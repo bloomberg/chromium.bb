@@ -747,14 +747,9 @@ BrowserAccessibilityWin
       REFIID iid,
       void** object);
 
-  // Accessors.
-  int32 ia_role() const { return ia_role_; }
-  int32 ia_state() const { return ia_state_; }
-  int32 ia2_role() const { return ia2_role_; }
-  int32 ia2_state() const { return ia2_state_; }
-  const std::vector<string16>& ia2_attributes() const {
-    return ia2_attributes_;\
-  }
+  // Accessors to IA2 role and state.
+  int32 ia2_role() { return ia2_role_; }
+  int32 ia2_state() { return ia2_state_; }
 
  private:
   // Add one to the reference count and return the same object. Always

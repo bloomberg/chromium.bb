@@ -73,7 +73,6 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     case ROLE_DOCUMENT: result += " DOCUMENT"; break;
     case ROLE_DRAWER: result += " DRAWER"; break;
     case ROLE_EDITABLE_TEXT: result += " EDITABLE_TEXT"; break;
-    case ROLE_FOOTER: result += " FOOTER"; break;
     case ROLE_GRID: result += " GRID"; break;
     case ROLE_GROUP: result += " GROUP"; break;
     case ROLE_GROW_AREA: result += " GROW_AREA"; break;
