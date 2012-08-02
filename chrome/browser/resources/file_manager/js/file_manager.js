@@ -1041,12 +1041,15 @@ FileManager.prototype = {
 
   /**
    * Index of selected item in the typeList of the dialog params.
-   * @return {intener} Index of selected type from this.fileTypes_ + 1. 0
-   *                   means value is not specified.
+   * @return {number} 1-based index of selected type or 0 if no type selected.
    */
   FileManager.prototype.getSelectedFilterIndex_ = function() {
-    // 0 is the 'All files' item.
-    return Math.min(0, this.fileTypeSelector_.selectedIndex);
+    var index = Number(this.fileTypeSelector_.selectedIndex);
+    if (index < 0)  // Nothing selected.
+      return 0;
+    if (this.params_.includeAllFiles)  // Already 1-based.
+      return index;
+    return index + 1;  // Convert to 1-based;
   };
 
   /**
@@ -1385,35 +1388,52 @@ FileManager.prototype = {
    * Fills the file type list or hides it.
    */
   FileManager.prototype.initFileTypeFilter_ = function() {
-    if (this.fileTypes_.length == 0) {
-      this.fileTypeSelector_.hidden = true;
-      return;
+    if (this.params_.includeAllFiles) {
+      var option = this.document_.createElement('option');
+      option.innerText = str('ALL_FILES_FILTER');
+      this.fileTypeSelector_.appendChild(option);
+      option.value = 0;
     }
 
-    var option = this.document_.createElement('option');
-    option.innerText = str('ALL_FILES_FILTER');
-    this.fileTypeSelector_.appendChild(option);
-    option.value = 0;
-
     for (var i = 0; i < this.fileTypes_.length; i++) {
-       var option = this.document_.createElement('option');
-       var description = this.fileTypes_[i].description;
-       if (!description) {
-         if (this.fileTypes_[i].extensions.length == 1) {
-           description = this.getFileTypeString_('.' +
-               this.fileTypes_[i].extensions[0]);
-         } else {
-           description = this.fileTypes_[i].extensions.join(', ');
-         }
+      var fileType = this.fileTypes_[i];
+      var option = this.document_.createElement('option');
+      var description = fileType.description;
+      if (!description) {
+        // See if all the extensions in the group have the same description.
+        for (var j = 0; j != fileType.extensions.length; j++) {
+          var currentDescription =
+              this.getFileTypeString_('.' + fileType.extensions[j]);
+          if (!description)  // Set the first time.
+            description = currentDescription;
+          else if (description != currentDescription) {
+            // No single description, fall through to the extension list.
+            description = null;
+            break;
+          }
+        }
+
+        if (!description)
+          // Convert ['jpg', 'png'] to '*.jpg, *.png'.
+          description = fileType.extensions.map(function(s) {
+           return '*.' + s;
+          }).join(', ');
        }
        option.innerText = description;
 
        option.value = i + 1;
 
-       if (this.fileTypes_[i].selected)
+       if (fileType.selected)
          option.selected = true;
 
        this.fileTypeSelector_.appendChild(option);
+    }
+
+    var options = this.fileTypeSelector_.querySelectorAll('option');
+    if (options.length < 2) {
+      // There is in fact no choice, hide the selector.
+      this.fileTypeSelector_.hidden = true;
+      return;
     }
 
     this.fileTypeSelector_.addEventListener('change',
@@ -1425,8 +1445,8 @@ FileManager.prototype = {
    */
   FileManager.prototype.updateFileTypeFilter_ = function() {
     this.directoryModel_.removeFilter('fileType');
-    var selectedIndex = Number(this.fileTypeSelector_.selectedIndex);
-    if (selectedIndex >= 1) { // Specific filter selected.
+    var selectedIndex = this.getSelectedFilterIndex_();
+    if (selectedIndex > 0) { // Specific filter selected.
       var regexp = new RegExp('.*(' +
           this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
       function filter(entry) {

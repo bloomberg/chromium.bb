@@ -332,12 +332,15 @@ GURL GetFileBrowserUrlWithParams(
         dict->SetString("description", desc);
       }
 
+      // file_type_index is 1-based. 0 means no selection at all.
       dict->SetBoolean("selected",
-                       (static_cast<size_t>(file_type_index) == i));
+                       (static_cast<size_t>(file_type_index) == (i + 1)));
 
       types_list->Set(i, dict);
     }
     arg_value.Set("typeList", types_list);
+
+    arg_value.SetBoolean("includeAllFiles", file_types->include_all_files);
   }
 
   std::string json_args;

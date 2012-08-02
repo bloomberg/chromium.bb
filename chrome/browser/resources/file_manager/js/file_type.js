@@ -25,6 +25,8 @@ FileType.types = [
    pattern: /\.png$/i},
   {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'WebP',
    pattern: /\.webp$/i},
+  {type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'TIFF',
+   pattern: /\.tiff?$/i},
 
   // Video
   {type: 'video', name: 'VIDEO_FILE_TYPE', subtype: '3GP',
