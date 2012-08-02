@@ -28,7 +28,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "content/common/font_config_ipc_linux.h"
-#include "content/common/sandbox_linux.h"
+#include "content/common/sandbox_methods_linux.h"
 #include "content/common/webkitplatformsupport_impl.h"
 #include "skia/ext/SkFontHost_fontconfig_direct.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -36,7 +36,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontInfo.h"
 #include "ui/gfx/font_render_params_linux.h"
 
-using content::LinuxSandbox;
 using WebKit::WebCString;
 using WebKit::WebFontInfo;
 using WebKit::WebUChar;

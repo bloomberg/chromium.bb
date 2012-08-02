@@ -28,7 +28,8 @@
 #include "crypto/nss_util.h"
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/pepper_plugin_registry.h"
-#include "content/common/sandbox_linux.h"
+#include "content/common/sandbox_methods_linux.h"
+#include "content/common/seccomp_sandbox.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -451,15 +452,27 @@ bool ZygoteMain(const MainFunctionParams& params,
   sandbox::InitLibcUrandomOverrides();
 #endif
 
-  LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
-  // This will pre-initialize the various sandboxes that need it.
-  // There need to be a corresponding call to PreinitializeSandboxFinish()
-  // for each new process, this will be done in the Zygote child, once we know
-  // our process type.
-  linux_sandbox->PreinitializeSandboxBegin();
+  int proc_fd_for_seccomp = -1;
+#if defined(SECCOMP_SANDBOX)
+  if (SeccompSandboxEnabled()) {
+    // The seccomp sandbox needs access to files in /proc, which might be denied
+    // after one of the other sandboxes have been started. So, obtain a suitable
+    // file handle in advance.
+    proc_fd_for_seccomp = open("/proc", O_DIRECTORY | O_RDONLY);
+    if (proc_fd_for_seccomp < 0) {
+      LOG(ERROR) << "WARNING! Cannot access \"/proc\". Disabling seccomp "
+          "sandboxing.";
+    }
+  }
+#endif  // SECCOMP_SANDBOX
 
-  sandbox::SetuidSandboxClient* setuid_sandbox =
-      linux_sandbox->setuid_sandbox_client();
+  scoped_ptr<sandbox::SetuidSandboxClient>
+      setuid_sandbox(sandbox::SetuidSandboxClient::Create());
+
+  if (setuid_sandbox == NULL) {
+    LOG(FATAL) << "Failed to instantiate the setuid sandbox client.";
+    return false;
+  }
 
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
@@ -473,8 +486,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   // Turn on the SELinux or SUID sandbox.
   bool using_suid_sandbox = false;
   bool has_started_new_init = false;
-
-  if (!EnterSandbox(setuid_sandbox,
+  if (!EnterSandbox(setuid_sandbox.get(),
                     &using_suid_sandbox,
                     &has_started_new_init)) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
@@ -482,15 +494,44 @@ bool ZygoteMain(const MainFunctionParams& params,
     return false;
   }
 
-  if (setuid_sandbox->IsInNewPIDNamespace() && !has_started_new_init) {
+  int sandbox_flags = 0;
+  if (using_suid_sandbox) {
+    sandbox_flags |= kSandboxLinuxSUID;
+    if (setuid_sandbox->IsInNewPIDNamespace())
+      sandbox_flags |= kSandboxLinuxPIDNS;
+    if (setuid_sandbox->IsInNewNETNamespace())
+      sandbox_flags |= kSandboxLinuxNetNS;
+  }
+
+  if ((sandbox_flags & kSandboxLinuxPIDNS) && !has_started_new_init) {
     LOG(ERROR) << "The SUID sandbox created a new PID namespace but Zygote "
                   "is not the init process. Please, make sure the SUID "
                   "binary is up to date.";
   }
 
-  int sandbox_flags = linux_sandbox->GetStatus();
+#if defined(SECCOMP_SANDBOX)
+  // The seccomp sandbox will be turned on when the renderers start. But we can
+  // already check if sufficient support is available so that we only need to
+  // print one error message for the entire browser session.
+  if (proc_fd_for_seccomp >= 0 && SeccompSandboxEnabled()) {
+    if (!SupportsSeccompSandbox(proc_fd_for_seccomp)) {
+      // There are a good number of users who cannot use the seccomp sandbox
+      // (e.g. because their distribution does not enable seccomp mode by
+      // default). While we would prefer to deny execution in this case, it
+      // seems more realistic to continue in degraded mode.
+      LOG(ERROR) << "WARNING! This machine lacks support needed for the "
+                    "Seccomp sandbox. Running renderers with Seccomp "
+                    "sandboxing disabled.";
+      close(proc_fd_for_seccomp);
+      proc_fd_for_seccomp = -1;
+    } else {
+      VLOG(1) << "Enabling experimental Seccomp sandbox.";
+      sandbox_flags |= kSandboxLinuxSeccomp;
+    }
+  }
+#endif  // SECCOMP_SANDBOX
 
-  Zygote zygote(sandbox_flags, forkdelegate);
+  Zygote zygote(sandbox_flags, forkdelegate, proc_fd_for_seccomp);
   // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();
 }

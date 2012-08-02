@@ -32,7 +32,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/time.h"
-#include "content/common/sandbox_linux.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
@@ -539,6 +538,23 @@ bool InitializeBpfSandbox_x86(const CommandLine& command_line,
   return true;
 }
 
+bool InitializeLegacySandbox_x86(const CommandLine& command_line,
+                                  const std::string& process_type) {
+#if defined(SECCOMP_SANDBOX)
+  // Start the old seccomp mode 1 (sandbox/linux/seccomp-legacy).
+  if (process_type == switches::kRendererProcess && SeccompSandboxEnabled()) {
+    // N.b. SupportsSeccompSandbox() returns a cached result, as we already
+    // called it earlier in the zygote. Thus, it is OK for us to not pass in
+    // a file descriptor for "/proc".
+    if (SupportsSeccompSandbox(-1)) {
+      StartSeccompSandbox();
+      return true;
+    }
+  }
+#endif
+  return false;
+}
+
 }  // anonymous namespace
 
 #endif  // defined(__i386__) || defined(__x86_64__)
@@ -555,7 +571,7 @@ void InitializeSandbox() {
 
   // First, try to enable seccomp-legacy.
   seccomp_legacy_started =
-      LinuxSandbox::GetInstance()->StartSeccompLegacy(process_type);
+      InitializeLegacySandbox_x86(command_line, process_type);
   if (seccomp_legacy_started)
     LogSandboxStarted("seccomp-legacy", process_type);
 

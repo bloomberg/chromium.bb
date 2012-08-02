@@ -73,9 +73,6 @@ TEST(SetuidSandboxClient, SandboxedClientAPI) {
   EXPECT_TRUE(env->SetVar(kSandboxEnvironmentApiProvides,
               base::IntToString(kSUIDSandboxApiNumber + 1)));
   EXPECT_FALSE(sandbox_client->IsSuidSandboxUpToDate());
-  // We didn't go through the actual sandboxing mechanism as it is
-  // very hard in a unit test.
-  EXPECT_FALSE(sandbox_client->IsSandboxed());
 }
 
 }  // namespace sandbox

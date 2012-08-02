@@ -103,9 +103,8 @@ SetuidSandboxClient* SetuidSandboxClient::Create() {
   return sandbox_client;
 }
 
-SetuidSandboxClient::SetuidSandboxClient()
-    : env_(NULL),
-      sandboxed_(false) {
+SetuidSandboxClient::SetuidSandboxClient() {
+  env_ = NULL;
 }
 
 SetuidSandboxClient::~SetuidSandboxClient() {
@@ -143,10 +142,6 @@ bool SetuidSandboxClient::ChrootMe() {
     LOG(ERROR) << "Error code reply from chroot helper";
     return false;
   }
-
-  // We now consider ourselves "fully sandboxed" as far as the
-  // setuid sandbox is concerned.
-  sandboxed_ = true;
   return true;
 }
 
@@ -164,10 +159,6 @@ bool SetuidSandboxClient::IsInNewPIDNamespace() const {
 
 bool SetuidSandboxClient::IsInNewNETNamespace() const {
   return env_->HasVar(kSandboxNETNSEnvironmentVarName);
-}
-
-bool SetuidSandboxClient::IsSandboxed() const {
-  return sandboxed_;
 }
 
 void SetuidSandboxClient::SetupLaunchEnvironment() {

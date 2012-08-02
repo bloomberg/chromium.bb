@@ -25,7 +25,7 @@
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket.h"
 #include "content/common/set_process_title.h"
-#include "content/common/sandbox_linux.h"
+#include "content/common/sandbox_methods_linux.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
@@ -68,9 +68,13 @@ void SELinuxTransitionToTypeOrDie(const char* type) {
 }  // namespace
 
 Zygote::Zygote(int sandbox_flags,
-               ZygoteForkDelegate* helper)
+               ZygoteForkDelegate* helper,
+               int proc_fd_for_seccomp)
     : sandbox_flags_(sandbox_flags),
       helper_(helper),
+#if defined(SECCOMP_SANDBOX)
+      proc_fd_for_seccomp_(proc_fd_for_seccomp),
+#endif
       initial_uma_sample_(0),
       initial_uma_boundary_value_(0) {
   if (helper_) {
@@ -419,9 +423,17 @@ base::ProcessId Zygote::ReadArgsAndFork(const Pickle& pickle,
                                               uma_boundary_value);
   if (!child_pid) {
     // This is the child process.
-
-    // At this point, we finally know our process type.
-    LinuxSandbox::GetInstance()->PreinitializeSandboxFinish(process_type);
+#if defined(SECCOMP_SANDBOX)
+    if (proc_fd_for_seccomp_ >= 0) {
+      if (process_type == switches::kRendererProcess &&
+          SeccompSandboxEnabled()) {
+        SeccompSandboxSetProcFd(proc_fd_for_seccomp_);
+      } else {
+        close(proc_fd_for_seccomp_);
+      }
+      proc_fd_for_seccomp_ = -1;
+    }
+#endif
 
     close(kBrowserDescriptor);  // Our socket from the browser.
     if (UsingSUIDSandbox())

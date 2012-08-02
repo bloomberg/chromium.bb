@@ -10,6 +10,7 @@
 
 #include "base/hash_tables.h"
 #include "base/process.h"
+#include "content/common/seccomp_sandbox.h"
 
 class Pickle;
 class PickleIterator;
@@ -23,8 +24,12 @@ class ZygoteForkDelegate;
 // runs it.
 class Zygote {
  public:
+  // The proc_fd_for_seccomp should be a file descriptor to /proc under the
+  // seccomp sandbox. This is not needed when not using seccomp, and should be
+  // -1 in those cases.
   Zygote(int sandbox_flags,
-         ZygoteForkDelegate* helper);
+         ZygoteForkDelegate* helper,
+         int proc_fd_for_seccomp);
   ~Zygote();
 
   bool ProcessRequests();
@@ -92,6 +97,11 @@ class Zygote {
 
   const int sandbox_flags_;
   ZygoteForkDelegate* helper_;
+
+#if defined(SECCOMP_SANDBOX)
+  // File descriptor to proc under seccomp, -1 when not using seccomp.
+  int proc_fd_for_seccomp_;
+#endif
 
   // These might be set by helper_->InitialUMA. They supply a UMA enumeration
   // sample we should report on the first fork.
