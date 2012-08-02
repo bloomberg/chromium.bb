@@ -218,7 +218,8 @@ class TrayPopupHeaderButton : public views::ToggleImageButton {
                         int enabled_resource_id,
                         int disabled_resource_id,
                         int enabled_resource_id_hover,
-                        int disabled_resource_id_hover);
+                        int disabled_resource_id_hover,
+                        int accessible_name_id);
   virtual ~TrayPopupHeaderButton();
 
  private:

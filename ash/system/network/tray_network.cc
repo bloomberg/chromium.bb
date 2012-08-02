@@ -265,21 +265,24 @@ class NetworkDetailedView : public TrayDetailsView,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED,
         IDR_AURA_UBER_TRAY_WIFI_DISABLED,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER,
-        IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER);
+        IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER,
+        IDS_ASH_STATUS_TRAY_WIFI);
     footer()->AddButton(button_wifi_);
 
     button_mobile_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
         IDR_AURA_UBER_TRAY_CELLULAR_DISABLED,
         IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER,
-        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER);
+        IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER,
+        IDS_ASH_STATUS_TRAY_CELLULAR);
     footer()->AddButton(button_mobile_);
 
     info_icon_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_NETWORK_INFO,
         IDR_AURA_UBER_TRAY_NETWORK_INFO,
         IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
-        IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER);
+        IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER,
+        IDS_ASH_STATUS_TRAY_NETWORK_INFO);
     footer()->AddButton(info_icon_);
   }
 

@@ -404,7 +404,8 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                                              int enabled_resource_id,
                                              int disabled_resource_id,
                                              int enabled_resource_id_hover,
-                                             int disabled_resource_id_hover)
+                                             int disabled_resource_id_hover,
+                                             int accessible_name_id)
     : views::ToggleImageButton(listener) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   SetImage(views::CustomButton::BS_NORMAL,
@@ -417,6 +418,7 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
       bundle.GetImageNamed(disabled_resource_id_hover).ToImageSkia());
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
+  SetAccessibleName(bundle.GetLocalizedString(accessible_name_id));
   set_focusable(true);
   set_request_focus_on_press(false);
 }

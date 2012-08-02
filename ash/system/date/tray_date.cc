@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -69,7 +70,8 @@ class DateDefaultView : public views::View,
         IDR_AURA_UBER_TRAY_HELP,
         IDR_AURA_UBER_TRAY_HELP,
         IDR_AURA_UBER_TRAY_HELP_HOVER,
-        IDR_AURA_UBER_TRAY_HELP_HOVER);
+        IDR_AURA_UBER_TRAY_HELP_HOVER,
+        IDS_ASH_STATUS_TRAY_HELP);
     view->AddButton(help_);
 
     if (login != ash::user::LOGGED_IN_LOCKED &&
@@ -78,7 +80,8 @@ class DateDefaultView : public views::View,
           IDR_AURA_UBER_TRAY_SHUTDOWN,
           IDR_AURA_UBER_TRAY_SHUTDOWN,
           IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
-          IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER);
+          IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER,
+          IDS_ASH_STATUS_TRAY_SHUTDOWN);
       view->AddButton(shutdown_);
 
       if (login != ash::user::LOGGED_IN_GUEST) {
@@ -86,7 +89,8 @@ class DateDefaultView : public views::View,
             IDR_AURA_UBER_TRAY_LOCKSCREEN,
             IDR_AURA_UBER_TRAY_LOCKSCREEN,
             IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
-            IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER);
+            IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,
+            IDS_ASH_STATUS_TRAY_LOCK);
         view->AddButton(lock_);
       }
     }

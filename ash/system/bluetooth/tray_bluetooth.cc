@@ -99,7 +99,8 @@ class BluetoothDetailedView : public TrayDetailsView,
         IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED,
         IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED,
         IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER,
-        IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER);
+        IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER,
+        IDS_ASH_STATUS_TRAY_BLUETOOTH);
     toggle_bluetooth_->SetToggled(!delegate->GetBluetoothEnabled());
     footer()->AddButton(toggle_bluetooth_);
   }
