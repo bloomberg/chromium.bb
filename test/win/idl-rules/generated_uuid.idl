@@ -13,5 +13,5 @@ import "ocidl.idl";
   pointer_default(unique)
 ]
 interface IDummy : IUnknown {
-  HRESULT Dummy();
+  HRESULT Dummy2();
 };
