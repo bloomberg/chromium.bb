@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_IBUS_MOCK_IBUS_INPUT_CONTEXT_CLIENT_H_
 #define CHROMEOS_DBUS_IBUS_MOCK_IBUS_INPUT_CONTEXT_CLIENT_H_
 
+#include <string>
 #include "base/basictypes.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
 
@@ -43,6 +44,9 @@ class MockIBusInputContextClient : public IBusInputContextClient {
                                uint32 state,
                                const ProcessKeyEventCallback& callback,
                                const ErrorCallback& error_callback) OVERRIDE;
+  virtual void SetSurroundingText(const std::string& text,
+                                  uint32 cursor_pos,
+                                  uint32 anchor_pos) OVERRIDE;
 
   // Call count of Initialize().
   int initialize_call_count() const { return initialize_call_count_; }

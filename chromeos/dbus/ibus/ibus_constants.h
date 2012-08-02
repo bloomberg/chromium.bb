@@ -31,6 +31,7 @@ const char kResetMethod[] = "Reset";
 const char kSetCapabilitiesMethod[] = "SetCapabilities";
 const char kSetCursorLocationMethod[] = "SetCursorLocation";
 const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
+const char kSetSurroundingText[] = "SetSurroundingText";
 }  // namespace input_context
 
 namespace engine_factory {

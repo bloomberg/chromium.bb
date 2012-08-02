@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 
 namespace chromeos {
@@ -101,6 +102,12 @@ void MockIBusInputContextClient::ProcessKeyEvent(
     const ProcessKeyEventCallback& callback,
     const ErrorCallback& error_callback) {
   process_key_event_call_count_++;
+}
+
+void MockIBusInputContextClient::SetSurroundingText(
+    const std::string& text,
+    uint32 cursor_pos,
+    uint32 anchor_pos) {
 }
 
 }  // namespace chromeos

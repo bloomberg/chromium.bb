@@ -37,6 +37,9 @@ const uint32 kKeyval = 34;
 const uint32 kKeycode = 35;
 const uint32 kState = 36;
 const bool kIsKeyHandled = false;
+const char kSurroundingText[] = "Surrounding Text";
+const uint32 kCursorPos = 2;
+const uint32 kAnchorPos = 7;
 
 class MockCommitTextHandler {
  public:
@@ -266,6 +269,33 @@ class IBusInputContextClientTest : public testing::Test {
 
     message_loop_.PostTask(FROM_HERE, base::Bind(error_callback,
                                                  error_response_));
+  }
+
+  // Handles SetSurroudingText method call.
+  void OnSetSurroundingText(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback) {
+    EXPECT_EQ(ibus::input_context::kServiceInterface,
+              method_call->GetInterface());
+    EXPECT_EQ(ibus::input_context::kSetSurroundingText,
+              method_call->GetMember());
+    dbus::MessageReader reader(method_call);
+    std::string text;
+    uint32 cursor_pos = 0;
+    uint32 anchor_pos = 0;
+
+    EXPECT_TRUE(ibus::PopStringFromIBusText(&reader, &text));
+    EXPECT_TRUE(reader.PopUint32(&cursor_pos));
+    EXPECT_TRUE(reader.PopUint32(&anchor_pos));
+    EXPECT_FALSE(reader.HasMoreData());
+
+    EXPECT_EQ(kSurroundingText, text);
+    EXPECT_EQ(kCursorPos, cursor_pos);
+    EXPECT_EQ(kAnchorPos, anchor_pos);
+
+    message_loop_.PostTask(FROM_HERE, base::Bind(callback, response_));
   }
 
  protected:
@@ -557,6 +587,21 @@ TEST_F(IBusInputContextClientTest, OnProcessKeyEventFail) {
                                       base::Unretained(&callback)),
                            base::Bind(&MockProcessKeyEventErrorHandler::Run,
                                       base::Unretained(&error_callback)));
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(IBusInputContextClientTest, SetSurroundingTextTest) {
+  // Set expectations.
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillOnce(Invoke(this,
+                       &IBusInputContextClientTest::OnSetSurroundingText));
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  response_ = response.get();
+
+  // Call SetCursorLocation.
+  client_->SetSurroundingText(kSurroundingText, kCursorPos, kAnchorPos);
   // Run the message loop.
   message_loop_.RunAllPending();
 }

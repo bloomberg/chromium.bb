@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_IBUS_IBUS_INPUT_CONTEXT_CLIENT_H_
 #define CHROMEOS_DBUS_IBUS_IBUS_INPUT_CONTEXT_CLIENT_H_
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
@@ -102,6 +104,12 @@ class CHROMEOS_EXPORT IBusInputContextClient {
                                uint32 state,
                                const ProcessKeyEventCallback& callback,
                                const ErrorCallback& error_callback) = 0;
+
+  // Invokes SetSurroundingText method call. |start_index| is inclusive and
+  // |end_index| is exclusive.
+  virtual void SetSurroundingText(const std::string& text,
+                                  uint32 start_index,
+                                  uint32 end_index) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
