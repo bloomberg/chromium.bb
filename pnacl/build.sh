@@ -1884,7 +1884,10 @@ binutils-configure() {
   # If you ever touch this please make sure that rpath is correct via:
   # objdump -p toolchain/pnacl_linux_x86_64/host/bin/arm-pc-nacl-ld.gold
   # objdump -p toolchain/pnacl_linux_x86_64/host/bin/arm-pc-nacl-objdump
-  if ${BUILD_PLATFORM_MAC} ; then
+  if ${BUILD_PLATFORM_LINUX} ; then
+      local flags='-Xlinker -rpath -Xlinker '"'"'$\\$$\$$\\$$\$$ORIGIN/../lib'"'"
+      local shared='yes'
+  else
       # The shared build for binutils on mac is currently disabled.
       # A mac-expert needs to look at this but
       # It seems that on mac the linker is storing "full" library paths into
@@ -1895,9 +1898,6 @@ binutils-configure() {
       #local flags="-Xlinker -rpath -Xlinker '@executable_path/../lib'"
       local flags=''
       local shared='no'
-  else
-      local flags='-Xlinker -rpath -Xlinker '"'"'$\\$$\$$\\$$\$$ORIGIN/../lib'"'"
-      local shared='yes'
   fi
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
@@ -1989,7 +1989,7 @@ binutils-install() {
   # Move binutils shared libs to host/lib.
   # The first "*" expands to the host string, e.g.
   # x86_64-unknown-linux-gnu
-  if ! ${BUILD_PLATFORM_MAC} ; then
+  if ${BUILD_PLATFORM_LINUX} ; then
     echo "move shared libs to ${BINUTILS_INSTALL_DIR}/${SO_DIR}"
     for lib in ${BINUTILS_INSTALL_DIR}/*/arm-pc-nacl/lib/lib*${SO_EXT} ; do
       echo "moving ${lib}"
