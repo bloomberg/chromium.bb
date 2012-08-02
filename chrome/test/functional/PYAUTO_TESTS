@@ -551,6 +551,8 @@
       '-translate.TranslateTest.testSeveralLanguages',
       # crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
+      # crbug.com/140047
+      '-protector.ProtectorSessionStartupTest.testDetectSessionStartupChangeAndApply',
     ],
 
     'mac': [
