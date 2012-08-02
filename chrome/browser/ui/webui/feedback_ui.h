@@ -7,15 +7,10 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-class Browser;
-
-namespace browser {
-void ShowWebFeedbackView(Browser* browser,
-                         const std::string& description_template,
-                         const std::string& category_tag);
-}  // namespace browser
+class FilePath;
 
 class FeedbackUI : public ui::WebDialogUI {
  public:

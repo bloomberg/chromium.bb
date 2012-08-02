@@ -12,7 +12,7 @@
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/webui/feedback_ui.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -121,7 +121,7 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         content::PAGE_TRANSITION_LINK, false);
     web_contents_->OpenURL(params);
   } else if (source == feedback_link_) {
-    browser::ShowWebFeedbackView(
+    chrome::ShowFeedbackPage(
         browser::FindBrowserWithWebContents(web_contents_),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         std::string(kCategoryTagCrash));

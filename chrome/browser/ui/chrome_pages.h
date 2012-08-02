@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_CHROME_PAGES_H_
 #define CHROME_BROWSER_UI_CHROME_PAGES_H_
 
+#include <string>
+
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/content_settings_types.h"
 
@@ -35,6 +37,9 @@ void ShowHistory(Browser* browser);
 void ShowDownloads(Browser* browser);
 void ShowExtensions(Browser* browser);
 void ShowConflicts(Browser* browser);
+void ShowFeedbackPage(Browser* browser,
+                      const std::string& description_template,
+                      const std::string& category_tag);
 
 void ShowHelp(Browser* browser, HelpSource source);
 

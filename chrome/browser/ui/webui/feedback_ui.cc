@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -147,12 +148,11 @@ int GetIndexOfFeedbackTab(Browser* browser) {
 
 }  // namespace
 
+namespace chrome {
 
-namespace browser {
-
-void ShowWebFeedbackView(Browser* browser,
-                         const std::string& description_template,
-                         const std::string& category_tag) {
+void ShowFeedbackPage(Browser* browser,
+                      const std::string& description_template,
+                      const std::string& category_tag) {
 #if defined(OS_CHROMEOS)
   // Grab the timestamp before we do anything else - this is crucial to help
   // diagnose some hardware issues.
@@ -206,7 +206,7 @@ void ShowWebFeedbackView(Browser* browser,
   chrome::ShowSingletonTab(browser, GURL(feedback_url));
 }
 
-}  // namespace browser
+}  // namespace chrome
 
 // The handler for Javascript messages related to the "bug report" dialog
 class FeedbackHandler : public WebUIMessageHandler,
