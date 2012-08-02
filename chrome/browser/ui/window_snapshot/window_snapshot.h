@@ -20,11 +20,7 @@ namespace chrome {
 // Grabs a snapshot of the rectangle area |snapshot_bounds| with respect to the
 // top left corner of the designated window and stores a PNG representation
 // into a byte vector. On Windows, |window| may be NULL to grab a snapshot of
-// the primary monitor. This checks policy settings if taking screenshots is
-// allowed, and is intended to by used by browser code. If you need to take a
-// screenshot for debugging purposes, use ui::GrabWindowSnapshot
-// (ui/window_snapshot/window_snapshot.h).
-// Returns true if the operation is successful (ie. permitted).
+// the primary monitor. Returns true if the operation is successful.
 bool GrabWindowSnapshot(
     gfx::NativeWindow window,
     std::vector<unsigned char>* png_representation,

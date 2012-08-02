@@ -697,7 +697,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRTest) {
 const wchar_t kInstallFlowTestUrl[] =
     L"install_flow_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
+// crbug.com/139694
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_InstallFlowTest) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     ScopedChromeFrameRegistrar::UnregisterAtPath(
         GetChromeFrameBuildPath().value(),
@@ -901,7 +902,8 @@ class UaTemplateFileResponse : public test_server::FileResponse {
 //
 // This test currently fails because GCF does not add the chromeframe header
 // to requests that mshtml initiates via IInternetSession::CreateBinding.
-TEST_F(ChromeFrameTestWithWebServer, FAILS_FullTabModeIE_RefreshMshtmlTest) {
+// crbug.com/139694
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_RefreshMshtmlTest) {
   const wchar_t* kPages[] = {
     L"mshtml_refresh_test.html",
     L"mshtml_refresh_test_popup.html",

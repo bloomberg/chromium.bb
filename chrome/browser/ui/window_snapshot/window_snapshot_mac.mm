@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/window_snapshot/window_snapshot.h"
+#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,11 +11,11 @@
 #include "base/memory/scoped_nsobject.h"
 #include "ui/gfx/rect.h"
 
-namespace ui {
+namespace chrome {
 
-bool GrabWindowSnapshot(gfx::NativeWindow window,
-                        std::vector<unsigned char>* png_representation,
-                        const gfx::Rect& snapshot_bounds) {
+bool GrabWindowSnapshotImpl(gfx::NativeWindow window,
+                            std::vector<unsigned char>* png_representation,
+                            const gfx::Rect& snapshot_bounds) {
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   gfx::Rect screen_bounds = gfx::Rect(NSRectToCGRect([screen frame]));
   gfx::Rect window_bounds = gfx::Rect(NSRectToCGRect([window frame]));
@@ -58,4 +58,4 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   return true;
 }
 
-}  // namespace ui
+}  // namespace chrome

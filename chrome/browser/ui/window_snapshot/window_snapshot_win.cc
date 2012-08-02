@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/window_snapshot/window_snapshot.h"
+#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
@@ -34,11 +34,11 @@ gfx::Rect GetWindowBounds(gfx::NativeWindow window_handle) {
 
 }  // namespace
 
-namespace ui {
+namespace chrome {
 
-bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
-                        std::vector<unsigned char>* png_representation,
-                        const gfx::Rect& snapshot_bounds) {
+bool GrabWindowSnapshotImpl(gfx::NativeWindow window_handle,
+                            std::vector<unsigned char>* png_representation,
+                            const gfx::Rect& snapshot_bounds) {
   DCHECK(snapshot_bounds.right() <= GetWindowBounds(window_handle).right());
   DCHECK(snapshot_bounds.bottom() <= GetWindowBounds(window_handle).bottom());
 
@@ -97,4 +97,4 @@ bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
   return true;
 }
 
-}  // namespace ui
+}  // namespace chrome
