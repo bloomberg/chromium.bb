@@ -328,7 +328,7 @@ class GDataFileSystemTest : public testing::Test {
   bool UpdateContent(const std::vector<DocumentFeed*>& list,
                      int largest_changestamp) {
     GURL unused;
-    return file_system_->UpdateFromFeed(
+    return file_system_->UpdateFromFeedForTesting(
         list,
         largest_changestamp,
         root_feed_changestamp_++) == GDATA_FILE_OK;
