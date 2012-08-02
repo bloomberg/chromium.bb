@@ -1,7 +1,9 @@
 Name: jemalloc
+Short Name: jemalloc
 URL: http://hg.mozilla.org/mozilla-central/src/memory
-Version: unknown
+Version: 31465:63c44f8d16ac
 License: BSD
+License File: LICENSE
 Security Critical: yes
 
 Description:
