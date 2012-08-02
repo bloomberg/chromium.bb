@@ -24,7 +24,6 @@ namespace nacl_arm_test {
 class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
  public:
   explicit NamedArm32DecoderState();
-  virtual ~NamedArm32DecoderState();
 
   // Parses the given instruction, returning the named class
   // decoder to use.

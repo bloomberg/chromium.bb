@@ -15,7 +15,7 @@
 namespace nacl_arm_dec {
 
 
-static const nacl_arm_dec::SafetyLevel kSafetyLevel[] = {
+static const SafetyLevel kSafetyLevel[] = {
   UNKNOWN,
   UNDEFINED,
   UNPREDICTABLE,
@@ -56,6 +56,73 @@ uint32_t Imm12Bits0To11Interface::get_modified_immediate(Instruction i) {
   if (rotation == 0) return value;
 
   return (value >> rotation) | (value << (32 - rotation));
+}
+
+// ClassDecoder
+RegisterList ClassDecoder::defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return kRegisterListEverything;
+}
+
+RegisterList ClassDecoder::immediate_addressing_defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
+Register ClassDecoder::base_address_register(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return kRegisterNone;
+}
+
+bool ClassDecoder::offset_is_immediate(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return false;
+}
+
+Register ClassDecoder::branch_target_register(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return kRegisterNone;
+}
+
+bool ClassDecoder::is_relative_branch(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return false;
+}
+
+int32_t ClassDecoder::branch_target_offset(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return 0;
+}
+
+bool ClassDecoder::is_literal_pool_head(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return false;
+}
+
+bool ClassDecoder::clears_bits(Instruction i, uint32_t mask) const {
+  UNREFERENCED_PARAMETER(i);
+  UNREFERENCED_PARAMETER(mask);
+  return false;
+}
+
+bool ClassDecoder::sets_Z_if_bits_clear(Instruction i,
+                                        Register r,
+                                        uint32_t mask) const {
+  UNREFERENCED_PARAMETER(i);
+  UNREFERENCED_PARAMETER(r);
+  UNREFERENCED_PARAMETER(mask);
+  return false;
+}
+
+// UnsafeClassDecoder
+SafetyLevel UnsafeClassDecoder::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return safety_;
+}
+
+RegisterList UnsafeClassDecoder::defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
 }
 
 // CoprocessorOp

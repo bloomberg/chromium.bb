@@ -482,8 +482,29 @@ SafetyLevel StoreBasedImmedMemoryDouble::safety(const Instruction i) const {
 //      O L D    C L A S S    D E C O D E R S
 // **************************************************************
 
-// Breakpoint
+// EffectiveNoOp
+SafetyLevel EffectiveNoOp::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
 
+RegisterList EffectiveNoOp::defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
+// Roadblock
+SafetyLevel Roadblock::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList Roadblock::defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
+// Breakpoint
 bool Breakpoint::is_literal_pool_head(const Instruction i) const {
   return i.GetCondition() == Instruction::AL
       && i.Bits(19, 8) == 0x777
@@ -536,8 +557,12 @@ RegisterList SatAddSub::defs(const Instruction i) const {
   return DataProc::defs(i).Add(kConditions);
 }
 
-
 // MSR
+
+SafetyLevel MoveToStatusRegister::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
 
 RegisterList MoveToStatusRegister::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
@@ -705,6 +730,16 @@ RegisterList BxBlx::defs(const Instruction i) const {
 
 Register BxBlx::branch_target_register(const Instruction i) const {
   return m.reg(i);
+}
+
+SafetyLevel Branch::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+bool Branch::is_relative_branch(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return true;
 }
 
 RegisterList Branch::defs(const Instruction i) const {

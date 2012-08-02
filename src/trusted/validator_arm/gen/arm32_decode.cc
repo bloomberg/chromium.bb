@@ -72,8 +72,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , not_implemented_()
 {}
 
-Arm32DecoderState::~Arm32DecoderState() {}
-
 // Implementation of table: ARMv7.
 // Specified by: See Section A5.1
 const ClassDecoder& Arm32DecoderState::decode_ARMv7(

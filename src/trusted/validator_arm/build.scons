@@ -154,6 +154,7 @@ gtest_env.ComponentLibrary('decoder_test_tools',
                            ['decoder_tester.cc',
                             'inst_classes_testers.cc',
                             'actual_vs_baseline.cc',
+                            'named_class_decoder.cc',
                             'gen/arm32_decode_named.cc']);
 
 # Do NOT name this program 'validator_tests' because this is the same name as

@@ -37,9 +37,7 @@ namespace nacl_arm_dec {
 // change any general purpose registers.
 class DontCareInst : public ClassDecoder {
  public:
-  inline DontCareInst() {}
-  virtual ~DontCareInst() {}
-
+  DontCareInst() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -57,7 +55,7 @@ class DontCareInstRdNotPc : public DontCareInst {
   // We use the following Rd to capture the register being set.
   static const RegDBits12To15Interface d;
 
-  inline DontCareInstRdNotPc() {}
+  DontCareInstRdNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -77,9 +75,7 @@ class DontCareInstRnRsRmNotPc : public DontCareInst {
   static const RegSBits8To11Interface s;
   static const RegNBits16To19Interface n;
 
-  inline DontCareInstRnRsRmNotPc() : DontCareInst() {}
-  virtual ~DontCareInstRnRsRmNotPc() {}
-
+  DontCareInstRnRsRmNotPc() : DontCareInst() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -90,11 +86,9 @@ class DontCareInstRnRsRmNotPc : public DontCareInst {
 // flags (S - bit(20)) is set.
 class MaybeSetsConds : public ClassDecoder {
  public:
-  inline MaybeSetsConds() {}
-  virtual ~MaybeSetsConds() {}
-
   static const UpdatesConditionsBit20Interface conditions;
 
+  MaybeSetsConds() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -106,9 +100,7 @@ class MaybeSetsConds : public ClassDecoder {
 // the instruction is unsafe if it assigns register PC.
 class NoPcAssignClassDecoder : public MaybeSetsConds {
  public:
-  inline NoPcAssignClassDecoder() {}
-  virtual ~NoPcAssignClassDecoder() {}
-
+  NoPcAssignClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -119,9 +111,7 @@ class NoPcAssignClassDecoder : public MaybeSetsConds {
 // track if condition flags are updated.
 class NoPcAssignCondsDontCare : public DontCareInst {
  public:
-  inline NoPcAssignCondsDontCare() {}
-  virtual ~NoPcAssignCondsDontCare() {}
-
+  NoPcAssignCondsDontCare() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -132,8 +122,7 @@ class NoPcAssignCondsDontCare : public DontCareInst {
 // allow Rd=PC.
 class Defs12To15 : public NoPcAssignClassDecoder {
  public:
-  inline Defs12To15() {}
-  virtual ~Defs12To15() {}
+  Defs12To15() {}
 
   // We use the following Rd to capture the register being set.
   static const RegDBits12To15Interface d;
@@ -148,12 +137,10 @@ class Defs12To15 : public NoPcAssignClassDecoder {
 // allow Rd=PC, and doesn't care about tracking condition flags.
 class Defs12To15CondsDontCare : public NoPcAssignCondsDontCare {
  public:
-  inline Defs12To15CondsDontCare() {}
-  virtual ~Defs12To15CondsDontCare() {}
-
   // We use the following Rd to capture the register being set.
   static const RegDBits12To15Interface d;
 
+  Defs12To15CondsDontCare() {}
   virtual RegisterList defs(Instruction i) const;
 
  private:
@@ -172,9 +159,9 @@ class Defs12To15CondsDontCareRdRnNotPc : public Defs12To15CondsDontCare {
   static const RegNBits0To3Interface n;
   static const RegDBits12To15Interface d;
 
-  inline Defs12To15CondsDontCareRdRnNotPc() {}
-  virtual ~Defs12To15CondsDontCareRdRnNotPc() {}
+  Defs12To15CondsDontCareRdRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCareRdRnNotPc);
 };
@@ -191,9 +178,9 @@ class Defs12To15RdRnNotPc : public Defs12To15 {
   static const RegNBits0To3Interface n;
   static const RegDBits12To15Interface d;
 
-  inline Defs12To15RdRnNotPc() {}
-  virtual ~Defs12To15RdRnNotPc() {}
+  Defs12To15RdRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRnNotPc);
 };
@@ -212,8 +199,7 @@ class Defs12To15RdRmRnNotPc : public Defs12To15 {
   static const RegMBits8To11Interface m;
   static const RegDBits12To15Interface d;
 
-  inline Defs12To15RdRmRnNotPc() : Defs12To15() {}
-  virtual ~Defs12To15RdRmRnNotPc() {}
+  Defs12To15RdRmRnNotPc() : Defs12To15() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -236,9 +222,7 @@ class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
   static const RegSBits8To11Interface s;
   static const RegNBits16To19Interface n;
 
-  inline Defs12To15RdRnRsRmNotPc() {}
-  virtual ~Defs12To15RdRnRsRmNotPc() {}
-
+  Defs12To15RdRnRsRmNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -260,10 +244,8 @@ class Defs12To15CondsDontCareRdRnRsRmNotPc
   static const RegSBits8To11Interface s;
   static const RegNBits16To19Interface n;
 
-  inline Defs12To15CondsDontCareRdRnRsRmNotPc()
+  Defs12To15CondsDontCareRdRnRsRmNotPc()
       : Defs12To15CondsDontCare() {}
-  virtual ~Defs12To15CondsDontCareRdRnRsRmNotPc() {}
-
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -277,9 +259,7 @@ class Defs16To19CondsDontCare : public NoPcAssignClassDecoder {
   // We use the following Rd to capture the register being set.
   static const RegDBits16To19Interface d;
 
-  inline Defs16To19CondsDontCare() {}
-  virtual ~Defs16To19CondsDontCare() {}
-
+  Defs16To19CondsDontCare() {}
   virtual RegisterList defs(Instruction i) const;
 
  private:
@@ -293,9 +273,7 @@ class Defs16To19CondsDontCareRdRmRnNotPc : public Defs16To19CondsDontCare {
   static const RegNBits0To3Interface n;
   static const RegMBits8To11Interface m;
 
-  inline Defs16To19CondsDontCareRdRmRnNotPc() {}
-  virtual ~Defs16To19CondsDontCareRdRmRnNotPc() {}
-
+  Defs16To19CondsDontCareRdRmRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -310,9 +288,7 @@ class Defs16To19CondsDontCareRdRaRmRnNotPc : public Defs16To19CondsDontCare {
   static const RegMBits8To11Interface m;
   static const RegABits12To15Interface a;
 
-  inline Defs16To19CondsDontCareRdRaRmRnNotPc() {}
-  virtual ~Defs16To19CondsDontCareRdRaRmRnNotPc() {}
-
+  Defs16To19CondsDontCareRdRaRmRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -328,9 +304,7 @@ class Defs12To19CondsDontCare : public NoPcAssignClassDecoder {
   static const RegDBits12To15Interface d_lo;
   static const RegDBits16To19Interface d_hi;
 
-  inline Defs12To19CondsDontCare() {}
-  virtual ~Defs12To19CondsDontCare() {}
-
+  Defs12To19CondsDontCare() {}
   virtual RegisterList defs(Instruction i) const;
   virtual SafetyLevel safety(Instruction i) const;
 
@@ -346,9 +320,7 @@ class Defs12To19CondsDontCareRdRmRnNotPc : public Defs12To19CondsDontCare {
   static const RegNBits0To3Interface n;
   static const RegMBits8To11Interface m;
 
-  inline Defs12To19CondsDontCareRdRmRnNotPc() {}
-  virtual ~Defs12To19CondsDontCareRdRmRnNotPc() {}
-
+  Defs12To19CondsDontCareRdRmRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -367,9 +339,7 @@ class Defs12To15CondsDontCareRnRdRmNotPc : public Defs12To15CondsDontCare {
   static const RegDBits12To15Interface d;
   static const RegNBits16To19Interface n;
 
-  inline Defs12To15CondsDontCareRnRdRmNotPc() : Defs12To15CondsDontCare() {}
-  virtual ~Defs12To15CondsDontCareRnRdRmNotPc() {}
-
+  Defs12To15CondsDontCareRnRdRmNotPc() : Defs12To15CondsDontCare() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -383,8 +353,7 @@ class TestIfAddressMasked : public NoPcAssignClassDecoder {
   static const Imm12Bits0To11Interface imm12;
   static const RegNBits16To19Interface n;
 
-  inline TestIfAddressMasked() {}
-  virtual ~TestIfAddressMasked() {}
+  TestIfAddressMasked() {}
   virtual RegisterList defs(Instruction i) const;
   virtual bool sets_Z_if_bits_clear(Instruction i,
                                     Register r,
@@ -400,8 +369,7 @@ class MaskAddress : public Defs12To15 {
  public:
   static const Imm12Bits0To11Interface imm12;
 
-  inline MaskAddress() {}
-  virtual ~MaskAddress() {}
+  MaskAddress() {}
   virtual bool clears_bits(Instruction i, uint32_t mask) const;
 
  private:
@@ -422,9 +390,7 @@ class VfpOp : public CoprocessorOp {
   // Accessor to non-vector register fields.
   static const Imm4Bits8To11Interface coproc;
 
-  inline VfpOp() {}
-  virtual ~VfpOp() {}
-
+  VfpOp() {}
   // Default assumes the coprocessor instruction acts like a DontCareInst.
   virtual RegisterList defs(Instruction i) const;
 
@@ -438,8 +404,7 @@ class BasedAddressUsingRn : public ClassDecoder {
   // The base address register.
   static const RegNBits16To19Interface n;
 
-  inline BasedAddressUsingRn() {}
-  virtual ~BasedAddressUsingRn() {}
+  BasedAddressUsingRn() {}
   virtual Register base_address_register(Instruction i) const;
 
  private:
@@ -455,8 +420,7 @@ class LoadBasedMemory : public BasedAddressUsingRn {
   // but appears in the same bit locations).
   static const RegTBits12To15Interface t;
 
-  inline LoadBasedMemory() {}
-  virtual ~LoadBasedMemory() {}
+  LoadBasedMemory() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -470,8 +434,7 @@ class LoadBasedMemoryDouble : public LoadBasedMemory {
  public:
   static const RegT2Bits12To15Interface t2;
 
-  inline LoadBasedMemoryDouble() {}
-  virtual ~LoadBasedMemoryDouble() {}
+  LoadBasedMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -485,12 +448,11 @@ class LoadBasedMemoryWithWriteBack : public LoadBasedMemory {
   // Interfaces for components defining writeback.
   static const WritesBit21Interface writes;
   static const PrePostIndexingBit24Interface indexing;
-  inline bool HasWriteBack(const Instruction i) const {
+  bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
 
-  inline LoadBasedMemoryWithWriteBack() {}
-  virtual ~LoadBasedMemoryWithWriteBack() {}
+  LoadBasedMemoryWithWriteBack() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -506,8 +468,7 @@ class LoadBasedOffsetMemory : public LoadBasedMemoryWithWriteBack {
   // The offset register.
   static const RegMBits0To3Interface m;
 
-  inline LoadBasedOffsetMemory() {}
-  virtual ~LoadBasedOffsetMemory() {}
+  LoadBasedOffsetMemory() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -519,9 +480,7 @@ class LoadBasedOffsetMemoryDouble : public LoadBasedOffsetMemory {
  public:
   static const RegT2Bits12To15Interface t2;
 
-  inline LoadBasedOffsetMemoryDouble() {}
-  virtual ~LoadBasedOffsetMemoryDouble() {}
-
+  LoadBasedOffsetMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -533,8 +492,7 @@ class LoadBasedOffsetMemoryDouble : public LoadBasedOffsetMemory {
 // be modified by an immediate offset.
 class LoadBasedImmedMemory : public LoadBasedMemoryWithWriteBack {
  public:
-  inline LoadBasedImmedMemory() {}
-  virtual ~LoadBasedImmedMemory() {}
+  LoadBasedImmedMemory() {}
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
 
@@ -547,9 +505,7 @@ class LoadBasedImmedMemoryDouble : public LoadBasedImmedMemory {
  public:
   static const RegT2Bits12To15Interface t2;
 
-  inline LoadBasedImmedMemoryDouble() {}
-  virtual ~LoadBasedImmedMemoryDouble() {}
-
+  LoadBasedImmedMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -563,8 +519,7 @@ class StoreBasedMemoryRtBits0To3 : public BasedAddressUsingRn {
   static const RegTBits0To3Interface t;
   static const RegDBits12To15Interface d;
 
-  inline StoreBasedMemoryRtBits0To3() {}
-  virtual ~StoreBasedMemoryRtBits0To3() {}
+  StoreBasedMemoryRtBits0To3() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -578,8 +533,7 @@ class StoreBasedMemoryDoubleRtBits0To3 : public StoreBasedMemoryRtBits0To3 {
  public:
   static const RegT2Bits0To3Interface t2;
 
-  inline StoreBasedMemoryDoubleRtBits0To3() {}
-  virtual ~StoreBasedMemoryDoubleRtBits0To3() {}
+  StoreBasedMemoryDoubleRtBits0To3() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -592,12 +546,11 @@ class StoreBasedMemoryWithWriteBack : public BasedAddressUsingRn {
   static const RegTBits12To15Interface t;
   static const WritesBit21Interface writes;
   static const PrePostIndexingBit24Interface indexing;
-  inline bool HasWriteBack(const Instruction i) const {
+  bool HasWriteBack(const Instruction i) const {
     return indexing.IsPostIndexing(i) || writes.IsDefined(i);
   }
 
-  inline StoreBasedMemoryWithWriteBack() {}
-  virtual ~StoreBasedMemoryWithWriteBack() {}
+  StoreBasedMemoryWithWriteBack() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -612,8 +565,7 @@ class StoreBasedOffsetMemory : public StoreBasedMemoryWithWriteBack {
  public:
   static const RegMBits0To3Interface m;
 
-  inline StoreBasedOffsetMemory() {}
-  virtual ~StoreBasedOffsetMemory() {}
+  StoreBasedOffsetMemory() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -625,8 +577,7 @@ class StoreBasedOffsetMemoryDouble : public StoreBasedOffsetMemory {
  public:
   static const RegT2Bits12To15Interface t2;
 
-  inline StoreBasedOffsetMemoryDouble() {}
-  virtual ~StoreBasedOffsetMemoryDouble() {}
+  StoreBasedOffsetMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -637,8 +588,7 @@ class StoreBasedOffsetMemoryDouble : public StoreBasedOffsetMemory {
 // modified by an immediate offset.
 class StoreBasedImmedMemory : public StoreBasedMemoryWithWriteBack {
  public:
-  inline StoreBasedImmedMemory() {}
-  virtual ~StoreBasedImmedMemory() {}
+  StoreBasedImmedMemory() {}
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
 
  private:
@@ -650,8 +600,7 @@ class StoreBasedImmedMemoryDouble : public StoreBasedImmedMemory {
  public:
   static const RegT2Bits12To15Interface t2;
 
-  inline StoreBasedImmedMemoryDouble() {}
-  virtual ~StoreBasedImmedMemoryDouble() {}
+  StoreBasedImmedMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
@@ -664,23 +613,22 @@ class StoreBasedImmedMemoryDouble : public StoreBasedImmedMemory {
 
 class OldClassDecoder : public ClassDecoder {
  public:
-  inline OldClassDecoder() : ClassDecoder() {}
-  virtual ~OldClassDecoder() {}
+  OldClassDecoder() : ClassDecoder() {}
 
   // Many instructions define control bits in bits 20-24. The useful bits
   // are defined here.
 
   // True if S (updates condition flags in APSR register) flag is defined.
-  inline bool UpdatesConditions(const Instruction& i) const {
+  bool UpdatesConditions(const Instruction& i) const {
     return i.Bit(20);
   }
 
   // True if W (does write) flag is defined.
-  inline bool WritesFlag(const Instruction& i) const {
+  bool WritesFlag(const Instruction& i) const {
     return i.Bit(21);
   }
   // True if P (pre-indexing) flag is defined.
-  inline bool PreindexingFlag(const Instruction& i) const {
+  bool PreindexingFlag(const Instruction& i) const {
     return i.Bit(24);
   }
 
@@ -727,17 +675,9 @@ class OldClassDecoder : public ClassDecoder {
 //
 class EffectiveNoOp : public OldClassDecoder {
  public:
-  inline EffectiveNoOp() {}
-  virtual ~EffectiveNoOp() {}
-
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return MAY_BE_SAFE;
-  }
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return RegisterList();
-  }
+  EffectiveNoOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(EffectiveNoOp);
@@ -748,17 +688,9 @@ class EffectiveNoOp : public OldClassDecoder {
 // special role in the SFI model, so Breakpoints are distinguished below.
 class Roadblock : public OldClassDecoder {
  public:
-  inline Roadblock() {}
-  virtual ~Roadblock() {}
-
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return MAY_BE_SAFE;
-  }
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return RegisterList();
-  }
+  Roadblock() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Roadblock);
@@ -770,8 +702,7 @@ class Roadblock : public OldClassDecoder {
 // we may generate it.
 class Breakpoint : public Roadblock {
  public:
-  inline Breakpoint() {}
-  virtual ~Breakpoint() {}
+  Breakpoint() {}
   virtual bool is_literal_pool_head(Instruction i) const;
 
  private:
@@ -796,13 +727,12 @@ class Breakpoint : public Roadblock {
 // UQSUB8, UHADD16, UHASX, UHSAX, UHSUB16, UHADD8, UHSUB8
 class DataProc : public OldClassDecoder {
  public:
-  inline DataProc() : OldClassDecoder() {}
-  virtual ~DataProc() {}
-
+  DataProc() : OldClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+
   // Defines the destination register of the data operation.
-  inline Register Rd(const Instruction& i) const {
+  Register Rd(const Instruction& i) const {
     return i.Reg(15, 12);
   }
 
@@ -826,13 +756,12 @@ class DataProc : public OldClassDecoder {
 //
 class PackSatRev : public OldClassDecoder {
  public:
-  inline PackSatRev() {}
-  virtual ~PackSatRev() {}
-
+  PackSatRev() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+
   // Defines the destination register.
-  inline Register Rd(const Instruction& i) const {
+  Register Rd(const Instruction& i) const {
     return i.Reg(15, 12);
   }
 
@@ -856,13 +785,12 @@ class PackSatRev : public OldClassDecoder {
 // USAD8, USADA8, SMLAD, SMUAD, SMLSD, SMUSD, SMMLA, SMMUL, SMMLS
 class Multiply : public OldClassDecoder {
  public:
-  inline Multiply() {}
-  virtual ~Multiply() {}
-
+  Multiply() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+
   // Defines the destination register.
-  inline Register Rd(const Instruction& i) const {
+  Register Rd(const Instruction& i) const {
     return i.Reg(19, 16);
   }
 
@@ -885,16 +813,15 @@ class Multiply : public OldClassDecoder {
 //
 class LongMultiply : public Multiply {
  public:
-  inline LongMultiply() {}
-  virtual ~LongMultiply() {}
-
+  LongMultiply() {}
   virtual RegisterList defs(Instruction i) const;
+
   // Supplies the lower 32 bits for the destination result.
-  inline Register RdLo(const Instruction& i) const {
+  Register RdLo(const Instruction& i) const {
     return i.Reg(15, 12);
   }
   // Supplies the other 32 bits of the destination result.
-  inline Register RdHi(const Instruction& i) const {
+  Register RdHi(const Instruction& i) const {
     return i.Reg(19, 16);
   }
 
@@ -910,9 +837,7 @@ class LongMultiply : public Multiply {
 //
 class SatAddSub : public DataProc {
  public:
-  inline SatAddSub() {}
-  virtual ~SatAddSub() {}
-
+  SatAddSub() {}
   virtual RegisterList defs(Instruction i) const;
 
  private:
@@ -929,13 +854,8 @@ class SatAddSub : public DataProc {
 //
 class MoveToStatusRegister : public OldClassDecoder {
  public:
-  inline MoveToStatusRegister() {}
-  virtual ~MoveToStatusRegister() {}
-
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return MAY_BE_SAFE;
-  }
+  MoveToStatusRegister() {}
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
@@ -950,15 +870,14 @@ class MoveToStatusRegister : public OldClassDecoder {
 // STMDA / STMED, STM / STMIA / STMEA, STMDB / STMFD, STMIB / STMFA
 class StoreImmediate : public OldClassDecoder {
  public:
-  inline StoreImmediate() {}
-  virtual ~StoreImmediate() {}
-
+  StoreImmediate() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+
   // Defines the base register.
-  inline Register Rn(const Instruction& i) const {
+  Register Rn(const Instruction& i) const {
     return i.Reg(19, 16);
   }
 
@@ -973,15 +892,14 @@ class StoreImmediate : public OldClassDecoder {
 // LDMDA / LDMFA, LDM / LDMIA / LDMFD, LDMDB / LDMEA, LDMIB / LDMED
 class LoadMultiple : public OldClassDecoder {
  public:
-  inline LoadMultiple() {}
-  virtual ~LoadMultiple() {}
-
+  LoadMultiple() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+
   // Defines the base register.
-  inline Register Rn(const Instruction& i) const {
+  Register Rn(const Instruction& i) const {
     return i.Reg(19, 16);
   }
 
@@ -999,19 +917,18 @@ class LoadMultiple : public OldClassDecoder {
 // VLD4(single), VLD4(single, all lanes)
 class VectorLoad : public OldClassDecoder {
  public:
-  inline VectorLoad() {}
-  virtual ~VectorLoad() {}
-
+  VectorLoad() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+
   // Defines the base address for the access.
-  inline Register Rn(const Instruction& i) const {
+  Register Rn(const Instruction& i) const {
     return i.Reg(19, 16);
   }
   // Contains an address offset applied after the access.
-  inline Register Rm(const Instruction& i) const {
+  Register Rm(const Instruction& i) const {
     return i.Reg(3, 0);
   }
 
@@ -1026,57 +943,25 @@ class VectorLoad : public OldClassDecoder {
 // VST1(single), VST2(single), VST3(single), VST4(single)
 class VectorStore : public OldClassDecoder {
  public:
-  static const WritesBit21Interface writes;
-
-  inline VectorStore() {}
-  virtual ~VectorStore() {}
-
+  VectorStore() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+
+  static const WritesBit21Interface writes;
   // Defines the base address for the access.
-  inline Register Rn(const Instruction& i) const {
+  Register Rn(const Instruction& i) const {
     return i.Reg(19, 16);
   }
   // Contains an address offset applied after the access.
-  inline Register Rm(const Instruction& i) const {
+  Register Rm(const Instruction& i) const {
     return i.Reg(3, 0);
   }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorStore);
 };
-
-// A generic coprocessor instruction that (by default) only effect vector
-// register banks. Hence, they do not change general purpose registers.
-// These instructions are:
-// - Permitted only for whitelisted coprocessors (101x) that define VFP
-//   operations.
-// - Not permitted to update r15.
-//
-// Coprocessor ops with visible side-effects on the APSR conditions flags, or
-// general purpose register should extend and override this.
-/*
-class CoprocessorOp : public OldClassDecoder {
- public:
-  inline CoprocessorOp() {}
-  virtual ~CoprocessorOp() {}
-
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return RegisterList();
-  }
-  // Returns the name (i.e. index) of the coprocessor referenced.
-  inline uint32_t CoprocIndex(const Instruction& i) const {
-    return i.Bits(11, 8);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(CoprocessorOp);
-};
-*/
 
 // LDC/LDC2, which load data from memory directly into a coprocessor.
 // The only visible side effect of this is optional indexing writeback,
@@ -1090,13 +975,12 @@ class LoadCoprocessor : public CoprocessorOp {
  public:
   static const WritesBit21Interface writes;
 
-  inline LoadCoprocessor() {}
-  virtual ~LoadCoprocessor() {}
-
+  LoadCoprocessor() {}
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
+
   // Contains the base address for the access.
-  inline Register Rn(const Instruction& i) const {
+  Register Rn(const Instruction& i) const {
     return i.Reg(19, 16);
   }
 
@@ -1113,16 +997,14 @@ class LoadCoprocessor : public CoprocessorOp {
 // whitelist certain cases of this on known coprocessor types (see the impl).
 class StoreCoprocessor : public CoprocessorOp {
  public:
-  static const WritesBit21Interface writes;
-
-  inline StoreCoprocessor() {}
-  virtual ~StoreCoprocessor() {}
-
+  StoreCoprocessor() {}
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+
+  static const WritesBit21Interface writes;
   // Contains the base address for the access.
-  inline Register Rn(const Instruction& i) const {
+  Register Rn(const Instruction& i) const {
     return i.Reg(19, 16);
   }
 
@@ -1133,12 +1015,11 @@ class StoreCoprocessor : public CoprocessorOp {
 // MRC/MRC2, which load a single register from a coprocessor register.
 class MoveFromCoprocessor : public CoprocessorOp {
  public:
-  inline MoveFromCoprocessor() {}
-  virtual ~MoveFromCoprocessor() {}
-
+  MoveFromCoprocessor() {}
   virtual RegisterList defs(Instruction i) const;
+
   // Defines the destination core register.
-  inline Register Rt(const Instruction& i) const {
+  Register Rt(const Instruction& i) const {
     Register rt(i.Reg(15, 12));
     if (rt.Equals(kRegisterPc)) {
       // Per ARM ISA spec: r15 here is a synonym for the flags register!
@@ -1154,16 +1035,15 @@ class MoveFromCoprocessor : public CoprocessorOp {
 // MRRC/MRRC2, which load pairs of registers from a coprocessor register.
 class MoveDoubleFromCoprocessor : public CoprocessorOp {
  public:
-  inline MoveDoubleFromCoprocessor() {}
-  virtual ~MoveDoubleFromCoprocessor() {}
-
+  MoveDoubleFromCoprocessor() {}
   virtual RegisterList defs(Instruction i) const;
+
   // Contains the first destination core register.
-  inline Register Rt(const Instruction& i) const {
+  Register Rt(const Instruction& i) const {
     return i.Reg(15, 12);
   }
   // Contains the second destination core register.
-  inline Register Rt2(const Instruction& i) const {
+  Register Rt2(const Instruction& i) const {
     return i.Reg(19, 16);
   }
 
@@ -1180,9 +1060,7 @@ class BxBlx : public OldClassDecoder {
   static const RegMBits0To3Interface m;
   static const UpdatesLinkRegisterBit5Interface link_register;
 
-  inline BxBlx() {}
-  virtual ~BxBlx() {}
-
+  BxBlx() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual Register branch_target_register(Instruction i) const;
@@ -1197,18 +1075,10 @@ class BxBlx : public OldClassDecoder {
 // the assumption holds for all non-illegal direct branches.
 class Branch : public OldClassDecoder {
  public:
-  inline Branch() {}
-  virtual ~Branch() {}
-
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return MAY_BE_SAFE;
-  }
+  Branch() {}
+  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual bool is_relative_branch(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return true;
-  }
+  virtual bool is_relative_branch(Instruction i) const;
   virtual int32_t branch_target_offset(Instruction i) const;
 
  private:
@@ -1238,8 +1108,7 @@ class Unary1RegisterSet : public ClassDecoder {
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  inline Unary1RegisterSet() {}
-  virtual ~Unary1RegisterSet() {}
+  Unary1RegisterSet() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -1266,8 +1135,7 @@ class Unary1RegisterUse : public ClassDecoder {
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  inline Unary1RegisterUse() {}
-  virtual ~Unary1RegisterUse() {}
+  Unary1RegisterUse() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
@@ -1302,8 +1170,7 @@ class Unary1RegisterBitRange : public ClassDecoder {
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  inline Unary1RegisterBitRange() : ClassDecoder() {}
-  virtual ~Unary1RegisterBitRange() {}
+  Unary1RegisterBitRange() : ClassDecoder() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual bool clears_bits(Instruction i, uint32_t mask) const;

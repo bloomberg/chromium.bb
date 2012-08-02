@@ -68,12 +68,12 @@ SafetyLevel Int2SafetyLevel(uint32_t i);
 // Interface class to pull out shift type from bits 5 through 6
 class ShiftTypeBits5To6Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(6, 5);
   }
   // Converts the given immediate value using the shift type specified
   // by this interface. Defined in A8.4.3, page A8-11.
-  static inline uint32_t DecodeImmShift(Instruction insn, uint32_t imm5_value) {
+  static uint32_t DecodeImmShift(Instruction insn, uint32_t imm5_value) {
     return ComputeDecodeImmShift(value(insn), imm5_value);
   }
  private:
@@ -85,13 +85,13 @@ class ShiftTypeBits5To6Interface {
 // Interface class to pull out the condition in bits 28 through 31
 class ConditionBits28To31Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(31, 28);
   }
-  static inline bool defined(const Instruction& i) {
+  static bool defined(const Instruction& i) {
     return value(i) != 0xF;
   }
-  static inline bool undefined(const Instruction& i)  {
+  static bool undefined(const Instruction& i)  {
     return !defined(i);
   }
 
@@ -102,10 +102,10 @@ class ConditionBits28To31Interface {
 // Interface class to pull out Register A from bits 12 through 15.
 class RegABits12To15Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(15, 12);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -116,10 +116,10 @@ class RegABits12To15Interface {
 // Interface class to pull out Register D from bits 12 through 15.
 class RegDBits12To15Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(15, 12);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -130,13 +130,13 @@ class RegDBits12To15Interface {
 // Interface class to pull out Register D from bits 16 through 19.
 class RegDBits16To19Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(19, 16);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
-  static inline bool IsEven(const Instruction& i) {
+  static bool IsEven(const Instruction& i) {
     return (number(i) & 0x1) == 0;
   }
 
@@ -147,10 +147,10 @@ class RegDBits16To19Interface {
 // Interface class to pull out Register M from bits 0 through 3.
 class RegMBits0To3Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(3, 0);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -161,10 +161,10 @@ class RegMBits0To3Interface {
 // Interface class to pull out Register M from bits 8 through 11.
 class RegMBits8To11Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(11, 8);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -175,10 +175,10 @@ class RegMBits8To11Interface {
 // Interface class to pull out Register N from bits 0 through 3.
 class RegNBits0To3Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(3, 0);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -189,10 +189,10 @@ class RegNBits0To3Interface {
 // Interface class to pull out Register n from bits 16 through 19.
 class RegNBits16To19Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(19, 16);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -203,10 +203,10 @@ class RegNBits16To19Interface {
 // Interface class to pull out Register S from bits 8 through 11.
 class RegSBits8To11Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(11, 8);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -217,15 +217,15 @@ class RegSBits8To11Interface {
 // Interface class to pull out Register T from bits 0 through 3.
 class RegTBits0To3Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(3, 0);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
   // Only used when Rt2 is defined. Makes sure register
   // index is even (and hence, Rt2 is odd).
-  static inline bool IsEven(const Instruction& i) {
+  static bool IsEven(const Instruction& i) {
     return (number(i) & 0x1) == 0;
   }
 
@@ -237,10 +237,10 @@ class RegTBits0To3Interface {
 // bits 0 through 3.
 class RegT2Bits0To3Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(3, 0) + 1;
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -251,15 +251,15 @@ class RegT2Bits0To3Interface {
 // Interface class to pull out Register T from bits 12 through 15.
 class RegTBits12To15Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(15, 12);
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
   // Only used when Rt2 is defined. Makes sure register
   // index is even (and hence, Rt2 is odd).
-  static inline bool IsEven(const Instruction& i) {
+  static bool IsEven(const Instruction& i) {
     return (number(i) & 0x1) == 0;
   }
 
@@ -271,10 +271,10 @@ class RegTBits12To15Interface {
 // bits 12 through 15.
 class RegT2Bits12To15Interface {
  public:
-  static inline uint32_t number(const Instruction& i) {
+  static uint32_t number(const Instruction& i) {
     return i.Bits(15, 12) + 1;
   }
-  static inline Register reg(const Instruction& i) {
+  static Register reg(const Instruction& i) {
     return Register(number(i));
   }
 
@@ -285,7 +285,7 @@ class RegT2Bits12To15Interface {
 // Interface class to pull out a binary immediate value from bit 22.
 class Imm1Bit22Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(22, 22);
   }
 
@@ -296,7 +296,7 @@ class Imm1Bit22Interface {
 // Interface class to pull out an immediate value in bits 0 through 3.
 class Imm4Bits0To3Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(3, 0);
   }
 
@@ -307,11 +307,11 @@ class Imm4Bits0To3Interface {
 // Interface class to pull out an immediate value in bits 0 through 7.
 class Imm8Bits0To7Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(7, 0);
   }
   // Returns if the value is even.
-  static inline bool IsEven(const Instruction& i) {
+  static bool IsEven(const Instruction& i) {
     return (value(i) & 0x1) == 0;
   }
 
@@ -322,7 +322,7 @@ class Imm8Bits0To7Interface {
 // Interface class to pull out an immediate value in bits 0 through 11.
 class Imm12Bits0To11Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(11, 0);
   }
   static uint32_t get_modified_immediate(Instruction i);
@@ -334,10 +334,10 @@ class Imm12Bits0To11Interface {
 // Interface class to pull out an immediate 24 address in bits 0 through 23
 class Imm24AddressBits0To23Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(23, 0);
   }
-  static inline int32_t relative_address(const Instruction& i) {
+  static int32_t relative_address(const Instruction& i) {
     // Sign extend and shift left 2:
     int32_t offset = (int32_t)(value(i) << 8) >> 6;
     return offset + 8;  // because r15 reads as 8 bytes ahead
@@ -350,10 +350,10 @@ class Imm24AddressBits0To23Interface {
 // Interface class to pull out a Register List in bits 0 through 15
 class RegisterListBits0To15Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(15, 0);
   }
-  static inline RegisterList registers(const Instruction& i) {
+  static RegisterList registers(const Instruction& i) {
     return RegisterList(value(i));
   }
 
@@ -364,7 +364,7 @@ class RegisterListBits0To15Interface {
 // Interface class to pull out value in bit 5
 class Imm1Bit5Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(5, 5);
   }
 
@@ -375,7 +375,7 @@ class Imm1Bit5Interface {
 // Interface class to pull out an immediate value in bits 7 through 11.
 class Imm5Bits7To11Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(11, 7);
   }
 
@@ -386,7 +386,7 @@ class Imm5Bits7To11Interface {
 // Interface class to pull out an immediate value in bits 8 through 11.
 class Imm4Bits8To11Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(11, 8);
   }
 
@@ -397,7 +397,7 @@ class Imm4Bits8To11Interface {
 // Interface class to pull out an immediate value in bits 8 through 19
 class Imm12Bits8To19Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(19, 8);
   }
 
@@ -408,7 +408,7 @@ class Imm12Bits8To19Interface {
 // Interface class to pull out an immediate value in bits 16 through 20.
 class Imm5Bits16To20Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(20, 16);
   }
 
@@ -419,7 +419,7 @@ class Imm5Bits16To20Interface {
 // Interface class to pull out an immediate value in bits 16 through 19.
 class Imm4Bits16To19Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(19, 16);
   }
 
@@ -430,7 +430,7 @@ class Imm4Bits16To19Interface {
 // Interface class to pull out an immediate value in bits 18 through 19.
 class Imm2Bits18To19Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(19, 18);
   }
 
@@ -441,7 +441,7 @@ class Imm2Bits18To19Interface {
 // Interface class to pull out an immediate value in bits 21 through 23.
 class Imm3Bits21To23Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(23, 21);
   }
 
@@ -452,7 +452,7 @@ class Imm3Bits21To23Interface {
 // Interface class to pull out an immediate value in bit 22.
 class Imm1Bit21Interface {
  public:
-  static inline uint32_t value(const Instruction& i) {
+  static uint32_t value(const Instruction& i) {
     return i.Bits(22, 22);
   }
 
@@ -464,7 +464,7 @@ class Imm1Bit21Interface {
 // to indicate whether the link register is also updated.
 class UpdatesLinkRegisterBit5Interface {
  public:
-  static inline bool IsUpdated(const Instruction i) {
+  static bool IsUpdated(const Instruction i) {
     return i.Bit(5);
   }
 
@@ -478,11 +478,11 @@ class UpdatesConditionsBit20Interface {
  public:
   // Returns true if bit is set that states that the condition bits
   // APSR is updated.
-  static inline bool is_updated(const Instruction i) {
+  static bool is_updated(const Instruction i) {
     return i.Bit(20);
   }
   // Returns the conditions register if it is used.
-  static inline Register conds_if_updated(const Instruction i) {
+  static Register conds_if_updated(const Instruction i) {
     return is_updated(i) ? kConditions : kRegisterNone;
   }
 
@@ -494,7 +494,7 @@ class UpdatesConditionsBit20Interface {
 // when true, updates the corresponging core register.
 class UpdatesArmRegisterBit20Interface {
  public:
-  static inline bool IsDefined(const Instruction& i) {
+  static bool IsDefined(const Instruction& i) {
     return i.Bit(20);
   }
 
@@ -507,7 +507,7 @@ class UpdatesArmRegisterBit20Interface {
 // register (Rn).
 class WritesBit21Interface {
  public:
-  static inline bool IsDefined(const Instruction& i) {
+  static bool IsDefined(const Instruction& i) {
     return i.Bit(21);
   }
 
@@ -518,7 +518,7 @@ class WritesBit21Interface {
 // Interface class to pull out bit 21.
 class FlagBit21Interface {
  public:
-  static inline bool IsDefined(const Instruction& i) {
+  static bool IsDefined(const Instruction& i) {
     return i.Bits(21, 21);
   }
 
@@ -531,7 +531,7 @@ class FlagBit21Interface {
 // the APSR/CPSR.
 class ReadSpsrBit22Interface {
  public:
-  static inline bool IsDefined(const Instruction& i) {
+  static bool IsDefined(const Instruction& i) {
     return i.Bit(22);
   }
 
@@ -543,7 +543,7 @@ class ReadSpsrBit22Interface {
 // we should add (rather than subtract) the offset to the base address.
 class AddOffsetBit23Interface {
  public:
-  static inline bool IsAdd(const Instruction& i) {
+  static bool IsAdd(const Instruction& i) {
     return i.Bit(23);
   }
 
@@ -555,13 +555,13 @@ class AddOffsetBit23Interface {
 // for indexing.
 class PrePostIndexingBit24Interface {
  public:
-  static inline bool IsDefined(const Instruction& i) {
+  static bool IsDefined(const Instruction& i) {
     return i.Bit(24);
   }
-  static inline bool IsPreIndexing(const Instruction& i) {
+  static bool IsPreIndexing(const Instruction& i) {
     return i.Bit(24);
   }
-  static inline bool IsPostIndexing(const Instruction& i) {
+  static bool IsPostIndexing(const Instruction& i) {
     return !i.Bit(24);
   }
 
@@ -620,10 +620,7 @@ class ClassDecoder {
   // The default implementation returns a ridiculous bitmask that suggests that
   // all possible side effects will occur -- override if this is not
   // appropriate. :-)
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return kRegisterListEverything;
-  }
+  virtual RegisterList defs(Instruction i) const;
 
   // Gets the set of registers that this instruction defines through immediate
   // indexed addressing writeback -- a subset of the defs() set.
@@ -635,28 +632,19 @@ class ClassDecoder {
   // addressing writeback, since they have no useful properties in our model.
   //
   // Stubbed to indicate that no such addressing occurs.
-  virtual RegisterList immediate_addressing_defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return RegisterList();
-  }
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
 
   // For instructions that can read or write memory, gets the register used as
   // the base for generating the effective address.
   //
   // It is stubbed to return nonsense.
-  virtual Register base_address_register(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
-  }
+  virtual Register base_address_register(Instruction i) const;
 
   // Checks whether the instruction computes its read or write address as
   // base address + immediate.
   //
   // It is stubbed to return false.
-  virtual bool offset_is_immediate(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return false;
-  }
+  virtual bool offset_is_immediate(Instruction i) const;
 
   // For indirect branch instructions, returns the register being moved into
   // r15.  Otherwise, reports kRegisterNone.
@@ -665,17 +653,11 @@ class ClassDecoder {
   // register, unmodified.  This means BX, BLX, and MOV without shift.  Not
   // even BIC, which we allow to write to r15, is modeled this way.
   //
-  virtual Register branch_target_register(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
-  }
+  virtual Register branch_target_register(Instruction i) const;
 
   // Checks whether the instruction is a direct relative branch -- meaning it
   // adds a constant offset to r15.
-  virtual bool is_relative_branch(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return false;
-  }
+  virtual bool is_relative_branch(Instruction i) const;
 
   // For relative branches, gets the offset added to the instruction's
   // virtual address to find the target.  The results are bogus unless
@@ -684,26 +666,16 @@ class ClassDecoder {
   // Note that this is different than the offset added to r15 at runtime, since
   // r15 reads as 8 bytes ahead.  This function does the math so you don't have
   // to.
-  virtual int32_t branch_target_offset(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return 0;
-  }
+  virtual int32_t branch_target_offset(Instruction i) const;
 
   // Checks whether this instruction is the special bit sequence that marks
   // the start of a literal pool.
-  virtual bool is_literal_pool_head(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return false;
-  }
+  virtual bool is_literal_pool_head(Instruction i) const;
 
   // Checks that an instruction clears a certain pattern of bits in all its
   // (non-flag) result registers.  The mask should include 1s in the positions
   // that should be cleared.
-  virtual bool clears_bits(Instruction i, uint32_t mask) const {
-    UNREFERENCED_PARAMETER(i);
-    UNREFERENCED_PARAMETER(mask);
-    return false;
-  }
+  virtual bool clears_bits(Instruction i, uint32_t mask) const;
 
   // Checks that an instruction will set Z if certain bits in r (chosen by 1s in
   // the mask) are clear.
@@ -712,15 +684,10 @@ class ClassDecoder {
   // *more* bits to be clear to set Z.  This is fine.
   virtual bool sets_Z_if_bits_clear(Instruction i,
                                     Register r,
-                                    uint32_t mask) const {
-    UNREFERENCED_PARAMETER(i);
-    UNREFERENCED_PARAMETER(r);
-    UNREFERENCED_PARAMETER(mask);
-    return false;
-  }
+                                    uint32_t mask) const;
 
  protected:
-  inline ClassDecoder() {}
+  ClassDecoder() {}
   virtual ~ClassDecoder() {}
 
  private:
@@ -737,21 +704,14 @@ class ClassDecoder {
 
 class UnsafeClassDecoder : public ClassDecoder {
  public:
-  inline explicit UnsafeClassDecoder(SafetyLevel safety)
+  explicit UnsafeClassDecoder(SafetyLevel safety)
       : safety_(safety) {}
-  virtual ~UnsafeClassDecoder() {}
 
   // Return the safety associated with this class.
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return safety_;
-  }
+  virtual SafetyLevel safety(Instruction i) const;
 
   // Switch off the def warnings -- it's already forbidden!
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return RegisterList();
-  }
+  virtual RegisterList defs(Instruction i) const;
 
  private:
   SafetyLevel safety_;
@@ -760,8 +720,7 @@ class UnsafeClassDecoder : public ClassDecoder {
 
 class Forbidden : public UnsafeClassDecoder {
  public:
-  inline Forbidden() : UnsafeClassDecoder(FORBIDDEN) {}
-  virtual ~Forbidden() {}
+  Forbidden() : UnsafeClassDecoder(FORBIDDEN) {}
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Forbidden);
@@ -770,8 +729,7 @@ class Forbidden : public UnsafeClassDecoder {
 // Represents the undefined space in the instruction encoding.
 class Undefined : public UnsafeClassDecoder {
  public:
-  inline Undefined() : UnsafeClassDecoder(UNDEFINED) {}
-  virtual ~Undefined() {}
+  Undefined() : UnsafeClassDecoder(UNDEFINED) {}
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Undefined);
@@ -780,8 +738,7 @@ class Undefined : public UnsafeClassDecoder {
 // Represents that the instruction is not implemented.
 class NotImplemented : public UnsafeClassDecoder {
  public:
-  inline NotImplemented() : UnsafeClassDecoder(NOT_IMPLEMENTED) {}
-  virtual ~NotImplemented() {}
+  NotImplemented() : UnsafeClassDecoder(NOT_IMPLEMENTED) {}
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(NotImplemented);
@@ -790,8 +747,7 @@ class NotImplemented : public UnsafeClassDecoder {
 // Represents instructions that have been deprecated in ARMv7.
 class Deprecated : public UnsafeClassDecoder {
  public:
-  inline Deprecated() : UnsafeClassDecoder(DEPRECATED) {}
-  virtual ~Deprecated() {}
+  Deprecated() : UnsafeClassDecoder(DEPRECATED) {}
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Deprecated);
@@ -802,8 +758,7 @@ class Deprecated : public UnsafeClassDecoder {
 // the case where a large space of the instruction set is unpredictable.
 class Unpredictable : public UnsafeClassDecoder {
  public:
-  inline Unpredictable() : UnsafeClassDecoder(UNPREDICTABLE) {}
-  virtual ~Unpredictable() {}
+  Unpredictable() : UnsafeClassDecoder(UNPREDICTABLE) {}
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unpredictable);
@@ -823,8 +778,7 @@ class CoprocessorOp : public ClassDecoder {
   // Accessor to non-vector register fields.
   static const Imm4Bits8To11Interface coproc;
 
-  inline CoprocessorOp() {}
-  virtual ~CoprocessorOp() {}
+  CoprocessorOp() {}
 
   virtual SafetyLevel safety(Instruction i) const;
   // Default assumes defs={}

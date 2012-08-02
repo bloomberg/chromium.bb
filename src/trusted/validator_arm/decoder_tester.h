@@ -176,7 +176,6 @@ class Arm32DecoderTester : public DecoderTester {
  public:
   explicit Arm32DecoderTester(
       const NamedClassDecoder& expected_decoder);
-  virtual ~Arm32DecoderTester();
   void Test(const char* pattern);
   virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual void ProcessMatch();
@@ -214,7 +213,6 @@ class ThumbDecoderTester;
 class ThumbWord1DecoderTester : public DecoderTester {
  public:
   explicit ThumbWord1DecoderTester(ThumbDecoderTester* thumb_tester);
-  virtual ~ThumbWord1DecoderTester();
 
   // Defines the pattern to use for word 1.
   void SetPattern(const char* pattern);
@@ -253,7 +251,6 @@ class ThumbWord1DecoderTester : public DecoderTester {
 class ThumbWord2DecoderTester : public DecoderTester {
  public:
   explicit ThumbWord2DecoderTester(ThumbDecoderTester* thumb_tester);
-  virtual ~ThumbWord2DecoderTester();
 
   // Defines the pattern to use for word 2.
   void SetPattern(const char* pattern);
@@ -295,7 +292,6 @@ class ThumbDecoderTester : public DecoderTester {
  public:
   explicit ThumbDecoderTester(
       const NamedClassDecoder& expected_decoder);
-  virtual ~ThumbDecoderTester();
   void Test(const char* pattern);
   virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual void ProcessMatch();

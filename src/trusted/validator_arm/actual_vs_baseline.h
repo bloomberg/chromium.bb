@@ -29,7 +29,6 @@ class ActualVsBaselineTester : public Arm32DecoderTester {
  public:
   ActualVsBaselineTester(const NamedClassDecoder& actual,
                          DecoderTester& baseline_tester);
-  virtual ~ActualVsBaselineTester() {}
 
   // Runs baseline tester on inputs, then checks that
   // virtuals of actual and baseline match.

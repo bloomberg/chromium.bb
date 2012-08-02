@@ -55,7 +55,6 @@ DECODER_DECLARE_HEADER="""
 class %(decoder_name)s : DecoderState {
  public:
    explicit %(decoder_name)s();
-   virtual ~%(decoder_name)s();
 
    // Parses the given instruction, returning the decoder to use.
    virtual const ClassDecoder& decode(const Instruction) const;
@@ -153,8 +152,6 @@ CONSTRUCTOR_FIELD_INIT="""
 CONSTRUCTOR_FOOTER="""
   , not_implemented_()
 {}
-
-%(decoder_name)s::~%(decoder_name)s() {}
 """
 
 METHOD_HEADER="""

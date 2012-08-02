@@ -164,9 +164,6 @@ Arm32DecoderTester::Arm32DecoderTester(
       inst_((uint32_t) 0xFFFFFFFF) {
 }
 
-Arm32DecoderTester:: ~Arm32DecoderTester() {
-}
-
 void Arm32DecoderTester::Test(const char* pattern) {
   pattern_ = pattern;
   ASSERT_EQ(static_cast<int>(kArm32InstSize),
@@ -237,8 +234,6 @@ ThumbWord1DecoderTester::ThumbWord1DecoderTester(
     : thumb_tester_(thumb_tester), pattern_("")
 {}
 
-ThumbWord1DecoderTester::~ThumbWord1DecoderTester() {}
-
 void ThumbWord1DecoderTester::SetPattern(const char* pattern) {
   pattern_ = pattern;
   ASSERT_LE(static_cast<int>(kThumbWordSize),
@@ -299,8 +294,6 @@ ThumbWord2DecoderTester::ThumbWord2DecoderTester(
     ThumbDecoderTester* thumb_tester)
     : thumb_tester_(thumb_tester), pattern_("")
 {}
-
-ThumbWord2DecoderTester::~ThumbWord2DecoderTester() {}
 
 void ThumbWord2DecoderTester::SetPattern(const char* pattern) {
   pattern_ = pattern;
@@ -369,9 +362,6 @@ ThumbDecoderTester::ThumbDecoderTester(
       word1_tester_(this),
       word2_tester_(this)
 {}
-
-ThumbDecoderTester::~ThumbDecoderTester() {
-}
 
 void ThumbDecoderTester::Test(const char* pattern) {
   int len = static_cast<int>(strlen(pattern_));

@@ -76,10 +76,9 @@ parsed table representations.
 #
 #  class NamedInstClass : public NamedClassDecoder {
 #   public:
-#    inline NamedInstClass()
+#    NamedInstClass()
 #        : NamedClassDecoder(decoder_, "InstClass")
 #    {}
-#  virtual ~NamedInstClass() {}
 #
 # private:
 #  Binary3RegisterShiftedTest decoder_;
@@ -105,7 +104,6 @@ parsed table representations.
 # class NamedDecoder : DecoderState {
 #  public:
 #   explicit NamedDecoder();
-#   virtual ~NamedDecoder();
 #  const NamedClassDecoder& decode_named(const Instruction) const;
 #  virtual const ClassDecoder& decode(const Instruction) const;
 #  ...
@@ -274,8 +272,6 @@ namespace nacl_arm_dec {
 
 RULE_CLASS="""class %(DECODER_class)s
     : public %(DECODER)s {
- public:
-  virtual ~%(DECODER_class)s() {}
 };
 
 """
@@ -302,10 +298,9 @@ namespace nacl_arm_test {
 NAMED_CLASS_DECLARE="""class %(named_DECODER_class)s
     : public NamedClassDecoder {
  public:
-  inline %(named_DECODER_class)s()
+  %(named_DECODER_class)s()
     : NamedClassDecoder(decoder_, "%(DECODER)s %(rule)s")
   {}
-  virtual ~%(named_DECODER_class)s() {}
 
  private:
   nacl_arm_dec::%(DECODER_class)s decoder_;
@@ -321,10 +316,9 @@ NAMED_CLASSES_H_FOOTER="""
 // an action.
 class NotImplementedNamed : public NamedClassDecoder {
  public:
-  inline NotImplementedNamed()
+  NotImplementedNamed()
     : NamedClassDecoder(decoder_, "not implemented")
   {}
-  virtual ~NotImplementedNamed() {}
 
  private:
   nacl_arm_dec::NotImplemented decoder_;
@@ -380,7 +374,6 @@ namespace nacl_arm_test {
 class Named%(decoder_name)s : nacl_arm_dec::DecoderState {
  public:
   explicit Named%(decoder_name)s();
-  virtual ~Named%(decoder_name)s();
 
   // Parses the given instruction, returning the named class
   // decoder to use.
@@ -472,8 +465,6 @@ namespace nacl_arm_test {
 
 Named%(decoder_name)s::Named%(decoder_name)s()
 {}
-
-Named%(decoder_name)s::~Named%(decoder_name)s() {}
 """
 
 PARSE_TABLE_METHOD_HEADER="""

@@ -20,8 +20,6 @@ namespace nacl_arm_test {
 NamedArm32DecoderState::NamedArm32DecoderState()
 {}
 
-NamedArm32DecoderState::~NamedArm32DecoderState() {}
-
 /*
  * Implementation of table ARMv7.
  * Specified by: ('See Section A5.1',)

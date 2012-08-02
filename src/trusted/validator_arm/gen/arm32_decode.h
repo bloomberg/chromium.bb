@@ -20,7 +20,6 @@ namespace nacl_arm_dec {
 class Arm32DecoderState : DecoderState {
  public:
    explicit Arm32DecoderState();
-   virtual ~Arm32DecoderState();
 
    // Parses the given instruction, returning the decoder to use.
    virtual const ClassDecoder& decode(const Instruction) const;
