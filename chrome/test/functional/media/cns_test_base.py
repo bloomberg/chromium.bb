@@ -15,6 +15,8 @@ import urllib2
 import pyauto
 import pyauto_paths
 
+WINDOWS = 'win32' in sys.platform
+
 # List of commonly used network constraints settings.
 # Each setting is a tuppe of the form:
 #    ('TEST_NAME', [BANDWIDTH_Kbps, LATENCY_ms, PACKET_LOSS_%])
@@ -42,7 +44,10 @@ _CNS_PATH = os.path.join(
 _CNS_PORT = 9000
 
 # Base CNS URL, only requires & separated parameter names appended.
-CNS_BASE_URL = 'http://127.0.0.1:%d/ServeConstrained?' % _CNS_PORT
+if WINDOWS:
+  CNS_BASE_URL = 'http://chromeperf34.chrome:%d/ServeConstrained?' % _CNS_PORT
+else:
+  CNS_BASE_URL = 'http://127.0.0.1:%d/ServeConstrained?' % _CNS_PORT
 
 # Used for server sanity check.
 _TEST_VIDEO = 'roller.webm'
@@ -69,7 +74,22 @@ class CNSTestBase(pyauto.PyUITest):
     pyauto.PyUITest.__init__(self, *args, **kwargs)
 
   def setUp(self):
-    """Starts the Constrained Network Server (CNS)."""
+    """Ensures the Constrained Network Server (CNS) server is up and running."""
+    if WINDOWS:
+      self._SetUpWin()
+    else:
+      self._SetUpLinux()
+
+  def _SetUpWin(self):
+    """Ensures the test can connect to the external CNS server."""
+    if self.WaitUntil(self._CanAccessServer, retry_sleep=3, timeout=30,
+                      debug=False):
+      pyauto.PyUITest.setUp(self)
+    else:
+      self.fail('Failed to connect to CNS.')
+
+  def _SetUpLinux(self):
+    """Starts the CNS server locally."""
     cmd = [sys.executable, os.path.join(pyauto_paths.GetSourceDir(), _CNS_PATH),
            '--port', str(self._port),
            '--interface', self._interface,
@@ -103,13 +123,14 @@ class CNSTestBase(pyauto.PyUITest):
   def tearDown(self):
     """Stops the Constrained Network Server (CNS)."""
     pyauto.PyUITest.tearDown(self)
-    logging.debug('Stopping CNS server.')
-    # Do not use process.kill(), it will not clean up cns.
-    self.Kill(self._cns_process.pid)
-    # Need to wait since the process logger has a lock on the process stderr.
-    self._cns_process.wait()
-    self.assertFalse(self._cns_process.returncode is None)
-    logging.debug('CNS server stopped.')
+    if not WINDOWS:
+      logging.debug('Stopping CNS server.')
+      # Do not use process.kill(), it will not clean up cns.
+      self.Kill(self._cns_process.pid)
+      # Need to wait since the process logger has a lock on the process stderr.
+      self._cns_process.wait()
+      self.assertFalse(self._cns_process.returncode is None)
+      logging.debug('CNS server stopped.')
 
 
 class ProcessLogger(threading.Thread):

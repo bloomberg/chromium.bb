@@ -13,6 +13,7 @@ TODO(dalecurtis): Add some more docs here.
 """
 
 import logging
+from logging import handlers
 import mimetypes
 import optparse
 import os
@@ -321,22 +322,22 @@ def ParseArgs():
   # Convert the path to an absolute to remove any . or ..
   options.www_root = os.path.abspath(options.www_root)
 
-  # Required so that cherrypy logs do not get propagated to root logger causing
-  # the logs to be printed twice.
-  cherrypy.log.error_log.propagate = False
-  cherrypy.log.access_log.propagate = False
-
   _SetLogger(options.verbose)
 
   return options
 
 
 def _SetLogger(verbose):
-  # Logging is used for traffic_control debug statements.
+  file_handler = handlers.RotatingFileHandler('cns.log', 'a', 10000000, 10)
+  file_handler.setFormatter(logging.Formatter('[%(threadName)s] %(message)s'))
+
   log_level = _DEFAULT_LOG_LEVEL
   if verbose:
     log_level = logging.DEBUG
-  logging.basicConfig(level=log_level, format='[%(threadName)s] %(message)s')
+  file_handler.setLevel(log_level)
+
+  cherrypy.log.error_log.addHandler(file_handler)
+  cherrypy.log.access_log.addHandler(file_handler)
 
 
 def Main():
