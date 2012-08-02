@@ -3829,7 +3829,7 @@ scoped_refptr<const PermissionSet> Extension::GetTabSpecificPermissions(
 
 void Extension::UpdateTabSpecificPermissions(
     int tab_id,
-    const PermissionSet* permissions) const {
+    scoped_refptr<const PermissionSet> permissions) const {
   base::AutoLock auto_lock(runtime_data_lock_);
   runtime_data_.UpdateTabSpecificPermissions(tab_id, permissions);
 }
@@ -3887,12 +3887,12 @@ scoped_refptr<const PermissionSet>
 
 void Extension::RuntimeData::UpdateTabSpecificPermissions(
     int tab_id,
-    const PermissionSet* permissions) {
+    scoped_refptr<const PermissionSet> permissions) {
   CHECK_GE(tab_id, 0);
   if (tab_specific_permissions_.count(tab_id)) {
     tab_specific_permissions_[tab_id] = PermissionSet::CreateUnion(
         tab_specific_permissions_[tab_id],
-        permissions);
+        permissions.get());
   } else {
     tab_specific_permissions_[tab_id] = permissions;
   }

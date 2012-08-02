@@ -53,9 +53,10 @@ void ActiveTabPermissionManager::GrantIfRequested(const Extension* extension) {
   new_apis.insert(APIPermission::kTab);
   URLPatternSet new_hosts;
   new_hosts.AddPattern(pattern);
+  scoped_refptr<const PermissionSet> new_permissions =
+      new PermissionSet(new_apis, new_hosts, URLPatternSet());
 
-  extension->UpdateTabSpecificPermissions(
-      tab_id_, new PermissionSet(new_apis, new_hosts, URLPatternSet()));
+  extension->UpdateTabSpecificPermissions(tab_id_, new_permissions);
   granted_extensions_.Insert(extension);
   Send(new ExtensionMsg_UpdateTabSpecificPermissions(GetPageID(),
                                                      tab_id_,

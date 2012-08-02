@@ -571,8 +571,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Updates the tab-specific permissions of |tab_id| to include those from
   // |permissions|.
-  void UpdateTabSpecificPermissions(int tab_id,
-                                    const PermissionSet* permissions) const;
+  void UpdateTabSpecificPermissions(
+      int tab_id,
+      scoped_refptr<const PermissionSet> permissions) const;
 
   // Clears the tab-specific permissions of |tab_id|.
   void ClearTabSpecificPermissions(int tab_id) const;
@@ -728,8 +729,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
     scoped_refptr<const PermissionSet> GetTabSpecificPermissions(int tab_id)
         const;
-    void UpdateTabSpecificPermissions(int tab_id,
-                                      const PermissionSet* permissions);
+    void UpdateTabSpecificPermissions(
+        int tab_id,
+        scoped_refptr<const PermissionSet> permissions);
     void ClearTabSpecificPermissions(int tab_id);
 
    private:
