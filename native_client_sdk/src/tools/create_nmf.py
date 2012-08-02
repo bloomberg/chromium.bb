@@ -29,7 +29,7 @@ FORMAT_ARCH_MAP = {
     # Names returned by x86_64-nacl-objdump:
     'elf64-nacl': 'x86-64',
     'elf32-nacl': 'x86-32',
-    }
+}
 
 ARCH_LOCATION = {
     'x86-32': 'lib32',
@@ -56,13 +56,28 @@ LD_NACL_MAP = {
     'x86-64': 'ld-nacl-x86-64.so.1',
 }
 
-_debug_mode = False  # Set to True to enable extra debug prints
-
 
 def DebugPrint(message):
-  if _debug_mode:
+  if DebugPrint.debug_mode:
     sys.stderr.write('%s\n' % message)
-    sys.stderr.flush()
+
+
+DebugPrint.debug_mode = False  # Set to True to enable extra debug prints
+
+
+def MakeDir(dirname):
+  """Just like os.makedirs but doesn't generate errors when dirname
+  already exists.
+  """
+  if os.path.isdir(dirname):
+    return
+
+  Trace("mkdir: %s" % dirname)
+  try:
+    os.makedirs(dirname)
+  except OSError as exception_info:
+    if exception_info.errno != errno.EEXIST:
+      raise
 
 
 class Error(Exception):
@@ -85,6 +100,9 @@ class ArchFile(object):
     self.path = path
     self.url = url or '/'.join([arch, name])
 
+  def __repr__(self):
+    return "<ArchFile %s>" % self.path
+
   def __str__(self):
     '''Return the file path when invoked with the str() function'''
     return self.path
@@ -101,7 +119,7 @@ class NmfUtils(object):
   def __init__(self, main_files=None, objdump='x86_64-nacl-objdump',
                lib_path=None, extra_files=None, lib_prefix=None,
                toolchain=None, remap={}):
-    ''' Constructor
+    '''Constructor
 
     Args:
       main_files: List of main entry program files.  These will be named
@@ -206,7 +224,7 @@ class NmfUtils(object):
 
     runnable = (self.toolchain != 'newlib' and self.toolchain != 'pnacl')
     DebugPrint('GetNeeded(%s)' % self.main_files)
-    if runnable:    
+    if runnable:
       examined = set()
       all_files, unexamined = self.GleanFromObjdump(
           dict([(file, None) for file in self.main_files]))
@@ -239,7 +257,8 @@ class NmfUtils(object):
         url = os.path.split(filename)[1]
         need[filename] = ArchFile(arch=arch, name=os.path.basename(filename),
                                   path=filename, url=url)
-      self.needed = need        
+      self.needed = need
+
     return self.needed
 
   def StageDependencies(self, destination_dir):
@@ -252,15 +271,18 @@ class NmfUtils(object):
     '''
     needed = self.GetNeeded()
     for source, arch_file in needed.items():
-      destination = os.path.join(destination_dir,
-                                 urllib.url2pathname(arch_file.url))
-      try:
-        os.makedirs(os.path.dirname(destination))
-      except OSError as exception_info:
-        if exception_info.errno != errno.EEXIST:
-          raise
+      urldest = urllib.url2pathname(arch_file.url)
+      if source.endswith('.nexe') and source in self.main_files:
+        urldest = os.path.basename(urldest)
+
+      destination = os.path.join(destination_dir, urldest)
+
       if (os.path.normcase(os.path.abspath(source)) !=
           os.path.normcase(os.path.abspath(destination))):
+        # make sure target dir exists
+        MakeDir(os.path.dirname(destination))
+
+        Trace("copy: %s -> %s" % (source, destination))
         shutil.copy2(source, destination)
 
   def _GenerateManifest(self):
@@ -277,8 +299,7 @@ class NmfUtils(object):
     runnable = (self.toolchain != 'newlib' and self.toolchain != 'pnacl')
 
     needed = self.GetNeeded()
-    for need in needed:
-      archinfo = needed[need]
+    for need, archinfo in needed.items():
       urlinfo = { URL_KEY: archinfo.url }
       name = archinfo.name
 
@@ -323,11 +344,6 @@ class NmfUtils(object):
     return '\n'.join([line.rstrip() for line in pretty_lines]) + '\n'
 
 
-def ErrorOut(text):
-  sys.stderr.write(text + '\n')
-  sys.exit(1)
-
-
 def DetermineToolchain(objdump):
   objdump = objdump.replace('\\', '/')
   paths = objdump.split('/')
@@ -338,7 +354,14 @@ def DetermineToolchain(objdump):
         return 'newlib'
       if paths[index + 1].endswith('glibc'):
         return 'glibc'
-  ErrorOut('Could not deternime which toolchain to use.')
+  raise Error('Could not deternime which toolchain to use.')
+
+
+def Trace(msg):
+  if Trace.verbose:
+    sys.stderr.write(str(msg) + '\n')
+
+Trace.verbose = False
 
 
 def Main(argv):
@@ -366,23 +389,30 @@ def Main(argv):
   parser.add_option('-n', '--name', dest='name',
                     help='Rename FOO as BAR',
                     action='append', default=[], metavar='FOO,BAR')
+  parser.add_option('-v', '--verbose',
+                    help='Verbose output', action='store_true')
+  parser.add_option('-d', '--debug-mode',
+                    help='Debug mode', action='store_true')
   (options, args) = parser.parse_args(argv)
-  
+  if options.verbose:
+    Trace.verbose = True
+  if options.debug_mode:
+    DebugPrint.debug_mode = True
+
+  if len(args) < 1:
+    raise Error("No nexe files specified.  See --help for more info")
+
   if not options.toolchain:
     options.toolchain = DetermineToolchain(os.path.abspath(options.objdump))
 
   if options.toolchain not in ['newlib', 'glibc', 'pnacl']:
-    ErrorOut('Unknown toolchain: ' + str(options.toolchain))
-
-  if len(args) < 1:
-    parser.print_usage()
-    sys.exit(1)
+    raise Error('Unknown toolchain: ' + str(options.toolchain))
 
   remap = {}
   for ren in options.name:
     parts = ren.split(',')
     if len(parts) != 2:
-      ErrorOut('Expecting --name=<orig_arch.so>,<new_name.so>')
+      raise Error('Expecting --name=<orig_arch.so>,<new_name.so>')
     remap[parts[0]] = parts[1]
 
   nmf = NmfUtils(objdump=options.objdump,
@@ -399,9 +429,17 @@ def Main(argv):
       output.write(nmf.GetJson())
 
   if options.stage_dependencies:
+    Trace("Staging dependencies...")
     nmf.StageDependencies(options.stage_dependencies)
+
+  return 0
 
 
 # Invoke this file directly for simple testing.
 if __name__ == '__main__':
-  sys.exit(Main(sys.argv[1:]))
+  try:
+    rtn = Main(sys.argv[1:])
+  except Error, e:
+    print "%s: %s" % (os.path.basename(__file__), e)
+    rtn = 1
+  sys.exit(rtn)
