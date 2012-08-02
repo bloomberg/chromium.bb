@@ -1878,6 +1878,27 @@ binutils-configure() {
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
+  # The linux escaping is horrible but apparently the only way of doing this:
+  # c.f.:  http://sourceware.org/ml/binutils/2009-05/msg00252.html
+  # all we try to do here is to add "$ORIGIN/../lib to "rpath".
+  # If you ever touch this please make sure that rpath is correct via:
+  # objdump -p toolchain/pnacl_linux_x86_64/host/bin/arm-pc-nacl-ld.gold
+  # objdump -p toolchain/pnacl_linux_x86_64/host/bin/arm-pc-nacl-objdump
+  if ${BUILD_PLATFORM_MAC} ; then
+      # The shared build for binutils on mac is currently disabled.
+      # A mac-expert needs to look at this but
+      # It seems that on mac the linker is storing "full" library paths into
+      # the dynamic image, e.g, for the llc dynamic image we see  paths like:
+      # @executable_path/../lib/libLLVM-3.2svn.dylib
+      # This only works if at linktime the libraries are already at
+      # @executable_path/../lib which is not the case for mac
+      #local flags="-Xlinker -rpath -Xlinker '@executable_path/../lib'"
+      local flags=''
+      local shared='no'
+  else
+      local flags='-Xlinker -rpath -Xlinker '"'"'$\\$$\$$\\$$\$$ORIGIN/../lib'"'"
+      local shared='yes'
+  fi
   # The --enable-gold and --enable-plugins options are on so that we
   # can use gold's support for plugin to link PNaCl modules.
 
@@ -1889,10 +1910,12 @@ binutils-configure() {
       PATH="/usr/bin:/bin" \
       CC="${CC}" \
       CXX="${CXX}" \
+      LDFLAGS="${flags}" \
       ${srcdir}/binutils-2.20/configure \
           --prefix="${BINUTILS_INSTALL_DIR}" \
           --target=${BINUTILS_TARGET} \
           --enable-targets=${targ} \
+          --enable-shared=${shared} \
           --enable-gold=yes \
           --enable-ld=yes \
           --enable-plugins \
@@ -1960,7 +1983,20 @@ binutils-install() {
 
   # Also remove "${BINUTILS_INSTALL_DIR}/arm-pc-nacl" which contains
   # duplicate binaries and unused linker scripts
+  echo "remove unused ${BINUTILS_INSTALL_DIR}/arm-pc-nacl/"
   rm -rf "${BINUTILS_INSTALL_DIR}/arm-pc-nacl/"
+
+  # Move binutils shared libs to host/lib.
+  # The first "*" expands to the host string, e.g.
+  # x86_64-unknown-linux-gnu
+  if ! ${BUILD_PLATFORM_MAC} ; then
+    echo "move shared libs to ${BINUTILS_INSTALL_DIR}/${SO_DIR}"
+    for lib in ${BINUTILS_INSTALL_DIR}/*/arm-pc-nacl/lib/lib*${SO_EXT} ; do
+      echo "moving ${lib}"
+      mv ${lib} ${BINUTILS_INSTALL_DIR}/${SO_DIR}
+    done
+  fi
+
   spopd
 }
 
