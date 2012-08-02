@@ -1849,10 +1849,14 @@ namespace {
             };
             if (operand.enabled) {
               auto it = operand_type.find(operand.source);
-              if (it != operand_type.end() &&
-                  (strcmp(it->second, "rm") ||
-                   enabled(Actions::kParseOperandPositions))) {
-                fprintf(out_file, " @operand%zd_%s", operand_index, it->second);
+              if (it != operand_type.end()) {
+                if (strcmp(it->second, "rm") ||
+                    enabled(Actions::kParseOperandPositions)) {
+                  fprintf(out_file, " @operand%zd_%s", operand_index,
+                          it->second);
+                  ++operand_index;
+                }
+              } else {
                 ++operand_index;
               }
             } else if (enabled(Actions::kParseOperandPositions)) {
