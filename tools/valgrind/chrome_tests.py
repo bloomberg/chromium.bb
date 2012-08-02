@@ -251,13 +251,6 @@ class ChromeTests:
   def TestFFmpegRegressions(self):
     return self.SimpleTest("chrome", "ffmpeg_regression_tests")
 
-  def TestGfx(self):
-    # Run ui_unittests, a successor of gfx_unittests, since gfx_unittests is
-    # deprecated.
-    # TODO(hbono): This is a band-aid fix. We need to change the master script
-    # so our bots run ui_unittests.
-    return self.SimpleTest("chrome", "ui_unittests")
-
   def TestGPU(self):
     return self.SimpleTest("gpu", "gpu_unittests")
 
@@ -510,7 +503,6 @@ class ChromeTests:
     "ui_unit": TestUIUnit,       "ui_unittests": TestUIUnit,
     "unit": TestUnit,            "unit_tests": TestUnit,
     "views": TestViews,          "views_unittests": TestViews,
-    "gfx": TestGfx,              "gfx_unittests": TestGfx,
   }
 
 

@@ -101,7 +101,6 @@ class ChromeTests(object):
       "ui_unit": self.TestUIUnit,       "ui_unittests": self.TestUIUnit,
       "unit": self.TestUnit,            "unit_tests": self.TestUnit,
       "views": self.TestViews,          "views_unittests": self.TestViews,
-      "gfx": self.TestGfx,              "gfx_unittests": self.TestGfx,
     }
 
     if test not in self._test_list:
@@ -310,13 +309,6 @@ class ChromeTests(object):
 
   def TestViews(self):
     return self.SimpleTest("views", "views_unittests")
-
-  def TestGfx(self):
-    # Run ui_unittests, a successor of gfx_unittests, since gfx_unittests is
-    # deprecated.
-    # TODO(hbono): This is a band-aid fix. We need to change the master script
-    # so our bots run ui_unittests.
-    return self.SimpleTest("chrome", "ui_unittests")
 
   def TestLayoutChunk(self, chunk_num, chunk_size):
     '''Runs tests [chunk_num*chunk_size .. (chunk_num+1)*chunk_size).
