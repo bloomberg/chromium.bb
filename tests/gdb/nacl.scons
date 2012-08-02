@@ -90,8 +90,7 @@ node = env.CommandTest(
     extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
 
 env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_break_continue_thread_test',
-                       is_broken=env.Bit('host_windows'))
+                       'run_gdb_break_continue_thread_test')
 
 node = env.CommandTest(
     'gdb_syscall_thread.out',
@@ -100,5 +99,4 @@ node = env.CommandTest(
     extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
 
 env.AddNodeToTestSuite(node, ['large_tests'],
-                       'run_gdb_syscall_thread_test',
-                       is_broken=env.Bit('host_windows'))
+                       'run_gdb_syscall_thread_test')

@@ -82,8 +82,7 @@ static int8_t ExceptionToSignal(int ex) {
 }
 
 static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
-  uint32_t id = static_cast<uint32_t>(GetCurrentThreadId());
-  IThread* thread = IThread::Acquire(id);
+  struct NaClSignalContext context;
 
   // This 2 lines is a fix for the bug:
   // 366: Linux GDB doesn't work for Chrome
@@ -100,33 +99,47 @@ static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
     return EXCEPTION_CONTINUE_EXECUTION;
   }
 
-  // If we are not tracking this thread, then ignore it
-  if (NULL == thread) return EXCEPTION_CONTINUE_SEARCH;
+  NaClSignalContextFromHandler(&context, ep->ContextRecord);
+  if (NaClSignalContextIsUntrusted(&context)) {
+    // Ensure signals are processed one at a time.
+    // Spin if we are processing another signal already. This won't actually
+    // spin for too long as that signal handler will suspend this thread.
+    // TODO(eaeltsin): this is here because Target::Signal fails doing the same
+    // using Target::sig_start_ IEvent. Investigate and remove this hack!
+    static Atomic32 g_is_processing_signal = 0;
+    while (CompareAndSwap(&g_is_processing_signal, 0, 1) != 0) {
+      // Spin.
+    }
 
-  int8_t sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
+    uint32_t id = static_cast<uint32_t>(GetCurrentThreadId());
+    IThread* thread = IThread::Acquire(id);
+    *thread->GetContext() = context;
+    // Handle EXCEPTION_BREAKPOINT SEH/VEH handler special case:
+    // Here instruction pointer from the CONTEXT structure points to the int3
+    // instruction, not after the int3 instruction.
+    // This is different from the hardware context, and (thus) different from
+    // the context obtained via GetThreadContext on Windows and from signal
+    // handler context on Linux.
+    // See http://code.google.com/p/nativeclient/issues/detail?id=1730.
+    // We adjust instruction pointer to match the hardware.
+    if (ep->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
+      thread->GetContext()->prog_ctr += 1;
+    }
 
-  // Handle EXCEPTION_BREAKPOINT SEH/VEH handler special case:
-  // Here instruction pointer from the CONTEXT structure points to the int3
-  // instruction, not after the int3 instruction.
-  // This is different from the hardware context, and (thus) different from
-  // the context obtained via GetThreadContext on Windows and from signal
-  // handler context on Linux.
-  // See http://code.google.com/p/nativeclient/issues/detail?id=1730.
-  // We adjust instruction pointer to match the hardware.
-  if (ep->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
-#if NACL_BUILD_SUBARCH == 64
-    ep->ContextRecord->Rip += 1;
-#else
-    ep->ContextRecord->Eip += 1;
-#endif
+    int8_t sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
+    if (NULL != s_CatchFunc) s_CatchFunc(id, sig, s_CatchCookie);
+    NaClSignalContextToHandler(ep->ContextRecord, thread->GetContext());
+
+    IThread::Release(thread);
+    // TODO(eaeltsin): remove this hack!
+    while (CompareAndSwap(&g_is_processing_signal, 1, 0) != 1) {
+      // Spin.
+    }
+    return EXCEPTION_CONTINUE_EXECUTION;
+  } else {
+    // Do not attempt to debug crashes in trusted code.
+    return EXCEPTION_CONTINUE_SEARCH;
   }
-
-  NaClSignalContextFromHandler(thread->GetContext(), ep->ContextRecord);
-  if (NULL != s_CatchFunc) s_CatchFunc(id, sig, s_CatchCookie);
-  NaClSignalContextToHandler(ep->ContextRecord, thread->GetContext());
-
-  IThread::Release(thread);
-  return EXCEPTION_CONTINUE_EXECUTION;
 }
 
 void IThread::SetExceptionCatch(IThread::CatchFunc_t func, void *cookie) {
