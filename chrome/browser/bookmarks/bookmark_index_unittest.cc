@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -233,7 +234,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   profile.CreateBookmarkModel(true);
   profile.BlockUntilBookmarkModelLoaded();
 
-  BookmarkModel* model = profile.GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
 
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(&profile, Profile::EXPLICIT_ACCESS);

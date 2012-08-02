@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_manager_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
 
   // Provide some testing data here, since bookmark editing will be disabled
   // within the extension.
-  BookmarkModel* model = profile->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   ui_test_utils::WaitForBookmarkModelToLoad(model);
   const BookmarkNode* bar = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(bar, 0, ASCIIToUTF16("Folder"));

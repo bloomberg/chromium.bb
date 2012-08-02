@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -824,7 +825,7 @@ class BookmarkModelTestWithProfile : public testing::Test {
   }
 
   void BlockTillBookmarkModelLoaded() {
-    bb_model_ = profile_->GetBookmarkModel();
+    bb_model_ = BookmarkModelFactory::GetForProfile(profile_.get());
     profile_->BlockUntilBookmarkModelLoaded();
   }
 

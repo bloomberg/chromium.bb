@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -77,7 +78,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
-  BookmarkModel* model = profile.GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
   const BookmarkNode* root = model->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
   const string16 title(ASCIIToUTF16("blah"));
@@ -120,7 +121,7 @@ TEST_F(BookmarkNodeDataTest, Folder) {
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
   profile.SetID(L"id");
-  BookmarkModel* model = profile.GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* g1 = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
   const BookmarkNode* g11 = model->AddFolder(g1, 0, ASCIIToUTF16("g11"));
@@ -159,7 +160,7 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
-  BookmarkModel* model = profile.GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
@@ -198,7 +199,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   profile.SetID(L"id");
   profile.CreateBookmarkModel(false);
   profile.BlockUntilBookmarkModelLoaded();
-  BookmarkModel* model = profile.GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 

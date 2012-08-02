@@ -16,6 +16,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -233,7 +234,7 @@ int PerformBookmarkDrop(Profile* profile,
                         const BookmarkNodeData& data,
                         const BookmarkNode* parent_node,
                         int index) {
-  BookmarkModel* model = profile->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
   if (data.IsFromProfile(profile)) {
     const std::vector<const BookmarkNode*> dragged_nodes =
         data.GetNodes(profile);

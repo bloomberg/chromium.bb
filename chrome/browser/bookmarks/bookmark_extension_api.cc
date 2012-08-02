@@ -22,6 +22,7 @@
 #include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -83,7 +84,7 @@ FilePath GetDefaultFilepathForBookmarkExport() {
 }  // namespace
 
 void BookmarksFunction::Run() {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   if (!model->IsLoaded()) {
     // Bookmarks are not ready yet.  We'll wait.
     registrar_.Add(
@@ -127,7 +128,7 @@ void BookmarksFunction::Observe(int type,
   if (!source_profile || !source_profile->IsSameProfile(profile()))
     return;
 
-  DCHECK(profile()->GetBookmarkModel()->IsLoaded());
+  DCHECK(BookmarkModelFactory::GetForProfile(profile())->IsLoaded());
   Run();
   Release();  // Balanced in Run().
 }
@@ -463,7 +464,7 @@ bool RemoveBookmarkFunction::RunImpl() {
   if (name() == RemoveTreeBookmarkFunction::function_name())
     recursive = true;
 
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   if (!bookmark_extension_helpers::RemoveNode(model, id, recursive, &error_))
     return false;
 
@@ -563,7 +564,7 @@ bool MoveBookmarkFunction::RunImpl() {
     return false;
   }
 
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* node = model->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;
@@ -712,7 +713,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
       if (!json->GetString(keys::kParentIdKey, &parent_id))
         return;
     }
-    BookmarkModel* model = profile_->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
 
     int64 parent_id_int64;
     base::StringToInt64(parent_id, &parent_id_int64);
@@ -750,7 +751,7 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
     }
 
     for (IdList::iterator it = ids.begin(); it != ids.end(); ++it) {
-      BookmarkModel* model = profile_->GetBookmarkModel();
+      BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
       const BookmarkNode* node = model->GetNodeByID(*it);
       if (!node || node->is_root())
         return;

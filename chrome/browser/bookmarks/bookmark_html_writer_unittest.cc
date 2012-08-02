@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/base/testing_profile.h"
@@ -148,7 +149,7 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   profile.CreateFaviconService();
   profile.CreateBookmarkModel(true);
   profile.BlockUntilBookmarkModelLoaded();
-  BookmarkModel* model = profile.GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(&profile);
 
   // Create test PNG representing favicon for url1.
   SkBitmap bitmap;

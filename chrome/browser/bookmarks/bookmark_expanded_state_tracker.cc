@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -29,7 +30,7 @@ void BookmarkExpandedStateTracker::SetExpandedNodes(const Nodes& nodes) {
 BookmarkExpandedStateTracker::Nodes
 BookmarkExpandedStateTracker::GetExpandedNodes() {
   Nodes nodes;
-  BookmarkModel* model = profile_->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   if (!model->IsLoaded())
     return nodes;
 

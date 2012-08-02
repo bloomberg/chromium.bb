@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
@@ -319,8 +320,8 @@ std::vector<const BookmarkNode*> BookmarkNodeData::GetNodes(
     return nodes;
 
   for (size_t i = 0; i < elements.size(); ++i) {
-    const BookmarkNode* node =
-        profile->GetBookmarkModel()->GetNodeByID(elements[i].id_);
+    const BookmarkNode* node = BookmarkModelFactory::GetForProfile(
+        profile)->GetNodeByID(elements[i].id_);
     if (!node) {
       nodes.clear();
       return nodes;

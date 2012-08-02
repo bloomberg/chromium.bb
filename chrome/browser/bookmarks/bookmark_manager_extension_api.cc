@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_extension_api_constants.h"
 #include "chrome/browser/bookmarks/bookmark_extension_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -223,7 +224,7 @@ void BookmarkManagerExtensionEventRouter::ClearBookmarkNodeData() {
 }
 
 bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   std::vector<const BookmarkNode*> nodes;
   EXTENSION_FUNCTION_VALIDATE(GetNodesFromArguments(model, args_.get(),
                                                     0, &nodes));
@@ -244,7 +245,7 @@ bool CutBookmarkManagerFunction::RunImpl() {
 bool PasteBookmarkManagerFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
     error_ = keys::kNoParentError;
@@ -273,7 +274,7 @@ bool PasteBookmarkManagerFunction::RunImpl() {
 bool CanPasteBookmarkManagerFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
     error_ = keys::kNoParentError;
@@ -287,7 +288,7 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
 bool SortChildrenBookmarkManagerFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
   if (!parent_node) {
     error_ = keys::kNoParentError;
@@ -383,7 +384,7 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
 bool StartDragBookmarkManagerFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   std::vector<const BookmarkNode*> nodes;
   EXTENSION_FUNCTION_VALIDATE(
       GetNodesFromArguments(model, args_.get(), 0, &nodes));
@@ -408,7 +409,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
   if (!EditBookmarksEnabled())
     return false;
 
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model =BookmarkModelFactory::GetForProfile(profile());
 
   int64 id;
   std::string id_string;
@@ -462,7 +463,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
 }
 
 bool GetSubtreeBookmarkManagerFunction::RunImpl() {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* node;
   int64 id;
   std::string id_string;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +49,8 @@ void RecentlyUsedFoldersComboModelTest::TearDown() {
 
 // Verifies there are no duplicate nodes in the model.
 TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
-  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(profile_.get());
   const BookmarkNode* new_node = bookmark_model->AddURL(
       bookmark_model->bookmark_bar_node(), 0, ASCIIToUTF16("a"),
       GURL("http://a"));
