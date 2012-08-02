@@ -61,7 +61,8 @@ class WebRTCMockRenderProcess : public RenderProcess {
   virtual bool UseInProcessPlugins() const OVERRIDE { return false; }
   virtual void AddBindings(int bindings) OVERRIDE {}
   virtual int GetEnabledBindings() const { return 0; }
-  virtual bool HasInitializedMediaLibrary() const { return false; }
+  virtual TransportDIB* CreateTransportDIB(size_t size)  { return NULL; }
+  virtual void FreeTransportDIB(TransportDIB*) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRTCMockRenderProcess);

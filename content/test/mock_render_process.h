@@ -22,7 +22,8 @@ class MockRenderProcess : public RenderProcess {
   virtual bool UseInProcessPlugins() const OVERRIDE;
   virtual void AddBindings(int bindings) OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
-  virtual bool HasInitializedMediaLibrary() const;
+  virtual TransportDIB* CreateTransportDIB(size_t size) OVERRIDE;
+  virtual void FreeTransportDIB(TransportDIB*) OVERRIDE;
 
  private:
   uint32 transport_dib_next_sequence_number_;

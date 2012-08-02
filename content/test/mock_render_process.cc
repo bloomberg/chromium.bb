@@ -46,8 +46,11 @@ int MockRenderProcess::GetEnabledBindings() const {
   return enabled_bindings_;
 }
 
-bool MockRenderProcess::HasInitializedMediaLibrary() const {
-  return false;
+TransportDIB* MockRenderProcess::CreateTransportDIB(size_t size) {
+  return TransportDIB::Create(size, transport_dib_next_sequence_number_++);
 }
 
+void MockRenderProcess::FreeTransportDIB(TransportDIB* dib) {
+  delete dib;
+}
 

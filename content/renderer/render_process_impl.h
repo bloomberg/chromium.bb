@@ -28,6 +28,8 @@ class RenderProcessImpl : public RenderProcess {
   virtual bool UseInProcessPlugins() const OVERRIDE;
   virtual void AddBindings(int bindings) OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
+  virtual TransportDIB* CreateTransportDIB(size_t size) OVERRIDE;
+  virtual void FreeTransportDIB(TransportDIB*) OVERRIDE;
 
   // Like UseInProcessPlugins(), but called before RenderProcess is created
   // and does not allow overriding by tests. This just checks the command line
@@ -52,11 +54,6 @@ class RenderProcessImpl : public RenderProcess {
   // of the given size. If all entries in the cache are larger than the given
   // size, this doesn't free any slots and returns -1.
   int FindFreeCacheSlot(size_t size);
-
-  // Create a new transport DIB of, at least, the given size. Return NULL on
-  // error.
-  TransportDIB* CreateTransportDIB(size_t size);
-  void FreeTransportDIB(TransportDIB*);
 
   // A very simplistic and small cache.  If an entry in this array is non-null,
   // then it points to a SharedMemory object that is available for reuse.

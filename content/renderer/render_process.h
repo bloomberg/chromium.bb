@@ -54,6 +54,11 @@ class RenderProcess : public ChildProcess {
   // The cumulative set of enabled bindings for this process.
   virtual int GetEnabledBindings() const = 0;
 
+  // Create a new transport DIB of, at least, the given size. Return NULL on
+  // error.
+  virtual TransportDIB* CreateTransportDIB(size_t size) = 0;
+  virtual void FreeTransportDIB(TransportDIB*) = 0;
+
   // Returns a pointer to the RenderProcess singleton instance. Assuming that
   // we're actually a renderer or a renderer test, this static cast will
   // be correct.
