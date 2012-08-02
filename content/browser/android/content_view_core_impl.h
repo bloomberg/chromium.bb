@@ -195,6 +195,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   struct JavaObject;
   JavaObject* java_object_;
 
+  // A weak reference to the Java ContentViewCore object.
+  JavaObjectWeakGlobalRef java_ref_;
+
   NotificationRegistrar notification_registrar_;
 
   // Reference to the current WebContents used to determine how and what to

@@ -22,6 +22,7 @@
 #include <string>
 
 #include "base/android/jni_helper.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
@@ -109,8 +110,11 @@ class DownloadController : public DownloadItem::Observer {
                             int render_process_id,
                             int render_view_id);
 
-  jobject GetContentViewCoreFromWebContents(WebContents* web_contents);
-  jobject GetContentView(int render_process_id, int render_view_id);
+  base::android::ScopedJavaLocalRef<jobject> GetContentViewCoreFromWebContents(
+      WebContents* web_contents);
+
+  base::android::ScopedJavaLocalRef<jobject> GetContentView(
+      int render_process_id, int render_view_id);
 
   // Creates Java object if it is not created already and returns it.
   JavaObject* GetJavaObject();

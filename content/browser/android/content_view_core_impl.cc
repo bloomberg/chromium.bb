@@ -56,11 +56,7 @@ jfieldID g_native_content_view;
 namespace content {
 
 struct ContentViewCoreImpl::JavaObject {
-  jweak obj;
 
-  ScopedJavaLocalRef<jobject> View(JNIEnv* env) {
-    return GetRealObject(env, obj);
-  }
 };
 
 // ----------------------------------------------------------------------------
@@ -81,7 +77,8 @@ ContentViewCore* ContentViewCore::GetNativeContentViewCore(JNIEnv* env,
 
 ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          WebContents* web_contents)
-    : web_contents_(static_cast<WebContentsImpl*>(web_contents)),
+    : java_ref_(env, obj),
+      web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       tab_crashed_(false) {
   DCHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
@@ -98,12 +95,9 @@ ContentViewCoreImpl::~ContentViewCoreImpl() {
   // down.
   notification_registrar_.RemoveAll();
 
-  if (java_object_) {
-    JNIEnv* env = AttachCurrentThread();
-    env->DeleteWeakGlobalRef(java_object_->obj);
-    delete java_object_;
-    java_object_ = 0;
-  }
+  delete java_object_;
+  java_object_ = NULL;
+  java_ref_.reset();
 }
 
 void ContentViewCoreImpl::Destroy(JNIEnv* env, jobject obj) {
@@ -125,11 +119,12 @@ void ContentViewCoreImpl::Observe(int type,
           Details<std::pair<int, Value*> >(details).ptr();
       std::string json;
       base::JSONWriter::Write(result_pair->second, &json);
-      ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env,
-                                                                   json);
-      Java_ContentViewCore_onEvaluateJavaScriptResult(env,
-          java_object_->View(env).obj(),
-          static_cast<jint>(result_pair->first), j_json.obj());
+      ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
+      ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+      if (!j_obj.is_null()) {
+        Java_ContentViewCore_onEvaluateJavaScriptResult(env, j_obj.obj(),
+            static_cast<jint>(result_pair->first), j_json.obj());
+      }
       break;
     }
   }
@@ -139,7 +134,6 @@ void ContentViewCoreImpl::Observe(int type,
 
 void ContentViewCoreImpl::InitJNI(JNIEnv* env, jobject obj) {
   java_object_ = new JavaObject;
-  java_object_->obj = env->NewWeakGlobalRef(obj);
 }
 
 RenderWidgetHostViewAndroid*
@@ -466,6 +460,9 @@ void ContentViewCoreImpl::SetTitle(const string16& title) {
 void ContentViewCoreImpl::ShowSelectPopupMenu(
     const std::vector<WebMenuItem>& items, int selected_item, bool multiple) {
   JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
 
   // For multi-select list popups we find the list of previous selections by
   // iterating through the items. But for single selection popups we take the
@@ -502,24 +499,26 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
   }
   ScopedJavaLocalRef<jobjectArray> items_array(
       base::android::ToJavaArrayOfStrings(env, labels));
-  Java_ContentViewCore_showSelectPopup(env, java_object_->View(env).obj(),
+  Java_ContentViewCore_showSelectPopup(env, j_obj.obj(),
                                        items_array.obj(), enabled_array.obj(),
                                        multiple, selected_array.obj());
 }
 
 void ContentViewCoreImpl::ConfirmTouchEvent(bool handled) {
-  // TODO(yusufo): Upstream changes for http://crbug/139386 to match upstream
-  // to downstream.
   JNIEnv* env = AttachCurrentThread();
-  Java_ContentViewCore_confirmTouchEvent(env,
-                                         java_object_->View(env).obj(),
-                                         handled);
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
+  Java_ContentViewCore_confirmTouchEvent(env, j_obj.obj(), handled);
 }
 
 void ContentViewCoreImpl::DidSetNeedTouchEvents(bool need_touch_events) {
   JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
   Java_ContentViewCore_didSetNeedTouchEvents(env,
-                                             java_object_->View(env).obj(),
+                                             j_obj.obj(),
                                              need_touch_events);
 }
 
@@ -544,7 +543,10 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
 
 void ContentViewCoreImpl::DidStartLoading() {
   JNIEnv* env = AttachCurrentThread();
-  Java_ContentViewCore_didStartLoading(env, java_object_->View(env).obj());
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
+  Java_ContentViewCore_didStartLoading(env, j_obj.obj());
 }
 
 void ContentViewCoreImpl::OnAcceleratedCompositingStateChange(
@@ -554,10 +556,13 @@ void ContentViewCoreImpl::OnAcceleratedCompositingStateChange(
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return;
   ScopedJavaLocalRef<jstring> jcontent_url =
       ConvertUTF8ToJavaString(env, content_url.spec());
   Java_ContentViewCore_startContentIntent(env,
-                                          java_object_->View(env).obj(),
+                                          j_obj.obj(),
                                           jcontent_url.obj());
 }
 
