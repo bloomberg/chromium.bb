@@ -305,7 +305,7 @@ cr.define('options.internet', function() {
       /* Network information merged into the Wifi tab for wireless networks
          unless the option is set for enabling a static IP configuration. */
       updateHidden('#details-internet-page .network-details',
-                   this.wireless && !this.showStaticIPConfig);
+                   (this.wireless && !this.showStaticIPConfig) || this.vpn);
       updateHidden('#details-internet-page .wifi-network-setting',
                    this.showStaticIPConfig);
 
