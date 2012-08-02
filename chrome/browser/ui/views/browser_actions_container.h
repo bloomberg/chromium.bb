@@ -16,7 +16,7 @@
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 class BrowserActionButton;
 class ExtensionPopup;
@@ -109,7 +109,7 @@ class BrowserActionsContainer
       public ui::AnimationDelegate,
       public ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
-      public views::Widget::Observer {
+      public views::WidgetObserver {
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
@@ -199,7 +199,7 @@ class BrowserActionsContainer
   virtual void NotifyMenuDeleted(
       BrowserActionOverflowMenuController* controller) OVERRIDE;
 
-  // Overridden from views::Widget::Observer
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Moves a browser action with |id| to |new_index|.

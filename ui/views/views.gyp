@@ -350,6 +350,7 @@
         'widget/widget_hwnd_utils.h',
         'widget/widget_message_filter.cc',
         'widget/widget_message_filter.h',
+        'widget/widget_observer.h',
         'widget/x11_desktop_handler.cc',
         'widget/x11_desktop_handler.h',
         'widget/x11_window_event_filter.cc',

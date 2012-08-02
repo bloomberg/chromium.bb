@@ -610,7 +610,7 @@ TEST_F(WidgetOwnershipTest,
 //
 
 class WidgetObserverTest : public WidgetTest,
-                                  Widget::Observer {
+                           public WidgetObserver {
  public:
   WidgetObserverTest()
       : active_(NULL),
@@ -622,6 +622,7 @@ class WidgetObserverTest : public WidgetTest,
 
   virtual ~WidgetObserverTest() {}
 
+  // Overridden from WidgetObserver:
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE {
     if (active_ == widget)
       active_ = NULL;

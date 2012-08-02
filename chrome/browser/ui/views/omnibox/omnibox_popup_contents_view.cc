@@ -12,6 +12,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include <dwmapi.h>

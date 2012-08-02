@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/widget/widget_observer.h"
 
 class Browser;
 class LocationBarView;
@@ -29,7 +30,7 @@ class MenuRunner;
 // given PageAction and notify the extension when the icon is clicked.
 class PageActionImageView : public views::ImageView,
                             public ImageLoadingTracker::Observer,
-                            public views::Widget::Observer,
+                            public views::WidgetObserver,
                             public views::ContextMenuController,
                             public content::NotificationObserver,
                             public ExtensionAction::IconAnimation::Observer {
@@ -47,30 +48,30 @@ class PageActionImageView : public views::ImageView,
     preview_enabled_ = preview_enabled;
   }
 
-  // Overridden from view.
+  // Overridden from views::View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
 
-  // Overridden from ImageLoadingTracker.
+  // Overridden from ImageLoadingTracker:
   virtual void OnImageLoaded(const gfx::Image& image,
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
-  // Overridden from views::Widget::Observer
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Overridden from views::ContextMenuController.
   virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& point) OVERRIDE;
 
-  // content::NotificationObserver implementation.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from ui::AcceleratorTarget.
+  // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
@@ -83,7 +84,7 @@ class PageActionImageView : public views::ImageView,
   void ExecuteAction(int button);
 
  private:
-  // Overridden from ExtensionAction::IconAnimation::Observer.
+  // Overridden from ExtensionAction::IconAnimation::Observer:
   virtual void OnIconChanged(
       const ExtensionAction::IconAnimation& animation) OVERRIDE;
 

@@ -9,6 +9,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -16,7 +17,7 @@ namespace {
 // will automatically close.
 const int kBubbleCloseDelay = 400;
 
-}
+}  // namespace
 
 // static
 ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = NULL;

@@ -14,7 +14,7 @@
 #include "ui/aura/focus_change_observer.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace app_list {
 class AppListView;
@@ -36,7 +36,7 @@ class AppListController : public aura::EventFilter,
                           public aura::FocusChangeObserver,
                           public aura::RootWindowObserver,
                           public ui::ImplicitAnimationObserver,
-                          public views::Widget::Observer,
+                          public views::WidgetObserver,
                           public ShellObserver,
                           public LauncherIconObserver {
  public:
@@ -94,7 +94,7 @@ class AppListController : public aura::EventFilter,
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
-  // views::Widget::Observer overrides:
+  // views::WidgetObserver overrides:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // ShellObserver overrides:

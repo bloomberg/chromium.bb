@@ -75,6 +75,7 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"

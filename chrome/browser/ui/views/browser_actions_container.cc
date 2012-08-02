@@ -30,6 +30,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/metrics.h"
+#include "ui/views/widget/widget.h"
 
 using extensions::Extension;
 

@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
+#include "ui/views/widget/widget.h"
 
 using content::WebContents;
 

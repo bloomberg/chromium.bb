@@ -28,6 +28,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/single_split_view_listener.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/client_view.h"
 
 #if defined(OS_WIN)
@@ -89,7 +90,7 @@ class BrowserView : public BrowserWindow,
                     public TabStripModelObserver,
                     public ui::AcceleratorProvider,
                     public views::WidgetDelegate,
-                    public views::Widget::Observer,
+                    public views::WidgetObserver,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitViewListener,
@@ -398,7 +399,7 @@ class BrowserView : public BrowserWindow,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // Overridden from views::Widget::Observer
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 

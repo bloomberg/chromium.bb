@@ -9,7 +9,7 @@
 #include "ash/system/user/login_status.h"
 #include "base/base_export.h"
 #include "base/timer.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 #include <vector>
 
@@ -21,7 +21,7 @@ class SystemTrayItem;
 namespace internal {
 
 class SystemTrayBubble : public TrayBubbleView::Host,
-                         public views::Widget::Observer {
+                         public views::WidgetObserver {
  public:
   enum BubbleType {
     BUBBLE_TYPE_DEFAULT,
@@ -64,7 +64,7 @@ class SystemTrayBubble : public TrayBubbleView::Host,
  private:
   void CreateItemViews(user::LoginStatus login_status);
 
-  // Overridden from views::Widget::Observer.
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   ash::SystemTray* tray_;

@@ -9,7 +9,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/mouse_watcher.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace aura {
 class Window;
@@ -22,7 +22,7 @@ class SlideAnimation;
 // NonClientFrameViewAura implementation for apps.
 class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
                                   public views::MouseWatcherListener,
-                                  public views::Widget::Observer {
+                                  public views::WidgetObserver {
  public:
   AppNonClientFrameViewAura(
       BrowserFrame* frame, BrowserView* browser_view);
@@ -51,7 +51,7 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   // views::MouseWatcherListener.
   virtual void MouseMovedOutOfHost() OVERRIDE;
 
-  // views::Widget::Observer.
+  // views::WidgetObserver.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Close the app window.

@@ -12,7 +12,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 class ContentSettingImageModel;
 class ContentSettingBubbleContents;
@@ -32,11 +32,10 @@ class SlideAnimation;
 
 class ContentSettingsDelegateView;
 
-class ContentSettingImageView
-    : public views::ImageView,
-      public ui::AnimationDelegate,
-      public views::Widget::Observer,
-      public TouchableLocationBarView {
+class ContentSettingImageView : public views::ImageView,
+                                public ui::AnimationDelegate,
+                                public views::WidgetObserver,
+                                public TouchableLocationBarView {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
                           LocationBarView* parent);
@@ -54,7 +53,7 @@ class ContentSettingImageView
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
-  // views::Widget::Observer override:
+  // views::WidgetObserver override:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // TouchableLocationBarView.

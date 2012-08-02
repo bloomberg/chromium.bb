@@ -8,7 +8,7 @@
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class View;
@@ -24,7 +24,7 @@ namespace internal {
 class LauncherView;
 
 // OverflowBubble displays an overflow bubble.
-class OverflowBubble : public views::Widget::Observer {
+class OverflowBubble : public views::WidgetObserver {
  public:
   OverflowBubble();
   virtual ~OverflowBubble();
@@ -40,7 +40,7 @@ class OverflowBubble : public views::Widget::Observer {
   bool IsShowing() const { return !!bubble_; }
 
  private:
-  // views::Widget::Observer overrides:
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   views::View* bubble_;  // Owned by views hierarchy.

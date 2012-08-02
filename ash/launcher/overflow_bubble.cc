@@ -12,6 +12,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {

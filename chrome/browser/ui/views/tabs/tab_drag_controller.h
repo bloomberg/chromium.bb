@@ -18,7 +18,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class View;
@@ -50,7 +50,7 @@ class TabStripSelectionModel;
 class TabDragController : public content::WebContentsDelegate,
                           public content::NotificationObserver,
                           public MessageLoopForUI::Observer,
-                          public views::Widget::Observer,
+                          public views::WidgetObserver,
                           public TabStripModelObserver {
  public:
   enum DetachBehavior {
@@ -227,7 +227,7 @@ class TabDragController : public content::WebContentsDelegate,
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
-  // Overriden from views::Widget::Observer:
+  // Overriden from views::WidgetObserver:
   virtual void OnWidgetMoved(views::Widget* widget) OVERRIDE;
 
   // Overriden from TabStripModelObserver:

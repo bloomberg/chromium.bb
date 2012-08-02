@@ -15,6 +15,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
 #include "base/win/windows_version.h"

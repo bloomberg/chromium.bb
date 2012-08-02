@@ -84,7 +84,7 @@ class PanelBrowserView : public BrowserView,
   virtual void OnWindowBeginUserBoundsChange() OVERRIDE;
   virtual void OnWindowEndUserBoundsChange() OVERRIDE;
 
-  // Overridden from views::Widget::Observer
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 

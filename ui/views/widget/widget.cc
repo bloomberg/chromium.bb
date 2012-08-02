@@ -24,6 +24,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/custom_frame_view.h"
 
 #if !defined(OS_MACOSX)
@@ -347,15 +348,15 @@ gfx::NativeWindow Widget::GetNativeWindow() const {
   return native_widget_->GetNativeWindow();
 }
 
-void Widget::AddObserver(Widget::Observer* observer) {
+void Widget::AddObserver(WidgetObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void Widget::RemoveObserver(Widget::Observer* observer) {
+void Widget::RemoveObserver(WidgetObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Widget::HasObserver(Widget::Observer* observer) {
+bool Widget::HasObserver(WidgetObserver* observer) {
   return observers_.HasObserver(observer);
 }
 
@@ -633,7 +634,7 @@ ui::ThemeProvider* Widget::GetThemeProvider() const {
   if (root_widget && root_widget != this) {
     // Attempt to get the theme provider, and fall back to the default theme
     // provider if not found.
-    ThemeProvider* provider = root_widget->GetThemeProvider();
+    ui::ThemeProvider* provider = root_widget->GetThemeProvider();
     if (provider)
       return provider;
 
@@ -849,7 +850,7 @@ NativeWidget* Widget::native_widget() {
   return native_widget_;
 }
 
-void Widget::SetCapture(views::View* view) {
+void Widget::SetCapture(View* view) {
   if (internal::NativeWidgetPrivate::IsMouseButtonDown())
     is_mouse_button_pressed_ = true;
   if (internal::NativeWidgetPrivate::IsTouchDown())
@@ -925,7 +926,7 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
   if (!active)
     SaveWindowPlacement();
 
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(WidgetObserver, observers_,
                     OnWidgetActivationChanged(this, active));
 }
 
@@ -942,7 +943,7 @@ void Widget::OnNativeBlur(gfx::NativeView new_focused_view) {
 void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
   View* root = GetRootView();
   root->PropagateVisibilityNotifications(root, visible);
-  FOR_EACH_OBSERVER(Observer, observers_,
+  FOR_EACH_OBSERVER(WidgetObserver, observers_,
                     OnWidgetVisibilityChanged(this, visible));
   if (GetCompositor() && root->layer())
     root->layer()->SetVisible(visible);
@@ -965,7 +966,7 @@ void Widget::OnNativeWidgetDestroying() {
   // in case that the focused view is under this root view.
   if (GetFocusManager())
     GetFocusManager()->ViewRemoved(root_view_.get());
-  FOR_EACH_OBSERVER(Observer, observers_, OnWidgetClosing(this));
+  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetClosing(this));
   if (non_client_view_)
     non_client_view_->WindowClosing();
   widget_delegate_->WindowClosing();
@@ -987,7 +988,7 @@ gfx::Size Widget::GetMaximumSize() {
 
 void Widget::OnNativeWidgetMove() {
   widget_delegate_->OnWidgetMove();
-  FOR_EACH_OBSERVER(Observer, observers_, OnWidgetMoved(this));
+  FOR_EACH_OBSERVER(WidgetObserver, observers_, OnWidgetMoved(this));
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {

@@ -8,6 +8,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 // The duration of the fade animation in milliseconds.
 static const int kHideFadeDurationMS = 200;
@@ -44,7 +45,7 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
 // transparent native controls and use per-pixel HWND alpha on the border.
 // TODO(msw): Clean these up when Windows native controls are no longer needed.
 class BubbleBorderDelegate : public WidgetDelegate,
-                             public Widget::Observer {
+                             public WidgetObserver {
  public:
   BubbleBorderDelegate(BubbleDelegateView* bubble, Widget* widget)
       : bubble_(bubble),
@@ -63,11 +64,11 @@ class BubbleBorderDelegate : public WidgetDelegate,
   virtual Widget* GetWidget() OVERRIDE { return widget_; }
   virtual const Widget* GetWidget() const OVERRIDE { return widget_; }
   virtual NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE {
+      Widget* widget) OVERRIDE {
     return bubble_->CreateNonClientFrameView(widget);
   }
 
-  // Widget::Observer overrides:
+  // WidgetObserver overrides:
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE {
     bubble_ = NULL;
     widget_->Close();
@@ -115,7 +116,7 @@ BubbleDelegateView::BubbleDelegateView()
       border_widget_(NULL),
       use_focusless_(false),
       parent_window_(NULL) {
-  set_background(views::Background::CreateSolidBackground(color_));
+  set_background(Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
@@ -134,7 +135,7 @@ BubbleDelegateView::BubbleDelegateView(
       border_widget_(NULL),
       use_focusless_(false),
       parent_window_(NULL) {
-  set_background(views::Background::CreateSolidBackground(color_));
+  set_background(Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 

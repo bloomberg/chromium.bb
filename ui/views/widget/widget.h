@@ -49,7 +49,6 @@ class OSExchangeData;
 class ThemeProvider;
 enum TouchStatus;
 }
-using ui::ThemeProvider;
 
 namespace views {
 
@@ -60,6 +59,8 @@ class NonClientFrameView;
 class ScopedEvent;
 class View;
 class WidgetDelegate;
+class WidgetObserver;
+
 namespace internal {
 class NativeWidgetPrivate;
 class RootView;
@@ -93,17 +94,6 @@ class RootView;
 class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public FocusTraversable {
  public:
-  // Observers can listen to various events on the Widgets.
-  class VIEWS_EXPORT Observer {
-   public:
-    virtual void OnWidgetClosing(Widget* widget) {}
-    virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
-    virtual void OnWidgetActivationChanged(Widget* widget, bool active) {}
-    virtual void OnWidgetMoved(Widget* widget) {}
-   protected:
-    virtual ~Observer() {}
-  };
-
   typedef std::set<Widget*> Widgets;
 
   enum FrameType {
@@ -271,9 +261,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   gfx::NativeWindow GetNativeWindow() const;
 
   // Add/remove observer.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-  bool HasObserver(Observer* observer);
+  void AddObserver(WidgetObserver* observer);
+  void RemoveObserver(WidgetObserver* observer);
+  bool HasObserver(WidgetObserver* observer);
 
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.
@@ -429,7 +419,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool IsAccessibleWidget() const;
 
   // Returns the ThemeProvider that provides theme resources for this Widget.
-  virtual ThemeProvider* GetThemeProvider() const;
+  virtual ui::ThemeProvider* GetThemeProvider() const;
 
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.
@@ -577,7 +567,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Sets capture to the specified view. This makes it so that all mouse, touch
   // and gesture events go to |view|.
-  void SetCapture(views::View* view);
+  void SetCapture(View* view);
 
   // Releases capture.
   void ReleaseCapture();
@@ -711,7 +701,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   internal::NativeWidgetPrivate* native_widget_;
 
-  ObserverList<Observer> observers_;
+  ObserverList<WidgetObserver> observers_;
 
   // Non-owned pointer to the Widget's delegate.  May be NULL if no delegate is
   // being used.

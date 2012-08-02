@@ -27,6 +27,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace {
 
@@ -548,7 +549,7 @@ class WebNotificationTray::BubbleContentsView : public views::View {
 };
 
 class WebNotificationTray::Bubble : public TrayBubbleView::Host,
-                                    public views::Widget::Observer {
+                                    public views::WidgetObserver {
  public:
   explicit Bubble(WebNotificationTray* tray)
       : tray_(tray),
@@ -616,7 +617,7 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
     tray_->status_area_widget()->HideWebNotificationBubble();
   }
 
-  // Overridden from views::Widget::Observer.
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
     CHECK_EQ(bubble_widget_, widget);
     bubble_widget_ = NULL;

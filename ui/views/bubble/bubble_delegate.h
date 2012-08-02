@@ -8,12 +8,12 @@
 #include "base/gtest_prod_util.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ui {
 class SlideAnimation;
-}  // namespace ui
+}
 
 namespace views {
 
@@ -25,7 +25,7 @@ class BubbleFrameView;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
                                         public ui::AnimationDelegate,
-                                        public Widget::Observer {
+                                        public WidgetObserver {
  public:
   // The default bubble background color.
   static const SkColor kBackgroundColor;
@@ -42,10 +42,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
-  virtual NonClientFrameView* CreateNonClientFrameView(
-      views::Widget* widget) OVERRIDE;
+  virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
 
-  // Widget::Observer overrides:
+  // WidgetObserver overrides:
   virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;

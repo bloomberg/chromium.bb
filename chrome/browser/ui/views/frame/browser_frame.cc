@@ -136,7 +136,7 @@ bool BrowserFrame::GetAccelerator(int command_id,
   return browser_view_->GetAccelerator(command_id, accelerator);
 }
 
-ThemeProvider* BrowserFrame::GetThemeProvider() const {
+ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
   return ThemeServiceFactory::GetForProfile(
       browser_view_->browser()->profile());
 }

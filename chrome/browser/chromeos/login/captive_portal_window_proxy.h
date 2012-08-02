@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class Widget;
@@ -29,7 +29,7 @@ class CaptivePortalWindowProxyDelegate {
 };
 
 // Proxy which manages showing of the window for CaptivePortal sign-in.
-class CaptivePortalWindowProxy : public views::Widget::Observer {
+class CaptivePortalWindowProxy : public views::WidgetObserver {
  public:
   typedef CaptivePortalWindowProxyDelegate Delegate;
 
@@ -57,7 +57,7 @@ class CaptivePortalWindowProxy : public views::Widget::Observer {
   // redirections.
   void OnOriginalURLLoaded();
 
-  // views::Widget::Observer implementation:
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
  private:

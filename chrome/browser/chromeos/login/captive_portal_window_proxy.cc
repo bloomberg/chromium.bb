@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 

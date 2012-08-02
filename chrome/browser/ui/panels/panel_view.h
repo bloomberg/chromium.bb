@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 class Panel;
 class PanelBoundsAnimation;
@@ -21,7 +21,7 @@ class WebView;
 }
 
 class PanelView : public NativePanel,
-                  public views::Widget::Observer,
+                  public views::WidgetObserver,
                   public views::WidgetDelegateView,
                   public ui::AnimationDelegate {
  public:
@@ -128,7 +128,7 @@ class PanelView : public NativePanel,
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
-  // Overridden from views::Widget::Observer
+  // Overridden from views::WidgetObserver:
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 

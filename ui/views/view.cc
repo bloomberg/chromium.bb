@@ -728,7 +728,7 @@ void View::Paint(gfx::Canvas* canvas) {
   PaintCommon(canvas);
 }
 
-ThemeProvider* View::GetThemeProvider() const {
+ui::ThemeProvider* View::GetThemeProvider() const {
   const Widget* widget = GetWidget();
   return widget ? widget->GetThemeProvider() : NULL;
 }
