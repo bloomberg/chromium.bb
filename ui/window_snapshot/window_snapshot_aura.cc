@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
+#include "ui/window_snapshot/window_snapshot.h"
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -13,11 +13,11 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/rect.h"
 
-namespace chrome {
+namespace ui {
 
-bool GrabWindowSnapshotImpl(gfx::NativeWindow window,
-                            std::vector<unsigned char>* png_representation,
-                            const gfx::Rect& snapshot_bounds) {
+bool GrabWindowSnapshot(gfx::NativeWindow window,
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
   ui::Compositor* compositor = window->layer()->GetCompositor();
 
   gfx::Rect read_pixels_bounds = snapshot_bounds;
@@ -48,4 +48,4 @@ bool GrabWindowSnapshotImpl(gfx::NativeWindow window,
   return true;
 }
 
-}  // namespace chrome
+}  // namespace ui

@@ -14,11 +14,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "ui/base/win/foreground_helper.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/window_snapshot/window_snapshot.h"
+
 
 namespace ui_test_utils {
 
@@ -124,9 +125,9 @@ bool SaveScreenSnapshotToDirectory(const FilePath& directory,
     RECT& rect = monitor_info.rcMonitor;
 
     std::vector<unsigned char> png_data;
-    if (chrome::GrabWindowSnapshot(NULL, &png_data,
-                                   gfx::Rect(rect.right - rect.left,
-                                             rect.bottom - rect.top)) &&
+    if (ui::GrabWindowSnapshot(NULL, &png_data,
+                               gfx::Rect(rect.right - rect.left,
+                                         rect.bottom - rect.top)) &&
         png_data.size() <= INT_MAX) {
       int bytes = static_cast<int>(png_data.size());
       int written = file_util::WriteFile(

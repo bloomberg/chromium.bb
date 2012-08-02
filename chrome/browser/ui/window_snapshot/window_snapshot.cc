@@ -7,14 +7,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "ui/window_snapshot/window_snapshot.h"
 
 namespace chrome {
-
-// Like GrabWindowSnapshot, but does not check if policy settings allow taking
-// screenshots. Implemented in a platform-specific way.
-bool GrabWindowSnapshotImpl(gfx::NativeWindow window,
-                            std::vector<unsigned char>* png_representation,
-                            const gfx::Rect& snapshot_bounds);
 
 bool GrabWindowSnapshot(
     gfx::NativeWindow window,
@@ -22,7 +17,7 @@ bool GrabWindowSnapshot(
     const gfx::Rect& snapshot_bounds) {
   if (g_browser_process->local_state()->GetBoolean(prefs::kDisableScreenshots))
     return false;
-  return GrabWindowSnapshotImpl(window, png_representation, snapshot_bounds);
+  return ui::GrabWindowSnapshot(window, png_representation, snapshot_bounds);
 }
 
 void RegisterScreenshotPrefs(PrefService* service) {

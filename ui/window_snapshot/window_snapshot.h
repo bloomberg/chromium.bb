@@ -2,36 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WINDOW_SNAPSHOT_WINDOW_SNAPSHOT_H_
-#define CHROME_BROWSER_UI_WINDOW_SNAPSHOT_WINDOW_SNAPSHOT_H_
+#ifndef UI_WINDOW_SNAPSHOT_WINDOW_SNAPSHOT_H_
+#define UI_WINDOW_SNAPSHOT_WINDOW_SNAPSHOT_H_
 
 #include <vector>
 
+#include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
-
-class PrefService;
 
 namespace gfx {
 class Rect;
 }
 
-namespace chrome {
+namespace ui {
 
 // Grabs a snapshot of the rectangle area |snapshot_bounds| with respect to the
 // top left corner of the designated window and stores a PNG representation
 // into a byte vector. On Windows, |window| may be NULL to grab a snapshot of
-// the primary monitor. This checks policy settings if taking screenshots is
-// allowed, and is intended to by used by browser code. If you need to take a
-// screenshot for debugging purposes, use ui::GrabWindowSnapshot
-// (ui/window_snapshot/window_snapshot.h).
-// Returns true if the operation is successful (ie. permitted).
-bool GrabWindowSnapshot(
+// the primary monitor. DO NOT use in browser code. Screenshots initiated by
+// user action should be taken with chrome::GrabWindowSnapshot
+// (chrome/browser/ui/window_snapshot/window_snapshot.cc), so user context is
+// taken into account (eg. policy settings are checked).
+// Returns true if the operation is successful.
+UI_EXPORT bool GrabWindowSnapshot(
     gfx::NativeWindow window,
     std::vector<unsigned char>* png_representation,
     const gfx::Rect& snapshot_bounds);
 
-void RegisterScreenshotPrefs(PrefService* service);
-
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_UI_WINDOW_SNAPSHOT_WINDOW_SNAPSHOT_H_
+#endif  // UI_WINDOW_SNAPSHOT_WINDOW_SNAPSHOT_H_
