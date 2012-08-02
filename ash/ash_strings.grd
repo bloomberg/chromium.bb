@@ -392,6 +392,21 @@ Press Search key to cancel.
       <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
         Wi-Fi
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_HELP" desc="The accessible text for the help button.">
+        Help
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SHUTDOWN" desc="The accessible text for the shutdown button.">
+        Shutdown
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS" desc="The accessible text for the notifications button.">
+        Notifications
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_CELLULAR" desc="The accessible text for the cellular button.">
+        Cellular
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_INFO" desc="The accessible text for the network info button.">
+        Network Info
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
         No network information available
       </message>
