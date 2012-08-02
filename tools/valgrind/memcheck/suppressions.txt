@@ -1047,6 +1047,20 @@
    fun:_Znw*
    fun:_ZN7WebCoreL19nameToPseudoTypeMapEv
 }
+{
+   bug_79322_a (Intentional)
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base42StatisticsRecorderTest_NotInitialized_Test8TestBodyEv
+}
+{
+   bug_79322_b (Intentional)
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base18StatisticsRecorder31RegisterOrDeleteDuplicateRangesEPKNS_12BucketRangesE
+   fun:_ZN4base48StatisticsRecorderTest_RegisterBucketRanges_Test8TestBodyEv
+}
+
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -5475,6 +5489,19 @@
    ...
    fun:_ZNK7WebCore11RenderLayer15parentClipRectsEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeERNS_9ClipRectsENS_29OverlayScrollbarSizeRelevancyE
    fun:_ZNK7WebCore11RenderLayer18backgroundClipRectEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeENS_29OverlayScrollbarSizeRelevancyE
+}
+{
+   bug_131354
+   Memcheck:Unaddressable
+   fun:_ZN7WebCore8AudioBus20loadPlatformResourceEPKcf
+   fun:_ZN7WebCore13HRTFElevation35calculateKernelsForAzimuthElevationEiifRKN3WTF6StringERNS1_6RefPtrINS_10HRTFKernelEEES8_
+   fun:_ZN7WebCore13HRTFElevation16createForSubjectERKN3WTF6StringEif
+   fun:_ZN7WebCore12HRTFDatabaseC1Ef
+   fun:_ZN7WebCore12HRTFDatabase6createEf
+   fun:_ZN7WebCore18HRTFDatabaseLoader4loadEv
+   fun:_ZN7WebCoreL19databaseLoaderEntryEPv
+   fun:_ZN3WTFL16threadEntryPointEPv
+   fun:_ZN3WTFL19wtfThreadEntryPointEPv
 }
 {
    bug_131668
