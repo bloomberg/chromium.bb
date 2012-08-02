@@ -967,6 +967,16 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
     """
     test_description = 'AlternateLists'
 
+    def sort_menu_setup():
+      # Open and close the "Sort" menu to get some DOM nodes to appear that are
+      # used by the scenario in this test.
+      sort_xpath = '//div[text()="Sort"]'
+      self.WaitForDomNode(sort_xpath)
+      sort_button = self._GetElement(self._driver.find_element_by_xpath,
+                                     sort_xpath)
+      sort_button.click()
+      sort_button.click()
+
     def scenario():
       # Click the "Shared with me" button, wait for 1 second, click the
       # "My Drive" button, wait for 1 second.
@@ -975,24 +985,25 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
       if not self._ClickElementByXpath(
           self._driver, '//span[starts-with(text(), "Shared with me")]'):
         self._num_errors += 1
-      self.WaitForDomNode('//div[text()="Share date"]')
+      try:
+        self.WaitForDomNode('//div[text()="Share date"]')
+      except pyauto_errors.JSONInterfaceError:
+        # This case can occur when the page reloads; set things up again.
+        sort_menu_setup()
       time.sleep(1)
 
       # Click the "My Drive" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(
           self._driver, '//span[starts-with(text(), "My Drive")]'):
         self._num_errors += 1
-      self.WaitForDomNode('//div[text()="Quota used"]')
+      try:
+        self.WaitForDomNode('//div[text()="Quota used"]')
+      except pyauto_errors.JSONInterfaceError:
+        # This case can occur when the page reloads; set things up again.
+        sort_menu_setup()
       time.sleep(1)
 
-    # Open and close the "Sort" menu to get some DOM nodes to appear that are
-    # used by the scenario in this test.
-    sort_xpath = '//div[text()="Sort"]'
-    self.WaitForDomNode(sort_xpath)
-    sort_button = self._GetElement(self._driver.find_element_by_xpath,
-                                   sort_xpath)
-    sort_button.click()
-    sort_button.click()
+    sort_menu_setup()
 
     self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
@@ -1042,7 +1053,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
         self._num_errors += 1
 
       try:
-        self.WaitForDomNode('//div[text()="Friends"]')
+        self.WaitForDomNode('//span[contains(., "in Friends")]')
       except (pyauto_errors.JSONInterfaceError,
               pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
@@ -1057,7 +1068,7 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
         self._num_errors += 1
 
       try:
-        self.WaitForDomNode('//div[text()="Family"]')
+        self.WaitForDomNode('//span[contains(., "in Family")]')
       except (pyauto_errors.JSONInterfaceError,
               pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
