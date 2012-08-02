@@ -6,7 +6,8 @@
 #define SANDBOX_LINUX_SUID_SETUID_SANDBOX_CLIENT_H_
 
 #include "base/basictypes.h"
-#include "base/environment.h"
+
+namespace base { class Environment; }
 
 namespace sandbox {
 
@@ -38,6 +39,8 @@ class SetuidSandboxClient {
   bool IsInNewPIDNamespace() const;
   // Did the setuid helper create a new network namespace ?
   bool IsInNewNETNamespace() const;
+  // Are we done and fully sandboxed ?
+  bool IsSandboxed() const;
 
   // Set-up the environment. This should be done prior to launching the setuid
   // helper.
@@ -46,6 +49,7 @@ class SetuidSandboxClient {
  private:
   // Holds the environment. Will never be NULL.
   base::Environment* env_;
+  bool sandboxed_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(SetuidSandboxClient);
 };
 

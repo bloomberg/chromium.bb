@@ -8,18 +8,20 @@
 namespace content {
 
 // These form a bitmask which describes the conditions of the Linux sandbox.
-enum {
+// Note: this doesn't strictly give you the current status, it states
+// what will be enabled when the relevant processes are initialized.
+enum LinuxSandboxStatus {
   // SUID sandbox active.
   kSandboxLinuxSUID = 1 << 0,
 
   // SUID sandbox is using the PID namespace.
   kSandboxLinuxPIDNS = 1 << 1,
 
-  //SUID sandbox is using the network namespace.
+  // SUID sandbox is using the network namespace.
   kSandboxLinuxNetNS = 1 << 2,
 
-  // seccomp sandbox active.
-  kSandboxLinuxSeccomp = 1 << 3
+  // seccomp-legacy sandbox active.
+  kSandboxLinuxSeccomp = 1 << 3,
 };
 
 }  // namespace content
