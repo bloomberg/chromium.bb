@@ -9,8 +9,19 @@ var kReadKeysOnly = true;
 var kReadDataToo = false;
 var kWriteToo = true;
 var kDontWrite = false;
+var kWriteSameStore = true;
+var kWriteDifferentStore = false;
+var kPlaceholderArg = false;
 
 var tests = [
+// Create a single small item in a single object store, then delete everything.
+  [testCreateAndDeleteDatabase,  1,    1,    1],
+// Create a single small item in a single object store, then delete everything.
+  [testCreateAndDeleteDatabase,  100,  1,    1],
+// Create a single small item in a single object store, then delete everything.
+  [testCreateAndDeleteDatabase,  1,    100,  1],
+// Create a single small item in a single object store, then delete everything.
+  [testCreateAndDeleteDatabase,  100,    1,  10000],
 // Create a single small item in a single object store.
   [testCreateKeysInStores, 1,     1,    1],
 // Create many small items in a single object store.
@@ -38,14 +49,22 @@ var tests = [
 // transactions.
   [testRandomReadsAndWrites, 1000,  5,    5,  50, kUseIndex],
 // Read a long, contiguous sequence of an object store via a cursor.
-  [testCursorReadsAndRandomWrites, kReadDataToo, kDontUseIndex, kDontWrite],
+  [testCursorReadsAndRandomWrites, kReadDataToo, kDontUseIndex, kDontWrite,
+   kPlaceholderArg],
 // Read a sequence of an object store via a cursor, writing
 // transformed values into another.
-  [testCursorReadsAndRandomWrites, kReadDataToo, kDontUseIndex, kWriteToo],
+  [testCursorReadsAndRandomWrites, kReadDataToo, kDontUseIndex, kWriteToo,
+   kWriteDifferentStore],
+// Read a sequence of an object store via a cursor, writing
+// transformed values into another.
+  [testCursorReadsAndRandomWrites, kReadDataToo, kDontUseIndex, kWriteToo,
+   kWriteSameStore],
 // Read a sequence of an index into an object store via a cursor.
-  [testCursorReadsAndRandomWrites, kReadDataToo, kUseIndex, kDontWrite],
+  [testCursorReadsAndRandomWrites, kReadDataToo, kUseIndex, kDontWrite,
+   kPlaceholderArg],
 // Read a sequence of an index into an object store via a key cursor.
-  [testCursorReadsAndRandomWrites, kReadKeysOnly, kUseIndex, kDontWrite],
+  [testCursorReadsAndRandomWrites, kReadKeysOnly, kUseIndex, kDontWrite,
+   kPlaceholderArg],
 // Make batches of random writes into a store, triggered by periodic setTimeout
 // calls.
   [testSporadicWrites, 5, 0],
@@ -86,6 +105,52 @@ function onAllTestsComplete() {
   automation.setDone();
 }
 
+// This is the only test that includes database creation and deletion in its
+// results; the others just test specific operations.  To see only the
+// creation/deletion without the specific operations used to build up the data
+// in the object stores here, subtract off the results of
+// testCreateKeysInStores.
+function testCreateAndDeleteDatabase(
+    numKeys, numStores, payloadLength, onTestComplete) {
+  var testName = getDisplayName(arguments);
+  assert(numKeys >= 0);
+  assert(numStores >= 1);
+  var objectStoreNames = [];
+  for (var i=0; i < numStores; ++i) {
+    objectStoreNames.push("store " + i);
+  }
+  var value = stringOfLength(payloadLength);
+  function getValue() {
+    return value;
+  }
+
+  automation.setStatus("Creating database.");
+  var startTime = Date.now();
+
+  createDatabase(testName, objectStoreNames, onCreated, onError);
+
+  function onCreated(db) {
+    automation.setStatus("Constructing transaction.");
+    var transaction =
+        getTransaction(db, objectStoreNames, "readwrite",
+            function() { onValuesWritten(db); });
+    putLinearValues(transaction, objectStoreNames, numKeys, null, getValue);
+  }
+
+  function onValuesWritten(db) {
+    automation.setStatus("Deleting database.");
+    db.close();
+    deleteDatabase(testName, onDeleted);
+  }
+
+  function onDeleted() {
+    var duration = Date.now() - startTime;
+    automation.addResult(testName, duration);
+    automation.setStatus("Deleted database.");
+    onTestComplete();
+  }
+}
+
 function testCreateKeysInStores(
     numKeys, numStores, payloadLength, onTestComplete) {
   var testName = getDisplayName(arguments);
@@ -106,7 +171,7 @@ function testCreateKeysInStores(
   function onCreated(db) {
     automation.setStatus("Constructing transaction.");
     var completionFunc =
-        getCompletionFunc(testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, Date.now(), onTestComplete);
     var transaction =
         getTransaction(db, objectStoreNames, "readwrite", completionFunc);
     putLinearValues(transaction, objectStoreNames, numKeys, null, getValue);
@@ -147,7 +212,8 @@ function testRandomReadsAndWrites(
   var completionFunc;
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
-    completionFunc = getCompletionFunc(testName, Date.now(), onTestComplete);
+    completionFunc =
+        getCompletionFunc(db, testName, Date.now(), onTestComplete);
     runOneBatch(db);
   }
 
@@ -212,7 +278,7 @@ function testCreateAndDeleteIndex(numKeys, onTestComplete) {
     var indexCreationCompleteTime = Date.now();
     automation.addResult("testCreateIndex",
         indexCreationCompleteTime - startTime);
-    completionFunc = getCompletionFunc("testDeleteIndex",
+    completionFunc = getCompletionFunc(db, "testDeleteIndex",
         indexCreationCompleteTime, onTestComplete);
     var f = function(objectStore) {
       objectStore.deleteIndex("index");
@@ -222,22 +288,28 @@ function testCreateAndDeleteIndex(numKeys, onTestComplete) {
   }
 }
 
-// TODO: Add a version that writes back to the same store, to see how that
-// affects cursor speed w.r.t. invalidated caches.
 function testCursorReadsAndRandomWrites(
-    readKeysOnly, useIndexForReads, writeToAnotherStore, onTestComplete) {
+    readKeysOnly, useIndexForReads, writeAlso, sameStoreForWrites,
+    onTestComplete) {
   // There's no key cursor unless you're reading from an index.
   assert(useIndexForReads || !readKeysOnly);
   // If we're writing to another store, having an index would constrain our
   // writes, as we create both object stores with the same configurations.
   // We could do that if needed, but it's simpler not to.
-  assert(!useIndexForReads || !writeToAnotherStore);
+  assert(!useIndexForReads || !writeAlso);
   var numKeys = 1000;
   var numReadsPerTransaction = 100;
   var testName = getDisplayName(arguments);
   var objectStoreNames = ["input store"];
-  if (writeToAnotherStore)
-    objectStoreNames.push("output store");
+  var outputStoreName;
+  if (writeAlso) {
+    if (sameStoreForWrites) {
+      outputStoreName = objectStoreNames[0];
+    } else {
+      outputStoreName = "output store";
+      objectStoreNames.push(outputStoreName);
+    }
+  }
   var getKeyForRead = getSimpleKey;
   var indexName;
   if (useIndexForReads) {
@@ -273,16 +345,16 @@ function testCursorReadsAndRandomWrites(
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
     var completionFunc =
-        getCompletionFunc(testName, Date.now(), onTestComplete);
+        getCompletionFunc(db, testName, Date.now(), onTestComplete);
     var mode = "readonly";
-    if (writeToAnotherStore)
+    if (writeAlso)
       mode = "readwrite";
     var transaction =
         getTransaction(db, objectStoreNames, mode, completionFunc);
 
     getValuesFromCursor(
         transaction, objectStoreNames[0], numReadsPerTransaction, numKeys,
-        indexName, getKeyForRead, readKeysOnly, objectStoreNames[1]);
+        indexName, getKeyForRead, readKeysOnly, outputStoreName);
   }
 }
 
@@ -324,7 +396,8 @@ function testSporadicWrites(
   var completionFunc;
   function onSetupComplete(db) {
     automation.setStatus("Setup complete.");
-    completionFunc = getCompletionFunc(testName, Date.now(), onTestComplete);
+    completionFunc =
+        getCompletionFunc(db, testName, Date.now(), onTestComplete);
     runOneBatch(db);
   }
 

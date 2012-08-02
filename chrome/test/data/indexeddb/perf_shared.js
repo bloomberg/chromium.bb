@@ -160,12 +160,13 @@ function getTransaction(db, objectStoreNames, mode, opt_handler) {
 function deleteDatabase(name, opt_handler) {
   var deleteRequest = indexedDB.deleteDatabase(name);
   deleteRequest.onerror = onError;
+  deleteRequest.onblocked = onError;
   if (opt_handler) {
     deleteRequest.onsuccess = opt_handler;
   }
 }
 
-function getCompletionFunc(testName, startTime, onTestComplete) {
+function getCompletionFunc(db, testName, startTime, onTestComplete) {
   function onDeleted() {
     automation.setStatus("Deleted database.");
     onTestComplete();
@@ -175,9 +176,8 @@ function getCompletionFunc(testName, startTime, onTestComplete) {
     // Ignore the cleanup time for this test.
     automation.addResult(testName, duration);
     automation.setStatus("Deleting database.");
-    // TODO(ericu): Turn on actual deletion; for now it's way too slow.
-    // deleteDatabase(testName, onDeleted);
-    onTestComplete();
+    db.close();
+    deleteDatabase(testName, onDeleted);
   }
 }
 
@@ -332,8 +332,12 @@ function getValuesFromCursor(
     if (cursor) {
       assert(numReadsLeft);
       --numReadsLeft;
-      if (oos) // Put in random order for maximum difficulty.
-        oos.put(cursor.value, Math.random());
+      if (oos)
+        // Put in random order for maximum difficulty.  We add in numKeys just
+        // in case we're writing back to the same store; this way we won't
+        // affect the number of keys available to the cursor, since we're always
+        // outside its range.
+        oos.put(cursor.value, numKeys + Math.random());
       values.push({key: cursor.key, value: cursor.value});
       cursor.continue();
     } else {
