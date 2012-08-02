@@ -1048,19 +1048,12 @@
    fun:_ZN7WebCoreL19nameToPseudoTypeMapEv
 }
 {
-   bug_79322_a (Intentional)
+   bug_79322 (Intentional)
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base42StatisticsRecorderTest_NotInitialized_Test8TestBodyEv
+   ...
+   fun:_ZN4base*StatisticsRecorderTest_*_Test8TestBodyEv
 }
-{
-   bug_79322_b (Intentional)
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base18StatisticsRecorder31RegisterOrDeleteDuplicateRangesEPKNS_12BucketRangesE
-   fun:_ZN4base48StatisticsRecorderTest_RegisterBucketRanges_Test8TestBodyEv
-}
-
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -5853,6 +5846,14 @@
    fun:_Znw*
    fun:_ZN15WebsiteSettings11OnUIClosingEv
    fun:_ZN36WebsiteSettingsTest_ShowInfoBar_Test8TestBodyEv
+}
+{
+   bug_140196
+   Memcheck:Uninitialized
+   fun:_ZNK12SkDescriptor6equalsERKS_
+   fun:_ZN12SkGlyphCache10VisitCacheEPK12SkDescriptorPFbPKS_PvES5_
+   ...
+   fun:_ZNK7SkPaint14descriptorProcEPK8SkMatrixPFvPK12SkDescriptorPvES6_b
 }
 
 #-----------------------------------------------------------------------
