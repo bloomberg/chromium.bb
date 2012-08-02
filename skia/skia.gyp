@@ -254,6 +254,8 @@
         '../third_party/skia/src/core/SkMallocPixelRef.cpp',
         '../third_party/skia/src/core/SkMask.cpp',
         '../third_party/skia/src/core/SkMaskFilter.cpp',
+        '../third_party/skia/src/core/SkMaskGamma.cpp',
+        '../third_party/skia/src/core/SkMaskGamma.h',
         '../third_party/skia/src/core/SkMath.cpp',
         '../third_party/skia/src/core/SkMatrix.cpp',
         '../third_party/skia/src/core/SkMetaData.cpp',
@@ -548,8 +550,6 @@
         '../third_party/skia/src/ports/SkFontHost_android.cpp',
         #'../third_party/skia/src/ports/SkFontHost_ascender.cpp',
         '../third_party/skia/src/ports/SkFontHost_tables.cpp',
-        '../third_party/skia/src/ports/SkFontHost_gamma.cpp',
-        '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
         #'../third_party/skia/src/ports/SkFontHost_linux.cpp',
         '../third_party/skia/src/ports/SkFontHost_mac.cpp',
         #'../third_party/skia/src/ports/SkFontHost_none.cpp',
@@ -571,7 +571,6 @@
         #'../third_party/skia/src/ports/SkXMLParser_expat.cpp',
         #'../third_party/skia/src/ports/SkXMLParser_tinyxml.cpp',
         #'../third_party/skia/src/ports/SkXMLPullParser_expat.cpp',
-        '../third_party/skia/src/ports/sk_predefined_gamma.h',
 
         '../third_party/skia/src/sfnt/SkOTUtils.cpp',
         '../third_party/skia/src/sfnt/SkOTUtils.h',
@@ -822,6 +821,8 @@
       ],
       'msvs_disabled_warnings': [4244, 4267, 4341, 4345, 4390, 4554, 4800],
       'defines': [
+        'SK_GAMMA_SRGB',
+        #'SK_GAMMA_APPLY_TO_A8',
         'SK_BUILD_NO_IMAGE_ENCODE',
         'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
         'GR_STATIC_RECT_VB=1',
@@ -870,8 +871,6 @@
         [ 'OS != "android"', {
           'sources/': [
             ['exclude', '_android\\.(cc|cpp)$'],
-            # Below files are only used by Android
-            ['exclude', '../third_party/skia/src/ports/SkFontHost_gamma\\.cpp$'],
           ],
           'defines': [
             'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
@@ -925,8 +924,6 @@
           'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
           'sources!': [
             '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
-            '../third_party/skia/src/ports/SkFontHost_TryeType_Tables.cpp',
-            '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
           ],
         }],
         [ 'use_aura == 1 and use_canvas_skia == 1', {
@@ -984,7 +981,6 @@
               'sources!': [
                 'ext/vector_platform_device_skia.cc',
                 '../third_party/skia/src/pdf/SkPDFFont.cpp',
-                '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
               ],
               'export_dependent_settings': [
                 '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
@@ -1094,6 +1090,10 @@
       'direct_dependent_settings': {
         'include_dirs': [
           'config',
+
+          #temporary until we can hide SkFontHost
+          '../third_party/skia/src/core',
+
           '../third_party/skia/include/config',
           '../third_party/skia/include/core',
           '../third_party/skia/include/effects',
@@ -1258,6 +1258,9 @@
           'sources': [
             '../third_party/skia/src/opts/memset16_neon.S',
             '../third_party/skia/src/opts/memset32_neon.S',
+            '../third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp',
+            '../third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h',
+            '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
         ],
         }],
         [ 'target_arch == "arm" and armv7 != 1', {
