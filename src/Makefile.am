@@ -102,7 +102,6 @@ drm_backend_la_SOURCES =			\
 	tty.c					\
 	evdev.c					\
 	evdev.h					\
-	evdev-private.h				\
 	evdev-touchpad.c			\
 	launcher-util.c				\
 	launcher-util.h				\

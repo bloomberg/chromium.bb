@@ -29,7 +29,6 @@
 
 #include "compositor.h"
 #include "evdev.h"
-#include "evdev-private.h"
 #include "launcher-util.h"
 
 static void

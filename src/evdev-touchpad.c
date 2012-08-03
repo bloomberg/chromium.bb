@@ -26,7 +26,7 @@
 #include <linux/input.h>
 
 #include "filter.h"
-#include "evdev-private.h"
+#include "evdev.h"
 
 /* Default values */
 #define DEFAULT_CONSTANT_ACCEL_NUMERATOR 50
