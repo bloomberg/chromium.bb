@@ -41,35 +41,36 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
   TestRequestCallback() : complete_(false) {
   }
 
-  virtual void OnUploadProgress(uint64 position, uint64 size) {
+  virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) {
+      GURL* new_first_party_for_cookies) OVERRIDE {
     *has_new_first_party_for_cookies = false;
     return true;
   }
 
-  virtual void OnReceivedResponse(const ResourceResponseInfo& info) {
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE {
   }
 
-  virtual void OnDownloadedData(int len) {
+  virtual void OnDownloadedData(int len) OVERRIDE {
   }
 
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length) {
+                              int encoded_data_length) OVERRIDE {
     EXPECT_FALSE(complete_);
     data_.append(data, data_length);
     total_encoded_data_length_ += encoded_data_length;
   }
 
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::TimeTicks& completion_time) {
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE {
     EXPECT_FALSE(complete_);
     complete_ = true;
   }
@@ -153,10 +154,10 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
 
  protected:
   // testing::Test
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     dispatcher_.reset(new ResourceDispatcher(this));
   }
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     dispatcher_.reset();
   }
 
@@ -236,7 +237,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
       : defer_loading_(false) {
   }
 
-  virtual bool Send(IPC::Message* msg) {
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
     delete msg;
     return true;
   }
@@ -247,12 +248,8 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     ResourceResponseHead response_head;
     response_head.status.set_status(net::URLRequestStatus::SUCCESS);
 
-    IPC::Message* response_message =
-        new ResourceMsg_ReceivedResponse(0, 0, response_head);
-
-    dispatcher_->OnMessageReceived(*response_message);
-
-    delete response_message;
+    dispatcher_->OnMessageReceived(
+        ResourceMsg_ReceivedResponse(0, 0, response_head));
 
     // Duplicate the shared memory handle so both the test and the callee can
     // close their copy.
@@ -260,57 +257,54 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     EXPECT_TRUE(shared_handle_.ShareToProcess(base::GetCurrentProcessHandle(),
                                               &duplicated_handle));
 
-    response_message =
-        new ResourceMsg_DataReceived(0, 0, duplicated_handle, 100, 100);
-
-    dispatcher_->OnMessageReceived(*response_message);
-
-    delete response_message;
+    dispatcher_->OnMessageReceived(
+        ResourceMsg_DataReceived(0, 0, duplicated_handle, 100, 100));
 
     set_defer_loading(false);
   }
 
   // ResourceLoaderBridge::Peer methods.
-  virtual void OnUploadProgress(uint64 position, uint64 size) {
+  virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) {
+      GURL* new_first_party_for_cookies) OVERRIDE {
     *has_new_first_party_for_cookies = false;
     return true;
   }
 
-  virtual void OnReceivedResponse(const ResourceResponseInfo& info) {
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE {
     EXPECT_EQ(defer_loading_, false);
     set_defer_loading(true);
   }
 
-  virtual void OnDownloadedData(int len) {
+  virtual void OnDownloadedData(int len) OVERRIDE {
   }
 
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length) {
+                              int encoded_data_length) OVERRIDE {
     EXPECT_EQ(defer_loading_, false);
     set_defer_loading(false);
   }
 
-  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
-                                  const std::string& security_info,
-                                  const base::TimeTicks& completion_time) {
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE {
   }
 
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ResourceDispatcherTest::SetUp();
     shared_handle_.Delete(kShmemSegmentName);
     EXPECT_TRUE(shared_handle_.CreateNamed(kShmemSegmentName, false, 100));
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     shared_handle_.Close();
     EXPECT_TRUE(shared_handle_.Delete(kShmemSegmentName));
     ResourceDispatcherTest::TearDown();
@@ -341,6 +335,98 @@ TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
   // Dispatch deferred messages.
   message_loop.RunAllPending();
   delete bridge;
+}
+
+class TimeConversionTest : public ResourceDispatcherTest,
+                           public ResourceLoaderBridge::Peer {
+ public:
+  virtual bool Send(IPC::Message* msg) OVERRIDE {
+    delete msg;
+    return true;
+  }
+
+  void PerformTest(const ResourceResponseHead& response_head) {
+    scoped_ptr<ResourceLoaderBridge> bridge(CreateBridge());
+    bridge->Start(this);
+
+    dispatcher_->OnMessageReceived(
+        ResourceMsg_ReceivedResponse(0, 0, response_head));
+  }
+
+  // ResourceLoaderBridge::Peer methods.
+  virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
+  }
+
+  virtual bool OnReceivedRedirect(
+      const GURL& new_url,
+      const ResourceResponseInfo& info,
+      bool* has_new_first_party_for_cookies,
+      GURL* new_first_party_for_cookies) {
+    return true;
+  }
+
+  virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE {
+    response_info_ = info;
+  }
+
+  virtual void OnDownloadedData(int len) OVERRIDE {
+  }
+
+  virtual void OnReceivedData(const char* data,
+                              int data_length,
+                              int encoded_data_length) OVERRIDE {
+  }
+
+  virtual void OnCompletedRequest(
+      const net::URLRequestStatus& status,
+      const std::string& security_info,
+      const base::TimeTicks& completion_time) OVERRIDE {
+  }
+
+  const ResourceResponseInfo& response_info() const { return response_info_; }
+
+ private:
+  ResourceResponseInfo response_info_;
+};
+
+// TODO(simonjam): Enable this when 10829031 lands.
+TEST_F(TimeConversionTest, DISABLED_ProperlyInitialized) {
+  ResourceResponseHead response_head;
+  response_head.status.set_status(net::URLRequestStatus::SUCCESS);
+  response_head.request_start = base::TimeTicks::FromInternalValue(5);
+  response_head.response_start = base::TimeTicks::FromInternalValue(15);
+  response_head.load_timing.base_time = base::Time::Now();
+  response_head.load_timing.base_ticks = base::TimeTicks::FromInternalValue(10);
+  response_head.load_timing.dns_start = -1;
+  response_head.load_timing.connect_start = 3;
+
+  PerformTest(response_head);
+
+  EXPECT_LT(0, response_info().load_timing.base_ticks.ToInternalValue());
+  EXPECT_EQ(-1, response_info().load_timing.dns_start);
+  EXPECT_LE(0, response_info().load_timing.connect_start);
+}
+
+TEST_F(TimeConversionTest, PartiallyInitialized) {
+  ResourceResponseHead response_head;
+  response_head.status.set_status(net::URLRequestStatus::SUCCESS);
+  response_head.request_start = base::TimeTicks::FromInternalValue(5);
+  response_head.response_start = base::TimeTicks::FromInternalValue(15);
+
+  PerformTest(response_head);
+
+  EXPECT_EQ(0, response_info().load_timing.base_ticks.ToInternalValue());
+  EXPECT_EQ(-1, response_info().load_timing.dns_start);
+}
+
+TEST_F(TimeConversionTest, NotInitialized) {
+  ResourceResponseHead response_head;
+  response_head.status.set_status(net::URLRequestStatus::SUCCESS);
+
+  PerformTest(response_head);
+
+  EXPECT_EQ(0, response_info().load_timing.base_ticks.ToInternalValue());
+  EXPECT_EQ(-1, response_info().load_timing.dns_start);
 }
 
 }  // namespace content

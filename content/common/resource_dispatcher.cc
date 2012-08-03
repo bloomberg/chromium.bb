@@ -588,7 +588,8 @@ void ResourceDispatcher::ToResourceResponseInfo(
   if (request_info.request_start.is_null() ||
       request_info.response_start.is_null() ||
       browser_info.request_start.is_null() ||
-      browser_info.response_start.is_null()) {
+      browser_info.response_start.is_null() ||
+      browser_info.load_timing.base_ticks.is_null()) {
     return;
   }
   InterProcessTimeTicksConverter converter(
