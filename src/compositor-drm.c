@@ -65,12 +65,6 @@ struct drm_configured_output {
 	struct wl_list link;
 };
 
-enum {
-	WESTON_PLANE_DRM_CURSOR =	0x100,
-	WESTON_PLANE_DRM_PLANE =	0x101,
-	WESTON_PLANE_DRM_FB =		0x102
-};
-
 struct drm_compositor {
 	struct weston_compositor base;
 
@@ -129,7 +123,9 @@ struct drm_output {
 
 	struct gbm_surface *surface;
 	struct gbm_bo *cursor_bo[2];
-	int current_cursor, cursor_free, cursor_x, cursor_y;
+	struct weston_plane cursor_plane;
+	struct weston_plane fb_plane;
+	int current_cursor, cursor_free;
 	EGLSurface egl_surface;
 	struct drm_fb *current, *next;
 	struct backlight *backlight;
@@ -146,6 +142,7 @@ struct drm_sprite {
 	uint32_t pending_fb_id;
 	struct weston_surface *surface;
 	struct weston_surface *pending_surface;
+	struct weston_plane plane;
 
 	struct drm_output *output;
 
@@ -252,7 +249,7 @@ fb_handle_buffer_destroy(struct wl_listener *listener, void *data)
 		weston_output_schedule_repaint(&fb->output->base);
 }
 
-static int
+static struct weston_plane *
 drm_output_prepare_scanout_surface(struct weston_output *_output,
 				   struct weston_surface *es)
 {
@@ -267,7 +264,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	    es->geometry.height != output->base.current->height ||
 	    es->transform.enabled ||
 	    es->buffer == NULL)
-		return -1;
+		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
 			   es->buffer, GBM_BO_USE_SCANOUT);
@@ -277,13 +274,13 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	 * For now, scanout only if format is XRGB8888. */
 	if (gbm_bo_get_format(bo) != GBM_FORMAT_XRGB8888) {
 		gbm_bo_destroy(bo);
-		return -1;
+		return NULL;
 	}
 
 	output->next = drm_fb_get_from_bo(bo, output);
 	if (!output->next) {
 		gbm_bo_destroy(bo);
-		return -1;
+		return NULL;
 	}
 
 	output->next->is_client_buffer = 1;
@@ -294,9 +291,7 @@ drm_output_prepare_scanout_surface(struct weston_output *_output,
 	wl_signal_add(&output->next->buffer->resource.destroy_signal,
 		      &output->next->buffer_destroy_listener);
 
-	es->plane = WESTON_PLANE_DRM_FB;
-
-	return 0;
+	return &output->fb_plane;
 }
 
 static void
@@ -315,7 +310,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	}
 
 	wl_list_for_each_reverse(surface, &compositor->base.surface_list, link)
-		if (surface->plane == WESTON_PLANE_PRIMARY)
+		if (surface->plane == &compositor->base.primary_plane)
 			weston_surface_draw(surface, &output->base, damage);
 
 	wl_signal_emit(&output->base.frame_signal, output);
@@ -554,7 +549,7 @@ drm_disable_unused_sprites(struct weston_output *output_base)
  * if the sprite ends up binding to a different surface than in the
  * previous frame.
  */
-static int
+static struct weston_plane *
 drm_output_prepare_overlay_surface(struct weston_output *output_base,
 				   struct weston_surface *es)
 {
@@ -573,16 +568,16 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	wl_fixed_t sx1, sy1, sx2, sy2;
 
 	if (c->sprites_are_broken)
-		return -1;
+		return NULL;
 
 	if (es->output_mask != (1u << output_base->id))
-		return -1;
+		return NULL;
 
 	if (es->buffer == NULL)
-		return -1;
+		return NULL;
 
 	if (!drm_surface_transform_supported(es))
-		return -1;
+		return NULL;
 
 	wl_list_for_each(s, &c->sprite_list, link) {
 		if (!drm_sprite_crtc_supported(output_base, s->possible_crtcs))
@@ -596,12 +591,12 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 
 	/* No sprites available */
 	if (!found)
-		return -1;
+		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
 			   es->buffer, GBM_BO_USE_SCANOUT);
 	if (!bo)
-		return -1;
+		return NULL;
 
 	format = gbm_bo_get_format(bo);
 	handle = gbm_bo_get_handle(bo).s32;
@@ -610,10 +605,10 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	gbm_bo_destroy(bo);
 
 	if (!drm_surface_format_supported(s, format))
-		return -1;
+		return NULL;
 
 	if (!handle)
-		return -1;
+		return NULL;
 
 	handles[0] = handle;
 	pitches[0] = stride;
@@ -625,12 +620,16 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (ret) {
 		weston_log("addfb2 failed: %d\n", ret);
 		c->sprites_are_broken = 1;
-		return -1;
+		return NULL;
 	}
 
 	s->pending_fb_id = fb_id;
 	s->pending_surface = es;
 	es->buffer->busy_count++;
+
+	box = pixman_region32_extents(&es->transform.boundingbox);
+	s->plane.x = box->x1;
+	s->plane.y = box->y1;
 
 	/*
 	 * Calculate the source & dest rects properly based on actual
@@ -677,15 +676,13 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	s->src_h = (sy2 - sy1) << 8;
 	pixman_region32_fini(&src_rect);
 
-	es->plane = WESTON_PLANE_DRM_PLANE;
-
 	wl_signal_add(&es->buffer->resource.destroy_signal,
 		      &s->pending_destroy_listener);
 
-	return 0;
+	return &s->plane;
 }
 
-static void
+static struct weston_plane *
 drm_output_set_cursor(struct weston_output *output_base,
 		      struct weston_surface *es)
 {
@@ -699,13 +696,14 @@ drm_output_set_cursor(struct weston_output *output_base,
 	int i, x, y;
 
 	if (!output->cursor_free)
-		return;
+		return NULL;
 	if (es->output_mask != (1u << output_base->id))
-		return;
+		return NULL;
 	if (es->buffer == NULL || !wl_buffer_is_shm(es->buffer) ||
 	    es->geometry.width > 64 || es->geometry.height > 64)
-		return;
+		return NULL;
 
+	output->cursor_free = 0;
 	if (es->buffer && pixman_region32_not_empty(&es->damage)) {
 		output->current_cursor ^= 1;
 		bo = output->cursor_bo[output->current_cursor];
@@ -717,29 +715,24 @@ drm_output_set_cursor(struct weston_output *output_base,
 			       es->geometry.width * 4);
 
 		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
-			return;
+			weston_log("failed update cursor: %n\n");
 
 		handle = gbm_bo_get_handle(bo).s32;
 		if (drmModeSetCursor(c->drm.fd,
-				     output->crtc_id, handle, 64, 64)) {
+				     output->crtc_id, handle, 64, 64))
 			weston_log("failed to set cursor: %n\n");
-			return;
-		}
 	}
 
 	x = es->geometry.x - output->base.x;
 	y = es->geometry.y - output->base.y;
-	if (output->cursor_x != x || output->cursor_y != y) {
-		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y)) {
+	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
+		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y))
 			weston_log("failed to move cursor: %m\n");
-			return;
-		}
-		output->cursor_x = x;
-		output->cursor_y = y;
+		output->cursor_plane.x = x;
+		output->cursor_plane.y = y;
 	}
 
-	es->plane = WESTON_PLANE_DRM_CURSOR;
-	output->cursor_free = 0;
+	return &output->cursor_plane;
 }
 
 static void
@@ -750,7 +743,7 @@ drm_assign_planes(struct weston_output *output)
 	struct drm_output *drm_output = (struct drm_output *) output;
 	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
-	int prev_plane;
+	struct weston_plane *primary, *next_plane;
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
@@ -767,34 +760,27 @@ drm_assign_planes(struct weston_output *output)
 	 */
 	pixman_region32_init(&overlap);
 	drm_output->cursor_free = 1;
+	primary = &c->base.primary_plane;
 	wl_list_for_each_safe(es, next, &c->base.surface_list, link) {
 		pixman_region32_init(&surface_overlap);
 		pixman_region32_intersect(&surface_overlap, &overlap,
 					  &es->transform.boundingbox);
 
-		prev_plane = es->plane;
-		es->plane = WESTON_PLANE_PRIMARY;
+		next_plane = NULL;
 		if (pixman_region32_not_empty(&surface_overlap))
-			goto bail;
-
-		if (es->plane == WESTON_PLANE_PRIMARY)
-			drm_output_set_cursor(output, es);
-		if (es->plane == WESTON_PLANE_PRIMARY)
-			drm_output_prepare_scanout_surface(output, es);
-		if (es->plane == WESTON_PLANE_PRIMARY)
-			drm_output_prepare_overlay_surface(output, es);
-
-	bail:
-		if (es->plane == WESTON_PLANE_PRIMARY)
+			next_plane = primary;
+		if (next_plane == NULL)
+			next_plane = drm_output_set_cursor(output, es);
+		if (next_plane == NULL)
+			next_plane = drm_output_prepare_scanout_surface(output, es);
+		if (next_plane == NULL)
+			next_plane = drm_output_prepare_overlay_surface(output, es);
+		if (next_plane == NULL)
+			next_plane = primary;
+		weston_surface_move_to_plane(es, next_plane);
+		if (next_plane == primary)
 			pixman_region32_union(&overlap, &overlap,
 					      &es->transform.boundingbox);
-
-		if (prev_plane != WESTON_PLANE_PRIMARY &&
-		    es->plane == WESTON_PLANE_PRIMARY)
-			weston_surface_damage(es);
-		else if (prev_plane == WESTON_PLANE_PRIMARY &&
-			 es->plane != WESTON_PLANE_PRIMARY)
-			weston_surface_damage_below(es);
 
 		pixman_region32_fini(&surface_overlap);
 	}
@@ -831,6 +817,9 @@ drm_output_destroy(struct weston_output *output_base)
 
 	eglDestroySurface(c->base.egl_display, output->egl_surface);
 	gbm_surface_destroy(output->surface);
+
+	weston_plane_release(&output->fb_plane);
+	weston_plane_release(&output->cursor_plane);
 
 	weston_output_destroy(&output->base);
 	wl_list_remove(&output->base.link);
@@ -1491,6 +1480,9 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.set_dpms = drm_set_dpms;
 	output->base.switch_mode = drm_output_switch_mode;
 
+	weston_plane_init(&output->cursor_plane, 0, 0);
+	weston_plane_init(&output->fb_plane, 0, 0);
+
 	weston_log("Output %s, (connector %d, crtc %d)\n",
 		   output->name, output->connector_id, output->crtc_id);
 	wl_list_for_each(m, &output->base.mode_list, link)
@@ -1568,6 +1560,7 @@ create_sprites(struct drm_compositor *ec)
 		memcpy(sprite->formats, plane->formats,
 		       plane->count_formats * sizeof(plane->formats[0]));
 		drmModeFreePlane(plane);
+		weston_plane_init(&sprite->plane, 0, 0);
 
 		wl_list_insert(&ec->sprite_list, &sprite->link);
 	}
@@ -1591,6 +1584,7 @@ destroy_sprites(struct drm_compositor *compositor)
 				output->crtc_id, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0);
 		drmModeRmFB(compositor->drm.fd, sprite->fb_id);
+		weston_plane_release(&sprite->plane);
 		free(sprite);
 	}
 }

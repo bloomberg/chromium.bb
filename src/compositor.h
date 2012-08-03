@@ -258,6 +258,11 @@ struct weston_layer {
 	struct wl_list link;
 };
 
+struct weston_plane {
+	pixman_region32_t damage;
+	int32_t x, y;
+};
+
 struct weston_compositor {
 	struct wl_shm *shm;
 	struct wl_signal destroy_signal;
@@ -312,7 +317,7 @@ struct weston_compositor {
 
 	/* Repaint state. */
 	struct wl_array vertices, indices;
-	pixman_region32_t damage;
+	struct weston_plane primary_plane;
 
 	uint32_t focus;
 
@@ -379,10 +384,6 @@ struct weston_region {
  * transformation in global coordinates, add it to the tail of the list.
  */
 
-enum {
-	WESTON_PLANE_PRIMARY
-};
-
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
@@ -400,7 +401,7 @@ struct weston_surface {
 	GLfloat opaque_rect[4];
 	GLfloat alpha;
 	int blend;
-	int plane;
+	struct weston_plane *plane;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.
@@ -536,6 +537,11 @@ void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below);
 
 void
+weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y);
+void
+weston_plane_release(struct weston_plane *plane);
+
+void
 weston_output_finish_frame(struct weston_output *output, uint32_t msecs);
 void
 weston_output_schedule_repaint(struct weston_output *output);
@@ -640,6 +646,9 @@ weston_surface_damage(struct weston_surface *surface);
 void
 weston_surface_damage_below(struct weston_surface *surface);
 
+void
+weston_surface_move_to_plane(struct weston_surface *surface,
+			     struct weston_plane *plane);
 void
 weston_surface_unmap(struct weston_surface *surface);
 

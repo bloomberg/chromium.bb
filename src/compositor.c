@@ -250,6 +250,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->buffer = NULL;
 	surface->output = NULL;
+	surface->plane = &compositor->primary_plane;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
@@ -309,19 +310,27 @@ weston_surface_to_global_float(struct weston_surface *surface,
 }
 
 WL_EXPORT void
+weston_surface_move_to_plane(struct weston_surface *surface,
+			     struct weston_plane *plane)
+{
+	if (surface->plane == plane)
+		return;
+
+	weston_surface_damage_below(surface);
+	surface->plane = plane;
+	weston_surface_damage(surface);
+}
+
+WL_EXPORT void
 weston_surface_damage_below(struct weston_surface *surface)
 {
-	struct weston_compositor *compositor = surface->compositor;
 	pixman_region32_t damage;
-
-	if (surface->plane != WESTON_PLANE_PRIMARY)
-		return;
 
 	pixman_region32_init(&damage);
 	pixman_region32_subtract(&damage, &surface->transform.boundingbox,
 				 &surface->clip);
-	pixman_region32_union(&compositor->damage,
-			      &compositor->damage, &damage);
+	pixman_region32_union(&surface->plane->damage,
+			      &surface->plane->damage, &damage);
 	pixman_region32_fini(&damage);
 }
 
@@ -995,8 +1004,9 @@ weston_output_damage(struct weston_output *output)
 {
 	struct weston_compositor *compositor = output->compositor;
 
-	pixman_region32_union(&compositor->damage,
-			      &compositor->damage, &output->region);
+	pixman_region32_union(&compositor->primary_plane.damage,
+			      &compositor->primary_plane.damage,
+			      &output->region);
 	weston_output_schedule_repaint(output);
 }
 
@@ -1073,7 +1083,6 @@ update_shm_texture(struct weston_surface *surface)
 
 static void
 surface_accumulate_damage(struct weston_surface *surface,
-			  pixman_region32_t *new_damage,
 			  pixman_region32_t *opaque)
 {
 	if (surface->buffer && wl_buffer_is_shm(surface->buffer))
@@ -1087,14 +1096,18 @@ surface_accumulate_damage(struct weston_surface *surface,
 				     extents->x2 - extents->x1,
 				     extents->y2 - extents->y1,
 				     &surface->damage);
+		pixman_region32_translate(&surface->damage,
+					  -surface->plane->x,
+					  -surface->plane->y);
 	} else {
 		pixman_region32_translate(&surface->damage,
-					  surface->geometry.x,
-					  surface->geometry.y);
+					  surface->geometry.x - surface->plane->x,
+					  surface->geometry.y - surface->plane->y);
 	}
 
 	pixman_region32_subtract(&surface->damage, &surface->damage, opaque);
-	pixman_region32_union(new_damage, new_damage, &surface->damage);
+	pixman_region32_union(&surface->plane->damage,
+			      &surface->plane->damage, &surface->damage);
 	empty_region(&surface->damage);
 	pixman_region32_copy(&surface->clip, opaque);
 	pixman_region32_union(opaque, opaque, &surface->transform.opaque);
@@ -1109,7 +1122,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	struct wl_list frame_callback_list;
-	pixman_region32_t opaque, new_damage, output_damage;
+	pixman_region32_t opaque, output_damage;
 	int32_t width, height;
 
 	weston_compositor_update_drag_surfaces(ec);
@@ -1144,24 +1157,22 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 		 */
 		output->assign_planes(output);
 
-	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
 
 	wl_list_for_each(es, &ec->surface_list, link)
-		surface_accumulate_damage(es, &new_damage, &opaque);
-
-	pixman_region32_union(&ec->damage, &ec->damage, &new_damage);
+		surface_accumulate_damage(es, &opaque);
 
 	pixman_region32_init(&output_damage);
-	pixman_region32_union(&output_damage,
-			      &ec->damage, &output->previous_damage);
-	pixman_region32_copy(&output->previous_damage, &ec->damage);
+	pixman_region32_union(&output_damage, &ec->primary_plane.damage,
+			      &output->previous_damage);
+	pixman_region32_copy(&output->previous_damage,
+			     &ec->primary_plane.damage);
 	pixman_region32_intersect(&output_damage,
 				  &output_damage, &output->region);
-	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
+	pixman_region32_subtract(&ec->primary_plane.damage,
+				 &ec->primary_plane.damage, &output->region);
 
 	pixman_region32_fini(&opaque);
-	pixman_region32_fini(&new_damage);
 
 	if (output->dirty)
 		weston_output_update_matrix(output);
@@ -1657,6 +1668,20 @@ idle_handler(void *data)
 	weston_compositor_fade(compositor, 1.0);
 
 	return 1;
+}
+
+WL_EXPORT void
+weston_plane_init(struct weston_plane *plane, int32_t x, int32_t y)
+{
+	pixman_region32_init(&plane->damage);
+	plane->x = x;
+	plane->y = y;
+}
+
+WL_EXPORT void
+weston_plane_release(struct weston_plane *plane)
+{
+	pixman_region32_fini(&plane->damage);
 }
 
 static  void
@@ -3138,6 +3163,8 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->axis_binding_list);
 	wl_list_init(&ec->fade.animation.link);
 
+	weston_plane_init(&ec->primary_plane, 0, 0);
+
 	weston_compositor_xkb_init(ec, &xkb_names);
 
 	ec->ping_handler = NULL;
@@ -3256,12 +3283,12 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	weston_binding_list_destroy_all(&ec->button_binding_list);
 	weston_binding_list_destroy_all(&ec->axis_binding_list);
 
+	weston_plane_release(&ec->primary_plane);
+
 	wl_array_release(&ec->vertices);
 	wl_array_release(&ec->indices);
 
 	wl_event_loop_destroy(ec->input_loop);
-
-	pixman_region32_fini(&ec->damage);
 }
 
 static int on_term_signal(int signal_number, void *data)
