@@ -68,6 +68,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUICryptohomeHost,
   chrome::kChromeUIDiagnosticsHost,
   chrome::kChromeUIDiscardsHost,
+  chrome::kChromeUIDriveInternalsHost,
   chrome::kChromeUIImageBurnerHost,
   chrome::kChromeUIKeyboardOverlayHost,
   chrome::kChromeUILoginHost,
