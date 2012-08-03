@@ -19,12 +19,24 @@ namespace chromeos {
 
 namespace {
 
-std::string GetDeviceUuid(const std::string& source_path) {
-  // Get the media device uuid if exists.
+bool GetDeviceInfo(const std::string& source_path, std::string* device_id,
+                   string16* device_label) {
+  // Get the media device uuid and label if exists.
   const disks::DiskMountManager::DiskMap& disks =
       disks::DiskMountManager::GetInstance()->disks();
   disks::DiskMountManager::DiskMap::const_iterator it = disks.find(source_path);
-  return it == disks.end() ? std::string() : it->second->fs_uuid();
+  if (it == disks.end())
+    return false;
+
+  const disks::DiskMountManager::Disk& disk = *(it->second);
+  *device_id = disk.fs_uuid();
+
+  // TODO(kmadhusu): If device label is empty, extract vendor and model details
+  // and use them as device_label.
+  *device_label = UTF8ToUTF16(disk.device_label().empty() ?
+                              FilePath(source_path).BaseName().value() :
+                              disk.device_label());
+  return true;
 }
 
 }  // namespace
@@ -114,19 +126,22 @@ void MediaDeviceNotifications::AddMountedPathOnUIThread(
     return;
   }
 
-  // Get the media device uuid if exists.
-  std::string device_id_str = GetDeviceUuid(mount_info.source_path);
+  // Get the media device uuid and label if exists.
+  std::string device_id;
+  string16 device_label;
+  if (!GetDeviceInfo(mount_info.source_path, &device_id, &device_label))
+    return;
 
   // Keep track of device uuid, to see how often we receive empty uuid values.
   UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_uuid_available",
-                        !device_id_str.empty());
-  if (device_id_str.empty())
+                        !device_id.empty());
+  if (device_id.empty())
     return;
 
-  mount_map_.insert(std::make_pair(mount_info.mount_path, device_id_str));
+  mount_map_.insert(std::make_pair(mount_info.mount_path, device_id));
   base::SystemMonitor::Get()->ProcessMediaDeviceAttached(
-      device_id_str,
-      UTF8ToUTF16(FilePath(mount_info.source_path).BaseName().value()),
+      device_id,
+      device_label,
       base::SystemMonitor::TYPE_PATH,
       mount_info.mount_path);
 }
