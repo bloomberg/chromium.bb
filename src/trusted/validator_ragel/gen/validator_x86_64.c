@@ -8264,11 +8264,14 @@ st74:
 case 74:
 	if ( (*( current_position)) == 15u )
 		goto st75;
-	if ( (*( current_position)) > 79u ) {
-		if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+	if ( (*( current_position)) < 112u ) {
+		if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
+			goto tr181;
+	} else if ( (*( current_position)) > 127u ) {
+		if ( 224u <= (*( current_position)) && (*( current_position)) <= 227u )
 			goto st77;
-	} else if ( (*( current_position)) >= 64u )
-		goto tr181;
+	} else
+		goto st77;
 	goto tr39;
 st75:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8288,7 +8291,10 @@ st76:
 case 76:
 	if ( (*( current_position)) == 15u )
 		goto st75;
-	if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
+	if ( (*( current_position)) > 127u ) {
+		if ( 224u <= (*( current_position)) && (*( current_position)) <= 227u )
+			goto st77;
+	} else if ( (*( current_position)) >= 112u )
 		goto st77;
 	goto tr39;
 tr1380:

@@ -389,8 +389,8 @@ ins oz Yz, 0x6d, rep nacl-forbidden
 ######## INT ###################################################################
 int =Ib, 0xcd, nacl-forbidden
 ######## JCXZ/JECXZ/JRCXZ ######################################################
-jecxz Jb, 0xe3, ia32 nacl-forbidden
-jrcxz Jb, 0xe3, amd64
+jecxz Jb, 0xe3, ia32 branch_hint nacl-forbidden
+jrcxz Jb, 0xe3, amd64 branch_hint
 ######## Jcc ###################################################################
 ja Jb, 0x77, branch_hint
 ja Jw, data16 0x0f 0x87, branch_hint nacl-forbidden
@@ -495,9 +495,9 @@ llwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /0, CPUFeature_LWP
 ######## LODS/LODSB/LODSW/LODSD/LODSQ ##########################################
 lods X a, 0xac, rep nacl-amd64-forbidden
 ######## LOOP/LOOPE/LOOPNE/LOOPNZ/LOOPZ ########################################
-loop Jb, 0xe2, nacl-ia32-forbidden
-loope Jb, 0xe1, nacl-ia32-forbidden
-loopne Jb, 0xe0, nacl-ia32-forbidden
+loop Jb, 0xe2, branch_hint nacl-ia32-forbidden
+loope Jb, 0xe1, branch_hint nacl-ia32-forbidden
+loopne Jb, 0xe0, branch_hint nacl-ia32-forbidden
 ######## LWPINS ################################################################
 lwpins Id Ed By, 0x8f RXB.0A W.src1.0.00 0x12 /0, CPUFeature_LWP
 ######## LWPVAL ################################################################
