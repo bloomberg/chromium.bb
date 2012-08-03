@@ -126,6 +126,8 @@ class TestWebKitPlatformSupport :
 
   virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
+  virtual WebKit::WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
+      WebKit::WebRTCPeerConnectionHandlerClient* client) OVERRIDE;
 
  private:
   TestShellWebMimeRegistryImpl mime_registry_;

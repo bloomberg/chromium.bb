@@ -506,7 +506,17 @@ TestWebKitPlatformSupport::createMediaStreamCenter(
     WebKit::WebMediaStreamCenterClient* client) {
   if (shadow_platform_delegate_)
     return shadow_platform_delegate_->createMediaStreamCenter(client);
-  else
-    return webkit_glue::WebKitPlatformSupportImpl::createMediaStreamCenter(
-        client);
+
+  return webkit_glue::WebKitPlatformSupportImpl::createMediaStreamCenter(
+      client);
+}
+
+WebKit::WebRTCPeerConnectionHandler*
+TestWebKitPlatformSupport::createRTCPeerConnectionHandler(
+    WebKit::WebRTCPeerConnectionHandlerClient* client) {
+  if (shadow_platform_delegate_)
+    return shadow_platform_delegate_->createRTCPeerConnectionHandler(client);
+
+  return webkit_glue::WebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
+      client);
 }
