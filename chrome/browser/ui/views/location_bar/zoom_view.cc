@@ -14,8 +14,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
-ZoomView::ZoomView(ToolbarModel* toolbar_model)
+ZoomView::ZoomView(ToolbarModel* toolbar_model,
+                   LocationBarView::Delegate* location_bar_delegate)
     : toolbar_model_(toolbar_model),
+      location_bar_delegate_(location_bar_delegate),
       zoom_icon_state_(ZoomController::NONE),
       zoom_percent_(100) {
   set_accessibility_focusable(true);
@@ -71,8 +73,10 @@ bool ZoomView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void ZoomView::OnMouseReleased(const views::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && HitTest(event.location()))
-    ZoomBubbleView::ShowBubble(this, zoom_percent_, false);
+  if (event.IsOnlyLeftMouseButton() && HitTest(event.location())) {
+    ZoomBubbleView::ShowBubble(
+        this, location_bar_delegate_->GetTabContents(), false);
+  }
 }
 
 bool ZoomView::OnKeyPressed(const views::KeyEvent& event) {
@@ -80,6 +84,7 @@ bool ZoomView::OnKeyPressed(const views::KeyEvent& event) {
       event.key_code() != ui::VKEY_RETURN)
     return false;
 
-  ZoomBubbleView::ShowBubble(this, zoom_percent_, false);
+  ZoomBubbleView::ShowBubble(
+      this, location_bar_delegate_->GetTabContents(), false);
   return true;
 }

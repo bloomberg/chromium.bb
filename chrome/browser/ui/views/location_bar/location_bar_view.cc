@@ -275,7 +275,7 @@ void LocationBarView::Init(views::View* popup_parent_view) {
     content_blocked_view->SetVisible(false);
   }
 
-  zoom_view_ = new ZoomView(model_);
+  zoom_view_ = new ZoomView(model_, delegate_);
   AddChildView(zoom_view_);
 
   if (extensions::switch_utils::IsActionBoxEnabled()) {
@@ -533,7 +533,7 @@ void LocationBarView::SetZoomIconState(
 }
 
 void LocationBarView::ShowZoomBubble(int zoom_percent) {
-  ZoomBubbleView::ShowBubble(zoom_view_, zoom_percent, true);
+  ZoomBubbleView::ShowBubble(zoom_view_, GetTabContents(), true);
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {
@@ -1304,7 +1304,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   DCHECK_NE(GetDragOperationsForView(sender, press_pt),
             ui::DragDropTypes::DRAG_NONE);
 
-  TabContents* tab_contents = delegate_->GetTabContents();
+  TabContents* tab_contents = GetTabContents();
   DCHECK(tab_contents);
   gfx::ImageSkia favicon =
       tab_contents->favicon_tab_helper()->GetFavicon().AsImageSkia();

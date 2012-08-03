@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "ui/views/controls/image_view.h"
 
@@ -18,7 +19,13 @@ class MouseEvent;
 // View for the zoom icon in the Omnibox.
 class ZoomView : public views::ImageView {
  public:
-  explicit ZoomView(ToolbarModel* toolbar_model);
+  // Constructor for ZoomView. Clicking on the ZoomView shows a ZoomBubbleView,
+  // which requires the current TabContents. Because the current TabContents
+  // changes as the user switches tabs, it cannot be provided in the
+  // constructor.  Instead, a LocationBarView::Delegate is passed here so that
+  // it can be queried for the current TabContents as needed.
+  ZoomView(ToolbarModel* toolbar_model,
+           LocationBarView::Delegate* location_bar_delegate);
   virtual ~ZoomView();
 
   void SetZoomIconState(ZoomController::ZoomIconState zoom_icon_state);
@@ -39,6 +46,9 @@ class ZoomView : public views::ImageView {
 
   // Toolbar model used to test whether location bar input is in progress.
   ToolbarModel* toolbar_model_;
+
+  // The delegate used to get the currently visible TabContents.
+  LocationBarView::Delegate* location_bar_delegate_;
 
   // The current icon state.
   ZoomController::ZoomIconState zoom_icon_state_;
