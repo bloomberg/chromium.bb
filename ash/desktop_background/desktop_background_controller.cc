@@ -5,7 +5,6 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 
 #include "ash/desktop_background/desktop_background_view.h"
-#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -19,7 +18,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
 
@@ -93,11 +91,9 @@ class DesktopBackgroundController::WallpaperOperation
 };
 
 DesktopBackgroundController::DesktopBackgroundController()
-    : locked_(false),
-      desktop_background_mode_(BACKGROUND_SOLID_COLOR),
+    : desktop_background_mode_(BACKGROUND_IMAGE),
       background_color_(SK_ColorGRAY),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  InstallComponentForAllWindows();
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
@@ -124,16 +120,27 @@ SkBitmap DesktopBackgroundController::GetCurrentWallpaperImage() {
 
 void DesktopBackgroundController::OnRootWindowAdded(
     aura::RootWindow* root_window) {
-  InstallComponent(root_window);
+  switch (desktop_background_mode_) {
+    case BACKGROUND_IMAGE:
+      if (current_wallpaper_.get()) {
+        SetDesktopBackgroundImage(root_window);
+      } else {
+        internal::CreateDesktopBackground(root_window);
+      }
+      break;
+    case BACKGROUND_SOLID_COLOR:
+      SetDesktopBackgroundSolidColorMode(background_color_);
+      break;
+  }
 }
 
 void DesktopBackgroundController::SetDefaultWallpaper(int index) {
   // We should not change background when index is invalid. For instance, at
   // login screen or stub_user login.
-  if (index == GetInvalidWallpaperIndex()) {
+  if (index == ash::GetInvalidWallpaperIndex()) {
     CreateEmptyWallpaper();
     return;
-  } else if (index == GetSolidColorIndex()) {
+  } else if (index == ash::GetSolidColorIndex()) {
     SetDesktopBackgroundSolidColorMode(kLoginWallpaperColor);
     return;
   }
@@ -158,7 +165,8 @@ void DesktopBackgroundController::SetCustomWallpaper(
     WallpaperLayout layout) {
   CancelPendingWallpaperOperation();
   current_wallpaper_.reset(new WallpaperData(layout, wallpaper));
-  SetDesktopBackgroundImageMode();
+  desktop_background_mode_ = BACKGROUND_IMAGE;
+  UpdateDesktopBackgroundImageMode();
 }
 
 void DesktopBackgroundController::CancelPendingWallpaperOperation() {
@@ -172,142 +180,65 @@ void DesktopBackgroundController::CancelPendingWallpaperOperation() {
 
 void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode(
     SkColor color) {
+  // Set a solid black background.
+  // TODO(derat): Remove this in favor of having the compositor only clear the
+  // viewport when there are regions not covered by a layer:
+  // http://crbug.com/113445
+  current_wallpaper_.reset(NULL);
   background_color_ = color;
-  if (desktop_background_mode_ != BACKGROUND_SOLID_COLOR) {
-    desktop_background_mode_ = BACKGROUND_SOLID_COLOR;
-    InstallComponentForAllWindows();
-    return;
-  }
-
+  desktop_background_mode_ = BACKGROUND_SOLID_COLOR;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
+    ui::Layer* background_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
+    background_layer->SetColor(color);
     aura::RootWindow* root_window = *iter;
-    internal::DesktopBackgroundWidgetController* component = root_window->
-        GetProperty(internal::kWindowDesktopComponent);
-    DCHECK(component);
-    DCHECK(component->layer());
-    component->layer()->SetColor(background_color_ );
+    Shell::GetContainer(
+        root_window,
+        internal::kShellWindowId_DesktopBackgroundContainer)->
+        layer()->Add(background_layer);
+    GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(
+        background_layer);
+    GetRootWindowLayoutManager(root_window)->SetBackgroundWidget(NULL);
   }
 }
 
-void DesktopBackgroundController::CreateEmptyWallpaper() {
-  current_wallpaper_.reset(NULL);
-  SetDesktopBackgroundImageMode();
+void DesktopBackgroundController::SetDesktopBackgroundImage(
+    aura::RootWindow* root_window) {
+  GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(NULL);
+  if (current_wallpaper_.get() &&
+      !current_wallpaper_->wallpaper_image.empty())
+    internal::CreateDesktopBackground(root_window);
 }
 
-void DesktopBackgroundController::MoveDesktopToLockedContainer() {
-  if (locked_)
-    return;
-  locked_ = true;
-  ReparentBackgroundWidgets(GetBackgroundContainerId(false),
-                            GetBackgroundContainerId(true));
-}
-
-void DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
-  if (!locked_)
-    return;
-  locked_ = false;
-  ReparentBackgroundWidgets(GetBackgroundContainerId(true),
-                            GetBackgroundContainerId(false));
-}
-
-void DesktopBackgroundController::SetDesktopBackgroundImageMode() {
-  if (desktop_background_mode_ != BACKGROUND_IMAGE) {
-    desktop_background_mode_ = BACKGROUND_IMAGE;
-    InstallComponentForAllWindows();
-    return;
-  }
-
+void DesktopBackgroundController::UpdateDesktopBackgroundImageMode() {
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
-      iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
-    internal::DesktopBackgroundWidgetController* component = root_window->
-        GetProperty(internal::kWindowDesktopComponent);
-    DCHECK(component);
-    DCHECK(component->widget());
-    aura::Window* window = component->widget()->GetNativeView();
-    gfx::Rect bounds = window->bounds();
-    window->SchedulePaintInRect(gfx::Rect(0, 0,
-                                          bounds.width(), bounds.height()));
+       iter != root_windows.end(); ++iter) {
+    SetDesktopBackgroundImage(*iter);
   }
+  desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
 void DesktopBackgroundController::OnWallpaperLoadCompleted(
     scoped_refptr<WallpaperOperation> wo) {
   current_wallpaper_.reset(wo->ReleaseWallpaperData());
 
-  SetDesktopBackgroundImageMode();
+  UpdateDesktopBackgroundImageMode();
 
   DCHECK(wo.get() == wallpaper_op_.get());
   wallpaper_op_ = NULL;
 }
 
-ui::Layer* DesktopBackgroundController::SetColorLayerForContainer(
-    SkColor color,
-    aura::RootWindow* root_window,
-    int container_id) {
-  ui::Layer* background_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
-  background_layer->SetColor(color);
-
-  Shell::GetContainer(root_window,container_id)->
-      layer()->Add(background_layer);
-  return background_layer;
-}
-
-void DesktopBackgroundController::InstallComponent(
-    aura::RootWindow* root_window) {
-  internal::DesktopBackgroundWidgetController* component = NULL;
-  int container_id = GetBackgroundContainerId(locked_);
-
-  switch (desktop_background_mode_) {
-    case BACKGROUND_IMAGE: {
-      views::Widget* widget = internal::CreateDesktopBackground(root_window,
-                                                                container_id);
-      component = new internal::DesktopBackgroundWidgetController(widget);
-      break;
-    }
-    case BACKGROUND_SOLID_COLOR: {
-      ui::Layer* layer = SetColorLayerForContainer(background_color_,
-                                                   root_window,
-                                                   container_id);
-      component = new internal::DesktopBackgroundWidgetController(layer);
-      break;
-    }
-    default: {
-      NOTREACHED();
-    }
-  }
-  root_window->SetProperty(internal::kWindowDesktopComponent, component);
-}
-
-void DesktopBackgroundController::InstallComponentForAllWindows() {
+void DesktopBackgroundController::CreateEmptyWallpaper() {
+  current_wallpaper_.reset(NULL);
+  desktop_background_mode_ = BACKGROUND_IMAGE;
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    InstallComponent(*iter);
+    internal::CreateDesktopBackground(*iter);
   }
-}
-
-void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
-                                                            int dst_container) {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
-    iter != root_windows.end(); ++iter) {
-    aura::RootWindow* root_window = *iter;
-    internal::DesktopBackgroundWidgetController* component = root_window->
-        GetProperty(internal::kWindowDesktopComponent);
-    DCHECK(component);
-    component->Reparent(root_window,
-                        src_container,
-                        dst_container);
-  }
-}
-
-int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
-  return locked ? internal::kShellWindowId_LockScreenBackgroundContainer :
-                  internal::kShellWindowId_DesktopBackgroundContainer;
 }
 
 }  // namespace ash

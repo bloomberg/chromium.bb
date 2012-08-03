@@ -7,8 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -145,8 +143,6 @@ ScreenLocker::ScreenLocker(const User& user)
 void ScreenLocker::Init() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   delegate_.reset(new WebUIScreenLocker(this));
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToLockedContainer();
   delegate_->LockScreen(unlock_on_input_);
 }
 
@@ -322,8 +318,6 @@ void ScreenLocker::InitClass() {
 ScreenLocker::~ScreenLocker() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   ClearErrors();
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToUnlockedContainer();
 
   screen_locker_ = NULL;
   bool state = false;

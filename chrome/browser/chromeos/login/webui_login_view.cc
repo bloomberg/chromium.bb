@@ -203,7 +203,9 @@ void WebUILoginView::LoadURL(const GURL & url) {
   webui_login_->RequestFocus();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableNewOobe)) {
+  // Only enable transparency on sign in screen, not on lock screen.
+  if (BaseLoginDisplayHost::default_host() &&
+      !command_line->HasSwitch(switches::kDisableNewOobe)) {
     // TODO(nkostylev): Use WebContentsObserver::RenderViewCreated to track
     // when RenderView is created.
     // Use a background with transparency to trigger transparency in Webkit.

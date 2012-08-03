@@ -4,7 +4,6 @@
 
 #include "ash/wm/root_window_layout_manager.h"
 
-#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
@@ -16,12 +15,25 @@ namespace internal {
 // RootWindowLayoutManager, public:
 
 RootWindowLayoutManager::RootWindowLayoutManager(aura::Window* owner)
-    : owner_(owner) {
+    : owner_(owner),
+      background_widget_(NULL) {
 }
 
 RootWindowLayoutManager::~RootWindowLayoutManager() {
 }
 
+void RootWindowLayoutManager::SetBackgroundWidget(views::Widget* widget) {
+  if (widget == background_widget_)
+    return;
+  // Close now so that the focus manager will be deleted before shutdown.
+  if (background_widget_)
+    background_widget_->CloseNow();
+  background_widget_ = widget;
+}
+
+void RootWindowLayoutManager::SetBackgroundLayer(ui::Layer* layer) {
+  background_layer_.reset(layer);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowLayoutManager, aura::LayoutManager implementation:
@@ -39,10 +51,11 @@ void RootWindowLayoutManager::OnWindowResized() {
     for (j = (*i)->children().begin(); j != (*i)->children().end(); ++j)
       (*j)->SetBounds(fullscreen_bounds);
   }
-  internal::DesktopBackgroundWidgetController* background =
-      owner_->GetProperty(internal::kWindowDesktopComponent);
-  if (background)
-    background->SetBounds(fullscreen_bounds);
+
+  if (background_widget_)
+    background_widget_->SetBounds(fullscreen_bounds);
+  if (background_layer_.get())
+    background_layer_->SetBounds(fullscreen_bounds);
 }
 
 void RootWindowLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
