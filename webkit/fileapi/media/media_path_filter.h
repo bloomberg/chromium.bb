@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/synchronization/lock.h"
 #include "webkit/fileapi/fileapi_export.h"
 
 class FilePath;
@@ -20,11 +21,15 @@ class FILEAPI_EXPORT MediaPathFilter {
  public:
   MediaPathFilter();
   ~MediaPathFilter();
-  bool Match(const FilePath& path) const;
+  bool Match(const FilePath& path);
 
  private:
   typedef std::vector<FilePath::StringType> MediaFileExtensionList;
 
+  void EnsureInitialized();
+
+  bool initialized_;
+  base::Lock initialization_lock_;
   MediaFileExtensionList media_file_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPathFilter);

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/string_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "net/base/mime_util.h"
 
 namespace fileapi {
@@ -23,10 +22,27 @@ bool IsUnsupportedExtension(const FilePath::StringType& extension) {
 
 }  // namespace
 
-MediaPathFilter::MediaPathFilter() {
-  // TODO(tzik): http://crbug.com/140401
-  // Remove this ScopedAllowIO after move this to FILE thread.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+MediaPathFilter::MediaPathFilter()
+    : initialized_(false) {
+}
+
+MediaPathFilter::~MediaPathFilter() {
+}
+
+bool MediaPathFilter::Match(const FilePath& path) {
+  EnsureInitialized();
+  return std::binary_search(media_file_extensions_.begin(),
+                            media_file_extensions_.end(),
+                            StringToLowerASCII(path.Extension()));
+}
+
+void MediaPathFilter::EnsureInitialized() {
+  if (initialized_)
+    return;
+
+  base::AutoLock lock(initialization_lock_);
+  if (initialized_)
+    return;
 
   net::GetImageExtensions(&media_file_extensions_);
   net::GetAudioExtensions(&media_file_extensions_);
@@ -42,15 +58,8 @@ MediaPathFilter::MediaPathFilter() {
        itr != media_file_extensions_.end(); ++itr)
     *itr = FilePath::kExtensionSeparator + *itr;
   std::sort(media_file_extensions_.begin(), media_file_extensions_.end());
-}
 
-MediaPathFilter::~MediaPathFilter() {
-}
-
-bool MediaPathFilter::Match(const FilePath& path) const {
-  return std::binary_search(media_file_extensions_.begin(),
-                            media_file_extensions_.end(),
-                            StringToLowerASCII(path.Extension()));
+  initialized_ = true;
 }
 
 }  // namespace fileapi
