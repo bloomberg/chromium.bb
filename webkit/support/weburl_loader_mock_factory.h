@@ -43,6 +43,11 @@ class WebURLLoaderMockFactory {
                    const WebKit::WebURLResponse& response,
                    const WebKit::WebString& filePath);
 
+  // Registers an error to be served when the specified URL is requested.
+  void RegisterErrorURL(const WebKit::WebURL& url,
+                        const WebKit::WebURLResponse& response,
+                        const WebKit::WebURLError& error);
+
   // Unregisters |url| so it will no longer be mocked.
   void UnregisterURL(const WebKit::WebURL& url);
 
@@ -89,6 +94,9 @@ class WebURLLoaderMockFactory {
   // The loaders that have not being served data yet.
   typedef std::map<WebURLLoaderMock*, WebKit::WebURLRequest> LoaderToRequestMap;
   LoaderToRequestMap pending_loaders_;
+
+  typedef std::map<WebKit::WebURL, WebKit::WebURLError> URLToErrorMap;
+  URLToErrorMap url_to_error_info_;
 
   // Table of the registered URLs and the responses that they should receive.
   typedef std::map<WebKit::WebURL, ResponseInfo> URLToResponseMap;

@@ -487,6 +487,13 @@ void RegisterMockedURL(const WebKit::WebURL& url,
       RegisterURL(url, response, file_path);
 }
 
+void RegisterMockedErrorURL(const WebKit::WebURL& url,
+                            const WebKit::WebURLResponse& response,
+                            const WebKit::WebURLError& error) {
+  test_environment->webkit_platform_support()->url_loader_factory()->
+      RegisterErrorURL(url, response, error);
+}
+
 void UnregisterMockedURL(const WebKit::WebURL& url) {
   test_environment->webkit_platform_support()->url_loader_factory()->
     UnregisterURL(url);

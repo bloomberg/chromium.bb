@@ -50,14 +50,28 @@ void WebURLLoaderMockFactory::RegisterURL(const WebURL& url,
   url_to_reponse_info_[url] = response_info;
 }
 
+
+void WebURLLoaderMockFactory::RegisterErrorURL(const WebURL& url,
+                                               const WebURLResponse& response,
+                                               const WebURLError& error) {
+  DCHECK(url_to_reponse_info_.find(url) == url_to_reponse_info_.end());
+  RegisterURL(url, response, WebString());
+  url_to_error_info_[url] = error;
+}
+
 void WebURLLoaderMockFactory::UnregisterURL(const WebKit::WebURL& url) {
   URLToResponseMap::iterator iter = url_to_reponse_info_.find(url);
   DCHECK(iter != url_to_reponse_info_.end());
   url_to_reponse_info_.erase(iter);
+
+  URLToErrorMap::iterator error_iter = url_to_error_info_.find(url);
+  if (error_iter != url_to_error_info_.end())
+    url_to_error_info_.erase(error_iter);
 }
 
 void WebURLLoaderMockFactory::UnregisterAllURLs() {
   url_to_reponse_info_.clear();
+  url_to_error_info_.clear();
 }
 
 void WebURLLoaderMockFactory::ServeAsynchronousRequests() {
@@ -129,6 +143,11 @@ void WebURLLoaderMockFactory::LoadRequest(const WebURLRequest& request,
                                           WebURLResponse* response,
                                           WebURLError* error,
                                           WebData* data) {
+  URLToErrorMap::const_iterator error_iter =
+      url_to_error_info_.find(request.url());
+  if (error_iter != url_to_error_info_.end())
+    *error = error_iter->second;
+
   URLToResponseMap::const_iterator iter =
       url_to_reponse_info_.find(request.url());
   if (iter == url_to_reponse_info_.end()) {
@@ -137,7 +156,7 @@ void WebURLLoaderMockFactory::LoadRequest(const WebURLRequest& request,
     return;
   }
 
-  if (!ReadFile(iter->second.file_path, data)) {
+  if (!error->reason && !ReadFile(iter->second.file_path, data)) {
     NOTREACHED();
     return;
   }

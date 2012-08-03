@@ -125,6 +125,11 @@ void RegisterMockedURL(const WebKit::WebURL& url,
                        const WebKit::WebURLResponse& response,
                        const WebKit::WebString& file_path);
 
+// Registers the error to be returned when |url| is requested.
+void RegisterMockedErrorURL(const WebKit::WebURL& url,
+                            const WebKit::WebURLResponse& response,
+                            const WebKit::WebURLError& error);
+
 // Unregisters URLs so they are no longer mocked.
 void UnregisterMockedURL(const WebKit::WebURL& url);
 void UnregisterAllMockedURLs();

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 
@@ -30,6 +31,11 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     return;
 
   client_->didReceiveResponse(this, response);
+
+  if (error.reason) {
+    client_->didFail(this, error);
+    return;
+  }
   client_->didReceiveData(this, data.data(), data.size(), data.size());
   client_->didFinishLoading(this, 0);
 }
