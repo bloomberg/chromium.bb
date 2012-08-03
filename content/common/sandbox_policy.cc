@@ -41,6 +41,7 @@ namespace {
 const wchar_t* const kTroublesomeDlls[] = {
   L"adialhk.dll",                 // Kaspersky Internet Security.
   L"acpiz.dll",                   // Unknown.
+  L"aswjsflt.dll",                // Avast! AV
   L"avgrsstx.dll",                // AVG 8.
   L"babylonchromepi.dll",         // Babylon translator.
   L"btkeyind.dll",                // Widcomm Bluetooth.
@@ -101,6 +102,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"sguard.dll",                  // Iolo (System Guard).
   L"smum32.dll",                  // Spyware Doctor version 6.
   L"smumhook.dll",                // Spyware Doctor version 5.
+  L"snxhk.dll",                   // Avast! AV
   L"ssldivx.dll",                 // DivX.
   L"syncor11.dll",                // SynthCore Midi interface.
   L"systools.dll",                // Panda Antivirus.
