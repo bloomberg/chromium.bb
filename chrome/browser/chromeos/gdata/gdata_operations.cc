@@ -69,9 +69,9 @@ const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 // Use smaller 'page' size while debugging to ensure we hit feed reload
 // almost always. Be careful not to use something too small on account that
 // have many items because server side 503 error might kick in.
-const int kMaxDocumentsPerFeed = 1000;
+const int kMaxDocumentsPerFeed = 500;
 #else
-const int kMaxDocumentsPerFeed = 1000;
+const int kMaxDocumentsPerFeed = 500;
 #endif
 
 const char kFeedField[] = "feed";

@@ -35,6 +35,7 @@ class DocumentsServiceInterface;
 class DriveWebAppsRegistryInterface;
 class GDataWapiFeedLoader;
 struct GetDocumentsParams;
+struct GetDocumentsUiState;
 struct UploadFileInfo;
 
 namespace {
@@ -170,6 +171,10 @@ class GDataWapiFeedLoader {
       base::TimeTicks start_time,
       GDataErrorCode status,
       scoped_ptr<base::Value> data);
+
+  // Callback for handling UI updates caused by document fetching.
+  void OnNotifyDocumentFeedFetched(
+      base::WeakPtr<GetDocumentsUiState> ui_state);
 
   // Save filesystem as proto file.
   void SaveFileSystemAsProto();

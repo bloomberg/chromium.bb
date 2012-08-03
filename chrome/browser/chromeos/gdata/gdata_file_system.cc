@@ -55,6 +55,9 @@ const int kGDataUpdateCheckIntervalInSec = 5;
 const int kGDataUpdateCheckIntervalInSec = 60;
 #endif
 
+// Update the fetch progress UI per every this number of feeds.
+const int kFetchUiUpdateStep = 10;
+
 // Schedule for dumping root file system proto buffers to disk depending its
 // total protobuffer size in MB.
 typedef struct {
@@ -585,6 +588,36 @@ void GDataWapiFeedLoader::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+// Defines set of parameters sent to callback OnNotifyDocumentFeedFetched().
+// This is a trick to update the number of fetched documents frequently on
+// UI. Due to performance reason, we need to fetch a number of files at
+// a time. However, it'll take long time, and a user has no way to know
+// the current update state. In order to make users confortable,
+// we increment the number of fetched documents with more frequent but smaller
+// steps than actual fetching.
+struct GetDocumentsUiState {
+  explicit GetDocumentsUiState(base::TimeTicks start_time)
+      : num_fetched_documents(0),
+        num_showing_documents(0),
+        start_time(start_time),
+        weak_ptr_factory(this) {
+  }
+
+  // The number of fetched documents.
+  int num_fetched_documents;
+
+  // The number documents shown on UI.
+  int num_showing_documents;
+
+  // When the UI update has started.
+  base::TimeTicks start_time;
+
+  // Time elapsed since the feed fetching was started.
+  base::TimeDelta feed_fetching_elapsed_time;
+
+  base::WeakPtrFactory<GetDocumentsUiState> weak_ptr_factory;
+};
+
 // Defines set of parameters sent to callback OnGetDocuments().
 // TODO(satorux): Move this to a new file: crbug.com/138268
 struct GetDocumentsParams {
@@ -595,7 +628,8 @@ struct GetDocumentsParams {
                      const FilePath& search_file_path,
                      const std::string& search_query,
                      const std::string& directory_resource_id,
-                     const FindEntryCallback& callback);
+                     const FindEntryCallback& callback,
+                     GetDocumentsUiState* ui_state);
   ~GetDocumentsParams();
 
   // Changestamps are positive numbers in increasing order. The difference
@@ -612,6 +646,7 @@ struct GetDocumentsParams {
   std::string search_query;
   std::string directory_resource_id;
   FindEntryCallback callback;
+  scoped_ptr<GetDocumentsUiState> ui_state;
 };
 
 GetDocumentsParams::GetDocumentsParams(
@@ -622,7 +657,8 @@ GetDocumentsParams::GetDocumentsParams(
     const FilePath& search_file_path,
     const std::string& search_query,
     const std::string& directory_resource_id,
-    const FindEntryCallback& callback)
+    const FindEntryCallback& callback,
+    GetDocumentsUiState* ui_state)
     : start_changestamp(start_changestamp),
       root_feed_changestamp(root_feed_changestamp),
       feed_list(feed_list),
@@ -630,7 +666,8 @@ GetDocumentsParams::GetDocumentsParams(
       search_file_path(search_file_path),
       search_query(search_query),
       directory_resource_id(directory_resource_id),
-      callback(callback) {
+      callback(callback),
+      ui_state(ui_state) {
 }
 
 GetDocumentsParams::~GetDocumentsParams() {
@@ -1086,7 +1123,8 @@ void GDataWapiFeedLoader::LoadFromServer(
                                                     search_file_path,
                                                     search_query,
                                                     directory_resource_id,
-                                                    entry_found_callback)),
+                                                    entry_found_callback,
+                                                    NULL)),
                  start_time));
 }
 
@@ -2834,13 +2872,29 @@ void GDataWapiFeedLoader::OnGetDocuments(
   for (size_t i = 0; i < params->feed_list->size(); ++i)
     num_accumulated_entries += params->feed_list->at(i)->entries().size();
 
-  // Notify the observers that a document feed is fetched.
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnDocumentFeedFetched(num_accumulated_entries));
-
   // Check if we need to collect more data to complete the directory list.
   if (params->should_fetch_multiple_feeds && has_next_feed_url &&
       !next_feed_url.is_empty()) {
+    // Post an UI update event to make the UI smoother.
+    GetDocumentsUiState* ui_state = params->ui_state.get();
+    if (ui_state == NULL) {
+      ui_state = new GetDocumentsUiState(base::TimeTicks::Now());
+      params->ui_state.reset(ui_state);
+    }
+    DCHECK(ui_state);
+
+    if ((ui_state->num_fetched_documents - ui_state->num_showing_documents)
+        < kFetchUiUpdateStep) {
+      // Currently the UI update is stopped. Start UI periodic callback.
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ui_state->weak_ptr_factory.GetWeakPtr()));
+    }
+    ui_state->num_fetched_documents = num_accumulated_entries;
+    ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
+
     // Kick of the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
@@ -2860,16 +2914,58 @@ void GDataWapiFeedLoader::OnGetDocuments(
                            params->search_file_path,
                            params->search_query,
                            params->directory_resource_id,
-                           params->callback)),
+                           params->callback,
+                           params->ui_state.release())),
                    start_time));
     return;
   }
+
+  // Notify the observers that a document feed is fetched.
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Gdata.EntireFeedLoadTime",
                       base::TimeTicks::Now() - start_time);
 
   if (!callback.is_null())
     callback.Run(params, error);
+}
+
+void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
+    base::WeakPtr<GetDocumentsUiState> ui_state) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!ui_state) {
+    // The ui state instance is already released, which means the fetching
+    // is done and we don't need to update any more.
+    return;
+  }
+
+  base::TimeDelta elapsed_time =
+      base::TimeTicks::Now() - ui_state->start_time;
+
+  if (ui_state->num_showing_documents + kFetchUiUpdateStep <=
+      ui_state->num_fetched_documents) {
+    ui_state->num_showing_documents += kFetchUiUpdateStep;
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnDocumentFeedFetched(ui_state->num_showing_documents));
+
+    int num_remaining_ui_updates =
+        (ui_state->num_fetched_documents - ui_state->num_showing_documents)
+        / kFetchUiUpdateStep;
+    if (num_remaining_ui_updates > 0) {
+      // Heuristically, we use fetched time duration to calculate the next
+      // UI update timing.
+      base::TimeDelta remaining_duration =
+          ui_state->feed_fetching_elapsed_time - elapsed_time;
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ui_state->weak_ptr_factory.GetWeakPtr()),
+          remaining_duration / num_remaining_ui_updates);
+    }
+  }
 }
 
 void GDataWapiFeedLoader::LoadFromCache(
