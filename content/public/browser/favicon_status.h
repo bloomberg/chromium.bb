@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/image/image.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
@@ -14,6 +15,9 @@ namespace content {
 // Collects the favicon related information for a NavigationEntry.
 struct CONTENT_EXPORT FaviconStatus {
   FaviconStatus();
+
+  // Returns 1x resolution of image. This function should eventually go away.
+  SkBitmap AsBitmap() const;
 
   // Indicates whether we've gotten an official favicon for the page, or are
   // just using the default favicon.
@@ -26,7 +30,7 @@ struct CONTENT_EXPORT FaviconStatus {
   // set or it empty, it will return the default favicon. Note that this is
   // loaded asynchronously, so even if the favicon URL is valid we may return
   // the default favicon if we haven't gotten the data yet.
-  SkBitmap bitmap;
+  gfx::Image image;
 
   // Copy and assignment is explicitly allowed for this struct.
 };

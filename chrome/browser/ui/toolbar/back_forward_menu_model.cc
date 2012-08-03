@@ -142,7 +142,7 @@ bool BackForwardMenuModel::GetIconAt(int index, gfx::ImageSkia* icon) {
         IDR_HISTORY_FAVICON);
   } else {
     NavigationEntry* entry = GetNavigationEntry(index);
-    *icon = entry->GetFavicon().bitmap;
+    *icon = *entry->GetFavicon().image.ToImageSkia();
     if (!entry->GetFavicon().valid && menu_model_delegate()) {
       FetchFavicon(entry);
     }
@@ -285,7 +285,9 @@ void BackForwardMenuModel::OnFavIconDataAvailable(
       entry->GetFavicon().url = favicon.icon_url;
       if (fav_icon.empty())
         return;
-      entry->GetFavicon().bitmap = fav_icon;
+      // TODO: Once the history service returns more representations,
+      // use them all instead of having just the lodpi favicon.
+      entry->GetFavicon().image = gfx::Image(fav_icon);
       if (menu_model_delegate()) {
         menu_model_delegate()->OnIconChanged(model_index);
       }

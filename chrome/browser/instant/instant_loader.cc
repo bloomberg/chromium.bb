@@ -376,10 +376,11 @@ void InstantLoader::WebContentsDelegateImpl::CommitHistory(
       tab->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
   if (favicon_service && active_entry->GetFavicon().valid &&
-      !active_entry->GetFavicon().bitmap.empty()) {
+      !active_entry->GetFavicon().image.IsEmpty()) {
     std::vector<unsigned char> image_data;
-    gfx::PNGCodec::EncodeBGRASkBitmap(active_entry->GetFavicon().bitmap, false,
-                                      &image_data);
+    // TODO: Add all variants once the history service supports it.
+    gfx::PNGCodec::EncodeBGRASkBitmap(active_entry->GetFavicon().AsBitmap(),
+                                      false, &image_data);
     favicon_service->SetFavicon(active_entry->GetURL(),
                                 active_entry->GetFavicon().url,
                                 image_data,

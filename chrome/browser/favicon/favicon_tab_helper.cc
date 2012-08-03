@@ -55,11 +55,11 @@ SkBitmap FaviconTabHelper::GetFavicon() const {
   const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
-    return entry->GetFavicon().bitmap;
+    return entry->GetFavicon().AsBitmap();
 
   entry = controller.GetLastCommittedEntry();
   if (entry)
-    return entry->GetFavicon().bitmap;
+    return entry->GetFavicon().AsBitmap();
   return SkBitmap();
 }
 
@@ -107,11 +107,12 @@ void FaviconTabHelper::SaveFavicon() {
     return;
   const FaviconStatus& favicon(entry->GetFavicon());
   if (!favicon.valid || favicon.url.is_empty() ||
-      favicon.bitmap.empty()) {
+      favicon.image.IsEmpty()) {
     return;
   }
   std::vector<unsigned char> image_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap, false, &image_data);
+  // TODO: Save all representations.
+  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.AsBitmap(), false, &image_data);
   service->SetFavicon(
       entry->GetURL(), favicon.url, image_data, history::FAVICON);
 }

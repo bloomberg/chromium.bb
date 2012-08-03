@@ -236,7 +236,7 @@ void FaviconHandler::UpdateFavicon(NavigationEntry* entry,
   if (!image)
     return;
 
-  entry->GetFavicon().bitmap = *image->ToSkBitmap();
+  entry->GetFavicon().image = *image;
   delegate_->NotifyFaviconUpdated();
 }
 
