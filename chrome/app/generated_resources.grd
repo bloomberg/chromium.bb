@@ -13339,6 +13339,15 @@ Press any key to continue exploring.
       <message name="IDS_UPDATE_CANCELLED" desc="Message shown when the update has been cancelled by user">
         Cancelling update...
       </message>
+      <message name="IDS_CHECKING_FOR_UPDATE_MSG" desc="Chrome OS OOBE: message shown during checking for update stage.">
+        <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version.
+      </message>
+      <message name="IDS_UPDATE_MSG" desc="Chrome OS OOBE: message shown during update stage.">
+        <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version. When this download completes, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will restart and you'll be on your way.
+      </message>
+      <message name="IDS_WELCOME_SCREEN_GREETING" desc="Greeting message on the OOBE welcome screen">
+        Welcome!
+      </message>
       <message name="IDS_WELCOME_SCREEN_TITLE" desc="Title of the OOBE welcome screen">
         Connect
       </message>
@@ -13356,6 +13365,9 @@ Press any key to continue exploring.
       </message>
       <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
         Let's get started
+      </message>
+      <message name="IDS_OOBE_LANGUAGE_SELECTION_MSG" desc="Chrome OS OOBE: label for language selection dropdown">
+        What is your language?
       </message>
       <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
         Select a network:
