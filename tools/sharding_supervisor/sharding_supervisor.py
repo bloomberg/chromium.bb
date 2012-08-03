@@ -182,8 +182,6 @@ def RunShard(test, total_shards, index, gtest_args, stdout, stderr):
   # Allows ui_tests to be run in parallel on the same machine
   env["CHROME_LOG_FILE"] = "chrome_log_%d" % index
 
-  sys.stderr.write('RUNNING: [%s]\n' % str(args));
-
   return subprocess.Popen(
       args, stdout=stdout,
       stderr=stderr,
