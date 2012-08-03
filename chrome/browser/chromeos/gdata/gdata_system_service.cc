@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/file_write_helper.h"
 #include "chrome/browser/chromeos/gdata/gdata_contacts_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
@@ -68,6 +69,7 @@ void GDataSystemService::Initialize(
                                          uploader(),
                                          webapps_registry(),
                                          blocking_task_runner_));
+  file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_observer_.reset(new GDataDownloadObserver(uploader(),
                                                      file_system()));
   sync_client_.reset(new GDataSyncClient(profile_, file_system(), cache()));
@@ -97,6 +99,7 @@ void GDataSystemService::Shutdown() {
   contacts_service_.reset();
   sync_client_.reset();
   download_observer_.reset();
+  file_write_helper_.reset();
   file_system_.reset();
   webapps_registry_.reset();
   uploader_.reset();

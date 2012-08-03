@@ -59,6 +59,12 @@
 #include "printing/print_settings.h"
 #include "unicode/ulocdata.h"
 
+#ifdef OS_CHROMEOS
+// TODO(kinaba): provide more non-intrusive way for handling local/remote
+// distinction and remove these ugly #ifdef's. http://crbug.com/140425
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#endif
+
 #if !defined(OS_MACOSX)
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
@@ -122,7 +128,7 @@ void ReportPrintDestinationHistogram(enum PrintDestinationBuckets event) {
                             PRINT_DESTINATION_BUCKET_BOUNDARY);
 }
 
-// Name of a dictionary fielad holdong cloud print related data;
+// Name of a dictionary field holding cloud print related data;
 const char kCloudPrintData[] = "cloudPrintData";
 // Name of a dictionary field holding the initiator tab title.
 const char kInitiatorTabTitle[] = "initiatorTabTitle";
@@ -212,6 +218,22 @@ void PrintToPdfCallback(Metafile* metafile, const FilePath& path) {
       BrowserThread::UI, FROM_HERE,
       base::Bind(&base::DeletePointer<Metafile>, metafile));
 }
+
+#ifdef OS_CHROMEOS
+void PrintToPdfCallbackWithCheck(Metafile* metafile,
+                                 gdata::GDataFileError error,
+                                 const FilePath& path) {
+  if (error != gdata::GDATA_FILE_OK) {
+    LOG(ERROR) << "Save to pdf failed to write: " << error;
+  } else {
+    metafile->SaveTo(path);
+  }
+  // |metafile| must be deleted on the UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&base::DeletePointer<Metafile>, metafile));
+}
+#endif
 
 static base::LazyInstance<printing::StickySettings> sticky_settings =
     LAZY_INSTANCE_INITIALIZER;
@@ -911,9 +933,18 @@ void PrintPreviewHandler::PostPrintToPdfTask(base::RefCountedBytes* data) {
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
   // PrintToPdfCallback takes ownership of |metafile|.
+#ifdef OS_CHROMEOS
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  gdata::util::PrepareWritableFileAndRun(
+      Profile::FromBrowserContext(preview_web_contents()->GetBrowserContext()),
+      *print_to_pdf_path_,
+      base::Bind(&PrintToPdfCallbackWithCheck, metafile));
+#else
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&PrintToPdfCallback, metafile,
                                      *print_to_pdf_path_));
+#endif
+
   print_to_pdf_path_.reset();
   ActivateInitiatorTabAndClosePreviewTab();
 }

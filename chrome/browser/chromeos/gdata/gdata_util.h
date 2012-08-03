@@ -110,6 +110,22 @@ bool GetTimeFromString(const base::StringPiece& raw_value, base::Time* time);
 // Formats a base::Time as an RFC 3339 date/time (in UTC).
 std::string FormatTimeAsString(const base::Time& time);
 
+// Callback type for PrepareWritableFilePathAndRun.
+typedef base::Callback<void (GDataFileError, const FilePath& path)>
+   OpenFileCallback;
+
+// Invokes |callback| on blocking thread pool, after converting virtual |path|
+// string like "/special/drive/foo.txt" to the concrete local cache file path.
+// After |callback| returns, the written content is synchronized to the server.
+//
+// If |path| is not a GData path, it is regarded as a local path and no path
+// conversion takes place.
+//
+// Must be called from UI thread.
+void PrepareWritableFileAndRun(Profile* profile,
+                               const FilePath& path,
+                               const OpenFileCallback& callback);
+
 }  // namespace util
 }  // namespace gdata
 

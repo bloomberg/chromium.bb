@@ -21,6 +21,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/gdata/file_write_helper.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -69,6 +70,12 @@ GDataCache* GetGDataCache(Profile* profile) {
   GDataSystemService* system_service =
       GDataSystemServiceFactory::GetForProfile(profile);
   return system_service ? system_service->cache() : NULL;
+}
+
+FileWriteHelper* GetFileWriteHelper(Profile* profile) {
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(profile);
+  return system_service ? system_service->file_write_helper() : NULL;
 }
 
 void GetHostedDocumentURLBlockingThread(const FilePath& gdata_cache_path,
@@ -577,6 +584,24 @@ std::string FormatTimeAsString(const base::Time& time) {
       "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
       exploded.year, exploded.month, exploded.day_of_month,
       exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
+}
+
+void PrepareWritableFileAndRun(Profile* profile,
+                               const FilePath& path,
+                               const OpenFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (IsUnderGDataMountPoint(path)) {
+    FileWriteHelper* file_write_helper = GetFileWriteHelper(profile);
+    if (!file_write_helper)
+      return;
+    FilePath remote_path(ExtractGDataPath(path));
+    file_write_helper->PrepareWritableFileAndRun(remote_path, callback);
+  } else {
+    if (!callback.is_null()) {
+      content::BrowserThread::GetBlockingPool()->PostTask(
+          FROM_HERE, base::Bind(callback, GDATA_FILE_OK, path));
+    }
+  }
 }
 
 }  // namespace util

@@ -19,6 +19,7 @@ namespace gdata {
 
 class DocumentsServiceInterface;
 class DriveWebAppsRegistry;
+class FileWriteHelper;
 class GDataCache;
 class GDataContactsService;
 class GDataDownloadObserver;
@@ -37,6 +38,7 @@ class GDataSystemService : public ProfileKeyedService  {
   DocumentsServiceInterface* docs_service() { return documents_service_.get(); }
   GDataCache* cache() { return cache_; }
   GDataFileSystemInterface* file_system() { return file_system_.get(); }
+  FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   GDataUploader* uploader() { return uploader_.get(); }
   GDataContactsService* contacts_service() { return contacts_service_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
@@ -67,6 +69,7 @@ class GDataSystemService : public ProfileKeyedService  {
   scoped_ptr<GDataUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<GDataFileSystemInterface> file_system_;
+  scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
   scoped_ptr<GDataContactsService> contacts_service_;

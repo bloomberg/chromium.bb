@@ -544,6 +544,8 @@
         'browser/chromeos/gdata/drive_task_executor.h',
         'browser/chromeos/gdata/drive_webapps_registry.cc',
         'browser/chromeos/gdata/drive_webapps_registry.h',
+        'browser/chromeos/gdata/file_write_helper.cc',
+        'browser/chromeos/gdata/file_write_helper.h',
         'browser/chromeos/gdata/gdata_auth_service.cc',
         'browser/chromeos/gdata/gdata_auth_service.h',
         'browser/chromeos/gdata/gdata_cache.cc',
