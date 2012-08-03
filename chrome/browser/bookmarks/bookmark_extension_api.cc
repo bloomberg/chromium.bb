@@ -9,6 +9,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
@@ -196,8 +197,8 @@ void BookmarkExtensionEventRouter::BookmarkNodeAdded(BookmarkModel* model,
   ListValue args;
   const BookmarkNode* node = parent->GetChild(index);
   args.Append(new StringValue(base::Int64ToString(node->id())));
-  BookmarkTreeNode* tree_node =
-      bookmark_extension_helpers::GetBookmarkTreeNode(node, false, false);
+  scoped_ptr<BookmarkTreeNode> tree_node(
+      bookmark_extension_helpers::GetBookmarkTreeNode(node, false, false));
   args.Append(tree_node->ToValue().release());
 
   std::string json_args;
