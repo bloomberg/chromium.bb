@@ -46,8 +46,8 @@
 #
 
 # Sanity check. We can only build for ARM for now.
-ifneq (,$(filter-out armeabi armeabi-v7a,$(TARGET_ARCH_ABI)))
-$(error Sorry, Google Breakpad only works on Android ARM for now!)
+ifneq (,$(filter-out armeabi armeabi-v7a x86,$(TARGET_ARCH_ABI)))
+$(error Sorry, Google Breakpad only works on Android ARM and x86 for now!)
 endif
 
 # The top Google Breakpad directory.

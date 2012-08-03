@@ -88,6 +88,10 @@ get_core_count () {
   esac
 }
 
+DEFAULT_ABI="armeabi"
+VALID_ABIS="armeabi armeabi-v7a x86 mips"
+
+ABI=
 ADB=
 ENABLE_M32=
 HELP=
@@ -103,6 +107,7 @@ for opt do
   # The following extracts the value if the option is like --name=<value>.
   optarg=$(expr -- $opt : '^--[^=]*=\(.*\)$')
   case $opt in
+    --abi=*) ABI=$optarg;;
     --adb=*) ADB=$optarg;;
     --enable-m32) ENABLE_M32=true;;
     --help|-h|-?) HELP=TRUE;;
@@ -163,6 +168,18 @@ if [ "$HELP" -o "$HELP_ALL" ]; then
     you see which exact commands are being issues and their result. Use the
     flag twice for even more output. Use --quiet to decrease verbosity
     instead and run the script silently.
+
+    If you have a device connected, the script will probe it to determine
+    its primary CPU ABI, and build the test program for it. You can however
+    use the --abi=<name> option to override this (this can be useful to check
+    the secondary ABI, e.g. using --abi=armeabi to check that such a program
+    works correctly on an ARMv7-A device).
+
+    If you don't have a device connected, the test program will be built (but
+    not run) with the default '$DEFAULT_ABI' ABI. Again, you can use
+    --abi=<name> to override this. Valid ABI names are:
+
+        $VALID_ABIS
 "
 
   fi  # HELP_ALL
@@ -173,6 +190,7 @@ if [ "$HELP" -o "$HELP_ALL" ]; then
       --help|-h|-?     Display this message.
       --help-all       Display extended help.
       --enable-m32     Build 32-bit version of host tools.
+      --abi=<name>     Specify target CPU ABI [auto-detected].
       --jobs=<count>   Run <count> build tasks in parallel [$NUM_JOBS].
       --ndk-dir=<path> Specify NDK installation directory.
       --tmp-dir=<path> Specify temporary directory (will be wiped-out).
@@ -387,23 +405,59 @@ TMPBIN=$TMPHOST/bin
 
 # Generate a stand-alone NDK toolchain
 
-# Extract ABI and architecture from device, if any.
+# Extract CPU ABI and architecture from device, if any.
 if [ "$ADB" ]; then
-  ABI=$(adb_shell getprop ro.product.cpu.abi)
-  if [ -z "$ABI" ]; then
+  DEVICE_ABI=$(adb_shell getprop ro.product.cpu.abi)
+  DEVICE_ABI2=$(adb_shell getprop ro.product.cpu.abi2)
+  if [ -z "$DEVICE_ABI" ]; then
     panic "Can't extract ABI from connected device!"
   fi
-  dump "Found device ABI: $ABI"
+  if [ "$DEVICE_ABI2" ]; then
+    dump "Found device ABIs: $DEVICE_ABI $DEVICE_ABI2"
+  else
+    dump "Found device ABI: $DEVICE_ABI"
+    DEVICE_ABI2=$DEVICE_ABI
+  fi
+
+  # If --abi=<name> is used, check that the device supports it.
+  if [ "$ABI" -a "$DEVICE_ABI" != "$ABI" -a "$DEVICE_ABI2" != "$ABI" ]; then
+    dump  "ERROR: Device ABI(s) do not match --abi command-line value ($ABI)!"
+    panic "Please use --no-device to skip device tests."
+  fi
+
+  if [ -z "$ABI" ]; then
+    ABI=$DEVICE_ABI
+    dump "Using CPU ABI: $ABI (device)"
+  else
+    dump "Using CPU ABI: $ABI (command-line)"
+  fi
 else
-  # No device connected, choose default ABI
-  ABI=armeabi
-  dump "Default ABI: $ABI"
+  if [ -z "$ABI" ]; then
+    # No device connected, choose default ABI
+    ABI=$DEFAULT_ABI
+    dump "Using CPU ABI: $ABI (default)"
+  else
+    dump "Using CPU ABI: $ABI (command-line)"
+  fi
 fi
 
-# Compute architecture name
+# Check the ABI value
+VALID=
+for VALID_ABI in $VALID_ABIS; do
+  if [ "$ABI" = "$VALID_ABI" ]; then
+    VALID=true
+    break
+  fi
+done
+
+if [ -z "$VALID" ]; then
+  panic "Unknown CPU ABI '$ABI'. Valid values are: $VALID_ABIS"
+fi
+
+# Extract architecture name from ABI
 case $ABI in
-  arm*) ARCH=arm;;
-  *) ARCH="$ABI";;
+  armeabi*) ARCH=arm;;
+  *) ARCH=$ABI;;
 esac
 
 # Extract GNU configuration name
@@ -454,7 +508,7 @@ NDK_BUILD_FLAGS="-j$NUM_JOBS"
 if [ "$VERBOSE" -ge 2 ]; then
   NDK_BUILD_FLAGS="$NDK_BUILD_FLAGS NDK_LOG=1 V=1"
 fi
-run "$NDK_DIR/ndk-build" -C "$PROJECT_DIR" $NDK_BUILD_FLAGS
+run "$NDK_DIR/ndk-build" -C "$PROJECT_DIR" $NDK_BUILD_FLAGS APP_ABI=$ABI
 fail_panic "Can't build test program!"
 
 # Unless --no-device was used, stop right here if ADB isn't in the path,
