@@ -464,7 +464,7 @@ evdev_configure_device(struct evdev_input_device *device)
 
 static struct evdev_input_device *
 evdev_input_device_create(struct evdev_seat *master,
-			  struct wl_display *display, const char *path)
+			  const char *path, int device_fd)
 {
 	struct evdev_input_device *device;
 	struct weston_compositor *ec;
@@ -485,13 +485,7 @@ evdev_input_device_create(struct evdev_seat *master,
 	device->rel.dx = 0;
 	device->rel.dy = 0;
 	device->dispatch = NULL;
-
-	/* Use non-blocking mode so that we can loop on read on
-	 * evdev_input_device_data() until all events on the fd are
-	 * read.  mtdev_get() also expects this. */
-	device->fd = weston_launcher_open(ec, path, O_RDWR | O_NONBLOCK);
-	if (device->fd < 0)
-		goto err0;
+	device->fd = device_fd;
 
 	if (evdev_configure_device(device) == -1)
 		goto err1;
@@ -522,8 +516,6 @@ evdev_input_device_create(struct evdev_seat *master,
 err2:
 	device->dispatch->interface->destroy(device->dispatch);
 err1:
-	close(device->fd);
-err0:
 	free(device->devnode);
 	free(device);
 	return NULL;
@@ -553,8 +545,10 @@ static void
 device_added(struct udev_device *udev_device, struct evdev_seat *master)
 {
 	struct weston_compositor *c;
+	struct evdev_input_device *device;
 	const char *devnode;
 	const char *device_seat;
+	int fd;
 
 	device_seat = udev_device_get_property_value(udev_device, "ID_SEAT");
 	if (!device_seat)
@@ -565,7 +559,21 @@ device_added(struct udev_device *udev_device, struct evdev_seat *master)
 
 	c = master->base.compositor;
 	devnode = udev_device_get_devnode(udev_device);
-	evdev_input_device_create(master, c->wl_display, devnode);
+
+	/* Use non-blocking mode so that we can loop on read on
+	 * evdev_input_device_data() until all events on the fd are
+	 * read.  mtdev_get() also expects this. */
+	fd = weston_launcher_open(c, devnode, O_RDWR | O_NONBLOCK);
+	if (fd < 0) {
+		weston_log("opening input device '%s' failed.\n", devnode);
+		return;
+	}
+
+	device = evdev_input_device_create(master, devnode, fd);
+	if (!device) {
+		close(fd);
+		weston_log("not using input device '%s'.\n", devnode);
+	}
 }
 
 static void
