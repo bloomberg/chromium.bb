@@ -572,6 +572,17 @@ signal_int(int signum)
 	running = 0;
 }
 
+static void
+usage(int error_code)
+{
+	fprintf(stderr, "Usage: simple-egl [OPTIONS]\n\n"
+		"  -f\tRun in fullscreen mode\n"
+		"  -o\tCreate an opaque surface\n"
+		"  -h\tThis help text\n\n");
+
+	exit(error_code);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -588,8 +599,12 @@ main(int argc, char **argv)
 	for (i = 1; i < argc; i++) {
 		if (strcmp("-f", argv[i]) == 0)
 			window.fullscreen = 1;
-		if (strcmp("-o", argv[i]) == 0)
-			alpha_size = 0;
+		else if (strcmp("-o", argv[i]) == 0)
+			window.opaque = 1;
+		else if (strcmp("-h", argv[i]) == 0)
+			usage(EXIT_SUCCESS);
+		else
+			usage(EXIT_FAILURE);
 	}
 
 	display.display = wl_display_connect(NULL);
