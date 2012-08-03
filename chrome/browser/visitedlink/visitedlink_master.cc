@@ -65,7 +65,7 @@ void GenerateSalt(uint8 salt[LINK_SALT_LENGTH]) {
 }
 
 // Opens file on a background thread to not block UI thread.
-void AsyncOpen(FILE** file, FilePath filename) {
+void AsyncOpen(FILE** file, const FilePath& filename) {
   *file = OpenFile(filename, "wb+");
   DLOG_IF(ERROR, !(*file)) << "Failed to open file " << filename.value();
 }
