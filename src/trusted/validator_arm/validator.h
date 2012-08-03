@@ -306,11 +306,11 @@ class DecodedInstruction {
     return defs().ContainsAll(rl);
   }
 
-  inline const nacl_arm_dec::Instruction& inst() const {
+  const nacl_arm_dec::Instruction& inst() const {
     return inst_;
   }
 
-  inline DecodedInstruction& Copy(const DecodedInstruction& other) {
+  DecodedInstruction& Copy(const DecodedInstruction& other) {
     vaddr_ = other.vaddr_;
     inst_.Copy(other.inst_);
     decoder_ = other.decoder_;
@@ -460,7 +460,7 @@ typedef enum {
 // even then it may be desirable to exit after the first, say, 200 reports.
 class ProblemSink {
  public:
-  inline ProblemSink() {}
+  ProblemSink() {}
   virtual ~ProblemSink() {}
 
   // Helper function for reporting safety level issues.

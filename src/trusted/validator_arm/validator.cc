@@ -179,7 +179,7 @@ enum PatternMatch {
 // pattern.
 class InstructionPairMatchData {
  public:
-  explicit inline InstructionPairMatchData(ProblemSink* out)
+  explicit InstructionPairMatchData(ProblemSink* out)
       : out_(out),
         match_(PATTERN_UNSAFE),
         problem_(kValidatorProblemSize),

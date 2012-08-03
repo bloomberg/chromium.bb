@@ -22,7 +22,7 @@ namespace nacl_arm_test {
 // the conditions bits (28-31) are 1111.
 class UncondDecoderTester : public Arm32DecoderTester {
  public:
-  explicit inline UncondDecoderTester(const NamedClassDecoder& decoder)
+  explicit UncondDecoderTester(const NamedClassDecoder& decoder)
       : Arm32DecoderTester(decoder) {}
   virtual bool PassesParsePreconditions(
       nacl_arm_dec::Instruction inst,
@@ -41,7 +41,7 @@ class UncondDecoderTester : public Arm32DecoderTester {
 // Implements a decoder tester for an UnsafeUncondNop
 class UnsafeUncondNopTester : public UncondDecoderTester {
  public:
-  explicit inline UnsafeUncondNopTester(const NamedClassDecoder& decoder)
+  explicit UnsafeUncondNopTester(const NamedClassDecoder& decoder)
       : UncondDecoderTester(decoder),
         expected_decoder_(nacl_arm_dec::UNKNOWN) {}
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
@@ -76,7 +76,7 @@ class CondDecoderTester : public Arm32DecoderTester {
 // Implements a decoder tester for an UnsafeCondNop
 class UnsafeCondNopTester : public CondDecoderTester {
  public:
-  explicit inline UnsafeCondNopTester(const NamedClassDecoder& decoder)
+  explicit UnsafeCondNopTester(const NamedClassDecoder& decoder)
       : CondDecoderTester(decoder),
         expected_decoder_(nacl_arm_dec::UNKNOWN) {}
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
@@ -1712,7 +1712,7 @@ class Binary3RegisterShiftedTestTesterRegsNotPc
 // If t=15 then UNPREDICTABLE
 class VfpUsesRegOpTester : public CondVfpOpTester {
  public:
-  explicit inline VfpUsesRegOpTester(const NamedClassDecoder& decoder)
+  explicit VfpUsesRegOpTester(const NamedClassDecoder& decoder)
       : CondVfpOpTester(decoder) {}
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
@@ -1740,7 +1740,7 @@ class VfpUsesRegOpTester : public CondVfpOpTester {
 // in FPSCR.
 class VfpMrsOpTester : public CondVfpOpTester {
  public:
-  explicit inline VfpMrsOpTester(const NamedClassDecoder& decoder)
+  explicit VfpMrsOpTester(const NamedClassDecoder& decoder)
       : CondVfpOpTester(decoder) {}
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
@@ -1771,7 +1771,7 @@ class VfpMrsOpTester : public CondVfpOpTester {
 // Note: We don't model Register S[Vn:N] since it can't effect NaCl validation.
 class MoveVfpRegisterOpTester : public CondVfpOpTester {
  public:
-  explicit inline MoveVfpRegisterOpTester(const NamedClassDecoder& decoder)
+  explicit MoveVfpRegisterOpTester(const NamedClassDecoder& decoder)
       : CondVfpOpTester(decoder) {}
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
@@ -1791,7 +1791,7 @@ class MoveVfpRegisterOpTester : public CondVfpOpTester {
 // within Vn.
 class MoveVfpRegisterOpWithTypeSelTester : public MoveVfpRegisterOpTester {
  public:
-  explicit inline MoveVfpRegisterOpWithTypeSelTester(
+  explicit MoveVfpRegisterOpWithTypeSelTester(
       const NamedClassDecoder& decoder)
       : MoveVfpRegisterOpTester(decoder) {}
   virtual bool ApplySanityChecks(
@@ -1821,7 +1821,7 @@ class MoveVfpRegisterOpWithTypeSelTester : public MoveVfpRegisterOpTester {
 // if b:e=11 then UNDEFINED.
 class DuplicateToVfpRegistersTester : public CondVfpOpTester {
  public:
-  explicit inline DuplicateToVfpRegistersTester(
+  explicit DuplicateToVfpRegistersTester(
       const NamedClassDecoder& decoder)
       : CondVfpOpTester(decoder) {}
   virtual bool ApplySanityChecks(

@@ -105,19 +105,19 @@ class ProblemRecord {
 
   ProblemRecord& operator=(const ProblemRecord& r);
 
-  inline uint32_t vaddr() const {
+  uint32_t vaddr() const {
     return vaddr_;
   }
 
-  inline ValidatorProblem problem() const {
+  ValidatorProblem problem() const {
     return problem_;
   }
 
-  inline ValidatorProblemMethod method() const {
+  ValidatorProblemMethod method() const {
     return method_;
   }
 
-  inline const uint32_t* user_data() const {
+  const uint32_t* user_data() const {
     return user_data_;
   }
 

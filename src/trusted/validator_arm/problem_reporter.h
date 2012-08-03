@@ -18,7 +18,7 @@ namespace nacl_arm_val {
 // data, and converts reported problems into human readable text.
 class ProblemReporter : public ProblemSink {
  public:
-  inline ProblemReporter() {}
+  ProblemReporter() {}
   virtual ~ProblemReporter() {}
 
  protected:

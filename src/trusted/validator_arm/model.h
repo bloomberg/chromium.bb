@@ -46,31 +46,31 @@ static const uint32_t kRegisterNoneNumber = 31;
 // implicit conversion to/from int.
 class Register {
  public:
-  inline Register() : number_(kRegisterNoneNumber) {}
-  explicit inline Register(uint32_t number) : number_(number) {}
+  Register() : number_(kRegisterNoneNumber) {}
+  explicit Register(uint32_t number) : number_(number) {}
 
   // Note: can't make explicit without introducing compile-time errors
   // on functions returning a Register value.
-  inline Register(const Register& r) : number_(r.number_) {}
+  Register(const Register& r) : number_(r.number_) {}
 
   // Produces the bitmask used to represent this register, in both RegisterList
   // and ARM's LDM instruction.
-  inline uint32_t BitMask() const {
+  uint32_t BitMask() const {
     if (number_ == 31) return 0;
     return (1 << number_);
   }
 
   // Returns the register number for the register.
-  inline uint32_t number() const {
+  uint32_t number() const {
     return number_;
   }
 
-  inline bool Equals(const Register& r) const {
+  bool Equals(const Register& r) const {
     return number_ == r.number_;
   }
 
   // Changes the value of a register.
-  inline Register& Copy(const Register& r) {
+  Register& Copy(const Register& r) {
     number_ = r.number_;
     return *this;
   }
@@ -120,75 +120,75 @@ static const Register kCondsDontCareFlag(kCondsDontCareIndex);
 class RegisterList {
  public:
   // Defines an empty register list.
-  inline RegisterList() : bits_(0) {}
+  RegisterList() : bits_(0) {}
 
   // Produces a RegisterList that contains the registers specified in the
   // given bitmask.  To indicate rN, the bitmask must include (1 << N).
-  explicit inline RegisterList(uint32_t bitmask) : bits_(bitmask) {}
+  explicit RegisterList(uint32_t bitmask) : bits_(bitmask) {}
 
   // Note: can't make explicit without introducing compile-time errors
   // on functions returning a RegisterList value.
-  inline RegisterList(const RegisterList& other) : bits_(other.bits_) {}
+  RegisterList(const RegisterList& other) : bits_(other.bits_) {}
 
   // Produces a RegisterList containing a single register.
-  explicit inline RegisterList(const Register& r) : bits_(r.BitMask()) {}
+  explicit RegisterList(const Register& r) : bits_(r.BitMask()) {}
 
   // Checks whether this list contains the given register.
-  inline bool Contains(const Register& r) const {
+  bool Contains(const Register& r) const {
     return bits_ & r.BitMask();
   }
 
   // Checks whether this list contains all the registers in the operand.
-  inline bool ContainsAll(const RegisterList& other) const {
+  bool ContainsAll(const RegisterList& other) const {
     return (bits_ & other.bits_) == other.bits_;
   }
 
   // Checks whether this list contains any of the registers in the operand.
-  inline bool ContainsAny(const RegisterList& other) const {
+  bool ContainsAny(const RegisterList& other) const {
     return bits_ & other.bits_;
   }
 
-  inline bool Equals(const RegisterList& other) const {
+  bool Equals(const RegisterList& other) const {
     return bits_ == other.bits_;
   }
 
   // Adds a register to the register list.
-  inline RegisterList& Add(const Register& r) {
+  RegisterList& Add(const Register& r) {
     bits_ |= r.BitMask();
     return *this;
   }
 
   // Removes a register from the register list.
-  inline RegisterList& Remove(const Register& r) {
+  RegisterList& Remove(const Register& r) {
     bits_ &= ~r.BitMask();
     return *this;
   }
 
   // Unions this given register list into this.
-  inline RegisterList& Union(const RegisterList& other) {
+  RegisterList& Union(const RegisterList& other) {
     bits_ |= other.bits_;
     return *this;
   }
 
   // Intersects the given register list into this.
-  inline RegisterList& Intersect(const RegisterList& other) {
+  RegisterList& Intersect(const RegisterList& other) {
     bits_ &= other.bits_;
     return *this;
   }
 
   // Copies the other register list into this.
-  inline RegisterList& Copy(const RegisterList& other) {
+  RegisterList& Copy(const RegisterList& other) {
     bits_ = other.bits_;
     return *this;
   }
 
   // Returns the bits defined in the register list.
-  inline uint32_t bits() const {
+  uint32_t bits() const {
     return bits_;
   }
 
   // Returns the number of elements in the register list.
-  inline uint32_t size(uint32_t limit = 32) const {
+  uint32_t size(uint32_t limit = 32) const {
     uint32_t count = 0;
     for (uint32_t i = 0; i < limit;  ++i) {
       if (bits_ & (1 << i)) ++count;
@@ -237,21 +237,21 @@ class Instruction {
   // Arm 32-bit instruction API *
   // ****************************
 
-  inline Instruction() : bits_(0) {}
+  Instruction() : bits_(0) {}
 
-  inline Instruction(const Instruction& inst) : bits_(inst.bits_) {}
+  Instruction(const Instruction& inst) : bits_(inst.bits_) {}
 
   // Creates an a 32-bit ARM instruction.
-  explicit inline Instruction(uint32_t bits)  : bits_(bits) {}
+  explicit Instruction(uint32_t bits)  : bits_(bits) {}
 
   // Returns the entire sequence of bits defined by an instruction.
-  inline uint32_t Bits() const {
+  uint32_t Bits() const {
     return bits_;
   }
 
   // Extracts a range of contiguous bits, right-justifies it, and returns it.
   // Note that the range follows hardware convention, with the high bit first.
-  inline uint32_t Bits(int hi, int lo) const {
+  uint32_t Bits(int hi, int lo) const {
     // When both arguments are constant (the usual case), this can be inlined
     // as
     //    ubfx r0, r0, #hi, #(hi+1-lo)
@@ -266,7 +266,7 @@ class Instruction {
 
   // Changes the range of contiguous bits, with the given value.
   // Note: Assumes the value fits, if not, it is truncated.
-  inline void SetBits(int hi, int lo, uint32_t value) {
+  void SetBits(int hi, int lo, uint32_t value) {
     // Compute bit mask for range of bits.
     int bit_count = hi - lo + 1;
     uint32_t clear_mask = (1 << bit_count) - 1;
@@ -279,17 +279,17 @@ class Instruction {
   }
 
   // A convenience method for converting bits to a register.
-  inline const Register Reg(int hi, int lo) const {
+  const Register Reg(int hi, int lo) const {
     return Register(Bits(hi, lo));
   }
 
   // Extracts a single bit (0 - 31).
-  inline bool Bit(int index) const {
+  bool Bit(int index) const {
     return (bits_ >> index) & 1;
   }
 
   // Sets the specified bit to the specified value for an ARM instruction.
-  inline void SetBit(int index, bool value) {
+  void SetBit(int index, bool value) {
     uint32_t mask = (1 << index);
     if (value) {
       // Set to 1
@@ -317,7 +317,7 @@ class Instruction {
   // Extracts the condition field.  UNCONDITIONAL is converted to AL -- in the
   // event that you need to distinguish, (1) make sure that's really true and
   // then (2) explicitly extract bits(31,28).
-  inline Condition GetCondition() const {
+  Condition GetCondition() const {
     Instruction::Condition cc = Instruction::Condition(Bits(31, 28));
     if (cc == Instruction::UNCONDITIONAL) {
       return Instruction::AL;
@@ -330,11 +330,11 @@ class Instruction {
   // **********************************
 
   // Creates a 1 word THUMB instruction.
-  explicit inline Instruction(uint16_t word)
+  explicit Instruction(uint16_t word)
       : bits_(static_cast<uint32_t>(word)) {}
 
   // Creates a 2 word THUMB instruction.
-  explicit inline Instruction(uint16_t word1, uint16_t word2)
+  explicit Instruction(uint16_t word1, uint16_t word2)
       : bits_(((static_cast<int32_t>(word2) << kThumbWordSize)
                | static_cast<uint32_t>(word1)))
   {}
@@ -343,7 +343,7 @@ class Instruction {
   // THUMB instruction , right-justifies it, and returns it.  Note
   // that the range follows hardware convention, with the high bit
   // first.
-  inline uint16_t Word1Bits(int hi, int lo) const {
+  uint16_t Word1Bits(int hi, int lo) const {
     return static_cast<uint16_t>(Bits(hi, lo));
   }
 
@@ -351,7 +351,7 @@ class Instruction {
   // THUMB instruction , right-justifies it, and returns it.  Note
   // that the range follows hardware convention, with the high bit
   // first.
-  inline uint16_t Word2Bits(int hi, int lo) const {
+  uint16_t Word2Bits(int hi, int lo) const {
     return
         static_cast<uint16_t>(Bits(hi + kThumbWordSize, lo + kThumbWordSize));
   }
@@ -359,51 +359,51 @@ class Instruction {
   // Changes the range of contiguous bits of the first word of a THUMB
   // instruction, with the given value.  Note: Assumes the value fits,
   // if not, it is truncated.
-  inline void Word1SetBits(int hi, int lo, uint16_t value)  {
+  void Word1SetBits(int hi, int lo, uint16_t value)  {
     SetBits(hi, lo, (uint32_t) value);
   }
 
   // Changes the range of contiguous bits of the second word of a THUMB
   // instruction, with the given value.  Note: Assumes the value fits,
   // if not, it is truncated.
-  inline void Word2SetBits(int hi, int lo, uint16_t value) {
+  void Word2SetBits(int hi, int lo, uint16_t value) {
     SetBits(hi + kThumbWordSize, lo + kThumbWordSize,
              static_cast<uint32_t>(value));
   }
 
   // A convenience method that extracts the register specified by
   // the corresponding bits of the first word of a THUMB instruction.
-  inline const Register Word1Reg(int hi, int lo) const {
+  const Register Word1Reg(int hi, int lo) const {
     return Register(Word1Bits(hi, lo));
   }
 
   // A convenience method that extracts the register specified by
   // the corresponding bits of the second word of a THUMB instruction.
-  inline const Register Word2Reg(int hi, int lo) const {
+  const Register Word2Reg(int hi, int lo) const {
     return Register(Word2Bits(hi, lo));
   }
 
   // Extracts a single bit (0 - 15) from the first word of a
   // THUMB instruction.
-  inline bool Word1Bit(int index) const {
+  bool Word1Bit(int index) const {
     return Bit(index);
   }
 
   // Extracts a single bit (0 - 15) from the second word of
   // a THUMB instruction.
-  inline bool Word2Bit(int index) const {
+  bool Word2Bit(int index) const {
     return Bit(index + kThumbWordSize);
   }
 
   // Sets the specified bit of the first word in a THUMB instruction
   // to the corresponding value.
-  inline void Word1SetBit(int index, bool value) {
+  void Word1SetBit(int index, bool value) {
     SetBit(index, value);
   }
 
   // Sets the specified bit of the second word in a THUMB instruction
   // to the corresponding value.
-  inline void Word2SetBit(int index, bool value) {
+  void Word2SetBit(int index, bool value) {
     SetBit(index + kThumbWordSize, value);
   }
 
