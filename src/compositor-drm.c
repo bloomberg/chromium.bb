@@ -2100,6 +2100,7 @@ vt_func(struct weston_compositor *compositor, int event)
 
 	switch (event) {
 	case TTY_ENTER_VT:
+		weston_log("entering VT\n");
 		compositor->focus = 1;
 		if (weston_launcher_drm_set_master(&ec->base, ec->drm.fd, 1)) {
 			weston_log("failed to set master: %m\n");
@@ -2114,6 +2115,7 @@ vt_func(struct weston_compositor *compositor, int event)
 		}
 		break;
 	case TTY_LEAVE_VT:
+		weston_log("leaving VT\n");
 		wl_list_for_each(seat, &compositor->seat_list, link) {
 			evdev_disable_udev_monitor(seat);
 			evdev_remove_devices(seat);
