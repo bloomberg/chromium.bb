@@ -20,6 +20,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/transport_security_state.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_payload_map.h"
@@ -118,6 +119,8 @@ class MyTestURLRequestContext : public TestURLRequestContext {
             net::HostResolver::kDefaultParallelism,
             net::HostResolver::kDefaultRetryAttempts,
             NULL));
+    context_storage_.set_transport_security_state(
+        new net::TransportSecurityState());
     Init();
   }
 
