@@ -1505,6 +1505,17 @@ const char kDisableWebsiteSettings[]         = "disable-website-settings";
 // Enables sync credential caching on Windows 8.
 // See chrome/browser/sync/credential_cache_service_win.h.
 const char kEnableSyncCredentialCaching[]    = "enable-sync-credential-caching";
+
+// For the DelegateExecute verb handler to launch Chrome in metro mode on
+// Windows 8 and higher.  Used when relaunching metro Chrome.
+const char kForceImmersive[]                 = "force-immersive";
+
+// Relaunches metro Chrome on Windows 8 and higher using a given shortcut.
+const char kRelaunchShortcut[]               = "relaunch-shortcut";
+
+// Waits for the given handle to be signaled before relaunching metro Chrome on
+// Windows 8 and higher.
+const char kWaitForHandle[]                  = "wait-for-handle";
 #endif
 
 #if defined(USE_AURA)

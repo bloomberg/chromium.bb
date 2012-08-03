@@ -421,6 +421,9 @@ extern const char kUseMockKeychain[];
 extern const char kDisableDesktopShortcuts[];
 extern const char kDisableWebsiteSettings[];
 extern const char kEnableSyncCredentialCaching[];
+extern const char kForceImmersive[];
+extern const char kRelaunchShortcut[];
+extern const char kWaitForHandle[];
 #endif
 
 #if defined(USE_AURA)

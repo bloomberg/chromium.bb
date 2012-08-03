@@ -32,6 +32,7 @@
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -610,4 +611,31 @@ bool ShellIntegration::ActivateMetroChrome() {
   const string16 app_id(
       ShellUtil::GetBrowserModelId(dist, chrome_exe.value()));
   return ActivateApplication(app_id);
+}
+
+FilePath ShellIntegration::GetStartMenuShortcut(const FilePath& chrome_exe) {
+  static const int kFolderIds[] = {
+    base::DIR_COMMON_START_MENU,
+    base::DIR_START_MENU,
+  };
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  string16 shortcut_name(dist->GetAppShortCutName());
+  FilePath shortcut;
+
+  // Check both the common and the per-user Start Menu folders for system-level
+  // installs.
+  size_t folder =
+      InstallUtil::IsPerUserInstall(chrome_exe.value().c_str()) ? 1 : 0;
+  for (; folder < arraysize(kFolderIds); ++folder) {
+    if (!PathService::Get(kFolderIds[folder], &shortcut)) {
+      NOTREACHED();
+      continue;
+    }
+
+    shortcut = shortcut.Append(shortcut_name).Append(shortcut_name + L".lnk");
+    if (file_util::PathExists(shortcut))
+      return shortcut;
+  }
+
+  return FilePath();
 }
