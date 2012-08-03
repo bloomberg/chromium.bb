@@ -133,19 +133,6 @@ namespace extension_misc {
     LAUNCH_NONE
   };
 
-  // The name of the apps promo histogram.
-  extern const char kAppsPromoHistogram[];
-
-  // The buckets used in the apps promo histogram.
-  enum AppsPromoBuckets {
-    PROMO_LAUNCH_APP,
-    PROMO_LAUNCH_WEB_STORE,
-    PROMO_CLOSE,
-    PROMO_EXPIRE,
-    PROMO_SEEN,
-    PROMO_BUCKET_BOUNDARY
-  };
-
   // The name of the app launch histogram.
   extern const char kAppLaunchHistogram[];
 

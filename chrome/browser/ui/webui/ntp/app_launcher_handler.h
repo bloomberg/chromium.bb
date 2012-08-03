@@ -84,9 +84,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Callback for the "setPageIndex" message.
   void HandleSetPageIndex(const base::ListValue* args);
 
-  // Callback for the "promoSeen" message.
-  void HandlePromoSeen(const base::ListValue* args);
-
   // Callback for the "saveAppPageName" message.
   void HandleSaveAppPageName(const base::ListValue* args);
 
@@ -124,9 +121,8 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Reset some instance flags we use to track the currently uninstalling app.
   void CleanupAfterUninstall();
 
-  // Records a web store launch in the appropriate histograms. |promo_active|
-  // specifies if the web store promotion was active.
-  static void RecordWebStoreLaunch(bool promo_active);
+  // Records a web store launch in the appropriate histograms.
+  static void RecordWebStoreLaunch();
 
   // Records an app launch in the corresponding |bucket| of the app launch
   // histogram. |promo_active| specifies if the web store promotion was active.
@@ -156,9 +152,6 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // Returns the ExtensionInstallPrompt object for this class, creating it if
   // needed.
   ExtensionInstallPrompt* GetExtensionInstallPrompt();
-
-  // Helper that uninstalls all the default apps.
-  void UninstallDefaultApps();
 
   // Continuation for installing a bookmark app after favicon lookup.
   void OnFaviconForApp(FaviconService::Handle handle,

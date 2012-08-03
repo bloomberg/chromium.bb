@@ -11,10 +11,6 @@ namespace prefs {
 // *************** PROFILE PREFS ***************
 // These are attached to the user profile
 
-// A counter that controls whether the apps promo is shown in the app launcher
-// or not.
-const char kAppsPromoCounter[] = "apps_promo_counter";
-
 // A string property indicating whether default apps should be installed
 // in this profile.  Use the value "install" to enable defaults apps, or
 // "noinstall" to disable them.  This property is usually set in the
@@ -1566,9 +1562,6 @@ const char kNtpWebStorePromoUserGroup[] = "ntp.webstorepromo.usergroup";
 
 // Customized app page names that appear on the New Tab Page.
 const char kNtpAppPageNames[] = "ntp.app_page_names";
-
-// When true, web store promos will never be shown.
-const char kNtpHideWebStorePromo[] = "ntp.hide_webstore_promo";
 
 const char kDevToolsDisabled[] = "devtools.disabled";
 

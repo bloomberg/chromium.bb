@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/app_notification.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
-#include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -214,9 +213,6 @@ void AppLauncherHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("setPageIndex",
       base::Bind(&AppLauncherHandler::HandleSetPageIndex,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("promoSeen",
-      base::Bind(&AppLauncherHandler::HandlePromoSeen,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("saveAppPageName",
       base::Bind(&AppLauncherHandler::HandleSaveAppPageName,
                  base::Unretained(this)));
@@ -387,11 +383,6 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   dictionary->SetBoolean("disableCreateAppShortcut", true);
 #endif
 
-  dictionary->SetBoolean(
-      "showLauncher",
-      extension_service_->apps_promo()->ShouldShowAppLauncher(
-          extension_service_->GetAppIds()));
-
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   const ListValue* app_page_names = prefs->GetList(prefs::kNtpAppPageNames);
   if (!app_page_names || !app_page_names->GetSize()) {
@@ -420,15 +411,6 @@ DictionaryValue* AppLauncherHandler::GetAppInfo(const Extension* extension) {
   return app_info;
 }
 
-void AppLauncherHandler::FillPromoDictionary(DictionaryValue* dictionary) {
-  AppsPromo::PromoData data = AppsPromo::GetPromo();
-  dictionary->SetString("promoHeader", data.header);
-  dictionary->SetString("promoButton", data.button);
-  dictionary->SetString("promoLink", data.link.spec());
-  dictionary->SetString("promoLogo", data.logo.spec());
-  dictionary->SetString("promoExpire", data.expire);
-}
-
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   DictionaryValue dictionary;
 
@@ -440,24 +422,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   //    expired.
   // b) Conceptually, it doesn't really make sense to count a
   //    prefchange-triggered refresh as a promo 'view'.
-  AppsPromo* apps_promo = extension_service_->apps_promo();
   Profile* profile = Profile::FromWebUI(web_ui());
-  bool apps_promo_just_expired = false;
-  if (apps_promo->ShouldShowPromo(extension_service_->GetAppIds(),
-                                  &apps_promo_just_expired)) {
-    dictionary.SetBoolean("showPromo", true);
-    FillPromoDictionary(&dictionary);
-  } else {
-    dictionary.SetBoolean("showPromo", false);
-  }
-
-  // If the default apps have just expired (user viewed them too many times with
-  // no interaction), then we uninstall them and focus the recent sites section.
-  if (apps_promo_just_expired) {
-    ignore_changes_ = true;
-    UninstallDefaultApps();
-    ignore_changes_ = false;
-  }
 
   // The first time we load the apps we must add all current app to the list
   // of apps visible on the NTP.
@@ -543,9 +508,8 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
         web_ui_util::GetDispositionFromClick(args, 3) : CURRENT_TAB;
   if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunchByID(launch_bucket);
-    extension_service_->apps_promo()->ExpireDefaultApps();
   } else {
-    RecordWebStoreLaunch(url.find("chrome-ntp-promo") != std::string::npos);
+    RecordWebStoreLaunch();
   }
 
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB ||
@@ -692,12 +656,6 @@ void AppLauncherHandler::HandleSetPageIndex(const ListValue* args) {
   // Don't update the page; it already knows the apps have been reordered.
   AutoReset<bool> auto_reset(&ignore_changes_, true);
   extension_sorting->SetPageOrdinal(extension_id, page_ordinal);
-}
-
-void AppLauncherHandler::HandlePromoSeen(const ListValue* args) {
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
-                            extension_misc::PROMO_SEEN,
-                            extension_misc::PROMO_BUCKET_BOUNDARY);
 }
 
 void AppLauncherHandler::HandleSaveAppPageName(const ListValue* args) {
@@ -850,14 +808,8 @@ void AppLauncherHandler::RecordAppLaunchType(
 }
 
 // static
-void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
+void AppLauncherHandler::RecordWebStoreLaunch() {
   RecordAppLaunchType(extension_misc::APP_LAUNCH_NTP_WEBSTORE);
-
-  if (!promo_active) return;
-
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
-                            extension_misc::PROMO_LAUNCH_WEB_STORE,
-                            extension_misc::PROMO_BUCKET_BOUNDARY);
 }
 
 // static
@@ -993,14 +945,4 @@ ExtensionInstallPrompt* AppLauncherHandler::GetExtensionInstallPrompt() {
         chrome::CreateExtensionInstallPromptWithBrowser(browser));
   }
   return extension_install_ui_.get();
-}
-
-void AppLauncherHandler::UninstallDefaultApps() {
-  AppsPromo* apps_promo = extension_service_->apps_promo();
-  const extensions::ExtensionIdSet& app_ids = apps_promo->old_default_apps();
-  for (extensions::ExtensionIdSet::const_iterator iter = app_ids.begin();
-       iter != app_ids.end(); ++iter) {
-    if (extension_service_->GetExtensionById(*iter, true))
-      extension_service_->UninstallExtension(*iter, false, NULL);
-  }
 }

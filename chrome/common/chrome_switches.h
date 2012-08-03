@@ -196,7 +196,6 @@ extern const char kFlagSwitchesEnd[];
 extern const char kFeedbackServer[];
 extern const char kFileDescriptorLimit[];
 extern const char kFirstRun[];
-extern const char kForceAppsPromoVisible[];
 extern const char kGaiaHost[];
 extern const char kGaiaOAuthHost[];
 extern const char kGaiaOAuthUrlPath[];

@@ -14,7 +14,6 @@
 namespace prefs {
 
 // Profile prefs. Please add Local State prefs below instead.
-extern const char kAppsPromoCounter[];
 extern const char kDefaultApps[];
 extern const char kDefaultAppsInstalled[];
 extern const char kHomePageIsNewTabPage[];
@@ -548,17 +547,7 @@ extern const char kNtpPromoPlatform[];
 extern const char kNtpPromoBuild[];
 extern const char kNtpPromoGplusRequired[];
 extern const char kNtpWebStoreEnabled[];
-extern const char kNtpWebStorePromoLastId[];
-extern const char kNtpWebStorePromoId[];
-extern const char kNtpWebStorePromoHeader[];
-extern const char kNtpWebStorePromoButton[];
-extern const char kNtpWebStorePromoLink[];
-extern const char kNtpWebStorePromoLogo[];
-extern const char kNtpWebStorePromoLogoSource[];
-extern const char kNtpWebStorePromoExpire[];
-extern const char kNtpWebStorePromoUserGroup[];
 extern const char kNtpAppPageNames[];
-extern const char kNtpHideWebStorePromo[];
 
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsOpenDocked[];

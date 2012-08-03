@@ -17,7 +17,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs.h"
-#include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -165,7 +164,6 @@ void RegisterLocalState(PrefService* local_state) {
 
   PromoResourceService::RegisterPrefs(local_state);
 #if !defined(OS_ANDROID)
-  AppsPromo::RegisterPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
   RegisterBrowserPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
@@ -240,7 +238,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if !defined(OS_ANDROID)
-  AppsPromo::RegisterUserPrefs(user_prefs);
   CaptureVisibleTabFunction::RegisterUserPrefs(user_prefs);
   ChromeToMobileService::RegisterUserPrefs(user_prefs);
   extensions::CommandService::RegisterUserPrefs(user_prefs);

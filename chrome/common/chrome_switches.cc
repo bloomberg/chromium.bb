@@ -708,10 +708,6 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 // whether or not it's actually the first run.
 const char kFirstRun[]                      = "first-run";
 
-// Forces the apps/webstore promo to be shown, independent of whether it has
-// timed out, etc. Useful for testing.
-const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
-
 // Specifies the backend server used for gaia authentications, like sync or
 // policies for example. The https:// prefix and the trailing slash should be
 // omitted. The default value is "www.google.com".

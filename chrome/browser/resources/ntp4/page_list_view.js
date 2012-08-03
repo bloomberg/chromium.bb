@@ -393,8 +393,6 @@ cr.define('ntp', function() {
           this.appsPages[pageIndex].insertApp(app, false);
       }
 
-      ntp.AppsPage.setPromo(data.showPromo ? data : null);
-
       this.cardSlider.currentCard = prevCurrentCard;
 
       if (highlightApp)

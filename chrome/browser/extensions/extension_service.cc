@@ -38,7 +38,6 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
-#include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -337,7 +336,6 @@ ExtensionService::ExtensionService(Profile* profile,
       menu_manager_(profile),
       app_notification_manager_(
           new extensions::AppNotificationManager(profile)),
-      apps_promo_(profile->GetPrefs()),
       event_routers_initialized_(false),
       update_once_all_providers_are_ready_(false),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),

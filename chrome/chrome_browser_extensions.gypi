@@ -252,8 +252,6 @@
         'browser/extensions/app_notify_channel_ui_android.h',
         'browser/extensions/app_shortcut_manager.cc',
         'browser/extensions/app_shortcut_manager.h',
-        'browser/extensions/apps_promo.cc',
-        'browser/extensions/apps_promo.h',
         'browser/extensions/app_sync_bundle.cc',
         'browser/extensions/app_sync_bundle.h',
         'browser/extensions/app_sync_data.cc',

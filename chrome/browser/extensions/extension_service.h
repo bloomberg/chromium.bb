@@ -24,7 +24,6 @@
 #include "base/tuple.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
-#include "chrome/browser/extensions/apps_promo.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -218,8 +217,6 @@ class ExtensionService
       pending_extension_manager() OVERRIDE;
 
   const FilePath& install_directory() const { return install_directory_; }
-
-  AppsPromo* apps_promo() { return &apps_promo_; }
 
   extensions::ProcessMap* process_map() { return &process_map_; }
 
@@ -798,9 +795,6 @@ class ExtensionService
   // Keeps track of favicon-sized omnibox icons for extensions.
   ExtensionIconManager omnibox_icon_manager_;
   ExtensionIconManager omnibox_popup_icon_manager_;
-
-  // Manages the promotion of the web store.
-  AppsPromo apps_promo_;
 
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;

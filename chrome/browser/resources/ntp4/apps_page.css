@@ -102,67 +102,8 @@
   text-decoration: underline;
 }
 
-/* Promo */
-/* Show the promo if the webstore has a promo and is the only app on the page.
- */
-.tile:only-of-type > .has-promo > .app-contents > span {
-  display: none;
-}
-
-.tile:only-of-type > .has-promo .app-img-container > .apps-promo-logo {
-  display: block;
-}
-
-.apps-promo-logo {
-  display: none;
-  height: 128px;
-  width: 128px;
-}
-
-.tile:only-of-type > .has-promo .app-img-container > img:first-child {
-  display: none;
-}
-
 .app-img-container > img:first-child {
   display: block;
-}
-
-/* TODO(estade): animation? */
-.tile:only-of-type > .has-promo > .apps-promo-extras {
-  display: block;
-}
-
-.apps-promo-extras {
-  display: none;
-  /* 128 * 5/4 */
-  left: 160px;
-  position: absolute;
-  text-align: left;
-  top: 0;
-}
-
-html[dir='rtl'] .apps-promo-extras {
-  left: auto;
-  right: 160px;
-}
-
-.apps-promo-heading {
-  -webkit-margin-start: 3px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.g-button-basic {
-  -webkit-border-image: url('images/app_promo_button.png') 6 10 12 6;
-  border-width: 6px 10px 12px 6px;
-  color: #fff !important;
-  display: inline-block;
-  font-size: 1.3em;
-  font-weight: bold;
-  padding: 2px 10px;
-  text-align: center;
-  text-decoration: none;
-  white-space: nowrap;
 }
 
 .app .invisible {
