@@ -42,15 +42,8 @@ const double kMetricCPUUsageTickSize = 100.0;
 // Private Memory Usage
 const char kMetricPrivateMemoryUsageName[] = "Private Memory Usage";
 const char kMetricPrivateMemoryUsageDescription[] =
-    "The total private memory usage of all chrome processes measured in bytes.";
-const char kMetricPrivateMemoryUsageUnits[] = "bytes";
+    "The private memory usage measured in bytes.";
+const char kMetricPrivateMemoryUsageUnits[] = "percent";
 const double kMetricPrivateMemoryUsageTickSize = 10000000.0;
-
-// Shared Memory Usage
-const char kMetricSharedMemoryUsageName[] = "Shared Memory Usage";
-const char kMetricSharedMemoryUsageDescription[] =
-    "The total shared memory usage of all chrome processes measured in bytes.";
-const char kMetricSharedMemoryUsageUnits[] = "bytes";
-const double kMetricSharedMemoryUsageTickSize = 10000000.0;
 
 }  // namespace performance_monitor

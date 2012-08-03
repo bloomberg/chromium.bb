@@ -28,10 +28,6 @@ extern const char kMetricPrivateMemoryUsageName[];
 extern const char kMetricPrivateMemoryUsageDescription[];
 extern const char kMetricPrivateMemoryUsageUnits[];
 extern const double kMetricPrivateMemoryUsageTickSize;
-extern const char kMetricSharedMemoryUsageName[];
-extern const char kMetricSharedMemoryUsageDescription[];
-extern const char kMetricSharedMemoryUsageUnits[];
-extern const double kMetricSharedMemoryUsageTickSize;
 
 }  // namespace performance_monitor
 

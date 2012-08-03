@@ -25,12 +25,6 @@ const MetricDetails kMetricDetailsList[] = {
     kMetricPrivateMemoryUsageUnits,
     kMetricPrivateMemoryUsageTickSize
   },
-  {
-    kMetricSharedMemoryUsageName,
-    kMetricSharedMemoryUsageDescription,
-    kMetricSharedMemoryUsageUnits,
-    kMetricSharedMemoryUsageTickSize
-  },
 };
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMetricDetailsList) == METRIC_NUMBER_OF_METRICS,
                metric_names_incorrect_size);

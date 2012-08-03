@@ -13,7 +13,6 @@ namespace performance_monitor {
 enum MetricType {
   METRIC_CPU_USAGE,
   METRIC_PRIVATE_MEMORY_USAGE,
-  METRIC_SHARED_MEMORY_USAGE,
   METRIC_NUMBER_OF_METRICS
 };
 

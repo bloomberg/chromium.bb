@@ -5,16 +5,12 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MONITOR_PERFORMANCE_MONITOR_H_
 
-#include <map>
 #include <string>
 
 #include "base/callback.h"
 #include "base/file_path.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/process.h"
-#include "base/process_util.h"
 #include "base/timer.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/event.h"
@@ -30,9 +26,6 @@ class PerformanceMonitor : public content::NotificationObserver {
  public:
   typedef base::Callback<void(const std::string&)> StateValueCallback;
 
-  typedef std::map<base::ProcessHandle,
-                   linked_ptr<base::ProcessMetrics> > MetricsMap;
-
   // Set the path which the PerformanceMonitor should use for the database files
   // constructed. This must be done prior to the initialization of the
   // PerformanceMonitor. Returns true on success, false on failure (failure
@@ -47,9 +40,6 @@ class PerformanceMonitor : public content::NotificationObserver {
   // Begins the initialization process for the PerformanceMonitor in order to
   // start collecting data.
   void Start();
-
-  // Gathers CPU usage and memory usage of all Chrome processes.
-  void GatherStatisticsOnBackgroundThread();
 
   // content::NotificationObserver
   // Wait for various notifications; insert events into the database upon
@@ -99,16 +89,6 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   void AddEventOnBackgroundThread(scoped_ptr<Event> event);
 
-  // Gathers the CPU usage of every Chrome process that has been running since
-  // the last call to GatherStatistics().
-  void GatherCPUUsageOnBackgroundThread();
-
-  // Gathers the memory usage of every process in the current list of processes.
-  void GatherMemoryUsageOnBackgroundThread();
-
-  // Updates the ProcessMetrics map with the current list of processes.
-  void UpdateMetricsMapOnBackgroundThread();
-
   // Gets the corresponding value of |key| from the database, and then runs
   // |callback| on the UI thread with that value as a parameter.
   void GetStateValueOnBackgroundThread(
@@ -132,9 +112,6 @@ class PerformanceMonitor : public content::NotificationObserver {
   FilePath database_path_;
 
   scoped_ptr<Database> database_;
-
-  // A map of currently running ProcessHandles to ProcessMetrics.
-  MetricsMap metrics_map_;
 
   // The timer to signal PerformanceMonitor to perform its timed collections.
   base::RepeatingTimer<PerformanceMonitor> timer_;

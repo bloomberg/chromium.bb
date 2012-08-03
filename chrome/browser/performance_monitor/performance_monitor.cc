@@ -5,12 +5,10 @@
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 
 #include <set>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "base/time.h"
@@ -18,6 +16,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/performance_monitor/constants.h"
+#include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,8 +26,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/test/base/chrome_process_util.h"
-#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -39,10 +36,6 @@ using content::BrowserThread;
 using extensions::Extension;
 
 namespace {
-const uint32 kAccessFlags = base::kProcessAccessDuplicateHandle |
-                            base::kProcessAccessQueryInformation |
-                            base::kProcessAccessTerminate |
-                            base::kProcessAccessWaitForTermination;
 
 std::string TimeToString(base::Time time) {
   int64 time_int64 = time.ToInternalValue();
@@ -245,90 +238,6 @@ void PerformanceMonitor::NotifyInitialized() {
       chrome::NOTIFICATION_PERFORMANCE_MONITOR_INITIALIZED,
       content::Source<PerformanceMonitor>(this),
       content::NotificationService::NoDetails());
-}
-
-void PerformanceMonitor::GatherStatisticsOnBackgroundThread() {
-  CHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Because the CPU usage is gathered as an average since the last time the
-  // function was called, while the memory usage is gathered as an instantaneous
-  // usage, the CPU usage is gathered before the metrics map is wiped.
-  GatherCPUUsageOnBackgroundThread();
-  UpdateMetricsMapOnBackgroundThread();
-  GatherMemoryUsageOnBackgroundThread();
-}
-
-void PerformanceMonitor::GatherCPUUsageOnBackgroundThread() {
-  if (metrics_map_.size()) {
-    double cpu_usage = 0;
-    for (MetricsMap::const_iterator iter = metrics_map_.begin();
-         iter != metrics_map_.end(); ++iter) {
-      cpu_usage += iter->second->GetCPUUsage();
-    }
-
-    database_->AddMetric(METRIC_CPU_USAGE, base::DoubleToString(cpu_usage));
-  }
-}
-
-void PerformanceMonitor::GatherMemoryUsageOnBackgroundThread() {
-  size_t private_memory_sum = 0;
-  size_t shared_memory_sum = 0;
-  for (MetricsMap::const_iterator iter = metrics_map_.begin();
-       iter != metrics_map_.end(); ++iter) {
-    size_t private_memory = 0;
-    size_t shared_memory = 0;
-    if (iter->second->GetMemoryBytes(&private_memory, &shared_memory)) {
-      private_memory_sum += private_memory;
-      shared_memory_sum += shared_memory;
-    } else {
-      LOG(WARNING) << "GetMemoryBytes returned NULL (platform-specific error)";
-    }
-  }
-
-  database_->AddMetric(METRIC_PRIVATE_MEMORY_USAGE,
-                       base::Uint64ToString(private_memory_sum));
-  database_->AddMetric(METRIC_SHARED_MEMORY_USAGE,
-                       base::Uint64ToString(shared_memory_sum));
-}
-
-void PerformanceMonitor::UpdateMetricsMapOnBackgroundThread() {
-  // Remove old process handles. Use two iterators to safely call erase() on the
-  // current element.
-  for (MetricsMap::iterator iter_next = metrics_map_.begin();
-       iter_next != metrics_map_.end();) {
-    MetricsMap::iterator iter = iter_next++;
-
-    if (base::GetTerminationStatus(iter->first, NULL) !=
-        base::TERMINATION_STATUS_STILL_RUNNING) {
-      base::CloseProcessHandle(iter->first);
-      metrics_map_.erase(iter);
-    }
-  }
-
-  // Add new process handles.
-  base::ProcessId browser_pid = base::GetCurrentProcId();
-  ChromeProcessList chrome_processes(GetRunningChromeProcesses(browser_pid));
-  for (ChromeProcessList::const_iterator pid_iter = chrome_processes.begin();
-       pid_iter != chrome_processes.end(); ++pid_iter) {
-    base::ProcessHandle process_handle;
-    if (base::OpenProcessHandleWithAccess(*pid_iter,
-                                          kAccessFlags,
-                                          &process_handle) &&
-        !ContainsKey(metrics_map_, process_handle)) {
-#if defined(OS_MACOSX)
-      linked_ptr<base::ProcessMetrics> process_metrics(
-          base::ProcessMetrics::CreateProcessMetrics(process_handle,
-              content::BrowserChildProcessHost::GetPortProvider()));
-#else
-      linked_ptr<base::ProcessMetrics> process_metrics(
-          base::ProcessMetrics::CreateProcessMetrics(process_handle));
-#endif
-      // Prime the CPUUsage to be gathered next time.
-      process_metrics->GetCPUUsage();
-
-      metrics_map_[process_handle] = process_metrics;
-    }
-  }
 }
 
 void PerformanceMonitor::UpdateLiveProfiles() {

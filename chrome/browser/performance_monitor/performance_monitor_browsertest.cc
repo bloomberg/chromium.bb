@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -39,7 +38,6 @@ using extensions::Extension;
 using performance_monitor::Event;
 
 namespace {
-
 // Helper struct to store the information of an extension; this is needed if the
 // pointer to the extension ever becomes invalid (e.g., if we uninstall the
 // extension).
@@ -150,19 +148,6 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     windowed_observer.Wait();
   }
 
-  // A handle for gathering statistics from the database, which must be done on
-  // the background thread. Since we are testing, we can mock synchronicity with
-  // FlushForTesting().
-  void GatherStatistics() {
-    content::BrowserThread::PostBlockingPoolSequencedTask(
-        Database::kDatabaseSequenceToken,
-        FROM_HERE,
-        base::Bind(&PerformanceMonitor::GatherStatisticsOnBackgroundThread,
-                   base::Unretained(performance_monitor())));
-
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-  }
-
   void GetEventsOnBackgroundThread(std::vector<linked_ptr<Event> >* events) {
     // base::Time is potentially flaky in that there is no guarantee that it
     // won't actually decrease between successive calls. If we call GetEvents
@@ -192,31 +177,6 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
 
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     return events;
-  }
-
-  void GetStatsOnBackgroundThread(Database::MetricInfoVector* metrics,
-                                  MetricType type) {
-    *metrics = performance_monitor_->database()->GetStatsForActivityAndMetric(
-        type, base::Time(), base::Time::FromInternalValue(kint64max));
-  }
-
-  // A handle for getting statistics from the database (see previous comments on
-  // GetEvents() and GetEventsOnBackgroundThread).
-  Database::MetricInfoVector GetStats(MetricType type) {
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    content::RunAllPendingInMessageLoop();
-
-    Database::MetricInfoVector metrics;
-    content::BrowserThread::PostBlockingPoolSequencedTask(
-        Database::kDatabaseSequenceToken,
-        FROM_HERE,
-        base::Bind(&PerformanceMonitorBrowserTest::GetStatsOnBackgroundThread,
-                   base::Unretained(this),
-                   &metrics,
-                   type));
-
-    content::BrowserThread::GetBlockingPool()->FlushForTesting();
-    return metrics;
   }
 
   // A handle for inserting a state value into the database, which must be done
@@ -500,51 +460,6 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
   ASSERT_EQ(kOldVersion, previous_version);
   ASSERT_TRUE(value->GetString("currentVersion", &current_version));
   ASSERT_EQ(version_string, current_version);
-}
-
-IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, GatherStatistics) {
-  GatherStatistics();
-
-  // Gather CPU usage. No stats should be recorded because this was the first
-  // call to GatherStatistics.
-  Database::MetricInfoVector stats = GetStats(METRIC_CPU_USAGE);
-  ASSERT_EQ(0u, stats.size());
-
-  // Gather private memory usage.
-  stats = GetStats(METRIC_PRIVATE_MEMORY_USAGE);
-  ASSERT_EQ(1u, stats.size());
-  EXPECT_GT(stats[0].value, 0);
-
-  // Gather shared memory usage.
-  stats = GetStats(METRIC_SHARED_MEMORY_USAGE);
-  ASSERT_EQ(1u, stats.size());
-  EXPECT_GT(stats[0].value, 0);
-
-  // Spin for a while, so CPU usage isn't 0.
-  const int kSpinCount = 1000000000;
-  int i = 0;
-  for (; i < kSpinCount; ++i) {
-  }
-  ASSERT_EQ(kSpinCount, i);
-
-  GatherStatistics();
-
-  // Gather CPU usage a second time and verify a stat was recorded.
-  stats = GetStats(METRIC_CPU_USAGE);
-  ASSERT_EQ(1u, stats.size());
-  EXPECT_GT(stats[0].value, 0);
-
-  // Gather private memory usage a second time and verify a second stat was
-  // recorded.
-  stats = GetStats(METRIC_PRIVATE_MEMORY_USAGE);
-  ASSERT_EQ(2u, stats.size());
-  EXPECT_GT(stats[1].value, 0);
-
-  // Gather shared memory usage a second time and verify a second stat was
-  // recorded.
-  stats = GetStats(METRIC_SHARED_MEMORY_USAGE);
-  ASSERT_EQ(2u, stats.size());
-  EXPECT_GT(stats[1].value, 0);
 }
 
 #if !defined(OS_WIN)
