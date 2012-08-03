@@ -20,16 +20,24 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 
 #include "compositor.h"
 #include "android-framebuffer.h"
+#include "evdev.h"
 
 struct android_compositor;
 
@@ -44,6 +52,7 @@ struct android_output {
 
 struct android_seat {
 	struct weston_seat base;
+	struct wl_list devices_list;
 };
 
 struct android_compositor {
@@ -56,6 +65,12 @@ static inline struct android_output *
 to_android_output(struct weston_output *base)
 {
 	return container_of(base, struct android_output, base);
+}
+
+static inline struct android_seat *
+to_android_seat(struct weston_seat *base)
+{
+	return container_of(base, struct android_seat, base);
 }
 
 static inline struct android_compositor *
@@ -229,8 +244,85 @@ android_compositor_add_output(struct android_compositor *compositor,
 }
 
 static void
+android_led_update(struct weston_seat *seat_base, enum weston_led leds)
+{
+	struct android_seat *seat = to_android_seat(seat_base);
+
+	evdev_led_update(&seat->devices_list, leds);
+}
+
+static void
+android_seat_open_device(struct android_seat *seat, const char *devnode)
+{
+	struct evdev_input_device *device;
+	int fd;
+
+	/* XXX: check the Android excluded list */
+
+	fd = open(devnode, O_RDWR | O_NONBLOCK | O_CLOEXEC);
+	if (fd < 0) {
+		weston_log_continue("opening '%s' failed: %s\n", devnode,
+				    strerror(errno));
+		return;
+	}
+
+	device = evdev_input_device_create(&seat->base, devnode, fd);
+	if (!device) {
+		close(fd);
+		return;
+	}
+
+	wl_list_insert(seat->devices_list.prev, &device->link);
+}
+
+static int
+is_dot_or_dotdot(const char *str)
+{
+	return (str[0] == '.' &&
+		(str[1] == 0 || (str[1] == '.' && str[2] == 0)));
+}
+
+static void
+android_seat_scan_devices(struct android_seat *seat, const char *dirpath)
+{
+	int ret;
+	DIR *dir;
+	struct dirent *dent;
+	char *devnode = NULL;
+
+	dir = opendir(dirpath);
+	if (!dir) {
+		weston_log("Could not open input device directory '%s': %s\n",
+			   dirpath, strerror(errno));
+		return;
+	}
+
+	while ((dent = readdir(dir)) != NULL) {
+		if (is_dot_or_dotdot(dent->d_name))
+			continue;
+
+		ret = asprintf(&devnode, "%s/%s", dirpath, dent->d_name);
+		if (ret < 0)
+			continue;
+
+		android_seat_open_device(seat, devnode);
+		free(devnode);
+	}
+
+	closedir(dir);
+}
+
+static void
 android_seat_destroy(struct android_seat *seat)
 {
+	struct evdev_input_device *device, *next;
+
+	wl_list_for_each_safe(device, next, &seat->devices_list, link)
+		evdev_input_device_destroy(device);
+
+	if (seat->base.seat.keyboard)
+		notify_keyboard_focus_out(&seat->base.seat);
+
 	weston_seat_release(&seat->base);
 	free(seat);
 }
@@ -245,7 +337,18 @@ android_seat_create(struct android_compositor *compositor)
 		return NULL;
 
 	weston_seat_init(&seat->base, &compositor->base);
+	seat->base.led_update = android_led_update;
+	wl_list_init(&seat->devices_list);
 	compositor->base.seat = &seat->base;
+
+	android_seat_scan_devices(seat, "/dev/input");
+
+	evdev_notify_keyboard_focus(&seat->base, &seat->devices_list);
+
+	if (wl_list_empty(&seat->devices_list))
+		weston_log("Warning: no input devices found.\n");
+
+	/* XXX: implement hotplug support */
 
 	return seat;
 }
@@ -411,6 +514,8 @@ android_compositor_create(struct wl_display *display, int argc, char *argv[],
 {
 	struct android_compositor *compositor;
 	struct android_output *output;
+
+	weston_log("initializing android backend\n");
 
 	compositor = calloc(1, sizeof *compositor);
 	if (compositor == NULL)

@@ -115,6 +115,7 @@ AC_ARG_ENABLE(android-compositor,
 AM_CONDITIONAL(ENABLE_ANDROID_COMPOSITOR, test x$enable_android_compositor = xyes)
 if test x$enable_android_compositor = xyes; then
   AC_DEFINE([BUILD_ANDROID_COMPOSITOR], [1], [Build the compositor for Android 4.0])
+  PKG_CHECK_MODULES(ANDROID_COMPOSITOR, [mtdev >= 1.1.0])
 fi
 
 

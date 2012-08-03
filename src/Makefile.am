@@ -124,12 +124,18 @@ endif
 if ENABLE_ANDROID_COMPOSITOR
 android_backend = android-backend.la
 android_backend_la_LDFLAGS = -module -avoid-version
-android_backend_la_LIBADD = $(COMPOSITOR_LIBS)
-android_backend_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+android_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(ANDROID_COMPOSITOR_LIBS)
+android_backend_la_CFLAGS =			\
+	$(GCC_CFLAGS)				\
+	$(COMPOSITOR_CFLAGS)			\
+	$(ANDROID_COMPOSITOR_CFLAGS)
 android_backend_la_CXXFLAGS = $(GCC_CXXFLAGS) $(COMPOSITOR_CFLAGS)
-android_backend_la_SOURCES = \
-	compositor-android.c \
-	android-framebuffer.cpp \
+android_backend_la_SOURCES =			\
+	compositor-android.c			\
+	evdev.c					\
+	evdev.h					\
+	evdev-touchpad.c			\
+	android-framebuffer.cpp			\
 	android-framebuffer.h
 endif
 
