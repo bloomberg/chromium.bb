@@ -1905,6 +1905,8 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 		devnode = udev_device_get_devnode(udev_device);
 		wl_list_for_each_safe(device, next, &seat->devices_list, link)
 			if (!strcmp(device->devnode, devnode)) {
+				weston_log("input device %s, %s removed\n",
+					   device->devname, device->devnode);
 				evdev_input_device_destroy(device);
 				break;
 			}
