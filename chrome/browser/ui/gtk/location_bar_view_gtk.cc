@@ -815,7 +815,7 @@ void LocationBarViewGtk::OnSetFocus() {
 }
 
 SkBitmap LocationBarViewGtk::GetFavicon() const {
-  return GetTabContents()->favicon_tab_helper()->GetFavicon();
+  return GetTabContents()->favicon_tab_helper()->GetFavicon().AsBitmap();
 }
 
 string16 LocationBarViewGtk::GetTitle() const {

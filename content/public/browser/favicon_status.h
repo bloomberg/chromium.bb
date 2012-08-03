@@ -16,9 +16,6 @@ namespace content {
 struct CONTENT_EXPORT FaviconStatus {
   FaviconStatus();
 
-  // Returns 1x resolution of image. This function should eventually go away.
-  SkBitmap AsBitmap() const;
-
   // Indicates whether we've gotten an official favicon for the page, or are
   // just using the default favicon.
   bool valid;

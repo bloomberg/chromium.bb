@@ -49,18 +49,18 @@ void FaviconTabHelper::FetchFavicon(const GURL& url) {
     touch_icon_handler_->FetchFavicon(url);
 }
 
-SkBitmap FaviconTabHelper::GetFavicon() const {
+gfx::Image FaviconTabHelper::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
   const NavigationController& controller = web_contents()->GetController();
   NavigationEntry* entry = controller.GetTransientEntry();
   if (entry)
-    return entry->GetFavicon().AsBitmap();
+    return entry->GetFavicon().image;
 
   entry = controller.GetLastCommittedEntry();
   if (entry)
-    return entry->GetFavicon().AsBitmap();
-  return SkBitmap();
+    return entry->GetFavicon().image;
+  return gfx::Image();
 }
 
 bool FaviconTabHelper::FaviconIsValid() const {
@@ -112,7 +112,8 @@ void FaviconTabHelper::SaveFavicon() {
   }
   std::vector<unsigned char> image_data;
   // TODO: Save all representations.
-  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.AsBitmap(), false, &image_data);
+  gfx::PNGCodec::EncodeBGRASkBitmap(
+      favicon.image.AsBitmap(), false, &image_data);
   service->SetFavicon(
       entry->GetURL(), favicon.url, image_data, history::FAVICON);
 }

@@ -107,6 +107,13 @@ class UI_EXPORT Image {
   NSImage* ToNSImage() const;
 #endif
 
+  // Same as ToSkBitmap(), but returns a null SkBitmap if this image is empty.
+  SkBitmap AsBitmap() const;
+
+  // Same as ToSkBitmap(), but returns a ImageSkia with a null SkBitmap if this
+  // image is empty.
+  ImageSkia AsImageSkia() const;
+
   // Performs a conversion, like above, but returns a copy of the result rather
   // than a weak pointer. The caller is responsible for deleting the result.
   // Note that the result is only a copy in terms of memory management; the

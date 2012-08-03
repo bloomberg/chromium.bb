@@ -15,6 +15,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
+namespace gfx {
+class Image;
+}
+
 class FaviconHandler;
 class SkBitmap;
 
@@ -38,9 +42,9 @@ class FaviconTabHelper : public content::WebContentsObserver,
 
   // Returns the favicon for this tab, or IDR_DEFAULT_FAVICON if the tab does
   // not have a favicon. The default implementation uses the current navigation
-  // entry. This will return an isNull bitmap if there are no navigation
+  // entry. This will return an empty bitmap if there are no navigation
   // entries, which should rarely happen.
-  SkBitmap GetFavicon() const;
+  gfx::Image GetFavicon() const;
 
   // Returns true if we have the favicon for the page.
   bool FaviconIsValid() const;

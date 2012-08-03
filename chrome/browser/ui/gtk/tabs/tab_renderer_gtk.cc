@@ -337,7 +337,8 @@ void TabRendererGtk::UpdateData(WebContents* contents,
     if (app_icon) {
       data_.favicon = *app_icon;
     } else {
-      data_.favicon = tab_contents->favicon_tab_helper()->GetFavicon();
+      data_.favicon =
+          tab_contents->favicon_tab_helper()->GetFavicon().AsBitmap();
     }
 
     data_.app = app;

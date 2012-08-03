@@ -1074,7 +1074,8 @@ void LocationBarView::OnSetFocus() {
 }
 
 SkBitmap LocationBarView::GetFavicon() const {
-  return delegate_->GetTabContents()->favicon_tab_helper()->GetFavicon();
+  return delegate_->GetTabContents()->favicon_tab_helper()->
+             GetFavicon().AsBitmap();
 }
 
 string16 LocationBarView::GetTitle() const {
@@ -1305,10 +1306,12 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
 
   TabContents* tab_contents = delegate_->GetTabContents();
   DCHECK(tab_contents);
+  gfx::ImageSkia favicon =
+      tab_contents->favicon_tab_helper()->GetFavicon().AsImageSkia();
   button_drag_utils::SetURLAndDragImage(
       tab_contents->web_contents()->GetURL(),
       tab_contents->web_contents()->GetTitle(),
-      tab_contents->favicon_tab_helper()->GetFavicon(),
+      favicon,
       data,
       sender->GetWidget());
 }

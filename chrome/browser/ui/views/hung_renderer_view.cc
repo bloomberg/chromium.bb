@@ -120,7 +120,7 @@ string16 HungPagesTableModel::GetText(int row, int column_id) {
 
 gfx::ImageSkia HungPagesTableModel::GetIcon(int row) {
   DCHECK(row >= 0 && row < RowCount());
-  return tab_observers_[row]->favicon_tab_helper()->GetFavicon();
+  return tab_observers_[row]->favicon_tab_helper()->GetFavicon().AsImageSkia();
 }
 
 void HungPagesTableModel::SetObserver(ui::TableModelObserver* observer) {

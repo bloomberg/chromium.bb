@@ -534,7 +534,9 @@ SkBitmap Browser::GetCurrentPageIcon() const {
   TabContents* contents = chrome::GetActiveTabContents(this);
   // |contents| can be NULL since GetCurrentPageIcon() is called by the window
   // during the window's creation (before tabs have been added).
-  return contents ? contents->favicon_tab_helper()->GetFavicon() : SkBitmap();
+  // TODO: Let this return a gfx::Image.
+  return contents ?
+      contents->favicon_tab_helper()->GetFavicon().AsBitmap() : SkBitmap();
 }
 
 string16 Browser::GetWindowTitleForCurrentTab() const {

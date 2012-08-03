@@ -379,8 +379,8 @@ void InstantLoader::WebContentsDelegateImpl::CommitHistory(
       !active_entry->GetFavicon().image.IsEmpty()) {
     std::vector<unsigned char> image_data;
     // TODO: Add all variants once the history service supports it.
-    gfx::PNGCodec::EncodeBGRASkBitmap(active_entry->GetFavicon().AsBitmap(),
-                                      false, &image_data);
+    gfx::PNGCodec::EncodeBGRASkBitmap(
+        active_entry->GetFavicon().image.AsBitmap(), false, &image_data);
     favicon_service->SetFavicon(active_entry->GetURL(),
                                 active_entry->GetFavicon().url,
                                 image_data,

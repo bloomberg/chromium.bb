@@ -22,6 +22,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/image/image.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -62,8 +63,9 @@ void PanelHost::DestroyWebContents() {
 }
 
 SkBitmap PanelHost::GetPageIcon() const {
+  // TODO: Make this function return gfx::Image.
   return favicon_tab_helper_.get() ?
-      favicon_tab_helper_->GetFavicon() : SkBitmap();
+      favicon_tab_helper_->GetFavicon().AsBitmap() : SkBitmap();
 }
 
 void PanelHost::NavigationStateChanged(const content::WebContents* source,

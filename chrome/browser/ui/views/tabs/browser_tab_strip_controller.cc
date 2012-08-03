@@ -509,7 +509,9 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     TabStatus tab_status) {
   TabContents* tab_contents = TabContents::FromWebContents(contents);
 
-  data->favicon = tab_contents->favicon_tab_helper()->GetFavicon();
+  // TODO: Convert data->favicon to gfx::Image.
+  data->favicon =
+      tab_contents->favicon_tab_helper()->GetFavicon().AsBitmap();
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
   data->url = contents->GetURL();

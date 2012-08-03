@@ -13,8 +13,4 @@ FaviconStatus::FaviconStatus() : valid(false) {
   image = gfx::Image(*GetContentClient()->browser()->GetDefaultFavicon());
 }
 
-SkBitmap FaviconStatus::AsBitmap() const {
-  return image.IsEmpty() ? SkBitmap() : *image.ToSkBitmap();
-}
-
 }  // namespace content

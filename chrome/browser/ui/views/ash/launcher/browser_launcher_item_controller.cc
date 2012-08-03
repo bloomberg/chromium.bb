@@ -227,7 +227,7 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
     DCHECK_EQ(TYPE_TABBED, type_);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     if (tab->favicon_tab_helper()->ShouldDisplayFavicon()) {
-      item.image = tab->favicon_tab_helper()->GetFavicon();
+      item.image = tab->favicon_tab_helper()->GetFavicon().AsBitmap();
       if (item.image.empty()) {
         item.image = *rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
       }

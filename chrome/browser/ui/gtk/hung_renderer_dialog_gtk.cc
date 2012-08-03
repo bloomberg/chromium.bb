@@ -191,7 +191,7 @@ void HungRendererDialogGtk::ShowForWebContents(WebContents* hung_contents) {
       std::string title = UTF16ToUTF8(it->web_contents()->GetTitle());
       if (title.empty())
         title = UTF16ToUTF8(CoreTabHelper::GetDefaultTitle());
-      SkBitmap favicon = it->favicon_tab_helper()->GetFavicon();
+      SkBitmap favicon = it->favicon_tab_helper()->GetFavicon().AsBitmap();
 
       GdkPixbuf* pixbuf = NULL;
       if (favicon.width() > 0)

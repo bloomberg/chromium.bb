@@ -19,9 +19,7 @@ namespace mac {
 
 NSImage* FaviconForTabContents(TabContents* contents) {
   if (contents && contents->favicon_tab_helper()->FaviconIsValid()) {
-    CGColorSpaceRef color_space = base::mac::GetSystemColorSpace();
-    NSImage* image = gfx::SkBitmapToNSImageWithColorSpace(
-        contents->favicon_tab_helper()->GetFavicon(), color_space);
+    NSImage* image = contents->favicon_tab_helper()->GetFavicon().ToNSImage();
     // The |image| could be nil if the bitmap is null. In that case, fallback
     // to the default image.
     if (image) {

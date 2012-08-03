@@ -468,7 +468,8 @@ void ContentSettingPopupBubbleModel::SetPopups() {
       title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
     PopupItem popup_item;
     popup_item.title = title;
-    popup_item.bitmap = (*i)->favicon_tab_helper()->GetFavicon();
+    // TODO: Make this use gfx::Image.
+    popup_item.bitmap = (*i)->favicon_tab_helper()->GetFavicon().AsBitmap();
     popup_item.tab_contents = (*i);
     add_popup(popup_item);
   }
