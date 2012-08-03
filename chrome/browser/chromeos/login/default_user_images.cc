@@ -10,6 +10,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
@@ -99,11 +100,10 @@ bool IsDefaultImageUrl(const std::string url, int* image_id) {
 const gfx::ImageSkia& GetDefaultImage(int index) {
   DCHECK(index >= 0 && index < kDefaultImagesCount);
   return *ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(kDefaultImageResources[index]);
+      GetImageSkiaNamed(kDefaultImageResourceIDs[index]);
 }
 
-// Resource IDs of default user images.
-const int kDefaultImageResources[] = {
+const int kDefaultImageResourceIDs[] = {
   IDR_LOGIN_DEFAULT_USER,
   IDR_LOGIN_DEFAULT_USER_1,
   IDR_LOGIN_DEFAULT_USER_2,
@@ -125,7 +125,51 @@ const int kDefaultImageResources[] = {
   IDR_LOGIN_DEFAULT_USER_18,
 };
 
-const int kDefaultImagesCount = arraysize(kDefaultImageResources);
+const int kDefaultImageAuthorIDs[] = {
+  IDS_LOGIN_DEFAULT_USER_AUTHOR,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_1,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_2,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_3,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_4,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_5,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_6,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_7,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_8,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_9,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_10,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_11,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_12,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_13,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_14,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_15,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_16,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_17,
+  IDS_LOGIN_DEFAULT_USER_AUTHOR_18,
+};
+
+const int kDefaultImageWebsiteIDs[] = {
+  IDS_LOGIN_DEFAULT_USER_WEBSITE,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_1,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_2,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_3,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_4,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_5,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_6,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_7,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_8,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_9,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_10,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_11,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_12,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_13,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_14,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_15,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_16,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_17,
+  IDS_LOGIN_DEFAULT_USER_WEBSITE_18,
+};
+
+const int kDefaultImagesCount = arraysize(kDefaultImageResourceIDs);
 
 const int kFirstDefaultImageIndex = 0;
 

@@ -180,3 +180,12 @@ html[dir=rtl] #flip-photo {
       no-repeat center -1px;
   display: block;
 }
+
+#user-image-attribution {
+  -webkit-padding-start: 34px;
+  line-height: 26px;
+}
+
+#user-image-author-website {
+  -webkit-padding-start: 5px;
+}

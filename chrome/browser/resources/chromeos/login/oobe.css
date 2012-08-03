@@ -665,6 +665,11 @@ html[camera=webrtc] .camera.live.online #take-photo {
   -webkit-perspective: 600px;
 }
 
+#user-image-attribution {
+  /* Turned off for now. */
+  display: none;
+}
+
 /* TODO(nkostylev): Remove footer, button-strip styles. */
 #footer {
   height: 28px;  /* Same as button height */

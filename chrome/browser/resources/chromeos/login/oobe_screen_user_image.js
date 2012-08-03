@@ -284,14 +284,16 @@ cr.define('oobe', function() {
     },
 
     /**
-     * Appends received images to the list.
-     * @param {Array.<string>} images An array of URLs to user images.
+     * Appends default images to the image grid. Should only be called once.
+     * @param {Array.<{url: string, author: string, website: string}>} images
+     *   An array of default images data, including URL, author and website.
      * @private
      */
-    setUserImages_: function(images) {
+    setDefaultImages_: function(images) {
       var imageGrid = $('user-image-grid');
-      for (var i = 0, url; url = images[i]; i++)
-        imageGrid.addItem(url);
+      for (var i = 0, data; data = imagesData[i]; i++) {
+        imageGrid.addItem(data.url);
+      }
     },
 
     /**
@@ -471,6 +473,13 @@ cr.define('oobe', function() {
         chrome.send('selectImage', [imageGrid.selectedItemUrl]);
       }
       this.updateCaption_();
+      // Update image attribution text.
+      var image = imageGrid.selectedItem;
+      $('user-image-author-name').textContent = image.author;
+      $('user-image-author-website').textContent = image.website;
+      $('user-image-author-website').href = image.website;
+      $('user-image-attribution').style.visibility =
+          (image.author || image.website) ? 'visible' : 'hidden';
     },
 
     /**
@@ -531,14 +540,19 @@ cr.define('oobe', function() {
     },
 
     /**
-     * Appends received images to the list.
-     * @param {Array.<string>} images An array of URLs to user images.
+     * Appends default images to the image grid. Should only be called once.
+     * @param {Array.<{url: string, author: string, website: string}>} images
+     *   An array of default images data, including URL, author and website.
      * @private
      */
-    setUserImages_: function(images) {
+    setDefaultImages_: function(imagesData) {
       var imageGrid = $('user-image-grid');
-      for (var i = 0, url; url = images[i]; i++)
-        imageGrid.addItem(url).type = 'default';
+      for (var i = 0, data; data = imagesData[i]; i++) {
+        var item = imageGrid.addItem(data.url);
+        item.type = 'default';
+        item.author = data.author || '';
+        item.website = data.website || '';
+      }
     },
 
     /**
@@ -581,10 +595,10 @@ cr.define('oobe', function() {
 
   // Forward public APIs to private implementations.
   [
+    'setDefaultImages',
     'setCameraPresent',
     'setProfileImage',
     'setSelectedImage',
-    'setUserImages',
     'setUserPhoto',
   ].forEach(function(name) {
     UserImageScreen[name] = function(value) {

@@ -75,7 +75,7 @@ base::RefCountedMemory* UserImageSource::GetUserImage(
       return new base::RefCountedBytes(user->raw_image());
     } else if (user->HasDefaultImage()) {
       return ResourceBundle::GetSharedInstance().
-          LoadDataResourceBytes(kDefaultImageResources[user->image_index()],
+          LoadDataResourceBytes(kDefaultImageResourceIDs[user->image_index()],
                                 scale_factor);
     } else {
       NOTREACHED() << "User with custom image missing raw data";

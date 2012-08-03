@@ -35,13 +35,13 @@
   -webkit-box-flex: 1;
 }
 
-.image-attr {
+.wallpaper-image-attr {
   -webkit-padding-start: 34px;
   line-height: 26px;
   padding-top: 14px;
 }
 
-#author-website {
+#wallpaper-author-website {
   -webkit-padding-start: 5px;
 }
 

@@ -67,6 +67,8 @@ void UserImageScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_IMAGE_SCREEN_PROFILE_LOADING_PHOTO));
   localized_strings->SetString("okButtonText",
       l10n_util::GetStringUTF16(IDS_OK));
+  localized_strings->SetString("authorCredit",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
   if (!CommandLine::ForCurrentProcess()->
           HasSwitch(switches::kDisableHtml5Camera)) {
     localized_strings->SetString("cameraType", "webrtc");
@@ -76,11 +78,17 @@ void UserImageScreenHandler::GetLocalizedStrings(
 }
 
 void UserImageScreenHandler::Initialize() {
-  ListValue image_urls;
+  base::ListValue image_urls;
   for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
-    image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
+    scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
+    image_data->SetString("url", GetDefaultImageUrl(i));
+    image_data->SetString(
+        "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
+    image_data->SetString(
+        "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
+    image_urls.Append(image_data.release());
   }
-  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setUserImages",
+  web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setDefaultImages",
                                    image_urls);
 
   if (selected_image_ != User::kInvalidImageIndex)

@@ -35,7 +35,13 @@ bool IsDefaultImageUrl(const std::string url, int* image_id);
 const gfx::ImageSkia& GetDefaultImage(int index);
 
 // Resource IDs of default user images.
-extern const int kDefaultImageResources[];
+extern const int kDefaultImageResourceIDs[];
+
+// String IDs of author names for default user images.
+extern const int kDefaultImageAuthorIDs[];
+
+// String IDs of websites for default user images.
+extern const int kDefaultImageWebsiteIDs[];
 
 // Number of default images.
 extern const int kDefaultImagesCount;

@@ -103,6 +103,8 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO));
   localized_strings->SetString("previewAltText",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT));
+  localized_strings->SetString("authorCredit",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
   if (!CommandLine::ForCurrentProcess()->
           HasSwitch(switches::kDisableHtml5Camera)) {
     localized_strings->SetString("cameraType", "webrtc");
@@ -133,9 +135,15 @@ void ChangePictureOptionsHandler::RegisterMessages() {
 }
 
 void ChangePictureOptionsHandler::SendDefaultImages() {
-  ListValue image_urls;
+  base::ListValue image_urls;
   for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
-    image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
+    scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
+    image_data->SetString("url", GetDefaultImageUrl(i));
+    image_data->SetString(
+        "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
+    image_data->SetString(
+        "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
+    image_urls.Append(image_data.release());
   }
   web_ui()->CallJavascriptFunction("ChangePictureOptions.setDefaultImages",
                                    image_urls);

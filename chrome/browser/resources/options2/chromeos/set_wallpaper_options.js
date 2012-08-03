@@ -99,13 +99,14 @@ cr.define('options', function() {
     setWallpaperAttribution_: function(url) {
       for (var i = 0; i < this.wallpapers_.length; i++) {
         if (this.wallpapers_[i].url == url) {
-          $('author-name').textContent = this.wallpapers_[i].author;
-          $('author-website').textContent = this.wallpapers_[i].website;
+          $('wallpaper-author-name').textContent = this.wallpapers_[i].author;
+          $('wallpaper-author-website').textContent =
+              this.wallpapers_[i].website;
           return;
         }
       }
-      $('author-name').textContent = '';
-      $('author-website').textContent = '';
+      $('wallpaper-author-name').textContent = '';
+      $('wallpaper-author-website').textContent = '';
     },
 
     /**
@@ -190,7 +191,7 @@ cr.define('options', function() {
       var wallpaperGrid = $('wallpaper-grid');
       if ($('use-daily-wallpaper').checked) {
         wallpaperGrid.disabled = true;
-        $('attribution-label').hidden = false;
+        $('wallpaper-attribution-label').hidden = false;
         chrome.send('selectDailyWallpaper');
         wallpaperGrid.classList.add('grayout');
         $('set-wallpaper-layout').hidden = true;
@@ -270,11 +271,11 @@ cr.define('options', function() {
     set isCustom(isCustom) {
       if (isCustom) {
         // Clear attributions for custom wallpaper.
-        $('attribution-label').hidden = true;
+        $('wallpaper-attribution-label').hidden = true;
         // Enable the layout drop down box when custom wallpaper is selected.
         $('set-wallpaper-layout').hidden = false;
       } else {
-        $('attribution-label').hidden = false;
+        $('wallpaper-attribution-label').hidden = false;
         $('set-wallpaper-layout').hidden = true;
       }
     },

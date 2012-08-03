@@ -16099,6 +16099,89 @@ Battery full
         US Mystery keyboard
       </message>
 
+      <!-- Attribution strings for stock user images, not translateable. -->
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_1">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_2">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_3">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_4">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_5">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_6">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_7">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_8">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_9">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_10">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_11">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_12">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_13">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_14">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_15">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_16">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_17">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_18">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_19">
+      </message>
+
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_1">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_2">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_3">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_4">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_5">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_6">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_7">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_8">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_9">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_10">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_11">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_12">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_13">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_14">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_15">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_16">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_17">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_18">
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_19">
+      </message>
+
       <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
         You are not authorized to use this device. For sign-in permission contact the device owner.
       </message>
