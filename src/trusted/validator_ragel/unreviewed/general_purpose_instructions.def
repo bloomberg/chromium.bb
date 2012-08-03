@@ -291,31 +291,33 @@ bts Ib Ev, 0x0f 0xba /5, lock nacl-ia32-forbidden
 ######## CALL (Near) ###########################################################
 call Jw, data16 0xe8, nacl-forbidden
 call Jd, 0xe8
+call Jd, data16 rexw 0xe8, amd64
 # “call” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-callw Ew, data16 0xff /2, nacl-forbidden
 call Ed, 0xff /2, ia32 nacl-forbidden
 callq Eq, 0xff /2, amd64 nacl-forbidden
+callq Eq, data16 rexw 0xff /2, amd64 nacl-forbidden
+callw Ew, data16 0xff /2, norexw nacl-forbidden
 ######## CALL (Far) ############################################################
 # “lcall” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-lcallw Mp, data16 0xff /3, norexw nacl-forbidden
-"data32 lcallq" Mp, data16 rexw 0xff /3, amd64 nacl-forbidden
 lcall Mp, 0xff /3, ia32 nacl-forbidden
 lcallq Mp, 0xff /3, amd64 nacl-forbidden
+lcallq Mp, data16 rexw 0xff /3, amd64 nacl-forbidden
+lcallw Mp, data16 0xff /3, norexw nacl-forbidden
 ######## CBW/CWDE/CDQE #########################################################
 cwtl, 0x98, norexw
 cbtw, data16 0x98, norexw
-"data32 cltq", data16 rexw 0x98, amd64
+cltq, data16 rexw 0x98, amd64
 cltq, rexw 0x98, amd64
 ######## CWD/CDQ/CQO ###########################################################
 cltd, 0x99, norexw
 cwtd, data16 0x99, norexw
-"data32 cqto", data16 rexw 0x99, amd64
+cqto, data16 rexw 0x99, amd64
 cqto, rexw 0x99, amd64
 ######## CLC ###################################################################
 clc, 0xf8
@@ -442,22 +444,24 @@ js Jd, 0x0f 0x88, branch_hint
 jmp Jw, data16 0xe9, nacl-forbidden
 jmp Jd, 0xe9
 jmp Jb, 0xeb
+jmp Jd, data16 rexw 0xe9, amd64
 # “jmp” does not require rex prefix and always uses 64bit addresses in x86-64
-# mode unless data16 prefix is used.  We use simple solution: 16bit call is
+# mode unless data16 prefix is used.  We use simple solution: 16bit jump is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-jmpw Ew, data16 0xff /4, nacl-forbidden
 jmp Ed, 0xff /4, ia32 nacl-forbidden
 jmpq Eq, 0xff /4, amd64 nacl-forbidden
+jmpq Eq, data16 rexw 0xff /4, amd64 nacl-forbidden
+jmpw Ew, data16 0xff /4, norexw nacl-forbidden
 ######## JMP (Far) #############################################################
 # “ljmp” does not require rex prefix and always uses 64bit addresses in x86-64
-# mode unless data16 prefix is used.  We use simple solution: 16bit call is
+# mode unless data16 prefix is used.  We use simple solution: 16bit jump is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-ljmpw Mp, data16 0xff /5, norexw nacl-forbidden
-"data32 ljmpq" Mp, data16 rexw 0xff /5, amd64 nacl-forbidden
 ljmp Mp, 0xff /5, ia32 nacl-forbidden
 ljmpq Mp, 0xff /5, amd64 nacl-forbidden
+ljmpq Mp, data16 rexw 0xff /5, amd64 nacl-forbidden
+ljmpw Mp, data16 0xff /5, norexw nacl-forbidden
 ######## LAHF ##################################################################
 # LAHF is always available in 16bit/32bit mode, but not always in 64bit mode
 lahf, 0x9f, ia32
@@ -626,10 +630,10 @@ pop rr, 0x58
 ######## POPCNT ################################################################
 popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT
 ######## POPF/POPFD/POPFQ ######################################################
-popfw, data16 0x9d, norexw
-"data32 popfq", data16 rexw 0x9d, amd64
 popf, 0x9d, ia32 nacl-forbidden
 popfq, 0x9d, amd64 nacl-forbidden
+popfq, data16 rexw 0x9d, amd64
+popfw, data16 0x9d, norexw
 ######## PREFETCH/PREFETCHW ####################################################
 prefetch Mb, 0x0f 0x0d /0, CPUFeature_3DPRFTCH no_memory_access
 prefetchw Mb, 0x0f 0x0d /1, CPUFeature_3DPRFTCH no_memory_access
@@ -659,10 +663,10 @@ push =Ib, 0x6a
 "pushq  %fs", 0x0f 0xa0, amd64 nacl-forbidden
 "pushq  %gs", 0x0f 0xa8, amd64 nacl-forbidden
 ######## PUSHF/PUSHFD/PUSHFQ ###################################################
-pushfw, data16 0x9c, norexw
-"data32 pushfq", data16 rexw 0x9c, amd64
 pushf, 0x9c, ia32 nacl-forbidden
 pushfq, 0x9c, amd64 nacl-forbidden
+pushfq, data16 rexw 0x9c, amd64
+pushfw, data16 0x9c, norexw
 ######## RCL ###################################################################
 rcl E, 0xd0 /2
 rcl cb E, 0xd2 /2

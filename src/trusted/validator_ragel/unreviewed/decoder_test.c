@@ -699,13 +699,40 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       show_name_suffix = 'q';
     }
   }
-  if (instruction->prefix.lock) {
+  if (instruction->prefix.lock && (begin[0] == 0xf0)) {
     print_name("lock ");
   }
-  if (instruction->prefix.repnz) {
+  if (instruction->prefix.repnz && (begin[0] == 0xf2)) {
     print_name("repnz ");
   }
-  if (instruction->prefix.repz) {
+  if (instruction->prefix.repz && (begin[0] == 0xf3)) {
+    /* This prefix is "rep" for "ins", "lods", "movs", "outs", "stos". For other
+     * instructions print "repz".
+     */
+    if ((!strcmp(instruction_name, "ins")) ||
+        (!strcmp(instruction_name, "lods")) ||
+        (!strcmp(instruction_name, "movs")) ||
+        (!strcmp(instruction_name, "outs")) ||
+        (!strcmp(instruction_name, "stos"))) {
+      print_name("rep ");
+    } else {
+      print_name("repz ");
+    }
+  }
+  if (((instruction->prefix.data16) && rex_prefix & 0x08) &&
+      strcmp(instruction_name, "bsf") &&
+      strcmp(instruction_name, "bsr")) {
+    if ((end - begin) != 3 ||
+        (begin[0] != 0x66) || ((begin[1] & 0x48) != 0x48) || (begin[2] != 0x90))
+      print_name("data32 ");
+  }
+  if (instruction->prefix.lock && (begin[0] != 0xf0)) {
+    print_name("lock ");
+  }
+  if (instruction->prefix.repnz && (begin[0] != 0xf2)) {
+    print_name("repnz ");
+  }
+  if (instruction->prefix.repz && (begin[0] != 0xf3)) {
     /* This prefix is "rep" for "ins", "lods", "movs", "outs", "stos". For other
      * instructions print "repz".
      */
@@ -750,10 +777,24 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     if ((!strcmp(instruction_name, "in")) ||
         (!strcmp(instruction_name, "ins")) ||
         (!strcmp(instruction_name, "out")) ||
-        (!strcmp(instruction_name, "outs")) ||
-        (!strcmp(instruction_name, "pop")) ||
-        (!strcmp(instruction_name, "push"))) {
+        (!strcmp(instruction_name, "outs"))) {
       rex_bits = -1;
+    }
+    if ((!strcmp(instruction_name, "pop")) ||
+        (!strcmp(instruction_name, "push"))) {
+      if (instruction->prefix.data16)
+        ++rex_bits;
+      else
+        rex_bits = -1;
+    }
+    if ((!strcmp(instruction_name, "callq")) ||
+        (!strcmp(instruction_name, "jmpq")) ||
+        (!strcmp(instruction_name, "lcallq")) ||
+        (!strcmp(instruction_name, "ljmpq")) ||
+        (!strcmp(instruction_name, "popfq")) ||
+        (!strcmp(instruction_name, "pushfq"))) {
+      if (instruction->prefix.data16)
+        ++rex_bits;
     }
   }
   if (show_name_suffix == 'b') {

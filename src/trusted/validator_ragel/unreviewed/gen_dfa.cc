@@ -1524,6 +1524,13 @@ namespace {
       }
     }
 
+    void print_one_size_definition_w_unused(void) {
+      auto saved_w_is_unused = rex.w_is_unused;
+      rex.w_is_unused = true;
+      print_one_size_definition();
+      rex.w_is_unused = saved_w_is_unused;
+    }
+
     void print_one_size_definition_data16(void) {
       auto saved_prefixes = required_prefixes;
       required_prefixes.insert("data16");
@@ -1538,12 +1545,21 @@ namespace {
       rex = saved_rex;
     }
 
+    void print_one_size_definition_data16_rexw(void) {
+      auto saved_prefixes = required_prefixes;
+      auto saved_rex = rex;
+      rex.w = true;
+      required_prefixes.insert("data16");
+      print_one_size_definition();
+      rex = saved_rex;
+      required_prefixes = saved_prefixes;
+    }
+
     void print_definition(void) {
       switch (auto saved_class = instruction_class) {
         case InstructionClass::kDefault:
         case InstructionClass::kSize8:
-          rex.w_is_unused = true;
-          print_one_size_definition();
+          print_one_size_definition_w_unused();
           break;
         case InstructionClass::kSize8RexW:
         case InstructionClass::kRexW:
@@ -1569,6 +1585,7 @@ namespace {
           print_one_size_definition();
           instruction_class = InstructionClass::kRexW;
           print_one_size_definition_rexw();
+          print_one_size_definition_data16_rexw();
           instruction_class = saved_class;
           break;
         case InstructionClass::kSize8Data16DefaultRexWxDefaultRexW: {
@@ -1591,7 +1608,10 @@ namespace {
         } /* Falltrought: the rest is as in kSize8Data16DefaultRexW.  */
         case InstructionClass::kSize8Data16DefaultRexW:
           instruction_class = InstructionClass::kSize8;
-          print_one_size_definition();
+          if (saved_class == InstructionClass::kSize8Data16DefaultRexW)
+            print_one_size_definition_w_unused();
+          else
+            print_one_size_definition();
           for (auto opcode = opcodes.rbegin();
                opcode != opcodes.rend(); ++opcode) {
             if (opcode->find('/') == opcode->npos) {
@@ -1603,6 +1623,7 @@ namespace {
               print_one_size_definition();
               instruction_class = InstructionClass::kRexW;
               print_one_size_definition_rexw();
+              print_one_size_definition_data16_rexw();
               instruction_class = saved_class;
               return;
             }
@@ -2525,6 +2546,7 @@ namespace {
              const char *> jump_sizes {
           { { InstructionClass::kDefault,       "b"     },      "rel8"  },
           { { InstructionClass::kDefault,       "d"     },      "rel32" },
+          { { InstructionClass::kRexW,          "d"     },      "rel32" },
           { { InstructionClass::kData16,        "w"     },      "rel16" },
           { { InstructionClass::kDefault,       "z"     },      "rel32" },
           { { InstructionClass::kData16,        "z"     },      "rel16" },
