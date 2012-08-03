@@ -86,6 +86,9 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_LOCATION_BAR:
       return "chrome-location-bar";
 
+    case VIEW_ID_ACTION_BOX_BUTTON:
+      return "chrome-action-box-button";
+
     case VIEW_ID_BROWSER_ACTION_TOOLBAR:
       return "chrome-toolbar-browser-actions-container";
 

@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/gtk/action_box_button_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -70,6 +71,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -469,8 +471,23 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // doesn't work, someone is probably calling show_all on our parent box.
   gtk_box_pack_end(GTK_BOX(entry_box_), tab_to_search_hint_, FALSE, FALSE, 0);
 
-  // Hide the star and Chrome To Mobile icons in popups, app windows, etc.
-  if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
+  if (extensions::switch_utils::IsActionBoxEnabled()) {
+    // TODO(mpcomplete): should we hide this if ShouldOnlyShowLocation()==true?
+    action_box_button_.reset(new ActionBoxButtonGtk(browser_));
+
+    // TODO(mpcomplete): Figure out why CustomDrawButton is offset 3 pixels.
+    // This offset corrects the strange offset of CustomDrawButton.
+    const int kMagicActionBoxYOffset = 3;
+    GtkWidget* alignment = gtk_alignment_new(0, 0, 1, 1);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+                              0, kMagicActionBoxYOffset,
+                              0, kInnerPadding);
+    gtk_container_add(GTK_CONTAINER(alignment), action_box_button_->widget());
+
+    gtk_box_pack_end(GTK_BOX(hbox_.get()), alignment,
+                     FALSE, FALSE, 0);
+  } else if (browser_defaults::bookmarks_enabled && !ShouldOnlyShowLocation()) {
+    // Hide the star and Chrome To Mobile icons in popups, app windows, etc.
     CreateStarButton();
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
 

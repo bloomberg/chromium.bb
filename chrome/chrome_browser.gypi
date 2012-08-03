@@ -3025,6 +3025,8 @@
         'browser/ui/global_error/global_error_service_factory.h',
         'browser/ui/gtk/accelerators_gtk.cc',
         'browser/ui/gtk/accelerators_gtk.h',
+        'browser/ui/gtk/action_box_button_gtk.cc',
+        'browser/ui/gtk/action_box_button_gtk.h',
         'browser/ui/gtk/autofill/autofill_popup_view_gtk.cc',
         'browser/ui/gtk/autofill/autofill_popup_view_gtk.h',
         'browser/ui/gtk/avatar_menu_bubble_gtk.cc',

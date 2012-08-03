@@ -38,13 +38,14 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class OmniboxViewGtk;
+class ActionBoxButtonGtk;
 class Browser;
 class CommandUpdater;
 class ContentSettingImageModel;
 class ContentSettingBubbleGtk;
 class ExtensionAction;
 class GtkThemeService;
+class OmniboxViewGtk;
 class SkBitmap;
 class ToolbarModel;
 
@@ -481,6 +482,8 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // Alignment used to wrap |location_entry_|.
   GtkWidget* location_entry_alignment_;
+
+  scoped_ptr<ActionBoxButtonGtk> action_box_button_;
 
   CommandUpdater* command_updater_;
   ToolbarModel* toolbar_model_;
