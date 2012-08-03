@@ -22,6 +22,7 @@ class UserImage {
 
   // Creates a new instance from a given still frame and tries to encode raw
   // representation for it.
+  // TODO(ivankr): remove eventually.
   static UserImage CreateAndEncode(const gfx::ImageSkia& image);
 
   // Create instance with an empty still frame and no raw data.

@@ -571,7 +571,7 @@ void UserManagerImpl::SaveUserImageFromProfileImage(
   } else {
     // No profile image - use the stub image (gray avatar).
     SetUserImage(username, User::kProfileImageIndex,
-                 GURL(), UserImage(SkBitmap()));
+                 GURL(), UserImage::CreateAndEncode(SkBitmap()));
     SaveImageToLocalState(username, "", User::kProfileImageIndex,
                           GURL(), false);
   }
