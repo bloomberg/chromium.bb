@@ -43,6 +43,7 @@ const char kClientName[] = "chrome";
 // http://ibus.googlecode.com/svn/docs/ibus-1.4/ibus-ibustypes.html#IBusCapabilite
 const uint32 kIBusCapabilityPreeditText = 1U;
 const uint32 kIBusCapabilityFocus = 8U;
+const uint32 kIBusCapabilitySurroundingText = 32U;
 
 XKeyEvent* GetKeyEvent(XEvent* event) {
   DCHECK(event && (event->type == KeyPress || event->type == KeyRelease));
@@ -354,6 +355,33 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
 
   // This function runs asynchronously.
   ibus_client_->SetCursorLocation(rect, composition_head);
+
+  ui::Range selection_range;
+  if (!GetTextInputClient()->GetSelectionRange(&selection_range)) {
+    previous_selected_text_.clear();
+    return;
+  }
+
+  string16 selection_text;
+  if (!GetTextInputClient()->GetTextFromRange(selection_range,
+                                              &selection_text)) {
+    previous_selected_text_.clear();
+    return;
+  }
+
+  if (previous_selected_text_ == selection_text)
+    return;
+
+  previous_selected_text_ = selection_text;
+
+  // In the original meaning of SetSurroundingText is not just selection text,
+  // but currently there are no way to retrieve surrounding text in
+  // TextInputClient.
+  // TODO(nona): Implement fully surrounding text retrieval.
+  GetInputContextClient()->SetSurroundingText(
+      UTF16ToUTF8(selection_text),
+      0UL, /* cursor position. */
+      selection_range.length()); /* selection anchor position. */
 }
 
 void InputMethodIBus::CancelComposition(const TextInputClient* client) {
@@ -438,7 +466,8 @@ void InputMethodIBus::SetUpSignalHandlers() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   GetInputContextClient()->SetCapabilities(
-      kIBusCapabilityPreeditText | kIBusCapabilityFocus);
+      kIBusCapabilityPreeditText | kIBusCapabilityFocus |
+      kIBusCapabilitySurroundingText);
 
   UpdateContextFocusState();
   // Since ibus-daemon is launched in an on-demand basis on Chrome OS, RWHVA (or
@@ -535,7 +564,7 @@ void InputMethodIBus::UpdateContextFocusState() {
     GetInputContextClient()->FocusIn();
 
   if (context_focused_) {
-    uint32 capability = kIBusCapabilityFocus;
+    uint32 capability = kIBusCapabilityFocus | kIBusCapabilitySurroundingText;
     if (CanComposeInline())
       capability |= kIBusCapabilityPreeditText;
     GetInputContextClient()->SetCapabilities(capability);

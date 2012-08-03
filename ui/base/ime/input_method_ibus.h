@@ -188,6 +188,8 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   // processing result of the pending key event.
   string16 result_text_;
 
+  string16 previous_selected_text_;
+
   // Indicates if input context is focused or not.
   bool context_focused_;
 
