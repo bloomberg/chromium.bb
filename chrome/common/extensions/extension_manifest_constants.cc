@@ -128,7 +128,7 @@ const char kWebURLs[] = "app.urls";
 }  // namespace extension_manifest_keys
 
 namespace extension_manifest_values {
-const char kBrowserActionKeybindingEvent[] = "_execute_browser_action";
+const char kBrowserActionCommandEvent[] = "_execute_browser_action";
 const char kIncognitoSplit[] = "split";
 const char kIncognitoSpanning[] = "spanning";
 const char kIntentDispositionWindow[] = "window";
@@ -142,9 +142,10 @@ const char kKeybindingPlatformWin[] = "windows";
 const char kRunAtDocumentStart[] = "document_start";
 const char kRunAtDocumentEnd[] = "document_end";
 const char kRunAtDocumentIdle[] = "document_idle";
-const char kPageActionKeybindingEvent[] = "_execute_page_action";
+const char kPageActionCommandEvent[] = "_execute_page_action";
 const char kPageActionTypeTab[] = "tab";
 const char kPageActionTypePermanent[] = "permanent";
+const char kScriptBadgeCommandEvent[] = "_execute_script_badge";
 const char kLaunchContainerPanel[] = "panel";
 const char kLaunchContainerTab[] = "tab";
 const char kLaunchContainerWindow[] = "window";

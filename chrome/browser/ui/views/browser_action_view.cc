@@ -240,7 +240,7 @@ void BrowserActionButton::Observe(int type,
               details).ptr();
       if (extension_->id() == payload->first &&
           payload->second ==
-              extension_manifest_values::kBrowserActionKeybindingEvent) {
+              extension_manifest_values::kBrowserActionCommandEvent) {
         if (type == chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED)
           MaybeRegisterExtensionCommand();
         else

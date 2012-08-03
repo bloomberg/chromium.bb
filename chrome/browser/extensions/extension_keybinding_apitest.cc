@@ -18,18 +18,31 @@
 
 using content::WebContents;
 
-class KeybindingApiTest : public ExtensionApiTest {
+class CommandsApiTest : public ExtensionApiTest {
  public:
-  KeybindingApiTest() {
+  CommandsApiTest() {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalExtensionApis);
   }
-  virtual ~KeybindingApiTest() {}
+  virtual ~CommandsApiTest() {}
 
  protected:
   BrowserActionTestUtil GetBrowserActionsBar() {
     return BrowserActionTestUtil(browser());
   }
+};
+
+class ScriptBadgesCommandsApiTest : public ExtensionApiTest {
+ public:
+  ScriptBadgesCommandsApiTest() {
+    // We cannot add this to CommandsApiTest because then PageActions get
+    // treated like BrowserActions and the PageAction test starts failing.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableScriptBadges);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalExtensionApis);
+  }
+  virtual ~ScriptBadgesCommandsApiTest() {}
 };
 
 #if !defined(OS_MACOSX)
@@ -39,7 +52,7 @@ class KeybindingApiTest : public ExtensionApiTest {
 // - Note: Page action keybindings are tested in PageAction test below.
 // - The shortcut keys taken by one extension are not overwritten by the last
 //   installed extension.
-IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, Basic) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/basics")) << message_;
   const extensions::Extension* extension = GetSingleLoadedExtension();
@@ -86,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, Basic) {
   ASSERT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(KeybindingApiTest, PageAction) {
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("keybinding/page_action")) << message_;
   const extensions::Extension* extension = GetSingleLoadedExtension();
@@ -123,6 +136,36 @@ IN_PROC_BROWSER_TEST_F(KeybindingApiTest, PageAction) {
       L"    window.domAutomationController.send(true)}}, 100)",
       &result));
   ASSERT_TRUE(result);
+}
+
+// Checked-in in a disabled state, because the necessary functionality to
+// automatically verify that the test works hasn't been implemented for the
+// script badges yet (see http://crbug.com/140016). The test results, can be
+// verified manually by running the test and verifying that the synthesized
+// popup for script badges appear. When bug 140016 has been fixed, the popup
+// code can signal to the test that the test passed.
+// TODO(finnur): Enable this test once the bug is fixed.
+IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, ScriptBadge_DISABLED) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/script_badge")) << message_;
+  const extensions::Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  {
+    ResultCatcher catcher;
+    // Tell the extension to update the script badge state.
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(extension->GetResourceURL("show.html")));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  {
+    ResultCatcher catcher;
+    // Activate the shortcut (Ctrl+Shift+F).
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), ui::VKEY_F, true, true, false, false));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
 }
 
 #endif  // !OS_MACOSX

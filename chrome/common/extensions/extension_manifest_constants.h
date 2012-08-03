@@ -136,7 +136,7 @@ namespace extension_manifest_keys {
 
 // Some values expected in manifests.
 namespace extension_manifest_values {
-  extern const char kBrowserActionKeybindingEvent[];
+  extern const char kBrowserActionCommandEvent[];
   extern const char kIncognitoSplit[];
   extern const char kIncognitoSpanning[];
   extern const char kIntentDispositionWindow[];
@@ -150,9 +150,10 @@ namespace extension_manifest_values {
   extern const char kLaunchContainerPanel[];
   extern const char kLaunchContainerTab[];
   extern const char kLaunchContainerWindow[];
-  extern const char kPageActionKeybindingEvent[];
+  extern const char kPageActionCommandEvent[];
   extern const char kPageActionTypePermanent[];
   extern const char kPageActionTypeTab[];
+  extern const char kScriptBadgeCommandEvent[];
   extern const char kRunAtDocumentEnd[];
   extern const char kRunAtDocumentIdle[];
   extern const char kRunAtDocumentStart[];

@@ -231,9 +231,11 @@ bool Command::Parse(DictionaryValue* command,
       command_name_ = command_name;
 
       if (command_name !=
-              extension_manifest_values::kPageActionKeybindingEvent &&
+              extension_manifest_values::kPageActionCommandEvent &&
           command_name !=
-              extension_manifest_values::kBrowserActionKeybindingEvent) {
+              extension_manifest_values::kBrowserActionCommandEvent &&
+          command_name !=
+              extension_manifest_values::kScriptBadgeCommandEvent) {
         if (!command->GetString(keys::kDescription, &description_) ||
             description_.empty()) {
           *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
@@ -252,8 +254,9 @@ DictionaryValue* Command::ToValue(const Extension* extension,
   DictionaryValue* extension_data = new DictionaryValue();
 
   string16 command_description;
-  if (command_name() == values::kBrowserActionKeybindingEvent ||
-      command_name() == values::kPageActionKeybindingEvent) {
+  if (command_name() == values::kBrowserActionCommandEvent ||
+      command_name() == values::kPageActionCommandEvent ||
+      command_name() == values::kScriptBadgeCommandEvent) {
     command_description =
         l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE);
   } else {

@@ -41,8 +41,9 @@ void ExtensionKeybindingRegistry::Init() {
 
 bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(
     const std::string& command) const {
-  return command == extension_manifest_values::kPageActionKeybindingEvent ||
-         command == extension_manifest_values::kBrowserActionKeybindingEvent;
+  return command == extension_manifest_values::kPageActionCommandEvent ||
+         command == extension_manifest_values::kBrowserActionCommandEvent ||
+         command == extension_manifest_values::kScriptBadgeCommandEvent;
 }
 
 void ExtensionKeybindingRegistry::Observe(

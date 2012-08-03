@@ -1851,28 +1851,55 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
   extensions::CommandService* command_service =
       extensions::CommandServiceFactory::GetForProfile(
           owner_->browser()->profile());
-  extensions::Command command;
+
+  extensions::Command command_page_action;
   if (command_service->GetPageActionCommand(
           extension->id(),
           extensions::CommandService::ACTIVE_ONLY,
-          &command,
+          &command_page_action,
           NULL)) {
-    // Found the browser action shortcut command, register it.
-    keybinding_.reset(new ui::AcceleratorGtk(
-        command.accelerator().key_code(),
-        command.accelerator().IsShiftDown(),
-        command.accelerator().IsCtrlDown(),
-        command.accelerator().IsAltDown()));
+    // Found the page action shortcut command, register it.
+    page_action_keybinding_.reset(new ui::AcceleratorGtk(
+        command_page_action.accelerator().key_code(),
+        command_page_action.accelerator().IsShiftDown(),
+        command_page_action.accelerator().IsCtrlDown(),
+        command_page_action.accelerator().IsAltDown()));
+  }
 
+  extensions::Command command_script_badge;
+  if (command_service->GetScriptBadgeCommand(
+          extension->id(),
+          extensions::CommandService::ACTIVE_ONLY,
+          &command_script_badge,
+          NULL)) {
+    // Found the script badge shortcut command, register it.
+    script_badge_keybinding_.reset(new ui::AcceleratorGtk(
+        command_script_badge.accelerator().key_code(),
+        command_script_badge.accelerator().IsShiftDown(),
+        command_script_badge.accelerator().IsCtrlDown(),
+        command_script_badge.accelerator().IsAltDown()));
+  }
+
+  if (page_action_keybinding_.get() || script_badge_keybinding_.get()) {
     accel_group_ = gtk_accel_group_new();
     gtk_window_add_accel_group(window_, accel_group_);
 
-    gtk_accel_group_connect(
-        accel_group_,
-        keybinding_->GetGdkKeyCode(),
-        keybinding_->gdk_modifier_type(),
-        GtkAccelFlags(0),
-        g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
+    if (page_action_keybinding_.get()) {
+      gtk_accel_group_connect(
+          accel_group_,
+          page_action_keybinding_->GetGdkKeyCode(),
+          page_action_keybinding_->gdk_modifier_type(),
+          GtkAccelFlags(0),
+          g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
+    }
+    if (script_badge_keybinding_.get()) {
+      gtk_accel_group_connect(
+          accel_group_,
+          script_badge_keybinding_->GetGdkKeyCode(),
+          script_badge_keybinding_->gdk_modifier_type(),
+          GtkAccelFlags(0),
+          g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
+    }
 
     // Since we've added an accelerator, we'll need to unregister it before
     // the window is closed, so we listen for the window being closed.
@@ -1889,14 +1916,25 @@ void LocationBarViewGtk::PageActionViewGtk::OnIconChanged(
 
 void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {
   if (accel_group_) {
-    gtk_accel_group_disconnect_key(
-        accel_group_,
-        keybinding_.get()->GetGdkKeyCode(),
-        static_cast<GdkModifierType>(keybinding_.get()->modifiers()));
+    if (page_action_keybinding_.get()) {
+      gtk_accel_group_disconnect_key(
+          accel_group_,
+          page_action_keybinding_->GetGdkKeyCode(),
+          static_cast<GdkModifierType>(
+              page_action_keybinding_->modifiers()));
+    }
+    if (script_badge_keybinding_.get()) {
+      gtk_accel_group_disconnect_key(
+          accel_group_,
+          script_badge_keybinding_->GetGdkKeyCode(),
+          static_cast<GdkModifierType>(
+              script_badge_keybinding_->modifiers()));
+    }
     gtk_window_remove_accel_group(window_, accel_group_);
     g_object_unref(accel_group_);
     accel_group_ = NULL;
-    keybinding_.reset(NULL);
+    page_action_keybinding_.reset(NULL);
+    script_badge_keybinding_.reset(NULL);
   }
 }
 

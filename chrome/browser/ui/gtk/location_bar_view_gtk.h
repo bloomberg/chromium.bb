@@ -324,7 +324,9 @@ class LocationBarViewGtk : public OmniboxEditController,
     GtkAccelGroup* accel_group_;
 
     // The keybinding accelerator registered to show the page action popup.
-    scoped_ptr<ui::AcceleratorGtk> keybinding_;
+    scoped_ptr<ui::AcceleratorGtk> page_action_keybinding_;
+    // The keybinding accelerator registered to show the script badge popup.
+    scoped_ptr<ui::AcceleratorGtk> script_badge_keybinding_;
 
     // This is used for post-install visual feedback. The page_action icon
     // is briefly shown even if it hasn't been enabled by its extension.

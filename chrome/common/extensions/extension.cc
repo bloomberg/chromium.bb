@@ -1477,10 +1477,12 @@ bool Extension::LoadCommands(string16* error) {
         return false;  // |error| already set.
 
       std::string command_name = binding->command_name();
-      if (command_name == values::kPageActionKeybindingEvent) {
+      if (command_name == values::kPageActionCommandEvent) {
         page_action_command_.reset(binding.release());
-      } else if (command_name == values::kBrowserActionKeybindingEvent) {
+      } else if (command_name == values::kBrowserActionCommandEvent) {
         browser_action_command_.reset(binding.release());
+      } else if (command_name == values::kScriptBadgeCommandEvent) {
+        script_badge_command_.reset(binding.release());
       } else {
         if (command_name[0] != '_')  // All commands w/underscore are reserved.
           named_commands_[command_name] = *binding.get();
@@ -1495,7 +1497,7 @@ bool Extension::LoadCommands(string16* error) {
     // No keyboard shortcut will be assigned to it, until the user selects one.
     browser_action_command_.reset(
         new extensions::Command(
-            values::kBrowserActionKeybindingEvent, string16(), ""));
+            values::kBrowserActionCommandEvent, string16(), ""));
   }
 
   return true;

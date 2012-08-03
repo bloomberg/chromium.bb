@@ -204,7 +204,7 @@ class BrowserActionButton : public content::NotificationObserver,
               details).ptr();
       if (extension_->id() == payload->first &&
           payload->second ==
-              extension_manifest_values::kBrowserActionKeybindingEvent) {
+              extension_manifest_values::kBrowserActionCommandEvent) {
         if (type == chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED)
           ConnectBrowserActionPopupAccelerator();
         else

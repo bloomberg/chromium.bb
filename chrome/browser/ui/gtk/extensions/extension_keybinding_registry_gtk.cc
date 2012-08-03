@@ -66,8 +66,8 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
     return;
   }
 
-  extensions::CommandMap::const_iterator iter = commands.begin();
-  for (; iter != commands.end(); ++iter) {
+  for (extensions::CommandMap::const_iterator iter = commands.begin();
+       iter != commands.end(); ++iter) {
     if (!command_name.empty() && (iter->second.command_name() != command_name))
       continue;
 
@@ -129,7 +129,7 @@ void ExtensionKeybindingRegistryGtk::RemoveExtensionKeybinding(
   EventTargets::iterator iter = event_targets_.begin();
   while (iter != event_targets_.end()) {
     if (iter->second.first != extension->id() ||
-        (!command_name.empty() && (iter->second.second != command_name))) {
+        (!command_name.empty() && iter->second.second != command_name)) {
       ++iter;
       continue;  // Not the extension or command we asked for.
     }

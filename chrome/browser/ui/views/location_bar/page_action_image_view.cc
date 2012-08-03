@@ -84,15 +84,41 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
           extensions::CommandService::ACTIVE_ONLY,
           &page_action_command,
           NULL)) {
-    keybinding_.reset(new ui::Accelerator(page_action_command.accelerator()));
+    page_action_keybinding_.reset(
+        new ui::Accelerator(page_action_command.accelerator()));
     owner_->GetFocusManager()->RegisterAccelerator(
-        *keybinding_.get(), ui::AcceleratorManager::kHighPriority, this);
+        *page_action_keybinding_.get(),
+        ui::AcceleratorManager::kHighPriority,
+        this);
+  }
+
+  extensions::Command script_badge_command;
+  if (command_service->GetScriptBadgeCommand(
+          extension->id(),
+          extensions::CommandService::ACTIVE_ONLY,
+          &script_badge_command,
+          NULL)) {
+    script_badge_keybinding_.reset(
+        new ui::Accelerator(script_badge_command.accelerator()));
+    owner_->GetFocusManager()->RegisterAccelerator(
+        *script_badge_keybinding_.get(),
+        ui::AcceleratorManager::kHighPriority,
+        this);
   }
 }
 
 PageActionImageView::~PageActionImageView() {
-  if (keybinding_.get() && owner_->GetFocusManager())
-    owner_->GetFocusManager()->UnregisterAccelerator(*keybinding_.get(), this);
+  if (owner_->GetFocusManager()) {
+    if (page_action_keybinding_.get()) {
+      owner_->GetFocusManager()->UnregisterAccelerator(
+          *page_action_keybinding_.get(), this);
+    }
+
+    if (script_badge_keybinding_.get()) {
+      owner_->GetFocusManager()->UnregisterAccelerator(
+          *script_badge_keybinding_.get(), this);
+    }
+  }
 
   if (popup_)
     popup_->GetWidget()->RemoveObserver(this);

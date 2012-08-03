@@ -609,19 +609,25 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   // The browser action command that the extension wants to use, which is not
   // necessarily the one it can use, as it might be inactive (see also
-  // GetActiveBrowserActionCommand in ExtensionKeybindingRegistry).
+  // GetBrowserActionCommand in CommandService).
   const extensions::Command* browser_action_command() const {
     return browser_action_command_.get();
   }
   // The page action command that the extension wants to use, which is not
   // necessarily the one it can use, as it might be inactive (see also
-  // GetActivePageActionCommand in ExtensionKeybindingRegistry).
+  // GetPageActionCommand in CommandService).
   const extensions::Command* page_action_command() const {
     return page_action_command_.get();
   }
+  // The script badge command that the extension wants to use, which is not
+  // necessarily the one it can use, as it might be inactive (see also
+  // GetScriptBadgeCommand in CommandService).
+  const extensions::Command* script_badge_command() const {
+    return script_badge_command_.get();
+  }
   // The map (of command names to commands) that the extension wants to use,
   // which is not necessarily the one it can use, as they might be inactive
-  // (see also GetActiveNamedCommands in ExtensionKeybindingRegistry).
+  // (see also GetNamedCommands in CommandService).
   const extensions::CommandMap& named_commands() const {
     return named_commands_;
   }
@@ -1001,6 +1007,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Optional list of commands (keyboard shortcuts).
   scoped_ptr<extensions::Command> browser_action_command_;
   scoped_ptr<extensions::Command> page_action_command_;
+  scoped_ptr<extensions::Command> script_badge_command_;
   extensions::CommandMap named_commands_;
 
   // Optional list of web accessible extension resources.

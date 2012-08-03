@@ -57,7 +57,8 @@ bool CommandService::GetBrowserActionCommand(
     QueryType type,
     extensions::Command* command,
     bool* active) {
-  return GetExtensionActionCommand(extension_id, type, command, active, true);
+  return GetExtensionActionCommand(
+      extension_id, type, command, active, BROWSER_ACTION);
 }
 
 bool CommandService::GetPageActionCommand(
@@ -65,7 +66,17 @@ bool CommandService::GetPageActionCommand(
     QueryType type,
     extensions::Command* command,
     bool* active) {
-  return GetExtensionActionCommand(extension_id, type, command, active, false);
+  return GetExtensionActionCommand(
+      extension_id, type, command, active, PAGE_ACTION);
+}
+
+bool CommandService::GetScriptBadgeCommand(
+    const std::string& extension_id,
+    QueryType type,
+    extensions::Command* command,
+    bool* active) {
+  return GetExtensionActionCommand(
+      extension_id, type, command, active, SCRIPT_BADGE);
 }
 
 bool CommandService::GetNamedCommands(const std::string& extension_id,
@@ -219,6 +230,15 @@ void CommandService::AssignInitialKeybindings(const Extension* extension) {
                       page_action_command->command_name(),
                       false);  // Overwriting not allowed.
   }
+
+  const extensions::Command* script_badge_command =
+      extension->script_badge_command();
+  if (script_badge_command) {
+    AddKeybindingPref(script_badge_command->accelerator(),
+                      extension->id(),
+                      script_badge_command->command_name(),
+                      false);  // Overwriting not allowed.
+  }
 }
 
 void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
@@ -267,11 +287,12 @@ void CommandService::RemoveKeybindingPrefs(const std::string& extension_id,
   }
 }
 
-bool CommandService::GetExtensionActionCommand(const std::string& extension_id,
-                                               QueryType type,
-                                               extensions::Command* command,
-                                               bool* active,
-                                               bool browser_action) {
+bool CommandService::GetExtensionActionCommand(
+    const std::string& extension_id,
+    QueryType query_type,
+    extensions::Command* command,
+    bool* active,
+    ExtensionActionType action_type) {
   const ExtensionSet* extensions =
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   const Extension* extension = extensions->GetByID(extension_id);
@@ -280,9 +301,18 @@ bool CommandService::GetExtensionActionCommand(const std::string& extension_id,
   if (active)
     *active = false;
 
-  const extensions::Command* requested_command =
-      browser_action ? extension->browser_action_command() :
-                       extension->page_action_command();
+  const extensions::Command* requested_command = NULL;
+  switch (action_type) {
+    case BROWSER_ACTION:
+      requested_command = extension->browser_action_command();
+      break;
+    case PAGE_ACTION:
+      requested_command = extension->page_action_command();
+      break;
+    case SCRIPT_BADGE:
+      requested_command = extension->script_badge_command();
+      break;
+  }
   if (!requested_command)
     return false;
 
@@ -292,7 +322,8 @@ bool CommandService::GetExtensionActionCommand(const std::string& extension_id,
   if (active)
     *active = (shortcut_assigned.key_code() != ui::VKEY_UNKNOWN);
 
-  if (type == ACTIVE_ONLY && shortcut_assigned.key_code() == ui::VKEY_UNKNOWN)
+  if (query_type == ACTIVE_ONLY &&
+      shortcut_assigned.key_code() == ui::VKEY_UNKNOWN)
     return false;
 
   *command = *requested_command;
