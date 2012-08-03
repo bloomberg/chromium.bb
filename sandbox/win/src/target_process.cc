@@ -106,16 +106,19 @@ TargetProcess::~TargetProcess() {
   // it. http://b/893891
   // For now, this wait is there only to do a best effort to prevent some leaks
   // from showing up in purify.
-  ::WaitForSingleObject(sandbox_process_info_.process_handle(), 50);
-  if (!::GetExitCodeProcess(sandbox_process_info_.process_handle(),
-                            &exit_code) || (STILL_ACTIVE == exit_code)) {
-    // It is an error to destroy this object while the target process is still
-    // alive because we need to destroy the IPC subsystem and cannot risk to
-    // have an IPC reach us after this point.
-    shared_section_.Take();
-    SharedMemIPCServer* server = ipc_server_.release();
-    sandbox_process_info_.TakeProcessHandle();
-    return;
+  if (sandbox_process_info_.IsValid()) {
+    ::WaitForSingleObject(sandbox_process_info_.process_handle(), 50);
+    if (!::GetExitCodeProcess(sandbox_process_info_.process_handle(),
+                              &exit_code) || (STILL_ACTIVE == exit_code)) {
+      // It is an error to destroy this object while the target process is still
+      // alive because we need to destroy the IPC subsystem and cannot risk to
+      // have an IPC reach us after this point.
+      if (shared_section_.IsValid())
+        shared_section_.Take();
+      SharedMemIPCServer* server = ipc_server_.release();
+      sandbox_process_info_.TakeProcessHandle();
+      return;
+    }
   }
 
   // ipc_server_ references our process handle, so make sure the former is shut
