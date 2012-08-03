@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef UI_BASE_UI_BASE_PATHS_H_
 #define UI_BASE_UI_BASE_PATHS_H_
 
+#include "build/build_config.h"
 #include "ui/base/ui_export.h"
 
 // This file declares path keys for the app module.  These can be used with
@@ -17,8 +18,12 @@ enum {
 
   DIR_LOCALES,              // Directory where locale resources are stored.
 
-  // Valid only in development environment; TODO(darin): move these
+  // Valid only in development environment; TODO(darin): move this
   DIR_TEST_DATA,            // Directory where unit test data resides.
+
+#if defined(OS_ANDROID)
+  DIR_RESOURCE_PAKS_ANDROID,
+#endif
 
   PATH_END
 };

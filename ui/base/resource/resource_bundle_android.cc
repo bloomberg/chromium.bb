@@ -11,31 +11,19 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_handle.h"
-
-namespace {
-
-FilePath GetResourcesPakFilePath(const std::string& pak_name) {
-  FilePath path;
-  if (PathService::Get(base::DIR_ANDROID_APP_DATA, &path))
-    return path.AppendASCII("paks").AppendASCII(pak_name.c_str());
-
-  // Return just the name of the pack file.
-  return FilePath(pak_name.c_str());
-}
-
-}  // namespace
 
 namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPackFromPath(GetResourcesPakFilePath("chrome.pak"),
+  FilePath path;
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &path);
+  AddDataPackFromPath(path.AppendASCII("chrome.pak"),
                       SCALE_FACTOR_100P);
-  AddDataPackFromPath(GetResourcesPakFilePath(
-                      "theme_resources_100_percent.pak"),
+  AddDataPackFromPath(path.AppendASCII("theme_resources_100_percent.pak"),
                       SCALE_FACTOR_100P);
-  AddDataPackFromPath(GetResourcesPakFilePath(
-                      "ui_resources_100_percent.pak"),
+  AddDataPackFromPath(path.AppendASCII("ui_resources_100_percent.pak"),
                       SCALE_FACTOR_100P);
 }
 

@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "ui/base/ui_base_paths.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -312,11 +313,15 @@ bool PathProvider(int key, FilePath* result) {
                  .Append(FILE_PATH_LITERAL("resources.pak"));
         break;
       }
-      // If we're not bundled on mac, resources.pak should be next to the
-      // binary (e.g., for unit tests).
-#endif
+#elif defined(OS_ANDROID)
+      if (!PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
+        return false;
+#else
+      // If we're not bundled on mac or Android, resources.pak should be next
+      // to the binary (e.g., for unit tests).
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
+#endif
       cur = cur.Append(FILE_PATH_LITERAL("resources.pak"));
       break;
     case chrome::DIR_RESOURCES_EXTENSION:
