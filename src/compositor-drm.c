@@ -125,7 +125,8 @@ struct drm_output {
 	struct gbm_bo *cursor_bo[2];
 	struct weston_plane cursor_plane;
 	struct weston_plane fb_plane;
-	int current_cursor, cursor_free;
+	struct weston_surface *cursor_surface;
+	int current_cursor;
 	EGLSurface egl_surface;
 	struct drm_fb *current, *next;
 	struct backlight *backlight;
@@ -162,6 +163,11 @@ struct drm_sprite {
 
 	uint32_t formats[];
 };
+
+static void
+drm_output_set_cursor(struct drm_output *output);
+static void
+drm_disable_unused_sprites(struct weston_output *output_base);
 
 static int
 drm_sprite_crtc_supported(struct weston_output *output_base, uint32_t supported)
@@ -367,6 +373,8 @@ drm_output_repaint(struct weston_output *output_base,
 
 	output->page_flip_pending = 1;
 
+	drm_output_set_cursor(output);
+
 	/*
 	 * Now, update all the sprite surfaces
 	 */
@@ -404,6 +412,8 @@ drm_output_repaint(struct weston_output *output_base,
 		s->output = output;
 		output->vblank_pending = 1;
 	}
+
+	drm_disable_unused_sprites(&output->base);
 
 	return;
 }
@@ -683,10 +693,28 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 }
 
 static struct weston_plane *
-drm_output_set_cursor(struct weston_output *output_base,
-		      struct weston_surface *es)
+drm_output_prepare_cursor_surface(struct weston_output *output_base,
+				  struct weston_surface *es)
 {
 	struct drm_output *output = (struct drm_output *) output_base;
+
+	if (output->cursor_surface)
+		return NULL;
+	if (es->output_mask != (1u << output_base->id))
+		return NULL;
+	if (es->buffer == NULL || !wl_buffer_is_shm(es->buffer) ||
+	    es->geometry.width > 64 || es->geometry.height > 64)
+		return NULL;
+
+	output->cursor_surface = es;
+
+	return &output->cursor_plane;
+}
+
+static void
+drm_output_set_cursor(struct drm_output *output)
+{
+	struct weston_surface *es = output->cursor_surface;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
 	EGLint handle, stride;
@@ -695,16 +723,14 @@ drm_output_set_cursor(struct weston_output *output_base,
 	unsigned char *s;
 	int i, x, y;
 
-	if (!output->cursor_free)
-		return NULL;
-	if (es->output_mask != (1u << output_base->id))
-		return NULL;
-	if (es->buffer == NULL || !wl_buffer_is_shm(es->buffer) ||
-	    es->geometry.width > 64 || es->geometry.height > 64)
-		return NULL;
+	if (es == NULL) {
+		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
+		return;
+	}
 
-	output->cursor_free = 0;
-	if (es->buffer && pixman_region32_not_empty(&es->damage)) {
+	if (es->buffer && pixman_region32_not_empty(&output->cursor_plane.damage)) {
+		pixman_region32_fini(&output->cursor_plane.damage);
+		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
 		bo = output->cursor_bo[output->current_cursor];
 		memset(buf, 0, sizeof buf);
@@ -731,8 +757,6 @@ drm_output_set_cursor(struct weston_output *output_base,
 		output->cursor_plane.x = x;
 		output->cursor_plane.y = y;
 	}
-
-	return &output->cursor_plane;
 }
 
 static void
@@ -759,7 +783,7 @@ drm_assign_planes(struct weston_output *output)
 	 * as we do for flipping full screen surfaces.
 	 */
 	pixman_region32_init(&overlap);
-	drm_output->cursor_free = 1;
+	drm_output->cursor_surface = NULL;
 	primary = &c->base.primary_plane;
 	wl_list_for_each_safe(es, next, &c->base.surface_list, link) {
 		pixman_region32_init(&surface_overlap);
@@ -770,7 +794,7 @@ drm_assign_planes(struct weston_output *output)
 		if (pixman_region32_not_empty(&surface_overlap))
 			next_plane = primary;
 		if (next_plane == NULL)
-			next_plane = drm_output_set_cursor(output, es);
+			next_plane = drm_output_prepare_cursor_surface(output, es);
 		if (next_plane == NULL)
 			next_plane = drm_output_prepare_scanout_surface(output, es);
 		if (next_plane == NULL)
@@ -785,11 +809,6 @@ drm_assign_planes(struct weston_output *output)
 		pixman_region32_fini(&surface_overlap);
 	}
 	pixman_region32_fini(&overlap);
-
-	if (drm_output->cursor_free)
-		drmModeSetCursor(c->drm.fd, drm_output->crtc_id, 0, 0, 0);
-
-	drm_disable_unused_sprites(output);
 }
 
 static void
