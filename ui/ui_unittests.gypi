@@ -67,7 +67,6 @@
         'base/cocoa/events_mac_unittest.mm',
         'base/cocoa/focus_tracker_unittest.mm',
         'base/dialogs/select_file_dialog_win_unittest.cc',
-        'base/event_unittest.cc',
         'base/gtk/gtk_expanded_container_unittest.cc',
         'base/gtk/gtk_im_context_util_unittest.cc',
         'base/gtk/menu_label_accelerator_util_unittest.cc',
@@ -203,14 +202,9 @@
             'gfx/render_text_unittest.cc',
           ],
         }],
-        ['toolkit_views==0', {
+        ['OS!="win" or use_aura==0', {
           'sources!': [
             'base/view_prop_unittest.cc',
-            'base/event_unittest.cc',
-          ],
-        }, {
-          'sources': [
-            'base/gestures/velocity_calculator_unittest.cc',
           ],
         }],
         ['use_aura==1', {
@@ -219,6 +213,11 @@
             'base/dragdrop/os_exchange_data_win_unittest.cc',
             'base/native_theme/native_theme_win_unittest.cc',
             'gfx/screen_unittest.cc',
+          ],
+        }],
+        ['use_aura==1 or toolkit_views==1', {
+          'sources': [
+            'base/gestures/velocity_calculator_unittest.cc',
           ],
         }],
       ],
