@@ -248,7 +248,7 @@ void SetWallpaperOptionsHandler::HandleDailyWallpaper(const ListValue* args) {
     index = ash::GetNextWallpaperIndex(index);
   UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DAILY, index);
   ash::Shell::GetInstance()->desktop_background_controller()->
-      SetDefaultWallpaper(index, false);
+      SetDefaultWallpaper(index);
   base::StringValue image_url(GetDefaultWallpaperThumbnailURL(index));
   base::FundamentalValue is_daily(true);
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",

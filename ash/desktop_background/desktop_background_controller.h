@@ -71,10 +71,8 @@ class ASH_EXPORT DesktopBackgroundController {
   void OnRootWindowAdded(aura::RootWindow* root_window);
 
   // Loads default wallpaper at |index| asynchronously and sets to current
-  // wallpaper after loaded. When |force_reload| is true, reload wallpaper
-  // for all root windows even if |index| is the same as current wallpaper. It
-  // must be true when a different resolution of current wallpaper is needed.
-  void SetDefaultWallpaper(int index, bool force_reload);
+  // wallpaper after loaded.
+  void SetDefaultWallpaper(int index);
 
   // Sets the user selected custom wallpaper. Called when user selected a file
   // from file system or changed the layout of wallpaper.

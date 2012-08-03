@@ -19,21 +19,10 @@ enum WallpaperLayout {
   TILE,
 };
 
-enum WallpaperResolution {
-  LARGE,
-  SMALL
-};
-
-// Encapsulates wallpaper infomation needed by desktop background view.
-struct ASH_EXPORT WallpaperViewInfo {
-  int id;
-  WallpaperLayout layout;
-};
-
 struct ASH_EXPORT WallpaperInfo {
-  WallpaperViewInfo large;
-  WallpaperViewInfo small;
+  int id;
   int thumb_id;
+  WallpaperLayout layout;
   // TODO(bshe): author member should be encoded to UTF16. We need to use i18n
   // string for this member after M19.
   const char* author;
@@ -50,8 +39,6 @@ ASH_EXPORT int GetNextWallpaperIndex(int index);
 ASH_EXPORT int GetSolidColorIndex();
 ASH_EXPORT int GetWallpaperCount();
 ASH_EXPORT const WallpaperInfo& GetWallpaperInfo(int index);
-ASH_EXPORT const WallpaperViewInfo& GetWallpaperViewInfo(int index,
-    WallpaperResolution resolution);
 
 }  // namespace ash
 
