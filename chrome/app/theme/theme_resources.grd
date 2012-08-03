@@ -583,7 +583,7 @@
         <structure type="chrome_scaled_image" name="IDR_PROFILE_PICTURE_LOADING" file="profile_loading.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PROFILE_SELECTED" file="profile_selected.png" />
-      <structure type="chrome_scaled_image" name="IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON" file="register_protocol_handler_locationbar_icon.png" />
+      <structure type="chrome_scaled_image" name="IDR_REGISTER_PROTOCOL_HANDLER_LOCATIONBAR_ICON" file="webintents.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_RELOAD" file="reload.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="reload_hover.png" />
