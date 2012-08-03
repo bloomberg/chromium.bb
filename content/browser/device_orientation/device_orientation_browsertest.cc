@@ -5,6 +5,8 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/browser/device_orientation/device_data.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
 #include "content/public/browser/web_contents.h"
@@ -17,20 +19,23 @@ namespace device_orientation {
 
 class MockProvider : public Provider {
  public:
-  explicit MockProvider(const Orientation& orientation)
-      : orientation_(orientation),
+  MockProvider(const DeviceData* device_data, DeviceData::Type type)
+      : device_data_(device_data),
+        device_data_type_(type),
         added_observer_(false),
-        removed_observer_(false) {}
+        removed_observer_(false) {
+  }
 
   virtual void AddObserver(Observer* observer) {
     added_observer_ = true;
-    observer->OnOrientationUpdate(orientation_);
+    observer->OnDeviceDataUpdate(device_data_.get(), device_data_type_);
   }
   virtual void RemoveObserver(Observer* observer) {
     removed_observer_ = true;
   }
 
-  Orientation orientation_;
+  scoped_refptr<const DeviceData> device_data_;
+  DeviceData::Type device_data_type_;
   bool added_observer_;
   bool removed_observer_;
 
@@ -48,12 +53,13 @@ class DeviceOrientationBrowserTest : public content::ContentBrowserTest {
 
 // crbug.com/113952
 IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
-  Orientation test_orientation;
-  test_orientation.set_alpha(1);
-  test_orientation.set_beta(2);
-  test_orientation.set_gamma(3);
-  test_orientation.set_absolute(true);
-  scoped_refptr<MockProvider> provider(new MockProvider(test_orientation));
+  scoped_refptr<Orientation> test_orientation(new Orientation());
+  test_orientation->set_alpha(1);
+  test_orientation->set_beta(2);
+  test_orientation->set_gamma(3);
+  test_orientation->set_absolute(true);
+  scoped_refptr<MockProvider> provider(new MockProvider(
+    test_orientation, DeviceData::kTypeOrientation));
   Provider::SetInstanceForTests(provider.get());
 
   // The test page will register an event handler for orientation events,

@@ -54,7 +54,14 @@ DataFetcherImplAndroid::~DataFetcherImplAndroid() {
   Stop();
 }
 
-bool DataFetcherImplAndroid::GetOrientation(Orientation* orientation) {
+const DeviceData* DataFetcherImplAndroid::GetDeviceData(
+    DeviceData::Type type) {
+  if (type != DeviceData::kTypeOrientation)
+    return NULL;
+  return GetOrientation();
+}
+
+const Orientation* DataFetcherImplAndroid::GetOrientation() {
   // Do we have a new orientation value? (It's safe to do this outside the lock
   // because we only skip the lock if the value is null. We always enter the
   // lock if we're going to make use of the new value.)
@@ -62,9 +69,9 @@ bool DataFetcherImplAndroid::GetOrientation(Orientation* orientation) {
     base::AutoLock autolock(next_orientation_lock_);
     next_orientation_.swap(current_orientation_);
   }
-  if (current_orientation_.get())
-    *orientation = *current_orientation_;
-  return true;
+  if (!current_orientation_.get())
+    return new Orientation();
+  return current_orientation_.get();
 }
 
 void DataFetcherImplAndroid::GotOrientation(
@@ -76,7 +83,7 @@ void DataFetcherImplAndroid::GotOrientation(
   orientation->set_beta(beta);
   orientation->set_gamma(gamma);
   orientation->set_absolute(true);
-  next_orientation_.reset(orientation);
+  next_orientation_ = orientation;
 }
 
 bool DataFetcherImplAndroid::Start(int rate_in_milliseconds) {

@@ -6,23 +6,31 @@
 #define CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/browser/device_orientation/device_data.h"
 #include "content/common/content_export.h"
 
 namespace device_orientation {
-
-class Orientation;
 
 class CONTENT_EXPORT Provider : public base::RefCountedThreadSafe<Provider> {
  public:
   class Observer {
    public:
-    // Called when the orientation changes.
+    // Called when device data changes.
     // An Observer must not synchronously call Provider::RemoveObserver
     // or Provider::AddObserver when this is called.
-    virtual void OnOrientationUpdate(const Orientation& orientation) = 0;
+    virtual void OnDeviceDataUpdate(const DeviceData* device_data,
+                                    DeviceData::Type device_data_type) = 0;
+    DeviceData::Type device_data_type() { return device_data_type_; }
 
    protected:
+    Observer(DeviceData::Type device_data_type)
+        : device_data_type_(device_data_type) {
+    }
     virtual ~Observer() {}
+
+   private:
+    // Each Observer observes exactly one type of DeviceData.
+    DeviceData::Type device_data_type_;
   };
 
   // Returns a pointer to the singleton instance of this class.
@@ -39,8 +47,7 @@ class CONTENT_EXPORT Provider : public base::RefCountedThreadSafe<Provider> {
   // Get the current instance. Used for testing.
   static Provider* GetInstanceForTests();
 
-  // Note: AddObserver may call back synchronously to the observer with
-  // orientation data.
+  // Note: AddObserver may call back synchronously to the observer with data.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 

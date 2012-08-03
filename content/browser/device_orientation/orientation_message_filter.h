@@ -7,12 +7,11 @@
 
 #include <map>
 
-#include "content/browser/device_orientation/provider.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/browser/device_orientation/message_filter.h"
 
 namespace device_orientation {
 
-class OrientationMessageFilter : public content::BrowserMessageFilter {
+class OrientationMessageFilter : public MessageFilter {
  public:
   OrientationMessageFilter();
 
@@ -22,17 +21,6 @@ class OrientationMessageFilter : public content::BrowserMessageFilter {
 
  private:
   virtual ~OrientationMessageFilter();
-
-  void OnStartUpdating(int render_view_id);
-  void OnStopUpdating(int render_view_id);
-
-  // Helper class that observes a Provider and forwards updates to a RenderView.
-  class ObserverDelegate;
-
-  // map from render_view_id to ObserverDelegate.
-  std::map<int, scoped_refptr<ObserverDelegate> > observers_map_;
-
-  scoped_refptr<Provider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OrientationMessageFilter);
 };

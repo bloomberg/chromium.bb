@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_
 #define CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -12,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "content/browser/device_orientation/data_fetcher.h"
-#include "content/browser/device_orientation/orientation.h"
+#include "content/browser/device_orientation/device_data.h"
 #include "content/browser/device_orientation/provider.h"
 #include "content/common/content_export.h"
 
@@ -25,8 +26,8 @@ class ProviderImpl : public Provider {
   typedef DataFetcher* (*DataFetcherFactory)();
 
   // Create a ProviderImpl that uses the factory to create a DataFetcher that
-  // can provide orientation data. A NULL DataFetcherFactory indicates that
-  // there are no DataFetchers for this OS.
+  // can provide data. A NULL DataFetcherFactory indicates that there are no
+  // DataFetchers for this OS.
   CONTENT_EXPORT ProviderImpl(DataFetcherFactory factory);
 
   // From Provider.
@@ -39,14 +40,19 @@ class ProviderImpl : public Provider {
   virtual ~ProviderImpl();
 
   // Starts or Stops the provider. Called from creator_loop_.
-  void Start();
+  void Start(DeviceData::Type type);
   void Stop();
 
-  void ScheduleInitializePollingThread();
+  void ScheduleInitializePollingThread(DeviceData::Type device_data_type);
+  void ScheduleDoAddPollingDataType(DeviceData::Type type);
 
-  // Method for notifying observers of an orientation update.
+  // Method for notifying observers of a data update.
   // Runs on the creator_thread_.
-  void DoNotify(const Orientation& orientation);
+  void DoNotify(const DeviceData* device_data,
+                DeviceData::Type device_data_type);
+
+  static bool ShouldFireEvent(const DeviceData* old_data,
+      const DeviceData* new_data, DeviceData::Type device_data_type);
 
   // The Message Loop on which this object was created.
   // Typically the I/O loop, but may be something else during testing.
@@ -55,8 +61,11 @@ class ProviderImpl : public Provider {
   // Members below are only to be used from the creator_loop_.
   DataFetcherFactory factory_;
   std::set<Observer*> observers_;
-  Orientation last_notification_;
+  std::map<DeviceData::Type, scoped_refptr<const DeviceData> >
+      last_notifications_map_;
 
+  // When polling_thread_ is running, members below are only to be used
+  // from that thread.
   base::WeakPtrFactory<ProviderImpl> weak_factory_;
 
   // Polling is done on this background thread. PollingThread is owned by

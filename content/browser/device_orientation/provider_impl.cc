@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cmath>
+#include "content/browser/device_orientation/provider_impl.h"
+
 #include <set>
 #include <vector>
 
@@ -11,24 +12,8 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
-#include "content/browser/device_orientation/orientation.h"
-#include "content/browser/device_orientation/provider_impl.h"
 
 namespace {
-
-bool IsElementSignificantlyDifferent(bool can_provide_element1,
-                                     bool can_provide_element2,
-                                     double element1,
-                                     double element2) {
-  const double kThreshold = 0.1;
-
-  if (can_provide_element1 != can_provide_element2)
-    return true;
-  if (can_provide_element1 &&
-      std::fabs(element1 - element2) >= kThreshold)
-    return true;
-  return false;
-}
 
 void DeleteThread(base::Thread* thread) {
   thread->Stop();
@@ -46,8 +31,12 @@ class ProviderImpl::PollingThread : public base::Thread {
                 MessageLoop* creator_loop);
   virtual ~PollingThread();
 
-  // Method for finding a suitable DataFetcher and starting the polling.
-  void Initialize(DataFetcherFactory factory);
+  // Method for creating a DataFetcher and starting the polling, if the fetcher
+  // can provide this type of data.
+  void Initialize(DataFetcherFactory factory, DeviceData::Type type);
+
+  // Method for adding a type of data to poll for.
+  void DoAddPollingDataType(DeviceData::Type type);
 
  private:
   // Method for polling a DataFetcher.
@@ -56,10 +45,8 @@ class ProviderImpl::PollingThread : public base::Thread {
 
   // Schedule a notification to the |provider_| which lives on a different
   // thread (|creator_loop_| is its message loop).
-  void ScheduleDoNotify(const Orientation& orientation);
-
-  static bool SignificantlyDifferent(const Orientation& orientation1,
-                                     const Orientation& orientation2);
+  void ScheduleDoNotify(const DeviceData* device_data,
+                        DeviceData::Type device_data_type);
 
   enum { kDesiredSamplingIntervalMs = 100 };
   base::TimeDelta SamplingInterval() const;
@@ -69,7 +56,9 @@ class ProviderImpl::PollingThread : public base::Thread {
   MessageLoop* creator_loop_;
 
   scoped_ptr<DataFetcher> data_fetcher_;
-  Orientation last_orientation_;
+  std::map<DeviceData::Type, scoped_refptr<const DeviceData> >
+    last_device_data_map_;
+  std::set<DeviceData::Type> polling_data_types_;
 
   base::WeakPtr<ProviderImpl> provider_;
 };
@@ -86,56 +75,76 @@ ProviderImpl::PollingThread::PollingThread(
 ProviderImpl::PollingThread::~PollingThread() {
 }
 
-void ProviderImpl::PollingThread::Initialize(DataFetcherFactory factory) {
+void ProviderImpl::PollingThread::DoAddPollingDataType(DeviceData::Type type) {
+  DCHECK(MessageLoop::current() == message_loop());
+
+  polling_data_types_.insert(type);
+}
+
+void ProviderImpl::PollingThread::Initialize(DataFetcherFactory factory,
+                                             DeviceData::Type type) {
   DCHECK(MessageLoop::current() == message_loop());
 
   if (factory != NULL) {
-    // Try to use factory to create a fetcher that can provide orientation data.
+    // Try to use factory to create a fetcher that can provide this type of
+    // data. If factory creates a fetcher that provides this type of data,
+    // start polling.
     scoped_ptr<DataFetcher> fetcher(factory());
-    Orientation orientation;
 
-    if (fetcher.get() && fetcher->GetOrientation(&orientation)) {
-      // Pass ownership of fetcher to provider_.
-      data_fetcher_.swap(fetcher);
-      last_orientation_ = orientation;
+    if (fetcher.get()) {
+      scoped_refptr<const DeviceData> device_data(fetcher->GetDeviceData(type));
+      if (device_data != NULL) {
+        // Pass ownership of fetcher to provider_.
+        data_fetcher_.swap(fetcher);
+        last_device_data_map_[type] = device_data;
 
-      // Notify observers.
-      if (!orientation.is_empty())
-        ScheduleDoNotify(orientation);
+        // Notify observers.
+        ScheduleDoNotify(device_data, type);
 
-      // Start polling.
-      ScheduleDoPoll();
-      return;
+        // Start polling.
+        ScheduleDoPoll();
+        return;
+      }
     }
   }
 
-  // When no orientation data can be provided.
-  ScheduleDoNotify(Orientation::Empty());
+  // When no device data can be provided.
+  ScheduleDoNotify(NULL, type);
 }
 
 void ProviderImpl::PollingThread::ScheduleDoNotify(
-    const Orientation& orientation) {
+    const DeviceData* device_data, DeviceData::Type device_data_type) {
   DCHECK(MessageLoop::current() == message_loop());
 
-  creator_loop_->PostTask(
-      FROM_HERE, base::Bind(&ProviderImpl::DoNotify, provider_, orientation));
+  creator_loop_->PostTask(FROM_HERE,
+                          base::Bind(&ProviderImpl::DoNotify, provider_,
+                                     device_data, device_data_type));
 }
 
 void ProviderImpl::PollingThread::DoPoll() {
   DCHECK(MessageLoop::current() == message_loop());
 
-  Orientation orientation;
-  if (!data_fetcher_->GetOrientation(&orientation)) {
-    LOG(ERROR) << "Failed to poll device orientation data fetcher.";
+  // Poll the fetcher for each type of data.
+  typedef std::set<DeviceData::Type>::const_iterator SetIterator;
+  for (SetIterator i = polling_data_types_.begin();
+       i != polling_data_types_.end(); ++i) {
+    DeviceData::Type device_data_type = *i;
+    scoped_refptr<const DeviceData> device_data(data_fetcher_->GetDeviceData(
+        device_data_type));
 
-    ScheduleDoNotify(Orientation::Empty());
-    return;
-  }
+    if (device_data == NULL) {
+      LOG(ERROR) << "Failed to poll device data fetcher.";
+      ScheduleDoNotify(NULL, device_data_type);
+      continue;
+    }
 
-  if (!orientation.is_empty() &&
-      SignificantlyDifferent(orientation, last_orientation_)) {
-    last_orientation_ = orientation;
-    ScheduleDoNotify(orientation);
+    const DeviceData* old_data = last_device_data_map_[device_data_type];
+    if (old_data != NULL && !device_data->ShouldFireEvent(old_data))
+      continue;
+
+    // Update the last device data of this type and notify observers.
+    last_device_data_map_[device_data_type] = device_data;
+    ScheduleDoNotify(device_data, device_data_type);
   }
 
   ScheduleDoPoll();
@@ -148,27 +157,6 @@ void ProviderImpl::PollingThread::ScheduleDoPoll() {
       FROM_HERE,
       base::Bind(&PollingThread::DoPoll, base::Unretained(this)),
       SamplingInterval());
-}
-
-// Returns true if two orientations are considered different enough that
-// observers should be notified of the new orientation.
-bool ProviderImpl::PollingThread::SignificantlyDifferent(
-    const Orientation& o1,
-    const Orientation& o2) {
-  return IsElementSignificantlyDifferent(o1.can_provide_alpha(),
-                                         o2.can_provide_alpha(),
-                                         o1.alpha(),
-                                         o2.alpha()) ||
-         IsElementSignificantlyDifferent(o1.can_provide_beta(),
-                                         o2.can_provide_beta(),
-                                         o1.beta(),
-                                         o2.beta()) ||
-         IsElementSignificantlyDifferent(o1.can_provide_gamma(),
-                                         o2.can_provide_gamma(),
-                                         o1.gamma(),
-                                         o2.gamma()) ||
-         (o1.can_provide_absolute() != o2.can_provide_absolute() ||
-          o1.absolute() != o2.absolute());
 }
 
 base::TimeDelta ProviderImpl::PollingThread::SamplingInterval() const {
@@ -192,14 +180,32 @@ ProviderImpl::~ProviderImpl() {
   Stop();
 }
 
+void ProviderImpl::ScheduleDoAddPollingDataType(DeviceData::Type type) {
+  DCHECK(MessageLoop::current() == creator_loop_);
+
+  MessageLoop* polling_loop = polling_thread_->message_loop();
+  polling_loop->PostTask(FROM_HERE,
+                         base::Bind(&PollingThread::DoAddPollingDataType,
+                                    base::Unretained(polling_thread_),
+                                    type));
+}
+
 void ProviderImpl::AddObserver(Observer* observer) {
   DCHECK(MessageLoop::current() == creator_loop_);
 
+  DeviceData::Type type = observer->device_data_type();
+
   observers_.insert(observer);
   if (observers_.size() == 1)
-    Start();
-  else
-    observer->OnOrientationUpdate(last_notification_);
+    Start(type);
+  else {
+    // Notify observer of most recent notification if one exists.
+    const DeviceData *last_notification = last_notifications_map_[type];
+    if (last_notification != NULL)
+      observer->OnDeviceDataUpdate(last_notification, type);
+  }
+
+  ScheduleDoAddPollingDataType(type);
 }
 
 void ProviderImpl::RemoveObserver(Observer* observer) {
@@ -210,20 +216,20 @@ void ProviderImpl::RemoveObserver(Observer* observer) {
     Stop();
 }
 
-void ProviderImpl::Start() {
+void ProviderImpl::Start(DeviceData::Type type) {
   DCHECK(MessageLoop::current() == creator_loop_);
   DCHECK(!polling_thread_);
 
-  polling_thread_ = new PollingThread("Device orientation polling thread",
+  polling_thread_ = new PollingThread("Device data polling thread",
                                       weak_factory_.GetWeakPtr(),
                                       creator_loop_);
   if (!polling_thread_->Start()) {
-    LOG(ERROR) << "Failed to start device orientation polling thread";
+    LOG(ERROR) << "Failed to start device data polling thread";
     delete polling_thread_;
     polling_thread_ = NULL;
     return;
   }
-  ScheduleInitializePollingThread();
+  ScheduleInitializePollingThread(type);
 }
 
 void ProviderImpl::Stop() {
@@ -241,30 +247,48 @@ void ProviderImpl::Stop() {
   }
 }
 
-void ProviderImpl::ScheduleInitializePollingThread() {
+void ProviderImpl::ScheduleInitializePollingThread(
+    DeviceData::Type device_data_type) {
   DCHECK(MessageLoop::current() == creator_loop_);
 
   MessageLoop* polling_loop = polling_thread_->message_loop();
   polling_loop->PostTask(FROM_HERE,
                          base::Bind(&PollingThread::Initialize,
                                     base::Unretained(polling_thread_),
-                                    factory_));
+                                    factory_,
+                                    device_data_type));
 }
 
-void ProviderImpl::DoNotify(const Orientation& orientation) {
+void ProviderImpl::DoNotify(const DeviceData* device_data,
+    DeviceData::Type device_data_type) {
   DCHECK(MessageLoop::current() == creator_loop_);
 
-  last_notification_ = orientation;
+  scoped_refptr<const DeviceData> data(device_data);
 
-  typedef std::set<Observer*>::const_iterator Iterator;
-  for (Iterator i = observers_.begin(); i != observers_.end(); ++i)
-    (*i)->OnOrientationUpdate(orientation);
+  // Update last notification of this type.
+  last_notifications_map_[device_data_type] = data;
 
-  if (orientation.is_empty()) {
-    // Notify observers about failure to provide data exactly once.
-    observers_.clear();
-    Stop();
+  // Notify observers of this type of the new data.
+  typedef std::set<Observer*>::const_iterator ConstIterator;
+  for (ConstIterator i = observers_.begin(); i != observers_.end(); ++i) {
+    if ((*i)->device_data_type() == device_data_type)
+      (*i)->OnDeviceDataUpdate(data.get(), device_data_type);
+  }
+
+  if (data == NULL) {
+    // Notify observers exactly once about failure to provide data.
+    typedef std::set<Observer*>::iterator Iterator;
+    Iterator i = observers_.begin();
+    while (i != observers_.end()) {
+      Iterator current = i++;
+      if ((*current)->device_data_type() == device_data_type)
+        observers_.erase(current);
+    }
+
+    if (observers_.empty())
+      Stop();
   }
 }
+
 
 }  // namespace device_orientation

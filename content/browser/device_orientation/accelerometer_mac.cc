@@ -24,6 +24,12 @@ AccelerometerMac::~AccelerometerMac() {
 AccelerometerMac::AccelerometerMac() {
 }
 
+const DeviceData* AccelerometerMac::GetDeviceData(DeviceData::Type type) {
+  if (type != DeviceData::kTypeOrientation)
+    return NULL;
+  return GetOrientation();
+}
+
 //  Retrieve per-axis orientation values.
 //
 //  Axes and angles are defined according to the W3C DeviceOrientation Draft.
@@ -33,13 +39,13 @@ AccelerometerMac::AccelerometerMac() {
 //
 //  Returns false in case of error.
 //
-bool AccelerometerMac::GetOrientation(Orientation* orientation) {
+const Orientation* AccelerometerMac::GetOrientation() {
   DCHECK(sudden_motion_sensor_.get());
 
   // Retrieve per-axis calibrated values.
   float axis_value[3];
   if (!sudden_motion_sensor_->ReadSensorValues(axis_value))
-    return false;
+    return NULL;
 
   // Transform the accelerometer values to W3C draft angles.
   //
@@ -63,6 +69,8 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
   //
   const double kRad2deg = 180.0 / M_PI;
 
+  scoped_refptr<Orientation> orientation(new Orientation());
+
   orientation->set_beta(kRad2deg * atan2(-axis_value[1], axis_value[2]));
   orientation->set_gamma(kRad2deg * asin(axis_value[0]));
   // TODO(aousterh): should absolute_ be set to false here?
@@ -85,7 +93,7 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
   DCHECK_GE(orientation->gamma(), -90.0);
   DCHECK_LT(orientation->gamma(),  90.0);
 
-  return true;
+  return orientation;
 }
 
 bool AccelerometerMac::Init() {

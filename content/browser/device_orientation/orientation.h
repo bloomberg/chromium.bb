@@ -5,52 +5,24 @@
 #ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_H_
 #define CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_H_
 
+#include "base/compiler_specific.h"
+#include "content/browser/device_orientation/device_data.h"
+#include "content/common/content_export.h"
+
 namespace device_orientation {
-class Orientation {
+
+class Orientation : public DeviceData {
  public:
   // alpha, beta, gamma and absolute are the rotations around the axes as
   // specified in http://dev.w3.org/geo/api/spec-source-orientation.html
   //
   // can_provide_{alpha,beta,gamma,absolute} is true if data can be provided
   // for that variable.
+  CONTENT_EXPORT Orientation();
 
-  Orientation()
-      : alpha_(0),
-        beta_(0),
-        gamma_(0),
-        absolute_(false),
-        can_provide_alpha_(false),
-        can_provide_beta_(false),
-        can_provide_gamma_(false),
-        can_provide_absolute_(false) {
-  }
-  Orientation(const Orientation& orientation)
-      : alpha_(orientation.alpha()),
-        beta_(orientation.beta()),
-        gamma_(orientation.gamma()),
-        absolute_(orientation.absolute()),
-        can_provide_alpha_(orientation.can_provide_alpha()),
-        can_provide_beta_(orientation.can_provide_beta()),
-        can_provide_gamma_(orientation.can_provide_gamma()),
-        can_provide_absolute_(orientation.can_provide_absolute()) {
-  }
-  void operator=(const Orientation& source) {
-    alpha_ = source.alpha();
-    beta_ = source.beta();
-    gamma_ = source.gamma();
-    absolute_ = source.absolute();
-    can_provide_alpha_ = source.can_provide_alpha();
-    can_provide_beta_ = source.can_provide_beta();
-    can_provide_gamma_ = source.can_provide_gamma();
-    can_provide_absolute_ = source.can_provide_absolute();
-  }
-
-  static Orientation Empty() { return Orientation(); }
-
-  bool is_empty() const {
-    return !can_provide_alpha_ && !can_provide_beta_ && !can_provide_gamma_
-        && !can_provide_absolute_;
-  }
+  // From DeviceData.
+  virtual IPC::Message* CreateIPCMessage(int render_view_id) const OVERRIDE;
+  virtual bool ShouldFireEvent(const DeviceData* old_data) const OVERRIDE;
 
   void set_alpha(double alpha) {
     can_provide_alpha_ = true;
@@ -81,6 +53,11 @@ class Orientation {
   bool absolute() const { return absolute_; }
 
  private:
+  virtual ~Orientation();
+
+  static bool IsElementSignificantlyDifferent(bool can_provide_element1,
+      bool can_provide_element2, double element1, double element2);
+
   double alpha_;
   double beta_;
   double gamma_;

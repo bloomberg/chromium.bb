@@ -10,23 +10,27 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/device_orientation/data_fetcher.h"
+#include "content/browser/device_orientation/device_data.h"
 
 class SuddenMotionSensor;
 
 namespace device_orientation {
+
+class Orientation;
 
 class AccelerometerMac : public DataFetcher {
  public:
   static DataFetcher* Create();
 
   // Implement DataFetcher.
-  virtual bool GetOrientation(Orientation* orientation) OVERRIDE;
+  virtual const DeviceData* GetDeviceData(DeviceData::Type type) OVERRIDE;
 
   virtual ~AccelerometerMac();
 
  private:
   AccelerometerMac();
   bool Init();
+  const Orientation* GetOrientation();
 
   scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 };
