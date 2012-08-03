@@ -13,6 +13,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/common/extensions/api/events.h"
 #include "googleurl/src/gurl.h"
 #include "unicode/regex.h"
@@ -43,7 +44,6 @@ typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
     LinkedPtrEventResponseDelta;
 
 // Base class for all WebRequestActions of the declarative Web Request API.
-//
 class WebRequestAction {
  public:
   // Type identifiers for concrete WebRequestActions.
@@ -58,6 +58,8 @@ class WebRequestAction {
     ACTION_ADD_RESPONSE_HEADER,
     ACTION_REMOVE_RESPONSE_HEADER,
     ACTION_IGNORE_RULES,
+    ACTION_MODIFY_REQUEST_COOKIE,
+    ACTION_MODIFY_RESPONSE_COOKIE,
   };
 
   WebRequestAction();
@@ -389,8 +391,55 @@ class WebRequestIgnoreRulesAction : public WebRequestAction {
   DISALLOW_COPY_AND_ASSIGN(WebRequestIgnoreRulesAction);
 };
 
-// TODO(battre) Implement further actions:
-// Redirect by RegEx, Cookie manipulations, ...
+// Action that instructs to modify (add, edit, remove) a request cookie.
+class WebRequestRequestCookieAction : public WebRequestAction {
+ public:
+  typedef extension_web_request_api_helpers::RequestCookieModification
+      RequestCookieModification;
+
+  explicit WebRequestRequestCookieAction(
+      linked_ptr<RequestCookieModification> request_cookie_modification);
+  virtual ~WebRequestRequestCookieAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  linked_ptr<RequestCookieModification> request_cookie_modification_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestRequestCookieAction);
+};
+
+// Action that instructs to modify (add, edit, remove) a response cookie.
+class WebRequestResponseCookieAction : public WebRequestAction {
+ public:
+  typedef extension_web_request_api_helpers::ResponseCookieModification
+      ResponseCookieModification;
+
+  explicit WebRequestResponseCookieAction(
+      linked_ptr<ResponseCookieModification> response_cookie_modification);
+  virtual ~WebRequestResponseCookieAction();
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  linked_ptr<ResponseCookieModification> response_cookie_modification_;
+  DISALLOW_COPY_AND_ASSIGN(WebRequestResponseCookieAction);
+};
 
 }  // namespace extensions
 

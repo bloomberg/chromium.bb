@@ -48,6 +48,8 @@ using helpers::EventResponseDeltas;
 using helpers::InDecreasingExtensionInstallationTimeOrder;
 using helpers::MergeCancelOfResponses;
 using helpers::MergeOnBeforeRequestResponses;
+using helpers::RequestCookieModification;
+using helpers::ResponseCookieModification;
 using helpers::ResponseHeader;
 using helpers::ResponseHeaders;
 using helpers::StringToCharList;
@@ -1279,6 +1281,162 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
   EXPECT_EQ(1u, conflicting_extensions.size());
   EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
   EXPECT_EQ(3u, capturing_net_log.GetSize());
+}
+
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeOnBeforeSendHeadersResponses_Cookies) {
+  net::HttpRequestHeaders base_headers;
+  base_headers.AddHeaderFromString(
+      "Cookie: name=value; name2=value2; name3=value3");
+  net::CapturingBoundNetLog capturing_net_log;
+  net::BoundNetLog net_log = capturing_net_log.bound();
+  std::set<std::string> conflicting_extensions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+
+  linked_ptr<RequestCookieModification> add_cookie =
+      make_linked_ptr(new RequestCookieModification);
+  add_cookie->type = helpers::ADD;
+  add_cookie->modification.reset(new helpers::RequestCookie);
+  add_cookie->modification->name.reset(new std::string("name4"));
+  add_cookie->modification->value.reset(new std::string("\"value 4\""));
+
+  linked_ptr<RequestCookieModification> add_cookie_2 =
+      make_linked_ptr(new RequestCookieModification);
+  add_cookie_2->type = helpers::ADD;
+  add_cookie_2->modification.reset(new helpers::RequestCookie);
+  add_cookie_2->modification->name.reset(new std::string("name"));
+  add_cookie_2->modification->value.reset(new std::string("new value"));
+
+  linked_ptr<RequestCookieModification> edit_cookie =
+      make_linked_ptr(new RequestCookieModification);
+  edit_cookie->type = helpers::EDIT;
+  edit_cookie->filter.reset(new helpers::RequestCookie);
+  edit_cookie->filter->name.reset(new std::string("name2"));
+  edit_cookie->modification.reset(new helpers::RequestCookie);
+  edit_cookie->modification->value.reset(new std::string("new value"));
+
+  linked_ptr<RequestCookieModification> remove_cookie =
+      make_linked_ptr(new RequestCookieModification);
+  remove_cookie->type = helpers::REMOVE;
+  remove_cookie->filter.reset(new helpers::RequestCookie);
+  remove_cookie->filter->name.reset(new std::string("name3"));
+
+  linked_ptr<RequestCookieModification> operations[] = {
+      add_cookie, add_cookie_2, edit_cookie, remove_cookie
+  };
+
+  for (size_t i = 0; i < arraysize(operations); ++i) {
+    linked_ptr<EventResponseDelta> delta(
+        new EventResponseDelta("extid0", base::Time::FromInternalValue(i * 5)));
+    delta->request_cookie_modifications.push_back(operations[i]);
+    deltas.push_back(delta);
+  }
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  net::HttpRequestHeaders headers1;
+  headers1.MergeFrom(base_headers);
+  MergeOnBeforeSendHeadersResponses(
+      deltas, &headers1, &conflicting_extensions, &net_log);
+  EXPECT_TRUE(headers1.HasHeader("Cookie"));
+  ASSERT_TRUE(headers1.GetHeader("Cookie", &header_value));
+  EXPECT_EQ("name=new value; name2=new value; name4=\"value 4\"", header_value);
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(0u, capturing_net_log.GetSize());
+}
+
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeCookiesInOnHeadersReceivedResponses) {
+  net::CapturingBoundNetLog capturing_net_log;
+  net::BoundNetLog net_log = capturing_net_log.bound();
+  std::set<std::string> conflicting_extensions;
+  std::string header_value;
+  EventResponseDeltas deltas;
+
+  char base_headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "Foo: Bar\r\n"
+      "Set-Cookie: name=value; DOMAIN=google.com; Secure\r\n"
+      "Set-Cookie: name2=value2\r\n"
+      "Set-Cookie: name3=value3\r\n"
+      "\r\n";
+  scoped_refptr<net::HttpResponseHeaders> base_headers(
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(
+              base_headers_string, sizeof(base_headers_string))));
+
+  // Check that we can handle if not touching the response headers.
+  linked_ptr<EventResponseDelta> d0(
+      new EventResponseDelta("extid0", base::Time::FromInternalValue(3000)));
+  deltas.push_back(d0);
+  scoped_refptr<net::HttpResponseHeaders> new_headers0;
+  MergeCookiesInOnHeadersReceivedResponses(
+        deltas, base_headers.get(), &new_headers0, &conflicting_extensions,
+        &net_log);
+  EXPECT_FALSE(new_headers0.get());
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(0u, capturing_net_log.GetSize());
+
+  linked_ptr<ResponseCookieModification> add_cookie =
+      make_linked_ptr(new ResponseCookieModification);
+  add_cookie->type = helpers::ADD;
+  add_cookie->modification.reset(new helpers::ResponseCookie);
+  add_cookie->modification->name.reset(new std::string("name4"));
+  add_cookie->modification->value.reset(new std::string("\"value4\""));
+
+  linked_ptr<ResponseCookieModification> edit_cookie =
+      make_linked_ptr(new ResponseCookieModification);
+  edit_cookie->type = helpers::EDIT;
+  edit_cookie->filter.reset(new helpers::ResponseCookie);
+  edit_cookie->filter->name.reset(new std::string("name2"));
+  edit_cookie->modification.reset(new helpers::ResponseCookie);
+  edit_cookie->modification->value.reset(new std::string("new value"));
+
+  linked_ptr<ResponseCookieModification> edit_cookie_2 =
+      make_linked_ptr(new ResponseCookieModification);
+  edit_cookie_2->type = helpers::EDIT;
+  edit_cookie_2->filter.reset(new helpers::ResponseCookie);
+  edit_cookie_2->filter->secure.reset(new bool(false));
+  edit_cookie_2->modification.reset(new helpers::ResponseCookie);
+  edit_cookie_2->modification->secure.reset(new bool(true));
+
+  linked_ptr<ResponseCookieModification> remove_cookie =
+      make_linked_ptr(new ResponseCookieModification);
+  remove_cookie->type = helpers::REMOVE;
+  remove_cookie->filter.reset(new helpers::ResponseCookie);
+  remove_cookie->filter->name.reset(new std::string("name3"));
+
+  linked_ptr<ResponseCookieModification> operations[] = {
+      add_cookie, edit_cookie, edit_cookie_2, remove_cookie
+  };
+
+  for (size_t i = 0; i < arraysize(operations); ++i) {
+    linked_ptr<EventResponseDelta> delta(
+        new EventResponseDelta("extid0", base::Time::FromInternalValue(i * 5)));
+    delta->response_cookie_modifications.push_back(operations[i]);
+    deltas.push_back(delta);
+  }
+  deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
+  scoped_refptr<net::HttpResponseHeaders> headers1(
+      new net::HttpResponseHeaders(
+          net::HttpUtil::AssembleRawHeaders(
+              base_headers_string, sizeof(base_headers_string))));
+  scoped_refptr<net::HttpResponseHeaders> new_headers1;
+  MergeCookiesInOnHeadersReceivedResponses(
+      deltas, headers1.get(), &new_headers1, &conflicting_extensions, &net_log);
+
+  EXPECT_TRUE(new_headers1->HasHeader("Foo"));
+  void* iter = NULL;
+  std::string cookie_string;
+  std::set<std::string> expected_cookies;
+  expected_cookies.insert("name=value; domain=google.com; secure");
+  expected_cookies.insert("name2=value2; secure");
+  expected_cookies.insert("name4=\"value4\"; secure");
+  std::set<std::string> actual_cookies;
+  while (new_headers1->EnumerateHeader(&iter, "Set-Cookie", &cookie_string))
+    actual_cookies.insert(cookie_string);
+  EXPECT_EQ(expected_cookies, actual_cookies);
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(0u, capturing_net_log.GetSize());
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {

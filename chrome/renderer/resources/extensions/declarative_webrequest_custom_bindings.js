@@ -68,4 +68,22 @@ chromeHidden.registerCustomHook('declarativeWebRequest', function(api) {
   chrome.declarativeWebRequest.IgnoreRules = function(parameters) {
     setupInstance(this, parameters, 'IgnoreRules');
   };
+  chrome.declarativeWebRequest.AddRequestCookie = function(parameters) {
+    setupInstance(this, parameters, 'AddRequestCookie');
+  };
+  chrome.declarativeWebRequest.AddResponseCookie = function(parameters) {
+    setupInstance(this, parameters, 'AddResponseCookie');
+  };
+  chrome.declarativeWebRequest.EditRequestCookie = function(parameters) {
+    setupInstance(this, parameters, 'EditRequestCookie');
+  };
+  chrome.declarativeWebRequest.EditResponseCookie = function(parameters) {
+    setupInstance(this, parameters, 'EditResponseCookie');
+  };
+  chrome.declarativeWebRequest.RemoveRequestCookie = function(parameters) {
+    setupInstance(this, parameters, 'RemoveRequestCookie');
+  };
+  chrome.declarativeWebRequest.RemoveResponseCookie = function(parameters) {
+    setupInstance(this, parameters, 'RemoveResponseCookie');
+  };
 });

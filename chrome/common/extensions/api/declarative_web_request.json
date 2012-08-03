@@ -180,6 +180,168 @@
             "description": "If set, rules with a lower priority than the specified value are ignored. This boundary is not persited, it affects only rules and their actions of the same network request stage. TODO(battre): Explain network request stages."
           }
         }
+      },
+      {
+        "id": "declarativeWebRequest.RequestCookie",
+        "description": "A filter or specification of a cookie in HTTP Requests.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of a cookie.",
+            "optional": true
+          },
+          "value": {
+            "type": "string",
+            "description": "Value of a cookie, may be padded in double-quotes.",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.ResponseCookie",
+        "description": "A filter or specification of a cookie in HTTP Responses.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of a cookie.",
+            "optional": true
+          },
+          "value": {
+            "type": "string",
+            "description": "Value of a cookie, may be padded in double-quotes.",
+            "optional": true
+          },
+          "expires": {
+            "type": "string",
+            "description": "Value of the Expires cookie attribute.",
+            "optional": true
+          },
+          "maxAge": {
+            "type": "number",
+            "description": "Value of the Max-Age cookie attribute",
+            "optional": true
+          },
+          "domain": {
+            "type": "string",
+            "description": "Value of the Domain cookie attribute.",
+            "optional": true
+          },
+          "path": {
+            "type": "string",
+            "description": "Value of the Path cookie attribute.",
+            "optional": true
+          },
+          "secure": {
+            "type": "string",
+            "description": "Existence of the Secure cookie attribute.",
+            "optional": true
+          },
+          "httpOnly": {
+            "type": "string",
+            "description": "Existence of the HttpOnly cookie attribute.",
+            "optional": true
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.AddRequestCookie",
+        "description": "Adds a cookie to the request or overrides a cookie, in case another cookie of the same name exists already. Note that it is preferred to use the Cookies API because this is computationally less expensive.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.AddRequestCookie"],
+            "nodoc": true
+          },
+          "cookie": {
+            "$ref": "declarativeWebRequest.RequestCookie",
+            "description": "Cookie to be added to the request. No field may be undefined."
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.AddResponseCookie",
+        "description": "Adds a cookie to the response or overrides a cookie, in case another cookie of the same name exists already. Note that it is preferred to use the Cookies API because this is computationally less expensive.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.AddResponseCookie"],
+            "nodoc": true
+          },
+          "cookie": {
+            "$ref": "declarativeWebRequest.ResponseCookie",
+            "description": "Cookie to be added to the response. The name and value need to be specified."
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.EditRequestCookie",
+        "description": "Edits one or more cookies of request. Note that it is preferred to use the Cookies API because this is computationally less expensive.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.EditRequestCookie"],
+            "nodoc": true
+          },
+          "filter": {
+            "$ref": "declarativeWebRequest.RequestCookie",
+            "description": "Filter for cookies that will be modified. All empty entries are ignored."
+          },
+          "modification": {
+            "$ref": "declarativeWebRequest.RequestCookie",
+            "description": "Attributes that shall be overridden in cookies that machted the filter. Attributes that are set to an empty string are removed."
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.EditResponseCookie",
+        "description": "Edits one or more cookies of response. Note that it is preferred to use the Cookies API because this is computationally less expensive.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.EditResponseCookie"],
+            "nodoc": true
+          },
+          "filter": {
+            "$ref": "declarativeWebRequest.ResponseCookie",
+            "description": "Filter for cookies that will be modified. All empty entries are ignored."
+          },
+          "modification": {
+            "$ref": "declarativeWebRequest.ResponseCookie",
+            "description": "Attributes that shall be overridden in cookies that machted the filter. Attributes that are set to an empty string are removed."
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.RemoveRequestCookie",
+        "description": "Removes one or more cookies of request. Note that it is preferred to use the Cookies API because this is computationally less expensive.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RemoveRequestCookie"],
+            "nodoc": true
+          },
+          "filter": {
+            "$ref": "declarativeWebRequest.RequestCookie",
+            "description": "Filter for cookies that will be removed. All empty entries are ignored."
+          }
+        }
+      },
+      {
+        "id": "declarativeWebRequest.RemoveResponseCookie",
+        "description": "Removes one or more cookies of response. Note that it is preferred to use the Cookies API because this is computationally less expensive.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RemoveResponseCookie"],
+            "nodoc": true
+          },
+          "filter": {
+            "$ref": "declarativeWebRequest.ResponseCookie",
+            "description": "Filter for cookies that will be removed. All empty entries are ignored."
+          }
+        }
       }
     ],
     "functions": [
@@ -192,15 +354,21 @@
           "supportsRules": true,
           "conditions": ["declarativeWebRequest.RequestMatcher"],
           "actions": [
+            "declarativeWebRequest.AddRequestCookie",
+            "declarativeWebRequest.AddResponseCookie",
             "declarativeWebRequest.AddResponseHeader",
             "declarativeWebRequest.CancelRequest",
+            "declarativeWebRequest.EditRequestCookie",
+            "declarativeWebRequest.EditResponseCookie",
             "declarativeWebRequest.RedirectRequest",
             "declarativeWebRequest.RedirectToTransparentImage",
             "declarativeWebRequest.RedirectToEmptyDocument",
             "declarativeWebRequest.RedirectByRegEx",
-            "declarativeWebRequest.SetRequestHeader",
+            "declarativeWebRequest.RemoveRequestCookie",
+            "declarativeWebRequest.RemoveResponseCookie",
             "declarativeWebRequest.RemoveRequestHeader",
             "declarativeWebRequest.RemoveResponseHeader",
+            "declarativeWebRequest.SetRequestHeader",
             "declarativeWebRequest.IgnoreRules"
           ]
         }

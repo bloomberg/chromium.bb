@@ -21,6 +21,12 @@ var RemoveResponseHeader =
     chrome.declarativeWebRequest.RemoveResponseHeader;
 var IgnoreRules =
     chrome.declarativeWebRequest.IgnoreRules;
+var AddRequestCookie = chrome.declarativeWebRequest.AddRequestCookie;
+var AddResponseCookie = chrome.declarativeWebRequest.AddResponseCookie;
+var EditRequestCookie = chrome.declarativeWebRequest.EditRequestCookie;
+var EditResponseCookie = chrome.declarativeWebRequest.EditResponseCookie;
+var RemoveRequestCookie = chrome.declarativeWebRequest.RemoveRequestCookie;
+var RemoveResponseCookie = chrome.declarativeWebRequest.RemoveResponseCookie;
 
 // Constants as functions, not to be called until after runTests.
 function getURLEchoUserAgent() {
@@ -49,10 +55,20 @@ function getURLSetCookie() {
   return getServerURL('set-cookie?Foo=Bar');
 }
 
+function getURLSetCookie2() {
+  return getServerURL('set-cookie?passedCookie=Foo&editedCookie=Foo&' +
+                      'deletedCookie=Foo');
+}
+
+function getURLEchoCookie() {
+  return getServerURL('echoheader?Cookie');
+}
+
 function getURLHttpXHRData() {
   return getServerURL("files/extensions/api_test/webrequest/xhr/data.json",
                       "b.com");
 }
+
 function getURLHttpSimpleOnB() {
   return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html",
                       "b.com");
@@ -342,6 +358,82 @@ runTests([
     );
   },
 
+  function testEditRequestCookies() {
+    ignoreUnexpected = true;
+    expect();
+    var cookie1 = {name: "requestCookie1", value: "foo"};
+    var cookie2 = {name: "requestCookie2", value: "foo"};
+    onRequest.addRules(
+      [ {conditions: [new RequestMatcher({})],
+         actions: [
+           // We exploit the fact that cookies are first added, then modified
+           // and finally removed.
+           new AddRequestCookie({cookie: cookie1}),
+           new AddRequestCookie({cookie: cookie2}),
+           new EditRequestCookie({filter: {name: "requestCookie1"},
+                                  modification: {value: "bar"}}),
+           new RemoveRequestCookie({filter: {name: "requestCookie2"}})
+         ]}
+      ],
+      function() {
+        navigateAndWait(getURLEchoCookie(), function() {
+          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+            chrome.test.assertTrue(request.pass, "Invalid cookies. " +
+                JSON.stringify(request.cookies));
+          });
+          chrome.tabs.executeScript(tabId, {code:
+              "function hasCookie(name, value) {" +
+              "  var entry = name + '=' + value;" +
+              "  return document.body.innerText.indexOf(entry) >= 0;" +
+              "};" +
+              "var result = {};" +
+              "result.pass = hasCookie('requestCookie1', 'bar') && " +
+              "              !hasCookie('requestCookie1', 'foo') && " +
+              "              !hasCookie('requestCookie2', 'foo');" +
+              "result.cookies = document.body.innerText;" +
+              "chrome.extension.sendRequest(result);"});
+        });
+      }
+    );
+  },
+
+  function testEditResponseCookies() {
+    ignoreUnexpected = true;
+    expect();
+    onRequest.addRules(
+      [ {conditions: [new RequestMatcher({})],
+         actions: [
+           new AddResponseCookie({cookie: {name: "addedCookie", value: "Foo"}}),
+           new EditResponseCookie({filter: {name: "editedCookie"},
+                                   modification: {value: "bar"}}),
+           new RemoveResponseCookie({filter: {name: "deletedCookie"}})
+         ]}
+      ],
+      function() {
+        navigateAndWait(getURLSetCookie2(), function() {
+          chrome.test.listenOnce(chrome.extension.onRequest, function(request) {
+            chrome.test.assertTrue(request.pass, "Invalid cookies. " +
+                JSON.stringify(request.cookies));
+          });
+          chrome.tabs.executeScript(tabId, {code:
+              "var cookies = document.cookie.split('; ');" +
+              "var cookieMap = {};" +
+              "for (var i = 0; i < cookies.length; ++i) {" +
+              "  var cookieParts = cookies[i].split('=');" +
+              "  cookieMap[cookieParts[0]] = cookieParts[1];" +
+              "}" +
+              "var result = {};" +
+              "result.cookies = cookieMap;" +
+              "result.pass = (cookieMap.passedCookie === 'Foo') &&" +
+              "              (cookieMap.addedCookie === 'Foo') &&" +
+              "              (cookieMap.editedCookie === 'bar') &&" +
+              "              !cookieMap.hasOwnProperty('deletedCookie');" +
+              "chrome.extension.sendRequest(result);"});
+        });
+      }
+    );
+  },
+
   function testPermission() {
     // Test that a redirect is ignored if the extension has no permission.
     // we load a.html from a.com and issue an XHR to b.com, which is not
@@ -375,5 +467,4 @@ runTests([
       }
     );
   },
-
   ]);

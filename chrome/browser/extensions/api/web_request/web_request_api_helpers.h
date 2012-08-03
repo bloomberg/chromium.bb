@@ -40,6 +40,69 @@ namespace extension_web_request_api_helpers {
 typedef std::pair<std::string, std::string> ResponseHeader;
 typedef std::vector<ResponseHeader> ResponseHeaders;
 
+// Data container for RequestCookies as defined in the declarative WebRequest
+// API definition.
+struct RequestCookie {
+  RequestCookie();
+  ~RequestCookie();
+  scoped_ptr<std::string> name;
+  scoped_ptr<std::string> value;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RequestCookie);
+};
+
+// Data container for ResponseCookies as defined in the declarative WebRequest
+// API definition.
+struct ResponseCookie {
+  ResponseCookie();
+  ~ResponseCookie();
+  scoped_ptr<std::string> name;
+  scoped_ptr<std::string> value;
+  scoped_ptr<std::string> expires;
+  scoped_ptr<int> max_age;
+  scoped_ptr<std::string> domain;
+  scoped_ptr<std::string> path;
+  scoped_ptr<bool> secure;
+  scoped_ptr<bool> http_only;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResponseCookie);
+};
+
+enum CookieModificationType {
+  ADD,
+  EDIT,
+  REMOVE,
+};
+
+struct RequestCookieModification {
+  RequestCookieModification();
+  ~RequestCookieModification();
+  CookieModificationType type;
+  // Used for EDIT and REMOVE. NULL for ADD.
+  scoped_ptr<RequestCookie> filter;
+  // Used for ADD and EDIT. NULL for REMOVE.
+  scoped_ptr<RequestCookie> modification;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RequestCookieModification);
+};
+
+struct ResponseCookieModification {
+  ResponseCookieModification();
+  ~ResponseCookieModification();
+  CookieModificationType type;
+  // Used for EDIT and REMOVE.
+  scoped_ptr<ResponseCookie> filter;
+  // Used for ADD and EDIT.
+  scoped_ptr<ResponseCookie> modification;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResponseCookieModification);
+};
+
+typedef std::vector<linked_ptr<RequestCookieModification> >
+    RequestCookieModifications;
+typedef std::vector<linked_ptr<ResponseCookieModification> >
+    ResponseCookieModifications;
+
 // Contains the modification an extension wants to perform on an event.
 struct EventResponseDelta {
   // ID of the extension that sent this response.
@@ -69,6 +132,12 @@ struct EventResponseDelta {
 
   // Authentication Credentials to use.
   scoped_ptr<net::AuthCredentials> auth_credentials;
+
+  // Modifications to cookies in request headers.
+  RequestCookieModifications request_cookie_modifications;
+
+  // Modifications to cookies in response headers.
+  ResponseCookieModifications response_cookie_modifications;
 
   EventResponseDelta(const std::string& extension_id,
                      const base::Time& extension_install_time);
@@ -144,11 +213,29 @@ void MergeOnBeforeRequestResponses(
     GURL* new_url,
     std::set<std::string>* conflicting_extensions,
     const net::BoundNetLog* net_log);
+// Modifies the "Cookie" header in |request_headers| according to
+// |deltas.request_cookie_modifications|. Conflicts are currently ignored
+// silently.
+void MergeCookiesInOnBeforeSendHeadersResponses(
+    const EventResponseDeltas& deltas,
+    net::HttpRequestHeaders* request_headers,
+    std::set<std::string>* conflicting_extensions,
+    const net::BoundNetLog* net_log);
 // Modifies the headers in |request_headers| according to |deltas|. Conflicts
 // are tried to be resolved.
 void MergeOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
+    std::set<std::string>* conflicting_extensions,
+    const net::BoundNetLog* net_log);
+// Modifies the "Set-Cookie" headers in |override_response_headers| according to
+// |deltas.response_cookie_modifications|. If |override_response_headers| is
+// NULL, a copy of |original_response_headers| is created. Conflicts are
+// currently ignored silently.
+void MergeCookiesInOnHeadersReceivedResponses(
+    const EventResponseDeltas& deltas,
+    const net::HttpResponseHeaders* original_response_headers,
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     std::set<std::string>* conflicting_extensions,
     const net::BoundNetLog* net_log);
 // Stores a copy of |original_response_header| into |override_response_headers|

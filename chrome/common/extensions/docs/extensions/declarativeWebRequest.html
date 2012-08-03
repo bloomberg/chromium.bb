@@ -226,7 +226,7 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-declarativeWebRequest.RedirectByRegEx">RedirectByRegEx</a>
+                <a href="#type-declarativeWebRequest.RemoveResponseHeader">RemoveResponseHeader</a>
                 <ol>
                 </ol>
               </li><li>
@@ -246,7 +246,7 @@
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-declarativeWebRequest.CancelRequest">CancelRequest</a>
+                <a href="#type-declarativeWebRequest.RedirectByRegEx">RedirectByRegEx</a>
                 <ol>
                 </ol>
               </li><li>
@@ -262,11 +262,43 @@
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-declarativeWebRequest.RemoveResponseHeader">RemoveResponseHeader</a>
+                <a href="#type-declarativeWebRequest.CancelRequest">CancelRequest</a>
                 <ol>
                 </ol>
               </li><li>
                 <a href="#type-declarativeWebRequest.IgnoreRules">IgnoreRules</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.RequestCookie">RequestCookie</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.ResponseCookie">ResponseCookie</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.AddRequestCookie">AddRequestCookie</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.AddResponseCookie">AddResponseCookie</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.EditRequestCookie">EditRequestCookie</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.EditResponseCookie">EditResponseCookie</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.RemoveRequestCookie">RemoveRequestCookie</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-declarativeWebRequest.RemoveResponseCookie">RemoveResponseCookie</a>
                 <ol>
                 </ol>
               </li>
@@ -437,6 +469,24 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     <div>
                       <div>
           <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.AddRequestCookie">AddRequestCookie</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.AddResponseCookie">AddResponseCookie</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
             <a href="declarativeWebRequest.html#type-declarativeWebRequest.AddResponseHeader">AddResponseHeader</a>
           </dt>
           <dd class="todo">
@@ -447,6 +497,24 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                       <div>
           <dt>
             <a href="declarativeWebRequest.html#type-declarativeWebRequest.CancelRequest">CancelRequest</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.EditRequestCookie">EditRequestCookie</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.EditResponseCookie">EditResponseCookie</a>
           </dt>
           <dd class="todo">
             Undocumented.
@@ -491,7 +559,16 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     </div><div>
                       <div>
           <dt>
-            <a href="declarativeWebRequest.html#type-declarativeWebRequest.SetRequestHeader">SetRequestHeader</a>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.RemoveRequestCookie">RemoveRequestCookie</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.RemoveResponseCookie">RemoveResponseCookie</a>
           </dt>
           <dd class="todo">
             Undocumented.
@@ -518,6 +595,15 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     </div><div>
                       <div>
           <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.SetRequestHeader">SetRequestHeader</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
             <a href="declarativeWebRequest.html#type-declarativeWebRequest.IgnoreRules">IgnoreRules</a>
           </dt>
           <dd class="todo">
@@ -536,8 +622,8 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-declarativeWebRequest.RedirectByRegEx"></a>
-              <h4>declarativeWebRequest.RedirectByRegEx</h4>
+              <a name="type-declarativeWebRequest.RemoveResponseHeader"></a>
+              <h4>declarativeWebRequest.RemoveResponseHeader</h4>
               <div>
           <dt>
               <em>
@@ -553,14 +639,14 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>Redirects a request by applying a regular expression on the URL. The regular expressions use the <a href="http://code.google.com/p/re2/wiki/Syntax">RE2 syntax</a>.</dd>
+          <dd>Removes all response headers of the specified names and values.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
               <div>
                 <div>
           <dt>
-            <var>from</var>
+            <var>name</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -574,7 +660,7 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>A match pattern that may contain capture groups. Capture groups are referenced in the Perl syntax ($1, $2, ...) instead of the RE2 syntax (\1, \2, ...) in order to be closer to JavaScript Regular Expressions.</dd>
+          <dd>HTTP request header name (case-insensitive).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -583,11 +669,12 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </div><div>
                 <div>
           <dt>
-            <var>to</var>
+            <var>value</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>string</span>
@@ -597,7 +684,7 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>Destination pattern.</dd>
+          <dd>HTTP request header value (case-insensitive).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -803,8 +890,8 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-declarativeWebRequest.CancelRequest"></a>
-              <h4>declarativeWebRequest.CancelRequest</h4>
+              <a name="type-declarativeWebRequest.RedirectByRegEx"></a>
+              <h4>declarativeWebRequest.RedirectByRegEx</h4>
               <div>
           <dt>
               <em>
@@ -820,10 +907,57 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>Declarative event action that cancels a network request.</dd>
+          <dd>Redirects a request by applying a regular expression on the URL. The regular expressions use the <a href="http://code.google.com/p/re2/wiki/Syntax">RE2 syntax</a>.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
+              <div>
+                <div>
+          <dt>
+            <var>from</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A match pattern that may contain capture groups. Capture groups are referenced in the Perl syntax ($1, $2, ...) instead of the RE2 syntax (\1, \2, ...) in order to be closer to JavaScript Regular Expressions.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>to</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Destination pattern.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
             </dl>
           </dd>
           <!-- OBJECT METHODS -->
@@ -1033,8 +1167,8 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-declarativeWebRequest.RemoveResponseHeader"></a>
-              <h4>declarativeWebRequest.RemoveResponseHeader</h4>
+              <a name="type-declarativeWebRequest.CancelRequest"></a>
+              <h4>declarativeWebRequest.CancelRequest</h4>
               <div>
           <dt>
               <em>
@@ -1050,58 +1184,10 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                 </div>
               </em>
           </dt>
-          <dd>Removes all response headers of the specified names and values.</dd>
+          <dd>Declarative event action that cancels a network request.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
-              <div>
-                <div>
-          <dt>
-            <var>name</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>HTTP request header name (case-insensitive).</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>value</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>HTTP request header value (case-insensitive).</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
             </dl>
           </dd>
           <!-- OBJECT METHODS -->
@@ -1148,6 +1234,662 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </em>
           </dt>
           <dd>If set, rules with a lower priority than the specified value are ignored. This boundary is not persited, it affects only rules and their actions of the same network request stage. TODO(battre): Explain network request stages.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.RequestCookie"></a>
+              <h4>declarativeWebRequest.RequestCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A filter or specification of a cookie in HTTP Requests.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>name</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Name of a cookie.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>value</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of a cookie, may be padded in double-quotes.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.ResponseCookie"></a>
+              <h4>declarativeWebRequest.ResponseCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A filter or specification of a cookie in HTTP Responses.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>name</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Name of a cookie.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>value</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of a cookie, may be padded in double-quotes.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>expires</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of the Expires cookie attribute.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>maxAge</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>number</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of the Max-Age cookie attribute</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>domain</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of the Domain cookie attribute.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>path</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Value of the Path cookie attribute.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>secure</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Existence of the Secure cookie attribute.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>httpOnly</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Existence of the HttpOnly cookie attribute.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.AddRequestCookie"></a>
+              <h4>declarativeWebRequest.AddRequestCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Adds a cookie to the request or overrides a cookie, in case another cookie of the same name exists already. Note that it is preferred to use the Cookies API because this is computationally less expensive.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>cookie</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.RequestCookie">declarativeWebRequest.RequestCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Cookie to be added to the request. No field may be undefined.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.AddResponseCookie"></a>
+              <h4>declarativeWebRequest.AddResponseCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Adds a cookie to the response or overrides a cookie, in case another cookie of the same name exists already. Note that it is preferred to use the Cookies API because this is computationally less expensive.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>cookie</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.ResponseCookie">declarativeWebRequest.ResponseCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Cookie to be added to the response. The name and value need to be specified.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.EditRequestCookie"></a>
+              <h4>declarativeWebRequest.EditRequestCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Edits one or more cookies of request. Note that it is preferred to use the Cookies API because this is computationally less expensive.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>filter</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.RequestCookie">declarativeWebRequest.RequestCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Filter for cookies that will be modified. All empty entries are ignored.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>modification</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.RequestCookie">declarativeWebRequest.RequestCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Attributes that shall be overridden in cookies that machted the filter. Attributes that are set to an empty string are removed.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.EditResponseCookie"></a>
+              <h4>declarativeWebRequest.EditResponseCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Edits one or more cookies of response. Note that it is preferred to use the Cookies API because this is computationally less expensive.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>filter</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.ResponseCookie">declarativeWebRequest.ResponseCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Filter for cookies that will be modified. All empty entries are ignored.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>modification</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.ResponseCookie">declarativeWebRequest.ResponseCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Attributes that shall be overridden in cookies that machted the filter. Attributes that are set to an empty string are removed.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.RemoveRequestCookie"></a>
+              <h4>declarativeWebRequest.RemoveRequestCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Removes one or more cookies of request. Note that it is preferred to use the Cookies API because this is computationally less expensive.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>filter</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.RequestCookie">declarativeWebRequest.RequestCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Filter for cookies that will be removed. All empty entries are ignored.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-declarativeWebRequest.RemoveResponseCookie"></a>
+              <h4>declarativeWebRequest.RemoveResponseCookie</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Removes one or more cookies of response. Note that it is preferred to use the Cookies API because this is computationally less expensive.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>filter</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="declarativeWebRequest.html#type-declarativeWebRequest.ResponseCookie">declarativeWebRequest.ResponseCookie</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Filter for cookies that will be removed. All empty entries are ignored.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

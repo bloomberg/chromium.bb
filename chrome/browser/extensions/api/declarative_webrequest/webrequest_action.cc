@@ -41,6 +41,42 @@ const char kEmptyDocumentUrl[] = "data:text/html,";
     } \
   } while (0)
 
+scoped_ptr<helpers::RequestCookie> ParseRequestCookie(
+    const DictionaryValue* dict) {
+  scoped_ptr<helpers::RequestCookie> result(new helpers::RequestCookie);
+  std::string tmp;
+  if (dict->GetString(keys::kNameKey, &tmp))
+    result->name.reset(new std::string(tmp));
+  if (dict->GetString(keys::kValueKey, &tmp))
+    result->value.reset(new std::string(tmp));
+  return result.Pass();
+}
+
+scoped_ptr<helpers::ResponseCookie> ParseResponseCookie(
+    const DictionaryValue* dict) {
+  scoped_ptr<helpers::ResponseCookie> result(new helpers::ResponseCookie);
+  std::string string_tmp;
+  int int_tmp = 0;
+  bool bool_tmp = false;
+  if (dict->GetString(keys::kNameKey, &string_tmp))
+    result->name.reset(new std::string(string_tmp));
+  if (dict->GetString(keys::kValueKey, &string_tmp))
+    result->value.reset(new std::string(string_tmp));
+  if (dict->GetString(keys::kExpiresKey, &string_tmp))
+    result->expires.reset(new std::string(string_tmp));
+  if (dict->GetInteger(keys::kMaxAgeKey, &int_tmp))
+    result->max_age.reset(new int(int_tmp));
+  if (dict->GetString(keys::kDomainKey, &string_tmp))
+    result->domain.reset(new std::string(string_tmp));
+  if (dict->GetString(keys::kPathKey, &string_tmp))
+    result->path.reset(new std::string(string_tmp));
+  if (dict->GetBoolean(keys::kSecureKey, &bool_tmp))
+    result->secure.reset(new bool(bool_tmp));
+  if (dict->GetBoolean(keys::kHttpOnlyKey, &bool_tmp))
+    result->http_only.reset(new bool(bool_tmp));
+  return result.Pass();
+}
+
 // Helper function for WebRequestActions that can be instantiated by just
 // calling the constructor.
 template <class T>
@@ -145,6 +181,96 @@ scoped_ptr<WebRequestAction> CreateIgnoreRulesAction(
       new WebRequestIgnoreRulesAction(minium_priority));
 }
 
+scoped_ptr<WebRequestAction> CreateRequestCookieAction(
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  using extension_web_request_api_helpers::RequestCookieModification;
+
+  linked_ptr<RequestCookieModification> modification(
+      new RequestCookieModification);
+
+  // Get modification type.
+  std::string instance_type;
+  INPUT_FORMAT_VALIDATE(
+      dict->GetString(keys::kInstanceTypeKey, &instance_type));
+  if (instance_type == keys::kAddRequestCookieType)
+    modification->type = helpers::ADD;
+  else if (instance_type == keys::kEditRequestCookieType)
+    modification->type = helpers::EDIT;
+  else if (instance_type == keys::kRemoveRequestCookieType)
+    modification->type = helpers::REMOVE;
+  else
+    INPUT_FORMAT_VALIDATE(false);
+
+  // Get filter.
+  if (modification->type == helpers::EDIT ||
+      modification->type == helpers::REMOVE) {
+    const DictionaryValue* filter = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
+    modification->filter = ParseRequestCookie(filter);
+  }
+
+  // Get new value.
+  if (modification->type == helpers::ADD) {
+    const DictionaryValue* value = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
+    modification->modification = ParseRequestCookie(value);
+  } else if (modification->type == helpers::EDIT) {
+    const DictionaryValue* value = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
+    modification->modification = ParseRequestCookie(value);
+  }
+
+  return scoped_ptr<WebRequestAction>(
+      new WebRequestRequestCookieAction(modification));
+}
+
+scoped_ptr<WebRequestAction> CreateResponseCookieAction(
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  using extension_web_request_api_helpers::ResponseCookieModification;
+
+  linked_ptr<ResponseCookieModification> modification(
+      new ResponseCookieModification);
+
+  // Get modification type.
+  std::string instance_type;
+  INPUT_FORMAT_VALIDATE(
+      dict->GetString(keys::kInstanceTypeKey, &instance_type));
+  if (instance_type == keys::kAddResponseCookieType)
+    modification->type = helpers::ADD;
+  else if (instance_type == keys::kEditResponseCookieType)
+    modification->type = helpers::EDIT;
+  else if (instance_type == keys::kRemoveResponseCookieType)
+    modification->type = helpers::REMOVE;
+  else
+    INPUT_FORMAT_VALIDATE(false);
+
+  // Get filter.
+  if (modification->type == helpers::EDIT ||
+      modification->type == helpers::REMOVE) {
+    const DictionaryValue* filter = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
+    modification->filter = ParseResponseCookie(filter);
+  }
+
+  // Get new value.
+  if (modification->type == helpers::ADD) {
+    const DictionaryValue* value = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &value));
+    modification->modification = ParseResponseCookie(value);
+  } else if (modification->type == helpers::EDIT) {
+    const DictionaryValue* value = NULL;
+    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kModificationKey, &value));
+    modification->modification = ParseResponseCookie(value);
+  }
+
+  return scoped_ptr<WebRequestAction>(
+      new WebRequestResponseCookieAction(modification));
+}
+
 struct WebRequestActionFactory {
   // Factory methods for WebRequestAction instances. |dict| contains the json
   // dictionary that describes the action. |error| is used to return error
@@ -158,10 +284,18 @@ struct WebRequestActionFactory {
   std::map<std::string, FactoryMethod> factory_methods;
 
   WebRequestActionFactory() {
+    factory_methods[keys::kAddRequestCookieType] =
+        &CreateRequestCookieAction;
+    factory_methods[keys::kAddResponseCookieType] =
+        &CreateResponseCookieAction;
     factory_methods[keys::kAddResponseHeaderType] =
         &CreateAddResponseHeaderAction;
     factory_methods[keys::kCancelRequestType] =
         &CallConstructorFactoryMethod<WebRequestCancelAction>;
+    factory_methods[keys::kEditRequestCookieType] =
+        &CreateRequestCookieAction;
+    factory_methods[keys::kEditResponseCookieType] =
+        &CreateResponseCookieAction;
     factory_methods[keys::kRedirectByRegExType] =
         &CreateRedirectRequestByRegExAction;
     factory_methods[keys::kRedirectRequestType] =
@@ -171,6 +305,10 @@ struct WebRequestActionFactory {
             WebRequestRedirectToTransparentImageAction>;
     factory_methods[keys::kRedirectToEmptyDocumentType] =
         &CallConstructorFactoryMethod<WebRequestRedirectToEmptyDocumentAction>;
+    factory_methods[keys::kRemoveRequestCookieType] =
+        &CreateRequestCookieAction;
+    factory_methods[keys::kRemoveResponseCookieType] =
+        &CreateResponseCookieAction;
     factory_methods[keys::kSetRequestHeaderType] =
         &CreateSetRequestHeaderAction;
     factory_methods[keys::kRemoveRequestHeaderType] =
@@ -760,6 +898,76 @@ LinkedPtrEventResponseDelta WebRequestIgnoreRulesAction::CreateDelta(
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
   return LinkedPtrEventResponseDelta(NULL);
+}
+
+//
+// WebRequestRequestCookieAction
+//
+
+WebRequestRequestCookieAction::WebRequestRequestCookieAction(
+    linked_ptr<RequestCookieModification> request_cookie_modification)
+    : request_cookie_modification_(request_cookie_modification) {
+  CHECK(request_cookie_modification_.get());
+}
+
+WebRequestRequestCookieAction::~WebRequestRequestCookieAction() {}
+
+int WebRequestRequestCookieAction::GetStages() const {
+  return ON_BEFORE_SEND_HEADERS;
+}
+
+WebRequestAction::Type WebRequestRequestCookieAction::GetType() const {
+  return WebRequestAction::ACTION_MODIFY_REQUEST_COOKIE;
+}
+
+LinkedPtrEventResponseDelta WebRequestRequestCookieAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+  result->request_cookie_modifications.push_back(
+      request_cookie_modification_);
+  return result;
+}
+
+//
+// WebRequestResponseCookieAction
+//
+
+WebRequestResponseCookieAction::WebRequestResponseCookieAction(
+    linked_ptr<ResponseCookieModification> response_cookie_modification)
+    : response_cookie_modification_(response_cookie_modification) {
+  CHECK(response_cookie_modification_.get());
+}
+
+WebRequestResponseCookieAction::~WebRequestResponseCookieAction() {}
+
+int WebRequestResponseCookieAction::GetStages() const {
+  return ON_HEADERS_RECEIVED;
+}
+
+WebRequestAction::Type WebRequestResponseCookieAction::GetType() const {
+  return WebRequestAction::ACTION_MODIFY_RESPONSE_COOKIE;
+}
+
+LinkedPtrEventResponseDelta WebRequestResponseCookieAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+  result->response_cookie_modifications.push_back(
+      response_cookie_modification_);
+  return result;
 }
 
 }  // namespace extensions
