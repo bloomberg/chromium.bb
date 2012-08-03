@@ -403,6 +403,8 @@ void PluginInstance::Delete() {
   // destructor of the instance object tries to use the instance.
   message_channel_->SetPassthroughObject(NULL);
   instance_interface_->DidDestroy(pp_instance());
+  if (nacl_plugin_instance_interface_.get())
+    nacl_plugin_instance_interface_->DidDestroy(pp_instance());
 
   if (fullscreen_container_) {
     fullscreen_container_->Destroy();
@@ -2133,6 +2135,11 @@ PP_Var PluginInstance::GetPluginInstanceURL(
 }
 
 bool PluginInstance::ResetAsProxied() {
+  // Remember the existing instance interface, so we can call DidDestroy in
+  // our Delete() method. This will delete the NaCl plugin instance, which
+  // will shut down the NaCl process.
+  nacl_plugin_instance_interface_.reset(instance_interface_.release());
+
   base::Callback<const void*(const char*)> get_plugin_interface_func =
       base::Bind(&PluginModule::GetPluginInterface, module_.get());
   PPP_Instance_Combined* ppp_instance_combined =

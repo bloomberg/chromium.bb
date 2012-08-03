@@ -506,6 +506,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
+  // If this is the NaCl plugin, store its instance interface so we can shut
+  // it down properly when using the IPC-based PPAPI proxy.
+  // TODO(bbudge) Remove this when the proxy switch is complete.
+  scoped_ptr< ::ppapi::PPP_Instance_Combined> nacl_plugin_instance_interface_;
 
   PP_Instance pp_instance_;
 
