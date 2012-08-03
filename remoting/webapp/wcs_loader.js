@@ -56,7 +56,7 @@ remoting.WcsLoader.load = function(onReady, onError) {
  * @private
  */
 remoting.WcsLoader.prototype.TALK_GADGET_URL_ =
-    'https://chromoting.talkgadget.google.com/talkgadget/';
+    'https://chromoting-client.talkgadget.google.com/talkgadget/';
 
 /**
  * The id of the script node.
