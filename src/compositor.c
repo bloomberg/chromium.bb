@@ -1148,14 +1148,12 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 		}
 	}
 
-	if (output->assign_planes)
-		/*
-		 * This will queue flips for the fbs and sprites where
-		 * applicable and clear the damage for those surfaces.
-		 * The repaint loop below will repaint everything
-		 * else.
-		 */
+	if (output->assign_planes && !output->disable_planes)
 		output->assign_planes(output);
+	else
+		wl_list_for_each(es, &ec->surface_list, link)
+			weston_surface_move_to_plane(es, &ec->primary_plane);
+
 
 	pixman_region32_init(&opaque);
 

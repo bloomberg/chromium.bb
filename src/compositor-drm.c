@@ -732,6 +732,7 @@ drm_output_set_cursor(struct drm_output *output)
 	unsigned char *s;
 	int i, x, y;
 
+	output->cursor_surface = NULL;
 	if (es == NULL) {
 		drmModeSetCursor(c->drm.fd, output->crtc_id, 0, 0, 0);
 		return;
@@ -773,7 +774,6 @@ drm_assign_planes(struct weston_output *output)
 {
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->compositor;
-	struct drm_output *drm_output = (struct drm_output *) output;
 	struct weston_surface *es, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
@@ -792,7 +792,6 @@ drm_assign_planes(struct weston_output *output)
 	 * as we do for flipping full screen surfaces.
 	 */
 	pixman_region32_init(&overlap);
-	drm_output->cursor_surface = NULL;
 	primary = &c->base.primary_plane;
 	wl_list_for_each_safe(es, next, &c->base.surface_list, link) {
 		pixman_region32_init(&surface_overlap);

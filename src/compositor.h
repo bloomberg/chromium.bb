@@ -165,6 +165,7 @@ struct weston_output {
 	int dirty;
 	struct wl_signal frame_signal;
 	uint32_t frame_time;
+	int disable_planes;
 
 	char *make, *model;
 	uint32_t subpixel;
