@@ -1057,8 +1057,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
               tray_->accessibility_observer();
           if (observer) {
             observer->OnAccessibilityModeChanged(
-                service->GetBoolean(prefs::kSpokenFeedbackEnabled),
-                IDS_STATUSBAR_ACCESSIBILITY_TURNED_ON_BUBBLE);
+                service->GetBoolean(prefs::kSpokenFeedbackEnabled));
           }
         } else {
           NOTREACHED();

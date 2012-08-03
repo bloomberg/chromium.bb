@@ -15002,10 +15002,6 @@ Press any key to continue exploring.
       <message name="IDS_STATUSBAR_ACCESSIBILITY_ENABLED" desc="The tooltip for the status bar button to indicate that accessibility is enabled.">
         Accessibility features are enabled.
       </message>
-      <message name="IDS_STATUSBAR_ACCESSIBILITY_TURNED_ON_BUBBLE" desc="The message shown on a bubble when accessibility is turned on">
-Accessibility features are enabled.
-Press Ctrl+Alt+Z to cancel.
-      </message>
       <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
         Disable Spoken Feedback
       </message>

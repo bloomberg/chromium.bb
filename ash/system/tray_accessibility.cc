@@ -60,8 +60,7 @@ class DefaultAccessibilityView : public ActionableView {
 TrayAccessibility::TrayAccessibility()
     : TrayImageItem(IDR_AURA_UBER_TRAY_ACCESSIBILITY),
       default_(NULL),
-      detailed_(NULL),
-      string_id_(0) {
+      detailed_(NULL) {
 }
 
 TrayAccessibility::~TrayAccessibility() {}
@@ -82,7 +81,6 @@ views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
 }
 
 views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
-  DCHECK(string_id_);
   CHECK(detailed_ == NULL);
   detailed_ = new views::View;
 
@@ -96,8 +94,8 @@ views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
       ToImageSkia());
 
   detailed_->AddChildView(image);
-  detailed_->AddChildView(new views::Label(
-        bundle.GetLocalizedString(string_id_)));
+  detailed_->AddChildView(new views::Label(bundle.GetLocalizedString(
+      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TURNED_ON_BUBBLE)));
 
   return detailed_;
 }
@@ -110,16 +108,13 @@ void TrayAccessibility::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayAccessibility::OnAccessibilityModeChanged(bool enabled,
-                                                   int string_id) {
+void TrayAccessibility::OnAccessibilityModeChanged(bool enabled) {
   if (tray_view())
     tray_view()->SetVisible(enabled);
 
   if (enabled) {
-    string_id_ = string_id;
     PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   } else if (detailed_) {
-    string_id_ = 0;
     detailed_->GetWidget()->Close();
   }
 }
