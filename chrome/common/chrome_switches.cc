@@ -563,6 +563,10 @@ const char kEnableIPCFuzzing[]              = "enable-ipc-fuzzing";
 // attempt to use the existing connection.
 const char kEnableIPPooling[]               = "enable-ip-pooling";
 
+// The managed storage extension API is disabled by default for now. This
+// flag can be used to enable it until http://crbug.com/108992 is fixed.
+extern const char kEnableManagedStorage[]   = "enable-managed-storage";
+
 // Enables media gallery UI elements and permission management.
 const char kEnableMediaGalleryUI[]          = "enable-media-gallery-ui";
 

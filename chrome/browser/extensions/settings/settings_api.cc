@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -25,6 +27,8 @@ namespace {
 const char kUnsupportedArgumentType[] = "Unsupported argument type";
 const char kInvalidNamespaceErrorMessage[] =
     "\"%s\" is not available in this instance of Chrome";
+const char kManagedNamespaceDisabledErrorMessage[] =
+    "\"managed\" is disabled. Use \"--%s\" to enable it.";
 const char kStorageErrorMessage[] = "Storage error";
 }  // namespace
 
@@ -54,6 +58,16 @@ bool SettingsFunction::RunImpl() {
       settings_namespace::FromString(settings_namespace_string);
   EXTENSION_FUNCTION_VALIDATE(
       settings_namespace_ != settings_namespace::INVALID);
+
+  // TODO(joaodasilva): remove this flag once policy for extensions works on
+  // mac and chromeos. http://crbug.com/108992
+  if (settings_namespace_ == settings_namespace::MANAGED &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableManagedStorage)) {
+    error_ = base::StringPrintf(kManagedNamespaceDisabledErrorMessage,
+                                switches::kEnableManagedStorage);
+    return false;
+  }
 
   SettingsFrontend* frontend =
       profile()->GetExtensionService()->settings_frontend();
