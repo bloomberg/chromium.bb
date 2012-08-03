@@ -32,7 +32,7 @@
 #include "launcher-util.h"
 
 static void
-evdev_led_update(struct weston_seat *seat_base, enum weston_led leds)
+evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
 {
 	static const struct {
 		enum weston_led weston;
@@ -42,7 +42,6 @@ evdev_led_update(struct weston_seat *seat_base, enum weston_led leds)
 		{ LED_CAPS_LOCK, LED_CAPSL },
 		{ LED_SCROLL_LOCK, LED_SCROLLL },
 	};
-	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
 	struct evdev_input_device *device;
 	struct input_event ev[ARRAY_LENGTH(map)];
 	unsigned int i;
@@ -54,10 +53,18 @@ evdev_led_update(struct weston_seat *seat_base, enum weston_led leds)
 		ev[i].value = !!(leds & map[i].weston);
 	}
 
-	wl_list_for_each(device, &seat->devices_list, link) {
+	wl_list_for_each(device, evdev_devices, link) {
 		if (device->caps & EVDEV_KEYBOARD)
 			write(device->fd, ev, sizeof ev);
 	}
+}
+
+static void
+drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
+{
+	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
+
+	evdev_led_update(&seat->devices_list, leds);
 }
 
 static inline void
@@ -753,7 +760,7 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 
 	memset(seat, 0, sizeof *seat);
 	weston_seat_init(&seat->base, c);
-	seat->base.led_update = evdev_led_update;
+	seat->base.led_update = drm_led_update;
 
 	wl_list_init(&seat->devices_list);
 	seat->seat_id = strdup(seat_id);
