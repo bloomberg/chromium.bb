@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/credential_cache_service_factory_win.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/sync/credential_cache_service_win.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 
 
 namespace syncer {
@@ -57,9 +59,11 @@ bool CredentialCacheServiceFactory::ServiceIsCreatedWithProfile() {
 ProfileKeyedService* CredentialCacheServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   // Only instantiate a CredentialCacheService object if we are running in the
-  // default profile on Windows 8.
+  // default profile on Windows 8, and if credential caching is enabled.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      IsDefaultProfile(profile)) {
+      IsDefaultProfile(profile) &&
+      command_line->HasSwitch(switches::kEnableSyncCredentialCaching)) {
     return new syncer::CredentialCacheService(profile);
   }
   return NULL;
