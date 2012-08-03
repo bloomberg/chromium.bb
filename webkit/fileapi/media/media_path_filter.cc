@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/base/mime_util.h"
 
 namespace fileapi {
@@ -23,6 +24,10 @@ bool IsUnsupportedExtension(const FilePath::StringType& extension) {
 }  // namespace
 
 MediaPathFilter::MediaPathFilter() {
+  // TODO(tzik): http://crbug.com/140401
+  // Remove this ScopedAllowIO after move this to FILE thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   net::GetImageExtensions(&media_file_extensions_);
   net::GetAudioExtensions(&media_file_extensions_);
   net::GetVideoExtensions(&media_file_extensions_);
