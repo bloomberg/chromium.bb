@@ -143,7 +143,8 @@ bool PanelBrowserWindowGtk::UsingDefaultTheme() const {
     return true;
 
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(panel_->profile());
-  return theme_provider->UsingDefaultTheme();
+  return theme_provider->UsingDefaultTheme() ||
+         theme_provider->UsingNativeTheme();
 }
 
 bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
