@@ -569,6 +569,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=False,
   useflags=official['useflags'] + ['pgo_generate'],
+  chroot_replace=True,
   hw_tests=['PGO_record'],
   async_hw_tests=[], # not very useful with pgo_generate turned on.
   upload_hw_test_artifacts=True,
