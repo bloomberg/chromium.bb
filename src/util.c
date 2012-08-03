@@ -46,6 +46,14 @@ weston_spring_update(struct weston_spring *spring, uint32_t msec)
 {
 	double force, v, current, step;
 
+	/* Avoid entering into an infinite loop */
+	if (msec - spring->timestamp > UINT32_MAX / 2) {
+		weston_log("timestamps going backwards (from %u to %u)\n",
+				spring->timestamp, msec);
+		spring->current = spring->previous = spring->target;
+		return;
+	}
+
 	step = 0.01;
 	while (4 < msec - spring->timestamp) {
 		current = spring->current;
