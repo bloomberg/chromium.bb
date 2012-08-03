@@ -50,6 +50,19 @@
 #include "compositor.h"
 #include "../shared/config-parser.h"
 
+static char *output_name;
+static char *output_mode;
+static int option_width;
+static int option_height;
+static int option_count;
+static struct wl_list configured_output_list;
+
+struct x11_configured_output {
+	char *name;
+	int width, height;
+	struct wl_list link;
+};
+
 struct x11_compositor {
 	struct weston_compositor	 base;
 
@@ -472,9 +485,8 @@ x11_output_set_icon(struct x11_compositor *c,
 static int
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			     int width, int height, int fullscreen,
-			     int no_input)
+			     int no_input, const char *name)
 {
-	static const char name[] = "Weston Compositor";
 	static const char class[] = "weston-1\0Weston Compositor";
 	struct x11_output *output;
 	xcb_screen_iterator_t iter;
@@ -1033,9 +1045,20 @@ x11_restore(struct weston_compositor *ec)
 }
 
 static void
+x11_free_configured_output(struct x11_configured_output *output)
+{
+	free(output->name);
+	free(output);
+}
+
+static void
 x11_destroy(struct weston_compositor *ec)
 {
 	struct x11_compositor *compositor = (struct x11_compositor *)ec;
+	struct x11_configured_output *o, *n;
+
+	wl_list_for_each_safe(o, n, &configured_output_list, link)
+		x11_free_configured_output(o);
 
 	wl_event_source_remove(compositor->xcb_source);
 	x11_input_destroy(compositor);
@@ -1050,13 +1073,17 @@ x11_destroy(struct weston_compositor *ec)
 
 static struct weston_compositor *
 x11_compositor_create(struct wl_display *display,
-		      int width, int height, int count, int fullscreen,
+		      int fullscreen,
 		      int no_input,
 		      int argc, char *argv[], const char *config_file)
 {
+	static const char name[] = "Weston Compositor";
+	char configured_name[32];
 	struct x11_compositor *c;
+	struct x11_configured_output *o;
 	xcb_screen_iterator_t s;
-	int i, x;
+	int i, x = 0, output_count = 0;
+	int width, height, count;
 
 	weston_log("initializing x11 backend\n");
 
@@ -1099,9 +1126,29 @@ x11_compositor_create(struct wl_display *display,
 	if (x11_input_create(c, no_input) < 0)
 		goto err_egl;
 
-	for (i = 0, x = 0; i < count; i++) {
+	width = option_width ? option_width : 1024;
+	height = option_height ? option_height : 640;
+	count = option_count ? option_count : 1;
+
+	wl_list_for_each(o, &configured_output_list, link) {
+		sprintf(configured_name, "%s - %s", name, o->name);
+		if (x11_compositor_create_output(c, x, 0,
+						option_width ? option_width :
+						o->width,
+						option_height ? option_height :
+						o->height,
+						fullscreen, no_input,
+						configured_name) < 0)
+			goto err_x11_input;
+		x += option_width ? option_width : o->width;
+		output_count++;
+		if (option_count && output_count >= option_count)
+			break;
+	}
+
+	for (i = output_count; i < count; i++) {
 		if (x11_compositor_create_output(c, x, 0, width, height,
-						 fullscreen, no_input) < 0)
+						 fullscreen, no_input, name) < 0)
 			goto err_x11_input;
 		x += width;
 	}
@@ -1126,25 +1173,75 @@ err_free:
 	return NULL;
 }
 
+static void
+output_section_done(void *data)
+{
+	struct x11_configured_output *output;
+
+	output = malloc(sizeof *output);
+
+	if (!output || !output_name || !output_mode) {
+		free(output_name);
+		output_name = NULL;
+		free(output_mode);
+		output_mode = NULL;
+		return;
+	}
+
+	output->name = output_name;
+
+	if (output_name[0] != 'X') {
+		x11_free_configured_output(output);
+		return;
+	}
+
+	if (sscanf(output_mode, "%dx%d", &output->width, &output->height) != 2) {
+		weston_log("Invalid mode \"%s\" for output %s\n",
+						output_mode, output_name);
+		x11_free_configured_output(output);
+		return;
+	}
+
+	free(output_mode);
+	output_mode = NULL;
+
+	wl_list_insert(configured_output_list.prev, &output->link);
+}
+
 WL_EXPORT struct weston_compositor *
 backend_init(struct wl_display *display, int argc, char *argv[],
 	     const char *config_file)
 {
-	int width = 1024, height = 640, fullscreen = 0, count = 1;
+	int fullscreen = 0;
 	int no_input = 0;
 
 	const struct weston_option x11_options[] = {
-		{ WESTON_OPTION_INTEGER, "width", 0, &width },
-		{ WESTON_OPTION_INTEGER, "height", 0, &height },
+		{ WESTON_OPTION_INTEGER, "width", 0, &option_width },
+		{ WESTON_OPTION_INTEGER, "height", 0, &option_height },
 		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &fullscreen },
-		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
+		{ WESTON_OPTION_INTEGER, "output-count", 0, &option_count },
 		{ WESTON_OPTION_BOOLEAN, "no-input", 0, &no_input },
 	};
 
 	parse_options(x11_options, ARRAY_LENGTH(x11_options), argc, argv);
 
+	wl_list_init(&configured_output_list);
+
+	const struct config_key x11_config_keys[] = {
+		{ "name", CONFIG_KEY_STRING, &output_name },
+		{ "mode", CONFIG_KEY_STRING, &output_mode },
+	};
+
+	const struct config_section config_section[] = {
+		{ "output", x11_config_keys,
+		ARRAY_LENGTH(x11_config_keys), output_section_done },
+	};
+
+	parse_config_file(config_file, config_section,
+				ARRAY_LENGTH(config_section), NULL);
+
 	return x11_compositor_create(display,
-				     width, height, count, fullscreen,
+				     fullscreen,
 				     no_input,
 				     argc, argv, config_file);
 }
