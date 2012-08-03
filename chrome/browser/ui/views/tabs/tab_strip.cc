@@ -1024,7 +1024,7 @@ void TabStrip::MaybeStartDrag(
 #endif
   // Gestures don't automatically do a capture. We don't allow multiple drags at
   // the same time, so we explicitly capture.
-  if (event.type() == ui::ET_GESTURE_TAP_DOWN)
+  if (event.type() == ui::ET_GESTURE_BEGIN)
     GetWidget()->SetCapture(this);
   drag_controller_.reset(new TabDragController);
   drag_controller_->Init(
