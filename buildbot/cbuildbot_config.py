@@ -783,30 +783,6 @@ internal_paladin.add_config('butterfly-paladin',
   paladin_builder_name='butterfly paladin',
 )
 
-# TODO(sosa): Test configs for unified paladin builds.
-internal_paladin.add_config('unified-lumpy-paladin',
-  master=True,
-  push_overlays=constants.BOTH_OVERLAYS,
-  overlays=constants.BOTH_OVERLAYS,
-  boards=['lumpy'],
-  unified_manifest_version=True,
-  paladin_builder_name='unified lumpy paladin',
-  vm_tests=None,
-  prebuilts=None,
-  hw_tests=['bvt'],
-  upload_hw_test_artifacts=True,
-  important=False,
-)
-
-paladin.add_config('unified-x86-generic-paladin',
-  boards=['x86-generic'],
-  unified_manifest_version=True,
-  paladin_builder_name='unified x86-generic paladin',
-  vm_tests=None,
-  prebuilts=None,
-  important=False,
-)
-
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
 )
@@ -879,18 +855,6 @@ _config.add_group('x86-alex-release-group',
   ),
 )
 
-_config.add_group('x86-alex32-release-group',
-  _release.add_config('x86-alex32-release',
-    boards=['x86-alex32'],
-  ),
-  _release.add_config('x86-alex32_he-release',
-    boards=['x86-alex32_he'],
-    vm_tests=None,
-    unittests=None,
-    upload_hw_test_artifacts=False,
-  ),
-)
-
 _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
@@ -898,18 +862,6 @@ _config.add_group('x86-zgb-release-group',
   ),
   _release.add_config('x86-zgb_he-release',
     boards=['x86-zgb_he'],
-    vm_tests=None,
-    unittests=None,
-    upload_hw_test_artifacts=False,
-  ),
-)
-
-_config.add_group('x86-zgb32-release-group',
-  _release.add_config('x86-zgb32-release',
-    boards=['x86-zgb32'],
-  ),
-  _release.add_config('x86-zgb32_he-release',
-    boards=['x86-zgb32_he'],
     vm_tests=None,
     unittests=None,
     upload_hw_test_artifacts=False,
