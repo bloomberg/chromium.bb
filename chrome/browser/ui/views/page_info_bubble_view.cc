@@ -20,6 +20,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/image_view.h"
@@ -424,6 +425,12 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
     if (!compute_bounds_only)
       headline_label_->SetBounds(x, y, w > 0 ? w : 0, size.height());
     y += size.height();
+
+    // Show the leading headline text by moving the textfield cursor there,
+    // otherwise long headlines may initially show the leading text truncated.
+    // This can only be done after the textfield is initialized with the Widget.
+    if (GetWidget())
+      headline_label_->SelectRange(ui::Range());
   } else {
     if (!compute_bounds_only)
       headline_label_->SetBounds(x, y, 0, 0);
