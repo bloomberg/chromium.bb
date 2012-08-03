@@ -81,11 +81,11 @@ class SigninScreenHandlerDelegate {
   virtual void CreateAccount() = 0;
 
   // Called user pod selection is canceled.
-  virtual void UserDeselected() = 0;
+  virtual void OnUserDeselected() = 0;
 
   // Called when user pod with |username| is selected at login screen.
   // |username| is the email address of the selected user.
-  virtual void UserSelected(const std::string& username) = 0;
+  virtual void OnUserSelected(const std::string& username) = 0;
 
   // Attempts to remove given user.
   virtual void RemoveUser(const std::string& username) = 0;

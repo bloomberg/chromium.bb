@@ -110,14 +110,6 @@ class UserManager {
   // Indicates that a user just logged in as ephemeral.
   virtual void EphemeralUserLoggedIn(const std::string& email) = 0;
 
-  // Initializes wallpaper. If logged in, loads user's wallpaper. If not logged
-  // in, uses a solid color wallpaper. If logged in as a stub user, uses an
-  // empty wallpaper.
-  virtual void InitializeWallpaper() = 0;
-
-  // Called when user pod with |email| is selected.
-  virtual void UserSelected(const std::string& email) = 0;
-
   // Called when browser session is started i.e. after
   // browser_creator.LaunchBrowser(...) was called after user sign in.
   // When user is at the image screen IsUserLoggedIn() will return true
@@ -174,12 +166,6 @@ class UserManager {
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const = 0;
 
-  // Sets |type| and |index| to the value saved in local state for logged in
-  // user.
-  virtual void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
-      int* index,
-      base::Time* last_modification_date) = 0;
-
   // Saves |type| and |index| chose by logged in user to Local State.
   virtual void SaveLoggedInUserWallpaperProperties(User::WallpaperType type,
                                                    int index) = 0;
@@ -203,14 +189,6 @@ class UserManager {
   // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
   virtual void SaveUserImageFromFile(const std::string& username,
                                      const FilePath& path) = 0;
-
-  // Tries to load user image from disk; if successful, sets it for the user,
-  // and updates Local State.
-  virtual void SaveUserWallpaperFromFile(
-      const std::string& username,
-      const FilePath& path,
-      ash::WallpaperLayout layout,
-      base::WeakPtr<WallpaperDelegate> delegate) = 0;
 
   // Sets profile image as user image for |username|, sends
   // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user

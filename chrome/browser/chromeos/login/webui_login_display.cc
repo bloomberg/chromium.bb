@@ -195,12 +195,12 @@ void WebUILoginDisplay::CreateAccount() {
     delegate_->CreateAccount();
 }
 
-void WebUILoginDisplay::UserDeselected() {
-  WallpaperManager::Get()->UserDeselected();
+void WebUILoginDisplay::OnUserDeselected() {
+  WallpaperManager::Get()->OnUserDeselected();
 }
 
-void WebUILoginDisplay::UserSelected(const std::string& username) {
-  UserManager::Get()->UserSelected(username);
+void WebUILoginDisplay::OnUserSelected(const std::string& username) {
+  WallpaperManager::Get()->OnUserSelected(username);
 }
 
 void WebUILoginDisplay::RemoveUser(const std::string& username) {

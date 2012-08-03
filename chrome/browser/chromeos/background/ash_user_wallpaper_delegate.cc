@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -49,7 +50,7 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
   }
 
   virtual void InitializeWallpaper() OVERRIDE {
-    chromeos::UserManager::Get()->InitializeWallpaper();
+    chromeos::WallpaperManager::Get()->InitializeWallpaper();
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {

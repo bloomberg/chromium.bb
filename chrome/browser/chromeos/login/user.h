@@ -85,9 +85,6 @@ class User {
   // image has a URL, for other images empty URL is returned.
   GURL image_url() const { return user_image_.url(); }
 
-  // The thumbnail of user custom wallpaper.
-  const SkBitmap& wallpaper_thumbnail() const { return wallpaper_thumbnail_; }
-
   // True if user image is a stub (while real image is being loaded from file).
   bool image_is_stub() const { return image_is_stub_; }
 
@@ -142,7 +139,6 @@ class User {
   std::string display_email_;
   UserImage user_image_;
   OAuthTokenStatus oauth_token_status_;
-  SkBitmap wallpaper_thumbnail_;
 
   // Either index of a default image for the user, |kExternalImageIndex| or
   // |kProfileImageIndex|.

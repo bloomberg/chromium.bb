@@ -8,23 +8,31 @@
 #include <string>
 
 #include "ash/desktop_background/desktop_background_resources.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
-#include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
+#include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler.h"
+#include "chromeos/dbus/power_manager_client.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "ui/gfx/image/image_skia.h"
 #include "unicode/timezone.h"
 
 class PrefService;
 
 namespace chromeos {
 
+class UserImage;
+
 // This class maintains wallpapers for users who have logged into this Chrome
 // OS device.
 class WallpaperManager: public system::TimezoneSettings::Observer,
-                        public chromeos::ResumeObserver {
+                        public chromeos::PowerManagerClient::Observer,
+                        public content::NotificationObserver {
  public:
   static WallpaperManager* Get();
 
@@ -33,13 +41,66 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Registers wallpaper manager preferences.
   static void RegisterPrefs(PrefService* local_state);
 
-  // Adds PowerManagerClient observer. It needs to be added after
-  // PowerManagerClient initialized.
-  void AddPowerManagerClientObserver();
+  // Adds PowerManagerClient and TimeZoneSettings observers. It needs to be
+  // added after PowerManagerClient initialized.
+  void AddObservers();
+
+  // Caches |email|'s wallpaper to memory if it is custom wallpaper.
+  void CacheIfCustomWallpaper(const std::string& email);
+
+  // Loads wallpaper asynchronously if the current wallpaper is not the
+  // wallpaper of logged in user.
+  void EnsureLoggedInUserWallpaperLoaded();
+
+  // Fetches |email|'s wallpaper from local disk.
+  void FetchCustomWallpaper(const std::string& email);
+
+  // Gets encoded custom wallpaper from cache. Returns true if success.
+  bool GetCustomWallpaperFromCache(const std::string& email,
+                                   gfx::ImageSkia* wallpaper);
+
+  // Returns wallpaper/thumbnail filepath for the given user.
+  FilePath GetWallpaperPathForUser(const std::string& username,
+                                   bool is_thumbnail);
+
+  // Gets the thumbnail of custom wallpaper from cache.
+  gfx::ImageSkia GetCustomWallpaperThumbnail(const std::string& email);
+
+  // Sets |type| and |index| to the value saved in local state for logged in
+  // user.
+  void GetLoggedInUserWallpaperProperties(User::WallpaperType* type,
+                                          int* index,
+                                          base::Time* last_modification_date);
+
+  // Initializes wallpaper. If logged in, loads user's wallpaper. If not logged
+  // in, uses a solid color wallpaper. If logged in as a stub user, uses an
+  // empty wallpaper.
+  void InitializeWallpaper();
+
+  // NotificationObserver overrides:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Starts a one shot timer which calls BatchUpdateWallpaper at next midnight.
   // Cancel any previous timer if any.
   void RestartTimer();
+
+  // Tries to load user image from disk; if successful, sets it for the user,
+  // and updates Local State.
+  void SetUserWallpaperFromFile(const std::string& username,
+                                const FilePath& path,
+                                ash::WallpaperLayout layout,
+                                base::WeakPtr<WallpaperDelegate> delegate);
+
+  // Set |email|'s wallpaper |type|, |index| and local date to local state.
+  void SaveUserWallpaperProperties(const std::string& email,
+                                   User::WallpaperType type,
+                                   int index);
+
+  // Sets one of the default wallpapers for the specified user and saves this
+  // settings in local state.
+  void SetInitialUserWallpaper(const std::string& username);
 
   // Saves |username| selected wallpaper information to local state.
   void SaveUserWallpaperInfo(const std::string& username,
@@ -50,35 +111,71 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Sets last selected user on user pod row.
   void SetLastSelectedUser(const std::string& last_selected_user);
 
-  // Sets wallpaper to the image file |path| points to.
-  void SetWallpaperFromFilePath(const std::string& path,
-                                ash::WallpaperLayout layout);
+  // Sets |email|'s wallpaper.
+  void SetUserWallpaper(const std::string& email);
 
   // Sets wallpaper to |wallpaper|.
   void SetWallpaperFromImageSkia(const gfx::ImageSkia& wallpaper,
                                  ash::WallpaperLayout layout);
 
   // User was deselected at login screen, reset wallpaper if needed.
-  void UserDeselected();
+  void OnUserDeselected();
+
+  // User |email| was selected at login screen, load wallpaper.
+  void OnUserSelected(const std::string& email);
 
  private:
-  virtual ~WallpaperManager();
+  typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;
 
-  void OnCustomWallpaperLoaded(const std::string& email,
-                               ash::WallpaperLayout layout,
-                               const UserImage& user_image);
+  virtual ~WallpaperManager();
 
   // Change the wallpapers for users who choose DAILY wallpaper type. Updates
   // current wallpaper if it changed. This function should be called at exactly
   // at 0am if chromeos device is on.
   void BatchUpdateWallpaper();
 
+  // Caches the decoded wallpaper to memory.
+  void CacheWallpaper(const std::string& email, const UserImage& wallpaper);
+
+  // Generates a 128x80 thumbnail and caches it.
+  void CacheThumbnail(const std::string& email,
+                      const gfx::ImageSkia& wallpaper);
+
+  // Sets wallpaper to the decoded wallpaper.
+  void FetchWallpaper(const std::string& email,
+                      ash::WallpaperLayout layout,
+                      const UserImage& wallpaper);
+
+  // Generates a 128x80 thumbnail and notifies delegate when ready.
+  void GenerateUserWallpaperThumbnail(const std::string& email,
+                                      User::WallpaperType type,
+                                      base::WeakPtr<WallpaperDelegate> delegate,
+                                      const gfx::ImageSkia& wallpaper);
+
+  // Get wallpaper |type|, |index| and |last_modification_date| of |email|
+  // from local state.
+  void GetUserWallpaperProperties(const std::string& email,
+                                  User::WallpaperType* type,
+                                  int* index,
+                                  base::Time* last_modification_date);
+
+  // Updates the custom wallpaper thumbnail in wallpaper picker UI.
+  void OnThumbnailUpdated(base::WeakPtr<WallpaperDelegate> delegate);
+
+  // Saves wallpaper to |path|.
+  void SaveWallpaper(const std::string& path, const UserImage& wallpaper);
+
+  // Saves wallpaper to file, post task to generate thumbnail and updates local
+  // state preferences.
+  void SetWallpaper(const std::string& username,
+                    ash::WallpaperLayout layout,
+                    User::WallpaperType type,
+                    base::WeakPtr<WallpaperDelegate> delegate,
+                    const UserImage& wallpaper);
+
   // Sets wallpaper to image in |user_image| with |layout|.
   void OnWallpaperLoaded(ash::WallpaperLayout layout,
                          const UserImage& user_image);
-
-  // Loads user image from its file.
-  scoped_refptr<UserImageLoader> image_loader_;
 
   // Overridden from chromeos::ResumeObserver
   virtual void SystemResumed() OVERRIDE;
@@ -86,8 +183,26 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Overridden from system::TimezoneSettings::Observer.
   virtual void TimezoneChanged(const icu::TimeZone& timezone) OVERRIDE;
 
+  // Loads user wallpaper from its file.
+  scoped_refptr<UserImageLoader> wallpaper_loader_;
+
+  // Logged-in user wallpaper type.
+  User::WallpaperType current_user_wallpaper_type_;
+
+  // Logged-in user wallpaper index.
+  int current_user_wallpaper_index_;
+
+  // Caches custom wallpapers of users. Accessed only on UI thread.
+  CustomWallpaperMap custom_wallpaper_cache_;
+
+  CustomWallpaperMap custom_wallpaper_thumbnail_cache_;
+
   // The last selected user on user pod row.
   std::string last_selected_user_;
+
+  base::WeakPtrFactory<WallpaperManager> weak_factory_;
+
+  content::NotificationRegistrar registrar_;
 
   base::OneShotTimer<WallpaperManager> timer_;
 

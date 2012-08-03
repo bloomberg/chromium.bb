@@ -25,8 +25,6 @@ class MockUserManager : public UserManager {
   MOCK_METHOD0(DemoUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
   MOCK_METHOD1(EphemeralUserLoggedIn, void(const std::string&));
-  MOCK_METHOD0(InitializeWallpaper, void(void));
-  MOCK_METHOD1(UserSelected, void(const std::string&));
   MOCK_METHOD0(SessionStarted, void(void));
   MOCK_METHOD2(RemoveUser, void(const std::string&, RemoveUserDelegate*));
   MOCK_METHOD1(RemoveUserFromList, void(const std::string&));
@@ -39,9 +37,6 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD1(GetUserDisplayName, string16(const std::string&));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
-  MOCK_METHOD3(GetLoggedInUserWallpaperProperties, void(User::WallpaperType*,
-                                                        int*,
-                                                        base::Time*));
   MOCK_METHOD2(SaveLoggedInUserWallpaperProperties, void(User::WallpaperType,
                                                          int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
@@ -51,11 +46,6 @@ class MockUserManager : public UserManager {
       ash::WallpaperLayout));
   MOCK_METHOD2(SaveUserImageFromFile, void(const std::string&,
                                            const FilePath&));
-  MOCK_METHOD4(SaveUserWallpaperFromFile, void(
-      const std::string&,
-      const FilePath&,
-      ash::WallpaperLayout,
-      base::WeakPtr<WallpaperDelegate>));
   MOCK_METHOD1(SaveUserImageFromProfileImage, void(const std::string&));
   MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));

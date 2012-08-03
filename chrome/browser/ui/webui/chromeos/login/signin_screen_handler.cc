@@ -804,7 +804,7 @@ void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
 
 void SigninScreenHandler::HandleUserDeselected(const base::ListValue* args) {
   if (delegate_)
-    delegate_->UserDeselected();
+    delegate_->OnUserDeselected();
 }
 
 void SigninScreenHandler::HandleUserSelected(const base::ListValue* args) {
@@ -817,7 +817,7 @@ void SigninScreenHandler::HandleUserSelected(const base::ListValue* args) {
     return;
   }
 
-  delegate_->UserSelected(email);
+  delegate_->OnUserSelected(email);
 }
 
 void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {

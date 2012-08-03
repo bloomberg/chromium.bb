@@ -284,9 +284,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Initialize DBusThreadManager for the browser. This must be done after
   // the main message loop is started, as it uses the message loop.
   chromeos::DBusThreadManager::Initialize();
-  // Add PowerManagerClient observer for WallpaperManager. WallpaperManager
-  // is initialized before DBusThreadManager.
-  chromeos::WallpaperManager::Get()->AddPowerManagerClientObserver();
+  // Add observers for WallpaperManager. WallpaperManager is initialized before
+  // DBusThreadManager.
+  chromeos::WallpaperManager::Get()->AddObservers();
 
   chromeos::CrosDBusService::Initialize();
 

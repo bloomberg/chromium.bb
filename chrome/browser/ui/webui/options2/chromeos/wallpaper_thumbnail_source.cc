@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/url_constants.h"
@@ -51,8 +52,9 @@ class WallpaperThumbnailSource::ThumbnailEncodingOperation
   void EncodeThumbnail() {
     if (cancel_flag_.IsSet())
       return;
-    gfx::PNGCodec::EncodeBGRASkBitmap(user_->wallpaper_thumbnail(),
-                                      false, &data_->data());
+    gfx::PNGCodec::EncodeBGRASkBitmap(
+        WallpaperManager::Get()->GetCustomWallpaperThumbnail(user_->email()),
+        false, &data_->data());
   }
 
   void Cancel() {

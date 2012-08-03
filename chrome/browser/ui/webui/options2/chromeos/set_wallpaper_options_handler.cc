@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -106,7 +107,7 @@ void SetWallpaperOptionsHandler::FileSelected(const FilePath& path,
   UserManager* user_manager = UserManager::Get();
 
   // Default wallpaper layout is CENTER_CROPPED.
-  user_manager->SaveUserWallpaperFromFile(
+  WallpaperManager::Get()->SetUserWallpaperFromFile(
       user_manager->GetLoggedInUser().email(), path, ash::CENTER_CROPPED,
       weak_factory_.GetWeakPtr());
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.didSelectFile");
@@ -166,7 +167,8 @@ void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   User::WallpaperType type;
   int index;
   base::Time date;
-  UserManager::Get()->GetLoggedInUserWallpaperProperties(&type, &index, &date);
+  WallpaperManager::Get()->GetLoggedInUserWallpaperProperties(
+      &type, &index, &date);
   if (type == User::DAILY && date != base::Time::Now().LocalMidnight()) {
       index = ash::GetNextWallpaperIndex(index);
       UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DAILY,
@@ -240,7 +242,8 @@ void SetWallpaperOptionsHandler::HandleDailyWallpaper(const ListValue* args) {
   User::WallpaperType type;
   int index;
   base::Time date;
-  UserManager::Get()->GetLoggedInUserWallpaperProperties(&type, &index, &date);
+  WallpaperManager::Get()->GetLoggedInUserWallpaperProperties(
+      &type, &index, &date);
   if (date != base::Time::Now().LocalMidnight())
     index = ash::GetNextWallpaperIndex(index);
   UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DAILY, index);

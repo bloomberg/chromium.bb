@@ -136,8 +136,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
 
     mock_login_display_host_.reset(new MockLoginDisplayHost());
 
-    EXPECT_CALL(*mock_user_manager_.user_manager(), InitializeWallpaper())
-        .Times(1);
     EXPECT_CALL(*mock_user_manager_.user_manager(), IsKnownUser(kUsername))
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));

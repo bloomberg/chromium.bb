@@ -88,6 +88,9 @@ class WizardController : public ScreenObserver {
   // Returns initial locale from local settings.
   static std::string GetInitialLocale();
 
+  // Sets delays to zero. MUST be used only for browser tests.
+  static void SetZeroDelays();
+
   // If true zero delays have been enabled (for browser tests).
   static bool IsZeroDelayEnabled();
 
@@ -213,9 +216,6 @@ class WizardController : public ScreenObserver {
 
   // Logs in the specified user via default login screen.
   void Login(const std::string& username, const std::string& password);
-
-  // Sets delays to zero. MUST be used only for browser tests.
-  static void SetZeroDelays();
 
   static bool skip_user_image_selection_;
 

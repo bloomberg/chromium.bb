@@ -19,8 +19,6 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -70,23 +68,6 @@ namespace {
 const char kImagePathNodeName[] = "path";
 const char kImageIndexNodeName[] = "index";
 const char kImageURLNodeName[] = "url";
-
-const char kWallpaperTypeNodeName[] = "type";
-const char kWallpaperIndexNodeName[] = "index";
-const char kWallpaperDateNodeName[] = "date";
-
-// Default wallpaper index used in OOBE (first boot).
-// Defined here because Chromium default index differs.
-// Also see ash::WallpaperInfo kDefaultWallpapers in
-// desktop_background_resources.cc
-#if defined(GOOGLE_CHROME_BUILD)
-const int kDefaultOOBEWallpaperIndex = 16; // IDR_AURA_WALLPAPERS_3_URBAN0
-#else
-const int kDefaultOOBEWallpaperIndex = 0;  // IDR_AURA_WALLPAPERS_ROMAINGUY_0
-#endif
-
-const int kThumbnailWidth = 128;
-const int kThumbnailHeight = 80;
 
 // Delay betweeen user login and attempt to update user's profile data.
 const long kProfileDataDownloadDelayMs = 10000;
@@ -212,9 +193,6 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_(false),
-      current_user_wallpaper_type_(User::UNKNOWN),
-      ALLOW_THIS_IN_INITIALIZER_LIST(current_user_wallpaper_index_(
-          ash::GetInvalidWallpaperIndex())),
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
@@ -298,7 +276,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     SaveUserDisplayName(GetLoggedInUser().email(),
         UTF8ToUTF16(GetLoggedInUser().GetAccountName(true)));
     SetInitialUserImage(email);
-    SetInitialUserWallpaper(email);
+    WallpaperManager::Get()->SetInitialUserWallpaper(email);
   } else {
     int image_index = logged_in_user_->image_index();
     // If current user image is profile image, it needs to be refreshed.
@@ -340,7 +318,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
 
   if (!browser_restart) {
     // For GAIA login flow, logged in user wallpaper may not be loaded.
-    EnsureLoggedInUserWallpaperLoaded();
+    WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
   }
 
   NotifyOnLogin();
@@ -352,14 +330,14 @@ void UserManagerImpl::DemoUserLoggedIn() {
   is_current_user_ephemeral_ = true;
   logged_in_user_ = CreateUser(kDemoUser, /* is_ephemeral= */ true);
   SetInitialUserImage(kDemoUser);
-  SetInitialUserWallpaper(kDemoUser);
+  WallpaperManager::Get()->SetInitialUserWallpaper(kDemoUser);
   NotifyOnLogin();
 }
 
 void UserManagerImpl::GuestUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_ephemeral_ = true;
-  SetInitialUserWallpaper(kGuestUser);
+  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUser);
   logged_in_user_ = CreateUser(kGuestUser, /* is_ephemeral= */ true);
   NotifyOnLogin();
 }
@@ -370,65 +348,8 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
   is_current_user_ephemeral_ = true;
   logged_in_user_ = CreateUser(email, /* is_ephemeral= */ true);
   SetInitialUserImage(email);
-  SetInitialUserWallpaper(email);
+  WallpaperManager::Get()->SetInitialUserWallpaper(email);
   NotifyOnLogin();
-}
-
-void UserManagerImpl::InitializeWallpaper() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!IsUserLoggedIn()) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableNewOobe)) {
-      if (!WizardController::IsDeviceRegistered() &&
-          !WizardController::IsZeroDelayEnabled()) {
-        // TODO(nkostylev): Add switch to disable wallpaper transition on OOBE.
-        // Should be used on test images so that they are not slowed down.
-        ash::Shell::GetInstance()->desktop_background_controller()->
-            SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
-      } else {
-        bool show_users = true;
-        bool result = CrosSettings::Get()->GetBoolean(
-            kAccountsPrefShowUserNamesOnSignIn, &show_users);
-        DCHECK(result) << "Unable to fetch setting "
-                       << kAccountsPrefShowUserNamesOnSignIn;
-        if (!show_users) {
-          ash::Shell::GetInstance()->desktop_background_controller()->
-              SetDefaultWallpaper(ash::GetSolidColorIndex());
-        }
-      }
-    }
-    return;
-  }
-  UserSelected(GetLoggedInUser().email());
-}
-
-void UserManagerImpl::UserSelected(const std::string& email) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (IsKnownUser(email)) {
-    User::WallpaperType type;
-    int index;
-    base::Time date;
-    GetUserWallpaperProperties(email, &type, &index, &date);
-    if (type == User::DAILY && date != base::Time::Now().LocalMidnight()) {
-      index = ash::GetNextWallpaperIndex(index);
-      SaveUserWallpaperProperties(email, User::DAILY, index);
-    } else if (type == User::CUSTOMIZED) {
-      std::string wallpaper_path =
-          GetWallpaperPathForUser(email, false).value();
-      // In customized mode, we use index pref to save the user selected
-      // wallpaper layout. See function SaveWallpaperToLocalState().
-      ash::WallpaperLayout layout = static_cast<ash::WallpaperLayout>(index);
-      // Load user image asynchronously.
-      image_loader_->Start(
-          wallpaper_path, 0,
-          base::Bind(&UserManagerImpl::OnCustomWallpaperLoaded,
-                     base::Unretained(this), email, layout));
-      return;
-    }
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(index);
-    WallpaperManager::Get()->SetLastSelectedUser(email);
-  }
 }
 
 void UserManagerImpl::SessionStarted() {
@@ -621,10 +542,11 @@ void UserManagerImpl::SetLoggedInUserCustomWallpaperLayout(
   std::string username = user.email();
   DCHECK(!username.empty());
 
-  std::string file_path = GetWallpaperPathForUser(username, false).value();
+  std::string file_path = WallpaperManager::Get()->
+      GetWallpaperPathForUser(username, false).value();
   SaveWallpaperToLocalState(username, file_path, layout, User::CUSTOMIZED);
   // Load wallpaper from file.
-  UserSelected(username);
+  WallpaperManager::Get()->OnUserSelected(username);
 }
 
 void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
@@ -634,20 +556,6 @@ void UserManagerImpl::SaveUserImageFromFile(const std::string& username,
       path.value(), login::kMaxUserImageSize,
       base::Bind(&UserManagerImpl::SaveUserImage,
                  base::Unretained(this), username));
-}
-
-void UserManagerImpl::SaveUserWallpaperFromFile(
-    const std::string& username,
-    const FilePath& path,
-    ash::WallpaperLayout layout,
-    base::WeakPtr<WallpaperDelegate> delegate) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // For wallpapers, save the image without resizing.
-  image_loader_->Start(
-      path.value(), 0 /* Original size */,
-      base::Bind(&UserManagerImpl::SaveUserWallpaperInternal,
-                 base::Unretained(this), username, layout, User::CUSTOMIZED,
-                 delegate));
 }
 
 void UserManagerImpl::SaveUserImageFromProfileImage(
@@ -797,15 +705,6 @@ FilePath UserManagerImpl::GetImagePathForUser(const std::string& username) {
   return user_data_dir.AppendASCII(filename);
 }
 
-FilePath UserManagerImpl::GetWallpaperPathForUser(const std::string& username,
-                                                  bool is_thumbnail) {
-  std::string filename = username +
-      (is_thumbnail ? "_wallpaper_thumb.png" : "_wallpaper.png");
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  return user_data_dir.AppendASCII(filename);
-}
-
 void UserManagerImpl::EnsureUsersLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!users_.empty())
@@ -832,6 +731,8 @@ void UserManagerImpl::EnsureUsersLoaded() {
       if ((*it)->GetAsString(&email)) {
         User* user = CreateUser(email, /* is_ephemeral= */ false);
         users_.push_back(user);
+
+        WallpaperManager::Get()->CacheIfCustomWallpaper(email);
 
         if (prefs_images) {
           // Get account image path.
@@ -907,17 +808,6 @@ void UserManagerImpl::EnsureUsersLoaded() {
       }
     }
   }
-}
-
-void UserManagerImpl::EnsureLoggedInUserWallpaperLoaded() {
-  User::WallpaperType type;
-  int index;
-  base::Time last_modification_date;
-  GetLoggedInUserWallpaperProperties(&type, &index, &last_modification_date);
-
-  if (type != current_user_wallpaper_type_ ||
-      index != current_user_wallpaper_index_)
-    UserSelected(GetLoggedInUser().email());
 }
 
 void UserManagerImpl::RetrieveTrustedDevicePolicies() {
@@ -1021,27 +911,6 @@ void UserManagerImpl::SetInitialUserImage(const std::string& username) {
   SaveUserDefaultImageIndex(username, image_id);
 }
 
-void UserManagerImpl::SetInitialUserWallpaper(const std::string& username) {
-  current_user_wallpaper_type_ = User::DEFAULT;
-  // TODO(bshe): Ideally, wallpaper should start to load as soon as user click
-  // "Add user".
-  if (username == kGuestUser)
-    current_user_wallpaper_index_ = ash::GetGuestWallpaperIndex();
-  else
-    current_user_wallpaper_index_ = ash::GetDefaultWallpaperIndex();
-  SaveUserWallpaperProperties(username,
-                              current_user_wallpaper_type_,
-                              current_user_wallpaper_index_);
-
-  // Some browser tests do not have shell instance. And it is not necessary to
-  // create a wallpaper for these tests. Add HasInstance check to prevent tests
-  // crash and speed up the tests by avoid loading wallpaper.
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(current_user_wallpaper_index_);
-  }
-}
-
 void UserManagerImpl::MigrateWallpaperData() {
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -1061,7 +930,9 @@ void UserManagerImpl::MigrateWallpaperData() {
           DictionaryPrefUpdate prefs_wallpapers_update(local_state,
                                                        kUserWallpapers);
           prefs_wallpapers_update->RemoveWithoutPathExpansion(username, NULL);
-          SaveUserWallpaperProperties(username, User::DEFAULT, index);
+          WallpaperManager::Get()->SaveUserWallpaperProperties(username,
+                                                               User::DEFAULT,
+                                                               index);
         } else {
           // Before M20, wallpaper index is not saved into LocalState unless
           // user specifically sets a wallpaper. After M20, the default
@@ -1075,37 +946,18 @@ void UserManagerImpl::MigrateWallpaperData() {
           // wallpaper for those users as described in cr/130685. So here we use
           // default wallpaper for users that exist in user list but does not
           // have an index saved in LocalState.
-          SaveUserWallpaperProperties(username, User::DEFAULT,
-                                      ash::GetDefaultWallpaperIndex());
+          WallpaperManager::Get()->SaveUserWallpaperProperties(username,
+              User::DEFAULT, ash::GetDefaultWallpaperIndex());
         }
       }
     }
   }
 }
 
-void UserManagerImpl::GetLoggedInUserWallpaperProperties(
-    User::WallpaperType* type,
-    int* index,
-    base::Time* last_modification_date) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(logged_in_user_);
-
-  if (IsLoggedInAsStub()) {
-    *type = current_user_wallpaper_type_ = User::DEFAULT;
-    *index = current_user_wallpaper_index_ = ash::GetInvalidWallpaperIndex();
-    return;
-  }
-
-  GetUserWallpaperProperties(GetLoggedInUser().email(),
-                             type,
-                             index,
-                             last_modification_date);
-}
-
 void UserManagerImpl::SaveLoggedInUserWallpaperProperties(
-    User::WallpaperType type,
-    int index) {
-  SaveUserWallpaperProperties(GetLoggedInUser().email(), type, index);
+    User::WallpaperType type, int index) {
+  WallpaperManager::Get()->SaveUserWallpaperProperties(
+      GetLoggedInUser().email(), type, index);
 }
 
 void UserManagerImpl::SetUserImage(const std::string& username,
@@ -1140,67 +992,6 @@ void UserManagerImpl::SetUserImage(const std::string& username,
   }
 }
 
-void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
-    User::WallpaperType* type,
-    int* index,
-    base::Time* last_modification_date) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Default to the values cached in memory.
-  *type = current_user_wallpaper_type_;
-  *index = current_user_wallpaper_index_;
-
-  // Override with values found in local store, if any.
-  if (!username.empty()) {
-    const DictionaryValue* user_wallpapers = g_browser_process->local_state()->
-        GetDictionary(UserManager::kUserWallpapersProperties);
-    const base::DictionaryValue* wallpaper_properties;
-    if (user_wallpapers->GetDictionaryWithoutPathExpansion(
-        username,
-        &wallpaper_properties)) {
-      *type = User::UNKNOWN;
-      *index = ash::GetInvalidWallpaperIndex();
-      wallpaper_properties->GetInteger(kWallpaperTypeNodeName,
-                                       reinterpret_cast<int*>(type));
-      wallpaper_properties->GetInteger(kWallpaperIndexNodeName, index);
-      std::string date_string;
-      int64 val;
-      if (!(wallpaper_properties->GetString(kWallpaperDateNodeName,
-                                            &date_string) &&
-            base::StringToInt64(date_string, &val)))
-        val = 0;
-      *last_modification_date = base::Time::FromInternalValue(val);
-    }
-  }
-}
-
-void UserManagerImpl::SaveUserWallpaperProperties(const std::string& username,
-                                                  User::WallpaperType type,
-                                                  int index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  current_user_wallpaper_type_ = type;
-  current_user_wallpaper_index_ = index;
-  // Ephemeral users can not save data to local state. We just cache the index
-  // in memory for them.
-  if (IsCurrentUserEphemeral()) {
-    return;
-  }
-
-  PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate wallpaper_update(local_state,
-      UserManager::kUserWallpapersProperties);
-
-  base::DictionaryValue* wallpaper_properties = new base::DictionaryValue();
-  wallpaper_properties->Set(kWallpaperTypeNodeName,
-                            new base::FundamentalValue(type));
-  wallpaper_properties->Set(kWallpaperIndexNodeName,
-                            new base::FundamentalValue(index));
-  wallpaper_properties->SetString(kWallpaperDateNodeName,
-      base::Int64ToString(base::Time::Now().LocalMidnight().ToInternalValue()));
-  wallpaper_update->SetWithoutPathExpansion(username, wallpaper_properties);
-}
-
 void UserManagerImpl::SaveUserImageInternal(const std::string& username,
                                             int image_index,
                                             const GURL& image_url,
@@ -1226,99 +1017,6 @@ void UserManagerImpl::SaveUserImageInternal(const std::string& username,
                  username, user_image, image_path, image_index, image_url));
 }
 
-void UserManagerImpl::SaveUserWallpaperInternal(
-    const std::string& username,
-    ash::WallpaperLayout layout,
-    User::WallpaperType type,
-    base::WeakPtr<WallpaperDelegate> delegate,
-    const UserImage& user_image) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const SkBitmap& wallpaper = user_image.image();
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UserManagerImpl::GenerateUserWallpaperThumbnail,
-                 base::Unretained(this), username, type, delegate, wallpaper));
-
-  ash::Shell::GetInstance()->desktop_background_controller()->
-      SetCustomWallpaper(wallpaper, layout);
-
-  // Ignore for ephemeral users.
-  if (IsEphemeralUser(username))
-    return;
-
-  FilePath wallpaper_path = GetWallpaperPathForUser(username, false);
-  DVLOG(1) << "Saving user image to " << wallpaper_path.value();
-
-  last_image_set_async_ = true;
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UserManagerImpl::SaveWallpaperToFile,
-                 base::Unretained(this), username, wallpaper, wallpaper_path,
-                 layout, User::CUSTOMIZED));
-}
-
-void UserManagerImpl::OnCustomWallpaperLoaded(const std::string& email,
-                                              ash::WallpaperLayout layout,
-                                              const UserImage& user_image) {
-  const SkBitmap& wallpaper = user_image.image();
-  ash::Shell::GetInstance()->desktop_background_controller()->
-      SetCustomWallpaper(wallpaper, layout);
-  // Starting to load wallpaper thumbnail
-  std::string wallpaper_thumbnail_path =
-      GetWallpaperPathForUser(email, true).value();
-  image_loader_->Start(
-      wallpaper_thumbnail_path, 0,
-      base::Bind(&UserManagerImpl::OnCustomWallpaperThumbnailLoaded,
-      base::Unretained(this), email));
-}
-
-void UserManagerImpl::OnCustomWallpaperThumbnailLoaded(
-    const std::string& email,
-    const UserImage& user_image) {
-  const SkBitmap& wallpaper = user_image.image();
-  User* user = const_cast<User*>(FindUser(email));
-  // User may have been removed by now.
-  if (user && !wallpaper.empty())
-    user->SetWallpaperThumbnail(wallpaper);
-}
-
-void UserManagerImpl::OnThumbnailUpdated(
-    base::WeakPtr<WallpaperDelegate> delegate) {
-  if (delegate)
-    delegate->SetCustomWallpaperThumbnail();
-}
-
-void UserManagerImpl::GenerateUserWallpaperThumbnail(
-    const std::string& username,
-    User::WallpaperType type,
-    base::WeakPtr<WallpaperDelegate> delegate,
-    const SkBitmap& wallpaper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  SkBitmap thumbnail =
-      skia::ImageOperations::Resize(wallpaper,
-                                    skia::ImageOperations::RESIZE_LANCZOS3,
-                                    kThumbnailWidth, kThumbnailHeight);
-  logged_in_user_->SetWallpaperThumbnail(thumbnail);
-
-  // Notify thumbnail is ready.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&UserManagerImpl::OnThumbnailUpdated,
-                 base::Unretained(this), delegate));
-
-  // Ignore for ephemeral users.
-  if (IsEphemeralUser(username))
-    return;
-
-  FilePath thumbnail_path = GetWallpaperPathForUser(username, true);
-  SaveBitmapToFile(UserImage(thumbnail), thumbnail_path);
-}
-
 void UserManagerImpl::SaveImageToFile(const std::string& username,
                                       const UserImage& user_image,
                                       const FilePath& image_path,
@@ -1333,24 +1031,6 @@ void UserManagerImpl::SaveImageToFile(const std::string& username,
       base::Bind(&UserManagerImpl::SaveImageToLocalState,
                  base::Unretained(this),
                  username, image_path.value(), image_index, image_url, true));
-}
-
-void UserManagerImpl::SaveWallpaperToFile(const std::string& username,
-                                          const SkBitmap& wallpaper,
-                                          const FilePath& wallpaper_path,
-                                          ash::WallpaperLayout layout,
-                                          User::WallpaperType type) {
-  // TODO(bshe): We should save the original file unchanged instead of
-  // re-encoding it and saving it.
-  if (!SaveBitmapToFile(UserImage(wallpaper), wallpaper_path))
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&UserManagerImpl::SaveWallpaperToLocalState,
-                 base::Unretained(this),
-                 username, wallpaper_path.value(), layout, type));
 }
 
 void UserManagerImpl::SaveImageToLocalState(const std::string& username,
@@ -1398,7 +1078,7 @@ void UserManagerImpl::SaveWallpaperToLocalState(const std::string& username,
     ash::WallpaperLayout layout,
     User::WallpaperType type) {
   // TODO(bshe): We probably need to save wallpaper_path instead of index.
-  SaveUserWallpaperProperties(username, type, layout);
+  WallpaperManager::Get()->SaveUserWallpaperProperties(username, type, layout);
 }
 
 bool UserManagerImpl::SaveBitmapToFile(const UserImage& user_image,
@@ -1646,7 +1326,8 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
   prefs_wallpapers_update->RemoveWithoutPathExpansion(email, NULL);
 
   // Remove user wallpaper thumbnail
-  FilePath wallpaper_thumb_path = GetWallpaperPathForUser(email, true);
+  FilePath wallpaper_thumb_path = WallpaperManager::Get()->
+      GetWallpaperPathForUser(email, true);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
@@ -1654,7 +1335,8 @@ void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
                  base::Unretained(this),
                  wallpaper_thumb_path));
   // Remove user wallpaper
-  FilePath wallpaper_path = GetWallpaperPathForUser(email, false);
+  FilePath wallpaper_path = WallpaperManager::Get()->
+      GetWallpaperPathForUser(email, false);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
