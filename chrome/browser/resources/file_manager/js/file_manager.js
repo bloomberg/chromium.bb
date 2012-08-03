@@ -1059,6 +1059,8 @@ FileManager.prototype = {
     this.grid_.addEventListener(
         'dblclick', this.onDetailDoubleClickOrTap_.bind(this));
     this.grid_.addEventListener(
+        'click', this.onDetailClick_.bind(this));
+    this.grid_.addEventListener(
         cr.ui.TouchHandler.EventType.TAP,
         this.onDetailDoubleClickOrTap_.bind(this));
     cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
@@ -1120,6 +1122,8 @@ FileManager.prototype = {
     // Don't pay attention to double clicks on the table header.
     this.table_.list.addEventListener(
         'dblclick', this.onDetailDoubleClickOrTap_.bind(this));
+    this.table_.list.addEventListener(
+        'click', this.onDetailClick_.bind(this));
     this.table_.list.addEventListener(
         cr.ui.TouchHandler.EventType.TAP,
         this.onDetailDoubleClickOrTap_.bind(this));
@@ -1826,11 +1830,13 @@ FileManager.prototype = {
   FileManager.prototype.renderFileNameLabel_ = function(entry) {
     // Filename need to be in a '.filename-label' container for correct
     // work of inplace renaming.
-    var fileName = this.document_.createElement('div');
-    fileName.className = 'filename-label';
+    var box = this.document_.createElement('div');
+    box.className = 'filename-label';
+    var fileName = this.document_.createElement('span');
     fileName.textContent = entry.name;
+    box.appendChild(fileName);
 
-    return fileName;
+    return box;
   };
 
   /**
@@ -2851,6 +2857,26 @@ FileManager.prototype = {
     }
 
     this.dispatchSelectionAction_();
+  };
+
+  /**
+   * Handles mouse click or tap. Simulates double click if click happens
+   * on the file name or the icon.
+   * @param {Event} event The click event.
+   */
+  FileManager.prototype.onDetailClick_ = function(event) {
+    if (this.isRenamingInProgress()) {
+      // Don't pay attention to clicks during a rename.
+      return;
+    }
+
+    if (event.target.parentElement.classList.contains('filename-label') ||
+        event.target.classList.contains('detail-icon') ||
+        event.target.classList.contains('img-container')) {
+      this.onDetailDoubleClickOrTap_(event);
+      event.stopPropagation();
+      event.preventDefault();
+    }
   };
 
   FileManager.prototype.dispatchSelectionAction_ = function() {
