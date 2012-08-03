@@ -49,15 +49,6 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
 /*
  * syscall return
  */
-NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
-                              uint32_t             new_prog_ctr) {
-  struct NaClApp  *nap;
-  struct NaClThreadContext  *context;
-
-  nap = natp->nap;
-  context = &natp->user;
-  context->new_prog_ctr = new_prog_ctr;
-  context->sysret = natp->sysret;
-
-  NaClSwitch(context);
+NORETURN void NaClSwitchToApp(struct NaClAppThread *natp) {
+  NaClSwitch(&natp->user);
 }

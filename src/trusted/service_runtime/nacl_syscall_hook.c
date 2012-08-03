@@ -40,6 +40,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   size_t                    sysnum;
   uintptr_t                 sp_user;
   uintptr_t                 sp_sys;
+  uint32_t                  sysret;
 
   /*
    * Mark the thread as running on a trusted stack as soon as possible
@@ -106,6 +107,12 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    */
   user_ret = *(uintptr_t *) (sp_sys + NACL_USERRET_FIX);
   /*
+   * before switching back to user module, we need to make sure that the
+   * user_ret is properly sandboxed.
+   */
+  user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t) user_ret);
+  natp->user.new_prog_ctr = user_ret;
+  /*
    * usr_syscall_args is used by Decoder functions in
    * nacl_syscall_handlers.c which is automatically generated file and
    * placed in the
@@ -128,28 +135,24 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
 
   if (sysnum >= NACL_MAX_SYSCALLS) {
     NaClLog(2, "INVALID system call %"NACL_PRIdS"\n", sysnum);
-    natp->sysret = -NACL_ABI_EINVAL;
+    sysret = -NACL_ABI_EINVAL;
     NaClCopyInDropLock(nap);
   } else {
     NaClLog(4, "making system call %"NACL_PRIdS", "
             "handler 0x%08"NACL_PRIxPTR"\n",
             sysnum, (uintptr_t) nap->syscall_table[sysnum].handler);
-    natp->sysret = (*(nap->syscall_table[sysnum].handler))(natp);
+    sysret = (*(nap->syscall_table[sysnum].handler))(natp);
     /* Implicitly drops lock */
   }
   NaClLog(4,
           ("returning from system call %"NACL_PRIdS", return value %"NACL_PRId32
            " (0x%"NACL_PRIx32")\n"),
-          sysnum, natp->sysret, natp->sysret);
+          sysnum, sysret, sysret);
+  natp->user.sysret = sysret;
 
   NaClLog(4, "return target 0x%08"NACL_PRIxNACL_REG"\n", user_ret);
   NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
 
-  /*
-   * before switching back to user module, we need to make sure that the
-   * user_ret is properly sandboxed.
-   */
-  user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t) user_ret);
   /*
    * After this NaClAppThreadSetSuspendState() call, we should not
    * claim any mutexes, otherwise we risk deadlock.  Note that if
@@ -160,7 +163,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
                                NACL_APP_THREAD_UNTRUSTED);
   NaClStackSafetyNowOnUntrustedStack();
 
-  NaClSwitchToApp(natp, user_ret);
+  NaClSwitchToApp(natp);
   /* NOTREACHED */
 
   fprintf(stderr, "NORETURN NaClSwitchToApp returned!?!\n");

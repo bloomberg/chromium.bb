@@ -403,14 +403,6 @@ static void TestGettingRegisterSnapshotInSyscall(struct NaClApp *nap) {
   test_shm->should_exit = 1;
   CHECK(NaClWaitForMainThreadToExit(nap) == 0);
 
-  /*
-   * TODO(mseaborn): prog_ctr is not reported correctly yet.  We get
-   * the return address of the *previous* syscall instead of the
-   * current syscall.  For now, ignore this by copying the value
-   * across.
-   */
-  regs.prog_ctr = test_shm->expected_regs.prog_ctr;
-
   AssertRegistersEqual(&regs, &test_shm->expected_regs);
 }
 
