@@ -286,6 +286,13 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
 
 void GpuChannelHost::MessageFilter::OnChannelError() {
   DCHECK(parent_->factory_->IsIOThread());
+
+  // Post the task to signal the GpuChannelHost before the proxies. That way, if
+  // they themselves post a task to recreate the context, they will not try to
+  // re-use this channel host before it has a chance to mark itself lost.
+  MessageLoop* main_loop = parent_->factory_->GetMainLoop();
+  main_loop->PostTask(FROM_HERE,
+                      base::Bind(&GpuChannelHost::OnChannelError, parent_));
   // Inform all the proxies that an error has occurred. This will be reported
   // via OpenGL as a lost context.
   for (ListenerMap::iterator it = listeners_.begin();
@@ -298,10 +305,6 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
   }
 
   listeners_.clear();
-
-  MessageLoop* main_loop = parent_->factory_->GetMainLoop();
-  main_loop->PostTask(FROM_HERE,
-                      base::Bind(&GpuChannelHost::OnChannelError, parent_));
 }
 
 
