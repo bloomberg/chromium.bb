@@ -76,14 +76,14 @@ evdev_process_key(struct evdev_input_device *device,
 	case BTN_FORWARD:
 	case BTN_BACK:
 	case BTN_TASK:
-		notify_button(&device->master->base.seat,
+		notify_button(&device->seat->seat,
 			      time, e->code,
 			      e->value ? WL_POINTER_BUTTON_STATE_PRESSED :
 					 WL_POINTER_BUTTON_STATE_RELEASED);
 		break;
 
 	default:
-		notify_key(&device->master->base.seat,
+		notify_key(&device->seat->seat,
 			   time, e->code,
 			   e->value ? WL_KEYBOARD_KEY_STATE_PRESSED :
 				      WL_KEYBOARD_KEY_STATE_RELEASED,
@@ -165,13 +165,13 @@ evdev_process_relative(struct evdev_input_device *device,
 		device->pending_events |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_WHEEL:
-		notify_axis(&device->master->base.seat,
+		notify_axis(&device->seat->seat,
 			      time,
 			      WL_POINTER_AXIS_VERTICAL_SCROLL,
 			      wl_fixed_from_int(e->value));
 		break;
 	case REL_HWHEEL:
-		notify_axis(&device->master->base.seat,
+		notify_axis(&device->seat->seat,
 			      time,
 			      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
 			      wl_fixed_from_int(e->value));
@@ -216,7 +216,7 @@ is_motion_event(struct input_event *e)
 static void
 evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 {
-	struct weston_seat *master = &device->master->base;
+	struct weston_seat *master = device->seat;
 
 	if (!device->pending_events)
 		return;
@@ -337,7 +337,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	struct input_event ev[32];
 	int len;
 
-	ec = device->master->base.compositor;
+	ec = device->seat->compositor;
 	if (!ec->focus)
 		return 1;
 
@@ -452,11 +452,11 @@ evdev_configure_device(struct evdev_input_device *device)
 
 	if ((device->caps &
 	     (EVDEV_MOTION_ABS | EVDEV_MOTION_REL | EVDEV_BUTTON)))
-		weston_seat_init_pointer(&device->master->base);
+		weston_seat_init_pointer(device->seat);
 	if ((device->caps & EVDEV_KEYBOARD))
-		weston_seat_init_keyboard(&device->master->base, NULL);
+		weston_seat_init_keyboard(device->seat, NULL);
 	if ((device->caps & EVDEV_TOUCH))
-		weston_seat_init_touch(&device->master->base);
+		weston_seat_init_touch(device->seat);
 
 	return 0;
 }
@@ -476,7 +476,7 @@ evdev_input_device_create(struct evdev_seat *master,
 	device->output =
 		container_of(ec->output_list.next, struct weston_output, link);
 
-	device->master = master;
+	device->seat = &master->base;
 	device->is_mt = 0;
 	device->mtdev = NULL;
 	device->devnode = strdup(path);

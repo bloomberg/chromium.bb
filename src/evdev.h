@@ -54,7 +54,7 @@ enum evdev_device_capability {
 };
 
 struct evdev_input_device {
-	struct evdev_seat *master;
+	struct weston_seat *seat;
 	struct wl_list link;
 	struct wl_event_source *source;
 	struct weston_output *output;
