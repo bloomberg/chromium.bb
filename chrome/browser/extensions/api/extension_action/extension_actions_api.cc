@@ -182,7 +182,8 @@ bool ExtensionActionFunction::ParseCSSColorString(
 }
 
 bool ExtensionActionFunction::SetVisible(bool visible) {
-  extension_action_->SetIsVisible(tab_id_, visible);
+  extension_action_->SetAppearance(
+      tab_id_, visible ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
   NotifyChange();
   return true;
 }

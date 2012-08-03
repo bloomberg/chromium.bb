@@ -95,7 +95,8 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Set visibility and broadcast notifications that the UI should be updated.
-  page_action->SetIsVisible(tab_id, enable);
+  page_action->SetAppearance(
+      tab_id, enable ? ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
   page_action->SetTitle(tab_id, title);
   page_action->SetIconIndex(tab_id, icon_id);
   contents->extension_tab_helper()->location_bar_controller()->NotifyChange();

@@ -810,8 +810,9 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
 
   // Page/script actions are hidden/disabled by default, and browser actions are
   // visible/enabled by default.
-  result->SetIsVisible(ExtensionAction::kDefaultTabId,
-                       action_type == ExtensionAction::TYPE_BROWSER);
+  result->SetAppearance(ExtensionAction::kDefaultTabId,
+                        action_type == ExtensionAction::TYPE_BROWSER ?
+                        ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
 
   if (manifest_version_ == 1) {
     const ListValue* icons = NULL;

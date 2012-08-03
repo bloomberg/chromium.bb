@@ -19,7 +19,10 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 
@@ -58,6 +61,25 @@ int Width(const gfx::Image& image) {
     return 0;
   return image.ToSkBitmap()->width();
 }
+
+class GetAttentionImageSource : public gfx::ImageSkiaSource {
+ public:
+  explicit GetAttentionImageSource(const gfx::Image& icon)
+      : icon_(*icon.ToImageSkia()) {}
+
+  // gfx::ImageSkiaSource overrides:
+  virtual gfx::ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor)
+      OVERRIDE {
+    gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale_factor);
+    color_utils::HSL shift = {-1, 0, 0.5};
+    return gfx::ImageSkiaRep(
+        SkBitmapOperations::CreateHSLShiftedBitmap(icon_rep.sk_bitmap(), shift),
+        icon_rep.scale_factor());
+  }
+
+ private:
+  const gfx::ImageSkia icon_;
+};
 
 }  // namespace
 
@@ -169,7 +191,7 @@ scoped_ptr<ExtensionAction> ExtensionAction::CopyForTest() const {
   copy->badge_text_ = badge_text_;
   copy->badge_background_color_ = badge_background_color_;
   copy->badge_text_color_ = badge_text_color_;
-  copy->visible_ = visible_;
+  copy->appearance_ = appearance_;
   copy->icon_animation_ = icon_animation_;
   copy->default_icon_path_ = default_icon_path_;
   copy->id_ = id_;
@@ -229,6 +251,11 @@ gfx::Image ExtensionAction::GetIcon(int tab_id) const {
     }
   }
 
+  if (GetValue(&appearance_, tab_id) == WANTS_ATTENTION) {
+    icon = gfx::Image(gfx::ImageSkia(new GetAttentionImageSource(icon),
+                                     icon.ToImageSkia()->size()));
+  }
+
   return ApplyIconAnimation(tab_id, icon);
 }
 
@@ -240,6 +267,23 @@ void ExtensionAction::SetIconIndex(int tab_id, int index) {
   SetValue(&icon_index_, tab_id, index);
 }
 
+bool ExtensionAction::SetAppearance(int tab_id, Appearance new_appearance) {
+  const Appearance old_appearance = GetValue(&appearance_, tab_id);
+
+  if (old_appearance == new_appearance)
+    return false;
+
+  SetValue(&appearance_, tab_id, new_appearance);
+
+  // When showing a badge for the first time on a web page, fade it
+  // in.  Other transitions happen instantly.
+  if (old_appearance == INVISIBLE && tab_id != kDefaultTabId) {
+    RunIconAnimation(tab_id);
+  }
+
+  return true;
+}
+
 void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   popup_url_.erase(tab_id);
   title_.erase(tab_id);
@@ -248,7 +292,7 @@ void ExtensionAction::ClearAllValuesForTab(int tab_id) {
   badge_text_.erase(tab_id);
   badge_text_color_.erase(tab_id);
   badge_background_color_.erase(tab_id);
-  visible_.erase(tab_id);
+  appearance_.erase(tab_id);
   icon_animation_.erase(tab_id);
 }
 

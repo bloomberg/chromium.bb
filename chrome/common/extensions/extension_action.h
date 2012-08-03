@@ -44,6 +44,16 @@ class ExtensionAction {
     TYPE_SCRIPT_BADGE,
   };
 
+  enum Appearance {
+    // The action icon is hidden.
+    INVISIBLE,
+    // The action is trying to get the user's attention but isn't yet
+    // running on the page.  Currently only used for script badges.
+    WANTS_ATTENTION,
+    // The action icon is visible with its normal appearance.
+    ACTIVE,
+  };
+
   // A fade-in animation.
   class IconAnimation : public ui::LinearAnimation,
                         public base::SupportsWeakPtr<IconAnimation> {
@@ -211,14 +221,14 @@ class ExtensionAction {
     return GetValue(&badge_background_color_, tab_id);
   }
 
-  // Set this action's badge visibility on a specific tab.
-  void SetIsVisible(int tab_id, bool value) {
-    SetValue(&visible_, tab_id, value);
-  }
+  // Set this action's badge visibility on a specific tab.  This takes
+  // care of any appropriate transition animations.  Returns true if
+  // the appearance has changed.
+  bool SetAppearance(int tab_id, Appearance value);
   // Get the badge visibility for a tab, or the default badge visibility
   // if none was set.
   bool GetIsVisible(int tab_id) const {
-    return GetValue(&visible_, tab_id);
+    return GetValue(&appearance_, tab_id) != INVISIBLE;
   }
 
   // Remove all tab-specific state.
@@ -231,10 +241,10 @@ class ExtensionAction {
   // reference will only have a value while the animation is running.
   base::WeakPtr<IconAnimation> GetIconAnimation(int tab_id) const;
 
+ private:
   // Runs an animation on a tab.
   void RunIconAnimation(int tab_id);
 
- private:
   class IconAnimationWrapper;
 
   // Finds the icon animation wrapper for a tab, if any.  If the animation for
@@ -284,7 +294,7 @@ class ExtensionAction {
   std::map<int, std::string> badge_text_;
   std::map<int, SkColor> badge_background_color_;
   std::map<int, SkColor> badge_text_color_;
-  std::map<int, bool> visible_;
+  std::map<int, Appearance> appearance_;
 
   // IconAnimationWrappers own themselves so that even if the Extension and
   // ExtensionAction are destroyed on a non-UI thread, the animation will still

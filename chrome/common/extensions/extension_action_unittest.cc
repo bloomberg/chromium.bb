@@ -4,6 +4,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -112,19 +113,49 @@ TEST_F(ExtensionActionTest, IconIndex) {
 }
 
 TEST_F(ExtensionActionTest, Visibility) {
+  // Supports the icon animation.
+  MessageLoop message_loop;
+
   ASSERT_FALSE(action.GetIsVisible(1));
-  action.SetIsVisible(ExtensionAction::kDefaultTabId, true);
+  EXPECT_FALSE(action.GetIconAnimation(ExtensionAction::kDefaultTabId));
+  action.SetAppearance(ExtensionAction::kDefaultTabId, ExtensionAction::ACTIVE);
   ASSERT_TRUE(action.GetIsVisible(1));
   ASSERT_TRUE(action.GetIsVisible(100));
-  action.SetIsVisible(ExtensionAction::kDefaultTabId, false);
+  EXPECT_FALSE(action.GetIconAnimation(ExtensionAction::kDefaultTabId));
+
+  action.SetAppearance(ExtensionAction::kDefaultTabId,
+                       ExtensionAction::INVISIBLE);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_FALSE(action.GetIsVisible(100));
-  action.SetIsVisible(100, true);
+  EXPECT_FALSE(action.GetIconAnimation(100));
+  action.SetAppearance(100, ExtensionAction::ACTIVE);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_TRUE(action.GetIsVisible(100));
+  EXPECT_TRUE(action.GetIconAnimation(100));
+
   action.ClearAllValuesForTab(100);
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_FALSE(action.GetIsVisible(100));
+  EXPECT_FALSE(action.GetIconAnimation(100));
+}
+
+TEST_F(ExtensionActionTest, GetAttention) {
+  // Supports the icon animation.
+  MessageLoop message_loop;
+
+  EXPECT_FALSE(action.GetIsVisible(1));
+  EXPECT_FALSE(action.GetIconAnimation(1));
+  action.SetAppearance(1, ExtensionAction::WANTS_ATTENTION);
+  EXPECT_TRUE(action.GetIsVisible(1));
+  EXPECT_TRUE(action.GetIconAnimation(1));
+
+  // Simulate waiting long enough for the animation to end.
+  action.GetIconAnimation(1)->Stop();
+  EXPECT_FALSE(action.GetIconAnimation(1));  // Sanity check.
+
+  action.SetAppearance(1, ExtensionAction::ACTIVE);
+  EXPECT_FALSE(action.GetIconAnimation(1))
+      << "The animation should not play again if the icon was already visible.";
 }
 
 TEST_F(ExtensionActionTest, Badge) {

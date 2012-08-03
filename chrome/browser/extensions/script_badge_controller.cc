@@ -50,7 +50,8 @@ void ScriptBadgeController::GetAttentionFor(
   // TODO(jyasskin): Modify the icon's appearance to indicate that the
   // extension is merely asking for permission to run:
   // http://crbug.com/133142
-  script_badge->SetIsVisible(SessionID::IdForTab(tab_contents_), true);
+  script_badge->SetAppearance(SessionID::IdForTab(tab_contents_),
+                              ExtensionAction::WANTS_ATTENTION);
 
   NotifyChange();
 }
@@ -66,22 +67,33 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
   ExtensionAction* script_badge = extension->script_badge();
   CHECK(script_badge);
 
-  tab_contents_->extension_tab_helper()->active_tab_permission_manager()->
-      GrantIfRequested(extension);
-
   switch (mouse_button) {
     case 1:  // left
-      return ACTION_SHOW_SCRIPT_POPUP;
     case 2:  // middle
-      // TODO(yoz): Show the popup if it's available or a default if not.
+      tab_contents_->extension_tab_helper()->active_tab_permission_manager()->
+          GrantIfRequested(extension);
+
+      // Even if clicking the badge doesn't immediately cause the extension to
+      // run script on the page, we want to help users associate clicking with
+      // the extension having permission to modify the page, so we make the icon
+      // full-colored immediately.
+      if (script_badge->SetAppearance(SessionID::IdForTab(tab_contents_),
+                                      ExtensionAction::ACTIVE))
+        NotifyChange();
 
       // Fire the scriptBadge.onClicked event.
       GetExtensionService()->browser_event_router()->ScriptBadgeExecuted(
           tab_contents_->profile(),
           *script_badge,
           SessionID::IdForTab(tab_contents_));
-      return ACTION_NONE;
+
+      // TODO(jyasskin): The fallback order should be user-defined popup ->
+      // onClicked handler -> default popup.
+      return ACTION_SHOW_SCRIPT_POPUP;
     case 3:  // right
+      // Don't grant access on right clicks, so users can investigate
+      // the extension without danger.
+
       return extension->ShowConfigureContextMenus() ?
           ACTION_SHOW_CONTEXT_MENU : ACTION_NONE;
   }
@@ -186,9 +198,8 @@ bool ScriptBadgeController::MarkExtensionExecuting(
   if (!script_badge)
     return false;
 
-  script_badge->SetIsVisible(SessionID::IdForTab(tab_contents_), true);
-  script_badge->RunIconAnimation(SessionID::IdForTab(tab_contents_));
-
+  script_badge->SetAppearance(SessionID::IdForTab(tab_contents_),
+                              ExtensionAction::ACTIVE);
   return true;
 }
 
