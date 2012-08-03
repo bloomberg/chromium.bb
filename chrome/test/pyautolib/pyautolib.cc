@@ -271,11 +271,10 @@ void PyUITestBase::ErrorResponse(
     const std::string& request,
     std::string* response) {
   base::DictionaryValue error_dict;
-  LOG(ERROR) << "Error during automation: " << *response;
-  error_dict.SetString("error",
-                       StringPrintf("%s for %s",
-                                    error_string.c_str(),
-                                    request.c_str()));
+  std::string error_msg = StringPrintf("%s for %s", error_string.c_str(),
+                                       request.c_str());
+  LOG(ERROR) << "Error during automation: " << error_msg;
+  error_dict.SetString("error", error_msg);
   base::JSONWriter::Write(&error_dict, response);
 }
 
