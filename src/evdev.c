@@ -54,7 +54,8 @@ evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
 
 	wl_list_for_each(device, evdev_devices, link) {
 		if (device->caps & EVDEV_KEYBOARD)
-			write(device->fd, ev, sizeof ev);
+			i = write(device->fd, ev, sizeof ev);
+		(void)i; /* no, we really don't care about the return value */
 	}
 }
 
