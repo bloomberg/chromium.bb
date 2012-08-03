@@ -152,7 +152,6 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   views::Label* count_label_;
   Delegate* delegate_;
   bool show_message_center_on_unlock_;
-  int unread_count_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationTray);
 };

@@ -80,24 +80,14 @@ namespace ash {
 namespace internal {
 
 struct WebNotification {
-  WebNotification(const std::string& i,
-                  const string16& t,
-                  const string16& m,
-                  const string16& s,
-                  const std::string& e)
-      : id(i),
-        title(t),
-        message(m),
-        display_source(s),
-        extension_id(e) {
-  }
-
+  WebNotification() : is_read(false) {}
   std::string id;
   string16 title;
   string16 message;
   string16 display_source;
   std::string extension_id;
   gfx::ImageSkia image;
+  bool is_read;
 };
 
 // A helper class to manage the list of notifications.
@@ -105,7 +95,25 @@ class WebNotificationList {
  public:
   typedef std::list<WebNotification> Notifications;
 
-  WebNotificationList() {
+  WebNotificationList()
+      : is_visible_(false),
+        unread_count_(0) {
+  }
+
+  void SetIsVisible(bool visible) {
+    if (is_visible_ == visible)
+      return;
+    is_visible_ = visible;
+    if (visible) {
+      // Clear the unread count when the list is shown.
+      unread_count_ = 0;
+    } else {
+      // Mark all notifications as read when the list is hidden.
+      for (Notifications::iterator iter = notifications_.begin();
+           iter != notifications_.end(); ++iter) {
+        iter->is_read = true;
+      }
+    }
   }
 
   void AddNotification(const std::string& id,
@@ -113,17 +121,19 @@ class WebNotificationList {
                        const string16& message,
                        const string16& display_source,
                        const std::string& extension_id) {
+    WebNotification notification;
     Notifications::iterator iter = GetNotification(id);
     if (iter != notifications_.end()) {
-      // Update existing notification.
-      iter->title = title;
-      iter->message = message;
-      iter->display_source = display_source;
-      iter->extension_id = extension_id;
-    } else {
-      notifications_.push_front(
-          WebNotification(id, title, message, display_source, extension_id));
+      notification = *iter;
+      EraseNotification(iter);
     }
+    notification.id = id;
+    notification.title = title;
+    notification.message = message;
+    notification.display_source = display_source;
+    notification.extension_id = extension_id;
+    notification.is_read = false;
+    PushNotification(notification);
   }
 
   void UpdateNotificationMessage(const std::string& id,
@@ -132,15 +142,20 @@ class WebNotificationList {
     Notifications::iterator iter = GetNotification(id);
     if (iter == notifications_.end())
       return;
-    iter->title = title;
-    iter->message = message;
+    // Copy and update notification, then move it to the front of the list.
+    WebNotification notification(*iter);
+    notification.title = title;
+    notification.message = message;
+    notification.is_read = false;
+    EraseNotification(iter);
+    PushNotification(notification);
   }
 
   bool RemoveNotification(const std::string& id) {
     Notifications::iterator iter = GetNotification(id);
     if (iter == notifications_.end())
       return false;
-    notifications_.erase(iter);
+    EraseNotification(iter);
     return true;
   }
 
@@ -157,7 +172,7 @@ class WebNotificationList {
          loopiter != notifications_.end(); ) {
       Notifications::iterator curiter = loopiter++;
       if (curiter->display_source == display_source)
-        notifications_.erase(curiter);
+        EraseNotification(curiter);
     }
   }
 
@@ -170,7 +185,7 @@ class WebNotificationList {
          loopiter != notifications_.end(); ) {
       Notifications::iterator curiter = loopiter++;
       if (curiter->extension_id == extension_id)
-        notifications_.erase(curiter);
+        EraseNotification(curiter);
     }
   }
 
@@ -183,7 +198,14 @@ class WebNotificationList {
     return true;
   }
 
+  std::string GetFirstId() {
+    if (notifications_.empty())
+      return std::string();
+    return notifications_.front().id;
+  }
+
   const Notifications& notifications() const { return notifications_; }
+  int unread_count() const { return unread_count_; }
 
  private:
   Notifications::iterator GetNotification(const std::string& id) {
@@ -195,7 +217,21 @@ class WebNotificationList {
     return notifications_.end();
   }
 
+  void EraseNotification(Notifications::iterator iter) {
+    if (!is_visible_ && !iter->is_read)
+      --unread_count_;
+    notifications_.erase(iter);
+  }
+
+  void PushNotification(const WebNotification& notification) {
+    if (!is_visible_)
+      ++unread_count_;
+    notifications_.push_front(notification);
+  }
+
   Notifications notifications_;
+  bool is_visible_;
+  int unread_count_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationList);
 };
@@ -306,7 +342,9 @@ class WebNotificationView : public views::View,
                 const WebNotification& notification) {
     set_border(views::Border::CreateSolidSidedBorder(
         1, 0, 0, 0, kBorderLightColor));
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+    SkColor bg_color = notification.is_read
+        ? kHeaderBackgroundColorLight : kBackgroundColor;
+    set_background(views::Background::CreateSolidBackground(bg_color));
 
     icon_ = new views::ImageView;
     icon_->SetImageSize(
@@ -579,6 +617,7 @@ class WebNotificationContentsView : public WebContentsView {
         notifications.begin();
     WebNotificationView* view = new WebNotificationView(tray_, *iter);
     content_->AddChildView(view);
+    Layout();
     GetWidget()->GetRootView()->SchedulePaint();
   }
 
@@ -734,8 +773,7 @@ WebNotificationTray::WebNotificationTray(
       notification_list_(new WebNotificationList()),
       count_label_(NULL),
       delegate_(NULL),
-      show_message_center_on_unlock_(false),
-      unread_count_(0) {
+      show_message_center_on_unlock_(false) {
   count_label_ = new views::Label(UTF8ToUTF16("0"));
   internal::SetupLabelForTray(count_label_);
   gfx::Font font = count_label_->font();
@@ -763,11 +801,8 @@ void WebNotificationTray::AddNotification(const std::string& id,
                                           const std::string& extension_id) {
   notification_list_->AddNotification(
       id, title, message, display_source, extension_id);
-  if (!message_center_bubble())
-    ++unread_count_;
   UpdateTrayAndBubble();
-  if (!message_center_bubble())
-    ShowNotificationBubble();
+  ShowNotificationBubble();
 }
 
 void WebNotificationTray::UpdateNotification(const std::string& id,
@@ -775,9 +810,12 @@ void WebNotificationTray::UpdateNotification(const std::string& id,
                                              const string16& message) {
   notification_list_->UpdateNotificationMessage(id, title, message);
   UpdateTrayAndBubble();
+  ShowNotificationBubble();
 }
 
 void WebNotificationTray::RemoveNotification(const std::string& id) {
+  if (id == notification_list_->GetFirstId())
+    HideNotificationBubble();
   if (!notification_list_->RemoveNotification(id))
     return;
   if (delegate_)
@@ -807,11 +845,15 @@ void WebNotificationTray::SetNotificationImage(const std::string& id,
   if (!notification_list_->SetNotificationImage(id, image))
     return;
   UpdateTrayAndBubble();
+  if (notification_bubble() && id == notification_list_->GetFirstId())
+    ShowNotificationBubble();
 }
 
 void WebNotificationTray::DisableByExtension(const std::string& id) {
   // When we disable notifications, we remove any existing matching
   // notifications to avoid adding complicated UI to re-enable the source.
+  if (id == notification_list_->GetFirstId())
+    HideNotificationBubble();
   notification_list_->RemoveNotificationsByExtension(id);
   UpdateTrayAndBubble();
   if (delegate_)
@@ -820,6 +862,8 @@ void WebNotificationTray::DisableByExtension(const std::string& id) {
 
 void WebNotificationTray::DisableByUrl(const std::string& id) {
   // See comment for DisableByExtension.
+  if (id == notification_list_->GetFirstId())
+    HideNotificationBubble();
   notification_list_->RemoveNotificationsBySource(id);
   UpdateTrayAndBubble();
   if (delegate_)
@@ -829,13 +873,13 @@ void WebNotificationTray::DisableByUrl(const std::string& id) {
 void WebNotificationTray::ShowMessageCenterBubble() {
   if (status_area_widget()->login_status() == user::LOGGED_IN_LOCKED)
     return;
-  unread_count_ = 0;
+  if (message_center_bubble() || GetNotificationCount() == 0) {
+    UpdateTray();
+    return;
+  }
+  notification_list_->SetIsVisible(true);  // clears notification count
   UpdateTray();
-  if (message_center_bubble())
-    return;
-  if (GetNotificationCount() == 0)
-    return;
-  notification_bubble_.reset();
+  HideNotificationBubble();
   message_center_bubble_.reset(
       new Bubble(this, Bubble::BUBBLE_TYPE_MESAGE_CENTER));
   status_area_widget()->SetHideSystemNotifications(true);
@@ -844,6 +888,7 @@ void WebNotificationTray::ShowMessageCenterBubble() {
 void WebNotificationTray::HideMessageCenterBubble() {
   message_center_bubble_.reset();
   show_message_center_on_unlock_ = false;
+  notification_list_->SetIsVisible(false);
   status_area_widget()->SetHideSystemNotifications(false);
 }
 
@@ -855,8 +900,12 @@ void WebNotificationTray::ShowNotificationBubble() {
   if (!status_area_widget()->ShouldShowNonSystemNotifications())
     return;
   UpdateTray();
-  notification_bubble_.reset(
-      new Bubble(this, Bubble::BUBBLE_TYPE_NOTIFICATION));
+  if (notification_bubble()) {
+    notification_bubble()->ScheduleUpdate();
+  } else {
+    notification_bubble_.reset(
+        new Bubble(this, Bubble::BUBBLE_TYPE_NOTIFICATION));
+  }
 }
 
 void WebNotificationTray::HideNotificationBubble() {
@@ -870,8 +919,7 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
       message_center_bubble_.reset();
       show_message_center_on_unlock_ = true;
     }
-    if (notification_bubble())
-      notification_bubble_.reset();
+    HideNotificationBubble();
   } else {
     if (show_message_center_on_unlock_)
       ShowMessageCenterBubble();
@@ -899,8 +947,8 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   else
     tray_container()->set_size(gfx::Size(kTraySideWidth, kTraySideHeight));
   // Destroy any existing bubble so that it will be rebuilt correctly.
-  message_center_bubble_.reset();
-  notification_bubble_.reset();
+  HideMessageCenterBubble();
+  HideNotificationBubble();
 }
 
 bool WebNotificationTray::PerformAction(const views::Event& event) {
@@ -916,7 +964,8 @@ int WebNotificationTray::GetNotificationCount() const {
 }
 
 void WebNotificationTray::UpdateTray() {
-  count_label_->SetText(UTF8ToUTF16(GetNotificationText(unread_count_)));
+  count_label_->SetText(UTF8ToUTF16(
+      GetNotificationText(notification_list()->unread_count())));
   Layout();
   SchedulePaint();
 }
@@ -925,7 +974,7 @@ void WebNotificationTray::UpdateTrayAndBubble() {
   UpdateTray();
   if (GetNotificationCount() == 0) {
     HideMessageCenterBubble();
-    notification_bubble_.reset();
+    HideNotificationBubble();
     return;
   }
   if (message_center_bubble())
@@ -938,7 +987,7 @@ void WebNotificationTray::HideBubble(Bubble* bubble) {
   if (bubble == message_center_bubble()) {
     HideMessageCenterBubble();
   } else if (bubble == notification_bubble()) {
-    notification_bubble_.reset();
+    HideNotificationBubble();
   }
 }
 
