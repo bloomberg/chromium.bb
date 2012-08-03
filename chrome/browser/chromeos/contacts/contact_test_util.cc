@@ -138,11 +138,8 @@ void CopyContacts(const ContactPointers& source,
                   ScopedVector<Contact>* dest) {
   DCHECK(dest);
   dest->clear();
-  for (size_t i = 0; i < source.size(); ++i) {
-    Contact* contact = new Contact;
-    *contact = *source[i];
-    dest->push_back(contact);
-  }
+  for (size_t i = 0; i < source.size(); ++i)
+    dest->push_back(new Contact(*source[i]));
 }
 
 void CopyContacts(const ScopedVector<Contact>& source,

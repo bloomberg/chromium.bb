@@ -1086,6 +1086,7 @@
         'browser/chromeos/contacts/contact_test_util.h',
         'browser/chromeos/contacts/fake_contact_database.cc',
         'browser/chromeos/contacts/fake_contact_database.h',
+        'browser/chromeos/contacts/google_contact_store_unittest.cc',
         'browser/chromeos/cros/cros_network_functions_unittest.cc',
         'browser/chromeos/cros/network_constants.h',
         'browser/chromeos/cros/network_library.cc',
