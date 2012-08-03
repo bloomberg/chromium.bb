@@ -67,6 +67,9 @@ void PpapiDecryptor::Decrypt(
   // }
 }
 
+void PpapiDecryptor::Stop() {
+}
+
 void PpapiDecryptor::DataReady(const DecryptCB& decrypt_cb,
                                const uint8* data, int data_size ) {
   DCHECK(!decrypt_cb.is_null());

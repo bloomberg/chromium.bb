@@ -43,6 +43,7 @@ class PpapiDecryptor : public media::Decryptor {
                                 const std::string& session_id) OVERRIDE;
   virtual void Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   // Callback for the plugin to hand back the decrypted data.
