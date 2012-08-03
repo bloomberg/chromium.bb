@@ -208,17 +208,39 @@ FileCopyManager.prototype.getStatus = function() {
     completedFiles: 0,
     completedDirectories: 0,
     completedBytes: 0,
+
+    percentage: NaN,
+    pendingCopies: 0,
+    pendingMoves: 0,
+    filename: ''  // In case pendingItems == 1
   };
+
+  var pendingFile = null;
 
   for (var i = 0; i < this.copyTasks_.length; i++) {
     var task = this.copyTasks_[i];
-    rv.pendingFiles += task.pendingFiles.length;
-    rv.pendingDirectories += task.pendingDirectories.length;
+    var pendingFiles = task.pendingFiles.length;
+    var pendingDirectories = task.pendingDirectories.length;
+    rv.pendingFiles += pendingFiles;
+    rv.pendingDirectories += pendingDirectories;
     rv.pendingBytes += task.pendingBytes;
 
     rv.completedFiles += task.completedFiles.length;
     rv.completedDirectories += task.completedDirectories.length;
     rv.completedBytes += task.completedBytes;
+
+    if (task.move || task.deleteAfterCopy) {
+      rv.pendingMoves += pendingFiles + pendingDirectories;
+    } else {
+      rv.pendingCopies += pendingFiles + pendingDirectories;
+    }
+
+    if (task.pendingFiles.length === 1)
+      pendingFile = task.pendingFiles[0];
+
+    if (task.pendingDirectories.length === 1)
+      pendingFile = task.pendingDirectories[0];
+
   }
   rv.pendingItems = rv.pendingFiles + rv.pendingDirectories;
   rv.completedItems = rv.completedFiles + rv.completedDirectories;
@@ -228,24 +250,11 @@ FileCopyManager.prototype.getStatus = function() {
   rv.totalItems = rv.pendingItems + rv.completedItems;
   rv.totalBytes = rv.pendingBytes + rv.completedBytes;
 
+  rv.percentage = rv.completedBytes / rv.totalBytes;
+  if (rv.pendingItems === 1)
+    rv.filename = pendingFile.name;
+
   return rv;
-};
-
-/**
- * Get the overall progress data of all queued copy tasks.
- * @return {Object} An object containing the following parameters:
- *    percentage - The percentage (0-1) of finished items.
- *    pendingItems - The number of pending/unfinished items.
- */
-FileCopyManager.prototype.getProgress = function() {
-  var status = this.getStatus();
-
-  var percentage = status.completedBytes / status.totalBytes;
-
-  return {
-    percentage: percentage,
-    pendingItems: status.pendingItems
-  };
 };
 
 /**

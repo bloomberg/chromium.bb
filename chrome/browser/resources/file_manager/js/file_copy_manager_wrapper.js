@@ -70,20 +70,6 @@ FileCopyManagerWrapper.prototype.onEvent = function(eventName, eventArgs) {
 };
 
 /**
- * Get the overall progress data of all queued copy tasks.
- * @return {Object} An object containing the following parameters:
- *    percentage - The percentage (0-1) of finished items.
- *    pendingItems - The number of pending/unfinished items.
- */
-FileCopyManagerWrapper.prototype.getProgress = function() {
-  var cm = this.getCopyManagerSync_();
-  if (cm)
-    return cm.getProgress();
-
-  return {percentage: NaN, pendingItems: 0};
-};
-
-/**
  * @return {Object} Status object.
  */
 FileCopyManagerWrapper.prototype.getStatus = function() {
@@ -105,7 +91,12 @@ FileCopyManagerWrapper.prototype.getStatus = function() {
     totalItems: 0,
     totalFiles: 0,
     totalDirectories: 0,
-    totalBytes: 0
+    totalBytes: 0,
+
+    percentage: NaN,
+    pendingCopies: 0,
+    pendingMoves: 0,
+    filename: ''  // In case pendingItems == 1
   };
 };
 

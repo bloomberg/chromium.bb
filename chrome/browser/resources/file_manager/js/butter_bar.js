@@ -186,15 +186,44 @@ ButterBar.prototype.clearHideTimeout_ = function() {
 };
 
 /**
+ * @private
+ * @return {string?} The type of operation.
+ */
+ButterBar.prototype.transferType_ = function() {
+  var progress = this.progress_;
+  if (!progress ||
+      progress.pendingMoves === 0 && progress.pendingCopies === 0)
+    return 'TRANSFER';
+
+  if (progress.pendingMoves > 0) {
+    if (progress.pendingCopies > 0)
+      return 'TRANSFER';
+    return 'MOVE';
+  }
+
+  return 'COPY';
+};
+
+/**
  * Set up butter bar for showing copy progress.
  * @private
  */
 ButterBar.prototype.showProgress_ = function() {
-  var progress = this.copyManager_.getProgress();
-  var options = {progress: progress.percentage, actions: {}, timeout: 0};
-  options.actions[str('CANCEL_LABEL')] =
-      this.copyManager_.requestCancel.bind(this.copyManager_);
-  this.show(strf('PASTE_ITEMS_REMAINING', progress.pendingItems), options);
+  this.progress_ = this.copyManager_.getStatus();
+  var options = {progress: this.progress_.percentage, actions: {}, timeout: 0};
+
+  var type = this.transferType_();
+  var progressString = (this.progress_.pendingItems === 1) ?
+          strf(type + '_FILE_NAME', this.progress_.filename) :
+          strf(type + '_ITEMS_REMAINING', this.progress_.pendingItems);
+
+  if (this.isVisible_()) {
+    this.update_(progressString, options);
+  } else {
+    options.actions[str('CANCEL_LABEL')] =
+        this.copyManager_.requestCancel.bind(this.copyManager_);
+    this.show(progressString, options);
+  }
 };
 
 /**
@@ -203,8 +232,6 @@ ButterBar.prototype.showProgress_ = function() {
  * @param {cr.Event} event A 'copy-progress' event from FileCopyManager.
  */
 ButterBar.prototype.onCopyProgress_ = function(event) {
-  var progress = this.copyManager_.getProgress();
-
   if (event.reason != 'PROGRESS')
     this.clearShowTimeout_();
 
@@ -217,11 +244,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'PROGRESS':
-      if (this.isVisible_()) {
-        var options = {'progress': progress.percentage, timeout: 0};
-        this.update_(strf('PASTE_ITEMS_REMAINING', progress.pendingItems),
-                     options);
-      }
+      this.showProgress_();
       break;
 
     case 'SUCCESS':
@@ -229,7 +252,7 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
       break;
 
     case 'CANCELLED':
-      this.show(str('PASTE_CANCELLED'), {timeout: 1000});
+      this.show(str(this.transferType_() + '_CANCELLED'), {timeout: 1000});
       break;
 
     case 'ERROR':
@@ -237,18 +260,20 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
         var name = event.error.data.name;
         if (event.error.data.isDirectory)
           name += '/';
-        this.showError_(strf('PASTE_TARGET_EXISTS_ERROR', name));
+        this.showError_(strf(this.transferType_() +
+                             '_TARGET_EXISTS_ERROR', name));
       } else if (event.error.reason === 'FILESYSTEM_ERROR') {
         if (event.error.data.toGDrive &&
             event.error.data.code === FileError.QUOTA_EXCEEDED_ERR) {
           // The alert will be shown in FileManager.onCopyProgress_.
           this.hide_();
         } else {
-          this.showError_(strf('PASTE_FILESYSTEM_ERROR',
-                              getFileErrorString(event.error.data.code)));
+          this.showError_(strf(this.transferType_() + '_FILESYSTEM_ERROR',
+                               getFileErrorString(event.error.data.code)));
           }
       } else {
-        this.showError_(strf('PASTE_UNEXPECTED_ERROR', event.error));
+        this.showError_(strf(this.transferType_() + '_UNEXPECTED_ERROR',
+                             event.error));
       }
       break;
 

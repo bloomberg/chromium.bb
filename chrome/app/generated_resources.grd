@@ -11130,20 +11130,56 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Cut
       </message>
 
-      <message name="IDS_FILE_BROWSER_PASTE_ITEMS_REMAINING" desc="File Manager status message.  'Item' is used here as a generic term for file or directory.">
-        Transferring $1 items
+      <message name="IDS_FILE_BROWSER_TRANSFER_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory. 'Transferring' is used in the sense 'copying or moving files'.">
+        Transferring $1 items.
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_CANCELLED" desc="File Manager status message.">
+      <message name="IDS_FILE_BROWSER_TRANSFER_CANCELLED" desc="File Manager status message. 'Transferring' is used in the sense 'copying or moving files'.">
         Transfer cancelled.
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_TARGET_EXISTS_ERROR" desc="File Manager error message.  'Item' is used here as a generic term for file or directory.">
+      <message name="IDS_FILE_BROWSER_TRANSFER_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory. 'Transferring' is used in the sense 'copying or moving files'.">
         Transfer failed, item exists: "$1"
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_FILESYSTEM_ERROR" desc="File Manager error message.">
+      <message name="IDS_FILE_BROWSER_TRANSFER_FILESYSTEM_ERROR" desc="File Manager error message. 'Transferring' is used in the sense 'copying or moving files'.">
         Transfer failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
       </message>
-      <message name="IDS_FILE_BROWSER_PASTE_UNEXPECTED_ERROR" desc="File Manager error message.">
+      <message name="IDS_FILE_BROWSER_TRANSFER_UNEXPECTED_ERROR" desc="File Manager error message. 'Transferring' is used in the sense 'copying or moving files'.">
         Transfer failed, unexpected error: $1
+      </message>
+      <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
+        Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+        Copying $1 items.
+      </message>
+      <message name="IDS_FILE_BROWSER_COPY_CANCELLED" desc="File Manager status message.">
+        Copy operation cancelled.
+      </message>
+      <message name="IDS_FILE_BROWSER_COPY_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
+        Copy operation failed, item exists: "$1"
+      </message>
+      <message name="IDS_FILE_BROWSER_COPY_FILESYSTEM_ERROR" desc="File Manager error message.">
+        Copy operation failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_COPY_UNEXPECTED_ERROR" desc="File Manager error message.">
+        Copy operation failed, unexpected error: $1
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_FILE_NAME" desc="File Manager status message.">
+        Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+        Moving $1 items.
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_CANCELLED" desc="File Manager status message.">
+        Move cancelled.
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_TARGET_EXISTS_ERROR" desc="File Manager error message. 'Item' is used here as a generic term for file or directory.">
+        Move failed, item exists: "$1"
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_FILESYSTEM_ERROR" desc="File Manager error message.">
+        Move failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_MOVE_UNEXPECTED_ERROR" desc="File Manager error message.">
+        Move failed, unexpected error: $1
       </message>
 
       <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
