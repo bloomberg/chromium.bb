@@ -63,6 +63,7 @@ bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
 }
 
 ui::GestureStatus MenuHostRootView::OnGestureEvent(const GestureEvent& event) {
+  RootView::OnGestureEvent(event);
   // ChromeOS uses MenuController to forward events like other
   // mouse events.
   if (!GetMenuController())

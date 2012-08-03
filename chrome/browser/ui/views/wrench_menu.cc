@@ -93,7 +93,8 @@ class FullscreenButton : public ImageButton {
   explicit FullscreenButton(views::ButtonListener* listener)
       : ImageButton(listener) { }
 
-  virtual gfx::Size GetPreferredSize() {
+  // Overridden from ImageButton.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size pref = ImageButton::GetPreferredSize();
     gfx::Insets insets;
     if (border())
@@ -115,11 +116,12 @@ class MenuButtonBorder : public views::Border {
                               kHorizontalTouchPadding :
                               kHorizontalPadding) {}
 
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const {
+  // Overridden from views::Border.
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
     // Painting of border is done in MenuButtonBackground.
   }
 
-  virtual void GetInsets(gfx::Insets* insets) const {
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
     insets->Set(MenuConfig::instance().item_top_margin,
                 horizontal_padding_,
                 MenuConfig::instance().item_bottom_margin,
@@ -162,7 +164,8 @@ class MenuButtonBackground : public views::Background {
     }
   }
 
-  virtual void Paint(gfx::Canvas* canvas, View* view) const {
+  // Overridden from views::Background.
+  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
     CustomButton::ButtonState state =
         (view->GetClassName() == views::Label::kViewClassName) ?
         CustomButton::BS_NORMAL : static_cast<CustomButton*>(view)->state();
@@ -294,7 +297,8 @@ class ScheduleAllView : public views::View {
  public:
   ScheduleAllView() {}
 
-  virtual void SchedulePaintInRect(const gfx::Rect& r) {
+  // Overridden from views::View.
+  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE {
     View::SchedulePaintInRect(gfx::Rect(0, 0, width(), height()));
   }
 
@@ -374,14 +378,13 @@ class ButtonContainerMenuItemView : public MenuItemView {
  public:
   // Constructor for use with button containing menu items which have a
   // different height then .
-  explicit ButtonContainerMenuItemView(MenuItemView* parent,
-                                       int id,
-                                       int height)
+  ButtonContainerMenuItemView(MenuItemView* parent, int id, int height)
       : MenuItemView(parent, id, MenuItemView::NORMAL),
         height_(height) {
   };
 
-  gfx::Size GetChildPreferredSize() OVERRIDE {
+  // Overridden from MenuItemView.
+  virtual gfx::Size GetChildPreferredSize() OVERRIDE {
     gfx::Size size = MenuItemView::GetChildPreferredSize();
     // When there is a height override given, we need to deduct our spacing
     // above and below to get to the correct height to return here for the
@@ -409,7 +412,8 @@ class TintedImageSource: public gfx::CanvasImageSource {
   virtual ~TintedImageSource() {
   }
 
-  void Draw(gfx::Canvas* canvas) OVERRIDE {
+  // Overridden from gfx::CanvasImageSource.
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawImageInt(image_, 0, 0);
     SkPaint paint;
     // We leave the old alpha alone and add the new color multiplied
@@ -466,21 +470,23 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
     copy_background->SetOtherButtons(cut, paste);
   }
 
-  gfx::Size GetPreferredSize() {
+  // Overridden from View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     // Returned height doesn't matter as MenuItemView forces everything to the
     // height of the menuitemview.
     return gfx::Size(GetMaxChildViewPreferredWidth() * child_count(), 0);
   }
 
-  void Layout() {
+  virtual void Layout() OVERRIDE {
     // All buttons are given the same width.
     int width = GetMaxChildViewPreferredWidth();
     for (int i = 0; i < child_count(); ++i)
       child_at(i)->SetBounds(i * width, 0, width, height());
   }
 
-  // ButtonListener
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
+  // Overridden from ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
     menu_->CancelAndEvaluate(menu_model_, sender->tag());
   }
 
@@ -596,7 +602,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
             HostZoomMap::GetForBrowserContext(menu->browser_->profile())));
   }
 
-  gfx::Size GetPreferredSize() {
+  // Overridden from View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
     // The increment/decrement button are forced to the same width.
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
@@ -611,7 +618,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
                      fullscreen_width, 0);
   }
 
-  void Layout() {
+  virtual void Layout() OVERRIDE {
     int x = 0;
     int button_width = std::max(increment_button_->GetPreferredSize().width(),
                                 decrement_button_->GetPreferredSize().width());
@@ -637,8 +644,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     fullscreen_button_->SetBoundsRect(bounds);
   }
 
-  // ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
+  // Overridden from ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
     if (sender->tag() == fullscreen_index_) {
       menu_->CancelAndEvaluate(menu_model_, sender->tag());
     } else {
@@ -647,10 +655,10 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
     }
   }
 
-  // content::NotificationObserver:
+  // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details) {
+                       const content::NotificationDetails& details) OVERRIDE {
     DCHECK_EQ(content::NOTIFICATION_ZOOM_LEVEL_CHANGED, type);
     UpdateZoomControls();
   }
