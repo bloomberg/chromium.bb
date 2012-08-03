@@ -174,6 +174,11 @@ TEST_F(DriveAPIParserTest, FileListParser) {
   ASSERT_TRUE(gdata::util::GetTimeFromString("2012-07-27T05:43:20.269Z",
                                              &modified_time));
   EXPECT_EQ(modified_time, file1.modified_by_me_date());
+
+  ASSERT_EQ(1U, file1.parents().size());
+  EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", file1.parents()[0]->file_id());
+  EXPECT_FALSE(file1.parents()[0]->is_root());
+
   EXPECT_EQ(GURL("https://www.example.com/download"), file1.download_url());
   EXPECT_EQ("ext", file1.file_extension());
   EXPECT_EQ("d41d8cd98f00b204e9800998ecf8427e", file1.md5_checksum());
@@ -185,12 +190,52 @@ TEST_F(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ("application/vnd.google-apps.document", file2.mime_type());
   EXPECT_EQ(0U, file2.file_size());
 
+  ASSERT_EQ(0U, file2.parents().size());
+
   // Check file 3 (a folder)
   const FileResource& file3 = *filelist->items()[2];
   EXPECT_EQ(0U, file3.file_size());
   EXPECT_EQ("TestFolder", file3.title());
   EXPECT_EQ("application/vnd.google-apps.folder", file3.mime_type());
   ASSERT_TRUE(file3.IsDirectory());
+
+  ASSERT_EQ(1U, file3.parents().size());
+  EXPECT_EQ("0AIv7G8yEYAWHUk9ABC", file3.parents()[0]->file_id());
+  EXPECT_TRUE(file3.parents()[0]->is_root());
+}
+
+// Test change list parsing.
+TEST_F(DriveAPIParserTest, ChangeListParser) {
+  std::string error;
+  scoped_ptr<Value> document(LoadJSONFile("changelist.json"));
+  ASSERT_TRUE(document.get());
+
+  ASSERT_EQ(Value::TYPE_DICTIONARY, document->GetType());
+  scoped_ptr<ChangeList> changelist(new ChangeList);
+  EXPECT_TRUE(changelist->Parse(*document));
+
+  EXPECT_EQ("\"Lp2bjAtLP341hvGmYHhxjYyBPJ8/BWbu_eylt5f_aGtCN6mGRv9hABC\"",
+            changelist->etag());
+  EXPECT_EQ("8929", changelist->next_page_token());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?pageToken=8929",
+            changelist->next_link().spec());
+  EXPECT_EQ(13664, changelist->largest_change_id());
+
+  ASSERT_EQ(3U, changelist->items().size());
+  const ChangeResource& change1 = *changelist->items()[0];
+  EXPECT_EQ(8421, change1.change_id());
+  EXPECT_FALSE(change1.is_deleted());
+  EXPECT_EQ(change1.file_id(), change1.file().file_id());
+
+  const ChangeResource& change2 = *changelist->items()[1];
+  EXPECT_EQ(8424, change2.change_id());
+  EXPECT_FALSE(change2.is_deleted());
+  EXPECT_EQ(change2.file_id(), change2.file().file_id());
+
+  const ChangeResource& change3 = *changelist->items()[2];
+  EXPECT_EQ(8429, change3.change_id());
+  EXPECT_FALSE(change3.is_deleted());
+  EXPECT_EQ(change3.file_id(), change3.file().file_id());
 }
 
 }  // namespace gdata
