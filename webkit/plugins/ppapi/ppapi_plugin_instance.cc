@@ -1633,12 +1633,10 @@ bool PluginInstance::IsProcessingUserGesture() {
 }
 
 void PluginInstance::OnLockMouseACK(bool succeeded) {
-  if (!TrackedCallback::IsPending(lock_mouse_callback_)) {
-    NOTREACHED();
-    return;
+  if (TrackedCallback::IsPending(lock_mouse_callback_)) {
+    TrackedCallback::ClearAndRun(&lock_mouse_callback_,
+                                 succeeded ? PP_OK : PP_ERROR_FAILED);
   }
-  TrackedCallback::ClearAndRun(&lock_mouse_callback_,
-                               succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
 void PluginInstance::OnMouseLockLost() {

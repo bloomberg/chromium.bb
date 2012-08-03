@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -36,7 +36,6 @@ void PpbMouseLockRpcServer::PPB_MouseLock_LockMouse(
 
   *pp_error = PPBMouseLockInterface()->LockMouse(instance, remote_callback);
   DebugPrintf("PPB_MouseLock::LockMouse: pp_error=%"NACL_PRId32"\n", *pp_error);
-  CHECK(*pp_error != PP_OK);  // LockMouse should not complete synchronously.
 
   if (*pp_error != PP_OK_COMPLETIONPENDING)
     DeleteRemoteCallbackInfo(remote_callback);
