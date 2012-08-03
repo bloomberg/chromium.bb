@@ -452,7 +452,7 @@ div.root-eject:hover {
 }
 
 #search-box {
-  -webkit-transition: width 600ms;
+  -webkit-transition: width 200ms;
   background: -webkit-image-set(
     url('../images/files/ui/icon_search.png') 1x,
     url('../images/files/ui/2x/icon_search.png') 2x);
