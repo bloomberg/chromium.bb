@@ -22,7 +22,7 @@ event_test_la_SOURCES = event-test.c $(test_runner_src)
 test_client_SOURCES = test-client.c
 test_client_LDADD = $(SIMPLE_CLIENT_LIBS)
 
-noinst_PROGRAMS = setbacklight matrix-test
+noinst_PROGRAMS = $(setbacklight) matrix-test
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\
@@ -37,5 +37,9 @@ setbacklight_SOURCES =				\
 
 setbacklight_CFLAGS = $(AM_CFLAGS) $(SETBACKLIGHT_CFLAGS)
 setbacklight_LDADD = $(SETBACKLIGHT_LIBS)
+
+if BUILD_SETBACKLIGHT
+setbacklight = setbacklight
+endif
 
 EXTRA_DIST = weston-test

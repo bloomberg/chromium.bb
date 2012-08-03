@@ -216,7 +216,8 @@ fi
 AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
 AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
 
-PKG_CHECK_MODULES(SETBACKLIGHT, [libudev libdrm])
+PKG_CHECK_MODULES(SETBACKLIGHT, [libudev libdrm], enable_setbacklight=yes, enable_setbacklight=no)
+AM_CONDITIONAL(BUILD_SETBACKLIGHT, test "x$enable_setbacklight" = "xyes")
 
 if test "x$GCC" = "xyes"; then
 	my_common_gcc_flags="-Wall -Wextra -Wno-unused-parameter \
