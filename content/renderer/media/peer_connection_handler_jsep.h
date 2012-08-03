@@ -55,8 +55,6 @@ class CONTENT_EXPORT PeerConnectionHandlerJsep
 
   // webrtc::PeerConnectionObserver implementation
   virtual void OnError() OVERRIDE;
-  virtual void OnMessage(const std::string& msg) OVERRIDE;
-  virtual void OnSignalingMessage(const std::string& msg) OVERRIDE;
   virtual void OnStateChange(StateType state_changed) OVERRIDE;
   virtual void OnAddStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
   virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) OVERRIDE;

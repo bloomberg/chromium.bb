@@ -182,13 +182,11 @@ bool PeerConnectionHandlerJsep::processIceMessage(
 void PeerConnectionHandlerJsep::addStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
   AddStream(stream);
-  native_peer_connection_->CommitStreamChanges();
 }
 
 void PeerConnectionHandlerJsep::removeStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
   RemoveStream(stream);
-  native_peer_connection_->CommitStreamChanges();
 }
 
 void PeerConnectionHandlerJsep::stop() {
@@ -199,16 +197,6 @@ void PeerConnectionHandlerJsep::stop() {
 void PeerConnectionHandlerJsep::OnError() {
   // TODO(grunell): Implement.
   NOTIMPLEMENTED();
-}
-
-void PeerConnectionHandlerJsep::OnMessage(const std::string& msg) {
-  // TODO(grunell): Implement.
-  NOTIMPLEMENTED();
-}
-
-void PeerConnectionHandlerJsep::OnSignalingMessage(const std::string& msg) {
-  // Not used by JSEP PeerConnection.
-  NOTREACHED();
 }
 
 void PeerConnectionHandlerJsep::OnStateChange(StateType state_changed) {
@@ -244,10 +232,6 @@ void PeerConnectionHandlerJsep::OnStateChange(StateType state_changed) {
     case kIceState:
       // TODO(grunell): Implement when available in native PeerConnection.
       NOTIMPLEMENTED();
-      break;
-    case kSdpState:
-      // Not used by JSEP.
-      NOTREACHED();
       break;
     default:
       NOTREACHED();

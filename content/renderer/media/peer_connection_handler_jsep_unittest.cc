@@ -225,7 +225,6 @@ TEST_F(PeerConnectionHandlerJsepTest, Basic) {
 
   pc_handler_->addStream(local_stream);
   EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
-  EXPECT_TRUE(mock_peer_connection_->stream_changes_committed());
 
   // On add stream. ( Remote stream received)
   std::string remote_stream_label("remote_stream");
@@ -239,8 +238,6 @@ TEST_F(PeerConnectionHandlerJsepTest, Basic) {
       static_cast<size_t>(0));
   pc_handler_->removeStream(local_stream);
   EXPECT_EQ("", mock_peer_connection_->stream_label());
-  mock_peer_connection_->ClearStreamChangesCommitted();
-  EXPECT_TRUE(!mock_peer_connection_->stream_changes_committed());
 
   // On remove stream.
   pc_handler_->OnRemoveStream(remote_stream);
@@ -249,7 +246,6 @@ TEST_F(PeerConnectionHandlerJsepTest, Basic) {
   // Add stream again.
   pc_handler_->addStream(local_stream);
   EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
-  EXPECT_TRUE(mock_peer_connection_->stream_changes_committed());
 
   // On state change.
   mock_peer_connection_->SetReadyState(

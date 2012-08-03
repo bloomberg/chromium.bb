@@ -82,14 +82,6 @@ cricket::VideoCapturer* MockLocalVideoTrack::GetVideoCapture() {
   return NULL;
 }
 
-void MockLocalVideoTrack::SetRenderer(VideoRendererWrapperInterface* renderer) {
-  renderer_ = renderer;
-}
-
-VideoRendererWrapperInterface* MockLocalVideoTrack::GetRenderer() {
-  return renderer_;
-}
-
 void MockLocalVideoTrack::AddRenderer(VideoRendererInterface* renderer) {
   NOTIMPLEMENTED();
 }

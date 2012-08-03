@@ -23,8 +23,6 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   explicit MockPeerConnectionImpl(MockMediaStreamDependencyFactory* factory);
 
   // PeerConnectionInterface implementation.
-  virtual void ProcessSignalingMessage(const std::string& msg) OVERRIDE;
-  virtual bool Send(const std::string& msg) OVERRIDE;
   virtual talk_base::scoped_refptr<StreamCollectionInterface>
       local_streams() OVERRIDE;
   virtual talk_base::scoped_refptr<StreamCollectionInterface>
@@ -32,13 +30,8 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   virtual void AddStream(LocalMediaStreamInterface* stream) OVERRIDE;
   virtual bool AddStream(MediaStreamInterface* local_stream,
                          const MediaConstraintsInterface* constraints) OVERRIDE;
-  virtual void RemoveStream(LocalMediaStreamInterface* stream) OVERRIDE;
   virtual void RemoveStream(MediaStreamInterface* local_stream) OVERRIDE;
-  virtual bool RemoveStream(const std::string& label) OVERRIDE;
-  virtual void CommitStreamChanges() OVERRIDE;
-  virtual void Close() OVERRIDE;
   virtual ReadyState ready_state() OVERRIDE;
-  virtual SdpState sdp_state() OVERRIDE;
   virtual bool StartIce(IceOptions options) OVERRIDE;
 
   virtual webrtc::SessionDescriptionInterface* CreateOffer(
@@ -76,12 +69,9 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   virtual IceState ice_state() OVERRIDE;
 
   void AddRemoteStream(MediaStreamInterface* stream);
-  void ClearStreamChangesCommitted() { stream_changes_committed_ = false; }
   void SetReadyState(ReadyState state) { ready_state_ = state; }
 
-  const std::string& signaling_message() const { return signaling_message_; }
   const std::string& stream_label() const { return stream_label_; }
-  bool stream_changes_committed() const { return stream_changes_committed_; }
   bool hint_audio() const { return hint_audio_; }
   bool hint_video() const { return hint_video_; }
   Action action() const { return action_; }
@@ -100,9 +90,7 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   // Used for creating MockSessionDescription.
   MockMediaStreamDependencyFactory* dependency_factory_;
 
-  std::string signaling_message_;
   std::string stream_label_;
-  bool stream_changes_committed_;
   talk_base::scoped_refptr<MockStreamCollection> local_streams_;
   talk_base::scoped_refptr<MockStreamCollection> remote_streams_;
   scoped_ptr<webrtc::SessionDescriptionInterface> local_desc_;

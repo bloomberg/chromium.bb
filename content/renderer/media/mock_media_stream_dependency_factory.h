@@ -17,12 +17,9 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
  public:
   explicit MockLocalVideoTrack(std::string label)
     : enabled_(false),
-      label_(label),
-      renderer_(NULL) {
+      label_(label) {
   }
   virtual cricket::VideoCapturer* GetVideoCapture() OVERRIDE;
-  virtual void SetRenderer(VideoRendererWrapperInterface* renderer) OVERRIDE;
-  virtual VideoRendererWrapperInterface* GetRenderer() OVERRIDE;
   virtual void AddRenderer(VideoRendererInterface* renderer) OVERRIDE;
   virtual void RemoveRenderer(VideoRendererInterface* renderer) OVERRIDE;
   virtual cricket::VideoRenderer* FrameInput() OVERRIDE;
@@ -41,7 +38,6 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
  private:
   bool enabled_;
   std::string label_;
-  VideoRendererWrapperInterface* renderer_;
 };
 
 class MockLocalAudioTrack : public LocalAudioTrackInterface {

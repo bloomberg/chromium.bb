@@ -42,7 +42,6 @@ const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 MockPeerConnectionImpl::MockPeerConnectionImpl(
     MockMediaStreamDependencyFactory* factory)
     : dependency_factory_(factory),
-      stream_changes_committed_(false),
       local_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
       remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
       hint_audio_(false),
@@ -53,15 +52,6 @@ MockPeerConnectionImpl::MockPeerConnectionImpl(
 }
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
-
-void MockPeerConnectionImpl::ProcessSignalingMessage(const std::string& msg) {
-  signaling_message_ = msg;
-}
-
-bool MockPeerConnectionImpl::Send(const std::string& msg) {
-  NOTIMPLEMENTED();
-  return false;
-}
 
 talk_base::scoped_refptr<StreamCollectionInterface>
 MockPeerConnectionImpl::local_streams() {
@@ -88,41 +78,14 @@ bool MockPeerConnectionImpl::AddStream(
   return true;
 }
 
-void MockPeerConnectionImpl::RemoveStream(LocalMediaStreamInterface* stream) {
-  DCHECK_EQ(stream_label_, stream->label());
-  stream_label_.clear();
-}
-
 void MockPeerConnectionImpl::RemoveStream(
     MediaStreamInterface* local_stream) {
   DCHECK_EQ(stream_label_, local_stream->label());
   stream_label_.clear();
 }
 
-bool MockPeerConnectionImpl::RemoveStream(const std::string& label) {
-  if (stream_label_ != label)
-    return false;
-  stream_label_.clear();
-  return true;
-}
-
-void MockPeerConnectionImpl::CommitStreamChanges() {
-  stream_changes_committed_ = true;
-}
-
-void MockPeerConnectionImpl::Close() {
-  signaling_message_.clear();
-  stream_label_.clear();
-  stream_changes_committed_ = false;
-}
-
 MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::ready_state() {
   return ready_state_;
-}
-
-MockPeerConnectionImpl::SdpState MockPeerConnectionImpl::sdp_state() {
-  NOTIMPLEMENTED();
-  return kSdpNew;
 }
 
 bool MockPeerConnectionImpl::StartIce(IceOptions options) {
