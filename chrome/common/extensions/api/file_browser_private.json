@@ -945,6 +945,11 @@
         ]
       },
       {
+        "name": "clearDriveCache",
+        "description": "Clear all GData local caches.",
+        "parameters": []
+      },
+      {
         "name": "getNetworkConnectionState",
         "description": "Retrieves the state of the currently active network connection.",
         "parameters": [

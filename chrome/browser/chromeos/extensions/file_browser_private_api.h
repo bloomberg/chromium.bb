@@ -670,6 +670,16 @@ class SearchDriveFunction : public AsyncExtensionFunction {
   GURL file_system_url_;
 };
 
+class ClearDriveCacheFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.clearDriveCache");
+
+ protected:
+  virtual ~ClearDriveCacheFunction() {}
+
+  virtual bool RunImpl() OVERRIDE;
+};
+
 // Implements the chrome.fileBrowserPrivate.getNetworkConnectionState method.
 class GetNetworkConnectionStateFunction : public SyncExtensionFunction {
  public:

@@ -2365,6 +2365,21 @@ void SearchDriveFunction::OnSearch(
   SendResponse(true);
 }
 
+bool ClearDriveCacheFunction::RunImpl() {
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if incognito window / guest login.
+  if (!system_service || !system_service->file_system())
+    return false;
+
+  // TODO(yoshiki): Receive a callback from JS-side and pass it to
+  // ClearCacheAndRemountFileSystem(). http://crbug.com/140511
+  system_service->ClearCacheAndRemountFileSystem(base::Callback<void(bool)>());
+
+  SendResponse(true);
+  return true;
+}
+
 bool GetNetworkConnectionStateFunction::RunImpl() {
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
