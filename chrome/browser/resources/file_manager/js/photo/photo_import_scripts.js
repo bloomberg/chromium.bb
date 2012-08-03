@@ -30,6 +30,7 @@
 //<include src="../file_type.js"/>
 //<include src="../directory_contents.js"/>
 //<include src="../volume_manager.js"/>
+//<include src="../path_util.js"/>
 //<include src="../file_copy_manager_wrapper.js"/>
 //<include src="../metadata/metadata_cache.js"/>
 //<include src="../metrics.js"/>
