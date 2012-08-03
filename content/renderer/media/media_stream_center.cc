@@ -147,8 +147,10 @@ WebKit::WebString MediaStreamCenter::constructSDP(
     LOG(ERROR) << "Invalid candidate label: " << UTF16ToUTF8(candidate.label());
     return WebKit::WebString();
   }
+  // TODO(ronghuawu): Get sdp_mid from WebKit when is available.
+  const std::string sdp_mid;
   scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
-      webrtc::CreateIceCandidate(UTF16ToUTF8(candidate.label()),
+      webrtc::CreateIceCandidate(sdp_mid,
                                  m_line_index,
                                  UTF16ToUTF8(candidate.candidateLine())));
   std::string sdp;
@@ -172,11 +174,16 @@ WebKit::WebString MediaStreamCenter::constructSDP(
                  << UTF16ToUTF8(candidate.label());
       continue;
     }
+    // TODO(ronghuawu): Get sdp_mid from WebKit when is available.
+    const std::string sdp_mid;
     scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
-        webrtc::CreateIceCandidate(UTF16ToUTF8(candidate.label()),
+        webrtc::CreateIceCandidate(sdp_mid,
                                    m_line_index,
                                    UTF16ToUTF8(candidate.candidateLine())));
-    native_desc->AddCandidate(native_candidate.get());
+    if (!native_desc->AddCandidate(native_candidate.get())) {
+      LOG(ERROR) << "Failed to add candidate to SessionDescription.";
+      continue;
+    }
   }
 
   std::string sdp;
