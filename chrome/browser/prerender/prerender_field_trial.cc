@@ -285,8 +285,7 @@ bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile) {
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kSpeculativeResourcePrefetching);
 
-    if (switch_value == switches::kSpeculativeResourcePrefetchingLearning)
-      return true;
+    return switch_value == switches::kSpeculativeResourcePrefetchingLearning;
   }
 
   const int group = FieldTrialList::FindValue(

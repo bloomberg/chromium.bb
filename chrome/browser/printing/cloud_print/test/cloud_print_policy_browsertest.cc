@@ -58,6 +58,9 @@ IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, NormalPassedFlag) {
 IN_PROC_BROWSER_TEST_F(CloudPrintPolicyTest, CloudPrintPolicyFlag) {
   CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendSwitch(switches::kCheckCloudPrintConnectorPolicy);
+  new_command_line.AppendSwitchASCII(
+      switches::kSpeculativeResourcePrefetching,
+      switches::kSpeculativeResourcePrefetchingDisabled);
 
   base::ProcessHandle handle;
   bool launched =
