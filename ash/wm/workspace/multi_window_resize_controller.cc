@@ -399,6 +399,7 @@ void MultiWindowResizeController::StartResize(
       ConvertPointFromScreen(windows_.window2->parent(), &location_in_parent);
   std::vector<aura::Window*> windows;
   windows.push_back(windows_.window2);
+  DCHECK(windows_.other_windows.empty());
   FindWindowsTouching(windows_.window2, windows_.direction,
                       &windows_.other_windows);
   for (size_t i = 0; i < windows_.other_windows.size(); ++i) {
@@ -433,8 +434,16 @@ void MultiWindowResizeController::CompleteResize(int event_flags) {
 
   // Mouse may still be over resizer, if not hide.
   gfx::Point screen_loc = gfx::Screen::GetCursorScreenPoint();
-  if (!resize_widget_->GetWindowBoundsInScreen().Contains(screen_loc))
+  if (!resize_widget_->GetWindowBoundsInScreen().Contains(screen_loc)) {
     Hide();
+  } else {
+    // If the mouse is over the resizer we need to remove observers on any of
+    // the |other_windows|. If we start another resize we'll recalculate the
+    // |other_windows| and invoke AddObserver() as necessary.
+    for (size_t i = 0; i < windows_.other_windows.size(); ++i)
+      windows_.other_windows[i]->RemoveObserver(this);
+    windows_.other_windows.clear();
+  }
 }
 
 void MultiWindowResizeController::CancelResize() {

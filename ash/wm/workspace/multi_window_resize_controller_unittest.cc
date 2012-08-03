@@ -246,7 +246,12 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   generator.MoveMouseTo(bounds.x() + 11, bounds.y() + 10);
 
   EXPECT_TRUE(HasTarget(w3.get()));
-}
 
+  // Release the mouse. The resizer should still be visible and a subsequent
+  // press should not trigger a DCHECK.
+  generator.ReleaseLeftButton();
+  EXPECT_TRUE(IsShowing());
+  generator.PressLeftButton();
+}
 }  // namespace internal
 }  // namespace ash
