@@ -10,7 +10,7 @@ import os
 import sys
 
 from make_rules import BuildDefineList, BuildLibList, BuildToolDict
-from make_rules import GetBuildRule, BUILD_RULES
+from make_rules import BuildIncludeList, GetBuildRule, BUILD_RULES
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
@@ -145,17 +145,19 @@ def GenerateCompile(target, tool, arch, srcs):
   name = target['NAME']
   object_sets = []
 
-  defines = target.get('DEFINES', [])
-  defs = BuildDefineList(tool, defines)
+  defs = BuildDefineList(tool, target.get('DEFINES', []))
+  includes = BuildIncludeList(tool, target.get('INCLUDES', []))
 
   if srcs['.c']:
-    replace = BuildToolDict(tool, name, arch, 'c', DEFLIST=defs)
+    replace = BuildToolDict(tool, name, arch, 'c',
+        DEFLIST=defs, INCLUDELIST=includes)
     compile_rule = GetBuildRule(tool, 'CC')
     rules += Replace(compile_rule, replace)
     object_sets.append('$(%s)' % replace['<OBJS>'])
 
   if srcs['.cc']:
-    replace = BuildToolDict(tool, name, arch, 'cc', DEFLIST=defs)
+    replace = BuildToolDict(tool, name, arch, 'cc',
+        DEFLIST=defs, INCLUDELIST=includes)
     compile_rule = GetBuildRule(tool, 'CXX')
     rules += Replace(compile_rule, replace)
     object_sets.append('$(%s)' % replace['<OBJS>'])
@@ -204,11 +206,11 @@ def GenerateRules(desc, tools):
         targs, link_rule = GenerateLink(target, tc, arch, objs)
         rules += comp_rule + link_rule
         clean.append(objs)
+        if target['TYPE'] == 'lib':
+          all_targets.append(targs)
 
       if target['TYPE'] == 'main':
         main = target
-      elif target['TYPE'] == 'lib':
-        all_targets.append(targs)
 
     if main:
       targs, nmf_rule = GenerateNMF(main, tc)
@@ -269,6 +271,7 @@ DSC_FORMAT = {
         'CCFLAGS': (list, '', False),
         'CXXFLAGS': (list, '', False),
         'LDFLAGS': (list, '', False),
+        'INCLUDES': (list, '', False),
         'LIBS' : (list, '', False)
     }, True),
     'HEADERS': (list, {
@@ -278,7 +281,7 @@ DSC_FORMAT = {
     'SEARCH': (list, '', False),
     'POST': (str, '', False),
     'PRE': (str, '', False),
-    'DEST': (str, ['examples', 'src'], True),
+    'DEST': (str, ['examples', 'src', 'testing'], True),
     'NAME': (str, '', False),
     'DATA': (list, '', False),
     'TITLE': (str, '', False),
@@ -324,6 +327,10 @@ def ValidateFormat(src, format, ErrorMsg=ErrorMsgFunc):
     if required and not value:
       ErrorMsg('Expected non-empty value for %s.' % key)
       failed = True
+      continue
+
+    # If it's a bool, the expected values are always True or False.
+    if exp_type is bool:
       continue
 
     # If it's a string and there are expected values, make sure it matches
@@ -552,8 +559,7 @@ def main(argv):
     toolchains = ['newlib', 'glibc']
     print 'Using default toolchains: ' + ' '.join(toolchains)
 
-  examples = []
-  libs = []
+  master_projects = {}
   for filename in args:
     desc = LoadProject(filename, toolchains)
     if not desc:
@@ -568,21 +574,19 @@ def main(argv):
     if not ProcessProject(srcroot, options.dstroot, desc, toolchains):
       ErrorExit('\n*** Failed to process project: %s ***' % filename)
 
-    # if this is an example add it to the master make and update the html
+    # if this is an example update the html
     if desc['DEST'] == 'examples':
-      examples.append(desc['NAME'])
       ProcessHTML(srcroot, options.dstroot, desc, toolchains)
 
-    # if this is a library add it to the master make
-    if desc['DEST'] == 'src':
-      libs.append(desc['NAME'])
+    # Create a list of projects for each DEST. This will be used to generate a
+    # master makefile.
+    master_projects.setdefault(desc['DEST'], []).append(desc['NAME'])
 
   if options.master:
     master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
-    master_out = os.path.join(options.dstroot, 'examples', 'Makefile')
-    GenerateMasterMakefile(master_in, master_out, examples)
-    master_out = os.path.join(options.dstroot, 'src', 'Makefile')
-    GenerateMasterMakefile(master_in, master_out, libs)
+    for dest, projects in master_projects.iteritems():
+      master_out = os.path.join(options.dstroot, dest, 'Makefile')
+      GenerateMasterMakefile(master_in, master_out, projects)
   return 0
 
 

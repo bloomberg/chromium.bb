@@ -56,20 +56,20 @@ NACL_CC_RULE = """
 <OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
 DEPFILES+=$(<OBJS>:.o=.d)
 $(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) -o $@ $< <MACH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST>
+<TAB>$(<CC>) -o $@ $< <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLUDELIST>
 """
 
 SO_CC_RULE = """
 <OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
 DEPFILES+=$(<OBJS>:.o=.d)
 $(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) -o $@ $< <MACH> -fPIC $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST>
+<TAB>$(<CC>) -o $@ $< <MACH> -fPIC -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLUDELIST>
 """
 
 WIN_CC_RULE = """
 <OBJS>:=$(patsubst %.<ext>, <tc>/%.obj,$(<PROJ>_<EXT>))
 $(<OBJS>) : <tc>/%.obj : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) /Fo$@ /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST>
+<TAB>$(<CC>) /Fo$@ /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLUDELIST>
 """
 
 #
@@ -118,7 +118,7 @@ LAUNCH_HOST: CHECK_FOR_CHROME all
 #
 POSIX_LIB_RULE = """
 $(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/lib<proj>.a : <OBJS>
-<TAB>$(MKDIR) $(dir $@)
+<TAB>$(MKDIR) -p $(dir $@)
 <TAB>$(<LIB>) $@ $^
 """
 
@@ -152,6 +152,7 @@ EXT_MAP = {
 
 WIN_TOOL = {
   'DEFINE': '-D%s',
+  'INCLUDE': '/I%s',
   'LIBRARY': '%s.lib',
   'main': '<tc>/<proj>.dll',
   'nmf': '<tc>/<proj>.nmf',
@@ -161,6 +162,7 @@ WIN_TOOL = {
 
 NACL_TOOL = {
   'DEFINE': '-D%s',
+  'INCLUDE': '-I%s',
   'LIBRARY': '-l%s',
   'main': '<tc>/<proj>_<ARCH>.nexe',
   'nmf': '<tc>/<proj>.nmf',
@@ -246,16 +248,21 @@ def GetBuildRule(tool, ext):
   return BUILD_RULES[tool][ext]
 
 
+def BuildList(tool, key, items):
+  pattern = BUILD_RULES[tool]['TOOL'][key]
+  items = [(pattern % name) for name in items]
+  return ' '.join(items)
+
 def BuildDefineList(tool, defs):
-  pattern = BUILD_RULES[tool]['TOOL']['DEFINE']
-  defines = [(pattern % name) for name in defs]
-  return ' '.join(defines)
+  return BuildList(tool, 'DEFINE', defs)
+
+
+def BuildIncludeList(tool, includes):
+  return BuildList(tool, 'INCLUDE', includes)
 
 
 def BuildLibList(tool, libs):
-  pattern = BUILD_RULES[tool]['TOOL']['LIBRARY']
-  libraries = [(pattern % name) for name in libs]
-  return ' '.join(libraries)
+  return BuildList(tool, 'LIBRARY', libs)
 
 
 def BuildToolDict(toolchain, project, arch = {}, ext='nexe', **kwargs):

@@ -532,9 +532,9 @@ def GetWindowsEnvironment():
   return dict(line.split('=') for line in stdout.split('\r\n')[:-1])
 
 
-def BuildStepBuildLibraries(pepperdir, platform):
+def BuildStepBuildLibraries(pepperdir, platform, directory):
   buildbot_common.BuildStep('Build Libraries')
-  src_dir = os.path.join(pepperdir, 'src')
+  src_dir = os.path.join(pepperdir, directory)
   makefile = os.path.join(src_dir, 'Makefile')
   if os.path.isfile(makefile):
     print "\n\nMake: " + src_dir
@@ -629,6 +629,38 @@ def BuildStepBuildExamples(pepperdir, platform):
 
     buildbot_common.Run(['make', '-j8'],
                         cwd=os.path.abspath(example_dir), shell=True, env=env)
+
+TEST_EXAMPLE_LIST = [
+]
+
+TEST_LIBRARY_LIST = [
+  'gtest',
+]
+
+def BuildStepCopyTests(pepperdir, toolchains, build_experimental):
+  buildbot_common.BuildStep('Copy Tests')
+
+  testingdir = os.path.join(pepperdir, 'testing')
+  buildbot_common.RemoveDir(testingdir)
+  buildbot_common.MakeDir(testingdir)
+
+  args = ['--dstroot=%s' % pepperdir, '--master']
+  for toolchain in toolchains:
+    args.append('--' + toolchain)
+
+  for example in TEST_EXAMPLE_LIST:
+    dsc = os.path.join(SDK_EXAMPLE_DIR, example, 'example.dsc')
+    args.append(dsc)
+
+  for library in TEST_LIBRARY_LIST:
+    dsc = os.path.join(SDK_LIBRARY_DIR, library, 'library.dsc')
+    args.append(dsc)
+
+  if build_experimental:
+    args.append('--experimental')
+
+  if generate_make.main(args):
+    buildbot_common.ErrorExit('Failed to build tests.')
 
 
 def BuildStepTestExamples(pepperdir, platform, pepper_ver):
@@ -756,8 +788,10 @@ def main(args):
 
   if options.only_examples:
     BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental)
-    BuildStepBuildLibraries(pepperdir, platform)
+    BuildStepBuildLibraries(pepperdir, platform, 'src')
     BuildStepBuildExamples(pepperdir, platform)
+    BuildStepCopyTests(pepperdir, toolchains, options.build_experimental)
+    BuildStepBuildLibraries(pepperdir, platform, 'testing')
     if options.test_examples:
       BuildStepTestExamples(pepperdir, platform, pepper_ver)
   elif options.only_updater:
@@ -776,7 +810,7 @@ def main(args):
     BuildStepCopyExamples(pepperdir, toolchains, options.build_experimental)
 
     # Ship with libraries prebuilt, so run that first.
-    BuildStepBuildLibraries(pepperdir, platform)
+    BuildStepBuildLibraries(pepperdir, platform, 'src')
 
     if not options.skip_tar:
       BuildStepTarBundle(pepper_ver, tarfile)
@@ -786,6 +820,8 @@ def main(args):
       # the examples and test from this directory instead of the original.
       pepperdir = BuildStepTestUpdater(platform, pepper_ver, clnumber, tarfile)
       BuildStepBuildExamples(pepperdir, platform)
+      BuildStepCopyTests(pepperdir, toolchains, options.build_experimental)
+      BuildStepBuildLibraries(pepperdir, platform, 'testing')
       if options.test_examples:
         BuildStepTestExamples(pepperdir, platform, pepper_ver)
 
