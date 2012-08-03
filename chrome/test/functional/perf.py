@@ -994,7 +994,7 @@ class LiveWebappLoadTest(BasePerfTest):
     Timing starts right before the new tab is opened, and stops as soon as the
     webpage displays the expected substring 'last modified' (case insensitive).
     """
-    EXPECTED_SUBSTRING = 'last modified'
+    EXPECTED_SUBSTRING = 'sort'
 
     def _SubstringExistsOnPage():
       js = """
