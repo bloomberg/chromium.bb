@@ -354,7 +354,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 			len = read(fd, &ev, sizeof ev);
 
 		if (len < 0 || len % sizeof ev[0] != 0) {
-			/* FIXME: call device_removed when errno is ENODEV. */
+			/* FIXME: call evdev_input_device_destroy when errno is ENODEV. */
 			return 1;
 		}
 
@@ -529,6 +529,24 @@ err0:
 	return NULL;
 }
 
+static void
+evdev_input_device_destroy(struct evdev_input_device *device)
+{
+	struct evdev_dispatch *dispatch;
+
+	dispatch = device->dispatch;
+	if (dispatch)
+		dispatch->interface->destroy(dispatch);
+
+	wl_event_source_remove(device->source);
+	wl_list_remove(&device->link);
+	if (device->mtdev)
+		mtdev_close_delete(device->mtdev);
+	close(device->fd);
+	free(device->devnode);
+	free(device);
+}
+
 static const char default_seat[] = "seat0";
 
 static void
@@ -548,24 +566,6 @@ device_added(struct udev_device *udev_device, struct evdev_seat *master)
 	c = master->base.compositor;
 	devnode = udev_device_get_devnode(udev_device);
 	evdev_input_device_create(master, c->wl_display, devnode);
-}
-
-static void
-device_removed(struct evdev_input_device *device)
-{
-	struct evdev_dispatch *dispatch;
-
-	dispatch = device->dispatch;
-	if (dispatch)
-		dispatch->interface->destroy(dispatch);
-
-	wl_event_source_remove(device->source);
-	wl_list_remove(&device->link);
-	if (device->mtdev)
-		mtdev_close_delete(device->mtdev);
-	close(device->fd);
-	free(device->devnode);
-	free(device);
 }
 
 static void
@@ -674,7 +674,7 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 			wl_list_for_each_safe(device, next,
 					      &master->devices_list, link)
 				if (!strcmp(device->devnode, devnode)) {
-					device_removed(device);
+					evdev_input_device_destroy(device);
 					break;
 				}
 		}
@@ -768,7 +768,7 @@ evdev_remove_devices(struct weston_seat *seat_base)
 	struct evdev_input_device *device, *next;
 
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
-		device_removed(device);
+		evdev_input_device_destroy(device);
 
 	notify_keyboard_focus_out(&seat->base.seat);
 }
