@@ -642,6 +642,9 @@ void
 weston_surface_assign_output(struct weston_surface *surface);
 
 void
+weston_surface_schedule_repaint(struct weston_surface *surface);
+
+void
 weston_surface_damage(struct weston_surface *surface);
 
 void

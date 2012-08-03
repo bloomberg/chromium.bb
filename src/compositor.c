@@ -529,13 +529,23 @@ weston_surface_from_global(struct weston_surface *surface,
 }
 
 WL_EXPORT void
+weston_surface_schedule_repaint(struct weston_surface *surface)
+{
+	struct weston_output *output;
+
+	wl_list_for_each(output, &surface->compositor->output_list, link)
+		if (surface->output_mask & (1 << output->id))
+			weston_output_schedule_repaint(output);
+}
+
+WL_EXPORT void
 weston_surface_damage(struct weston_surface *surface)
 {
 	pixman_region32_union_rect(&surface->damage, &surface->damage,
 				   0, 0, surface->geometry.width,
 				   surface->geometry.height);
 
-	weston_compositor_schedule_repaint(surface->compositor);
+	weston_surface_schedule_repaint(surface);
 }
 
 WL_EXPORT void
@@ -662,7 +672,7 @@ weston_surface_unmap(struct weston_surface *surface)
 					     wl_fixed_from_int(0));
 	}
 
-	weston_compositor_schedule_repaint(surface->compositor);
+	weston_surface_schedule_repaint(surface);
 }
 
 struct weston_frame_callback {
@@ -1419,8 +1429,7 @@ surface_damage(struct wl_client *client,
 
 	pixman_region32_union_rect(&es->damage, &es->damage,
 				   x, y, width, height);
-
-	weston_compositor_schedule_repaint(es->compositor);
+	weston_surface_schedule_repaint(es);
 }
 
 static void
@@ -1500,7 +1509,7 @@ surface_set_input_region(struct wl_client *client,
 					  surface->geometry.height);
 	}
 
-	weston_compositor_schedule_repaint(surface->compositor);
+	weston_surface_schedule_repaint(surface);
 }
 
 static const struct wl_surface_interface surface_interface = {
@@ -1758,7 +1767,7 @@ notify_motion(struct wl_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t y)
 		weston_surface_set_position(ws->sprite,
 					    ix - ws->hotspot_x,
 					    iy - ws->hotspot_y);
-		weston_compositor_schedule_repaint(ec);
+		weston_surface_schedule_repaint(ws->sprite);
 	}
 }
 
