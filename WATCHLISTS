@@ -105,6 +105,10 @@
     'clipboard': {
       'filepath': 'clipboard|dnd|drag|drop',
     },
+    'contacts': {
+      'filepath': 'chrome/browser/chromeos/contacts/|'\
+                  'chrome/browser/chromeos/gdata/gdata_contacts_service',
+    },
     'content': {
       'filepath': 'content/',
     },
@@ -443,6 +447,7 @@
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org',
                      'glotov+watch@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
+    'contacts': ['derat+watch@chromium.org'],
     'content': ['jam@chromium.org', 'joi+watch-content@chromium.org',
                 'darin-cc@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org', 'rkn@chromium.org',
