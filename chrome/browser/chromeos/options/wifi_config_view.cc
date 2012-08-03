@@ -402,7 +402,7 @@ bool WifiConfigView::CanLogin() {
 
   // If the network requires a passphrase, make sure it is the right length.
   if (passphrase_textfield_ != NULL
-      && PassphraseActive()
+      && passphrase_textfield_->enabled()
       && passphrase_textfield_->text().length() < kMinWirelessPasswordLen)
     return false;
 
