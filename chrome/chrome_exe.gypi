@@ -416,7 +416,11 @@
                 '../pdf/pdf.gyp:pdf',
               ],
               'conditions': [
-                ['OS=="linux" and linux_dump_symbols==1', {
+                # TODO(thestig) It would be nice to do this for CrOS as well,
+                # but when I tried that, it failed because dump_syms is built
+                # for the target arch rather than the host arch.
+                # http://crbug.com/140571
+                ['OS=="linux" and chromeos==0 and linux_dump_symbols==1', {
                   'dependencies': [
                     '../pdf/pdf.gyp:pdf_linux_symbols',
                   ],
