@@ -18,5 +18,6 @@
       "all_frames": true
     }
   ],
-  "content_security_policy": "default-src 'self' https://ssl.google-analytics.com http://www.google-analytics.com; frame-src https://www.google.com https://support.google.com; connect-src https://www.google.com https://support.google.com; style-src 'self' 'unsafe-inline'"
+  "manifest_version": 2,
+  "content_security_policy": "default-src 'self'; script-src 'self' https://ssl.google-analytics.com; object-src 'self'; img-src 'self' http://www.google-analytics.com; frame-src https://support.google.com; connect-src https://support.google.com; style-src 'self' 'unsafe-inline'"
 }
