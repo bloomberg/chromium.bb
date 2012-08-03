@@ -77,7 +77,7 @@ struct window {
 	struct wl_shell_surface *shell_surface;
 	EGLSurface egl_surface;
 	struct wl_callback *callback;
-	int fullscreen, configured;
+	int fullscreen, configured, opaque;
 };
 
 static const char *vert_shader_text =
@@ -100,7 +100,7 @@ static const char *frag_shader_text =
 static int running = 1;
 
 static void
-init_egl(struct display *display, EGLint alpha_size)
+init_egl(struct display *display, int opaque)
 {
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -112,13 +112,16 @@ init_egl(struct display *display, EGLint alpha_size)
 		EGL_RED_SIZE, 1,
 		EGL_GREEN_SIZE, 1,
 		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, alpha_size,
+		EGL_ALPHA_SIZE, 1,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE
 	};
 
 	EGLint major, minor, n;
 	EGLBoolean ret;
+
+	if (opaque)
+		config_attribs[9] = 0;
 
 	display->egl.dpy = eglGetDisplay(display->display);
 	assert(display->egl.dpy);
@@ -358,6 +361,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	};
 	static const int32_t speed_div = 5;
 	static uint32_t start_time = 0;
+	struct wl_region *region;
 
 	if (callback)
 		wl_callback_destroy(callback);
@@ -393,6 +397,15 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 	glDisableVertexAttribArray(window->gl.col);
 
 	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
+
+	if (window->opaque) {
+		region = wl_compositor_create_region(window->display->compositor);
+		wl_region_add(region, 0, 0,
+			      window->window_size.width,
+			      window->window_size.height);
+		wl_surface_set_opaque_region(window->surface, region);
+		wl_region_destroy(region);
+	}
 
 	window->callback = wl_surface_frame(window->surface);
 	wl_callback_add_listener(window->callback, &frame_listener, window);
@@ -565,14 +578,13 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display display = { 0 };
 	struct window  window  = { 0 };
-	int alpha_size, i;
+	int i;
 
 	window.display = &display;
 	display.window = &window;
 	window.window_size.width  = 250;
 	window.window_size.height = 250;
 
-	alpha_size = 1;
 	for (i = 1; i < argc; i++) {
 		if (strcmp("-f", argv[i]) == 0)
 			window.fullscreen = 1;
@@ -590,9 +602,9 @@ main(int argc, char **argv)
 	wl_display_iterate(display.display, WL_DISPLAY_READABLE);
 
 	if (window.fullscreen)
-		alpha_size = 0;
+		window.opaque = 1;
 
-	init_egl(&display, alpha_size);
+	init_egl(&display, window.opaque);
 	create_surface(&window);
 	init_gl(&window);
 
