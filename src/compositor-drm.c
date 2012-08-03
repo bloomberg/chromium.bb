@@ -2012,7 +2012,8 @@ evdev_remove_devices(struct weston_seat *seat_base)
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
 		evdev_input_device_destroy(device);
 
-	notify_keyboard_focus_out(&seat->base.seat);
+	if (seat->base.seat.keyboard)
+		notify_keyboard_focus_out(&seat->base.seat);
 }
 
 static void

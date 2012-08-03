@@ -561,9 +561,13 @@ evdev_notify_keyboard_focus(struct weston_seat *seat,
 	struct evdev_input_device *device;
 	struct wl_array keys;
 	unsigned int i, set;
-	char evdev_keys[(KEY_CNT + 7) / 8], all_keys[(KEY_CNT + 7) / 8];
+	char evdev_keys[(KEY_CNT + 7) / 8];
+	char all_keys[(KEY_CNT + 7) / 8];
 	uint32_t *k;
 	int ret;
+
+	if (!seat->seat.keyboard)
+		return;
 
 	memset(all_keys, 0, sizeof all_keys);
 	wl_list_for_each(device, evdev_devices, link) {
