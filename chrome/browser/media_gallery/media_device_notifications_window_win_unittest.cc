@@ -125,7 +125,8 @@ void MediaDeviceNotificationsWindowWinTest::DoDevicesDetachedTest(
          it != device_indices.end();
          ++it) {
       volume_broadcast.dbcv_unitmask |= 0x1 << *it;
-      EXPECT_CALL(observer_, OnMediaDeviceDetached(base::IntToString(*it)));
+      EXPECT_CALL(observer_, OnMediaDeviceDetached(base::IntToString(*it)))
+          .Times(0);
     }
   }
   window_->OnDeviceChange(DBT_DEVICEREMOVECOMPLETE,

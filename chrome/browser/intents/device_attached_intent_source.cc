@@ -15,6 +15,13 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/fileapi/media/media_file_system_config.h"
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#include "webkit/fileapi/media/media_device_map_service.h"
+
+using fileapi::MediaDeviceMapService;
+#endif
 
 using base::SystemMonitor;
 using content::WebContentsDelegate;
@@ -42,6 +49,7 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
     return;
 
   // Only handle FilePaths for now.
+  // TODO(kmadhusu): Handle all device types. http://crbug.com/140353.
   if (type != SystemMonitor::TYPE_PATH)
     return;
 
@@ -49,6 +57,10 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
   const FilePath device_path(location);
   if (!device_path.IsAbsolute() || device_path.ReferencesParent())
     return;
+
+  // Store the media device info locally.
+  SystemMonitor::MediaDeviceInfo device_info(id, name, type, location);
+  device_id_map_.insert(std::make_pair(id, device_info));
 
   std::string device_name;
 
@@ -67,4 +79,26 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
 
   delegate_->WebIntentDispatch(NULL  /* no WebContents */,
                                content::WebIntentsDispatcher::Create(intent));
+}
+
+void DeviceAttachedIntentSource::OnMediaDeviceDetached(const std::string& id) {
+  DeviceIdToInfoMap::iterator it = device_id_map_.find(id);
+  if (it == device_id_map_.end())
+    return;
+
+  // TODO(kmadhusu, vandebo): Clean up this code. http://crbug.com/140340.
+
+  FilePath path(it->second.location);
+  fileapi::IsolatedContext::GetInstance()->RevokeFileSystemByPath(path);
+  switch (it->second.type) {
+    case SystemMonitor::TYPE_MTP:
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+      MediaDeviceMapService::GetInstance()->RemoveMediaDevice(
+          it->second.location);
+#endif
+      break;
+    case SystemMonitor::TYPE_PATH:
+      break;
+  }
+  device_id_map_.erase(it);
 }

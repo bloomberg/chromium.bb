@@ -21,6 +21,13 @@
 #include "content/public/browser/render_process_host.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/media/media_file_system_config.h"
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#include "webkit/fileapi/media/media_device_map_service.h"
+
+using fileapi::MediaDeviceMapService;
+#endif
 
 namespace chrome {
 
@@ -76,7 +83,8 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     if (PathService::Get(chrome::DIR_USER_PICTURES, &pictures_path) &&
         IsGalleryPermittedForExtension(extension, SystemMonitor::TYPE_PATH,
                                        pictures_path.value())) {
-      std::string fsid = RegisterPathAsFileSystem(pictures_path);
+      std::string fsid = RegisterPathAsFileSystem(SystemMonitor::TYPE_PATH,
+                                                  pictures_path);
       child_it->second.insert(std::make_pair(pictures_path, fsid));
     }
   }
@@ -89,9 +97,11 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     if (media_devices[i].type == SystemMonitor::TYPE_PATH &&
         IsGalleryPermittedForExtension(extension, media_devices[i].type,
                                        media_devices[i].location)) {
+      device_id_map_.insert(std::make_pair(media_devices[i].unique_id,
+                                           media_devices[i]));
       FilePath path(media_devices[i].location);
-      device_id_map_.insert(std::make_pair(media_devices[i].unique_id, path));
-      const std::string fsid = RegisterPathAsFileSystem(path);
+      const std::string fsid = RegisterPathAsFileSystem(media_devices[i].type,
+                                                        path);
       child_it->second.insert(std::make_pair(path, fsid));
     }
   }
@@ -113,10 +123,12 @@ MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
 void MediaFileSystemRegistry::OnMediaDeviceDetached(const std::string& id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DeviceIdToMediaPathMap::iterator it = device_id_map_.find(id);
+  DeviceIdToInfoMap::iterator it = device_id_map_.find(id);
   if (it == device_id_map_.end())
     return;
-  RevokeMediaFileSystem(it->second);
+
+  FilePath path(it->second.location);
+  RevokeMediaFileSystem(it->second.type, path);
   device_id_map_.erase(it);
 }
 
@@ -165,24 +177,35 @@ void MediaFileSystemRegistry::UnregisterForRPHGoneNotifications(
 }
 
 std::string MediaFileSystemRegistry::RegisterPathAsFileSystem(
-    const FilePath& path) {
+    const SystemMonitor::MediaDeviceType& device_type, const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Sanity checks for |path|.
   CHECK(path.IsAbsolute());
   CHECK(!path.ReferencesParent());
 
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
+  switch (device_type) {
+    case SystemMonitor::TYPE_MTP:
+      type = fileapi::kFileSystemTypeDeviceMedia;
+      break;
+    case SystemMonitor::TYPE_PATH:
+      type = fileapi::kFileSystemTypeNativeMedia;
+      break;
+  }
+
   // The directory name is not exposed to the js layer and we simply use
   // a fixed name (as we only register a single directory per file system).
   std::string register_name(extension_misc::kMediaFileSystemPathPart);
   const std::string fsid =
       IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          fileapi::kFileSystemTypeIsolated, path, &register_name);
+          type, path, &register_name);
   CHECK(!fsid.empty());
   return fsid;
 }
 
-void MediaFileSystemRegistry::RevokeMediaFileSystem(const FilePath& path) {
+void MediaFileSystemRegistry::RevokeMediaFileSystem(
+    const SystemMonitor::MediaDeviceType& device_type, const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   IsolatedContext* isolated_context = IsolatedContext::GetInstance();
@@ -195,6 +218,19 @@ void MediaFileSystemRegistry::RevokeMediaFileSystem(const FilePath& path) {
     MediaPathToFSIDMap::iterator media_path_it = child_map.find(path);
     if (media_path_it == child_map.end())
       continue;
+
+    // TODO(kmadhusu, vandebo): Clean up this code. http://crbug.com/140340.
+
+    // Do the clean up tasks related to the file system.
+    switch (device_type) {
+      case SystemMonitor::TYPE_MTP:
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+        MediaDeviceMapService::GetInstance()->RemoveMediaDevice(path.value());
+#endif
+        break;
+      case SystemMonitor::TYPE_PATH:
+        break;
+    }
     child_map.erase(media_path_it);
   }
 }

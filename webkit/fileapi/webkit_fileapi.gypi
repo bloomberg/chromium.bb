@@ -72,6 +72,7 @@
         'local_file_stream_writer.h',
         'local_file_system_operation.cc',
         'local_file_system_operation.h',
+        'media/media_file_system_config.h',
         'media/media_path_filter.cc',
         'media/media_path_filter.h',
         'media/native_media_file_util.cc',
@@ -93,6 +94,18 @@
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+        ['OS == "linux"', {
+          'sources': [
+            'media/device_media_file_util.cc',
+            'media/device_media_file_util.h',
+            'media/media_device_interface.h',
+            'media/media_device_interface_impl.h',
+            'media/media_device_map_service.cc',
+            'media/media_device_map_service.h',
+            'media/mtp_device_interface_impl_linux.cc',
+            'media/mtp_device_interface_impl_linux.h',
           ],
         }],
         ['chromeos==1', {

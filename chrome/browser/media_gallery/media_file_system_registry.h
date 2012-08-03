@@ -72,8 +72,9 @@ class MediaFileSystemRegistry
   typedef std::map<const content::RenderProcessHost*,
                    MediaPathToFSIDMap> ChildIdToMediaFSMap;
 
-  // Mapping of device id to mount path.
-  typedef std::map<std::string, FilePath> DeviceIdToMediaPathMap;
+  // Mapping of device id to media device info.
+  typedef std::map<std::string, base::SystemMonitor::MediaDeviceInfo>
+      DeviceIdToInfoMap;
 
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
@@ -85,16 +86,21 @@ class MediaFileSystemRegistry
   void UnregisterForRPHGoneNotifications(const content::RenderProcessHost* rph);
 
   // Registers a path as a media file system and return the filesystem id.
-  std::string RegisterPathAsFileSystem(const FilePath& path);
+  std::string RegisterPathAsFileSystem(
+      const base::SystemMonitor::MediaDeviceType& device_type,
+      const FilePath& path);
+
 
   // Revoke a media file system with a given |path|.
-  void RevokeMediaFileSystem(const FilePath& path);
+  void RevokeMediaFileSystem(
+      const base::SystemMonitor::MediaDeviceType& device_type,
+      const FilePath& path);
 
   // Only accessed on the UI thread.
   ChildIdToMediaFSMap media_fs_map_;
 
   // Only accessed on the UI thread.
-  DeviceIdToMediaPathMap device_id_map_;
+  DeviceIdToInfoMap device_id_map_;
 
   // Is only used on the UI thread.
   content::NotificationRegistrar registrar_;

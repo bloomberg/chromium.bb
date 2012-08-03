@@ -12,6 +12,11 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/fileapi/media/media_file_system_config.h"
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+#include "webkit/fileapi/media/media_device_interface_impl.h"
+#endif
 
 namespace base {
 class SequencedTaskRunner;
@@ -35,6 +40,16 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
   }
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
 
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  void set_media_device(MediaDeviceInterfaceImpl* media_device) {
+    media_device_ = media_device;
+  }
+
+  MediaDeviceInterfaceImpl* media_device() const {
+    return media_device_.get();
+  }
+#endif
+
   base::SequencedTaskRunner* file_task_runner() const;
 
   void set_media_path_filter(MediaPathFilter* media_path_filter) {
@@ -50,6 +65,11 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
 
   int64 allowed_bytes_growth_;
   MediaPathFilter* media_path_filter_;
+
+#if defined(SUPPORT_MEDIA_FILESYSTEM)
+  // Store the current media device.
+  scoped_refptr<MediaDeviceInterfaceImpl> media_device_;
+#endif
 };
 
 }  // namespace fileapi

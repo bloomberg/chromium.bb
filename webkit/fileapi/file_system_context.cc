@@ -61,7 +61,7 @@ FileSystemContext::FileSystemContext(
               file_task_runner,
               profile_path,
               options)),
-      isolated_provider_(new IsolatedMountPointProvider) {
+      isolated_provider_(new IsolatedMountPointProvider(profile_path)) {
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(CreateQuotaClient(
             this, options.is_incognito()));

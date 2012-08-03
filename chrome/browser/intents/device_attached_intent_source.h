@@ -33,11 +33,16 @@ class DeviceAttachedIntentSource
       const string16& name,
       base::SystemMonitor::MediaDeviceType type,
       const FilePath::StringType& location) OVERRIDE;
+  virtual void OnMediaDeviceDetached(const std::string& id) OVERRIDE;
 
  private:
+  typedef std::map<std::string, base::SystemMonitor::MediaDeviceInfo>
+      DeviceIdToInfoMap;
+
   // Weak pointer to browser to which intents will be dispatched.
   Browser* browser_;
   content::WebContentsDelegate* delegate_;
+  DeviceIdToInfoMap device_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceAttachedIntentSource);
 };
