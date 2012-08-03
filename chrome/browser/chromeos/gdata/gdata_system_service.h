@@ -9,7 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
@@ -43,6 +45,11 @@ class GDataSystemService : public ProfileKeyedService  {
   GDataContactsService* contacts_service() { return contacts_service_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
 
+  // Clears all the local cache files and in-memory data, and remounts the file
+  // system.
+  void ClearCacheAndRemountFileSystem(
+      const base::Callback<void(bool)>& callback);
+
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
@@ -60,6 +67,11 @@ class GDataSystemService : public ProfileKeyedService  {
   // Unregisters drive mount point from File API.
   void RemoveDriveMountPoint();
 
+  // Adds back the drive mount point. Used to implement ClearCache().
+  void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
+                              GDataFileError error,
+                              const FilePath& file_path);
+
   friend class GDataSystemServiceFactory;
 
   Profile* profile_;
@@ -73,6 +85,7 @@ class GDataSystemService : public ProfileKeyedService  {
   scoped_ptr<GDataDownloadObserver> download_observer_;
   scoped_ptr<GDataSyncClient> sync_client_;
   scoped_ptr<GDataContactsService> contacts_service_;
+  base::WeakPtrFactory<GDataSystemService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataSystemService);
 };

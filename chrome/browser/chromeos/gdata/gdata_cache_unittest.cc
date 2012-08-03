@@ -113,6 +113,15 @@ void OnGetResourceIds(std::vector<std::string>* out_resource_ids,
   *out_resource_ids = resource_ids;
 }
 
+// Copies results from ClearAllOnUIThread.
+void OnClearAll(GDataFileError* out_error,
+                FilePath* out_file_path,
+                GDataFileError error,
+                const FilePath& file_path) {
+  *out_file_path = file_path;
+  *out_error = error;
+}
+
 }  // namespace
 
 class GDataCacheTest : public testing::Test {
@@ -717,6 +726,31 @@ class GDataCacheTest : public testing::Test {
     EXPECT_EQ(resource_id, unescaped_resource_id);
   }
 
+  // Returns the number of the cache files with name <resource_id>, and Confirm
+  // that they have the <md5>. This should return 1 or 0.
+  size_t CountCacheFiles(const std::string& resource_id,
+                         const std::string& md5) {
+    FilePath path = GetCacheFilePath(
+        resource_id, "*",
+        (test_util::ToCacheEntry(expected_cache_state_).is_pinned() ?
+         GDataCache::CACHE_TYPE_PERSISTENT :
+         GDataCache::CACHE_TYPE_TMP),
+        GDataCache::CACHED_FILE_FROM_SERVER);
+    file_util::FileEnumerator enumerator(path.DirName(), false,
+                                         file_util::FileEnumerator::FILES,
+                                         path.BaseName().value());
+    size_t num_files_found = 0;
+    for (FilePath current = enumerator.Next(); !current.empty();
+         current = enumerator.Next()) {
+      ++num_files_found;
+      EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
+                FilePath::kExtensionSeparator +
+                util::EscapeCacheFileName(md5),
+                current.BaseName().value());
+    }
+    return num_files_found;
+  }
+
   static FilePath GetTestFilePath(const FilePath::StringType& filename) {
     FilePath path;
     std::string error;
@@ -805,25 +839,7 @@ TEST_F(GDataCacheTest, StoreToCacheSimple) {
 
   // Verify that there's only one file with name <resource_id>, i.e. previously
   // cached file with the different md5 should be deleted.
-  FilePath path = GetCacheFilePath(
-      resource_id, "*",
-      (test_util::ToCacheEntry(expected_cache_state_).is_pinned() ?
-       GDataCache::CACHE_TYPE_PERSISTENT :
-       GDataCache::CACHE_TYPE_TMP),
-      GDataCache::CACHED_FILE_FROM_SERVER);
-  file_util::FileEnumerator enumerator(path.DirName(), false,
-                                       file_util::FileEnumerator::FILES,
-                                       path.BaseName().value());
-  size_t num_files_found = 0;
-  for (FilePath current = enumerator.Next(); !current.empty();
-       current = enumerator.Next()) {
-    ++num_files_found;
-    EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
-              FilePath::kExtensionSeparator +
-              util::EscapeCacheFileName(md5),
-              current.BaseName().value());
-  }
-  EXPECT_EQ(1U, num_files_found);
+  EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
 }
 
 TEST_F(GDataCacheTest, GetFromCacheSimple) {
@@ -1459,6 +1475,36 @@ TEST_F(GDataCacheTest, GetResourceIdsOfAllFilesOnUIThread) {
   EXPECT_EQ("pinned:non-existent", resource_ids[3]);
   EXPECT_EQ("tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?", resource_ids[4]);
   EXPECT_EQ("tmp:resource_id", resource_ids[5]);
+}
+
+
+TEST_F(GDataCacheTest, ClearAllOnUIThread) {
+  PrepareForInitCacheTest();
+
+  std::string resource_id("pdf:1a2b");
+  std::string md5("abcdef0123456789");
+
+  // Store an existing file.
+  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+                   GDATA_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+                   GDataCache::CACHE_TYPE_TMP);
+  EXPECT_EQ(1, num_callback_invocations_);
+
+  // Verify that there's only one cached file.
+  EXPECT_EQ(1U, CountCacheFiles(resource_id, md5));
+
+  // Clear cache.
+  GDataFileError error = GDATA_FILE_OK;
+  FilePath file_path;
+  cache_->ClearAllOnUIThread(base::Bind(&OnClearAll,
+                                        &error,
+                                        &file_path));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_OK, error);
+
+  // Verify that all the cache is removed.
+  VerifyRemoveFromCache(error, resource_id, md5);
+  EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
 
 }   // namespace gdata

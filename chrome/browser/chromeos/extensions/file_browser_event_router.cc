@@ -363,7 +363,7 @@ void FileBrowserEventRouter::MountCompleted(
           system_service ? system_service->cache() : NULL;
       if (cache) {
         cache->SetMountedStateOnUIThread(
-            source_path, false, gdata::SetMountedStateCallback());
+            source_path, false, gdata::ChangeCacheStateCallback());
       }
     }
   }

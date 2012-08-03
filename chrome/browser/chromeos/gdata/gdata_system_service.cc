@@ -40,7 +40,8 @@ const std::string* g_test_cache_root = NULL;
 
 GDataSystemService::GDataSystemService(Profile* profile)
     : profile_(profile),
-      cache_(NULL) {
+      cache_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
@@ -104,6 +105,30 @@ void GDataSystemService::Shutdown() {
   webapps_registry_.reset();
   uploader_.reset();
   documents_service_.reset();
+}
+
+void GDataSystemService::ClearCacheAndRemountFileSystem(
+    const base::Callback<void(bool)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RemoveDriveMountPoint();
+  docs_service()->CancelAll();
+  cache_->ClearAllOnUIThread(
+      base::Bind(&GDataSystemService::AddBackDriveMountPoint,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void GDataSystemService::AddBackDriveMountPoint(
+    const base::Callback<void(bool)>& callback,
+    GDataFileError error,
+    const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  AddDriveMountPoint();
+
+  if (!callback.is_null())
+    callback.Run(error == GDATA_FILE_OK);
 }
 
 void GDataSystemService::AddDriveMountPoint() {

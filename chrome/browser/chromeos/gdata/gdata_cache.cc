@@ -238,10 +238,10 @@ void CollectAnyFile(std::vector<std::string>* resource_ids,
 }
 
 // Runs callback with pointers dereferenced.
-// Used to implement SetMountedStateOnUIThread.
-void RunSetMountedStateCallback(const SetMountedStateCallback& callback,
-                                GDataFileError* error,
-                                FilePath* cache_file_path) {
+// Used to implement SetMountedStateOnUIThread and ClearAllOnUIThread.
+void RunChangeCacheStateCallback(const ChangeCacheStateCallback& callback,
+                                 const GDataFileError* error,
+                                 const FilePath* cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error);
   DCHECK(cache_file_path);
@@ -573,7 +573,7 @@ void GDataCache::UnpinOnUIThread(const std::string& resource_id,
 void GDataCache::SetMountedStateOnUIThread(
     const FilePath& file_path,
     bool to_mount,
-    const SetMountedStateCallback& callback) {
+    const ChangeCacheStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GDataFileError* error =
@@ -587,7 +587,7 @@ void GDataCache::SetMountedStateOnUIThread(
                  to_mount,
                  error,
                  cache_file_path),
-      base::Bind(&RunSetMountedStateCallback,
+      base::Bind(&RunChangeCacheStateCallback,
                  callback,
                  base::Owned(error),
                  base::Owned(cache_file_path)));
@@ -680,6 +680,22 @@ void GDataCache::RemoveOnUIThread(const std::string& resource_id,
                  base::Owned(error),
                  resource_id,
                  ""  /* md5 */));
+}
+
+void GDataCache::ClearAllOnUIThread(const ChangeCacheStateCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GDataFileError* error = new GDataFileError(GDATA_FILE_OK);
+
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GDataCache::ClearAll,
+                 base::Unretained(this),
+                 error),
+      base::Bind(&RunChangeCacheStateCallback,
+                 callback,
+                 base::Owned(error),
+                 &cache_root_path_));
 }
 
 void GDataCache::RequestInitializeOnUIThread() {
@@ -1433,6 +1449,16 @@ void GDataCache::Remove(const std::string& resource_id,
   metadata_->RemoveCacheEntry(resource_id);
 
   *error = GDATA_FILE_OK;
+}
+
+void GDataCache::ClearAll(GDataFileError* error) {
+  AssertOnSequencedWorkerPool();
+  DCHECK(error);
+
+  bool success = file_util::Delete(cache_root_path_, true);
+  Initialize();
+
+  *error = success ? GDATA_FILE_OK : GDATA_FILE_ERROR_FAILED;
 }
 
 void GDataCache::OnPinned(GDataFileError* error,
