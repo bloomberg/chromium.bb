@@ -641,9 +641,10 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     if (pattern.MatchesScheme(chrome::kFileScheme) &&
         !CanExecuteScriptEverywhere()) {
       wants_file_access_ = true;
-      if (!(creation_flags_ & ALLOW_FILE_ACCESS))
+      if (!(creation_flags_ & ALLOW_FILE_ACCESS)) {
         pattern.SetValidSchemes(
             pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+      }
     }
 
     result->add_url_pattern(pattern);
@@ -3401,9 +3402,10 @@ bool Extension::ParsePermissions(const char* key,
         if (pattern.MatchesScheme(chrome::kFileScheme) &&
             !CanExecuteScriptEverywhere()) {
           wants_file_access_ = true;
-          if (!(creation_flags_ & ALLOW_FILE_ACCESS))
+          if (!(creation_flags_ & ALLOW_FILE_ACCESS)) {
             pattern.SetValidSchemes(
                 pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
+          }
         }
 
         host_permissions->AddPattern(pattern);

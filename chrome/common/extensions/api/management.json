@@ -98,6 +98,10 @@
             "items" : {
               "type": "string"
             }
+          },
+          "installType": {
+            "description": "How the extension was installed (\"admin\", \"development\", \"normal\", \"sideload\", \"other\"). \"admin\" means the extension was installed because of an administrative policy. \"development\" means the extension was loaded unpacked in developer mode. \"normal\" means the extension was installed normally via a .crx file. \"sideload\" means the extension was installed by other software on the machine. \"other\" means the extension was installed by other means.",
+            "type": "string"
           }
         }
       }

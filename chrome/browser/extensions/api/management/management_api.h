@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -159,4 +159,4 @@ class ExtensionManagementEventRouter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionManagementEventRouter);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_API_H__
+#endif  // CHROME_BROWSER_EXTENSIONS_API_MANAGEMENT_MANAGEMENT_API_H_

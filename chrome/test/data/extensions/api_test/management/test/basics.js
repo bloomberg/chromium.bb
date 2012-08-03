@@ -45,22 +45,30 @@ function checkHostPermission(item, perm) {
 var tests = [
   function simple() {
     chrome.management.getAll(callback(function(items) {
-      chrome.test.assertEq(7, items.length);
+      chrome.test.assertEq(10, items.length);
 
       checkItemInList(items, "Extension Management API Test", true, false);
       checkItemInList(items, "description", true, false,
-                { "description": "a short description" });
+          { "description": "a short description" });
       checkItemInList(items, "enabled_app", true, true,
-                { "appLaunchUrl": "http://www.google.com/",
-                  "offlineEnabled": true,
-                  "updateUrl": "http://example.com/update.xml" });
+          { "appLaunchUrl": "http://www.google.com/",
+            "offlineEnabled": true,
+            "updateUrl": "http://example.com/update.xml" });
       checkItemInList(items, "disabled_app", false, true,
-                     { "disabledReason": "unknown" });
+          { "disabledReason": "unknown" });
       checkItemInList(items, "enabled_extension", true, false,
-                     { "homepageUrl": "http://example.com/" });
+          { "homepageUrl": "http://example.com/" });
       checkItemInList(items, "disabled_extension", false, false,
-                { "optionsUrl": "chrome-extension://<ID>/pages/options.html",
-                  "disabledReason": "unknown" });
+          { "optionsUrl": "chrome-extension://<ID>/pages/options.html",
+            "disabledReason": "unknown" });
+      checkItemInList(items, "description", true, false,
+          { "installType": "development" });
+      checkItemInList(items, "internal_extension", true, false,
+          { "installType": "normal" });
+      checkItemInList(items, "external_extension", true, false,
+          { "installType": "sideload" });
+      checkItemInList(items, "admin_extension", true, false,
+          { "installType": "admin" });
 
       // Check that we got the icons correctly
       var extension = getItemNamed(items, "enabled_extension");

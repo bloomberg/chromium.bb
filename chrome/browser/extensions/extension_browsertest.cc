@@ -134,7 +134,6 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(browser()->profile()));
     CHECK(service->AllowFileAccess(extension));
-
     if (!fileaccess_enabled) {
       service->SetAllowFileAccess(extension, fileaccess_enabled);
       load_signal.Wait();
@@ -265,7 +264,8 @@ const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
     const FilePath& path,
     int expected_change) {
   return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
-                                  expected_change, browser(), true);
+                                  expected_change, Extension::INTERNAL,
+                                  browser(), true);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -274,7 +274,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     InstallUIType ui_type,
     int expected_change) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  browser(), false);
+                                  Extension::INTERNAL, browser(), false);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -282,6 +282,28 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const FilePath& path,
     InstallUIType ui_type,
     int expected_change,
+    Browser* browser,
+    bool from_webstore) {
+  return InstallOrUpdateExtension(id, path, ui_type, expected_change,
+                                  Extension::INTERNAL, browser, from_webstore);
+}
+
+const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
+    const std::string& id,
+    const FilePath& path,
+    InstallUIType ui_type,
+    int expected_change,
+    Extension::Location install_source) {
+  return InstallOrUpdateExtension(id, path, ui_type, expected_change,
+                                  install_source, browser(), false);
+}
+
+const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
+    const std::string& id,
+    const FilePath& path,
+    InstallUIType ui_type,
+    int expected_change,
+    Extension::Location install_source,
     Browser* browser,
     bool from_webstore) {
   ExtensionService* service = browser->profile()->GetExtensionService();
@@ -316,6 +338,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
         extensions::CrxInstaller::Create(service, install_ui));
     installer->set_expected_id(id);
     installer->set_is_gallery_install(from_webstore);
+    installer->set_install_source(install_source);
     if (!from_webstore) {
       installer->set_off_store_install_allow_reason(
           extensions::CrxInstaller::OffStoreInstallAllowedInTest);

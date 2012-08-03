@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_management_api.h"
+#include "chrome/browser/extensions/api/management/management_api.h"
 
 #include <map>
 #include <string>
@@ -13,9 +13,9 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/api/management/management_api_constants.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_management_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -143,6 +143,27 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
     }
   }
   info->Set(keys::kHostPermissionsKey, host_permission_list);
+
+  std::string install_type = keys::kInstallTypeOther;
+  switch (extension.location()) {
+    case Extension::INTERNAL:
+      install_type = keys::kInstallTypeNormal;
+      break;
+    case Extension::LOAD:
+      install_type = keys::kInstallTypeDevelopment;
+      break;
+    case Extension::EXTERNAL_PREF:
+    case Extension::EXTERNAL_REGISTRY:
+    case Extension::EXTERNAL_PREF_DOWNLOAD:
+      install_type = keys::kInstallTypeSideload;
+      break;
+    case Extension::EXTERNAL_POLICY_DOWNLOAD:
+      install_type = keys::kInstallTypeAdmin;
+      break;
+    default:
+      install_type = keys::kInstallTypeOther;
+  }
+  info->SetString(keys::kInstallTypeKey, install_type);
 
   return info;
 }

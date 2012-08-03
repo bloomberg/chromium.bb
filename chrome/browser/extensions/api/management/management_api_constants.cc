@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_management_api_constants.h"
+#include "chrome/browser/extensions/api/management/management_api_constants.h"
 
 namespace extension_management_api_constants {
 
@@ -10,6 +10,7 @@ const char kAppLaunchUrlKey[] = "appLaunchUrl";
 const char kDisabledReasonKey[] = "disabledReason";
 const char kHostPermissionsKey[] = "hostPermissions";
 const char kIconsKey[] = "icons";
+const char kInstallTypeKey[] = "installType";
 const char kIsAppKey[] = "isApp";
 const char kMayDisableKey[] = "mayDisable";
 const char kPermissionsKey[] = "permissions";
@@ -33,5 +34,11 @@ const char kUserCantModifyError[] = "Extension * cannot be modified by user";
 const char kUninstallCanceledError[] = "Extension * uninstall canceled by user";
 const char kUserDidNotReEnableError[] =
     "The user did not accept the re-enable dialog";
+
+const char kInstallTypeAdmin[] = "admin";
+const char kInstallTypeDevelopment[] = "development";
+const char kInstallTypeNormal[] = "normal";
+const char kInstallTypeOther[] = "other";
+const char kInstallTypeSideload[] = "sideload";
 
 }  // namespace extension_management_api_constants

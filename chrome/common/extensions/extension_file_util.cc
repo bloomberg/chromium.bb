@@ -141,8 +141,9 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
   if (!manifest.get())
     return NULL;
   if (!extension_l10n_util::LocalizeExtension(extension_path, manifest.get(),
-                                              error))
+                                              error)) {
     return NULL;
+  }
 
   scoped_refptr<Extension> extension(Extension::Create(extension_path,
                                                        location,

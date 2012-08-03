@@ -16,9 +16,11 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/manifest.h"
 #include "content/public/test/test_utils.h"
 
 using extensions::Extension;
+using extensions::Manifest;
 
 namespace {
 
@@ -44,19 +46,19 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
     command_line->AppendSwitch(switches::kEnablePanels);
   }
 
-  virtual void InstallExtensions() {
+  virtual void LoadExtensions() {
     FilePath basedir = test_data_dir_.AppendASCII("management");
 
     // Load 4 enabled items.
-    InstallNamedExtension(basedir, "enabled_extension");
-    InstallNamedExtension(basedir, "enabled_app");
-    InstallNamedExtension(basedir, "description");
-    InstallNamedExtension(basedir, "permissions");
+    LoadNamedExtension(basedir, "enabled_extension");
+    LoadNamedExtension(basedir, "enabled_app");
+    LoadNamedExtension(basedir, "description");
+    LoadNamedExtension(basedir, "permissions");
 
     // Load 2 disabled items.
-    InstallNamedExtension(basedir, "disabled_extension");
+    LoadNamedExtension(basedir, "disabled_extension");
     DisableExtension(extension_ids_["disabled_extension"]);
-    InstallNamedExtension(basedir, "disabled_app");
+    LoadNamedExtension(basedir, "disabled_app");
     DisableExtension(extension_ids_["disabled_app"]);
   }
 
@@ -74,29 +76,47 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
   }
 
  protected:
-  void InstallNamedExtension(FilePath basedir, std::string name) {
-    const Extension* extension = LoadExtension(basedir.AppendASCII(name));
+  void LoadNamedExtension(const FilePath& path,
+                          const std::string& name) {
+    const Extension* extension = LoadExtension(path.AppendASCII(name));
     ASSERT_TRUE(extension);
     extension_ids_[name] = extension->id();
   }
 
-  // Maps installed extension names to their IDs..
+  void InstallNamedExtension(const FilePath& path,
+                             const std::string& name,
+                             Extension::Location install_source) {
+    const Extension* extension = InstallExtension(path.AppendASCII(name), 1,
+                                                  install_source);
+    ASSERT_TRUE(extension);
+    extension_ids_[name] = extension->id();
+  }
+
+  // Maps installed extension names to their IDs.
   std::map<std::string, std::string> extension_ids_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
-  InstallExtensions();
+  LoadExtensions();
+
+  FilePath basedir = test_data_dir_.AppendASCII("management");
+  InstallNamedExtension(basedir, "internal_extension", Extension::INTERNAL);
+  InstallNamedExtension(basedir, "external_extension",
+                        Extension::EXTERNAL_PREF);
+  InstallNamedExtension(basedir, "admin_extension",
+                        Extension::EXTERNAL_POLICY_DOWNLOAD);
+
   ASSERT_TRUE(RunExtensionSubtest("management/test", "basics.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Uninstall) {
-  InstallExtensions();
+  LoadExtensions();
   ASSERT_TRUE(RunExtensionSubtest("management/test", "uninstall.html"));
 }
 
 // Tests actions on extensions when no management policy is in place.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyAllowed) {
-  InstallExtensions();
+  LoadExtensions();
   ExtensionService* service = browser()->profile()->GetExtensionService();
   EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
                                         false));
@@ -114,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyAllowed) {
 
 // Tests actions on extensions when management policy prohibits those actions.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, ManagementPolicyProhibited) {
-  InstallExtensions();
+  LoadExtensions();
   ExtensionService* service = browser()->profile()->GetExtensionService();
   EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
                                         false));

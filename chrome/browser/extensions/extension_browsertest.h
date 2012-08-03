@@ -12,15 +12,12 @@
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-
-namespace extensions {
-class Extension;
-}
 
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
@@ -38,9 +35,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // Same as above, but enables the extension in incognito mode first.
   const extensions::Extension* LoadExtensionIncognito(const FilePath& path);
 
-  const extensions::Extension* LoadExtensionWithOptions(const FilePath& path,
-                                            bool incognito_enabled,
-                                            bool fileaccess_enabled);
+  const extensions::Extension* LoadExtensionWithOptions(
+      const FilePath& path,
+      bool incognito_enabled,
+      bool fileaccess_enabled);
 
   // Loads extension and imitates that it is a component extension.
   const extensions::Extension* LoadExtensionAsComponent(const FilePath& path);
@@ -68,6 +66,16 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
                                     expected_change);
   }
 
+  // Same as above, but an install source other than Extension::INTERNAL can be
+  // specified.
+  const extensions::Extension* InstallExtension(
+      const FilePath& path,
+      int expected_change,
+      extensions::Extension::Location install_source) {
+    return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
+                                    expected_change, install_source);
+  }
+
   // Installs extension as if it came from the Chrome Webstore.
   const extensions::Extension* InstallExtensionFromWebstore(
       const FilePath& path, int expected_change);
@@ -76,7 +84,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // privilege increase.
   const extensions::Extension* UpdateExtension(const std::string& id,
                                                const FilePath& path,
-                                   int expected_change) {
+                                               int expected_change) {
     return InstallOrUpdateExtension(id, path, INSTALL_UI_TYPE_NONE,
                                     expected_change);
   }
@@ -196,6 +204,20 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
                                                         int expected_change,
                                                         Browser* browser,
                                                         bool from_webstore);
+  const extensions::Extension* InstallOrUpdateExtension(
+      const std::string& id,
+      const FilePath& path,
+      InstallUIType ui_type,
+      int expected_change,
+      extensions::Extension::Location install_source);
+  const extensions::Extension* InstallOrUpdateExtension(
+      const std::string& id,
+      const FilePath& path,
+      InstallUIType ui_type,
+      int expected_change,
+      extensions::Extension::Location install_source,
+      Browser* browser,
+      bool from_webstore);
 
   bool WaitForExtensionViewsToLoad();
 
