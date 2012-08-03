@@ -8,6 +8,9 @@
 #include <cmath>
 
 #include "chrome/browser/chrome_page_zoom_constants.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -63,15 +66,16 @@ std::vector<double> PresetZoomLevels(double custom_level) {
 
 void Zoom(content::WebContents* web_contents, content::PageZoom zoom) {
   content::RenderViewHost* host = web_contents->GetRenderViewHost();
+  double current_zoom_level = web_contents->GetZoomLevel();
+  double default_zoom_level =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext())->
+          GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
+
   if (zoom == content::PAGE_ZOOM_RESET) {
-    host->SetZoomLevel(0);
+    host->SetZoomLevel(default_zoom_level);
     content::RecordAction(UserMetricsAction("ZoomNormal"));
     return;
   }
-
-  double current_zoom_level = web_contents->GetZoomLevel();
-  double default_zoom_level =
-      web_contents->GetMutableRendererPrefs()->default_zoom_level;
 
   // Generate a vector of zoom levels from an array of known presets along with
   // the default level added if necessary.
