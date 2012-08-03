@@ -34,6 +34,17 @@ namespace chromeos {
 // The interval between external metrics collections in seconds
 static const int kExternalMetricsCollectionIntervalSeconds = 30;
 
+class SystemHistogram : public base::Histogram {
+ public:
+  static bool CheckValues(const std::string& name,
+                          int minimum,
+                          int maximum,
+                          size_t bucket_count) {
+    return base::Histogram::InspectConstructionArguments(
+        name, &minimum, &maximum, &bucket_count);
+  }
+};
+
 ExternalMetrics::ExternalMetrics()
     : test_recorder_(NULL) {
 }
@@ -87,6 +98,14 @@ void ExternalMetrics::RecordHistogram(const char* histogram_data) {
                  name, &sample, &min, &max, &nbuckets);
   if (n != 5) {
     LOG(ERROR) << "bad histogram request: " << histogram_data;
+    return;
+  }
+
+  if (!SystemHistogram::CheckValues(name, min, max, nbuckets)) {
+    LOG(ERROR) << "Invalid histogram " << name
+               << ", min=" << min
+               << ", max=" << max
+               << ", nbuckets=" << nbuckets;
     return;
   }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
