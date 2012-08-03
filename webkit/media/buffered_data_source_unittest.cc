@@ -591,4 +591,24 @@ TEST_F(BufferedDataSourceTest, File_Read) {
   Stop();
 }
 
+TEST_F(BufferedDataSourceTest, Http_FinishLoading) {
+  InitializeWith206Response();
+
+  EXPECT_TRUE(data_source_->downloading());
+  FinishLoading();
+  EXPECT_FALSE(data_source_->downloading());
+
+  Stop();
+}
+
+TEST_F(BufferedDataSourceTest, File_FinishLoading) {
+  InitializeWithFileResponse();
+
+  EXPECT_FALSE(data_source_->downloading());
+  FinishLoading();
+  EXPECT_FALSE(data_source_->downloading());
+
+  Stop();
+}
+
 }  // namespace webkit_media

@@ -457,17 +457,16 @@ void BufferedDataSource::LoadingStateChangedCallback(
       is_downloading_data = true;
       break;
     case BufferedResourceLoader::kLoadingDeferred:
+    case BufferedResourceLoader::kLoadingFinished:
       is_downloading_data = false;
       break;
 
     // TODO(scherkus): we don't signal network activity changes when loads
-    // complete or fail to preserve existing behaviour when deferring is
-    // toggled, however we considering changing DownloadingCB to also
-    // propagate loading state. For example there isn't any signal today
-    // to notify the client that loading has failed/finished (we only get
-    // errors on subsequent reads).
+    // fail to preserve existing behaviour when deferring is toggled, however
+    // we should consider changing DownloadingCB to also propagate loading
+    // state. For example there isn't any signal today to notify the client that
+    // loading has failed (we only get errors on subsequent reads).
     case BufferedResourceLoader::kLoadingFailed:
-    case BufferedResourceLoader::kLoadingFinished:
       return;
   }
 
