@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
@@ -12,6 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "ppapi/proxy/proxy_module.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox.h"
@@ -43,6 +45,14 @@ int PpapiPluginMain(const content::MainFunctionParams& parameters) {
       base::debug::WaitForDebugger(2*60, false);
     else
       ChildProcess::WaitForDebugger("Ppapi");
+  }
+
+  // Set the default locale to be the current UI language. WebKit uses ICU's
+  // default locale for some font settings (especially switching between
+  // Japanese and Chinese fonts for the same characters).
+  if (command_line.HasSwitch(switches::kLang)) {
+    std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
+    base::i18n::SetICUDefaultLocale(locale);
   }
 
   MessageLoop main_message_loop;
