@@ -415,10 +415,27 @@ class LocalGestureEvent :
     data().y = client_point.y;
     data().globalX = screen_point.x;
     data().globalY = screen_point.y;
-    data().deltaX = details.generic_x();
-    data().deltaY = details.generic_y();
     data().type = ConvertToWebInputEvent(type_);
     data().boundingBox = details.bounding_box();
+
+    // Copy any event-type specific data.
+    switch (type_) {
+      case ui::ET_GESTURE_TAP:
+        data().deltaX = details.tap_count();
+        break;
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+        data().deltaX = details.scroll_x();
+        data().deltaY = details.scroll_y();
+        break;
+      case ui::ET_GESTURE_PINCH_UPDATE:
+        data().deltaX = details.scale();
+        break;
+      case ui::ET_SCROLL_FLING_START:
+        data().deltaX = details.velocity_x();
+        data().deltaY = details.velocity_y();
+      default:
+        break;
+    }
   }
 
   virtual int GetLowestTouchId() const OVERRIDE {

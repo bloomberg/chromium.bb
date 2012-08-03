@@ -39,6 +39,11 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       data.swipe.down = delta_y > 0;
       break;
 
+    case ui::ET_GESTURE_TAP:
+      data.tap_count = static_cast<int>(delta_x);
+      CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for tap.";
+      break;
+
     default:
       data.generic.delta_x = delta_x;
       data.generic.delta_y = delta_y;

@@ -90,7 +90,9 @@ class UI_EXPORT GestureSequence {
   void AppendTapDownGestureEvent(const GesturePoint& point, Gestures* gestures);
   void AppendBeginGestureEvent(const GesturePoint& point, Gestures* gestures);
   void AppendEndGestureEvent(const GesturePoint& point, Gestures* gestures);
-  void AppendClickGestureEvent(const GesturePoint& point, Gestures* gestures);
+  void AppendClickGestureEvent(const GesturePoint& point,
+                               int tap_count,
+                               Gestures* gestures);
   void AppendDoubleClickGestureEvent(const GesturePoint& point,
                                      Gestures* gestures);
   void AppendLongPressGestureEvent();

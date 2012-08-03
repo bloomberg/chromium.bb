@@ -596,11 +596,12 @@ void GestureSequence::AppendEndGestureEvent(const GesturePoint& point,
 }
 
 void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
+                                              int tap_count,
                                               Gestures* gestures) {
   gfx::Rect er = point.enclosing_rectangle();
   gfx::Point center = er.CenterPoint();
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0),
+      GestureEventDetails(ui::ET_GESTURE_TAP, tap_count, 0),
       center,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
@@ -753,8 +754,9 @@ bool GestureSequence::Click(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
   if (point.IsInClickWindow(event)) {
-    AppendClickGestureEvent(point, gestures);
-    if (point.IsInDoubleClickWindow(event))
+    bool double_tap = point.IsInDoubleClickWindow(event);
+    AppendClickGestureEvent(point, double_tap ? 2 : 1, gestures);
+    if (double_tap)
       AppendDoubleClickGestureEvent(point, gestures);
     return true;
   }

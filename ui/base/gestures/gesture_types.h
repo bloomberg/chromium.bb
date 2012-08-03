@@ -69,12 +69,9 @@ struct UI_EXPORT GestureEventDetails {
     return data.swipe.down;
   }
 
-  float generic_x() const {
-    return data.generic.delta_x;
-  }
-
-  float generic_y() const {
-    return data.generic.delta_y;
+  int tap_count() const {
+    CHECK_EQ(ui::ET_GESTURE_TAP, type_);
+    return data.tap_count;
   }
 
  private:
@@ -100,6 +97,8 @@ struct UI_EXPORT GestureEventDetails {
       bool up;
       bool down;
     } swipe;
+
+    int tap_count;  // TAP repeat count.
 
     struct {
       float delta_x;

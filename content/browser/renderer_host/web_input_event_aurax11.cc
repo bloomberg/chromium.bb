@@ -364,6 +364,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
       gesture_event.type = WebKit::WebInputEvent::GestureTap;
+      gesture_event.deltaX = event->details().tap_count();
       break;
     case ui::ET_GESTURE_TAP_DOWN:
       gesture_event.type = WebKit::WebInputEvent::GestureTapDown;
@@ -376,6 +377,8 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       gesture_event.type = WebKit::WebInputEvent::GestureScrollUpdate;
+      gesture_event.deltaX = event->details().scroll_x();
+      gesture_event.deltaY = event->details().scroll_y();
       break;
     case ui::ET_GESTURE_SCROLL_END:
       gesture_event.type = WebKit::WebInputEvent::GestureScrollEnd;
@@ -385,12 +388,15 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       break;
     case ui::ET_GESTURE_PINCH_UPDATE:
       gesture_event.type = WebKit::WebInputEvent::GesturePinchUpdate;
+      gesture_event.deltaX = event->details().scale();
       break;
     case ui::ET_GESTURE_PINCH_END:
       gesture_event.type = WebKit::WebInputEvent::GesturePinchEnd;
       break;
     case ui::ET_SCROLL_FLING_START:
       gesture_event.type = WebKit::WebInputEvent::GestureFlingStart;
+      gesture_event.deltaX = event->details().velocity_x();
+      gesture_event.deltaY = event->details().velocity_y();
       break;
     case ui::ET_SCROLL_FLING_CANCEL:
       gesture_event.type = WebKit::WebInputEvent::GestureFlingCancel;
@@ -410,8 +416,6 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
   }
 
   gesture_event.boundingBox = event->details().bounding_box();
-  gesture_event.deltaX = event->details().generic_x();
-  gesture_event.deltaY = event->details().generic_y();
   gesture_event.modifiers = EventFlagsToWebEventModifiers(event->flags());
 
   return gesture_event;

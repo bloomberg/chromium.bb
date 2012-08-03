@@ -51,7 +51,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_x_(0),
         scroll_y_(0),
         velocity_x_(0),
-        velocity_y_(0) {
+        velocity_y_(0),
+        tap_count_(0) {
   }
 
   virtual ~GestureEventConsumeDelegate() {}
@@ -79,6 +80,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_y_ = 0;
     velocity_x_ = 0;
     velocity_y_ = 0;
+    tap_count_ = 0;
   }
 
   bool tap() const { return tap_; }
@@ -110,12 +112,14 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float velocity_x() const { return velocity_x_; }
   float velocity_y() const { return velocity_y_; }
   const gfx::Rect& bounding_box() const { return bounding_box_; }
+  int tap_count() const { return tap_count_; }
 
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* gesture) OVERRIDE {
     bounding_box_ = gesture->details().bounding_box();
     switch (gesture->type()) {
       case ui::ET_GESTURE_TAP:
         tap_location_ = gesture->location();
+        tap_count_ = gesture->details().tap_count();
         tap_ = true;
         break;
       case ui::ET_GESTURE_TAP_DOWN:
@@ -196,6 +200,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float velocity_y_;
   int touch_id_;
   gfx::Rect bounding_box_;
+  int tap_count_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventConsumeDelegate);
 };
@@ -431,6 +436,8 @@ TEST_F(GestureRecognizerTest, GestureEventTap) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
+
+  EXPECT_EQ(1, delegate->tap_count());
 }
 
 // Check that appropriate touch events generate tap gesture events
@@ -481,6 +488,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_update());
      EXPECT_FALSE(delegate->scroll_end());
 
+     EXPECT_EQ(1, delegate->tap_count());
      gfx::Point actual_point(delegate->tap_location());
      EXPECT_EQ(24, delegate->bounding_box().width());
      EXPECT_EQ(24, delegate->bounding_box().height());
@@ -522,6 +530,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_update());
      EXPECT_FALSE(delegate->scroll_end());
 
+     EXPECT_EQ(1, delegate->tap_count());
      gfx::Point actual_point(delegate->tap_location());
      EXPECT_EQ(46, delegate->bounding_box().width());
      EXPECT_EQ(40, delegate->bounding_box().height());
@@ -579,6 +588,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_update());
      EXPECT_FALSE(delegate->scroll_end());
 
+     EXPECT_EQ(1, delegate->tap_count());
      gfx::Point actual_point(delegate->tap_location());
      EXPECT_EQ(28, delegate->bounding_box().width());
      EXPECT_EQ(28, delegate->bounding_box().height());
@@ -668,6 +678,7 @@ TEST_F(GestureRecognizerTest, GestureEventTapRegion) {
      EXPECT_FALSE(delegate->scroll_update());
      EXPECT_FALSE(delegate->scroll_end());
 
+     EXPECT_EQ(1, delegate->tap_count());
      gfx::Point actual_point(delegate->tap_location());
      EXPECT_EQ(35, delegate->bounding_box().width());
      EXPECT_EQ(36, delegate->bounding_box().height());
@@ -2373,6 +2384,136 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_TRUE(delegate->scroll_end());
+}
+
+// Check that appropriate touch events generate double tap gesture events.
+TEST_F(GestureRecognizerTest, GestureEventDoubleTap) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  // First tap (tested in GestureEventTap)
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(104, 201),
+                   kTouchId, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(104, 201),
+                     kTouchId, press1.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  delegate->Reset();
+
+  // Second tap
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(101, 203),
+                   kTouchId, release1.time_stamp() +
+                   base::TimeDelta::FromMilliseconds(200));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(102, 206),
+                     kTouchId, press2.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+
+  EXPECT_TRUE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_TRUE(delegate->end());
+  EXPECT_TRUE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  EXPECT_EQ(2, delegate->tap_count());
+}
+
+// Check that we don't get a double tap when the two taps are far apart.
+TEST_F(GestureRecognizerTest, TwoTapsFarApart) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  // First tap (tested in GestureEventTap)
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                   kTouchId, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                     kTouchId, press1.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  delegate->Reset();
+
+  // Second tap, close in time but far in distance
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(201, 201),
+                   kTouchId, release1.time_stamp() +
+                   base::TimeDelta::FromMilliseconds(200));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(201, 201),
+                     kTouchId, press2.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+
+  EXPECT_TRUE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_TRUE(delegate->end());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  EXPECT_EQ(1, delegate->tap_count());
+}
+
+// Check that we don't get a double tap when the two taps have a long enough
+// delay in between.
+TEST_F(GestureRecognizerTest, TwoTapsWithDelayBetween) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 2;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  // First tap (tested in GestureEventTap)
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                   kTouchId, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                     kTouchId, press1.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
+  delegate->Reset();
+
+  // Second tap, close in distance but after some delay
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                   kTouchId, release1.time_stamp() +
+                   base::TimeDelta::FromMilliseconds(2000));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201),
+                     kTouchId, press2.time_stamp() +
+                     base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+
+  EXPECT_TRUE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_TRUE(delegate->end());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  EXPECT_EQ(1, delegate->tap_count());
 }
 
 }  // namespace test
