@@ -14,7 +14,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
-#include "ash/wm/workspace_controller.h"
+#include "ash/wm/workspace_controller_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
@@ -75,8 +75,9 @@ class WorkspaceManagerTest : public test::AshTestBase {
   // Overridden from AshTestBase:
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    Shell::TestApi shell_test(Shell::GetInstance());
-    manager_ = shell_test.workspace_controller()->workspace_manager();
+    WorkspaceControllerTestHelper workspace_helper(
+        Shell::TestApi(Shell::GetInstance()).workspace_controller());
+    manager_ = workspace_helper.workspace_manager();
     manager_->set_grid_size(0);
   }
   virtual void TearDown() OVERRIDE {
@@ -607,7 +608,7 @@ TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
 
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
   ASSERT_FALSE(manager_->ShouldManageWindow(w2.get()));
-  EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
+  EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN,
             manager_->GetWindowState());
 
   w2->Hide();
@@ -643,7 +644,7 @@ TEST_F(WorkspaceManagerTest,
   // to hide.
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
   ASSERT_FALSE(manager_->ShouldManageWindow(w2.get()));
-  EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
+  EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN,
             manager_->GetWindowState());
 
   w2->Hide();
@@ -651,7 +652,7 @@ TEST_F(WorkspaceManagerTest,
 
   w2->Show();
   EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
-  EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
+  EXPECT_EQ(WORKSPACE_WINDOW_STATE_FULL_SCREEN,
             manager_->GetWindowState());
 
   w2.reset();

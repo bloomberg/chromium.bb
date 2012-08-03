@@ -6,6 +6,7 @@
 #define ASH_WM_WORKSPACE_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/activation_change_observer.h"
@@ -17,6 +18,7 @@ class Window;
 namespace ash {
 namespace internal {
 
+class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventFilter;
 class WorkspaceLayoutManager;
@@ -25,19 +27,23 @@ class WorkspaceManager;
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces: WorkspaceManager, WorkspaceLayoutManager and
 // WorkspaceEventFilter.
-class ASH_EXPORT WorkspaceController :
-    public aura::client::ActivationChangeObserver {
+class ASH_EXPORT WorkspaceController
+    : public aura::client::ActivationChangeObserver {
  public:
   explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
 
-  // Returns the workspace manager that this controller owns.
-  WorkspaceManager* workspace_manager() {
-    return workspace_manager_.get();
-  }
+  // Returns true if in maximized or fullscreen mode.
+  bool IsInMaximizedMode() const;
 
   // Sets the size of the grid.
   void SetGridSize(int grid_size);
+  int GetGridSize() const;
+
+  // Returns the current window state.
+  WorkspaceWindowState GetWindowState() const;
+
+  void SetShelf(ShelfLayoutManager* shelf);
 
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* window,

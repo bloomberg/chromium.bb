@@ -139,9 +139,9 @@ void WorkspaceManager::UpdateShelfVisibility() {
     shelf_->UpdateVisibilityState();
 }
 
-WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
+WorkspaceWindowState WorkspaceManager::GetWindowState() const {
   if (!shelf_ || !active_workspace_)
-    return WINDOW_STATE_DEFAULT;
+    return WORKSPACE_WINDOW_STATE_DEFAULT;
 
   // TODO: this code needs to be made multi-display aware.
   gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
@@ -158,16 +158,17 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
       // we hit a maximized window.
       has_maximized_window = true;
     } else if (wm::IsWindowFullscreen(*i)) {
-      return WINDOW_STATE_FULL_SCREEN;
+      return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
     }
     if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))
       window_overlaps_launcher = true;
   }
   if (has_maximized_window)
-    return WINDOW_STATE_MAXIMIZED;
+    return WORKSPACE_WINDOW_STATE_MAXIMIZED;
 
-  return window_overlaps_launcher ? WINDOW_STATE_WINDOW_OVERLAPS_SHELF :
-      WINDOW_STATE_DEFAULT;
+  return window_overlaps_launcher ?
+      WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF :
+      WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
 void WorkspaceManager::ShowStateChanged(aura::Window* window) {

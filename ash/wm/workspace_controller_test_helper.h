@@ -20,6 +20,9 @@ class WorkspaceControllerTestHelper {
 
   WorkspaceEventFilter* filter() { return controller_->event_filter_; }
   MultiWindowResizeController* GetMultiWindowResizeController();
+  WorkspaceManager* workspace_manager() {
+    return controller_->workspace_manager_.get();
+  }
 
  private:
   WorkspaceController* controller_;

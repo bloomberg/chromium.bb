@@ -341,6 +341,7 @@
         'wm/workspace/workspace_layout_manager.h',
         'wm/workspace/workspace_manager.cc',
         'wm/workspace/workspace_manager.h',
+        'wm/workspace/workspace_types.h',
         'wm/workspace/workspace_window_resizer.cc',
         'wm/workspace/workspace_window_resizer.h',
       ],

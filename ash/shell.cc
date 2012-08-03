@@ -65,7 +65,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
-#include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -661,8 +660,8 @@ SystemTray* Shell::system_tray() {
 }
 
 int Shell::GetGridSize() const {
-  return GetPrimaryRootWindowController()->workspace_controller()->
-      workspace_manager()->grid_size();
+  return
+      GetPrimaryRootWindowController()->workspace_controller()->GetGridSize();
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
@@ -753,12 +752,11 @@ void Shell::InitLayoutManagersForPrimaryDisplay(
   controller->GetContainer(internal::kShellWindowId_StatusContainer)->
       SetLayoutManager(status_area_layout_manager);
 
-  shelf_layout_manager->set_workspace_manager(
-      controller->workspace_controller()->workspace_manager());
+  shelf_layout_manager->set_workspace_controller(
+      controller->workspace_controller());
 
   // TODO(oshima): Support multiple displays.
-  controller->workspace_controller()->workspace_manager()->
-      set_shelf(shelf());
+  controller->workspace_controller()->SetShelf(shelf());
 
   // Create Panel layout manager
   aura::Window* panel_container = GetContainer(
@@ -772,11 +770,12 @@ void Shell::InitLayoutManagersForPrimaryDisplay(
   panel_container->SetLayoutManager(panel_layout_manager_);
 }
 
+// TODO: this is only used in tests, move with test.
 void Shell::DisableWorkspaceGridLayout() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    (*iter)->workspace_controller()->workspace_manager()->set_grid_size(0);
+    (*iter)->workspace_controller()->SetGridSize(0);
 }
 
 void Shell::SetCursor(gfx::NativeCursor cursor) {

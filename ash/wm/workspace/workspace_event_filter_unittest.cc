@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller_test_helper.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/test/event_generator.h"
@@ -40,9 +41,9 @@ class WorkspaceEventFilterTest : public test::AshTestBase {
 };
 
 TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
-  Shell::TestApi shell_test(Shell::GetInstance());
-  WorkspaceManager* manager =
-      shell_test.workspace_controller()->workspace_manager();
+  WorkspaceControllerTestHelper workspace_helper(
+      Shell::TestApi(Shell::GetInstance()).workspace_controller());
+  WorkspaceManager* manager = workspace_helper.workspace_manager();
   manager->set_grid_size(0);
 
   // Double clicking the vertical resize edge of a window should maximize it

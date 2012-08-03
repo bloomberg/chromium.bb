@@ -14,7 +14,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/web_notification/web_notification_tray.h"
-#include "ash/wm/workspace/workspace_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
 #include "ui/aura/client/activation_client.h"
@@ -129,7 +129,7 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* status)
       alignment_(SHELF_ALIGNMENT_BOTTOM),
       launcher_(NULL),
       status_(status),
-      workspace_manager_(NULL),
+      workspace_controller_(NULL),
       window_overlaps_shelf_(false) {
   Shell::GetInstance()->AddShellObserver(this);
   aura::client::GetActivationClient(root_window_)->AddObserver(this);
@@ -231,24 +231,23 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (delegate && delegate->IsScreenLocked()) {
     SetState(VISIBLE);
   } else {
-    WorkspaceManager::WindowState window_state(
-        workspace_manager_->GetWindowState());
+    WorkspaceWindowState window_state(workspace_controller_->GetWindowState());
     switch (window_state) {
-      case WorkspaceManager::WINDOW_STATE_FULL_SCREEN:
+      case WORKSPACE_WINDOW_STATE_FULL_SCREEN:
         SetState(HIDDEN);
         break;
 
-      case WorkspaceManager::WINDOW_STATE_MAXIMIZED:
+      case WORKSPACE_WINDOW_STATE_MAXIMIZED:
         SetState(auto_hide_behavior_ != SHELF_AUTO_HIDE_BEHAVIOR_NEVER ?
                  AUTO_HIDE : VISIBLE);
         break;
 
-      case WorkspaceManager::WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
-      case WorkspaceManager::WINDOW_STATE_DEFAULT:
+      case WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF:
+      case WORKSPACE_WINDOW_STATE_DEFAULT:
         SetState(auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS ?
                  AUTO_HIDE : VISIBLE);
         SetWindowOverlapsShelf(window_state ==
-            WorkspaceManager::WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
+                               WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF);
     }
   }
 }

@@ -46,9 +46,25 @@ WorkspaceController::~WorkspaceController() {
     viewport_->SetLayoutManager(NULL);
 }
 
+bool WorkspaceController::IsInMaximizedMode() const {
+  return workspace_manager_->IsInMaximizedMode();
+}
+
 void WorkspaceController::SetGridSize(int grid_size) {
   workspace_manager_->set_grid_size(grid_size);
   event_filter_->set_grid_size(grid_size);
+}
+
+int WorkspaceController::GetGridSize() const {
+  return workspace_manager_->grid_size();
+}
+
+WorkspaceWindowState WorkspaceController::GetWindowState() const {
+  return workspace_manager_->GetWindowState();
+}
+
+void WorkspaceController::SetShelf(ShelfLayoutManager* shelf) {
+  workspace_manager_->set_shelf(shelf);
 }
 
 void WorkspaceController::OnWindowActivated(aura::Window* window,

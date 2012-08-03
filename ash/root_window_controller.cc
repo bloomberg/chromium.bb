@@ -19,7 +19,6 @@
 #include "ash/wm/toplevel_window_event_filter.h"
 #include "ash/wm/visibility_controller.h"
 #include "ash/wm/window_properties.h"
-#include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
@@ -289,7 +288,7 @@ void RootWindowController::CloseChildWindows() {
 }
 
 bool RootWindowController::IsInMaximizedMode() const {
-  return workspace_controller_->workspace_manager()->IsInMaximizedMode();
+  return workspace_controller_->IsInMaximizedMode();
 }
 
 void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {

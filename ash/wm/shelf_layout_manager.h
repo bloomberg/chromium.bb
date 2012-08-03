@@ -32,7 +32,7 @@ class ScreenAsh;
 namespace internal {
 
 class ShelfLayoutManagerTest;
-class WorkspaceManager;
+class WorkspaceController;
 
 // ShelfLayoutManager is the layout manager responsible for the launcher and
 // status widgets. The launcher is given the total available width and told the
@@ -98,8 +98,8 @@ class ASH_EXPORT ShelfLayoutManager :
   bool SetAlignment(ShelfAlignment alignment);
   ShelfAlignment alignment() const { return alignment_; }
 
-  void set_workspace_manager(WorkspaceManager* manager) {
-    workspace_manager_ = manager;
+  void set_workspace_controller(WorkspaceController* controller) {
+    workspace_controller_ = controller;
   }
 
   views::Widget* launcher_widget() {
@@ -261,7 +261,7 @@ class ASH_EXPORT ShelfLayoutManager :
   Launcher* launcher_;
   views::Widget* status_;
 
-  WorkspaceManager* workspace_manager_;
+  WorkspaceController* workspace_controller_;
 
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;

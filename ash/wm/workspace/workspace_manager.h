@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/workspace/workspace.h"
+#include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/insets.h"
@@ -32,20 +33,6 @@ class WorkspaceManagerTest;
 // WorkspaceManager manages multiple workspaces in the desktop.
 class ASH_EXPORT WorkspaceManager {
  public:
-  enum WindowState {
-    // There's a full screen window.
-    WINDOW_STATE_FULL_SCREEN,
-
-    // There's a maximized window.
-    WINDOW_STATE_MAXIMIZED,
-
-    // At least one window overlaps the shelf.
-    WINDOW_STATE_WINDOW_OVERLAPS_SHELF,
-
-    // None of the windows are fullscreen, maximized or touch the shelf.
-    WINDOW_STATE_DEFAULT,
-  };
-
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
@@ -88,7 +75,7 @@ class ASH_EXPORT WorkspaceManager {
   void UpdateShelfVisibility();
 
   // Returns the current window state.
-  WindowState GetWindowState();
+  WorkspaceWindowState GetWindowState() const;
 
   // Invoked when the show state of the specified window changes.
   void ShowStateChanged(aura::Window* window);
