@@ -31,7 +31,7 @@
 #include "evdev.h"
 #include "launcher-util.h"
 
-static void
+void
 evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
 {
 	static const struct {
@@ -468,7 +468,7 @@ evdev_configure_device(struct evdev_input_device *device)
 	return 0;
 }
 
-static struct evdev_input_device *
+struct evdev_input_device *
 evdev_input_device_create(struct weston_seat *seat,
 			  const char *path, int device_fd)
 {
@@ -526,7 +526,7 @@ err1:
 	return NULL;
 }
 
-static void
+void
 evdev_input_device_destroy(struct evdev_input_device *device)
 {
 	struct evdev_dispatch *dispatch;
@@ -584,7 +584,7 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 	wl_list_insert(master->devices_list.prev, &device->link);
 }
 
-static void
+void
 evdev_notify_keyboard_focus(struct weston_seat *seat,
 			    struct wl_list *evdev_devices)
 {

@@ -132,4 +132,18 @@ evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base);
 void
 evdev_disable_udev_monitor(struct weston_seat *seat_base);
 
+void
+evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds);
+
+struct evdev_input_device *
+evdev_input_device_create(struct weston_seat *seat,
+			  const char *path, int device_fd);
+
+void
+evdev_input_device_destroy(struct evdev_input_device *device);
+
+void
+evdev_notify_keyboard_focus(struct weston_seat *seat,
+			    struct wl_list *evdev_devices);
+
 #endif /* EVDEV_H */
