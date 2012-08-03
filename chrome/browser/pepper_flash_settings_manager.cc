@@ -82,7 +82,9 @@ class PepperFlashSettingsManager::Core
           type(INVALID_REQUEST_TYPE),
           setting_type(PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC),
           permission(PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT),
-          clear_site_specific(false) {
+          clear_site_specific(false),
+          flags(0),
+          max_age(0) {
     }
 
     uint32 id;
