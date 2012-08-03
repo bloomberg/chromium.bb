@@ -482,11 +482,24 @@ class WebNotificationButtonView : public views::View,
 
 class WebContentsView : public views::View {
  public:
-  WebContentsView() {}
+  explicit WebContentsView(WebNotificationTray* tray)
+      : tray_(tray) {
+    // TODO(stevenjb): Remove this border when TrayBubbleBorder is integrated
+    // with BubbleBorder.
+    int left = (tray->shelf_alignment() == SHELF_ALIGNMENT_LEFT) ? 0 : 1;
+    int right = (tray->shelf_alignment() == SHELF_ALIGNMENT_RIGHT) ? 0 : 1;
+    int bottom = (tray->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) ? 0 : 1;
+    set_border(views::Border::CreateSolidSidedBorder(
+        1, left, bottom, right, ash::kBorderDarkColor));
+    set_notify_enter_exit_on_child(true);
+  }
   virtual ~WebContentsView() {}
 
   virtual void Update(
       const WebNotificationList::Notifications& notifications) = 0;
+
+ protected:
+  WebNotificationTray* tray_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsView);
@@ -495,10 +508,7 @@ class WebContentsView : public views::View {
 class MessageCenterContentsView : public WebContentsView {
  public:
   explicit MessageCenterContentsView(WebNotificationTray* tray)
-      : tray_(tray) {
-    set_border(views::Border::CreateSolidSidedBorder(
-        1, 1, 1, 1, ash::kBorderDarkColor));
-
+      : WebContentsView(tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -542,7 +552,6 @@ class MessageCenterContentsView : public WebContentsView {
     scroller_->SizeToPreferredSize();
   }
 
-  WebNotificationTray* tray_;
   internal::FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
   internal::WebNotificationButtonView* button_view_;
@@ -553,10 +562,7 @@ class MessageCenterContentsView : public WebContentsView {
 class WebNotificationContentsView : public WebContentsView {
  public:
   explicit WebNotificationContentsView(WebNotificationTray* tray)
-      : tray_(tray) {
-    set_border(views::Border::CreateSolidSidedBorder(
-        1, 1, 1, 1, ash::kBorderDarkColor));
-
+      : WebContentsView(tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -577,7 +583,6 @@ class WebNotificationContentsView : public WebContentsView {
   }
 
  private:
-  WebNotificationTray* tray_;
   views::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationContentsView);
