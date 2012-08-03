@@ -1881,34 +1881,36 @@ evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 static int
 evdev_udev_handler(int fd, uint32_t mask, void *data)
 {
-	struct drm_seat *master = data;
+	struct drm_seat *seat = data;
 	struct udev_device *udev_device;
 	struct evdev_input_device *device, *next;
 	const char *action;
 	const char *devnode;
 
-	udev_device = udev_monitor_receive_device(master->udev_monitor);
+	udev_device = udev_monitor_receive_device(seat->udev_monitor);
 	if (!udev_device)
 		return 1;
 
 	action = udev_device_get_action(udev_device);
-	if (action) {
-		if (strncmp("event", udev_device_get_sysname(udev_device), 5) != 0)
-			return 0;
+	if (!action)
+		goto out;
 
-		if (!strcmp(action, "add")) {
-			device_added(udev_device, master);
-		}
-		else if (!strcmp(action, "remove")) {
-			devnode = udev_device_get_devnode(udev_device);
-			wl_list_for_each_safe(device, next,
-					      &master->devices_list, link)
-				if (!strcmp(device->devnode, devnode)) {
-					evdev_input_device_destroy(device);
-					break;
-				}
-		}
+	if (strncmp("event", udev_device_get_sysname(udev_device), 5) != 0)
+		goto out;
+
+	if (!strcmp(action, "add")) {
+		device_added(udev_device, seat);
 	}
+	else if (!strcmp(action, "remove")) {
+		devnode = udev_device_get_devnode(udev_device);
+		wl_list_for_each_safe(device, next, &seat->devices_list, link)
+			if (!strcmp(device->devnode, devnode)) {
+				evdev_input_device_destroy(device);
+				break;
+			}
+	}
+
+out:
 	udev_device_unref(udev_device);
 
 	return 0;
