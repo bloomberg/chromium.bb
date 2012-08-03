@@ -77,6 +77,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
 
   // Signal the client that the current buffer has been read and can be
   // returned. Will also release the mapping.
+  void ReturnCurrInputBufferLocked();
   void ReturnCurrInputBuffer();
 
   // Get and set up one or more output buffers in the decoder. This will sleep
