@@ -469,7 +469,7 @@ evdev_configure_device(struct evdev_input_device *device)
 }
 
 static struct evdev_input_device *
-evdev_input_device_create(struct evdev_seat *master,
+evdev_input_device_create(struct weston_seat *seat,
 			  const char *path, int device_fd)
 {
 	struct evdev_input_device *device;
@@ -478,12 +478,13 @@ evdev_input_device_create(struct evdev_seat *master,
 	device = malloc(sizeof *device);
 	if (device == NULL)
 		return NULL;
+	memset(device, 0, sizeof *device);
 
-	ec = master->base.compositor;
+	ec = seat->compositor;
 	device->output =
 		container_of(ec->output_list.next, struct weston_output, link);
 
-	device->seat = &master->base;
+	device->seat = seat;
 	device->is_mt = 0;
 	device->mtdev = NULL;
 	device->devnode = strdup(path);
@@ -514,8 +515,6 @@ evdev_input_device_create(struct evdev_seat *master,
 					      evdev_input_device_data, device);
 	if (device->source == NULL)
 		goto err2;
-
-	wl_list_insert(master->devices_list.prev, &device->link);
 
 	return device;
 
@@ -575,11 +574,14 @@ device_added(struct udev_device *udev_device, struct evdev_seat *master)
 		return;
 	}
 
-	device = evdev_input_device_create(master, devnode, fd);
+	device = evdev_input_device_create(&master->base, devnode, fd);
 	if (!device) {
 		close(fd);
 		weston_log("not using input device '%s'.\n", devnode);
+		return;
 	}
+
+	wl_list_insert(master->devices_list.prev, &device->link);
 }
 
 static void
