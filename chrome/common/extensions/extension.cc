@@ -536,25 +536,8 @@ bool Extension::HasWebAccessibleResources() const {
   return false;
 }
 
-bool Extension::HasNaClModules() const {
-  if (nacl_modules_.size())
-    return true;
-
-  return false;
-}
-
 bool Extension::IsSandboxedPage(const std::string& relative_path) const {
   return ResourceMatches(sandboxed_pages_, relative_path);
-}
-
-bool Extension::IsResourceNaClManifest(const std::string& resource) const {
-  GURL url = extension_url_.Resolve(resource);
-  for (std::vector<NaClModuleInfo>::const_iterator it = nacl_modules_.begin();
-       it != nacl_modules_.end(); it++) {
-    if (it->url == url)
-      return true;
-  }
-  return false;
 }
 
 

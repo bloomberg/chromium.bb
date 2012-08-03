@@ -356,9 +356,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the specified resource is web accessible.
   bool IsResourceWebAccessible(const std::string& relative_path) const;
 
-  // Returns true if the specified resource is a NaCl manifest.
-  bool IsResourceNaClManifest(const std::string& resource) const;
-
   // Returns true if the specified page is sandboxed (served in a unique
   // origin).
   bool IsSandboxedPage(const std::string& relative_path) const;
@@ -370,9 +367,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns true when 'web_accessible_resources' are defined for the extension.
   bool HasWebAccessibleResources() const;
-
-  // Returns true when 'nacl_modules' are defined for the extension.
-  bool HasNaClModules() const;
 
   // Returns an extension resource object. |relative_path| should be UTF8
   // encoded.

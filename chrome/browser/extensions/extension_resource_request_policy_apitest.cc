@@ -54,15 +54,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
     &result));
   EXPECT_EQ(result, "Loaded");
 
-  // A web host that does not have permission.
-  ui_test_utils::NavigateToURL(
-      browser(), web_resource.ReplaceComponents(make_host_b_com));
-  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
-    chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
-      L"window.domAutomationController.send(document.title)",
-    &result));
-  EXPECT_EQ(result, "Image failed to load");
-
   // A web host that loads a non-existent extension.
   GURL non_existent_extension(
       test_server()->GetURL(
