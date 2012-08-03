@@ -727,7 +727,7 @@
             'remoting_me2me_host',
           ],
           'sources': [
-            'host/installer/chromoting.wxs',
+            'host/win/chromoting.wxs',
           ],
           'outputs': [
             '<(PRODUCT_DIR)/chromoting.msi',
@@ -752,14 +752,14 @@
                 '<(PRODUCT_DIR)/remoting_service.exe',
                 '<(sas_dll_path)/sas.dll',
                 'resources/chromoting.ico',
-                'candle_and_light.py',
+                'tools/candle_and_light.py',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi',
               ],
               'msvs_cygwin_shell': 0,
               'action': [
-                'python', 'candle_and_light.py',
+                'python', 'tools/candle_and_light.py',
                 '--wix_path', '<(wix_path)',
                 '--version', '<(version_full)',
                 '--product_dir', '<(PRODUCT_DIR).',
@@ -800,7 +800,7 @@
               'rule_name': 'dark_and_candle_and_light',
               'extension': 'msi',
               'inputs': [
-                'dark_and_candle_and_light.py',
+                'tools/dark_and_candle_and_light.py',
               ],
               'outputs': [
                 '<(INTERMEDIATE_DIR)/chromoting-test.msi',
@@ -808,7 +808,7 @@
               'msvs_cygwin_shell': 0,
               'action': [
                 'python',
-                'dark_and_candle_and_light.py',
+                'tools/dark_and_candle_and_light.py',
                 '--wix_path', '<(wix_path)',
                 '--input', '<(RULE_INPUT_PATH)',
                 '--intermediate_dir', '<(INTERMEDIATE_DIR).',
