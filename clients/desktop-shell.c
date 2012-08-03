@@ -44,6 +44,8 @@
 
 #include "desktop-shell-client-protocol.h"
 
+extern char **environ; /* defined by libc */
+
 struct desktop {
 	struct display *display;
 	struct desktop_shell *shell;
@@ -484,9 +486,9 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 
 	wl_array_init(&launcher->envp);
 	wl_array_init(&launcher->argv);
-	for (i = 0; __environ[i]; i++) {
+	for (i = 0; environ[i]; i++) {
 		ps = wl_array_add(&launcher->envp, sizeof *ps);
-		*ps = __environ[i];
+		*ps = environ[i];
 	}
 	j = 0;
 
