@@ -69,6 +69,11 @@ const int kOpenFilePermissions = base::PLATFORM_FILE_CREATE |
                                  base::PLATFORM_FILE_DELETE_ON_CLOSE |
                                  base::PLATFORM_FILE_WRITE_ATTRIBUTES;
 
+void RevokeFilePermission(int child_id, const FilePath& path) {
+  ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
+    child_id, path);
+}
+
 }  // namespace
 
 FileAPIMessageFilter::FileAPIMessageFilter(
@@ -703,6 +708,19 @@ void FileAPIMessageFilter::RegisterFileAsBlob(const GURL& blob_url,
   FilePath::StringType extension = virtual_path.Extension();
   if (!extension.empty())
     extension = extension.substr(1);  // Strip leading ".".
+
+  scoped_refptr<webkit_blob::ShareableFileReference> shareable_file =
+      webkit_blob::ShareableFileReference::Get(platform_path);
+  if (shareable_file &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+          process_id_, platform_path)) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
+        process_id_, platform_path);
+    // This will revoke all permissions for the file when the last ref
+    // of the file is dropped (assuming it's ok).
+    shareable_file->AddFinalReleaseCallback(
+        base::Bind(&RevokeFilePermission, process_id_));
+  }
 
   // This may fail, but then we'll be just setting the empty mime type.
   std::string mime_type;
