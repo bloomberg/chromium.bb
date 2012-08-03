@@ -583,7 +583,8 @@ device_added(struct udev_device *udev_device, struct evdev_seat *master)
 }
 
 static void
-evdev_notify_keyboard_focus(struct evdev_seat *seat)
+evdev_notify_keyboard_focus(struct weston_seat *seat,
+			    struct wl_list *evdev_devices)
 {
 	struct evdev_input_device *device;
 	struct wl_array keys;
@@ -593,7 +594,7 @@ evdev_notify_keyboard_focus(struct evdev_seat *seat)
 	int ret;
 
 	memset(all_keys, 0, sizeof all_keys);
-	wl_list_for_each(device, &seat->devices_list, link) {
+	wl_list_for_each(device, evdev_devices, link) {
 		memset(evdev_keys, 0, sizeof evdev_keys);
 		ret = ioctl(device->fd,
 			    EVIOCGKEY(sizeof evdev_keys), evdev_keys);
@@ -615,8 +616,7 @@ evdev_notify_keyboard_focus(struct evdev_seat *seat)
 		}
 	}
 
-	notify_keyboard_focus_in(&seat->base.seat, &keys,
-				 STATE_UPDATE_AUTOMATIC);
+	notify_keyboard_focus_in(&seat->seat, &keys, STATE_UPDATE_AUTOMATIC);
 
 	wl_array_release(&keys);
 }
@@ -649,7 +649,7 @@ evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 	}
 	udev_enumerate_unref(e);
 
-	evdev_notify_keyboard_focus(seat);
+	evdev_notify_keyboard_focus(&seat->base, &seat->devices_list);
 
 	if (wl_list_empty(&seat->devices_list)) {
 		weston_log(
