@@ -137,6 +137,8 @@ TEST_F(ExtensionActionTest, Visibility) {
   ASSERT_FALSE(action.GetIsVisible(1));
   ASSERT_FALSE(action.GetIsVisible(100));
   EXPECT_FALSE(action.GetIconAnimation(100));
+
+  message_loop.RunAllPending();
 }
 
 TEST_F(ExtensionActionTest, GetAttention) {
@@ -156,6 +158,8 @@ TEST_F(ExtensionActionTest, GetAttention) {
   action.SetAppearance(1, ExtensionAction::ACTIVE);
   EXPECT_FALSE(action.GetIconAnimation(1))
       << "The animation should not play again if the icon was already visible.";
+
+  message_loop.RunAllPending();
 }
 
 TEST_F(ExtensionActionTest, Badge) {
