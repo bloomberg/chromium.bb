@@ -52,7 +52,7 @@ enum BubbleCreationType {
 
 class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
  public:
-  SystemTray();
+  explicit SystemTray(internal::StatusAreaWidget* status_area_widget);
   virtual ~SystemTray();
 
   // Called after the tray has been added to the widget containing it.
@@ -99,8 +99,8 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Temporarily hides/unhides the notification bubble.
   void SetHideNotifications(bool hidden);
 
-  // Returns true if the primary bubble is visible.
-  bool IsBubbleVisible() const;
+  // Returns true if any bubble is visible.
+  bool IsAnyBubbleVisible() const;
 
   // Returns true if the launcher should show.
   bool should_show_launcher() const {
@@ -194,8 +194,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Called when the anchor (tray or bubble) may have moved or changed.
   void UpdateNotificationAnchor();
 
-  void SetBorder();
-
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
 
@@ -212,9 +210,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Pointers to members of |items_|.
   SystemTrayItem* detailed_item_;
   std::vector<SystemTrayItem*> notification_items_;
-
-  // The container for all the tray views of the items.
-  internal::SystemTrayContainer* tray_container_;
 
   // Mappings of system tray item and it's view in the tray.
   std::map<SystemTrayItem*, views::View*> tray_item_map_;
@@ -238,7 +233,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Bubble for default and detailed views.
   scoped_ptr<internal::SystemTrayBubble> bubble_;
 
-  // Buble for notifications.
+  // Bubble for notifications.
   scoped_ptr<internal::SystemTrayBubble> notification_bubble_;
 
   // See description agove getter.

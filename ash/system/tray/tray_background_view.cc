@@ -19,6 +19,12 @@ namespace {
 const SkColor kTrayBackgroundAlpha = 100;
 const SkColor kTrayBackgroundHoverAlpha = 150;
 
+// Adjust the size of TrayContainer with additional padding.
+const int kTrayContainerVerticalPaddingBottomAlignment  = 1;
+const int kTrayContainerHorizontalPaddingBottomAlignment  = 1;
+const int kTrayContainerVerticalPaddingVerticalAlignment  = 1;
+const int kTrayContainerHorizontalPaddingVerticalAlignment = 1;
+
 }  // namespace
 
 namespace ash {
@@ -50,11 +56,75 @@ class TrayBackground : public views::Background {
   DISALLOW_COPY_AND_ASSIGN(TrayBackground);
 };
 
+TrayBackgroundView::TrayContainer::TrayContainer(ShelfAlignment alignment)
+    : alignment_(alignment) {
+  UpdateLayout();
+}
+
+void TrayBackgroundView::TrayContainer::SetAlignment(ShelfAlignment alignment) {
+  if (alignment_ == alignment)
+    return;
+  alignment_ = alignment;
+  UpdateLayout();
+}
+
+gfx::Size TrayBackgroundView::TrayContainer::GetPreferredSize() {
+  if (size_.IsEmpty())
+    return views::View::GetPreferredSize();
+  return size_;
+}
+
+void TrayBackgroundView::TrayContainer::ChildPreferredSizeChanged(
+    views::View* child) {
+  PreferredSizeChanged();
+}
+
+void TrayBackgroundView::TrayContainer::ChildVisibilityChanged(View* child) {
+  PreferredSizeChanged();
+}
+
+void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(bool is_add,
+                                                             View* parent,
+                                                             View* child) {
+  if (parent == this)
+    PreferredSizeChanged();
+}
+
+void TrayBackgroundView::TrayContainer::UpdateLayout() {
+  // Adjust the size of status tray dark background by adding additional
+  // empty border.
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    set_border(views::Border::CreateEmptyBorder(
+        kTrayContainerVerticalPaddingBottomAlignment,
+        kTrayContainerHorizontalPaddingBottomAlignment,
+        kTrayContainerVerticalPaddingBottomAlignment,
+        kTrayContainerHorizontalPaddingBottomAlignment));
+    views::BoxLayout* layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    layout->set_spread_blank_space(true);
+    views::View::SetLayoutManager(layout);
+  } else {
+    set_border(views::Border::CreateEmptyBorder(
+        kTrayContainerVerticalPaddingVerticalAlignment,
+        kTrayContainerHorizontalPaddingVerticalAlignment,
+        kTrayContainerVerticalPaddingVerticalAlignment,
+        kTrayContainerHorizontalPaddingVerticalAlignment));
+    views::BoxLayout* layout =
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+    layout->set_spread_blank_space(true);
+    views::View::SetLayoutManager(layout);
+  }
+  PreferredSizeChanged();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
-TrayBackgroundView::TrayBackgroundView()
-    : shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
+TrayBackgroundView::TrayBackgroundView(
+    internal::StatusAreaWidget* status_area_widget)
+    : status_area_widget_(status_area_widget),
+      tray_container_(NULL),
+      shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
           this, 0, kTrayBackgroundAlpha)),
@@ -66,6 +136,11 @@ TrayBackgroundView::TrayBackgroundView()
   SetPaintsBackground(true, internal::BackgroundAnimator::CHANGE_IMMEDIATE);
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_IMMEDIATE);
+
+  SetBorder();
+
+  tray_container_ = new TrayContainer(shelf_alignment_);
+  SetContents(tray_container_);
 }
 
 TrayBackgroundView::~TrayBackgroundView() {
@@ -113,6 +188,27 @@ void TrayBackgroundView::SetPaintsBackground(
 
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
   shelf_alignment_ = alignment;
+  SetBorder();
+  tray_container_->SetAlignment(alignment);
+}
+
+void TrayBackgroundView::SetBorder() {
+  // Change the border padding for different shelf alignment.
+  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+    set_border(views::Border::CreateEmptyBorder(0, 0,
+        kPaddingFromBottomOfScreenBottomAlignment,
+        kPaddingFromRightEdgeOfScreenBottomAlignment));
+  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
+    set_border(views::Border::CreateEmptyBorder(0,
+        kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
+        kPaddingFromBottomOfScreenVerticalAlignment,
+        kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
+  } else {
+    set_border(views::Border::CreateEmptyBorder(0,
+        kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+        kPaddingFromBottomOfScreenVerticalAlignment,
+        kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
+  }
 }
 
 }  // namespace internal

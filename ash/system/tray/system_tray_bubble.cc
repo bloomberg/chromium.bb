@@ -279,12 +279,11 @@ void SystemTrayBubble::InitView(views::View* anchor,
   if (bubble_type_ == BUBBLE_TYPE_DETAILED &&
       init_params.max_height < kDetailedBubbleMaxHeight) {
     init_params.max_height = kDetailedBubbleMaxHeight;
+  } else if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION) {
+    init_params.close_on_deactivate = false;
   }
-
   bubble_view_ = TrayBubbleView::Create(anchor, this, init_params);
 
-  if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION)
-    bubble_view_->set_close_on_deactivate(false);
 
   CreateItemViews(login_status);
 

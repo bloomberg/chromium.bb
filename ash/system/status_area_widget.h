@@ -24,11 +24,6 @@ class StatusAreaWidgetDelegate;
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
-  enum UserAction {
-    NON_USER_ACTION,
-    USER_ACTION
-  };
-
   StatusAreaWidget();
   virtual ~StatusAreaWidget();
 
@@ -47,10 +42,14 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
 
-  // Always used to show/hide the web notification tray. These handle any logic
-  // with hiding/supressing notifications from the system tray.
-  void ShowWebNotificationBubble(UserAction user_action);
-  void HideWebNotificationBubble();
+  // Hide any non system (i.e. web) notifications.
+  void HideNonSystemNotifications();
+
+  // Toggle the visibility of system notifications.
+  void SetHideSystemNotifications(bool hide);
+
+  // Returns true if it is OK to show a non system notification.
+  bool ShouldShowNonSystemNotifications();
 
   // Called by the client when the login status changes. Caches login_status
   // and calls UpdateAfterLoginStatusChange for the system tray and the web

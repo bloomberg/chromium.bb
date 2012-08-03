@@ -247,6 +247,7 @@ TrayBubbleView::InitParams::InitParams(AnchorType anchor_type,
       bubble_width(kTrayPopupWidth),
       max_height(0),
       can_activate(false),
+      close_on_deactivate(true),
       arrow_offset(kArrowDefaultOffset),
       arrow_color(kHeaderBackgroundColorDark) {
 }
@@ -286,6 +287,7 @@ TrayBubbleView::TrayBubbleView(
       anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
       internal::kShellWindowId_SettingBubbleContainer));
   set_notify_enter_exit_on_child(true);
+  set_close_on_deactivate(init_params.close_on_deactivate);
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(true);
 }

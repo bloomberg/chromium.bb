@@ -298,7 +298,7 @@ StatusAreaWidget::~StatusAreaWidget() {
 
 void StatusAreaWidget::CreateTrayViews(ShellDelegate* shell_delegate) {
   AddWebNotificationTray(new WebNotificationTray(this));
-  AddSystemTray(new SystemTray(), shell_delegate);
+  AddSystemTray(new SystemTray(this), shell_delegate);
 }
 
 void StatusAreaWidget::Shutdown() {
@@ -351,27 +351,18 @@ void StatusAreaWidget::SetPaintsBackground(
     web_notification_tray_->SetPaintsBackground(value, change_type);
 }
 
-void StatusAreaWidget::ShowWebNotificationBubble(UserAction user_action) {
-  if (system_tray_ && system_tray_->IsBubbleVisible()) {
-    // User actions should always hide the system tray bubble first.
-    DCHECK(user_action != USER_ACTION);
-    // Don't immediately show the web notification bubble if the system tray
-    // bubble is visible.
-    return;
-  }
-  DCHECK(web_notification_tray_);
-  web_notification_tray_->ShowBubble();
-  // Disable showing system notifications while viewing web notifications.
-  if (system_tray_)
-    system_tray_->SetHideNotifications(true);
+void StatusAreaWidget::HideNonSystemNotifications() {
+  if (web_notification_tray_)
+    web_notification_tray_->HideNotificationBubble();
 }
 
-void StatusAreaWidget::HideWebNotificationBubble() {
-  DCHECK(web_notification_tray_);
-  web_notification_tray_->HideBubble();
-  // Show any hidden or suppressed system notifications.
+void StatusAreaWidget::SetHideSystemNotifications(bool hide) {
   if (system_tray_)
-    system_tray_->SetHideNotifications(false);
+    system_tray_->SetHideNotifications(hide);
+}
+
+bool StatusAreaWidget::ShouldShowNonSystemNotifications() {
+  return !(system_tray_ && system_tray_->IsAnyBubbleVisible());
 }
 
 void StatusAreaWidget::UpdateAfterLoginStatusChange(

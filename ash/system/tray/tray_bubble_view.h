@@ -77,6 +77,7 @@ class TrayBubbleView : public views::BubbleDelegateView {
     int bubble_width;
     int max_height;
     bool can_activate;
+    bool close_on_deactivate;
     int arrow_offset;
     SkColor arrow_color;
   };

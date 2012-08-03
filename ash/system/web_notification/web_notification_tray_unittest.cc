@@ -82,7 +82,7 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
 
   // Adding a notification should show the bubble.
   delegate->AddNotification(tray, "test_id1");
-  EXPECT_TRUE(tray->bubble() != NULL);
+  EXPECT_TRUE(tray->notification_bubble() != NULL);
   EXPECT_EQ(1, tray->GetNotificationCount());
   delegate->AddNotification(tray, "test_id2");
   delegate->AddNotification(tray, "test_id2");
@@ -97,7 +97,7 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
   // Removing the last notification should hide the bubble.
   delegate->RemoveNotification(tray, "test_id1");
   EXPECT_EQ(0, tray->GetNotificationCount());
-  EXPECT_TRUE(tray->bubble() == NULL);
+  EXPECT_TRUE(tray->notification_bubble() == NULL);
 }
 
 }  // namespace ash

@@ -20,6 +20,7 @@
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/settings/tray_settings.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -48,69 +49,9 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
-namespace {
-
-// Adjust the size of SystemTrayContainer with additional padding.
-const int kTrayContainerVerticalPaddingBottomAlignment  = 1;
-const int kTrayContainerHorizontalPaddingBottomAlignment  = 1;
-const int kTrayContainerVerticalPaddingVerticalAlignment  = 1;
-const int kTrayContainerHorizontalPaddingVerticalAlignment = 1;
-
-}  // namespace
-
 namespace ash {
 
 namespace internal {
-
-// Container for all the items in the tray. The container auto-resizes the
-// widget when necessary.
-class SystemTrayContainer : public views::View {
- public:
-  SystemTrayContainer() {}
-  virtual ~SystemTrayContainer() {}
-
-  void UpdateLayout(ShelfAlignment alignment) {
-    // Adjust the size of status tray dark background by adding additional
-    // empty border.
-    if (alignment == SHELF_ALIGNMENT_BOTTOM) {
-      set_border(views::Border::CreateEmptyBorder(
-          kTrayContainerVerticalPaddingBottomAlignment,
-          kTrayContainerHorizontalPaddingBottomAlignment,
-          kTrayContainerVerticalPaddingBottomAlignment,
-          kTrayContainerHorizontalPaddingBottomAlignment));
-      views::View::SetLayoutManager(new views::BoxLayout(
-          views::BoxLayout::kHorizontal, 0, 0, 0));
-    } else {
-      set_border(views::Border::CreateEmptyBorder(
-          kTrayContainerVerticalPaddingVerticalAlignment,
-          kTrayContainerHorizontalPaddingVerticalAlignment,
-          kTrayContainerVerticalPaddingVerticalAlignment,
-          kTrayContainerHorizontalPaddingVerticalAlignment));
-      views::View::SetLayoutManager(new views::BoxLayout(
-          views::BoxLayout::kVertical, 0, 0, 0));
-    }
-    PreferredSizeChanged();
-  }
-
- private:
-  // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
-    PreferredSizeChanged();
-  }
-
-  virtual void ChildVisibilityChanged(View* child) OVERRIDE {
-    PreferredSizeChanged();
-  }
-
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    View* parent,
-                                    View* child) OVERRIDE {
-    if (parent == this)
-      PreferredSizeChanged();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayContainer);
-};
 
 // Observe the tray layer animation and update the anchor when it changes.
 // TODO(stevenjb): Observe or mirror the actual animation, not just the start
@@ -145,8 +86,9 @@ using internal::SystemTrayBubble;
 using internal::SystemTrayLayerAnimationObserver;
 using internal::TrayBubbleView;
 
-SystemTray::SystemTray()
-    : items_(),
+SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
+    : internal::TrayBackgroundView(status_area_widget),
+      items_(),
       accessibility_observer_(NULL),
       audio_observer_(NULL),
       bluetooth_observer_(NULL),
@@ -162,10 +104,6 @@ SystemTray::SystemTray()
       should_show_launcher_(false),
       default_bubble_height_(0),
       hide_notifications_(false) {
-  tray_container_ = new internal::SystemTrayContainer;
-  tray_container_->UpdateLayout(shelf_alignment());
-  SetContents(tray_container_);
-  SetBorder();
 }
 
 SystemTray::~SystemTray() {
@@ -245,7 +183,7 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
       ash::Shell::GetInstance()->system_tray()->shelf_alignment());
 
   if (tray_item) {
-    tray_container_->AddChildViewAt(tray_item, 0);
+    tray_container()->AddChildViewAt(tray_item, 0);
     PreferredSizeChanged();
     tray_item_map_[item] = tray_item;
   }
@@ -329,8 +267,12 @@ void SystemTray::SetHideNotifications(bool hide_notifications) {
   hide_notifications_ = hide_notifications;
 }
 
-bool SystemTray::IsBubbleVisible() const {
-  return bubble_.get() && bubble_->IsVisible();
+bool SystemTray::IsAnyBubbleVisible() const {
+  if (bubble_.get() && bubble_->IsVisible())
+    return true;
+  if (notification_bubble_.get() && notification_bubble_->IsVisible())
+    return true;
+  return false;
 }
 
 bool SystemTray::CloseBubbleForTest() const {
@@ -413,7 +355,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     bubble_.reset(new SystemTrayBubble(this, items, bubble_type));
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    views::View* anchor = tray_container_;
+    views::View* anchor = tray_container();
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            shelf_alignment());
     init_params.can_activate = can_activate;
@@ -441,6 +383,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     should_show_launcher_ = true;
 
   UpdateNotificationBubble();  // State changed, re-create notifications.
+  status_area_widget()->HideNonSystemNotifications();
 }
 
 void SystemTray::UpdateNotificationBubble() {
@@ -475,7 +418,7 @@ void SystemTray::UpdateNotificationBubble() {
     anchor = bubble_->bubble_view();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_BUBBLE;
   } else {
-    anchor = tray_container_;
+    anchor = tray_container();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_TRAY;
   }
   TrayBubbleView::InitParams init_params(anchor_type, shelf_alignment());
@@ -486,6 +429,8 @@ void SystemTray::UpdateNotificationBubble() {
   notification_bubble_->InitView(anchor, init_params, login_status);
   if (hide_notifications_)
     notification_bubble_->SetVisible(false);
+  else
+    status_area_widget()->HideNonSystemNotifications();
 }
 
 void SystemTray::UpdateNotificationAnchor() {
@@ -496,32 +441,11 @@ void SystemTray::UpdateNotificationAnchor() {
   notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
 }
 
-void SystemTray::SetBorder() {
-  // Change the border padding for different shelf alignment.
-  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-    set_border(views::Border::CreateEmptyBorder(0, 0,
-        kPaddingFromBottomOfScreenBottomAlignment,
-        kPaddingFromRightEdgeOfScreenBottomAlignment));
-  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-    set_border(views::Border::CreateEmptyBorder(0,
-        kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
-        kPaddingFromBottomOfScreenVerticalAlignment,
-        kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
-  } else {
-    set_border(views::Border::CreateEmptyBorder(0,
-        kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
-        kPaddingFromBottomOfScreenVerticalAlignment,
-        kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
-  }
-}
-
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
   UpdateAfterShelfAlignmentChange(alignment);
-  SetBorder();
-  tray_container_->UpdateLayout(alignment);
   // Destroy any existing bubble so that it is rebuilt correctly.
   bubble_.reset();
   // Rebuild any notification bubble.
