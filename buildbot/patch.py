@@ -1031,7 +1031,6 @@ class UploadedLocalPatch(GitRepoPatch):
 
 class GerritPatch(GitRepoPatch):
   """Object that represents a Gerrit CL."""
-  _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
 
   def __init__(self, patch_dict, internal):
     """Construct a GerritPatch object from Gerrit query results.
@@ -1087,7 +1086,7 @@ class GerritPatch(GitRepoPatch):
     if internal:
       url_prefix = constants.GERRIT_INT_SSH_URL
     else:
-      url_prefix = cls._PUBLIC_URL
+      url_prefix = constants.GERRIT_SSH_URL
 
     return os.path.join(url_prefix, project)
 

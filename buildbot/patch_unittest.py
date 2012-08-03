@@ -574,7 +574,7 @@ class TestGerritPatch(TestGitRepoPatch):
     kls = cros_patch.GerritPatch
     self.assertEqual(
         kls._GetProjectUrl('monkeys', False),
-        os.path.join(kls._PUBLIC_URL, 'monkeys'))
+        os.path.join(constants.GERRIT_SSH_URL, 'monkeys'))
     self.assertEqual(
         kls._GetProjectUrl('monkeys', True),
         os.path.join(constants.GERRIT_INT_SSH_URL, 'monkeys'))
