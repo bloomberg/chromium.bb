@@ -1802,6 +1802,8 @@ handle_special_char(struct terminal *terminal, char c)
 	case '\x0F': /* SI */
 		terminal->cs = terminal->g0;
 		break;
+	case '\0':
+		break;
 	default:
 		return 0;
 	}
