@@ -226,6 +226,48 @@ void FileBrowserEventRouter::RemoveFileWatch(
   }
 }
 
+void FileBrowserEventRouter::MountDrive(
+    const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  if (system_service) {
+    system_service->docs_service()->Authenticate(
+        base::Bind(&FileBrowserEventRouter::OnAuthenticated,
+                   this,
+                   callback));
+  }
+}
+
+void FileBrowserEventRouter::OnAuthenticated(
+    const base::Closure& callback,
+    gdata::GDataErrorCode error,
+    const std::string& token) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  chromeos::MountError error_code;
+  // For the file manager to work offline, GDATA_NO_CONNECTION is allowed.
+  if (error == gdata::HTTP_SUCCESS || error == gdata::GDATA_NO_CONNECTION)
+    error_code = chromeos::MOUNT_ERROR_NONE;
+  else
+    error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
+
+  // Pass back the gdata mount point path as source path.
+  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
+  DiskMountManager::MountPointInfo mount_info(
+      gdata_path,
+      gdata_path,
+      chromeos::MOUNT_TYPE_GDATA,
+      chromeos::disks::MOUNT_CONDITION_NONE);
+
+  // Raise mount event.
+  MountCompleted(DiskMountManager::MOUNTING, error_code, mount_info);
+
+  if (!callback.is_null())
+    callback.Run();
+}
+
 void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -414,6 +456,26 @@ void FileBrowserEventRouter::OnDocumentFeedFetched(
       std::string(kFileBrowserDomain),
       extensions::event_names::kOnDocumentFeedFetched, args_json,
       NULL, GURL());
+}
+
+void FileBrowserEventRouter::OnFileSystemMounted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  MountDrive(base::Bind(&base::DoNothing));  // Callback does nothing.
+}
+
+void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Raise a MountCompleted event to notify the File Manager.
+  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
+  DiskMountManager::MountPointInfo mount_info(
+      gdata_path,
+      gdata_path,
+      chromeos::MOUNT_TYPE_GDATA,
+      chromeos::disks::MOUNT_CONDITION_NONE);
+  MountCompleted(DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
+                 mount_info);
 }
 
 void FileBrowserEventRouter::OnAuthenticationFailed() {

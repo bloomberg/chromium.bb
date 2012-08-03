@@ -276,11 +276,6 @@ class AddMountFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Sends gdata mount event to renderers.
-  void RaiseGDataMountEvent(gdata::GDataErrorCode error);
-  // A callback method to handle the result of GData authentication request.
-  void OnGDataAuthentication(gdata::GDataErrorCode error,
-                             const std::string& token);
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const std::string& mount_type_str,

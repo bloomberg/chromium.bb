@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -1089,13 +1088,11 @@ bool AddMountFunction::RunImpl() {
       break;
     }
     case chromeos::MOUNT_TYPE_GDATA: {
-      gdata::GDataSystemService* system_service =
-          gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-      if (system_service) {
-        system_service->docs_service()->Authenticate(
-            base::Bind(&AddMountFunction::OnGDataAuthentication,
-                       this));
-      }
+      const bool success = true;
+      FileBrowserEventRouterFactory::GetForProfile(profile_)->
+          MountDrive(base::Bind(&AddMountFunction::SendResponse,
+                                this,
+                                success));
       break;
     }
     default: {
@@ -1112,33 +1109,6 @@ bool AddMountFunction::RunImpl() {
   }
 
   return true;
-}
-
-void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
-  chromeos::MountError error_code = chromeos::MOUNT_ERROR_NONE;
-  // For the file manager to work offline, GDATA_NO_CONNECTION is allowed.
-  if (error == gdata::HTTP_SUCCESS || error == gdata::GDATA_NO_CONNECTION) {
-    error_code = chromeos::MOUNT_ERROR_NONE;
-  } else {
-    error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
-  }
-  // Pass back the gdata mount point path as source path.
-  const std::string& gdata_path = gdata::util::GetGDataMountPointPathAsString();
-  SetResult(Value::CreateStringValue(gdata_path));
-  DiskMountManager::MountPointInfo mount_info(
-      gdata_path,
-      gdata_path,
-      chromeos::MOUNT_TYPE_GDATA,
-      chromeos::disks::MOUNT_CONDITION_NONE);
-  // Raise mount event
-  FileBrowserEventRouterFactory::GetForProfile(profile_)->
-      MountCompleted(DiskMountManager::MOUNTING, error_code, mount_info);
-}
-
-void AddMountFunction::OnGDataAuthentication(gdata::GDataErrorCode error,
-                                             const std::string& token) {
-  RaiseGDataMountEvent(error);
-  SendResponse(true);
 }
 
 void AddMountFunction::GetLocalPathsResponseOnUIThread(

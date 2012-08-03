@@ -213,6 +213,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataFileSystemInterface::Observer* observer) OVERRIDE;
   virtual void StartUpdates() OVERRIDE;
   virtual void StopUpdates() OVERRIDE;
+  virtual void NotifyFileSystemMounted() OVERRIDE;
+  virtual void NotifyFileSystemToBeUnmounted() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,

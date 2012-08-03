@@ -886,9 +886,16 @@ void GDataFileSystem::StartUpdates() {
 }
 
 void GDataFileSystem::StopUpdates() {
+  // If unmount request comes from filesystem side, this method may be called
+  // twice. First is just after unmounting on filesystem, second is after
+  // unmounting on filemanager on JS. In other words, if this is called from
+  // GDataSystemService::RemoveDriveMountPoint(), this will be called again from
+  // FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread().
+  // We choose to stopping updates asynchronous without waiting for filemanager,
+  // rather than waiting for completion of unmounting on filemanager.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(update_timer_.IsRunning());
-  update_timer_.Stop();
+  if (update_timer_.IsRunning())
+    update_timer_.Stop();
 }
 
 void GDataFileSystem::GetEntryInfoByResourceId(
@@ -3476,6 +3483,24 @@ void GDataFileSystem::RemoveStaleEntryOnUpload(const std::string& resource_id,
   } else {
     LOG(ERROR) << "Entry for the existing file not found: " << resource_id;
   }
+}
+
+void GDataFileSystem::NotifyFileSystemMounted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "File System is mounted";
+  // Notify the observers that the file system is mounted.
+  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
+                    OnFileSystemMounted());
+}
+
+void GDataFileSystem::NotifyFileSystemToBeUnmounted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "File System is to be unmounted";
+  // Notify the observers that the file system is being unmounted.
+  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
+                    OnFileSystemBeingUnmounted());
 }
 
 void GDataFileSystem::RunAndNotifyInitialLoadFinished(

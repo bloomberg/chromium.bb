@@ -24,6 +24,8 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD0(StartUpdates, void());
   MOCK_METHOD0(StopUpdates, void());
+  MOCK_METHOD0(NotifyFileSystemMounted, void());
+  MOCK_METHOD0(NotifyFileSystemToBeUnmounted, void());
   MOCK_METHOD0(CheckForUpdates, void());
   MOCK_METHOD2(GetEntryInfoByResourceId,
                void(const std::string& resource_id,

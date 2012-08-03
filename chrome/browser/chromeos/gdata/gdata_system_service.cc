@@ -118,9 +118,15 @@ void GDataSystemService::AddDriveMountPoint() {
         mount_point,
         new GDataFileSystemProxy(file_system_.get()));
   }
+
+  file_system_->Initialize();
+  file_system_->NotifyFileSystemMounted();
 }
 
 void GDataSystemService::RemoveDriveMountPoint() {
+  file_system_->NotifyFileSystemToBeUnmounted();
+  file_system_->StopUpdates();
+
   const FilePath mount_point = gdata::util::GetGDataMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
       BrowserContext::GetFileSystemContext(profile_)->external_provider();

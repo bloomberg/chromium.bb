@@ -107,6 +107,11 @@ class GDataFileSystemInterface {
     // Triggered when the feed from the server is loaded.
     virtual void OnFeedFromServerLoaded() {}
 
+    // Triggered when the file system is mounted.
+    virtual void OnFileSystemMounted() {}
+    // Triggered when the file system is being unmounted.
+    virtual void OnFileSystemBeingUnmounted() {}
+
    protected:
     virtual ~Observer() {}
   };
@@ -122,6 +127,12 @@ class GDataFileSystemInterface {
   // Starts and stops periodic updates.
   virtual void StartUpdates() = 0;
   virtual void StopUpdates() = 0;
+
+  // Notifies the file system was just mounted.
+  virtual void NotifyFileSystemMounted() = 0;
+
+  // Notifies the file system is going to be unmounted.
+  virtual void NotifyFileSystemToBeUnmounted() = 0;
 
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
