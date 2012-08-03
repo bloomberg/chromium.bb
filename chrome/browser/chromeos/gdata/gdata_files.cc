@@ -733,33 +733,6 @@ void GDataEntry::SerializeToString(std::string* serialized_proto) const {
   }
 }
 
-// static
-scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
-    const std::string& serialized_proto) {
-  // First try to parse as GDataDirectoryProto. Note that this can succeed for
-  // a serialized_proto that's really a GDataEntryProto - we have to check
-  // is_directory to be sure.
-  GDataDirectoryProto dir_proto;
-  bool ok = dir_proto.ParseFromString(serialized_proto);
-  if (ok && dir_proto.gdata_entry().file_info().is_directory()) {
-    scoped_ptr<GDataDirectory> dir(new GDataDirectory(NULL, NULL));
-    if (!dir->FromProto(dir_proto))
-      return scoped_ptr<GDataEntry>(NULL);
-    return scoped_ptr<GDataEntry>(dir.release());
-  }
-
-  GDataEntryProto entry_proto;
-  ok = entry_proto.ParseFromString(serialized_proto);
-  if (ok) {
-    DCHECK(!entry_proto.file_info().is_directory());
-    scoped_ptr<GDataFile> file(new GDataFile(NULL, NULL));
-    if (!file->FromProto(entry_proto))
-      return scoped_ptr<GDataEntry>(NULL);
-    return scoped_ptr<GDataEntry>(file.release());
-  }
-  return scoped_ptr<GDataEntry>(NULL);
-}
-
 void GDataDirectoryService::SerializeToString(
     std::string* serialized_proto) const {
   GDataRootDirectoryProto proto;

@@ -89,11 +89,7 @@ class GDataEntry {
       GDataDirectoryService* directory_service);
 
   // Serialize/Parse to/from string via proto classes.
-  // TODO(achuith): Correctly set up parent_ and root_ links in
-  // FromProtoString.
   void SerializeToString(std::string* serialized_proto) const;
-  static scoped_ptr<GDataEntry> FromProtoString(
-      const std::string& serialized_proto);
 
   // Converts the proto representation to the platform file.
   static void ConvertProtoToPlatformFileInfo(
