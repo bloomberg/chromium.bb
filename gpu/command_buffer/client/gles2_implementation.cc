@@ -3059,7 +3059,7 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
         MustBeContextLost();
       }
     }
-    query_tracker_->RemoveQuery(queries[ii]);
+    query_tracker_->RemoveQuery(queries[ii], context_lost_);
   }
   helper_->DeleteQueriesEXTImmediate(n, queries);
 }

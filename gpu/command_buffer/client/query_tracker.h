@@ -150,7 +150,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
 
   Query* CreateQuery(GLuint id, GLenum target);
   Query* GetQuery(GLuint id);
-  void RemoveQuery(GLuint id);
+  void RemoveQuery(GLuint id, bool context_lost);
 
  private:
   typedef gpu::hash_map<GLuint, Query*> QueryMap;

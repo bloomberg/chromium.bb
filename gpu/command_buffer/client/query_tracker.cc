@@ -151,11 +151,12 @@ QueryTracker::Query* QueryTracker::GetQuery(
   return it != queries_.end() ? it->second : NULL;
 }
 
-void QueryTracker::RemoveQuery(GLuint client_id) {
+void QueryTracker::RemoveQuery(GLuint client_id, bool context_lost) {
+  (void)context_lost;  // stop unused warning
   QueryMap::iterator it = queries_.find(client_id);
   if (it != queries_.end()) {
     Query* query = it->second;
-    GPU_DCHECK(!query->Pending());
+    GPU_DCHECK(context_lost || !query->Pending());
     query_sync_manager_.Free(query->info_);
     queries_.erase(it);
     delete query;

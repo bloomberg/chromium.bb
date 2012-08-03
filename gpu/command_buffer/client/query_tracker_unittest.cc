@@ -115,7 +115,7 @@ TEST_F(QueryTrackerTest, Basic) {
   // Check we get nothing for a non-existent query.
   EXPECT_TRUE(query_tracker_->GetQuery(kId2) == NULL);
   // Check we can delete the query.
-  query_tracker_->RemoveQuery(kId1);
+  query_tracker_->RemoveQuery(kId1, false);
   // Check we get nothing for a non-existent query.
   EXPECT_TRUE(query_tracker_->GetQuery(kId1) == NULL);
 }
