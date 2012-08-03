@@ -23,6 +23,10 @@
 
 namespace ash {
 namespace {
+
+const int kSmallWallpaperMaximalWidth = 1366;
+const int kSmallWallpaperMaximalHeight = 800;
+
 internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
     aura::RootWindow* root_window) {
   return static_cast<internal::RootWindowLayoutManager*>(
@@ -32,11 +36,11 @@ internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
 
 // Stores the current wallpaper data.
 struct DesktopBackgroundController::WallpaperData {
-  explicit WallpaperData(int index)
+  WallpaperData(int index, WallpaperResolution resolution)
       : wallpaper_index(index),
-        wallpaper_layout(GetWallpaperInfo(index).layout),
+        wallpaper_layout(GetWallpaperViewInfo(index, resolution).layout),
         wallpaper_image(*(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            GetWallpaperInfo(index).id).ToImageSkia())) {
+            GetWallpaperViewInfo(index, resolution).id).ToImageSkia())) {
   }
   WallpaperData(WallpaperLayout layout, const gfx::ImageSkia& image)
       : wallpaper_index(-1),
@@ -54,7 +58,9 @@ class DesktopBackgroundController::WallpaperOperation
     : public base::RefCountedThreadSafe<
           DesktopBackgroundController::WallpaperOperation> {
  public:
-  explicit WallpaperOperation(int index) : index_(index) {
+  WallpaperOperation(int index, WallpaperResolution resolution)
+      : index_(index),
+        resolution_(resolution) {
   }
 
   static void Run(scoped_refptr<WallpaperOperation> wo) {
@@ -64,7 +70,7 @@ class DesktopBackgroundController::WallpaperOperation
   void LoadingWallpaper() {
     if (cancel_flag_.IsSet())
       return;
-    wallpaper_data_.reset(new WallpaperData(index_));
+    wallpaper_data_.reset(new WallpaperData(index_, resolution_));
   }
 
   void Cancel() {
@@ -85,7 +91,9 @@ class DesktopBackgroundController::WallpaperOperation
 
   scoped_ptr<WallpaperData> wallpaper_data_;
 
-  int index_;
+  const int index_;
+
+  const WallpaperResolution resolution_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperOperation);
 };
@@ -123,7 +131,17 @@ void DesktopBackgroundController::OnRootWindowAdded(
   switch (desktop_background_mode_) {
     case BACKGROUND_IMAGE:
       if (current_wallpaper_.get()) {
-        SetDesktopBackgroundImage(root_window);
+        gfx::Size root_window_size = root_window->GetHostSize();
+        int wallpaper_width = current_wallpaper_->wallpaper_image.width();
+        int wallpaper_height = current_wallpaper_->wallpaper_image.height();
+        // Loads a higher resolution wallpaper if needed.
+        if ((wallpaper_width < root_window_size.width() ||
+             wallpaper_height < root_window_size.height()) &&
+            current_wallpaper_->wallpaper_index != -1 &&
+            current_wallpaper_->wallpaper_layout != TILE)
+          SetDefaultWallpaper(current_wallpaper_->wallpaper_index, true);
+        else
+          SetDesktopBackgroundImage(root_window);
       } else {
         internal::CreateDesktopBackground(root_window);
       }
@@ -134,7 +152,8 @@ void DesktopBackgroundController::OnRootWindowAdded(
   }
 }
 
-void DesktopBackgroundController::SetDefaultWallpaper(int index) {
+void DesktopBackgroundController::SetDefaultWallpaper(int index,
+                                                      bool force_reload) {
   // We should not change background when index is invalid. For instance, at
   // login screen or stub_user login.
   if (index == ash::GetInvalidWallpaperIndex()) {
@@ -145,12 +164,23 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
     return;
   }
 
-  if (current_wallpaper_.get() && current_wallpaper_->wallpaper_index == index)
+  if (!force_reload && current_wallpaper_.get() &&
+      current_wallpaper_->wallpaper_index == index)
     return;
 
   CancelPendingWallpaperOperation();
 
-  wallpaper_op_ = new WallpaperOperation(index);
+  WallpaperResolution resolution = SMALL;
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    gfx::Size root_window_size = (*iter)->GetHostSize();
+    if (root_window_size.width() > kSmallWallpaperMaximalWidth ||
+        root_window_size.height() > kSmallWallpaperMaximalHeight)
+      resolution = LARGE;
+  }
+
+  wallpaper_op_ = new WallpaperOperation(index, resolution);
   base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WallpaperOperation::Run, wallpaper_op_),

@@ -206,7 +206,7 @@ void WallpaperManager::InitializeWallpaper() {
         // TODO(nkostylev): Add switch to disable wallpaper transition on OOBE.
         // Should be used on test images so that they are not slowed down.
         ash::Shell::GetInstance()->desktop_background_controller()->
-            SetDefaultWallpaper(kDefaultOOBEWallpaperIndex);
+            SetDefaultWallpaper(kDefaultOOBEWallpaperIndex, false);
       } else {
         bool show_users = true;
         bool result = CrosSettings::Get()->GetBoolean(
@@ -215,7 +215,7 @@ void WallpaperManager::InitializeWallpaper() {
                        << kAccountsPrefShowUserNamesOnSignIn;
         if (!show_users) {
           ash::Shell::GetInstance()->desktop_background_controller()->
-              SetDefaultWallpaper(ash::GetSolidColorIndex());
+              SetDefaultWallpaper(ash::GetSolidColorIndex(), false);
         }
       }
     }
@@ -307,7 +307,7 @@ void WallpaperManager::SetInitialUserWallpaper(const std::string& username) {
   // crash and speed up the tests by avoid loading wallpaper.
   if (ash::Shell::HasInstance()) {
     ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(current_user_wallpaper_index_);
+        SetDefaultWallpaper(current_user_wallpaper_index_, false);
   }
 }
 
@@ -366,7 +366,7 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
     return;
   }
   ash::Shell::GetInstance()->desktop_background_controller()->
-      SetDefaultWallpaper(index);
+      SetDefaultWallpaper(index, false);
   SetLastSelectedUser(email);
 }
 
@@ -381,7 +381,7 @@ void WallpaperManager::OnUserDeselected() {
   if (!UserManager::Get()->IsUserLoggedIn()) {
     // This will set default login wallpaper (#fefefe).
     ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(ash::GetSolidColorIndex());
+        SetDefaultWallpaper(ash::GetSolidColorIndex(), false);
   }
 }
 
