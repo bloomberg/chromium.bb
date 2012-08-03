@@ -256,7 +256,7 @@ void ConfigureSpeculativePrefetching() {
   // Field trial to see if we're enabled.
   const FieldTrial::Probability kDivisor = 100;
 
-  FieldTrial::Probability kDisabledProbability = 99;
+  FieldTrial::Probability kDisabledProbability = 10;
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_BETA) {
