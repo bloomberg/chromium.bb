@@ -122,7 +122,7 @@ void InvalidatorStorage::DeserializeFromList(
     InvalidationVersionMap* max_versions_map) {
   max_versions_map->clear();
   for (size_t i = 0; i < max_versions_list.GetSize(); ++i) {
-    DictionaryValue* value = NULL;
+    const DictionaryValue* value = NULL;
     if (!max_versions_list.GetDictionary(i, &value)) {
       DLOG(WARNING) << "Unable to deserialize entry " << i;
       continue;

@@ -419,7 +419,7 @@ TEST(ExtensionAPI, FeaturesRequireContexts) {
 static void GetDictionaryFromList(const DictionaryValue* schema,
                                   const std::string& list_name,
                                   const int list_index,
-                                  DictionaryValue** out) {
+                                  const DictionaryValue** out) {
   const ListValue* list;
   EXPECT_TRUE(schema->GetList(list_name, &list));
   EXPECT_TRUE(list->GetDictionary(list_index, out));
@@ -442,8 +442,8 @@ TEST(ExtensionAPI, TypesHaveNamespace) {
 
   const DictionaryValue* schema = api.GetSchema("test.foo");
 
-  DictionaryValue* dict;
-  DictionaryValue* sub_dict;
+  const DictionaryValue* dict;
+  const DictionaryValue* sub_dict;
   std::string type;
 
   GetDictionaryFromList(schema, "types", 0, &dict);
@@ -452,7 +452,7 @@ TEST(ExtensionAPI, TypesHaveNamespace) {
   EXPECT_TRUE(dict->GetString("customBindings", &type));
   EXPECT_EQ("test.foo.TestType", type);
   EXPECT_TRUE(dict->GetDictionary("properties", &sub_dict));
-  DictionaryValue* property;
+  const DictionaryValue* property;
   EXPECT_TRUE(sub_dict->GetDictionary("foo", &property));
   EXPECT_TRUE(property->GetString("$ref", &type));
   EXPECT_EQ("test.foo.OtherType", type);

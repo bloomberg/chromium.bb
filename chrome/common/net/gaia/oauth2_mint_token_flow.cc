@@ -237,7 +237,7 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
 
   bool success = true;
   for (size_t index = 0; index < scopes_list->GetSize(); ++index) {
-    base::DictionaryValue* scopes_entry = NULL;
+    const base::DictionaryValue* scopes_entry = NULL;
     IssueAdviceInfoEntry entry;
     string16 detail;
     if (!scopes_list->GetDictionary(index, &scopes_entry) ||

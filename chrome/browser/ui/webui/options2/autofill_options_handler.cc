@@ -158,15 +158,14 @@ void GetNameList(const AutofillProfile& profile,
 }
 
 // Set the multi-valued element for |type| from input |list| values.
-void SetNameList(const ListValue* names,
-                 AutofillProfile* profile) {
+void SetNameList(const ListValue* names, AutofillProfile* profile) {
   const size_t size = names->GetSize();
   std::vector<string16> first_names(size);
   std::vector<string16> middle_names(size);
   std::vector<string16> last_names(size);
 
   for (size_t i = 0; i < size; ++i) {
-    ListValue* name;
+    const ListValue* name;
     bool success = names->GetList(i, &name);
     DCHECK(success);
 
@@ -195,7 +194,7 @@ void SetNameList(const ListValue* names,
 // the |args| input.
 void ExtractPhoneNumberInformation(const ListValue* args,
                                    size_t* index,
-                                   ListValue** phone_number_list,
+                                   const ListValue** phone_number_list,
                                    std::string* country_code) {
   // Retrieve index as a |double|, as that is how it comes across from
   // JavaScript.
@@ -249,12 +248,15 @@ void RemoveDuplicatePhoneNumberAtIndex(size_t index,
     list->Remove(index, NULL);
 }
 
-void ValidatePhoneArguments(const ListValue* args, ListValue** list) {
+scoped_ptr<ListValue> ValidatePhoneArguments(const ListValue* args) {
   size_t index = 0;
   std::string country_code;
-  ExtractPhoneNumberInformation(args, &index, list, &country_code);
+  const ListValue* extracted_list = NULL;
+  ExtractPhoneNumberInformation(args, &index, &extracted_list, &country_code);
 
-  RemoveDuplicatePhoneNumberAtIndex(index, country_code, *list);
+  scoped_ptr<ListValue> list(extracted_list->DeepCopy());
+  RemoveDuplicatePhoneNumberAtIndex(index, country_code, list.get());
+  return list.Pass();
 }
 
 }  // namespace
@@ -550,7 +552,7 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
 
   std::string country_code;
   string16 value;
-  ListValue* list_value;
+  const ListValue* list_value;
   if (args->GetList(1, &list_value))
     SetNameList(list_value, &profile);
   if (args->GetString(2, &value))
@@ -614,8 +616,7 @@ void AutofillOptionsHandler::ValidatePhoneNumbers(const ListValue* args) {
   if (!IsPersonalDataLoaded())
     return;
 
-  ListValue* list_value = NULL;
-  ValidatePhoneArguments(args, &list_value);
+  scoped_ptr<ListValue> list_value = ValidatePhoneArguments(args);
 
   web_ui()->CallJavascriptFunction(
     "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);

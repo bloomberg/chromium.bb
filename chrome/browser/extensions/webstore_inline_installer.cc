@@ -101,11 +101,11 @@ class SafeWebstoreResponseParser : public UtilityProcessHostClient {
 
   void OnJSONParseSucceeded(const ListValue& wrapper) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    Value* value = NULL;
+    const Value* value = NULL;
     CHECK(wrapper.Get(0, &value));
     if (value->IsType(Value::TYPE_DICTIONARY)) {
       parsed_webstore_data_.reset(
-          static_cast<DictionaryValue*>(value)->DeepCopy());
+          static_cast<const DictionaryValue*>(value)->DeepCopy());
     } else {
       error_ = kInvalidWebstoreResponseError;
     }

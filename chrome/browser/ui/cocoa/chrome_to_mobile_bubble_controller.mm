@@ -104,7 +104,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   NSWindow* window = [self window];
 
   const ListValue* mobiles = service_->GetMobiles();
-  DictionaryValue* mobile = NULL;
+  const DictionaryValue* mobile = NULL;
   string16 name;
 
   if (mobiles->GetSize() == 1) {
@@ -185,7 +185,7 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   // NSMatrix selectedRow is -1 by default (in the single mobile device case).
   const int selected_index = std::max<int>([mobileRadioGroup_ selectedRow], 0);
 
-  DictionaryValue* mobile = NULL;
+  const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
     service_->SendToMobile(*mobile,
         ([sendCopy_ state] == NSOnState) ? snapshotPath_ : FilePath(),

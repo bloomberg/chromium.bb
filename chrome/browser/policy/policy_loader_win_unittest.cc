@@ -95,7 +95,7 @@ bool InstallValue(const base::Value& value,
       if (!value.GetAsList(&list))
         return false;
       for (size_t i = 0; i < list->GetSize(); ++i) {
-        base::Value* item;
+        const base::Value* item;
         if (!list->Get(i, &item))
           return false;
         if (!InstallValue(*item, hive, path + kPathSep + name,

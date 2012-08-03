@@ -153,7 +153,7 @@ base::Value* RunFunctionAndReturnSingleResult(
   RunFunction(function, args, browser, flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
       << function->GetError();
-  base::Value* single_result = NULL;
+  const base::Value* single_result = NULL;
   if (function->GetResultList() != NULL &&
       function->GetResultList()->Get(0, &single_result)) {
     return single_result->DeepCopy();

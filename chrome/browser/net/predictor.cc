@@ -613,7 +613,7 @@ void Predictor::DeserializeReferrers(const base::ListValue& referral_list) {
       referral_list.GetInteger(0, &format_version) &&
       format_version == kPredictorReferrerVersion) {
     for (size_t i = 1; i < referral_list.GetSize(); ++i) {
-      base::ListValue* motivator;
+      const base::ListValue* motivator;
       if (!referral_list.GetList(i, &motivator)) {
         NOTREACHED();
         return;
@@ -624,7 +624,7 @@ void Predictor::DeserializeReferrers(const base::ListValue& referral_list) {
         return;
       }
 
-      Value* subresource_list;
+      const Value* subresource_list;
       if (!motivator->Get(1, &subresource_list)) {
         NOTREACHED();
         return;

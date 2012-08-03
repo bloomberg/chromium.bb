@@ -152,7 +152,7 @@ void ManageProfileHandler::SendProfileNames() {
 void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
   DCHECK(args);
 
-  Value* file_path_value;
+  const Value* file_path_value;
   FilePath profile_file_path;
   if (!args->Get(0, &file_path_value) ||
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
@@ -239,7 +239,7 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
 
   ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
 
-  Value* file_path_value;
+  const Value* file_path_value;
   FilePath profile_file_path;
   if (!args->Get(0, &file_path_value) ||
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
@@ -253,7 +253,7 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
     const base::ListValue* args) {
   DCHECK(args);
 
-  Value* file_path_value;
+  const Value* file_path_value;
   FilePath file_path;
   if (!args->Get(0, &file_path_value) ||
       !base::GetValueAsFilePath(*file_path_value, &file_path)) {

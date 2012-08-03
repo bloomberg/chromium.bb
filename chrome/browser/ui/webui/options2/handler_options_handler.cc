@@ -131,7 +131,7 @@ void HandlerOptionsHandler::UpdateHandlerList() {
 }
 
 void HandlerOptionsHandler::RemoveHandler(const ListValue* args) {
-  ListValue* list;
+  const ListValue* list;
   if (!args->GetList(0, &list)) {
     NOTREACHED();
     return;
@@ -146,7 +146,7 @@ void HandlerOptionsHandler::RemoveHandler(const ListValue* args) {
 }
 
 void HandlerOptionsHandler::RemoveIgnoredHandler(const ListValue* args) {
-  ListValue* list;
+  const ListValue* list;
   if (!args->GetList(0, &list)) {
     NOTREACHED();
     return;
@@ -166,7 +166,7 @@ void HandlerOptionsHandler::SetHandlersEnabled(const ListValue* args) {
 }
 
 void HandlerOptionsHandler::ClearDefault(const ListValue* args) {
-  Value* value;
+  const Value* value;
   CHECK(args->Get(0, &value));
   std::string protocol_to_clear;
   CHECK(value->GetAsString(&protocol_to_clear));
@@ -174,9 +174,7 @@ void HandlerOptionsHandler::ClearDefault(const ListValue* args) {
 }
 
 void HandlerOptionsHandler::SetDefault(const ListValue* args) {
-  Value* value;
-  CHECK(args->Get(0, &value));
-  ListValue* list;
+  const ListValue* list;
   CHECK(args->GetList(0, &list));
   const ProtocolHandler& handler(ParseHandlerFromArgs(list));
   CHECK(!handler.IsEmpty());

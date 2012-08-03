@@ -56,7 +56,7 @@ bool HasUnprivilegedChild(const DictionaryValue* name_space_node,
 
   if (name_space_node->GetList(child_kind, &child_list)) {
     for (size_t i = 0; i < child_list->GetSize(); ++i) {
-      DictionaryValue* item = NULL;
+      const DictionaryValue* item = NULL;
       CHECK(child_list->GetDictionary(i, &item));
       if (IsUnprivileged(item))
         return true;
@@ -101,11 +101,11 @@ scoped_ptr<ListValue> LoadSchemaList(const std::string& name,
   return scoped_ptr<ListValue>(static_cast<ListValue*>(result.release()));
 }
 
-DictionaryValue* FindListItem(const ListValue* list,
-                              const std::string& property_name,
-                              const std::string& property_value) {
+const DictionaryValue* FindListItem(const ListValue* list,
+                                    const std::string& property_name,
+                                    const std::string& property_value) {
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    DictionaryValue* item = NULL;
+    const DictionaryValue* item = NULL;
     CHECK(list->GetDictionary(i, &item))
         << property_value << "/" << property_name;
     std::string value;
@@ -118,7 +118,7 @@ DictionaryValue* FindListItem(const ListValue* list,
 
 const DictionaryValue* GetSchemaChild(const DictionaryValue* schema_node,
                                       const std::string& child_name) {
-  DictionaryValue* child_node = NULL;
+  const DictionaryValue* child_node = NULL;
   for (size_t i = 0; i < arraysize(kChildKinds); ++i) {
     const ListValue* list_node = NULL;
     if (!schema_node->GetList(kChildKinds[i], &list_node))

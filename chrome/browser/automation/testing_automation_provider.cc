@@ -5194,8 +5194,8 @@ std::vector<AutofillProfile>
 TestingAutomationProvider::GetAutofillProfilesFromList(
     const ListValue& profiles, std::string* error_message) {
   std::vector<AutofillProfile> autofill_profiles;
-  DictionaryValue* profile_info = NULL;
-  ListValue* current_value = NULL;
+  const DictionaryValue* profile_info = NULL;
+  const ListValue* current_value = NULL;
 
   std::map<AutofillFieldType, std::string> autofill_type_to_string =
       GetAutofillFieldToStringMap();
@@ -5211,7 +5211,7 @@ TestingAutomationProvider::GetAutofillProfilesFromList(
       if (profile_info->HasKey(type_it->second)) {
         if (profile_info->GetList(type_it->second, &current_value)) {
           std::vector<string16> value_list;
-          for (ListValue::iterator list_it = current_value->begin();
+          for (ListValue::const_iterator list_it = current_value->begin();
                list_it != current_value->end(); ++list_it) {
             string16 value;
             if ((*list_it)->GetAsString(&value)) {
@@ -5237,7 +5237,7 @@ TestingAutomationProvider::GetAutofillProfilesFromList(
 std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
     const ListValue& cards, std::string* error_message) {
   std::vector<CreditCard> credit_cards;
-  DictionaryValue* card_info = NULL;
+  const DictionaryValue* card_info = NULL;
   string16 current_value;
 
   std::map<AutofillFieldType, std::string> credit_card_type_to_string =

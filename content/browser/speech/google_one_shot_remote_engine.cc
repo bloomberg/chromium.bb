@@ -110,7 +110,7 @@ bool ParseServerResponse(const std::string& response_body,
   // final result, consisting of one fragment (with one or more hypotheses).
   size_t index = 0;
   for (; index < hypotheses_list->GetSize(); ++index) {
-    Value* hypothesis = NULL;
+    const Value* hypothesis = NULL;
     if (!hypotheses_list->Get(index, &hypothesis)) {
       LOG(WARNING) << "ParseServerResponse: Unable to read hypothesis value.";
       break;
@@ -123,7 +123,7 @@ bool ParseServerResponse(const std::string& response_body,
     }
 
     const DictionaryValue* hypothesis_value =
-        static_cast<DictionaryValue*>(hypothesis);
+        static_cast<const DictionaryValue*>(hypothesis);
     string16 utterance;
 
     if (!hypothesis_value->GetString(kUtteranceString, &utterance)) {

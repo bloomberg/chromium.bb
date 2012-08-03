@@ -1000,7 +1000,7 @@ TEST_F(SyncManagerTest, ProcessJsMessageGetRootNodeDetails) {
   SendJsMessage("getRootNodeDetails", kNoArgs, reply_handler.AsWeakHandle());
 
   EXPECT_EQ(1u, return_args.Get().GetSize());
-  DictionaryValue* node_info = NULL;
+  const DictionaryValue* node_info = NULL;
   EXPECT_TRUE(return_args.Get().GetDictionary(0, &node_info));
   if (node_info) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1017,11 +1017,11 @@ void CheckGetNodesByIdReturnArgs(SyncManager* sync_manager,
                                  int64 id,
                                  bool is_detailed) {
   EXPECT_EQ(1u, return_args.Get().GetSize());
-  ListValue* nodes = NULL;
+  const ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
   EXPECT_EQ(1u, nodes->GetSize());
-  DictionaryValue* node_info = NULL;
+  const DictionaryValue* node_info = NULL;
   EXPECT_TRUE(nodes->GetDictionary(0, &node_info));
   ASSERT_TRUE(node_info);
   ReadTransaction trans(FROM_HERE, sync_manager->GetUserShare());
@@ -1164,7 +1164,7 @@ TEST_F(SyncManagerTest, GetChildNodeIds) {
   }
 
   EXPECT_EQ(1u, return_args.Get().GetSize());
-  ListValue* nodes = NULL;
+  const ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
   EXPECT_EQ(6u, nodes->GetSize());
@@ -1238,8 +1238,8 @@ TEST_F(SyncManagerTest, GetAllNodesTest) {
   // would make this test brittle without greatly increasing our chances of
   // catching real bugs.
 
-  ListValue* node_list;
-  DictionaryValue* first_result;
+  const ListValue* node_list;
+  const DictionaryValue* first_result;
 
   // The resulting argument list should have one argument, a list of nodes.
   ASSERT_EQ(1U, return_args.Get().GetSize());

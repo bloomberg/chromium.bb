@@ -228,7 +228,7 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
     // Constructs GpuBlacklistEntry from DictionaryValue loaded from json.
     // Top-level entry must have an id number.  Others are exceptions.
     static ScopedGpuBlacklistEntry GetGpuBlacklistEntryFromValue(
-        base::DictionaryValue* value, bool top_level);
+        const base::DictionaryValue* value, bool top_level);
 
     // Determines if a given os/gc/driver is included in the Entry set.
     bool Contains(OsType os_type,
@@ -381,7 +381,7 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
   // By default, if there is no browser version information in the entry,
   // return kSupported;
   BrowserVersionSupport IsEntrySupportedByCurrentBrowserVersion(
-      base::DictionaryValue* value);
+      const base::DictionaryValue* value);
 
   // GpuDataManager::Observer implementation.
   virtual void OnGpuInfoUpdate() OVERRIDE;

@@ -193,8 +193,8 @@ namespace {
 bool ValueHasSpecifics(const DictionaryValue& value,
                        const std::string& path) {
   const ListValue* entities_list = NULL;
-  DictionaryValue* entry_dictionary = NULL;
-  DictionaryValue* specifics_dictionary = NULL;
+  const DictionaryValue* entry_dictionary = NULL;
+  const DictionaryValue* specifics_dictionary = NULL;
 
   if (!value.GetList(path, &entities_list))
     return false;

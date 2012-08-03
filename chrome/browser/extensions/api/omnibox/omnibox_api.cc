@@ -179,7 +179,7 @@ bool ExtensionOmniboxSuggestion::Populate(const base::DictionaryValue& value,
       return false;
     }
     for (size_t i = 0; i < styles->GetSize(); ++i) {
-      base::DictionaryValue* style = NULL;
+      const base::DictionaryValue* style = NULL;
       int offset, type;
       if (!styles->GetDictionary(i, &style))
         return false;
@@ -206,7 +206,7 @@ bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
   styles.resize(description.length());  // sets all styles to 0
 
   for (size_t i = 0; i < styles_value.GetSize(); ++i) {
-    DictionaryValue* style;
+    const DictionaryValue* style;
     std::string type;
     int offset;
     int length;

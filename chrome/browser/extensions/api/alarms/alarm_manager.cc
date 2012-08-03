@@ -59,11 +59,11 @@ base::TimeDelta TimeDeltaFromDelay(double delay_in_minutes) {
 std::vector<Alarm> AlarmsFromValue(const base::ListValue* list) {
   std::vector<Alarm> alarms;
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    base::DictionaryValue* alarm_dict = NULL;
+    const base::DictionaryValue* alarm_dict = NULL;
     Alarm alarm;
     if (list->GetDictionary(i, &alarm_dict) &&
         api::alarms::Alarm::Populate(*alarm_dict, alarm.js_alarm.get())) {
-      base::Value* time_value = NULL;
+      const base::Value* time_value = NULL;
       if (alarm_dict->Get(kAlarmGranularity, &time_value))
         base::GetValueAsTimeDelta(*time_value, &alarm.granularity);
       alarms.push_back(alarm);

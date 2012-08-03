@@ -43,7 +43,7 @@ std::vector<GURL> GetNamedList(const char* name,
   if (!prefs->GetList(name, &value_list))
     return list;
   for (size_t i = 0; i < value_list->GetSize(); ++i) {
-    Value* entry;
+    const Value* entry;
     GURL gurl_entry;
     if (!value_list->Get(i, &entry) || !GetGURLFromValue(entry, &gurl_entry)) {
       NOTREACHED();

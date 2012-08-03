@@ -183,7 +183,7 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
     // List() is called only once; no one touches delete_queue_ before List().
     CHECK(delete_queue_.empty());
     for (size_t i = 0; i != result.GetSize(); ++i) {
-      base::DictionaryValue* sms_dictionary = NULL;
+      const base::DictionaryValue* sms_dictionary = NULL;
       if (!result.GetDictionary(i, &sms_dictionary)) {
         LOG(ERROR) << "result[" << i << "] is not a dictionary.";
         continue;

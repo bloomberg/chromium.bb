@@ -315,7 +315,7 @@ bool GpuBlacklist::FloatInfo::IsValid() const {
 // static
 GpuBlacklist::ScopedGpuBlacklistEntry
 GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
-    DictionaryValue* value, bool top_level) {
+    const DictionaryValue* value, bool top_level) {
   DCHECK(value);
   ScopedGpuBlacklistEntry entry(new GpuBlacklistEntry());
 
@@ -345,7 +345,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     entry->description_ = "The GPU is unavailable for an unexplained reason.";
   }
 
-  ListValue* cr_bugs;
+  const ListValue* cr_bugs;
   if (value->GetList("cr_bugs", &cr_bugs)) {
     for (size_t i = 0; i < cr_bugs->GetSize(); ++i) {
       int bug_id;
@@ -359,7 +359,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  ListValue* webkit_bugs;
+  const ListValue* webkit_bugs;
   if (value->GetList("webkit_bugs", &webkit_bugs)) {
     for (size_t i = 0; i < webkit_bugs->GetSize(); ++i) {
       int bug_id;
@@ -373,14 +373,14 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* os_value = NULL;
+  const DictionaryValue* os_value = NULL;
   if (value->GetDictionary("os", &os_value)) {
     std::string os_type;
     std::string os_version_op = "any";
     std::string os_version_string;
     std::string os_version_string2;
     os_value->GetString("type", &os_type);
-    DictionaryValue* os_version_value = NULL;
+    const DictionaryValue* os_version_value = NULL;
     if (os_value->GetDictionary("version", &os_version_value)) {
       os_version_value->GetString("op", &os_version_op);
       os_version_value->GetString("number", &os_version_string);
@@ -403,7 +403,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  ListValue* device_id_list;
+  const ListValue* device_id_list;
   if (value->GetList("device_id", &device_id_list)) {
     for (size_t i = 0; i < device_id_list->GetSize(); ++i) {
         std::string device_id;
@@ -434,7 +434,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* driver_vendor_value = NULL;
+  const DictionaryValue* driver_vendor_value = NULL;
   if (value->GetDictionary("driver_vendor", &driver_vendor_value)) {
     std::string vendor_op;
     std::string vendor_value;
@@ -447,7 +447,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* driver_version_value = NULL;
+  const DictionaryValue* driver_version_value = NULL;
   if (value->GetDictionary("driver_version", &driver_version_value)) {
     std::string driver_version_op = "any";
     std::string driver_version_style;
@@ -467,7 +467,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* driver_date_value = NULL;
+  const DictionaryValue* driver_date_value = NULL;
   if (value->GetDictionary("driver_date", &driver_date_value)) {
     std::string driver_date_op = "any";
     std::string driver_date_string;
@@ -483,7 +483,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* gl_vendor_value = NULL;
+  const DictionaryValue* gl_vendor_value = NULL;
   if (value->GetDictionary("gl_vendor", &gl_vendor_value)) {
     std::string vendor_op;
     std::string vendor_value;
@@ -496,7 +496,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* gl_renderer_value = NULL;
+  const DictionaryValue* gl_renderer_value = NULL;
   if (value->GetDictionary("gl_renderer", &gl_renderer_value)) {
     std::string renderer_op;
     std::string renderer_value;
@@ -509,7 +509,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* perf_graphics_value = NULL;
+  const DictionaryValue* perf_graphics_value = NULL;
   if (value->GetDictionary("perf_graphics", &perf_graphics_value)) {
     std::string op;
     std::string float_value;
@@ -524,7 +524,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* perf_gaming_value = NULL;
+  const DictionaryValue* perf_gaming_value = NULL;
   if (value->GetDictionary("perf_gaming", &perf_gaming_value)) {
     std::string op;
     std::string float_value;
@@ -539,7 +539,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
-  DictionaryValue* perf_overall_value = NULL;
+  const DictionaryValue* perf_overall_value = NULL;
   if (value->GetDictionary("perf_overall", &perf_overall_value)) {
     std::string op;
     std::string float_value;
@@ -555,7 +555,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
   }
 
   if (top_level) {
-    ListValue* blacklist_value = NULL;
+    const ListValue* blacklist_value = NULL;
     if (!value->GetList("blacklist", &blacklist_value)) {
       LOG(WARNING) << "Malformed blacklist entry " << entry->id();
       return NULL;
@@ -578,10 +578,10 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
   }
 
   if (top_level) {
-    ListValue* exception_list_value = NULL;
+    const ListValue* exception_list_value = NULL;
     if (value->GetList("exceptions", &exception_list_value)) {
       for (size_t i = 0; i < exception_list_value->GetSize(); ++i) {
-        DictionaryValue* exception_value = NULL;
+        const DictionaryValue* exception_value = NULL;
         if (!exception_list_value->GetDictionary(i, &exception_value)) {
           LOG(WARNING) << "Malformed exceptions entry " << entry->id();
           return NULL;
@@ -602,7 +602,7 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
       dictionary_entry_count++;
     }
 
-    DictionaryValue* browser_version_value = NULL;
+    const DictionaryValue* browser_version_value = NULL;
     // browser_version is processed in LoadGpuBlacklist().
     if (value->GetDictionary("browser_version", &browser_version_value))
       dictionary_entry_count++;
@@ -975,7 +975,7 @@ bool GpuBlacklist::LoadGpuBlacklist(
   uint32 max_entry_id = 0;
   bool contains_unknown_fields = false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    DictionaryValue* list_item = NULL;
+    const DictionaryValue* list_item = NULL;
     bool valid = list->GetDictionary(i, &list_item);
     if (!valid || list_item == NULL)
       return false;
@@ -1138,9 +1138,9 @@ void GpuBlacklist::Clear() {
 
 GpuBlacklist::BrowserVersionSupport
 GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
-    DictionaryValue* value) {
+    const DictionaryValue* value) {
   DCHECK(value);
-  DictionaryValue* browser_version_value = NULL;
+  const DictionaryValue* browser_version_value = NULL;
   if (value->GetDictionary("browser_version", &browser_version_value)) {
     std::string version_op = "any";
     std::string version_string;

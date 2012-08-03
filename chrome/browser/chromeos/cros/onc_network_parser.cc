@@ -1941,7 +1941,7 @@ bool OncVirtualNetworkParser::ParseOpenVPNValue(OncNetworkParser* parser,
       // today.  So extract the first.
       const base::ListValue* value_list = NULL;
       value.GetAsList(&value_list);
-      base::Value* first_item = NULL;
+      const base::Value* first_item = NULL;
       if (!value_list->Get(0, &first_item) ||
           !first_item->IsType(base::Value::TYPE_STRING)) {
         VLOG(1) << "RemoteCertKU must be non-empty list of strings";

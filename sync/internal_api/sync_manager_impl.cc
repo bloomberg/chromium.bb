@@ -1683,7 +1683,7 @@ JsArgList GetNodeInfoById(const JsArgList& args,
   ListValue return_args;
   ListValue* node_summaries = new ListValue();
   return_args.Append(node_summaries);
-  ListValue* id_list = NULL;
+  const ListValue* id_list = NULL;
   ReadTransaction trans(FROM_HERE, user_share);
   if (args.Get().GetList(0, &id_list)) {
     CHECK(id_list);

@@ -232,7 +232,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
 
   size_t i = 0;
   while (i < url_list->GetSize()) {
-    Value* val = NULL;
+    const Value* val = NULL;
     url_list->Get(i, &val);
 
     // Verify that the override value is good.  If not, unregister it and find
@@ -365,7 +365,7 @@ void ExtensionWebUI::RegisterChromeURLOverrides(
 void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
                                                   Profile* profile,
                                                   ListValue* list,
-                                                  Value* override) {
+                                                  const Value* override) {
   size_t index = 0;
   bool found = list->Remove(*override, &index);
   if (found && index == 0) {
@@ -379,7 +379,8 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
 
 // static
 void ExtensionWebUI::UnregisterChromeURLOverride(const std::string& page,
-    Profile* profile, Value* override) {
+                                                 Profile* profile,
+                                                 const Value* override) {
   if (!override)
     return;
   PrefService* prefs = profile->GetPrefs();

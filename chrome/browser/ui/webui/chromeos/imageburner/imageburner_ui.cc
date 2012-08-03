@@ -293,7 +293,7 @@ class WebUIHandler
   void ExtractTargetedDevicePath(const ListValue& list_value,
                                  int index,
                                  FilePath* device_path) {
-    Value* list_member;
+    const Value* list_member;
     if (list_value.Get(index, &list_member) &&
         list_member->GetType() == Value::TYPE_STRING) {
       const StringValue* string_value =

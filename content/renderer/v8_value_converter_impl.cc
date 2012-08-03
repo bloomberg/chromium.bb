@@ -132,7 +132,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Array(
   v8::Handle<v8::Array> result(v8::Array::New(val->GetSize()));
 
   for (size_t i = 0; i < val->GetSize(); ++i) {
-    Value* child = NULL;
+    const Value* child = NULL;
     CHECK(val->Get(i, &child));
 
     v8::Handle<v8::Value> child_v8 = ToV8ValueImpl(child);

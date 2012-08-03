@@ -420,7 +420,7 @@ class CCGenerator(object):
       failure_value = 'scoped_ptr<Params>()'
       c.Append()
       value_var = param.unix_name + '_value'
-      (c.Append('base::Value* %(value_var)s = NULL;')
+      (c.Append('const base::Value* %(value_var)s = NULL;')
         .Append('if (args.Get(%(i)s, &%(value_var)s) &&\n'
                 '    !%(value_var)s->IsType(base::Value::TYPE_NULL))')
         .Sblock('{')

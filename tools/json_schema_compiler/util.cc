@@ -28,7 +28,7 @@ bool GetItemFromList(const ListValue& from, int index, std::string* out) {
 
 bool GetItemFromList(const ListValue& from, int index,
     linked_ptr<any::Any>* out) {
-  Value* value = NULL;
+  const Value* value = NULL;
   if (!from.Get(index, &value))
     return false;
   scoped_ptr<any::Any> any_object(new any::Any());
@@ -39,7 +39,7 @@ bool GetItemFromList(const ListValue& from, int index,
 
 bool GetItemFromList(const ListValue& from, int index,
     linked_ptr<base::DictionaryValue>* out) {
-  DictionaryValue* dict = NULL;
+  const DictionaryValue* dict = NULL;
   if (!from.GetDictionary(index, &dict))
     return false;
   *out = linked_ptr<DictionaryValue>(dict->DeepCopy());

@@ -226,12 +226,12 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
 #endif  // !defined(OS_ANDROID)
 
   // No support for multiple promos yet. Only consider the first one.
-  DictionaryValue* promo = NULL;
+  const DictionaryValue* promo = NULL;
   if (!promo_list->GetDictionary(0, &promo))
     return;
 
   // Strings. Assume the first one is the promo text.
-  DictionaryValue* strings = NULL;
+  const DictionaryValue* strings = NULL;
   if (promo->GetDictionary("strings", &strings)) {
 #if !defined(OS_ANDROID)
     DictionaryValue::Iterator iter(*strings);
@@ -241,9 +241,9 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   }
 
   // Date.
-  ListValue* date_list = NULL;
+  const ListValue* date_list = NULL;
   if (promo->GetList("date", &date_list)) {
-    DictionaryValue* date;
+    const DictionaryValue* date;
     if (date_list->GetDictionary(0, &date)) {
       std::string time_str;
       base::Time time;
@@ -263,7 +263,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   }
 
   // Grouping.
-  DictionaryValue* grouping = NULL;
+  const DictionaryValue* grouping = NULL;
   if (promo->GetDictionary("grouping", &grouping)) {
     grouping->GetInteger("buckets", &num_groups_);
     grouping->GetInteger("segment", &initial_segment_);
@@ -279,7 +279,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   }
 
   // Payload.
-  DictionaryValue* payload = NULL;
+  const DictionaryValue* payload = NULL;
   if (promo->GetDictionary("payload", &payload)) {
     payload->GetBoolean("gplus_required", &gplus_required_);
 
@@ -317,7 +317,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
   payload->GetString("promo_action_type", &promo_action_type_);
   // We need to be idempotent as the tests call us more than once.
   promo_action_args_.reset(new base::ListValue);
-  ListValue* args;
+  const ListValue* args;
   if (payload->GetList("promo_action_args", &args)) {
     // JSON format for args: "promo_action_args" : [ "<arg1>", "<arg2>"... ]
     // Every value comes from "strings" dictionary, either directly or not.
@@ -415,7 +415,7 @@ void NotificationPromo::InitFromPrefs() {
   if (!promo_list)
     return;
 
-  base::DictionaryValue* ntp_promo(NULL);
+  const base::DictionaryValue* ntp_promo(NULL);
   promo_list->GetDictionary(0, &ntp_promo);
   if (!ntp_promo)
     return;
@@ -424,7 +424,7 @@ void NotificationPromo::InitFromPrefs() {
 #if defined(OS_ANDROID)
   ntp_promo->GetString(kPrefPromoTextLong, &promo_text_long_);
   ntp_promo->GetString(kPrefPromoActionType, &promo_action_type_);
-  base::ListValue* lv(NULL);
+  const base::ListValue* lv(NULL);
   ntp_promo->GetList(kPrefPromoActionArgs, &lv);
   DCHECK(lv != NULL);
   promo_action_args_.reset(lv->DeepCopy());

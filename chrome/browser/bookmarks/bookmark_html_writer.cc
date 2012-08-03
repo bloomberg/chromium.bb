@@ -334,7 +334,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     // Write the children.
     const ListValue* children = static_cast<const ListValue*>(child_values);
     for (size_t i = 0; i < children->GetSize(); ++i) {
-      Value* child_value;
+      const Value* child_value;
       if (!children->Get(i, &child_value) ||
           child_value->GetType() != Value::TYPE_DICTIONARY) {
         NOTREACHED();

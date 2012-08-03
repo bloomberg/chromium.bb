@@ -298,7 +298,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
   DCHECK_GE(static_cast<int>(args->GetSize()), 2);
 
   // Get callback JS function name.
-  base::Value* callback;
+  const base::Value* callback;
   if (!args->Get(0, &callback) || !callback->IsType(base::Value::TYPE_STRING))
     return;
 
@@ -308,7 +308,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
 
   // Get the list of name for prefs to build the response dictionary.
   DictionaryValue result_value;
-  base::Value* list_member;
+  const base::Value* list_member;
 
   for (size_t i = 1; i < args->GetSize(); i++) {
     if (!args->Get(i, &list_member))
@@ -339,7 +339,7 @@ void CoreOptionsHandler::HandleObservePrefs(const ListValue* args) {
 
   // Get all other parameters - pref identifiers.
   for (size_t i = 1; i < args->GetSize(); i++) {
-    base::Value* list_member;
+    const base::Value* list_member;
     if (!args->Get(i, &list_member))
       break;
 
@@ -389,7 +389,7 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args, PrefType type) {
   if (!args->GetString(0, &pref_name))
     return;
 
-  base::Value* value;
+  const base::Value* value;
   if (!args->Get(1, &value))
     return;
 

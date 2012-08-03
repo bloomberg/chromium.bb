@@ -167,7 +167,7 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
     printing::PageRanges new_ranges;
     if (job_settings.GetList(printing::kSettingPageRange, &page_range_array)) {
       for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
-        base::DictionaryValue* dict;
+        const base::DictionaryValue* dict;
         if (!page_range_array->GetDictionary(index, &dict))
           continue;
         printing::PageRange range;

@@ -180,7 +180,7 @@ std::string GetPhotoUrl(const DictionaryValue& dict) {
     return std::string();
 
   for (size_t i = 0; i < link_list->GetSize(); ++i) {
-    DictionaryValue* link_dict = NULL;
+    const DictionaryValue* link_dict = NULL;
     if (!link_list->GetDictionary(i, &link_dict))
       continue;
 
@@ -237,7 +237,7 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   const ListValue* email_list = NULL;
   if (dict.GetList(kEmailField, &email_list)) {
     for (size_t i = 0; i < email_list->GetSize(); ++i) {
-      DictionaryValue* email_dict = NULL;
+      const DictionaryValue* email_dict = NULL;
       if (!email_list->GetDictionary(i, &email_dict))
         return false;
 
@@ -252,7 +252,7 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   const ListValue* phone_list = NULL;
   if (dict.GetList(kPhoneField, &phone_list)) {
     for (size_t i = 0; i < phone_list->GetSize(); ++i) {
-      DictionaryValue* phone_dict = NULL;
+      const DictionaryValue* phone_dict = NULL;
       if (!phone_list->GetDictionary(i, &phone_dict))
         return false;
 
@@ -267,7 +267,7 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   const ListValue* address_list = NULL;
   if (dict.GetList(kPostalAddressField, &address_list)) {
     for (size_t i = 0; i < address_list->GetSize(); ++i) {
-      DictionaryValue* address_dict = NULL;
+      const DictionaryValue* address_dict = NULL;
       if (!address_list->GetDictionary(i, &address_dict))
         return false;
 
@@ -285,7 +285,7 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   const ListValue* im_list = NULL;
   if (dict.GetList(kInstantMessagingField, &im_list)) {
     for (size_t i = 0; i < im_list->GetSize(); ++i) {
-      DictionaryValue* im_dict = NULL;
+      const DictionaryValue* im_dict = NULL;
       if (!im_list->GetDictionary(i, &im_dict))
         return false;
 
@@ -404,7 +404,7 @@ class GDataContactsService::DownloadContactsRequest
       LOG(WARNING) << "Category list missing";
       return false;
     }
-    DictionaryValue* category_dict = NULL;
+    const DictionaryValue* category_dict = NULL;
     if (!category_list->GetSize() == 1 ||
         !category_list->GetDictionary(0, &category_dict)) {
       LOG(WARNING) << "Unable to get dictionary from category list of size "

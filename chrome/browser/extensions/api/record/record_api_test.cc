@@ -243,7 +243,7 @@ class RecordApiTest : public InProcessBrowserTest {
       const TestProcessStrategy& strategy) {
 
     // Check that the two bad URLs are returned.
-    base::Value* string_value = NULL;
+    const base::Value* string_value = NULL;
     StringValue badURL2("URL 2(bad)"), badURL4("URL 4(bad)");
 
     EXPECT_TRUE(result->GetSize() == 2);

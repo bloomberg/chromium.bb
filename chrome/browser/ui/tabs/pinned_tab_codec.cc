@@ -152,7 +152,7 @@ StartupTabs PinnedTabCodec::ReadPinnedTabs(const base::Value* value) {
     return results;
 
   for (size_t i = 0, max = tabs_list->GetSize(); i < max; ++i) {
-    base::DictionaryValue* tab_values = NULL;
+    const base::DictionaryValue* tab_values = NULL;
     if (tabs_list->GetDictionary(i, &tab_values)) {
       StartupTab tab;
       if (DecodeTab(*tab_values, &tab))

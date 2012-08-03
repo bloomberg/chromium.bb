@@ -247,21 +247,28 @@ TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
 
 // Return a motivation_list if we can find one for the given motivating_host (or
 // NULL if a match is not found).
-static ListValue* FindSerializationMotivation(const GURL& motivation,
-                                              const ListValue& referral_list) {
-  CHECK_LT(0u, referral_list.GetSize());  // Room for version.
+static const ListValue* FindSerializationMotivation(
+    const GURL& motivation,
+    const ListValue* referral_list) {
+  CHECK_LT(0u, referral_list->GetSize());  // Room for version.
   int format_version = -1;
-  CHECK(referral_list.GetInteger(0, &format_version));
+  CHECK(referral_list->GetInteger(0, &format_version));
   CHECK_EQ(Predictor::kPredictorReferrerVersion, format_version);
-  ListValue* motivation_list(NULL);
-  for (size_t i = 1; i < referral_list.GetSize(); ++i) {
-    referral_list.GetList(i, &motivation_list);
+  const ListValue* motivation_list(NULL);
+  for (size_t i = 1; i < referral_list->GetSize(); ++i) {
+    referral_list->GetList(i, &motivation_list);
     std::string existing_spec;
     EXPECT_TRUE(motivation_list->GetString(0, &existing_spec));
     if (motivation == GURL(existing_spec))
       return motivation_list;
   }
   return NULL;
+}
+
+static ListValue* FindSerializationMotivation(const GURL& motivation,
+                                              ListValue* referral_list) {
+  return const_cast<ListValue*>(FindSerializationMotivation(
+      motivation, static_cast<const ListValue*>(referral_list)));
 }
 
 // Create a new empty serialization list.
@@ -281,7 +288,7 @@ static void AddToSerializedList(const GURL& motivation,
                                 ListValue* referral_list ) {
   // Find the motivation if it is already used.
   ListValue* motivation_list = FindSerializationMotivation(motivation,
-                                                           *referral_list);
+                                                           referral_list);
   if (!motivation_list) {
     // This is the first mention of this motivation, so build a list.
     motivation_list = new ListValue;
@@ -315,11 +322,11 @@ static bool GetDataFromSerialization(const GURL& motivation,
                                      const GURL& subresource,
                                      const ListValue& referral_list,
                                      double* use_rate) {
-  ListValue* motivation_list = FindSerializationMotivation(motivation,
-                                                           referral_list);
+  const ListValue* motivation_list =
+      FindSerializationMotivation(motivation, &referral_list);
   if (!motivation_list)
     return false;
-  ListValue* subresource_list;
+  const ListValue* subresource_list;
   EXPECT_TRUE(motivation_list->GetList(1, &subresource_list));
   for (size_t i = 0; i < subresource_list->GetSize();) {
     std::string url_spec;

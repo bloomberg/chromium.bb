@@ -705,7 +705,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
   // TODO(tim): This should share code with CreateBookmarkFunction::RunImpl,
   // but I can't figure out a good way to do that with all the macros.
   virtual void GetBucketsForArgs(const ListValue* args, BucketList* buckets) {
-    DictionaryValue* json;
+    const DictionaryValue* json;
     if (!args->GetDictionary(0, &json))
       return;
 

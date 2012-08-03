@@ -204,7 +204,7 @@ void StartupPagesHandler::DragDropStartupPage(const ListValue* args) {
   CHECK(args->GetString(0, &value));
   base::StringToInt(value, &to_index);
 
-  ListValue* selected;
+  const ListValue* selected;
   CHECK(args->GetList(1, &selected));
 
   std::vector<int> index_list;

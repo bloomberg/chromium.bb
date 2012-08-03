@@ -58,7 +58,7 @@ const BookmarkNode* GetNodeFromArguments(BookmarkModel* model,
 bool GetNodesFromArguments(BookmarkModel* model, const ListValue* args,
     size_t args_index, std::vector<const BookmarkNode*>* nodes) {
 
-  ListValue* ids;
+  const ListValue* ids;
   if (!args->GetList(args_index, &ids))
     return false;
 

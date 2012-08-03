@@ -261,7 +261,7 @@ void ChromeToMobileBubbleView::Init() {
   const ListValue* mobiles = service_->GetMobiles();
   if (mobiles->GetSize() == 1) {
     string16 name;
-    DictionaryValue* mobile = NULL;
+    const DictionaryValue* mobile = NULL;
     if (mobiles->GetDictionary(0, &mobile) &&
         mobile->GetString("name", &name)) {
       title_label->SetText(l10n_util::GetStringFUTF16(
@@ -274,7 +274,7 @@ void ChromeToMobileBubbleView::Init() {
         IDS_CHROME_TO_MOBILE_BUBBLE_MULTI_TITLE));
 
     string16 name;
-    DictionaryValue* mobile = NULL;
+    const DictionaryValue* mobile = NULL;
     views::RadioButton* radio = NULL;
     layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
     for (size_t index = 0; index < mobiles->GetSize(); ++index) {
@@ -366,7 +366,7 @@ void ChromeToMobileBubbleView::Send() {
     DCHECK(radio_buttons_.empty());
   }
 
-  DictionaryValue* mobile = NULL;
+  const DictionaryValue* mobile = NULL;
   if (mobiles->GetDictionary(selected_index, &mobile)) {
     FilePath snapshot = send_copy_->checked() ? snapshot_path_ : FilePath();
     service_->SendToMobile(*mobile, snapshot, browser_,

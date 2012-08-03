@@ -117,7 +117,7 @@ void WriteValue(Message* m, const Value* value, int recursion) {
       const ListValue* list = static_cast<const ListValue*>(value);
       WriteParam(m, static_cast<int>(list->GetSize()));
       for (size_t i = 0; i < list->GetSize(); ++i) {
-        Value* subval;
+        const Value* subval;
         if (list->Get(i, &subval)) {
           WriteValue(m, subval, recursion + 1);
         } else {

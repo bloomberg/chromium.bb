@@ -137,7 +137,7 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
     v8::Local<v8::Context> context(*((*it)->v8_context()));
     std::vector<v8::Handle<v8::Value> > v8_arguments;
     for (size_t i = 0; i < arguments.GetSize(); ++i) {
-      base::Value* item = NULL;
+      const base::Value* item = NULL;
       CHECK(arguments.Get(i, &item));
       v8_arguments.push_back(converter->ToV8Value(item, context));
     }

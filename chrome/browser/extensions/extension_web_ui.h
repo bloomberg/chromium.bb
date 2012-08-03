@@ -50,7 +50,7 @@ class ExtensionWebUI : public content::WebUIController {
       const extensions::Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverride(const std::string& page,
                                           Profile* profile,
-                                          base::Value* override);
+                                          const base::Value* override);
 
   // Called from BrowserPrefs
   static void RegisterUserPrefs(PrefService* prefs);
@@ -66,7 +66,7 @@ class ExtensionWebUI : public content::WebUIController {
   static void UnregisterAndReplaceOverride(const std::string& page,
                                            Profile* profile,
                                            base::ListValue* list,
-                                           base::Value* override);
+                                           const base::Value* override);
 
   // TODO(aa): This seems out of place. Why is it not with the event routers for
   // the other extension APIs?

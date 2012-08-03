@@ -1764,17 +1764,17 @@ void RenderViewHostImpl::OnAccessibilityNotifications(
 }
 
 void RenderViewHostImpl::OnScriptEvalResponse(int id, const ListValue& result) {
-  Value* result_value;
+  const Value* result_value;
   if (!result.Get(0, &result_value)) {
     // Programming error or rogue renderer.
     NOTREACHED() << "Got bad arguments for OnScriptEvalResponse";
     return;
   }
-  std::pair<int, Value*> details(id, result_value);
+  std::pair<int, const Value*> details(id, result_value);
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_EXECUTE_JAVASCRIPT_RESULT,
       content::Source<RenderViewHost>(this),
-      content::Details<std::pair<int, Value*> >(&details));
+      content::Details<std::pair<int, const Value*> >(&details));
 }
 
 void RenderViewHostImpl::OnDidZoomURL(double zoom_level,

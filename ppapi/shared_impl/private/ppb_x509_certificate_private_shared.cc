@@ -30,7 +30,7 @@ void PPB_X509Certificate_Fields::SetField(
 PP_Var PPB_X509Certificate_Fields::GetFieldAsPPVar(
     PP_X509Certificate_Private_Field field) const {
   uint32_t index = static_cast<uint32_t>(field);
-  base::Value* value;
+  const base::Value* value;
   bool success = values_.Get(index, &value);
   if (!success) {
     // Our list received might be smaller than the number of fields, so just

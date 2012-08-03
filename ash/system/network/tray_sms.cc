@@ -209,7 +209,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
     const base::ListValue& messages = tray_->messages();
     scroll_content()->RemoveAllChildViews(true);
     for (size_t index = 0; index < messages.GetSize(); ++index) {
-      base::DictionaryValue* message = NULL;
+      const base::DictionaryValue* message = NULL;
       if (!messages.GetDictionary(index, &message)) {
         LOG(ERROR) << "SMS message not a dictionary at: " << index;
         continue;

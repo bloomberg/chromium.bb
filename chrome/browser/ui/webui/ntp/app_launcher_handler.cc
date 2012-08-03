@@ -652,7 +652,7 @@ void AppLauncherHandler::HandleReorderApps(const ListValue* args) {
   CHECK(args->GetSize() == 2);
 
   std::string dragged_app_id;
-  ListValue* app_order;
+  const ListValue* app_order;
   CHECK(args->GetString(0, &dragged_app_id));
   CHECK(args->GetList(1, &app_order));
 

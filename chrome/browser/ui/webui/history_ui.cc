@@ -378,7 +378,7 @@ void BrowsingHistoryHandler::ExtractSearchHistoryArguments(
     int* month,
     string16* query) {
   *month = 0;
-  Value* list_member;
+  const Value* list_member;
 
   // Get search string.
   if (args->Get(0, &list_member) &&

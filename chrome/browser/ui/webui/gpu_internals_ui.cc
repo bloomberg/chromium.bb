@@ -132,7 +132,7 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
   DCHECK_GE(args->GetSize(), static_cast<size_t>(2));
   // unpack args into requestId, submessage and submessageArgs
   bool ok;
-  Value* requestId;
+  const Value* requestId;
   ok = args->Get(0, &requestId);
   DCHECK(ok);
 
@@ -142,7 +142,7 @@ void GpuMessageHandler::OnCallAsync(const ListValue* args) {
 
   ListValue* submessageArgs = new ListValue();
   for (size_t i = 2; i < args->GetSize(); ++i) {
-    Value* arg;
+    const Value* arg;
     ok = args->Get(i, &arg);
     DCHECK(ok);
 

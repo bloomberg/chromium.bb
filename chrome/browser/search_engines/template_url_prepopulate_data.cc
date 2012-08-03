@@ -3364,8 +3364,8 @@ void GetPrepopulatedTemplateFromPrefs(Profile* profile,
 
   size_t num_engines = list->GetSize();
   for (size_t i = 0; i != num_engines; ++i) {
-    Value* val;
-    DictionaryValue* engine;
+    const Value* val;
+    const DictionaryValue* engine;
     if (list->GetDictionary(i, &engine) &&
         engine->Get("name", &val) && val->GetAsString(&name) &&
         engine->Get("keyword", &val) && val->GetAsString(&keyword) &&

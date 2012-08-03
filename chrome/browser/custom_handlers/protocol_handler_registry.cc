@@ -834,7 +834,7 @@ ProtocolHandlerRegistry::GetHandlersFromPref(const char* pref_name) const {
   const ListValue* handlers = prefs->GetList(pref_name);
   if (handlers) {
     for (size_t i = 0; i < handlers->GetSize(); ++i) {
-      DictionaryValue* dict;
+      const DictionaryValue* dict;
       if (!handlers->GetDictionary(i, &dict))
         continue;
       if (ProtocolHandler::IsValidDict(dict)) {

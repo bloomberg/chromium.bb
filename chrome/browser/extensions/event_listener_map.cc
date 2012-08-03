@@ -173,7 +173,7 @@ void EventListenerMap::LoadFilteredLazyListeners(
     if (!filtered.GetListWithoutPathExpansion(*it, &filter_list))
       continue;
     for (size_t i = 0; i < filter_list->GetSize(); i++) {
-      DictionaryValue* filter = NULL;
+      const DictionaryValue* filter = NULL;
       if (!filter_list->GetDictionary(i, &filter))
         continue;
       AddListener(scoped_ptr<EventListener>(new EventListener(
