@@ -240,8 +240,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAWithImg) {
   RunTest(FILE_PATH_LITERAL("a-with-img.html"));
 }
 
+// TODO(dimich): Started to fail in Chrome r149732 (crbug 140397)
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityContenteditableDescendants \
+    DISABLED_AccessibilityContenteditableDescendants
+#else
+#define MAYBE_AccessibilityContenteditableDescendants \
+    AccessibilityContenteditableDescendants
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityContenteditableDescendants) {
+                       MAYBE_AccessibilityContenteditableDescendants) {
   RunTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
 }
 
