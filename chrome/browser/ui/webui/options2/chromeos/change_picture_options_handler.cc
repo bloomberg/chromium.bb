@@ -48,8 +48,6 @@ ui::SelectFileDialog::FileTypeInfo GetUserImageFileTypeInfo() {
 
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("bmp"));
 
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("gif"));
-
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("jpg"));
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("jpeg"));
 
