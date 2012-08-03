@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_FACTORY_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_FACTORY_H_
 
-#include "base/memory/singleton.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+
+template <typename T> struct DefaultSingletonTraits;
 
 class Profile;
 class BookmarkModel;
@@ -33,6 +36,8 @@ class BookmarkModelFactory : public ProfileKeyedServiceFactory {
   virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkModelFactory);
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_FACTORY_H_

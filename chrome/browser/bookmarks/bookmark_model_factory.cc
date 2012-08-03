@@ -4,6 +4,7 @@
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
