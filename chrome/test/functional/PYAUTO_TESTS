@@ -97,6 +97,8 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testTabFSExitWhenNavToNewPage',
       '-fullscreen_mouselock.FullscreenMouselockTest.testMLExitWhenNavBackToPrevPage',
       '-fullscreen_mouselock.FullscreenMouselockTest.testMLExitWhenNavToNewPage',
+      # crbug.com/140460
+      '-fullscreen_mouselock.FullscreenMouselockTest.testNoTabFSExitWhenJSExitMouseLock',
 
       # crosbug.com/136875
       '-fullscreen_mouselock.FullscreenMouselockTest.testTabFSDoesNotExitForAnchorLinks',
