@@ -1349,12 +1349,12 @@ weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
 	struct wl_resource *resource = NULL;
 	struct wl_client *client = es->surface.resource.client;
 
+	es->output_mask = mask;
 	if (es->surface.resource.client == NULL)
 		return;
 	if (different == 0)
 		return;
 
-	es->output_mask = mask;
 	wl_list_for_each(output, &es->compositor->output_list, link) {
 		if (1 << output->id & different)
 			resource =
