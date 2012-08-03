@@ -986,7 +986,9 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     case NACL_DESC_DEVICE_RNG:
     case NACL_DESC_DEVICE_POSTMESSAGE:
     case NACL_DESC_CUSTOM:
-      /* Unsupported stuff */
+      NaClLog(LOG_ERROR,
+              "NaClLoadModuleRpc: cannot load from desc of type=%d\n",
+              NACL_VTBL(NaClDesc, nexe_binary)->typeTag);
       rpc->result = NACL_SRPC_RESULT_APP_ERROR;
       goto cleanup;
   }
