@@ -117,10 +117,10 @@ bool LinuxPtraceDumper::BuildProcPath(char* path, pid_t pid,
   if (total_length >= NAME_MAX)
     return false;
 
-  memcpy(path, "/proc/", 6);
+  my_memcpy(path, "/proc/", 6);
   my_itos(path + 6, pid, pid_len);
   path[6 + pid_len] = '/';
-  memcpy(path + 6 + pid_len + 1, node, node_len);
+  my_memcpy(path + 6 + pid_len + 1, node, node_len);
   path[total_length] = '\0';
   return true;
 }
@@ -138,7 +138,7 @@ void LinuxPtraceDumper::CopyFromProcess(void* dest, pid_t child,
     if (sys_ptrace(PTRACE_PEEKDATA, child, remote + done, &tmp) == -1) {
       tmp = 0;
     }
-    memcpy(local + done, &tmp, l);
+    my_memcpy(local + done, &tmp, l);
     done += l;
   }
 }
@@ -212,11 +212,11 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
 
   const uint8_t* stack_pointer;
 #if defined(__i386)
-  memcpy(&stack_pointer, &info->regs.esp, sizeof(info->regs.esp));
+  my_memcpy(&stack_pointer, &info->regs.esp, sizeof(info->regs.esp));
 #elif defined(__x86_64)
-  memcpy(&stack_pointer, &info->regs.rsp, sizeof(info->regs.rsp));
+  my_memcpy(&stack_pointer, &info->regs.rsp, sizeof(info->regs.rsp));
 #elif defined(__ARM_EABI__)
-  memcpy(&stack_pointer, &info->regs.ARM_sp, sizeof(info->regs.ARM_sp));
+  my_memcpy(&stack_pointer, &info->regs.ARM_sp, sizeof(info->regs.ARM_sp));
 #else
 #error "This code hasn't been ported to your platform yet."
 #endif
@@ -237,8 +237,8 @@ bool LinuxPtraceDumper::ThreadsSuspend() {
       // If the thread either disappeared before we could attach to it, or if
       // it was part of the seccomp sandbox's trusted code, it is OK to
       // silently drop it from the minidump.
-      memmove(&threads_[i], &threads_[i+1],
-              (threads_.size() - i - 1) * sizeof(threads_[i]));
+      my_memmove(&threads_[i], &threads_[i+1],
+                 (threads_.size() - i - 1) * sizeof(threads_[i]));
       threads_.resize(threads_.size() - 1);
       --i;
     }

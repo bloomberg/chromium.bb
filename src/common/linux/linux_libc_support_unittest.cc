@@ -129,6 +129,23 @@ TEST(LinuxLibcSupportTest, strchr) {
   ASSERT_TRUE(my_strchr("abc", 'a'));
   ASSERT_TRUE(my_strchr("bcda", 'a'));
   ASSERT_TRUE(my_strchr("sdfasdf", 'a'));
+
+  static const char abc3[] = "abcabcabc";
+  ASSERT_EQ(abc3, my_strchr(abc3, 'a'));
+}
+
+TEST(LinuxLibcSupportTest, strrchr) {
+  ASSERT_EQ(NULL, my_strrchr("abc", 'd'));
+  ASSERT_EQ(NULL, my_strrchr("", 'd'));
+  ASSERT_EQ(NULL, my_strrchr("efghi", 'd'));
+
+  ASSERT_TRUE(my_strrchr("a", 'a'));
+  ASSERT_TRUE(my_strrchr("abc", 'a'));
+  ASSERT_TRUE(my_strrchr("bcda", 'a'));
+  ASSERT_TRUE(my_strrchr("sdfasdf", 'a'));
+
+  static const char abc3[] = "abcabcabc";
+  ASSERT_EQ(abc3 + 6, my_strrchr(abc3, 'a'));
 }
 
 TEST(LinuxLibcSupportTest, read_hex_ptr) {
@@ -153,5 +170,26 @@ TEST(LinuxLibcSupportTest, read_hex_ptr) {
 
   last = my_read_hex_ptr(&result, "0123a-");
   ASSERT_EQ(result, 0x123a);
+  ASSERT_EQ(*last, '-');
+}
+
+TEST(LinuxLibcSupportTest, read_decimal_ptr) {
+  uintptr_t result;
+  const char* last;
+
+  last = my_read_decimal_ptr(&result, "0");
+  ASSERT_EQ(result, 0);
+  ASSERT_EQ(*last, 0);
+
+  last = my_read_decimal_ptr(&result, "0123");
+  ASSERT_EQ(result, 123);
+  ASSERT_EQ(*last, 0);
+
+  last = my_read_decimal_ptr(&result, "1234");
+  ASSERT_EQ(result, 1234);
+  ASSERT_EQ(*last, 0);
+
+  last = my_read_decimal_ptr(&result, "01234-");
+  ASSERT_EQ(result, 1234);
   ASSERT_EQ(*last, '-');
 }

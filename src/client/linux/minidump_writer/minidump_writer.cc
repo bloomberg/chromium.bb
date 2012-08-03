@@ -91,14 +91,14 @@ typedef MDRawContextX86 RawContextCPU;
 //   out: memory location to write to
 //   v: value to write.
 static void U16(void* out, uint16_t v) {
-  memcpy(out, &v, sizeof(v));
+  my_memcpy(out, &v, sizeof(v));
 }
 
 // Write a uint32_t to memory
 //   out: memory location to write to
 //   v: value to write.
 static void U32(void* out, uint32_t v) {
-  memcpy(out, &v, sizeof(v));
+  my_memcpy(out, &v, sizeof(v));
 }
 
 // Juggle an x86 user_(fp|fpx|)regs_struct into minidump format
@@ -145,7 +145,7 @@ static void CPUFillFromThreadInfo(MDRawContextX86 *out,
   out->float_save.data_selector = info.fpregs.fos;
 
   // 8 registers * 10 bytes per register.
-  memcpy(out->float_save.register_area, info.fpregs.st_space, 10 * 8);
+  my_memcpy(out->float_save.register_area, info.fpregs.st_space, 10 * 8);
 
   // This matches the Intel fpsave format.
   U16(out->extended_registers + 0, info.fpregs.cwd);
@@ -158,8 +158,8 @@ static void CPUFillFromThreadInfo(MDRawContextX86 *out,
   U16(out->extended_registers + 20, info.fpregs.fos);
   U32(out->extended_registers + 24, info.fpxregs.mxcsr);
 
-  memcpy(out->extended_registers + 32, &info.fpxregs.st_space, 128);
-  memcpy(out->extended_registers + 160, &info.fpxregs.xmm_space, 128);
+  my_memcpy(out->extended_registers + 32, &info.fpxregs.st_space, 128);
+  my_memcpy(out->extended_registers + 160, &info.fpxregs.xmm_space, 128);
 }
 
 // Juggle an x86 ucontext into minidump format
@@ -200,7 +200,7 @@ static void CPUFillFromUContext(MDRawContextX86 *out, const ucontext *uc,
   out->float_save.data_selector = fp->datasel;
 
   // 8 registers * 10 bytes per register.
-  memcpy(out->float_save.register_area, fp->_st, 10 * 8);
+  my_memcpy(out->float_save.register_area, fp->_st, 10 * 8);
 }
 
 #elif defined(__x86_64)
@@ -261,8 +261,8 @@ static void CPUFillFromThreadInfo(MDRawContextAMD64 *out,
   out->flt_save.data_selector = 0;   // We don't have this.
   out->flt_save.mx_csr = info.fpregs.mxcsr;
   out->flt_save.mx_csr_mask = info.fpregs.mxcr_mask;
-  memcpy(&out->flt_save.float_registers, &info.fpregs.st_space, 8 * 16);
-  memcpy(&out->flt_save.xmm_registers, &info.fpregs.xmm_space, 16 * 16);
+  my_memcpy(&out->flt_save.float_registers, &info.fpregs.st_space, 8 * 16);
+  my_memcpy(&out->flt_save.xmm_registers, &info.fpregs.xmm_space, 16 * 16);
 }
 
 static void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
@@ -308,8 +308,8 @@ static void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
   out->flt_save.data_selector = 0;  // We don't have this.
   out->flt_save.mx_csr = fpregs->mxcsr;
   out->flt_save.mx_csr_mask = fpregs->mxcr_mask;
-  memcpy(&out->flt_save.float_registers, &fpregs->_st, 8 * 16);
-  memcpy(&out->flt_save.xmm_registers, &fpregs->_xmm, 16 * 16);
+  my_memcpy(&out->flt_save.float_registers, &fpregs->_st, 8 * 16);
+  my_memcpy(&out->flt_save.xmm_registers, &fpregs->_xmm, 16 * 16);
 }
 
 #elif defined(__ARMEL__)
@@ -327,8 +327,8 @@ static void CPUFillFromThreadInfo(MDRawContextARM *out,
   out->float_save.fpscr = info.fpregs.fpsr |
     (static_cast<u_int64_t>(info.fpregs.fpcr) << 32);
   // TODO: sort this out, actually collect floating point registers
-  memset(&out->float_save.regs, 0, sizeof(out->float_save.regs));
-  memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
+  my_memset(&out->float_save.regs, 0, sizeof(out->float_save.regs));
+  my_memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
 #endif
 }
 
@@ -358,8 +358,8 @@ static void CPUFillFromUContext(MDRawContextARM *out, const ucontext *uc,
 
   // TODO: fix this after fixing ExceptionHandler
   out->float_save.fpscr = 0;
-  memset(&out->float_save.regs, 0, sizeof(out->float_save.regs));
-  memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
+  my_memset(&out->float_save.regs, 0, sizeof(out->float_save.regs));
+  my_memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
 }
 
 #else
@@ -439,7 +439,7 @@ class MinidumpWriter {
       return false;
     if (!dir.AllocateArray(kNumWriters))
       return false;
-    memset(header.get(), 0, sizeof(MDRawHeader));
+    my_memset(header.get(), 0, sizeof(MDRawHeader));
 
     header.get()->signature = MD_HEADER_SIGNATURE;
     header.get()->version = MD_HEADER_VERSION;
@@ -537,7 +537,7 @@ class MinidumpWriter {
       uint64_t old_top = top;
       top = bp;
       u_int8_t* bp_addr = stack_copy + bp - thread.stack.start_of_memory_range;
-      memcpy(&bp, bp_addr, sizeof(bp));
+      my_memcpy(&bp, bp_addr, sizeof(bp));
       if (bp == 0xDEADBEEFDEADBEEFull) {
         struct {
           uint64_t r15;
@@ -565,9 +565,9 @@ class MinidumpWriter {
             thread.stack.start_of_memory_range+thread.stack.memory.data_size) {
           break;
         }
-        memcpy(&seccomp_stackframe,
-               bp_addr - offsetof(typeof(seccomp_stackframe), deadbeef),
-               sizeof(seccomp_stackframe));
+        my_memcpy(&seccomp_stackframe,
+                  bp_addr - offsetof(typeof(seccomp_stackframe), deadbeef),
+                  sizeof(seccomp_stackframe));
         cpu->rbx = seccomp_stackframe.rbx;
         cpu->rcx = seccomp_stackframe.rcx;
         cpu->rdx = seccomp_stackframe.rdx;
@@ -600,7 +600,7 @@ class MinidumpWriter {
       uint32_t old_top = top;
       top = bp;
       u_int8_t* bp_addr = stack_copy + bp - thread.stack.start_of_memory_range;
-      memcpy(&bp, bp_addr, sizeof(bp));
+      my_memcpy(&bp, bp_addr, sizeof(bp));
       if (bp == 0xDEADBEEFu) {
         struct {
           uint32_t edi;
@@ -619,9 +619,9 @@ class MinidumpWriter {
             thread.stack.start_of_memory_range+thread.stack.memory.data_size) {
           break;
         }
-        memcpy(&seccomp_stackframe,
-               bp_addr - offsetof(typeof(seccomp_stackframe), deadbeef),
-               sizeof(seccomp_stackframe));
+        my_memcpy(&seccomp_stackframe,
+                  bp_addr - offsetof(typeof(seccomp_stackframe), deadbeef),
+                  sizeof(seccomp_stackframe));
         cpu->ebx = seccomp_stackframe.ebx;
         cpu->ecx = seccomp_stackframe.ecx;
         cpu->edx = seccomp_stackframe.edx;
@@ -865,13 +865,13 @@ class MinidumpWriter {
       return false;
 
     const uint32_t cv_signature = MD_CVINFOPDB70_SIGNATURE;
-    memcpy(cv_ptr, &cv_signature, sizeof(cv_signature));
+    my_memcpy(cv_ptr, &cv_signature, sizeof(cv_signature));
     cv_ptr += sizeof(cv_signature);
     uint8_t* signature = cv_ptr;
     cv_ptr += sizeof(MDGUID);
     if (identifier) {
       // GUID was provided by caller.
-      memcpy(signature, identifier, sizeof(MDGUID));
+      my_memcpy(signature, identifier, sizeof(MDGUID));
     } else {
       dumper_->ElfFileIdentifierForMapping(mapping, member,
                                            mapping_id, signature);
@@ -880,7 +880,7 @@ class MinidumpWriter {
     cv_ptr += sizeof(uint32_t);
 
     // Write pdb_file_name
-    memcpy(cv_ptr, filename_ptr, filename_len + 1);
+    my_memcpy(cv_ptr, filename_ptr, filename_len + 1);
     cv.Copy(cv_buf, MDCVInfoPDB70_minsize + filename_len + 1);
 
     mod.cv_record = cv.location();
@@ -1110,8 +1110,8 @@ class MinidumpWriter {
           CpuInfoEntry* entry = &cpu_info_table[i];
           if (entry->found && i)
             continue;
-          if (!strncmp(line, entry->info_name, strlen(entry->info_name))) {
-            const char* value = strchr(line, ':');
+          if (!my_strncmp(line, entry->info_name, strlen(entry->info_name))) {
+            const char* value = my_strchr(line, ':');
             if (!value)
               continue;
 
@@ -1119,33 +1119,35 @@ class MinidumpWriter {
             // line. i.e. we matched "model name" instead of "model".
             // check and make sure there is only spaces between the prefix and
             // the colon.
-            const char* space_ptr = line + strlen(entry->info_name);
+            const char* space_ptr = line + my_strlen(entry->info_name);
             for (; space_ptr < value; space_ptr++) {
-              if (!isspace(*space_ptr)) {
+              if (!my_isspace(*space_ptr)) {
                 break;
               }
             }
             if (space_ptr != value)
               continue;
 
-            sscanf(++value, " %d", &(entry->value));
+            uintptr_t val;
+            my_read_decimal_ptr(&val, ++value);
+            entry->value = static_cast<int>(val);
             entry->found = true;
           }
         }
 
         // special case for vendor_id
-        if (!strncmp(line, vendor_id_name, vendor_id_name_length)) {
-          const char* value = strchr(line, ':');
+        if (!my_strncmp(line, vendor_id_name, vendor_id_name_length)) {
+          const char* value = my_strchr(line, ':');
           if (!value)
             goto popline;
 
           // skip ':" and all the spaces that follows
           do {
             value++;
-          } while (isspace(*value));
+          } while (my_isspace(*value));
 
           if (*value) {
-            size_t length = strlen(value);
+            size_t length = my_strlen(value);
             if (length == 0)
               goto popline;
             // we don't want the trailing newline
@@ -1153,7 +1155,7 @@ class MinidumpWriter {
               length--;
             // ensure we have space for the value
             if (length < sizeof(vendor_id))
-              strncpy(vendor_id, value, length);
+              my_strlcpy(vendor_id, value, length);
           }
         }
 
@@ -1180,8 +1182,8 @@ class MinidumpWriter {
                                      cpu_info_table[2].value;
 
     if (vendor_id[0] != '\0') {
-      memcpy(sys_info->cpu.x86_cpu_info.vendor_id, vendor_id,
-             sizeof(sys_info->cpu.x86_cpu_info.vendor_id));
+      my_memcpy(sys_info->cpu.x86_cpu_info.vendor_id, vendor_id,
+                sizeof(sys_info->cpu.x86_cpu_info.vendor_id));
     }
     return true;
   }
@@ -1270,9 +1272,9 @@ class MinidumpWriter {
     };
     bool first_item = true;
     for (const char** cur_info = info_table; *cur_info; cur_info++) {
-      static const char* separator = " ";
-      size_t separator_len = strlen(separator);
-      size_t info_len = strlen(*cur_info);
+      static const char separator[] = " ";
+      size_t separator_len = sizeof(separator) - 1;
+      size_t info_len = my_strlen(*cur_info);
       if (info_len == 0)
         continue;
 
@@ -1280,12 +1282,12 @@ class MinidumpWriter {
         break;
 
       if (!first_item) {
-        strcat(buf, separator);
+        my_strlcat(buf, separator, sizeof(buf));
         space_left -= separator_len;
       }
 
       first_item = false;
-      strcat(buf, *cur_info);
+      my_strlcat(buf, *cur_info, sizeof(buf));
       space_left -= info_len;
     }
 
@@ -1301,8 +1303,8 @@ class MinidumpWriter {
     if (fingerprint_len > 0 && fingerprint_len < PROP_VALUE_MAX) {
       const char* separator = " ";
       if (!first_item)
-        strlcat(buf, separator, buf_len);
-      strlcat(buf, fingerprint, buf_len);
+        my_strlcat(buf, separator, sizeof(buf));
+      my_strlcat(buf, fingerprint, sizeof(buf));
     }
 #endif
 

@@ -113,7 +113,7 @@ LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
   assert(filename_len < NAME_MAX);
   if (filename_len >= NAME_MAX)
     return false;
-  memcpy(filename, mapping.name, filename_len);
+  my_memcpy(filename, mapping.name, filename_len);
   filename[filename_len] = '\0';
   bool filename_modified = HandleDeletedFileInMapping(filename);
 
@@ -151,11 +151,11 @@ LinuxDumper::FindBeginningOfLinuxGateSharedLibrary(pid_t pid) const {
                   sizeof(elf_aux_entry)) == sizeof(elf_aux_entry) &&
          one_aux_entry.a_type != AT_NULL) {
     if (one_aux_entry.a_type == AT_SYSINFO_EHDR) {
-      close(fd);
+      sys_close(fd);
       return reinterpret_cast<void*>(one_aux_entry.a_un.a_val);
     }
   }
-  close(fd);
+  sys_close(fd);
   return NULL;
 }
 
@@ -177,11 +177,11 @@ LinuxDumper::FindEntryPoint(pid_t pid) const {
                   sizeof(elf_aux_entry)) == sizeof(elf_aux_entry) &&
          one_aux_entry.a_type != AT_NULL) {
     if (one_aux_entry.a_type == AT_ENTRY) {
-      close(fd);
+      sys_close(fd);
       return reinterpret_cast<void*>(one_aux_entry.a_un.a_val);
     }
   }
-  close(fd);
+  sys_close(fd);
   return NULL;
 }
 
@@ -240,14 +240,14 @@ bool LinuxDumper::EnumerateMappings() {
             }
           }
           MappingInfo* const module = new(allocator_) MappingInfo;
-          memset(module, 0, sizeof(MappingInfo));
+          my_memset(module, 0, sizeof(MappingInfo));
           module->start_addr = start_addr;
           module->size = end_addr - start_addr;
           module->offset = offset;
           if (name != NULL) {
             const unsigned l = my_strlen(name);
             if (l < sizeof(module->name))
-              memcpy(module->name, name, l);
+              my_memcpy(module->name, name, l);
           }
           // If this is the entry-point mapping, and it's not already the
           // first one, then we need to make it be first.  This is because
@@ -351,7 +351,7 @@ bool LinuxDumper::HandleDeletedFileInMapping(char* path) const {
     return false;
   }
 
-  memcpy(path, exe_link, NAME_MAX);
+  my_memcpy(path, exe_link, NAME_MAX);
   return true;
 }
 

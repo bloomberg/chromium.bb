@@ -86,6 +86,7 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/common/linux/elfutils.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/guid_creator.cc \
+	src/common/linux/linux_libc_support.cc \
 	src/common/linux/memory_mapped_file.cc \
 	src/common/linux/safe_readlink.cc
 endif LINUX_HOST
@@ -339,6 +340,7 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/linux/elfutils.o \
 	src/common/linux/file_id.o \
 	src/common/linux/guid_creator.o \
+	src/common/linux/linux_libc_support.o \
 	src/common/linux/memory_mapped_file.o \
 	src/common/linux/safe_readlink.o \
 	src/common/string_conversion.o \
@@ -373,6 +375,7 @@ src_tools_linux_dump_syms_dump_syms_SOURCES = \
 	src/common/linux/elf_symbols_to_module.cc \
 	src/common/linux/elfutils.cc \
 	src/common/linux/file_id.cc \
+	src/common/linux/linux_libc_support.cc \
 	src/common/linux/memory_mapped_file.cc \
 	src/common/linux/safe_readlink.cc \
 	src/tools/linux/dump_syms/dump_syms.cc
@@ -422,15 +425,16 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/linux/elf_core_dump_unittest.cc \
 	src/common/linux/elf_symbols_to_module.cc \
 	src/common/linux/elf_symbols_to_module_unittest.cc \
-	src/common/linux/memory_mapped_file.cc \
-	src/common/linux/memory_mapped_file_unittest.cc \
-	src/common/linux/synth_elf.cc \
-	src/common/linux/synth_elf_unittest.cc \
 	src/common/linux/elfutils.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/file_id_unittest.cc \
+	src/common/linux/linux_libc_support.cc \
+	src/common/linux/memory_mapped_file.cc \
+	src/common/linux/memory_mapped_file_unittest.cc \
 	src/common/linux/safe_readlink.cc \
 	src/common/linux/safe_readlink_unittest.cc \
+	src/common/linux/synth_elf.cc \
+	src/common/linux/synth_elf_unittest.cc \
 	src/common/linux/tests/crash_generator.cc \
 	src/common/tests/file_utils.cc \
 	src/testing/gtest/src/gtest-all.cc \
