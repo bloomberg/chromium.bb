@@ -583,7 +583,7 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
       input_event->type == WebInputEvent::MouseWheel ||
       WebInputEvent::isTouchEventType(input_event->type);
   bool is_input_throttled =
-      webwidget_->isInputThrottled() ||
+      (webwidget_ ? webwidget_->isInputThrottled() : false) ||
       paint_aggregator_.HasPendingUpdate();
 
   if (event_type_gets_rate_limited && is_input_throttled && !is_hidden_) {
