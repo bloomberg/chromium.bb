@@ -29,7 +29,6 @@
 
 #include "compositor.h"
 #include "evdev.h"
-#include "launcher-util.h"
 
 void
 evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
@@ -57,14 +56,6 @@ evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
 		if (device->caps & EVDEV_KEYBOARD)
 			write(device->fd, ev, sizeof ev);
 	}
-}
-
-static void
-drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
-{
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
-
-	evdev_led_update(&seat->devices_list, leds);
 }
 
 static inline void
@@ -544,46 +535,6 @@ evdev_input_device_destroy(struct evdev_input_device *device)
 	free(device);
 }
 
-static const char default_seat[] = "seat0";
-
-static void
-device_added(struct udev_device *udev_device, struct drm_seat *master)
-{
-	struct weston_compositor *c;
-	struct evdev_input_device *device;
-	const char *devnode;
-	const char *device_seat;
-	int fd;
-
-	device_seat = udev_device_get_property_value(udev_device, "ID_SEAT");
-	if (!device_seat)
-		device_seat = default_seat;
-
-	if (strcmp(device_seat, master->seat_id))
-		return;
-
-	c = master->base.compositor;
-	devnode = udev_device_get_devnode(udev_device);
-
-	/* Use non-blocking mode so that we can loop on read on
-	 * evdev_input_device_data() until all events on the fd are
-	 * read.  mtdev_get() also expects this. */
-	fd = weston_launcher_open(c, devnode, O_RDWR | O_NONBLOCK);
-	if (fd < 0) {
-		weston_log("opening input device '%s' failed.\n", devnode);
-		return;
-	}
-
-	device = evdev_input_device_create(&master->base, devnode, fd);
-	if (!device) {
-		close(fd);
-		weston_log("not using input device '%s'.\n", devnode);
-		return;
-	}
-
-	wl_list_insert(master->devices_list.prev, &device->link);
-}
-
 void
 evdev_notify_keyboard_focus(struct weston_seat *seat,
 			    struct wl_list *evdev_devices)
@@ -621,183 +572,4 @@ evdev_notify_keyboard_focus(struct weston_seat *seat,
 	notify_keyboard_focus_in(&seat->seat, &keys, STATE_UPDATE_AUTOMATIC);
 
 	wl_array_release(&keys);
-}
-
-void
-evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
-{
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
-	struct udev_enumerate *e;
-	struct udev_list_entry *entry;
-	struct udev_device *device;
-	const char *path, *sysname;
-
-	e = udev_enumerate_new(udev);
-	udev_enumerate_add_match_subsystem(e, "input");
-	udev_enumerate_scan_devices(e);
-	udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
-		path = udev_list_entry_get_name(entry);
-		device = udev_device_new_from_syspath(udev, path);
-
-		sysname = udev_device_get_sysname(device);
-		if (strncmp("event", sysname, 5) != 0) {
-			udev_device_unref(device);
-			continue;
-		}
-
-		device_added(device, seat);
-
-		udev_device_unref(device);
-	}
-	udev_enumerate_unref(e);
-
-	evdev_notify_keyboard_focus(&seat->base, &seat->devices_list);
-
-	if (wl_list_empty(&seat->devices_list)) {
-		weston_log(
-			"warning: no input devices on entering Weston. "
-			"Possible causes:\n"
-			"\t- no permissions to read /dev/input/event*\n"
-			"\t- seats misconfigured "
-			"(Weston backend option 'seat', "
-			"udev device property ID_SEAT)\n");
-	}
-}
-
-static int
-evdev_udev_handler(int fd, uint32_t mask, void *data)
-{
-	struct drm_seat *master = data;
-	struct udev_device *udev_device;
-	struct evdev_input_device *device, *next;
-	const char *action;
-	const char *devnode;
-
-	udev_device = udev_monitor_receive_device(master->udev_monitor);
-	if (!udev_device)
-		return 1;
-
-	action = udev_device_get_action(udev_device);
-	if (action) {
-		if (strncmp("event", udev_device_get_sysname(udev_device), 5) != 0)
-			return 0;
-
-		if (!strcmp(action, "add")) {
-			device_added(udev_device, master);
-		}
-		else if (!strcmp(action, "remove")) {
-			devnode = udev_device_get_devnode(udev_device);
-			wl_list_for_each_safe(device, next,
-					      &master->devices_list, link)
-				if (!strcmp(device->devnode, devnode)) {
-					evdev_input_device_destroy(device);
-					break;
-				}
-		}
-	}
-	udev_device_unref(udev_device);
-
-	return 0;
-}
-
-int
-evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base)
-{
-	struct drm_seat *master = (struct drm_seat *) seat_base;
-	struct wl_event_loop *loop;
-	struct weston_compositor *c = master->base.compositor;
-	int fd;
-
-	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
-	if (!master->udev_monitor) {
-		weston_log("udev: failed to create the udev monitor\n");
-		return 0;
-	}
-
-	udev_monitor_filter_add_match_subsystem_devtype(master->udev_monitor,
-			"input", NULL);
-
-	if (udev_monitor_enable_receiving(master->udev_monitor)) {
-		weston_log("udev: failed to bind the udev monitor\n");
-		udev_monitor_unref(master->udev_monitor);
-		return 0;
-	}
-
-	loop = wl_display_get_event_loop(c->wl_display);
-	fd = udev_monitor_get_fd(master->udev_monitor);
-	master->udev_monitor_source =
-		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
-				     evdev_udev_handler, master);
-	if (!master->udev_monitor_source) {
-		udev_monitor_unref(master->udev_monitor);
-		return 0;
-	}
-
-	return 1;
-}
-
-void
-evdev_disable_udev_monitor(struct weston_seat *seat_base)
-{
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
-
-	if (!seat->udev_monitor)
-		return;
-
-	udev_monitor_unref(seat->udev_monitor);
-	seat->udev_monitor = NULL;
-	wl_event_source_remove(seat->udev_monitor_source);
-	seat->udev_monitor_source = NULL;
-}
-
-void
-evdev_input_create(struct weston_compositor *c, struct udev *udev,
-		   const char *seat_id)
-{
-	struct drm_seat *seat;
-
-	seat = malloc(sizeof *seat);
-	if (seat == NULL)
-		return;
-
-	memset(seat, 0, sizeof *seat);
-	weston_seat_init(&seat->base, c);
-	seat->base.led_update = drm_led_update;
-
-	wl_list_init(&seat->devices_list);
-	seat->seat_id = strdup(seat_id);
-	if (!evdev_enable_udev_monitor(udev, &seat->base)) {
-		free(seat->seat_id);
-		free(seat);
-		return;
-	}
-
-	evdev_add_devices(udev, &seat->base);
-
-	c->seat = &seat->base;
-}
-
-void
-evdev_remove_devices(struct weston_seat *seat_base)
-{
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
-	struct evdev_input_device *device, *next;
-
-	wl_list_for_each_safe(device, next, &seat->devices_list, link)
-		evdev_input_device_destroy(device);
-
-	notify_keyboard_focus_out(&seat->base.seat);
-}
-
-void
-evdev_input_destroy(struct weston_seat *seat_base)
-{
-	struct drm_seat *seat = (struct drm_seat *) seat_base;
-
-	evdev_remove_devices(seat_base);
-	evdev_disable_udev_monitor(&seat->base);
-
-	weston_seat_release(seat_base);
-	free(seat->seat_id);
-	free(seat);
 }

@@ -25,15 +25,6 @@
 
 #include <linux/input.h>
 #include <wayland-util.h>
-#include <libudev.h>
-
-struct drm_seat {
-	struct weston_seat base;
-	struct wl_list devices_list;
-	struct udev_monitor *udev_monitor;
-	struct wl_event_source *udev_monitor_source;
-	char *seat_id;
-};
 
 #define MAX_SLOTS 16
 
@@ -112,25 +103,6 @@ struct evdev_dispatch {
 
 struct evdev_dispatch *
 evdev_touchpad_create(struct evdev_input_device *device);
-
-void
-evdev_add_devices(struct udev *udev, struct weston_seat *seat_base);
-
-void
-evdev_remove_devices(struct weston_seat *seat_base);
-
-void
-evdev_input_create(struct weston_compositor *c, struct udev *udev,
-		   const char *seat);
-
-void
-evdev_input_destroy(struct weston_seat *seat);
-
-int
-evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base);
-
-void
-evdev_disable_udev_monitor(struct weston_seat *seat_base);
 
 void
 evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds);
