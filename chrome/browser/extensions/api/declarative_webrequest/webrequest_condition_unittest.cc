@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/matcher/url_matcher_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request_test_util.h"
@@ -72,13 +73,15 @@ TEST(WebRequestConditionTest, CreateCondition) {
   TestURLRequest match_request(GURL("http://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&match_request,
       ResourceType::MAIN_FRAME, NULL, -1, -1);
-  EXPECT_TRUE(result->IsFulfilled(&match_request, ON_BEFORE_REQUEST));
+  EXPECT_TRUE(result->IsFulfilled(
+      WebRequestRule::RequestData(&match_request, ON_BEFORE_REQUEST)));
 
   TestURLRequest wrong_resource_type(
       GURL("https://www.example.com"), NULL, &context);
   content::ResourceRequestInfo::AllocateForTesting(&wrong_resource_type,
       ResourceType::SUB_FRAME, NULL, -1, -1);
-  EXPECT_FALSE(result->IsFulfilled(&wrong_resource_type, ON_BEFORE_REQUEST));
+  EXPECT_FALSE(result->IsFulfilled(
+      WebRequestRule::RequestData(&wrong_resource_type, ON_BEFORE_REQUEST)));
 }
 
 TEST(WebRequestConditionTest, CreateConditionSet) {
@@ -142,7 +145,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   url_match_ids = matcher.MatchURL(http_url);
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
-    if (result->IsFulfilled(*i, &http_request, ON_BEFORE_REQUEST))
+    if (result->IsFulfilled(
+            *i, WebRequestRule::RequestData(&http_request, ON_BEFORE_REQUEST)))
       ++number_matches;
   }
   EXPECT_EQ(1, number_matches);
@@ -153,7 +157,8 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   number_matches = 0;
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
-    if (result->IsFulfilled(*i, &https_request, ON_BEFORE_REQUEST))
+    if (result->IsFulfilled(
+            *i, WebRequestRule::RequestData(&https_request, ON_BEFORE_REQUEST)))
       ++number_matches;
   }
   EXPECT_EQ(1, number_matches);
@@ -165,7 +170,9 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   number_matches = 0;
   for (std::set<URLMatcherConditionSet::ID>::iterator i = url_match_ids.begin();
        i != url_match_ids.end(); ++i) {
-    if (result->IsFulfilled(*i, &https_foo_request, ON_BEFORE_REQUEST))
+    if (result->IsFulfilled(
+            *i, WebRequestRule::RequestData(
+                &https_foo_request, ON_BEFORE_REQUEST)))
       ++number_matches;
   }
   EXPECT_EQ(0, number_matches);

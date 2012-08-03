@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -343,7 +343,7 @@ class ExtensionWebRequestEventRouter
       ExtensionInfoMap* extension_info_map,
       const std::string& event_name,
       net::URLRequest* request,
-      extensions::RequestStages request_stage,
+      extensions::RequestStage request_stage,
       net::HttpResponseHeaders* original_response_headers);
 
   // Called when the RulesRegistry is ready to unblock a request that was
@@ -352,7 +352,7 @@ class ExtensionWebRequestEventRouter
       void* profile,
       const std::string& event_name,
       uint64 request_id,
-      extensions::RequestStages request_stage);
+      extensions::RequestStage request_stage);
 
   // Sets the flag that |event_type| has been signaled for |request_id|.
   // Returns the value of the flag before setting it.

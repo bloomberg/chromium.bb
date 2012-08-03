@@ -46,9 +46,9 @@ class WebRequestCondition {
       const base::Value& condition,
       std::string* error);
 
-  // Returns whether |request| is a match, given that the URLMatcher found
+  // Returns whether the request is a match, given that the URLMatcher found
   // a match for |url_matcher_conditions_|.
-  bool IsFulfilled(net::URLRequest* request, RequestStages request_stage) const;
+  bool IsFulfilled(const WebRequestRule::RequestData& request_data) const;
 
   // Returns a URLMatcherConditionSet::ID which is the canonical representation
   // for all URL patterns that need to be matched by this WebRequestCondition.
@@ -70,7 +70,7 @@ class WebRequestCondition {
   scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
   WebRequestConditionAttributes condition_attributes_;
 
-  // Bit vector indicating all RequestStages during which all
+  // Bit vector indicating all RequestStage during which all
   // |condition_attributes_| can be evaluated.
   int applicable_request_stages_;
 
@@ -101,13 +101,13 @@ class WebRequestConditionSet {
   }
 
   // Returns whether any condition in the condition set is fulfilled
-  // based on a match |url_match| and the value of |request|. This function
-  // should be called for each URLMatcherConditionSet::ID that was found
-  // by the URLMatcher to ensure that the each trigger in |match_triggers_| is
-  // found.
-  bool IsFulfilled(URLMatcherConditionSet::ID url_match,
-                   net::URLRequest* request,
-                   RequestStages request_stage) const;
+  // based on a match |url_match| and the value of |request_data.request|.
+  // This function should be called for each URLMatcherConditionSet::ID
+  // that was found by the URLMatcher to ensure that the each trigger in
+  // |match_triggers_| is found.
+  bool IsFulfilled(
+      URLMatcherConditionSet::ID url_match,
+      const WebRequestRule::RequestData& request_data) const;
 
   // Appends the URLMatcherConditionSet from all conditions to |condition_sets|.
   void GetURLMatcherConditionSets(

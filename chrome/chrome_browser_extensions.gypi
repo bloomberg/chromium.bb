@@ -118,7 +118,7 @@
         'browser/extensions/api/declarative/rules_registry_with_cache.h',
         'browser/extensions/api/declarative/test_rules_registry.cc',
         'browser/extensions/api/declarative/test_rules_registry.h',
-        'browser/extensions/api/declarative_webrequest/request_stages.h',
+        'browser/extensions/api/declarative_webrequest/request_stage.h',
         'browser/extensions/api/declarative_webrequest/webrequest_action.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_action.h',
         'browser/extensions/api/declarative_webrequest/webrequest_condition.cc',

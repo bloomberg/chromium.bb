@@ -90,13 +90,11 @@ scoped_ptr<WebRequestRule> WebRequestRule::Create(
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRule::CreateDeltas(
     const ExtensionInfoMap* extension_info_map,
-    net::URLRequest* request,
-    bool crosses_incognito,
-    RequestStages request_stage,
-    const OptionalRequestData& optional_request_data) const {
-  return actions_->CreateDeltas(extension_info_map, extension_id(), request,
-      crosses_incognito, request_stage, optional_request_data,
-      extension_installation_time_);
+    const RequestData& request_data,
+    bool crosses_incognito) const {
+  return actions_->CreateDeltas(extension_info_map, extension_id(),
+                                request_data, crosses_incognito,
+                                extension_installation_time_);
 }
 
 int WebRequestRule::GetMinimumPriority() const {

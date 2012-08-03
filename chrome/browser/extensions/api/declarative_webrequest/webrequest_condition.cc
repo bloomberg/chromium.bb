@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
@@ -55,17 +55,17 @@ WebRequestCondition::WebRequestCondition(
 
 WebRequestCondition::~WebRequestCondition() {}
 
-bool WebRequestCondition::IsFulfilled(net::URLRequest* request,
-                                      RequestStages request_stage) const {
+bool WebRequestCondition::IsFulfilled(
+    const WebRequestRule::RequestData& request_data) const {
   // All condition attributes must be fulfilled for a fulfilled condition.
-  if (!(request_stage & applicable_request_stages_)) {
+  if (!(request_data.stage & applicable_request_stages_)) {
     // A condition that cannot be evaluated is considered as violated.
     return false;
   }
 
   for (WebRequestConditionAttributes::const_iterator i =
        condition_attributes_.begin(); i != condition_attributes_.end(); ++i) {
-    if (!(*i)->IsFulfilled(request, request_stage))
+    if (!(*i)->IsFulfilled(request_data))
       return false;
   }
   return true;
@@ -160,12 +160,11 @@ WebRequestConditionSet::~WebRequestConditionSet() {}
 
 bool WebRequestConditionSet::IsFulfilled(
     URLMatcherConditionSet::ID url_match,
-    net::URLRequest* request,
-    RequestStages request_stage) const {
+    const WebRequestRule::RequestData& request_data) const {
   MatchTriggers::const_iterator trigger = match_triggers_.find(url_match);
   DCHECK(trigger != match_triggers_.end());
   DCHECK_EQ(url_match, trigger->second->url_matcher_condition_set_id());
-  return trigger->second->IsFulfilled(request, request_stage);
+  return trigger->second->IsFulfilled(request_data);
 }
 
 void WebRequestConditionSet::GetURLMatcherConditionSets(

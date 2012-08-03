@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "content/public/browser/resource_request_info.h"
@@ -114,12 +114,11 @@ int WebRequestConditionAttributeResourceType::GetStages() const {
 }
 
 bool WebRequestConditionAttributeResourceType::IsFulfilled(
-    net::URLRequest* request,
-    RequestStages request_stage) {
-  if (!(request_stage & GetStages()))
+    const WebRequestRule::RequestData& request_data) {
+  if (!(request_data.stage & GetStages()))
     return false;
   const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
+      content::ResourceRequestInfo::ForRequest(request_data.request);
   if (!info)
     return false;
   return std::find(types_.begin(), types_.end(), info->GetResourceType()) !=

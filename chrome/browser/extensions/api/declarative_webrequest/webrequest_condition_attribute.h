@@ -11,7 +11,8 @@
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/api/events.h"
 #include "webkit/glue/resource_type.h"
 
@@ -45,14 +46,13 @@ class WebRequestConditionAttribute {
       const base::Value* value,
       std::string* error);
 
-  // Returns a bit vector representing extensions::RequestStages. The bit vector
+  // Returns a bit vector representing extensions::RequestStage. The bit vector
   // contains a 1 for each request stage during which the condition attribute
   // can be tested.
   virtual int GetStages() const = 0;
 
   // Returns whether the condition is fulfilled for this request.
-  virtual bool IsFulfilled(net::URLRequest* request,
-                           RequestStages request_stage) = 0;
+  virtual bool IsFulfilled(const WebRequestRule::RequestData& request_data) = 0;
 
   virtual Type GetType() const = 0;
 
@@ -87,8 +87,8 @@ class WebRequestConditionAttributeResourceType
 
   // Implementation of WebRequestConditionAttribute:
   virtual int GetStages() const OVERRIDE;
-  virtual bool IsFulfilled(net::URLRequest* request,
-                           RequestStages request_stage) OVERRIDE;
+  virtual bool IsFulfilled(const WebRequestRule::RequestData& request_data)
+      OVERRIDE;
   virtual Type GetType() const OVERRIDE;
 
  private:

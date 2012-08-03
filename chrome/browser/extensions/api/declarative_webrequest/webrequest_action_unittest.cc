@@ -148,16 +148,18 @@ TEST(WebRequestActionTest, TestPermissions) {
   // Check that redirect works on regular URLs but not on protected URLs.
   TestURLRequest regular_request(GURL("http://test.com"), NULL, &context);
   std::list<LinkedPtrEventResponseDelta> deltas =
-      action_set->CreateDeltas(NULL, "ext1", &regular_request, false,
-          ON_BEFORE_REQUEST, WebRequestRule::OptionalRequestData(),
-          base::Time());
+      action_set->CreateDeltas(
+          NULL, "ext1",
+          WebRequestRule::RequestData(&regular_request, ON_BEFORE_REQUEST),
+          false, base::Time());
   EXPECT_EQ(1u, deltas.size());
 
   TestURLRequest protected_request(GURL(extension_urls::kGalleryBrowsePrefix),
                                    NULL, &context);
-  deltas = action_set->CreateDeltas(NULL, "ext1", &protected_request, false,
-      ON_BEFORE_REQUEST, WebRequestRule::OptionalRequestData(),
-      base::Time());
+  deltas = action_set->CreateDeltas(
+      NULL, "ext1",
+      WebRequestRule::RequestData(&protected_request, ON_BEFORE_REQUEST),
+      false, base::Time());
   EXPECT_EQ(0u, deltas.size());
 }
 

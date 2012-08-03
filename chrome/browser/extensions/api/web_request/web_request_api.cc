@@ -1400,7 +1400,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     ExtensionInfoMap* extension_info_map,
     const std::string& event_name,
     net::URLRequest* request,
-    extensions::RequestStages request_stage,
+    extensions::RequestStage request_stage,
     net::HttpResponseHeaders* original_response_headers) {
   // Rules of the current |profile| may apply but we need to check also whether
   // there are applicable rules from extensions whose background page
@@ -1459,12 +1459,12 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
        i != relevant_registries.end(); ++i) {
     extensions::WebRequestRulesRegistry* rules_registry =
         i->first;
-    extensions::WebRequestRule::OptionalRequestData optional_request_data;
-    optional_request_data.original_response_headers =
-        original_response_headers;
     helpers::EventResponseDeltas result =
-        rules_registry->CreateDeltas(extension_info_map, request,
-            i->second, request_stage, optional_request_data);
+        rules_registry->CreateDeltas(
+            extension_info_map,
+            extensions::WebRequestRule::RequestData(
+                request, request_stage, original_response_headers),
+            i->second);
 
     if (!result.empty()) {
       helpers::EventResponseDeltas& deltas =
@@ -1485,7 +1485,7 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
     void* profile,
     const std::string& event_name,
     uint64 request_id,
-    extensions::RequestStages request_stage) {
+    extensions::RequestStage request_stage) {
   // It's possible that this request was deleted, or cancelled by a previous
   // event handler. If so, ignore this response.
   if (blocked_requests_.find(request_id) == blocked_requests_.end())

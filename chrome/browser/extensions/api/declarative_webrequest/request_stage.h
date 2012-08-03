@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGES_H_
-#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGES_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGE_H_
+#define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGE_H_
 
 namespace extensions {
 
 // The stages of the web request during which a condition can be tested and
 // an action can be applied. This is required because for example the response
 // headers cannot be tested before a request has been sent.
-//
-// TODO(battre) rename to singular.
-enum RequestStages {
+enum RequestStage {
   ON_BEFORE_REQUEST = 1 << 0,
   ON_BEFORE_SEND_HEADERS = 1 << 1,
   ON_SEND_HEADERS = 1 << 2,
@@ -26,4 +24,4 @@ enum RequestStages {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGES_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_WEBREQUEST_REQUEST_STAGE_H_

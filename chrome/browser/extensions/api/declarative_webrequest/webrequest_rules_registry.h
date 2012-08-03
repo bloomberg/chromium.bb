@@ -14,7 +14,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/matcher/url_matcher.h"
@@ -69,17 +69,14 @@ class WebRequestRulesRegistry : public RulesRegistryWithCache {
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.
   std::set<WebRequestRule::GlobalRuleId> GetMatches(
-      net::URLRequest* request,
-      RequestStages request_stage);
+      const WebRequestRule::RequestData& request_data);
 
   // Returns which modifications should be executed on the network request
   // according to the rules registered in this registry.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       const ExtensionInfoMap* extension_info_map,
-      net::URLRequest* request,
-      bool crosses_incognito,
-      RequestStages request_stage,
-      const WebRequestRule::OptionalRequestData& optional_request_data);
+      const WebRequestRule::RequestData& request_data,
+      bool crosses_incognito);
 
   // Implementation of RulesRegistryWithCache:
   virtual std::string AddRulesImpl(

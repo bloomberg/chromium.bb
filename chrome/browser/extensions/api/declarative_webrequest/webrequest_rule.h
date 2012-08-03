@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
-#include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 
 class ExtensionInfoMap;
 class WebRequestPermissions;
@@ -45,10 +45,18 @@ class WebRequestRule {
   typedef std::pair<ExtensionId, RuleId> GlobalRuleId;
   typedef int Priority;
 
-  // Container to pass additional information about requests that are not
-  // available in all request stages.
-  struct OptionalRequestData {
-    OptionalRequestData() : original_response_headers(NULL) {}
+  struct RequestData {
+    RequestData(net::URLRequest* request, RequestStage stage)
+        : request(request), stage(stage),
+          original_response_headers(NULL) {}
+    RequestData(net::URLRequest* request, RequestStage stage,
+                net::HttpResponseHeaders* original_response_headers)
+        : request(request), stage(stage),
+          original_response_headers(original_response_headers) {}
+    net::URLRequest* request;
+    RequestStage stage;
+    // Additional information about requests that is not
+    // available in all request stages.
     net::HttpResponseHeaders* original_response_headers;
   };
 
@@ -79,14 +87,12 @@ class WebRequestRule {
   // of view; no harm is done if this function is called at other times for
   // testing purposes).
   // If |extension| is set, deltas are suppressed if the |extension| does not
-  // have have sufficient permissions to modify the |request|. The returned list
+  // have have sufficient permissions to modify the request. The returned list
   // may be empty in this case.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
       const ExtensionInfoMap* extension_info_map,
-      net::URLRequest* request,
-      bool crosses_incognito,
-      RequestStages request_stage,
-      const OptionalRequestData& optional_request_data) const;
+      const RequestData& request_data,
+      bool crosses_incognito) const;
 
   // Returns the minimum priority of rules that may be evaluated after
   // this rule. Defaults to MAX_INT. Only valid if the conditions of this rule
