@@ -21,7 +21,10 @@ enum LinuxSandboxStatus {
   kSandboxLinuxNetNS = 1 << 2,
 
   // seccomp-legacy sandbox active.
-  kSandboxLinuxSeccomp = 1 << 3,
+  kSandboxLinuxSeccompLegacy = 1 << 3,
+
+  // seccomp-bpf sandbox active.
+  kSandboxLinuxSeccompBpf = 1 << 4,
 };
 
 }  // namespace content

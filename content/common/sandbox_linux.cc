@@ -160,7 +160,12 @@ int LinuxSandbox::GetStatus() const {
       ShouldEnableSeccompLegacy(switches::kRendererProcess)) {
     // We report whether the sandbox will be activated when renderers go
     // through sandbox initialization.
-    sandbox_flags |= kSandboxLinuxSeccomp;
+    sandbox_flags |= kSandboxLinuxSeccompLegacy;
+  }
+  if (seccomp_bpf_supported() &&
+      SandboxSeccompBpf::ShouldEnableSeccompBpf(switches::kRendererProcess)) {
+    // Same here, what we report is what we will do for the renderer.
+    sandbox_flags |= kSandboxLinuxSeccompBpf;
   }
   return sandbox_flags;
 }

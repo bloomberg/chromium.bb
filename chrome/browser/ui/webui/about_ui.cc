@@ -975,14 +975,19 @@ std::string AboutSandbox() {
                   status & content::kSandboxLinuxPIDNS);
   AboutSandboxRow(&data, "&nbsp;&nbsp;", IDS_ABOUT_SANDBOX_NET_NAMESPACES,
                   status & content::kSandboxLinuxNetNS);
-  AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SECCOMP_SANDBOX,
-                  status & content::kSandboxLinuxSeccomp);
+  AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SECCOMP_LEGACY_SANDBOX,
+                  status & content::kSandboxLinuxSeccompLegacy);
+  AboutSandboxRow(&data, "", IDS_ABOUT_SANDBOX_SECCOMP_BPF_SANDBOX,
+                  status & content::kSandboxLinuxSeccompBpf);
 
   data.append("</table>");
 
+  // We do not consider the seccomp-bpf status here as the renderers
+  // policy is weak at the moment.
+  // TODO(jln): fix when whe have better renderer policies.
   bool good = ((status & content::kSandboxLinuxSUID) &&
                (status & content::kSandboxLinuxPIDNS)) ||
-              (status & content::kSandboxLinuxSeccomp);
+              (status & content::kSandboxLinuxSeccompLegacy);
   if (good) {
     data.append("<p style=\"color: green\">");
     data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));

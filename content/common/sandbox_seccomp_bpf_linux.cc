@@ -510,6 +510,15 @@ bool SandboxSeccompBpf::IsSeccompBpfDesired() {
   }
 }
 
+bool SandboxSeccompBpf::ShouldEnableSeccompBpf(
+    const std::string& process_type) {
+#if defined(SECCOMP_BPF_SANDBOX)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return !ShouldDisableBpfSandbox(command_line, process_type);
+#endif
+  return false;
+}
+
 bool SandboxSeccompBpf::SupportsSandbox() {
 #if defined(SECCOMP_BPF_SANDBOX)
   // TODO(jln): pass the saved proc_fd_ from the LinuxSandbox singleton
@@ -528,7 +537,7 @@ bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
 
   if (IsSeccompBpfDesired() &&  // Global switches policy.
       // Process-specific policy.
-      !ShouldDisableBpfSandbox(command_line, process_type) &&
+      ShouldEnableSeccompBpf(process_type) &&
       SupportsSandbox()) {
     return StartBpfSandbox_x86(command_line, process_type);
   }
