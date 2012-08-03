@@ -689,6 +689,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ToggleWifi() OVERRIDE {
+    tray_->network_observer()->OnWillToggleWifi();
     network_menu_->ToggleWifi();
   }
 

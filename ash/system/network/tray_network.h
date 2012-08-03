@@ -24,6 +24,11 @@ class NetworkTrayView;
 class TrayNetwork : public SystemTrayItem,
                     public NetworkObserver {
  public:
+  enum DetailedViewType {
+    LIST_VIEW,
+    WIFI_VIEW,
+  };
+
   TrayNetwork();
   virtual ~TrayNetwork();
 
@@ -49,6 +54,7 @@ class TrayNetwork : public SystemTrayItem,
                                const string16& message,
                                const string16& link_text) OVERRIDE;
   virtual void ClearNetworkError(ErrorType error_type) OVERRIDE;
+  virtual void OnWillToggleWifi() OVERRIDE;
 
  private:
   friend class tray::NetworkErrorView;
@@ -63,6 +69,7 @@ class TrayNetwork : public SystemTrayItem,
   tray::NetworkDetailedView* detailed_;
   tray::NetworkNotificationView* notification_;
   scoped_ptr<tray::NetworkErrors> errors_;
+  bool request_wifi_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };

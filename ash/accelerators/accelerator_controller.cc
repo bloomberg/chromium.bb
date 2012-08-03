@@ -29,6 +29,7 @@
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/property_util.h"
@@ -408,6 +409,10 @@ bool AcceleratorController::PerformAction(int action,
       return HandleCrosh();
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
+    case TOGGLE_WIFI:
+      if (Shell::GetInstance()->tray_delegate())
+        Shell::GetInstance()->tray_delegate()->ToggleWifi();
+      return true;
     case CYCLE_DISPLAY_MODE: {
       internal::OutputConfiguratorAnimation* animation =
           Shell::GetInstance()->output_configurator_animation();

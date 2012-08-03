@@ -242,6 +242,12 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_PROXY_SETTINGS" desc="The label used in the proxy settings entry in the network dialog in the login screen.">
         Proxy...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned on.">
+        Wi-Fi is turned on.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned off.">
+        Wi-Fi is turned off.
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">
         SMS
       </message>

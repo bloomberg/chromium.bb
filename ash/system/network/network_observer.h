@@ -42,6 +42,11 @@ class NetworkObserver {
                                const string16& link_text) = 0;
   // Clears the error notification for |error_type|.
   virtual void ClearNetworkError(ErrorType error_type) = 0;
+
+  // Called when the user attempted to toggle Wi-Fi enable/disable.
+  // NOTE: Toggling is asynchronous and subsequent calls to query the current
+  // state may return the old value.
+  virtual void OnWillToggleWifi() = 0;
 };
 
 }  // namespace ash
