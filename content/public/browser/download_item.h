@@ -61,10 +61,6 @@ class CONTENT_EXPORT DownloadItem {
     // Download has been cancelled.
     CANCELLED,
 
-    // This state indicates that the download item is about to be destroyed,
-    // and observers seeing this state should release all references.
-    REMOVING,
-
     // This state indicates that the download has been interrupted.
     INTERRUPTED,
 
@@ -102,10 +98,18 @@ class CONTENT_EXPORT DownloadItem {
   // to receive updates to the download's status.
   class CONTENT_EXPORT Observer {
    public:
-    virtual void OnDownloadUpdated(DownloadItem* download) = 0;
+    virtual void OnDownloadUpdated(DownloadItem* download) {}
 
     // Called when a downloaded file has been opened.
-    virtual void OnDownloadOpened(DownloadItem* download) = 0;
+    virtual void OnDownloadOpened(DownloadItem* download) {}
+
+    // Called when the user removes a download.
+    virtual void OnDownloadRemoved(DownloadItem* download) {}
+
+    // Called when the download is being destroyed. This happens after
+    // every OnDownloadRemoved() as well as when the DownloadManager is going
+    // down.
+    virtual void OnDownloadDestroyed(DownloadItem* download) {}
 
    protected:
     virtual ~Observer() {}

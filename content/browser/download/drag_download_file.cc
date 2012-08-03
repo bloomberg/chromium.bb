@@ -196,8 +196,7 @@ void DragDownloadFile::ModelChanged(DownloadManager* manager) {
 
 void DragDownloadFile::OnDownloadUpdated(content::DownloadItem* download) {
   AssertCurrentlyOnUIThread();
-  if (download->IsCancelled() ||
-      (download->GetState() == DownloadItem::REMOVING)) {
+  if (download->IsCancelled()) {
     RemoveObservers();
     DownloadCompleted(false);
   } else if (download->IsComplete()) {
@@ -205,6 +204,17 @@ void DragDownloadFile::OnDownloadUpdated(content::DownloadItem* download) {
     DownloadCompleted(true);
   }
   // Ignore other states.
+}
+
+// If the download completes or is cancelled, then OnDownloadUpdated() will
+// handle it and RemoveObserver() so that OnDownloadDestroyed is never called.
+// OnDownloadDestroyed is only called if OnDownloadUpdated() does not detect
+// completion or cancellation (in which cases it removes this observer).
+// TODO(benjhayden): Try to change this to NOTREACHED()?
+void DragDownloadFile::OnDownloadDestroyed(content::DownloadItem* download) {
+  AssertCurrentlyOnUIThread();
+  RemoveObservers();
+  DownloadCompleted(false);
 }
 
 void DragDownloadFile::AssertCurrentlyOnDragThread() {

@@ -150,11 +150,6 @@ void PluginInstaller::OnDownloadUpdated(DownloadItem* download) {
       DownloadCancelled();
       break;
     }
-    case DownloadItem::REMOVING: {
-      DCHECK_EQ(INSTALLER_STATE_DOWNLOADING, state_);
-      state_ = INSTALLER_STATE_IDLE;
-      break;
-    }
     case DownloadItem::INTERRUPTED: {
       content::DownloadInterruptReason reason = download->GetLastReason();
       DownloadError(content::InterruptReasonDebugString(reason));
@@ -168,7 +163,10 @@ void PluginInstaller::OnDownloadUpdated(DownloadItem* download) {
   download->RemoveObserver(this);
 }
 
-void PluginInstaller::OnDownloadOpened(DownloadItem* download) {
+void PluginInstaller::OnDownloadDestroyed(DownloadItem* download) {
+  DCHECK_EQ(INSTALLER_STATE_DOWNLOADING, state_);
+  state_ = INSTALLER_STATE_IDLE;
+  download->RemoveObserver(this);
 }
 
 void PluginInstaller::AddObserver(PluginInstallerObserver* observer) {

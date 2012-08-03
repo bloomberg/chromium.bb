@@ -128,8 +128,6 @@ string16 DownloadItemModel::GetStatusText() {
     case DownloadItem::CANCELLED:
       status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
       break;
-    case DownloadItem::REMOVING:
-      break;
     case DownloadItem::INTERRUPTED:
       reason = download_->GetLastReason();
       status_text = InterruptReasonStatusMessage(reason);

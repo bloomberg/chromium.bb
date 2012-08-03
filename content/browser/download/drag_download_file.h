@@ -63,7 +63,7 @@ class DragDownloadFile
   // content::DownloadItem::Observer methods.
   // Called on UI thread.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE { }
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
  private:
   // Called on drag-and-drop thread (Windows).

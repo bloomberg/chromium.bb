@@ -33,7 +33,7 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
 
   // content::DownloadItem::Observer interface
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE { }
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   // content::DownloadManager::Observer interface
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;

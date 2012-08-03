@@ -85,17 +85,15 @@ bool DownloadTestObserver::IsFinished() const {
           wait_count_);
 }
 
-void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
-  // The REMOVING state indicates that the download is being destroyed.
+void DownloadTestObserver::OnDownloadDestroyed(DownloadItem* download) {
   // Stop observing.  Do not do anything with it, as it is about to be gone.
-  if (download->GetState() == DownloadItem::REMOVING) {
-    DownloadSet::iterator it = downloads_observed_.find(download);
-    ASSERT_TRUE(it != downloads_observed_.end());
-    downloads_observed_.erase(it);
-    download->RemoveObserver(this);
-    return;
-  }
+  DownloadSet::iterator it = downloads_observed_.find(download);
+  ASSERT_TRUE(it != downloads_observed_.end());
+  downloads_observed_.erase(it);
+  download->RemoveObserver(this);
+}
 
+void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
   // Real UI code gets the user's response after returning from the observer.
   if (download->GetSafetyState() == DownloadItem::DANGEROUS &&
       !ContainsKey(dangerous_downloads_seen_, download->GetId())) {
@@ -268,17 +266,15 @@ void DownloadTestFlushObserver::ModelChanged(DownloadManager* manager) {
   CheckDownloadsInProgress(true);
 }
 
-void DownloadTestFlushObserver::OnDownloadUpdated(DownloadItem* download) {
-  // The REMOVING state indicates that the download is being destroyed.
+void DownloadTestFlushObserver::OnDownloadDestroyed(DownloadItem* download) {
   // Stop observing.  Do not do anything with it, as it is about to be gone.
-  if (download->GetState() == DownloadItem::REMOVING) {
-    DownloadSet::iterator it = downloads_observed_.find(download);
-    ASSERT_TRUE(it != downloads_observed_.end());
-    downloads_observed_.erase(it);
-    download->RemoveObserver(this);
-    return;
-  }
+  DownloadSet::iterator it = downloads_observed_.find(download);
+  ASSERT_TRUE(it != downloads_observed_.end());
+  downloads_observed_.erase(it);
+  download->RemoveObserver(this);
+}
 
+void DownloadTestFlushObserver::OnDownloadUpdated(DownloadItem* download) {
   // No change in DownloadItem set on manager.
   CheckDownloadsInProgress(false);
 }

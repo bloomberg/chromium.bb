@@ -1358,15 +1358,8 @@ void SavePackage::StopObservation() {
   download_manager_ = NULL;
 }
 
-void SavePackage::OnDownloadUpdated(DownloadItem* download) {
-  DCHECK(download_);
-  DCHECK(download_ == download);
-  DCHECK(download_manager_);
-
-  // Check for removal.
-  if (download_->GetState() == DownloadItem::REMOVING) {
-    StopObservation();
-  }
+void SavePackage::OnDownloadDestroyed(DownloadItem* download) {
+  StopObservation();
 }
 
 void SavePackage::FinalizeDownloadEntry() {

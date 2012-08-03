@@ -323,7 +323,7 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_EQ(0U, downloads.size());
 
   // Keep track of these as we need to update them later during the test.
-  DownloadID in_progress, removing;
+  DownloadID in_progress;
 
   // Create one with a 0 time.
   EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, Time()));
@@ -336,23 +336,22 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_NE(0, in_progress = AddDownload(DownloadItem::IN_PROGRESS, month_ago));
   EXPECT_NE(0, AddDownload(DownloadItem::CANCELLED, month_ago));
   EXPECT_NE(0, AddDownload(DownloadItem::INTERRUPTED, month_ago));
-  EXPECT_NE(0, removing = AddDownload(DownloadItem::REMOVING, month_ago));
 
   // Test to see if inserts worked.
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(9U, downloads.size());
+  EXPECT_EQ(8U, downloads.size());
 
   // Try removing from current timestamp. This should delete the one in the
   // future and one very recent one.
   db_->RemoveDownloadsBetween(now, Time());
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(7U, downloads.size());
+  EXPECT_EQ(6U, downloads.size());
 
   // Try removing from two months ago. This should not delete items that are
   // 'in progress' or in 'removing' state.
   db_->RemoveDownloadsBetween(now - TimeDelta::FromDays(60), Time());
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(3U, downloads.size());
+  EXPECT_EQ(2U, downloads.size());
 
   // Download manager converts to TimeT, which is lossy, so we do the same
   // for comparison.
@@ -364,9 +363,6 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_EQ(DownloadItem::IN_PROGRESS, downloads[1].state);
   EXPECT_EQ(month_ago_lossy.ToInternalValue(),
             downloads[1].start_time.ToInternalValue());
-  EXPECT_EQ(DownloadItem::REMOVING, downloads[2].state);
-  EXPECT_EQ(month_ago_lossy.ToInternalValue(),
-            downloads[2].start_time.ToInternalValue());
 
   // Change state so we can delete the downloads.
   DownloadPersistentStoreInfo data;
@@ -377,7 +373,6 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   data.db_handle = in_progress;
   EXPECT_TRUE(db_->UpdateDownload(data));
   data.state = DownloadItem::CANCELLED;
-  data.db_handle = removing;
   EXPECT_TRUE(db_->UpdateDownload(data));
 
   // Try removing from Time=0. This should delete all.

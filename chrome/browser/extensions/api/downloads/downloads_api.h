@@ -226,7 +226,8 @@ class ExtensionDownloadsEventRouter : public content::DownloadManager::Observer,
 
   // content::DownloadItem::Observer
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadRemoved(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   // Used for testing.
   struct DownloadsNotificationSource {

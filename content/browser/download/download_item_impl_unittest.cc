@@ -131,16 +131,42 @@ class DownloadItemTest : public testing::Test {
  public:
   class MockObserver : public DownloadItem::Observer {
    public:
-    explicit MockObserver(DownloadItem* item) : item_(item), updated_(false) {
+    explicit MockObserver(DownloadItem* item)
+      : item_(item),
+        removed_(false),
+        destroyed_(false),
+        updated_(false) {
       item_->AddObserver(this);
     }
-    ~MockObserver() { item_->RemoveObserver(this); }
+
+    virtual ~MockObserver() {
+      if (item_) item_->RemoveObserver(this);
+    }
+
+    virtual void OnDownloadRemoved(DownloadItem* download) {
+      removed_ = true;
+    }
 
     virtual void OnDownloadUpdated(DownloadItem* download) {
       updated_ = true;
     }
 
-    virtual void OnDownloadOpened(DownloadItem* download) { }
+    virtual void OnDownloadOpened(DownloadItem* download) {
+    }
+
+    virtual void OnDownloadDestroyed(DownloadItem* download) {
+      destroyed_ = true;
+      item_->RemoveObserver(this);
+      item_ = NULL;
+    }
+
+    bool CheckRemoved() {
+      return removed_;
+    }
+
+    bool CheckDestroyed() {
+      return destroyed_;
+    }
 
     bool CheckUpdated() {
       bool was_updated = updated_;
@@ -150,6 +176,8 @@ class DownloadItemTest : public testing::Test {
 
    private:
     DownloadItem* item_;
+    bool removed_;
+    bool destroyed_;
     bool updated_;
   };
 
@@ -302,12 +330,21 @@ TEST_F(DownloadItemTest, NotificationAfterDelete) {
   ASSERT_TRUE(observer.CheckUpdated());
 }
 
+TEST_F(DownloadItemTest, NotificationAfterDestroyed) {
+  DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  MockObserver observer(item);
+
+  DestroyDownloadItem(item);
+  ASSERT_TRUE(observer.CheckDestroyed());
+}
+
 TEST_F(DownloadItemTest, NotificationAfterRemove) {
   DownloadItemImpl* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
   item->Remove();
   ASSERT_TRUE(observer.CheckUpdated());
+  ASSERT_TRUE(observer.CheckRemoved());
 }
 
 TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {

@@ -48,8 +48,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
   virtual ~PluginInstaller();
 
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   void AddObserver(PluginInstallerObserver* observer);
   void RemoveObserver(PluginInstallerObserver* observer);

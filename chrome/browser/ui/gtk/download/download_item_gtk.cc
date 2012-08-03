@@ -326,9 +326,6 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
   }
 
   switch (download->GetState()) {
-    case DownloadItem::REMOVING:
-      parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
-      return;
     case DownloadItem::CANCELLED:
       StopDownloadProgress();
       gtk_widget_queue_draw(progress_area_.get());
@@ -370,6 +367,11 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
 
   status_text_ = UTF16ToUTF8(download_model_->GetStatusText());
   UpdateStatusLabel(status_text_);
+}
+
+void DownloadItemGtk::OnDownloadDestroyed(DownloadItem* download) {
+  parent_shelf_->RemoveDownloadItem(this);
+  // This will delete us!
 }
 
 void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {

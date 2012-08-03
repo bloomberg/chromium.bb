@@ -506,8 +506,6 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
       file_value->SetString("state", "DANGEROUS");
     else
       file_value->SetString("state", "COMPLETE");
-  } else if (download->GetState() == DownloadItem::REMOVING) {
-    file_value->SetString("state", "REMOVING");
   } else {
     NOTREACHED() << "state undefined";
   }
