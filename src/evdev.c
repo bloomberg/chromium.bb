@@ -445,16 +445,29 @@ evdev_configure_device(struct evdev_input_device *device)
 	/* This rule tries to catch accelerometer devices and opt out. We may
 	 * want to adjust the protocol later adding a proper event for dealing
 	 * with accelerometers and implement here accordingly */
-	if (has_abs && !has_key && !device->is_mt)
+	if (has_abs && !has_key && !device->is_mt) {
+		weston_log("input device %s, %s "
+			   "ignored: unsupported device type\n",
+			   device->devname, device->devnode);
 		return -1;
+	}
 
 	if ((device->caps &
-	     (EVDEV_MOTION_ABS | EVDEV_MOTION_REL | EVDEV_BUTTON)))
+	     (EVDEV_MOTION_ABS | EVDEV_MOTION_REL | EVDEV_BUTTON))) {
 		weston_seat_init_pointer(device->seat);
-	if ((device->caps & EVDEV_KEYBOARD))
+		weston_log("input device %s, %s is a pointer\n",
+			   device->devname, device->devnode);
+	}
+	if ((device->caps & EVDEV_KEYBOARD)) {
 		weston_seat_init_keyboard(device->seat, NULL);
-	if ((device->caps & EVDEV_TOUCH))
+		weston_log("input device %s, %s is a keyboard\n",
+			   device->devname, device->devnode);
+	}
+	if ((device->caps & EVDEV_TOUCH)) {
 		weston_seat_init_touch(device->seat);
+		weston_log("input device %s, %s is a touch device\n",
+			   device->devname, device->devnode);
+	}
 
 	return 0;
 }
@@ -465,6 +478,7 @@ evdev_input_device_create(struct weston_seat *seat,
 {
 	struct evdev_input_device *device;
 	struct weston_compositor *ec;
+	char devname[256] = "unknown";
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
@@ -484,6 +498,9 @@ evdev_input_device_create(struct weston_seat *seat,
 	device->rel.dy = 0;
 	device->dispatch = NULL;
 	device->fd = device_fd;
+
+	ioctl(device->fd, EVIOCGNAME(sizeof(devname)), devname);
+	device->devname = strdup(devname);
 
 	if (evdev_configure_device(device) == -1)
 		goto err1;
@@ -512,6 +529,7 @@ evdev_input_device_create(struct weston_seat *seat,
 err2:
 	device->dispatch->interface->destroy(device->dispatch);
 err1:
+	free(device->devname);
 	free(device->devnode);
 	free(device);
 	return NULL;
@@ -531,6 +549,7 @@ evdev_input_device_destroy(struct evdev_input_device *device)
 	if (device->mtdev)
 		mtdev_close_delete(device->mtdev);
 	close(device->fd);
+	free(device->devname);
 	free(device->devnode);
 	free(device);
 }
