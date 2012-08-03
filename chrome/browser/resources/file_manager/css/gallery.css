@@ -915,7 +915,7 @@ body {
 /* Load spinner and error banner */
 
 .gallery .spinner {
-  background-image: url('../images/common/spinner_white.svg);
+  background-image: url('../images/common/spinner_white.svg');
   background-size: 100%;
   height: 32px;
   left: 50%;
@@ -997,4 +997,18 @@ body {
 .gallery[video] > .toolbar .button.edit,
 .gallery[video] > .toolbar .edit-bar {
   display: none;
+}
+
+@media print {
+  .image-container > .image {
+    left: 0 !important;
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    top: 0 !important;
+  }
+
+  .gallery .tool {
+    opacity: 0 !important;
+  }
 }
