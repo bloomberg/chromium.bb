@@ -80,8 +80,15 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
+  // Move the cursor again. The cursor should be visible.
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
+
+  // Now activate the window and press on it again.
+  aura::client::GetActivationClient(
+      root_window())->ActivateWindow(window.get());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_FALSE(cursor_client.IsCursorVisible());
 }
 
 }  // namespace test

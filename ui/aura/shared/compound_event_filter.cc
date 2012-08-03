@@ -103,7 +103,7 @@ bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
   if (event->type() == ui::ET_MOUSE_MOVED ||
       event->type() == ui::ET_MOUSE_PRESSED ||
       event->type() == ui::ET_MOUSEWHEEL) {
-    SetVisibilityOnEvent(target, event, true);
+    SetCursorVisibilityOnEvent(target, event, true);
     UpdateCursor(target, event);
   }
 
@@ -125,7 +125,12 @@ bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
 ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
     aura::Window* target,
     aura::TouchEvent* event) {
-  return FilterTouchEvent(target, event);
+  ui::TouchStatus status = FilterTouchEvent(target, event);
+  if (status == ui::TOUCH_STATUS_UNKNOWN &&
+      event->type() == ui::ET_TOUCH_PRESSED) {
+    SetCursorVisibilityOnEvent(target, event, false);
+  }
+  return status;
 }
 
 ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
@@ -145,7 +150,6 @@ ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
       event->details().touch_points() == 1 &&
       target->GetRootWindow() &&
       GetActiveWindow(target) != target) {
-    SetVisibilityOnEvent(target, event, false);
     target->GetFocusManager()->SetFocusedWindow(
         FindFocusableWindowFor(target), event);
   }
@@ -211,9 +215,9 @@ ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
   return status;
 }
 
-void CompoundEventFilter::SetVisibilityOnEvent(aura::Window* target,
-                                               aura::LocatedEvent* event,
-                                               bool show) {
+void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
+                                                     aura::LocatedEvent* event,
+                                                     bool show) {
   if (update_cursor_visibility_ && !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
     aura::client::CursorClient* client =
         aura::client::GetCursorClient(target->GetRootWindow());
