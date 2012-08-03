@@ -82,7 +82,7 @@ class LocalTempFile {
   const nacl::string identifier() const {
     return nacl::string(reinterpret_cast<const char*>(identifier_));
   }
-  pp::FileIO* write_file_io() const { return write_io_.get(); }
+  const pp::FileIO& write_file_io() const { return *write_io_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LocalTempFile);

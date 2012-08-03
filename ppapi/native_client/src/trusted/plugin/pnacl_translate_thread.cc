@@ -33,7 +33,7 @@ void PnaclTranslateThread::RunTranslate(
     const Manifest* manifest,
     const Manifest* ld_manifest,
     TempFile* obj_file,
-    TempFile* nexe_file,
+    LocalTempFile* nexe_file,
     ErrorInfo* error_info,
     PnaclResources* resources,
     Plugin* plugin) {
@@ -131,7 +131,7 @@ void PnaclTranslateThread::DoTranslate() {
   }
   // Run LLC.
   SrpcParams params;
-  nacl::DescWrapper* llc_out_file = obj_file_->write_wrapper();
+  nacl::DescWrapper* llc_out_file = obj_file_->get_wrapper();
   PluginReverseInterface* llc_reverse =
       llc_subprocess->service_runtime()->rev_interface();
   llc_reverse->AddTempQuotaManagedFile(obj_file_->identifier());
@@ -233,11 +233,12 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
     TranslateFailed("Link process could not reset object file");
     return false;
   }
-  nacl::DescWrapper* ld_in_file = obj_file_->read_wrapper();
+  nacl::DescWrapper* ld_in_file = obj_file_->get_wrapper();
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
   PluginReverseInterface* ld_reverse =
       ld_subprocess->service_runtime()->rev_interface();
-  ld_reverse->AddTempQuotaManagedFile(nexe_file_->identifier());
+  ld_reverse->AddQuotaManagedFile(nexe_file_->identifier(),
+                                  nexe_file_->write_file_io());
   RegisterReverseInterface(ld_reverse);
   if (!ld_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
                                        "hhiss",
