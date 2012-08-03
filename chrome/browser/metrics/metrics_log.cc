@@ -47,8 +47,10 @@
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 #if defined(OS_WIN)
+#include "base/win/metro.h"
+
+// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
@@ -756,7 +758,17 @@ void MetricsLog::RecordEnvironmentProto(
 #endif
 
   SystemProfileProto::OS* os = system_profile->mutable_os();
-  os->set_name(base::SysInfo::OperatingSystemName());
+  std::string os_name = base::SysInfo::OperatingSystemName();
+#if defined(OS_WIN)
+  // TODO(mad): This only checks whether the main process is a Metro process at
+  // upload time; not whether the collected metrics were all gathered from
+  // Metro.  This is ok as an approximation for now, since users will rarely be
+  // switching from Metro to Desktop mode; but we should re-evaluate whether we
+  // can distinguish metrics more cleanly in the future: http://crbug.com/140568
+  if (base::win::IsMetroProcess())
+    os_name += " (Metro)";
+#endif
+  os->set_name(os_name);
   os->set_version(base::SysInfo::OperatingSystemVersion());
 
   const content::GPUInfo& gpu_info =
