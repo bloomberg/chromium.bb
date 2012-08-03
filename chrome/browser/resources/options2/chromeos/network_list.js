@@ -415,9 +415,6 @@ cr.define('options.network', function() {
       if (policyManaged)
         this.showManagedNetworkIndicator();
 
-      // TODO(kevers): Add default icon for VPN when disconnected or in the
-      // process of connecting.
-
       if (activeMenu_ == this.getMenuName_()) {
         // Menu is already showing and needs to be updated. Explicitly calling
         // show menu will force the existing menu to be replaced.  The call
@@ -460,8 +457,7 @@ cr.define('options.network', function() {
             options.Preferences.setBooleanPref(
                 'cros.signed.data_roaming_enabled',
                 !enableDataRoaming_);
-            // Force revalidation of the menu the next time it is
-            // displayed.
+            // Force revalidation of the menu the next time it is displayed.
             this.menu_ = null;
           };
         }
@@ -482,31 +478,13 @@ cr.define('options.network', function() {
 
       var networkGroup = this.ownerDocument.createElement('div');
       networkGroup.className = 'network-menu-group';
-      var empty = true;
       list = this.data.networkList;
+      var empty = !list || list.length == 0;
       if (list) {
         for (var i = 0; i < list.length; i++) {
           var data = list[i];
-          if (!data.connected && !data.connecting) {
-            if (data.networkType != Constants.TYPE_ETHERNET) {
-              if (data.networkType == Constants.TYPE_CELLULAR) {
-                // Test if cellular network has an activated data plan.
-                var activate = data.needs_new_plan ||
-                   (data.activation_state !=
-                   Constants.ACTIVATION_STATE_ACTIVATED &&
-                   data.activation_state !=
-                   Constants.ACTIVATION_STATE_ACTIVATING);
-                var cmd = activate ? 'activate' : 'connect';
-                this.createConnectCallback_(networkGroup, data, cmd);
-              } else {
-                this.createConnectCallback_(networkGroup, data);
-              }
-              empty = false;
-            }
-          } else if (data.connected) {
-            addendum.push({label: loadTimeData.getString('networkOptions'),
-                           command: 'options',
-                           data: data});
+          this.createNetworkOptionsCallback_(networkGroup, data);
+          if (data.connected) {
             if (data.networkType == Constants.TYPE_VPN) {
               // Add separator
               addendum.push({});
@@ -514,13 +492,6 @@ cr.define('options.network', function() {
               addendum.push({label: loadTimeData.getString(i18nKey),
                              command: 'disconnect',
                              data: data});
-            }
-            if (data.networkType != Constants.TYPE_ETHERNET) {
-              var onlineMessage = this.ownerDocument.createElement('div');
-              onlineMessage.textContent =
-                  loadTimeData.getString('networkOnline');
-              onlineMessage.className = 'network-menu-header';
-              menu.insertBefore(onlineMessage, menu.firstChild);
             }
           }
         }
@@ -560,9 +531,7 @@ cr.define('options.network', function() {
         for (var i = 0; i < addendum.length; i++) {
           var value = addendum[i];
           if (value.data) {
-            var item = this.createCallback_(menu,
-                                            value.data,
-                                            value.label,
+            var item = this.createCallback_(menu, value.data, value.label,
                                             value.command);
             if (value.tooltip)
               item.title = value.tooltip;
@@ -694,39 +663,24 @@ cr.define('options.network', function() {
     },
 
     /**
-     * Adds a menu item for connecting to a network.
-     * @param {!Element} menu Parent menu.
+     * Adds a menu item for showing network details.
+     * @param {!Element} parent The parent element.
      * @param {Object} data Description of the network.
-     * @param {string=} opt_connect Optional connection method.
      * @private
      */
-    createConnectCallback_: function(menu, data, opt_connect) {
-      var cmd = opt_connect ? opt_connect : 'connect';
-      var label = data.networkName;
-      if (cmd == 'activate') {
-        label = loadTimeData.getString('activateNetwork');
-        label = label.replace('$1', data.networkName);
-      }
-      var menuItem = this.createCallback_(menu,
+    createNetworkOptionsCallback_: function(parent, data) {
+      var menuItem = this.createCallback_(parent,
                                           data,
-                                          label,
-                                          cmd);
+                                          data.networkName,
+                                          'options');
       menuItem.style.backgroundImage = url(data.iconURL);
-
       if (data.policyManaged)
         menuItem.appendChild(new ManagedNetworkIndicator());
-
-      var optionsButton = this.ownerDocument.createElement('div');
-      optionsButton.className = 'network-options-button';
-      var type = String(data.networkType);
-      var path = data.servicePath;
-      optionsButton.addEventListener('click', function(event) {
-        event.stopPropagation();
-        chrome.send('networkCommand',
-                    [type, path, 'options']);
-        closeMenu_();
-      });
-      menuItem.appendChild(optionsButton);
+      if (data.connected || data.connecting) {
+        var label = menuItem.getElementsByClassName(
+            'network-menu-item-label')[0];
+        label.classList.add('active-network');
+      }
     }
   };
 

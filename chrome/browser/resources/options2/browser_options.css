@@ -236,11 +236,6 @@ list:not([disabled]) > .network-group[selected] {
   width: 19px;
 }
 
-.network-menu-item:hover .network-options-button {
-  background-image: url('chrome://theme/IDR_STATUSBAR_EDIT');
-  background-size: 25px;
-}
-
 .network-group > .controlled-setting-indicator,
 .network-menu-item > .controlled-setting-indicator {
   -webkit-box-flex: 0;
@@ -340,6 +335,11 @@ list:not([disabled]) > .network-group[selected] {
   white-space: nowrap;
 }
 
+.active-network {
+   color: black;
+   font-weight: bold;
+}
+
 @media (pointer:coarse) {
   .network-menu-item-label {
     padding-top: 14px;
@@ -348,13 +348,6 @@ list:not([disabled]) > .network-group[selected] {
 
 .network-disabled-control {
   color: #999;
-}
-
-.network-menu-header {
-  -webkit-padding-start: 36px;
-  color: #999;
-  padding-bottom: 8px;
-  padding-top: 8px;
 }
 
 /* Restrict the size of the networks menu, by limiting the number of
