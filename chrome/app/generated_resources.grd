@@ -11259,6 +11259,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GDATA_BUY_MORE_SPACE" desc="Menu item, offering user to buy more space on Google Drive">
         Buy more storage...
       </message>
+      <message name="IDS_FILE_BROWSER_GDATA_SPACE_AVAILABLE_LONG" desc="Text showing space left on Google Drive">
+        Google Drive space left: <ph name="SPACE_AVAILABLE">$1<ex>400 MB</ex></ph>.
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_BUY_MORE_SPACE_LINK" desc="Text on the link, offering user to buy more space on Google Drive">
+        Buy more storage
+      </message>
       <message name="IDS_FILE_BROWSER_GDATA_WAITING_FOR_SPACE_INFO" desc="Menu item, saying that FileBrowser is waiting for account's space information from GData servers. When actual data arrives, this item will be replaced with IDS_FILE_BROWSER_GDATA_SPACE_AVAILABLE">
         Waiting for space info...
       </message>

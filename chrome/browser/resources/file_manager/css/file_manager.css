@@ -594,6 +594,43 @@ button#detail-view:not([disabled]) {
   height: 0;
 }
 
+/* Drive space warning banner. */
+.gdrive-space-warning {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-transition: height 70ms linear;
+  background-image: url('../images/files/ui/clouds.png');
+  background-repeat: repeat-x;
+  background-size: 150px 44px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  color: #333;
+  display: -webkit-box;
+  font-size: 13px;
+  height: 44px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gdrive-space-warning[hidden] {
+  border-top-width: 0;
+  height: 0;
+}
+
+.gdrive-space-warning .gdrive-icon {
+  background-image: -webkit-image-set(
+    url('../images/files/ui/gdrive_logo.png') 1x,
+    url('../images/files/ui/2x/gdrive_logo.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 25px 22px;
+  height: 44px;
+  width: 50px;
+}
+
+.gdrive-space-warning .gdrive-text {
+  margin-right: 11px;
+}
+
 /* The cr.ui.Grid representing the detailed file list. */
 .thumbnail-grid {
   overflow-y: auto;

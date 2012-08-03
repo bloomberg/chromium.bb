@@ -548,6 +548,9 @@ chrome.fileBrowserPrivate = {
       GDATA_BUY_MORE_SPACE: 'Buy more storage...',
       GDATA_SPACE_AVAILABLE: '$1 left',
 
+      GDATA_BUY_MORE_SPACE_LINK: 'Buy more storage',
+      GDATA_SPACE_AVAILABLE_LONG: 'Google Drive space left: $1.',
+
       OFFLINE_COLUMN_LABEL: 'Available offline',
       GDATA_LOADING: 'Hang with us. We\'re fetching your files.',
       GDATA_RETRY: 'Retry',

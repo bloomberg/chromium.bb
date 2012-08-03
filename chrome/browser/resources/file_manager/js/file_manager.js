@@ -2888,7 +2888,7 @@ FileManager.prototype = {
    * Show or hide the "Low disk space" warning.
    * @param {boolean} show True if the box need to be shown.
    */
-  FileManager.prototype.showLowDiskSpaceWarning_ = function(show) {
+  FileManager.prototype.showLowDownloadsSpaceWarning_ = function(show) {
     var box = this.dialogDom_.querySelector('.downloads-warning');
 
     if (box.hidden == !show) return;
@@ -2901,6 +2901,70 @@ FileManager.prototype = {
           this.onExternalLinkClick_.bind(this, DOWNLOADS_FAQ_URL));
     } else {
       box.innerHTML = '';
+    }
+
+    box.hidden = !show;
+    this.requestResize_(100);
+  };
+
+  /**
+   * Show or hide the "Low Google Drive space" warning.
+   * @param {boolean} show True if the box need to be shown.
+   * @param {object} sizeStats Size statistics.
+   */
+  FileManager.prototype.showLowGDriveSpaceWarning_ = function(show, sizeStats) {
+    var box = this.dialogDom_.querySelector('.gdrive-space-warning');
+
+    // If the warning was dismissed before, this key stores the quota value
+    // (as of the moment of dismissal).
+    // If the warning was never dismissed or was reset this key stores 0.
+    var WARNING_DISMISSED_KEY = 'gdriveSpaceWarningDismissed';
+    var dismissed = parseInt(localStorage[WARNING_DISMISSED_KEY] || '0');
+
+    if (dismissed) {
+      if (dismissed == sizeStats.totalSizeKB &&  // Quota had not changed
+          sizeStats.remainingSizeKB / sizeStats.totalSizeKB < 0.15) {
+        // Since the last dismissal decision the quota has not changed AND
+        // the user did not free up significant space. Obey the dismissal.
+        show = false;
+      } else {
+        // Forget the dismissal. Warning will be shown again.
+        localStorage[WARNING_DISMISSED_KEY] = 0;
+      }
+    }
+
+    // Avoid showing two banners.
+    // TODO(kaznacheev): Unify the low space warning and the promo header.
+    if (show) this.cleanupGDataWelcome_();
+
+    if (box.hidden == !show) return;
+
+    box.textContent = '';
+    if (show) {
+      var icon = this.document_.createElement('div');
+      icon.className = 'gdrive-icon';
+      box.appendChild(icon);
+
+      var text = this.document_.createElement('div');
+      text.className = 'gdrive-text';
+      text.textContent = strf('GDATA_SPACE_AVAILABLE_LONG',
+          util.bytesToSi(sizeStats.remainingSizeKB * 1024));
+      box.appendChild(text);
+
+      var link = this.document_.createElement('div');
+      link.className = 'plain-link';
+      link.textContent = str('GDATA_BUY_MORE_SPACE_LINK');
+      link.addEventListener('click',
+          this.onExternalLinkClick_.bind(this, GOOGLE_DRIVE_BUY_STORAGE));
+      box.appendChild(link);
+
+      var close = this.document_.createElement('div');
+      close.className = 'cr-dialog-close';
+      box.appendChild(close);
+      close.addEventListener('click', function(total) {
+        localStorage[WARNING_DISMISSED_KEY] = total;
+        box.hidden = true;
+      }.bind(this, sizeStats.totalSizeKB));
     }
 
     box.hidden = !show;
@@ -3717,52 +3781,58 @@ FileManager.prototype = {
    * @param {string} currentPath New path to the current directory.
    */
   FileManager.prototype.checkFreeSpace_ = function(currentPath) {
-    var dir = RootDirectory.DOWNLOADS;
-
-    var scheduleCheck = function(timeout) {
+    var scheduleCheck = function(timeout, root, threshold) {
       if (this.checkFreeSpaceTimer_) {
         clearTimeout(this.checkFreeSpaceTimer_);
         this.checkFreeSpaceTimer_ = null;
       }
 
       if (timeout) {
-        this.checkFreeSpaceTimer_ = setTimeout(doCheck, timeout);
+        this.checkFreeSpaceTimer_ = setTimeout(
+            doCheck, timeout, root, threshold);
       }
     }.bind(this);
 
-    var doCheck = function() {
+    var doCheck = function(root, threshold) {
       // Remember our invocation timer, because getSizeStats is long and
       // asynchronous call.
       var selfTimer = this.checkFreeSpaceTimer_;
 
       chrome.fileBrowserPrivate.getSizeStats(
-          util.makeFilesystemUrl(dir),
+          util.makeFilesystemUrl(root),
           function(sizeStats) {
             // If new check started while we were in async getSizeStats call,
             // then we shouldn't do anything.
             if (selfTimer != this.checkFreeSpaceTimer_) return;
 
             // sizeStats is undefined, if some error occurs.
-            var lowDiskSpace =
-                sizeStats &&
-                sizeStats.totalSizeKB > 0 &&
-                sizeStats.remainingSizeKB / sizeStats.totalSizeKB < 0.2;
+            var ratio = (sizeStats && sizeStats.totalSizeKB > 0) ?
+                sizeStats.remainingSizeKB / sizeStats.totalSizeKB : 1;
 
-            this.showLowDiskSpaceWarning_(lowDiskSpace);
+            var lowDiskSpace = ratio < threshold;
+
+            if (root == RootDirectory.DOWNLOADS)
+              this.showLowDownloadsSpaceWarning_(lowDiskSpace);
+            else
+              this.showLowGDriveSpaceWarning_(lowDiskSpace, sizeStats);
 
             // If disk space is low, check it more often. User can delete files
             // manually and we should not bother her with warning in this case.
-            scheduleCheck(lowDiskSpace ? 1000 * 5 : 1000 * 30);
+            scheduleCheck(lowDiskSpace ? 1000 * 5 : 1000 * 30, root, threshold);
           }.bind(this));
     }.bind(this);
 
-    if (PathUtil.getRootPath(currentPath) === dir) {
-      // Setup short timeout if currentPath just changed.
-      scheduleCheck(500);
+    // TODO(kaznacheev): Unify the two low space warning.
+    var root = PathUtil.getRootPath(currentPath);
+    if (root === RootDirectory.DOWNLOADS) {
+      scheduleCheck(500, root, 0.2);
+    } else if (root === RootDirectory.GDATA) {
+      scheduleCheck(500, root, 0.1);
     } else {
       scheduleCheck(0);
 
-      this.showLowDiskSpaceWarning_(false);
+      this.showLowDownloadsSpaceWarning_(false);
+      this.showLowGDriveSpaceWarning_(false);
     }
   };
 
