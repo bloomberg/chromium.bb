@@ -69,6 +69,9 @@ class MockDiskMountManager : public DiskMountManager {
   // Is used to implement disks.
   const DiskMountManager::DiskMap& disksInternal() const { return disks_; }
 
+  // This function is primarily for MediaDeviceNotificationsTest.
+  const DiskMountManager::MountPointMap& mountPointsInternal() const;
+
   // Notifies observers about device status update.
   void NotifyDeviceChanged(DiskMountManagerEventType event,
                            const std::string& path);
@@ -82,6 +85,9 @@ class MockDiskMountManager : public DiskMountManager {
 
   // The list of disks found.
   DiskMountManager::DiskMap disks_;
+
+  // The list of existing mount points.
+  DiskMountManager::MountPointMap mount_points_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDiskMountManager);
 };

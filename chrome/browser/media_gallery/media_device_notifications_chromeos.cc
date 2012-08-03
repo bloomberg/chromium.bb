@@ -46,12 +46,26 @@ using content::BrowserThread;
 MediaDeviceNotifications::MediaDeviceNotifications() {
   DCHECK(disks::DiskMountManager::GetInstance());
   disks::DiskMountManager::GetInstance()->AddObserver(this);
+  CheckExistingMountPointsOnUIThread();
 }
 
 MediaDeviceNotifications::~MediaDeviceNotifications() {
   disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
   if (manager) {
     manager->RemoveObserver(this);
+  }
+}
+
+void MediaDeviceNotifications::CheckExistingMountPointsOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const disks::DiskMountManager::MountPointMap& mount_point_map =
+      disks::DiskMountManager::GetInstance()->mount_points();
+  for (disks::DiskMountManager::MountPointMap::const_iterator it =
+           mount_point_map.begin(); it != mount_point_map.end(); ++it) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&MediaDeviceNotifications::CheckMountedPathOnFileThread,
+                   this, it->second));
   }
 }
 

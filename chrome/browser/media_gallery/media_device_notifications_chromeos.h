@@ -47,6 +47,10 @@ class MediaDeviceNotifications
   // Private to avoid code deleting the object.
   virtual ~MediaDeviceNotifications();
 
+  // Checks existing mount points map for media devices. For each mount point,
+  // call CheckMountedPathOnFileThread() below.
+  void CheckExistingMountPointsOnUIThread();
+
   // Checks if the mount point in |mount_info| is a media device. If it is,
   // then continue with AddMountedPathOnUIThread() below.
   void CheckMountedPathOnFileThread(

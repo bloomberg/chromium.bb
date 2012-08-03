@@ -51,6 +51,8 @@ MockDiskMountManager::MockDiskMountManager() {
                             &MockDiskMountManager::RemoveObserverInternal));
   ON_CALL(*this, disks())
       .WillByDefault(Invoke(this, &MockDiskMountManager::disksInternal));
+  ON_CALL(*this, mount_points())
+      .WillByDefault(Invoke(this, &MockDiskMountManager::mountPointsInternal));
 }
 
 MockDiskMountManager::~MockDiskMountManager() {
@@ -143,6 +145,8 @@ void MockDiskMountManager::SetupDefaultReplies() {
       .Times(AnyNumber());
   EXPECT_CALL(*this, disks())
       .WillRepeatedly(ReturnRef(disks_));
+  EXPECT_CALL(*this, mount_points())
+      .WillRepeatedly(ReturnRef(mount_points_));
   EXPECT_CALL(*this, RequestMountInfoRefresh())
       .Times(AnyNumber());
   EXPECT_CALL(*this, MountPath(_, _, _, _))
@@ -191,6 +195,11 @@ void MockDiskMountManager::RemoveDiskEntryForMountDevice(
     delete it->second;
     disks_.erase(it);
   }
+}
+
+const DiskMountManager::MountPointMap&
+MockDiskMountManager::mountPointsInternal() const {
+  return mount_points_;
 }
 
 void MockDiskMountManager::NotifyDiskChanged(
