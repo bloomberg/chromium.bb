@@ -855,9 +855,13 @@ const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";
 
-// TODO(motek): Remove this once a firm decision is made regarding how the UI
-// should be presented.
-const char kDefaultBrowserFlowDialog[] = "browser.set_default_flow_dialog";
+#if defined(OS_WIN)
+// By default, setting Chrome as default during first run on Windows 8 will
+// trigger shutting down the current instance and spawning a new (Metro)
+// Chrome. This boolean preference supresses this behaviour.
+const char kSuppressSwitchToMetroModeOnSetDefault[] =
+    "browser.suppress_switch_to_metro_mode_on_set_default";
+#endif
 
 // Policy setting whether default browser check should be disabled and default
 // browser registration should take place.

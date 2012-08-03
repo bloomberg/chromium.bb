@@ -235,6 +235,12 @@ void SetupMasterPrefsFromInstallPrefs(
           &value) && value) {
     out_prefs->make_chrome_default = true;
   }
+
+  if (install_prefs->GetBool(
+          installer::master_preferences::kSuppressFirstRunDefaultBrowserPrompt,
+          &value) && value) {
+    out_prefs->suppress_first_run_default_browser_prompt = true;
+  }
 }
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
@@ -409,7 +415,8 @@ MasterPrefs::MasterPrefs()
       homepage_defined(false),
       do_import_items(0),
       dont_import_items(0),
-      make_chrome_default(false) {
+      make_chrome_default(false),
+      suppress_first_run_default_browser_prompt(false) {
 }
 
 MasterPrefs::~MasterPrefs() {}

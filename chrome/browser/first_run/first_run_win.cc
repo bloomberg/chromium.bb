@@ -29,7 +29,6 @@
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -554,7 +553,6 @@ void AutoImport(
   process_singleton->Unlock();
   CreateSentinel();
 #endif  // !defined(USE_AURA)
-  chrome::ShowFirstRunDefaultBrowserPrompt(profile);
 }
 
 int ImportNow(Profile* profile, const CommandLine& cmdline) {

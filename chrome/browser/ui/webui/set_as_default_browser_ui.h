@@ -18,7 +18,7 @@ class SetAsDefaultBrowserUI : public content::WebUIController {
   explicit SetAsDefaultBrowserUI(content::WebUI* web_ui);
 
   // Present metroizer UI either in a new singleton tab or in a dialog window.
-  static void Show(Profile* profile, Browser* browser, bool dialog);
+  static void Show(Profile* profile, Browser* browser);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SetAsDefaultBrowserUI);

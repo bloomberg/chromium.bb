@@ -82,9 +82,13 @@ void RegisterBrowserUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser,
                              true,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDefaultBrowserFlowDialog,
-                             true,
+#if defined(OS_WIN)
+  // As with Mac-spacific code above, it should be in a platform-specific
+  // section somewhere, but there is no good place for it.
+  prefs->RegisterBooleanPref(prefs::kSuppressSwitchToMetroModeOnSetDefault,
+                             false,
                              PrefService::UNSYNCABLE_PREF);
+#endif
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint,
                              true,
                              PrefService::UNSYNCABLE_PREF);

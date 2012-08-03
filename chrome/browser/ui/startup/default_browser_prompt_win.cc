@@ -61,10 +61,7 @@ void SetMetroBrowserFlowLauncher::Observe(
 
   // Unregister and delete.
   registrar_.RemoveAll();
-  bool as_dialog =
-      profile_->GetPrefs()->GetBoolean(prefs::kDefaultBrowserFlowDialog);
-
-  SetAsDefaultBrowserUI::Show(profile_, browser, as_dialog);
+  SetAsDefaultBrowserUI::Show(profile_, browser);
   delete this;
 }
 

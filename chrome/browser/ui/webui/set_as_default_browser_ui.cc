@@ -135,10 +135,15 @@ void SetAsDefaultBrowserHandler::SetDefaultWebClientUIState(
     // chrome the default. We fold this UI and move on.
     ConcludeInteraction();
   } else if (state == ShellIntegration::STATE_IS_DEFAULT) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SetAsDefaultBrowserHandler::ActivateMetroChrome,
-                   base::Unretained(this)));
+    if (!Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
+            prefs::kSuppressSwitchToMetroModeOnSetDefault)) {
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&SetAsDefaultBrowserHandler::ActivateMetroChrome,
+                     base::Unretained(this)));
+    } else {
+      ConcludeInteraction();
+    }
   }
 }
 
@@ -167,20 +172,13 @@ void SetAsDefaultBrowserHandler::ConcludeInteraction() {
   WebContents* contents = web_ui()->GetWebContents();
   if (contents) {
     content::WebContentsDelegate* delegate = contents->GetDelegate();
-    if (delegate) {
-      if (!delegate->IsPopupOrPanel(contents)) {
-        Browser* browser = browser::FindBrowserWithWebContents(contents);
-        if (browser)
-          chrome::ShowSyncSetup(browser, SyncPromoUI::SOURCE_START_PAGE);
-      }
+    if (delegate)
       delegate->CloseContents(contents);
-    }
   }
 }
 
 void SetAsDefaultBrowserHandler::ActivateMetroChrome() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
   FilePath cur_chrome_exe;
   bool sentinel_removed = false;
   if (PathService::Get(base::FILE_EXE, &cur_chrome_exe) &&
@@ -313,19 +311,9 @@ SetAsDefaultBrowserUI::SetAsDefaultBrowserUI(content::WebUI* web_ui)
 }
 
 // static
-void SetAsDefaultBrowserUI::Show(Profile* profile,
-                                 Browser* browser,
-                                 bool dialog) {
+void SetAsDefaultBrowserUI::Show(Profile* profile, Browser* browser) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (dialog) {
-    SetAsDefaultBrowserDialogImpl* dialog =
-        new SetAsDefaultBrowserDialogImpl(profile, browser);
-    dialog->ShowDialog();
-  } else {
-    GURL url(chrome::kChromeUIMetroFlowURL);
-    chrome::NavigateParams params(
-        chrome::GetSingletonTabNavigateParams(browser, url));
-    params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
-    chrome::ShowSingletonTabOverwritingNTP(browser, params);
-  }
+  SetAsDefaultBrowserDialogImpl* dialog =
+      new SetAsDefaultBrowserDialogImpl(profile, browser);
+  dialog->ShowDialog();
 }

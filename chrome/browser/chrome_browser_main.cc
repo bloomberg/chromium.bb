@@ -76,6 +76,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
@@ -1122,6 +1123,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
     chrome::SetNewHomePagePrefs(profile_->GetPrefs());
     browser_process_->profile_manager()->OnImportFinished(profile_);
+
+    if (!master_prefs_->suppress_first_run_default_browser_prompt)
+      chrome::ShowFirstRunDefaultBrowserPrompt(profile_);
+    else
+      browser_creator_->set_is_default_browser_dialog_suppressed(true);
   }  // if (is_first_run_)
 
 #if defined(OS_WIN)

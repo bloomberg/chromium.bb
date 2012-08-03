@@ -181,12 +181,10 @@ namespace chrome {
 void ShowDefaultBrowserPrompt(Profile* profile) {
   // We do not check if we are the default browser if:
   // - the user said "don't ask me again" on the infobar earlier.
-  // - this is the first launch after the first run flow.
   // - There is a policy in control of this setting.
-  if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser) ||
-      first_run::IsChromeFirstRun()) {
+  if (!profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser))
     return;
-  }
+
   if (g_browser_process->local_state()->IsManagedPreference(
       prefs::kDefaultBrowserSettingEnabled)) {
     if (g_browser_process->local_state()->GetBoolean(

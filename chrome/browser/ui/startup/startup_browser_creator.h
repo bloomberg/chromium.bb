@@ -83,6 +83,14 @@ class StartupBrowserCreator {
       const CommandLine& command_line,
       Profile* profile);
 
+  void set_is_default_browser_dialog_suppressed(bool new_value) {
+    is_default_browser_dialog_suppressed_ = new_value;
+  }
+
+  bool is_default_browser_dialog_suppressed() const {
+    return is_default_browser_dialog_suppressed_;
+  }
+
  private:
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;
@@ -117,6 +125,11 @@ class StartupBrowserCreator {
 
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;
+
+  // True if the set-as-default dialog has been explicitly supressed.
+  // This information is used to allow the default browser prompt to show on
+  // first-run when the dialog has been suppressed.
+  bool is_default_browser_dialog_suppressed_;
 
   // True if we have already read and reset the preference kWasRestarted. (A
   // member variable instead of a static variable inside WasRestarted because

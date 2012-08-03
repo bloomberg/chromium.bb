@@ -48,6 +48,7 @@ struct MasterPrefs {
   int do_import_items;
   int dont_import_items;
   bool make_chrome_default;
+  bool suppress_first_run_default_browser_prompt;
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
 };

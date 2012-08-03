@@ -310,7 +310,9 @@ extern const char kPluginsShowDetails[];
 extern const char kPluginsAllowOutdated[];
 extern const char kPluginsAlwaysAuthorize[];
 extern const char kCheckDefaultBrowser[];
-extern const char kDefaultBrowserFlowDialog[];
+#if defined(OS_WIN)
+extern const char kSuppressSwitchToMetroModeOnSetDefault[];
+#endif
 extern const char kDefaultBrowserSettingEnabled[];
 #if defined(OS_MACOSX)
 extern const char kShowUpdatePromotionInfoBar[];
