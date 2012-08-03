@@ -1042,6 +1042,53 @@ enum MountSourceType {
 };
 }  // namespace cros_disks
 
+namespace mtpd {
+const char kMtpdInterface[] = "org.chromium.Mtpd";
+const char kMtpdServicePath[] = "/org/chromium/Mtpd";
+const char kMtpdServiceName[] = "org.chromium.Mtpd";
+const char kMtpdServiceError[] = "org.chromium.Mtpd.Error";
+
+// Methods.
+const char kEnumerateStorage[] = "EnumerateStorage";
+const char kGetStorageInfo[] = "GetStorageInfo";
+const char kOpenStorage[] = "OpenStorage";
+const char kCloseStorage[] = "CloseStorage";
+const char kReadDirectoryByPath[] = "ReadDirectoryByPath";
+const char kReadDirectoryById[] = "ReadDirectoryById";
+const char kReadFileByPath[] = "ReadFileByPath";
+const char kReadFileById[] = "ReadFileById";
+
+// Signals.
+const char kMTPStorageAttached[] = "MTPStorageAttached";
+const char kMTPStorageDetached[] = "MTPStorageDetached";
+
+// For MTPStorage struct:
+const char kVendor[] = "Vendor";
+const char kVendorId[] = "VendorId";
+const char kProduct[] = "Product";
+const char kProductId[] = "ProductId";
+const char kDeviceFlags[] = "DeviceFlags";
+const char kStorageType[] = "StorageType";
+const char kFilesystemType[] = "FilesystemType";
+const char kAccessCapability[] = "AccessCapability";
+const char kMaxCapacity[] = "MaxCapacity";
+const char kFreeSpaceInBytes[] = "FreeSpaceInBytes";
+const char kFreeSpaceInObjects[] = "FreeSpaceInObjects";
+const char kStorageDescription[] = "StorageDescription";
+const char kVolumeIdentifier[] = "VolumeIdentifier";
+
+// For FileEntry struct:
+const char kItemId[] = "ItemId";
+const char kParentId[] = "ParentId";
+const char kFileName[] = "FileName";
+const char kFileSize[] = "FileSize";
+const char kModificationDate[] = "ModificationDate";
+const char kFileType[] = "FileType";
+
+// For OpenStorage method:
+const char kReadOnlyMode[] = "ro";
+}  // namespace mtpd
+
 namespace update_engine {
 const char kUpdateEngineInterface[] = "org.chromium.UpdateEngineInterface";
 const char kUpdateEngineServicePath[] = "/org/chromium/UpdateEngine";
