@@ -86,7 +86,10 @@ bool FileSystemUsageCache::Invalidate(const FilePath& usage_file_path) {
 bool FileSystemUsageCache::IsValid(const FilePath& usage_file_path) {
   bool is_valid = true;
   uint32 dirty = 0;
-  Read(usage_file_path, &is_valid, &dirty);
+  int64 result = Read(usage_file_path, &is_valid, &dirty);
+  if (result < 0)
+    return false;
+
   return is_valid;
 }
 
@@ -163,8 +166,11 @@ int FileSystemUsageCache::Write(const FilePath& usage_file_path,
 
   DCHECK(!usage_file_path.empty());
   FilePath temporary_usage_file_path;
-  file_util::CreateTemporaryFileInDir(usage_file_path.DirName(),
-                                      &temporary_usage_file_path);
+  if (!file_util::CreateTemporaryFileInDir(usage_file_path.DirName(),
+                                           &temporary_usage_file_path)) {
+    return -1;
+  }
+
   int bytes_written = file_util::WriteFile(temporary_usage_file_path,
                                            (const char *)write_pickle.data(),
                                            write_pickle.size());
