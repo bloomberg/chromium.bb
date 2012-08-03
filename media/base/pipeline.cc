@@ -17,7 +17,6 @@
 #include "base/synchronization/condition_variable.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
-#include "media/base/callback_util.h"
 #include "media/base/clock.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
@@ -451,59 +450,63 @@ TimeDelta Pipeline::TimeForByteOffset_Locked(int64 byte_offset) const {
   return time_offset;
 }
 
-void Pipeline::DoPause(const base::Closure& done_cb) {
+void Pipeline::DoPause(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  scoped_ptr<std::queue<ClosureFunc> > closures(new std::queue<ClosureFunc>);
+  DCHECK(!pending_callbacks_.get());
+  SerialRunner::Queue bound_fns;
 
   if (audio_renderer_)
-    closures->push(base::Bind(&AudioRenderer::Pause, audio_renderer_));
+    bound_fns.Push(base::Bind(&AudioRenderer::Pause, audio_renderer_));
 
   if (video_renderer_)
-    closures->push(base::Bind(&VideoRenderer::Pause, video_renderer_));
+    bound_fns.Push(base::Bind(&VideoRenderer::Pause, video_renderer_));
 
-  RunInSeries(closures.Pass(), done_cb);
+  pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
-void Pipeline::DoFlush(const base::Closure& done_cb) {
+void Pipeline::DoFlush(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  scoped_ptr<std::queue<ClosureFunc> > closures(new std::queue<ClosureFunc>);
+  DCHECK(!pending_callbacks_.get());
+  SerialRunner::Queue bound_fns;
 
   if (audio_renderer_)
-    closures->push(base::Bind(&AudioRenderer::Flush, audio_renderer_));
+    bound_fns.Push(base::Bind(&AudioRenderer::Flush, audio_renderer_));
 
   if (video_renderer_)
-    closures->push(base::Bind(&VideoRenderer::Flush, video_renderer_));
+    bound_fns.Push(base::Bind(&VideoRenderer::Flush, video_renderer_));
 
-  RunInParallel(closures.Pass(), done_cb);
+  pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
-void Pipeline::DoPlay(const base::Closure& done_cb) {
+void Pipeline::DoPlay(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  scoped_ptr<std::queue<ClosureFunc> > closures(new std::queue<ClosureFunc>);
+  DCHECK(!pending_callbacks_.get());
+  SerialRunner::Queue bound_fns;
 
   if (audio_renderer_)
-    closures->push(base::Bind(&AudioRenderer::Play, audio_renderer_));
+    bound_fns.Push(base::Bind(&AudioRenderer::Play, audio_renderer_));
 
   if (video_renderer_)
-    closures->push(base::Bind(&VideoRenderer::Play, video_renderer_));
+    bound_fns.Push(base::Bind(&VideoRenderer::Play, video_renderer_));
 
-  RunInSeries(closures.Pass(), done_cb);
+  pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
-void Pipeline::DoStop(const base::Closure& done_cb) {
+void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  scoped_ptr<std::queue<ClosureFunc> > closures(new std::queue<ClosureFunc>);
+  DCHECK(!pending_callbacks_.get());
+  SerialRunner::Queue bound_fns;
 
   if (demuxer_)
-    closures->push(base::Bind(&Demuxer::Stop, demuxer_));
+    bound_fns.Push(base::Bind(&Demuxer::Stop, demuxer_));
 
   if (audio_renderer_)
-    closures->push(base::Bind(&AudioRenderer::Stop, audio_renderer_));
+    bound_fns.Push(base::Bind(&AudioRenderer::Stop, audio_renderer_));
 
   if (video_renderer_)
-    closures->push(base::Bind(&VideoRenderer::Stop, video_renderer_));
+    bound_fns.Push(base::Bind(&VideoRenderer::Stop, video_renderer_));
 
-  RunInSeries(closures.Pass(), done_cb);
+  pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
 void Pipeline::AddBufferedByteRange(int64 start, int64 end) {
@@ -545,25 +548,21 @@ void Pipeline::OnFilterInitialize(PipelineStatus status) {
 }
 
 // Called from any thread.
-void Pipeline::OnFilterStateTransition() {
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::FilterStateTransitionTask, this));
-}
-
-// Called from any thread.
 // This method makes the PipelineStatusCB behave like a Closure. It
 // makes it look like a host()->SetError() call followed by a call to
 // OnFilterStateTransition() when errors occur.
 //
 // TODO: Revisit this code when SetError() is removed from FilterHost and
 //       all the Closures are converted to PipelineStatusCB.
-void Pipeline::OnFilterStateTransitionWithStatus(PipelineStatus status) {
+void Pipeline::OnFilterStateTransition(PipelineStatus status) {
   if (status != PIPELINE_OK)
     SetError(status);
-  OnFilterStateTransition();
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &Pipeline::FilterStateTransitionTask, this));
 }
 
-void Pipeline::OnTeardownStateTransition() {
+void Pipeline::OnTeardownStateTransition(PipelineStatus status) {
+  // Ignore any errors during teardown.
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::TeardownStateTransitionTask, this));
 }
@@ -694,7 +693,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     SetState(kSeeking);
     seek_timestamp_ = demuxer_->GetStartTime();
     DoSeek(seek_timestamp_, true,
-           base::Bind(&Pipeline::OnFilterStateTransitionWithStatus, this));
+           base::Bind(&Pipeline::OnFilterStateTransition, this));
   }
 }
 
@@ -889,6 +888,9 @@ void Pipeline::AudioDisabledTask() {
 
 void Pipeline::FilterStateTransitionTask() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(pending_callbacks_.get())
+      << "Filter state transitions must be completed via pending_callbacks_";
+  pending_callbacks_.reset();
 
   // No reason transitioning if we've errored or have stopped.
   if (IsPipelineStopped()) {
@@ -923,7 +925,7 @@ void Pipeline::FilterStateTransitionTask() {
       DoFlush(base::Bind(&Pipeline::OnFilterStateTransition, this));
     } else if (state_ == kSeeking) {
       DoSeek(seek_timestamp_, false,
-             base::Bind(&Pipeline::OnFilterStateTransitionWithStatus, this));
+             base::Bind(&Pipeline::OnFilterStateTransition, this));
     } else if (state_ == kStarting) {
       DoPlay(base::Bind(&Pipeline::OnFilterStateTransition, this));
     } else if (state_ == kStopping) {
@@ -964,6 +966,10 @@ void Pipeline::FilterStateTransitionTask() {
 
 void Pipeline::TeardownStateTransitionTask() {
   DCHECK(IsPipelineTearingDown());
+  DCHECK(pending_callbacks_.get())
+      << "Teardown state transitions must be completed via pending_callbacks_";
+  pending_callbacks_.reset();
+
   switch (state_) {
     case kStopping:
       SetState(error_caused_teardown_ ? kError : kStopped);
@@ -1171,6 +1177,9 @@ void Pipeline::TearDownPipeline() {
   // Mark that we already start tearing down operation.
   tearing_down_ = true;
 
+  // Cancel any pending operation so we can proceed with teardown.
+  pending_callbacks_.reset();
+
   switch (state_) {
     case kCreated:
     case kError:
@@ -1229,22 +1238,25 @@ void Pipeline::DoSeek(base::TimeDelta seek_timestamp,
                       bool skip_demuxer_seek,
                       const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  scoped_ptr<std::queue<PipelineStatusCBFunc> > status_cbs(
-      new std::queue<PipelineStatusCBFunc>());
+  DCHECK(!pending_callbacks_.get());
+  SerialRunner::Queue bound_fns;
 
-  if (!skip_demuxer_seek)
-    status_cbs->push(base::Bind(&Demuxer::Seek, demuxer_, seek_timestamp));
+  if (!skip_demuxer_seek) {
+    bound_fns.Push(base::Bind(
+        &Demuxer::Seek, demuxer_, seek_timestamp));
+  }
 
-  if (audio_renderer_)
-    status_cbs->push(base::Bind(
+  if (audio_renderer_) {
+    bound_fns.Push(base::Bind(
         &AudioRenderer::Preroll, audio_renderer_, seek_timestamp));
+  }
 
-  if (video_renderer_)
-    status_cbs->push(base::Bind(
+  if (video_renderer_) {
+    bound_fns.Push(base::Bind(
         &VideoRenderer::Preroll, video_renderer_, seek_timestamp));
+  }
 
-  RunInSeriesWithStatus(status_cbs.Pass(), base::Bind(
-      &Pipeline::ReportStatus, this, done_cb));
+  pending_callbacks_ = SerialRunner::Run(bound_fns, done_cb);
 }
 
 void Pipeline::OnAudioUnderflow() {
