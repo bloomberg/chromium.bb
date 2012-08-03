@@ -170,6 +170,8 @@ GestureRecognizerImpl::GestureRecognizerImpl(GestureEventHelper* helper)
 }
 
 GestureRecognizerImpl::~GestureRecognizerImpl() {
+  STLDeleteValues(&consumer_sequence_);
+  STLDeleteValues(&event_queue_);
 }
 
 // Checks if this finger is already down, if so, returns the current target.
