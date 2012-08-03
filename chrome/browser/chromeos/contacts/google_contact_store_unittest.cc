@@ -184,6 +184,7 @@ TEST_F(GoogleContactStoreTest, UpdateFromGData) {
   EXPECT_EQ(VarContactsToString(
                 3, contact1.get(), contact2.get(), contact3.get()),
             ContactsToString(db_->contacts()));
+  EXPECT_EQ(3, db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
 }
 
@@ -195,21 +196,23 @@ TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
   scoped_ptr<Contact> contact3(new Contact);
   InitContact("provider3", "3", false, contact3.get());
 
+  ContactPointers kAllContacts;
+  kAllContacts.push_back(contact1.get());
+  kAllContacts.push_back(contact2.get());
+  kAllContacts.push_back(contact3.get());
+
   // Tell the GData service to return all three contacts in response to a full
   // update.
-  ContactPointers gdata_contacts;
-  gdata_contacts.push_back(contact1.get());
-  gdata_contacts.push_back(contact2.get());
-  gdata_contacts.push_back(contact3.get());
+  ContactPointers gdata_contacts(kAllContacts);
   gdata_service_->SetContacts(gdata_contacts, base::Time());
 
+  // All the contacts should be loaded and saved to the database.
   store_->Init();
   ContactPointers loaded_contacts;
   store_->AppendContacts(&loaded_contacts);
-  EXPECT_EQ(ContactsToString(gdata_contacts),
-            ContactsToString(loaded_contacts));
-  EXPECT_EQ(ContactsToString(gdata_contacts),
-            ContactsToString(db_->contacts()));
+  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(loaded_contacts));
+  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(db_->contacts()));
+  EXPECT_EQ(static_cast<int>(kAllContacts.size()), db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
   EXPECT_EQ(1, observer_.num_updates());
   observer_.reset_stats();
@@ -221,19 +224,21 @@ TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
   contact3->set_update_time(
       (old_contact3_update_time +
        base::TimeDelta::FromSeconds(10)).ToInternalValue());
+  gdata_contacts.clear();
+  gdata_contacts.push_back(contact3.get());
   gdata_service_->SetContacts(
       gdata_contacts,
       old_contact3_update_time + base::TimeDelta::FromMilliseconds(1));
 
   // Check that the updated contact is loaded (i.e. the store passed the
-  // correct minimum update time to the service).
+  // correct minimum update time to the service) and saved back to the database.
+  db_->reset_stats();
   test_api_->DoUpdate();
   loaded_contacts.clear();
   store_->AppendContacts(&loaded_contacts);
-  EXPECT_EQ(ContactsToString(gdata_contacts),
-            ContactsToString(loaded_contacts));
-  EXPECT_EQ(ContactsToString(gdata_contacts),
-            ContactsToString(db_->contacts()));
+  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(loaded_contacts));
+  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(db_->contacts()));
+  EXPECT_EQ(1, db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
   EXPECT_EQ(1, observer_.num_updates());
   observer_.reset_stats();
@@ -244,13 +249,14 @@ TEST_F(GoogleContactStoreTest, FetchUpdatedContacts) {
       gdata_contacts,
       base::Time::FromInternalValue(contact3->update_time()) +
       base::TimeDelta::FromMilliseconds(1));
+
+  db_->reset_stats();
   test_api_->DoUpdate();
   loaded_contacts.clear();
   store_->AppendContacts(&loaded_contacts);
-  EXPECT_EQ(ContactsToString(gdata_contacts),
-            ContactsToString(loaded_contacts));
-  EXPECT_EQ(ContactsToString(gdata_contacts),
-            ContactsToString(db_->contacts()));
+  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(loaded_contacts));
+  EXPECT_EQ(ContactsToString(kAllContacts), ContactsToString(db_->contacts()));
+  EXPECT_EQ(1, db_->num_saved_contacts());
   EXPECT_TRUE(test_api_->update_scheduled());
   EXPECT_EQ(1, observer_.num_updates());
 }

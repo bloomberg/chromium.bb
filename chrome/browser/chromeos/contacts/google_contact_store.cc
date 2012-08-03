@@ -85,7 +85,8 @@ GoogleContactStore::GoogleContactStore(Profile* profile)
 }
 
 GoogleContactStore::~GoogleContactStore() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // This should also be running on the UI thread but we can't check it; the
+  // message loop is typically already getting torn down at this point.
   weak_ptr_factory_.InvalidateWeakPtrs();
   DestroyDatabase();
 }
@@ -261,27 +262,32 @@ void GoogleContactStore::OnDownloadSuccess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   VLOG(1) << "Got " << updated_contacts->size() << " contact(s) for "
           << profile_->GetProfileName();
-  size_t num_updated_contacts = updated_contacts->size();
+
+  // Copy the pointers so we can update just these contacts in the database.
+  scoped_ptr<ContactPointers> contacts_to_save_to_db(new ContactPointers);
+  if (db_) {
+    for (size_t i = 0; i < updated_contacts->size(); ++i)
+      contacts_to_save_to_db->push_back((*updated_contacts)[i]);
+  }
+  bool got_updates = !updated_contacts->empty();
+
   MergeContacts(is_full_update, updated_contacts.Pass());
   last_successful_update_start_time_ = update_start_time;
 
-  if (is_full_update || num_updated_contacts > 0) {
+  if (is_full_update || got_updates > 0) {
     FOR_EACH_OBSERVER(ContactStoreObserver,
                       observers_,
                       OnContactsUpdated(this));
   }
 
   if (db_) {
-    scoped_ptr<ContactPointers> contacts_to_save(new ContactPointers);
-    for (ContactMap::const_iterator it = contacts_.begin();
-         it != contacts_.end(); ++it) {
-      contacts_to_save->push_back(it->second);
-    }
+    VLOG(1) << "Saving " << contacts_to_save_to_db->size() << " contact(s) to "
+            << "database as " << (is_full_update ? "full" : "partial")
+            << " update";
     scoped_ptr<UpdateMetadata> metadata(new UpdateMetadata);
     metadata->set_last_update_start_time(update_start_time.ToInternalValue());
-
     db_->SaveContacts(
-        contacts_to_save.Pass(),
+        contacts_to_save_to_db.Pass(),
         metadata.Pass(),
         is_full_update,
         base::Bind(&GoogleContactStore::OnDatabaseContactsSaved,
@@ -348,6 +354,25 @@ void GoogleContactStore::OnDatabaseContactsSaved(bool success) {
   // We only update the database when we've successfully downloaded contacts, so
   // report success to ScheduleUpdate() even if the database update failed.
   ScheduleUpdate(true);
+}
+
+GoogleContactStoreFactory::GoogleContactStoreFactory() {
+}
+
+GoogleContactStoreFactory::~GoogleContactStoreFactory() {
+}
+
+bool GoogleContactStoreFactory::CanCreateContactStoreForProfile(
+    Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(profile);
+  return gdata::util::IsGDataAvailable(profile);
+}
+
+ContactStore* GoogleContactStoreFactory::CreateContactStore(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(CanCreateContactStoreForProfile(profile));
+  return new GoogleContactStore(profile);
 }
 
 }  // namespace contacts

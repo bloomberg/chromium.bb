@@ -65,9 +65,8 @@ class GoogleContactStore : public ContactStore {
   explicit GoogleContactStore(Profile* profile);
   virtual ~GoogleContactStore();
 
-  void Init();
-
   // ContactStore implementation:
+  virtual void Init() OVERRIDE;
   virtual void AppendContacts(ContactPointers* contacts_out) OVERRIDE;
   virtual const Contact* GetContactByProviderId(
       const std::string& provider_id) OVERRIDE;
@@ -160,6 +159,20 @@ class GoogleContactStore : public ContactStore {
   base::WeakPtrFactory<GoogleContactStore> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleContactStore);
+};
+
+// ContactStoreFactory implementation that returns GoogleContactStores.
+class GoogleContactStoreFactory : public ContactStoreFactory {
+ public:
+  GoogleContactStoreFactory();
+  virtual ~GoogleContactStoreFactory();
+
+  // ContactStoreFactory implementation:
+  virtual bool CanCreateContactStoreForProfile(Profile* profile) OVERRIDE;
+  virtual ContactStore* CreateContactStore(Profile* profile) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GoogleContactStoreFactory);
 };
 
 }  // namespace contacts

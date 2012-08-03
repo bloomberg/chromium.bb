@@ -10,6 +10,8 @@
 
 #include "base/basictypes.h"
 
+class Profile;
+
 namespace contacts {
 
 class Contact;
@@ -21,6 +23,9 @@ class ContactStore {
  public:
   ContactStore() {}
   virtual ~ContactStore() {}
+
+  // Initializes the object.
+  virtual void Init() = 0;
 
   // Appends all (non-deleted) contacts to |contacts_out|.
   virtual void AppendContacts(ContactPointers* contacts_out) = 0;
@@ -36,6 +41,26 @@ class ContactStore {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContactStore);
+};
+
+// Interface for factories that return ContactStore objects of a given type.
+class ContactStoreFactory {
+ public:
+  ContactStoreFactory() {}
+  virtual ~ContactStoreFactory() {}
+
+  // Does |profile| support this type of ContactStore?
+  virtual bool CanCreateContactStoreForProfile(Profile* profile) = 0;
+
+  // Creates and returns a new, uninitialized ContactStore for |profile|.
+  // CanCreateContactStoreForProfile() should be called first.
+  // TODO(derat): Figure out how this should work if/when there are other
+  // ContactStore implementations that need additional information beyond the
+  // stuff contained in a Profile.
+  virtual ContactStore* CreateContactStore(Profile* profile) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContactStoreFactory);
 };
 
 }  // namespace contacts

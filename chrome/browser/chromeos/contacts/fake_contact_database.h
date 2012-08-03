@@ -22,6 +22,9 @@ class FakeContactDatabase : public ContactDatabaseInterface {
   void set_save_success(bool success) { save_success_ = success; }
   void set_load_success(bool success) { load_success_ = success; }
 
+  int num_saved_contacts() const { return num_saved_contacts_; }
+  void reset_stats() { num_saved_contacts_ = 0; }
+
   // Copies |contacts| into |contacts_| and |metadata| into |metadata_|.  These
   // values will be returned by subsequent calls to LoadContacts().
   void SetContacts(const ContactPointers& contacts,
@@ -41,10 +44,17 @@ class FakeContactDatabase : public ContactDatabaseInterface {
   virtual ~FakeContactDatabase();
 
  private:
+  // Merges |updated_contacts| into |contacts_|.
+  void MergeContacts(const ContactPointers& updated_contacts);
+
   // Should we report success in response to various requests?
   bool init_success_;
   bool save_success_;
   bool load_success_;
+
+  // Total number of contacts that have been passed to SaveContacts() while
+  // |save_success_| is true.
+  int num_saved_contacts_;
 
   // Currently-stored contacts and metadata.
   ScopedVector<Contact> contacts_;
