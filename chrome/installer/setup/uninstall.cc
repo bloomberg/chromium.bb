@@ -339,23 +339,30 @@ bool DeleteEmptyParentDir(const FilePath& path) {
   return ret;
 }
 
-FilePath GetLocalStateFolder(const Product& product) {
+void GetLocalStateFolders(const Product& product,
+                          std::vector<FilePath>* paths) {
   // Obtain the location of the user profile data.
-  FilePath local_state_folder = product.GetUserDataPath();
-  LOG_IF(ERROR, local_state_folder.empty())
+  product.GetUserDataPaths(paths);
+  LOG_IF(ERROR, paths->empty())
       << "Could not retrieve user's profile directory.";
-
-  return local_state_folder;
 }
 
 // Creates a copy of the local state file and returns a path to the copy.
-FilePath BackupLocalStateFile(const FilePath& local_state_folder) {
+FilePath BackupLocalStateFile(
+    const std::vector<FilePath>& local_state_folders) {
   FilePath backup;
-  FilePath state_file(local_state_folder.Append(chrome::kLocalStateFilename));
-  if (!file_util::CreateTemporaryFile(&backup)) {
-    LOG(ERROR) << "Failed to create temporary file for Local State.";
-  } else {
-    file_util::CopyFile(state_file, backup);
+
+  // Copy the first local state file that is found.
+  for (size_t i = 0; i < local_state_folders.size(); ++i) {
+    const FilePath& local_state_folder = local_state_folders[i];
+    FilePath state_file(local_state_folder.Append(chrome::kLocalStateFilename));
+    if (!file_util::PathExists(state_file))
+      continue;
+    if (!file_util::CreateTemporaryFile(&backup))
+      LOG(ERROR) << "Failed to create temporary file for Local State.";
+    else
+      file_util::CopyFile(state_file, backup);
+    break;
   }
   return backup;
 }
@@ -366,30 +373,32 @@ enum DeleteResult {
   DELETE_REQUIRES_REBOOT,
 };
 
-// Copies the local state to the temp folder and then deletes it.
-// The path to the copy is returned via the local_state_copy parameter.
-DeleteResult DeleteLocalState(const Product& product) {
-  FilePath user_local_state(GetLocalStateFolder(product));
-  if (user_local_state.empty())
+// Deletes all user data directories for a product.
+DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
+                              bool schedule_on_failure) {
+  if (local_state_folders.empty())
     return DELETE_SUCCEEDED;
 
   DeleteResult result = DELETE_SUCCEEDED;
-  VLOG(1) << "Deleting user profile " << user_local_state.value();
-  if (!file_util::Delete(user_local_state, true)) {
-    LOG(ERROR) << "Failed to delete user profile dir: "
-               << user_local_state.value();
-    if (product.is_chrome_frame()) {
-      ScheduleDirectoryForDeletion(user_local_state.value().c_str());
-      result = DELETE_REQUIRES_REBOOT;
-    } else {
-      result = DELETE_FAILED;
+  for (size_t i = 0; i < local_state_folders.size(); ++i) {
+    const FilePath& user_local_state = local_state_folders[i];
+    VLOG(1) << "Deleting user profile " << user_local_state.value();
+    if (!file_util::Delete(user_local_state, true)) {
+      LOG(ERROR) << "Failed to delete user profile dir: "
+                 << user_local_state.value();
+      if (schedule_on_failure) {
+        ScheduleDirectoryForDeletion(user_local_state.value().c_str());
+        result = DELETE_REQUIRES_REBOOT;
+      } else {
+        result = DELETE_FAILED;
+      }
     }
   }
 
   if (result == DELETE_REQUIRES_REBOOT) {
-    ScheduleParentAndGrandparentForDeletion(user_local_state);
+    ScheduleParentAndGrandparentForDeletion(local_state_folders[0]);
   } else {
-    DeleteEmptyParentDir(user_local_state);
+    DeleteEmptyParentDir(local_state_folders[0]);
   }
 
   return result;
@@ -1101,8 +1110,9 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // When deleting files, we must make sure that we're either a "single"
   // (aka non-multi) installation or we are the Chrome Binaries.
 
-  FilePath backup_state_file(
-      BackupLocalStateFile(GetLocalStateFolder(product)));
+  std::vector<FilePath> local_state_folders;
+  GetLocalStateFolders(product, &local_state_folders);
+  FilePath backup_state_file(BackupLocalStateFile(local_state_folders));
 
   DeleteResult delete_result = DELETE_SUCCEEDED;
 
@@ -1121,7 +1131,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   }
 
   if (delete_profile)
-    DeleteLocalState(product);
+    DeleteLocalState(local_state_folders, product.is_chrome_frame());
 
   if (delete_result == DELETE_FAILED) {
     ret = installer::UNINSTALL_FAILED;

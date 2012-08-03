@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/win/windows_version.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/install_util.h"
@@ -40,8 +42,22 @@ FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist) {
   return GetChromeInstallBasePath(system_install, dist, kInstallBinaryDir);
 }
 
-FilePath GetChromeUserDataPath(BrowserDistribution* dist) {
-  return GetChromeInstallBasePath(false, dist, kInstallUserDataDir);
+void GetChromeUserDataPaths(BrowserDistribution* dist,
+                            std::vector<FilePath>* paths) {
+  const bool has_metro_data = dist->CanSetAsDefault() &&
+      base::win::GetVersion() >= base::win::VERSION_WIN8;
+  FilePath data_dir(GetChromeInstallBasePath(false, dist, kInstallUserDataDir));
+  if (data_dir.empty()) {
+    paths->clear();
+  } else {
+    paths->resize(has_metro_data ? 2 : 1);
+    (*paths)[0] = data_dir;
+    if (has_metro_data) {
+      (*paths)[1] = data_dir.DirName().Append(
+          chrome::kMetroChromeUserDataSubDir);
+    }
+  }
+  DCHECK(!paths->empty());
 }
 
 BrowserDistribution* GetBinariesDistribution(bool system_install) {

@@ -62,8 +62,8 @@ void Product::InitializeFromUninstallCommand(
   operations_->ReadOptions(uninstall_command, &options_);
 }
 
-FilePath Product::GetUserDataPath() const {
-  return GetChromeUserDataPath(distribution_);
+void Product::GetUserDataPaths(std::vector<FilePath>* paths) const {
+  GetChromeUserDataPaths(distribution_, paths);
 }
 
 bool Product::LaunchChrome(const FilePath& application_path) const {
