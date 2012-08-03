@@ -477,6 +477,11 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   void FinishHelper();
 
+  // Checks if the context is lost.
+  // NOTE: This is an expensive call and should only be called
+  // for error checking.
+  bool MustBeContextLost();
+
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   TransferBufferInterface* transfer_buffer_;
@@ -566,6 +571,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   QueryTracker::Query* current_query_;
 
   ErrorMessageCallback* error_message_callback_;
+
+  bool context_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };

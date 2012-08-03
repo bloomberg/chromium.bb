@@ -405,7 +405,8 @@ GLES2Implementation::GLES2Implementation(
       debug_(false),
       use_count_(0),
       current_query_(NULL),
-      error_message_callback_(NULL) {
+      error_message_callback_(NULL),
+      context_lost_(false) {
   GPU_DCHECK(helper);
   GPU_DCHECK(transfer_buffer);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -1066,6 +1067,15 @@ void GLES2Implementation::ShallowFlushCHROMIUM() {
 void GLES2Implementation::Finish() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   FinishHelper();
+}
+
+bool GLES2Implementation::MustBeContextLost() {
+  if (!context_lost_) {
+    FinishHelper();
+    context_lost_ = error::IsError(helper_->command_buffer()->GetLastError());
+  }
+  GPU_CHECK(context_lost_);
+  return context_lost_;
 }
 
 void GLES2Implementation::FinishHelper() {
@@ -3044,7 +3054,10 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
   for (GLsizei ii = 0; ii < n; ++ii) {
     QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
     if (query && query->Pending()) {
-      GPU_CHECK(query->CheckResultsAvailable(helper_));
+      if (!query->CheckResultsAvailable(helper_)) {
+        // Should only get here on context lost.
+        MustBeContextLost();
+      }
     }
     query_tracker_->RemoveQuery(queries[ii]);
   }
@@ -3091,6 +3104,10 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
   QueryTracker::Query* query = query_tracker_->GetQuery(id);
   if (!query) {
     query = query_tracker_->CreateQuery(id, target);
+    if (!query) {
+      MustBeContextLost();
+      return;
+    }
   } else if (query->target() != target) {
     SetGLError(
         GL_INVALID_OPERATION, "glBeginQueryEXT", "target does not match");
@@ -3106,6 +3123,10 @@ void GLES2Implementation::EndQueryEXT(GLenum target) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] EndQueryEXT("
                  << GLES2Util::GetStringQueryTarget(target) << ")");
+  // Don't do anything if the context is lost.
+  if (context_lost_) {
+    return;
+  }
 
   if (!current_query_) {
     SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT", "no active query");
@@ -3145,6 +3166,11 @@ void GLES2Implementation::GetQueryObjectuivEXT(
   GPU_CLIENT_LOG("[" << this << "] GetQueryivEXT(" << id << ", "
                  << GLES2Util::GetStringQueryObjectParameter(pname) << ", "
                  << static_cast<const void*>(params) << ")");
+
+  // exit if the context is lost.
+  if (context_lost_) {
+    return;
+  }
 
   QueryTracker::Query* query = query_tracker_->GetQuery(id);
   if (!query) {
