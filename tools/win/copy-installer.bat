@@ -57,26 +57,24 @@ SET TOCOPY=*.pdb mini_installer.exe
 SET INSTALLER=mini_installer.exe
 )
 
-REM Branch to handle copying via robocopy (fast) or xcopy (slow).
-robocopy /? 1> nul 2> nul
-IF "%ERRORLEVEL%"=="9009" GOTO _xcopy else GOTO _robocopy
+CALL :_copyfiles
 
-REM robocopy is rsync, basically.
-:_robocopy
-robocopy "%FROM%" "%TO%" %TOCOPY% /J /MT
-GOTO _copydone
+REM incremental_chrome_dll=1 puts chrome_dll.pdb into the "initial" dir.
+IF EXIST "%FROM%\initial" (
+SET FROM=%FROM%\initial
+SET TOCOPY=*.pdb
+CALL :_copyfiles
+)
 
-REM xcopy is not.
-:_xcopy
-IF NOT exist "%TO%" mkdir "%TO%"
-call :_xcopy_hack %TOCOPY%
-GOTO _copydone
-
-:_copydone
 ECHO Ready to run/debug %TO%\%INSTALLER%.
 GOTO :EOF
 
 REM All labels henceforth are subroutines intended to be invoked by CALL.
+
+REM Canonicalize the first argument, returning it in RET.
+:_canonicalize
+SET RET=%~f1
+GOTO :EOF
 
 REM Search for a mini_installer.exe in the candidate build outputs.
 :_find_build
@@ -105,15 +103,21 @@ GOTO :EOF
 )
 GOTO :EOF
 
+REM Branch to handle copying via robocopy (fast) or xcopy (slow).
+:_copyfiles
+robocopy /? 1> nul 2> nul
+IF NOT "%ERRORLEVEL%"=="9009" (
+robocopy "%FROM%" "%TO%" %TOCOPY% /J /MT /XX
+) ELSE (
+IF NOT EXIST "%TO%" mkdir "%TO%"
+call :_xcopy_hack %TOCOPY%
+)
+GOTO :EOF
+
 REM We can't use a for..in..do loop since we have wildcards, so we make a call
 REM to this with the files to copy.
 :_xcopy_hack
 SHIFT
 IF "%0"=="" GOTO :EOF
-xcopy "%FROM%\%0" "%TO%" /y
+xcopy "%FROM%\%0" "%TO%" /d /y
 GOTO _xcopy_hack
-
-REM Canonicalize the first argument, returning it in RET.
-:_canonicalize
-SET RET=%~f1
-GOTO :EOF
