@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 
@@ -48,6 +49,9 @@ UI_EXPORT float GetScaleFactorScale(ScaleFactor scale_factor);
 // Converting from float to ScaleFactor is inefficient and should be done as
 // little as possible.
 UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
+
+// Returns the ScaleFactor used by |view|.
+UI_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
 
 #if defined(OS_MACOSX)
 

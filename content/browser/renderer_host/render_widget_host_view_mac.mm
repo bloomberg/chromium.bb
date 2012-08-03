@@ -48,6 +48,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #import "ui/base/cocoa/fullscreen_window_manager.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/surface/io_surface_support_mac.h"
@@ -72,10 +73,6 @@ using WebKit::WebGestureEvent;
 + (id)addLocalMonitorForEventsMatchingMask:(NSEventMask)mask
                                    handler:(NSEvent* (^)(NSEvent*))block;
 + (void)removeMonitor:(id)eventMonitor;
-@end
-
-@interface NSScreen (LionAPI)
-- (CGFloat)backingScaleFactor;
 @end
 
 @interface NSWindow (LionAPI)
@@ -110,17 +107,7 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 }
 
 static float ScaleFactor(NSView* view) {
-  if (NSWindow* window = [view window]) {
-    if ([window respondsToSelector:@selector(backingScaleFactor)])
-      return [window backingScaleFactor];
-    return [window userSpaceScaleFactor];
-  }
-  if (NSScreen* screen = [NSScreen mainScreen]) {
-    if ([screen respondsToSelector:@selector(backingScaleFactor)])
-      return [screen backingScaleFactor];
-    return [screen userSpaceScaleFactor];
-  }
-  return 1;
+  return ui::GetScaleFactorScale(ui::GetScaleFactorForNativeView(view));
 }
 
 // Private methods:

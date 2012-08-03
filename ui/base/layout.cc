@@ -13,6 +13,11 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(USE_AURA) && !defined(OS_WIN)
+#include "ui/aura/root_window.h"
+#include "ui/compositor/compositor.h"
+#endif  // defined(USE_AURA) && !defined(OS_WIN)
+
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/base/touch/touch_factory.h"
 #endif // defined(USE_AURA) && defined(USE_X11)
@@ -73,18 +78,6 @@ bool UseTouchOptimizedUI() {
 const float kScaleFactorScales[] = {1.0, 2.0};
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
 
-#if defined(OS_MACOSX)
-std::vector<ui::ScaleFactor>& GetSupportedScaleFactorsInternal() {
-  static std::vector<ui::ScaleFactor>* supported_scale_factors =
-      new std::vector<ui::ScaleFactor>();
-  if (supported_scale_factors->empty()) {
-      supported_scale_factors->push_back(ui::SCALE_FACTOR_100P);
-      supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
-  }
-  return *supported_scale_factors;
-}
-#endif  // OS_MACOSX
-
 }  // namespace
 
 namespace ui {
@@ -123,25 +116,16 @@ float GetScaleFactorScale(ScaleFactor scale_factor) {
   return kScaleFactorScales[scale_factor];
 }
 
-#if defined(OS_MACOSX)
-std::vector<ScaleFactor> GetSupportedScaleFactors() {
-  return GetSupportedScaleFactorsInternal();
+#if !defined(OS_MACOSX)
+ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view) {
+#if defined(USE_AURA) && !defined(OS_WIN)
+  return GetScaleFactorFromScale(
+      view->GetRootWindow()->compositor()->device_scale_factor());
+#else
+  NOTIMPLEMENTED();
+  return SCALE_FACTOR_NONE;
+#endif
 }
-
-namespace test {
-
-void SetSupportedScaleFactors(
-    const std::vector<ui::ScaleFactor>& scale_factors) {
-  std::vector<ui::ScaleFactor>& supported_scale_factors =
-      GetSupportedScaleFactorsInternal();
-  supported_scale_factors.clear();
-
-  for (size_t i = 0; i < scale_factors.size(); ++i)
-    supported_scale_factors.push_back(scale_factors[i]);
-}
-
-}  // namespace test
-
-#endif  // OS_MACOSX
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace ui
