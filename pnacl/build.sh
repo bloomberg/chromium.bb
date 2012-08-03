@@ -1997,6 +1997,12 @@ binutils-install() {
     done
   fi
 
+  # NOTE: this needs to come AFTER the moving of the shared libs
+  # TODO(robertm): this needs to be augmented for mac and windows
+  echo "remove unused (remaining) binutils static libs and headers"
+  rm -rf "${BINUTILS_INSTALL_DIR}/i686-pc-linux-gnu" \
+         "${BINUTILS_INSTALL_DIR}/x86_64-unknown-linux-gnu"
+
   spopd
 }
 
