@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
@@ -169,6 +170,13 @@ void CreateContainersInRootWindow(aura::RootWindow* root_window) {
       non_lock_screen_containers);
   SetUsesScreenCoordinates(input_method_container);
 
+  aura::Window* lock_background_containers = CreateContainer(
+      internal::kShellWindowId_LockScreenBackgroundContainer,
+      "LockScreenBackgroundContainer",
+      lock_screen_containers);
+
+  SetChildWindowVisibilityChangesAnimated(lock_background_containers);
+
   // TODO(beng): Figure out if we can make this use
   // SystemModalContainerEventFilter instead of stops_event_propagation.
   aura::Window* lock_container = CreateContainer(
@@ -278,7 +286,9 @@ void RootWindowController::CreateContainers() {
 
 void RootWindowController::CloseChildWindows() {
   // Close background widget first as it depends on tooltip.
-  root_window_layout_->SetBackgroundWidget(NULL);
+  root_window_->SetProperty(kWindowDesktopComponent,
+      static_cast<DesktopBackgroundWidgetController*>(NULL));
+
   workspace_controller_.reset();
   aura::client::SetTooltipClient(root_window_.get(), NULL);
 

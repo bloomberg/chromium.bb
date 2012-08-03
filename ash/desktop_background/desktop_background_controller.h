@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace aura {
@@ -94,25 +95,49 @@ class ASH_EXPORT DesktopBackgroundController {
   // is SystemGestureEventFilterTest.ThreeFingerSwipe.
   void CreateEmptyWallpaper();
 
+  // Move all desktop widgets to locked container.
+  void MoveDesktopToLockedContainer();
+
+  // Move all desktop widgets to unlocked container.
+  void MoveDesktopToUnlockedContainer();
+
  private:
   // An operation to asynchronously loads wallpaper.
   class WallpaperOperation;
 
   struct WallpaperData;
 
-  // Creates a new background widget using the current wallpapaer image and
-  // use it as a background of the |root_window|. Deletes the old widget if any.
-  void SetDesktopBackgroundImage(aura::RootWindow* root_window);
-
-  // Update the background of all root windows using the current wallpaper image
-  // in |current_wallpaper_|.
-  void UpdateDesktopBackgroundImageMode();
+  // Creates view for all root windows, or notifies them to repaint if they
+  // already exist.
+  void SetDesktopBackgroundImageMode();
 
   // Creates a new background widget and sets the background mode to image mode.
   // Called after wallpaper loaded successfully.
   void OnWallpaperLoadCompleted(scoped_refptr<WallpaperOperation> wo);
 
+  // Adds layer with solid |color| to container |container_id| in |root_window|.
+  ui::Layer* SetColorLayerForContainer(SkColor color,
+                                       aura::RootWindow* root_window,
+                                       int container_id);
+
+  // Creates and adds component for current mode (either Widget or Layer) to
+  // |root_window|.
+  void InstallComponent(aura::RootWindow* root_window);
+
+  // Creates and adds component for current mode (either Widget or Layer) to
+  // all root windows.
+  void InstallComponentForAllWindows();
+
+  // Moves all descktop components from one container to other across all root
+  // windows.
+  void ReparentBackgroundWidgets(int src_container, int dst_container);
+
+  // Returns id for background container for unlocked and locked states.
+  int GetBackgroundContainerId(bool locked);
+
   // Can change at runtime.
+  bool locked_;
+
   BackgroundMode desktop_background_mode_;
 
   SkColor background_color_;

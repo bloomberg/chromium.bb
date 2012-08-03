@@ -170,6 +170,8 @@ cr.define('login', function() {
    * Sets wallpaper for lock screen.
    */
   AccountPickerScreen.setWallpaper = function() {
+    // TODO(antrim): remove whole method once 136853 is accepted.
+    return;
     var oobe = Oobe.getInstance();
     if (!oobe.isNewOobe() || !oobe.isLockScreen())
       return;

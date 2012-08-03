@@ -10,7 +10,6 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -31,8 +30,10 @@ namespace {
 class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
   ShowWallpaperAnimationObserver(aura::RootWindow* root_window,
+                                 int container_id,
                                  views::Widget* desktop_widget)
       : root_window_(root_window),
+        container_id_(container_id),
         desktop_widget_(desktop_widget) {
   }
 
@@ -42,11 +43,6 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    internal::RootWindowLayoutManager* root_window_layout =
-        static_cast<internal::RootWindowLayoutManager*>(
-            root_window_->layout_manager());
-    root_window_layout->SetBackgroundWidget(desktop_widget_);
-
     ash::Shell::GetInstance()->
         user_wallpaper_delegate()->OnWallpaperAnimationFinished();
 
@@ -54,6 +50,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
   }
 
   aura::RootWindow* root_window_;
+  int container_id_;
   views::Widget* desktop_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowWallpaperAnimationObserver);
@@ -138,7 +135,8 @@ void DesktopBackgroundView::ShowContextMenuForView(views::View* source,
   Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), point);
 }
 
-void CreateDesktopBackground(aura::RootWindow* root_window) {
+views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
+                                       int container_id) {
   DesktopBackgroundController* controller = ash::Shell::GetInstance()->
       desktop_background_controller();
   views::Widget* desktop_widget = new views::Widget;
@@ -148,8 +146,7 @@ void CreateDesktopBackground(aura::RootWindow* root_window) {
   params.delegate = view;
   if (controller->GetWallpaper().empty())
     params.transparent = true;
-  params.parent = root_window->GetChildById(
-      ash::internal::kShellWindowId_DesktopBackgroundContainer);
+  params.parent = root_window->GetChildById(container_id);
   desktop_widget->Init(params);
   desktop_widget->SetContentsView(view);
   ash::WindowVisibilityAnimationType animation_type =
@@ -163,9 +160,11 @@ void CreateDesktopBackground(aura::RootWindow* root_window) {
       desktop_widget->GetNativeView()->layer()->GetAnimator());
   settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
   settings.AddObserver(new ShowWallpaperAnimationObserver(root_window,
+                                                          container_id,
                                                           desktop_widget));
   desktop_widget->Show();
   desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");
+  return desktop_widget;
 }
 
 }  // namespace internal
