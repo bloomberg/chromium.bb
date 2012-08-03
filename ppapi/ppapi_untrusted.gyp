@@ -36,12 +36,16 @@
          'ppapi_cpp_lib',
          'native_client/native_client.gyp:ppapi_lib',
          'native_client/native_client.gyp:nacl_irt',
-       ],
+      ],
       'variables': {
-         'defines': [
-            '<@(default_defines)',
-            '-DGL_GLEXT_PROTOTYPES',
-           ],
+        # TODO(bradnelson): Remove this compile flag once new nacl_rev is
+        # above 9362.
+        'compile_flags': [
+          '-DGL_GLEXT_PROTOTYPES',
+        ],
+        'defines': [
+          'GL_GLEXT_PROTOTYPES',
+        ],
         'nexe_target': 'ppapi_nacl_tests',
         'build_newlib': 1,
         'include_dirs': [
