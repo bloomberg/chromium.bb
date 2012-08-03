@@ -250,7 +250,7 @@ SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 readonly UPSTREAM_REV=${UPSTREAM_REV:-5fff6f044668}
 
 readonly BINUTILS_REV=95a4e0cd6450
-readonly GOLD_REV=4d56431485a3
+readonly GOLD_REV=1d230f25708e
 
 # Repositories
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
