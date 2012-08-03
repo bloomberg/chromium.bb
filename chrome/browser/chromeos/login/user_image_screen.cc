@@ -148,7 +148,7 @@ void UserImageScreen::OnDefaultImageSelected(int index) {
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
   UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
-                            index,
+                            GetDefaultImageHistogramValue(index),
                             kHistogramImagesCount);
 }
 

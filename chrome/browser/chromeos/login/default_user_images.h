@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,21 +40,35 @@ extern const int kDefaultImageResources[];
 // Number of default images.
 extern const int kDefaultImagesCount;
 
-// Image index to be used in histograms when user image is taken from file.
+// The starting index of default images available for selection. Note that
+// existing users may have images with smaller indices.
+extern const int kFirstDefaultImageIndex;
+
+/// Histogram values. ////////////////////////////////////////////////////////
+
+// Histogram value for user image taken from file.
 extern const int kHistogramImageFromFile;
 
-// Image index to be used in histograms when user image is taken from camera.
+// Histogram value for user image taken from camera.
 extern const int kHistogramImageFromCamera;
 
-// Image index to be used in histograms when user selects a previously used
-// image from camera/file.
+// Histogram value a previously used image from camera/file.
 extern const int kHistogramImageOld;
 
-// Image index to be used in histograms when user image is taken from profile.
+// Histogram value for user image from G+ profile.
 extern const int kHistogramImageFromProfile;
 
-// Number of possible user image indices to be used in histograms.
+// Histogram value for user video (animated avatar) from camera.
+extern const int kHistogramVideoFromCamera;
+
+// Histogram value for user video from file.
+extern const int kHistogramVideoFromFile;
+
+// Number of possible histogram values for user images.
 extern const int kHistogramImagesCount;
+
+// Returns the histogram value corresponding to the given default image index.
+int GetDefaultImageHistogramValue(int index);
 
 }  // namespace chromeos
 

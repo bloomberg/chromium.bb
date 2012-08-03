@@ -77,7 +77,7 @@ void UserImageScreenHandler::GetLocalizedStrings(
 
 void UserImageScreenHandler::Initialize() {
   ListValue image_urls;
-  for (int i = 0; i < kDefaultImagesCount; ++i) {
+  for (int i = kFirstDefaultImageIndex; i < kDefaultImagesCount; ++i) {
     image_urls.Append(new StringValue(GetDefaultImageUrl(i)));
   }
   web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setUserImages",

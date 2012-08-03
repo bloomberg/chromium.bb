@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace {
 
 const char kDefaultPathPrefix[] = "default:";
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
-const char kFirstDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
+const char kZeroDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
 
 const char* kOldDefaultImageNames[] = {
   "default:gray",
@@ -84,12 +84,12 @@ bool IsDefaultImagePath(const std::string& path, int* image_id) {
 
 std::string GetDefaultImageUrl(int index) {
   if (index == 0)
-    return kFirstDefaultUrl;
+    return kZeroDefaultUrl;
   return GetDefaultImageString(index, kDefaultUrlPrefix);
 }
 
 bool IsDefaultImageUrl(const std::string url, int* image_id) {
-  if (url == kFirstDefaultUrl) {
+  if (url == kZeroDefaultUrl) {
     *image_id = 0;
     return true;
   }
@@ -127,12 +127,25 @@ const int kDefaultImageResources[] = {
 
 const int kDefaultImagesCount = arraysize(kDefaultImageResources);
 
+const int kFirstDefaultImageIndex = 0;
+
 // The order and the values of these constants are important for histograms
 // of different Chrome OS versions to be merged smoothly.
-const int kHistogramImageFromCamera = kDefaultImagesCount;
-const int kHistogramImageFromFile = kDefaultImagesCount + 1;
-const int kHistogramImageOld = kDefaultImagesCount + 2;
-const int kHistogramImageFromProfile = kDefaultImagesCount + 3;
-const int kHistogramImagesCount = kDefaultImagesCount + 4;
+const int kHistogramImageFromCamera = 19;
+const int kHistogramImageFromFile = 20;
+const int kHistogramImageOld = 21;
+const int kHistogramImageFromProfile = 22;
+const int kHistogramVideoFromCamera = 23;
+const int kHistogramVideoFromFile = 24;
+const int kHistogramImagesCount = kDefaultImagesCount + 6;
+
+int GetDefaultImageHistogramValue(int index) {
+  DCHECK(index >= 0 && index < kDefaultImagesCount);
+  // Create a gap in histogram values for
+  // [kHistogramImageFromCamera..kHistogramImageFromProfile] block to fit.
+  if (index < kHistogramImageFromCamera)
+    return index;
+  return index + 6;
+}
 
 }  // namespace chromeos
