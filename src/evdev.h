@@ -27,7 +27,7 @@
 #include <wayland-util.h>
 #include <libudev.h>
 
-struct evdev_seat {
+struct drm_seat {
 	struct weston_seat base;
 	struct wl_list devices_list;
 	struct udev_monitor *udev_monitor;

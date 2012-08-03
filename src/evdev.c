@@ -62,7 +62,7 @@ evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
 static void
 drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
 {
-	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
+	struct drm_seat *seat = (struct drm_seat *) seat_base;
 
 	evdev_led_update(&seat->devices_list, leds);
 }
@@ -547,7 +547,7 @@ evdev_input_device_destroy(struct evdev_input_device *device)
 static const char default_seat[] = "seat0";
 
 static void
-device_added(struct udev_device *udev_device, struct evdev_seat *master)
+device_added(struct udev_device *udev_device, struct drm_seat *master)
 {
 	struct weston_compositor *c;
 	struct evdev_input_device *device;
@@ -626,7 +626,7 @@ evdev_notify_keyboard_focus(struct weston_seat *seat,
 void
 evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 {
-	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
+	struct drm_seat *seat = (struct drm_seat *) seat_base;
 	struct udev_enumerate *e;
 	struct udev_list_entry *entry;
 	struct udev_device *device;
@@ -667,7 +667,7 @@ evdev_add_devices(struct udev *udev, struct weston_seat *seat_base)
 static int
 evdev_udev_handler(int fd, uint32_t mask, void *data)
 {
-	struct evdev_seat *master = data;
+	struct drm_seat *master = data;
 	struct udev_device *udev_device;
 	struct evdev_input_device *device, *next;
 	const char *action;
@@ -703,7 +703,7 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 int
 evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base)
 {
-	struct evdev_seat *master = (struct evdev_seat *) seat_base;
+	struct drm_seat *master = (struct drm_seat *) seat_base;
 	struct wl_event_loop *loop;
 	struct weston_compositor *c = master->base.compositor;
 	int fd;
@@ -739,7 +739,7 @@ evdev_enable_udev_monitor(struct udev *udev, struct weston_seat *seat_base)
 void
 evdev_disable_udev_monitor(struct weston_seat *seat_base)
 {
-	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
+	struct drm_seat *seat = (struct drm_seat *) seat_base;
 
 	if (!seat->udev_monitor)
 		return;
@@ -754,7 +754,7 @@ void
 evdev_input_create(struct weston_compositor *c, struct udev *udev,
 		   const char *seat_id)
 {
-	struct evdev_seat *seat;
+	struct drm_seat *seat;
 
 	seat = malloc(sizeof *seat);
 	if (seat == NULL)
@@ -780,7 +780,7 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 void
 evdev_remove_devices(struct weston_seat *seat_base)
 {
-	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
+	struct drm_seat *seat = (struct drm_seat *) seat_base;
 	struct evdev_input_device *device, *next;
 
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
@@ -792,7 +792,7 @@ evdev_remove_devices(struct weston_seat *seat_base)
 void
 evdev_input_destroy(struct weston_seat *seat_base)
 {
-	struct evdev_seat *seat = (struct evdev_seat *) seat_base;
+	struct drm_seat *seat = (struct drm_seat *) seat_base;
 
 	evdev_remove_devices(seat_base);
 	evdev_disable_udev_monitor(&seat->base);
