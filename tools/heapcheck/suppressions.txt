@@ -1487,3 +1487,16 @@
    ...
    fun:base::PlatformThread::SetName
 }
+{
+   bug_140628_a
+   Heapcheck:Leak
+   ...
+   fun:ExtensionAction::RunIconAnimation
+   fun:ExtensionAction::SetAppearance
+}
+{
+   bug_140628_b
+   Heapcheck:Leak
+   ...
+   fun:ExtensionAction::GetIconAnimation
+}

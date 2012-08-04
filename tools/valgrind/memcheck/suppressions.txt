@@ -5820,6 +5820,25 @@
    fun:_ZN5media8Pipeline8SeekTaskEN4base9TimeDeltaERKNS1_8CallbackIFvNS_14PipelineStatusEEEE
 }
 {
+   bug_139853
+   Memcheck:Unaddressable
+   fun:_ZN11SkGpuDeviceC1EP9GrContextP9GrTexture
+   fun:_ZN7WebCoreL23createAcceleratedCanvas*
+   fun:_ZN7WebCore45FrameBufferSkPictureCanvasLayerTextureUpdater17*
+   fun:_ZN7WebCore45FrameBufferSkPictureCanvasLayerTextureUpdater7Texture10updateRectEPNS_18CCResourceProviderERKNS_7IntRectES6_
+   fun:_ZN7WebCore12_GLOBAL__N_126UnthrottledTextureUploader13uploadTextureEPNS_19LayerTextureUpdater7TextureEPNS_18CCResourceProviderENS_7IntRectES7_
+   fun:_ZN7WebCore16CCTextureUpdater6updateEPNS_18CCResourceProviderEPNS_13TextureCopierEPNS_15TextureUploaderEm
+   fun:_ZN7WebCore19CCSingleThreadProxy8doCommitERNS_16CCTextureUpdaterE
+   fun:_ZN7WebCore19CCSingleThreadProxy18commitAndCompositeEv
+   fun:_ZN7WebCore19CCSingleThreadProxy20compositeAndReadbackEPvRKNS_7IntRectE
+   fun:_ZN7WebCore15CCLayerTreeHost20compositeAndReadbackEPvRKNS_7IntRectE
+   fun:_ZN6WebKit16WebLayerTreeView20compositeAndReadbackEPvRKNS_7WebRectE
+   fun:_ZN6WebKit11WebViewImpl23doPixelReadbackToCanvasEP8SkCanvasRKN7WebCore7IntRectE
+   fun:_ZN6WebKit11WebViewImpl5paintEP8SkCanvasRKNS_7WebRectE
+   fun:_ZN11WebViewHost9paintRectERKN6WebKit7WebRectE
+   fun:_ZN11WebViewHost22paintInvalidatedRegionEv
+}
+{
    bug_139996
    Memcheck:Leak
    fun:_Znw*
@@ -5860,6 +5879,13 @@
    fun:_ZN12SkGlyphCache10VisitCacheEPK12SkDescriptorPFbPKS_PvES5_
    ...
    fun:_ZNK7SkPaint14descriptorProcEPK8SkMatrixPFvPK12SkDescriptorPvES6_b
+}
+{
+   bug_140628
+   Memcheck:Leak
+   ...
+   fun:_ZN15ExtensionAction16RunIconAnimationEi
+   fun:_ZN15ExtensionAction13SetAppearanceEiNS_10AppearanceE
 }
 
 #-----------------------------------------------------------------------
