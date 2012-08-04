@@ -186,6 +186,7 @@
     ],
     'remoting_host_installer_mac_files': [
       'host/installer/mac/do_signing.sh',
+      'host/installer/mac/do_signing.props',
       'host/installer/mac/ChromotingHost.packproj',
       'host/installer/mac/ChromotingHostService.packproj',
       'host/installer/mac/ChromotingHostUninstaller.packproj',

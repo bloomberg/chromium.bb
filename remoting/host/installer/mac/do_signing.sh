@@ -5,8 +5,9 @@
 # found in the LICENSE file.
 
 # This script signs the Chromoting binaries, builds the Chrome Remote Desktop
-# installer and then packages it into a .dmg.  It requires that Iceberg be
-# installed (for 'freeze').
+# installer and then packages it into a .dmg.  It requires that Packages be
+# installed (for 'packagesbuild').
+# Packages: http://s.sudre.free.fr/Software/Packages/about.html
 #
 # usage: sign_and_build.sh output_dir input_dir codesign_keychain codesign_id
 #
@@ -25,45 +26,59 @@ USE_ICEBERG=false
 
 declare -a g_cleanup_dirs
 
-# Binaries to sign.
-ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app'
-UNINSTALLER='Applications/@@HOST_UNINSTALLER_NAME@@.app'
-PREFPANE='PreferencePanes/org.chromium.chromoting.prefPane'
+setup() {
+  local input_dir="${1}"
 
-# The Chromoting Host installer is a meta-package that consists of 3
-# components:
-#  * Chromoting Host Service package
-#  * Chromoting Host Uninstaller package
-#  * Keystone package (GoogleSoftwareUpdate - for Official builds only)
-if $USE_ICEBERG ; then
-  PKGPROJ_HOST='ChromotingHost.packproj'
-  PKGPROJ_HOST_SERVICE='ChromotingHostService.packproj'
-  PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
+  # The file that contains the properties for this signing build.
+  # The file should contain only key=value pairs, one per line.
+  PROPS_FILENAME="${input_dir}/do_signing.props"
 
-  # Final (user-visible) mpkg name.
-  PKG_FINAL='@@HOST_PKG@@.mpkg'
-else
-  PKGPROJ_HOST='ChromotingHost.pkgproj'
-  PKGPROJ_HOST_SERVICE='ChromotingHostService.pkgproj'
-  PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.pkgproj'
+  # Individually load the properties for this build. Don't 'source' the file
+  # to guard against code accidentally being added to the props file.
+  HOST_UNINSTALLER_NAME=$(read_property "HOST_UNINSTALLER_NAME")
+  HOST_PKG=$(read_property "HOST_PKG")
+  DMG_VOLUME_NAME=$(read_property "DMG_VOLUME_NAME")
+  DMG_FILE_NAME=$(read_property "DMG_FILE_NAME")
 
-  # Final (user-visible) pkg name.
-  PKG_FINAL='@@HOST_PKG@@.pkg'
-fi
+  # Binaries to sign.
+  ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app'
+  UNINSTALLER="Applications/${HOST_UNINSTALLER_NAME}.app"
+  PREFPANE='PreferencePanes/org.chromium.chromoting.prefPane'
 
-DMG_VOLUME_NAME='@@DMG_VOLUME_NAME@@'
-DMG_FILE_NAME='@@DMG_FILE_NAME@@.dmg'
+  # The Chromoting Host installer is a meta-package that consists of 3
+  # components:
+  #  * Chromoting Host Service package
+  #  * Chromoting Host Uninstaller package
+  #  * Keystone package (GoogleSoftwareUpdate - for Official builds only)
+  if $USE_ICEBERG ; then
+    PKGPROJ_HOST='ChromotingHost.packproj'
+    PKGPROJ_HOST_SERVICE='ChromotingHostService.packproj'
+    PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
 
-# Temp directory for Iceberg output.
-PKG_DIR=build
-g_cleanup_dirs+=("${PKG_DIR}")
+    # Final (user-visible) mpkg name.
+    PKG_FINAL="${HOST_PKG}.mpkg"
+  else
+    PKGPROJ_HOST='ChromotingHost.pkgproj'
+    PKGPROJ_HOST_SERVICE='ChromotingHostService.pkgproj'
+    PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.pkgproj'
 
-# Temp directories for building the dmg.
-DMG_TEMP_DIR="$(mktemp -d -t "${ME}"-dmg)"
-g_cleanup_dirs+=("${DMG_TEMP_DIR}")
+    # Final (user-visible) pkg name.
+    PKG_FINAL="${HOST_PKG}.pkg"
+  fi
 
-DMG_EMPTY_DIR="$(mktemp -d -t "${ME}"-empty)"
-g_cleanup_dirs+=("${DMG_EMPTY_DIR}")
+  DMG_FILE_NAME="${DMG_FILE_NAME}.dmg"
+
+  # Temp directory for Packages output.
+  PKG_DIR=build
+  g_cleanup_dirs+=("${PKG_DIR}")
+
+  # Temp directories for building the dmg.
+  DMG_TEMP_DIR="$(mktemp -d -t "${ME}"-dmg)"
+  g_cleanup_dirs+=("${DMG_TEMP_DIR}")
+
+  DMG_EMPTY_DIR="$(mktemp -d -t "${ME}"-empty)"
+  g_cleanup_dirs+=("${DMG_EMPTY_DIR}")
+}
 
 err() {
   echo "[$(date +'%Y-%m-%d %H:%M:%S%z')]: ${@}" >&2
@@ -84,6 +99,13 @@ shell_safe_path() {
   else
     echo "${path}"
   fi
+}
+
+# Read a single property from the properties file.
+read_property() {
+  local property="${1}"
+  local filename="${PROPS_FILENAME}"
+  echo `grep "${property}" "${filename}" | tail -n 1 | cut -d "=" -f2-`
 }
 
 verify_clean_dir() {
@@ -191,6 +213,7 @@ main() {
     productsign_id="${5}"
   fi
 
+  setup "${input_dir}"
   verify_clean_dir "${output_dir}"
 
   sign_binaries "${input_dir}" "${keychain}" "${codesign_id}"
