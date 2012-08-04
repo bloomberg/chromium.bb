@@ -91,6 +91,9 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 void BubbleFrameView::SetBubbleBorder(BubbleBorder* border) {
   bubble_border_ = border;
   set_border(bubble_border_);
+
+  // Update the background, which relies on the border.
+  set_background(new views::BubbleBackground(border));
 }
 
 gfx::Rect BubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {

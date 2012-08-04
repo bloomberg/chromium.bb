@@ -18,6 +18,8 @@
 #include "ui/base/events.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble/bubble_border_2.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -25,12 +27,22 @@
 namespace ash {
 namespace internal {
 namespace {
-const int kTooltipMargin = 3;
+const int kTooltipTopBottomMargin = 3;
+const int kTooltipLeftRightMargin = 10;
 const int kTooltipAppearanceDelay = 200;  // msec
+const int kTooltipMinHeight = 29 - 2 * kTooltipTopBottomMargin;
+const SkColor kTooltipTextColor = SkColorSetRGB(22, 22, 22);
 
 // The maximum width of the tooltip bubble.  Borrowed the value from
 // ash/tooltip/tooltip_controller.cc
-const int kTooltipMaxWidth = 400;
+const int kTooltipMaxWidth = 250;
+
+// Bubble border metrics
+const int kArrowHeight = 7;
+const int kArrowWidth = 15;
+const int kShadowWidth = 8;
+// The distance between the arrow tip and edge of the anchor view.
+const int kArrowOffset = 10;
 
 views::BubbleBorder::ArrowLocation GetArrowLocation(ShelfAlignment alignment) {
   switch (alignment) {
@@ -58,11 +70,20 @@ class LauncherTooltipManager::LauncherTooltipBubble
   void Close();
 
  private:
+  // Overridden from views::BubbleDelegateView:
+  virtual gfx::Rect GetBubbleBounds() OVERRIDE;
+
   // views::WidgetDelegate overrides:
   virtual void WindowClosing() OVERRIDE;
 
+  // views::View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
   LauncherTooltipManager* host_;
   views::Label* label_;
+  views::BubbleBorder2* bubble_border_;
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherTooltipBubble);
 };
 
 LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
@@ -70,12 +91,13 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
     views::BubbleBorder::ArrowLocation arrow_location,
     LauncherTooltipManager* host)
     : views::BubbleDelegateView(anchor, arrow_location),
-      host_(host) {
+      host_(host),
+      bubble_border_(NULL) {
   set_close_on_esc(false);
   set_close_on_deactivate(false);
   set_use_focusless(true);
-  set_margins(gfx::Insets(kTooltipMargin, kTooltipMargin, kTooltipMargin,
-                          kTooltipMargin));
+  set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin,
+                          kTooltipTopBottomMargin, kTooltipLeftRightMargin));
   SetLayoutManager(new views::FillLayout());
   // The anchor may not have the widget in tests.
   if (anchor->GetWidget() && anchor->GetWidget()->GetNativeView()) {
@@ -86,14 +108,22 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   }
   label_ = new views::Label;
   label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  label_->SetEnabledColor(kTooltipTextColor);
   AddChildView(label_);
+  views::BubbleDelegateView::CreateBubble(this);
+  bubble_border_ = new views::BubbleBorder2(views::BubbleBorder::BOTTOM_RIGHT);
+  bubble_border_->SetShadow(gfx::ShadowValue(
+      gfx::Point(0, 5), kShadowWidth, SkColorSetARGB(0x72, 0, 0, 0)));
+  bubble_border_->set_arrow_width(kArrowWidth);
+  bubble_border_->set_arrow_height(kArrowHeight);
+  set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset, kArrowOffset,
+      kArrowOffset));
+  GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
 }
 
 void LauncherTooltipManager::LauncherTooltipBubble::SetText(
     const string16& text) {
   label_->SetText(text);
-  label_->SetMultiLine(true);
-  label_->SizeToFit(kTooltipMaxWidth);
   SizeToContents();
 }
 
@@ -104,10 +134,41 @@ void LauncherTooltipManager::LauncherTooltipBubble::Close() {
   }
 }
 
+gfx::Rect LauncherTooltipManager::LauncherTooltipBubble::GetBubbleBounds() {
+  // This happens before replacing the default border.
+  if (!bubble_border_)
+    return views::BubbleDelegateView::GetBubbleBounds();
+
+  const gfx::Rect anchor_rect = GetAnchorRect();
+  gfx::Rect bubble_rect = GetBubbleFrameView()->GetUpdatedWindowBounds(
+      anchor_rect,
+      GetPreferredSize(),
+      false /* try_mirroring_arrow */);
+
+  const gfx::Point old_offset = bubble_border_->offset();
+  bubble_rect = bubble_border_->ComputeOffsetAndUpdateBubbleRect(bubble_rect,
+      anchor_rect);
+
+  // Repaints border if arrow offset is changed.
+  if (bubble_border_->offset() != old_offset)
+    GetBubbleFrameView()->SchedulePaint();
+
+  return bubble_rect;
+}
+
 void LauncherTooltipManager::LauncherTooltipBubble::WindowClosing() {
   views::BubbleDelegateView::WindowClosing();
   if (host_)
     host_->OnBubbleClosed(this);
+}
+
+gfx::Size LauncherTooltipManager::LauncherTooltipBubble::GetPreferredSize() {
+  gfx::Size pref_size = views::BubbleDelegateView::GetPreferredSize();
+  if (pref_size.height() < kTooltipMinHeight)
+    pref_size.set_height(kTooltipMinHeight);
+  if (pref_size.width() > kTooltipMaxWidth)
+    pref_size.set_width(kTooltipMaxWidth);
+  return pref_size;
 }
 
 LauncherTooltipManager::LauncherTooltipManager(
@@ -339,7 +400,6 @@ void LauncherTooltipManager::CreateBubble(views::View* anchor,
   text_ = text;
   view_ = new LauncherTooltipBubble(
       anchor, GetArrowLocation(alignment_), this);
-  views::BubbleDelegateView::CreateBubble(view_);
   widget_ = view_->GetWidget();
   view_->SetText(text_);
 

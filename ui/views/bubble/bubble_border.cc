@@ -212,7 +212,7 @@ void BubbleBorder::GetInsetsForArrowLocation(gfx::Insets* insets,
   insets->Set(top, left, bottom, right);
 }
 
-int BubbleBorder::border_thickness() const {
+int BubbleBorder::GetBorderThickness() const {
   return images_->border_thickness;
 }
 
@@ -505,7 +505,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   paint.setColor(border_->background_color());
   SkPath path;
   gfx::Rect bounds(view->GetContentsBounds());
-  bounds.Inset(-border_->border_thickness(), -border_->border_thickness());
+  bounds.Inset(-border_->GetBorderThickness(), -border_->GetBorderThickness());
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
   path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
   canvas->DrawPath(path, paint);
