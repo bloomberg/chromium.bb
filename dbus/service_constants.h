@@ -637,10 +637,15 @@ namespace shill {
 // Device property names.
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
+const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 
 // Manager property names.
 const char kHostNameProperty[] = "HostName";
+const char kLinkMonitorTechnologiesProperty[] =
+    "LinkMonitorTechnologies";
 const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
+const char kShortDNSTimeoutTechnologiesProperty[] =
+    "ShortDNSTimeoutTechnologies";
 
 // Service property names.
 const char kEapRemoteCertificationProperty[] = "EAP.RemoteCertification";
