@@ -436,7 +436,7 @@ wl_closure_vmarshal(struct wl_object *sender,
 {
 	struct wl_closure *closure;
 	struct wl_object **objectp, *object;
-	uint32_t length, *p, *start, size, *end;
+	uint32_t length, aligned, *p, *start, size, *end;
 	int dup_fd;
 	struct wl_array **arrayp, *array;
 	const char **sp, *s;
@@ -497,7 +497,8 @@ wl_closure_vmarshal(struct wl_object *sender,
 				goto err_null;
 
 			length = s ? strlen(s) + 1: 0;
-			if (p + DIV_ROUNDUP(length, sizeof *p) + 1 > end)
+			aligned = (length + 3) & ~3;
+			if (p + aligned / sizeof *p + 1 > end)
 				goto err;
 			*p++ = length;
 
@@ -507,7 +508,8 @@ wl_closure_vmarshal(struct wl_object *sender,
 				*sp = NULL;
 
 			memcpy(p, s, length);
-			p += DIV_ROUNDUP(length, sizeof *p);
+			memset((char *) p + length, 0, aligned - length);
+			p += aligned / sizeof *p;
 			break;
 		case 'o':
 			closure->types[i] = &ffi_type_pointer;
