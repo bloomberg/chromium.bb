@@ -1,0 +1,682 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ash/wm/maximize_bubble_controller.h"
+
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/wm/window_animations.h"
+#include "ash/wm/workspace/frame_maximize_button.h"
+#include "base/timer.h"
+#include "grit/ash_strings.h"
+#include "grit/ui_resources.h"
+#include "ui/aura/event.h"
+#include "ui/aura/focus_manager.h"
+#include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
+#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/events/event.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/mouse_watcher.h"
+#include "ui/views/widget/widget.h"
+
+namespace {
+
+// The spacing between two buttons.
+const int kLayoutSpacing = -1;
+
+// The background color.
+const SkColor kBubbleBackgroundColor = 0xc8141414;
+
+// The text color within the bubble.
+const SkColor kBubbleTextColor = SK_ColorWHITE;
+
+// The line width of the bubble.
+const int kLineWidth = 1;
+
+// The pixel dimensions of the arrow.
+const int kArrowHeight = 10;
+const int kArrowWidth = 20;
+
+// The delay of the bubble appearance.
+const int kBubbleAppearanceDelayMS = 200;
+const int kAnimationDurationForPopupMS = 200;
+
+class MaximizeBubbleBorder : public views::BubbleBorder {
+ public:
+  MaximizeBubbleBorder(views::View* content_view, views::View* anchor);
+
+  virtual ~MaximizeBubbleBorder() {}
+
+  // Overridden from views::BubbleBorder to match the design specs.
+  virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
+                              const gfx::Size& contents_size) const OVERRIDE;
+
+  // Overridden from views::Border.
+  virtual void Paint(const views::View& view,
+                     gfx::Canvas* canvas) const OVERRIDE;
+ private:
+  views::View* anchor_;
+  views::View* content_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(MaximizeBubbleBorder);
+};
+
+MaximizeBubbleBorder::MaximizeBubbleBorder(views::View* content_view,
+                                           views::View* anchor)
+    : views::BubbleBorder(views::BubbleBorder::TOP_RIGHT,
+                          views::BubbleBorder::NO_SHADOW),
+      anchor_(anchor),
+      content_view_(content_view) {
+  set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+}
+
+gfx::Rect MaximizeBubbleBorder::GetBounds(
+    const gfx::Rect& position_relative_to,
+    const gfx::Size& contents_size) const {
+  gfx::Size border_size(contents_size);
+  gfx::Insets insets;
+  GetInsets(&insets);
+  border_size.Enlarge(insets.width(), insets.height());
+
+  // Position the bubble to center the box on the anchor.
+  int x = (-border_size.width() + anchor_->width()) / 2;
+  // Position the bubble under the anchor, overlapping the arrow with it.
+  int y = anchor_->height() - insets.top();
+
+  gfx::Point view_origin(x, y);
+  views::View::ConvertPointToScreen(anchor_, &view_origin);
+
+  return gfx::Rect(view_origin, border_size);
+}
+
+void MaximizeBubbleBorder::Paint(const views::View& view,
+                                 gfx::Canvas* canvas) const {
+  gfx::Insets inset;
+  GetInsets(&inset);
+
+  // Draw the border line around everything.
+  int y = inset.top();
+  // Top
+  canvas->FillRect(gfx::Rect(inset.left(),
+                             y - kLineWidth,
+                             content_view_->width(),
+                             kLineWidth),
+                   kBubbleBackgroundColor);
+  // Bottom
+  canvas->FillRect(gfx::Rect(inset.left(),
+                             y + content_view_->height(),
+                             content_view_->width(),
+                             kLineWidth),
+                   kBubbleBackgroundColor);
+  // Left
+  canvas->FillRect(gfx::Rect(inset.left() - kLineWidth,
+                             y - kLineWidth,
+                             kLineWidth,
+                             content_view_->height() + 2 * kLineWidth),
+                   kBubbleBackgroundColor);
+  // Right
+  canvas->FillRect(gfx::Rect(inset.left() + content_view_->width(),
+                             y - kLineWidth,
+                             kLineWidth,
+                             content_view_->height() + 2 * kLineWidth),
+                   kBubbleBackgroundColor);
+
+  // Draw the arrow afterwards covering the border.
+  SkPath path;
+  path.incReserve(4);
+  // The center of the tip should be in the middle of the button.
+  int tip_x = inset.left() + content_view_->width() / 2;
+  int left_base_x = tip_x - kArrowWidth / 2;
+  int left_base_y = y;
+  int tip_y = left_base_y - kArrowHeight;
+  path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
+  path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
+  path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
+              SkIntToScalar(left_base_y));
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(kBubbleBackgroundColor);
+  canvas->DrawPath(path, paint);
+}
+
+}  // namespace
+
+namespace ash {
+
+class BubbleContentsButtonRow;
+class BubbleContentsView;
+class BubbleDialogButton;
+
+// The mouse watcher host which makes sure that the bubble does not get closed
+// while the mouse cursor is over the maximize button or the balloon content.
+// Note: This object gets destroyed when the MouseWatcher gets destroyed.
+class BubbleMouseWatcherHost: public views::MouseWatcherHost {
+ public:
+  explicit BubbleMouseWatcherHost(MaximizeBubbleController::Bubble* bubble)
+      : bubble_(bubble) {}
+  virtual ~BubbleMouseWatcherHost() {}
+
+  // Implementation of MouseWatcherHost.
+  virtual bool Contains(const gfx::Point& screen_point,
+                        views::MouseWatcherHost::MouseEventType type);
+ private:
+  MaximizeBubbleController::Bubble* bubble_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleMouseWatcherHost);
+};
+
+// The class which creates and manages the bubble menu element.
+// It creates a 'bubble border' and the content accordingly.
+// Note: Since the SnapSizer will show animations on top of the maximize button
+// this menu gets created as a separate window and the SnapSizer will be
+// created underneath this window.
+class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
+                                         public views::MouseWatcherListener {
+ public:
+  explicit Bubble(MaximizeBubbleController* owner);
+  virtual ~Bubble() {}
+
+  // The window of the menu under which the SnapSizer will get created.
+  aura::Window* GetBubbleWindow();
+
+  // Overridden from views::BubbleDelegateView.
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
+
+  // Implementation of MouseWatcherListener.
+  virtual void MouseMovedOutOfHost();
+
+  // Implementation of MouseWatcherHost.
+  virtual bool Contains(const gfx::Point& screen_point,
+                        views::MouseWatcherHost::MouseEventType type);
+
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+  // Overridden from views::Widget::Observer.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+  // Called from the controller class to indicate that the menu should get
+  // destroyed.
+  virtual void ControllerRequestsCloseAndDelete();
+
+  // Called from the owning class to change the menu content to the given
+  // |snap_type| so that the user knows what is selected.
+  void SetSnapType(SnapType snap_type);
+
+  // Get the owning MaximizeBubbleController. This might return NULL in case
+  // of an asynchronous shutdown.
+  MaximizeBubbleController* controller() const { return owner_; }
+
+ private:
+  // True if the shut down has been initiated.
+  bool shutting_down_;
+
+  // Our owning class.
+  MaximizeBubbleController* owner_;
+
+  // The widget which contains our menu and the bubble border.
+  views::Widget* bubble_widget_;
+
+  // The content accessor of the menu.
+  BubbleContentsView* contents_view_;
+
+  // The mouse watcher which takes care of out of window hover events.
+  scoped_ptr<views::MouseWatcher> mouse_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(Bubble);
+};
+
+// A class that creates all buttons and put them into a view.
+class BubbleContentsButtonRow : public views::View,
+                                public views::ButtonListener {
+ public:
+  explicit BubbleContentsButtonRow(MaximizeBubbleController::Bubble* bubble);
+
+  virtual ~BubbleContentsButtonRow() {}
+
+  // Overridden from ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
+  // Called from BubbleDialogButton.
+  void ButtonHovered(BubbleDialogButton* sender);
+
+ private:
+  // The owning object which gets notifications.
+  MaximizeBubbleController::Bubble* bubble_;
+
+  // The created buttons for our menu.
+  BubbleDialogButton* left_button_;
+  BubbleDialogButton* minimize_button_;
+  BubbleDialogButton* right_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleContentsButtonRow);
+};
+
+// A class which creates the content of the bubble: The buttons, and the label.
+class BubbleContentsView : public views::View {
+ public:
+  explicit BubbleContentsView(MaximizeBubbleController::Bubble* bubble);
+
+  virtual ~BubbleContentsView() {}
+
+  // Set the label content to reflect the currently selected |snap_type|.
+  // This function can be executed through the frame maximize button as well as
+  // through hover operations.
+  void SetSnapType(SnapType snap_type);
+
+ private:
+  // The owning class.
+  MaximizeBubbleController::Bubble* bubble_;
+
+  // The object which owns all the buttons.
+  BubbleContentsButtonRow* buttons_view_;
+
+  // The label object which shows the user the selected action.
+  views::Label* label_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleContentsView);
+};
+
+// The image button gets overridden to be able to capture mouse hover events.
+// The constructor also assigns all button states and
+class BubbleDialogButton : public views::ImageButton {
+ public:
+  explicit BubbleDialogButton(
+      BubbleContentsButtonRow* button_row_listener,
+      int normal_image,
+      int hovered_image,
+      int pressed_image);
+  virtual ~BubbleDialogButton() {}
+
+  // CustomButton overrides:
+  virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+
+ private:
+  // The creating class which needs to get notified in case of a hover event.
+  BubbleContentsButtonRow* button_row_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleDialogButton);
+};
+
+MaximizeBubbleController::Bubble::Bubble(MaximizeBubbleController* owner)
+    : views::BubbleDelegateView(owner->frame_maximize_button(),
+                                views::BubbleBorder::TOP_RIGHT),
+      shutting_down_(false),
+      owner_(owner),
+      bubble_widget_(NULL),
+      contents_view_(NULL) {
+  set_margins(gfx::Insets());
+
+  // The window needs to be owned by the root so that the SnapSizer does not
+  // cover it upon animation.
+  aura::Window* parent = Shell::GetContainer(
+      Shell::GetActiveRootWindow(),
+      internal::kShellWindowId_LauncherContainer);
+  set_parent_window(parent);
+
+  set_notify_enter_exit_on_child(true);
+  set_try_mirroring_arrow(false);
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+  set_color(kBubbleBackgroundColor);
+  set_close_on_deactivate(false);
+  set_background(
+      views::Background::CreateSolidBackground(kBubbleBackgroundColor));
+
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0, kLayoutSpacing));
+
+  contents_view_ = new BubbleContentsView(this);
+  AddChildView(contents_view_);
+
+  // Note that the returned widget has an observer which points to our
+  // functions.
+  bubble_widget_ = views::BubbleDelegateView::CreateBubble(this);
+
+  SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+  bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
+
+  MaximizeBubbleBorder* bubble_border = new MaximizeBubbleBorder(
+      this,
+      anchor_view());
+  GetBubbleFrameView()->SetBubbleBorder(bubble_border);
+  GetBubbleFrameView()->set_background(NULL);
+
+  // Recalculate size with new border.
+  SizeToContents();
+
+  // Setup animation.
+  ash::SetWindowVisibilityAnimationType(
+      bubble_widget_->GetNativeWindow(),
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ash::SetWindowVisibilityAnimationTransition(
+      bubble_widget_->GetNativeWindow(),
+      ash::ANIMATE_BOTH);
+  ash::SetWindowVisibilityAnimationDuration(
+      bubble_widget_->GetNativeWindow(),
+      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
+
+  Show();
+  // We don't want to lose the focus on our parent window because the button
+  // would otherwise lose the highlight when the "helper bubble" is shown.
+  views::Widget* widget =
+      owner_->frame_maximize_button()->parent()->GetWidget();
+  if (widget) {
+    aura::Window* parent_window = widget->GetNativeWindow();
+    parent_window->GetFocusManager()->SetFocusedWindow(parent_window, NULL);
+  }
+  mouse_watcher_.reset(new views::MouseWatcher(
+      new BubbleMouseWatcherHost(this),
+      this));
+  mouse_watcher_->Start();
+}
+
+bool BubbleMouseWatcherHost::Contains(
+    const gfx::Point& screen_point,
+    views::MouseWatcherHost::MouseEventType type) {
+  return bubble_->Contains(screen_point, type);
+}
+
+aura::Window* MaximizeBubbleController::Bubble::GetBubbleWindow() {
+  return bubble_widget_ ? bubble_widget_->GetNativeWindow() : NULL;
+}
+
+gfx::Rect MaximizeBubbleController::Bubble::GetAnchorRect() {
+  if (!owner_)
+    return gfx::Rect();
+
+  gfx::Rect anchor_rect =
+      owner_->frame_maximize_button()->GetBoundsInScreen();
+  return anchor_rect;
+}
+
+void MaximizeBubbleController::Bubble::MouseMovedOutOfHost() {
+  if (!owner_ || shutting_down_)
+    return;
+  // When we leave the bubble, we might be still be in gesture mode or over
+  // the maximize button. So only close if none of the other cases apply.
+  if (!owner_->frame_maximize_button()->is_snap_enabled()) {
+    gfx::Point screen_location = gfx::Screen::GetCursorScreenPoint();
+    if (!owner_->frame_maximize_button()->GetBoundsInScreen().Contains(
+        screen_location)) {
+        owner_->RequestDestructionThroughOwner();
+    }
+  }
+}
+
+bool MaximizeBubbleController::Bubble::Contains(
+    const gfx::Point& screen_point,
+    views::MouseWatcherHost::MouseEventType type) {
+  if (!owner_ || shutting_down_)
+    return false;
+  // Check if either a gesture is taking place (=> bubble stays no matter what
+  // the mouse does) or the mouse is over the maximize button or the bubble
+  // content.
+  return (owner_->frame_maximize_button()->is_snap_enabled() ||
+          owner_->frame_maximize_button()->GetBoundsInScreen().Contains(
+              screen_point) ||
+          contents_view_->GetBoundsInScreen().Contains(screen_point));
+}
+
+gfx::Size MaximizeBubbleController::Bubble::GetPreferredSize() {
+  return contents_view_->GetPreferredSize();
+}
+
+void MaximizeBubbleController::Bubble::OnWidgetClosing(views::Widget* widget) {
+  if (bubble_widget_ != widget)
+    return;
+
+  mouse_watcher_->Stop();
+
+  if (owner_) {
+    // If the bubble destruction was triggered by some other external influence
+    // then ourselves, the owner needs to be informed that the menu is gone.
+    shutting_down_ = true;
+    owner_->RequestDestructionThroughOwner();
+    owner_ = NULL;
+  }
+  // Remove any existing observers.
+  bubble_widget_->RemoveObserver(this);
+  anchor_widget()->RemoveObserver(this);
+}
+
+void MaximizeBubbleController::Bubble::ControllerRequestsCloseAndDelete() {
+  // This only gets called from the owning base class once it is deleted.
+  if (shutting_down_)
+    return;
+  shutting_down_ = true;
+  owner_ = NULL;
+
+  // Close the widget asynchronously.
+  bubble_widget_->Close();
+}
+
+void MaximizeBubbleController::Bubble::SetSnapType(SnapType snap_type) {
+  if (contents_view_)
+    contents_view_->SetSnapType(snap_type);
+}
+
+BubbleContentsButtonRow::BubbleContentsButtonRow(
+    MaximizeBubbleController::Bubble* bubble)
+    : bubble_(bubble),
+      left_button_(NULL),
+      minimize_button_(NULL),
+      right_button_(NULL) {
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, kLayoutSpacing));
+  set_background(
+      views::Background::CreateSolidBackground(kBubbleBackgroundColor));
+
+  left_button_ = new BubbleDialogButton(
+      this,
+      IDR_AURA_WINDOW_POSITION_LEFT,
+      IDR_AURA_WINDOW_POSITION_LEFT_H,
+      IDR_AURA_WINDOW_POSITION_LEFT_P);
+  minimize_button_ = new BubbleDialogButton(
+      this,
+      IDR_AURA_WINDOW_POSITION_MIDDLE,
+      IDR_AURA_WINDOW_POSITION_MIDDLE_H,
+      IDR_AURA_WINDOW_POSITION_MIDDLE_P);
+  right_button_ = new BubbleDialogButton(
+      this,
+      IDR_AURA_WINDOW_POSITION_RIGHT,
+      IDR_AURA_WINDOW_POSITION_RIGHT_H,
+      IDR_AURA_WINDOW_POSITION_RIGHT_P);
+}
+
+// Overridden from ButtonListener.
+void BubbleContentsButtonRow::ButtonPressed(views::Button* sender,
+                                            const views::Event& event) {
+  // While shutting down, the connection to the owner might already be broken.
+  if (!bubble_->controller())
+    return;
+  if (sender == left_button_)
+    bubble_->controller()->OnButtonClicked(SNAP_LEFT);
+  else if (sender == minimize_button_)
+    bubble_->controller()->OnButtonClicked(SNAP_MINIMIZE);
+  else if (sender == right_button_)
+    bubble_->controller()->OnButtonClicked(SNAP_RIGHT);
+  else
+    NOTREACHED() << "Unknown button pressed.";
+}
+
+// Called from BubbleDialogButton.
+void BubbleContentsButtonRow::ButtonHovered(BubbleDialogButton* sender) {
+  // While shutting down, the connection to the owner might already be broken.
+  if (!bubble_->controller())
+    return;
+  if (sender == left_button_)
+    bubble_->controller()->OnButtonHover(SNAP_LEFT);
+  else if (sender == minimize_button_)
+    bubble_->controller()->OnButtonHover(SNAP_MINIMIZE);
+  else if (sender == right_button_)
+    bubble_->controller()->OnButtonHover(SNAP_RIGHT);
+  else
+    bubble_->controller()->OnButtonHover(SNAP_NONE);
+}
+
+BubbleContentsView::BubbleContentsView(
+    MaximizeBubbleController::Bubble* bubble)
+    : bubble_(bubble),
+      buttons_view_(NULL),
+      label_view_(NULL) {
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, 0, 0, kLayoutSpacing));
+  set_background(
+      views::Background::CreateSolidBackground(kBubbleBackgroundColor));
+
+  buttons_view_ = new BubbleContentsButtonRow(bubble);
+  AddChildView(buttons_view_);
+
+  label_view_ = new views::Label();
+  SetSnapType(SNAP_NONE);
+  label_view_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  label_view_->SetBackgroundColor(kBubbleBackgroundColor);
+  label_view_->SetEnabledColor(kBubbleTextColor);
+  AddChildView(label_view_);
+}
+
+// Set the label content to reflect the currently selected |snap_type|.
+// This function can be executed through the frame maximize button as well as
+// through hover operations.
+void BubbleContentsView::SetSnapType(SnapType snap_type) {
+  if (!bubble_->controller())
+    return;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  int id = 0;
+  switch (snap_type) {
+    case SNAP_LEFT:
+      id = IDS_ASH_SNAP_WINDOW_LEFT;
+      break;
+    case SNAP_RIGHT:
+      id = IDS_ASH_SNAP_WINDOW_RIGHT;
+      break;
+    case SNAP_MAXIMIZE:
+      DCHECK(!bubble_->controller()->is_maximized());
+      id = IDS_ASH_MAXIMIZE_WINDOW;
+      break;
+    case SNAP_MINIMIZE:
+      id = IDS_ASH_MINIMIZE_WINDOW;
+      break;
+    case SNAP_RESTORE:
+      DCHECK(bubble_->controller()->is_maximized());
+      id = IDS_ASH_RESTORE_WINDOW;
+      break;
+    default:
+      // If nothing is selected, we automatically select the click operation.
+      id = bubble_->controller()->is_maximized() ? IDS_ASH_RESTORE_WINDOW :
+               IDS_ASH_MAXIMIZE_WINDOW;
+      break;
+  }
+  label_view_->SetText(rb.GetLocalizedString(id));
+}
+
+MaximizeBubbleController::MaximizeBubbleController(
+    FrameMaximizeButton* frame_maximize_button,
+    bool is_maximized)
+    : frame_maximize_button_(frame_maximize_button),
+      bubble_(NULL),
+      is_maximized_(is_maximized) {
+  // Create the task which will create the bubble delayed.
+  base::OneShotTimer<MaximizeBubbleController>* new_timer =
+      new base::OneShotTimer<MaximizeBubbleController>();
+  new_timer->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kBubbleAppearanceDelayMS),
+      this,
+      &MaximizeBubbleController::CreateBubble);
+  timer_.reset(new_timer);
+}
+
+MaximizeBubbleController::~MaximizeBubbleController() {
+  // Note: The destructor only gets initiated through the owner.
+  timer_.reset();
+  if (bubble_) {
+    bubble_->ControllerRequestsCloseAndDelete();
+    bubble_ = NULL;
+  }
+}
+
+void MaximizeBubbleController::SetSnapType(SnapType snap_type) {
+  if (bubble_)
+    bubble_->SetSnapType(snap_type);
+}
+
+aura::Window* MaximizeBubbleController::GetBubbleWindow() {
+  return bubble_ ? bubble_->GetBubbleWindow() : NULL;
+}
+
+void MaximizeBubbleController::DelayCreation() {
+  if (timer_.get() && timer_->IsRunning())
+    timer_->Reset();
+}
+
+void MaximizeBubbleController::OnButtonClicked(SnapType snap_type) {
+  frame_maximize_button_->ExecuteSnapAndCloseMenu(snap_type);
+}
+
+void MaximizeBubbleController::OnButtonHover(SnapType snap_type) {
+  frame_maximize_button_->SnapButtonHovered(snap_type);
+}
+
+void MaximizeBubbleController::RequestDestructionThroughOwner() {
+  // Tell the parent to destroy us (if this didn't happen yet).
+  if (timer_.get()) {
+    timer_.reset(NULL);
+    // Informs the owner that the menu is gone and requests |this| destruction.
+    frame_maximize_button_->DestroyMaximizeMenu();
+    // Note: After this call |this| is destroyed.
+  }
+}
+
+void MaximizeBubbleController::CreateBubble() {
+  if (!bubble_)
+    bubble_ = new Bubble(this);
+
+  timer_->Stop();
+}
+
+BubbleDialogButton::BubbleDialogButton(
+    BubbleContentsButtonRow* button_row,
+    int normal_image,
+    int hovered_image,
+    int pressed_image)
+    : views::ImageButton(button_row),
+      button_row_(button_row) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  SetImage(views::CustomButton::BS_NORMAL, rb.GetImageSkiaNamed(normal_image));
+  SetImage(views::CustomButton::BS_HOT, rb.GetImageSkiaNamed(hovered_image));
+  SetImage(views::CustomButton::BS_PUSHED,
+           rb.GetImageSkiaNamed(pressed_image));
+  button_row->AddChildView(this);
+}
+
+void BubbleDialogButton::OnMouseCaptureLost() {
+  button_row_->ButtonHovered(NULL);
+  views::ImageButton::OnMouseCaptureLost();
+}
+
+void BubbleDialogButton::OnMouseEntered(const views::MouseEvent& event) {
+  button_row_->ButtonHovered(this);
+  views::ImageButton::OnMouseEntered(event);
+}
+
+void BubbleDialogButton::OnMouseExited(const views::MouseEvent& event) {
+  button_row_->ButtonHovered(NULL);
+  views::ImageButton::OnMouseExited(event);
+}
+
+}  // namespace ash

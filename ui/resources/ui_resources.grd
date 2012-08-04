@@ -159,20 +159,15 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="ash/status_wifi_enabled_h.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFY_CLOSE" file="ash/status_notify_x.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="aura/window_button_separator.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="aura/window_close_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_P" file="aura/window_close_pressed.png" />
         <!-- TODO(benrg): Get rid of all conditionals that test the output
              context. -->
         <if expr="context.startswith('default_')">
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="aura/window_fullscreen_close_normal.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="aura/window_fullscreen_close_hover.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="aura/window_fullscreen_close_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="aura/window_fullscreen_restore_normal.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="aura/window_fullscreen_restore_hover.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="aura/window_fullscreen_restore_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="aura/window_fullscreen_separator.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="cros/window_close_fullscreen_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="cros/window_close_fullscreen_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="cros/window_close_fullscreen_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="cros/window_size_fullscreen_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="cros/window_size_fullscreen_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="cros/window_size_fullscreen_pressed.png" />
         </if>
         <if expr="not context.startswith('default_')">
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="aura/window_close_normal.png" />
@@ -181,7 +176,6 @@
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="aura/window_restore_normal.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="aura/window_restore_hover.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="aura/window_restore_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="aura/window_button_separator.png" />
         </if>
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW" file="aura/window_fullscreen_shadow.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_ACTIVE" file="aura/window_header_base_active.png" />
@@ -198,45 +192,51 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP" file="aura/window_header_shade_top.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT" file="aura/window_header_shade_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="aura/window_header_shade_top_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE" file="aura/window_maximize_normal.png" />
+
         <if expr="context.startswith('default_')">
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_maximized_close_normal.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_maximized_close_hover.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_maximized_close_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="cros/window_close_tall_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="cros/window_close_tall_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_P" file="cros/window_close_tall_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="cros/window_close_short_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="cros/window_close_short_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="cros/window_close_short_pressed.png" />
+        
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE" file="cros/window_size_tall_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_H" file="cros/window_size_tall_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_P" file="cros/window_size_tall_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="cros/window_size_short_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="cros/window_size_short_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="cros/window_size_short_pressed.png" />
         </if>
         <if expr="not context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="aura/window_close_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_P" file="aura/window_close_pressed.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_close_normal.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_close_hover.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_close_pressed.png" />
-        </if>
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE" file="aura/window_maximized_minimize_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_H" file="aura/window_maximized_minimize_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_P" file="aura/window_maximized_minimize_pressed.png" />
-        <if expr="context.startswith('default_')">
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_maximized_restore_normal.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_maximized_restore_hover.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_maximized_restore_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="aura/window_maximized_snap_left_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="aura/window_maximized_snap_minimize_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="aura/window_maximized_snap_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="aura/window_maximized_snap_right_pressed.png" />
-        </if>
-        <if expr="not context.startswith('default_')">
+
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE" file="aura/window_maximize_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_H" file="aura/window_maximize_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_P" file="aura/window_maximize_pressed.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_restore_normal.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_restore_hover.png" />
           <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_restore_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="aura/window_snap_left_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="aura/window_snap_minimize_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="aura/window_snap_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="aura/window_snap_right_pressed.png" />
         </if>
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_H" file="aura/window_maximize_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_P" file="aura/window_maximize_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_LEFT_P" file="aura/window_snap_left_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_MINIMIZE_P" file="aura/window_snap_minimize_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_P" file="aura/window_snap_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="aura/window_snap_right_pressed.png" />
+
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT" file="cros/window_position_left_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_H" file="cros/window_position_left_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_P" file="cros/window_position_left_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_MIDDLE" file="cros/window_position_middle_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_MIDDLE_H" file="cros/window_position_middle_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_MIDDLE_P" file="cros/window_position_middle_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT" file="cros/window_position_right_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_H" file="cros/window_position_right_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_P" file="cros/window_position_right_pressed.png" />
+
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" />
+
       </if>
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" />
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" />

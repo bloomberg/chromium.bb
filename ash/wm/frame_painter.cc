@@ -466,25 +466,19 @@ void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
-    if (size_button_behavior_ == SIZE_BUTTON_MINIMIZES) {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE,
-                      IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_P);
-    } else {
-      SetButtonImages(size_button_,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-                      IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
-    }
+    // The chat window cannot be restored but only minimized.
+    // Case: (size_button_behavior_ == SIZE_BUTTON_MINIMIZES). We used to have
+    // a special set of artwork to show this case, but per discussion we
+    // removed this.
+    SetButtonImages(size_button_,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
   } else {
     SetButtonImages(close_button_,
                     IDR_AURA_WINDOW_CLOSE,
                     IDR_AURA_WINDOW_CLOSE_H,
                     IDR_AURA_WINDOW_CLOSE_P);
-    // TODO(jamescook): If we ever have normal-layout windows (with the
-    // standard 35 pixel tall headers) that can only minimize, we'll need art
-    // assets for SIZE_BUTTON_MINIMIZES.  As of R19 we don't use them.
     SetButtonImages(size_button_,
                     IDR_AURA_WINDOW_MAXIMIZE,
                     IDR_AURA_WINDOW_MAXIMIZE_H,

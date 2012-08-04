@@ -83,6 +83,11 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
     use_focusless_ = use_focusless;
   }
 
+  bool try_mirroring_arrow() const { return try_mirroring_arrow_; }
+  void set_try_mirroring_arrow(bool try_mirroring_arrow) {
+    try_mirroring_arrow_ = try_mirroring_arrow;
+  }
+
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect();
 
@@ -172,6 +177,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Create a popup window for focusless bubbles on Linux/ChromeOS.
   // These bubbles are not interactive and should not gain focus.
   bool use_focusless_;
+
+  // If true (defaults to true), the arrow may be mirrored to fit the
+  // bubble on screen better.
+  bool try_mirroring_arrow_;
 
   // Parent native window of the bubble.
   gfx::NativeView parent_window_;

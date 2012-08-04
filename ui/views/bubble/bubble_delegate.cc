@@ -115,6 +115,7 @@ BubbleDelegateView::BubbleDelegateView()
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false),
+      try_mirroring_arrow_(true),
       parent_window_(NULL) {
   set_background(Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -134,6 +135,7 @@ BubbleDelegateView::BubbleDelegateView(
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false),
+      try_mirroring_arrow_(true),
       parent_window_(NULL) {
   set_background(Background::CreateSolidBackground(color_));
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
@@ -336,7 +338,7 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
   // The argument rect has its origin at the bubble's arrow anchor point;
   // its size is the preferred size of the bubble's client view (this view).
   return GetBubbleFrameView()->GetUpdatedWindowBounds(GetAnchorRect(),
-      GetPreferredSize(), true /*try_mirroring_arrow*/);
+      GetPreferredSize(), try_mirroring_arrow_);
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

@@ -69,9 +69,6 @@ class AppNonClientFrameViewAura::ControlView
         IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
         IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
     control_base_ = rb.GetImageNamed(control_base_resource_id).ToImageSkia();
-
-    separator_ =
-        rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR).ToImageSkia();
     shadow_ = rb.GetImageNamed(IDR_AURA_WINDOW_FULLSCREEN_SHADOW).ToImageSkia();
 
     AddChildView(close_button_);
@@ -117,9 +114,6 @@ class AppNonClientFrameViewAura::ControlView
 
     views::View::OnPaint(canvas);
 
-    // Separator overlaps the left edge of the close button.
-    canvas->DrawImageInt(*separator_,
-                         close_button_->x(), 0);
     canvas->DrawImageInt(*shadow_, 0, kShadowHeightStretch);
   }
 
@@ -151,7 +145,6 @@ class AppNonClientFrameViewAura::ControlView
   views::ImageButton* close_button_;
   views::ImageButton* restore_button_;
   const gfx::ImageSkia* control_base_;
-  const gfx::ImageSkia* separator_;
   const gfx::ImageSkia* shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(ControlView);

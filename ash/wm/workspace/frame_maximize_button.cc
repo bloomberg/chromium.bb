@@ -8,6 +8,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/maximize_bubble_controller.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
@@ -74,7 +75,7 @@ bool FrameMaximizeButton::EscapeEventFilter::PreHandleKeyEvent(
     aura::KeyEvent* event) {
   if (event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
-    button_->Cancel();
+    button_->Cancel(false);
   }
   return false;
 }
@@ -105,13 +106,78 @@ FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
       frame_(frame),
       is_snap_enabled_(false),
       exceeded_drag_threshold_(false),
+      window_(NULL),
       snap_type_(SNAP_NONE) {
   // TODO(sky): nuke this. It's temporary while we don't have good images.
   SetImageAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-  SetTooltipText(l10n_util::GetStringUTF16(IDS_FRAME_MAXIMIZE_BUTTON_TOOLTIP));
 }
 
 FrameMaximizeButton::~FrameMaximizeButton() {
+  if (window_)
+    OnWindowDestroying(window_);
+}
+
+void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
+  // Make sure to only show hover operations when no button is pressed and
+  // a similar snap operation in progress does not get re-applied.
+  if (is_snap_enabled_ || (type == snap_type_ && snap_sizer_.get()))
+    return;
+  // Prime the mouse location with the center of the (local) button.
+  press_location_ = gfx::Point(width() / 2, height() / 2);
+  // Then get an adjusted mouse position to initiate the effect.
+  gfx::Point location = press_location_;
+  switch (type) {
+    case SNAP_LEFT:
+      location.set_x(location.x() - width());
+      break;
+    case SNAP_RIGHT:
+      location.set_x(location.x() + width());
+      break;
+    case SNAP_MINIMIZE:
+      location.set_y(location.y() + height());
+      break;
+    case SNAP_MAXIMIZE:
+    case SNAP_RESTORE:
+      break;
+    case SNAP_NONE:
+      Cancel(true);
+      return;
+    default:
+      // We should not come here.
+      NOTREACHED();
+  }
+  UpdateSnap(location);
+}
+
+void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
+  DCHECK_NE(snap_type_, SNAP_NONE);
+  snap_type_ = snap_type;
+  Snap();
+  // Remove any pending snap previews.
+  SnapButtonHovered(SNAP_NONE);
+  // At this point the operation has been performed and the menu should be
+  // closed - if not, it'll get now closed.
+  maximizer_.reset();
+}
+
+void FrameMaximizeButton::DestroyMaximizeMenu() {
+  maximizer_.reset();
+}
+
+void FrameMaximizeButton::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  Cancel(false);
+}
+
+void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
+  maximizer_.reset();
+  if (window_) {
+    CHECK_EQ(window_, window);
+    window_->RemoveObserver(this);
+    window_ = NULL;
+  }
 }
 
 bool FrameMaximizeButton::OnMousePressed(const views::MouseEvent& event) {
@@ -124,10 +190,31 @@ bool FrameMaximizeButton::OnMousePressed(const views::MouseEvent& event) {
 
 void FrameMaximizeButton::OnMouseEntered(const views::MouseEvent& event) {
   ImageButton::OnMouseEntered(event);
+  if (!maximizer_.get()) {
+    DCHECK(GetWidget());
+    if (!window_) {
+      window_ = frame_->GetWidget()->GetNativeWindow();
+      window_->AddObserver(this);
+    }
+    maximizer_.reset(new MaximizeBubbleController(
+        this,
+        frame_->GetWidget()->IsMaximized()));
+  }
 }
 
 void FrameMaximizeButton::OnMouseExited(const views::MouseEvent& event) {
   ImageButton::OnMouseExited(event);
+  // Remove the bubble menu when the button is not pressed and the mouse is not
+  // within the bubble.
+  if (!is_snap_enabled_ && maximizer_.get() && maximizer_->GetBubbleWindow()) {
+    gfx::Point screen_location = gfx::Screen::GetCursorScreenPoint();
+    if (!maximizer_->GetBubbleWindow()->GetBoundsInScreen().Contains(
+            screen_location)) {
+      maximizer_.reset();
+      // Make sure that all remaining snap hover states get removed.
+      SnapButtonHovered(SNAP_NONE);
+    }
+  }
 }
 
 bool FrameMaximizeButton::OnMouseDragged(const views::MouseEvent& event) {
@@ -137,12 +224,14 @@ bool FrameMaximizeButton::OnMouseDragged(const views::MouseEvent& event) {
 }
 
 void FrameMaximizeButton::OnMouseReleased(const views::MouseEvent& event) {
+  maximizer_.reset();
   if (!ProcessEndEvent(event))
     ImageButton::OnMouseReleased(event);
+  // At this point |this| might be already destroyed.
 }
 
 void FrameMaximizeButton::OnMouseCaptureLost() {
-  Cancel();
+  Cancel(false);
   ImageButton::OnMouseCaptureLost();
 }
 
@@ -180,56 +269,17 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
   return ImageButton::OnGestureEvent(event);
 }
 
-gfx::ImageSkia FrameMaximizeButton::GetImageToPaint() {
-  if (is_snap_enabled_) {
-    int id = 0;
-    if (frame_->GetWidget()->IsMaximized()) {
-      switch (snap_type_) {
-        case SNAP_LEFT:
-          id = IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P;
-          break;
-        case SNAP_RIGHT:
-          id = IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P;
-          break;
-        case SNAP_MAXIMIZE:
-        case SNAP_RESTORE:
-        case SNAP_NONE:
-          id = IDR_AURA_WINDOW_MAXIMIZED_SNAP_P;
-          break;
-        case SNAP_MINIMIZE:
-          id = IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P;
-          break;
-        default:
-          NOTREACHED();
-      }
-    } else {
-      switch (snap_type_) {
-        case SNAP_LEFT:
-          id = IDR_AURA_WINDOW_SNAP_LEFT_P;
-          break;
-        case SNAP_RIGHT:
-          id = IDR_AURA_WINDOW_SNAP_RIGHT_P;
-          break;
-        case SNAP_MAXIMIZE:
-        case SNAP_RESTORE:
-        case SNAP_NONE:
-          id = IDR_AURA_WINDOW_SNAP_P;
-          break;
-        case SNAP_MINIMIZE:
-          id = IDR_AURA_WINDOW_SNAP_MINIMIZE_P;
-          break;
-        default:
-          NOTREACHED();
-      }
-    }
-    return *ResourceBundle::GetSharedInstance().GetImageNamed(id).ToImageSkia();
-  }
-  // Hot and pressed states handled by regular ImageButton.
-  return ImageButton::GetImageToPaint();
-}
-
 void FrameMaximizeButton::ProcessStartEvent(const views::LocatedEvent& event) {
   DCHECK(is_snap_enabled_);
+  // Prepare the help menu.
+  if (!maximizer_.get()) {
+    maximizer_.reset(new MaximizeBubbleController(
+        this,
+        frame_->GetWidget()->IsMaximized()));
+  } else {
+    // If the menu did not show up yet, we delay it even a bit more.
+    maximizer_->DelayCreation();
+  }
   snap_sizer_.reset(NULL);
   InstallEventFilter();
   snap_type_ = SNAP_NONE;
@@ -260,6 +310,9 @@ bool FrameMaximizeButton::ProcessEndEvent(const views::LocatedEvent& event) {
   bool should_snap = is_snap_enabled_;
   is_snap_enabled_ = false;
 
+  // Remove our help bubble.
+  maximizer_.reset();
+
   if (!should_snap || snap_type_ == SNAP_NONE)
     return false;
 
@@ -272,11 +325,15 @@ bool FrameMaximizeButton::ProcessEndEvent(const views::LocatedEvent& event) {
   return true;
 }
 
-void FrameMaximizeButton::Cancel() {
-  UninstallEventFilter();
-  is_snap_enabled_ = false;
+void FrameMaximizeButton::Cancel(bool keep_menu_open) {
+  if (!keep_menu_open) {
+    maximizer_.reset();
+    UninstallEventFilter();
+    is_snap_enabled_ = false;
+  }
   phantom_window_.reset();
   snap_sizer_.reset();
+  snap_type_ = SNAP_NONE;
   update_timer_.Stop();
   SchedulePaint();
 }
@@ -333,10 +390,14 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
     phantom_window_.reset(new internal::PhantomWindowController(
                               frame_->GetWidget()->GetNativeWindow()));
   }
+  if (maximizer_.get()) {
+    phantom_window_->set_phantom_below_window(maximizer_->GetBubbleWindow());
+    maximizer_->SetSnapType(snap_type_);
+  }
   phantom_window_->Show(ScreenBoundsForType(snap_type_));
 }
 
-FrameMaximizeButton::SnapType FrameMaximizeButton::SnapTypeForLocation(
+SnapType FrameMaximizeButton::SnapTypeForLocation(
     const gfx::Point& location) const {
   int delta_x = location.x() - press_location_.x();
   int delta_y = location.y() - press_location_.y();

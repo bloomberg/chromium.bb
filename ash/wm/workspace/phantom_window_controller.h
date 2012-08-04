@@ -50,6 +50,12 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   // Returns true if the phantom is showing.
   bool IsShowing() const;
 
+  // If set, the phantom window is stacked below this window, otherwise it
+  // is stacked above the window passed to the constructor.
+  void set_phantom_below_window(aura::Window* phantom_below_window) {
+    phantom_below_window_ = phantom_below_window;
+  }
+
   // ui::AnimationDelegate overrides:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
@@ -60,6 +66,9 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   // Window the phantom is placed beneath.
   aura::Window* window_;
 
+  // If set, the phantom window should get stacked below this window.
+  aura::Window* phantom_below_window_;
+
   // Initially the bounds of |window_|. Each time Show() is invoked
   // |start_bounds_| is then reset to the bounds of |phantom_widget_| and
   // |bounds_| is set to the value passed into Show(). The animation animates
@@ -67,7 +76,7 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   gfx::Rect start_bounds_;
   gfx::Rect bounds_;
 
-  scoped_ptr<views::Widget> phantom_widget_;
+  views::Widget* phantom_widget_;
 
   // Used to transition the bounds.
   scoped_ptr<ui::SlideAnimation> animation_;
