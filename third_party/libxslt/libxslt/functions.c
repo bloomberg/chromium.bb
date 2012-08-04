@@ -654,6 +654,7 @@ xsltFormatNumberFunction(xmlXPathParserContextPtr ctxt, int nargs)
 void
 xsltGenerateIdFunction(xmlXPathParserContextPtr ctxt, int nargs){
     xmlNodePtr cur = NULL;
+    xmlXPathObjectPtr obj = NULL;
     long val;
     xmlChar str[30];
     xmlDocPtr doc;
@@ -661,7 +662,6 @@ xsltGenerateIdFunction(xmlXPathParserContextPtr ctxt, int nargs){
     if (nargs == 0) {
 	cur = ctxt->context->node;
     } else if (nargs == 1) {
-	xmlXPathObjectPtr obj;
 	xmlNodeSetPtr nodelist;
 	int i, ret;
 
@@ -684,7 +684,6 @@ xsltGenerateIdFunction(xmlXPathParserContextPtr ctxt, int nargs){
 	    if (ret == -1)
 	        cur = nodelist->nodeTab[i];
 	}
-	xmlXPathFreeObject(obj);
     } else {
 	xsltTransformError(xsltXPathGetTransformContext(ctxt), NULL, NULL,
 		"generate-id() : invalid number of args %d\n", nargs);
@@ -706,6 +705,9 @@ xsltGenerateIdFunction(xmlXPathParserContextPtr ctxt, int nargs){
             doc = ctxt->context->doc;
 
     }
+
+    if (obj)
+        xmlXPathFreeObject(obj);
 
     val = (long)((char *)cur - (char *)doc);
     if (val >= 0) {
