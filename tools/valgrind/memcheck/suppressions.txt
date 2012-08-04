@@ -971,6 +971,19 @@
    fun:_ZN10disk_cache14StatsHistogram10FactoryGet*
 }
 {
+   Intentional leak for Histogram (in StatisticsRecorderTest, NotInitialized).
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base42StatisticsRecorderTest_NotInitialized_Test8TestBodyEv
+}
+{
+   Intentional leak for list<const BucketRanges*>(in StatisticsRecorderTest, RegisterBucketRanges).
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base18StatisticsRecorder31RegisterOrDeleteDuplicateRangesEPKNS_12BucketRangesE
+   fun:_ZN4base48StatisticsRecorderTest_RegisterBucketRanges_Test8TestBodyEv
+}
+{
    # See http://code.google.com/p/chromium/issues/detail?id=70062#c8
    bug_70062 (Intentional)
    Memcheck:Leak
