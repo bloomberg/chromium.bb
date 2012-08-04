@@ -30,6 +30,7 @@ class EncryptedData;
 }  // namespace sync_pb
 
 namespace syncer {
+
 class BaseTransaction;
 class Encryptor;
 struct Experiments;
@@ -409,7 +410,8 @@ class SyncManager {
   // Forwards to the underlying notifier (see
   // SyncNotifier::UpdateRegisteredIds()).
   virtual void UpdateRegisteredInvalidationIds(
-      SyncNotifierObserver* handler, const ObjectIdSet& ids) = 0;
+      SyncNotifierObserver* handler,
+      const ObjectIdSet& ids) = 0;
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(

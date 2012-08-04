@@ -552,10 +552,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
-  // Updates the set of ObjectIds associated with a given
-  // |handler|. Passing an empty ObjectIdSet will unregister
-  // |handler|. There should be at most one handler registered per
-  // object id.
+  // Updates the set of ObjectIds associated with a given |handler|.
+  // Passing an empty ObjectIdSet will unregister |handler|.
+  // There should be at most one handler registered per object id.
   //
   // The handler -> registered ids map is persisted across restarts of
   // sync.

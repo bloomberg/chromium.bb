@@ -739,7 +739,8 @@ void SyncManagerImpl::UpdateEnabledTypes(
 }
 
 void SyncManagerImpl::UpdateRegisteredInvalidationIds(
-    SyncNotifierObserver* handler, const ObjectIdSet& ids) {
+    SyncNotifierObserver* handler,
+    const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_notifier_->UpdateRegisteredIds(handler, ids);
 }

@@ -55,9 +55,8 @@ ModelTypeSet FakeSyncManager::GetAndResetEnabledTypes() {
   return enabled_types;
 }
 
-void FakeSyncManager::Invalidate(
-    const ObjectIdPayloadMap& id_payloads,
-    IncomingNotificationSource source) {
+void FakeSyncManager::Invalidate(const ObjectIdPayloadMap& id_payloads,
+                                 IncomingNotificationSource source) {
   if (!sync_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&FakeSyncManager::InvalidateOnSyncThread,
@@ -151,7 +150,8 @@ void FakeSyncManager::UpdateEnabledTypes(const ModelTypeSet& types) {
 }
 
 void FakeSyncManager::UpdateRegisteredInvalidationIds(
-    SyncNotifierObserver* handler, const ObjectIdSet& ids) {
+    SyncNotifierObserver* handler,
+    const ObjectIdSet& ids) {
   notifier_helper_.UpdateRegisteredIds(handler, ids);
 }
 

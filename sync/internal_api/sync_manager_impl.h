@@ -87,7 +87,8 @@ class SyncManagerImpl : public SyncManager,
   virtual void UpdateEnabledTypes(
       const ModelTypeSet& enabled_types) OVERRIDE;
   virtual void UpdateRegisteredInvalidationIds(
-      SyncNotifierObserver* handler, const ObjectIdSet& ids) OVERRIDE;
+      SyncNotifierObserver* handler,
+      const ObjectIdSet& ids) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void SetEncryptionPassphrase(const std::string& passphrase,

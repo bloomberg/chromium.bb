@@ -54,9 +54,8 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet GetAndResetEnabledTypes();
 
   // Posts a method to invalidate the given IDs on the sync thread.
-  void Invalidate(
-    const ObjectIdPayloadMap& id_payloads,
-    IncomingNotificationSource source);
+  void Invalidate(const ObjectIdPayloadMap& id_payloads,
+                  IncomingNotificationSource source);
 
   // Posts a method to enable notifications on the sync thread.
   void EnableNotifications();
@@ -96,7 +95,8 @@ class FakeSyncManager : public SyncManager {
   virtual void UpdateCredentials(const SyncCredentials& credentials) OVERRIDE;
   virtual void UpdateEnabledTypes(const ModelTypeSet& types) OVERRIDE;
   virtual void UpdateRegisteredInvalidationIds(
-      SyncNotifierObserver* handler, const ObjectIdSet& ids) OVERRIDE;
+      SyncNotifierObserver* handler,
+      const ObjectIdSet& ids) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void SetEncryptionPassphrase(const std::string& passphrase,
