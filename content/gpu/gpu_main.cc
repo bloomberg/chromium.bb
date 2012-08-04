@@ -30,6 +30,10 @@
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #include "sandbox/win/src/sandbox.h"
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #endif
 
 #if defined(USE_X11)
@@ -148,6 +152,12 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   {
     TRACE_EVENT0("gpu", "Initialize sandbox");
     bool do_init_sandbox = true;
+
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+    OmxVideoDecodeAccelerator::PreSandboxInitialization();
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+    VaapiVideoDecodeAccelerator::PreSandboxInitialization();
+#endif
 
 #if defined(OS_CHROMEOS) && defined(NDEBUG)
     // On Chrome OS and when not on a debug build, initialize

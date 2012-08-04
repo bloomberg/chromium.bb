@@ -129,6 +129,13 @@ class VaapiH264Decoder {
   // Valid after a successful DecodeInitial().
   static size_t GetRequiredNumOfPictures();
 
+  // Do any necessary initialization before the sandbox is enabled.
+  static void PreSandboxInitialization();
+
+  // Lazily initialize static data after sandbox is enabled.  Return false on
+  // init failure.
+  static bool PostSandboxInitialization();
+
  private:
   // We need to keep at least kDPBMaxSize pictures in DPB for
   // reference/to display later and an additional one for the one currently
@@ -328,6 +335,9 @@ class VaapiH264Decoder {
 
   // Called by decoder when a picture should be outputted.
   OutputPicCB output_pic_cb_;
+
+  // Has static initialization of pre-sandbox components completed successfully?
+  static bool pre_sandbox_init_done_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiH264Decoder);
 };
