@@ -40,7 +40,8 @@ class VariationsService : public net::URLFetcherDelegate {
   bool CreateTrialsFromSeed(PrefService* local_prefs);
 
   // Calls FetchVariationsSeed once and repeats this periodically. See
-  // implementation for details on the period.
+  // implementation for details on the period. Must be called after
+  // |CreateTrialsFromSeed|.
   void StartRepeatedVariationsSeedFetch();
 
   // Starts the fetching process once, where |OnURLFetchComplete| is called with
@@ -127,9 +128,16 @@ class VariationsService : public net::URLFetcherDelegate {
   // The URL to use for querying the variations server.
   GURL variations_server_url_;
 
+  // Cached serial number from the most recently fetched variations seed.
+  std::string variations_serial_number_;
+
+  // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that
+  // it gets called prior to |StartRepeatedVariationsSeedFetch|.
+  bool create_trials_from_seed_called_;
+
   // The timer used to repeatedly ping the server. Keep this as an instance
   // member so if VariationsService goes out of scope, the timer is
-  // automatically cancelled.
+  // automatically canceled.
   base::RepeatingTimer<VariationsService> timer_;
 };
 
