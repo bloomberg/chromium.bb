@@ -159,6 +159,21 @@ void RemoveMissingIdsFromMap(map<short, Data, kSetSize>* the_map,
     the_map->erase(old_ids[i]);
 }
 
+// Erases the element in the map given by the iterator, returns an iterator
+// for the element after the erased one. Useful for erasing elements in a loop.
+template<typename Map, typename Iterator>
+Iterator MapEraseIterator(Map* the_map, Iterator it) {
+  if (it == the_map->begin()) {
+    the_map->erase(it);
+    return the_map->begin();
+  } else {
+    Iterator ret = it;
+    --ret;
+    the_map->erase(it);
+    return ++ret;
+  }
+}
+
 }  // namespace gestures
 
 #endif  // GESTURES_MAP_H__

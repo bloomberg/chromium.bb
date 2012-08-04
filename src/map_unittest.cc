@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <utility>
 
 #include <base/logging.h>
@@ -109,6 +110,73 @@ TEST(MapTest, ConstAccessTest) {
   mp[1] = 2;
   const map<int, int, 3>& const_mp = mp;
   EXPECT_EQ(2, const_mp[1]);
+}
+
+template<typename Map>
+void ExpectMapContains(const Map& the_map, size_t size, ...) {
+  EXPECT_EQ(size, the_map.size());
+  if (size != the_map.size())
+    return;
+
+  va_list list;
+  va_start(list, size);
+  for (size_t i = 0; i < size; i++) {
+    int elt = va_arg(list, int);
+    EXPECT_TRUE(MapContainsKey(the_map, elt));
+  }
+  va_end(list);
+}
+
+template<typename Map>
+void DoMapEraseIteratorTest(Map* the_map) {
+  ExpectMapContains(*the_map, 0);
+  (*the_map)[1] = 1;
+  (*the_map)[2] = 2;
+  ExpectMapContains(*the_map, 2, 1, 2);
+
+  // erasing the first element
+  EXPECT_EQ(1, (*the_map->begin()).first);
+  typename Map::iterator new_begin = MapEraseIterator(the_map,
+                                                      the_map->begin());
+  EXPECT_TRUE(new_begin == the_map->begin());
+  ExpectMapContains(*the_map, 1, 2);
+
+  // erasing the last element
+  the_map->clear();
+  (*the_map)[1] = 1;
+  (*the_map)[2] = 2;
+  typename Map::iterator prev_end = the_map->end();
+  --prev_end;
+  EXPECT_EQ(2, (*prev_end).first);
+  typename Map::iterator output = MapEraseIterator(the_map,
+                                                   prev_end);
+  typename Map::iterator new_end = the_map->end();
+  EXPECT_TRUE(output == new_end);
+  ExpectMapContains(*the_map, 1, 1);
+
+  // erasing a middle element
+  the_map->clear();
+  (*the_map)[1] = 1;
+  (*the_map)[2] = 2;
+  (*the_map)[3] = 3;
+  typename Map::iterator erase = the_map->begin();
+  ++erase;
+  EXPECT_EQ(2, (*erase).first);
+  output = MapEraseIterator(the_map, erase);
+  typename Map::iterator new_second = the_map->begin();
+  ++new_second;
+  EXPECT_TRUE(new_second == output);
+  ExpectMapContains(*the_map, 2, 1, 3);
+}
+
+TEST(MapTest, MapEraseIteratorTest) {
+  map<int, int, 3> the_map;
+  DoMapEraseIteratorTest(&the_map);
+}
+
+TEST(MapTest, StdMapEraseIteratorTest) {
+  std::map<int, int> std_map;
+  DoMapEraseIteratorTest(&std_map);
 }
 
 }  // namespace gestures
