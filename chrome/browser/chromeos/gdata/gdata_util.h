@@ -18,6 +18,14 @@
 class FilePath;
 class Profile;
 
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
+namespace tracked_objects {
+class Location;
+}  // tracked_objects
+
 namespace gdata {
 namespace util {
 
@@ -112,7 +120,7 @@ std::string FormatTimeAsString(const base::Time& time);
 
 // Callback type for PrepareWritableFilePathAndRun.
 typedef base::Callback<void (GDataFileError, const FilePath& path)>
-   OpenFileCallback;
+    OpenFileCallback;
 
 // Invokes |callback| on blocking thread pool, after converting virtual |path|
 // string like "/special/drive/foo.txt" to the concrete local cache file path.
@@ -125,6 +133,24 @@ typedef base::Callback<void (GDataFileError, const FilePath& path)>
 void PrepareWritableFileAndRun(Profile* profile,
                                const FilePath& path,
                                const OpenFileCallback& callback);
+
+// Converts gdata error code into file platform error code.
+GDataFileError GDataToGDataFileError(GDataErrorCode status);
+
+// Wrapper around BrowserThread::PostTask to post a task to the blocking
+// pool with the given sequence token.
+void PostBlockingPoolSequencedTask(
+    const tracked_objects::Location& from_here,
+    base::SequencedTaskRunner* blocking_task_runner,
+    const base::Closure& task);
+
+// Similar to PostBlockingPoolSequencedTask() but this one takes a reply
+// callback that runs on the calling thread.
+void PostBlockingPoolSequencedTaskAndReply(
+    const tracked_objects::Location& from_here,
+    base::SequencedTaskRunner* blocking_task_runner,
+    const base::Closure& request_task,
+    const base::Closure& reply_task);
 
 }  // namespace util
 }  // namespace gdata

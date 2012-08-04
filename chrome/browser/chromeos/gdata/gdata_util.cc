@@ -21,6 +21,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
+#include "base/tracked_objects.h"
 #include "chrome/browser/chromeos/gdata/file_write_helper.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
@@ -602,6 +603,48 @@ void PrepareWritableFileAndRun(Profile* profile,
           FROM_HERE, base::Bind(callback, GDATA_FILE_OK, path));
     }
   }
+}
+
+GDataFileError GDataToGDataFileError(GDataErrorCode status) {
+  switch (status) {
+    case HTTP_SUCCESS:
+    case HTTP_CREATED:
+      return GDATA_FILE_OK;
+    case HTTP_UNAUTHORIZED:
+    case HTTP_FORBIDDEN:
+      return GDATA_FILE_ERROR_ACCESS_DENIED;
+    case HTTP_NOT_FOUND:
+      return GDATA_FILE_ERROR_NOT_FOUND;
+    case GDATA_PARSE_ERROR:
+    case GDATA_FILE_ERROR:
+      return GDATA_FILE_ERROR_ABORT;
+    case GDATA_NO_CONNECTION:
+      return GDATA_FILE_ERROR_NO_CONNECTION;
+    default:
+      return GDATA_FILE_ERROR_FAILED;
+  }
+}
+
+void PostBlockingPoolSequencedTask(
+    const tracked_objects::Location& from_here,
+    base::SequencedTaskRunner* blocking_task_runner,
+    const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const bool posted = blocking_task_runner->PostTask(from_here, task);
+  DCHECK(posted);
+}
+
+void PostBlockingPoolSequencedTaskAndReply(
+    const tracked_objects::Location& from_here,
+    base::SequencedTaskRunner* blocking_task_runner,
+    const base::Closure& request_task,
+    const base::Closure& reply_task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const bool posted = blocking_task_runner->PostTaskAndReply(
+      from_here, request_task, reply_task);
+  DCHECK(posted);
 }
 
 }  // namespace util
