@@ -211,6 +211,10 @@ class VaapiH264Decoder {
 
   // Destroys allocated VASurfaces and related VAContext.
   void DestroyVASurfaces();
+  // Destroys all buffers in |pending_slice_bufs_| and |pending_va_bufs_|.
+  void DestroyPendingBuffers();
+  // Destroys a list of buffers.
+  void DestroyBuffers(size_t num_va_buffers, const VABufferID* va_buffers);
 
   // These queue up data for HW decoder to be committed on running HW decode.
   bool SendPPS();
