@@ -23,14 +23,14 @@ void GTFNativeDestroyPixmap(EGLNativeDisplayType nativeDisplay,
 EGLImageKHR GTFCreateEGLImageExternal(
     int width, int height, int format,
     float r, float g, float b, float a, void** resource) {
-  return (EGLImageKHR)NULL;
+  return (EGLImageKHR)0;
 }
 
 void GTFDestroyEGLImageExternal(EGLImageKHR image, void* resource) {
 }
 
 const int* GTFQueryFormatsEGLImageExternal(void) {
-  return NULL;
+  return 0;
 }
 
 GTFbool GTFIsAlphaFormatEGLImageExternal(int format) {
