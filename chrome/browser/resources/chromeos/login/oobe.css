@@ -465,6 +465,7 @@ html[oobe=old] #user-image {
   -webkit-user-drag: none;
   -webkit-user-select: none;
   display: inline-block;
+  height: 264px;
   margin: 0;
   outline: none;
   overflow: hidden;

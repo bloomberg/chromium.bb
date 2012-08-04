@@ -16166,6 +16166,46 @@ Battery full
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_18">
       </message>
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_19">
+        Kirsten Hammelbo
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_20">
+        Igor Djurovic
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_21">
+        Romain Guy
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_22">
+        Barbara Dudzińska
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_23">
+        Romain Guy
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_24">
+        Dirk Ercken
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_25">
+        Pauline Ilott
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_26">
+        cynoclub
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_27">
+        Romain Guy
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_28">
+        Vladimir Vladimirov
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_29">
+        MOF
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_30">
+        Romain Guy
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_31">
+        Shaun Lowe
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR_32">
+        Magdalena Wasiczek
       </message>
 
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE">
@@ -16207,6 +16247,46 @@ Battery full
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_18">
       </message>
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_19">
+        http://www.istockphoto/Kirkham
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_20">
+        http://www.istockphoto/vectorig
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_21">
+        http://www.curious-creature.org/
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_22">
+        http://www.istockphoto/barol16
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_23">
+        http://www.curious-creature.org/
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_24">
+        http://www.istockphoto/kikkerdirk
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_25">
+        http://www.istockphoto/pollypic
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_26">
+        http://www.istockphoto/cynoclub
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_27">
+        http://www.curious-creature.org/
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_28">
+        http://www.istockphoto.com/portishead1
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_29">
+        http://www.istockphoto.com/MOF
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_30">
+        http://www.curious-creature.org/
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_31">
+        http://www.istockphoto.com/shaunl
+      </message>
+      <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_WEBSITE_32">
+        http://www.magdawasiczek.pl
       </message>
 
       <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
