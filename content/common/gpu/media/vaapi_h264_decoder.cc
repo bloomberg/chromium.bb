@@ -34,8 +34,8 @@
 
 namespace content {
 
-void *vaapi_handle = dlopen("libva.so", RTLD_NOW);
-void *vaapi_x11_handle = dlopen("libva-x11.so", RTLD_NOW);
+void *vaapi_handle = NULL;
+void *vaapi_x11_handle = NULL;
 
 typedef VADisplay (*VaapiGetDisplay)(Display *dpy);
 typedef int (*VaapiDisplayIsValid)(VADisplay dpy);
@@ -106,51 +106,30 @@ typedef VAStatus (*VaapiCreateBuffer)(VADisplay dpy,
 typedef VAStatus (*VaapiDestroyBuffer)(VADisplay dpy, VABufferID buffer_id);
 typedef const char* (*VaapiErrorStr)(VAStatus error_status);
 
-#define VAAPI_DLSYM(name, handle)                                 \
-    Vaapi##name VAAPI_##name =                                    \
-        reinterpret_cast<Vaapi##name>(dlsym((handle), "va"#name))
+#define VAAPI_SYM(name, handle) Vaapi##name VAAPI_##name = NULL
 
-VAAPI_DLSYM(GetDisplay, vaapi_x11_handle);
-VAAPI_DLSYM(DisplayIsValid, vaapi_handle);
-VAAPI_DLSYM(Initialize, vaapi_handle);
-VAAPI_DLSYM(Terminate, vaapi_handle);
-VAAPI_DLSYM(GetConfigAttributes, vaapi_handle);
-VAAPI_DLSYM(CreateConfig, vaapi_handle);
-VAAPI_DLSYM(DestroyConfig, vaapi_handle);
-VAAPI_DLSYM(CreateSurfaces, vaapi_handle);
-VAAPI_DLSYM(DestroySurfaces, vaapi_handle);
-VAAPI_DLSYM(CreateContext, vaapi_handle);
-VAAPI_DLSYM(DestroyContext, vaapi_handle);
-VAAPI_DLSYM(PutSurface, vaapi_x11_handle);
-VAAPI_DLSYM(SyncSurface, vaapi_x11_handle);
-VAAPI_DLSYM(BeginPicture, vaapi_handle);
-VAAPI_DLSYM(RenderPicture, vaapi_handle);
-VAAPI_DLSYM(EndPicture, vaapi_handle);
-VAAPI_DLSYM(CreateBuffer, vaapi_handle);
-VAAPI_DLSYM(DestroyBuffer, vaapi_handle);
-VAAPI_DLSYM(ErrorStr, vaapi_handle);
+VAAPI_SYM(GetDisplay, vaapi_x11_handle);
+VAAPI_SYM(DisplayIsValid, vaapi_handle);
+VAAPI_SYM(Initialize, vaapi_handle);
+VAAPI_SYM(Terminate, vaapi_handle);
+VAAPI_SYM(GetConfigAttributes, vaapi_handle);
+VAAPI_SYM(CreateConfig, vaapi_handle);
+VAAPI_SYM(DestroyConfig, vaapi_handle);
+VAAPI_SYM(CreateSurfaces, vaapi_handle);
+VAAPI_SYM(DestroySurfaces, vaapi_handle);
+VAAPI_SYM(CreateContext, vaapi_handle);
+VAAPI_SYM(DestroyContext, vaapi_handle);
+VAAPI_SYM(PutSurface, vaapi_x11_handle);
+VAAPI_SYM(SyncSurface, vaapi_x11_handle);
+VAAPI_SYM(BeginPicture, vaapi_handle);
+VAAPI_SYM(RenderPicture, vaapi_handle);
+VAAPI_SYM(EndPicture, vaapi_handle);
+VAAPI_SYM(CreateBuffer, vaapi_handle);
+VAAPI_SYM(DestroyBuffer, vaapi_handle);
+VAAPI_SYM(ErrorStr, vaapi_handle);
 
-static bool AreVaapiFunctionPointersInitialized() {
-  return VAAPI_GetDisplay &&
-      VAAPI_DisplayIsValid &&
-      VAAPI_Initialize &&
-      VAAPI_Terminate &&
-      VAAPI_GetConfigAttributes &&
-      VAAPI_CreateConfig &&
-      VAAPI_DestroyConfig &&
-      VAAPI_CreateSurfaces &&
-      VAAPI_DestroySurfaces &&
-      VAAPI_CreateContext &&
-      VAAPI_DestroyContext &&
-      VAAPI_PutSurface &&
-      VAAPI_SyncSurface &&
-      VAAPI_BeginPicture &&
-      VAAPI_RenderPicture &&
-      VAAPI_EndPicture &&
-      VAAPI_CreateBuffer &&
-      VAAPI_DestroyBuffer &&
-      VAAPI_ErrorStr;
-}
+// static
+bool VaapiH264Decoder::pre_sandbox_init_done_ = false;
 
 class VaapiH264Decoder::DecodeSurface {
  public:
@@ -499,11 +478,6 @@ bool VaapiH264Decoder::Initialize(
 
   if (!SetProfile(profile)) {
     DVLOG(1) << "Unsupported profile";
-    return false;
-  }
-
-  if (!AreVaapiFunctionPointersInitialized()) {
-    DVLOG(1) << "Could not load libva";
     return false;
   }
 
@@ -2130,6 +2104,63 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::DecodeOneFrame(int32 input_id) {
 // static
 size_t VaapiH264Decoder::GetRequiredNumOfPictures() {
   return kNumReqPictures;
+}
+
+// static
+void VaapiH264Decoder::PreSandboxInitialization() {
+  DCHECK(!pre_sandbox_init_done_);
+  vaapi_handle = dlopen("libva.so", RTLD_NOW);
+  vaapi_x11_handle = dlopen("libva-x11.so", RTLD_NOW);
+  pre_sandbox_init_done_ = vaapi_handle && vaapi_x11_handle;
+}
+
+// static
+bool VaapiH264Decoder::PostSandboxInitialization() {
+  if (!pre_sandbox_init_done_)
+    return false;
+#define VAAPI_DLSYM(name, handle)                                       \
+  VAAPI_##name = reinterpret_cast<Vaapi##name>(dlsym((handle), "va"#name)) \
+
+  VAAPI_DLSYM(GetDisplay, vaapi_x11_handle);
+  VAAPI_DLSYM(DisplayIsValid, vaapi_handle);
+  VAAPI_DLSYM(Initialize, vaapi_handle);
+  VAAPI_DLSYM(Terminate, vaapi_handle);
+  VAAPI_DLSYM(GetConfigAttributes, vaapi_handle);
+  VAAPI_DLSYM(CreateConfig, vaapi_handle);
+  VAAPI_DLSYM(DestroyConfig, vaapi_handle);
+  VAAPI_DLSYM(CreateSurfaces, vaapi_handle);
+  VAAPI_DLSYM(DestroySurfaces, vaapi_handle);
+  VAAPI_DLSYM(CreateContext, vaapi_handle);
+  VAAPI_DLSYM(DestroyContext, vaapi_handle);
+  VAAPI_DLSYM(PutSurface, vaapi_x11_handle);
+  VAAPI_DLSYM(SyncSurface, vaapi_x11_handle);
+  VAAPI_DLSYM(BeginPicture, vaapi_handle);
+  VAAPI_DLSYM(RenderPicture, vaapi_handle);
+  VAAPI_DLSYM(EndPicture, vaapi_handle);
+  VAAPI_DLSYM(CreateBuffer, vaapi_handle);
+  VAAPI_DLSYM(DestroyBuffer, vaapi_handle);
+  VAAPI_DLSYM(ErrorStr, vaapi_handle);
+#undef VAAPI_DLSYM
+
+  return VAAPI_GetDisplay &&
+      VAAPI_DisplayIsValid &&
+      VAAPI_Initialize &&
+      VAAPI_Terminate &&
+      VAAPI_GetConfigAttributes &&
+      VAAPI_CreateConfig &&
+      VAAPI_DestroyConfig &&
+      VAAPI_CreateSurfaces &&
+      VAAPI_DestroySurfaces &&
+      VAAPI_CreateContext &&
+      VAAPI_DestroyContext &&
+      VAAPI_PutSurface &&
+      VAAPI_SyncSurface &&
+      VAAPI_BeginPicture &&
+      VAAPI_RenderPicture &&
+      VAAPI_EndPicture &&
+      VAAPI_CreateBuffer &&
+      VAAPI_DestroyBuffer &&
+      VAAPI_ErrorStr;
 }
 
 }  // namespace content
