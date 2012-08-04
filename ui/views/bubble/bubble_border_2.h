@@ -47,7 +47,7 @@ class VIEWS_EXPORT BubbleBorder2 : public BubbleBorder {
   void SetShadow(gfx::ShadowValue shadow);
 
   // views::BubbleBorder overrides:
-  int GetBorderThickness() const OVERRIDE;
+  virtual int GetBorderThickness() const OVERRIDE;
 
  protected:
   void PaintBackground(gfx::Canvas* canvas,
@@ -61,8 +61,9 @@ class VIEWS_EXPORT BubbleBorder2 : public BubbleBorder {
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                               const gfx::Size& contents_size) const OVERRIDE;
-  void GetInsetsForArrowLocation(gfx::Insets* insets,
-                                 ArrowLocation arrow_loc) const OVERRIDE;
+  virtual void GetInsetsForArrowLocation(
+      gfx::Insets* insets,
+      ArrowLocation arrow_loc) const OVERRIDE;
 
   // views::Border overrides:
   virtual void Paint(const View& view,
