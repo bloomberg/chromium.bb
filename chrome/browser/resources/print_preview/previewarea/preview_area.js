@@ -567,7 +567,11 @@ cr.define('print_preview', function() {
         this.pageOffset_ = new print_preview.Coordinate2d(
             this.plugin_.pageXOffset(), this.plugin_.pageYOffset());
       }
-      var normalized = this.plugin_.getPageLocationNormalized().split(';');
+      var pageLocationNormalizedStr = this.plugin_.getPageLocationNormalized();
+      if (!pageLocationNormalizedStr) {
+        return;
+      }
+      var normalized = pageLocationNormalizedStr.split(';');
       var pluginWidth = this.plugin_.getWidth();
       var pluginHeight = this.plugin_.getHeight();
       var translationTransform = new print_preview.Coordinate2d(
