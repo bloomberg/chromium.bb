@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "config-parser.h"
 
@@ -55,11 +56,13 @@ handle_key(const struct config_key *key, const char *value)
 
 	case CONFIG_KEY_STRING:
 		len = strlen(value);
-		s = malloc(len);
+		while (len > 0 && isspace(value[len - 1]))
+			len--;
+		s = malloc(len + 1);
 		if (s == NULL)
 			return -1;
-		memcpy(s, value, len - 1);
-		s[len - 1] = '\0';
+		memcpy(s, value, len);
+		s[len] = '\0';
 		*(char **)key->data = s;
 		return 0;
 
