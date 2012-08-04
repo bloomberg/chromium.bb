@@ -32,7 +32,8 @@ class PermissionSelectorView : public views::View {
  public:
   PermissionSelectorView(ContentSettingsType type,
                          ContentSetting default_setting,
-                         ContentSetting current_setting);
+                         ContentSetting current_setting,
+                         content_settings::SettingSource source);
 
   void AddObserver(PermissionSelectorViewObserver* observer);
 

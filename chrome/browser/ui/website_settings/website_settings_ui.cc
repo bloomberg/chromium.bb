@@ -12,8 +12,62 @@
 #include "ui/gfx/image/image.h"
 
 namespace {
+
 const int kInvalidResourceID = -1;
-}
+
+// The resource id's for the strings that are displayed on the permissions
+// button if the permission setting is managed by policy.
+const int kPermissionButtonTextIDPolicyManaged[] = {
+  kInvalidResourceID,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_POLICY,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_POLICY,
+  kInvalidResourceID,
+  kInvalidResourceID
+};
+COMPILE_ASSERT(arraysize(kPermissionButtonTextIDPolicyManaged) ==
+               CONTENT_SETTING_NUM_SETTINGS,
+               button_text_id_array_size_incorrect);
+
+// The resource id's for the strings that are displayed on the permissions
+// button if the permission setting is managed by an extension.
+const int kPermissionButtonTextIDExtensionManaged[] = {
+  kInvalidResourceID,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_EXTENSION,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_EXTENSION,
+  kInvalidResourceID,
+  kInvalidResourceID
+};
+COMPILE_ASSERT(arraysize(kPermissionButtonTextIDExtensionManaged) ==
+               CONTENT_SETTING_NUM_SETTINGS,
+               button_text_id_array_size_incorrect);
+
+// The resource id's for the strings that are displayed on the permissions
+// button if the permission setting is managed by the user.
+const int kPermissionButtonTextIDUserManaged[] = {
+  kInvalidResourceID,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_USER,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_USER,
+  kInvalidResourceID,
+  kInvalidResourceID
+};
+COMPILE_ASSERT(arraysize(kPermissionButtonTextIDUserManaged) ==
+               CONTENT_SETTING_NUM_SETTINGS,
+               button_text_id_array_size_incorrect);
+
+// The resource id's for the strings that are displayed on the permissions
+// button if the permission setting is the global default setting.
+const int kPermissionButtonTextIDDefaultSetting[] = {
+  kInvalidResourceID,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_DEFAULT,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_DEFAULT,
+  IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_DEFAULT,
+  kInvalidResourceID
+};
+COMPILE_ASSERT(arraysize(kPermissionButtonTextIDDefaultSetting) ==
+               CONTENT_SETTING_NUM_SETTINGS,
+               button_text_id_array_size_incorrect);
+
+}  // namespace
 
 WebsiteSettingsUI::CookieInfo::CookieInfo()
     : allowed(-1), blocked(-1) {
@@ -22,7 +76,8 @@ WebsiteSettingsUI::CookieInfo::CookieInfo()
 WebsiteSettingsUI::PermissionInfo::PermissionInfo()
     : type(CONTENT_SETTINGS_TYPE_DEFAULT),
       setting(CONTENT_SETTING_DEFAULT),
-      default_setting(CONTENT_SETTING_DEFAULT) {
+      default_setting(CONTENT_SETTING_DEFAULT),
+      source(content_settings::SETTING_SOURCE_NONE) {
 }
 
 WebsiteSettingsUI::IdentityInfo::IdentityInfo()
@@ -89,37 +144,36 @@ string16 WebsiteSettingsUI::PermissionValueToUIString(ContentSetting value) {
 
 // static
 string16 WebsiteSettingsUI::PermissionActionToUIString(
-      ContentSetting setting, ContentSetting default_setting) {
-  ContentSetting setting_value;
-  int setting_description_id = kInvalidResourceID;
-  int action_description_id = kInvalidResourceID;
+      ContentSetting setting,
+      ContentSetting default_setting,
+      content_settings::SettingSource source) {
+  ContentSetting effective_setting = setting;
+  if (effective_setting == CONTENT_SETTING_DEFAULT)
+    effective_setting = default_setting;
 
-  // Check whether or not the default setting was used.
-  if (setting == CONTENT_SETTING_DEFAULT) {
-    setting_value = default_setting;
-    setting_description_id = IDS_WEBSITE_SETTINGS_DEFAULT_SETTING;
-  } else {
-    setting_value = setting;
-    setting_description_id = IDS_WEBSITE_SETTINGS_USER_SETTING;
-  }
-
-  // Determine the string to use to describe the action that was taken, e.g.
-  // "Allowed", "Blocked", "Ask".
-  switch (setting_value) {
-    case CONTENT_SETTING_ALLOW:
-      action_description_id = IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ALLOWED;
+  const int* button_text_ids = NULL;
+  switch (source) {
+    case content_settings::SETTING_SOURCE_USER:
+      if (setting == CONTENT_SETTING_DEFAULT)
+        button_text_ids = kPermissionButtonTextIDDefaultSetting;
+      else
+        button_text_ids = kPermissionButtonTextIDUserManaged;
       break;
-    case CONTENT_SETTING_BLOCK:
-      action_description_id = IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_BLOCKED;
+    case content_settings::SETTING_SOURCE_POLICY:
+      button_text_ids = kPermissionButtonTextIDPolicyManaged;
       break;
-    case CONTENT_SETTING_ASK:
-      action_description_id = IDS_WEBSITE_SETTINGS_PERMISSION_ACTION_ASK;
+    case content_settings::SETTING_SOURCE_EXTENSION:
+      button_text_ids = kPermissionButtonTextIDExtensionManaged;
       break;
+    case content_settings::SETTING_SOURCE_WHITELIST:
+    case content_settings::SETTING_SOURCE_NONE:
     default:
       NOTREACHED();
+      return string16();
   }
-  return l10n_util::GetStringFUTF16(setting_description_id,
-      l10n_util::GetStringUTF16(action_description_id));
+  int button_text_id = button_text_ids[effective_setting];
+  DCHECK_NE(button_text_id, kInvalidResourceID);
+  return l10n_util::GetStringUTF16(button_text_id);
 }
 
 // static

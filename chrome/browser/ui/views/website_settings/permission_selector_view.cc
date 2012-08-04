@@ -89,9 +89,12 @@ class PermissionMenuButton : public views::MenuButton,
  public:
   // Creates a new |PermissionMenuButton| with the passed |text|. The ownership
   // of the |model| remains with the caller and is not transfered to the
-  // |PermissionMenuButton|.
+  // |PermissionMenuButton|. If the |show_menu_marker| flag is true, then a
+  // small icon is be displayed next to the button |text|, indicating that the
+  // button opens a drop down menu.
   PermissionMenuButton(const string16& text,
-                       PermissionMenuModel* model);
+                       PermissionMenuModel* model,
+                       bool show_menu_marker);
   virtual ~PermissionMenuButton();
 
   // Overridden from views::MenuButton.
@@ -168,8 +171,10 @@ void PermissionMenuModel::ExecuteCommand(int command_id) {
 ///////////////////////////////////////////////////////////////////////////////
 
 PermissionMenuButton::PermissionMenuButton(const string16& text,
-                                           PermissionMenuModel* model)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(MenuButton(NULL, text, this, true)),
+                                           PermissionMenuModel* model,
+                                           bool show_menu_marker)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(MenuButton(NULL, text, this,
+                                                show_menu_marker)),
       menu_model_(model) {
 }
 
@@ -219,9 +224,11 @@ void PermissionMenuButton::OnMenuButtonClicked(View* source,
 // PermissionSelectorView
 ///////////////////////////////////////////////////////////////////////////////
 
-PermissionSelectorView::PermissionSelectorView(ContentSettingsType type,
-                                               ContentSetting default_setting,
-                                               ContentSetting current_setting)
+PermissionSelectorView::PermissionSelectorView(
+    ContentSettingsType type,
+    ContentSetting default_setting,
+    ContentSetting current_setting,
+    content_settings::SettingSource source)
     : icon_(NULL),
       menu_button_(NULL) {
   views::GridLayout* layout = new views::GridLayout(this);
@@ -274,10 +281,14 @@ PermissionSelectorView::PermissionSelectorView(ContentSettingsType type,
   // Create the permission menu button.
   menu_button_model_.reset(new internal::PermissionMenuModel(
       type, default_setting, current_setting, this));
+  bool button_enabled = source == content_settings::SETTING_SOURCE_USER;
   menu_button_ = new internal::PermissionMenuButton(
       WebsiteSettingsUI::PermissionActionToUIString(current_setting,
-                                                    default_setting),
-      menu_button_model_.get());
+                                                    default_setting,
+                                                    source),
+      menu_button_model_.get(),
+      button_enabled);
+  menu_button_->SetEnabled(button_enabled);
   layout->AddView(menu_button_);
 }
 
@@ -298,7 +309,9 @@ void PermissionSelectorView::SelectionChanged() {
   // Update the menu button text to reflect the new setting.
   menu_button_->SetText(WebsiteSettingsUI::PermissionActionToUIString(
         menu_button_model_->current_setting(),
-        menu_button_model_->default_setting()));
+        menu_button_model_->default_setting(),
+        content_settings::SETTING_SOURCE_USER));
+
 
   FOR_EACH_OBSERVER(PermissionSelectorViewObserver,
                     observer_list_,

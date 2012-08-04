@@ -209,6 +209,33 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
         Reload
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_POLICY" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to allow and managed by policy.">
+        Allowed by policy
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_POLICY" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to block and managed by policy.">
+        Blocked by policy
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_EXTENSION" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to allow and managed by an extension.">
+        Allowed by extension
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_EXTENSION" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to block and managed by an extension.">
+        Blocked by extension
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to allow by the user.">
+        Allowed by you
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_USER" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button was explicitly set to block by the user.">
+        Blocked by you
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ALLOWED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is allow.">
+        Allowed by default
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_BLOCKED_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is block.">
+        Blocked by default
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_ASK_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is ask.">
+        Ask by default
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS" desc="Title of the permissions section of the website settings popup.">
         Permissions
       </message>

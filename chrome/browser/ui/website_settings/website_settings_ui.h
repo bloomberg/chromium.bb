@@ -58,6 +58,8 @@ class WebsiteSettingsUI {
     ContentSetting setting;
     // The global default settings for this permission |type|.
     ContentSetting default_setting;
+    // The settings source e.g. user, extensions, policy, ... .
+    content_settings::SettingSource source;
   };
 
   // |IdentityInfo| contains information about the site's identity and
@@ -99,8 +101,10 @@ class WebsiteSettingsUI {
   // Returns the UI string describing the action taken for a permission,
   // including why that action was taken. E.g. "Allowed by you",
   // "Blocked by default".
-  static string16 PermissionActionToUIString(ContentSetting setting,
-                                             ContentSetting default_setting);
+  static string16 PermissionActionToUIString(
+      ContentSetting setting,
+      ContentSetting default_setting,
+      content_settings::SettingSource source);
 
   // Returns the icon for the given permission |type| and |setting|.
   static const gfx::Image& GetPermissionIcon(ContentSettingsType type,

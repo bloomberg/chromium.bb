@@ -404,8 +404,8 @@ const ContentSetting kPermissionsMenuSettings[] = {
   // Update the title to match the current permission setting.
   scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
   [titleItem setTitle:base::SysUTF16ToNSString(
-      WebsiteSettingsUI::PermissionActionToUIString(setting,
-                                                    defaultSetting))];
+      WebsiteSettingsUI::PermissionActionToUIString(
+          setting, defaultSetting, content_settings::SETTING_SOURCE_USER))];
   [[button cell] setUsesItemFromMenu:NO];
   [[button cell] setMenuItem:titleItem.get()];
   [button sizeToFit];

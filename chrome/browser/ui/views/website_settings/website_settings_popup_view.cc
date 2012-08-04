@@ -462,7 +462,8 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
     PermissionSelectorView* selector = new PermissionSelectorView(
         permission->type,
         permission->default_setting,
-        permission->setting);
+        permission->setting,
+        permission->source);
     selector->AddObserver(this);
     layout->AddView(selector,
                     1,

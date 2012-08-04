@@ -426,6 +426,7 @@ void WebsiteSettings::PresentSitePermissions() {
     DCHECK(value.get());
     permission_info.setting =
         content_settings::ValueToContentSetting(value.get());
+    permission_info.source = info.source;
 
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
         info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
