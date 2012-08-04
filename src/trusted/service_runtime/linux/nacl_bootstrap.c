@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
@@ -54,7 +54,9 @@ static const char kReservedAtZeroTemplate[] =
     RESERVED_AT_ZERO_TEMPLATE_PREFIX TEMPLATE_DIGITS;
 static const size_t kReservedAtZeroPrefixLen =
     sizeof(RESERVED_AT_ZERO_TEMPLATE_PREFIX) - 1;
-extern size_t RESERVE_TOP;
+extern char RESERVE_TOP[];
+
+extern char TEXT_START[];
 
 /*
  * We're not using <string.h> functions here, to avoid dependencies.
@@ -161,19 +163,25 @@ static void my_pread(const char *file, const char *fail_message,
     fail(file, fail_message, "read count", result, NULL, 0);
 }
 
-static uintptr_t my_mmap(const char *file,
-                         const char *segment_type, unsigned int segnum,
-                         uintptr_t address, size_t size,
-                         int prot, int flags, int fd, uintptr_t pos) {
+static uintptr_t my_mmap_simple(uintptr_t address, size_t size,
+                                int prot, int flags, int fd, uintptr_t pos) {
 #if defined(__NR_mmap2)
   void *result = sys_mmap2((void *) address, size, prot, flags, fd, pos >> 12);
 #else
   void *result = sys_mmap((void *) address, size, prot, flags, fd, pos);
 #endif
-  if (result == MAP_FAILED)
+  return (uintptr_t) result;
+}
+
+static uintptr_t my_mmap(const char *file,
+                         const char *segment_type, unsigned int segnum,
+                         uintptr_t address, size_t size,
+                         int prot, int flags, int fd, uintptr_t pos) {
+  uintptr_t result = my_mmap_simple(address, size, prot, flags, fd, pos);
+  if ((void *) result == MAP_FAILED)
     fail(file, "Failed to map segment!  ",
          segment_type, segnum, "errno", my_errno);
-  return (uintptr_t) result;
+  return result;
 }
 
 static void my_mprotect(const char *file, unsigned int segnum,
@@ -432,10 +440,49 @@ static int check_reserved_at_zero_arg(char *arg) {
   if (my_strcmp(arg, kReservedAtZeroTemplate) == 0) {
     fill_in_template_digits(arg + kReservedAtZeroPrefixLen,
                             sizeof(TEMPLATE_DIGITS) - 1,
-                            (uintptr_t) &RESERVE_TOP);
+                            (uintptr_t) RESERVE_TOP);
     return 1;
   }
   return 0;
+}
+
+
+static void ReserveBottomPages(size_t pagesize) {
+  uintptr_t page_addr;
+  uintptr_t mmap_rval;
+
+  /*
+   * Attempt to protect low memory from zero to the code start address.
+   *
+   * It is normal for mmap() calls to fail with EPERM if the indicated
+   * page is less than vm.mmap_min_addr (see /proc/sys/vm/mmap_min_addr),
+   * or with EACCES under SELinux if less than CONFIG_LSM_MMAP_MIN_ADDR
+   * (64k).  Hence, we adaptively move the bottom of the region up a page
+   * at a time until we succeed in getting a reservation.
+   */
+  for (page_addr = 0;
+       page_addr < (uintptr_t) TEXT_START;
+       page_addr += pagesize) {
+    mmap_rval = my_mmap_simple(page_addr,
+                               (uintptr_t) TEXT_START - page_addr,
+                               PROT_NONE,
+                               MAP_PRIVATE | MAP_FIXED |
+                               MAP_ANONYMOUS | MAP_NORESERVE,
+                               -1, 0);
+    if (page_addr == mmap_rval) {
+      /* Success; the pages are now protected. */
+      break;
+    } else if (MAP_FAILED == (void *) mmap_rval &&
+               (EPERM == my_errno || EACCES == my_errno)) {
+      /*
+       * Normal; this is an invalid page for this process and
+       * doesn't need to be protected. Continue with next page.
+       */
+    } else {
+      fail("ReserveBottomPages: ", "NULL pointer guard page",
+           "errno", my_errno, NULL, 0);
+    }
+  }
 }
 
 
@@ -541,6 +588,8 @@ ElfW(Addr) do_load(stack_val_t *stack) {
         break;
     }
   }
+
+  ReserveBottomPages(pagesize);
 
   /* Load the program and point the auxv elements at its phdrs and entry.  */
   const char *interp = NULL;
