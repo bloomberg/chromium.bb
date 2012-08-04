@@ -20,14 +20,19 @@ BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
 
 BrowserGpuChannelHostFactory::CreateRequest::CreateRequest()
     : event(false, false),
+      gpu_host_id(0),
       route_id(MSG_ROUTING_NONE) {
 }
 
 BrowserGpuChannelHostFactory::CreateRequest::~CreateRequest() {
 }
 
-BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest()
-    : event(false, false) {
+BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
+    CauseForGpuLaunch cause)
+    : event(false, false),
+      cause_for_gpu_launch(cause),
+      gpu_host_id(0),
+      reused_gpu_process(true) {
 }
 
 BrowserGpuChannelHostFactory::EstablishRequest::~EstablishRequest() {
@@ -130,34 +135,51 @@ int32 BrowserGpuChannelHostFactory::CreateViewCommandBuffer(
 }
 
 void BrowserGpuChannelHostFactory::EstablishGpuChannelOnIO(
-    EstablishRequest* request,
-    CauseForGpuLaunch cause_for_gpu_launch) {
+    EstablishRequest* request) {
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host) {
     host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                               cause_for_gpu_launch);
+                               request->cause_for_gpu_launch);
     if (!host) {
       request->event.Signal();
       return;
     }
     gpu_host_id_ = host->host_id();
+    request->reused_gpu_process = false;
+  } else {
+    if (host->host_id() == request->gpu_host_id) {
+      // We come here if we retried to establish the channel because of a
+      // failure in GpuChannelEstablishedOnIO, but we ended up with the same
+      // process ID, meaning the failure was not because of a channel error, but
+      // another reason. So fail now.
+      request->event.Signal();
+      return;
+    }
+    request->reused_gpu_process = true;
   }
+  request->gpu_host_id = gpu_host_id_;
 
   host->EstablishGpuChannel(
       gpu_client_id_,
       true,
       base::Bind(&BrowserGpuChannelHostFactory::GpuChannelEstablishedOnIO,
+                 base::Unretained(this),
                  request));
 }
 
-// static
 void BrowserGpuChannelHostFactory::GpuChannelEstablishedOnIO(
     EstablishRequest* request,
     const IPC::ChannelHandle& channel_handle,
     const GPUInfo& gpu_info) {
-  request->channel_handle = channel_handle;
-  request->gpu_info = gpu_info;
-  request->event.Signal();
+  if (channel_handle.name.empty() && request->reused_gpu_process) {
+    // We failed after re-using the GPU process, but it may have died in the
+    // mean time. Retry to have a chance to create a fresh GPU process.
+    EstablishGpuChannelOnIO(request);
+  } else {
+    request->channel_handle = channel_handle;
+    request->gpu_info = gpu_info;
+    request->event.Signal();
+  }
 }
 
 GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
@@ -172,14 +194,13 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
   // Ensure initialization on the main thread.
   GpuDataManagerImpl::GetInstance();
 
-  EstablishRequest request;
+  EstablishRequest request(cause_for_gpu_launch);
   GetIOLoopProxy()->PostTask(
       FROM_HERE,
       base::Bind(
           &BrowserGpuChannelHostFactory::EstablishGpuChannelOnIO,
           base::Unretained(this),
-          &request,
-          cause_for_gpu_launch));
+          &request));
 
   {
     // We're blocking the UI thread, which is generally undesirable.
@@ -193,7 +214,7 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
   if (request.channel_handle.name.empty())
     return NULL;
 
-  gpu_channel_ = new GpuChannelHost(this, gpu_host_id_, gpu_client_id_);
+  gpu_channel_ = new GpuChannelHost(this, request.gpu_host_id, gpu_client_id_);
   gpu_channel_->set_gpu_info(request.gpu_info);
   content::GetContentClient()->SetGpuInfo(request.gpu_info);
 
