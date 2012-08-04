@@ -1194,6 +1194,10 @@
         'base/util.h',
         # TODO(kxing): Seperate the audio and video codec files into a separate
         # target.
+        'codec/audio_decoder.cc',
+        'codec/audio_decoder.h',
+        'codec/audio_decoder_verbatim.cc',
+        'codec/audio_decoder_verbatim.h',
         'codec/audio_encoder.h',
         'codec/audio_encoder_verbatim.cc',
         'codec/audio_encoder_verbatim.h',
@@ -1401,6 +1405,8 @@
         'remoting_protocol',
       ],
       'sources': [
+        'client/audio_decode_scheduler.cc',
+        'client/audio_decode_scheduler.h',
         'client/audio_player.h',
         'client/chromoting_client.cc',
         'client/chromoting_client.h',

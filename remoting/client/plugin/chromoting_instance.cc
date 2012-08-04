@@ -470,11 +470,11 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 
   host_connection_.reset(new protocol::ConnectionToHost(true));
-  audio_player_.reset(new PepperAudioPlayer(this));
-  client_.reset(new ChromotingClient(config, context_.main_task_runner(),
+  scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));
+  client_.reset(new ChromotingClient(config, &context_,
                                      host_connection_.get(), this,
                                      rectangle_decoder_.get(),
-                                     audio_player_.get()));
+                                     audio_player.Pass()));
 
   // Construct the input pipeline
   mouse_input_filter_.reset(
@@ -536,7 +536,6 @@ void ChromotingInstance::Disconnect() {
   input_handler_.reset();
   input_tracker_.reset();
   mouse_input_filter_.reset();
-  audio_player_.reset();
   host_connection_.reset();
 }
 

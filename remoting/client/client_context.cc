@@ -8,7 +8,8 @@ namespace remoting {
 
 ClientContext::ClientContext(base::SingleThreadTaskRunner* main_task_runner)
     : main_task_runner_(main_task_runner),
-      decode_thread_("ChromotingClientDecodeThread") {
+      decode_thread_("ChromotingClientDecodeThread"),
+      audio_decode_thread_("ChromotingClientAudioDecodeThread") {
 }
 
 ClientContext::~ClientContext() {
@@ -17,11 +18,13 @@ ClientContext::~ClientContext() {
 void ClientContext::Start() {
   // Start all the threads.
   decode_thread_.Start();
+  audio_decode_thread_.Start();
 }
 
 void ClientContext::Stop() {
   // Stop all the threads.
   decode_thread_.Stop();
+  audio_decode_thread_.Stop();
 }
 
 base::SingleThreadTaskRunner* ClientContext::main_task_runner() {
@@ -30,6 +33,10 @@ base::SingleThreadTaskRunner* ClientContext::main_task_runner() {
 
 base::SingleThreadTaskRunner* ClientContext::decode_task_runner() {
   return decode_thread_.message_loop_proxy();
+}
+
+base::SingleThreadTaskRunner* ClientContext::audio_decode_task_runner() {
+  return audio_decode_thread_.message_loop_proxy();
 }
 
 }  // namespace remoting

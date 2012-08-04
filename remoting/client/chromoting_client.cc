@@ -5,6 +5,7 @@
 #include "remoting/client/chromoting_client.h"
 
 #include "base/bind.h"
+#include "remoting/client/audio_decode_scheduler.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
@@ -31,20 +32,23 @@ ChromotingClient::QueuedVideoPacket::~QueuedVideoPacket() {
 
 ChromotingClient::ChromotingClient(
     const ClientConfig& config,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    ClientContext* client_context,
     protocol::ConnectionToHost* connection,
     ClientUserInterface* user_interface,
     RectangleUpdateDecoder* rectangle_decoder,
-    AudioPlayer* audio_player)
+    scoped_ptr<AudioPlayer> audio_player)
     : config_(config),
-      task_runner_(task_runner),
+      task_runner_(client_context->main_task_runner()),
       connection_(connection),
       user_interface_(user_interface),
       rectangle_decoder_(rectangle_decoder),
-      audio_player_(audio_player),
       packet_being_processed_(false),
       last_sequence_number_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  audio_decode_scheduler_.reset(new AudioDecodeScheduler(
+      client_context->main_task_runner(),
+      client_context->audio_decode_task_runner(),
+      audio_player.Pass()));
 }
 
 ChromotingClient::~ChromotingClient() {
@@ -65,7 +69,8 @@ void ChromotingClient::Start(
 
   connection_->Connect(xmpp_proxy, config_.local_jid, config_.host_jid,
                        config_.host_public_key, transport_factory.Pass(),
-                       authenticator.Pass(), this, this, this, this, this);
+                       authenticator.Pass(), this, this, this, this,
+                       audio_decode_scheduler_.get());
 }
 
 void ChromotingClient::Stop(const base::Closure& shutdown_task) {
@@ -141,12 +146,6 @@ int ChromotingClient::GetPendingVideoPackets() {
   return received_packets_.size();
 }
 
-void ChromotingClient::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
-                                          const base::Closure& done) {
-  audio_player_->ProcessAudioPacket(packet.Pass());
-  done.Run();
-}
-
 void ChromotingClient::DispatchPacket() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK(!packet_being_processed_);
@@ -217,6 +216,8 @@ void ChromotingClient::Initialize() {
 
   // Initialize the decoder.
   rectangle_decoder_->Initialize(connection_->config());
+  if (connection_->config().is_audio_enabled())
+    audio_decode_scheduler_->Initialize(connection_->config());
 }
 
 }  // namespace remoting

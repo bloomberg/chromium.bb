@@ -199,7 +199,6 @@ class ChromotingInstance :
 #endif
   KeyEventMapper key_mapper_;
   scoped_ptr<PepperInputHandler> input_handler_;
-  scoped_ptr<PepperAudioPlayer> audio_player_;
   scoped_ptr<ChromotingClient> client_;
 
   // XmppProxy is a refcounted interface used to perform thread-switching and

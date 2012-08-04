@@ -29,12 +29,16 @@ class ClientContext {
 
   base::SingleThreadTaskRunner* main_task_runner();
   base::SingleThreadTaskRunner* decode_task_runner();
+  base::SingleThreadTaskRunner* audio_decode_task_runner();
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  // A thread that handles all decode operations.
+  // A thread that handles all video decode operations.
   base::Thread decode_thread_;
+
+  // A thread that handles all audio decode operations.
+  base::Thread audio_decode_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientContext);
 };
