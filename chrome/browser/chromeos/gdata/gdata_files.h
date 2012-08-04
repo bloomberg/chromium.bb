@@ -21,11 +21,17 @@
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace gdata {
 
+struct CreateDBParams;
 class GDataFile;
 class GDataDirectory;
 class GDataDirectoryService;
+class ResourceMetadataDB;
 
 class GDataEntryProto;
 class GDataDirectoryProto;
@@ -102,7 +108,7 @@ class GDataEntry {
       PlatformFileInfoProto* proto);
 
   // Converts to/from proto. Only handles the common part (i.e. does not
-  // touch |file_specific_info| and |directory_specific_info|.
+  // touch |file_specific_info|).
   bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataEntryProto* proto) const;
 
@@ -332,11 +338,16 @@ class GDataDirectory : public GDataEntry {
   DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
 };
 
+// TODO(achuith,hashimoto,satorux): Move this to a separate file.
+// crbug.com/140317.
 // Class to handle GDataEntry* lookups, add/remove GDataEntry*.
 class GDataDirectoryService {
  public:
   // Callback for GetEntryByResourceIdAsync.
   typedef base::Callback<void(GDataEntry* entry)> GetEntryByResourceIdCallback;
+
+  // Map of resource id and serialized GDataEntry.
+  typedef std::map<std::string, std::string> SerializedMap;
 
   GDataDirectoryService();
   ~GDataDirectoryService();
@@ -401,17 +412,44 @@ class GDataDirectoryService {
   void SerializeToString(std::string* serialized_proto) const;
   bool ParseFromString(const std::string& serialized_proto);
 
+  // Restores from and saves to database.
+  void InitFromDB(const FilePath& db_path,
+                  base::SequencedTaskRunner* blocking_task_runner,
+                  const FileOperationCallback& callback);
+  void SaveToDB();
+
  private:
   // A map table of file's resource string to its GDataFile* entry.
   typedef std::map<std::string, GDataEntry*> ResourceMap;
 
-  scoped_ptr<GDataDirectory> root_;  // Stored in the serialized proto.
+  // Initializes the resource map using serialized_resources fetched from the
+  // database.
+  void InitResourceMap(CreateDBParams* create_params,
+                       const FileOperationCallback& callback);
+
+  // Clears root_ and the resource map.
+  void ClearRoot();
+
+  // Creates GDataEntry from serialized string.
+  scoped_ptr<GDataEntry> FromProtoString(
+      const std::string& serialized_proto);
+
+  // Private data members.
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  scoped_ptr<ResourceMetadataDB> directory_service_db_;
+
   ResourceMap resource_map_;
+
+  scoped_ptr<GDataDirectory> root_;  // Stored in the serialized proto.
 
   base::Time last_serialized_;
   size_t serialized_size_;
   int largest_changestamp_;  // Stored in the serialized proto.
   ContentOrigin origin_;
+
+  // This should remain the last member so it'll be destroyed first and
+  // invalidate its weak pointers before other members are destroyed.
+  base::WeakPtrFactory<GDataDirectoryService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDirectoryService);
 };

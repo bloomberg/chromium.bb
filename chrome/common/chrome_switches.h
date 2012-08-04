@@ -373,6 +373,7 @@ extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kSkipOAuthLogin[];
 extern const char kEnableDevicePolicy[];
 extern const char kEnableDriveV2Api[];
+extern const char kUseLevelDBForGData[];
 extern const char kEnableGView[];
 extern const char kEnableKioskMode[];
 extern const char kEnableONCPolicy[];

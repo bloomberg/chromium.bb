@@ -38,10 +38,6 @@ struct GetDocumentsParams;
 struct GetDocumentsUiState;
 struct UploadFileInfo;
 
-namespace {
-struct LoadRootFeedParams;
-}  // namespace
-
 // Callback run as a response to LoadFromServer.
 //
 // TODO(satorux): Move this to a new file: crbug.com/138268
@@ -145,6 +141,11 @@ class GDataWapiFeedLoader {
   // Callback for handling root directory refresh from the cache.
   void OnProtoLoaded(LoadRootFeedParams* params);
 
+  // Continues handling root directory refresh after the directory service
+  // is fully loaded.
+  void ContinueWithInitializedDirectoryService(LoadRootFeedParams* params,
+                                               GDataFileError error);
+
   // Helper callback for handling results of metadata retrieval initiated from
   // ReloadFeedFromServerIfNeeded(). This method makes a decision about fetching
   // the content of the root feed during the root directory refresh process.
@@ -174,12 +175,12 @@ class GDataWapiFeedLoader {
       GDataErrorCode status,
       scoped_ptr<base::Value> data);
 
+  // Save filesystem to disk.
+  void SaveFileSystem();
+
   // Callback for handling UI updates caused by document fetching.
   void OnNotifyDocumentFeedFetched(
       base::WeakPtr<GetDocumentsUiState> ui_state);
-
-  // Save filesystem as proto file.
-  void SaveFileSystemAsProto();
 
   GDataDirectoryService* directory_service_;  // Not owned.
   DocumentsServiceInterface* documents_service_;  // Not owned.

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,6 +47,8 @@ const FilePath::CharType kAccountMetadataFile[] =
     FILE_PATH_LITERAL("account_metadata.json");
 const FilePath::CharType kFilesystemProtoFile[] =
     FILE_PATH_LITERAL("file_system.pb");
+const FilePath::CharType kResourceMetadataDBFile[] =
+    FILE_PATH_LITERAL("resource_metadata.db");
 
 const char kEmptyFilePath[] = "/dev/null";
 
@@ -76,28 +80,6 @@ SerializationTimetable kSerializeTimetable[] = {
     {4.0, 60},
     {-1,  120},  // Any size, dump if older than 120 minutes.
 #endif
-};
-
-// Defines set of parameters sent to callback OnProtoLoaded().
-struct LoadRootFeedParams {
-  LoadRootFeedParams(
-        FilePath search_file_path,
-        bool should_load_from_server,
-        const FindEntryCallback& callback)
-        : search_file_path(search_file_path),
-          should_load_from_server(should_load_from_server),
-          load_error(GDATA_FILE_OK),
-          callback(callback) {
-    }
-  ~LoadRootFeedParams() {
-  }
-
-  FilePath search_file_path;
-  bool should_load_from_server;
-  std::string proto;
-  GDataFileError load_error;
-  base::Time last_modified;
-  const FindEntryCallback callback;
 };
 
 // Returns true if file system is due to be serialized on disk based on it
@@ -271,6 +253,11 @@ void SaveFeedOnBlockingPoolForDebugging(
       return;
     }
   }
+}
+
+bool UseLevelDB() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseLevelDBForGData);
 }
 
 // Gets the file size of |local_file|.
@@ -995,6 +982,9 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  DVLOG(1) << "ReloadFeedFromServerIfNeeded local_changestamp="
+           << local_changestamp << ", initial_origin=" << initial_origin;
+
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
   documents_service_->GetAccountMetadata(
@@ -1162,7 +1152,7 @@ void GDataWapiFeedLoader::OnFeedFromServerLoaded(GetDocumentsParams* params,
   }
 
   // Save file system metadata to disk.
-  SaveFileSystemAsProto();
+  SaveFileSystem();
 
   // If we had someone to report this too, then this retrieval was done in a
   // context of search... so continue search.
@@ -2996,17 +2986,25 @@ void GDataWapiFeedLoader::LoadFromCache(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const FilePath path =
-      cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
-          kFilesystemProtoFile);
   LoadRootFeedParams* params = new LoadRootFeedParams(search_file_path,
                                                       should_load_from_server,
                                                       callback);
-  BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
-      base::Bind(&LoadProtoOnBlockingPool, path, params),
-      base::Bind(&GDataWapiFeedLoader::OnProtoLoaded,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(params)));
+  FilePath path = cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META);
+  if (UseLevelDB()) {
+    path = path.Append(kResourceMetadataDBFile);
+    directory_service_->InitFromDB(path, blocking_task_runner_,
+        base::Bind(
+            &GDataWapiFeedLoader::ContinueWithInitializedDirectoryService,
+            weak_ptr_factory_.GetWeakPtr(),
+            base::Owned(params)));
+  } else {
+    path = path.Append(kFilesystemProtoFile);
+    BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+        base::Bind(&LoadProtoOnBlockingPool, path, params),
+        base::Bind(&GDataWapiFeedLoader::OnProtoLoaded,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Owned(params)));
+  }
 }
 
 void GDataFileSystem::OnDirectoryChanged(const FilePath& directory_path) {
@@ -3058,7 +3056,6 @@ void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
   if (directory_service_->origin() == FROM_SERVER)
     return;
 
-  int local_changestamp = 0;
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
   if (params->load_error == GDATA_FILE_OK) {
@@ -3066,16 +3063,27 @@ void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
     if (directory_service_->ParseFromString(params->proto)) {
       directory_service_->set_last_serialized(params->last_modified);
       directory_service_->set_serialized_size(params->proto.size());
-      local_changestamp = directory_service_->largest_changestamp();
     } else {
       params->load_error = GDATA_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
     }
   }
 
+  ContinueWithInitializedDirectoryService(params, params->load_error);
+}
+
+void GDataWapiFeedLoader::ContinueWithInitializedDirectoryService(
+    LoadRootFeedParams* params,
+    GDataFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "Time elapsed to load directory service from disk="
+           << (base::Time::Now() - params->load_start_time).InMilliseconds()
+           << " milliseconds";
+
   FindEntryCallback callback = params->callback;
   // If we got feed content from cache, try search over it.
-  if (params->load_error == GDATA_FILE_OK && !callback.is_null()) {
+  if (error == GDATA_FILE_OK && !callback.is_null()) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
     directory_service_->FindEntryByPathAndRunSync(params->search_file_path,
@@ -3103,33 +3111,35 @@ void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
   // |reported| to the original callback, then we just need to refresh the
   // content without continuing search upon operation completion.
   ReloadFromServerIfNeeded(initial_origin,
-                           local_changestamp,
+                           directory_service_->largest_changestamp(),
                            params->search_file_path,
                            callback);
 }
 
-void GDataWapiFeedLoader::SaveFileSystemAsProto() {
+void GDataWapiFeedLoader::SaveFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DVLOG(1) << "SaveFileSystemAsProto";
 
   if (!ShouldSerializeFileSystemNow(directory_service_->serialized_size(),
                                     directory_service_->last_serialized())) {
     return;
   }
 
-  const FilePath path =
-      cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
-          kFilesystemProtoFile);
-  scoped_ptr<std::string> serialized_proto(new std::string());
-  directory_service_->SerializeToString(serialized_proto.get());
-  directory_service_->set_last_serialized(base::Time::Now());
-  directory_service_->set_serialized_size(serialized_proto->size());
-  PostBlockingPoolSequencedTask(
-      FROM_HERE,
-      blocking_task_runner_,
-      base::Bind(&SaveProtoOnBlockingPool, path,
-                 base::Passed(serialized_proto.Pass())));
+  if (UseLevelDB()) {
+    directory_service_->SaveToDB();
+  } else {
+    const FilePath path =
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
+            kFilesystemProtoFile);
+    scoped_ptr<std::string> serialized_proto(new std::string());
+    directory_service_->SerializeToString(serialized_proto.get());
+    directory_service_->set_last_serialized(base::Time::Now());
+    directory_service_->set_serialized_size(serialized_proto->size());
+    PostBlockingPoolSequencedTask(
+        FROM_HERE,
+        blocking_task_runner_,
+        base::Bind(&SaveProtoOnBlockingPool, path,
+                   base::Passed(serialized_proto.Pass())));
+  }
 }
 
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
@@ -3524,9 +3534,10 @@ void GDataFileSystem::RunAndNotifyInitialLoadFinished(
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DVLOG(1) << "Initial load finished";
   if (!callback.is_null())
     callback.Run(error, entry);
+
+  DVLOG(1) << "RunAndNotifyInitialLoadFinished";
 
   // Notify the observers that root directory has been initialized.
   FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,

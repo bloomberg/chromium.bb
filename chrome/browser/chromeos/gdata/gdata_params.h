@@ -22,6 +22,50 @@
 namespace gdata {
 
 class GDataEntry;
+struct ResumeUploadResponse;
+
+// Different callback types for various functionalities in DocumentsService.
+
+// Callback type for authentication related DocumentService calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const std::string& token)> AuthStatusCallback;
+
+// Callback type for DocumentServiceInterface::GetDocuments.
+// Note: feed_data argument should be passed using base::Passed(&feed_data), not
+// feed_data.Pass().
+typedef base::Callback<void(GDataErrorCode error,
+                            scoped_ptr<base::Value> feed_data)> GetDataCallback;
+
+// Callback type for Delete/Move DocumentServiceInterface calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& document_url)> EntryActionCallback;
+
+// Callback type for DownloadDocument/DownloadFile DocumentServiceInterface
+// calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& content_url,
+                            const FilePath& temp_file)> DownloadActionCallback;
+
+// Callback type for getting download data from DownloadFile
+// DocumentServiceInterface calls.
+typedef base::Callback<void(
+    GDataErrorCode error,
+    scoped_ptr<std::string> download_data)> GetDownloadDataCallback;
+
+// Callback type for DocumentServiceInterface::InitiateUpload.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& upload_url)> InitiateUploadCallback;
+
+// Callback type for DocumentServiceInterface::ResumeUpload.
+typedef base::Callback<void(
+    const ResumeUploadResponse& response,
+    scoped_ptr<gdata::DocumentEntry> new_entry)> ResumeUploadCallback;
+
+// Callback type used to get result of file search.
+// If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
+typedef base::Callback<void(GDataFileError error, GDataEntry* entry)>
+    FindEntryCallback;
+
 
 // Struct for response to ResumeUpload.
 struct ResumeUploadResponse {
@@ -88,47 +132,23 @@ struct InitiateUploadParams {
   const FilePath& virtual_path;
 };
 
-// Different callback types for various functionalities in DocumentsService.
+// Defines set of parameters sent to callback OnProtoLoaded().
+struct LoadRootFeedParams {
+  LoadRootFeedParams(
+        FilePath search_file_path,
+        bool should_load_from_server,
+        const FindEntryCallback& callback);
+  ~LoadRootFeedParams();
 
-// Callback type for authentication related DocumentService calls.
-typedef base::Callback<void(GDataErrorCode error,
-                            const std::string& token)> AuthStatusCallback;
-
-// Callback type for DocumentServiceInterface::GetDocuments.
-// Note: feed_data argument should be passed using base::Passed(&feed_data), not
-// feed_data.Pass().
-typedef base::Callback<void(GDataErrorCode error,
-                            scoped_ptr<base::Value> feed_data)> GetDataCallback;
-
-// Callback type for Delete/Move DocumentServiceInterface calls.
-typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& document_url)> EntryActionCallback;
-
-// Callback type for DownloadDocument/DownloadFile DocumentServiceInterface
-// calls.
-typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& content_url,
-                            const FilePath& temp_file)> DownloadActionCallback;
-
-// Callback type for getting download data from DownloadFile
-// DocumentServiceInterface calls.
-typedef base::Callback<void(
-    GDataErrorCode error,
-    scoped_ptr<std::string> download_data)> GetDownloadDataCallback;
-
-// Callback type for DocumentServiceInterface::InitiateUpload.
-typedef base::Callback<void(GDataErrorCode error,
-                            const GURL& upload_url)> InitiateUploadCallback;
-
-// Callback type for DocumentServiceInterface::ResumeUpload.
-typedef base::Callback<void(
-    const ResumeUploadResponse& response,
-    scoped_ptr<gdata::DocumentEntry> new_entry)> ResumeUploadCallback;
-
-// Callback type used to get result of file search.
-// If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
-typedef base::Callback<void(GDataFileError error, GDataEntry* entry)>
-    FindEntryCallback;
+  FilePath search_file_path;
+  bool should_load_from_server;
+  std::string proto;
+  GDataFileError load_error;
+  base::Time last_modified;
+  // Time when filesystem began to be loaded from disk.
+  base::Time load_start_time;
+  const FindEntryCallback callback;
+};
 
 }  // namespace gdata
 

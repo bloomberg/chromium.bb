@@ -56,4 +56,18 @@ ResumeUploadParams::ResumeUploadParams(
 ResumeUploadParams::~ResumeUploadParams() {
 }
 
+LoadRootFeedParams::LoadRootFeedParams(
+    FilePath search_file_path,
+    bool should_load_from_server,
+    const FindEntryCallback& callback)
+    : search_file_path(search_file_path),
+      should_load_from_server(should_load_from_server),
+      load_error(GDATA_FILE_OK),
+      load_start_time(base::Time::Now()),
+      callback(callback) {
+}
+
+LoadRootFeedParams::~LoadRootFeedParams() {
+}
+
 }  // namespace gdata

@@ -1369,6 +1369,9 @@ const char kEnableDevicePolicy[]            = "enable-device-policy";
 // Enables Drive v2 API instead of Google Documents List API.
 const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
 
+// Use level db for drive metadata storage.
+const char kUseLevelDBForGData[]            = "use-leveldb-for-gdata";
+
 // Enables the redirection of viewable document requests to the Google Document
 // Viewer.
 const char kEnableGView[]                   = "enable-gview";
