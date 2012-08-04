@@ -57,6 +57,10 @@ class WallpaperImageSource::WallpaperEncodingOperation
       return;
     TRACE_EVENT0("LOCK_SCREEN", "imageEncoding");
     SkAutoLockPixels lock_input(image_);
+
+    if (!image_.readyToDraw())
+      return;
+
     // Avoid compression to make things faster.
     gfx::PNGCodec::EncodeWithCompressionLevel(
         reinterpret_cast<unsigned char*>(image_.getAddr32(0, 0)),
