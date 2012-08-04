@@ -78,7 +78,8 @@ FakeContactStoreFactory::~FakeContactStoreFactory() {
 FakeContactStore* FakeContactStoreFactory::GetContactStoreForProfile(
     Profile* profile) {
   CHECK(profile);
-  return stores_[profile];
+  ProfileStoreMap::const_iterator it = stores_.find(profile);
+  return it != stores_.end() ? it->second : NULL;
 }
 
 void FakeContactStoreFactory::RemoveStore(FakeContactStore* store) {

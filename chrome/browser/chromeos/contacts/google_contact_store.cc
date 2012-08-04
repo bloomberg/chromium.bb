@@ -85,8 +85,7 @@ GoogleContactStore::GoogleContactStore(Profile* profile)
 }
 
 GoogleContactStore::~GoogleContactStore() {
-  // This should also be running on the UI thread but we can't check it; the
-  // message loop is typically already getting torn down at this point.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   weak_ptr_factory_.InvalidateWeakPtrs();
   DestroyDatabase();
 }

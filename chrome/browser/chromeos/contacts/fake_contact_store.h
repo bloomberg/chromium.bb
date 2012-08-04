@@ -73,7 +73,8 @@ class FakeContactStoreFactory : public ContactStoreFactory {
     permit_store_creation_ = permit;
   }
 
-  // Returns the FakeContactStore previously created for |profile|.
+  // Returns the FakeContactStore previously created for |profile|, or NULL if
+  // no store has been created for it.
   FakeContactStore* GetContactStoreForProfile(Profile* profile);
 
   // Removes |store| from |stores_| after being called by a FakeContactStore's
