@@ -365,6 +365,7 @@ extern const char kTabletUI[];
 
 #if defined(OS_CHROMEOS)
 // Keep switches in alphabetical order.
+extern const char kDisableBootAnimation[];
 extern const char kDisableGData[];
 extern const char kDisableHtml5Camera[];
 extern const char kDisableNewOobe[];
@@ -378,6 +379,7 @@ extern const char kEnableONCPolicy[];
 extern const char kEnableStaticIPConfig[];
 extern const char kEnableUnsupportedBluetoothDevices[];
 extern const char kExperimentalWallpaperUI[];
+extern const char kFirstBoot[];
 extern const char kKioskModeScreensaverPath[];
 extern const char kLoginManager[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing

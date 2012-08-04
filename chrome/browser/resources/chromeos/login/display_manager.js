@@ -361,6 +361,13 @@ cr.define('cr.ui.login', function() {
     isLockScreen: function() {
       return document.documentElement.getAttribute('screen') == 'lock';
     },
+
+    /**
+     * Returns true if sign in UI should trigger wallpaper load on boot.
+     */
+    shouldLoadWallpaperOnBoot: function() {
+      return localStrings.getString('bootIntoWallpaper') == 'on';
+    },
   };
 
   /**

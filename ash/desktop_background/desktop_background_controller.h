@@ -40,6 +40,9 @@ class UserWallpaperDelegate {
 
   // Notifies delegate that wallpaper animation has finished.
   virtual void OnWallpaperAnimationFinished() = 0;
+
+  // Notifies delegate that wallpaper boot animation has finished.
+  virtual void OnWallpaperBootAnimationFinished() = 0;
 };
 
 // Loads selected desktop wallpaper from file system asynchronously and updates

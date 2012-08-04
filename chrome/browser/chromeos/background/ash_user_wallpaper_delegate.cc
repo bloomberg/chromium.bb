@@ -26,27 +26,39 @@ namespace chromeos {
 
 namespace {
 
-class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
+bool IsNormalWallpaperChange() {
+  if (chromeos::UserManager::Get()->IsUserLoggedIn() ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe) ||
+      WizardController::IsZeroDelayEnabled() ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager)) {
+    return true;
+  }
+
+  return false;
+}
+
+class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
  public:
-  UserWallpaperDelegate() {
+  UserWallpaperDelegate() : boot_animation_finished_(false) {
   }
 
   virtual ~UserWallpaperDelegate() {
   }
 
   virtual ash::WindowVisibilityAnimationType GetAnimationType() OVERRIDE {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableNewOobe) ||
-        WizardController::IsZeroDelayEnabled()) {
+    if (IsNormalWallpaperChange() || boot_animation_finished_)
       return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
-    }
 
+    // It is a first boot case now. If kDisableBootAnimation flag
+    // is passed, it only disables any transition after OOBE.
     bool is_registered = WizardController::IsDeviceRegistered();
-    // TODO(nkostylev): Figure out whether this would affect autotests as well.
-    if (is_registered)
+    bool disable_boot_animation = CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kDisableBootAnimation);
+    if (is_registered && disable_boot_animation)
       return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
-    else
-      return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE;
+
+    return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE;
   }
 
   virtual void InitializeWallpaper() OVERRIDE {
@@ -68,7 +80,14 @@ class UserWallpaperDelegate: public ash::UserWallpaperDelegate {
         content::NotificationService::NoDetails());
   }
 
+  virtual void OnWallpaperBootAnimationFinished() OVERRIDE {
+    // Make sure that boot animation type is used only once.
+    boot_animation_finished_ = true;
+  }
+
  private:
+  bool boot_animation_finished_;
+
   DISALLOW_COPY_AND_ASSIGN(UserWallpaperDelegate);
 };
 

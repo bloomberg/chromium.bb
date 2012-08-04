@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
@@ -61,7 +62,9 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe) &&
       !zero_delay_enabled) {
-    waiting_for_wallpaper_load_ = !is_registered;
+    bool disable_boot_animation = CommandLine::ForCurrentProcess()->
+        HasSwitch(switches::kDisableBootAnimation);
+    waiting_for_wallpaper_load_ = !is_registered || !disable_boot_animation;
   } else {
     waiting_for_wallpaper_load_ = false;
   }
@@ -173,6 +176,8 @@ void WebUILoginDisplayHost::Observe(
   BaseLoginDisplayHost::Observe(type, source, details);
   if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
     is_wallpaper_loaded_ = true;
+    ash::Shell::GetInstance()->user_wallpaper_delegate()->
+        OnWallpaperBootAnimationFinished();
     if (waiting_for_wallpaper_load_)
       StartPostponedWebUI();
     registrar_.Remove(this,

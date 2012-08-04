@@ -1344,6 +1344,9 @@ const char kTabletUI[]                      = "tablet-ui";
 #endif
 
 #if defined(OS_CHROMEOS)
+// Disables wallpaper boot animation (except of OOBE case).
+const char kDisableBootAnimation[]          = "disable-boot-animation";
+
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";
 
@@ -1387,6 +1390,9 @@ const char kEnableUnsupportedBluetoothDevices[] =
 
 // Enables the experimental wallpaper picker UI.
 const char kExperimentalWallpaperUI[] = "experimental-wallpaper-ui";
+
+// Passed to Chrome on first boot. Not passed on restart after sign out.
+const char kFirstBoot[] = "first-boot";
 
 // Path for the screensaver used in Kiosk mode
 const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";

@@ -198,13 +198,18 @@ void WallpaperManager::InitializeWallpaper() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
     WizardController::SetZeroDelays();
 
+  // Zero delays is also set in autotests.
+  if (WizardController::IsZeroDelayEnabled())
+    return;
+
+  bool disable_new_oobe = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableNewOobe);
+  bool disable_boot_animation = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableBootAnimation);
+
   if (!user_manager->IsUserLoggedIn()) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableNewOobe)) {
-      if (!WizardController::IsDeviceRegistered() &&
-          !WizardController::IsZeroDelayEnabled()) {
-        // TODO(nkostylev): Add switch to disable wallpaper transition on OOBE.
-        // Should be used on test images so that they are not slowed down.
+    if (!disable_new_oobe) {
+      if (!WizardController::IsDeviceRegistered()) {
         ash::Shell::GetInstance()->desktop_background_controller()->
             SetDefaultWallpaper(kDefaultOOBEWallpaperIndex, false);
       } else {
@@ -214,8 +219,20 @@ void WallpaperManager::InitializeWallpaper() {
         DCHECK(result) << "Unable to fetch setting "
                        << kAccountsPrefShowUserNamesOnSignIn;
         if (!show_users) {
+          // Boot into sign in form, preload default wallpaper.
           ash::Shell::GetInstance()->desktop_background_controller()->
-              SetDefaultWallpaper(ash::GetSolidColorIndex(), false);
+              SetDefaultWallpaper(kDefaultOOBEWallpaperIndex, false);
+        } else if (!disable_boot_animation) {
+          // Normal boot, load user wallpaper.
+          // If normal boot animation is disabled wallpaper would be set
+          // asynchronously once user pods are loaded.
+          const chromeos::UserList& users = user_manager->GetUsers();
+          if (!users.empty()) {
+            SetUserWallpaper(users[0]->email());
+          } else {
+            ash::Shell::GetInstance()->desktop_background_controller()->
+                SetDefaultWallpaper(kDefaultOOBEWallpaperIndex, false);
+          }
         }
       }
     }

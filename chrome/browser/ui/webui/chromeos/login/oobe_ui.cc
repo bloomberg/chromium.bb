@@ -243,6 +243,15 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   else
     localized_strings->SetString("oobeType", "old");
 
+  // If we're not doing boot animation then WebUI should trigger
+  // wallpaper load on boot.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBootAnimation)) {
+    localized_strings->SetString("bootIntoWallpaper", "on");
+  } else {
+    localized_strings->SetString("bootIntoWallpaper", "off");
+  }
+
   // OobeUI is used for OOBE/login and lock screen.
   if (BaseLoginDisplayHost::default_host())
     localized_strings->SetString("screenType", "login");

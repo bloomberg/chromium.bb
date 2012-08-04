@@ -88,7 +88,7 @@ class WizardController : public ScreenObserver {
   // Returns initial locale from local settings.
   static std::string GetInitialLocale();
 
-  // Sets delays to zero. MUST be used only for browser tests.
+  // Sets delays to zero. MUST be used only for tests.
   static void SetZeroDelays();
 
   // If true zero delays have been enabled (for browser tests).
