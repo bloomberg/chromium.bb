@@ -48,7 +48,8 @@ CommandBufferProxyImpl::~CommandBufferProxyImpl() {
   }
   for (Decoders::iterator it = video_decoder_hosts_.begin();
        it != video_decoder_hosts_.end(); ++it) {
-    it->second->Destroy();
+    if (it->second)
+      it->second->OnChannelError();
   }
 }
 
@@ -506,7 +507,7 @@ CommandBufferProxyImpl::CreateVideoDecoder(
   GpuVideoDecodeAcceleratorHost* decoder_host =
       new GpuVideoDecodeAcceleratorHost(channel_, decoder_route_id, client);
   bool inserted = video_decoder_hosts_.insert(std::make_pair(
-      decoder_route_id, decoder_host)).second;
+      decoder_route_id, base::AsWeakPtr(decoder_host))).second;
   DCHECK(inserted);
 
   channel_->AddRoute(decoder_route_id, base::AsWeakPtr(decoder_host));

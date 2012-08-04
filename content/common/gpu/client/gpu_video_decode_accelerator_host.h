@@ -25,7 +25,6 @@ class GpuVideoDecodeAcceleratorHost
   GpuVideoDecodeAcceleratorHost(GpuChannelHost* channel,
                                 int32 decoder_route_id,
                                 media::VideoDecodeAccelerator::Client* client);
-  virtual ~GpuVideoDecodeAcceleratorHost();
 
   // IPC::Listener implementation.
   virtual void OnChannelError() OVERRIDE;
@@ -42,6 +41,9 @@ class GpuVideoDecodeAcceleratorHost
   virtual void Destroy() OVERRIDE;
 
  private:
+  // Only Destroy() should be deleting |this|.
+  virtual ~GpuVideoDecodeAcceleratorHost();
+
   void Send(IPC::Message* message);
 
   void OnBitstreamBufferProcessed(int32 bitstream_buffer_id);

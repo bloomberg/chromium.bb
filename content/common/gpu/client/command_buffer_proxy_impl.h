@@ -107,7 +107,7 @@ class CommandBufferProxyImpl
 
  private:
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
-  typedef std::map<int, GpuVideoDecodeAcceleratorHost*> Decoders;
+  typedef std::map<int, base::WeakPtr<GpuVideoDecodeAcceleratorHost> > Decoders;
   typedef base::hash_map<uint32, base::Closure> SignalTaskMap;
 
   // Send an IPC message over the GPU channel. This is private to fully
@@ -130,8 +130,8 @@ class CommandBufferProxyImpl
   // Local cache of id to transfer buffer mapping.
   TransferBufferMap transfer_buffers_;
 
-  // Zero or more video decoder hosts owned by this proxy, keyed by their
-  // decoder_route_id.
+  // Zero or more (unowned!) video decoder hosts using this proxy, keyed by
+  // their decoder_route_id.
   Decoders video_decoder_hosts_;
 
   // The last cached state received from the service.

@@ -119,13 +119,17 @@ void GpuVideoDecodeAcceleratorHost::Reset() {
 
 void GpuVideoDecodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
-  channel_->RemoveRoute(decoder_route_id_);
+  if (channel_)
+    channel_->RemoveRoute(decoder_route_id_);
   client_ = NULL;
   Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
   delete this;
 }
 
-GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {}
+GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!client_) << "destructor called without Destroy being called!";
+}
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
   // After OnChannelError is called, the client should no longer send

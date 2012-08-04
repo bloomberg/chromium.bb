@@ -106,18 +106,7 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
     closure.Run();
     return;
   }
-  VideoDecodeAccelerator* vda ALLOW_UNUSED = vda_.release();
-  // Tricky: |this| needs to stay alive until after VDA::Destroy is actually
-  // called, not just posted.  We can't simply PostTaskAndReply using |closure|
-  // as the |reply| because we might be called while the renderer thread
-  // (a.k.a. vda_loop_proxy_) is paused (during WebMediaPlayerImpl::Destroy()),
-  // which would result in an apparent hang.  Instead, we take an artificial ref
-  // to |this| and release it as |reply| after VDA::Destroy returns.
-  AddRef();
-  vda_loop_proxy_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&VideoDecodeAccelerator::Destroy, weak_vda_),
-      base::Bind(&GpuVideoDecoder::Release, this));
+  DestroyVDA();
   closure.Run();
 }
 
@@ -171,8 +160,22 @@ void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
 
 void GpuVideoDecoder::SetVDA(VideoDecodeAccelerator* vda) {
   DCHECK(vda_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(!vda_.get());
   vda_.reset(vda);
   weak_vda_ = vda->AsWeakPtr();
+}
+
+void GpuVideoDecoder::DestroyVDA() {
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
+  VideoDecodeAccelerator* vda ALLOW_UNUSED = vda_.release();
+  // Tricky: |this| needs to stay alive until after VDA::Destroy is actually
+  // called, not just posted, so we take an artificial ref to |this| and release
+  // it as |reply| after VDA::Destroy() returns.
+  AddRef();
+  vda_loop_proxy_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&VideoDecodeAccelerator::Destroy, weak_vda_),
+      base::Bind(&GpuVideoDecoder::Release, this));
 }
 
 void GpuVideoDecoder::Read(const ReadCB& read_cb) {
@@ -549,8 +552,9 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   }
   if (!vda_.get())
     return;
-  vda_loop_proxy_->DeleteSoon(FROM_HERE, vda_.release());
+
   DLOG(ERROR) << "VDA Error: " << error;
+  DestroyVDA();
 
   error_occured_ = true;
 

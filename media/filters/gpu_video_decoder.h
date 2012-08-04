@@ -125,6 +125,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   // thread).
   void SetVDA(VideoDecodeAccelerator* vda);
 
+  // Call VDA::Destroy() on |vda_loop_proxy_| ensuring that |this| outlives the
+  // Destroy() call.
+  void DestroyVDA();
+
   // A shared memory segment and its allocated size.
   struct SHMBuffer {
     SHMBuffer(base::SharedMemory* m, size_t s);
