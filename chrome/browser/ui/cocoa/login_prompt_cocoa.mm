@@ -152,7 +152,6 @@ LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
 }
 
 - (IBAction)loginPressed:(id)sender {
-  using base::SysNSStringToWide;
   [NSApp endSheet:[self window]];
   handler_->OnLoginPressed(
       base::SysNSStringToUTF16([nameField_ stringValue]),
