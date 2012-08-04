@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/panels/panel_host.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_page_zoom.h"
