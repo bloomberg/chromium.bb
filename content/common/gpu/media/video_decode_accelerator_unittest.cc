@@ -889,10 +889,6 @@ int main(int argc, char **argv) {
 
 #if defined(OS_WIN)
   DXVAVideoDecodeAccelerator::PreSandboxInitialization();
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  OmxVideoDecodeAccelerator::PreSandboxInitialization();
-#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  VaapiVideoDecodeAccelerator::PreSandboxInitialization();
 #endif
 
   return RUN_ALL_TESTS();

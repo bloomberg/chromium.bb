@@ -56,10 +56,7 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator :
   virtual void Reset() OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
-  // Do any necessary initialization before the sandbox is enabled.
-  static void PreSandboxInitialization();
-
-private:
+ private:
   // Ensure data has been synced with the output texture and notify
   // the client it is ready for displaying.
   void SyncAndNotifyPictureReady(int32 input_id, int32 output_id);
@@ -124,10 +121,6 @@ private:
 
   // Helper for Destroy(), doing all the actual work except for deleting self.
   void Cleanup();
-
-  // Lazily initialize static data after sandbox is enabled.  Return false on
-  // init failure.
-  static bool PostSandboxInitialization();
 
   // Client-provided X/GLX state.
   Display* x_display_;

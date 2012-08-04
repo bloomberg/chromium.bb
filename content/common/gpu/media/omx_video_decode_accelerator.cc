@@ -21,7 +21,8 @@ typedef std::pair<scoped_ptr<base::SharedMemory>, int32> SharedMemoryAndId;
 
 enum { kNumPictureBuffers = 4 };
 
-void* omx_handle = NULL;
+// Open the libOmxCore here for now.
+void* omx_handle = dlopen("libOmxCore.so", RTLD_NOW);
 
 typedef OMX_ERRORTYPE (*OMXInit)();
 typedef OMX_ERRORTYPE (*OMXGetHandle)(
@@ -30,11 +31,21 @@ typedef OMX_ERRORTYPE (*OMXGetComponentsOfRole)(OMX_STRING, OMX_U32*, OMX_U8**);
 typedef OMX_ERRORTYPE (*OMXFreeHandle)(OMX_HANDLETYPE);
 typedef OMX_ERRORTYPE (*OMXDeinit)();
 
-OMXInit omx_init = NULL;
-OMXGetHandle omx_gethandle = NULL;
-OMXGetComponentsOfRole omx_get_components_of_role = NULL;
-OMXFreeHandle omx_free_handle = NULL;
-OMXDeinit omx_deinit = NULL;
+OMXInit omx_init = reinterpret_cast<OMXInit>(dlsym(omx_handle, "OMX_Init"));
+OMXGetHandle omx_gethandle =
+    reinterpret_cast<OMXGetHandle>(dlsym(omx_handle, "OMX_GetHandle"));
+OMXGetComponentsOfRole omx_get_components_of_role =
+    reinterpret_cast<OMXGetComponentsOfRole>(
+        dlsym(omx_handle, "OMX_GetComponentsOfRole"));
+OMXFreeHandle omx_free_handle =
+    reinterpret_cast<OMXFreeHandle>(dlsym(omx_handle, "OMX_FreeHandle"));
+OMXDeinit omx_deinit =
+    reinterpret_cast<OMXDeinit>(dlsym(omx_handle, "OMX_Deinit"));
+
+static bool AreOMXFunctionPointersInitialized() {
+  return (omx_init && omx_gethandle && omx_get_components_of_role &&
+          omx_free_handle && omx_deinit);
+}
 
 // Maps h264-related Profile enum values to OMX_VIDEO_AVCPROFILETYPE values.
 static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
@@ -86,9 +97,6 @@ static OMX_U32 MapH264ProfileToOMXAVCProfile(uint32 profile) {
       log << ", OMX result: 0x" << std::hex << omx_result,              \
       error, ret_val)
 
-// static
-bool OmxVideoDecodeAccelerator::pre_sandbox_init_done_ = false;
-
 OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
     EGLDisplay egl_display, EGLContext egl_context,
     media::VideoDecodeAccelerator::Client* client)
@@ -110,8 +118,7 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       codec_(UNKNOWN),
       h264_profile_(OMX_VIDEO_AVCProfileMax),
       component_name_is_nvidia_h264ext_(false) {
-  static bool omx_functions_initialized = PostSandboxInitialization();
-  RETURN_ON_FAILURE(omx_functions_initialized,
+  RETURN_ON_FAILURE(AreOMXFunctionPointersInitialized(),
                     "Failed to load openmax library", PLATFORM_FAILURE,);
   RETURN_ON_OMX_FAILURE(omx_init(), "Failed to init OpenMAX core",
                         PLATFORM_FAILURE,);
@@ -984,32 +991,6 @@ void OmxVideoDecodeAccelerator::EventHandlerCompleteTask(OMX_EVENTTYPE event,
       RETURN_ON_FAILURE(false, "Unexpected unhandled event: " << event,
                         PLATFORM_FAILURE,);
   }
-}
-
-// static
-void OmxVideoDecodeAccelerator::PreSandboxInitialization() {
-  DCHECK(!pre_sandbox_init_done_);
-  omx_handle = dlopen("libOmxCore.so", RTLD_NOW);
-  pre_sandbox_init_done_ = omx_handle != NULL;
-}
-
-// static
-bool OmxVideoDecodeAccelerator::PostSandboxInitialization() {
-  if (!pre_sandbox_init_done_)
-    return false;
-
-  omx_init = reinterpret_cast<OMXInit>(dlsym(omx_handle, "OMX_Init"));
-  omx_gethandle =
-      reinterpret_cast<OMXGetHandle>(dlsym(omx_handle, "OMX_GetHandle"));
-  omx_get_components_of_role =
-      reinterpret_cast<OMXGetComponentsOfRole>(
-          dlsym(omx_handle, "OMX_GetComponentsOfRole"));
-  omx_free_handle =
-      reinterpret_cast<OMXFreeHandle>(dlsym(omx_handle, "OMX_FreeHandle"));
-  omx_deinit =
-      reinterpret_cast<OMXDeinit>(dlsym(omx_handle, "OMX_Deinit"));
-  return (omx_init && omx_gethandle && omx_get_components_of_role &&
-          omx_free_handle && omx_deinit);
 }
 
 // static

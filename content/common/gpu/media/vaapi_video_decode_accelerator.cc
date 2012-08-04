@@ -67,10 +67,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       client_(client_ptr_factory_.GetWeakPtr()),
       decoder_thread_("VaapiDecoderThread") {
   DCHECK(client);
-  static bool vaapi_functions_initialized = PostSandboxInitialization();
-  RETURN_AND_NOTIFY_ON_FAILURE(vaapi_functions_initialized,
-                               "Failed to initialize VAAPI libs",
-                               PLATFORM_FAILURE, );
 }
 
 VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
@@ -557,16 +553,6 @@ void VaapiVideoDecodeAccelerator::Destroy() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   Cleanup();
   delete this;
-}
-
-// static
-void VaapiVideoDecodeAccelerator::PreSandboxInitialization() {
-  VaapiH264Decoder::PreSandboxInitialization();
-}
-
-// static
-bool VaapiVideoDecodeAccelerator::PostSandboxInitialization() {
-  return VaapiH264Decoder::PostSandboxInitialization();
 }
 
 void VaapiVideoDecodeAccelerator::OutputPicCallback(int32 input_id,

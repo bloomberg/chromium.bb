@@ -54,9 +54,6 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
 
   base::WeakPtr<OmxVideoDecodeAccelerator> weak_this() { return weak_this_; }
 
-  // Do any necessary initialization before the sandbox is enabled.
-  static void PreSandboxInitialization();
-
  private:
   // Because OMX state-transitions are described solely by the "state reached"
   // (3.1.2.9.1, table 3-7 of the spec), we track what transition was requested
@@ -146,10 +143,6 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   // Decode bitstream buffers that were queued (see queued_bitstream_buffers_).
   void DecodeQueuedBitstreamBuffers();
 
-  // Lazily initialize static data after sandbox is enabled.  Return false on
-  // init failure.
-  static bool PostSandboxInitialization();
-
   // Weak pointer to |this|; used to safely trampoline calls from the OMX thread
   // to the ChildThread.  Since |this| is kept alive until OMX is fully shut
   // down, only the OMX->Child thread direction needs to be guarded this way.
@@ -213,9 +206,6 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   Codec codec_;
   uint32 h264_profile_;  // OMX_AVCProfile requested during Initialization.
   bool component_name_is_nvidia_h264ext_;
-
-  // Has static initialization of pre-sandbox components completed successfully?
-  static bool pre_sandbox_init_done_;
 
   // Method to handle events
   void EventHandlerCompleteTask(OMX_EVENTTYPE event,
