@@ -1,5 +1,6 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDltVl1k15pjRzuZfMc3B69inxwm2bZeZ2O8/zFO+NluHnBm3GJ3fzdOoFGJd+M16I8p7zxxQyHeDMfWYASyCeB8XnUEDKjqNLQfCnncsANzHsYoEbYj2nEUML2P13b9q+AAvpCBpAJ4cZp81e9n1y/vbSXHE4385cgkKueItzikQIDAQAB",
+  "manifest_version": 2,
   "name": "ChromeVox",
   "version": "1.0",
   "description": "ChromeVox - Giving Voice to Chrome.",
@@ -22,6 +23,9 @@
         "chromeVoxChromePageScript.js"
       ]
     }
+  ],
+  "web_accessible_resources": [
+    "chromevox/injected/api.js"
   ],
   "default_locale": "en"
 }
