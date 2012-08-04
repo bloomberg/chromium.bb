@@ -70,8 +70,10 @@ const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 // almost always. Be careful not to use something too small on account that
 // have many items because server side 503 error might kick in.
 const int kMaxDocumentsPerFeed = 500;
+const int kMaxDocumentsPerSearchFeed = 50;
 #else
 const int kMaxDocumentsPerFeed = 500;
+const int kMaxDocumentsPerSearchFeed = 50;
 #endif
 
 const char kFeedField[] = "feed";
@@ -171,15 +173,18 @@ void GetDocumentsOperation::SetUrl(const GURL& url) {
 }
 
 GURL GetDocumentsOperation::GetURL() const {
+  int max_docs = search_string_.empty() ? kMaxDocumentsPerFeed :
+                                          kMaxDocumentsPerSearchFeed;
+
   if (!override_url_.is_empty())
     return AddFeedUrlParams(override_url_,
-                            kMaxDocumentsPerFeed,
+                            max_docs,
                             0,
-                            std::string());
+                            search_string_);
 
   if (start_changestamp_ == 0) {
     return AddFeedUrlParams(FormatDocumentListURL(directory_resource_id_),
-                            kMaxDocumentsPerFeed,
+                            max_docs,
                             0,
                             search_string_);
   }

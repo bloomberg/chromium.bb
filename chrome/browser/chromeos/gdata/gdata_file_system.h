@@ -109,6 +109,7 @@ class GDataWapiFeedLoader {
   // after we retrieve first feed chunk.
   // If invoked as a part of content search, query will be set in
   // |search_query|.
+  // If |feed_to_load| is set, this is feed url that will be used to load feed.
   void LoadFromServer(
       ContentOrigin initial_origin,
       int start_changestamp,
@@ -116,6 +117,7 @@ class GDataWapiFeedLoader {
       bool should_fetch_multiple_feeds,
       const FilePath& search_file_path,
       const std::string& search_query,
+      const GURL& feed_to_load,
       const std::string& directory_resource_id,
       const FindEntryCallback& entry_found_callback,
       const LoadDocumentFeedCallback& feed_load_callback);
@@ -220,6 +222,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) OVERRIDE;
   virtual void Search(const std::string& search_query,
+                      const GURL& next_feed,
                       const SearchCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
       const FilePath& remote_src_file_path,
@@ -822,6 +825,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
   void SearchAsyncOnUIThread(const std::string& search_query,
+                             const GURL& next_feed,
                              const SearchCallback& callback);
   void OpenFileOnUIThread(const FilePath& file_path,
                           const OpenFileCallback& callback);

@@ -58,6 +58,7 @@ void DriveSearchCallback(
     const SearchResultPair* expected_results,
     size_t expected_results_size,
     GDataFileError error,
+    const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > results) {
   ASSERT_TRUE(results.get());
   ASSERT_EQ(expected_results_size, results->size());
@@ -2451,7 +2452,7 @@ TEST_F(GDataFileSystemTest, ContentSearch) {
   SearchCallback callback = base::Bind(&DriveSearchCallback,
       &message_loop_, kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults));
 
-  file_system_->Search("foo", callback);
+  file_system_->Search("foo", GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
 }
 
@@ -2484,7 +2485,7 @@ TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
   SearchCallback callback = base::Bind(&DriveSearchCallback,
       &message_loop_, kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults));
 
-  file_system_->Search("foo", callback);
+  file_system_->Search("foo", GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
 }
 
@@ -2501,7 +2502,7 @@ TEST_F(GDataFileSystemTest, ContentSearchEmptyResult) {
   SearchCallback callback = base::Bind(&DriveSearchCallback,
       &message_loop_, expected_results, 0u);
 
-  file_system_->Search("foo", callback);
+  file_system_->Search("foo", GURL(), callback);
   message_loop_.Run();  // Wait to get our result.
 }
 

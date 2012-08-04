@@ -2305,8 +2305,15 @@ bool SetGDataPreferencesFunction::RunImpl() {
   return true;
 }
 
+SearchDriveFunction::SearchDriveFunction() {}
+
+SearchDriveFunction::~SearchDriveFunction() {}
+
 bool SearchDriveFunction::RunImpl() {
   if (!args_->GetString(0, &query_))
+    return false;
+
+  if (!args_->GetString(1, &next_feed_))
     return false;
 
   BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
@@ -2335,12 +2342,13 @@ void SearchDriveFunction::OnFileSystemOpened(
   }
 
   system_service->file_system()->Search(
-      query_,
+      query_, GURL(next_feed_),
       base::Bind(&SearchDriveFunction::OnSearch, this));
 }
 
 void SearchDriveFunction::OnSearch(
     gdata::GDataFileError error,
+    const GURL& next_feed,
     scoped_ptr<std::vector<gdata::SearchResultInfo> > results) {
   if (error != gdata::GDATA_FILE_OK) {
     SendResponse(false);
@@ -2361,7 +2369,11 @@ void SearchDriveFunction::OnSearch(
     entries->Append(entry);
   }
 
-  SetResult(entries);
+  base::DictionaryValue* result = new DictionaryValue();
+  result->Set("entries", entries);
+  result->SetString("nextFeed", next_feed.spec());
+
+  SetResult(result);
   SendResponse(true);
 }
 

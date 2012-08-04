@@ -1169,6 +1169,10 @@ DirectoryModel.prototype.search = function(query,
   if (this.onSearchCompleted_)
     this.removeEventListener('scan-completed', this.onSearchCompleted_);
 
+  // Current search will be cancelled.
+  if (this.onClearSearch_)
+    this.onClearSearch_();
+
   this.onSearchCompleted_ = onSearchRescan;
   this.onClearSearch_ = onClearSearch;
 

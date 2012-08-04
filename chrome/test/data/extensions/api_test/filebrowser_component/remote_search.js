@@ -77,10 +77,11 @@ chrome.test.runTests([
       });
   },
   function driveSearch() {
-    chrome.fileBrowserPrivate.searchGData('foo',
-        function(entries) {
+    chrome.fileBrowserPrivate.searchGData('foo', '',
+        function(entries, nextFeed) {
           chrome.test.assertTrue(!!entries);
           chrome.test.assertEq(2, entries.length);
+          chrome.test.assertEq('', nextFeed);
 
           chrome.test.assertEq('/drive/Folder',
                                entries[0].fullPath);

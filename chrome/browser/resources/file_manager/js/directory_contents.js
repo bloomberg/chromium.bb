@@ -354,6 +354,18 @@ DirectoryContentsBasic.prototype.createDirectory = function(
                            onSuccess.bind(this), errorCallback);
 };
 
+/**
+ * Delay to be used for gdata search scan.
+ * The goal is to reduce the number of server requests when user is typing the
+ * query.
+ */
+DirectoryContentsGDataSearch.SCAN_DELAY = 200;
+
+/**
+ * Number of results at which we stop the search.
+ * Note that max number of shown results is MAX_RESULTS + search feed size.
+ */
+DirectoryContentsGDataSearch.MAX_RESULTS = 999;
 
 /**
  * @constructor
@@ -366,6 +378,9 @@ function DirectoryContentsGDataSearch(context, dirEntry, query) {
   DirectoryContents.call(this, context);
   this.query_ = query;
   this.directoryEntry_ = dirEntry;
+  this.nextFeed_ = '';
+  this.done_ = false;
+  this.fetchedResultsNum_ = 0;
 }
 
 /**
@@ -407,8 +422,9 @@ DirectoryContentsGDataSearch.prototype.getPath = function() {
  * Start directory scan.
  */
 DirectoryContentsGDataSearch.prototype.scan = function() {
-  chrome.fileBrowserPrivate.searchGData(this.query_,
-                                        this.onNewEntries.bind(this));
+  // Let's give another search a chance to cancel us before we begin.
+  setTimeout(this.readNextChunk.bind(this),
+             DirectoryContentsGDataSearch.SCAN_DELAY);
 };
 
 /**
@@ -416,7 +432,33 @@ DirectoryContentsGDataSearch.prototype.scan = function() {
  * it means we're done.
  */
 DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
-  this.onCompleted();
+  if (this.scanCancelled_)
+    return;
+
+  if (this.done_) {
+    this.onCompleted();
+    return;
+  }
+
+  var searchCallback = (function(entries, nextFeed) {
+    // TODO(tbarzic): Improve error handling.
+    if (!entries) {
+      console.log('Drive search encountered an error');
+      this.onCompleted();
+      return;
+    }
+    this.nextFeed_ = nextFeed;
+    this.fetchedResultsNum_ += entries.length;
+    if (this.fetchedResultsNum_ >= DirectoryContentsGDataSearch.MAX_RESULTS)
+      this.nextFeed_ = '';
+
+    this.done_ = (this.nextFeed_ == '');
+    this.onNewEntries(entries);
+  }).bind(this);
+
+  chrome.fileBrowserPrivate.searchGData(this.query_,
+                                        this.nextFeed_,
+                                        searchCallback);
 };
 
 

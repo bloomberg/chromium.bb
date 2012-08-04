@@ -70,6 +70,7 @@ typedef base::Callback<void(GDataFileError error,
 // If |error| is not PLATFORM_FILE_OK, |result_paths| is empty.
 typedef base::Callback<void(
     GDataFileError error,
+    const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
@@ -327,11 +328,13 @@ class GDataFileSystemInterface {
   virtual void RequestDirectoryRefresh(const FilePath& file_path) = 0;
 
   // Does server side content search for |search_query|.
+  // If |next_feed| is set, this is the feed url that will be fetched.
   // Search results will be returned as a list of results' |SearchResultInfo|
   // structs, which contains file's path and is_directory flag.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void Search(const std::string& search_query,
+                      const GURL& next_feed,
                       const SearchCallback& callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information

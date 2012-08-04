@@ -401,6 +401,7 @@ void AddEntryToSearchResults(
     const base::Closure& entry_skipped_callback,
     GDataFileError error,
     bool run_callback,
+    const GURL& next_feed,
     GDataEntry* entry) {
   // If a result is not present in our local file system snapshot, invoke
   // |entry_skipped_callback| and refreshes the snapshot with delta feed.
@@ -417,7 +418,7 @@ void AddEntryToSearchResults(
   if (run_callback) {
     scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
     if (!callback.is_null())
-      callback.Run(error, result_vec.Pass());
+      callback.Run(error, next_feed, result_vec.Pass());
   }
 }
 
@@ -1022,6 +1023,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
                    true,  /* should_fetch_multiple_feeds */
                    search_file_path,
                    std::string() /* no search query */,
+                   GURL(), /* feed not explicitly set */
                    std::string() /* no directory resource ID */,
                    callback,
                    base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
@@ -1051,6 +1053,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
                    true,  /* should_fetch_multiple_feeds */
                    search_file_path,
                    std::string() /* no search query */,
+                   GURL(), /* feed not explicitly set */
                    std::string() /* no directory resource ID */,
                    callback,
                    base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
@@ -1091,6 +1094,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
                  true,  /* should_fetch_multiple_feeds */
                  search_file_path,
                  std::string() /* no search query */,
+                 GURL(), /* feed not explicitly set */
                  std::string() /* no directory resource ID */,
                  callback,
                  base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
@@ -1104,6 +1108,7 @@ void GDataWapiFeedLoader::LoadFromServer(
     bool should_fetch_multiple_feeds,
     const FilePath& search_file_path,
     const std::string& search_query,
+    const GURL& feed_to_load,
     const std::string& directory_resource_id,
     const FindEntryCallback& entry_found_callback,
     const LoadDocumentFeedCallback& feed_load_callback) {
@@ -1115,7 +1120,7 @@ void GDataWapiFeedLoader::LoadFromServer(
       new std::vector<DocumentFeed*>);
   const base::TimeTicks start_time = base::TimeTicks::Now();
   documents_service_->GetDocuments(
-      GURL(),   // root feed start.
+      feed_to_load,
       start_changestamp,
       search_query,
       directory_resource_id,
@@ -2407,6 +2412,7 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
       true,  // multiple feeds
       file_path,
       std::string(),  // No search query
+      GURL(), /* feed not explicitly set */
       entry_proto->resource_id(),
       FindEntryCallback(),  // Not used.
       base::Bind(&GDataFileSystem::OnRequestDirectoryRefresh,
@@ -2729,7 +2735,7 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
 
   if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
-      callback.Run(error, scoped_ptr<std::vector<SearchResultInfo> >());
+      callback.Run(error, GURL(), scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
 
@@ -2741,10 +2747,14 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
   DCHECK_EQ(1u, params->feed_list->size());
   DocumentFeed* feed = params->feed_list->at(0);
 
+  // TODO(tbarzic): Limit total number of returned results for the query.
+  GURL next_feed;
+  feed->GetNextFeedURL(&next_feed);
+
   if (feed->entries().empty()) {
     scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
     if (!callback.is_null())
-      callback.Run(error, result_vec.Pass());
+      callback.Run(error, next_feed, result_vec.Pass());
     return;
   }
 
@@ -2781,22 +2791,26 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
                    callback,
                    base::Bind(&GDataFileSystem::CheckForUpdates, ui_weak_ptr_),
                    error,
-                   i+1 == feed->entries().size()));
+                   i+1 == feed->entries().size(),
+                   next_feed));
   }
 }
 
 void GDataFileSystem::Search(const std::string& search_query,
+                             const GURL& next_feed,
                              const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::SearchAsyncOnUIThread,
                                ui_weak_ptr_,
                                search_query,
+                               next_feed,
                                CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::SearchAsyncOnUIThread(
     const std::string& search_query,
+    const GURL& next_feed,
     const SearchCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
@@ -2812,6 +2826,7 @@ void GDataFileSystem::SearchAsyncOnUIThread(
       // results (especially since we don't cache them).
       FilePath(),  // Not used.
       search_query,
+      next_feed,
       std::string(),  // No directory resource ID.
       FindEntryCallback(),  // Not used.
       base::Bind(&GDataFileSystem::OnSearch, ui_weak_ptr_, callback));

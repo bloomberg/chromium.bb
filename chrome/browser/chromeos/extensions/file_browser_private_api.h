@@ -648,8 +648,10 @@ class SearchDriveFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.searchGData");
 
+  SearchDriveFunction();
+
  protected:
-  virtual ~SearchDriveFunction() {}
+  virtual ~SearchDriveFunction();
 
   virtual bool RunImpl() OVERRIDE;
 
@@ -660,10 +662,12 @@ class SearchDriveFunction : public AsyncExtensionFunction {
                           const GURL& file_system_url);
   // Callback for gdata::SearchAsync called after file system is opened.
   void OnSearch(gdata::GDataFileError error,
+                const GURL& next_feed,
                 scoped_ptr<std::vector<gdata::SearchResultInfo> > result_paths);
 
   // Query for which the search is being performed.
   std::string query_;
+  std::string next_feed_;
   // Information about remote file system we will need to create file entries
   // to represent search results.
   std::string file_system_name_;
