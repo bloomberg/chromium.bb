@@ -524,6 +524,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   const GURL& sync_service_url() const { return sync_service_url_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }
   SigninManager* signin() const { return signin_; }
+  bool setup_in_progress() const { return setup_in_progress_; }
 
   // Stops the sync backend and sets the flag for suppressing sync startup.
   void StopAndSuppress();

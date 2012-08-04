@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/cancelable_callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -60,7 +61,7 @@ class CredentialCacheService : public ProfileKeyedService,
   // Returns true if the credential cache represented by |store| contains a
   // value for |pref_name|.
   bool HasPref(scoped_refptr<JsonPrefStore> store,
-              const std::string& pref_name);
+               const std::string& pref_name);
 
   // Encrypts and base 64 encodes |credential|, converts the result to a
   // StringValue, and returns the result. Caller owns the StringValue returned.
@@ -70,24 +71,34 @@ class CredentialCacheService : public ProfileKeyedService,
   // and returns the result.
   static std::string UnpackCredential(const base::Value& packed);
 
+  // Writes the timestamp at which the last update was made to the credential
+  // cache of the local profile. Used to make sure that we only copy credentials
+  // from a more recently updated cache to an older cache.
+  void WriteLastUpdatedTime();
+
   // Updates the value of |pref_name| to |new_value|, unless the user has signed
   // out, in which case we write an empty string value to |pref_name|.
   void PackAndUpdateStringPref(const std::string& pref_name,
-                              const std::string& new_value);
+                               const std::string& new_value);
 
   // Updates the value of |pref_name| to |new_value|, unless the user has signed
   // out, in which case we write "false" to |pref_name|.
   void UpdateBooleanPref(const std::string& pref_name, bool new_value);
 
+  // Returns the time at which the credential cache represented by |store| was
+  // last updated. Used to make sure that we only copy credentials from a more
+  // recently updated cache to an older cache.
+  int64 GetLastUpdatedTime(scoped_refptr<JsonPrefStore> store);
+
   // Returns the string pref value contained in |store| for |pref_name|. Assumes
   // that |store| contains a value for |pref_name|.
   std::string GetAndUnpackStringPref(scoped_refptr<JsonPrefStore> store,
-                                    const std::string& pref_name);
+                                     const std::string& pref_name);
 
   // Returns the boolean pref value contained in |store| for |pref_name|.
   // Assumes that |store| contains a value for |pref_name|.
   bool GetBooleanPref(scoped_refptr<JsonPrefStore> store,
-                    const std::string& pref_name);
+                      const std::string& pref_name);
 
   // Getter for unit tests.
   const scoped_refptr<JsonPrefStore>& local_store() const {
@@ -144,14 +155,65 @@ class CredentialCacheService : public ProfileKeyedService,
   // ApplyCachedCredentials if the load was successful.
   void ReadCachedCredentialsFromAlternateProfile();
 
-  // Applies the credentials read from the alternate profile to the PrefStore
-  // and TokenService of the local profile and then notifies listeners.
-  void ApplyCachedCredentials(const std::string& google_services_username,
-                              const std::string& lsid,
-                              const std::string& sid,
-                              const std::string& encryption_bootstrap_token,
-                              bool keep_everything_synced,
-                              const bool datatype_prefs[]);
+  // Initiates sync sign in using credentials read from the alternate profile by
+  // persisting |google_services_username|, |encryption_bootstrap_token|,
+  // |keep_everything_synced| and |preferred_types| to the local pref store, and
+  // preparing ProfileSyncService for sign in.
+  void InitiateSignInWithCachedCredentials(
+      const std::string& google_services_username,
+      const std::string& encryption_bootstrap_token,
+      bool keep_everything_synced,
+      ModelTypeSet preferred_types);
+
+  // Updates the TokenService credentials with |lsid| and |sid| and triggers the
+  // minting of new tokens for all Chrome services. ProfileSyncService is
+  // automatically notified when tokens are minted, and goes on to consume the
+  // updated credentials.
+  void UpdateTokenServiceCredentials(const std::string& lsid,
+                                     const std::string& sid);
+
+  // Initiates a sign out of sync. Called when we notice that the user has
+  // signed out from the alternate mode by reading its credential cache.
+  void InitiateSignOut();
+
+  // Compares the sync preferences in the local profile with values that were
+  // read from the alternate profile -- |keep_everything_synced| and
+  // |preferred_types|. Returns true if the prefs have changed, and false
+  // otherwise.
+  bool HaveSyncPrefsChanged(bool keep_everything_synced,
+                            ModelTypeSet preferred_types) const;
+
+  // Compares the token service credentials in the local profile with values
+  // that were read from the alternate profile -- |lsid| and |sid|. Returns true
+  // if the credentials have changed, and false otherwise.
+  bool HaveTokenServiceCredentialsChanged(const std::string& lsid,
+                                          const std::string& sid);
+
+  // Determines if the user must be signed out of the local profile or not.
+  // Called when updated settings are noticed in the alternate credential cache
+  // for |google_services_username|. Returns true if we should sign out, and
+  // false if not.
+  bool ShouldSignOutOfSync(const std::string& google_services_username);
+
+  // Determines if sync settings may be reconfigured or not. Called when
+  // updated settings are noticed in the alternate credential cache for
+  // |google_services_username|. Returns true if we may reconfigure, and false
+  // if not.
+  bool MayReconfigureSync(const std::string& google_services_username);
+
+  // Determines if the user must be signed in to the local profile or not.
+  // Called when updated settings are noticed in the alternate credential cache
+  // for |google_services_username|, with new values for |lsid|, |sid| and
+  // |encryption_bootstrap_token|. Returns true if we should sign in, and
+  // false if not.
+  bool ShouldSignInToSync(const std::string& google_services_username,
+                          const std::string& lsid,
+                          const std::string& sid,
+                          const std::string& encryption_bootstrap_token);
+
+  // Resets |alternate_store_| and schedules the next read from the alternate
+  // credential cache.
+  void ScheduleNextReadFromAlternateCredentialCache();
 
   // Profile for which credentials are being cached.
   Profile* profile_;
@@ -176,6 +238,10 @@ class CredentialCacheService : public ProfileKeyedService,
 
   // WeakPtr implementation.
   base::WeakPtrFactory<CredentialCacheService> weak_factory_;
+
+  // Used to make sure that there is always at most one future read scheduled
+  // on the alternate credential cache.
+  base::CancelableClosure next_read_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialCacheService);
 };

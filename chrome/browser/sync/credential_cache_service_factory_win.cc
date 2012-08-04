@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/credential_cache_service_win.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -37,6 +38,7 @@ CredentialCacheServiceFactory::CredentialCacheServiceFactory()
   // TODO(rsimha): Uncomment this once it exists.
   // DependsOn(PrefServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
 }
 
