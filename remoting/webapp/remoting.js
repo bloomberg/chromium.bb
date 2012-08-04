@@ -46,6 +46,13 @@ remoting.init = function() {
   remoting.toolbar = new remoting.Toolbar(
       document.getElementById('session-toolbar'));
   remoting.clipboard = new remoting.Clipboard();
+  remoting.suspendMonitor = new remoting.SuspendMonitor(
+      function() {
+        if (remoting.clientSession) {
+          remoting.clientSession.logErrors(false);
+        }
+      }
+  );
 
   remoting.oauth2.getEmail(remoting.onEmail, remoting.showErrorMessage);
 

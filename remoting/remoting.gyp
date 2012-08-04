@@ -172,6 +172,7 @@
       'webapp/server_log_entry.js',
       'webapp/spinner.gif',
       'webapp/stats_accumulator.js',
+      'webapp/suspend_monitor.js',
       'webapp/toolbar.css',
       'webapp/toolbar.js',
       'webapp/ui_mode.js',

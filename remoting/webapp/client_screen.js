@@ -246,7 +246,7 @@ function onClientStateChange_(oldState, newState) {
 
   } else if (newState == remoting.ClientSession.State.FAILED) {
     console.error('Client plugin reported connection failed: ' +
-                       remoting.clientSession.error);
+                  remoting.clientSession.error);
     clearPin = true;
     if (remoting.clientSession.error ==
         remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE) {
@@ -530,6 +530,8 @@ function connectMe2MeWithAccessToken_(token) {
             pin, 'spake2_hmac,spake2_plain', remoting.hostId,
             /** @type {string} */ (remoting.oauth2.getCachedEmail()),
             remoting.ClientSession.Mode.ME2ME, onClientStateChange_);
+    // Don't log errors for cached JIDs.
+    remoting.clientSession.logErrors(!remoting.retryIfOffline);
     remoting.clientSession.createPluginAndConnect(
         document.getElementById('session-mode'),
         token);

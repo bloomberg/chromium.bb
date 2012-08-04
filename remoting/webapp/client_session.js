@@ -94,6 +94,13 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
   this.fullScreen_.addEventListener('click', this.callToggleFullScreen_, false);
   /** @type {number?} @private */
   this.bumpScrollTimer_ = null;
+  /**
+   * Allow error reporting to be suppressed in situations where it would not
+   * be useful, for example, when the device is offline.
+   *
+   * @type {boolean} @private
+   */
+  this.logErrors_ = true;
 };
 
 // Note that the positive values in both of these enums are copied directly
@@ -521,8 +528,15 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   if (this.onStateChange) {
     this.onStateChange(oldState, newState);
   }
-  this.logToServer.logClientSessionStateChange(this.state, this.error,
-      this.mode);
+  // If connection errors are being suppressed from the logs, translate
+  // FAILED to CLOSED here. This ensures that the duration is still logged.
+  var state = this.state;
+  if (this.state == remoting.ClientSession.State.FAILED &&
+      !this.logErrors_) {
+    console.log('Suppressing error.');
+    state = remoting.ClientSession.State.CLOSED;
+  }
+  this.logToServer.logClientSessionStateChange(state, this.error, this.mode);
 };
 
 /**
@@ -646,6 +660,17 @@ remoting.ClientSession.prototype.getPerfStats = function() {
  */
 remoting.ClientSession.prototype.logStatistics = function(stats) {
   this.logToServer.logStatistics(stats, this.mode);
+};
+
+/**
+ * Enable or disable logging of connection errors. For example, if attempting
+ * a connection using a cached JID, errors should not be logged because the
+ * JID will be refreshed and the connection retried.
+ *
+ * @param {boolean} enable True to log errors; false to suppress them.
+ */
+remoting.ClientSession.prototype.logErrors = function(enable) {
+  this.logErrors_ = enable;
 };
 
 /**
