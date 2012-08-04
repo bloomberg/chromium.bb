@@ -45,6 +45,8 @@ class SrpcClient {
   bool HasMethod(const nacl::string& method_name);
   //  Invoke an SRPC method.
   bool Invoke(const nacl::string& method_name, SrpcParams* params);
+  // Get the error status from that last method invocation
+  NaClSrpcError GetLastError() { return last_error_; }
   bool InitParams(const nacl::string& method_name, SrpcParams* params);
 
   // Attach a service for reverse-direction (from .nexe) RPCs.
@@ -58,6 +60,7 @@ class SrpcClient {
   Methods methods_;
   NaClSrpcChannel srpc_channel_;
   bool srpc_channel_initialised_;
+  NaClSrpcError last_error_;
 };
 
 }  // namespace plugin

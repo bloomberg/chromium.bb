@@ -48,16 +48,18 @@ class PnaclTranslateThread {
                     PnaclResources* resources,
                     Plugin* plugin);
 
-  // Signal the translate thread and subprocesses that they should stop.
-  void SetSubprocessesShouldDie();
+  // Kill the llc and/or ld subprocesses. This happens by closing the command
+  // channel on the plugin side, which causes the trusted code in the nexe to
+  // exit, which will cause any pending SRPCs to error. Because this is called
+  // on the main thread, the translation thread must not use the subprocess
+  // objects without the lock, other than InvokeSrpcMethod, which does not
+  // race with service runtime shutdown.
+  void AbortSubprocesses();
 
   // Send bitcode bytes to the translator. Called from the main thread.
   void PutBytes(std::vector<char>* data, int count);
 
  private:
-  // Returns true if the translate thread and subprocesses should stop.
-  bool SubprocessesShouldDie();
-
   // Starts an individual llc or ld subprocess used for translation.
   NaClSubprocess* StartSubprocess(const nacl::string& url,
                                   const Manifest* manifest,
@@ -74,28 +76,19 @@ class PnaclTranslateThread {
                        const nacl::string& soname,
                        const nacl::string& lib_dependencies);
 
-  // Register a reverse service interface which will be shutdown if the
-  // plugin is shutdown. The reverse service pointer must be available on the
-  // main thread because the translation thread could be blocked on SRPC
-  // waiting for the translator, which could be waiting on a reverse
-  // service call.
-  // (see also the comments in Plugin::~Plugin about ShutdownSubprocesses,
-  // but that only handles the main nexe and not the translator nexes.)
-  void RegisterReverseInterface(PluginReverseInterface *iface);
 
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
-  // True if the translation thread and related subprocesses should exit.
-  bool subprocesses_should_die_;
-  // Used to guard and publish subprocesses_should_die_.
-  struct NaClMutex subprocess_mu_;
 
   nacl::scoped_ptr<NaClThread> translate_thread_;
 
-  // Reverse interface to shutdown on SetSubprocessesShouldDie
-  PluginReverseInterface* current_rev_interface_;
-
-
+  // Used to guard llc_subprocess and ld_subprocess
+  struct NaClMutex subprocess_mu_;
+  nacl::scoped_ptr<NaClSubprocess> llc_subprocess_;
+  nacl::scoped_ptr<NaClSubprocess> ld_subprocess_;
+  // Used to ensure the subprocesses don't get shutdown more than once.
+  bool llc_subprocess_active_;
+  bool ld_subprocess_active_;
 
   // Condition variable to synchronize communication with the SRPC thread.
   // SRPC thread waits on this condvar if data_buffers_ is empty (meaning

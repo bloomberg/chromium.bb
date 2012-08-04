@@ -182,14 +182,14 @@ bool SrpcClient::Invoke(const nacl::string& method_name, SrpcParams* params) {
 
   PLUGIN_PRINTF(("SrpcClient::Invoke (sending the rpc)\n"));
   // Call the method
-  NaClSrpcError err = NaClSrpcInvokeV(&srpc_channel_,
-                                      methods_[method_name]->index(),
-                                      params->ins(),
-                                      params->outs());
-  PLUGIN_PRINTF(("SrpcClient::Invoke (response=%d)\n", err));
-  if (NACL_SRPC_RESULT_OK != err) {
+  last_error_ = NaClSrpcInvokeV(&srpc_channel_,
+                                methods_[method_name]->index(),
+                                params->ins(),
+                                params->outs());
+  PLUGIN_PRINTF(("SrpcClient::Invoke (response=%d)\n", last_error_));
+  if (NACL_SRPC_RESULT_OK != last_error_) {
     PLUGIN_PRINTF(("SrpcClient::Invoke (err='%s', return 0)\n",
-                   NaClSrpcErrorString(err)));
+                   NaClSrpcErrorString(last_error_)));
     return false;
   }
 
