@@ -240,8 +240,9 @@ bool GpuProcessHost::HostIsValid(GpuProcessHost* host) {
   // blacklisted, and we can kill it and start over.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU) ||
-      host->software_rendering() ||
-      !GpuDataManagerImpl::GetInstance()->ShouldUseSoftwareRendering()) {
+      (host->valid_ &&
+       (host->software_rendering() ||
+        !GpuDataManagerImpl::GetInstance()->ShouldUseSoftwareRendering()))) {
     return true;
   }
 
@@ -307,6 +308,7 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
 
 GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
     : host_id_(host_id),
+      valid_(true),
       in_process_(false),
       software_rendering_(false),
       kind_(kind),
@@ -443,7 +445,10 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
     return true;
   }
 
-  return process_->Send(msg);
+  bool result = process_->Send(msg);
+  if (!result)
+    valid_ = false;
+  return result;
 }
 
 bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {

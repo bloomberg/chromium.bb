@@ -171,6 +171,9 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   // Qeueud messages to send when the process launches.
   std::queue<IPC::Message*> queued_messages_;
 
+  // Whether the GPU process is valid, set to false after Send() failed.
+  bool valid_;
+
   // Whether we are running a GPU thread inside the browser process instead
   // of a separate GPU process.
   bool in_process_;
