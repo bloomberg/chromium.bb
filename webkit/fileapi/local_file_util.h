@@ -103,12 +103,12 @@ class FILEAPI_EXPORT_PRIVATE LocalFileUtil : public FileSystemFileUtil {
   virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual scoped_refptr<webkit_blob::ShareableFileReference>
-      CreateSnapshotFile(FileSystemOperationContext* context,
-                         const FileSystemURL& url,
-                         base::PlatformFileError* result,
-                         base::PlatformFileInfo* file_info,
-                         FilePath* platform_path) OVERRIDE;
+  virtual PlatformFileError CreateSnapshotFile(
+      FileSystemOperationContext* context,
+      const FileSystemURL& url,
+      base::PlatformFileInfo* file_info,
+      FilePath* platform_path,
+      SnapshotFilePolicy* snapshot_policy) OVERRIDE;
 
  private:
   // Given the filesystem url, produces a real, full local path for the

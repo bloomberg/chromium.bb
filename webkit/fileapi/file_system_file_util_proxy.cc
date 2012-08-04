@@ -47,7 +47,9 @@ class EnsureFileExistsHelper {
 
 class GetFileInfoHelper {
  public:
-  GetFileInfoHelper() : error_(base::PLATFORM_FILE_OK) {}
+  GetFileInfoHelper()
+      : error_(base::PLATFORM_FILE_OK),
+        snapshot_policy_(FileSystemFileUtil::kSnapshotFileUnknown) {}
 
   void GetFileInfo(FileSystemFileUtil* file_util,
                    FileSystemOperationContext* context,
@@ -58,8 +60,8 @@ class GetFileInfoHelper {
   void CreateSnapshotFile(FileSystemFileUtil* file_util,
                           FileSystemOperationContext* context,
                           const FileSystemURL& url) {
-    file_ref_ = file_util->CreateSnapshotFile(
-        context, url, &error_, &file_info_, &platform_path_);
+    error_ = file_util->CreateSnapshotFile(
+        context, url, &file_info_, &platform_path_, &snapshot_policy_);
   }
 
   void ReplyFileInfo(const Proxy::GetFileInfoCallback& callback) {
@@ -68,15 +70,16 @@ class GetFileInfoHelper {
   }
 
   void ReplySnapshotFile(const Proxy::SnapshotFileCallback& callback) {
+    DCHECK(snapshot_policy_ != FileSystemFileUtil::kSnapshotFileUnknown);
     if (!callback.is_null())
-      callback.Run(error_, file_info_, platform_path_, file_ref_);
+      callback.Run(error_, file_info_, platform_path_, snapshot_policy_);
   }
 
  private:
   base::PlatformFileError error_;
   base::PlatformFileInfo file_info_;
   FilePath platform_path_;
-  scoped_refptr<webkit_blob::ShareableFileReference> file_ref_;
+  FileSystemFileUtil::SnapshotFilePolicy snapshot_policy_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 

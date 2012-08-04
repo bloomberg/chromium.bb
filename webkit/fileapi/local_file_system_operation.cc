@@ -24,6 +24,8 @@
 #include "webkit/quota/quota_manager.h"
 #include "webkit/quota/quota_types.h"
 
+using webkit_blob::ShareableFileReference;
+
 namespace fileapi {
 
 class LocalFileSystemOperation::ScopedQuotaNotifier {
@@ -676,7 +678,14 @@ void LocalFileSystemOperation::DidCreateSnapshotFile(
     base::PlatformFileError result,
     const base::PlatformFileInfo& file_info,
     const FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    FileSystemFileUtil::SnapshotFilePolicy snapshot_policy) {
+  scoped_refptr<ShareableFileReference> file_ref;
+  if (result == base::PLATFORM_FILE_OK &&
+      snapshot_policy == FileSystemFileUtil::kSnapshotFileTemporary) {
+    file_ref = ShareableFileReference::GetOrCreate(
+        platform_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+        file_system_context()->file_task_runner());
+  }
   callback.Run(result, file_info, platform_path, file_ref);
 }
 

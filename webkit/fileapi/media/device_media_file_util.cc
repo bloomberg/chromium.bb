@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
@@ -16,7 +15,6 @@
 
 using base::PlatformFileError;
 using base::PlatformFileInfo;
-using webkit_blob::ShareableFileReference;
 
 namespace fileapi {
 
@@ -156,47 +154,44 @@ PlatformFileError DeviceMediaFileUtil::DeleteSingleDirectory(
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
-scoped_refptr<ShareableFileReference> DeviceMediaFileUtil::CreateSnapshotFile(
+base::PlatformFileError DeviceMediaFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
-    base::PlatformFileError* result,
     base::PlatformFileInfo* file_info,
-    FilePath* local_path) {
-  DCHECK(result);
+    FilePath* local_path,
+    SnapshotFilePolicy* snapshot_policy) {
   DCHECK(file_info);
   DCHECK(local_path);
+  DCHECK(snapshot_policy);
 
-  scoped_refptr<ShareableFileReference> file_ref;
-  if (!context->media_device()) {
-    *result = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    return file_ref;
-  }
+  if (!context->media_device())
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  *result = base::PLATFORM_FILE_ERROR_FAILED;
+  // We return a temporary file as a snapshot.
+  *snapshot_policy = FileSystemFileUtil::kSnapshotFileTemporary;
 
   // Create a temp file in "profile_path_/kDeviceMediaFileUtilTempDir".
   FilePath isolated_media_file_system_dir_path =
       profile_path_.Append(kDeviceMediaFileUtilTempDir);
   bool dir_exists = file_util::DirectoryExists(
       isolated_media_file_system_dir_path);
-  if (!dir_exists) {
-    if (!file_util::CreateDirectory(isolated_media_file_system_dir_path))
-      return file_ref;
+  if (!dir_exists &&
+      !file_util::CreateDirectory(isolated_media_file_system_dir_path)) {
+    LOG(WARNING) << "Could not create a directory for media snapshot file "
+                 << isolated_media_file_system_dir_path.value();
+    return base::PLATFORM_FILE_ERROR_FAILED;
   }
 
   bool file_created = file_util::CreateTemporaryFileInDir(
       isolated_media_file_system_dir_path, local_path);
-  if (!file_created)
-    return file_ref;
-
-  *result = context->media_device()->CreateSnapshotFile(url.path(), *local_path,
-                                                        file_info);
-  if (*result == base::PLATFORM_FILE_OK) {
-    file_ref = ShareableFileReference::GetOrCreate(
-        *local_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-        context->file_task_runner());
+  if (!file_created) {
+    LOG(WARNING) << "Could not create a temporary file for media snapshot in "
+                 << isolated_media_file_system_dir_path.value();
+    return base::PLATFORM_FILE_ERROR_FAILED;
   }
-  return file_ref;
+
+  return context->media_device()->CreateSnapshotFile(
+      url.path(), *local_path, file_info);
 }
 
 }  // namespace fileapi

@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/tracked_objects.h"
+#include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
 
 namespace fileapi {
@@ -39,10 +40,15 @@ class FileSystemFileUtilProxy {
   typedef base::Callback<void(PlatformFileError status,
                               bool created)> EnsureFileExistsCallback;
   typedef FileSystemOperationInterface::GetMetadataCallback GetFileInfoCallback;
-  typedef FileSystemOperationInterface::SnapshotFileCallback
-      SnapshotFileCallback;
   typedef FileSystemOperationInterface::ReadDirectoryCallback
       ReadDirectoryCallback;
+
+  typedef base::Callback<
+      void(base::PlatformFileError result,
+           const base::PlatformFileInfo& file_info,
+           const FilePath& platform_path,
+           FileSystemFileUtil::SnapshotFilePolicy snapshot_policy)>
+      SnapshotFileCallback;
 
   // Deletes a file or a directory on the given context's file_task_runner.
   // It is an error to delete a non-empty directory with recursive=false.

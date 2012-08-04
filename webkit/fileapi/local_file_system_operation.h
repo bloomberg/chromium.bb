@@ -226,7 +226,7 @@ class FILEAPI_EXPORT LocalFileSystemOperation
       base::PlatformFileError rv,
       const base::PlatformFileInfo& file_info,
       const FilePath& platform_path,
-      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+      FileSystemFileUtil::SnapshotFilePolicy snapshot_policy);
 
   // Checks the validity of a given |url| and populates |file_util| for |mode|.
   base::PlatformFileError SetUp(

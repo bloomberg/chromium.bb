@@ -892,16 +892,16 @@ PlatformFileError ObfuscatedFileUtil::DeleteSingleDirectory(
   return base::PLATFORM_FILE_OK;
 }
 
-scoped_refptr<webkit_blob::ShareableFileReference>
-ObfuscatedFileUtil::CreateSnapshotFile(
+base::PlatformFileError ObfuscatedFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
-    base::PlatformFileError* result,
     base::PlatformFileInfo* file_info,
-    FilePath* platform_path) {
-  DCHECK(result);
-  *result = GetFileInfo(context, url, file_info, platform_path);
-  return NULL;
+    FilePath* platform_path,
+    SnapshotFilePolicy* policy) {
+  DCHECK(policy);
+  // We're just returning the local file information.
+  *policy = kSnapshotFileLocal;
+  return GetFileInfo(context, url, file_info, platform_path);
 }
 
 FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(

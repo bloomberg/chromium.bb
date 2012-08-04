@@ -6,7 +6,6 @@
 
 #include <stack>
 
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
@@ -16,6 +15,18 @@ using base::PlatformFileError;
 namespace fileapi {
 
 namespace {
+
+// A helper class to delete a temporary file.
+class ScopedFileDeleter {
+ public:
+  explicit ScopedFileDeleter(const FilePath& path) : path_(path) {}
+  ~ScopedFileDeleter() {
+    file_util::Delete(path_, false /* recursive */);
+  }
+
+ private:
+  FilePath path_;
+};
 
 // A helper class for cross-FileUtil Copy/Move operations.
 class CrossFileUtilHelper {
@@ -250,13 +261,16 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
   // Resolve the src_url's underlying file path.
   base::PlatformFileInfo file_info;
   FilePath platform_file_path;
-  PlatformFileError error = base::PLATFORM_FILE_OK;
+  FileSystemFileUtil::SnapshotFilePolicy snapshot_policy;
 
-  scoped_refptr<webkit_blob::ShareableFileReference> file_ref =
-      src_util_->CreateSnapshotFile(context_, src_url,
-                                    &error, &file_info, &platform_file_path);
+  PlatformFileError error = src_util_->CreateSnapshotFile(
+      context_, src_url, &file_info, &platform_file_path, &snapshot_policy);
   if (error != base::PLATFORM_FILE_OK)
     return error;
+
+  scoped_ptr<ScopedFileDeleter> file_deleter;
+  if (snapshot_policy == FileSystemFileUtil::kSnapshotFileTemporary)
+    file_deleter.reset(new ScopedFileDeleter(platform_file_path));
 
   // Call CopyInForeignFile() on the dest_util_ with the resolved source path
   // to perform limited cross-FileSystemFileUtil copy/move.

@@ -122,12 +122,12 @@ class FILEAPI_EXPORT_PRIVATE ObfuscatedFileUtil : public FileSystemFileUtil {
   virtual base::PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual scoped_refptr<webkit_blob::ShareableFileReference>
-      CreateSnapshotFile(FileSystemOperationContext* context,
-                         const FileSystemURL& url,
-                         base::PlatformFileError* result,
-                         base::PlatformFileInfo* file_info,
-                         FilePath* platform_path) OVERRIDE;
+  virtual base::PlatformFileError CreateSnapshotFile(
+      FileSystemOperationContext* context,
+      const FileSystemURL& url,
+      base::PlatformFileInfo* file_info,
+      FilePath* platform_path,
+      SnapshotFilePolicy* policy) OVERRIDE;
 
   // Gets the topmost directory specific to this origin and type.  This will
   // contain both the directory database's files and all the backing file
