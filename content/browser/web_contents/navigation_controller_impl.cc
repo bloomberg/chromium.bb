@@ -243,6 +243,9 @@ void NavigationControllerImpl::Reload(bool check_for_repost) {
 void NavigationControllerImpl::ReloadIgnoringCache(bool check_for_repost) {
   ReloadInternal(check_for_repost, RELOAD_IGNORING_CACHE);
 }
+void NavigationControllerImpl::ReloadOriginalRequestURL(bool check_for_repost) {
+  ReloadInternal(check_for_repost, RELOAD_ORIGINAL_REQUEST_URL);
+}
 
 void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
                                               ReloadType reload_type) {
@@ -951,12 +954,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
       static_cast<SiteInstanceImpl*>(web_contents_->GetSiteInstance()));
   new_entry->SetHasPostData(params.is_post);
   new_entry->SetPostID(params.post_id);
+  new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
-
-  if (params.redirects.size() > 0)
-    new_entry->SetOriginalRequestURL(params.redirects[0]);
-  else
-    new_entry->SetOriginalRequestURL(params.url);
 
   InsertOrReplaceEntry(new_entry, *did_replace_entry);
 }

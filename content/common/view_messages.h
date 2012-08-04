@@ -477,6 +477,9 @@ IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
   // Serialized history item state to store in the navigation entry.
   IPC_STRUCT_MEMBER(std::string, content_state)
 
+  // Original request's URL.
+  IPC_STRUCT_MEMBER(GURL, original_request_url)
+
   // User agent override used to navigate.
   IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
 IPC_STRUCT_END()

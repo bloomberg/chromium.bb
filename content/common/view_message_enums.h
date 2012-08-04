@@ -35,6 +35,9 @@ struct ViewMsg_Navigate_Type {
     // Reload the page, ignoring any cache entries.
     RELOAD_IGNORING_CACHE,
 
+    // Reload the page using the original request URL.
+    RELOAD_ORIGINAL_REQUEST_URL,
+
     // The navigation is the result of session restore and should honor the
     // page's cache policy while restoring form state. This is set to true if
     // restoring a tab/session from the previous session and the previous

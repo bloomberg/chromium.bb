@@ -31,9 +31,10 @@ struct Referrer;
 class NavigationController {
  public:
   enum ReloadType {
-    NO_RELOAD,                // Normal load.
-    RELOAD,                   // Normal (cache-validating) reload.
-    RELOAD_IGNORING_CACHE     // Reload bypassing the cache, aka shift-reload.
+    NO_RELOAD,                   // Normal load.
+    RELOAD,                      // Normal (cache-validating) reload.
+    RELOAD_IGNORING_CACHE,       // Reload bypassing the cache (shift-reload).
+    RELOAD_ORIGINAL_REQUEST_URL  // Reload using the original request URL.
   };
 
   // Creates a navigation entry and translates the virtual url to a real one.

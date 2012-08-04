@@ -361,7 +361,9 @@ static void StopAltErrorPageFetcher(WebDataSource* data_source) {
 static bool IsReload(const ViewMsg_Navigate_Params& params) {
   return
       params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
-      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
+      params.navigation_type ==
+          ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
 static WebReferrerPolicy GetReferrerPolicyFromRequest(
@@ -1040,9 +1042,16 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
   // have history state, then we need to navigate to it, which corresponds to a
   // back/forward navigation event.
   if (is_reload) {
+    bool reload_original_url =
+        (params.navigation_type ==
+            ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
     bool ignore_cache = (params.navigation_type ==
                              ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
-    main_frame->reload(ignore_cache);
+
+    if (reload_original_url)
+      main_frame->reloadWithOverrideURL(params.url, true);
+    else
+      main_frame->reload(ignore_cache);
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
@@ -1477,6 +1486,9 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // Send the user agent override back.
     params.is_overriding_user_agent =
         document_state->is_overriding_user_agent();
+
+    // Track the URL of the original request.
+    params.original_request_url = original_request.url();
 
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.

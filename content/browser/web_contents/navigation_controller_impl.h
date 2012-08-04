@@ -132,6 +132,11 @@ class CONTENT_EXPORT NavigationControllerImpl
       content::SiteInstance* instance,
       int32 page_id) const;
 
+  // Reloads the current entry using the original URL used to create it.  This
+  // is used for cases where the user wants to refresh a page using a different
+  // user agent after following a redirect.
+  void ReloadOriginalRequestURL(bool check_for_repost);
+
   // Transient entry -----------------------------------------------------------
 
   // Adds an entry that is returned by GetActiveEntry().  The entry is

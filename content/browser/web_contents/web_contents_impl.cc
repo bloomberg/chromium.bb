@@ -189,6 +189,8 @@ ViewMsg_Navigate_Type::Value GetNavigationType(
       return ViewMsg_Navigate_Type::RELOAD;
     case NavigationControllerImpl::RELOAD_IGNORING_CACHE:
       return ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+    case NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL:
+      return ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
     case NavigationControllerImpl::NO_RELOAD:
       break;  // Fall through to rest of function.
   }
@@ -216,7 +218,6 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
   params->current_history_list_offset = controller.GetLastCommittedEntryIndex();
   params->current_history_list_length = controller.GetEntryCount();
-  params->url = entry.GetURL();
   if (!entry.GetBaseURLForDataURL().is_empty()) {
     params->base_url_for_data_url = entry.GetBaseURLForDataURL();
     params->history_url_for_data_url = entry.GetVirtualURL();
@@ -244,6 +245,17 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
           entry.GetBrowserInitiatedPostData()->front() +
               entry.GetBrowserInitiatedPostData()->size());
 
+  }
+
+  if (reload_type == NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL &&
+      entry.GetOriginalRequestURL().is_valid() && !entry.GetHasPostData()) {
+    // We may have been redirected when navigating to the current URL.
+    // Use the URL the user originally intended to visit, if it's valid and if a
+    // POST wasn't involved; the latter case avoids issues with sending data to
+    // the wrong page.
+    params->url = entry.GetOriginalRequestURL();
+  } else {
+    params->url = entry.GetURL();
   }
 
   if (delegate)
