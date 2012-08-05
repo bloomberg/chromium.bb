@@ -62,7 +62,7 @@ void DeviceAttachedIntentSource::OnMediaDeviceAttached(
   SystemMonitor::MediaDeviceInfo device_info(id, name, type, location);
   device_id_map_.insert(std::make_pair(id, device_info));
 
-  std::string device_name;
+  std::string device_name(UTF16ToUTF8(name));
 
   // Register device path as an isolated file system.
   // TODO(kinuko, kmadhusu): Use a different file system type for MTP.
