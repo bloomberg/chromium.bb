@@ -311,7 +311,16 @@ Value* V8ValueConverterImpl::FromV8Object(
   for (uint32 i = 0; i < property_names->Length(); ++i) {
     v8::Handle<v8::Value> key(property_names->Get(i));
 
-    if (!key->IsString() || !val->HasRealNamedProperty(key->ToString()))
+    // base::DictionaryValue can only have string properties.
+    if (!key->IsString())
+      continue;
+
+    // Ensure that the property actually exists.
+    if (!val->HasRealNamedProperty(key->ToString()))
+      continue;
+
+    // Skip all callbacks: crbug.com/139933
+    if (val->HasRealNamedCallbackProperty(key->ToString()))
       continue;
 
     v8::String::Utf8Value name_utf8(key->ToString());

@@ -88,8 +88,8 @@ chrome.test.getConfig(function(config) {
 
       // Non-pure ojbects (like DOM nodes) will get converted as best they can.
       function executeCallbackDOMObjShouldSucceed() {
-        var scriptDetails = {}
-        scriptDetails.code = 'var a = document.getElementById("testDiv"); a';
+        var scriptDetails = {};
+        scriptDetails.code = 'var a = document.getElementById("testDiv"); a;';
         chrome.tabs.executeScript(tabId, scriptDetails, function(scriptVal) {
           chrome.tabs.get(tabId, chrome.test.callbackPass(function(tab) {
             // Test passes as long as the DOM node was converted in some form
@@ -146,6 +146,18 @@ chrome.test.getConfig(function(config) {
             // Test passes as long as the window was converted in some form and
             // is not null
             chrome.test.assertFalse(null == scriptVal[0]);
+          }));
+        });
+      },
+
+      function executeCallbackInputShouldSucceed() {
+        var scriptDetails = {};
+        scriptDetails.code = 'var a = document.getElementById("testInput"); a;';
+        chrome.tabs.executeScript(tabId, scriptDetails, function(scriptVal) {
+          chrome.tabs.get(tabId, chrome.test.callbackPass(function(tab) {
+            // Test passes as long as the input element was converted in some
+            // form and is not null
+            chrome.test.assertTrue(scriptVal[0] != null);
           }));
         });
       }

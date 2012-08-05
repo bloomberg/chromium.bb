@@ -10,6 +10,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
+namespace {
+
+// A dumb getter for an object's named callback.
+v8::Handle<v8::Value> NamedCallbackGetter(v8::Local<v8::String> name,
+                                          const v8::AccessorInfo& info) {
+  return v8::String::New("bar");
+}
+
+}  // namespace
+
 class V8ValueConverterImplTest : public testing::Test {
  protected:
   virtual void SetUp() {
@@ -377,6 +387,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   EXPECT_TRUE(IsNull(list_result.get(), 1));
 }
 
+// Do not try and convert any named callbacks including getters.
 TEST_F(V8ValueConverterImplTest, ObjectGetters) {
   v8::Context::Scope context_scope(context_);
   v8::HandleScope handle_scope;
@@ -390,6 +401,25 @@ TEST_F(V8ValueConverterImplTest, ObjectGetters) {
   v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
+
+  V8ValueConverterImpl converter;
+  scoped_ptr<DictionaryValue> result(
+      static_cast<DictionaryValue*>(converter.FromV8Value(object, context_)));
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(0u, result->size());
+}
+
+// Do not try and convert any named callbacks including getters.
+TEST_F(V8ValueConverterImplTest, ObjectWithInternalFieldsGetters) {
+  v8::Context::Scope context_scope(context_);
+  v8::HandleScope handle_scope;
+
+  v8::Handle<v8::ObjectTemplate> object_template = v8::ObjectTemplate::New();
+  object_template->SetInternalFieldCount(1);
+  object_template->SetAccessor(v8::String::New("foo"), NamedCallbackGetter);
+  v8::Handle<v8::Object> object = object_template->NewInstance();
+  ASSERT_FALSE(object.IsEmpty());
+  object->Set(v8::String::New("a"), v8::String::New("b"));
 
   V8ValueConverterImpl converter;
   scoped_ptr<DictionaryValue> result(
