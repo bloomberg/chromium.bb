@@ -71,7 +71,10 @@
         ['OS=="mac"', {
           'copies': [{
             'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            'files': ['../tools/test_shell/resources/textAreaResizeCorner.png'],
+            'files': [
+              '../tools/test_shell/resources/missingImage.png',
+              '../tools/test_shell/resources/textAreaResizeCorner.png',
+            ],
           }],
         },{ # OS!="mac"
           'copies': [{
