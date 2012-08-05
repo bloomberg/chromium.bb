@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/threading/platform_thread.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -32,26 +33,26 @@
 namespace content {
 namespace {
 
-static const char* g_vertex_shader_blit_rgb = SHADER_STRING_GLSL(
+const char* g_vertex_shader_blit_rgb = SHADER_STRING_GLSL(
     varying vec2 texture_coordinate;
     void main() {
       gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
       texture_coordinate = vec2(gl_MultiTexCoord0);
     });
 
-static const char* g_fragment_shader_blit_rgb = SHADER_STRING_GLSL(
+const char* g_fragment_shader_blit_rgb = SHADER_STRING_GLSL(
     varying vec2 texture_coordinate;
     uniform sampler2DRect texture;
     void main() {
       gl_FragColor = vec4(texture2DRect(texture, texture_coordinate).rgb, 1.0);
     });
 
-static const char* g_vertex_shader_white = SHADER_STRING_GLSL(
+const char* g_vertex_shader_white = SHADER_STRING_GLSL(
     void main() {
       gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
     });
 
-static const char* g_fragment_shader_white = SHADER_STRING_GLSL(
+const char* g_fragment_shader_white = SHADER_STRING_GLSL(
     void main() {
       gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
     });
@@ -105,6 +106,18 @@ GLuint CreateProgramGLSL(const char* vertex_shader_str,
 }
 
 }  // namespace
+
+CVReturn DisplayLinkCallback(CVDisplayLinkRef display_link,
+                             const CVTimeStamp* now,
+                             const CVTimeStamp* output_time,
+                             CVOptionFlags flags_in,
+                             CVOptionFlags* flags_out,
+                             void* context) {
+  CompositingIOSurfaceMac* surface =
+      static_cast<CompositingIOSurfaceMac*>(context);
+  surface->DisplayLinkTick(display_link, output_time);
+  return kCVReturnSuccess;
+}
 
 CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
   TRACE_EVENT0("browser", "CompositingIOSurfaceMac::Create");
@@ -170,12 +183,33 @@ CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
     return NULL;
   }
 
+  CVDisplayLinkRef display_link;
+  CVReturn ret = CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
+  if (ret != kCVReturnSuccess) {
+    LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed: " << ret;
+    return NULL;
+  }
+
+  // Set the display link for the current renderer
+  CGLPixelFormatObj cglPixelFormat =
+      (CGLPixelFormatObj)[glPixelFormat CGLPixelFormatObj];
+  ret = CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(display_link,
+                                                          cglContext,
+                                                          cglPixelFormat);
+  if (ret != kCVReturnSuccess) {
+    CVDisplayLinkRelease(display_link);
+    LOG(ERROR) << "CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext failed: "
+               << ret;
+    return NULL;
+  }
+
   return new CompositingIOSurfaceMac(io_surface_support, glContext.release(),
                                      cglContext,
                                      shader_program_blit_rgb,
                                      blit_rgb_sampler_location,
                                      shader_program_white,
-                                     is_vsync_disabled);
+                                     is_vsync_disabled,
+                                     display_link);
 }
 
 CompositingIOSurfaceMac::CompositingIOSurfaceMac(
@@ -185,7 +219,8 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
     GLuint shader_program_blit_rgb,
     GLint blit_rgb_sampler_location,
     GLuint shader_program_white,
-    bool is_vsync_disabled)
+    bool is_vsync_disabled,
+    CVDisplayLinkRef display_link)
     : io_surface_support_(io_surface_support),
       glContext_(glContext),
       cglContext_(cglContext),
@@ -194,10 +229,45 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
       shader_program_blit_rgb_(shader_program_blit_rgb),
       blit_rgb_sampler_location_(blit_rgb_sampler_location),
       shader_program_white_(shader_program_white),
-      is_vsync_disabled_(is_vsync_disabled) {
+      is_vsync_disabled_(is_vsync_disabled),
+      display_link_(display_link),
+      display_link_stop_timer_(FROM_HERE, base::TimeDelta::FromSeconds(1),
+                               this, &CompositingIOSurfaceMac::StopDisplayLink),
+      vsync_count_(0),
+      swap_count_(0),
+      vsync_interval_numerator_(0),
+      vsync_interval_denominator_(0) {
+  CVReturn ret = CVDisplayLinkSetOutputCallback(display_link_,
+                                                &DisplayLinkCallback, this);
+  DCHECK(ret == kCVReturnSuccess)
+      << "CVDisplayLinkSetOutputCallback failed: " << ret;
+
+  StartOrContinueDisplayLink();
+
+  CVTimeStamp cv_time;
+  ret = CVDisplayLinkGetCurrentTime(display_link_, &cv_time);
+  DCHECK(ret == kCVReturnSuccess)
+      << "CVDisplayLinkGetCurrentTime failed: " << ret;
+
+  {
+    base::AutoLock lock(lock_);
+    CalculateVsyncParametersLockHeld(&cv_time);
+  }
+
+  // Stop display link for now, it will be started when needed during Draw.
+  StopDisplayLink();
+}
+
+void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
+                                                 uint32* interval_numerator,
+                                                 uint32* interval_denominator) {
+  *timebase = vsync_timebase_;
+  *interval_numerator = vsync_interval_numerator_;
+  *interval_denominator = vsync_interval_denominator_;
 }
 
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
+  CVDisplayLinkRelease(display_link_);
   UnrefIOSurface();
 }
 
@@ -301,7 +371,15 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
 
   CGLFlushDrawable(cglContext_);
 
+  // For latency_tests.cc:
+  UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
+
   CGLSetCurrentContext(0);
+
+  StartOrContinueDisplayLink();
+
+  if (!is_vsync_disabled_)
+    RateLimitDraws();
 }
 
 bool CompositingIOSurfaceMac::CopyTo(
@@ -471,6 +549,66 @@ void CompositingIOSurfaceMac::GlobalFrameDidChange() {
 void CompositingIOSurfaceMac::ClearDrawable() {
   [glContext_ clearDrawable];
   UnrefIOSurface();
+}
+
+void CompositingIOSurfaceMac::DisplayLinkTick(CVDisplayLinkRef display_link,
+                                              const CVTimeStamp* output_time) {
+  base::AutoLock lock(lock_);
+  // Increment vsync_count but don't let it get ahead of swap_count.
+  vsync_count_ = std::min(vsync_count_ + 1, swap_count_);
+
+  CalculateVsyncParametersLockHeld(output_time);
+}
+
+void CompositingIOSurfaceMac::CalculateVsyncParametersLockHeld(
+    const CVTimeStamp* time) {
+  vsync_interval_numerator_ = static_cast<uint32>(time->videoRefreshPeriod);
+  vsync_interval_denominator_ = time->videoTimeScale;
+  // Verify that videoRefreshPeriod is 32 bits.
+  DCHECK((time->videoRefreshPeriod & ~0xffffFFFFull) == 0ull);
+
+  vsync_timebase_ =
+      base::TimeTicks::FromInternalValue(time->hostTime / 1000);
+}
+
+void CompositingIOSurfaceMac::RateLimitDraws() {
+  int64 vsync_count;
+  int64 swap_count;
+
+  {
+    base::AutoLock lock(lock_);
+    vsync_count = vsync_count_;
+    swap_count = ++swap_count_;
+  }
+
+  // It's OK for swap_count to get 2 ahead of vsync_count, but any more
+  // indicates that it has become unthrottled. This happens when, for example,
+  // the window is obscured by another opaque window.
+  if (swap_count > vsync_count + 2) {
+    TRACE_EVENT0("gpu", "CompositingIOSurfaceMac::RateLimitDraws");
+    // Sleep for one vsync interval. This will prevent spinning while the window
+    // is not visible, but will also allow quick recovery when the window
+    // becomes visible again.
+    int64 sleep_us = 16666;  // default to 60hz if display link API fails.
+    if (vsync_interval_denominator_ > 0) {
+      sleep_us = (static_cast<int64>(vsync_interval_numerator_) * 1000000) /
+                 vsync_interval_denominator_;
+    }
+    base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(sleep_us));
+  }
+}
+
+void CompositingIOSurfaceMac::StartOrContinueDisplayLink() {
+  if (!CVDisplayLinkIsRunning(display_link_)) {
+    vsync_count_ = swap_count_ = 0;
+    CVDisplayLinkStart(display_link_);
+  }
+  display_link_stop_timer_.Reset();
+}
+
+void CompositingIOSurfaceMac::StopDisplayLink() {
+  if (CVDisplayLinkIsRunning(display_link_))
+    CVDisplayLinkStop(display_link_);
 }
 
 }  // namespace content

@@ -6,10 +6,14 @@
 #define CONTENT_BROWSER_RENDERER_HOST_ACCELERATED_COMPOSITING_VIEW_MAC_H
 
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/CVDisplayLink.h>
 #include <QuartzCore/QuartzCore.h>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/synchronization/lock.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
@@ -69,7 +73,19 @@ class CompositingIOSurfaceMac {
 
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
 
+  // Get vsync scheduling parameters.
+  void GetVSyncParameters(base::TimeTicks* timebase,
+                          uint32* interval_numerator,
+                          uint32* interval_denominator);
+
  private:
+  friend CVReturn DisplayLinkCallback(CVDisplayLinkRef,
+                                      const CVTimeStamp*,
+                                      const CVTimeStamp*,
+                                      CVOptionFlags,
+                                      CVOptionFlags*,
+                                      void*);
+
   // Vertex structure for use in glDraw calls.
   struct SurfaceVertex {
     SurfaceVertex() : x_(0.0f), y_(0.0f), tx_(0.0f), ty_(0.0f) { }
@@ -130,7 +146,8 @@ class CompositingIOSurfaceMac {
                           GLuint shader_program_blit_rgb,
                           GLint blit_rgb_sampler_location,
                           GLuint shader_program_white,
-                          bool is_vsync_disabled);
+                          bool is_vsync_disabled,
+                          CVDisplayLinkRef display_link);
 
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTexture(uint64 io_surface_handle);
@@ -138,6 +155,19 @@ class CompositingIOSurfaceMac {
   void UnrefIOSurfaceWithContextCurrent();
 
   void DrawQuad(const SurfaceQuad& quad);
+
+  // Called on display-link thread.
+  void DisplayLinkTick(CVDisplayLinkRef display_link,
+                       const CVTimeStamp* output_time);
+
+  void CalculateVsyncParametersLockHeld(const CVTimeStamp* time);
+
+  // Prevent from spinning on CGLFlushDrawable when it fails to throttle to
+  // VSync frequency.
+  void RateLimitDraws();
+
+  void StartOrContinueDisplayLink();
+  void StopDisplayLink();
 
   // Cached pointer to IOSurfaceSupport Singleton.
   IOSurfaceSupport* io_surface_support_;
@@ -169,6 +199,24 @@ class CompositingIOSurfaceMac {
   SurfaceQuad quad_;
 
   bool is_vsync_disabled_;
+
+  // CVDisplayLink for querying Vsync timing info and throttling swaps.
+  CVDisplayLinkRef display_link_;
+
+  // Timer for stopping display link after a timeout with no swaps.
+  base::DelayTimer<CompositingIOSurfaceMac> display_link_stop_timer_;
+
+  // Lock for sharing data between UI thread and display-link thread.
+  base::Lock lock_;
+
+  // Counts for throttling swaps.
+  int64 vsync_count_;
+  int64 swap_count_;
+
+  // Vsync timing data.
+  base::TimeTicks vsync_timebase_;
+  uint32 vsync_interval_numerator_;
+  uint32 vsync_interval_denominator_;
 };
 
 }  // namespace content

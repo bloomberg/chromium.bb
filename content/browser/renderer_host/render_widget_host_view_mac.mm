@@ -155,9 +155,6 @@ namespace {
 // Maximum number of characters we allow in a tooltip.
 const size_t kMaxTooltipLength = 1024;
 
-// Invalidation NSRect to trigger a drawRect on BuffersSwapped.
-const NSRect kGpuSwapBuffersDirtyRect = { {0, 0}, {1, 1} };
-
 // TODO(suzhe): Upstream this function.
 WebKit::WebColor WebColorFromNSColor(NSColor *color) {
   CGFloat r, g, b, a;
@@ -991,22 +988,10 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle) {
   // No need to draw the surface if we are inside a drawRect. It will be done
   // later.
   if (!about_to_validate_and_paint_) {
-    // Trigger a drawRect, but don't invalidate the whole window because it
-    // is expensive to clear it with transparency to expose the GL underneath.
-    [cocoa_view_ setNeedsDisplayInRect:kGpuSwapBuffersDirtyRect];
-
-    // While resizing, OSX fails to call drawRect on the NSView unless the
-    // window size has changed. That means we won't see animations update if the
-    // user has the mouse button held down, but is not currently changing the
-    // size of the window. To work around that, display here while resizing.
-    // Also, OSX will never call drawRect faster than vsync rate, so if
-    // disable-gpu-vsync is set, we need to display now.
-    if (compositing_iosurface_->is_vsync_disabled() ||
-        [cocoa_view_ inLiveResize]) {
-      [cocoa_view_ displayIfNeeded];
-    }
+    compositing_iosurface_->DrawIOSurface(cocoa_view_,
+                                          ScaleFactor(cocoa_view_));
   }
-  return false;
+  return true;
 }
 
 void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
@@ -2161,12 +2146,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   if (renderWidgetHostView_->last_frame_was_accelerated_ &&
       renderWidgetHostView_->compositing_iosurface_.get()) {
-    bool is_swap_without_dirty =
-        (dirtyRect.origin.x == kGpuSwapBuffersDirtyRect.origin.x &&
-         dirtyRect.origin.y == kGpuSwapBuffersDirtyRect.origin.y &&
-         dirtyRect.size.width == kGpuSwapBuffersDirtyRect.size.width &&
-         dirtyRect.size.height == kGpuSwapBuffersDirtyRect.size.height);
-    if (!is_swap_without_dirty) {
+    {
       TRACE_EVENT2("gpu", "NSRectFill clear", "w", damagedRect.width(),
                    "h", damagedRect.height());
       // Draw transparency to expose the GL underlay. NSRectFill is extremely
@@ -2183,9 +2163,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     // that on.
     renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         self, ScaleFactor(self));
-    // For latency_tests.cc:
-    UNSHIPPED_TRACE_EVENT_INSTANT0("test_gpu", "CompositorSwapBuffersComplete");
-    renderWidgetHostView_->AckPendingSwapBuffers();
     return;
   }
 
