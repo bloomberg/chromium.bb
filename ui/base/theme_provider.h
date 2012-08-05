@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/layout.h"
 #include "ui/base/ui_export.h"
 
 #if defined(OS_MACOSX)
@@ -77,7 +78,9 @@ class UI_EXPORT ThemeProvider {
   // Reads the image data from the theme file into the specified vector. Only
   // valid for un-themed resources and the themed IDR_THEME_NTP_* in most
   // implementations of ThemeProvider. Returns NULL on error.
-  virtual base::RefCountedMemory* GetRawData(int id) const = 0;
+  virtual base::RefCountedMemory* GetRawData(
+      int id,
+      ui::ScaleFactor scale_factor) const = 0;
 
 #if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
   // Gets the NSImage with the specified |id|.

@@ -129,9 +129,8 @@ void ThemeSource::SendThemeBitmap(int request_id,
     ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
     DCHECK(tp);
 
-    // TODO(flackr): Pass scale factor when fetching themeable images.
     scoped_refptr<base::RefCountedMemory> image_data(tp->GetRawData(
-        resource_id));
+        resource_id, scale_factor));
     SendResponse(request_id, image_data);
   } else {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

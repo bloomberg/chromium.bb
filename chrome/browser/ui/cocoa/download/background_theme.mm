@@ -51,7 +51,9 @@ bool BackgroundTheme::HasCustomImage(int id) const {
   return false;
 }
 
-base::RefCountedMemory* BackgroundTheme::GetRawData(int id) const {
+base::RefCountedMemory* BackgroundTheme::GetRawData(
+    int id,
+    ui::ScaleFactor scale_factor) const {
   return NULL;
 }
 

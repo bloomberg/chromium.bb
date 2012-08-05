@@ -235,17 +235,7 @@ std::vector<ImageSkiaRep> ImageSkia::GetRepresentations() const {
   for (size_t i = 0; i < supported_scale_factors.size(); ++i)
     storage_->FindRepresentation(supported_scale_factors[i], true);
 
-  ImageSkiaReps internal_image_reps = storage_->image_reps();
-  // Create list of image reps to return, skipping null image reps which were
-  // added for caching purposes only.
-  ImageSkiaReps image_reps;
-  for (ImageSkiaReps::iterator it = internal_image_reps.begin();
-       it != internal_image_reps.end(); ++it) {
-    if (!it->is_null())
-      image_reps.push_back(*it);
-  }
-
-  return image_reps;
+  return image_reps();
 }
 
 #endif  // OS_MACOSX
@@ -276,7 +266,17 @@ std::vector<ImageSkiaRep> ImageSkia::image_reps() const {
   if (isNull())
     return std::vector<ImageSkiaRep>();
 
-  return storage_->image_reps();
+  ImageSkiaReps internal_image_reps = storage_->image_reps();
+  // Create list of image reps to return, skipping null image reps which were
+  // added for caching purposes only.
+  ImageSkiaReps image_reps;
+  for (ImageSkiaReps::iterator it = internal_image_reps.begin();
+       it != internal_image_reps.end(); ++it) {
+    if (!it->is_null())
+      image_reps.push_back(*it);
+  }
+
+  return image_reps;
 }
 
 const SkBitmap* ImageSkia::bitmap() const {

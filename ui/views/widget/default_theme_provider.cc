@@ -46,7 +46,9 @@ bool DefaultThemeProvider::HasCustomImage(int id) const {
   return false;
 }
 
-base::RefCountedMemory* DefaultThemeProvider::GetRawData(int id) const {
+base::RefCountedMemory* DefaultThemeProvider::GetRawData(
+    int id,
+    ui::ScaleFactor scale_factor) const {
   return NULL;
 }
 

@@ -126,7 +126,7 @@ class BrowserThemePackTest : public ::testing::Test {
 
   bool LoadRawBitmapsTo(const std::map<int, FilePath>& out_file_paths) {
     return theme_pack_->LoadRawBitmapsTo(out_file_paths,
-                                         &theme_pack_->prepared_images_);
+                                         &theme_pack_->images_on_ui_thread_);
   }
 
   FilePath GetStarGazingPath() {

@@ -87,14 +87,13 @@ TEST(ImageSkiaTest, FixedSource) {
   EXPECT_EQ(100, result_200p.pixel_width());
   EXPECT_EQ(200, result_200p.pixel_height());
   EXPECT_EQ(ui::SCALE_FACTOR_100P, result_200p.scale_factor());
-  EXPECT_EQ(2U, image_skia.image_reps().size());
+  EXPECT_EQ(1U, image_skia.image_reps().size());
 
   // Get the representation again and make sure it doesn't
   // generate new image skia rep.
   image_skia.GetRepresentation(ui::SCALE_FACTOR_100P);
-  EXPECT_EQ(2U, image_skia.image_reps().size());
   image_skia.GetRepresentation(ui::SCALE_FACTOR_200P);
-  EXPECT_EQ(2U, image_skia.image_reps().size());
+  EXPECT_EQ(1U, image_skia.image_reps().size());
 }
 
 TEST(ImageSkiaTest, DynamicSource) {

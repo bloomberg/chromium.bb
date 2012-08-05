@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -14,6 +15,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"
 
 class FilePath;
@@ -93,7 +95,8 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
 
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method is only
   // supposed to work for the NTP attribution and background resources.
-  base::RefCountedMemory* GetRawData(int id) const;
+  base::RefCountedMemory* GetRawData(int id,
+                                     ui::ScaleFactor scale_factor) const;
 
   // Whether this theme provides an image for |id|.
   bool HasCustomImage(int id) const;
@@ -104,7 +107,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   friend class base::DeleteHelper<BrowserThemePack>;
   friend class BrowserThemePackTest;
 
-  // Cached images. We cache all retrieved and generated bitmaps and keep
+  // Cached images. We cache all retrieved and generated images and keep
   // track of the pointers. We own these and will delete them when we're done
   // using them.
   typedef std::map<int, const gfx::Image*> ImageCache;
@@ -150,33 +153,47 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // Creates the data for |source_images_| from |file_paths|.
   void BuildSourceImagesArray(const FilePathMap& file_paths);
 
-  // Loads the unmodified bitmaps packed in the extension to SkBitmaps. Returns
+  // Loads the unmodified images packed in the extension to SkBitmaps. Returns
   // true if all images loaded.
   bool LoadRawBitmapsTo(const FilePathMap& file_paths,
-                        ImageCache* raw_bitmaps);
+                        ImageCache* image_cache);
+
+  // Populate |images| cache with empty gfx::Images. Image reps are lazily
+  // generated when an image rep is requested via ImageSkia::GetRepresentation.
+  // Source and destination is |images|.
+  void CreateImages(ImageCache* images) const;
 
   // Creates tinted and composited frame images. Source and destination is
-  // |bitmaps|.
-  void GenerateFrameImages(ImageCache* bitmaps) const;
+  // |images|.
+  void CreateFrameImages(ImageCache* images) const;
 
-  // Generates button images tinted with |button_tint| and places them in
-  // processed_bitmaps.
-  void GenerateTintedButtons(const color_utils::HSL& button_tint,
-                             ImageCache* processed_bitmaps) const;
+  // Creates button images tinted with |button_tint| and places them in
+  // processed_images.
+  void CreateTintedButtons(const color_utils::HSL& button_tint,
+                           ImageCache* processed_images) const;
 
-  // Generates the semi-transparent tab background images, putting the results
-  // in |bitmaps|. Must be called after GenerateFrameImages().
-  void GenerateTabBackgroundImages(ImageCache* bitmaps) const;
+  // Creates the semi-transparent tab background images, putting the results
+  // in |images|. Must be called after GenerateFrameImages().
+  void CreateTabBackgroundImages(ImageCache* images) const;
 
   // Takes all the SkBitmaps in |images|, encodes them as PNGs and places
   // them in |reencoded_images|.
   void RepackImages(const ImageCache& images,
                     RawImages* reencoded_images) const;
 
+  // Generates image reps for |scale_factors| for
+  // |prepared_images_on_ui_thread_| and |prepared_images_on_file_thread_|.
+  void GenerateImageReps(const std::vector<ui::ScaleFactor>& scale_factors);
+
   // Takes all images in |source| and puts them in |destination|, freeing any
   // image already in |destination| that |source| would overwrite.
   void MergeImageCaches(const ImageCache& source,
                         ImageCache* destination) const;
+
+  // Copies images from |source| to |destination| such that the lifetimes of
+  // the images in |destination| are not affected by the lifetimes of the
+  // images in |source|.
+  void CopyImagesTo(const ImageCache& source, ImageCache* destination) const;
 
   // Changes the RefCountedMemory based |images| into StringPiece data in |out|.
   void AddRawImagesTo(const RawImages& images, RawDataForWriting* out) const;
@@ -185,6 +202,10 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   // always need to return a reasonable tint here, instead of partially
   // querying if the tint exists.
   color_utils::HSL GetTintInternal(int id) const;
+
+  // Returns a unique id to use to store the raw bitmap for |prs_id| at
+  // |scale_factor| in memory.
+  int GetRawIDByPersistentID(int prs_id, ui::ScaleFactor scale_factor) const;
 
   // Data pack, if we have one.
   scoped_ptr<ui::DataPack> data_pack_;
@@ -229,21 +250,25 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   int* source_images_;
 #pragma pack(pop)
 
+  // The scale factors represented by the images in the theme pack.
+  std::vector<ui::ScaleFactor> scale_factors_;
+
   // References to raw PNG data. This map isn't touched when |data_pack_| is
   // non-NULL; |image_memory_| is only filled during BuildFromExtension(). Any
   // image data that needs to be written to the DataPack during WriteToDisk()
   // needs to be in |image_memory_|.
   RawImages image_memory_;
 
-  // An immutable cache of images generated in BuildFromExtension(). When this
-  // BrowserThemePack is generated from BuildFromDataPack(), this cache is
-  // empty. We separate the images from the images loaded from disk so that
-  // WriteToDisk()'s implementation doesn't need locks. There should be no IDs
-  // in |image_memory_| that are in |prepared_images_| or vice versa.
-  ImageCache prepared_images_;
+  // Loaded images. These are loaded from |image_memory_|, from |data_pack_|,
+  // and by BuildFromExtension(). These images should only be accessed on the UI
+  // thread.
+  mutable ImageCache images_on_ui_thread_;
 
-  // Loaded images. These are loaded from |image_memory_| or the |data_pack_|.
-  mutable ImageCache loaded_images_;
+  // Cache of images created in BuildFromExtension(). Once the theme pack is
+  // created, this cache should only be accessed on the file thread. There
+  // should be no IDs in |image_memory_| that are in |images_on_file_thread_|
+  // or vice versa.
+  ImageCache images_on_file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThemePack);
 };

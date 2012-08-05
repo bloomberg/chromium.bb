@@ -336,7 +336,9 @@ bool ThemeService::HasCustomImage(int id) const {
   return false;
 }
 
-base::RefCountedMemory* ThemeService::GetRawData(int id) const {
+base::RefCountedMemory* ThemeService::GetRawData(
+    int id,
+    ui::ScaleFactor scale_factor) const {
   // Check to see whether we should substitute some images.
   int ntp_alternate;
   GetDisplayProperty(NTP_LOGO_ALTERNATE, &ntp_alternate);
@@ -345,7 +347,7 @@ base::RefCountedMemory* ThemeService::GetRawData(int id) const {
 
   base::RefCountedMemory* data = NULL;
   if (theme_pack_.get())
-    data = theme_pack_->GetRawData(id);
+    data = theme_pack_->GetRawData(id, scale_factor);
   if (!data)
     data = rb_.LoadDataResourceBytes(id, ui::SCALE_FACTOR_100P);
 

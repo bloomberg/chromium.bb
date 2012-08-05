@@ -143,13 +143,39 @@ class TiledImageSource : public gfx::ImageSkiaSource {
   }
 
  private:
-  const ImageSkia& source_;
+  const ImageSkia source_;
   const int src_x_;
   const int src_y_;
   const int dst_w_;
   const int dst_h_;
 
   DISALLOW_COPY_AND_ASSIGN(TiledImageSource);
+};
+
+class HSLImageSource : public gfx::ImageSkiaSource {
+ public:
+  HSLImageSource(const ImageSkia& image,
+                 const color_utils::HSL& hsl_shift)
+      : image_(image),
+        hsl_shift_(hsl_shift) {
+  }
+
+  virtual ~HSLImageSource() {
+  }
+
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
+    return gfx::ImageSkiaRep(
+        SkBitmapOperations::CreateHSLShiftedBitmap(image_rep.sk_bitmap(),
+            hsl_shift_), image_rep.scale_factor());
+  }
+
+ private:
+  const gfx::ImageSkia image_;
+  const color_utils::HSL hsl_shift_;
+
+  DISALLOW_COPY_AND_ASSIGN(HSLImageSource);
 };
 
 // ImageSkiaSource which uses SkBitmapOperations::CreateButtonBackground
@@ -307,6 +333,13 @@ ImageSkia ImageSkiaOperations::CreateTiledImage(const ImageSkia& source,
                                                 int dst_w, int dst_h) {
   return ImageSkia(new TiledImageSource(source, src_x, src_y, dst_w, dst_h),
                    gfx::Size(dst_w, dst_h));
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateHSLShiftedImage(
+    const ImageSkia& image,
+    const color_utils::HSL& hsl_shift) {
+  return ImageSkia(new HSLImageSource(image, hsl_shift), image.size());
 }
 
 // static
