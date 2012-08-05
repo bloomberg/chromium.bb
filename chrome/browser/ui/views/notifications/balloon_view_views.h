@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Draws the view for the balloons.
-
 #ifndef CHROME_BROWSER_UI_VIEWS_NOTIFICATIONS_BALLOON_VIEW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_NOTIFICATIONS_BALLOON_VIEW_VIEWS_H_
 
@@ -11,29 +9,30 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/ui/views/notifications/balloon_view_host.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/gfx/path.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
-#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class BalloonCollection;
+class BalloonViewHost;
 class NotificationOptionsMenuModel;
+
+namespace gfx {
+class Path;
+}
 
 namespace ui {
 class SlideAnimation;
 }
 
 namespace views {
-class ButtonListener;
 class ImageButton;
+class Label;
+class MenuButton;
 class MenuRunner;
 }
 
@@ -74,8 +73,8 @@ class BalloonViewImpl : public BalloonView,
   virtual void OnWorkAreaChanged() OVERRIDE;
 
   // views::ButtonListener interface.
-  virtual void ButtonPressed(
-      views::Button* sender, const views::Event&) OVERRIDE;
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event&) OVERRIDE;
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
@@ -30,10 +29,12 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/path.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -46,8 +47,6 @@
 #else
 #include "chrome/browser/ui/views/notifications/balloon_view_host.h"
 #endif
-
-using views::Widget;
 
 namespace {
 
@@ -358,14 +357,14 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   if (enable_web_ui_)
     html_contents_->EnableWebUI();
 
-  html_container_ = new Widget;
-  Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
+  html_container_ = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.bounds = contents_rect;
   html_container_->Init(params);
   html_container_->SetContentsView(html_contents_->view());
 
   gfx::Rect balloon_rect(x(), y(), GetTotalWidth(), GetTotalHeight());
-  frame_container_ = new Widget;
+  frame_container_ = new views::Widget;
   params.delegate = this;
   params.transparent = true;
   params.bounds = balloon_rect;
