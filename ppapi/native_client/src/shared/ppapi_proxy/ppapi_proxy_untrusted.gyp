@@ -101,7 +101,6 @@
           'plugin_ppp_rpc_server.cc',
           'plugin_resource.cc',
           'plugin_resource_tracker.cc',
-          'plugin_threading.cc',
           'plugin_upcall.cc',
           'ppp_instance_combined.cc',
           'proxy_var.cc',

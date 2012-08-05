@@ -196,7 +196,6 @@ int IrtInit() {
 
 int PpapiPluginMain() {
   IrtInit();
-  PpapiPluginRegisterDefaultThreadCreator();
   // Designate this as the main thread for PPB_Core::IsMainThread().
   ppapi_proxy::PluginCore::MarkMainThread();
   if (!NaClSrpcAcceptClientConnection(PppRpcs::srpc_methods)) {
