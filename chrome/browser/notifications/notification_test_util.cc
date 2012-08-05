@@ -17,15 +17,3 @@ std::string MockNotificationDelegate::id() const {
 content::RenderViewHost* MockNotificationDelegate::GetRenderViewHost() const {
   return NULL;
 }
-
-void MockBalloonView::Close(bool by_user) {
-  balloon_->OnClose(by_user);
-}
-
-gfx::Size MockBalloonView::GetSize() const {
-  return balloon_->content_size();
-}
-
-BalloonHost* MockBalloonView::GetHost() const {
-  return NULL;
-}

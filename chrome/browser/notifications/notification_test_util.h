@@ -75,25 +75,4 @@ class LoggingNotificationDelegate : public NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(LoggingNotificationDelegate);
 };
 
-// Test version of a balloon view which doesn't do anything
-// viewable, but does know how to close itself the same as a regular
-// BalloonView.
-class MockBalloonView : public BalloonView {
- public:
-  explicit MockBalloonView(Balloon * balloon) :
-      balloon_(balloon) {}
-
-  // BalloonView:
-  virtual void Show(Balloon* balloon) OVERRIDE {}
-  virtual void Update() OVERRIDE {}
-  virtual void RepositionToBalloon() OVERRIDE {}
-  virtual void Close(bool by_user) OVERRIDE;
-  virtual gfx::Size GetSize() const OVERRIDE;
-  virtual BalloonHost* GetHost() const OVERRIDE;
-
- private:
-  // Non-owned pointer.
-  Balloon* balloon_;
-};
-
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_

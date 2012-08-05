@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/notifications/fake_balloon_view.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -52,7 +53,7 @@ Balloon* MockBalloonCollection::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
   // Start with a normal balloon but mock out the view.
   Balloon* balloon = BalloonCollectionImpl::MakeBalloon(notification, profile);
-  balloon->set_view(new MockBalloonView(balloon));
+  balloon->set_view(new FakeBalloonView(balloon));
   balloons_.push_back(balloon);
   return balloon;
 }
