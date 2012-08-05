@@ -113,6 +113,8 @@
           ></command>
       <command id="gdata-help" i18n-values="label:GDATA_MENU_HELP"
           ></command>
+      <command id="gdata-clear-local-cache"
+          i18n-values="label:GDATA_CLEAR_LOCAL_CACHE"></command>
     </commands>
 
     <menu class="file-context-menu chrome-menu">
@@ -141,6 +143,9 @@
           i18n-content=GDATA_MOBILE_CONNECTION_OPTION></menuitem>
       <menuitem id="gdata-hosted-settings"
           i18n-content=GDATA_SHOW_HOSTED_FILES_OPTION></menuitem>
+      <hr visibleif="ctrl">
+      <menuitem id="gdata-clear-local-cache" visibleif="ctrl"
+          command="#gdata-clear-local-cache"></menuitem>
       <hr>
       <div id="gdata-space-info" disabled>
         <span id="gdata-space-info-label"

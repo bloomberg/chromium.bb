@@ -593,6 +593,7 @@ FileManager.prototype = {
     cr.ui.Grid.decorate(this.grid_);
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
+    this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
     // Disable the default browser context menu.
     this.document_.addEventListener('contextmenu',
                                     function(e) { e.preventDefault() });
@@ -977,6 +978,7 @@ FileManager.prototype = {
 
       case 'gdata-help':
       case 'gdata-buy-more-space':
+      case 'gdata-clear-local-cache':
         return this.isOnGData();
     }
   };
@@ -1311,6 +1313,10 @@ FileManager.prototype = {
 
       case 'gdata-help':
         window.open(GOOGLE_DRIVE_HELP, 'help');
+        return;
+
+      case 'gdata-clear-local-cache':
+        chrome.fileBrowserPrivate.clearDriveCache();
         return;
     }
   };
@@ -3315,6 +3321,10 @@ FileManager.prototype = {
     }
 
     switch (util.getKeyModifiers(event) + event.keyCode) {
+      case 'Ctrl-17':  // Ctrl => Show hidden setting
+        this.dialogDom_.setAttribute('ctrl-pressing', 'true');
+        return;
+
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
         var dm = this.directoryModel_;
         dm.setFilterHidden(!dm.isFilterHiddenOn());
@@ -3343,6 +3353,22 @@ FileManager.prototype = {
         break;
     }
   };
+
+  /**
+   * KeyUp event handler for the document.
+   */
+  FileManager.prototype.onKeyUp_ = function(event) {
+    if (event.srcElement === this.renameInput_) {
+      // Ignore keydown handler in the rename input box.
+      return;
+    }
+
+    switch (util.getKeyModifiers(event) + event.keyCode) {
+      case '17':  // Ctrl => Hide hidden setting
+        this.dialogDom_.removeAttribute('ctrl-pressing');
+        return;
+    }
+  }
 
   /**
    * KeyDown event handler for the div#list-container element.
