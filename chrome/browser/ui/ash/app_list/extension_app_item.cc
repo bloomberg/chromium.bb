@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/app_list/extension_app_item.h"
+#include "chrome/browser/ui/ash/app_list/extension_app_item.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_prefs.h"
