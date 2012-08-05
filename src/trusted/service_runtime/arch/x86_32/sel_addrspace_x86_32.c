@@ -75,6 +75,10 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
   uintptr_t start_addr;
   int       err;
+#if NACL_LINUX
+  uintptr_t page_addr;
+  void     *mmap_rval;
+#endif
 
   start_addr = nap->mem_start;
 
@@ -87,6 +91,41 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
 #if !NACL_LINUX
     NaClLog(LOG_FATAL, ("NaClMprotectGuards: zero-based sandbox is"
                         " supported on Linux only.\n"));
+#else
+    /*
+     * Attempt to protect low memory from zero to NACL_SYSCALL_START_ADDR,
+     * the base of the region allocated in Chrome by nacl_helper.
+     *
+     * It is normal for mmap() calls to fail with EPERM if the indicated
+     * page is less than vm.mmap_min_addr (see /proc/sys/vm/mmap_min_addr),
+     * or with EACCES under SELinux if less than CONFIG_LSM_MMAP_MIN_ADDR
+     * (64k).  Hence, we adaptively move the bottom of the region up a page
+     * at a time until we succeed in getting a reservation.
+     */
+    for (page_addr = 0;
+         page_addr < NACL_SYSCALL_START_ADDR;
+         page_addr += NACL_PAGESIZE) {
+      mmap_rval = mmap((void *) page_addr,
+                       NACL_SYSCALL_START_ADDR - page_addr,
+                       PROT_NONE,
+                       MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS | MAP_NORESERVE,
+                       -1, 0);
+      if (page_addr == (uintptr_t)mmap_rval) {
+        /* Success; the pages are now protected. */
+        break;
+      } else if (MAP_FAILED == mmap_rval &&
+                 (EPERM == errno || EACCES == errno)) {
+        /* Normal; this is an invalid page for this process and
+         * doesn't need to be protected. Continue with next page.
+         */
+      } else {
+        NaClLog(LOG_ERROR, ("NaClMemoryProtection: "
+                            " mmap(0x%08"NACL_PRIxPTR") failed, "
+                            " error %d (NULL pointer guard page)\n"),
+                page_addr, errno);
+        return LOAD_MPROTECT_FAIL;
+      }
+    }
 #endif
   } else {
     err = NaCl_mprotect((void *) start_addr,
