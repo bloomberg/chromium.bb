@@ -147,7 +147,7 @@ deps = {
     (Var("googlecode_url") % "ots") + "/trunk@94",
 
   "src/tools/page_cycler/acid3":
-    "/trunk/deps/page_cycler/acid3@102714",
+    "/trunk/deps/page_cycler/acid3@150075",
 
   "src/chrome/test/data/perf/canvas_bench":
     "/trunk/deps/canvas_bench@122605",
@@ -502,7 +502,7 @@ deps_os = {
       Var("webkit_trunk") + "/Tools/gdb@" + Var("webkit_revision"),
 
     "src/third_party/gold":
-      "/trunk/deps/third_party/gold@124239",
+      "/trunk/deps/third_party/gold@149858",
 
     "src/third_party/libmtp":
       "/trunk/deps/third_party/libmtp@149713",
