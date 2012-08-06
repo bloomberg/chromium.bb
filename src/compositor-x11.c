@@ -1183,29 +1183,28 @@ output_section_done(void *data)
 	if (!output || !output_name || !output_mode) {
 		free(output_name);
 		output_name = NULL;
-		free(output_mode);
-		output_mode = NULL;
-		return;
+		goto err_free;
 	}
 
 	output->name = output_name;
 
 	if (output_name[0] != 'X') {
 		x11_free_configured_output(output);
-		return;
+		goto err_free;
 	}
 
 	if (sscanf(output_mode, "%dx%d", &output->width, &output->height) != 2) {
 		weston_log("Invalid mode \"%s\" for output %s\n",
 						output_mode, output_name);
 		x11_free_configured_output(output);
-		return;
+		goto err_free;
 	}
 
+	wl_list_insert(configured_output_list.prev, &output->link);
+
+err_free:
 	free(output_mode);
 	output_mode = NULL;
-
-	wl_list_insert(configured_output_list.prev, &output->link);
 }
 
 WL_EXPORT struct weston_compositor *
