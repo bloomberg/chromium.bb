@@ -363,6 +363,7 @@ void GDataDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
 
     // TODO(achuith): Stop the pending upload and delete the file.
     case DownloadItem::CANCELLED:
+    case DownloadItem::REMOVING:
     case DownloadItem::INTERRUPTED:
       RemovePendingDownload(download);
       break;
@@ -372,10 +373,6 @@ void GDataDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
   }
 
   DVLOG(1) << "Number of pending downloads=" << pending_downloads_.size();
-}
-
-void GDataDownloadObserver::OnDownloadDestroyed(DownloadItem* download) {
-  RemovePendingDownload(download);
 }
 
 void GDataDownloadObserver::AddPendingDownload(DownloadItem* download) {

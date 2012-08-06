@@ -296,6 +296,10 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
     case DownloadItem::INTERRUPTED:
       ReportFailure(kDownloadInterruptedError);
       break;
+    case DownloadItem::REMOVING:
+      download_item_->RemoveObserver(this);
+      download_item_ = NULL;
+      break;
     case DownloadItem::COMPLETE:
       // Wait for other notifications if the download is really an extension.
       if (!download_crx_util::IsExtensionDownload(*download))
@@ -307,10 +311,8 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
   }
 }
 
-void WebstoreInstaller::OnDownloadDestroyed(DownloadItem* download) {
+void WebstoreInstaller::OnDownloadOpened(DownloadItem* download) {
   CHECK_EQ(download_item_, download);
-  download_item_->RemoveObserver(this);
-  download_item_ = NULL;
 }
 
 void WebstoreInstaller::StartDownload(const FilePath& file) {

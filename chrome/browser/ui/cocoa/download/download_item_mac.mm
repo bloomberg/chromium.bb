@@ -46,6 +46,9 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
   }
 
   switch (download->GetState()) {
+    case DownloadItem::REMOVING:
+      [item_controller_ remove];  // We're deleted now!
+      break;
     case DownloadItem::COMPLETE:
       if (download->GetAutoOpened()) {
         [item_controller_ remove];  // We're deleted now!
@@ -64,10 +67,6 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
     default:
       NOTREACHED();
   }
-}
-
-void DownloadItemMac::OnDownloadDestroyed(content::DownloadItem* download) {
-  [item_controller_ remove];  // We're deleted now!
 }
 
 void DownloadItemMac::OnDownloadOpened(content::DownloadItem* download) {

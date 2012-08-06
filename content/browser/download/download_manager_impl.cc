@@ -321,9 +321,13 @@ void DownloadManagerImpl::Shutdown() {
   // and all in progress downloads have been cancelled.  We can now delete
   // anything left.
 
+  // Copy downloads_ to separate container so as not to set off checks
+  // in DownloadItem destruction.
+  DownloadMap downloads_to_delete;
+  downloads_to_delete.swap(downloads_);
+
   active_downloads_.clear();
-  STLDeleteValues(&downloads_);
-  downloads_.clear();
+  STLDeleteValues(&downloads_to_delete);
 
   // We'll have nothing more to report to the observers after this point.
   observers_.Clear();
@@ -613,6 +617,13 @@ void DownloadManagerImpl::OnResponseCompleted(int32 download_id,
 
 void DownloadManagerImpl::AssertStateConsistent(
     DownloadItemImpl* download) const {
+  if (download->GetState() == DownloadItem::REMOVING) {
+    DCHECK(!ContainsKey(downloads_, download->GetId()));
+    DCHECK(!ContainsKey(active_downloads_, download->GetId()));
+    return;
+  }
+
+  // Should be in downloads_ if we're not REMOVING.
   CHECK(ContainsKey(downloads_, download->GetId()));
 
   int64 state = download->GetState();
@@ -771,16 +782,20 @@ int DownloadManagerImpl::RemoveDownloadItems(
 
   // Delete from internal maps.
   for (DownloadItemImplVector::const_iterator it = pending_deletes.begin();
-       it != pending_deletes.end();
-       ++it) {
+      it != pending_deletes.end();
+      ++it) {
     DownloadItemImpl* download = *it;
     DCHECK(download);
-    int32 download_id = download->GetId();
-    delete download;
-    downloads_.erase(download_id);
+    downloads_.erase(download->GetId());
   }
+
+  // Tell observers to refresh their views.
   NotifyModelChanged();
-  return static_cast<int>(pending_deletes.size());
+
+  // Delete the download items themselves.
+  const int num_deleted = static_cast<int>(pending_deletes.size());
+  STLDeleteContainerPointers(pending_deletes.begin(), pending_deletes.end());
+  return num_deleted;
 }
 
 void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
@@ -807,6 +822,8 @@ int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
   if (delegate_)
     delegate_->RemoveItemsFromPersistentStoreBetween(remove_begin, remove_end);
 
+  // All downloads visible to the user will be in the history,
+  // so scan that map.
   DownloadItemImplVector pending_deletes;
   for (DownloadMap::const_iterator it = downloads_.begin();
       it != downloads_.end();
@@ -817,7 +834,6 @@ int DownloadManagerImpl::RemoveDownloadsBetween(base::Time remove_begin,
         (remove_end.is_null() || download->GetStartTime() < remove_end) &&
         (download->IsComplete() || download->IsCancelled())) {
       AssertStateConsistent(download);
-      download->NotifyRemoved();
       pending_deletes.push_back(download);
     }
   }

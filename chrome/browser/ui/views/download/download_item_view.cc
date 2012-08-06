@@ -297,6 +297,9 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
         StopDownloadProgress();
         LoadIcon();
         break;
+      case DownloadItem::REMOVING:
+        parent_->RemoveDownloadView(this);  // This will delete us!
+        return;
       default:
         NOTREACHED();
     }
@@ -315,10 +318,6 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   // are spaces between each DownloadItemView that the parent is responsible
   // for painting.
   parent()->SchedulePaint();
-}
-
-void DownloadItemView::OnDownloadDestroyed(DownloadItem* download) {
-  parent_->RemoveDownloadView(this);  // This will delete us!
 }
 
 void DownloadItemView::OnDownloadOpened(DownloadItem* download) {

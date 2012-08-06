@@ -87,6 +87,8 @@ const char* DebugDownloadStateString(DownloadItem::DownloadState state) {
       return "COMPLETE";
     case DownloadItem::CANCELLED:
       return "CANCELLED";
+    case DownloadItem::REMOVING:
+      return "REMOVING";
     case DownloadItem::INTERRUPTED:
       return "INTERRUPTED";
     default:
@@ -297,7 +299,8 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
 
 DownloadItemImpl::~DownloadItemImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadDestroyed(this));
+
+  TransitionTo(REMOVING);
   STLDeleteContainerPairSecondPointers(
       external_data_map_.begin(), external_data_map_.end());
   delegate_->AssertStateConsistent(this);
@@ -651,13 +654,9 @@ void DownloadItemImpl::Remove() {
   Cancel(true);
   delegate_->AssertStateConsistent(this);
 
-  NotifyRemoved();
+  TransitionTo(REMOVING);
   delegate_->DownloadRemoved(this);
   // We have now been deleted.
-}
-
-void DownloadItemImpl::NotifyRemoved() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
 }
 
 bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
