@@ -444,10 +444,10 @@ Press Search key to cancel.
         Maximize
       </message>
       <message name="IDS_ASH_SNAP_WINDOW_RIGHT" desc="A help text to show that when the button gets clicked the window get snapped to the right side.">
-        Snap to right side
+        Right
       </message>
       <message name="IDS_ASH_SNAP_WINDOW_LEFT" desc="A help text to show that when the button gets clicked the window get snapped to the left side.">
-        Snap to left side
+        Left
       </message>
       <message name="IDS_ASH_RESTORE_WINDOW" desc="A help text to show that when the button gets clicked the window gets restored to its normal - non maximized - state.">
         Restore
