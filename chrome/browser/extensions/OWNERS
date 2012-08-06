@@ -6,13 +6,13 @@
 # chrome/browser/chromeos/extensions/OWNERS
 # chrome/common/extensions/OWNERS
 # chrome/renderer/extensions/OWNERS
+# chrome/renderer/resources/extensions/OWNERS
 aa@chromium.org
 asargent@chromium.org
 erikkay@chromium.org
 finnur@chromium.org
 jstritar@chromium.org
 kalman@chromium.org
-kathyw@chromium.org
 koz@chromium.org
 mihaip@chromium.org
 miket@chromium.org
