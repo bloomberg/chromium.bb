@@ -19,9 +19,9 @@ class AppListBubbleBorder : public views::BubbleBorder2 {
   virtual ~AppListBubbleBorder();
 
  private:
-  // views::ImagelessBubbleBorder overrides:
-  void PaintBackground(gfx::Canvas* canvas,
-                       const gfx::Rect& bounds) const;
+  // views::BubbleBorder2 overrides:
+  virtual void PaintBackground(gfx::Canvas* canvas,
+                               const gfx::Rect& bounds) const OVERRIDE;
 
   // AppListView hosted inside this bubble.
   const views::View* app_list_view_;  // Owned by views hierarchy.

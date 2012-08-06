@@ -74,13 +74,13 @@ void AppListView::InitAsBubble(
       kArrowOffset));
   views::BubbleDelegateView::CreateBubble(this);
 
-  // Resets default background since AppListBubbleBorder paints background.
-  GetBubbleFrameView()->set_background(NULL);
-
   // Overrides border with AppListBubbleBorder.
   bubble_border_ = new AppListBubbleBorder(this, search_box_view_);
   GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
   SetBubbleArrowLocation(arrow_location);
+
+  // Resets default background since AppListBubbleBorder paints background.
+  GetBubbleFrameView()->set_background(NULL);
 
   CreateModel();
 }

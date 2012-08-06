@@ -50,8 +50,8 @@ class VIEWS_EXPORT BubbleBorder2 : public BubbleBorder {
   virtual int GetBorderThickness() const OVERRIDE;
 
  protected:
-  void PaintBackground(gfx::Canvas* canvas,
-                       const gfx::Rect& bounds) const;
+  virtual void PaintBackground(gfx::Canvas* canvas,
+                               const gfx::Rect& bounds) const;
 
  private:
   // Gets arrow offset based on arrow location and |offset_|.
