@@ -228,8 +228,6 @@ InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
                keyEquivalent:@""];
   [titleItem setState:NSOffState];
 
-  [menu addItem:[NSMenuItem separatorItem]];
-
   // Add all capture devices.
   for (int i = 0; i < deviceMenuModel_->GetItemCount(); ++i) {
     if (deviceMenuModel_->GetCommandIdAt(i) == -1) {
