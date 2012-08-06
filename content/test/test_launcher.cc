@@ -299,52 +299,35 @@ base::TimeDelta GetTestTerminationTimeout(const std::string& test_name,
   return timeout;
 }
 
-// Runs test specified by |test_name| in a child process,
-// and returns the exit code.
-int RunTest(TestLauncherDelegate* launcher_delegate,
-            const std::string& test_name,
-            base::TimeDelta default_timeout,
-            bool* was_timeout) {
-  if (was_timeout)
-    *was_timeout = false;
-
-#if defined(OS_MACOSX)
-  // Some of the below method calls will leak objects if there is no
-  // autorelease pool in place.
-  base::mac::ScopedNSAutoreleasePool pool;
-#endif
-
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  CommandLine new_cmd_line(cmd_line->GetProgram());
-  CommandLine::SwitchMap switches = cmd_line->GetSwitches();
-
-  // Strip out gtest_output flag because otherwise we would overwrite results
-  // of the previous test. We will generate the final output file later
-  // in RunTests().
-  switches.erase(kGTestOutputFlag);
-
-  // Strip out gtest_repeat flag because we can only run one test in the child
-  // process (restarting the browser in the same process is illegal after it
-  // has been shut down and will actually crash).
-  switches.erase(kGTestRepeatFlag);
-
-  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
-       iter != switches.end(); ++iter) {
-    new_cmd_line.AppendSwitchNative((*iter).first, (*iter).second);
+int RunTestInternal(const testing::TestCase* test_case,
+                    const std::string& test_name,
+                    CommandLine* command_line,
+                    base::TimeDelta default_timeout,
+                    bool* was_timeout) {
+  if (test_case) {
+    std::string pre_test_name = test_name;
+    ReplaceFirstSubstringAfterOffset(&pre_test_name, 0, ".", ".PRE_");
+    for (int i = 0; i < test_case->total_test_count(); ++i) {
+      const testing::TestInfo* test_info = test_case->GetTestInfo(i);
+      std::string cur_test_name = test_info->test_case_name();
+      cur_test_name.append(".");
+      cur_test_name.append(test_info->name());
+      if (cur_test_name == pre_test_name) {
+        int exit_code = RunTestInternal(test_case, pre_test_name, command_line,
+                                        default_timeout, was_timeout);
+        if (exit_code != 0)
+          return exit_code;
+      }
+    }
   }
+
+  CommandLine new_cmd_line(*command_line);
 
   // Always enable disabled tests.  This method is not called with disabled
   // tests unless this flag was specified to the browser test executable.
   new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
   new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
   new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
-
-  // Do not let the child ignore failures.  We need to propagate the
-  // failure status back to the parent.
-  new_cmd_line.AppendSwitch(base::TestSuite::kStrictFailureHandling);
-
-  if (!launcher_delegate->AdjustChildProcessCommandLine(&new_cmd_line))
-    return -1;
 
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
   if (browser_wrapper) {
@@ -402,6 +385,52 @@ int RunTest(TestLauncherDelegate* launcher_delegate,
   return exit_code;
 }
 
+// Runs test specified by |test_name| in a child process,
+// and returns the exit code.
+int RunTest(TestLauncherDelegate* launcher_delegate,
+            const testing::TestCase* test_case,
+            const std::string& test_name,
+            base::TimeDelta default_timeout,
+            bool* was_timeout) {
+  if (was_timeout)
+    *was_timeout = false;
+
+#if defined(OS_MACOSX)
+  // Some of the below method calls will leak objects if there is no
+  // autorelease pool in place.
+  base::mac::ScopedNSAutoreleasePool pool;
+#endif
+
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  CommandLine new_cmd_line(cmd_line->GetProgram());
+  CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+
+  // Strip out gtest_output flag because otherwise we would overwrite results
+  // of the previous test. We will generate the final output file later
+  // in RunTests().
+  switches.erase(kGTestOutputFlag);
+
+  // Strip out gtest_repeat flag because we can only run one test in the child
+  // process (restarting the browser in the same process is illegal after it
+  // has been shut down and will actually crash).
+  switches.erase(kGTestRepeatFlag);
+
+  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+       iter != switches.end(); ++iter) {
+    new_cmd_line.AppendSwitchNative((*iter).first, (*iter).second);
+  }
+
+  // Do not let the child ignore failures.  We need to propagate the
+  // failure status back to the parent.
+  new_cmd_line.AppendSwitch(base::TestSuite::kStrictFailureHandling);
+
+  if (!launcher_delegate->AdjustChildProcessCommandLine(&new_cmd_line))
+    return -1;
+
+  return RunTestInternal(
+      test_case, test_name, &new_cmd_line, default_timeout, was_timeout);
+}
+
 bool RunTests(TestLauncherDelegate* launcher_delegate,
               bool should_shard,
               int total_shards,
@@ -454,6 +483,9 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
         continue;
       }
 
+      if (StartsWithASCII(test_info->name(), "PRE_", true))
+        continue;
+
       // Skip the test that doesn't match the filter string (if given).
       if ((!positive_filter.empty() &&
            !MatchesFilter(test_name, positive_filter)) ||
@@ -479,6 +511,7 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
       ++test_run_count;
       bool was_timeout = false;
       int exit_code = RunTest(launcher_delegate,
+                              test_case,
                               test_name,
                               TestTimeouts::action_max_timeout(),
                               &was_timeout);
@@ -641,6 +674,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     bool has_filter = command_line->HasSwitch(kGTestFilterFlag);
     if (warmup || (!should_shard && !has_filter)) {
       exit_code = RunTest(launcher_delegate,
+                          NULL,
                           empty_test,
                           TestTimeouts::large_test_timeout(),
                           NULL);

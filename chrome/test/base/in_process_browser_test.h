@@ -80,6 +80,19 @@ class RuleBasedHostResolverProc;
 // InProcessBrowserTest disables the sandbox when running.
 //
 // See ui_test_utils for a handful of methods designed for use with this class.
+//
+// It's possible to write browser tests that span a restart by splitting each
+// run of the browser process into a separate test. Example:
+//
+// IN_PROC_BROWSER_TEST_F(Foo, PRE_Bar) {
+//   do something
+// }
+//
+// IN_PROC_BROWSER_TEST_F(Foo, Bar) {
+//   verify something persisted from before
+// }
+//
+//  This is recursive, so PRE_PRE_Bar would run before PRE_BAR.
 class InProcessBrowserTest : public BrowserTestBase {
  public:
   InProcessBrowserTest();

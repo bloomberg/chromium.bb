@@ -23,6 +23,26 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/gfx/rect.h"
 
+// On GTK, resizing happens asynchronously and we currently don't have a way to
+// get called back (it's probably possible, but we don't have that code). Since
+// the GTK code is going away, not spending more time on this.
+#if !defined(TOOLKIT_GTK)
+
+typedef InProcessBrowserTest PreservedWindowPlacement;
+
+IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, PRE_Test) {
+  browser()->window()->SetBounds(gfx::Rect(20, 30, 400, 500));
+}
+
+IN_PROC_BROWSER_TEST_F(PreservedWindowPlacement, Test) {
+  gfx::Rect bounds = browser()->window()->GetBounds();
+
+  gfx::Rect expected_bounds(gfx::Rect(20, 30, 400, 500));
+  ASSERT_EQ(expected_bounds, bounds);
+}
+
+#endif  // defined(TOOLKIT_GTK)
+
 class PreferenceServiceTest : public InProcessBrowserTest {
  public:
   explicit PreferenceServiceTest(bool new_profile) : new_profile_(new_profile) {
