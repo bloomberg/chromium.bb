@@ -108,6 +108,7 @@ void ChildThread::Init() {
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
   channel_->AddFilter(new ChildTraceMessageFilter());
+  LOG(INFO) << "ChildThread::Init";
 
 #if defined(OS_POSIX)
   // Check that --process-type is specified so we don't do this in unit tests
@@ -134,6 +135,10 @@ ChildThread::~ChildThread() {
   // automatically.  We used to watch the object handle on Windows to do this,
   // but it wasn't possible to do so on POSIX.
   channel_->ClearIPCTaskRunner();
+}
+
+void ChildThread::OnChannelConnected(int32 peer_pid) {
+  LOG(INFO) << "ChildThread::OnChannelConnected";
 }
 
 void ChildThread::OnChannelError() {

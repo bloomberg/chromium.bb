@@ -115,12 +115,13 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
     on_channel_error_called_ = on_channel_error_called;
   }
 
- private:
-  void Init();
-
   // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
+
+ private:
+  void Init();
 
 #if defined(USE_TCMALLOC)
   void OnGetTcmallocStats();

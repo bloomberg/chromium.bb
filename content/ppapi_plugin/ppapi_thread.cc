@@ -124,7 +124,9 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
   return true;
 }
+
 void PpapiThread::OnChannelConnected(int32 peer_pid) {
+  ChildThread::OnChannelConnected(peer_pid);
 #if defined(OS_WIN)
   if (is_broker_)
     peer_handle_.Set(::OpenProcess(PROCESS_DUP_HANDLE, FALSE, peer_pid));
