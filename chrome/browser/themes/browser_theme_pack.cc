@@ -203,15 +203,15 @@ bool InputScalesValid(const char* input,
 }
 
 // Returns |scale_factors| as a string to be written to disk.
-base::StringPiece GetScaleFactorsAsString(
+std::string GetScaleFactorsAsString(
     const std::vector<ui::ScaleFactor>& scale_factors) {
   size_t scales_size = scale_factors.size() + 1;
   float* scales = new float[scales_size];
   for (size_t i = 0; i < scale_factors.size(); ++i)
     scales[i] = ui::GetScaleFactorScale(scale_factors[i]);
   scales[scales_size - 1] = -1.0f;
-  base::StringPiece out_string = base::StringPiece(
-      reinterpret_cast<const char*>(&scales),
+  std::string out_string = std::string(
+      reinterpret_cast<const char*>(scales),
       scales_size * sizeof(float));
   delete[] scales;
   return out_string;
@@ -540,7 +540,10 @@ bool BrowserThemePack::WriteToDisk(const FilePath& path) const {
       reinterpret_cast<const char*>(source_images_),
       source_count * sizeof(*source_images_));
 
-  resources[kScaleFactorsID] = GetScaleFactorsAsString(scale_factors_);
+  // Store results of GetScaleFactorsAsString() in std::string as
+  // base::StringPiece does not copy data in constructor.
+  std::string scale_factors_string = GetScaleFactorsAsString(scale_factors_);
+  resources[kScaleFactorsID] = scale_factors_string;
 
   AddRawImagesTo(image_memory_, &resources);
 
