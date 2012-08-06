@@ -59,7 +59,8 @@ def CleanStalePackages(boards, package_atoms):
       runcmd = cros_build_lib.SudoRunCommand
 
     if package_atoms:
-      runcmd(['emerge' + suffix, '-q', '--unmerge'] + package_atoms);
+      runcmd(['emerge' + suffix, '-q', '--unmerge'] + package_atoms,
+             extra_env={'CLEAN_DELAY': '0'})
     runcmd(['eclean' + suffix, '-d', 'packages'],
            redirect_stdout=True, redirect_stderr=True)
 
