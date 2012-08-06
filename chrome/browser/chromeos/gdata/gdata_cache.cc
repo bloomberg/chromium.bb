@@ -9,6 +9,7 @@
 #include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -38,20 +39,6 @@ const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
 const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
 
-// Returns the home directory path, or an empty string if the home directory
-// is not found.
-// Copied from webkit/chromeos/cros_mount_point_provider.h.
-// TODO(satorux): Share the code.
-std::string GetHomeDirectory() {
-  if (base::chromeos::IsRunningOnChromeOS())
-    return "/home/chronos/user";
-
-  const char* home = getenv("HOME");
-  if (home)
-    return home;
-  return "";
-}
-
 // Used to tweak GetAmountOfFreeDiskSpace() behavior for testing.
 FreeDiskSpaceGetterInterface* global_free_disk_getter_for_testing = NULL;
 
@@ -61,8 +48,12 @@ int64 GetAmountOfFreeDiskSpace() {
   if (global_free_disk_getter_for_testing)
     return global_free_disk_getter_for_testing->AmountOfFreeDiskSpace();
 
-  return base::SysInfo::AmountOfFreeDiskSpace(
-      FilePath::FromUTF8Unsafe(GetHomeDirectory()));
+  FilePath path;
+  if (!PathService::Get(base::DIR_HOME, &path)) {
+    LOG(ERROR) << "Home directory not found";
+    return -1;
+  }
+  return base::SysInfo::AmountOfFreeDiskSpace(path);
 }
 
 // Returns true if we have sufficient space to store the given number of

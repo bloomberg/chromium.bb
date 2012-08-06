@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
@@ -30,18 +31,6 @@ namespace {
 
 const char kChromeUIScheme[] = "chrome";
 
-// Returns the home directory path, or an empty string if the home directory
-// is not found.
-std::string GetHomeDirectory() {
-  if (base::chromeos::IsRunningOnChromeOS())
-    return "/home/chronos/user";
-
-  const char* home = getenv("HOME");
-  if (home)
-    return home;
-  return "";
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -63,11 +52,9 @@ CrosMountPointProvider::CrosMountPointProvider(
     : special_storage_policy_(special_storage_policy),
       file_access_permissions_(new FileAccessPermissions()),
       local_file_util_(new fileapi::LocalFileUtil()) {
-  const std::string home = GetHomeDirectory();
-  if (!home.empty()) {
-    AddLocalMountPoint(
-        FilePath::FromUTF8Unsafe(home).AppendASCII("Downloads"));
-  }
+  FilePath home_path;
+  if (PathService::Get(base::DIR_HOME, &home_path))
+    AddLocalMountPoint(home_path.AppendASCII("Downloads"));
   AddLocalMountPoint(FilePath(FILE_PATH_LITERAL("/media/archive")));
   AddLocalMountPoint(FilePath(FILE_PATH_LITERAL("/media/removable")));
 }
