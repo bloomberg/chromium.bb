@@ -5,6 +5,13 @@ Upstream cherry-picks:
 4c53bbe probe_codec: fix memory corruption
 26595cb vorbisdec: fix heap buffer overflow.
 86e35cd flacdec: fix memleaks
+70e76e2 mpegprobe: fix misdetection of mp3
+a9511ce dsputil: make add_hfyu_left_prediction_sse4() support unaligned src.
+12ba355 matroskadec: check element size against stream limit in ebml_parse_elem
+9c06b7f oggdec: Initialize stream index to -1 in ogg_packet.
+fd73a17 oggdec: simplify start time calculation code.
+6b063c8 oggdec: check stream index before using it in ogg_get_length()
+7274a3f mov: dont clip timestamps at 0
 
 
 Current patches:
