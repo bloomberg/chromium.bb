@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/webui/chromeos/diagnostics/diagnostics_ui.h"
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -17,6 +20,9 @@
 namespace chromeos {
 
 namespace {
+
+// JS API callback names.
+const char kJsApiUpdateConnStatus[] = "updateConnectivityStatus";
 
 ////////////////////////////////////////////////////////////////////////////////
 // DiagnosticsHandler
@@ -36,6 +42,12 @@ class DiagnosticsWebUIHandler : public content::WebUIMessageHandler {
   // Called when the page is first loaded.
   void OnPageLoaded(const base::ListValue* args);
 
+  // Called when GetNetworkInterfaces() is complete.
+  // |succeeded|: information was obtained successfully.
+  // |status|: network interfaces information in json. See
+  //      DebugDaemonClient::GetNetworkInterfaces() for details.
+  void OnGetNetworkInterfaces(bool succeeded, const std::string& status);
+
   base::WeakPtrFactory<DiagnosticsWebUIHandler> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsWebUIHandler);
 };
@@ -48,8 +60,25 @@ void DiagnosticsWebUIHandler::RegisterMessages() {
 }
 
 void DiagnosticsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
-  // TODO: invoke debugd methods to retrieve diagnostics information, and
-  // upon completion call javascript function to update status.
+  chromeos::DebugDaemonClient* debugd_client =
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+  DCHECK(debugd_client);
+
+  debugd_client->GetNetworkInterfaces(
+      base::Bind(&DiagnosticsWebUIHandler::OnGetNetworkInterfaces,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DiagnosticsWebUIHandler::OnGetNetworkInterfaces(
+    bool succeeded, const std::string& status) {
+  if (!succeeded)
+    return;
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(status));
+  if (parsed_value.get() && parsed_value->IsType(Value::TYPE_DICTIONARY)) {
+    base::DictionaryValue* result =
+        static_cast<DictionaryValue*>(parsed_value.get());
+    web_ui()->CallJavascriptFunction(kJsApiUpdateConnStatus, *result);
+  }
 }
 
 }  // namespace
@@ -63,6 +92,8 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
 
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIDiagnosticsHost);
+  source->add_resource_path("main.css", IDR_DIAGNOSTICS_MAIN_CSS);
+  source->add_resource_path("main.js", IDR_DIAGNOSTICS_MAIN_JS);
   source->set_default_resource(IDR_DIAGNOSTICS_MAIN_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);

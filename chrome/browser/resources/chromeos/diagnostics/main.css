@@ -1,0 +1,27 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  font-family: 'Chrome Droid Sans', 'Droid Sans Fallback', sans-serif;
+  font-size: 75%;
+  padding: 1em;
+}
+
+body header > h1 {
+  margin: 0;
+  padding: 21px 0 13px;
+}
+
+/* Create a border under the h1 (but before anything that gets appended
+ * to the end of the header, such as the managed prefs banner). */
+body header > h1::after {
+  -webkit-margin-end: 20px;
+  background-color: #eee;
+  content: '';
+  display: block;
+  height: 1px;
+  position: relative;
+  top: 13px;
+}
