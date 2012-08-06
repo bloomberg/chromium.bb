@@ -110,7 +110,9 @@ class TemplateDataSource(object):
       'intros': self._intro_data_source,
       'partials': self,
       'samples': self._samples_data_source,
-      'static': self._static_resources
+      'static': self._static_resources,
+      'true': True,
+      'false': False
     }).text
 
   def __getitem__(self, key):

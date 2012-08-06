@@ -30,14 +30,17 @@ class _MockRequest(object):
 
 class IntegrationTest(unittest.TestCase):
   def testAll(self):
-    for filename in os.listdir(os.path.join('templates', 'public')):
-      if filename in KNOWN_FAILURES or filename.startswith('.'):
-        continue
-      request = _MockRequest(filename)
-      response = _MockResponse()
-      Handler(request, response, local_path='../..').get()
-      self.assertEqual(200, response.status)
-      self.assertTrue(response.out.getvalue())
+    base_path = os.path.join('templates', 'public')
+    for path, dirs, files in os.walk(base_path):
+      for name in files:
+        filename = os.path.join(path, name)
+        if filename in KNOWN_FAILURES or filename.startswith('.'):
+          continue
+        request = _MockRequest(filename.split('/', 2)[-1])
+        response = _MockResponse()
+        Handler(request, response, local_path='../..').get()
+        self.assertEqual(200, response.status)
+        self.assertTrue(response.out.getvalue())
 
   def test404(self):
     request = _MockRequest('junk.html')
@@ -49,7 +52,7 @@ class IntegrationTest(unittest.TestCase):
   def testLocales(self):
     # Use US English, Spanish, and Arabic.
     for lang in ['en-US', 'es', 'ar']:
-      request = _MockRequest('samples.html')
+      request = _MockRequest('extensions/samples.html')
       request.headers['Accept-Language'] = lang + ';q=0.8'
       response = _MockResponse()
       Handler(request, response, local_path='../..').get()

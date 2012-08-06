@@ -1,4 +1,5 @@
 <h1 class="page_title">chrome.experimental.* APIs</h1>
+{{^is_apps}}
 <div class="doc-family extensions">
 <p>
 Before you start, <strong>choose the right version of this page.</strong>
@@ -18,22 +19,32 @@ For details about channel-specific docs,
 see <a href="docs.html#versions">Doc versions</a>.
 </p>
 </div>
+{{/is_apps}}
 
 <h2 id="overview">
 List of APIs
 </h2>
 
+{{^is_apps}}
 <p class="doc-family extensions">
 We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
 on the following experimental APIs:
 </p>
+{{/is_apps}}
 
 <ul>
-  {{#api_list.experimental}}
+  {{?is_apps}}
+  {{#api_list.apps.experimental}}
   <li><a href="{{name}}.html">{{name}}</a></li>
   {{/}}
+  {{:is_apps}}
+  {{#api_list.extensions.experimental}}
+  <li><a href="{{name}}.html">{{name}}</a></li>
+  {{/}}
+  {{/is_apps}}
 </ul>
 
+{{^is_apps}}
 <p class="doc-family extensions">
 Pay special attention to the following APIs,
 which we expect to finalize soon:
@@ -43,6 +54,7 @@ which we expect to finalize soon:
 For examples of using the experimental APIs, see
 <a href="samples.html#experimental">Samples</a>.
 </p>
+{{/is_apps}}
 
 <p class="warning">
 <b>Caution:</b>
@@ -57,6 +69,7 @@ upload items that use experimental APIs.
 <h2 id="using">How to use experimental APIs</h2>
 
 <ol>
+  {{^is_apps}}
   <li class="doc-family extensions">
     Make sure you're using either
     <a href="http://tools.google.com/dlpage/chromesxs">Canary</a>
@@ -72,6 +85,7 @@ upload items that use experimental APIs.
     <a href="http://code.google.com/chrome/extensions/dev/experimental.html">API documentation for the Dev channel</a>,
     write the code for your extension.
   </li>
+  {{/is_apps}}
   <li>
     Specify the "experimental"
     <a href="manifest.html#permissions">permission</a>
@@ -107,12 +121,14 @@ upload items that use experimental APIs.
     </ul>
   </li>
 
+  {{^is_apps}}
   <li class="doc-family extension">
     <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">Give us feedback!</a>
     Your comments and suggestions help us
     improve the APIs and decide
     which ones should move from experimental to supported.
   </li>
+  {{/is_apps}}
 </ol>
 
 <h2 id="other">More APIs</h2>

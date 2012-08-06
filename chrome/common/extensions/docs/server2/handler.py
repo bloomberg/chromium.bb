@@ -113,8 +113,11 @@ class Handler(webapp.RequestHandler):
   def _NavigateToPath(self, path):
     channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
     branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
-    if real_path == '':
-      real_path = 'index.html'
+    # TODO: Detect that these are directories and serve index.html out of them.
+    if real_path.strip('/') == 'apps':
+      real_path = 'apps/index.html'
+    if real_path.strip('/') == 'extensions':
+      real_path = 'extensions/index.html'
     # TODO: This leaks Server instances when branch bumps.
     _GetInstanceForBranch(branch, self._local_path).Get(real_path,
                                                         self.request,
@@ -125,16 +128,16 @@ class Handler(webapp.RequestHandler):
     if '_ah/warmup' in path:
       logging.info('Warmup request.')
       if DEFAULT_BRANCH != 'local':
-        self._NavigateToPath('trunk/samples.html')
-      self._NavigateToPath('dev/samples.html')
-      self._NavigateToPath('beta/samples.html')
-      self._NavigateToPath('stable/samples.html')
+        self._NavigateToPath('extensions/trunk/samples.html')
+      self._NavigateToPath('extensions/dev/samples.html')
+      self._NavigateToPath('extensions/beta/samples.html')
+      self._NavigateToPath('extensions/stable/samples.html')
       return
 
     # Redirect paths like "directory" to "directory/". This is so relative file
     # paths will know to treat this as a directory.
     if os.path.splitext(path)[1] == '' and path[-1] != '/':
       self.redirect(path + '/')
-    path = path.replace('/chrome/extensions/', '')
+    path = path.replace('/chrome/', '')
     path = path.strip('/')
     self._NavigateToPath(path)

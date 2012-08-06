@@ -15,15 +15,22 @@ class BranchUtility(object):
     self._memcache = memcache
 
   def SplitChannelNameFromPath(self, path):
+    prefix = ''
+    if path.startswith('extensions/'):
+      prefix = 'extensions/'
+      path = path[len('extensions/'):]
+    elif path.startswith('apps/'):
+      prefix = 'apps/'
+      path = path[len('apps/'):]
     try:
       first, second = path.split('/', 1)
     except ValueError:
       first = path
       second = ''
     if first in ['trunk', 'dev', 'beta', 'stable']:
-      return (first, second)
+      return (first, prefix + second)
     else:
-      return (self._default_branch, path)
+      return (self._default_branch, prefix + path)
 
   def GetBranchNumberForChannelName(self, channel_name):
     """Returns an empty string if the branch number cannot be found.
