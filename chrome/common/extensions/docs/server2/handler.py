@@ -128,10 +128,10 @@ class Handler(webapp.RequestHandler):
     if '_ah/warmup' in path:
       logging.info('Warmup request.')
       if DEFAULT_BRANCH != 'local':
-        self._NavigateToPath('extensions/trunk/samples.html')
-      self._NavigateToPath('extensions/dev/samples.html')
-      self._NavigateToPath('extensions/beta/samples.html')
-      self._NavigateToPath('extensions/stable/samples.html')
+        self._NavigateToPath('trunk/extensions/samples.html')
+      self._NavigateToPath('dev/extensions/samples.html')
+      self._NavigateToPath('beta/extensions/samples.html')
+      self._NavigateToPath('stable/extensions/samples.html')
       return
 
     # Redirect paths like "directory" to "directory/". This is so relative file

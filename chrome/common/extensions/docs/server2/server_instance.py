@@ -36,11 +36,13 @@ class ServerInstance(object):
   def Get(self, path, request, response):
     templates = self._template_data_source_factory.Create(request)
 
-    if fnmatch(path, 'examples/*.zip'):
-      content = self._example_zipper.Create(path[:-len('.zip')])
+    if fnmatch(path, 'extensions/examples/*.zip'):
+      content = self._example_zipper.Create(
+          path[len('extensions/'):-len('.zip')])
       response.headers['content-type'] = mimetypes.types_map['.zip']
-    elif path.startswith('examples/'):
-      content = self._cache.GetFromFile(DOCS_PATH + '/' + path)
+    elif path.startswith('extensions/examples/'):
+      content = self._cache.GetFromFile(
+          DOCS_PATH + '/' + path[len('extensions/'):])
       response.headers['content-type'] = 'text/plain'
     elif path.startswith('static/'):
       content = self._FetchStaticResource(path, response)

@@ -9,12 +9,14 @@
       return;
     var current_branch = window.bootstrap.branchInfo.current;
     var path = window.location.pathname.split('/');
+    if (path[0] == '')
+      path = path.slice(1);
     var index = path.indexOf(current_branch);
     if (index != -1)
       path[index] = value;
     else
-      path.splice(path.length - 1, 0, value);
-    window.location = path.join('/');
+      path.splice(0, 0, value);
+    window.location = '/' + path.join('/');
   }
 
   document.getElementById('branchChooser').addEventListener(

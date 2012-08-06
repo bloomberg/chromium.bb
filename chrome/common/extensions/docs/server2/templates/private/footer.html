@@ -14,12 +14,11 @@
         {{?is_apps}}
         api_names: {{*api_list.apps.chrome}}.concat(
             {{*api_list.apps.experimental}}),
-        branchInfo: {{*branchInfo}}
         {{:is_apps}}
         api_names: {{*api_list.extensions.chrome}}.concat(
             {{*api_list.extensions.experimental}}),
-        branchInfo: {{*branchInfo}}
         {{/is_apps}}
+        branchInfo: {{*branchInfo}}
       };
     </script>
     <script src="{{static}}/js/branch.js" type="text/javascript"></script>

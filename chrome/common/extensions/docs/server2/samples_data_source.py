@@ -95,7 +95,7 @@ class SamplesDataSource(object):
         if l10n_data['icon'] is None:
           icon_path = self._static_path + DEFAULT_ICON_PATH
         else:
-          icon_path = sample_base_path + '/' + l10n_data['icon']
+          icon_path = '/' + sample_base_path + '/' + l10n_data['icon']
         l10n_data.update({
           'icon': icon_path,
           'path': sample_base_path,
