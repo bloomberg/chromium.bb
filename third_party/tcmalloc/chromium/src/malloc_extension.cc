@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Google Inc.
+// Copyright (c) 2005, Google Inc.
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,6 @@
 #include "gperftools/malloc_extension.h"
 #include "gperftools/malloc_extension_c.h"
 #include "maybe_threads.h"
-#include "thread_cache.h"
 
 using STL_NAMESPACE::string;
 using STL_NAMESPACE::vector;
@@ -219,10 +218,6 @@ void MallocExtension::Register(MallocExtension* implementation) {
   if (!RunningOnValgrind()) {
     current_instance = implementation;
   }
-}
-
-unsigned int MallocExtension::GetBytesAllocatedOnCurrentThread() {
-  return tcmalloc::ThreadCache::GetBytesAllocatedOnCurrentThread();
 }
 
 // -----------------------------------------------------------------------

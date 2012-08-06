@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Google Inc.
+// Copyright (c) 2005, Google Inc.
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without
@@ -306,10 +306,6 @@ class PERFTOOLS_DLL_DECL MallocExtension {
   // Change the malloc implementation.  Typically called by the
   // malloc implementation during initialization.
   static void Register(MallocExtension* implementation);
-
-  // On the current thread, return the total number of bytes allocated.
-  // (Currently only implemented in tcmalloc.)
-  static unsigned int GetBytesAllocatedOnCurrentThread();
 
   // Returns detailed information about malloc's freelists. For each list,
   // return a FreeListInfo:

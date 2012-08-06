@@ -4,8 +4,6 @@
 
 #include "content/public/app/content_main_runner.h"
 
-#include <stdlib.h>
-
 #include "base/allocator/allocator_extension.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -19,7 +17,6 @@
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/profiler/alternate_timer.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_main.h"
@@ -453,17 +450,6 @@ static void ReleaseFreeMemoryThunk() {
     // On windows, we've already set these thunks up in _heap_init()
     base::allocator::SetGetStatsFunction(GetStatsThunk);
     base::allocator::SetReleaseFreeMemoryFunction(ReleaseFreeMemoryThunk);
-
-    // Provide optional hook for monitoring allocation quantities on a
-    // per-thread basis.  Only set the hook if the environment indicates this
-    // needs to be enabled.
-    const char* profiling = getenv(tracked_objects::kAlternateProfilerTime);
-    if (profiling &&
-        (atoi(profiling) == tracked_objects::TIME_SOURCE_TYPE_TCMALLOC)) {
-      tracked_objects::SetAlternateTimeSource(
-          MallocExtension::GetBytesAllocatedOnCurrentThread,
-          tracked_objects::TIME_SOURCE_TYPE_TCMALLOC);
-    }
 #endif
 
     // On Android,
