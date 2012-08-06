@@ -754,44 +754,6 @@ void NaClAppInitialDescriptorHookup(struct NaClApp  *nap) {
   NaClLog(4, "... done.\n");
 }
 
-void NaClAppVmmapUpdate(struct NaClApp    *nap,
-                        uintptr_t         page_num,
-                        size_t            npages,
-                        int               prot,
-                        struct NaClMemObj *nmop,
-                        int               remove) {
-  NaClXMutexLock(&nap->mu);
-  NaClVmmapUpdate(&nap->mem_map,
-                  page_num,
-                  npages,
-                  prot,
-                  nmop,
-                  remove);
-  NaClXMutexUnlock(&nap->mu);
-}
-
-uintptr_t NaClAppVmmapFindSpace(struct NaClApp  *nap,
-                                int             num_pages) {
-  uintptr_t rv;
-
-  NaClXMutexLock(&nap->mu);
-  rv = NaClVmmapFindSpace(&nap->mem_map,
-                          num_pages);
-  NaClXMutexUnlock(&nap->mu);
-  return rv;
-}
-
-uintptr_t NaClAppVmmapFindMapSpace(struct NaClApp *nap,
-                                   int            num_pages) {
-  uintptr_t rv;
-
-  NaClXMutexLock(&nap->mu);
-  rv = NaClVmmapFindMapSpace(&nap->mem_map,
-                             num_pages);
-  NaClXMutexUnlock(&nap->mu);
-  return rv;
-}
-
 void NaClCreateServiceSocket(struct NaClApp *nap) {
   struct NaClDesc *pair[2];
 

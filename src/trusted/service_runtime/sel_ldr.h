@@ -578,19 +578,6 @@ struct NaClAppThread *NaClGetThreadMu(struct NaClApp  *nap,
 
 void NaClAppInitialDescriptorHookup(struct NaClApp  *nap);
 
-void NaClAppVmmapUpdate(struct NaClApp    *nap,
-                        uintptr_t         page_num,
-                        size_t            npages,
-                        int               prot,
-                        struct NaClMemObj *nmop,
-                        int               remove);
-
-uintptr_t NaClAppVmmapFindSpace(struct NaClApp  *nap,
-                                int             num_pages);
-
-uintptr_t NaClAppVmmapFindMapSpace(struct NaClApp *nap,
-                                   int            num_pages);
-
 void NaClCreateServiceSocket(struct NaClApp *nap);
 
 void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
