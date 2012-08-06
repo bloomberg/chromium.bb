@@ -10,6 +10,7 @@
 
 namespace {
 const int kIndentSpaces = 4;
+const char* kSkipString = "@NO_DUMP";
 }
 
 DumpAccessibilityTreeHelper::DumpAccessibilityTreeHelper() {
@@ -31,7 +32,11 @@ void DumpAccessibilityTreeHelper::RecursiveDumpAccessibilityTree(
     prefix[i] = ' ';
   prefix[indent] = '\0';
 
-  *contents += ToString(node, prefix.get());
+  string16 line = ToString(node, prefix.get());
+  if (line.find(ASCIIToUTF16(kSkipString)) != string16::npos)
+    return;
+
+  *contents += line;
   for (size_t i = 0; i < node->children().size(); ++i) {
     RecursiveDumpAccessibilityTree(node->children()[i], contents,
                                    indent + kIndentSpaces);

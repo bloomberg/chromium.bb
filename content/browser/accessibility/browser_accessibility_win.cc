@@ -2726,18 +2726,86 @@ void BrowserAccessibilityWin::PreInitialize() {
     }
   }
 
+  // The calculation of the accessible name of an element has been
+  // standardized in the HTML to Platform Accessibility APIs Implementation
+  // Guide (http://www.w3.org/TR/html-aapi/). In order to return the
+  // appropriate accessible name on Windows, we need to apply some logic
+  // to the fields we get from WebKit.
+  //
+  // TODO(dmazzoni): move most of this logic into WebKit.
+  //
+  // WebKit gives us:
+  //
+  //   name: the default name, e.g. inner text
+  //   title ui element: a reference to a <label> element on the same
+  //       page that labels this node.
+  //   description: accessible labels that override the default name:
+  //       aria-label or aria-labelledby or aria-describedby
+  //   help: the value of the "title" attribute
+  //
+  // On Windows, the logic we apply lets some fields take precedence and
+  // always returns the primary name in "name" and the secondary name,
+  // if any, in "description".
+
+  string16 description, help, title_attr;
+  int title_elem_id = 0;
+  GetIntAttribute(AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT, &title_elem_id);
+  GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION, &description);
+  GetStringAttribute(AccessibilityNodeData::ATTR_HELP, &help);
+
+  // WebKit annoyingly puts the title in the description if there's no other
+  // description, which just confuses the rest of the logic. Put it back.
+  // Now "help" is always the value of the "title" attribute, if present.
+  if (GetHtmlAttribute("title", &title_attr) &&
+      description == title_attr &&
+      help.empty()) {
+    help = description;
+    description = L"";
+    string_attributes_[AccessibilityNodeData::ATTR_DESCRIPTION] = L"";
+    string_attributes_[AccessibilityNodeData::ATTR_HELP] = help;
+  }
+
+  // Now implement the main logic: the descripion should become the name if
+  // it's nonempty, and the help should become the description if
+  // there's no description - or the name if there's no name or description.
+  if (!description.empty()) {
+    name_ = description;
+    description = L"";
+    string_attributes_[AccessibilityNodeData::ATTR_DESCRIPTION] = description;
+  }
+  if (!help.empty() && description.empty()) {
+    description = help;
+    string_attributes_[AccessibilityNodeData::ATTR_DESCRIPTION] = help;
+    string_attributes_[AccessibilityNodeData::ATTR_HELP] = L"";
+  }
+  if (!description.empty() && name_.empty() && !title_elem_id) {
+    name_ = description;
+    description = L"";
+    string_attributes_[AccessibilityNodeData::ATTR_DESCRIPTION] = L"";
+  }
+
+  // If it's a text field, also consider the placeholder.
+  string16 placeholder;
+  if (role_ == AccessibilityNodeData::ROLE_TEXT_FIELD &&
+      HasState(AccessibilityNodeData::STATE_FOCUSABLE) &&
+      GetHtmlAttribute("placeholder", &placeholder)) {
+    if (name_.empty() && !title_elem_id) {
+      name_ = placeholder;
+    } else if (description.empty()) {
+      description = placeholder;
+      string_attributes_[AccessibilityNodeData::ATTR_DESCRIPTION] = description;
+    }
+  }
+
+  // For certain roles (listbox option, static text, and list marker)
+  // WebKit stores the main accessible text in the "value" - swap it so
+  // that it's the "name".
   if (name_.empty() &&
       (role_ == AccessibilityNodeData::ROLE_LISTBOX_OPTION ||
        role_ == AccessibilityNodeData::ROLE_STATIC_TEXT ||
        role_ == AccessibilityNodeData::ROLE_LIST_MARKER)) {
     name_.swap(value_);
   }
-
-  // If this object doesn't have a name but it does have a description,
-  // use the description as its name - because some screen readers only
-  // announce the name.
-  if (name_.empty())
-    GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION, &name_);
 
   // If this doesn't have a value and is linked then set its value to the url
   // attribute. This allows screen readers to read an empty link's destination.
@@ -2751,9 +2819,7 @@ void BrowserAccessibilityWin::PreInitialize() {
   relations_.clear();
 
   // Handle title UI element.
-  int title_elem_id;
-  if (GetIntAttribute(AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT,
-                      &title_elem_id)) {
+  if (title_elem_id) {
     // Add a labelled by relationship.
     CComObject<BrowserAccessibilityRelation>* relation;
     HRESULT hr = CComObject<BrowserAccessibilityRelation>::CreateInstance(

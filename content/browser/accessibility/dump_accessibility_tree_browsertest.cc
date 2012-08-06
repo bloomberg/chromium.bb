@@ -240,6 +240,15 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAWithImg) {
   RunTest(FILE_PATH_LITERAL("a-with-img.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityButtonNameCalc) {
+  RunTest(FILE_PATH_LITERAL("button-name-calc.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityCheckboxNameCalc) {
+  RunTest(FILE_PATH_LITERAL("checkbox-name-calc.html"));
+}
+
 // TODO(dimich): Started to fail in Chrome r149732 (crbug 140397)
 #if defined(OS_WIN)
 #define MAYBE_AccessibilityContenteditableDescendants \
@@ -248,6 +257,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAWithImg) {
 #define MAYBE_AccessibilityContenteditableDescendants \
     AccessibilityContenteditableDescendants
 #endif
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        MAYBE_AccessibilityContenteditableDescendants) {
   RunTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
@@ -255,6 +265,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFooter) {
   RunTest(FILE_PATH_LITERAL("footer.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityInputTextNameCalc) {
+  RunTest(FILE_PATH_LITERAL("input-text-name-calc.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityListMarkers) {

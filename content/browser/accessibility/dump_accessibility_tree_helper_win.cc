@@ -42,10 +42,12 @@ string16 DumpAccessibilityTreeHelper::ToString(
   IAccessibleStateToStringVector(acc_obj->ia_state(), &state_strings);
   IAccessible2StateToStringVector(acc_obj->ia2_state(), &state_strings);
 
-  // Get the description and attributes.
+  // Get the description, help, and attributes.
   string16 description;
   acc_obj->GetStringAttribute(content::AccessibilityNodeData::ATTR_DESCRIPTION,
                               &description);
+  string16 help;
+  acc_obj->GetStringAttribute(content::AccessibilityNodeData::ATTR_HELP, &help);
   const std::vector<string16>& ia2_attributes = acc_obj->ia2_attributes();
 
   // Build the line.
