@@ -706,9 +706,11 @@ weston_log_file_open(const char *filename);
 void
 weston_log_file_close(void);
 int
-weston_log(const char *fmt, ...);
+weston_log(const char *fmt, ...)
+	__attribute__ ((format (printf, 1, 2)));
 int
-weston_log_continue(const char *fmt, ...);
+weston_log_continue(const char *fmt, ...)
+	__attribute__ ((format (printf, 1, 2)));
 
 enum {
 	TTY_ENTER_VT,
