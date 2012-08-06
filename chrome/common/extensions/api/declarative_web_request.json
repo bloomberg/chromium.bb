@@ -23,6 +23,12 @@
             "description": "Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.",
             "items": { "type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"] }
           },
+          "contentType": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if the MIME media type of a response (from the HTTP Content-Type header) is contained in the list.",
+            "items": { "type": "string" }
+          },
           "instanceType": {
             "type": "string", "enum": ["declarativeWebRequest.RequestMatcher"],
             "nodoc": true

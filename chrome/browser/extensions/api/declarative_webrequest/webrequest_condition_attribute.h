@@ -31,7 +31,8 @@ namespace extensions {
 class WebRequestConditionAttribute {
  public:
   enum Type {
-    CONDITION_RESOURCE_TYPE
+    CONDITION_RESOURCE_TYPE,
+    CONDITION_CONTENT_TYPE
   };
 
   WebRequestConditionAttribute();
@@ -98,6 +99,36 @@ class WebRequestConditionAttributeResourceType
   std::vector<ResourceType::Type> types_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResourceType);
+};
+
+// Condition that checks whether a response's Content-Type header has a
+// certain MIME media type.
+class WebRequestConditionAttributeContentType
+    : public WebRequestConditionAttribute {
+ public:
+  virtual ~WebRequestConditionAttributeContentType();
+
+  static bool IsMatchingType(const std::string& instance_type);
+
+  // Factory method, see WebRequestConditionAttribute::Create.
+  static scoped_ptr<WebRequestConditionAttribute> Create(
+      const std::string& name,
+      const base::Value* value,
+      std::string* error);
+
+  // Implementation of WebRequestConditionAttribute:
+  virtual int GetStages() const OVERRIDE;
+  virtual bool IsFulfilled(const WebRequestRule::RequestData& request_data)
+      OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+
+ private:
+  explicit WebRequestConditionAttributeContentType(
+      const std::vector<std::string>& content_types);
+
+  std::vector<std::string> content_types_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeContentType);
 };
 
 }  // namespace extensions

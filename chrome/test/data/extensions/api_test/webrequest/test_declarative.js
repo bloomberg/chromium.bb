@@ -51,6 +51,11 @@ function getURLHttpRedirectTest() {
       "files/extensions/api_test/webrequest/declarative/a.html");
 }
 
+function getURLHttpWithHeaders() {
+  return getServerURL(
+      "files/extensions/api_test/webrequest/declarative/headers.html");
+}
+
 function getURLSetCookie() {
   return getServerURL('set-cookie?Foo=Bar');
 }
@@ -83,7 +88,7 @@ runTests([
         { label: "onErrorOccurred",
           event: "onErrorOccurred",
           details: {
-            url: getURLHttpSimple(),
+            url: getURLHttpWithHeaders(),
             fromCache: false,
             error: "net::ERR_BLOCKED_BY_CLIENT"
           }
@@ -98,10 +103,11 @@ runTests([
                  'ports': [testServerPort, [1000, 2000]],
                  'schemes': ["http"]
              },
-             'resourceType': ["main_frame"]})],
+             'resourceType': ["main_frame"],
+             'contentType': ["text/html"]})],
          'actions': [new CancelRequest()]}
       ],
-      function() {navigateAndWait(getURLHttpSimple());}
+      function() {navigateAndWait(getURLHttpWithHeaders());}
     );
   },
 

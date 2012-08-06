@@ -12,6 +12,7 @@ const char kOnRequest[] = "declarativeWebRequest.onRequest";
 
 // Keys of dictionaries.
 const char kCookieKey[] = "cookie";
+const char kContentTypeKey[] = "contentType";
 const char kDirectionKey[] = "direction";
 const char kDomainKey[] = "domain";
 const char kExpiresKey[] = "expires";

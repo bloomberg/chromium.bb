@@ -12,13 +12,16 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/resource_request_info.h"
+#include "net/http/http_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 
 namespace {
 // Error messages.
-const char kUnknownConditionAttribute[] = "Unknown matching condition: '%s'";
-const char kInvalidValue[] = "Condition '%s' has an invalid value";
+const char kUnknownConditionAttribute[] = "Unknown matching condition: '*'";
+const char kInvalidValue[] = "Condition '*' has an invalid value";
 }
 
 namespace helpers = extension_web_request_api_helpers;
@@ -38,8 +41,9 @@ WebRequestConditionAttribute::~WebRequestConditionAttribute() {}
 // static
 bool WebRequestConditionAttribute::IsKnownType(
     const std::string& instance_type) {
-  return WebRequestConditionAttributeResourceType::IsMatchingType(
-      instance_type);
+  return
+      WebRequestConditionAttributeResourceType::IsMatchingType(instance_type) ||
+      WebRequestConditionAttributeContentType::IsMatchingType(instance_type);
 }
 
 // static
@@ -50,12 +54,14 @@ WebRequestConditionAttribute::Create(
     std::string* error) {
   if (WebRequestConditionAttributeResourceType::IsMatchingType(name)) {
     return WebRequestConditionAttributeResourceType::Create(name, value, error);
+  } else if (WebRequestConditionAttributeContentType::IsMatchingType(name)) {
+    return WebRequestConditionAttributeContentType::Create(name, value, error);
   }
 
-  *error = base::StringPrintf(kUnknownConditionAttribute, name.c_str());
+  *error = ExtensionErrorUtils::FormatErrorMessage(kUnknownConditionAttribute,
+                                                   name);
   return scoped_ptr<WebRequestConditionAttribute>(NULL);
 }
-
 
 //
 // WebRequestConditionAttributeResourceType
@@ -83,9 +89,10 @@ WebRequestConditionAttributeResourceType::Create(
     std::string* error) {
   DCHECK(IsMatchingType(name));
 
-  const ListValue* value_as_list = 0;
+  const ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
-    *error = base::StringPrintf(kInvalidValue, keys::kResourceTypeKey);
+    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+                                                     keys::kResourceTypeKey);
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
   }
 
@@ -97,7 +104,8 @@ WebRequestConditionAttributeResourceType::Create(
     ResourceType::Type type = ResourceType::LAST_TYPE;
     if (!value_as_list->GetString(i, &resource_type_string) ||
         !helpers::ParseResourceType(resource_type_string, &type)) {
-      *error = base::StringPrintf(kInvalidValue, keys::kResourceTypeKey);
+      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+                                                       keys::kResourceTypeKey);
       return scoped_ptr<WebRequestConditionAttribute>(NULL);
     }
     passed_types.push_back(type);
@@ -128,6 +136,79 @@ bool WebRequestConditionAttributeResourceType::IsFulfilled(
 WebRequestConditionAttribute::Type
 WebRequestConditionAttributeResourceType::GetType() const {
   return CONDITION_RESOURCE_TYPE;
+}
+
+//
+// WebRequestConditionAttributeContentType
+//
+
+WebRequestConditionAttributeContentType::
+WebRequestConditionAttributeContentType(
+    const std::vector<std::string>& content_types)
+    : content_types_(content_types) {}
+
+WebRequestConditionAttributeContentType::
+~WebRequestConditionAttributeContentType() {}
+
+// static
+bool WebRequestConditionAttributeContentType::IsMatchingType(
+    const std::string& instance_type) {
+  return instance_type == keys::kContentTypeKey;
+}
+
+// static
+scoped_ptr<WebRequestConditionAttribute>
+WebRequestConditionAttributeContentType::Create(
+      const std::string& name,
+      const base::Value* value,
+      std::string* error) {
+  std::vector<std::string> content_types;
+
+  const ListValue* value_as_list = NULL;
+  if (!value->GetAsList(&value_as_list)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+                                                     keys::kContentTypeKey);
+    return scoped_ptr<WebRequestConditionAttribute>(NULL);
+  }
+
+  for (ListValue::const_iterator it = value_as_list->begin();
+       it != value_as_list->end(); ++it) {
+    std::string content_type;
+    if (!(*it)->GetAsString(&content_type)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
+                                                       keys::kContentTypeKey);
+      return scoped_ptr<WebRequestConditionAttribute>(NULL);
+    }
+    content_types.push_back(content_type);
+  }
+  return scoped_ptr<WebRequestConditionAttribute>(
+      new WebRequestConditionAttributeContentType(content_types));
+}
+
+int WebRequestConditionAttributeContentType::GetStages() const {
+  return ON_HEADERS_RECEIVED;
+}
+
+bool WebRequestConditionAttributeContentType::IsFulfilled(
+    const WebRequestRule::RequestData& request_data) {
+  if (!(request_data.stage & GetStages()))
+    return false;
+  std::string content_type;
+  request_data.original_response_headers->GetNormalizedHeader(
+      net::HttpRequestHeaders::kContentType, &content_type);
+  std::string mime_type;
+  std::string charset;
+  bool had_charset;
+  net::HttpUtil::ParseContentType(
+      content_type, &mime_type, &charset, &had_charset, NULL);
+
+  return std::find(content_types_.begin(), content_types_.end(),
+                   mime_type) != content_types_.end();
+}
+
+WebRequestConditionAttribute::Type
+WebRequestConditionAttributeContentType::GetType() const {
+  return CONDITION_CONTENT_TYPE;
 }
 
 }  // namespace extensions

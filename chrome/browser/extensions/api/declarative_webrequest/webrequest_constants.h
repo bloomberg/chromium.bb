@@ -15,6 +15,7 @@ extern const char kOnRequest[];
 
 // Keys of dictionaries.
 extern const char kCookieKey[];
+extern const char kContentTypeKey[];
 extern const char kDirectionKey[];
 extern const char kDomainKey[];
 extern const char kExpiresKey[];
