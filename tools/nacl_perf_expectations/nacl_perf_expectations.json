@@ -180,7 +180,7 @@
  "nacl-win7-64-bare-newlib-opt/nacl-perf/browser_startup_time.out/AllocAddrSpace_x86-64_nnacl_newlib_static": {"reva": 8556, "revb": 8592, "type": "absolute", "improve": 92, "regress": 111, "sha1": "2ea3e173"},
  "nacl-win7-64-bare-newlib-opt/nacl-perf/browser_startup_time.out/MakeDynText_x86-64_nnacl_newlib_static": {"reva": 8556, "revb": 8592, "type": "absolute", "improve": 14, "regress": 18, "sha1": "b8d48472"},
  "nacl-xp-bare-newlib-opt/nacl-perf/browser_startup_stripped_size.out/x86-32_nnacl_newlib_static": {"reva": 8556, "revb": 8557, "type": "absolute", "better": "lower", "improve": 549, "regress": 608, "sha1": "b73b90c0"},
- "nacl-xp-bare-newlib-opt/nacl-perf/browser_startup_time.out/AllocAddrSpace_x86-32_nnacl_newlib_static": {"reva": 8556, "revb": 8592, "type": "absolute", "improve": 169, "regress": 192, "sha1": "eeaf2029"},
+ "nacl-xp-bare-newlib-opt/nacl-perf/browser_startup_time.out/AllocAddrSpace_x86-32_nnacl_newlib_static": {"reva": 9176, "revb": 9381, "type": "absolute", "improve": 177, "regress": 204, "sha1": "fad4b897"},
  "nacl-xp-bare-newlib-opt/nacl-perf/browser_startup_time.out/MakeDynText_x86-32_nnacl_newlib_static": {"reva": 8556, "revb": 8592, "type": "absolute", "improve": 205, "regress": 238, "sha1": "2a913abe"},
  "load": true
 }
