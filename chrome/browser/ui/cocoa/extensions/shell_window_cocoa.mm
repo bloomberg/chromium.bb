@@ -82,11 +82,27 @@
 
 @end
 
+@interface ControlRegionView : NSView
+@end
+@implementation ControlRegionView
+- (BOOL)mouseDownCanMoveWindow {
+  return NO;
+}
+- (NSView*)hitTest:(NSPoint)aPoint {
+  return nil;
+}
+@end
+
+@interface NSView (WebContentsView)
+- (void)setMouseDownCanMoveWindow:(BOOL)can_move;
+@end
+
 ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
                                    const extensions::Extension* extension,
                                    const GURL& url,
                                    const ShellWindow::CreateParams& params)
     : ShellWindow(profile, extension, url),
+      has_frame_(params.frame == ShellWindow::CreateParams::FRAME_CHROME),
       attention_request_id_(0) {
   // Flip coordinates based on the primary screen.
   NSRect main_screen_rect = [[[NSScreen screens] objectAtIndex:0] frame];
@@ -117,15 +133,55 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
     [window setBottomCornerRounded:NO];
 
-  NSView* view = web_contents()->GetView()->GetNativeView();
-  [view setFrame:[[window contentView] bounds]];
-  [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  [[window contentView] addSubview:view];
-
   window_controller_.reset(
       [[ShellWindowController alloc] initWithWindow:window.release()]);
+
+  NSView* view = web_contents()->GetView()->GetNativeView();
+  [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
+  if (!has_frame_) {
+    // TODO(jeremya): this is a temporary hack to allow moving the window while
+    // we still don't have proper draggable region support.
+    NSView* controlRegion = [[ControlRegionView alloc] init];
+    [controlRegion setFrame:NSMakeRect(0, 0, NSWidth([view bounds]),
+                                       NSHeight([view bounds]) - 20)];
+    [controlRegion setAutoresizingMask:
+        NSViewWidthSizable | NSViewHeightSizable];
+    [view addSubview:controlRegion];
+    [controlRegion release];
+  }
+
+  InstallView();
+
   [[window_controller_ window] setDelegate:window_controller_];
   [window_controller_ setShellWindow:this];
+}
+
+void ShellWindowCocoa::InstallView() {
+  NSView* view = web_contents()->GetView()->GetNativeView();
+  if (has_frame_) {
+    [view setFrame:[[window() contentView] bounds]];
+    [[window() contentView] addSubview:view];
+  } else {
+    // TODO(jeremya): find a cleaner way to send this information to the
+    // WebContentsViewCocoa view.
+    DCHECK([view
+        respondsToSelector:@selector(setMouseDownCanMoveWindow:)]);
+    [view setMouseDownCanMoveWindow:YES];
+
+    NSView* frameView = [[window() contentView] superview];
+    [view setFrame:[frameView bounds]];
+    [frameView addSubview:view];
+
+    [[window() standardWindowButton:NSWindowZoomButton] setHidden:YES];
+    [[window() standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+    [[window() standardWindowButton:NSWindowCloseButton] setHidden:YES];
+  }
+}
+
+void ShellWindowCocoa::UninstallView() {
+  NSView* view = web_contents()->GetView()->GetNativeView();
+  [view removeFromSuperview];
 }
 
 bool ShellWindowCocoa::IsActive() const {
@@ -167,6 +223,12 @@ void ShellWindowCocoa::SetFullscreen(bool fullscreen) {
         kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, /*synchronous=*/true);
   }
 
+  // Since frameless windows insert the WebContentsView into the NSThemeFrame
+  // ([[window contentView] superview]), and since that NSThemeFrame is
+  // destroyed and recreated when we change the styleMask of the window, we
+  // need to remove the view from the window when we change the style, and
+  // add it back afterwards.
+  UninstallView();
   if (fullscreen) {
     restored_bounds_ = [window() frame];
     [window() setStyleMask:NSBorderlessWindowMask];
@@ -176,10 +238,13 @@ void ShellWindowCocoa::SetFullscreen(bool fullscreen) {
     base::mac::RequestFullScreen(base::mac::kFullScreenModeAutoHideAll);
   } else {
     base::mac::ReleaseFullScreen(base::mac::kFullScreenModeAutoHideAll);
-    [window() setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
-                           NSMiniaturizableWindowMask | NSResizableWindowMask];
+    NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                            NSMiniaturizableWindowMask | NSResizableWindowMask |
+                            NSTexturedBackgroundWindowMask;
+    [window() setStyleMask:style_mask];
     [window() setFrame:restored_bounds_ display:YES];
   }
+  InstallView();
 
   // Fade back in.
   if (did_fade_out) {

@@ -37,7 +37,10 @@ class Point;
   WebContentsViewMac* webContentsView_;  // WEAK; owns us
   scoped_nsobject<WebDragSource> dragSource_;
   scoped_nsobject<WebDragDest> dragDest_;
+  BOOL mouseDownCanMoveWindow_;
 }
+
+- (void)setMouseDownCanMoveWindow:(BOOL)canMove;
 
 // Expose this, since sometimes one needs both the NSView and the
 // WebContentsImpl.

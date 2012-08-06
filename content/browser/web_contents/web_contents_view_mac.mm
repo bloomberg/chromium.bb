@@ -412,6 +412,10 @@ void WebContentsViewMac::CloseTab() {
   }
 }
 
+- (void)setMouseDownCanMoveWindow:(BOOL)canMove {
+  mouseDownCanMoveWindow_ = canMove;
+}
+
 - (BOOL)mouseDownCanMoveWindow {
   // This is needed to prevent mouseDowns from moving the window
   // around.  The default implementation returns YES only for opaque
@@ -419,7 +423,7 @@ void WebContentsViewMac::CloseTab() {
   // its subviews do paint their entire frames.  Returning NO here
   // saves us the effort of overriding this method in every possible
   // subview.
-  return NO;
+  return mouseDownCanMoveWindow_;
 }
 
 - (void)pasteboard:(NSPasteboard*)sender provideDataForType:(NSString*)type {

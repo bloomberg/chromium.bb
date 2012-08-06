@@ -73,6 +73,11 @@ class ShellWindowCocoa : public ShellWindow {
 
   NSWindow* window() const;
 
+  void InstallView();
+  void UninstallView();
+
+  bool has_frame_;
+
   bool is_fullscreen_;
   NSRect restored_bounds_;
 
