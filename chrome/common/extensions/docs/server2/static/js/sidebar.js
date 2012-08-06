@@ -65,7 +65,7 @@
       if (item.className == 'leftNavSelected') {
         selectedNode = item;
       } else if (item.firstChild &&
-                 item.firstChild instanceof HTMLSpanElement) {
+                 item.firstChild.tagName == 'SPAN') {
         // Only assign toggles to text nodes in the sidebar.
         var a = document.createElement('a');
         a.className = 'toggle selected';
