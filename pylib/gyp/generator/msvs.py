@@ -1038,6 +1038,8 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
               'AdditionalIncludeDirectories', include_dirs)
   _ToolAppend(tools, 'VCResourceCompilerTool',
               'AdditionalIncludeDirectories', resource_include_dirs)
+  _ToolAppend(tools, 'VCMIDLTool',
+              'AdditionalIncludeDirectories', include_dirs)
   # Add in libraries.
   _ToolAppend(tools, 'VCLinkerTool', 'AdditionalDependencies', libraries)
   if out_file:
@@ -2767,6 +2769,8 @@ def _FinalizeMSBuildSettings(spec, configuration):
               'AdditionalIncludeDirectories', include_dirs)
   _ToolAppend(msbuild_settings, 'ResourceCompile',
               'AdditionalIncludeDirectories', resource_include_dirs)
+  _ToolAppend(msbuild_settings, 'Midl',
+              'AdditionalIncludeDirectories', include_dirs)
   # Add in libraries.
   _ToolAppend(msbuild_settings, 'Link', 'AdditionalDependencies', libraries)
   if out_file:

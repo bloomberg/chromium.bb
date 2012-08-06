@@ -1,0 +1,19 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+#include "additional-include.h"
+
+[
+  object,
+  uuid(226a169e-b96f-47c1-a043-58cad0030530),
+  oleautomation,
+  nonextensible,
+  pointer_default(unique)
+]
+interface IDummy : IUnknown {
+  HRESULT Dummy();
+};
