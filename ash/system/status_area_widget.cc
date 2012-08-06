@@ -325,6 +325,7 @@ void StatusAreaWidget::AddSystemTray(SystemTray* system_tray,
     system_tray_delegate_.reset(new DummySystemTrayDelegate());
 
   system_tray->CreateItems();  // Called after delegate is created.
+  UpdateAfterLoginStatusChange(system_tray_delegate_->GetUserLoginStatus());
 }
 
 void StatusAreaWidget::AddWebNotificationTray(
@@ -367,6 +368,8 @@ bool StatusAreaWidget::ShouldShowNonSystemNotifications() {
 
 void StatusAreaWidget::UpdateAfterLoginStatusChange(
     user::LoginStatus login_status) {
+  if (login_status_ == login_status)
+    return;
   login_status_ = login_status;
   if (system_tray_)
     system_tray_->UpdateAfterLoginStatusChange(login_status);

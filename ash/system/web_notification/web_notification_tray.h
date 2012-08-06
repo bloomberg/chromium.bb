@@ -110,6 +110,9 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   // Hide the message center bubble. Should only be called by StatusAreaWidget.
   void HideMessageCenterBubble();
 
+  // Hide the message center bubble if there are no notifications.
+  void HideMessageCenterBubbleIfEmpty();
+
   // Show a single notification bubble for the most recent notification.
   void ShowNotificationBubble();
 

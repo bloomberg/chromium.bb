@@ -56,6 +56,8 @@ const int kUpdateDelayMs = 50;
 // Limit the number of visible notifications.
 const int kMaxVisibleNotifications = 100;
 const int kAutocloseDelaySeconds = 5;
+const SkColor kMessageCountColor = SkColorSetARGB(0xff, 0xff, 0xff, 0xff);
+const SkColor kMessageCountDimmedColor = SkColorSetARGB(0x60, 0xff, 0xff, 0xff);
 
 // Individual notifications constants
 const int kWebNotificationWidth = 320;
@@ -437,8 +439,10 @@ class WebNotificationView : public views::View,
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
-    if (sender == close_button_)
+    if (sender == close_button_) {
       tray_->RemoveNotification(notification_.id);
+      tray_->HideMessageCenterBubbleIfEmpty();
+    }
   }
 
   // Overridden from MenuButtonListener.
@@ -504,11 +508,17 @@ class WebNotificationButtonView : public views::View,
   virtual ~WebNotificationButtonView() {
   }
 
+  void SetCloseAllVisible(bool visible) {
+    close_all_button_->SetVisible(visible);
+  }
+
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
-    if (sender == close_all_button_)
+    if (sender == close_all_button_) {
       tray_->RemoveAllNotifications();
+      tray_->HideMessageCenterBubbleIfEmpty();
+    }
   }
 
  private:
@@ -545,16 +555,37 @@ class WebContentsView : public views::View {
 
 class MessageCenterContentsView : public WebContentsView {
  public:
+  class ScrollContentView : public views::View {
+   public:
+    ScrollContentView() {
+      views::BoxLayout* layout =
+          new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
+      layout->set_spread_blank_space(true);
+      SetLayoutManager(layout);
+    }
+
+    virtual ~ScrollContentView() {};
+
+    virtual gfx::Size GetPreferredSize() OVERRIDE {
+      if (!preferred_size_.IsEmpty())
+        return preferred_size_;
+      return views::View::GetPreferredSize();
+    }
+
+    void set_preferred_size(const gfx::Size& size) { preferred_size_ = size; }
+
+   private:
+    gfx::Size preferred_size_;
+    DISALLOW_COPY_AND_ASSIGN(ScrollContentView);
+  };
+
   explicit MessageCenterContentsView(WebNotificationTray* tray)
       : WebContentsView(tray) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
-    scroll_content_ = new views::View;
-    scroll_content_->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-
+    scroll_content_ = new ScrollContentView;
     scroller_ = new internal::FixedSizedScrollView;
     scroller_->SetContentsView(scroll_content_);
     AddChildView(scroller_);
@@ -573,25 +604,40 @@ class MessageCenterContentsView : public WebContentsView {
       if (++num_children >= kMaxVisibleNotifications)
         break;
     }
+    if (num_children == 0) {
+      views::Label* label = new views::Label(l10n_util::GetStringUTF16(
+          IDS_ASH_WEB_NOTFICATION_TRAY_NO_MESSAGES));
+      label->SetFont(label->font().DeriveFont(2));
+      label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+      scroll_content_->AddChildView(label);
+      button_view_->SetCloseAllVisible(false);
+    } else {
+      button_view_->SetCloseAllVisible(true);
+    }
     SizeScrollContent();
+    Layout();
     GetWidget()->GetRootView()->SchedulePaint();
   }
 
  private:
   void SizeScrollContent() {
     gfx::Size scroll_size = scroll_content_->GetPreferredSize();
-    int button_height = button_view_->GetPreferredSize().height();
-    int scroll_height = std::min(
-        std::max(scroll_size.height(),
-                 kWebNotificationBubbleMinHeight - button_height),
-        kWebNotificationBubbleMaxHeight - button_height);
+    const int button_height = button_view_->GetPreferredSize().height();
+    const int min_height = kWebNotificationBubbleMinHeight - button_height;
+    const int max_height = kWebNotificationBubbleMaxHeight - button_height;
+    int scroll_height = std::min(std::max(
+        scroll_size.height(), min_height), max_height);
     scroll_size.set_height(scroll_height);
+    if (scroll_height == min_height)
+      scroll_content_->set_preferred_size(scroll_size);
+    else
+      scroll_content_->set_preferred_size(gfx::Size());
     scroller_->SetFixedSize(scroll_size);
     scroller_->SizeToPreferredSize();
   }
 
   internal::FixedSizedScrollView* scroller_;
-  views::View* scroll_content_;
+  ScrollContentView* scroll_content_;
   internal::WebNotificationButtonView* button_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterContentsView);
@@ -731,10 +777,6 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
   void UpdateBubbleView() {
     const WebNotificationList::Notifications& notifications =
         tray_->notification_list()->notifications();
-    if (notifications.size() == 0) {
-      tray_->HideBubble(this);  // deletes |this|!
-      return;
-    }
     contents_view_->Update(notifications);
     bubble_view_->Show();
     bubble_view_->UpdateBubble();
@@ -779,6 +821,7 @@ WebNotificationTray::WebNotificationTray(
   gfx::Font font = count_label_->font();
   count_label_->SetFont(font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
   count_label_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  count_label_->SetEnabledColor(kMessageCountDimmedColor);
 
   tray_container()->set_size(gfx::Size(kTrayWidth, kTrayHeight));
   tray_container()->AddChildView(count_label_);
@@ -837,6 +880,7 @@ void WebNotificationTray::RemoveAllNotifications() {
     }
   }
   notification_list_->RemoveAllNotifications();
+  HideMessageCenterBubble();
   UpdateTrayAndBubble();
 }
 
@@ -873,7 +917,7 @@ void WebNotificationTray::DisableByUrl(const std::string& id) {
 void WebNotificationTray::ShowMessageCenterBubble() {
   if (status_area_widget()->login_status() == user::LOGGED_IN_LOCKED)
     return;
-  if (message_center_bubble() || GetNotificationCount() == 0) {
+  if (message_center_bubble()) {
     UpdateTray();
     return;
   }
@@ -886,10 +930,17 @@ void WebNotificationTray::ShowMessageCenterBubble() {
 }
 
 void WebNotificationTray::HideMessageCenterBubble() {
+  if (!message_center_bubble())
+    return;
   message_center_bubble_.reset();
   show_message_center_on_unlock_ = false;
   notification_list_->SetIsVisible(false);
   status_area_widget()->SetHideSystemNotifications(false);
+}
+
+void WebNotificationTray::HideMessageCenterBubbleIfEmpty() {
+  if (GetNotificationCount() == 0)
+    HideMessageCenterBubble();
 }
 
 void WebNotificationTray::ShowNotificationBubble() {
@@ -966,21 +1017,27 @@ int WebNotificationTray::GetNotificationCount() const {
 void WebNotificationTray::UpdateTray() {
   count_label_->SetText(UTF8ToUTF16(
       GetNotificationText(notification_list()->unread_count())));
+  // Dim the message count text only if the message center is empty.
+  count_label_->SetEnabledColor(
+      (notification_list()->notifications().size() == 0) ?
+      kMessageCountDimmedColor : kMessageCountColor);
+  SetVisible((status_area_widget()->login_status() != user::LOGGED_IN_NONE));
   Layout();
   SchedulePaint();
 }
 
 void WebNotificationTray::UpdateTrayAndBubble() {
   UpdateTray();
-  if (GetNotificationCount() == 0) {
-    HideMessageCenterBubble();
-    HideNotificationBubble();
-    return;
-  }
+
   if (message_center_bubble())
     message_center_bubble()->ScheduleUpdate();
-  if (notification_bubble())
-    notification_bubble()->ScheduleUpdate();
+
+  if (notification_bubble()) {
+    if (GetNotificationCount() == 0)
+      HideNotificationBubble();
+    else
+      notification_bubble()->ScheduleUpdate();
+  }
 }
 
 void WebNotificationTray::HideBubble(Bubble* bubble) {
