@@ -292,10 +292,11 @@ class BookmarkModel : public content::NotificationObserver,
   // See BookmarkService for more details on this.
   virtual bool IsBookmarked(const GURL& url) OVERRIDE;
 
-  // Returns all the bookmarked urls.
+  // Returns all the bookmarked urls and their titles.
   // This method is thread safe.
   // See BookmarkService for more details on this.
-  virtual void GetBookmarks(std::vector<GURL>* urls) OVERRIDE;
+  virtual void GetBookmarks(
+      std::vector<BookmarkService::URLAndTitle>* urls) OVERRIDE;
 
   // Blocks until loaded; this is NOT invoked on the main thread.
   // See BookmarkService for more details on this.

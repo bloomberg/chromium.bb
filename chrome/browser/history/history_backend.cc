@@ -2257,7 +2257,7 @@ void HistoryBackend::DeleteAllHistory() {
   // the original tables directly.
 
   // Get the bookmarked URLs.
-  std::vector<GURL> starred_urls;
+  std::vector<BookmarkService::URLAndTitle> starred_urls;
   BookmarkService* bookmark_service = GetBookmarkService();
   if (bookmark_service)
     bookmark_service_->GetBookmarks(&starred_urls);
@@ -2265,7 +2265,7 @@ void HistoryBackend::DeleteAllHistory() {
   URLRows kept_urls;
   for (size_t i = 0; i < starred_urls.size(); i++) {
     URLRow row;
-    if (!db_->GetRowForURL(starred_urls[i], &row))
+    if (!db_->GetRowForURL(starred_urls[i].url, &row))
       continue;
 
     // Clear the last visit time so when we write these rows they are "clean."

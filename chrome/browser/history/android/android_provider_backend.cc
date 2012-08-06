@@ -749,16 +749,16 @@ bool AndroidProviderBackend::UpdateBookmarks() {
   }
 
   bookmark_service_->BlockTillLoaded();
-  std::vector<GURL> bookmark_urls;
-  bookmark_service_->GetBookmarks(&bookmark_urls);
+  std::vector<BookmarkService::URLAndTitle> bookmarks;
+  bookmark_service_->GetBookmarks(&bookmarks);
 
-  if (bookmark_urls.empty())
+  if (bookmarks.empty())
     return true;
 
   std::vector<URLID> url_ids;
-  for (std::vector<GURL>::const_iterator i = bookmark_urls.begin();
-      i != bookmark_urls.end(); ++i) {
-    URLID url_id = history_db_->GetRowForURL(*i, NULL);
+  for (std::vector<BookmarkService::URLAndTitle>::const_iterator i =
+           bookmarks.begin(); i != bookmarks.end(); ++i) {
+    URLID url_id = history_db_->GetRowForURL(i->url, NULL);
     if (url_id == 0)
       // TODO(michaelbai): Add a row to url and android_url table as the
       // bookmark could be added manually by user or insertted by sync.

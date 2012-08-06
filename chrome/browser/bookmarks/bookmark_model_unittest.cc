@@ -614,13 +614,21 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedNodeForURL) {
 // Makes sure GetBookmarks removes duplicates.
 TEST_F(BookmarkModelTest, GetBookmarksWithDups) {
   const GURL url("http://foo.com/0");
-  model_.AddURL(model_.bookmark_bar_node(), 0, ASCIIToUTF16("blah"), url);
-  model_.AddURL(model_.bookmark_bar_node(), 1, ASCIIToUTF16("blah"), url);
+  const string16 title(ASCIIToUTF16("blah"));
+  model_.AddURL(model_.bookmark_bar_node(), 0, title, url);
+  model_.AddURL(model_.bookmark_bar_node(), 1, title, url);
 
-  std::vector<GURL> urls;
-  model_.GetBookmarks(&urls);
-  EXPECT_EQ(1U, urls.size());
-  ASSERT_TRUE(urls[0] == url);
+  std::vector<BookmarkService::URLAndTitle> bookmarks;
+  model_.GetBookmarks(&bookmarks);
+  ASSERT_EQ(1U, bookmarks.size());
+  EXPECT_EQ(url, bookmarks[0].url);
+  EXPECT_EQ(title, bookmarks[0].title);
+
+  model_.AddURL(model_.bookmark_bar_node(), 2, ASCIIToUTF16("Title2"), url);
+  // Only one returned, even titles are different.
+  bookmarks.clear();
+  model_.GetBookmarks(&bookmarks);
+  EXPECT_EQ(1U, bookmarks.size());
 }
 
 TEST_F(BookmarkModelTest, HasBookmarks) {
