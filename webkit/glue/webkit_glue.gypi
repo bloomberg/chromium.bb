@@ -364,6 +364,8 @@
         'image_decoder.cc',
         'image_decoder.h',
         'image_resource_fetcher.cc',
+        'multi_resolution_image_resource_fetcher.cc',
+        'multi_resolution_image_resource_fetcher.h',
         'image_resource_fetcher.h',
         'multipart_response_delegate.cc',
         'multipart_response_delegate.h',

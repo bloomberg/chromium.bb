@@ -1,6 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include <vector>
 
 #include "base/basictypes.h"
 #include "ui/gfx/size.h"
@@ -27,6 +29,11 @@ class WEBKIT_GLUE_EXPORT ImageDecoder {
   // Call this function to decode the image. If successful, the decoded image
   // will be returned. Otherwise, an empty bitmap will be returned.
   SkBitmap Decode(const unsigned char* data, size_t size) const;
+
+  // Returns all frames found in the image represented by data. If there are
+  // multiple frames at the same size, only the first one is returned.
+  static std::vector<SkBitmap> DecodeAll(
+      const unsigned char* data, size_t size);
 
  private:
   // Size will be empty to get the largest possible size.

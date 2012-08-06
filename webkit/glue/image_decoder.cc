@@ -30,4 +30,15 @@ SkBitmap ImageDecoder::Decode(const unsigned char* data, size_t size) const {
   return image.getSkBitmap();
 }
 
+// static
+std::vector<SkBitmap> ImageDecoder::DecodeAll(
+      const unsigned char* data, size_t size) {
+  const WebKit::WebVector<WebImage>& images = WebImage::framesFromData(
+      WebData(reinterpret_cast<const char*>(data), size));
+  std::vector<SkBitmap> result;
+  for (size_t i = 0; i < images.size(); ++i)
+    result.push_back(images[i].getSkBitmap());
+  return result;
+}
+
 }  // namespace webkit_glue
