@@ -91,16 +91,20 @@ IN_PROC_BROWSER_TEST_F(MediaTest, VideoBear3gpAmrnbMpeg4) {
   PlayVideo("bear_mpeg4_amrnb.3gp");
 }
 
-// TODO(ihf): Enable these audio codecs for CrOS.
-// IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearWavAlaw) {
-//   PlayVideo("bear_alaw.wav");
-// }
-// IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearWavGsmms) {
-//   PlayVideo("bear_gsmms.wav");
-// }
+IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearWavGsmms) {
+  PlayAudio("bear_gsm_ms.wav");
+}
 
 IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearWavMulaw) {
   PlayAudio("bear_mulaw.wav");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearMovPcmS16be) {
+  PlayVideo("bear_pcm_s16be.mov");
+}
+
+IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearMovPcmS24be) {
+  PlayVideo("bear_pcm_s24be.mov");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearFlac) {
