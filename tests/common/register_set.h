@@ -9,14 +9,13 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
-#include "native_client/src/untrusted/nacl/nacl_thread.h"
 
 /*
  * ASM_WITH_REGS(regs, asm_code) executes asm_code with most registers
  * restored from regs, a pointer of type "struct NaClSignalContext *".
  */
 
-#if defined(__i386__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 
 # define ASM_WITH_REGS(regs, asm_code) \
     __asm__( \
@@ -29,10 +28,11 @@
         "movl 0x18(%%eax), %%esi\n" \
         "movl 0x1c(%%eax), %%edi\n" \
         "movl 0x00(%%eax), %%eax\n" \
+        RESET_X86_FLAGS \
         asm_code \
         : : "r"(regs) : "memory")
 
-#elif defined(__x86_64__)
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
 
 # define ASM_WITH_REGS(regs, asm_code) \
     __asm__( \
@@ -53,10 +53,11 @@
         "movq 0x68(%%rbp), %%r13\n" \
         "movq 0x70(%%rbp), %%r14\n" \
         "naclrestbp 0x30(%%rbp), %%r15\n" \
+        RESET_X86_FLAGS \
         asm_code \
         : : "r"(regs) : "memory")
 
-#elif defined(__arm__)
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
 /*
  * In principle we should be able to do just "ldmia r0, {r0-lr}", but:
@@ -105,7 +106,7 @@
 # error Unsupported architecture
 #endif
 
-#if defined(__i386__) || defined(__x86_64__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 /*
  * Normally it is possible to save x86 flags using the 'pushf'
@@ -132,6 +133,10 @@ extern const uint8_t kX86FlagBits[5];
     "jns 0f; lea 1<<7("reg"), "reg"; 0:\n" \
     "jno 0f; lea 1<<11("reg"), "reg"; 0:\n"
 
+/* Reset flags to RESET_X86_FLAGS_VALUE without modifying any registers. */
+#define RESET_X86_FLAGS "testl $0, %%eax\n"
+#define RESET_X86_FLAGS_VALUE ((1 << 2) | (1 << 6))
+
 #endif
 
 /*
@@ -140,7 +145,7 @@ extern const uint8_t kX86FlagBits[5];
  * callee_func in the form of a "struct NaClSignalContext *".
  */
 
-#if defined(__i386__)
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
 
 # define REGS_SAVER_FUNC(def_func, callee_func) \
     void def_func(); \
@@ -150,7 +155,7 @@ extern const uint8_t kX86FlagBits[5];
         #def_func ":\n" \
         /* Push most of "struct NaClSignalContext" in reverse order. */ \
         "push $0\n"  /* Leave space for flags */ \
-        "push $0\n"  /* Leave space for prog_ctr */ \
+        "push $" #def_func "\n"  /* Fill out prog_ctr with known value */ \
         "push %edi\n" \
         "push %esi\n" \
         "push %ebp\n" \
@@ -169,7 +174,7 @@ extern const uint8_t kX86FlagBits[5];
         "call " #callee_func "\n" \
         ".popsection\n")
 
-#elif defined(__x86_64__)
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
 
 # define REGS_SAVER_FUNC(def_func, callee_func) \
     void def_func(); \
@@ -199,6 +204,9 @@ extern const uint8_t kX86FlagBits[5];
         /* Save flags. */ \
         SAVE_X86_FLAGS_INTO_REG("%rax") \
         "movl %eax, 0x88(%rsp)\n" \
+        /* Fill out prog_ctr with known value */ \
+        "leaq " #def_func "(%rip), %rax\n" \
+        "movq %rax, 0x80(%rsp)\n" \
         /* Adjust saved %rsp value to account for preceding pushes. */ \
         "addq $10 * 8, 0x38(%rsp)\n" \
         /* Set argument to callee_func(). */ \
@@ -209,7 +217,7 @@ extern const uint8_t kX86FlagBits[5];
         "call " #callee_func "\n" \
         ".popsection\n")
 
-#elif defined(__arm__)
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
 /*
  * "push {sp}" is undefined ("unpredictable") on ARM, so we move sp to
@@ -223,12 +231,15 @@ extern const uint8_t kX86FlagBits[5];
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \
         #def_func ":\n" \
+        "push {r0}\n"  /* Leave space for prog_ctr */ \
         "push {r14}\n" \
-        "add r14, sp, #4\n" \
+        "add r14, sp, #8\n" \
         "push {r0-r12, r14}\n"  /* Push most of "struct NaClSignalContext" */ \
-        "mov r0, sp\n"  /* Argument to callee_func() */ \
-        /* Padding to put the "bl" at the end of the bundle */ \
-        "nop; nop; nop\n" \
+        /* Now save a correct prog_ctr value */ \
+        "adr r0, " #def_func "\n" \
+        "str r0, [sp, #0x3c]\n" \
+        /* Set argument to callee_func() */ \
+        "mov r0, sp\n" \
         "bl " #callee_func "\n" \
         ".popsection\n")
 

@@ -23,7 +23,7 @@ test_guest = env.ComponentProgram(
 
 test_host = trusted_env.ComponentProgram(
     'suspend_test_host', ['suspend_test_host.c'],
-    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
+    EXTRA_LIBS=['sel', 'test_common'])
 
 node = env.CommandTest('thread_suspension_test.out',
                        env.AddBootstrap(test_host, [test_guest]))
