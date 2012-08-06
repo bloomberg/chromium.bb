@@ -140,6 +140,8 @@ weston_client_launch(struct weston_compositor *compositor,
 	pid_t pid;
 	struct wl_client *client;
 
+	weston_log("launching '%s'\n", path);
+
 	if (os_socketpair_cloexec(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
 		weston_log("weston_client_launch: "
 			"socketpair failed while launching '%s': %m\n",
