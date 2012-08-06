@@ -59,6 +59,7 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
     // We want to kill this process after giving it 30 seconds to run the exit
     // handlers. SIGALRM has a default disposition of terminating the
     // application.
+    LOG(INFO) << "SuicideOnChannelErrorFilter::OnChannelError";
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChildCleanExit))
       alarm(30);
     else
@@ -136,6 +137,7 @@ ChildThread::~ChildThread() {
 }
 
 void ChildThread::OnChannelError() {
+  LOG(INFO) << "ChildThread::OnChannelError";
   set_on_channel_error_called(true);
   MessageLoop::current()->Quit();
 }
