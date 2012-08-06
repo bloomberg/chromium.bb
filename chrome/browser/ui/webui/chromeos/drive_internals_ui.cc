@@ -39,7 +39,8 @@ namespace {
 //
 // The list is sorted by the path.
 void GetGCacheContents(const FilePath& root_path,
-                       base::ListValue* gcache_contents) {
+                       base::ListValue* gcache_contents,
+                       base::DictionaryValue* gcache_summary) {
   using file_util::FileEnumerator;
   // Use this map to sort the result list by the path.
   std::map<FilePath, DictionaryValue*> files;
@@ -52,6 +53,7 @@ void GetGCacheContents(const FilePath& root_path,
       true,  // recursive
       static_cast<FileEnumerator::FileType>(options));
 
+  int64 total_size = 0;
   for (FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     FileEnumerator::FindInfo find_info;
@@ -70,8 +72,9 @@ void GetGCacheContents(const FilePath& root_path,
     entry->SetBoolean("is_symbolic_link", is_symbolic_link);
     entry->SetString("last_modified",
                      gdata::util::FormatTimeAsString(last_modified));
-
     files[current] = entry;
+
+    total_size += size;
   }
 
   // Convert |files| into |gcache_contents|.
@@ -79,6 +82,8 @@ void GetGCacheContents(const FilePath& root_path,
            iter = files.begin(); iter != files.end(); ++iter) {
     gcache_contents->Append(iter->second);
   }
+
+  gcache_summary->SetDouble("total_size", total_size);
 }
 
 // Formats |entry| into text.
@@ -159,7 +164,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnPageLoaded(const base::ListValue* args);
 
   // Called when GetGCacheContents() is complete.
-  void OnGetGCacheContents(base::ListValue* gcache_contents);
+  void OnGetGCacheContents(base::ListValue* gcache_contents,
+                           base::DictionaryValue* cache_summary);
 
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const FilePath& parent_path,
@@ -217,18 +223,27 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   const FilePath root_path =
       gdata::GDataCache::GetCacheRootPath(profile);
   base::ListValue* gcache_contents = new ListValue;
+  base::DictionaryValue* gcache_summary = new DictionaryValue;
   content::BrowserThread::PostBlockingPoolTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetGCacheContents, root_path, gcache_contents),
+      base::Bind(&GetGCacheContents,
+                 root_path,
+                 gcache_contents,
+                 gcache_summary),
       base::Bind(&DriveInternalsWebUIHandler::OnGetGCacheContents,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(gcache_contents)));
+                 base::Owned(gcache_contents),
+                 base::Owned(gcache_summary)));
 }
 
 void DriveInternalsWebUIHandler::OnGetGCacheContents(
-    base::ListValue* gcache_contents) {
+    base::ListValue* gcache_contents,
+    base::DictionaryValue* gcache_summary) {
   DCHECK(gcache_contents);
-  web_ui()->CallJavascriptFunction("updateGCacheContents", *gcache_contents);
+  DCHECK(gcache_summary);
+  web_ui()->CallJavascriptFunction("updateGCacheContents",
+                                   *gcache_contents,
+                                   *gcache_summary);
 
   // Start updating the file system tree section, if we have access token.
   gdata::GDataSystemService* system_service = GetSystemService();

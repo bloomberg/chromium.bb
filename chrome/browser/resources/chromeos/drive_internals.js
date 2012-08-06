@@ -15,8 +15,9 @@ function updateAuthStatus(authStatus) {
  * Updates the GCache Contents section.
  * @param {Array} gcacheContents List of dictionaries describing metadata
  * of files and directories under the GCache directory.
+ * @param {Object} gcacheSummary Dictionary of summary of GCache.
  */
-function updateGCacheContents(gcacheContents) {
+function updateGCacheContents(gcacheContents, gcacheSummary) {
   var tbody = $('gcache-contents');
   for (var i = 0; i < gcacheContents.length; i++) {
     var entry = gcacheContents[i];
@@ -34,6 +35,8 @@ function updateGCacheContents(gcacheContents) {
     tr.appendChild(createElementFromText('td', entry.last_modified));
     tbody.appendChild(tr);
   }
+
+  $('gcache-summary-total-size').textContent = gcacheSummary['total_size'];
 }
 
 /**
