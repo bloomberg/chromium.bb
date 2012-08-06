@@ -1705,6 +1705,19 @@ const char kGeolocationAccessToken[] = "geolocation.access_token";
 const char kRemoteAccessHostFirewallTraversal[] =
     "remote_access.host_firewall_traversal";
 
+// Boolean controlling whether 2-factor auth should be required when connecting
+// to a host (instead of a PIN).
+const char kRemoteAccessHostRequireTwoFactor[] =
+    "remote_access.host_require_two_factor";
+
+// String containing the domain name that hosts must belong to. If blank, then
+// hosts can belong to any domain.
+const char kRemoteAccessHostDomain[] = "remote_access.host_domain";
+
+// String containing the domain name of the Chromoting Directory.
+// Used by Chromoting host and client.
+const char kRemoteAccessHostTalkGadgetPrefix[] =
+    "remote_access.host_talkgadget_prefix";
 
 // The last used printer and its settings.
 const char kPrintPreviewStickySettings[] =

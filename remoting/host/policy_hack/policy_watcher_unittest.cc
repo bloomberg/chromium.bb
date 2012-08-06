@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "remoting/host/constants.h"
 #include "remoting/host/policy_hack/fake_policy_watcher.h"
 #include "remoting/host/policy_hack/mock_policy_callback.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
@@ -95,9 +96,10 @@ class PolicyWatcherTest : public testing::Test {
  private:
   void SetDefaults(base::DictionaryValue& dict) {
     dict.SetBoolean(PolicyWatcher::kNatPolicyName, true);
-    dict.SetBoolean(PolicyWatcher::kRequireTwoFactorPolicyName, false);
+    dict.SetBoolean(PolicyWatcher::kHostRequireTwoFactorPolicyName, false);
     dict.SetString(PolicyWatcher::kHostDomainPolicyName, "");
-    dict.SetString(PolicyWatcher::kTalkGadgetPolicyName, "chromoting");
+    dict.SetString(PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
+                   kDefaultTalkGadgetPrefix);
   }
 };
 

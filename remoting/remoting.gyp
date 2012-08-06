@@ -1239,6 +1239,7 @@
         'host/clipboard_win.cc',
         'host/composite_host_config.cc',
         'host/composite_host_config.h',
+        'host/constants.cc',
         'host/constants.h',
         'host/constants_mac.cc',
         'host/constants_mac.h',
