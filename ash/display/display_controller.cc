@@ -9,6 +9,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -23,7 +24,8 @@ namespace ash {
 namespace internal {
 
 DisplayController::DisplayController()
-    : secondary_display_layout_(RIGHT) {
+    : secondary_display_layout_(RIGHT),
+      dont_warp_mouse_(false) {
   aura::Env::GetInstance()->display_manager()->AddObserver(this);
 }
 
@@ -123,35 +125,41 @@ void DisplayController::SetSecondaryDisplayLayout(
 bool DisplayController::WarpMouseCursorIfNecessary(
     aura::RootWindow* current_root,
     const gfx::Point& point_in_root) {
-  if (root_windows_.size() < 2)
+  if (root_windows_.size() < 2 || dont_warp_mouse_)
     return false;
+
+  // The pointer might be outside the |current_root|. Get the root window where
+  // the pointer is currently on.
+  std::pair<aura::RootWindow*, gfx::Point> actual_location =
+      wm::GetRootWindowRelativeToWindow(current_root, point_in_root);
+  current_root = actual_location.first;
+  // Don't use |point_in_root| below. Instead, use |actual_location.second|
+  // which is in |actual_location.first|'s coordinates.
 
   gfx::Rect root_bounds = current_root->bounds();
   int offset_x = 0;
   int offset_y = 0;
-  if (point_in_root.x() <= root_bounds.x()) {
-    offset_x = -1;
-  } else if (point_in_root.x() >= root_bounds.right() - 1) {
-    offset_x = 1;
-  } else if (point_in_root.y() <= root_bounds.y()) {
-    offset_y = -1;
-  } else if (point_in_root.y() >= root_bounds.bottom() - 1) {
-    offset_y = 1;
+  if (actual_location.second.x() <= root_bounds.x()) {
+    // Use -2, not -1, to avoid infinite loop of pointer warp.
+    offset_x = -2;
+  } else if (actual_location.second.x() >= root_bounds.right() - 1) {
+    offset_x = 2;
+  } else if (actual_location.second.y() <= root_bounds.y()) {
+    offset_y = -2;
+  } else if (actual_location.second.y() >= root_bounds.bottom() - 1) {
+    offset_y = 2;
   } else {
     return false;
   }
 
-  gfx::Point point_in_screen(point_in_root);
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(current_root);
-  screen_position_client->ConvertPointToScreen(current_root,
-                                               &point_in_screen);
+  gfx::Point point_in_screen(actual_location.second);
+  wm::ConvertPointToScreen(current_root, &point_in_screen);
   point_in_screen.Offset(offset_x, offset_y);
-  aura::RootWindow* dst_root = Shell::GetRootWindowAt(point_in_screen);
-  gfx::Point point_in_dst_root(point_in_screen);
 
-  screen_position_client->ConvertPointFromScreen(dst_root,
-                                                 &point_in_dst_root);
+  aura::RootWindow* dst_root = wm::GetRootWindowAt(point_in_screen);
+  gfx::Point point_in_dst_root(point_in_screen);
+  wm::ConvertPointFromScreen(dst_root, &point_in_dst_root);
+
   if (dst_root->bounds().Contains(point_in_dst_root)) {
     DCHECK_NE(dst_root, current_root);
     dst_root->MoveCursorTo(point_in_dst_root);

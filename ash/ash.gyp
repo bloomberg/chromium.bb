@@ -236,6 +236,8 @@
         'wm/base_layout_manager.h',
         'wm/capture_controller.cc',
         'wm/capture_controller.h',
+        'wm/coordinate_conversion.cc',
+        'wm/coordinate_conversion.h',
         'wm/cursor_manager.cc',
         'wm/cursor_manager.h',
         'wm/custom_frame_view_ash.cc',

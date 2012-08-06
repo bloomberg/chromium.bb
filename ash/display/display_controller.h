@@ -68,6 +68,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   }
   void SetSecondaryDisplayLayout(SecondaryDisplayLayout layout);
 
+  void set_dont_warp_mouse(bool dont_warp_mouse) {
+    dont_warp_mouse_ = dont_warp_mouse;
+  }
+
   // Warps the mouse cursor to an alternate root window when the
   // |point_in_root|, which is the location of the mouse cursor,
   // hits or exceeds the edge of the |root_window| and the mouse cursor
@@ -95,6 +99,9 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   std::map<int, aura::RootWindow*> root_windows_;
 
   SecondaryDisplayLayout secondary_display_layout_;
+
+  // If true, the mouse pointer can't move from one display to another.
+  bool dont_warp_mouse_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayController);
 };

@@ -119,6 +119,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // snapping should be used.
   SnapType GetSnapType(const gfx::Point& location) const;
 
+  // Returns true if we should allow the mouse pointer to warp.
+  bool ShouldAllowMouseWarp() const;
+
   aura::Window* window() const { return details_.window; }
 
   const Details details_;

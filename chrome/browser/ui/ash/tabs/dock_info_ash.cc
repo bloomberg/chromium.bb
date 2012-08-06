@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
-#include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -56,7 +56,7 @@ gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeView>& ignore) {
   return GetLocalProcessWindowAtPointImpl(
-      screen_point, ignore, ash::Shell::GetRootWindowAt(screen_point));
+      screen_point, ignore, ash::wm::GetRootWindowAt(screen_point));
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {

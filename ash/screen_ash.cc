@@ -5,6 +5,7 @@
 #include "ash/screen_ash.h"
 
 #include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -83,7 +84,7 @@ gfx::Point ScreenAsh::GetCursorScreenPoint() {
 
 gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
   const gfx::Point point = gfx::Screen::GetCursorScreenPoint();
-  return Shell::GetRootWindowAt(point)->GetTopWindowContainingPoint(point);
+  return wm::GetRootWindowAt(point)->GetTopWindowContainingPoint(point);
 }
 
 int ScreenAsh::GetNumDisplays() {

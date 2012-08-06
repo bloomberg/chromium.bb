@@ -7,14 +7,18 @@
 #include <algorithm>
 #include <cmath>
 
+#include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/cursor_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -46,7 +50,9 @@ const int WorkspaceWindowResizer::kMinOnscreenSize = 20;
 const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
-  ash::Shell::GetInstance()->cursor_manager()->UnlockCursor();
+  Shell* shell = Shell::GetInstance();
+  shell->display_controller()->set_dont_warp_mouse(false);
+  shell->cursor_manager()->UnlockCursor();
 }
 
 // static
@@ -61,6 +67,14 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
 }
 
 void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
+  std::pair<aura::RootWindow*, gfx::Point> actual_location =
+      wm::GetRootWindowRelativeToWindow(window()->parent(), location);
+
+  // TODO(yusukes): Implement dragging a window from one display to another.
+  aura::RootWindow* current_root = actual_location.first;
+  if (current_root != window()->GetRootWindow())
+    return;
+
   int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
                   0 : ash::Shell::GetInstance()->GetGridSize();
   gfx::Rect bounds = CalculateBoundsForDrag(details_, location, grid_size);
@@ -164,7 +178,16 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0) {
   DCHECK(details_.is_resizable);
-  ash::Shell::GetInstance()->cursor_manager()->LockCursor();
+
+  Shell* shell = Shell::GetInstance();
+  shell->cursor_manager()->LockCursor();
+
+  // The pointer should be confined in one display during resizing a window
+  // because the window cannot span two displays at the same time anyway. The
+  // exception is window/tab dragging operation. During that operation,
+  // |dont_warp_mouse_| should be set to false so that the user could move a
+  // window/tab to another display.
+  shell->display_controller()->set_dont_warp_mouse(!ShouldAllowMouseWarp());
 
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() ||
@@ -439,6 +462,12 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
   if (location.x() >= area.right() - 1)
     return SNAP_RIGHT_EDGE;
   return SNAP_NONE;
+}
+
+bool WorkspaceWindowResizer::ShouldAllowMouseWarp() const {
+  return (details_.window_component == HTCAPTION) &&
+      (window()->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE) &&
+      (window()->type() == aura::client::WINDOW_TYPE_NORMAL);
 }
 
 }  // namespace internal

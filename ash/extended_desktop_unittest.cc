@@ -6,6 +6,7 @@
 #include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
@@ -245,17 +246,17 @@ TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
       internal::DisplayController::LEFT);
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
-  EXPECT_EQ(root_windows[1], Shell::GetRootWindowAt(gfx::Point(-400, 100)));
-  EXPECT_EQ(root_windows[1], Shell::GetRootWindowAt(gfx::Point(-1, 100)));
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(0, 300)));
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(700,300)));
+  EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-400, 100)));
+  EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-1, 100)));
+  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(0, 300)));
+  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(700,300)));
 
   // Zero origin.
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(0, 0)));
+  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(0, 0)));
 
   // Out of range point should return the primary root window
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(-600, 0)));
-  EXPECT_EQ(root_windows[0], Shell::GetRootWindowAt(gfx::Point(701, 100)));
+  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(-600, 0)));
+  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(701, 100)));
 }
 
 TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
@@ -267,33 +268,33 @@ TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
 
   // Containing rect.
   EXPECT_EQ(root_windows[1],
-            Shell::GetRootWindowMatching(gfx::Rect(-300, 10, 50, 50)));
+            wm::GetRootWindowMatching(gfx::Rect(-300, 10, 50, 50)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(100, 10, 50, 50)));
+            wm::GetRootWindowMatching(gfx::Rect(100, 10, 50, 50)));
 
   // Intersecting rect.
   EXPECT_EQ(root_windows[1],
-            Shell::GetRootWindowMatching(gfx::Rect(-200, 0, 300, 300)));
+            wm::GetRootWindowMatching(gfx::Rect(-200, 0, 300, 300)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(-100, 0, 300, 300)));
+            wm::GetRootWindowMatching(gfx::Rect(-100, 0, 300, 300)));
 
   // Zero origin.
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(0, 0, 0, 0)));
+            wm::GetRootWindowMatching(gfx::Rect(0, 0, 0, 0)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(0, 0, 1, 1)));
+            wm::GetRootWindowMatching(gfx::Rect(0, 0, 1, 1)));
 
   // Empty rect.
   EXPECT_EQ(root_windows[1],
-            Shell::GetRootWindowMatching(gfx::Rect(-400, 100, 0, 0)));
+            wm::GetRootWindowMatching(gfx::Rect(-400, 100, 0, 0)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(100, 100, 0, 0)));
+            wm::GetRootWindowMatching(gfx::Rect(100, 100, 0, 0)));
 
   // Out of range rect should return the primary root window.
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(-600, -300, 50, 50)));
+            wm::GetRootWindowMatching(gfx::Rect(-600, -300, 50, 50)));
   EXPECT_EQ(root_windows[0],
-            Shell::GetRootWindowMatching(gfx::Rect(0, 1000, 50, 50)));
+            wm::GetRootWindowMatching(gfx::Rect(0, 1000, 50, 50)));
 }
 
 TEST_F(ExtendedDesktopTest, Capture) {

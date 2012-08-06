@@ -334,20 +334,6 @@ aura::RootWindow* Shell::GetActiveRootWindow() {
 }
 
 // static
-aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
-  const gfx::Display& display = gfx::Screen::GetDisplayNearestPoint(point);
-  return Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display.id());
-}
-
-// static
-aura::RootWindow* Shell::GetRootWindowMatching(const gfx::Rect& rect) {
-  const gfx::Display& display = gfx::Screen::GetDisplayMatching(rect);
-  return Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display.id());
-}
-
-// static
 Shell::RootWindowList Shell::GetAllRootWindows() {
   return Shell::GetInstance()->display_controller()->
       GetAllRootWindows();

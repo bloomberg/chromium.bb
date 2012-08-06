@@ -31,9 +31,14 @@ bool MouseCursorEventFilter::PreHandleKeyEvent(aura::Window* target,
 
 bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                  aura::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_MOVED ||
-      ash::Shell::GetInstance()->cursor_manager()->is_cursor_locked())
-    return false;
+  // Handle both MOVED and DRAGGED events here because when the mouse pointer
+  // enters the other root window while dragging, the underlying window system
+  // (at least X11) stops generating a ui::ET_MOUSE_MOVED event.
+  if (event->type() != ui::ET_MOUSE_MOVED &&
+      event->type() != ui::ET_MOUSE_DRAGGED) {
+      return false;
+  }
+
   aura::RootWindow* current_root = target->GetRootWindow();
   gfx::Point location_in_root(event->location());
   aura::Window::ConvertPointToWindow(target, current_root, &location_in_root);

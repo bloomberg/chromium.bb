@@ -166,15 +166,6 @@ class ASH_EXPORT Shell : ash::CursorDelegate {
   // until the another window who has a different root window becomes active.
   static aura::RootWindow* GetActiveRootWindow();
 
-  // Returns the RootWindow at |point| in the virtual screen coordinates.
-  // Returns NULL if the root window does not exist at the given
-  // point.
-  static aura::RootWindow* GetRootWindowAt(const gfx::Point& point);
-
-  // Returns the RootWindow that shares the most area with |rect| in
-  // the virtual scren coordinates.
-  static aura::RootWindow* GetRootWindowMatching(const gfx::Rect& rect);
-
   // Returns all root windows. In non extended desktop mode, this
   // returns the primary root window only.
   static RootWindowList GetAllRootWindows();

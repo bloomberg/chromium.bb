@@ -4,6 +4,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
@@ -33,7 +34,7 @@ ui_controls::UIControlsAura* GetUIControlsForRootWindow(
 // absolute screen coordinates.  NULL if there is no RootWindow under the
 // |point|.
 ui_controls::UIControlsAura* GetUIControlsAt(const gfx::Point& point) {
-  aura::RootWindow* root = Shell::GetRootWindowAt(point);
+  aura::RootWindow* root = wm::GetRootWindowAt(point);
   return root ? GetUIControlsForRootWindow(root) : NULL;
 }
 

@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -127,9 +128,8 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
   // PhantomWindowController is used by FrameMaximizeButton to highlight the
   // launcher button. Put the phantom in the same window as the launcher so that
   // the phantom is visible.
-  params.parent = Shell::GetContainer(
-      Shell::GetInstance()->GetRootWindowMatching(bounds),
-      kShellWindowId_LauncherContainer);
+  params.parent = Shell::GetContainer(wm::GetRootWindowMatching(bounds),
+                                      kShellWindowId_LauncherContainer);
   params.can_activate = false;
   params.keep_on_top = true;
   phantom_widget_->set_focus_on_creation(false);

@@ -7,6 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/activation_client.h"
@@ -89,7 +90,7 @@ void ScreenPositionController::SetBounds(
   // Don't move a transient windows to other root window.
   // It moves when its transient_parent moves.
   if (!window->transient_parent()) {
-    aura::RootWindow* dst_root = Shell::GetRootWindowMatching(bounds);
+    aura::RootWindow* dst_root = wm::GetRootWindowMatching(bounds);
     aura::Window* dst_container = NULL;
     if (dst_root != window->GetRootWindow()) {
       int container_id = window->parent()->id();
