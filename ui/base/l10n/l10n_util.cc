@@ -269,8 +269,8 @@ bool CheckAndResolveLocale(const std::string& locale,
   // back to en-US in GetApplicationLocale so that it's a not critical,
   // but we can do better.
   std::string::size_type hyphen_pos = locale.find('-');
+  std::string lang(locale, 0, hyphen_pos);
   if (hyphen_pos != std::string::npos && hyphen_pos > 0) {
-    std::string lang(locale, 0, hyphen_pos);
     std::string region(locale, hyphen_pos + 1);
     std::string tmp_locale(lang);
     // Map es-RR other than es-ES to es-419 (Chrome's Latin American
@@ -306,8 +306,8 @@ bool CheckAndResolveLocale(const std::string& locale,
     }
   }
 
-  // Google updater uses no, iw and en for our nb, he, and en-US.
-  // We need to map them to our codes.
+  // Google updater uses no, iw and en for our nb, he, and en-US, and
+  // Android uses iw-*, in-*, and ji-*.  We need to map them to our codes.
   struct {
     const char* source;
     const char* dest;
@@ -316,10 +316,12 @@ bool CheckAndResolveLocale(const std::string& locale,
       {"tl", "fil"},
       {"iw", "he"},
       {"en", "en-US"},
+      {"in", "id"},
+      {"ji", "yi"},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(alias_map); ++i) {
-    if (LowerCaseEqualsASCII(locale, alias_map[i].source)) {
+    if (LowerCaseEqualsASCII(lang, alias_map[i].source)) {
       std::string tmp_locale(alias_map[i].dest);
       if (IsLocaleAvailable(tmp_locale)) {
         resolved_locale->swap(tmp_locale);
