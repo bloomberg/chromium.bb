@@ -47,9 +47,6 @@ PRUNE_PATHS = set([
     # Not in the public Chromium tree.
     os.path.join('third_party','adobe'),
 
-    # Written as part of Chromium.
-    os.path.join('third_party','fuzzymatch'),
-
     # Same license as Chromium.
     os.path.join('third_party','lss'),
 
