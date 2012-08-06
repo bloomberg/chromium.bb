@@ -63,6 +63,12 @@ struct workspace {
 	struct wl_listener seat_destroyed_listener;
 };
 
+struct input_panel_surface {
+	struct wl_list link;
+	struct weston_surface *surface;
+	struct wl_listener listener;
+};
+
 struct desktop_shell {
 	struct weston_compositor *compositor;
 
@@ -2507,17 +2513,17 @@ show_input_panels(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, show_input_panel_listener);
-	struct weston_surface *surface, *next;
+	struct input_panel_surface *surface, *next;
+	struct weston_surface *ws;
 
 	wl_list_for_each_safe(surface, next,
-			      &shell->input_panel.surfaces, layer_link) {
-		wl_list_remove(&surface->layer_link);
+			      &shell->input_panel.surfaces, link) {
+		ws = surface->surface;
 		wl_list_insert(&shell->panel_layer.surface_list,
-			       &surface->layer_link);
-		weston_surface_assign_output(surface);
-		weston_surface_damage(surface);
-		weston_slide_run(surface,
-				 surface->geometry.height, 0, NULL, NULL);
+			       &ws->layer_link);
+		weston_surface_assign_output(ws);
+		weston_surface_damage(ws);
+		weston_slide_run(ws, ws->geometry.height, 0, NULL, NULL);
 	}
 }
 
@@ -2533,11 +2539,8 @@ hide_input_panels(struct wl_listener *listener, void *data)
 
 	wl_list_for_each_safe(surface, next,
 			      &shell->panel_layer.surface_list, layer_link)
-		if (surface->configure == input_panel_configure) {
+		if (surface->configure == input_panel_configure)
 			weston_surface_unmap(surface);
-			wl_list_insert(&shell->input_panel.surfaces,
-				       &surface->layer_link);
-		}
 }
 
 static void
@@ -2898,6 +2901,19 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 }
 
 static void
+destroy_input_panel_surface(struct wl_listener *listener,
+			    void *data)
+{
+	struct input_panel_surface *input_panel_surface =
+		container_of(listener, struct input_panel_surface, listener);
+
+	wl_list_remove(&listener->link);
+	wl_list_remove(&input_panel_surface->link);
+
+	free(input_panel_surface);
+}
+
+static void
 input_panel_set_surface(struct wl_client *client,
 			struct wl_resource *resource,
 			struct wl_resource *surface_resource,
@@ -2906,11 +2922,26 @@ input_panel_set_surface(struct wl_client *client,
 	struct desktop_shell *shell = resource->data;
 	struct weston_surface *surface = surface_resource->data;
 	struct weston_output *output = output_resource->data;
+	struct input_panel_surface *input_panel_surface;
 
 	surface->configure = input_panel_configure;
 	surface->private = shell;
 	surface->output = output;
-	wl_list_insert(shell->input_panel.surfaces.prev, &surface->layer_link);
+
+	input_panel_surface = malloc(sizeof *input_panel_surface);
+	if (!input_panel_surface) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
+	input_panel_surface->surface = surface;
+	input_panel_surface->listener.notify = destroy_input_panel_surface;
+
+	wl_signal_add(&surface_resource->destroy_signal,
+		      &input_panel_surface->listener);
+
+	wl_list_insert(&shell->input_panel.surfaces,
+		       &input_panel_surface->link);
 }
 
 static const struct input_panel_interface input_panel_implementation = {
