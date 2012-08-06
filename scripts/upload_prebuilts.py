@@ -403,7 +403,8 @@ class PrebuiltUploader(object):
     tmpdir = tempfile.mkdtemp()
     try:
       tarfile = os.path.join(tmpdir, '%s.tbz2' % boardname)
-      cmd = ['tar', '-I', 'pbzip2', '-cf', tarfile]
+      bzip2 = cros_build_lib.FindCompressor(cros_build_lib.COMP_BZIP2)
+      cmd = ['tar', '-I', bzip2, '-cf', tarfile]
       excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                         'tmp')
       for path in excluded_paths:

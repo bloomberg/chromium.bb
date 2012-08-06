@@ -1199,10 +1199,13 @@ class SDKTestStage(bs.BuilderStage):
   """Stage that performs testing an SDK created in a previous stage"""
   def _PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tbz2')
-    board_location = os.path.join(self._build_root, 'chroot/build/amd64-host')
+    chroot_location = os.path.join(self._build_root, 'chroot')
+    board_location = os.path.join(chroot_location, 'build/amd64-host')
 
     # Create a tarball of the latest SDK.
-    cmd = ['tar', '-jcf', tarball_location]
+    bzip2 = cros_build_lib.FindCompressor(
+        cros_build_lib.COMP_BZIP2, chroot=chroot_location)
+    cmd = ['tar', '-I', bzip2, '-cf', tarball_location]
     excluded_paths = ('usr/lib/debug', 'usr/local/autotest', 'packages',
                       'tmp')
     for path in excluded_paths:

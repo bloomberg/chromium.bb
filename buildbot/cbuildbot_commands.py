@@ -442,14 +442,19 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
   """
   try:
     test_results_dir = test_results_dir.lstrip('/')
-    results_path = os.path.join(buildroot, 'chroot', test_results_dir)
+    chroot = os.path.join(buildroot, 'chroot')
+    results_path = os.path.join(chroot, test_results_dir)
     cros_build_lib.SudoRunCommand(['chmod', '-R', 'a+rw', results_path],
                                   print_cmd=False)
 
     test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
-    if os.path.exists(test_tarball): os.remove(test_tarball)
+    if os.path.exists(test_tarball):
+      os.remove(test_tarball)
+    gzip = cros_build_lib.FindCompressor(
+        cros_build_lib.COMP_GZIP, chroot=chroot)
     cros_build_lib.RunCommand(
-        ['tar', 'czf', test_tarball, '--directory=%s' % results_path, '.'],
+        ['tar', '-I', gzip, '-cf', test_tarball,
+         '--directory=%s' % results_path, '.'],
         print_cmd=False)
     shutil.rmtree(results_path)
 
@@ -505,12 +510,14 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
     List of stack trace file names.
   """
   stack_trace_filenames = []
-  chroot_tmp = os.path.join(buildroot, 'chroot', 'tmp')
+  chroot = os.path.join(buildroot, 'chroot')
+  gzip = cros_build_lib.FindCompressor(cros_build_lib.COMP_GZIP, chroot=chroot)
+  chroot_tmp = os.path.join(chroot, 'tmp')
   temp_dir = tempfile.mkdtemp(prefix='cbuildbot_dumps', dir=chroot_tmp)
 
   # We need to unzip the test results tarball first because we cannot update
   # a compressed tarball.
-  cros_build_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
+  cros_build_lib.RunCommand([gzip, '-df', gzipped_test_tarball])
   test_tarball = os.path.splitext(gzipped_test_tarball)[0] + '.tar'
 
   # Do our best to generate the symbols but if we fail, don't break the
@@ -537,8 +544,9 @@ def GenerateMinidumpStackTraces(buildroot, board, gzipped_test_tarball,
         stack_trace_filenames.append(filename)
     cros_build_lib.RunCommand(['tar', 'uf', test_tarball,
                                '--directory=%s' % temp_dir, '.'])
-  cros_build_lib.RunCommand('gzip -c %s > %s'
-                            % (test_tarball, gzipped_test_tarball), shell=True)
+  cros_build_lib.RunCommand('%s -c %s > %s'
+                            % (gzip, test_tarball, gzipped_test_tarball),
+                            shell=True)
   os.unlink(test_tarball)
   shutil.rmtree(temp_dir)
 
@@ -810,9 +818,11 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
 
   # Generate debug tarball. This needs to run as root because some of the
   # symbols are only readable by root.
-  board_dir = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'lib')
+  chroot = os.path.join(buildroot, 'chroot')
+  board_dir = os.path.join(chroot, 'build', board, 'usr', 'lib')
+  gzip = cros_build_lib.FindCompressor(cros_build_lib.COMP_GZIP, chroot=chroot)
   debug_tgz = os.path.join(archive_path, 'debug.tgz')
-  cmd = ['tar', 'czf', debug_tgz]
+  cmd = ['tar', '-I', gzip, '-cf', debug_tgz]
   if gdb_symbols:
     cmd.extend(['--exclude', 'debug/usr/local/autotest',
                 '--exclude', 'debug/tests',
@@ -994,15 +1004,12 @@ def BuildTarball(buildroot, input_list, tarball_output, cwd=None,
     cwd: Current working directory when tar command is executed.
     compressed: Whether or not the tarball should be compressed with pbzip2.
   """
-  pbzip2 = os.path.join(buildroot, 'chroot', 'usr', 'bin', 'pbzip2')
+  cmd = ['tar']
   if compressed:
-    cmd = ['tar',
-           '--use-compress-program=%s' % pbzip2,
-           '-cf', tarball_output]
-  else:
-    cmd = ['tar',
-           '-cf', tarball_output]
-  cmd += input_list
+    bzip2 = cros_build_lib.FindCompressor(
+        cros_build_lib.COMP_BZIP2, chroot=os.path.join(buildroot, 'chroot'))
+    cmd.append('--use-compress-program=%s' % bzip2)
+  cmd += ['-cf', tarball_output] + input_list
   cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd)
 
 

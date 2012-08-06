@@ -1484,6 +1484,55 @@ def TimedCommand(functor, *args, **kwargs):
   return ret
 
 
+COMP_NONE = 0
+COMP_GZIP = 1
+COMP_BZIP2 = 2
+COMP_XZ = 3
+def FindCompressor(compression, chroot=None):
+  """Locate a compressor utility program (possibly in a chroot).
+
+  Since we compress/decompress a lot, make it easy to locate a
+  suitable utility program in a variety of locations.  We favor
+  the one in the chroot over /, and the parallel implementation
+  over the single threaded one.
+
+  Arguments:
+    compression: The type of compression desired.
+    chroot: Optional path to a chroot to search.
+  Returns:
+    Path to a compressor.
+  Raises:
+    ValueError: If compression is unknown.
+  """
+  if compression == COMP_GZIP:
+    std = 'gzip'
+    para = 'pigz'
+  elif compression == COMP_BZIP2:
+    std = 'bzip2'
+    para = 'pbzip2'
+  elif compression == COMP_XZ:
+    std = 'xz'
+    para = 'xz'
+  elif compression == COMP_NONE:
+    return 'cat'
+  else:
+    raise ValueError('unknown compression')
+
+  roots = []
+  if chroot:
+    roots.append(chroot)
+  roots.append('/')
+
+  for prog in [para, std]:
+    for root in roots:
+      for subdir in ['', 'usr']:
+        path = os.path.join(root, subdir, 'bin', prog)
+        if os.path.exists(path):
+          return path
+
+  return std
+
+
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
   return raw_input(prompt)

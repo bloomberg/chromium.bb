@@ -202,12 +202,16 @@ class CBuildBotTest(mox.MoxTestBase):
     test_results_dir = 'fake_results_dir'
 
     # Convenience variables to make archive easier to understand.
-    path_to_results = os.path.join(buildroot, 'chroot', test_results_dir)
+    chroot = os.path.join(buildroot, 'chroot')
+    path_to_results = os.path.join(chroot, test_results_dir)
+    gzip = cros_build_lib.FindCompressor(
+        cros_build_lib.COMP_GZIP, chroot=chroot)
 
     cros_build_lib.SudoRunCommand(
         ['chmod', '-R', 'a+rw', path_to_results], print_cmd=False)
     cros_build_lib.RunCommand(
-        ['tar', 'czf', test_tarball, '--directory=%s' % path_to_results, '.'],
+        ['tar', '-I', gzip, '-cf', test_tarball,
+         '--directory=%s' % path_to_results, '.'],
         print_cmd=False)
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
@@ -241,7 +245,8 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(os, 'unlink')
     self.mox.StubOutWithMock(shutil, 'rmtree')
 
-    cros_build_lib.RunCommand(['gzip', '-df', gzipped_test_tarball])
+    gzip = cros_build_lib.FindCompressor(cros_build_lib.COMP_GZIP)
+    cros_build_lib.RunCommand([gzip, '-df', gzipped_test_tarball])
     cros_build_lib.RunCommand(
         ['tar',
          'xf',
@@ -259,7 +264,8 @@ class CBuildBotTest(mox.MoxTestBase):
     cros_build_lib.RunCommand(
         ['tar', 'uf', test_tarball, '--directory=%s' % temp_dir, '.'])
     cros_build_lib.RunCommand(
-        'gzip -c %s > %s' % (test_tarball, gzipped_test_tarball), shell=True)
+        '%s -c %s > %s' % (gzip, test_tarball, gzipped_test_tarball),
+        shell=True)
     os.unlink(test_tarball)
     shutil.rmtree(temp_dir)
 
