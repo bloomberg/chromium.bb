@@ -103,7 +103,7 @@ sysexit, 0x0f 0x35, CPUFeature_SEP nacl-forbidden
 sysret, 0x0f 0x07, norexw nacl-forbidden
 sysretq, rexw 0x0f 0x07, amd64 nacl-forbidden
 ######## UD2 ###################################################################
-ud2, 0x0f 0x0b
+ud2, 0x0f 0x0b, norex
 ######## VERR ##################################################################
 verr Ew, 0x0f 0x00 /4, nacl-forbidden
 ######## VERW ##################################################################

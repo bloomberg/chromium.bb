@@ -15,7 +15,7 @@
 #include "native_client/src/trusted/validator_ragel/gen/validator_x86_64_instruction_consts.c"
 
 %%{
-  machine x86_64_decoder;
+  machine x86_64_validator;
   alphtype unsigned char;
   variable p current_position;
   variable pe end_of_bundle;
@@ -72,9 +72,10 @@
 
   # Special %rbp modifications without required sandboxing
   rbp_modifications =
-    (0x48 0x89 0xe5)                       | # mov %rsp,%rbp
-    (0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rbp
-    (0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rbp
+    ((0x48 | 0x4a) 0x89 0xe5)               | # mov %rsp,%rbp
+    ((0x48 | 0x4a) 0x8b 0xec)               # | mov %rsp,%rbp
+    #(0x48 0x81 0xe5 any{3} (0x80 .. 0xff)) | # and $XXX,%rbp
+    #(0x48 0x83 0xe5 (0x80 .. 0xff))          # and $XXX,%rbp
     @process_0_operands;
 
   # Special instructions used for %rbp sandboxing
@@ -83,7 +84,7 @@
      0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
      0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
     @{ if (restricted_register != REG_RBP) {
-         errors_detected |= RESTRICTED_RBP_UNPROCESSED;
+         errors_detected |= UNRESTRICTED_RBP_PROCESSED;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (instruction_start - data));
@@ -91,7 +92,8 @@
 
   # Special %rbp modifications without required sandboxing
   rsp_modifications =
-    (0x48 0x89 0xec)                       | # mov %rbp,%rsp
+    ((0x48 | 0x4a) 0x89 0xec)              | # mov %rbp,%rsp
+    ((0x48 | 0x4a) 0x8b 0xe5)              | # mov %rbp,%rsp
     (0x48 0x81 0xe4 any{3} (0x80 .. 0xff)) | # and $XXX,%rsp
     (0x48 0x83 0xe4 (0x80 .. 0xff))          # and $XXX,%rsp
     @process_0_operands;
@@ -101,7 +103,7 @@
     (0x4c 0x01 0xfc       | # add %r15,%rsp
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register != REG_RSP) {
-         errors_detected |= RESTRICTED_RSP_UNPROCESSED;
+         errors_detected |= UNRESTRICTED_RSP_PROCESSED;
        }
        restricted_register = kNoRestrictedReg;
        BitmapClearBit(valid_targets, (instruction_start - data));
@@ -200,9 +202,23 @@
        }
     };
 
+  # Special %rdi sandboxing for EMMS/SSE2/AVX instructions
+  mmx_sse_rdi_sandboxing =
+    (REX_WRXB? (0x0f 0xf7)
+      @CPUFeature_EMMX modrm_registers | # maskmovq %mmX,%mmY
+     0x66 REX_WRXB? (0x0f 0xf7) @not_data16_prefix
+      @CPUFeature_SSE2 modrm_registers | # maskmovdqu %xmmX, %xmmY
+     ((0xc4 (VEX_RB & VEX_map00001) 0x79 @vex_prefix3) |
+      (0xc5 (0x79 | 0xf9) @vex_prefix_short)) 0xf7
+      @CPUFeature_AVX modrm_registers);  # vmaskmovdqu %xmmX, %xmmY
+
   # Special %rdi sandboxing for string instructions
+  string_rdi_sandboxing =
+    0x49 0x8d 0x3c 0x3f;                 # lea (%r15,%rdi,1),%rdi
+
   rdi_sandboxing =
-    (0x49 0x8d 0x3c 0x3f) # lea (%r15,%rdi,1),%rdi
+    (#mmx_sse_rdi_sandboxing |
+     string_rdi_sandboxing)
     @{ if (restricted_register == REG_RDI) {
          sandboxed_rdi = instruction_start;
          restricted_register = kSandboxedRdi;

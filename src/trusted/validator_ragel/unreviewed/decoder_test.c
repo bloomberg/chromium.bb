@@ -84,6 +84,11 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   unsigned char rex_prefix = instruction->prefix.rex;
   enum register_name rm_index = instruction->rm.index;
   enum register_name rm_base = instruction->rm.base;
+#ifdef _MSC_VER
+  Bool data16_prefix = instruction->prefix.data16;
+#else
+  _Bool data16_prefix = instruction->prefix.data16;
+#endif
   const uint8_t *p;
   char delimeter = ' ';
   int print_rip = FALSE;
@@ -109,29 +114,24 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
     return;
   } else if (((struct DecodeState *)userdata)->fwait) {
-    if (((begin[0] < 0xd8) || (begin[0] > 0xdf)) &&
-        (((begin[0] & 0xf0) != 0x40) ||
-                                      (begin[1] < 0xd8) || (begin[1] > 0xdf))) {
-      while ((((struct DecodeState *)userdata)->fwait) < begin) {
-        printf("%*lx:\t%02x                   \tfwait\n",
-          ((struct DecodeState *)userdata)->width,
-          (long)((((struct DecodeState *)userdata)->fwait) -
-                                    (((struct DecodeState *)userdata)->offset)),
-          *((struct DecodeState *)userdata)->fwait);
-        ++(((struct DecodeState *)userdata)->fwait);
-      }
-    } else {
+    /* If it's x87 instruction then we can fold some fwait's in the instruction
+       itself.  */
+    if (((begin[0] >= 0xd8) && (begin[0] <= 0xdf)) ||
+        ((((begin[0] & 0xf0) == 0x40) || (begin[0] == 0x66)) &&
+                                    (begin[1] >= 0xd8) && (begin[1] <= 0xdf)) ||
+        ((begin[0] == 0x66) || ((begin[1] & 0xf0) == 0x40) ||
+                                    (begin[2] >= 0xd8) || (begin[2] <= 0xdf))) {
       /* fwait "prefix" can only include two 0x9b bytes or one rex byte - and
        * then only if the instruction itself have no rex prefix.  */
-      int x9b_count = 0;
-      int x40_count = !!rex_prefix;
+      int fwait_count = !!data16_prefix;
+      int rex_count = (!!rex_prefix) | (!!data16_prefix);
       for (;;) {
         if (begin == ((struct DecodeState *)userdata)->fwait)
           break;
         if ((begin[-1]) == 0x9b) {
-          if (x9b_count < 2) {
+          if (fwait_count < 2) {
             --begin;
-            ++x9b_count;
+            ++fwait_count;
             if ((begin[1] & 0xf0) == 0x40) {
               break;
             }
@@ -139,11 +139,11 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             break;
           }
         } else if ((begin[-1] & 0xf0) == 0x40) {
-          if (x40_count >= 1) {
+          if (rex_count >= 1) {
             break;
           }
           --begin;
-          ++x40_count;
+          ++rex_count;
           if (!rex_prefix) {
             rex_prefix = *begin;
             /* Bug-to-bug compatibility, heh... */
@@ -167,6 +167,15 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
             *((struct DecodeState *)userdata)->fwait);
             ++(((struct DecodeState *)userdata)->fwait);
         }
+      }
+    } else {
+      while ((((struct DecodeState *)userdata)->fwait) < begin) {
+        printf("%*lx:\t%02x                   \tfwait\n",
+          ((struct DecodeState *)userdata)->width,
+          (long)((((struct DecodeState *)userdata)->fwait) -
+                                    (((struct DecodeState *)userdata)->offset)),
+          *((struct DecodeState *)userdata)->fwait);
+        ++(((struct DecodeState *)userdata)->fwait);
       }
     }
     ((struct DecodeState *)userdata)->fwait = FALSE;
@@ -196,6 +205,19 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     else if ((rex_prefix & 0x01) == 0x01) instruction_name = "popq %mm5";
     else if (rex_prefix) instruction_name = "popq %gs";
     if (rex_prefix & 0x01) ++maybe_rex_bits;
+  }
+  if ((data16_prefix) && (begin[0] == 0x66) && (!(rex_prefix & 0x08)) &&
+      (!strcmp(instruction_name, "fbld") ||
+       !strcmp(instruction_name, "fbstp") ||
+       !strcmp(instruction_name, "fild") ||
+       !strcmp(instruction_name, "fistp") ||
+       !strcmp(instruction_name, "fld") ||
+       !strcmp(instruction_name, "fstp"))) {
+    printf("%*lx:\t66                   \tdata16\n",
+           ((struct DecodeState *)userdata)->width,
+           (long)(begin - (((struct DecodeState *)userdata)->offset)));
+    data16_prefix = FALSE;
+    ++begin;
   }
   printf("%*lx:\t", ((struct DecodeState *)userdata)->width,
                     (long)(begin - (((struct DecodeState *)userdata)->offset)));
@@ -719,9 +741,16 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
       print_name("repz ");
     }
   }
-  if (((instruction->prefix.data16) && rex_prefix & 0x08) &&
+  if (((data16_prefix) && (rex_prefix & 0x08)) &&
       strcmp(instruction_name, "bsf") &&
-      strcmp(instruction_name, "bsr")) {
+      strcmp(instruction_name, "bsr") &&
+      strcmp(instruction_name, "fldenvs") &&
+      strcmp(instruction_name, "fnstenvs") &&
+      strcmp(instruction_name, "fnsaves") &&
+      strcmp(instruction_name, "frstors") &&
+      strcmp(instruction_name, "fsaves") &&
+      strcmp(instruction_name, "fstenvs") &&
+      strcmp(instruction_name, "movbe")) {
     if ((end - begin) != 3 ||
         (begin[0] != 0x66) || ((begin[1] & 0x48) != 0x48) || (begin[2] != 0x90))
       print_name("data32 ");
@@ -782,7 +811,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
     if ((!strcmp(instruction_name, "pop")) ||
         (!strcmp(instruction_name, "push"))) {
-      if (instruction->prefix.data16)
+      if (data16_prefix)
         ++rex_bits;
       else
         rex_bits = -1;
@@ -793,8 +822,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         (!strcmp(instruction_name, "ljmpq")) ||
         (!strcmp(instruction_name, "popfq")) ||
         (!strcmp(instruction_name, "pushfq"))) {
-      if (instruction->prefix.data16)
-        ++rex_bits;
+      if (data16_prefix) ++rex_bits;
     }
   }
   if (show_name_suffix == 'b') {
@@ -1014,6 +1042,8 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
   if ((strcmp(instruction_name, "nop") || operands_count != 0) &&
       strcmp(instruction_name, "fwait") &&
       strcmp(instruction_name, "rex.W nop") &&
+      strcmp(instruction_name, "nopw   0x0(%eax,%eax,1)") &&
+      strcmp(instruction_name, "nopw   0x0(%rax,%rax,1)") &&
       strcmp(instruction_name, "nopw %cs:0x0(%eax,%eax,1)") &&
       strcmp(instruction_name, "nopw %cs:0x0(%rax,%rax,1)") &&
       strcmp(instruction_name, "nopw   %cs:0x0(%eax,%eax,1)") &&
@@ -1398,8 +1428,12 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
         printf("%%st");
         break;
       case REG_RM: {
-        if (instruction->rm.offset) {
-          printf("0x%"NACL_PRIx64, instruction->rm.offset);
+        if (instruction->rm.disp_type != DISPNONE) {
+          if ((instruction->rm.disp_type == DISP64) ||
+              (instruction->rm.offset >= 0))
+            printf("0x%"NACL_PRIx64, instruction->rm.offset);
+          else
+            printf("-0x%"NACL_PRIx64, -instruction->rm.offset);
         }
         if (((struct DecodeState *)userdata)->ia32_mode) {
           if ((rm_base != NO_REG) ||

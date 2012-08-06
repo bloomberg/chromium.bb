@@ -24,18 +24,22 @@ enum validation_errors {
   UNRESTRICTED_INDEX_REGISTER   = 0x00000010,
   /* Operations with %ebp must be followed with sandboxing immediately.  */
   RESTRICTED_RBP_UNPROCESSED    = 0x00000020,
-  /* Operations with %ebp must be followed with sandboxing immediately.  */
-  RESTRICTED_RSP_UNPROCESSED    = 0x00000040,
+  /* Attemp to "sandbox" %rbp without restricting it first.  */
+  UNRESTRICTED_RBP_PROCESSED    = 0x00000040,
+  /* Operations with %esp must be followed with sandboxing immediately.  */
+  RESTRICTED_RSP_UNPROCESSED    = 0x00000080,
+  /* Attemp to "sandbox" %rsp without restricting it first.  */
+  UNRESTRICTED_RSP_PROCESSED    = 0x00000100,
   /* Operations with %r15 are forbidden.  */
-  R15_MODIFIED                  = 0x00000080,
+  R15_MODIFIED                  = 0x00000200,
   /* Operations with SPL are forbidden for compatibility with old validator.  */
-  BPL_MODIFIED                  = 0x00000100,
+  BPL_MODIFIED                  = 0x00000400,
   /* Operations with SPL are forbidden for compatibility with old validator.  */
-  SPL_MODIFIED                  = 0x00000200,
+  SPL_MODIFIED                  = 0x00000800,
   /* %rsi must be sandboxed in instructions cmpsb, lods, and movs.  */
-  RSI_UNSANDBOXDED              = 0x00000400,
+  RSI_UNSANDBOXDED              = 0x00001000,
   /* %rdi must be sandboxed in instructions cmpsb, movs, scas, and stos.  */
-  RDI_UNSANDBOXDED              = 0x00000800,
+  RDI_UNSANDBOXDED              = 0x00002000,
   /* Bad jump target.  Note: in this case ptr points to jump target!  */
   BAD_JUMP_TARGET               = 0x10000000
 };

@@ -45,13 +45,13 @@ NaClCPUFeaturesX86 old_validator_features = { { 1, 1 }, {
   0, /* NaClCPUFeature_F16C */
   0, /* NaClCPUFeature_FMA */
   0, /* NaClCPUFeature_FMA4 */ /* AMD-specific */
-  1, /* NaClCPUFeature_FXSR */
+  0, /* NaClCPUFeature_FXSR */
   0, /* NaClCPUFeature_LAHF */
   0, /* NaClCPUFeature_LM */
   0, /* NaClCPUFeature_LWP */ /* AMD-specific */
   1, /* NaClCPUFeature_LZCNT */  /* AMD-specific */
   1, /* NaClCPUFeature_MMX */
-  1, /* NaClCPUFeature_MON */
+  0, /* NaClCPUFeature_MON */
   1, /* NaClCPUFeature_MOVBE */
   1, /* NaClCPUFeature_OSXSAVE */
   1, /* NaClCPUFeature_POPCNT */

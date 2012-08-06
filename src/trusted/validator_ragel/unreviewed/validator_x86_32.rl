@@ -19,7 +19,7 @@
 #define SET_VEX_PREFIX3(P)
 
 %%{
-  machine x86_64_decoder;
+  machine x86_32_validator;
   alphtype unsigned char;
   variable p current_position;
   variable pe end_of_bundle;

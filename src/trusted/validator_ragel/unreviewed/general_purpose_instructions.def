@@ -207,6 +207,7 @@
 #       CPUFeature_LZCNT:     Fn8000_0001_EXC[ABM]
 #       CPUFeature_MMX:       Fn0000_0001_EDX[MMX]
 #       CPUFeature_MON:       Fn0000_0001_ECX[Monitor]
+#       CPUFeature_MOVBE:     Fn0000_0001_ECX[MOVBE]
 #       CPUFeature_MSR:       Fn0000_0001_EDX[MSR]
 #       CPUFeature_POPCNT:    Fn0000_0001_ECX[POPCNT]
 #       CPUFeature_SEP:       Fn0000_0001_EDX[SYSENTER]
@@ -277,8 +278,8 @@ bsr Ev Gv, 0x0f 0xbd
 ######## BSWAP #################################################################
 bswap ry, 0x0f 0xc8
 ######## BT ####################################################################
-bt Gv Ev, 0x0f 0xa3, nacl-forbidden
-bt Ib Ev, 0x0f 0xba /4, nacl-ia32-forbidden
+bt Gv =Ev, 0x0f 0xa3, nacl-forbidden
+bt Ib =Ev, 0x0f 0xba /4, nacl-ia32-forbidden
 ######## BTC ###################################################################
 btc Gv Ev, 0x0f 0xbb, lock nacl-forbidden
 btc Ib Ev, 0x0f 0xba /7, lock nacl-ia32-forbidden
@@ -291,7 +292,7 @@ bts Ib Ev, 0x0f 0xba /5, lock nacl-ia32-forbidden
 ######## CALL (Near) ###########################################################
 call Jw, data16 0xe8, nacl-forbidden
 call Jd, 0xe8
-call Jd, data16 rexw 0xe8, amd64
+call Jd, data16 rexw 0xe8, amd64 nacl-forbidden
 # “call” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
@@ -312,12 +313,12 @@ lcallw Mp, data16 0xff /3, norexw nacl-forbidden
 ######## CBW/CWDE/CDQE #########################################################
 cwtl, 0x98, norexw
 cbtw, data16 0x98, norexw
-cltq, data16 rexw 0x98, amd64
+cltq, data16 rexw 0x98, amd64 nacl-forbidden
 cltq, rexw 0x98, amd64
 ######## CWD/CDQ/CQO ###########################################################
 cltd, 0x99, norexw
 cwtd, data16 0x99, norexw
-cqto, data16 rexw 0x99, amd64
+cqto, data16 rexw 0x99, amd64 nacl-forbidden
 cqto, rexw 0x99, amd64
 ######## CLC ###################################################################
 clc, 0xf8
@@ -353,7 +354,10 @@ cmp E =G, 0x3a
 ######## CMPS/CMPSB/CMPSW/CMPSD/CMPSQ ##########################################
 cmps Y X, 0xa6, condrep nacl-amd64-forbidden
 ######## CMPXCHG ###############################################################
-cmpxchg G E, 0x0f 0xb0, lock
+# Bug-to-bug compatibility with the old validator.  “cmpxchg” only writes to
+# last argument (“E” one) and to implicit argument (%al/%[er]ax), but old
+# validator treats it as if it writes to both arguments.
+cmpxchg &G E, 0x0f 0xb0, lock
 ######## CMPXCHG8B/CMPXCHG16B ##################################################
 cmpxchg8b Mq, 0x0f 0xc7 /1, norexw lock CPUFeature_CX8
 cmpxchg16b Mo, rexw 0x0f 0xc7 /1, amd64 lock CPUFeature_CX16
@@ -365,13 +369,13 @@ crc32 E Gy, 0xf2 0x0f 0x38 0xf0, CPUFeature_SSE42
 dec E, 0xfe /1, lock
 dec rz, 0x48, ia32
 ######## DIV ###################################################################
-div E, 0xf6 /6
+div =E, 0xf6 /6
 ######## ENTER #################################################################
 enter iw =Ib, 0xc8, nacl-amd64-forbidden
 ######## IDIV ##################################################################
-idiv E, 0xf6 /7
+idiv =E, 0xf6 /7
 ######## IMUL ##################################################################
-imul E, 0xf6 /5
+imul =E, 0xf6 /5
 imul Ev Gv, 0x0f 0xaf
 imul Ib Ev Gv, 0x6b
 imul Iz Ev Gv, 0x69
@@ -441,10 +445,10 @@ js Jb, 0x78, branch_hint
 js Jw, data16 0x0f 0x88, branch_hint nacl-forbidden
 js Jd, 0x0f 0x88, branch_hint
 ######## JMP (Near) ############################################################
-jmp Jw, data16 0xe9, nacl-forbidden
-jmp Jd, 0xe9
 jmp Jb, 0xeb
-jmp Jd, data16 rexw 0xe9, amd64
+jmp Jd, 0xe9
+jmp Jw, data16 0xe9, nacl-forbidden
+jmp Jd, data16 rexw 0xe9, amd64 nacl-forbidden
 # “jmp” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit jump is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
@@ -523,6 +527,9 @@ movabs Ob ab, 0xa0, amd64 nacl-forbidden
 movabs Ov av, 0xa1, amd64 nacl-forbidden
 movabs ab Ob, 0xa2, amd64 nacl-forbidden
 movabs av Ov, 0xa3, amd64 nacl-forbidden
+######## MOVBE #################################################################
+movbe Mv Gv, 0x0f 0x38 0xf0, CPUFeature_MOVBE
+movbe Gv Mv, 0x0f 0x38 0xf1, CPUFeature_MOVBE
 ######## MOVD ##################################################################
 # This is description according to AMD/Intel manual.
 # movd Ey Vy, 0x66 0x0f 0x6e, CPUFeature_SSE2
@@ -542,7 +549,7 @@ movq Pq Eq, rexw 0x0f 0x7e, amd64 CPUFeature_MMX
 ######## MOVMSKPD ##############################################################
 # This is description according to AMD/Intel manual.
 #  movmskpd Upd Gd, 0x66 0x0f 0x50, CPUFeature_SSE2
-# GNU as accepts this descriotion, but objdump decodes last operand as “Gy”.
+# GNU as accepts this description, but objdump decodes last operand as “Gy”.
 # Technically it makes no difference: “movmskpd” clears everything except least
 # significant two bits and this operation produces precisely idential output for
 # “Gy” and “Gd” operands.  We'll use objdump's description.
@@ -550,7 +557,7 @@ movmskpd Upd Gy, 0x66 0x0f 0x50, CPUFeature_SSE2
 ######## MOVMSKPS ##############################################################
 # This is description according to AMD/Intel manual.
 #  movmskps Ups Gd, 0x0f 0x50, CPUFeature_SSE2
-# GNU as accepts this descriotion, but objdump decodes last operand as “Gy”.
+# GNU as accepts this description, but objdump decodes last operand as “Gy”.
 # Technically it makes no difference: “movmskps” clears everything except least
 # significant four bits and this operation produces precisely idential output
 # for “Gy” and “Gd” operands.  We'll use objdump's description.
@@ -576,8 +583,8 @@ movsww Ew Gw, data16 0x0f 0xbf, norexw
 movslq Ed Gv, 0x63, amd64
 ######## MOVZX #################################################################
 # This is description according to AMD/Intel manual.
-# movsx Eb Gv, 0x0f 0xb6
-# movsx Ew Gy, 0x0f 0xb7
+#  movsx Eb Gv, 0x0f 0xb6
+#  movsx Ew Gy, 0x0f 0xb7
 # Objdump has different names for this instrustion: “movzbw”, “movzbl”, “movzbq”,
 # “movzwl”, “movzwq” depending on operand size.  We describe 32bit versions and
 # 64bit version separately.
@@ -588,7 +595,7 @@ movzwl Ew Gd, 0x0f 0xb7, norexw
 movzwq Ew Gq, rexw 0x0f 0xb7, amd64
 movzww Ew Gw, data16 0x0f 0xb7, norexw
 ######## MUL ###################################################################
-mul E, 0xf6 /4
+mul =E, 0xf6 /4
 ######## NEG ###################################################################
 neg E, 0xf6 /3, lock
 ######## NOP ###################################################################
@@ -613,7 +620,7 @@ out az =oz, 0xef, nacl-forbidden
 outs Xb =ob, 0x6e, rep nacl-forbidden
 outs Xz =oz, 0x6f, rep nacl-forbidden
 ######## PAUSE #################################################################
-pause, 0xf3 0x90
+pause, 0xf3 0x90, norex
 ######## POP ###################################################################
 # “pop” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
@@ -632,8 +639,8 @@ popcnt Ev Gv, 0xf3 0x0f 0xb8, CPUFeature_POPCNT
 ######## POPF/POPFD/POPFQ ######################################################
 popf, 0x9d, ia32 nacl-forbidden
 popfq, 0x9d, amd64 nacl-forbidden
-popfq, data16 rexw 0x9d, amd64
-popfw, data16 0x9d, norexw
+popfq, data16 rexw 0x9d, amd64 nacl-forbidden
+popfw, data16 0x9d, norexw nacl-forbidden
 ######## PREFETCH/PREFETCHW ####################################################
 prefetch Mb, 0x0f 0x0d /0, CPUFeature_3DPRFTCH no_memory_access
 prefetchw Mb, 0x0f 0x0d /1, CPUFeature_3DPRFTCH no_memory_access
@@ -665,8 +672,8 @@ push =Ib, 0x6a
 ######## PUSHF/PUSHFD/PUSHFQ ###################################################
 pushf, 0x9c, ia32 nacl-forbidden
 pushfq, 0x9c, amd64 nacl-forbidden
-pushfq, data16 rexw 0x9c, amd64
-pushfw, data16 0x9c, norexw
+pushfq, data16 rexw 0x9c, amd64 nacl-forbidden
+pushfw, data16 0x9c, norexw nacl-forbidden
 ######## RCL ###################################################################
 rcl E, 0xd0 /2
 rcl cb E, 0xd2 /2
@@ -763,12 +770,12 @@ sub E G, 0x2a
 ######## T1MSKC ################################################################
 t1mskc Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /7, CPUFeature_TBM
 ######## TEST ##################################################################
-test I a, 0xa8
-test I E, 0xf6 /0
+test I =a, 0xa8
+test I =E, 0xf6 /0
 # AMD manual claims this opcode works identically to “/0”.  Intel manual
 # says it's reserved.  Objdump does not like it.
-# test I E, 0xf6 /1
-test G E, 0x84
+# test I =E, 0xf6 /1
+test G =E, 0x84
 ######## TZCNT #################################################################
 # We mark tzcnt specially to allow it independently from CPUID
 # See: http://code.google.com/p/nativeclient/issues/detail?id=2869
@@ -776,7 +783,7 @@ tzcnt Ev Gv, 0xf3 0x0f 0xbc, CPUFeature_TZCNT
 ######## TZMSK #################################################################
 tzmsk Ey By, 0x8f RXB.09 W.dest.0.00 0x01 /4, CPUFeature_TBM
 ######## XADD ##################################################################
-xadd G E, 0x0f 0xc0, lock
+xadd &G E, 0x0f 0xc0, lock
 ######## XCHG ##################################################################
 xchg &av rv, 0x90
 xchg &G E, 0x86, lock

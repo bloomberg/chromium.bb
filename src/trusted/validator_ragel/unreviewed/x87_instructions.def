@@ -114,6 +114,7 @@ fld1, 0xd9 0xe8, CPUFeature_x87
 fldcw Msw, 0xd9 /5, CPUFeature_x87
 ######## FLDENV ################################################################
 fldenv Mse, 0xd9 /4, CPUFeature_x87
+fldenvs Mse, data16 0xd9 /4, CPUFeature_x87
 ######## FLDL2E ################################################################
 fldl2e, 0xd9 0xea, CPUFeature_x87
 ######## FLDL2T ################################################################
@@ -148,9 +149,12 @@ fptan, 0xd9 0xf2, CPUFeature_x87
 frndint, 0xd9 0xfc, CPUFeature_x87
 ######## FRSTOR ################################################################
 frstor Msr, 0xdd /4, CPUFeature_x87
+frstors Msr, data16 0xdd /4, CPUFeature_x87
 ######## FSAVE/FNSAVE ##########################################################
 fnsave Msr, 0xdd /6, CPUFeature_x87
+fnsaves Msr, data16 0xdd /6, CPUFeature_x87
 fsave Msr, fwait 0xdd /6, CPUFeature_x87
+fsaves Msr, fwait data16 0xdd /6, CPUFeature_x87
 ######## FSCALE ################################################################
 fscale, 0xd9 0xfd, CPUFeature_x87
 ######## FSIN ##################################################################
@@ -172,7 +176,9 @@ fnstcw Msw, 0xd9 /7
 fstcw Msw, fwait 0xd9 /7
 ######## FSTENV/FNSTENV ########################################################
 fnstenv Mse, 0xd9 /6
+fnstenvs Mse, data16 0xd9 /6
 fstenv Mse, fwait 0xd9 /6
+fstenvs Mse, fwait data16 0xd9 /6
 ######## FSTSW/FNSTSW ##########################################################
 fnsts Mw, 0xdd /7, CPUFeature_x87
 fnstsw aw, 0xdf 0xe0, CPUFeature_x87
@@ -216,11 +222,11 @@ fxam, 0xd9 0xe5, CPUFeature_x87
 ######## FXCH ##################################################################
 fxch r7, 0xd9 0xc8, CPUFeature_x87
 ######## FXRSTOR ###############################################################
-fxrstor Msx, 0x0f 0xae /1, norexw CPUFeature_FXSR nacl-forbidden
-fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 CPUFeature_FXSR nacl-forbidden
+fxrstor Msx, 0x0f 0xae /1, norexw CPUFeature_FXSR
+fxrstor64 Msx, rexw 0x0f 0xae /1, amd64 CPUFeature_FXSR
 ######## FXSAVE ################################################################
-fxsave Msx, 0x0f 0xae /0, norexw CPUFeature_FXSR nacl-forbidden
-fxsave64 Msx, rexw 0x0f 0xae /0, amd64 CPUFeature_FXSR nacl-forbidden
+fxsave Msx, 0x0f 0xae /0, norexw CPUFeature_FXSR
+fxsave64 Msx, rexw 0x0f 0xae /0, amd64 CPUFeature_FXSR
 ######## FXTRACT ###############################################################
 fxtract, 0xd9 0xf4, CPUFeature_x87
 ######## FYL2X #################################################################

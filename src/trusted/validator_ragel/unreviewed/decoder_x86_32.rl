@@ -27,15 +27,16 @@
 
   main := (one_instruction
     @{
-        switch (disp_type) {
+        switch (instruction.rm.disp_type) {
           case DISPNONE: instruction.rm.offset = 0; break;
-          case DISP8: instruction.rm.offset = (uint64_t) *disp; break;
+          case DISP8: instruction.rm.offset = (int8_t) *disp; break;
           case DISP16: instruction.rm.offset =
-            (uint64_t) (disp[0] + 256U * disp[1]);
+            (int16_t) (disp[0] + 256U * disp[1]);
             break;
-          case DISP32: instruction.rm.offset = (uint64_t)
+          case DISP32: instruction.rm.offset = (int32_t)
             (disp[0] + 256U * (disp[1] + 256U * (disp[2] + 256U * (disp[3]))));
             break;
+          case DISP64: assert(FALSE);
         }
         switch (imm_operand) {
           case IMMNONE: instruction.imm[0] = 0; break;
@@ -97,7 +98,7 @@
 #define SET_MODRM_BASE(N) instruction.rm.base = (N)
 #define SET_MODRM_INDEX(N) instruction.rm.index = (N)
 #define SET_MODRM_SCALE(S) instruction.rm.scale = (S)
-#define SET_DISP_TYPE(T) disp_type = (T)
+#define SET_DISP_TYPE(T) instruction.rm.disp_type = (T)
 #define SET_DISP_PTR(P) disp = (P)
 #define SET_IMM_TYPE(T) imm_operand = (T)
 #define SET_IMM_PTR(P) imm = (P)
@@ -110,13 +111,6 @@ enum {
   REX_X = 2,
   REX_R = 4,
   REX_W = 8
-};
-
-enum disp_mode {
-  DISPNONE,
-  DISP8,
-  DISP16,
-  DISP32
 };
 
 enum imm_mode {
@@ -137,7 +131,6 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   const uint8_t *imm2 = NULL;
   const uint8_t *instruction_start = current_position;
   uint8_t vex_prefix3 = 0x00;
-  enum disp_mode disp_type = DISPNONE;
   enum imm_mode imm_operand = IMMNONE;
   enum imm_mode imm2_operand = IMMNONE;
   struct instruction instruction;

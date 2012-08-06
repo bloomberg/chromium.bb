@@ -181,6 +181,50 @@ $(BINUTILS_STAMP): $(BINUTILS_TARBALL) | $(OUT_DIRS)
 	   },\n\
 	   /* REG_0F18 */\n\
 	   {\n\
+	@@ -10490,13 +10496,34 @@\n\
+	   {\n\
+	     /* RM_0FAE_REG_5 */\n\
+	     { \"lfence\",		{ Skip_MODRM } },\n\
+	+    { \"lfence\",		{ Skip_MODRM } },\n\
+	+    { \"lfence\",		{ Skip_MODRM } },\n\
+	+    { \"lfence\",		{ Skip_MODRM } },\n\
+	+    { \"lfence\",		{ Skip_MODRM } },\n\
+	+    { \"lfence\",		{ Skip_MODRM } },\n\
+	+    { \"lfence\",		{ Skip_MODRM } },\n\
+	+    { \"lfence\",		{ Skip_MODRM } },\n\
+	   },\n\
+	   {\n\
+	     /* RM_0FAE_REG_6 */\n\
+	     { \"mfence\",		{ Skip_MODRM } },\n\
+	+    { \"mfence\",		{ Skip_MODRM } },\n\
+	+    { \"mfence\",		{ Skip_MODRM } },\n\
+	+    { \"mfence\",		{ Skip_MODRM } },\n\
+	+    { \"mfence\",		{ Skip_MODRM } },\n\
+	+    { \"mfence\",		{ Skip_MODRM } },\n\
+	+    { \"mfence\",		{ Skip_MODRM } },\n\
+	+    { \"mfence\",		{ Skip_MODRM } },\n\
+	   },\n\
+	   {\n\
+	     /* RM_0FAE_REG_7 */\n\
+	     { \"sfence\",		{ Skip_MODRM } },\n\
+	+    { \"sfence\",		{ Skip_MODRM } },\n\
+	+    { \"sfence\",		{ Skip_MODRM } },\n\
+	+    { \"sfence\",		{ Skip_MODRM } },\n\
+	+    { \"sfence\",		{ Skip_MODRM } },\n\
+	+    { \"sfence\",		{ Skip_MODRM } },\n\
+	+    { \"sfence\",		{ Skip_MODRM } },\n\
+	+    { \"sfence\",		{ Skip_MODRM } },\n\
+	   },\n\
+	 };\n\
+	@@ -13619,7 +13640,7 @@\n\
+	 	}\n\
+	       break;\n\
+	     case v_mode:\n\
+	-      if (sizeflag & DFLAG)\n\
+	+      if ((sizeflag & DFLAG) || (rex & REX_W))\n\
+	 	op = get32s ();\n\
+	       else\n\
+	 	op = get16 ();\n\
 	--- $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-opc.tbl\n\
 	+++ $(OUT)/build/$(BINUTILS_VER)/opcodes/i386-opc.tbl\n\
 	@@ -2954,2 +2954,3 @@\n\

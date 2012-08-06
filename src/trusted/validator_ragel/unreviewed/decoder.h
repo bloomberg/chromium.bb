@@ -83,6 +83,14 @@ enum DecoderCPUFeatures {
 };
 */
 
+enum disp_mode {
+  DISPNONE,
+  DISP8,
+  DISP16,
+  DISP32,
+  DISP64,
+};
+
 struct instruction {
   const char *name;
   unsigned char operands_count;
@@ -112,7 +120,8 @@ struct instruction {
     enum register_name base;
     enum register_name index;
     int scale;
-    uint64_t offset;
+    int64_t offset;
+    enum disp_mode disp_type;
   } rm;
   uint64_t imm[2];
 };

@@ -214,6 +214,7 @@ namespace {
     "CPUFeature_LZCNT",
     "CPUFeature_MMX",
     "CPUFeature_MON",
+    "CPUFeature_MOVBE",
     "CPUFeature_MSR",
     "CPUFeature_POPCNT",
     "CPUFeature_SEP",
@@ -1585,7 +1586,9 @@ namespace {
           print_one_size_definition();
           instruction_class = InstructionClass::kRexW;
           print_one_size_definition_rexw();
-          print_one_size_definition_data16_rexw();
+          if (enabled(Actions::kNaClForbidden)) {
+            print_one_size_definition_data16_rexw();
+          }
           instruction_class = saved_class;
           break;
         case InstructionClass::kSize8Data16DefaultRexWxDefaultRexW: {
@@ -1623,7 +1626,9 @@ namespace {
               print_one_size_definition();
               instruction_class = InstructionClass::kRexW;
               print_one_size_definition_rexw();
-              print_one_size_definition_data16_rexw();
+              if (enabled(Actions::kNaClForbidden)) {
+                print_one_size_definition_data16_rexw();
+              }
               instruction_class = saved_class;
               return;
             }
@@ -1975,6 +1980,9 @@ namespace {
       if (fwait) {
         if (ia32_mode) {
           fprintf(out_file, "0x9b ");
+        } else if ((required_prefixes.size() == 1) &&
+                   (*required_prefixes.begin()) == "data16") {
+          fprintf(out_file, "(REX_WRXB? 0x9b data16 | 0x9b ");
         } else {
           fprintf(out_file, "(REX_WRXB? 0x9b | 0x9b ");
         }
@@ -2303,16 +2311,16 @@ namespace {
             { T { InstructionClass::kUnknown, ' ', "fq"   },    "256bit"      },
             { T { InstructionClass::kUnknown, ' ', "o"    },    "128bit"      },
             { T { InstructionClass::kUnknown, ' ', "p"    },    "farptr"      },
-            { T { InstructionClass::kUnknown, ' ', "pb"   },    "xmm"         },
+            { T { InstructionClass::kUnknown, ' ', "pb"   },    "mmx_xmm"     },
             { T { InstructionClass::kUnknown, ' ', "pd"   },    "xmm"         },
             { T { InstructionClass::kUnknown, ' ', "pdw"  },    "xmm"         },
             { T { InstructionClass::kUnknown, ' ', "pdwx" },    "ymm"         },
             { T { InstructionClass::kUnknown, ' ', "pdx"  },    "ymm"         },
             { T { InstructionClass::kUnknown, ' ', "ph"   },    "xmm"         },
-            { T { InstructionClass::kUnknown, ' ', "pi"   },    "xmm"         },
-            { T { InstructionClass::kUnknown, ' ', "pj"   },    "xmm"         },
+            { T { InstructionClass::kUnknown, ' ', "pi"   },    "mmx_xmm"     },
+            { T { InstructionClass::kUnknown, ' ', "pj"   },    "mmx_xmm"     },
             { T { InstructionClass::kUnknown, ' ', "pjx"  },    "ymm"         },
-            { T { InstructionClass::kUnknown, ' ', "pk"   },    "xmm"         },
+            { T { InstructionClass::kUnknown, ' ', "pk"   },    "mmx_xmm"     },
             { T { InstructionClass::kUnknown, ' ', "pq"   },    "xmm"         },
             { T { InstructionClass::kUnknown, ' ', "pqw"  },    "xmm"         },
             { T { InstructionClass::kUnknown, ' ', "pqwx" },    "ymm"         },
@@ -2385,6 +2393,31 @@ namespace {
                     operand.size.c_str());
             exit(1);
           } else {
+            static const std::map<char, const char*> mmx_xmm_sizes {
+              { 'a', "xmm" }, /* %xmm0 */
+              { 'H', "xmm" },
+              { 'L', "xmm" },
+              { 'N', "mmx" },
+              { 'P', "mmx" },
+              { 'Q', "mmx" },
+              { 'U', "xmm" },
+              { 'V', "xmm" },
+              { 'W', "xmm" }
+            };
+            const char* operand_size = it->second;
+            if (!strcmp(it->second, "mmx_xmm")) {
+              auto it_mmx_xmm = mmx_xmm_sizes.find(operand.source);
+              if (it_mmx_xmm != mmx_xmm_sizes.end()) {
+                operand_size = it_mmx_xmm->second;
+              } else {
+                fprintf(stderr,
+                        "%s: error - can not determine operand size: %c%s",
+                        short_program_name,
+                        operand.source,
+                        operand.size.c_str());
+                exit(1);
+              }
+            }
             if (!enabled(Actions::kParseImmediateOperands)) {
               if (operand.source == 'I' || operand.source == 'i') {
                 operand.enabled = false;
@@ -2396,22 +2429,22 @@ namespace {
               }
             }
             if (!enabled(Actions::kParseX87Operands) &&
-                (!strncmp(it->second, "x87", 3) ||
-                 !strncmp(it->second, "float", 5))) {
+                (!strncmp(operand_size, "x87", 3) ||
+                 !strncmp(operand_size, "float", 5))) {
               operand.enabled = false;
             }
             if (!enabled(Actions::kParseMMXOperands) &&
-                !strcmp(it->second, "mmx")) {
+                !strcmp(operand_size, "mmx")) {
               operand.enabled = false;
             }
             if (!enabled(Actions::kParseXMMOperands) &&
-                (!strcmp(it->second, "xmm") ||
-                 !strcmp(it->second, "128bit"))) {
+                (!strcmp(operand_size, "xmm") ||
+                 !strcmp(operand_size, "128bit"))) {
               operand.enabled = false;
             }
             if (!enabled(Actions::kParseYMMOperands) &&
-                (!strcmp(it->second, "ymm") ||
-                 !strcmp(it->second, "256bit"))) {
+                (!strcmp(operand_size, "ymm") ||
+                 !strcmp(operand_size, "256bit"))) {
               operand.enabled = false;
             }
             if (!operand.write && !enabled(Actions::kParseNonWriteRegisters)) {
@@ -2423,7 +2456,8 @@ namespace {
                     (operand.source != 'N') && (operand.source != 'Q') &&
                     (operand.source != 'R') && (operand.source != 'U') &&
                     (operand.source != 'W')) || !memory_access)) {
-                fprintf(out_file, " @operand%zd_%s", operand_index, it->second);
+                fprintf(out_file, " @operand%zd_%s", operand_index,
+                                                                  operand_size);
               }
             }
           }
@@ -2512,6 +2546,7 @@ namespace {
           { { InstructionClass::kRexW,          "b"     },      "imm8"  },
           { { InstructionClass::kDefault,       "d"     },      "imm32" },
           { { InstructionClass::kRexW,          "d"     },      "imm32" },
+          { { InstructionClass::kRexW,          "q"     },      "imm64" },
           { { InstructionClass::kDefault,       "v"     },      "imm32" },
           { { InstructionClass::kData16,        "v"     },      "imm16" },
           { { InstructionClass::kRexW,          "v"     },      "imm64" },
