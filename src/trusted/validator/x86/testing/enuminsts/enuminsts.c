@@ -67,7 +67,7 @@ static int gSawLethalError = 0;
 const int kTextAddress = 0x1000;
 
 /* If non-negative, defines the prefix to test. */
-static int gPrefix = -1;
+static unsigned int gPrefix = 0;
 
 /* If non-negative, defines the opcode to test. */
 static int gOpcode = -1;
@@ -189,7 +189,7 @@ static void PrintBindings(ComparedInstruction* cinst) {
 #ifdef NACL_XED_DECODER
   fprintf(stderr, "--pin_version=\"%s\"\n", NACL_PINV);
 #endif
-  if (gPrefix >= 0) fprintf(stderr, "--prefix=0x%08x\n", gPrefix);
+  if (gPrefix > 0) fprintf(stderr, "--prefix=0x%08x\n", gPrefix);
   fprintf(stderr, "--nops=%s\n", BoolName(gNoCompareNops));
   fprintf(stderr, "--skipcontiguous=%s\n", BoolName(gSkipContiguous));
   fprintf(stderr, "--verbose=%s\n", BoolName(gVerbose));
@@ -800,7 +800,7 @@ static Bool IsLegalInstShorterThan(ComparedInstruction *cinst, size_t len) {
  * particular prefix.
  */
 static void TestAllWithPrefix(ComparedInstruction *cinst,
-                              int prefix, size_t prefix_length) {
+                              unsigned int prefix, size_t prefix_length) {
   const int kInstByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
   const int kIterByteCount = 3;
   InstByteArray itext;
@@ -809,7 +809,7 @@ static void TestAllWithPrefix(ComparedInstruction *cinst,
   int min_op;
   int max_op;
 
-  if ((gPrefix >= 0) && (gPrefix != prefix)) return;
+  if ((gPrefix > 0) && (gPrefix != prefix)) return;
 
   PrintProgress("TestAllWithPrefix(%x)\n", prefix);
   /* set up prefix */
@@ -852,6 +852,24 @@ static void TestAllWithPrefix(ComparedInstruction *cinst,
   }
 }
 
+/* For x86-64, enhance the iteration by looping through REX prefixes.
+ */
+static void TestAllWithPrefixREX(ComparedInstruction *cinst,
+                                 unsigned int prefix, size_t prefix_length) {
+#if NACL_TARGET_SUBARCH == 64
+  unsigned char REXp;
+  unsigned int rprefix;
+  /* test with REX prefixes */
+  for (REXp = 0x40; REXp < 0x50; REXp++) {
+    rprefix = (prefix << 8 | REXp);
+    printf("Testing with prefix %x\n", rprefix);
+    TestAllWithPrefix(cinst, rprefix, prefix_length + 1);
+  }
+#endif
+  /* test with no REX prefix */
+  TestAllWithPrefix(cinst, prefix, prefix_length);
+}
+
 /* For all prefixes, call TestAllWithPrefix() to enumrate and test
  * all instructions.
  */
@@ -862,17 +880,17 @@ static void TestAllInstructions(ComparedInstruction *cinst) {
    * go in instruction byte 0, and 3a in byte 1.
    */
   /* TODO(bradchen): extend enuminsts-64 to iterate over 64-bit prefixes. */
-  TestAllWithPrefix(cinst, 0, 0);
-  TestAllWithPrefix(cinst, 0x0f, 1);
-  TestAllWithPrefix(cinst, 0x0ff2, 2);
-  TestAllWithPrefix(cinst, 0x0ff3, 2);
-  TestAllWithPrefix(cinst, 0x0f66, 2);
-  TestAllWithPrefix(cinst, 0x0f0f, 2);
-  TestAllWithPrefix(cinst, 0x380f, 2);
-  TestAllWithPrefix(cinst, 0x3a0f, 2);
-  TestAllWithPrefix(cinst, 0x380f66, 3);
-  TestAllWithPrefix(cinst, 0x380ff2, 3);
-  TestAllWithPrefix(cinst, 0x3a0f66, 3);
+  TestAllWithPrefixREX(cinst, 0, 0);
+  TestAllWithPrefixREX(cinst, 0x0f, 1);
+  TestAllWithPrefixREX(cinst, 0x0ff2, 2);
+  TestAllWithPrefixREX(cinst, 0x0ff3, 2);
+  TestAllWithPrefixREX(cinst, 0x0f66, 2);
+  TestAllWithPrefixREX(cinst, 0x0f0f, 2);
+  TestAllWithPrefixREX(cinst, 0x380f, 2);
+  TestAllWithPrefixREX(cinst, 0x3a0f, 2);
+  TestAllWithPrefixREX(cinst, 0x380f66, 3);
+  TestAllWithPrefixREX(cinst, 0x380ff2, 3);
+  TestAllWithPrefixREX(cinst, 0x3a0f66, 3);
 }
 
 /* Enumerate and test each instruction on stdin. */
@@ -935,6 +953,12 @@ static void RunRegressionTests(ComparedInstruction *cinst) {
    */
   TestOneInstruction(cinst, "262e7e00");
   TestOneInstruction(cinst, "2e3e7900");
+  /* From the AMD manual, "An instruction may have only one REX prefix */
+  /* which must immediately precede the opcode or first excape byte    */
+  /* in the instruction encoding." */
+  TestOneInstruction(cinst, "406601d8");  /* illegal; REX before data16 */
+  TestOneInstruction(cinst, "664001d8");  /* legal; REX after data16    */
+  TestOneInstruction(cinst, "414001d8");  /* illegal; two REX bytes     */
 }
 
 /* Returns the decoder with the given name, if it is registered. Otherwise,
@@ -1291,7 +1315,7 @@ int main(int argc, char *argv[]) {
 
   if (testargs == argc) {
     if (NULL == NaClGetRegisteredDecoder(&gCinst, "in")) {
-      if (gPrefix < 0) RunRegressionTests(&gCinst);
+      if (gPrefix == 0) RunRegressionTests(&gCinst);
       TestAllInstructions(&gCinst);
     } else {
       TestInputInstructions(&gCinst);

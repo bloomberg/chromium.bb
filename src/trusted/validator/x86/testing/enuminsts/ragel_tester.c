@@ -103,8 +103,13 @@ void RagelDecodeError (const uint8_t *ptr, void *userdata) {
 
 void RagelValidateError (const uint8_t *ptr, uint32_t error, void *userdata) {
   UNREFERENCED_PARAMETER(ptr);
-  if ((error & UNRECOGNIZED_INSTRUCTION) ||
-      (error & CPUID_UNSUPPORTED_INSTRUCTION)) {
+  if (error & (UNRECOGNIZED_INSTRUCTION |
+               CPUID_UNSUPPORTED_INSTRUCTION |
+               FORBIDDEN_BASE_REGISTER |
+               UNRESTRICTED_INDEX_REGISTER |
+               R15_MODIFIED |
+               BPL_MODIFIED |
+               SPL_MODIFIED)) {
     ((struct RagelDecodeState*)userdata)->inst_is_legal = 0;
   }
   return;
