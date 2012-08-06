@@ -1,0 +1,31 @@
+/build
+/source/build
+*.mode1v3
+*.pbxuser
+*.pbxindex/
+!user.pbxuser
+/*.log
+*.user
+*.ncb
+*.suo
+*.pdb
+*.pdf
+*.html
+*.idb
+*.o
+*.lo
+*.a
+*.so
+*.so.0
+*.la
+.deps
+.libs
+*.pyc
+.DS_Store
+# Emacs and other editor backup files
+*~
+
+# builds on Windows
+Debug/
+Release/
+release/
