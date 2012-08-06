@@ -628,12 +628,12 @@
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_SPINNER" file="speech_input_spinner.png" />
       <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_BALLOON_ICON" file="speech_input_tray_balloon_icon.png" />
       <if expr="is_linux or pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="speech_input_tray_macosx_mic_empty.png" />
-        <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_FULL" file="speech_input_tray_macosx_mic_full.png" />
-      </if>
-      <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="speech_input_tray_linux_mic_empty.png" />
         <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_FULL" file="speech_input_tray_linux_mic_full.png" />
+      </if>
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="speech_input_tray_macosx_mic_empty.png" />
+        <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_FULL" file="speech_input_tray_macosx_mic_full.png" />
       </if>
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_SPEECH_INPUT_TRAY_MIC_EMPTY" file="speech_input_tray_windows_mic_empty.png" />
