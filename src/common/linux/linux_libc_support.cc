@@ -31,7 +31,7 @@
 // we call the libc functions directly we risk crashing in the dynamic linker
 // as it tries to resolve uncached PLT entries.
 
-#include "src/common/linux/linux_libc_support.h"
+#include "common/linux/linux_libc_support.h"
 
 #include <stddef.h>
 
