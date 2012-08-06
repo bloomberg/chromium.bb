@@ -130,7 +130,7 @@ deps = {
     'src/tools/gyp':
         Var('git_url') + '/external/gyp.git@9d0ee5cf35e0572c37a7943c6c49ae69382f8b76',
     'src/tools/page_cycler/acid3':
-        Var('git_url') + '/chromium/deps/acid3.git@633fc66cc99ae5bb92b567c6beafde7a01cfdb49',
+        Var('git_url') + '/chromium/deps/acid3.git@bed664c3c6f4200d2ab6b139bddb628dcef6f5ed',
     'src/v8':
         Var('git_url') + '/external/v8.git@e775fee00bcdfcabc9c69eed20d76595de108b78',
 }
@@ -318,7 +318,7 @@ deps_os = {
         'src/third_party/cros_system_api':
             Var('git_url') + '/chromiumos/platform/system_api.git@715c98d7d0ca9a1f0576fca77cb4a49498d303ae',
         'src/third_party/gold':
-            Var('git_url') + '/chromium/deps/gold.git@44ab2e796b8126864b4860eb108dbf5068887063',
+            Var('git_url') + '/chromium/deps/gold.git@74c34c19eadc0135b189318e393e78ca1dd431aa',
         'src/third_party/libmtp':
             Var('git_url') + '/chromium/deps/libmtp.git@660f6055de613f5081da9864e71f50f48067f8ae',
         'src/third_party/lss':
