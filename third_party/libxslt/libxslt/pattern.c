@@ -1787,6 +1787,8 @@ xsltCompileLocationPathPattern(xsltParserContextPtr ctxt, int novar) {
 	SKIP_BLANKS;
 	if ((CUR == '(') && !xmlXPathIsNodeType(name)) {
 	    xsltCompileIdKeyPattern(ctxt, name, 1, novar, 0);
+	    if (ctxt->error)
+		return;
 	    if ((CUR == '/') && (NXT(1) == '/')) {
 		PUSH(XSLT_OP_ANCESTOR, NULL, NULL, novar);
 		NEXT;

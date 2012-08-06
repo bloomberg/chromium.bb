@@ -47,6 +47,8 @@ Current version: 1.1.26, plus the following patches:
 
 5) Converted to utf-8 with: vim +"argdo write ++enc=utf-8" *.c
 
+6) A change to pattern.c to better handle an error condition parsing a broken
+expression.
 
 To import a new snapshot of libxslt:
 
