@@ -12,10 +12,11 @@
 #include "ui/gfx/rect.h"
 
 namespace chrome {
+namespace internal {
 
-bool GrabWindowSnapshotImpl(gfx::NativeWindow window,
-                            std::vector<unsigned char>* png_representation,
-                            const gfx::Rect& snapshot_bounds) {
+bool GrabWindowSnapshot(gfx::NativeWindow window,
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   gfx::Rect screen_bounds = gfx::Rect(NSRectToCGRect([screen frame]));
   gfx::Rect window_bounds = gfx::Rect(NSRectToCGRect([window frame]));
@@ -58,4 +59,5 @@ bool GrabWindowSnapshotImpl(gfx::NativeWindow window,
   return true;
 }
 
+}  // namespace internal
 }  // namespace chrome

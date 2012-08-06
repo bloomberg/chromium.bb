@@ -188,8 +188,9 @@ void ShowFeedbackPage(Browser* browser,
   native_window = browser->window()->GetNativeWindow();
   snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
 #endif
-  bool success = chrome::GrabWindowSnapshot(native_window, last_screenshot_png,
-                                            snapshot_bounds);
+  bool success = chrome::GrabWindowSnapshotForUser(native_window,
+                                                   last_screenshot_png,
+                                                   snapshot_bounds);
   FeedbackUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
 
   std::string feedback_url = std::string(chrome::kChromeUIFeedbackURL) + "?" +

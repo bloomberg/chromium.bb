@@ -230,7 +230,8 @@ class ThroughputTest : public BrowserPerfTest {
                               tab_contents_bounds.height());
 
     gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
-    if (!chrome::GrabWindowSnapshot(native_window, &png, snapshot_bounds)) {
+    if (!chrome::GrabWindowSnapshotForUser(native_window, &png,
+                                           snapshot_bounds)) {
       LOG(ERROR) << "browser::GrabWindowSnapShot() failed";
       return false;
     }
