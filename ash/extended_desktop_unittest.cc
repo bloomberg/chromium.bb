@@ -220,9 +220,9 @@ TEST_F(ExtendedDesktopTest, CycleWindows) {
   EXPECT_EQ(root_windows[1], d2_w2->GetNativeView()->GetRootWindow());
 
   controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
   EXPECT_TRUE(wm::IsActiveWindow(d1_w2->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
   EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
@@ -232,9 +232,9 @@ TEST_F(ExtendedDesktopTest, CycleWindows) {
   controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
   EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d1_w2->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
   EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
+  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(d1_w2->GetNativeView()));
   controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
   EXPECT_TRUE(wm::IsActiveWindow(d2_w2->GetNativeView()));
 }

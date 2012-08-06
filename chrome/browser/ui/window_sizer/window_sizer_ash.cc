@@ -44,7 +44,7 @@ aura::Window* GetTopWindow() {
 
   // Get a list of all windows.
   const std::vector<aura::Window*> windows =
-      ash::WindowCycleController::BuildWindowList();
+      ash::WindowCycleController::BuildWindowList(NULL);
 
   if (windows.empty())
     return NULL;

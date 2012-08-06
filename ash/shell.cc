@@ -457,7 +457,8 @@ void Shell::Init() {
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
-  window_cycle_controller_.reset(new WindowCycleController);
+  window_cycle_controller_.reset(
+      new WindowCycleController(activation_controller_.get()));
 
   tooltip_controller_.reset(new internal::TooltipController(
       drag_drop_controller_.get()));
@@ -704,6 +705,7 @@ void Shell::InitRootWindowController(
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());
   DCHECK(capture_controller_.get());
+  DCHECK(window_cycle_controller_.get());
 
   root_window->set_focus_manager(focus_manager_.get());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
@@ -735,6 +737,8 @@ void Shell::InitRootWindowController(
       root_window->GetChildById(internal::kShellWindowId_AlwaysOnTopContainer));
   root_window->SetProperty(internal::kAlwaysOnTopControllerKey,
                            always_on_top_controller);
+
+  window_cycle_controller_->OnRootWindowAdded(root_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ash/display/display_controller.h"
+#include "ash/display/multi_display_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -13,6 +15,7 @@
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/env.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/rect.h"
@@ -234,6 +237,227 @@ TEST_F(WindowCycleControllerTest, Minimized) {
 
   // One more time back to w0.
   controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+}
+
+TEST_F(WindowCycleControllerTest, AlwaysOnTopWindow) {
+  WindowCycleController* controller =
+      Shell::GetInstance()->window_cycle_controller();
+
+  // Set up several windows to use to test cycling.
+  Window* default_container =
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, default_container));
+
+  Window* top_container =
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          internal::kShellWindowId_AlwaysOnTopContainer);
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
+  wm::ActivateWindow(window0.get());
+
+  // Simulate pressing and releasing Alt-tab.
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+
+  // Window lists should return the topmost window in front.
+  ASSERT_TRUE(controller->windows());
+  ASSERT_EQ(3u, controller->windows()->windows().size());
+  EXPECT_EQ(window0.get(), controller->windows()->windows()[0]);
+  EXPECT_EQ(window2.get(), controller->windows()->windows()[1]);
+  EXPECT_EQ(window1.get(), controller->windows()->windows()[2]);
+
+  controller->AltKeyReleased();
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  controller->AltKeyReleased();
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+}
+
+TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
+  WindowCycleController* controller =
+      Shell::GetInstance()->window_cycle_controller();
+
+  // Set up several windows to use to test cycling.
+  Window* default_container =
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, default_container));
+
+  Window* top_container =
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          internal::kShellWindowId_AlwaysOnTopContainer);
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, top_container));
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, top_container));
+  wm::ActivateWindow(window0.get());
+
+  // Simulate pressing and releasing Alt-tab.
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+
+  // Window lists should return the topmost window in front.
+  ASSERT_TRUE(controller->windows());
+  ASSERT_EQ(4u, controller->windows()->windows().size());
+  EXPECT_EQ(window0.get(), controller->windows()->windows()[0]);
+  EXPECT_EQ(window3.get(), controller->windows()->windows()[1]);
+  EXPECT_EQ(window2.get(), controller->windows()->windows()[2]);
+  EXPECT_EQ(window1.get(), controller->windows()->windows()[3]);
+
+  controller->AltKeyReleased();
+  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  controller->AltKeyReleased();
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+}
+
+TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
+  // Set up a second root window
+  UpdateDisplay("0+0-1000x600,1001+0-600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+
+  // Move the active root window to the secondary.
+  Shell::GetInstance()->set_active_root_window(root_windows[1]);
+
+  WindowCycleController* controller =
+      Shell::GetInstance()->window_cycle_controller();
+
+  // Set up several windows to use to test cycling.
+  Window* default_container0 =
+      Shell::GetContainer(
+          root_windows[0],
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container0));
+
+  Window* top_container0 =
+      Shell::GetContainer(
+          root_windows[0],
+          internal::kShellWindowId_AlwaysOnTopContainer);
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, top_container0));
+
+  // Set up several windows to use to test cycling.
+  Window* default_container1 =
+      Shell::GetContainer(
+          root_windows[1],
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, default_container1));
+
+  Window* top_container1 =
+      Shell::GetContainer(
+          root_windows[1],
+          internal::kShellWindowId_AlwaysOnTopContainer);
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, top_container1));
+
+
+  wm::ActivateWindow(window2.get());
+
+  // Simulate pressing and releasing Alt-tab.
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+
+  // Window lists should return the topmost window in front.
+  ASSERT_TRUE(controller->windows());
+  ASSERT_EQ(4u, controller->windows()->windows().size());
+  EXPECT_EQ(window2.get(), controller->windows()->windows()[0]);
+  EXPECT_EQ(window3.get(), controller->windows()->windows()[1]);
+  EXPECT_EQ(window1.get(), controller->windows()->windows()[2]);
+  EXPECT_EQ(window0.get(), controller->windows()->windows()[3]);
+
+  controller->AltKeyReleased();
+  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
+  controller->AltKeyReleased();
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+}
+
+TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
+  WindowCycleController* controller =
+      Shell::GetInstance()->window_cycle_controller();
+
+  // Set up several windows to use to test cycling.
+  Window* container =
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, container));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, container));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, container));
+
+  wm::ActivateWindow(window0.get());
+
+  // Simulate pressing and releasing Alt-tab.
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+
+  // Window lists should return the topmost window in front.
+  ASSERT_TRUE(controller->windows());
+  ASSERT_EQ(3u, controller->windows()->windows().size());
+  EXPECT_EQ(window0.get(), controller->windows()->windows()[0]);
+  EXPECT_EQ(window2.get(), controller->windows()->windows()[1]);
+  EXPECT_EQ(window1.get(), controller->windows()->windows()[2]);
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  controller->AltKeyReleased();
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  controller->AltKeyReleased();
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
+  EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+
+  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
