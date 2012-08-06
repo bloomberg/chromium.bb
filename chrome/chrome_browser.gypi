@@ -1087,6 +1087,8 @@
         'browser/favicon/favicon_tab_helper.h',
         'browser/favicon/favicon_util.cc',
         'browser/favicon/favicon_util.h',
+        'browser/favicon/select_favicon_frames.cc',
+        'browser/favicon/select_favicon_frames.h',
         'browser/file_select_helper.cc',
         'browser/file_select_helper.h',
         'browser/first_run/first_run.cc',
