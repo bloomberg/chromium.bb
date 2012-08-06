@@ -662,7 +662,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const GURL& update_url() const { return update_url_; }
   const ExtensionIconSet& icons() const { return icons_; }
   const extensions::Manifest* manifest() const {
-    return manifest_;
+    return manifest_.get();
   }
   const std::string default_locale() const { return default_locale_; }
   const URLOverrideMap& GetChromeURLOverrides() const {
@@ -1069,15 +1069,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   GURL update_url_;
 
   // The manifest from which this extension was created.
-  //
-  // NOTE: This is an owned pointer, but can't use scoped_ptr because that would
-  // require manifest.h, which would in turn create a circulate dependency
-  // between extension.h and manifest.h.
-  //
-  // TODO(aa): Pull Extension::Type and Extension::Location out into their own
-  // files so that manifest.h can rely on them and not get all of extension.h
-  // too, and then change this back to a scoped_ptr.
-  extensions::Manifest* manifest_;
+  scoped_ptr<Manifest> manifest_;
 
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs. (see ExtensionOverrideUI).

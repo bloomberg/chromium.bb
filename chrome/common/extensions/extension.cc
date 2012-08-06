@@ -1278,7 +1278,7 @@ bool Extension::LoadLaunchContainer(string16* error) {
       launch_container_ == extension_misc::LAUNCH_WINDOW;
 
   // Validate the container width if present.
-  if (!ReadLaunchDimension(manifest_,
+  if (!ReadLaunchDimension(manifest_.get(),
                            keys::kLaunchWidth,
                            &launch_width_,
                            can_specify_initial_size,
@@ -1286,7 +1286,7 @@ bool Extension::LoadLaunchContainer(string16* error) {
       return false;
 
   // Validate container height if present.
-  if (!ReadLaunchDimension(manifest_,
+  if (!ReadLaunchDimension(manifest_.get(),
                            keys::kLaunchHeight,
                            &launch_height_,
                            can_specify_initial_size,
@@ -2912,8 +2912,6 @@ Extension::Extension(const FilePath& path,
 }
 
 Extension::~Extension() {
-  if (manifest_)
-    delete manifest_;
 }
 
 ExtensionResource Extension::GetResource(
