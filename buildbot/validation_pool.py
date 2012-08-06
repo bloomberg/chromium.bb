@@ -642,12 +642,28 @@ class RawPatchSeries(object):
 class PatchSeries(RawPatchSeries):
   """Class representing a set of patches applied to a manifest checkout."""
 
-  def __init__(self, path, helper_pool=None, force_content_merging=False):
+  def __init__(self, path, helper_pool=None, force_content_merging=False,
+               trust_patch_branch=False):
+    """Initialize a PatchSeries instance.
+
+    Args:
+      path: The path to a repository checkout.
+      helper_pool: If given, a HelperPool instance to constrain
+        gerrit access against.
+      force_content_merging: If set to True, then all projects have content
+        merging enabled.
+      trust_patch_branch: If True, don't use the manifests specified branch
+        for doing parentage/commit lookup- trust the patch's specified
+        tracking_branch.  This is basically a hack to work around revision
+        locked manifests.
+    """
+
     RawPatchSeries.__init__(self, path, helper_pool=helper_pool)
 
     self.manifest = None
     self._content_merging_projects = {}
     self.force_content_merging = force_content_merging
+    self._trust_patch_branch = trust_patch_branch
 
   def GetTrackingBranchForChange(self, change, gerrit=False):
     """Identify the branch to work against for this change.
@@ -655,6 +671,9 @@ class PatchSeries(RawPatchSeries):
     Args:
       gerrit: If True, give the shortened form; no refs/heads, no refs/remotes.
     """
+    if self._trust_patch_branch:
+      return RawPatchSeries.GetTrackingBranchForChange(self, change,
+                                                       gerrit=gerrit)
     ref = self.manifest.GetProjectsLocalRevision(change.project)
     return cros_build_lib.StripLeadingRefs(ref) if gerrit else ref
 
@@ -741,6 +760,11 @@ class ValidationFailedMessage(object):
     return '%s: %s' % (urllib.unquote(self.builder_name), ' '.join(details))
 
 
+def ValidationPool__reduce__(args, keywords):
+  """Shim to work around __reduce__'s lack of keyword args for ValidationPool"""
+  return ValidationPool(*args, **keywords)
+
+
 class ValidationPool(object):
   """Class that handles interactions with a validation pool.
 
@@ -754,8 +778,9 @@ class ValidationPool(object):
   GLOBAL_DRYRUN = False
 
   def __init__(self, overlays, build_root, build_number, builder_name,
-               is_master, dryrun, changes=None, non_os_changes=None,
-               conflicting_changes=None, helper_pool=None):
+               is_master, dryrun=False, changes=None, non_os_changes=None,
+               conflicting_changes=None, helper_pool=None,
+               revision_locked_manifest=False):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -778,6 +803,8 @@ class ValidationPool(object):
         instance is created with full access to external and internal gerrit
         instances; full access is used to allow cross gerrit dependencies
         to be supported.
+      revision_locked_manifest: If True, we're working against a revision
+        locked manifest, thus can't trust certain things about it.
     """
 
     if helper_pool is None:
@@ -836,7 +863,10 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
-    self._patch_series = PatchSeries(self.build_root, helper_pool=helper_pool)
+    self._revision_locked_manifest = revision_locked_manifest
+    self._patch_series = PatchSeries(
+        self.build_root, helper_pool=helper_pool,
+        trust_patch_branch=revision_locked_manifest)
 
   @staticmethod
   def GetBuildDashboardForOverlays(overlays):
@@ -860,14 +890,18 @@ class ValidationPool(object):
 
   def __reduce__(self):
     """Used for pickling to re-create validation pool."""
+    # Note that we use indirection here; via that, we can have both positional
+    # and optional args passed to our init.
     return (
-        self.__class__,
-        (
-            self._overlays,
-            self.build_root, self._build_number, self._builder_name,
-            self.is_master, self.dryrun, self.changes,
-            self.non_manifest_changes,
-            self.changes_that_failed_to_apply_earlier))
+        ValidationPool__reduce__, (
+            (self._overlays, self.build_root, self._build_number,
+             self._builder_name, self.is_master),
+            dict(dryrun=self.dryrun, changes=self.changes,
+                 non_os_changes=self.non_manifest_changes,
+                 conflicting_changes=self.changes_that_failed_to_apply_earlier,
+                 revision_locked_manifest=self._revision_locked_manifest,
+                 helper_pool=self._helper_pool)
+            ))
 
   @classmethod
   def _IsTreeOpen(cls, max_timeout=600):
@@ -993,7 +1027,7 @@ class ValidationPool(object):
       ValidationPool object.
     """
     pool = ValidationPool(overlays, build_root, build_number, builder_name,
-                          is_master, dryrun)
+                          is_master, dryrun, revision_locked_manifest=True)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
         lkgm_manager.PALADIN_COMMIT_ELEMENT)
