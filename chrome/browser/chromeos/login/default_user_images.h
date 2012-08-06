@@ -8,6 +8,8 @@
 #include <cstddef>  // for size_t
 #include <string>
 
+#include "base/string16.h"
+
 namespace gfx {
 class ImageSkia;
 }
@@ -33,6 +35,9 @@ bool IsDefaultImageUrl(const std::string url, int* image_id);
 
 // Returns bitmap of default user image with specified index.
 const gfx::ImageSkia& GetDefaultImage(int index);
+
+// Returns a description of a default user image with specified index.
+string16 GetDefaultImageDescription(int index);
 
 // Resource IDs of default user images.
 extern const int kDefaultImageResourceIDs[];

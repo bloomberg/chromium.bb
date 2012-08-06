@@ -24,7 +24,7 @@ cr.define('cr.ui', function() {
    * @extends {cr.ui.ListItem}
    */
   function GridItem(dataItem) {
-    var el = cr.doc.createElement('span');
+    var el = cr.doc.createElement('li');
     el.dataItem = dataItem;
     el.__proto__ = GridItem.prototype;
     return el;
@@ -350,16 +350,30 @@ cr.define('cr.ui', function() {
     __proto__: ListSelectionController.prototype,
 
     /**
+     * Check if accessibility is enabled: if ChromeVox is running
+     * (which provides spoken feedback for accessibility), make up/down
+     * behave the same as left/right. That's because the 2-dimensional
+     * structure of the grid isn't exposed, so it makes more sense to a
+     * user who is relying on spoken feedback to flatten it.
+     * @return {boolean} True if accessibility is enabled.
+     */
+    isAccessibilityEnabled: function() {
+      return window.cvox && cvox.Api &&
+             cvox.Api.isChromeVoxActive && cvox.Api.isChromeVoxActive();
+    },
+
+    /**
      * Returns the index below (y axis) the given element.
      * @param {number} index The index to get the index below.
      * @return {number} The index below or -1 if not found.
      * @override
      */
     getIndexBelow: function(index) {
+      if (this.isAccessibilityEnabled())
+        return this.getIndexAfter(index);
       var last = this.getLastIndex();
-      if (index == last) {
+      if (index == last)
         return -1;
-      }
       index += this.grid_.columns;
       return Math.min(index, last);
     },
@@ -371,9 +385,10 @@ cr.define('cr.ui', function() {
      * @override
      */
     getIndexAbove: function(index) {
-      if (index == 0) {
+      if (this.isAccessibilityEnabled())
+        return this.getIndexBefore(index);
+      if (index == 0)
         return -1;
-      }
       index -= this.grid_.columns;
       return Math.max(index, 0);
     },

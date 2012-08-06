@@ -61,6 +61,10 @@ void UserImageScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
   localized_strings->SetString("takePhoto",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO));
+  localized_strings->SetString("discardPhoto",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO));
+  localized_strings->SetString("flipPhoto",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO));
   localized_strings->SetString("profilePhoto",
       l10n_util::GetStringUTF16(IDS_IMAGE_SCREEN_PROFILE_PHOTO));
   localized_strings->SetString("profilePhotoLoading",
@@ -86,6 +90,7 @@ void UserImageScreenHandler::Initialize() {
         "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
     image_data->SetString(
         "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
+    image_data->SetString("title", GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
   web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setDefaultImages",

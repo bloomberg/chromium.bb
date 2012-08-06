@@ -69,7 +69,9 @@ cr.define('oobe', function() {
       // Profile image data (if present).
       this.profileImage_ = imageGrid.addItem(
           ButtonImages.PROFILE_PICTURE,
-          undefined, undefined, undefined,
+          localStrings.getString('profilePhoto'),
+          undefined,
+          undefined,
           function(el) {  // Custom decorator for Profile image element.
             var spinner = el.ownerDocument.createElement('div');
             spinner.className = 'spinner';
@@ -243,7 +245,7 @@ cr.define('oobe', function() {
       if (present && !this.takePhotoButton_) {
         this.takePhotoButton_ = imageGrid.addItem(
             ButtonImages.TAKE_PHOTO,
-            undefined,
+            localStrings.getString('takePhoto'),
             this.handleTakePhoto_.bind(this),
             0);
       } else if (!present && this.takePhotoButton_) {
@@ -284,15 +286,17 @@ cr.define('oobe', function() {
     },
 
     /**
+<<<<<<< HEAD
      * Appends default images to the image grid. Should only be called once.
-     * @param {Array.<{url: string, author: string, website: string}>} images
-     *   An array of default images data, including URL, author and website.
+     * @param {Array.<{url: string, author: string, website: string,
+     *     title: string}>} images An array of default images data,
+     * including URL, title, author and website.
      * @private
      */
     setDefaultImages_: function(images) {
       var imageGrid = $('user-image-grid');
       for (var i = 0, data; data = imagesData[i]; i++) {
-        imageGrid.addItem(data.url);
+        imageGrid.addItem(data.url, data.title);
       }
     },
 
@@ -548,7 +552,7 @@ cr.define('oobe', function() {
     setDefaultImages_: function(imagesData) {
       var imageGrid = $('user-image-grid');
       for (var i = 0, data; data = imagesData[i]; i++) {
-        var item = imageGrid.addItem(data.url);
+        var item = imageGrid.addItem(data.url, data.title);
         item.type = 'default';
         item.author = data.author || '';
         item.website = data.website || '';

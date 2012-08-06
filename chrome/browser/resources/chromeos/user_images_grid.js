@@ -66,8 +66,6 @@ cr.define('options', function() {
       var imageEl = cr.doc.createElement('img');
       imageEl.src = this.dataItem.url;
       imageEl.title = this.dataItem.title || '';
-      var label = imageEl.src.replace(/(.*\/|\.png)/g, '');
-      imageEl.setAttribute('aria-label', label.replace(/_/g, ' '));
       if (typeof this.dataItem.clickHandler == 'function')
         imageEl.addEventListener('mousedown', this.dataItem.clickHandler);
       // Remove any garbage added by GridItem and ListItem decorators.
@@ -75,6 +73,7 @@ cr.define('options', function() {
       this.appendChild(imageEl);
       if (typeof this.dataItem.decorateFn == 'function')
         this.dataItem.decorateFn(this);
+      this.setAttribute('role', 'option');
     }
   };
 
@@ -142,6 +141,7 @@ cr.define('options', function() {
       this.inProgramSelection_ = false;
       this.addEventListener('dblclick', this.handleDblClick_.bind(this));
       this.addEventListener('change', this.handleChange_.bind(this));
+      this.setAttribute('role', 'listbox');
     },
 
     /**

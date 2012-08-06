@@ -480,7 +480,7 @@ html[oobe=old] #user-image {
   width: 50px;
 }
 
-#user-image-grid [role=listitem] {
+#user-image-grid > li {
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 4px;
   display: inline-block;

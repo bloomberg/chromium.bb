@@ -319,7 +319,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('focus', this.handleElementFocus_, true);
       this.addEventListener('blur', this.handleElementBlur_, true);
       this.addEventListener('scroll', this.handleScroll.bind(this));
-      this.setAttribute('role', 'listbox');
+      this.setAttribute('role', 'list');
 
       this.touchHandler_ = new cr.ui.TouchHandler(this);
       this.addEventListener(cr.ui.TouchHandler.EventType.TOUCH_START,
@@ -332,6 +332,19 @@ cr.define('cr.ui', function() {
       // Make list focusable
       if (!this.hasAttribute('tabindex'))
         this.tabIndex = 0;
+
+      // Try to get an unique id prefix from the id of this element or the
+      // nearest ancestor with an id.
+      var element = this;
+      while (element && !element.id)
+        element = element.parentElement;
+      if (element && element.id)
+        this.uniqueIdPrefix_ = element.id;
+      else
+        this.uniqueIdPrefix_ = 'list';
+
+      // The next id suffix to use when giving each item an unique id.
+      this.nextUniqueIdSuffix_ = 0;
     },
 
     /**
@@ -582,8 +595,11 @@ cr.define('cr.ui', function() {
     handleOnChange_: function(ce) {
       ce.changes.forEach(function(change) {
         var listItem = this.getListItemByIndex(change.index);
-        if (listItem)
+        if (listItem) {
           listItem.selected = change.selected;
+          if (change.selected)
+            this.setAttribute('aria-activedescendant', listItem.id);
+        }
       }, this);
 
       cr.dispatchSimpleEvent(this, 'change');
@@ -816,6 +832,7 @@ cr.define('cr.ui', function() {
     createItem: function(value) {
       var item = new this.itemConstructor_(value);
       item.label = value;
+      item.id = this.uniqueIdPrefix_ + '-' + this.nextUniqueIdSuffix_++;
       if (typeof item.decorate == 'function')
         item.decorate();
       return item;

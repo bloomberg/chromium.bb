@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
@@ -29,6 +30,43 @@ const char* kOldDefaultImageNames[] = {
   "default:blue",
   "default:yellow",
   "default:red",
+};
+
+// IDs of default user image descriptions.
+const int kDefaultImageDescriptions[] = {
+  0,  // No description for deprecated user image 0.
+  0,  // No description for deprecated user image 1.
+  0,  // No description for deprecated user image 2.
+  0,  // No description for deprecated user image 3.
+  0,  // No description for deprecated user image 4.
+  0,  // No description for deprecated user image 5.
+  0,  // No description for deprecated user image 6.
+  0,  // No description for deprecated user image 7.
+  0,  // No description for deprecated user image 8.
+  0,  // No description for deprecated user image 9.
+  0,  // No description for deprecated user image 10.
+  0,  // No description for deprecated user image 11.
+  0,  // No description for deprecated user image 12.
+  0,  // No description for deprecated user image 13.
+  0,  // No description for deprecated user image 14.
+  0,  // No description for deprecated user image 15.
+  0,  // No description for deprecated user image 16.
+  0,  // No description for deprecated user image 17.
+  0,  // No description for deprecated user image 18.
+  IDS_LOGIN_DEFAULT_USER_DESC_19,
+  IDS_LOGIN_DEFAULT_USER_DESC_20,
+  IDS_LOGIN_DEFAULT_USER_DESC_21,
+  IDS_LOGIN_DEFAULT_USER_DESC_22,
+  IDS_LOGIN_DEFAULT_USER_DESC_23,
+  IDS_LOGIN_DEFAULT_USER_DESC_24,
+  IDS_LOGIN_DEFAULT_USER_DESC_25,
+  IDS_LOGIN_DEFAULT_USER_DESC_26,
+  IDS_LOGIN_DEFAULT_USER_DESC_27,
+  IDS_LOGIN_DEFAULT_USER_DESC_28,
+  IDS_LOGIN_DEFAULT_USER_DESC_29,
+  IDS_LOGIN_DEFAULT_USER_DESC_30,
+  IDS_LOGIN_DEFAULT_USER_DESC_31,
+  IDS_LOGIN_DEFAULT_USER_DESC_32,
 };
 
 // Returns a string consisting of the prefix specified and the index of the
@@ -103,6 +141,16 @@ const gfx::ImageSkia& GetDefaultImage(int index) {
       GetImageSkiaNamed(kDefaultImageResourceIDs[index]);
 }
 
+string16 GetDefaultImageDescription(int index) {
+  DCHECK(index >= 0 && index < kDefaultImagesCount);
+  int string_id = kDefaultImageDescriptions[index];
+  if (string_id)
+    return l10n_util::GetStringUTF16(string_id);
+  else
+    return string16();
+}
+
+// Resource IDs of default user images.
 const int kDefaultImageResourceIDs[] = {
   IDR_LOGIN_DEFAULT_USER,
   IDR_LOGIN_DEFAULT_USER_1,
