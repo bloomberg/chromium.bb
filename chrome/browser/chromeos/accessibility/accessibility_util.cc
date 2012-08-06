@@ -20,7 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
+#include "chrome/browser/speech/extension_api/tts_extension_api_controller.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -197,13 +197,19 @@ void ToggleSpokenFeedback(content::WebUI* login_web_ui) {
   EnableSpokenFeedback(spoken_feedback_enabled, login_web_ui);
 };
 
-void Speak(const std::string& utterance) {
+void Speak(const std::string& text) {
   UtteranceContinuousParameters params;
-  ExtensionTtsPlatformImpl::GetInstance()->Speak(
-      -1,  // No utterance ID because we don't need a callback when it finishes.
-      utterance.c_str(),
-      g_browser_process->GetApplicationLocale(),
-      params);
+
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  Utterance* utterance = new Utterance(profile);
+  utterance->set_text(text);
+  utterance->set_lang(g_browser_process->GetApplicationLocale());
+  utterance->set_continuous_parameters(params);
+  utterance->set_can_enqueue(false);
+  utterance->set_options(new DictionaryValue());
+
+  ExtensionTtsController* controller = ExtensionTtsController::GetInstance();
+  controller->SpeakOrEnqueue(utterance);
 }
 
 bool IsSpokenFeedbackEnabled() {
