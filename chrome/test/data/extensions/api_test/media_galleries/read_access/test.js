@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var mediaGalleries = chrome.mediaGalleries;
+var mediaGalleries = chrome.experimental.mediaGalleries;
 
 var mediaFileSystemsDirectoryErrorCallback = function(err) {
   chrome.test.fail("Couldn't read from directory: " + err);

@@ -49,7 +49,6 @@
           'experimental_serial.idl',
           'experimental_usb.idl',
           'file_system.idl',
-          'media_galleries.idl',
           'socket.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',

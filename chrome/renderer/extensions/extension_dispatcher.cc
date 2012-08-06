@@ -623,6 +623,8 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           new ExtensionCustomBindings(this)));
   module_system->RegisterNativeHandler("experimental_app",
       scoped_ptr<NativeHandler>(new ExperimentalAppCustomBindings()));
+  module_system->RegisterNativeHandler("experimental_mediaGalleries",
+      scoped_ptr<NativeHandler>(new MediaGalleryCustomBindings()));
   module_system->RegisterNativeHandler("experimental_usb",
       scoped_ptr<NativeHandler>(new ExperimentalUsbCustomBindings()));
   module_system->RegisterNativeHandler("file_browser_handler",
@@ -631,8 +633,6 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new FileBrowserPrivateCustomBindings()));
   module_system->RegisterNativeHandler("i18n",
       scoped_ptr<NativeHandler>(new I18NCustomBindings()));
-  module_system->RegisterNativeHandler("mediaGalleries",
-      scoped_ptr<NativeHandler>(new MediaGalleryCustomBindings()));
   module_system->RegisterNativeHandler("page_actions",
       scoped_ptr<NativeHandler>(
           new PageActionsCustomBindings(this)));
@@ -697,8 +697,6 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("mediaGalleries",
-                             IDR_MEDIA_GALLERY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("omnibox", IDR_OMNIBOX_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("pageActions",
                              IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS);

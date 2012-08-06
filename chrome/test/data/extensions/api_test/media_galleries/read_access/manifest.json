@@ -2,11 +2,11 @@
   "name": "chrome.mediaGalleries.read_access",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "test read access for chrome.mediaGalleries.getMediaFileSystems",
+  "description": "test read access for chrome.experimental.mediaGalleries.getMediaFileSystems",
   "app": {
     "background": {
       "scripts": ["test.js"]
     }
   },
-  "permissions": ["mediaGalleriesRead", "mediaGalleriesAllGalleries"]
+  "permissions": ["experimental", "mediaGalleriesRead", "mediaGalleriesAllGalleries"]
 }

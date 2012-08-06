@@ -20,6 +20,14 @@
 
 namespace {
 
+class ExperimentalMediaGalleriesAppBrowserTest : public PlatformAppBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+};
+
 class ExperimentalMediaGalleriesApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -67,18 +75,20 @@ class EnsurePictureDirectoryExists {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, NoGalleries) {
+IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesAppBrowserTest, NoGalleries) {
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_galleries"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MediaGalleriesRead) {
+IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesAppBrowserTest,
+                       MediaGalleriesRead) {
   EnsurePictureDirectoryExists picture_directory;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/read_access"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MediaGalleriesNoAccess) {
+IN_PROC_BROWSER_TEST_F(ExperimentalMediaGalleriesAppBrowserTest,
+                       MediaGalleriesNoAccess) {
   EnsurePictureDirectoryExists picture_directory;
   ASSERT_TRUE(RunPlatformAppTest("api_test/media_galleries/no_access"))
       << message_;

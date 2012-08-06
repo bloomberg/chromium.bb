@@ -17,7 +17,7 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.mediaGalleries module, which is part of the Google Chrome  extension APIs."><title>chrome.experimental.mediaGalleries - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.experimental.mediaGalleries module, which is part of the Google Chrome  extension APIs."><title>Media Galleries - Google Chrome Extensions - Google Code</title></head>
   <body doc-family="apps">  <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
   <link href="../css/prettify.css" rel="stylesheet" type="text/css">
   <link href="../css/shared.css" rel="stylesheet" type="text/css">
@@ -157,12 +157,17 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.mediaGalleries</h1>
+        <h1 class="page_title">Media Galleries</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
+            <li>
+              <a href="#manifest">Manifest</a>
+              <ol>
+              </ol>
+            </li>
               <li>
                 <a href="#apiReference">API reference: chrome.experimental.mediaGalleries</a>
                 <ol>
@@ -173,6 +178,8 @@
                 <a href="#method-assembleMediaFile">assembleMediaFile</a>
               </li><li>
                 <a href="#method-extractEmbeddedThumbnails">extractEmbeddedThumbnails</a>
+              </li><li>
+                <a href="#method-getMediaFileSystems">getMediaFileSystems</a>
               </li>
             </ol>
           </li>
@@ -182,11 +189,53 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
-          For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
-        </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-name" class="pageData">Media Galleries</div>
+<!-- BEGIN AUTHORED CONTENT -->
+<p>
+The media galleries API allows you to access media files (images,
+video, audio) from the user's local disks (with the user's consent).
+</p>
+<p>
+Using the API, you can prompt the user for permission to access the media
+galleries. The permission dialog will contain common media locations for
+the platform and will allow the user to add additional locations. From those
+locations, only media files will be present in the file system objects.
+</p>
+<h2 id="manifest">Manifest</h2>
+<p>The media galleries API has two axes of permissions; the locations that
+can be accessed, and the type of access (read-only, read-write, add-files).</p>
+<p>On the location axis, specifying no location-type permission means that
+no media galleries are accessible until the user grants permission to
+specific media galleries at runtime using the media gallery configuration
+dialog. This dialog can be programmatically triggered.  Alternatively,
+specifying the "mediaGalleriesAllGalleries" permission grants access to all
+auto-detected media galleries on the user's computer. However, this
+permission displays an install time prompt indicating that the extension
+will have access to all of the user's media files.</p>
+<p>On the access type axis, the "mediaGalleriesRead" permission grants the
+extension the right to read files. This permission does not trigger an install
+time permission prompt because the user must still grant access to particular
+galleries, either with the "mediaGalleriesAllGalleries" permission or at
+runtime by using the media gallery management dialog. For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  "permissions": [
+    <b>"mediaGalleriesAllGalleries"</b>
+    <b>"mediaGalleriesRead"</b>
+  ],
+  ...
+}</pre>
+<p>This set of permissions will trigger an install time permission prompt
+and let the extension read from all auto-detected media galleries on the
+user's computer. The user may add or remove galleries using the
+media gallery management dialog, after which the extension will be able
+to read all the media files from galleries that the user has selected.</p>
+<p>Currently "mediaGalleriesRead" is the only access type supported by
+this API. Read-write and add-file access with be implemented soon.</p>
+<!-- END AUTHORED CONTENT -->
+</div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
@@ -361,6 +410,149 @@
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getMediaFileSystems"></a> <!-- method-anchor -->
+              <h4>getMediaFileSystems</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.mediaGalleries.getMediaFileSystems</span>(<span class="optional"><span>object</span>
+                      <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>MediaFileSystemsCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Get the media galleries configured in this user agent. If none are configured or available, the callback will receive an empty array.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>details</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>interactive</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["no", "yes", "if_needed"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Whether to prompt the user for permission to additional media galleries before returning the permitted set. Default is silent.  If the value 'yes' is passed, or if the application has not been granted access to any media galleries and the value 'if_needed' is passed, then the media gallery configuration dialog will be displayed.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>MediaFileSystemsCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>mediaFileSystems</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>LocalFileSystem</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
         </div>
                   </div>
                 </dl>
