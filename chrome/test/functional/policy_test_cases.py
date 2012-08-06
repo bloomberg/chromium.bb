@@ -231,7 +231,7 @@ class PolicyPrefsTestCases(object):
     'ImportSavedPasswords':
         ('kImportSavedPasswords', False, [], ['win', 'mac', 'linux']),
     'MaxConnectionsPerProxy': ('kMaxConnectionsPerProxy', 32, [], OS_ALL),
-    'HideWebStorePromo': ('kNtpHideWebStorePromo', True, [], OS_ALL),
+    'HideWebStorePromo': (None, True, [], OS_ALL),
     'URLBlacklist': ('kUrlBlacklist', ['google.com'], [], OS_ALL),
     'URLWhitelist': ('kUrlWhitelist', ['google.com'], [], OS_ALL),
     'EnterpriseWebStoreURL': ('kEnterpriseWebStoreURL', '', [], OS_ALL),
