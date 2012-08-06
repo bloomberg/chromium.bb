@@ -25,7 +25,6 @@ class DescWrapper;
 
 namespace plugin {
 
-class LocalTempFile;
 class Manifest;
 class NaClSubprocess;
 class Plugin;
@@ -43,7 +42,7 @@ class PnaclTranslateThread {
                     const Manifest* manifest,
                     const Manifest* ld_manifest,
                     TempFile* obj_file,
-                    LocalTempFile* nexe_file,
+                    TempFile* nexe_file,
                     ErrorInfo* error_info,
                     PnaclResources* resources,
                     Plugin* plugin);
@@ -108,7 +107,7 @@ class PnaclTranslateThread {
   const Manifest* manifest_;
   const Manifest* ld_manifest_;
   TempFile* obj_file_;
-  LocalTempFile* nexe_file_;
+  TempFile* nexe_file_;
   ErrorInfo* coordinator_error_info_;
   PnaclResources* resources_;
   Plugin* plugin_;

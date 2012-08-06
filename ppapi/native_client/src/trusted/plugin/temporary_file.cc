@@ -69,16 +69,31 @@ void TempFile::Open(const pp::CompletionCallback& cb) {
     return;
   }
 
+  // dup the fd to make allow making a non-Quota-based wrapper.
+  // sel_ldr currently does not allow loading from Quota-backed descs,
+  // only plain host descs.  It's probably good hygiene to separate the
+  // read wrapper from the write wrapper anyway.
+  int32_t read_fd = DUP(fd);
+  if (read_fd == NACL_NO_FILE_DESC) {
+    PLUGIN_PRINTF(("TempFile::Open DUP failed\n"));
+    core->CallOnMainThread(0, cb, PP_ERROR_FAILED);
+    return;
+  }
+
   // The descriptor for a writeable file needs to have quota management.
-  wrapper_.reset(
-    plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
+  write_wrapper_.reset(
+      plugin_->wrapper_factory()->MakeFileDescQuota(fd, O_RDWR, identifier_));
+  read_wrapper_.reset(
+      plugin_->wrapper_factory()->MakeFileDesc(read_fd, O_RDONLY));
   core->CallOnMainThread(0, cb, PP_OK);
 }
 
 bool TempFile::Reset() {
   PLUGIN_PRINTF(("TempFile::Reset\n"));
-  CHECK(wrapper_.get() != NULL);
-  nacl_off64_t newpos = wrapper_->Seek(0, SEEK_SET);
+  // Use the write_wrapper_ to reset the file pos.  The read_wrapper_ is also
+  // backed by the same file, so it should also reset.
+  CHECK(write_wrapper_.get() != NULL);
+  nacl_off64_t newpos = write_wrapper_->Seek(0, SEEK_SET);
   return newpos >= 0;
 }
 

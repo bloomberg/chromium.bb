@@ -33,7 +33,7 @@ void PnaclTranslateThread::RunTranslate(
     const Manifest* manifest,
     const Manifest* ld_manifest,
     TempFile* obj_file,
-    LocalTempFile* nexe_file,
+    TempFile* nexe_file,
     ErrorInfo* error_info,
     PnaclResources* resources,
     Plugin* plugin) {
@@ -123,7 +123,7 @@ void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
 void PnaclTranslateThread::DoTranslate() {
   ErrorInfo error_info;
   SrpcParams params;
-  nacl::DescWrapper* llc_out_file = obj_file_->get_wrapper();
+  nacl::DescWrapper* llc_out_file = obj_file_->write_wrapper();
 
   {
     nacl::MutexLocker ml(&subprocess_mu_);
@@ -233,7 +233,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
     TranslateFailed("Link process could not reset object file");
     return false;
   }
-  nacl::DescWrapper* ld_in_file = obj_file_->get_wrapper();
+  nacl::DescWrapper* ld_in_file = obj_file_->read_wrapper();
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
 
   {
@@ -249,8 +249,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
     ld_subprocess_active_ = true;
     PluginReverseInterface* ld_reverse =
         ld_subprocess_->service_runtime()->rev_interface();
-    ld_reverse->AddQuotaManagedFile(nexe_file_->identifier(),
-                                    nexe_file_->write_file_io());
+    ld_reverse->AddTempQuotaManagedFile(nexe_file_->identifier());
   }
   // Run LD.
   if (!ld_subprocess_->InvokeSrpcMethod("RunWithDefaultCommandLine",

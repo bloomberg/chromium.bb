@@ -62,17 +62,18 @@ class TempFile;
 // The coordinator proceeds through several states.  They are
 // LOAD_TRANSLATOR_BINARIES
 //     Complete when ResourcesDidLoad is invoked.
-// OPEN_LOCAL_FILE_SYSTEM
-//     Complete when FileSystemDidOpen is invoked.
-// CREATED_PNACL_TEMP_DIRECTORY
-//     Complete when DirectoryWasCreated is invoked.
-// CACHED_FILE_OPEN
-//     Complete with success if cached version is available and jump to end.
-//     Otherwise, proceed with usual pipeline of translation.
-// OPEN_TMP_WRITE_FOR_LLC_TO_LD_COMMUNICATION
-//     Complete when ObjectWriteDidOpen is invoked.
-// OPEN_TMP_READ_FOR_LLC_TO_LD_COMMUNICATION
-//     Complete when ObjectReadDidOpen is invoked.
+//
+// If cache is enabled:
+//   OPEN_LOCAL_FILE_SYSTEM
+//       Complete when FileSystemDidOpen is invoked.
+//   CREATED_PNACL_TEMP_DIRECTORY
+//       Complete when DirectoryWasCreated is invoked.
+//   CACHED_FILE_OPEN
+//       Complete with success if cached version is available and jump to end.
+//       Otherwise, proceed with usual pipeline of translation.
+//
+// OPEN_TMP_FOR_LLC_TO_LD_COMMUNICATION
+//     Complete when ObjectFileDidOpen is invoked.
 // OPEN_TMP_FOR_LD_WRITING
 //     Complete when NexeWriteDidOpen is invoked.
 // PREPARE_PEXE_FOR_STREAMING
@@ -81,16 +82,17 @@ class TempFile;
 //     Complete when RunTranslate returns.
 // TRANSLATION_COMPLETE
 //     Complete when TranslateFinished is invoked.
-// CLOSE_OBJECT_FILE
-//     Complete when ObjectFileWasClosed is invoked.
-// DELETE_OBJECT_FILE
-//     Complete when ObjectFileWasDeleted is invoked.
-// CLOSE_NEXE_FILE
-//     Complete when NexeFileWasClosed is invoked.
-// RENAME_NEXE_FILE
+//
+// If cache is enabled:
+//   OPEN_CACHE_FOR_WRITE
+//     Complete when CachedNexeOpenedForWrite is invoked
+//   COPY_NEXE_TO_CACHE
+//     Complete when NexeWasCopiedToCache is invoked.
+//   RENAME_CACHE_FILE
 //     Complete when NexeFileWasRenamed is invoked.
+//
 // OPEN_NEXE_FOR_SEL_LDR
-//     Complete when NexeReadDidOpen is invoked.
+//   Complete when NexeReadDidOpen is invoked.
 class PnaclCoordinator: public CallbackSource<FileStreamData> {
  public:
   virtual ~PnaclCoordinator();
@@ -155,21 +157,27 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   void BitcodeStreamDidFinish(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
   void ObjectFileDidOpen(int32_t pp_error);
-  // Invoked when the descriptors for nexe_file_ have been closed.
-  void NexeFileWasClosed(int32_t pp_error);
-  // Invoked when the nexe_file_ temporary has been renamed to the nexe name.
-  void NexeFileWasRenamed(int32_t pp_error);
-  // Invoked when the read descriptor for nexe_file_ is created.
-  void NexeReadDidOpen(int32_t pp_error);
-  // Invoked if there was an error and we've cleaned up the nexe_file_ temp.
-  void NexeFileWasDeleted(int32_t pp_error);
-
   // Once llc and ld nexes have been loaded and the two temporary files have
   // been created, this starts the translation.  Translation starts two
   // subprocesses, one for llc and one for ld.
   void RunTranslate(int32_t pp_error);
 
+  // Invoked when translation is finished.
   void TranslateFinished(int32_t pp_error);
+
+  // If the cache is enabled, open a cache file for write, then copy
+  // the nexe data from temp_nexe_file_ to> cached_nexe_file_.
+  // Once the copy is done, we commit it to the cache by renaming the
+  // cache file to the final name.
+  void CachedNexeOpenedForWrite(int32_t pp_error);
+  void DidCopyNexeToCachePartial(int32_t pp_error, int32_t num_read_prev,
+                                 int64_t cur_offset);
+  void NexeWasCopiedToCache(int32_t pp_error);
+  // Invoked when the nexe_file_ temporary has been renamed to the nexe name.
+  void NexeFileWasRenamed(int32_t pp_error);
+  // Invoked when the read descriptor for nexe_file_ is created.
+  void NexeReadDidOpen(int32_t pp_error);
+
   // Keeps track of the pp_error upon entry to TranslateFinished,
   // for inspection after cleanup.
   int32_t translate_finish_error_;
@@ -209,8 +217,12 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   nacl::string cache_identity_;
   // Object file, produced by the translator and consumed by the linker.
   nacl::scoped_ptr<TempFile> obj_file_;
-  // Translated nexe file, produced by the linker and consumed by sel_ldr.
-  nacl::scoped_ptr<LocalTempFile> nexe_file_;
+  // Translated nexe file, produced by the linker.
+  nacl::scoped_ptr<TempFile> temp_nexe_file_;
+  // Cached nexe file, consumed by sel_ldr.  This will be NULL if we do
+  // not have a writeable cache file.  That is currently the case when
+  // off_the_record_ is true.
+  nacl::scoped_ptr<LocalTempFile> cached_nexe_file_;
 
   // Downloader for streaming translation
   nacl::scoped_ptr<FileDownloader> streaming_downloader_;
@@ -220,6 +232,9 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // True if an error was already reported, and translate_notify_callback_
   // was already run/consumed.
   bool error_already_reported_;
+
+  // True if compilation is off_the_record.
+  bool off_the_record_;
 
   // The helper thread used to do translations via SRPC.
   // Keep this last in declaration order to ensure the other variables
