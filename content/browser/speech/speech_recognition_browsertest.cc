@@ -28,10 +28,10 @@
 #include "content/test/content_browser_test_utils.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+using content::NavigationController;
 using content::SpeechRecognitionEventListener;
 using content::SpeechRecognitionSessionConfig;
 using content::SpeechRecognitionSessionContext;
-using content::NavigationController;
 using content::WebContents;
 
 namespace speech {
@@ -276,7 +276,13 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, GrammarAttribute) {
             fake_speech_recognition_manager_.grammar());
 }
 
-IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, TestCancelAll) {
+// Flaky on Linux and Windows, http://crbug.com/140765.
+#if defined(OS_WIN) || defined(OS_LINUX)
+#define MAYBE_TestCancelAll DISABLED_TestCancelAll
+#else
+#define MAYBE_TestCancelAll TestCancelAll
+#endif
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, MAYBE_TestCancelAll) {
   // The test checks that the cancel-all callback gets issued when a session
   // is pending, so don't send a fake response.
   // We are not expecting a navigation event being raised from the JS of the
