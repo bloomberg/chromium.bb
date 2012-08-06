@@ -17092,7 +17092,14 @@ Battery full
 	         desc="Infobar text for link to help center about metro mode issues">
       Why am I seeing this?
     </message>
-	
+    <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION"
+            desc="Notification displayed when a download request is completed">
+      Your download has completed
+    </message>
+    <message name="IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION_TITLE"
+            desc="Title for notification displayed when a download request is completed">
+      Download complete notification
+    </message>
     </messages>
     <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->
