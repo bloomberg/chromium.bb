@@ -241,7 +241,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DoNotGrantScopes) {
 #else
 #define MAYBE_AllowOffStore AllowOffStore
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_AllowOffStore) {
+// Crashy: http://crbug.com/140893
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const bool kTestData[] = {false, true};
 
