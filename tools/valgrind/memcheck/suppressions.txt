@@ -5769,13 +5769,6 @@
    fun:_ZNK7WebCore15NativeImageSkia13resizedBitmapERK7SkIRectiiS3_
 }
 {
-   bug_139703
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5media8Pipeline7DoPauseERKN4base8CallbackIFvvEEE
-   fun:_ZN5media8Pipeline8SeekTaskEN4base9TimeDeltaERKNS1_8CallbackIFvNS_14PipelineStatusEEEE
-}
-{
    bug_139853
    Memcheck:Unaddressable
    fun:_ZN11SkGpuDeviceC1EP9GrContextP9GrTexture
