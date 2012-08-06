@@ -304,7 +304,9 @@ void ChromeLauncherController::OpenAppID(
   } else {
     const Extension* extension =
         profile_->GetExtensionService()->GetInstalledExtension(app_id);
-    extension_utils::OpenExtension(profile_, extension, event_flags);
+    extension_utils::OpenExtension(GetProfileForNewWindows(),
+                                   extension,
+                                   event_flags);
   }
 }
 
