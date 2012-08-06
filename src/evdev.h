@@ -106,7 +106,7 @@ struct evdev_dispatch *
 evdev_touchpad_create(struct evdev_input_device *device);
 
 void
-evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds);
+evdev_led_update(struct evdev_input_device *device, enum weston_led leds);
 
 struct evdev_input_device *
 evdev_input_device_create(struct weston_seat *seat,

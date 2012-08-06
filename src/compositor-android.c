@@ -247,8 +247,10 @@ static void
 android_led_update(struct weston_seat *seat_base, enum weston_led leds)
 {
 	struct android_seat *seat = to_android_seat(seat_base);
+	struct evdev_input_device *device;
 
-	evdev_led_update(&seat->devices_list, leds);
+	wl_list_for_each(device, &seat->devices_list, link)
+		evdev_led_update(device, leds);
 }
 
 static void

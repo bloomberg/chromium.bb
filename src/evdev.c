@@ -31,7 +31,7 @@
 #include "evdev.h"
 
 void
-evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
+evdev_led_update(struct evdev_input_device *device, enum weston_led leds)
 {
 	static const struct {
 		enum weston_led weston;
@@ -41,9 +41,11 @@ evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
 		{ LED_CAPS_LOCK, LED_CAPSL },
 		{ LED_SCROLL_LOCK, LED_SCROLLL },
 	};
-	struct evdev_input_device *device;
 	struct input_event ev[ARRAY_LENGTH(map)];
 	unsigned int i;
+
+	if (!device->caps & EVDEV_KEYBOARD)
+		return;
 
 	memset(ev, 0, sizeof(ev));
 	for (i = 0; i < ARRAY_LENGTH(map); i++) {
@@ -52,11 +54,8 @@ evdev_led_update(struct wl_list *evdev_devices, enum weston_led leds)
 		ev[i].value = !!(leds & map[i].weston);
 	}
 
-	wl_list_for_each(device, evdev_devices, link) {
-		if (device->caps & EVDEV_KEYBOARD)
-			i = write(device->fd, ev, sizeof ev);
-		(void)i; /* no, we really don't care about the return value */
-	}
+	i = write(device->fd, ev, sizeof ev);
+	(void)i; /* no, we really don't care about the return value */
 }
 
 static inline void
