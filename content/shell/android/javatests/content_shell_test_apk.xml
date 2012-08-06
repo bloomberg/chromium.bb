@@ -10,11 +10,8 @@
     Building ContentShellTest.apk
   </description>
 
-  <property environment="env"/>
-  <property name="sdk.dir" location="${env.ANDROID_SDK_ROOT}"/>
-  <property name="toolchain.dir" location="${env.ANDROID_TOOLCHAIN}"/>
-  <property name="source.dir" location="src"/>
-  <property name="target" value="android-${env.ANDROID_SDK_VERSION}"/>
+  <import file="../../../../build/android/ant/common.xml"/>
+  <import file="../../../../build/android/ant/sdk-targets.xml"/>
   <property name="target.abi" value="${APP_ABI}"/>
   <property name="out.dir" location="${PRODUCT_DIR}/content_shell_test"/>
   <property name="resource.absolute.dir" value="../res"/>
@@ -71,6 +68,10 @@
 
   </target>
 
+  <!-- Classpath for javac -->
+  <path id="javac.custom.classpath">
+    <path refid="out.dex.jar.input.ref"/>
+  </path>
   <import file="${sdk.dir}/tools/ant/build.xml" />
 
 </project>

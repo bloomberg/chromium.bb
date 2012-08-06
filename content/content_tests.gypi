@@ -824,6 +824,11 @@
                 'ant',
                 '-DPRODUCT_DIR=<(ant_build_out)',
                 '-DAPP_ABI=<(android_app_abi)',
+                '-DANDROID_SDK=<(android_sdk)',
+                '-DANDROID_SDK_ROOT=<(android_sdk_root)',
+                '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
+                '-DANDROID_SDK_VERSION=<(android_sdk_version)',
+                '-DANDROID_TOOLCHAIN=<(android_toolchain)',
                 '-buildfile',
                 '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
               ]

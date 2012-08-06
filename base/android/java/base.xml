@@ -1,52 +1,15 @@
+<!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
 <project name="Base" default="dist" basedir=".">
   <description>
     building base java source code with ant
   </description>
-  <!-- Set global properties for this build -->
-  <property name="src" location="src"/>
-  <property name="dist" location="dist"/>
-  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
-  <!-- TODO(jrg): establish a standard for the intermediate java
-       directories.  Settle on a standard once ant/jar build files
-       like this are androidified -->
-  <property name="dest.dir" location="${PRODUCT_DIR}/java/base"/>
+  <import file="../../../build/android/ant/chromium-jars.xml" />
 
-  <target name="init">
-    <!-- Create the time stamp -->
-    <tstamp/>
-    <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${out.dir}"/>
-    <mkdir dir="${dest.dir}"/>
-  </target>
-
-  <target name="compile" depends="init"
-          description="compile the source " >
-    <!-- Compile the java code from ${src} into ${build} -->
-    <!-- TODO(jrg): adapting this to a proper android antfile will
-         remove warnings like this:
-           base.xml:23: warning: 'includeantruntime' was not set, 
-           defaulting to build.sysclasspath=last; 
-           set to false for repeatable builds
-      -->
-    <javac srcdir="${src}" destdir="${dest.dir}" debug="true" includeantruntime="false">
-      <classpath>
-        <path location="${ANDROID_SDK}/android.jar"/>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="dist" depends="compile"
-          description="generate the distribution" >
-    <!-- Create the distribution directory -->
-    <mkdir dir="${out.dir}"/>
-
-    <jar jarfile="${out.dir}/chromium_base.jar" basedir="${dest.dir}"/>
-  </target>
-
-  <target name="clean"
-          description="clean up" >
-    <!-- Delete the appropriate directory trees -->
-    <delete dir="${dest.dir}"/>
-    <delete dir="${dist}"/>
-  </target>
+  <path id="javac.custom.classpath">
+    <pathelement location="${ANDROID_SDK}/android.jar" />
+  </path>
 </project>

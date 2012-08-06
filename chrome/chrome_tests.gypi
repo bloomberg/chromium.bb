@@ -4591,6 +4591,7 @@
           'dependencies': [
             '../base/base.gyp:base_java',
             '../net/net.gyp:net_java',
+            'chrome_java',
             'unit_tests',
           ],
           'variables': {

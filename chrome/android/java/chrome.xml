@@ -3,17 +3,17 @@
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
 -->
-<project name="Content" default="dist" basedir=".">
+<project name="Chrome" default="dist" basedir=".">
   <description>
-    building content java source code with ant
+    Building chrome.jar from java source code.
   </description>
-  <import file="../../../../build/android/ant/chromium-jars.xml" />
-
+  <import file="../../../build/android/ant/chromium-jars.xml" />
   <path id="javac.custom.classpath">
     <pathelement location="${ANDROID_SDK}/android.jar" />
+    <pathelement location="${lib.dir}/chromium_content.jar" />
     <pathelement location="${lib.dir}/chromium_base.jar" />
     <pathelement location="${lib.dir}/chromium_net.jar" />
   </path>
   <!-- Override javac path to include jars in lib.java directory -->
-  <property-value name="javac.srcdir" value="${src}:${lib.dir}" />
+  <property-value name="javac.srcdir" value="${src}" />
 </project>

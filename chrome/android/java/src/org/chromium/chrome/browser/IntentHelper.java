@@ -61,7 +61,7 @@ public abstract class IntentHelper {
         send.putExtra(Intent.EXTRA_SUBJECT, subject);
         send.putExtra(Intent.EXTRA_TEXT, Html.fromHtml(body));
         try {
-            Intent chooser = Intent.createChooser(send, chooserTitle));
+            Intent chooser = Intent.createChooser(send, chooserTitle);
             // we start this activity outside the main activity.
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(chooser);

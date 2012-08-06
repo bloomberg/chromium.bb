@@ -1,45 +1,16 @@
+<!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+-->
 <project name="net" default="dist" basedir=".">
   <description>
     Building net/ java source code with ant.
   </description>
-  <!-- Set global properties for this build -->
-  <property name="src" location="src"/>
-  <property name="dist" location="dist"/>
-  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
-  <!-- TODO(jrg): establish a standard for the intermediate java
-           directories.  Settle on a standard once ant/jar build files
-           like this are androidified -->
-  <property name="dest.dir" location="${PRODUCT_DIR}/java/net"/>
+  <import file="../../../build/android/ant/chromium-jars.xml"/>
 
-  <target name="init">
-    <!-- Create the time stamp -->
-    <tstamp/>
-    <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${out.dir}"/>
-    <mkdir dir="${dest.dir}"/>
-  </target>
-
-  <target name="compile" depends="init"
-          description="compile the source " >
-    <javac srcdir="${src}" destdir="${dest.dir}" debug="true" includeantruntime="false">
-      <classpath>
-        <path location="${ANDROID_SDK}/android.jar"/>
-        <path location="${out.dir}/chromium_base.jar"/>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="dist" depends="compile"
-          description="generate the distribution" >
-    <!-- Create the distribution directory -->
-    <mkdir dir="${dist}/lib"/>
-
-    <jar jarfile="${out.dir}/chromium_net.jar" basedir="${dest.dir}"/>
-  </target>
-
-  <target name="clean"
-          description="clean up" >
-    <delete dir="${dest.dir}"/>
-    <delete dir="${dist}"/>
-  </target>
+  <path id="javac.custom.classpath">
+    <pathelement location="${ANDROID_SDK}/android.jar"/>
+    <pathelement location="${lib.dir}/chromium_base.jar"/>
+  </path>
 </project>

@@ -1073,5 +1073,24 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
+    ['OS=="android"',
+      {
+      'targets': [
+        {
+          'target_name': 'chrome_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java',
+            '../content/content.gyp:content_java',
+            '../net/net.gyp:net_java',
+          ],
+          'variables': {
+            'package_name': 'chrome',
+            'java_in_dir': '../chrome/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+      ]}, # 'targets'
+    ],  # OS=="android"
   ],  # 'conditions'
 }

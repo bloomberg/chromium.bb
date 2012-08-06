@@ -1,51 +1,17 @@
-<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
-
-     Use of this source code is governed by a BSD-style license that can be
-     found in the LICENSE file.
+<!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
 -->
 <project name="Media" default="dist" basedir=".">
   <description>
     building media java source code with ant
   </description>
-  <!-- set global properties for this build -->
-  <property name="src" location="src"/>
-  <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
-  <property name="out.dir" location="${PRODUCT_DIR}/lib.java"/>
-  <property name="dest.dir" location="${PRODUCT_DIR}/java/media"/>
 
-  <target name="init">
-    <!-- Create the time stamp -->
-    <tstamp/>
-    <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${out.dir}"/>
-    <mkdir dir="${dest.dir}"/>
-  </target>
+  <import file="../../../../build/android/ant/chromium-jars.xml"/>
 
-  <target name="compile" depends="init"
-          description="compile the source " >
-    <!-- Compile the java code from ${src} into ${dest.dir} -->
-    <javac srcdir="${src}" destdir="${dest.dir}" debug="true" includeantruntime="false">
-      <classpath>
-        <pathelement path="${ANDROID_SDK}/android.jar" />
-        <pathelement path="${out.dir}/chromium_base.jar" />
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="dist" depends="compile"
-          description="generate the distribution" >
-    <!-- Create the distribution directory -->
-    <mkdir dir="${out.dir}"/>
-
-    <!-- Put everything in ${build} into the chromium_media.jar file -->
-    <jar jarfile="${out.dir}/chromium_media.jar" basedir="${dest.dir}"/>
-  </target>
-
-  <target name="clean"
-          description="clean up" >
-    <!-- Delete the appropriate directory trees -->
-    <delete dir="${dest.dir}"/>
-    <delete dir="${dist}"/>
-  </target>
+  <path id="javac.custom.classpath">
+    <pathelement location="${ANDROID_SDK}/android.jar"/>
+    <pathelement location="${lib.dir}/chromium_base.jar"/>
+  </path>
 </project>
