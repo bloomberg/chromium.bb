@@ -2006,9 +2006,14 @@ void NativeWidgetWin::OnSetFocus(HWND old_focused_window) {
   SetMsgHandled(FALSE);
 }
 
+LRESULT NativeWidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
+  // Use a ScopedRedrawLock to avoid weird non-client painting.
+  return DefWindowProcWithRedrawLock(WM_SETICON, size_type,
+                                     reinterpret_cast<LPARAM>(new_icon));
+}
+
 LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
-  // DefWindowProc for WM_SETTEXT does weird non-client painting, so we need to
-  // call it inside a ScopedRedrawLock.
+  // Use a ScopedRedrawLock to avoid weird non-client painting.
   return DefWindowProcWithRedrawLock(WM_SETTEXT, NULL,
                                      reinterpret_cast<LPARAM>(text));
 }
