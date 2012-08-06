@@ -102,12 +102,12 @@ DownloadArmTrustedToolchain() {
   local rev=$1
   local tarball=$2
   curl -L \
-     ${URL_PREFIX_RAW}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_linux_arm-trusted.tgz \
+     ${URL_PREFIX_RAW}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/naclsdk_linux_arm-trusted.tgz \
      -o ${tarball}
 }
 
 ShowRecentArmTrustedToolchains() {
-   local url=gs://${BASE_ARM_TOOLCHAIN}/*/naclsdk_linux_arm-trusted.tgz
+   local url=gs://${BASE_TOOLCHAIN_COMPONENT}/*/naclsdk_linux_arm-trusted.tgz
    local recent=$(${GS_UTIL} ls ${url} | tail -5)
    for url in ${recent} ; do
      if ${GS_UTIL} ls -L "${url}" ; then
@@ -146,13 +146,13 @@ DownloadArmUntrustedToolchains() {
   local tarball=$3
 
   curl -L \
-      ${URL_PREFIX}/${BASE_ARM_TOOLCHAIN}/${rev}/naclsdk_${label}.tgz \
+      ${URL_PREFIX}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/naclsdk_${label}.tgz \
       -o ${tarball}
 }
 
 ShowRecentArmUntrustedToolchains() {
   local label=$1
-  local url="gs://${BASE_ARM_TOOLCHAIN}/*/naclsdk_${label}.tgz"
+  local url="gs://${BASE_TOOLCHAIN_COMPONENT}/*/naclsdk_${label}.tgz"
 
   local recent=$(${GS_UTIL} ls ${url} | tail -5)
   for url in ${recent} ; do
@@ -181,7 +181,8 @@ DownloadArchivedPexes() {
   local label="archived_pexes_$2.tar.bz2"
   local tarball=$3
 
-  curl -L ${URL_PREFIX_RAW}/${BASE_ARM_TOOLCHAIN}/${rev}/${label} -o ${tarball}
+  curl -L ${URL_PREFIX_RAW}/${BASE_TOOLCHAIN_COMPONENT}/${rev}/${label} \
+      -o ${tarball}
 }
 
 UploadArchivedPexesTranslator() {
