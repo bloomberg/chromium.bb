@@ -97,7 +97,7 @@ class UI_EXPORT Image {
 
   // Converts the Image to the desired representation and stores it internally.
   // The returned result is a weak pointer owned by and scoped to the life of
-  // the Image.
+  // the Image. Must only be called if IsEmpty() is false.
   const SkBitmap* ToSkBitmap() const;
   const ImageSkia* ToImageSkia() const;
 #if defined(TOOLKIT_GTK)
@@ -110,9 +110,14 @@ class UI_EXPORT Image {
   // Same as ToSkBitmap(), but returns a null SkBitmap if this image is empty.
   SkBitmap AsBitmap() const;
 
-  // Same as ToSkBitmap(), but returns a ImageSkia with a null SkBitmap if this
+  // Same as ToImageSkia(), but returns an empty ImageSkia if this
   // image is empty.
   ImageSkia AsImageSkia() const;
+
+#if defined(OS_MACOSX)
+  // Same as ToSkBitmap(), but returns nil if this image is empty.
+  NSImage* AsNSImage() const;
+#endif
 
   // Performs a conversion, like above, but returns a copy of the result rather
   // than a weak pointer. The caller is responsible for deleting the result.

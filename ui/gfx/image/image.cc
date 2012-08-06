@@ -342,8 +342,14 @@ SkBitmap Image::AsBitmap() const {
 }
 
 ImageSkia Image::AsImageSkia() const {
-  return IsEmpty() ? ImageSkia(SkBitmap()) : *ToImageSkia();
+  return IsEmpty() ? ImageSkia() : *ToImageSkia();
 }
+
+#if defined(OS_MACOSX)
+NSImage* Image::AsNSImage() const {
+  return IsEmpty() ? nil : ToNSImage();
+}
+#endif
 
 ImageSkia* Image::CopyImageSkia() const {
   return new ImageSkia(*ToImageSkia());
