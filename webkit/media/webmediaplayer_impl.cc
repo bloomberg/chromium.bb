@@ -513,13 +513,6 @@ void WebMediaPlayerImpl::setSize(const WebSize& size) {
   // Don't need to do anything as we use the dimensions passed in via paint().
 }
 
-// This variant (without alpha) is just present during staging of this API
-// change. Later we will again only have one virtual paint().
-void WebMediaPlayerImpl::paint(WebKit::WebCanvas* canvas,
-                               const WebKit::WebRect& rect) {
-  paint(canvas, rect, 0xFF);
-}
-
 void WebMediaPlayerImpl::paint(WebCanvas* canvas,
                                const WebRect& rect,
                                uint8_t alpha) {
@@ -625,22 +618,6 @@ COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusReachedIdLimit, kReachedIdLimit);
 
 WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
     const WebKit::WebString& id,
-    const WebKit::WebString& type) {
-    DCHECK_EQ(main_loop_, MessageLoop::current());
-
-    WebKit::WebString kDefaultSourceType("video/webm; codecs=\"vp8, vorbis\"");
-
-    if (type != kDefaultSourceType)
-      return WebKit::WebMediaPlayer::AddIdStatusNotSupported;
-
-    WebKit::WebVector<WebKit::WebString> codecs(static_cast<size_t>(2));
-    codecs[0] = "vp8";
-    codecs[1] = "vorbis";
-    return sourceAddId(id, "video/webm", codecs);
-}
-
-WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
-    const WebKit::WebString& id,
     const WebKit::WebString& type,
     const WebKit::WebVector<WebKit::WebString>& codecs) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
@@ -653,11 +630,6 @@ WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
                            new_codecs));
 }
 
-bool WebMediaPlayerImpl::sourceTimestampOffset(
-    const WebKit::WebString& id, double offset) {
-  return proxy_->DemuxerSetTimestampOffset(id.utf8().data(), offset);
-}
-
 bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {
   DCHECK(!id.isEmpty());
   proxy_->DemuxerRemoveId(id.utf8().data());
@@ -667,12 +639,6 @@ bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {
 WebKit::WebTimeRanges WebMediaPlayerImpl::sourceBuffered(
     const WebKit::WebString& id) {
   return ConvertToWebTimeRanges(proxy_->DemuxerBufferedRange(id.utf8().data()));
-}
-
-bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,
-                                      unsigned length) {
-  return sourceAppend(WebKit::WebString::fromUTF8("DefaultSourceId"),
-                      data, length);
 }
 
 bool WebMediaPlayerImpl::sourceAppend(const WebKit::WebString& id,

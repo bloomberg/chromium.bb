@@ -12,3 +12,4 @@ From http://www.khronos.org/openmax/headers/omx_il_v1_1/omx_il_v1_1_2_headers.zi
 
 Local Modifications:
 - Converted to utf-8 with: vim +"argdo write ++enc=utf-8" *.h
+

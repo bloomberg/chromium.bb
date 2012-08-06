@@ -32,11 +32,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 
   virtual void OnIPCClosed() OVERRIDE {}
 
-  virtual void OnVolume(double volume) {
-    volume_received_ = true;
-    volume_ = volume;
-  }
-
   void Reset() {
     state_changed_received_ = false;
     state_ = media::AudioOutputIPCDelegate::kError;
@@ -55,9 +50,6 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
   uint32 length() { return length_; }
-
-  bool volume_received() { return volume_received_; }
-  double volume() { return volume_; }
 
  private:
   bool state_changed_received_;

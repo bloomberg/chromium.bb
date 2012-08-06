@@ -288,10 +288,6 @@ class BufferedResourceLoaderTest : public testing::Test {
   MOCK_METHOD1(LoadingCallback, void(BufferedResourceLoader::LoadingState));
   MOCK_METHOD1(ProgressCallback, void(int64));
 
-  // Accessors for private variables on |loader_|.
-  int forward_bytes() { return loader_->buffer_.forward_bytes(); }
-  int forward_capacity() { return loader_->buffer_.forward_capacity(); }
-
  protected:
   GURL gurl_;
   int64 first_position_;

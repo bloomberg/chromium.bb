@@ -382,8 +382,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   int output_sample_rate() const {
     return output_audio_parameters_.sample_rate();
   }
-  int input_delay_ms() const { return input_delay_ms_; }
-  int output_delay_ms() const { return output_delay_ms_; }
   bool initialized() const { return initialized_; }
   bool playing() const { return playing_; }
   bool recording() const { return recording_; }

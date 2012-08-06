@@ -143,13 +143,6 @@ void AudioInputRendererHost::DoSendRecordingMessage(
   // should be implemented.
 }
 
-void AudioInputRendererHost::DoSendPausedMessage(
-    media::AudioInputController* controller) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // TODO(henrika): TBI?
-  NOTREACHED();
-}
-
 void AudioInputRendererHost::DoHandleError(
     media::AudioInputController* controller,
     int error_code) {

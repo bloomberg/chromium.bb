@@ -68,7 +68,6 @@ class CONTENT_EXPORT AudioInputDeviceManager
   void DevicesEnumeratedOnIOThread(StreamDeviceInfoArray* devices);
   void OpenedOnIOThread(int session_id);
   void ClosedOnIOThread(int session_id);
-  void ErrorOnIOThread(int session_id, MediaStreamProviderError error);
 
   bool IsOnDeviceThread() const;
 

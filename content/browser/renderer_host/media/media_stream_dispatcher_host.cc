@@ -106,21 +106,6 @@ void MediaStreamDispatcherHost::DevicesEnumerated(
       request.render_view_id, request.page_request_id, devices));
 }
 
-void MediaStreamDispatcherHost::DevicesEnumerationFailed(
-    const std::string& label) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DVLOG(1) << "MediaStreamDispatcherHost::DevicesEnumerationFailed("
-           << ", {label = " << label <<  "})";
-
-  StreamMap::iterator it = streams_.find(label);
-  DCHECK(it != streams_.end());
-  StreamRequest request = it->second;
-  streams_.erase(it);
-
-  Send(new MediaStreamMsg_DevicesEnumerationFailed(
-      request.render_view_id, request.page_request_id));
-}
-
 void MediaStreamDispatcherHost::DeviceOpened(
     const std::string& label,
     const StreamDeviceInfo& video_device) {
@@ -134,21 +119,6 @@ void MediaStreamDispatcherHost::DeviceOpened(
 
   Send(new MediaStreamMsg_DeviceOpened(
       request.render_view_id, request.page_request_id, label, video_device));
-}
-
-void MediaStreamDispatcherHost::DeviceOpenFailed(
-    const std::string& label) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DVLOG(1) << "MediaStreamDispatcherHost::DeviceOpenFailed("
-           << ", {label = " << label <<  "})";
-
-  StreamMap::iterator it = streams_.find(label);
-  DCHECK(it != streams_.end());
-  StreamRequest request = it->second;
-  streams_.erase(it);
-
-  Send(new MediaStreamMsg_DeviceOpenFailed(request.render_view_id,
-                                           request.page_request_id));
 }
 
 bool MediaStreamDispatcherHost::OnMessageReceived(

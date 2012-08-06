@@ -225,7 +225,6 @@ class GLRenderingVDAClient : public VideoDecodeAccelerator::Client {
   virtual void NotifyError(VideoDecodeAccelerator::Error error);
 
   // Simple getters for inspecting the state of the Client.
-  ClientState state() { return state_; }
   int num_done_bitstream_buffers() { return num_done_bitstream_buffers_; }
   int num_decoded_frames() { return num_decoded_frames_; }
   double frames_per_second();

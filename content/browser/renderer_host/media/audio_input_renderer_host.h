@@ -160,7 +160,6 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Send a state change message to the renderer.
   void DoSendRecordingMessage(media::AudioInputController* controller);
-  void DoSendPausedMessage(media::AudioInputController* controller);
 
   // Handle error coming from audio stream.
   void DoHandleError(media::AudioInputController* controller, int error_code);

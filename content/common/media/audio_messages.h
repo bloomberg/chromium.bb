@@ -25,11 +25,6 @@
 IPC_ENUM_TRAITS(media::AudioInputIPCDelegate::State)
 IPC_ENUM_TRAITS(media::AudioOutputIPCDelegate::State)
 
-IPC_STRUCT_TRAITS_BEGIN(media::AudioBuffersState)
-  IPC_STRUCT_TRAITS_MEMBER(pending_bytes)
-  IPC_STRUCT_TRAITS_MEMBER(hardware_delay_bytes)
-IPC_STRUCT_TRAITS_END()
-
 // Messages sent from the browser to the renderer.
 
 // Tell the renderer process that an audio stream has been created.

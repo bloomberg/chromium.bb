@@ -120,9 +120,6 @@ class H264DPB {
   enum { kDPBMaxSize = 16 };
 
  private:
-  // Remove a picture from DPB, freeing its resources.
-  void RemovePic(const Pictures::iterator iter);
-
   Pictures pics_;
 
   DISALLOW_COPY_AND_ASSIGN(H264DPB);
@@ -131,4 +128,3 @@ class H264DPB {
 }  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_H264_DPB_H_
-

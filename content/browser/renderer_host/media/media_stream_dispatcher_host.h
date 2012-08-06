@@ -36,10 +36,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   virtual void VideoDeviceFailed(const std::string& label, int index) OVERRIDE;
   virtual void DevicesEnumerated(const std::string& label,
                                  const StreamDeviceInfoArray& devices) OVERRIDE;
-  virtual void DevicesEnumerationFailed(const std::string& label) OVERRIDE;
   virtual void DeviceOpened(const std::string& label,
                             const StreamDeviceInfo& video_device) OVERRIDE;
-  virtual void DeviceOpenFailed(const std::string& label) OVERRIDE;
 
   // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,

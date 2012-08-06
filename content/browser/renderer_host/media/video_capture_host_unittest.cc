@@ -282,6 +282,7 @@ class VideoCaptureHostTest : public testing::Test {
     message_loop_->Run();
   }
 
+#ifdef DUMP_VIDEO
   void CaptureAndDumpVideo(int width, int heigt, int frame_rate) {
     InSequence s;
     // 1. First - get info about the new resolution
@@ -305,6 +306,7 @@ class VideoCaptureHostTest : public testing::Test {
     host_->OnStartCapture(kDeviceId, params);
     message_loop_->Run();
   }
+#endif
 
   void StopCapture() {
     EXPECT_CALL(*host_, OnStateChanged(kDeviceId,

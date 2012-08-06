@@ -19,7 +19,6 @@ class GPUPainter : public Painter {
 
   // Returns a reference to the GL context.
   gfx::GLSurface* surface() const { return surface_; }
-  gfx::GLContext* context() const { return context_; }
 
   // Sets context for subsequent gl calls in this painter.
   virtual void SetGLContext(gfx::GLSurface* surface, gfx::GLContext* context);

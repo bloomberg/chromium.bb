@@ -81,10 +81,6 @@ class MockAudioInputDeviceManagerEventHandler
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputDeviceManagerEventHandler);
 };
 
-ACTION_P(ExitMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-}
-
 class AudioInputDeviceManagerTest : public testing::Test {
  public:
   AudioInputDeviceManagerTest() {}

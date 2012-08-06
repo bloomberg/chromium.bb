@@ -64,9 +64,6 @@ class WebMediaPlayerProxy
       const scoped_refptr<media::FFmpegVideoDecoder>& video_decoder) {
     video_decoder_ = video_decoder;
   }
-  const scoped_refptr<media::FFmpegVideoDecoder>& video_decoder() {
-    return video_decoder_;
-  }
 
   // Methods for Filter -> WebMediaPlayerImpl communication.
   void Repaint();

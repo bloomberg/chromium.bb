@@ -180,8 +180,6 @@ class CONTENT_EXPORT MediaStreamImpl
   bool EnsurePeerConnectionFactory();
   void CleanupPeerConnectionFactory();
 
-  PeerConnectionHandlerBase* FindPeerConnectionByStream(
-      const WebKit::WebMediaStreamDescriptor& stream);
   scoped_refptr<media::VideoDecoder> CreateLocalVideoDecoder(
       webrtc::MediaStreamInterface* stream,
       media::MessageLoopFactory* message_loop_factory);

@@ -12,7 +12,9 @@
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_util.h"
 
+#if defined(OS_WIN)
 const int kMinIntervalBetweenReadCallsInMs = 10;
+#endif
 
 AudioSyncReader::AudioSyncReader(base::SharedMemory* shared_memory)
     : shared_memory_(shared_memory) {

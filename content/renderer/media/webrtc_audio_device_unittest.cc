@@ -24,10 +24,6 @@ using testing::StrEq;
 
 namespace {
 
-ACTION_P(QuitMessageLoop, loop_or_proxy) {
-  loop_or_proxy->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-}
-
 class AudioUtil : public AudioUtilInterface {
  public:
   AudioUtil() {}
@@ -165,11 +161,6 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
   int sample_rate() const {
     base::AutoLock auto_lock(lock_);
     return sample_rate_;
-  }
-
-  int channels() const {
-    base::AutoLock auto_lock(lock_);
-    return channels_;
   }
 
  private:

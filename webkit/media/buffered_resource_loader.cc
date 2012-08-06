@@ -322,10 +322,6 @@ bool BufferedResourceLoader::range_supported() {
   return range_supported_;
 }
 
-const GURL& BufferedResourceLoader::url() {
-  return url_;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // WebKit::WebURLLoaderClient implementation.
 void BufferedResourceLoader::willSendRequest(

@@ -136,9 +136,6 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Returns true if the server supports byte range requests.
   bool range_supported();
 
-  // Returns resulting URL.
-  const GURL& url();
-
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(
       WebKit::WebURLLoader* loader,

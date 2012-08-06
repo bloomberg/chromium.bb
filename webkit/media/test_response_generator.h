@@ -52,7 +52,6 @@ class TestResponseGenerator {
   // will be returned.
   WebKit::WebURLResponse GenerateFileResponse(int64 first_byte_offset);
 
-  const GURL& gurl() { return gurl_; }
   int64 content_length() { return content_length_; }
 
  private:

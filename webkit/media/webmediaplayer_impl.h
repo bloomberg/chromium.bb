@@ -143,9 +143,6 @@ class WebMediaPlayerImpl
   // Methods for painting.
   virtual void setSize(const WebKit::WebSize& size);
 
-  // This variant (without alpha) is just present during staging of this API
-  // change. Later we will again only have one virtual paint().
-  virtual void paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
   virtual void paint(WebKit::WebCanvas* canvas,
                      const WebKit::WebRect& rect,
                      uint8_t alpha);
@@ -191,25 +188,17 @@ class WebMediaPlayerImpl
 
   virtual WebKit::WebAudioSourceProvider* audioSourceProvider();
 
-  // TODO(acolwell): Remove once new sourceAddId() signature is checked into
-  // WebKit.
-  virtual AddIdStatus sourceAddId(const WebKit::WebString& id,
-                                  const WebKit::WebString& type);
   virtual AddIdStatus sourceAddId(
       const WebKit::WebString& id,
       const WebKit::WebString& type,
       const WebKit::WebVector<WebKit::WebString>& codecs);
   virtual bool sourceRemoveId(const WebKit::WebString& id);
   virtual WebKit::WebTimeRanges sourceBuffered(const WebKit::WebString& id);
-  // TODO(acolwell): Remove non-id version when http://webk.it/83788 fix lands.
-  virtual bool sourceAppend(const unsigned char* data, unsigned length);
   virtual bool sourceAppend(const WebKit::WebString& id,
                             const unsigned char* data,
                             unsigned length);
   virtual bool sourceAbort(const WebKit::WebString& id);
   virtual void sourceEndOfStream(EndOfStreamStatus status);
-  virtual bool sourceTimestampOffset(
-      const WebKit::WebString& id, double offset);
 
   virtual MediaKeyException generateKeyRequest(
       const WebKit::WebString& key_system,

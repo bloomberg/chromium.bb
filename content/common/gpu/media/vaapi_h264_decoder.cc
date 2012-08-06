@@ -167,10 +167,6 @@ class VaapiH264Decoder::DecodeSurface {
     return poc_;
   }
 
-  Pixmap x_pixmap() {
-    return x_pixmap_;
-  }
-
   // Associate the surface with |input_id| and |poc|, and make it unavailable
   // (in use).
   void Acquire(int32 input_id, int poc);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,6 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   bool device_info_receive() { return device_info_received_; }
   const media::VideoCaptureParams& received_device_info() { return params_; }
 
-  bool device_id_received() { return device_id_received_; }
   int32 device_id() { return device_id_; }
 
  private:

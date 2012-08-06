@@ -171,7 +171,7 @@ struct CONTENT_EXPORT H264SliceHeader {
   int first_mb_in_slice;
   int slice_type;
   int pic_parameter_set_id;
-  int colour_plane_id;
+  int colour_plane_id;  // TODO(posciak): use this!  http://crbug.com/139878
   int frame_num;
   bool field_pic_flag;
   bool bottom_field_flag;
