@@ -305,6 +305,7 @@ void StatusAreaWidget::Shutdown() {
   // Destroy the trays early, causing them to be removed from the view
   // hierarchy. Do not used scoped pointers since we don't want to destroy them
   // in the destructor if Shutdown() is not called (e.g. in tests).
+  system_tray_delegate_.reset();
   delete system_tray_;
   system_tray_ = NULL;
   delete web_notification_tray_;
