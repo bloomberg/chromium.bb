@@ -127,6 +127,7 @@ SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
   command_updater_->UpdateCommandEnabled(IDC_STOP, true);
   command_updater_->UpdateCommandEnabled(IDC_RELOAD, true);
   command_updater_->UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
+  command_updater_->UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE, true);
 }
 
 SimpleWebViewDialog::~SimpleWebViewDialog() {
@@ -345,6 +346,7 @@ void SimpleWebViewDialog::ExecuteCommandWithDisposition(
     case IDC_RELOAD:
       // Always reload ignoring cache.
     case IDC_RELOAD_IGNORING_CACHE:
+    case IDC_RELOAD_CLEARING_CACHE:
       web_contents->GetController().ReloadIgnoringCache(true);
       break;
     default:
@@ -373,20 +375,7 @@ void SimpleWebViewDialog::LoadImages() {
   forward_->SetImage(views::CustomButton::BS_DISABLED,
                      tp->GetImageSkiaNamed(IDR_FORWARD_D));
 
-  reload_->SetImage(views::CustomButton::BS_NORMAL,
-                    tp->GetImageSkiaNamed(IDR_RELOAD));
-  reload_->SetImage(views::CustomButton::BS_HOT,
-                    tp->GetImageSkiaNamed(IDR_RELOAD_H));
-  reload_->SetImage(views::CustomButton::BS_PUSHED,
-                    tp->GetImageSkiaNamed(IDR_RELOAD_P));
-  reload_->SetToggledImage(views::CustomButton::BS_NORMAL,
-                           tp->GetImageSkiaNamed(IDR_STOP));
-  reload_->SetToggledImage(views::CustomButton::BS_HOT,
-                           tp->GetImageSkiaNamed(IDR_STOP_H));
-  reload_->SetToggledImage(views::CustomButton::BS_PUSHED,
-                           tp->GetImageSkiaNamed(IDR_STOP_P));
-  reload_->SetToggledImage(views::CustomButton::BS_DISABLED,
-                           tp->GetImageSkiaNamed(IDR_STOP_D));
+  reload_->LoadImages(tp);
 }
 
 void SimpleWebViewDialog::UpdateButtons() {

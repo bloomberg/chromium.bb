@@ -265,7 +265,6 @@ void ToolbarView::Init(views::View* location_bar_parent,
   reload_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                        ui::EF_MIDDLE_MOUSE_BUTTON);
   reload_->set_tag(IDC_RELOAD);
-  reload_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_->set_id(VIEW_ID_RELOAD_BUTTON);
 
@@ -326,6 +325,9 @@ void ToolbarView::Update(WebContents* tab, bool should_restore_state) {
 
   if (browser_actions_)
     browser_actions_->RefreshBrowserActionViews();
+
+  if (reload_)
+    reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
 }
 
 void ToolbarView::SetPaneFocusAndFocusAppMenu() {
@@ -619,7 +621,7 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
 // ToolbarView, views::View overrides:
 
 gfx::Size ToolbarView::GetPreferredSize() {
-  if (IsDisplayModeNormal()) {
+  if (is_display_mode_normal()) {
     int min_width = kLeftEdgeSpacing +
         back_->GetPreferredSize().width() + kButtonSpacing +
         forward_->GetPreferredSize().width() + kButtonSpacing +
@@ -655,7 +657,7 @@ void ToolbarView::Layout() {
     return;
 
   bool maximized = browser_->window() && browser_->window()->IsMaximized();
-  if (!IsDisplayModeNormal()) {
+  if (!is_display_mode_normal()) {
     int edge_width = maximized ?
         0 : kPopupBackgroundEdge->width();  // See OnPaint().
     SetLocationBarContainerBounds(gfx::Rect(edge_width, PopupTopSpacing(),
@@ -775,7 +777,7 @@ bool ToolbarView::HitTest(const gfx::Point& point) const {
 void ToolbarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (IsDisplayModeNormal())
+  if (is_display_mode_normal())
     return;
 
   // In maximized mode, we don't draw the endcaps on the location bar, because
@@ -908,22 +910,7 @@ void ToolbarView::LoadImages() {
   forward_->SetImage(views::CustomButton::BS_DISABLED,
       tp->GetImageSkiaNamed(IDR_FORWARD_D));
 
-  reload_->SetImage(views::CustomButton::BS_NORMAL,
-      tp->GetImageSkiaNamed(IDR_RELOAD));
-  reload_->SetImage(views::CustomButton::BS_HOT,
-      tp->GetImageSkiaNamed(IDR_RELOAD_H));
-  reload_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetImageSkiaNamed(IDR_RELOAD_P));
-  reload_->SetImage(views::CustomButton::BS_DISABLED,
-      tp->GetImageSkiaNamed(IDR_RELOAD_D));
-  reload_->SetToggledImage(views::CustomButton::BS_NORMAL,
-      tp->GetImageSkiaNamed(IDR_STOP));
-  reload_->SetToggledImage(views::CustomButton::BS_HOT,
-      tp->GetImageSkiaNamed(IDR_STOP_H));
-  reload_->SetToggledImage(views::CustomButton::BS_PUSHED,
-      tp->GetImageSkiaNamed(IDR_STOP_P));
-  reload_->SetToggledImage(views::CustomButton::BS_DISABLED,
-      tp->GetImageSkiaNamed(IDR_STOP_D));
+  reload_->LoadImages(tp);
 
   home_->SetImage(views::CustomButton::BS_NORMAL,
       tp->GetImageSkiaNamed(IDR_HOME));

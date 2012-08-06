@@ -236,9 +236,10 @@ DevToolsWindow::~DevToolsWindow() {
 }
 
 void DevToolsWindow::InspectedContentsClosing() {
+  UpdateBrowserToolbar();
+
   if (docked_) {
     // Update dev tools to reflect removed dev tools window.
-
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
       inspected_window->UpdateDevTools();
@@ -482,6 +483,7 @@ void DevToolsWindow::Observe(int type,
       // Notify manager that this DevToolsClientHost no longer exists and
       // initiate self-destuct here.
       DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_);
+      UpdateBrowserToolbar();
       delete this;
     }
   } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
@@ -634,6 +636,9 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     do_open = true;
   }
 
+  // Update toolbar to reflect DevTools changes.
+  window->UpdateBrowserToolbar();
+
   // If window is docked and visible, we hide it on toggle. If window is
   // undocked, we show (activate) it.
   if (!window->is_docked() || do_open)
@@ -769,5 +774,13 @@ content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
 void DevToolsWindow::RunFileChooser(WebContents* web_contents,
                                     const FileChooserParams& params) {
   FileSelectHelper::RunFileChooser(web_contents, params);
+}
+
+void DevToolsWindow::UpdateBrowserToolbar() {
+  if (!inspected_tab_)
+    return;
+  BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+  if (inspected_window)
+    inspected_window->UpdateToolbar(inspected_tab_, false);
 }
 

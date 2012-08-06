@@ -154,6 +154,8 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void RequestSetDocked(bool docked);
 
+  void UpdateBrowserToolbar();
+
   Profile* profile_;
   TabContents* inspected_tab_;
   TabContents* tab_contents_;

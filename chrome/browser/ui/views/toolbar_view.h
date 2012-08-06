@@ -171,6 +171,13 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual void RemovePaneFocus() OVERRIDE;
 
  private:
+  // Types of display mode this toolbar can have.
+  enum DisplayMode {
+    DISPLAYMODE_NORMAL,       // Normal toolbar with buttons, etc.
+    DISPLAYMODE_LOCATION      // Slimline toolbar showing only compact location
+                              // bar, used for popups.
+  };
+
   // Returns true if we should show the upgrade recommended dot.
   bool ShouldShowUpgradeRecommended();
 
@@ -186,13 +193,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // Loads the images for all the child views.
   void LoadImages();
 
-  // Types of display mode this toolbar can have.
-  enum DisplayMode {
-    DISPLAYMODE_NORMAL,       // Normal toolbar with buttons, etc.
-    DISPLAYMODE_LOCATION      // Slimline toolbar showing only compact location
-                              // bar, used for popups.
-  };
-  bool IsDisplayModeNormal() const {
+  bool is_display_mode_normal() const {
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
 
