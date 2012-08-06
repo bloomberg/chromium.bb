@@ -71,7 +71,7 @@ void GetGCacheContents(const FilePath& root_path,
     entry->SetBoolean("is_directory", is_directory);
     entry->SetBoolean("is_symbolic_link", is_symbolic_link);
     entry->SetString("last_modified",
-                     gdata::util::FormatTimeAsString(last_modified));
+                     gdata::util::FormatTimeAsStringLocaltime(last_modified));
     files[current] = entry;
 
     total_size += size;

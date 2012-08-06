@@ -587,6 +587,16 @@ std::string FormatTimeAsString(const base::Time& time) {
       exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
 }
 
+std::string FormatTimeAsStringLocaltime(const base::Time& time) {
+  base::Time::Exploded exploded;
+  time.LocalExplode(&exploded);
+
+  return base::StringPrintf(
+      "%04d-%02d-%02dT%02d:%02d:%02d.%03d",
+      exploded.year, exploded.month, exploded.day_of_month,
+      exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
+}
+
 void PrepareWritableFileAndRun(Profile* profile,
                                const FilePath& path,
                                const OpenFileCallback& callback) {

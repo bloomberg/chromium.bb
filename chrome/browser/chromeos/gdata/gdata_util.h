@@ -117,6 +117,8 @@ bool GetTimeFromString(const base::StringPiece& raw_value, base::Time* time);
 
 // Formats a base::Time as an RFC 3339 date/time (in UTC).
 std::string FormatTimeAsString(const base::Time& time);
+// Formats a base::Time as an RFC 3339 date/time (in localtime).
+std::string FormatTimeAsStringLocaltime(const base::Time& time);
 
 // Callback type for PrepareWritableFilePathAndRun.
 typedef base::Callback<void (GDataFileError, const FilePath& path)>
