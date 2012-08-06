@@ -12,6 +12,7 @@
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
@@ -297,7 +298,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 #pragma mark Folder Tree Management
 
 - (BookmarkModel*)bookmarkModel {
-  return profile_->GetBookmarkModel();
+  return BookmarkModelFactory::GetForProfile(profile_);
 }
 
 - (Profile*)profile {
@@ -436,7 +437,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
   // of ancestor nodes.  Then crawl down the folderTreeArray looking
   // for each ancestor in order while building up the selectionPath.
   std::stack<const BookmarkNode*> nodeStack;
-  BookmarkModel* model = profile_->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   const BookmarkNode* rootNode = model->root_node();
   const BookmarkNode* node = desiredNode;
   while (node != rootNode) {
@@ -491,7 +492,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
 
 - (void)buildFolderTree {
   // Build up a tree of the current folder configuration.
-  BookmarkModel* model = profile_->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   const BookmarkNode* rootNode = model->root_node();
   NSMutableArray* baseArray = [self addChildFoldersFromNode:rootNode];
   DCHECK(baseArray);

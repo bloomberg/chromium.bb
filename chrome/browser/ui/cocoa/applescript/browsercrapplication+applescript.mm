@@ -8,6 +8,7 @@
 #import "base/memory/scoped_nsobject.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -76,7 +77,7 @@
     return nil;
   }
 
-  BookmarkModel* model = lastProfile->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(lastProfile);
   if (!model->IsLoaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return nil;
@@ -99,7 +100,7 @@
     return nil;
   }
 
-  BookmarkModel* model = lastProfile->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(lastProfile);
   if (!model->IsLoaded()) {
     AppleScript::SetError(AppleScript::errBookmarkModelLoad);
     return NULL;

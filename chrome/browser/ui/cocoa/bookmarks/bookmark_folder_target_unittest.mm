@@ -1,8 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
@@ -35,7 +36,7 @@ class BookmarkFolderTargetTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
-    BookmarkModel* model = profile()->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     bmbNode_ = model->bookmark_bar_node();
   }
 

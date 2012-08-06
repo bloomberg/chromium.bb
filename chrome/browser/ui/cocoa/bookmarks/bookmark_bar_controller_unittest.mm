@@ -12,6 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
@@ -345,7 +346,7 @@ class BookmarkBarControllerTest : public BookmarkBarControllerTestBase {
 
   // Return a menu item that points to the given URL.
   NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
-    BookmarkModel* model = profile()->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     const BookmarkNode* parent = model->bookmark_bar_node();
     const BookmarkNode* node = model->AddURL(parent, parent->child_count(),
                                              ASCIIToUTF16("A title"), gurl);
@@ -533,7 +534,7 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
 // Confirm our "no items" container goes away when we add the 1st
 // bookmark, and comes back when we delete the bookmark.
 TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* bar = model->bookmark_bar_node();
 
   [bar_ loaded:model];
@@ -566,7 +567,7 @@ TEST_F(BookmarkBarControllerTest, NoItemContainerGoesAway) {
 
 // Confirm off the side button only enabled when reasonable.
 TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [bar_ setIgnoreAnimations:YES];
 
   [bar_ loaded:model];
@@ -616,7 +617,7 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
 // off-the-side menu while it is open.  This test tries to bang hard
 // in this area to reproduce the crash.
 TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [bar_ setIgnoreAnimations:YES];
   [bar_ loaded:model];
 
@@ -707,7 +708,7 @@ TEST_F(BookmarkBarControllerTest, TagMap) {
 }
 
 TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   // First make sure something (e.g. "(empty)" string) is always present.
   NSMenu* menu = [bar_ menuForFolderNode:model->bookmark_bar_node()];
@@ -792,7 +793,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
 }
 
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   NSView* buttonView = [bar_ buttonView];
   EXPECT_EQ(0U, [[bar_ buttons] count]);
   unsigned int initial_subview_count = [[buttonView subviews] count];
@@ -842,7 +843,7 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
 // Make sure we don't create too many buttons; we only really need
 // ones that will be visible.
 TEST_F(BookmarkBarControllerTest, TestButtonLimits) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   EXPECT_EQ(0U, [[bar_ buttons] count]);
   // Add one; make sure we see it.
   const BookmarkNode* parent = model->bookmark_bar_node();
@@ -902,7 +903,7 @@ TEST_F(BookmarkBarControllerTest, TestButtonMarch) {
 
 TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
   WithNoAnimation at_all; // Turn off Cocoa auto animation in this scope.
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com");
   string16 title1(ASCIIToUTF16("x"));
   bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
@@ -929,7 +930,7 @@ TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
 }
 
 TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   const char* urls[] = { "https://secret.url.com",
                          "http://super.duper.web.site.for.doodz.gov",
@@ -954,7 +955,7 @@ TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
 // checkForBookmarkButtonGrowth:.
 
 TEST_F(BookmarkBarControllerTest, Cell) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [bar_ loaded:model];
 
   const BookmarkNode* parent = model->bookmark_bar_node();
@@ -985,7 +986,7 @@ TEST_F(BookmarkBarControllerTest, Display) {
 
 // Test that middle clicking on a bookmark button results in an open action.
 TEST_F(BookmarkBarControllerTest, MiddleClick) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com/");
   string16 title1(ASCIIToUTF16("x"));
   bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
@@ -1000,13 +1001,13 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
 }
 
 TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [bar_ loaded:model];
   EXPECT_FALSE([[[bar_ buttonView] noItemContainer] isHidden]);
 }
 
 TEST_F(BookmarkBarControllerTest, HidesHelpMessageWithBookmark) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   const BookmarkNode* parent = model->bookmark_bar_node();
   model->AddURL(parent, parent->child_count(),
@@ -1017,7 +1018,7 @@ TEST_F(BookmarkBarControllerTest, HidesHelpMessageWithBookmark) {
 }
 
 TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   const BookmarkNode* parent = model->bookmark_bar_node();
   model->AddURL(parent, parent->child_count(),
@@ -1058,7 +1059,7 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
     [nstitles addObject:base::SysUTF8ToNSString(titles[i])];
   }
 
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   [bar_ addURLs:nsurls withTitles:nstitles at:NSZeroPoint];
   EXPECT_EQ(4, parent->child_count());
@@ -1078,7 +1079,7 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
 }
 
 TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurl1("http://www.google.com");
   string16 title1(ASCIIToUTF16("x"));
   bookmark_utils::AddIfNotBookmarked(model, gurl1, title1);
@@ -1108,7 +1109,7 @@ TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
 }
 
 TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(parent,
                                                 parent->child_count(),
@@ -1136,7 +1137,7 @@ TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
 
 TEST_F(BookmarkBarControllerTest, TestDragButton) {
   WithNoAnimation at_all;
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   GURL gurls[] = { GURL("http://www.google.com/a"),
                    GURL("http://www.google.com/b"),
@@ -1207,7 +1208,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
 }
 
 TEST_F(BookmarkBarControllerTest, TestCopyButton) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   GURL gurls[] = { GURL("http://www.google.com/a"),
                    GURL("http://www.google.com/b"),
@@ -1237,7 +1238,7 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
 // Fake a theme with colored text.  Apply it and make sure bookmark
 // buttons have the same colored text.  Repeat more than once.
 TEST_F(BookmarkBarControllerTest, TestThemedButton) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   bookmark_utils::AddIfNotBookmarked(
       model, GURL("http://www.foo.com"), ASCIIToUTF16("small"));
   BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
@@ -1263,7 +1264,7 @@ TEST_F(BookmarkBarControllerTest, TestThemedButton) {
 // Test that delegates and targets of buttons are cleared on dealloc.
 TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
   // Make some bookmark buttons.
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   GURL gurls[] = { GURL("http://www.foo.com/"),
                    GURL("http://www.bar.com/"),
                    GURL("http://www.baz.com/") };
@@ -1297,7 +1298,7 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
 }
 
 TEST_F(BookmarkBarControllerTest, TestFolders) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   // Create some folder buttons.
   const BookmarkNode* parent = model->bookmark_bar_node();
@@ -1341,7 +1342,7 @@ TEST_F(BookmarkBarControllerTest, TestFolders) {
 // click on a folder folder menus should show until another click on a folder
 // button, and a click outside the bar and its folder menus.
 TEST_F(BookmarkBarControllerTest, TestFolderButtons) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b 4f:[ 4f1b 4f2b ] ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -1405,7 +1406,7 @@ TEST_F(BookmarkBarControllerTest, OffTheSideFolder) {
   EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
 
   // Create some buttons.
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   for (int x = 0; x < 30; x++) {
     model->AddURL(parent, parent->child_count(),
@@ -1484,7 +1485,7 @@ TEST_F(BookmarkBarControllerTest, EventToExitCheck) {
 
 TEST_F(BookmarkBarControllerTest, DropDestination) {
   // Make some buttons.
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   model->AddFolder(parent, parent->child_count(), ASCIIToUTF16("folder 1"));
   model->AddFolder(parent, parent->child_count(), ASCIIToUTF16("folder 2"));
@@ -1522,7 +1523,7 @@ TEST_F(BookmarkBarControllerTest, DropDestination) {
 }
 
 TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [bar_ loaded:model];
 
   const BookmarkNode* parent = model->bookmark_bar_node();
@@ -1561,7 +1562,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileMenuIsOpen) {
 }
 
 TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   [bar_ loaded:model];
 
   const BookmarkNode* parent = model->bookmark_bar_node();
@@ -1587,7 +1588,7 @@ TEST_F(BookmarkBarControllerTest, NodeDeletedWhileContextMenuIsOpen) {
 }
 
 TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(parent,
                                                 parent->child_count(),
@@ -1620,7 +1621,7 @@ TEST_F(BookmarkBarControllerTest, CloseFolderOnAnimate) {
 }
 
 TEST_F(BookmarkBarControllerTest, MoveRemoveAddButtons) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -1713,7 +1714,7 @@ public:
     frame.origin.y = 100;
     [[[bar_ view] superview] setFrame:frame];
 
-    BookmarkModel* model = profile()->GetBookmarkModel();
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
     parent_ = model->bookmark_bar_node();
     // { one, { two-one, two-two }, three }
     model->AddURL(parent_, parent_->child_count(), ASCIIToUTF16("title"),
@@ -1881,7 +1882,7 @@ class BookmarkBarControllerDragDropTest : public BookmarkBarControllerTestBase {
 };
 
 TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1bWithLongName 2fWithLongName:[ "
       "2f1bWithLongName 2f2fWithLongName:[ 2f2f1bWithLongName "
@@ -1933,7 +1934,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, DragOffTheSideToOther) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1bWithLongName 2bWithLongName "
       "3bWithLongName 4bWithLongName 5bWithLongName 6bWithLongName "
@@ -1990,7 +1991,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DragOffTheSideToOther) {
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkData) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                   "2f3b ] 3b 4b ");
@@ -2050,7 +2051,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkData) {
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, AddURLs) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                  "2f3b ] 3b 4b ");
@@ -2082,7 +2083,7 @@ TEST_F(BookmarkBarControllerDragDropTest, AddURLs) {
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, ControllerForNode) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -2098,7 +2099,7 @@ TEST_F(BookmarkBarControllerDragDropTest, ControllerForNode) {
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b 2f3b ] 3b 4b ");
   model_test_utils::AddNodesFromModelString(model, root, model_string);
@@ -2130,7 +2131,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, PulseButton) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   GURL gurl("http://www.google.com");
   const BookmarkNode* node = model->AddURL(root, root->child_count(),
@@ -2165,7 +2166,7 @@ TEST_F(BookmarkBarControllerDragDropTest, PulseButton) {
 }
 
 TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkDataToTrash) {
-  BookmarkModel& model(*profile()->GetBookmarkModel());
+  BookmarkModel& model(*BookmarkModelFactory::GetForProfile(profile()));
   const BookmarkNode* root = model.bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2f:[ 2f2f1b 2f2f2b 2f2f3b ] "
                                   "2f3b ] 3b 4b ");

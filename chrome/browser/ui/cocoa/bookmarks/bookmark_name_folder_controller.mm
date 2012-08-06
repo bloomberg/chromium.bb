@@ -7,6 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
@@ -79,7 +80,7 @@
 - (void)runAsModalSheet {
   // Ping me when things change out from under us.
   observer_.reset(new BookmarkModelObserverForCocoa(
-                    node_, profile_->GetBookmarkModel(),
+                    node_, BookmarkModelFactory::GetForProfile(profile_),
                     self,
                     @selector(cancel:)));
   [NSApp beginSheet:[self window]
@@ -95,7 +96,7 @@
 
 - (IBAction)ok:(id)sender {
   NSString* name = [nameField_ stringValue];
-  BookmarkModel* model = profile_->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
   if (node_) {
     model->SetTitle(node_, base::SysNSStringToUTF16(name));
   } else {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
@@ -59,8 +60,8 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
 
     view_.reset([[BookmarkBarFolderView alloc] init]);
 
-    mock_controller_.reset(GetMockController(YES,
-                                             profile()->GetBookmarkModel()));
+    mock_controller_.reset(GetMockController(
+        YES, BookmarkModelFactory::GetForProfile(profile())));
 
     mock_button_.reset(GetMockButton(mock_controller_.get()));
     [view_ awakeFromNib];
@@ -118,7 +119,8 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
   }
 
   id GetMockButton(id mock_controller) {
-    BookmarkModel* bookmark_model = profile()->GetBookmarkModel();
+    BookmarkModel* bookmark_model =
+        BookmarkModelFactory::GetForProfile(profile());
     const BookmarkNode* node =
         bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
                                0,
@@ -156,8 +158,8 @@ TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
   other_profile->CreateBookmarkModel(true);
   other_profile->BlockUntilBookmarkModelLoaded();
 
-  mock_controller_.reset(GetMockController(YES,
-                                           other_profile->GetBookmarkModel()));
+  mock_controller_.reset(GetMockController(
+      YES, BookmarkModelFactory::GetForProfile(other_profile)));
   [view_ setController:mock_controller_];
 
   id drag_info = GetFakeDragInfoForType(kBookmarkButtonDragType);
@@ -196,7 +198,8 @@ TEST_F(BookmarkBarFolderViewTest, BookmarkButtonDropIndicator) {
   [mock_controller_ verify];
   EXPECT_TRUE([view_ dropIndicatorShown]);
   EXPECT_EQ([view_ dropIndicatorPosition], kFakeIndicatorPos);
-  mock_controller_.reset(GetMockController(NO, profile()->GetBookmarkModel()));
+  mock_controller_.reset(GetMockController(
+      NO, BookmarkModelFactory::GetForProfile(profile())));
   [view_ setController:mock_controller_];
   [[[mock_controller_ expect] andReturnUnsignedInteger:NSDragOperationNone]
    draggingEntered:drag_info];

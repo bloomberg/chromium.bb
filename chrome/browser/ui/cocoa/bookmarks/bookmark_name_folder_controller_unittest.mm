@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_name_folder_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,7 +19,7 @@ class BookmarkNameFolderControllerTest : public CocoaProfileTest {
 
 // Simple add of a node (at the end).
 TEST_F(BookmarkNameFolderControllerTest, AddNew) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   EXPECT_EQ(0, parent->child_count());
 
@@ -48,7 +49,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNew) {
 
 // Add new but specify a sibling.
 TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
 
   // Add 2 nodes.  We will place the new folder in the middle of these.
@@ -78,7 +79,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
 
 // Make sure we are allowed to create a folder named "New Folder".
 TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
- BookmarkModel* model = profile()->GetBookmarkModel();
+ BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   EXPECT_EQ(0, parent->child_count());
 
@@ -99,7 +100,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
 
 // Make sure we are allowed to create a folder with an empty name.
 TEST_F(BookmarkNameFolderControllerTest, AddNewBlankName) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   EXPECT_EQ(0, parent->child_count());
 
@@ -119,7 +120,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewBlankName) {
 }
 
 TEST_F(BookmarkNameFolderControllerTest, Rename) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   const BookmarkNode* folder = model->AddFolder(parent,
                                                 parent->child_count(),
@@ -143,7 +144,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
 }
 
 TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* parent = model->bookmark_bar_node();
   EXPECT_EQ(0, parent->child_count());
 
