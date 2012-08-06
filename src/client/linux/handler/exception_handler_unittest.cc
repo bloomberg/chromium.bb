@@ -514,6 +514,12 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   free(filename);
 }
 
+// If AddressSanitizer is used, NULL pointer dereferences generate SIGILL
+// (illegal instruction) instead of SIGSEGV (segmentation fault).  Also,
+// the number of memory regions differs, so there is no point in running
+// this test if AddressSanitizer is used.
+#ifndef ADDRESS_SANITIZER
+
 // Ensure that an extra memory block doesn't get added when the
 // instruction pointer is not in mapped memory.
 TEST(ExceptionHandlerTest, InstructionPointerMemoryNullPointer) {
@@ -580,6 +586,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryNullPointer) {
   unlink(minidump_filename.c_str());
   free(filename);
 }
+#endif // !ADDRESS_SANITIZER
 
 static bool SimpleCallback(const char* dump_path,
                            const char* minidump_id,
