@@ -3075,16 +3075,18 @@ log_extensions(const char *name, const char *extensions)
 {
 	const char *p, *end;
 	int l;
+	int len;
 
 	l = weston_log("%s:", name);
 	p = extensions;
 	while (*p) {
 		end = strchrnul(p, ' ');
-		if (l + (end - p) > 78)
+		len = end - p;
+		if (l + len > 78)
 			l = weston_log_continue("\n" STAMP_SPACE "%.*s",
-						end - p, p);
+						len, p);
 		else
-			l += weston_log_continue(" %.*s", end - p, p);
+			l += weston_log_continue(" %.*s", len, p);
 		for (p = end; isspace(*p); p++)
 			;
 	}
