@@ -4,6 +4,7 @@
 
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,8 +28,7 @@ ResourcePrefetchPredictorFactory::GetInstance() {
 ResourcePrefetchPredictorFactory::ResourcePrefetchPredictorFactory()
     : ProfileKeyedServiceFactory("ResourcePrefetchPredictor",
                                  ProfileDependencyManager::GetInstance()) {
-  // TODO(shishir): Uncomment this when crbug.com/97804 is fixed.
-  // DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(PredictorDatabaseFactory::GetInstance());
 }
 

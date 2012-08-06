@@ -70,7 +70,6 @@ PredictorDatabaseInternal::~PredictorDatabaseInternal() {
 
 void PredictorDatabaseInternal::Initialize() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
-
   db_.set_exclusive_locking();
   bool success = db_.Open(db_path_);
 
