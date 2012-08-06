@@ -54,5 +54,8 @@ SkColor LocationBarContainer::GetBackgroundColor() {
 }
 
 void LocationBarContainer::StackAtTop() {
+  // TODO: reenable when PlatformInit() code is reenabled.
+  /*
   view_parent_->GetWidget()->StackAtTop();
+  */
 }
