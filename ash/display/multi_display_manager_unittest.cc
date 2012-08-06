@@ -32,6 +32,7 @@ class MultiDisplayManagerTest : public test::AshTestBase,
   virtual ~MultiDisplayManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
+    internal::DisplayController::SetExtendedDesktopEnabled(true);
     AshTestBase::SetUp();
     display_manager()->AddObserver(this);
     Shell::GetPrimaryRootWindow()->AddObserver(this);
@@ -40,6 +41,7 @@ class MultiDisplayManagerTest : public test::AshTestBase,
     Shell::GetPrimaryRootWindow()->RemoveObserver(this);
     display_manager()->RemoveObserver(this);
     AshTestBase::TearDown();
+    internal::DisplayController::SetExtendedDesktopEnabled(false);
   }
 
   aura::DisplayManager* display_manager() {

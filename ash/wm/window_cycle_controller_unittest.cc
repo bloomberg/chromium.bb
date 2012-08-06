@@ -341,7 +341,7 @@ TEST_F(WindowCycleControllerTest, AlwaysOnTopMultiWindow) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
-TEST_F(WindowCycleControllerTest, AlwaysOnTopMultipleRootWindows) {
+TEST_F(WindowCycleControllerTest, DISABLED_AlwaysOnTopMultipleRootWindows) {
   // Set up a second root window
   UpdateDisplay("0+0-1000x600,1001+0-600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();

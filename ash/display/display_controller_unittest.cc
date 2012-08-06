@@ -29,7 +29,24 @@ gfx::Display GetSecondaryDisplay() {
 
 }  // namespace
 
-typedef test::AshTestBase DisplayControllerTest;
+class DisplayControllerTest : public test::AshTestBase {
+ public:
+  DisplayControllerTest() {}
+  virtual ~DisplayControllerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    internal::DisplayController::SetExtendedDesktopEnabled(true);
+    AshTestBase::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    AshTestBase::TearDown();
+    internal::DisplayController::SetExtendedDesktopEnabled(false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisplayControllerTest);
+};
 
 #if defined(OS_WIN)
 // TOD(oshima): Windows creates a window with smaller client area.
