@@ -274,7 +274,8 @@ bool SyncTest::SetupClients() {
 
   // Create the verifier profile.
   verifier_ = MakeProfile(FILE_PATH_LITERAL("Verifier"));
-  ui_test_utils::WaitForBookmarkModelToLoad(verifier()->GetBookmarkModel());
+  ui_test_utils::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(verifier()));
   ui_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(verifier()));
   return (verifier_ != NULL);

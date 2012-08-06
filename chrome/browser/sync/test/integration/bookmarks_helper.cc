@@ -274,7 +274,7 @@ const BookmarkNode* GetSyncedBookmarksNode(int index) {
 }
 
 BookmarkModel* GetVerifierBookmarkModel() {
-  return test()->verifier()->GetBookmarkModel();
+  return BookmarkModelFactory::GetForProfile(test()->verifier());
 }
 
 const BookmarkNode* AddURL(int profile,

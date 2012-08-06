@@ -298,7 +298,7 @@ bool GetBookmarksFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   if (params->id_or_id_list_type ==
       bookmarks::Get::Params::ID_OR_ID_LIST_ARRAY) {
     std::vector<std::string>* ids = params->id_or_id_list_array.get();
@@ -342,7 +342,8 @@ bool GetBookmarkChildrenFunction::RunImpl() {
     return false;
 
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  const BookmarkNode* node = profile()->GetBookmarkModel()->GetNodeByID(id);
+  const BookmarkNode* node =
+      BookmarkModelFactory::GetForProfile(profile())->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;
     return false;
@@ -365,9 +366,10 @@ bool GetBookmarkRecentFunction::RunImpl() {
     return false;
 
   std::vector<const BookmarkNode*> nodes;
-  bookmark_utils::GetMostRecentlyAddedEntries(profile()->GetBookmarkModel(),
-                                              params->number_of_items,
-                                              &nodes);
+  bookmark_utils::GetMostRecentlyAddedEntries(
+      BookmarkModelFactory::GetForProfile(profile()),
+      params->number_of_items,
+      &nodes);
 
   std::vector<linked_ptr<BookmarkTreeNode> > tree_nodes;
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();
@@ -382,7 +384,8 @@ bool GetBookmarkRecentFunction::RunImpl() {
 
 bool GetBookmarkTreeFunction::RunImpl() {
   std::vector<linked_ptr<BookmarkTreeNode> > nodes;
-  const BookmarkNode* node = profile()->GetBookmarkModel()->root_node();
+  const BookmarkNode* node =
+      BookmarkModelFactory::GetForProfile(profile())->root_node();
   bookmark_extension_helpers::AddNode(node, &nodes, true);
   results_ = bookmarks::GetTree::Results::Create(nodes);
   return true;
@@ -397,7 +400,8 @@ bool GetBookmarkSubTreeFunction::RunImpl() {
   if (!GetBookmarkIdAsInt64(params->id, &id))
     return false;
 
-  const BookmarkNode* node = profile()->GetBookmarkModel()->GetNodeByID(id);
+  const BookmarkNode* node =
+      BookmarkModelFactory::GetForProfile(profile())->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;
     return false;
@@ -416,11 +420,12 @@ bool SearchBookmarksFunction::RunImpl() {
 
   std::string lang = profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   std::vector<const BookmarkNode*> nodes;
-  bookmark_utils::GetBookmarksContainingText(profile()->GetBookmarkModel(),
-                                             UTF8ToUTF16(params->query),
-                                             std::numeric_limits<int>::max(),
-                                             lang,
-                                             &nodes);
+  bookmark_utils::GetBookmarksContainingText(
+      BookmarkModelFactory::GetForProfile(profile()),
+      UTF8ToUTF16(params->query),
+      std::numeric_limits<int>::max(),
+      lang,
+      &nodes);
 
   std::vector<linked_ptr<BookmarkTreeNode> > tree_nodes;
   for (std::vector<const BookmarkNode*>::iterator node_iter = nodes.begin();
@@ -480,7 +485,7 @@ bool CreateBookmarkFunction::RunImpl() {
       bookmarks::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   int64 parentId;
 
   if (!params->bookmark.parent_id.get()) {
@@ -639,7 +644,7 @@ bool UpdateBookmarkFunction::RunImpl() {
     return false;
   }
 
-  BookmarkModel* model = profile()->GetBookmarkModel();
+  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
 
   // Optional but we need to distinguish non present from an empty title.
   string16 title;
