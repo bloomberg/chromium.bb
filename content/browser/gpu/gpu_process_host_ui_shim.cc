@@ -277,7 +277,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
       std::max(1, size.width()),
       std::max(1, size.height()),
       SWP_NOSENDCHANGING | SWP_NOCOPYBITS | SWP_NOZORDER |
-          SWP_NOACTIVATE | SWP_DEFERERASE);
+          SWP_NOACTIVATE | SWP_DEFERERASE | SWP_NOMOVE);
 #endif
 }
 
