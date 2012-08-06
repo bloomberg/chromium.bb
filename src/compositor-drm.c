@@ -751,12 +751,12 @@ drm_output_set_cursor(struct drm_output *output)
 			       es->geometry.width * 4);
 
 		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
-			weston_log("failed update cursor: %n\n");
+			weston_log("failed update cursor: %m\n");
 
 		handle = gbm_bo_get_handle(bo).s32;
 		if (drmModeSetCursor(c->drm.fd,
 				     output->crtc_id, handle, 64, 64))
-			weston_log("failed to set cursor: %n\n");
+			weston_log("failed to set cursor: %m\n");
 	}
 
 	x = es->geometry.x - output->base.x;
