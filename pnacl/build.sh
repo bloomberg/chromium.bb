@@ -189,6 +189,8 @@ readonly ILLEGAL_TOOL="${INSTALL_NEWLIB_BIN}"/pnacl-illegal
 # ELF -> PSO stub generator.
 readonly PSO_STUB_GEN="${LLVM_INSTALL_DIR}/bin/pso-stub"
 
+readonly PNACL_CRX_PACKAGER="${PNACL_ROOT}/pnacl_packaging/pnacl_component_crx_gen.py"
+
 # PNACL_CC_NEUTRAL is pnacl-cc without LibC bias (newlib vs. glibc)
 # This should only be used in conjunction with -E, -c, or -S.
 readonly PNACL_CC_NEUTRAL="${INSTALL_NEWLIB_BIN}/pnacl-clang -nodefaultlibs"
@@ -745,6 +747,31 @@ translator-archive-universal-pexes() {
 
   # strip all path components
   tar cjf ${tarball}  --transform 's!^.*/!!' ${all}
+}
+
+#+ package-translator-extensions <dir> <version> -  example version: 9999.9.9.9
+package-translator-extensions() {
+  local crx_build_dir="$1"
+  local version="$2"
+  StepBanner "CRX-PACKAGING" "[${version}]"
+  spushd "${NACL_ROOT}"
+
+  # Note: this builds all archs
+  ${PNACL_CRX_PACKAGER} --dest="${crx_build_dir}/" --unpacked_only ${version}
+
+  for arch in arm x86-32 x86-64 ; do
+    StepBanner "CRX-PACKAGING" "[${arch}]"
+    rm -rf  ${crx_build_dir}/tmp
+    mkdir -p "${crx_build_dir}/tmp"
+    cp "${crx_build_dir}/${version}/"*.json "${crx_build_dir}/tmp/"
+    cp -r "${crx_build_dir}/${version}/${arch}" "${crx_build_dir}/tmp/"
+    # the contents of tmp after this is
+    #   tmp/pnacl.json
+    #   tmp/manifest.json
+    #   tmp/<arch>/...
+    (cd "${crx_build_dir}/tmp"; zip -r "../translator.${arch}.zip" .)
+  done
+  spopd
 }
 
 #+ translator-clean-all  - Clean all translator install/build directories

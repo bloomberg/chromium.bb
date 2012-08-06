@@ -114,6 +114,16 @@ tc-archive-translator() {
       pnacl_translator pnacl-translator.tgz
 }
 
+tc-package-and-archive-extensions() {
+  echo @@@BUILD_STEP package_archive_extensions@@@
+  local tmp="$(pwd)/tmp.extension"
+  ${PNACL_BUILD} package-translator-extensions ${tmp} 9999.9.9.9
+  for ext in ${tmp}/*zip ; do
+      ${UP_DOWN_LOAD} UploadToolchainComponent ${BUILDBOT_GOT_REVISION} \
+                      $(basename ${ext}) ${ext}
+  done
+}
+
 tc-build-all() {
   local label=$1
   local is_try=$2
@@ -140,6 +150,7 @@ tc-build-all() {
     if ! ${is_try} ; then
       tc-archive-translator-pexes
       tc-archive-translator
+      tc-package-and-archive-extensions
     fi
   fi
 
