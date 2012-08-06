@@ -255,8 +255,7 @@ check-decoder: outdirs $(BINUTILS_STAMP) $(OBJD)/one_instruction_x86_32.dot \
 	  --gas="$(GAS) --32" \
 	  --objdump="$(OBJDUMP)" \
 	  --decoder="$(OBJD)/decoder_test" \
-	  --tester=./decoder_test_one_file.sh \
-	  --nthreads=`cat /proc/cpuinfo | grep processor | wc -l` -- \
+	  --tester=./decoder_test_one_file.sh -- \
 	  "$(OUT)/test/test_dfa_x86_32" "$(FAST_TMP_FOR_TEST)"
 	$(PYTHON2X) parse_dfa.py <"$(OBJD)/one_instruction_x86_64.dot" \
 	    > "$(OUT)/test/test_dfa_transitions_x86_64.c"
@@ -269,8 +268,7 @@ check-decoder: outdirs $(BINUTILS_STAMP) $(OBJD)/one_instruction_x86_32.dot \
 	  --gas="$(GAS) --64" \
 	  --objdump="$(OBJDUMP)" \
 	  --decoder="$(OBJD)/decoder_test" \
-	  --tester=./decoder_test_one_file.sh \
-	  --nthreads=`cat /proc/cpuinfo | grep processor | wc -l` -- \
+	  --tester=./decoder_test_one_file.sh -- \
 	  "$(OUT)/test/test_dfa_x86_64" "$(FAST_TMP_FOR_TEST)"
 
 include ncval_tests.txt

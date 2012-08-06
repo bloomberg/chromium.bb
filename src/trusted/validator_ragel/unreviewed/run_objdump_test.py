@@ -16,6 +16,7 @@ import signal
 import subprocess
 import sys
 import threading
+import multiprocessing
 import time
 
 
@@ -153,19 +154,24 @@ def Main():
       help='path to find the tested decoder')
   parser.add_option(
       '-n', '--nthreads', dest='nthreads',
-      default='0',
+      default=0,
+      type=int,
       help='amount of threads to use for running decoders')
   parser.add_option(
       '-t', '--tester', dest='tester',
       default=None,
       help='script to test an individual file')
   opt, generator_command = parser.parse_args()
+
   if (not opt.gas_path or
       not opt.objdump_path or
       not opt.decoder_path or
-      not opt.tester or
-      int(opt.nthreads) == 0):
+      not opt.tester):
     parser.error('invalid arguments')
+
+  if opt.nthreads == 0:
+    opt.nthreads = multiprocessing.cpu_count()
+  assert opt.nthreads > 0
 
   global CV
   CV = threading.Condition()
@@ -173,7 +179,7 @@ def Main():
 
   # Start all threads.
   workers = []
-  for i in xrange(0, int(opt.nthreads)):
+  for i in xrange(opt.nthreads):
     w = Worker(gen, opt)
     workers.append(w)
     w.start()
