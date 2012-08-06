@@ -1802,7 +1802,7 @@ static void
 device_added(struct udev_device *udev_device, struct drm_seat *master)
 {
 	struct weston_compositor *c;
-	struct evdev_input_device *device;
+	struct evdev_device *device;
 	const char *devnode;
 	const char *device_seat;
 	int fd;
@@ -1818,7 +1818,7 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 	devnode = udev_device_get_devnode(udev_device);
 
 	/* Use non-blocking mode so that we can loop on read on
-	 * evdev_input_device_data() until all events on the fd are
+	 * evdev_device_data() until all events on the fd are
 	 * read.  mtdev_get() also expects this. */
 	fd = weston_launcher_open(c, devnode, O_RDWR | O_NONBLOCK);
 	if (fd < 0) {
@@ -1826,7 +1826,7 @@ device_added(struct udev_device *udev_device, struct drm_seat *master)
 		return;
 	}
 
-	device = evdev_input_device_create(&master->base, devnode, fd);
+	device = evdev_device_create(&master->base, devnode, fd);
 	if (!device) {
 		close(fd);
 		weston_log("not using input device '%s'.\n", devnode);
@@ -1882,7 +1882,7 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 {
 	struct drm_seat *seat = data;
 	struct udev_device *udev_device;
-	struct evdev_input_device *device, *next;
+	struct evdev_device *device, *next;
 	const char *action;
 	const char *devnode;
 
@@ -1906,7 +1906,7 @@ evdev_udev_handler(int fd, uint32_t mask, void *data)
 			if (!strcmp(device->devnode, devnode)) {
 				weston_log("input device %s, %s removed\n",
 					   device->devname, device->devnode);
-				evdev_input_device_destroy(device);
+				evdev_device_destroy(device);
 				break;
 			}
 	}
@@ -1971,7 +1971,7 @@ static void
 drm_led_update(struct weston_seat *seat_base, enum weston_led leds)
 {
 	struct drm_seat *seat = (struct drm_seat *) seat_base;
-	struct evdev_input_device *device;
+	struct evdev_device *device;
 
 	wl_list_for_each(device, &seat->devices_list, link)
 		evdev_led_update(device, leds);
@@ -2008,10 +2008,10 @@ static void
 evdev_remove_devices(struct weston_seat *seat_base)
 {
 	struct drm_seat *seat = (struct drm_seat *) seat_base;
-	struct evdev_input_device *device, *next;
+	struct evdev_device *device, *next;
 
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
-		evdev_input_device_destroy(device);
+		evdev_device_destroy(device);
 
 	if (seat->base.seat.keyboard)
 		notify_keyboard_focus_out(&seat->base.seat);

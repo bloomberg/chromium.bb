@@ -83,7 +83,7 @@ enum touchpad_fingers_state {
 
 struct touchpad_dispatch {
 	struct evdev_dispatch base;
-	struct evdev_input_device *device;
+	struct evdev_device *device;
 
 	enum touchpad_model model;
 	enum touchpad_state state;
@@ -126,7 +126,7 @@ struct touchpad_dispatch {
 };
 
 static enum touchpad_model
-get_touchpad_model(struct evdev_input_device *device)
+get_touchpad_model(struct evdev_device *device)
 {
 	struct input_id id;
 	unsigned int i;
@@ -190,7 +190,7 @@ touchpad_profile(struct weston_motion_filter *filter,
 
 static void
 configure_touchpad(struct touchpad_dispatch *touchpad,
-		   struct evdev_input_device *device)
+		   struct evdev_device *device)
 {
 	struct weston_motion_filter *accel;
 
@@ -380,7 +380,7 @@ touchpad_update_state(struct touchpad_dispatch *touchpad, uint32_t time)
 
 static inline void
 process_absolute(struct touchpad_dispatch *touchpad,
-		 struct evdev_input_device *device,
+		 struct evdev_device *device,
 		 struct input_event *e)
 {
 	switch (e->code) {
@@ -416,7 +416,7 @@ process_absolute(struct touchpad_dispatch *touchpad,
 
 static inline void
 process_key(struct touchpad_dispatch *touchpad,
-	    struct evdev_input_device *device,
+	    struct evdev_device *device,
 	    struct input_event *e,
 	    uint32_t time)
 {
@@ -476,7 +476,7 @@ process_key(struct touchpad_dispatch *touchpad,
 
 static void
 touchpad_process(struct evdev_dispatch *dispatch,
-		 struct evdev_input_device *device,
+		 struct evdev_device *device,
 		 struct input_event *e,
 		 uint32_t time)
 {
@@ -519,7 +519,7 @@ struct evdev_dispatch_interface touchpad_interface = {
 };
 
 struct evdev_dispatch *
-evdev_touchpad_create(struct evdev_input_device *device)
+evdev_touchpad_create(struct evdev_device *device)
 {
 	struct touchpad_dispatch *touchpad;
 

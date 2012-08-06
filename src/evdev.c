@@ -31,7 +31,7 @@
 #include "evdev.h"
 
 void
-evdev_led_update(struct evdev_input_device *device, enum weston_led leds)
+evdev_led_update(struct evdev_device *device, enum weston_led leds)
 {
 	static const struct {
 		enum weston_led weston;
@@ -59,8 +59,7 @@ evdev_led_update(struct evdev_input_device *device, enum weston_led leds)
 }
 
 static inline void
-evdev_process_key(struct evdev_input_device *device,
-                        struct input_event *e, int time)
+evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 {
 	if (e->value == 2)
 		return;
@@ -91,8 +90,7 @@ evdev_process_key(struct evdev_input_device *device,
 }
 
 static void
-evdev_process_touch(struct evdev_input_device *device,
-		    struct input_event *e)
+evdev_process_touch(struct evdev_device *device, struct input_event *e)
 {
 	const int screen_width = device->output->current->width;
 	const int screen_height = device->output->current->height;
@@ -125,7 +123,7 @@ evdev_process_touch(struct evdev_input_device *device,
 }
 
 static inline void
-evdev_process_absolute_motion(struct evdev_input_device *device,
+evdev_process_absolute_motion(struct evdev_device *device,
 			      struct input_event *e)
 {
 	const int screen_width = device->output->current->width;
@@ -150,7 +148,7 @@ evdev_process_absolute_motion(struct evdev_input_device *device,
 }
 
 static inline void
-evdev_process_relative(struct evdev_input_device *device,
+evdev_process_relative(struct evdev_device *device,
 		       struct input_event *e, uint32_t time)
 {
 	switch (e->code) {
@@ -178,8 +176,7 @@ evdev_process_relative(struct evdev_input_device *device,
 }
 
 static inline void
-evdev_process_absolute(struct evdev_input_device *device,
-		       struct input_event *e)
+evdev_process_absolute(struct evdev_device *device, struct input_event *e)
 {
 	if (device->is_mt) {
 		evdev_process_touch(device, e);
@@ -212,7 +209,7 @@ is_motion_event(struct input_event *e)
 }
 
 static void
-evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
+evdev_flush_motion(struct evdev_device *device, uint32_t time)
 {
 	struct weston_seat *master = device->seat;
 
@@ -260,7 +257,7 @@ evdev_flush_motion(struct evdev_input_device *device, uint32_t time)
 
 static void
 fallback_process(struct evdev_dispatch *dispatch,
-		 struct evdev_input_device *device,
+		 struct evdev_device *device,
 		 struct input_event *event,
 		 uint32_t time)
 {
@@ -301,7 +298,7 @@ fallback_dispatch_create(void)
 }
 
 static void
-evdev_process_events(struct evdev_input_device *device,
+evdev_process_events(struct evdev_device *device,
 		     struct input_event *ev, int count)
 {
 	struct evdev_dispatch *dispatch = device->dispatch;
@@ -328,10 +325,10 @@ evdev_process_events(struct evdev_input_device *device,
 }
 
 static int
-evdev_input_device_data(int fd, uint32_t mask, void *data)
+evdev_device_data(int fd, uint32_t mask, void *data)
 {
 	struct weston_compositor *ec;
-	struct evdev_input_device *device = data;
+	struct evdev_device *device = data;
 	struct input_event ev[32];
 	int len;
 
@@ -351,7 +348,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 			len = read(fd, &ev, sizeof ev);
 
 		if (len < 0 || len % sizeof ev[0] != 0) {
-			/* FIXME: call evdev_input_device_destroy when errno is ENODEV. */
+			/* FIXME: call evdev_device_destroy when errno is ENODEV. */
 			return 1;
 		}
 
@@ -363,7 +360,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 }
 
 static int
-evdev_configure_device(struct evdev_input_device *device)
+evdev_configure_device(struct evdev_device *device)
 {
 	struct input_absinfo absinfo;
 	unsigned long ev_bits[NBITS(EV_MAX)];
@@ -472,11 +469,10 @@ evdev_configure_device(struct evdev_input_device *device)
 	return 0;
 }
 
-struct evdev_input_device *
-evdev_input_device_create(struct weston_seat *seat,
-			  const char *path, int device_fd)
+struct evdev_device *
+evdev_device_create(struct weston_seat *seat, const char *path, int device_fd)
 {
-	struct evdev_input_device *device;
+	struct evdev_device *device;
 	struct weston_compositor *ec;
 	char devname[256] = "unknown";
 
@@ -520,7 +516,7 @@ evdev_input_device_create(struct weston_seat *seat,
 
 	device->source = wl_event_loop_add_fd(ec->input_loop, device->fd,
 					      WL_EVENT_READABLE,
-					      evdev_input_device_data, device);
+					      evdev_device_data, device);
 	if (device->source == NULL)
 		goto err2;
 
@@ -536,7 +532,7 @@ err1:
 }
 
 void
-evdev_input_device_destroy(struct evdev_input_device *device)
+evdev_device_destroy(struct evdev_device *device)
 {
 	struct evdev_dispatch *dispatch;
 
@@ -558,7 +554,7 @@ void
 evdev_notify_keyboard_focus(struct weston_seat *seat,
 			    struct wl_list *evdev_devices)
 {
-	struct evdev_input_device *device;
+	struct evdev_device *device;
 	struct wl_array keys;
 	unsigned int i, set;
 	char evdev_keys[(KEY_CNT + 7) / 8];

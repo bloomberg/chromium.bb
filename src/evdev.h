@@ -44,7 +44,7 @@ enum evdev_device_capability {
 	EVDEV_TOUCH = (1 << 4),
 };
 
-struct evdev_input_device {
+struct evdev_device {
 	struct weston_seat *seat;
 	struct wl_list link;
 	struct wl_event_source *source;
@@ -90,7 +90,7 @@ struct evdev_dispatch;
 struct evdev_dispatch_interface {
 	/* Process an evdev input event. */
 	void (*process)(struct evdev_dispatch *dispatch,
-			struct evdev_input_device *device,
+			struct evdev_device *device,
 			struct input_event *event,
 			uint32_t time);
 
@@ -103,17 +103,16 @@ struct evdev_dispatch {
 };
 
 struct evdev_dispatch *
-evdev_touchpad_create(struct evdev_input_device *device);
+evdev_touchpad_create(struct evdev_device *device);
 
 void
-evdev_led_update(struct evdev_input_device *device, enum weston_led leds);
+evdev_led_update(struct evdev_device *device, enum weston_led leds);
 
-struct evdev_input_device *
-evdev_input_device_create(struct weston_seat *seat,
-			  const char *path, int device_fd);
+struct evdev_device *
+evdev_device_create(struct weston_seat *seat, const char *path, int device_fd);
 
 void
-evdev_input_device_destroy(struct evdev_input_device *device);
+evdev_device_destroy(struct evdev_device *device);
 
 void
 evdev_notify_keyboard_focus(struct weston_seat *seat,

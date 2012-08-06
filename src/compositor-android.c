@@ -247,7 +247,7 @@ static void
 android_led_update(struct weston_seat *seat_base, enum weston_led leds)
 {
 	struct android_seat *seat = to_android_seat(seat_base);
-	struct evdev_input_device *device;
+	struct evdev_device *device;
 
 	wl_list_for_each(device, &seat->devices_list, link)
 		evdev_led_update(device, leds);
@@ -256,7 +256,7 @@ android_led_update(struct weston_seat *seat_base, enum weston_led leds)
 static void
 android_seat_open_device(struct android_seat *seat, const char *devnode)
 {
-	struct evdev_input_device *device;
+	struct evdev_device *device;
 	int fd;
 
 	/* XXX: check the Android excluded list */
@@ -268,7 +268,7 @@ android_seat_open_device(struct android_seat *seat, const char *devnode)
 		return;
 	}
 
-	device = evdev_input_device_create(&seat->base, devnode, fd);
+	device = evdev_device_create(&seat->base, devnode, fd);
 	if (!device) {
 		close(fd);
 		return;
@@ -317,10 +317,10 @@ android_seat_scan_devices(struct android_seat *seat, const char *dirpath)
 static void
 android_seat_destroy(struct android_seat *seat)
 {
-	struct evdev_input_device *device, *next;
+	struct evdev_device *device, *next;
 
 	wl_list_for_each_safe(device, next, &seat->devices_list, link)
-		evdev_input_device_destroy(device);
+		evdev_device_destroy(device);
 
 	if (seat->base.seat.keyboard)
 		notify_keyboard_focus_out(&seat->base.seat);
