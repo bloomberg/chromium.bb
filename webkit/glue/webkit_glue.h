@@ -71,7 +71,7 @@ int NumberOfPages(WebKit::WebFrame* web_frame,
 string16 DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 
 // Returns a dump of the given history state suitable for implementing the
-// dumpBackForwardList command of the layoutTestController.
+// dumpBackForwardList command of the testRunner.
 WEBKIT_GLUE_EXPORT string16 DumpHistoryState(const std::string& history_state,
                                              int indent,
                                              bool is_current);

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var layoutTestController = layoutTestController || {};
 var testRunner = testRunner || {};
 var accessibilityController = accessibilityController || {};
 var gamepadController = gamepadController || {};
@@ -43,8 +42,7 @@ var textInputController = textInputController || {};
         {value: SetShouldStayOnPageAfterHandlingBeforeUnload});
     Object.defineProperty(this, "waitUntilDone", {value: SetWaitUntilDone});
   }
-  LayoutTestController.prototype = DefaultHandler("layoutTestController");
-  layoutTestController = new LayoutTestController();
+  LayoutTestController.prototype = DefaultHandler("testRunner");
   testRunner = new LayoutTestController();
 
   var AccessibilityController = function() {}

@@ -433,7 +433,7 @@ void TestShell::CallJSGC() {
 
 WebView* TestShell::CreateWebView() {
   // If we're running layout tests, only open a new window if the test has
-  // called layoutTestController.setCanOpenWindows()
+  // called testRunner.setCanOpenWindows()
   if (layout_test_mode_)
     return NULL;
 

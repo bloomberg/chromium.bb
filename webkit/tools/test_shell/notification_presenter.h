@@ -20,7 +20,7 @@ class TestNotificationPresenter : public WebKit::WebNotificationPresenter {
 
   void Reset();
 
-  // Called by the LayoutTestController to simulate a user granting
+  // Called by the testRunner to simulate a user granting
   // permission.
   void grantPermission(const std::string& origin);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   int64 GetFileSize(const string16& vfs_file_name);
   int64 GetSpaceAvailable(const string16& origin_identifier);
 
-  // For use by LayoutTestController, called on the main thread.
+  // For use by testRunner, called on the main thread.
   void ClearAllDatabases();
   void SetDatabaseQuota(int64 quota);
 

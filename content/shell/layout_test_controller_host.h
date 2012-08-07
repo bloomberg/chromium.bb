@@ -42,7 +42,7 @@ class LayoutTestControllerHost : public RenderViewHostObserver {
   void OnTextDump(const std::string& dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
 
-  // layoutTestController handlers.
+  // testRunner handlers.
   void OnNotifyDone();
   void OnDumpAsText();
   void OnDumpChildFramesAsText();

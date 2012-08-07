@@ -35,7 +35,7 @@ IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,
 // The main frame of the render view finished loading.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DidFinishLoad)
 
-// The following messages correspond to methods of the layoutTestController.
+// The following messages correspond to methods of the testRunner.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_NotifyDone)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpAsText)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_DumpChildFramesAsText)

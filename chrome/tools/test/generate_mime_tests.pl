@@ -217,8 +217,8 @@ foreach $content_type ( @content_type) {
   print OUT "This HTML is used to test HTTP content-type \"$content_type\"".
     " by having multiple iframes render different types of content for the".
     " same HTTP content-type header.\n";
-  print OUT "<script>\n  if(window.layoutTestController)\n    " .
-    "window.layoutTestController.waitUntilDone();\n</script>\n";
+  print OUT "<script>\n  if(window.testRunner)\n    " .
+    "window.testRunner.waitUntilDone();\n</script>\n";
   print OUT "<html>\n<body>\n<br>Well here are the frames !<br>\n";
 
   foreach $parameter ( @parameter ) {
@@ -239,8 +239,8 @@ foreach $content_type ( @content_type) {
   }
 
   print OUT "</body>\n</html>\n";
-  print OUT "<script>\n  if(window.layoutTestController)\n    ".
-    "layoutTestController.notifyDone();\n</script>";
+  print OUT "<script>\n  if(window.testRunner)\n    ".
+    "testRunner.notifyDone();\n</script>";
   close OUT;
 }
 

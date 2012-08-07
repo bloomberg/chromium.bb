@@ -67,7 +67,7 @@ void ScrapeResultFromBrowser(content::Shell* window, std::string* actual_text) {
 
 static const std::string preamble =
       "\n<script>\n"
-      "function LayoutTestController() {\n"
+      "function TestRunner() {\n"
       "  this.wait_until_done_ = false;\n"
       "  this.dumpAsText = function () {};\n"
       "  this.waitUntilDone = function () {\n"
@@ -78,14 +78,13 @@ static const std::string preamble =
       "  }\n"
       "  this.overridePreference = function () {}\n"
       "  this.OnEvent = function () {\n"
-      "    if (!layoutTestController.wait_until_done_)\n"
-      "      layoutTestController.notifyDone();\n"
+      "    if (!testRunner.wait_until_done_)\n"
+      "      testRunner.notifyDone();\n"
       "  }\n"
       "  this.workerThreadCount = 0; \n"
       "}\n"
-      "window.layoutTestController = new LayoutTestController();\n"
-      "window.testRunner = window.layoutTestController;\n"
-      "window.addEventListener('load', layoutTestController.OnEvent, false);\n"
+      "window.testRunner = new TestRunner();\n"
+      "window.addEventListener('load', testRunner.OnEvent, false);\n"
       "</script>";
 
 }
