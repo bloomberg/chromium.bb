@@ -169,7 +169,7 @@ ButterBar.prototype.hideError = function() {
  */
 ButterBar.prototype.clearShowTimeout_ = function() {
   if (this.showTimeout_) {
-    clearTimeout(this.hideTimeout_);
+    clearTimeout(this.showTimeout_);
     this.showTimeout_ = null;
   }
 };
