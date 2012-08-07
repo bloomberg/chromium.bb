@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -89,9 +89,13 @@ class PrefixSet {
   // |target_index|.  Only call if |IsDeltaAt()| returned |true|.
   uint16 DeltaAt(size_t target_index) const;
 
-  // Check whether |index_| and |deltas_| still match the CRC
+  // Check whether |index_| and |deltas_| still match the checksum
   // generated during construction.
   bool CheckChecksum() const;
+
+  // Accumulates xor checksum over what GetPrefixes() would return,
+  // without requiring a large temporary structure.
+  SBPrefix GetPrefixesChecksum() const;
 
  private:
   // Maximum number of consecutive deltas to encode before generating

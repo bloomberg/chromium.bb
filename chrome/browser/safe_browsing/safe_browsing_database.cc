@@ -271,7 +271,7 @@ enum PrefixSetEvent {
   // These were to track bloom misses which hit the prefix set, with
   // _INVALID to track where the item didn't appear to actually be in
   // the prefix set.  _INVALID was never hit.
-  PREFIX_SET_BLOOM_MISS_PREFIX_SET_HIT,
+  PREFIX_SET_BLOOM_MISS_PREFIX_SET_HIT_OBSOLETE,
   PREFIX_SET_BLOOM_MISS_PREFIX_SET_HIT_INVALID_OBSOLETE,
   // GetPrefixes() after creation failed to get the same prefixes.
   PREFIX_SET_GETPREFIXES_BROKEN,
@@ -283,8 +283,18 @@ enum PrefixSetEvent {
   PREFIX_SET_GETPREFIXES_BROKEN_DUPLICATION_OBSOLETE,
   PREFIX_SET_GETPREFIXES_UNSORTED_IS_DELTA_OBSOLETE,
   PREFIX_SET_GETPREFIXES_UNSORTED_IS_INDEX_OBSOLETE,
-  // Failed checksum when creating prefix set.
+  // Failed checksums when creating filters.
   PREFIX_SET_CREATE_PREFIX_SET_CHECKSUM,
+  PREFIX_SET_CREATE_BLOOM_FILTER_CHECKSUM,
+  PREFIX_SET_CREATE_ADD_PREFIXES_CHECKSUM,
+  PREFIX_SET_CREATE_PREFIXES_CHECKSUM,
+  PREFIX_SET_CREATE_GET_PREFIXES_CHECKSUM,
+  // Failed checksums when probing the filters.
+  PREFIX_SET_MISMATCH_PREFIX_SET_CHECKSUM,
+  PREFIX_SET_MISMATCH_BLOOM_FILTER_CHECKSUM,
+
+  // Recorded once per update if the impossible occurs.
+  PREFIX_SET_BLOOM_MISS_PREFIX_HIT,
 
   // Memory space for histograms is determined by the max.  ALWAYS ADD
   // NEW VALUES BEFORE THIS ONE.
@@ -301,67 +311,169 @@ safe_browsing::PrefixSet* CreateEmptyPrefixSet() {
   return new safe_browsing::PrefixSet(std::vector<SBPrefix>());
 }
 
-// Generate a |PrefixSet| instance from the contents of
-// |add_prefixes|.  Additionally performs various checks to make sure
-// that the resulting prefix set is valid, so that histograms in
-// ContainsBrowseUrl() can be trustworthy.
-safe_browsing::PrefixSet* PrefixSetFromAddPrefixes(
-    const SBAddPrefixes& add_prefixes) {
+// Generate xor "checksum" of SBPrefix part of add prefixes.  Pass 0
+// for |seed| will return a checksum, passing a previous checksum for
+// |seed| will return 0 (if it checks out).  Coded this way in hopes
+// that the compiler won't optimize separate runs into a single
+// temporary.
+SBPrefix ChecksumAddPrefixes(SBPrefix seed,
+                             const SBAddPrefixes& add_prefixes) {
+  SBPrefix checksum = seed;
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
+    checksum ^= iter->prefix;
+  }
+  return checksum;
+}
+
+// Generate xor "checksum" of prefixes.
+SBPrefix ChecksumPrefixes(SBPrefix seed,
+                          const std::vector<SBPrefix>& prefixes) {
+  SBPrefix checksum = seed;
+  for (std::vector<SBPrefix>::const_iterator iter = prefixes.begin();
+       iter != prefixes.end(); ++iter) {
+    checksum ^= *iter;
+  }
+  return checksum;
+}
+
+// Prefix set doesn't store duplicates, making it hard to verify that
+// checksums match.  Also hard is verifying that nothing was corrupted
+// while removing duplicates from a vector.  So this generates a
+// checksum of only the unique elements.
+SBPrefix ChecksumUniquePrefixes(const std::vector<SBPrefix>& prefixes) {
+  // Handle edge case up front.
+  if (prefixes.size() == 0)
+    return 0;
+
+  std::vector<SBPrefix>::const_iterator iter = prefixes.begin();
+  SBPrefix checksum = *iter++;
+  while (iter != prefixes.end()) {
+    if (*(iter - 1) != *iter)
+      checksum ^= *iter;
+    iter++;
+  }
+  return checksum;
+}
+
+// NOTE(shess): Past histograms have indicated that in a given day,
+// about 1 in 100,000 updates result in a PrefixSet which was
+// inconsistent relative to the BloomFilter.  Windows is about 5x more
+// likely to build an inconsistent PrefixSet than Mac.  A number of
+// developers have reviewed the code, and I ran extensive fuzzing with
+// random data, so at this point I'm trying to demonstrate memory
+// corruption.
+//
+// Other findings from past instrumentation:
+// - half of one percent of brokenness cases implied duplicate items
+//   in |prefixes|.  Per the code above, this should not be possible.
+// - about 1/20 of broken cases happened more than once for a given
+//   user.  Note that empty updates generally don't hit this code at
+//   all, so that may not imply a specific input pattern breaking
+//   things.
+// - about 1/3 of broken cases show a checksum mismatch between the
+//   checksum calculated while creating |prefix_set| and the checksum
+//   calculated immediately after creation.  This is almost certainly
+//   memory corruption.
+
+// Generate |PrefixSet| and |BloomFilter| instances from the contents
+// of |add_prefixes|.  Verify that the results are internally
+// consistent, and that the input maintained consistence while
+// constructing (which should assure that they are mutually
+// consistent).  Returns an empty prefix set if any of the checks
+// fail.
+void FiltersFromAddPrefixes(
+    const SBAddPrefixes& add_prefixes,
+    scoped_refptr<BloomFilter>* bloom_filter,
+    scoped_ptr<safe_browsing::PrefixSet>* prefix_set) {
+  const int filter_size =
+      BloomFilter::FilterSizeForKeyCount(add_prefixes.size());
+  *bloom_filter = new BloomFilter(filter_size);
+  if (add_prefixes.empty()) {
+    prefix_set->reset(CreateEmptyPrefixSet());
+    return;
+  }
+
+  const SBPrefix add_prefixes_checksum = ChecksumAddPrefixes(0, add_prefixes);
+
   // TODO(shess): If |add_prefixes| were sorted by the prefix, it
   // could be passed directly to |PrefixSet()|, removing the need for
-  // |prefixes|.  For now, |prefixes| is useful while debugging
-  // things.
+  // |prefixes|.
   std::vector<SBPrefix> prefixes;
   prefixes.reserve(add_prefixes.size());
   for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
        iter != add_prefixes.end(); ++iter) {
     prefixes.push_back(iter->prefix);
   }
-
   std::sort(prefixes.begin(), prefixes.end());
-  prefixes.erase(std::unique(prefixes.begin(), prefixes.end()),
-                 prefixes.end());
 
-  scoped_ptr<safe_browsing::PrefixSet>
-      prefix_set(new safe_browsing::PrefixSet(prefixes));
+  const SBPrefix unique_prefixes_checksum = ChecksumUniquePrefixes(prefixes);
 
-  std::vector<SBPrefix> restored;
-  prefix_set->GetPrefixes(&restored);
+  for (std::vector<SBPrefix>::const_iterator iter = prefixes.begin();
+       iter != prefixes.end(); ++iter) {
+    bloom_filter->get()->Insert(*iter);
+  }
 
-  // Expect them to be equal.
-  if (restored.size() == prefixes.size() &&
-      std::equal(prefixes.begin(), prefixes.end(), restored.begin()))
-    return prefix_set.release();
+  prefix_set->reset(new safe_browsing::PrefixSet(prefixes));
 
-  // NOTE(shess): Past histograms have indicated that in a given day,
-  // about 1 in 100,000 updates result in a PrefixSet which was
-  // inconsistent relative to the BloomFilter.  Windows is about 5x
-  // more likely to build an inconsistent PrefixSet than Mac.  A
-  // number of developers have reviewed the code, and I ran extensive
-  // fuzzing with random data, so at this point I'm trying to
-  // demonstrate memory corruption.
-  //
-  // Other findings from past instrumentation:
-  // - half of one percent of brokenness cases implied duplicate items
-  //   in |prefixes|.  Per the code above, this should not be
-  //   possible.
-  // - about 1/20 of broken cases happened more than once for a given
-  //   user.  Note that empty updates generally don't hit this code at
-  //   all, so that may not imply a specific input pattern breaking things.
-  // - about 1/3 of broken cases show a checksum mismatch between the
-  //   checksum calculated while creating |prefix_set| and the
-  //   checksum calculated immediately after creation.  This is almost
-  //   certainly memory corruption.
-  NOTREACHED();
-  RecordPrefixSetInfo(PREFIX_SET_GETPREFIXES_BROKEN);
+  // "unit test" for ChecksumUniquePrefixes() and GetPrefixesChecksum().
+  if (DCHECK_IS_ON()) {
+    std::vector<SBPrefix> unique(prefixes);
+    unique.erase(std::unique(unique.begin(), unique.end()), unique.end());
+    DCHECK_EQ(0, ChecksumPrefixes(unique_prefixes_checksum, unique));
 
-  // Broken because internal memory was corrupted during construction.
-  if (!prefix_set->CheckChecksum())
+    std::vector<SBPrefix> restored;
+    prefix_set->get()->GetPrefixes(&restored);
+    DCHECK_EQ(0, ChecksumPrefixes(prefix_set->get()->GetPrefixesChecksum(),
+                                  restored));
+  }
+
+  // TODO(shess): Need a barrier to prevent ordering checks above here
+  // or construction below here?
+
+  bool get_prefixes_broken =
+      (unique_prefixes_checksum != prefix_set->get()->GetPrefixesChecksum());
+  bool prefix_set_broken = !prefix_set->get()->CheckChecksum();
+  bool bloom_filter_broken = !bloom_filter->get()->CheckChecksum();
+  bool prefixes_input_broken =
+      (0 != ChecksumPrefixes(add_prefixes_checksum, prefixes));
+  bool add_prefixes_input_broken =
+      (0 != ChecksumAddPrefixes(add_prefixes_checksum, add_prefixes));
+
+  if (add_prefixes_input_broken) {
+    RecordPrefixSetInfo(PREFIX_SET_CREATE_ADD_PREFIXES_CHECKSUM);
+  } else if (prefixes_input_broken) {
+    RecordPrefixSetInfo(PREFIX_SET_CREATE_PREFIXES_CHECKSUM);
+  }
+
+  if (prefix_set_broken)
     RecordPrefixSetInfo(PREFIX_SET_CREATE_PREFIX_SET_CHECKSUM);
 
-  // TODO(shess): Test whether |prefixes| changed during construction.
+  // TODO(shess): Obviously this is a problem for operation of the
+  // bloom filter!  But for purposes of checking prefix set operation,
+  // all that matters is not messing up the histograms recorded later.
+  if (bloom_filter_broken)
+    RecordPrefixSetInfo(PREFIX_SET_CREATE_BLOOM_FILTER_CHECKSUM);
 
-  return CreateEmptyPrefixSet();
+  // Attempt to isolate the case where the output of GetPrefixes()
+  // would differ from the input presented.  This case implies that
+  // PrefixSet has an actual implementation flaw, and may in the
+  // future warrant more aggressive action, such as somehow dumping
+  // |prefixes| up to the crash server.
+  if (get_prefixes_broken && !prefix_set_broken && !prefixes_input_broken)
+    RecordPrefixSetInfo(PREFIX_SET_CREATE_GET_PREFIXES_CHECKSUM);
+
+  // If anything broke, clear the prefix set to prevent pollution of
+  // histograms generated later.
+  if (get_prefixes_broken || prefix_set_broken || bloom_filter_broken ||
+      prefixes_input_broken || add_prefixes_input_broken) {
+    DCHECK(!get_prefixes_broken);
+    DCHECK(!prefix_set_broken);
+    DCHECK(!bloom_filter_broken);
+    DCHECK(!prefixes_input_broken);
+    DCHECK(!add_prefixes_input_broken);
+    prefix_set->reset(CreateEmptyPrefixSet());
+  }
 }
 
 }  // namespace
@@ -622,6 +734,10 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   // not empty.
   const bool prefix_set_empty = !prefix_set_->GetSize();
 
+  // Track cases where the filters were not consistent with each other.
+  bool bloom_hit_prefix_miss = false;
+  bool bloom_miss_prefix_hit = false;
+
   size_t miss_count = 0;
   for (size_t i = 0; i < full_hashes.size(); ++i) {
     bool found = prefix_set_->Exists(full_hashes[i].prefix);
@@ -631,17 +747,40 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
         RecordPrefixSetInfo(PREFIX_SET_BLOOM_HIT);
         // This should be less than PREFIX_SET_BLOOM_HIT by the
         // false positive rate.
-        if (found)
+        if (found) {
           RecordPrefixSetInfo(PREFIX_SET_HIT);
+        } else {
+          // Could be false positive, but _could_ be corruption.
+          bloom_hit_prefix_miss = true;
+        }
       }
       prefix_hits->push_back(full_hashes[i].prefix);
       if (prefix_miss_cache_.count(full_hashes[i].prefix) > 0)
         ++miss_count;
     } else {
-      // Bloom filter misses should never be in prefix set.
+      // Bloom filter misses should never be in prefix set.  Check
+      // to see if the prefix set or bloom filter have changed since
+      // being created.
       DCHECK(!found);
-      if (found)
-        RecordPrefixSetInfo(PREFIX_SET_BLOOM_MISS_PREFIX_SET_HIT);
+      if (found && !prefix_set_empty)
+        bloom_miss_prefix_hit = true;
+    }
+  }
+
+  // In case of inconsistent results, verify the checksums and record
+  // failures (in case of corruption inconsistencies would be
+  // expected).  In case of corruption clear out |prefix_set_|, once
+  // we've noticed corruption there is no point to future comparisons.
+  if (bloom_miss_prefix_hit || bloom_hit_prefix_miss) {
+    if (!prefix_set_->CheckChecksum()) {
+      RecordPrefixSetInfo(PREFIX_SET_MISMATCH_PREFIX_SET_CHECKSUM);
+      prefix_set_.reset(CreateEmptyPrefixSet());
+    } else if (!browse_bloom_filter_->CheckChecksum()) {
+      RecordPrefixSetInfo(PREFIX_SET_MISMATCH_BLOOM_FILTER_CHECKSUM);
+      prefix_set_.reset(CreateEmptyPrefixSet());
+    } else if (bloom_miss_prefix_hit) {
+      // This case should be impossible if the filters are both valid.
+      RecordPrefixSetInfo(PREFIX_SET_BLOOM_MISS_PREFIX_HIT);
     }
   }
 
@@ -1230,19 +1369,9 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     return;
   }
 
-  // Create and populate |filter| from |add_prefixes|.
-  // TODO(shess): The bloom filter doesn't need to be a
-  // scoped_refptr<> for this code.  Refactor that away.
-  const int filter_size =
-      BloomFilter::FilterSizeForKeyCount(add_prefixes.size());
-  scoped_refptr<BloomFilter> filter(new BloomFilter(filter_size));
-  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
-       iter != add_prefixes.end(); ++iter) {
-    filter->Insert(iter->prefix);
-  }
-
-  scoped_ptr<safe_browsing::PrefixSet>
-      prefix_set(PrefixSetFromAddPrefixes(add_prefixes));
+  scoped_refptr<BloomFilter> bloom_filter;
+  scoped_ptr<safe_browsing::PrefixSet> prefix_set;
+  FiltersFromAddPrefixes(add_prefixes, &bloom_filter, &prefix_set);
 
   // This needs to be in sorted order by prefix for efficient access.
   std::sort(add_full_hashes.begin(), add_full_hashes.end(),
@@ -1260,7 +1389,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
     // hash will be fetched again).
     pending_browse_hashes_.clear();
     prefix_miss_cache_.clear();
-    browse_bloom_filter_.swap(filter);
+    browse_bloom_filter_.swap(bloom_filter);
     prefix_set_.swap(prefix_set);
   }
 

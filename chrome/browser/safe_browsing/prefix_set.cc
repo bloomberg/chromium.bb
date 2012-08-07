@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,6 +163,32 @@ void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
       prefixes->push_back(current);
     }
   }
+}
+
+// NOTE(shess): For debugging potential memory corruption.  I wanted
+// to test that the output of GetPrefixes() matched the checksum over
+// the unique elements in the input to the constructor, but the buffer
+// for GetPrefixes() to write to could itself be corrupted.  That
+// would make it look like GetPrefixes() itself was broken.  At that
+// point my head exploded, so I wrote this.
+SBPrefix PrefixSet::GetPrefixesChecksum() const {
+  SBPrefix checksum = 0;
+
+  for (size_t ii = 0; ii < index_.size(); ++ii) {
+    // The deltas for this |index_| entry run to the next index entry,
+    // or the end of the deltas.
+    const size_t deltas_end =
+        (ii + 1 < index_.size()) ? index_[ii + 1].second : deltas_.size();
+
+    SBPrefix current = index_[ii].first;
+    checksum ^= current;
+    for (size_t di = index_[ii].second; di < deltas_end; ++di) {
+      current += deltas_[di];
+      checksum ^= current;
+    }
+  }
+
+  return checksum;
 }
 
 // static
