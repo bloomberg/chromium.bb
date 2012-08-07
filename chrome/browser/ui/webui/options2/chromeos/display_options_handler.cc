@@ -49,7 +49,7 @@ void DisplayOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STOP_MIRRORING));
 }
 
-void DisplayOptionsHandler::InitializeHandler() {
+void DisplayOptionsHandler::InitializePage() {
   DCHECK(web_ui());
   UpdateDisplaySectionVisibility();
 }
