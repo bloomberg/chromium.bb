@@ -12,7 +12,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(TOOLKIT_GTK)
-#include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -37,7 +36,7 @@ const SkBitmap CreateBitmap(int width, int height) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   bitmap.allocPixels();
-  bitmap.eraseRGB(0, 255, 0);
+  bitmap.eraseRGB(255, 0, 0);
   return bitmap;
 }
 
@@ -112,44 +111,6 @@ PlatformImage ToPlatformType(const gfx::Image& image) {
 #else
   return *image.ToSkBitmap();
 #endif
-}
-
-PlatformImage CopyPlatformType(const gfx::Image& image) {
-#if defined(OS_MACOSX)
-  return image.CopyNSImage();
-#elif defined(TOOLKIT_GTK)
-  return image.CopyGdkPixbuf();
-#else
-  return *image.ToSkBitmap();
-#endif
-}
-
-#if defined(OS_MACOSX)
-// Defined in image_unittest_util_mac.mm.
-#elif defined(TOOLKIT_GTK)
-SkColor GetPlatformImageColor(PlatformImage image) {
-  guchar* gdk_pixels = gdk_pixbuf_get_pixels(image);
-  guchar alpha = gdk_pixbuf_get_has_alpha(image) ? gdk_pixels[3] : 255;
-  return SkColorSetARGB(alpha, gdk_pixels[0], gdk_pixels[1], gdk_pixels[2]);
-}
-#else
-SkColor GetPlatformImageColor(PlatformImage image) {
-  SkAutoLockPixels auto_lock(image);
-  return image.getColor(10, 10);
-}
-#endif
-
-void CheckColor(SkColor color, bool is_red) {
-  // Be tolerant of floating point rounding and lossy color space conversions.
-  if (is_red) {
-    EXPECT_GT(SkColorGetR(color), 0.95);
-    EXPECT_LT(SkColorGetG(color), 0.05);
-  } else {
-    EXPECT_GT(SkColorGetG(color), 0.95);
-    EXPECT_LT(SkColorGetR(color), 0.05);
-  }
-  EXPECT_LT(SkColorGetB(color), 0.05);
-  EXPECT_GT(SkColorGetA(color), 0.95);
 }
 
 bool IsPlatformImageValid(PlatformImage image) {

@@ -30,8 +30,8 @@ TEST_F(UiGfxImageTest, CheckColor) {
   CGFloat components[4] = { 0 };
   [color getComponents:components];
 
-  EXPECT_LT(components[0], 0.05);
-  EXPECT_GT(components[1], 0.95);
+  EXPECT_GT(components[0], 0.95);
+  EXPECT_LT(components[1], 0.05);
   EXPECT_LT(components[2], 0.05);
   EXPECT_GT(components[3], 0.95);
 }

@@ -9,7 +9,6 @@
 #define UI_GFX_IMAGE_IMAGE_UNITTEST_UTIL_H_
 
 #include "ui/gfx/image/image.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
 namespace test {
@@ -41,10 +40,6 @@ PlatformImage CreatePlatformImage();
 gfx::Image::RepresentationType GetPlatformRepresentationType();
 
 PlatformImage ToPlatformType(const gfx::Image& image);
-PlatformImage CopyPlatformType(const gfx::Image& image);
-
-SkColor GetPlatformImageColor(PlatformImage image);
-void CheckColor(SkColor color, bool is_red);
 
 bool IsPlatformImageValid(PlatformImage image);
 
