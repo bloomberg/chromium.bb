@@ -10,7 +10,6 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/browser_process.h",
   "!chrome/browser/feedback/proto/extension.pb.h",
   "!chrome/browser/infobars/infobar_tab_helper.h",
   "!chrome/browser/password_manager/encryptor.h",

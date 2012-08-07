@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -424,7 +424,8 @@ CountryNames* CountryNames::GetInstance() {
 const std::string CountryNames::ApplicationLocale() {
   if (application_locale_.empty()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    application_locale_ = g_browser_process->GetApplicationLocale();
+    application_locale_ =
+        content::GetContentClient()->browser()->GetApplicationLocale();
   }
 
   return application_locale_;
