@@ -3991,7 +3991,9 @@ FileManager.prototype = {
 
   FileManager.prototype.createGDataWelcomeHandler_ = function() {
     var board = str('CHROMEOS_RELEASE_BOARD');
-    var new_welcome = board.match(/^(stumpy|lumpy)/i);
+    // It is 'canary' or 'beta' for the other channels.
+    var releaseChannel = str('BROWSER_VERSION_MODIFIER') == '';
+    var new_welcome = board.match(/^(stumpy|lumpy)/i) && releaseChannel;
 
     var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
     var WELCOME_HEADER_COUNTER_LIMIT = 5;
