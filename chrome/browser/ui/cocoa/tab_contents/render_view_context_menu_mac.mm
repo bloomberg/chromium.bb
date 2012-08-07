@@ -12,17 +12,12 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
-
-// These are not documented, so use only after checking -respondsToSelector:.
-@interface NSApplication (UndocumentedSpeechMethods)
-- (void)speakString:(NSString*)string;
-- (void)stopSpeaking:(id)sender;
-- (BOOL)isSpeaking;
-@end
 
 namespace {
 
@@ -155,9 +150,10 @@ bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
       // appropriate.
       return true;
 
-    case IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING:
-      return [NSApp respondsToSelector:@selector(isSpeaking)] &&
-             [NSApp isSpeaking];
+    case IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING: {
+      content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+      return view && view->IsSpeaking();
+    }
 
     default:
       return RenderViewContextMenu::IsCommandIdEnabled(command_id);
@@ -179,18 +175,17 @@ void RenderViewContextMenuMac::InitPlatformMenu() {
         IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY,
         IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY);
 
-    // Add speech items only if NSApp supports the private API we're using.
-    if ([NSApp respondsToSelector:@selector(speakString:)] &&
-        [NSApp respondsToSelector:@selector(stopSpeaking:)]) {
+    content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+    if (view && view->SupportsSpeech()) {
       speech_submenu_model_.AddItemWithStringId(
           IDC_CONTENT_CONTEXT_SPEECH_START_SPEAKING,
-          IDS_CONTENT_CONTEXT_SPEECH_START_SPEAKING);
+          IDS_SPEECH_START_SPEAKING_MAC);
       speech_submenu_model_.AddItemWithStringId(
           IDC_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING,
-          IDS_CONTENT_CONTEXT_SPEECH_STOP_SPEAKING);
+          IDS_SPEECH_STOP_SPEAKING_MAC);
       menu_model_.AddSubMenu(
           IDC_CONTENT_CONTEXT_SPEECH_MENU,
-          l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPEECH_MENU),
+          l10n_util::GetStringUTF16(IDS_SPEECH_MAC),
           &speech_submenu_model_);
     }
   }
@@ -212,12 +207,15 @@ void RenderViewContextMenuMac::LookUpInDictionary() {
 }
 
 void RenderViewContextMenuMac::StartSpeaking() {
-  NSString* text = base::SysUTF16ToNSString(params_.selection_text);
-  [NSApp speakString:text];
+  content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+  if (view)
+    view->SpeakSelection();
 }
 
 void RenderViewContextMenuMac::StopSpeaking() {
-  [NSApp stopSpeaking:menu_controller_];
+  content::RenderWidgetHostView* view = GetRenderViewHost()->GetView();
+  if (view)
+    view->StopSpeaking();
 }
 
 void RenderViewContextMenuMac::UpdateMenuItem(int command_id,

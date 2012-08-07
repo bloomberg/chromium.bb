@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_H_
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -123,6 +124,15 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Informs the view that its containing window's frame changed.
   virtual void WindowFrameChanged() = 0;
+
+  // Returns |true| if Mac OS X text to speech is supported.
+  virtual bool SupportsSpeech() const = 0;
+  // Tells the view to speak the currently selected text.
+  virtual void SpeakSelection() = 0;
+  // Returns |true| if text is currently being spoken by Mac OS X.
+  virtual bool IsSpeaking() const = 0;
+  // Stops speaking, if it is currently in progress.
+  virtual void StopSpeaking() = 0;
 #endif  // defined(OS_MACOSX)
 
 #if defined(TOOLKIT_GTK)

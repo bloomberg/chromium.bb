@@ -66,6 +66,13 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebGestureEvent;
 
+// These are not documented, so use only after checking -respondsToSelector:.
+@interface NSApplication (UndocumentedSpeechMethods)
+- (void)speakString:(NSString*)string;
+- (void)stopSpeaking:(id)sender;
+- (BOOL)isSpeaking;
+@end
+
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -728,6 +735,26 @@ void RenderWidgetHostViewMac::SetTooltipText(const string16& tooltip_text) {
     NSString* tooltip_nsstring = base::SysUTF16ToNSString(display_text);
     [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
   }
+}
+
+bool RenderWidgetHostViewMac::SupportsSpeech() const {
+  return [NSApp respondsToSelector:@selector(speakString:)] &&
+         [NSApp respondsToSelector:@selector(stopSpeaking:)];
+}
+
+void RenderWidgetHostViewMac::SpeakSelection() {
+  if ([NSApp respondsToSelector:@selector(speakString:)])
+    [NSApp speakString:base::SysUTF8ToNSString(selected_text_)];
+}
+
+bool RenderWidgetHostViewMac::IsSpeaking() const {
+  return [NSApp respondsToSelector:@selector(isSpeaking)] &&
+         [NSApp isSpeaking];
+}
+
+void RenderWidgetHostViewMac::StopSpeaking() {
+  if ([NSApp respondsToSelector:@selector(stopSpeaking:)])
+    [NSApp stopSpeaking:cocoa_view_];
 }
 
 //
@@ -2304,6 +2331,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   SEL action = [item action];
 
+  if (action == @selector(stopSpeaking:)) {
+    return renderWidgetHostView_->render_widget_host_->IsRenderView() &&
+           renderWidgetHostView_->IsSpeaking();
+  }
+  if (action == @selector(startSpeaking:)) {
+    return renderWidgetHostView_->render_widget_host_->IsRenderView() &&
+           renderWidgetHostView_->SupportsSpeech();
+  }
+
   // For now, these actions are always enabled for render view,
   // this is sub-optimal.
   // TODO(suzhe): Plumb the "can*" methods up from WebCore.
@@ -3031,6 +3067,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     static_cast<RenderViewHostImpl*>(
         renderWidgetHostView_->render_widget_host_)->PasteAndMatchStyle();
   }
+}
+
+- (void)startSpeaking:(id)sender {
+  renderWidgetHostView_->SpeakSelection();
+}
+
+- (void)stopSpeaking:(id)sender {
+  renderWidgetHostView_->StopSpeaking();
 }
 
 - (void)cancelComposition {

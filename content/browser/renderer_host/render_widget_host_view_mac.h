@@ -7,6 +7,10 @@
 
 #import <Cocoa/Cocoa.h>
 #include <list>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -56,7 +60,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
 
   // These are part of the magic tooltip code from WebKit's WebHTMLView:
   id trackingRectOwner_;              // (not retained)
-  void *trackingRectUserData_;
+  void* trackingRectUserData_;
   NSTrackingRectTag lastToolTipTag_;
   scoped_nsobject<NSString> toolTip_;
 
@@ -205,6 +209,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
   virtual void WindowFrameChanged() OVERRIDE;
+  virtual bool SupportsSpeech() const OVERRIDE;
+  virtual void SpeakSelection() OVERRIDE;
+  virtual bool IsSpeaking() const OVERRIDE;
+  virtual void StopSpeaking() OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 
   // Implementation of RenderWidgetHostViewPort.
