@@ -174,8 +174,6 @@ void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
     const GURL origin = GURL(frame->document().securityOrigin().toString());
     const GURL root_url =
         fileapi::GetFileSystemRootURI(origin, fileapi::kFileSystemTypeIsolated);
-    const std::string fsname =
-        fileapi::GetIsolatedFileSystemName(origin, intent_->filesystem_id);
     const std::string url = base::StringPrintf(
         "%s%s/%s/",
         root_url.spec().c_str(),
@@ -186,7 +184,7 @@ void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
     // remove this hack.
     v8::Handle<v8::Value> filesystem_V8 = frame->createSerializableFileSystem(
         WebKit::WebFileSystem::TypeIsolated,
-        WebKit::WebString::fromUTF8(fsname),
+        WebKit::WebString::fromUTF8(intent_->root_name),
         WebKit::WebString::fromUTF8(url));
     WebSerializedScriptValue serialized_data =
         WebSerializedScriptValue::serialize(filesystem_V8);
