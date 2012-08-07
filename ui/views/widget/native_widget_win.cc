@@ -2500,10 +2500,13 @@ bool NativeWidgetWin::WidgetSizeIsClientSize() const {
 }
 
 void NativeWidgetWin::ClientAreaSizeChanged() {
-  RECT r;
-  if (WidgetSizeIsClientSize())
-    GetClientRect(&r);
-  else
+  RECT r = {0, 0, 0, 0};
+  if (WidgetSizeIsClientSize()) {
+    // TODO(beng): investigate whether this could be done
+    // from other branch of if-else.
+    if (!IsMinimized())
+      GetClientRect(&r);
+  } else
     GetWindowRect(&r);
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
