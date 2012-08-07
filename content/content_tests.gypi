@@ -816,6 +816,7 @@
               'inputs': [
                 '<(DEPTH)/content/shell/android/javatests/content_shell_test_apk.xml',
                 '<(DEPTH)/content/shell/android/javatests/AndroidManifest.xml',
+                '<!@(find <(DEPTH)/content/shell/android/javatests/ -name "*.java")'
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/content_shell_test/ContentShellTest-debug.apk',
