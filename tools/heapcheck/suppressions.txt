@@ -1500,3 +1500,11 @@
    ...
    fun:ExtensionAction::GetIconAnimation
 }
+{
+   bug_141037
+   Heapcheck:Leak
+   ...
+   fun:ReloadButton::CreateMenuModel
+   fun:ReloadButton::ReloadButton
+   fun:ReloadButtonTest::ReloadButtonTest
+}
