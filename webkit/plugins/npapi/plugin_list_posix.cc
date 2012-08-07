@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/cpu.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/sha1.h"
@@ -23,6 +24,14 @@ namespace {
 typedef std::pair<FilePath, base::Time> FileAndTime;
 typedef std::vector<FileAndTime> FileTimeList;
 
+enum PluginQuirk {
+  // No quirks - plugin is outright banned.
+  PLUGIN_QUIRK_NONE = 0,
+  // Plugin is using SSE2 instructions without checking for SSE2 instruction
+  // support. Ban the plugin if the system has no SSE2 support.
+  PLUGIN_QUIRK_MISSING_SSE2_CHECK = 1 << 0,
+};
+
 // Comparator used to sort by descending mtime then ascending filename.
 bool CompareTime(const FileAndTime& a, const FileAndTime& b) {
   if (a.second == b.second) {
@@ -34,18 +43,39 @@ bool CompareTime(const FileAndTime& a, const FileAndTime& b) {
   return a.second > b.second;
 }
 
+// Checks to see if the current environment meets any of the condtions set in
+// |quirks|. Returns true if any of the conditions are met, or if |quirks| is
+// PLUGIN_QUIRK_NONE.
+bool CheckQuirks(PluginQuirk quirks) {
+  if (quirks == PLUGIN_QUIRK_NONE)
+    return true;
+
+  if ((quirks & PLUGIN_QUIRK_MISSING_SSE2_CHECK) != 0) {
+    base::CPU cpu;
+    if (!cpu.has_sse2())
+      return true;
+  }
+
+  return false;
+}
+
 // Return true if |path| matches a known (file size, sha1sum) pair.
+// Also check against any PluginQuirks the bad plugin may have.
 // The use of the file size is an optimization so we don't have to read in
 // the entire file unless we have to.
-bool IsBlacklistedBySha1sum(const FilePath& path) {
+bool IsBlacklistedBySha1sumAndQuirks(const FilePath& path) {
   const struct BadEntry {
     int64 size;
     std::string sha1;
+    PluginQuirk quirks;
   } bad_entries[] = {
     // Flash 9 r31 - http://crbug.com/29237
-    { 7040080, "fa5803061125ca47846713b34a26a42f1f1e98bb" },
+    { 7040080, "fa5803061125ca47846713b34a26a42f1f1e98bb", PLUGIN_QUIRK_NONE },
     // Flash 9 r48 - http://crbug.com/29237
-    { 7040036, "0c4b3768a6d4bfba003088e4b9090d381de1af2b" },
+    { 7040036, "0c4b3768a6d4bfba003088e4b9090d381de1af2b", PLUGIN_QUIRK_NONE },
+    // Flash 11.2.202.236, 32-bit - http://crbug.com/140086
+    { 17406436, "1e07eac912faf9426c52a288c76c3b6238f90b6b",
+      PLUGIN_QUIRK_MISSING_SSE2_CHECK },
   };
 
   int64 size;
@@ -63,7 +93,7 @@ bool IsBlacklistedBySha1sum(const FilePath& path) {
     for (size_t j = 0; j < sha1.size(); j++)
       base::StringAppendF(&sha1_readable, "%02x", sha1[j] & 0xFF);
     if (bad_entries[i].sha1 == sha1_readable)
-      return true;
+      return CheckQuirks(bad_entries[i].quirks);
   }
   return false;
 }
@@ -100,7 +130,7 @@ bool IsBlacklistedPlugin(const FilePath& path) {
       return true;
     }
   }
-  return IsBlacklistedBySha1sum(path);
+  return IsBlacklistedBySha1sumAndQuirks(path);
 }
 
 }  // namespace
