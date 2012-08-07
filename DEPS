@@ -88,7 +88,7 @@ deps = {
 
   "src/third_party/cacheinvalidation/files/src/google":
     (Var("googlecode_url") % "google-cache-invalidation-api") +
-    "/trunk/src/google@219",
+    "/trunk/src/google@220",
 
   "src/third_party/leveldatabase/src":
     (Var("googlecode_url") % "leveldb") + "/trunk@67",
