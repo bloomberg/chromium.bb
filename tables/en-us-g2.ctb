@@ -160,7 +160,7 @@ joinword by 356
 word because 23-14
 word bec =
 sufword before 23-124
-sufword behind 23-125
+word behind 23-125
 word behring 12-15-125-1235-346
 word bel =
 begword beln = Belnick
@@ -557,7 +557,7 @@ always ow 246
 word o'clock 135-3-14
 
 # the letter p
-always paid 1234-145
+word paid 1234-145
 contraction pd
 always part 5-1234
 begword parta 1234-345-2345-1 partake
