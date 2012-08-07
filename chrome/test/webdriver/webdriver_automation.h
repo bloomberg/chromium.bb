@@ -68,9 +68,6 @@ class Automation {
 
     // True if the browser should ignore certificate related errors.
     bool ignore_certificate_errors;
-
-    // True if the browser should disable popup blocking.
-    bool disable_popup_blocking;
   };
 
   explicit Automation(const Logger& logger);

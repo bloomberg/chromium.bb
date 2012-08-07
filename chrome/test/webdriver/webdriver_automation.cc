@@ -337,8 +337,7 @@ namespace webdriver {
 Automation::BrowserOptions::BrowserOptions()
     : command(CommandLine::NO_PROGRAM),
       detach_process(false),
-      ignore_certificate_errors(false),
-      disable_popup_blocking(false) {}
+      ignore_certificate_errors(false) {}
 
 Automation::BrowserOptions::~BrowserOptions() {}
 
@@ -367,8 +366,6 @@ void Automation::Init(
     command.AppendSwitch(switches::kAutomationReinitializeOnChannelError);
   if (options.ignore_certificate_errors)
     command.AppendSwitch(switches::kIgnoreCertificateErrors);
-  if (options.disable_popup_blocking)
-    command.AppendSwitch(switches::kDisablePopupBlocking);
   if (options.user_data_dir.empty())
     command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
 

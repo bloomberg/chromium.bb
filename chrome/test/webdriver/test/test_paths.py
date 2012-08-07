@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,8 +26,9 @@ def _SetupPaths():
   global SRC_PATH
   SRC_PATH = J(start_dir, os.pardir, os.pardir, os.pardir, os.pardir)
 
-  global TEST_DATA_PATH
+  global TEST_DATA_PATH, PEM_CERT_AND_KEY
   TEST_DATA_PATH = start_dir
+  PEM_CERT_AND_KEY = J(start_dir, 'cert.pem')
 
   global CHROME_TEST_DATA_PATH
   CHROME_TEST_DATA_PATH = J(SRC_PATH, 'chrome', 'test', 'data')

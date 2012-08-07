@@ -111,7 +111,6 @@ Error* Session::Init(const DictionaryValue* capabilities_dict) {
   browser_options.user_data_dir = capabilities_.profile;
   if (!capabilities_.no_website_testing_defaults) {
     browser_options.ignore_certificate_errors = true;
-    browser_options.disable_popup_blocking = true;
   }
   RunSessionTask(base::Bind(
       &Session::InitOnSessionThread,
@@ -1900,11 +1899,28 @@ Error* Session::InitForWebsiteTesting() {
   if (error)
     return error;
 
-  // Allow certain content by default.
+  // Allow content by default.
+  // Media-stream cannot be enabled by default; we must specify
+  // particular host patterns and devices.
+  DictionaryValue* devices = new DictionaryValue();
+  devices->SetString("audio", "Default");
+  devices->SetString("video", "Default");
+  DictionaryValue* content_settings = new DictionaryValue();
+  content_settings->Set("media-stream", devices);
+  DictionaryValue* pattern_pairs = new DictionaryValue();
+  pattern_pairs->Set("https://*,*", content_settings);
+  error = SetPreference(
+      "profile.content_settings.pattern_pairs",
+      true /* is_user_pref */,
+      pattern_pairs);
+  if (error)
+    return error;
   const int kAllowContent = 1;
   DictionaryValue* default_content_settings = new DictionaryValue();
   default_content_settings->SetInteger("geolocation", kAllowContent);
+  default_content_settings->SetInteger("mouselock", kAllowContent);
   default_content_settings->SetInteger("notifications", kAllowContent);
+  default_content_settings->SetInteger("popups", kAllowContent);
   return SetPreference(
       "profile.default_content_settings",
       true /* is_user_pref */,
