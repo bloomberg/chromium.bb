@@ -9,14 +9,15 @@
 #define CHROME_APP_CLIENT_UTIL_H_
 
 #include <windows.h>
-#include <string>
+
+#include "base/string16.h"
 
 namespace sandbox {
   struct SandboxInterfaceInfo;
 }
 
 // Gets the path of the current exe with a trailing backslash.
-std::wstring GetExecutablePath();
+string16 GetExecutablePath();
 
 // Implements the common aspects of loading chrome.dll for both chrome and
 // chromium scenarios, which are in charge of implementing two abstract
@@ -34,7 +35,7 @@ class MainDllLoader {
   int Launch(HINSTANCE instance, sandbox::SandboxInterfaceInfo* sbox_info);
 
   // Look into the registry to find the latest version.
-  std::wstring GetVersion();
+  string16 GetVersion();
 
   // Launches a new instance of the browser if the current instance in
   // persistent mode an upgrade is detected.
@@ -43,21 +44,21 @@ class MainDllLoader {
   // Called after chrome.dll has been loaded but before the entry point
   // is invoked. Derived classes can implement custom actions here.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual void OnBeforeLaunch(const std::wstring& dll_path) {}
+  virtual void OnBeforeLaunch(const string16& dll_path) {}
 
   // Called after the chrome.dll entry point returns and before terminating
   // this process. The return value will be used as the process return code.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual int OnBeforeExit(int return_code, const std::wstring& dll_path) {
+  virtual int OnBeforeExit(int return_code, const string16& dll_path) {
     return return_code;
   }
 
  protected:
   // Derived classes must return the relative registry path that holds the
   // most current version of chrome.dll.
-  virtual std::wstring GetRegistryPath() = 0;
+  virtual string16 GetRegistryPath() = 0;
 
-  HMODULE Load(std::wstring* out_version, std::wstring* out_file);
+  HMODULE Load(string16* out_version, string16* out_file);
 
  private:
   // Chrome.dll handle.
