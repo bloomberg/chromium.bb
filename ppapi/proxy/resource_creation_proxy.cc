@@ -207,6 +207,25 @@ PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
                                                    is_always_opaque);
 }
 
+PP_Resource ResourceCreationProxy::CreateGraphics3D(
+    PP_Instance instance,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  printf("ResourceCreationProxy::CreateGraphics3D\n");
+  return PPB_Graphics3D_Proxy::CreateProxyResource(
+      instance, share_context, attrib_list);
+}
+
+PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
+    PP_Instance instance,
+    PP_Resource share_context,
+    const int32_t* attrib_list) {
+  printf("ResourceCreationProxy::CreateGraphics3DRaw\n");
+  // Not proxied. The raw creation function is used only in the implementation
+  // of the proxy on the host side.
+  return 0;
+}
+
 #if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateAudioInput0_1(
     PP_Instance instance,
@@ -282,23 +301,6 @@ PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
       void* user_data) {
   return PPB_NetworkMonitor_Private_Proxy::CreateProxyResource(
       instance, callback, user_data);
-}
-
-PP_Resource ResourceCreationProxy::CreateGraphics3D(
-    PP_Instance instance,
-    PP_Resource share_context,
-    const int32_t* attrib_list) {
-  return PPB_Graphics3D_Proxy::CreateProxyResource(
-      instance, share_context, attrib_list);
-}
-
-PP_Resource ResourceCreationProxy::CreateGraphics3DRaw(
-    PP_Instance instance,
-    PP_Resource share_context,
-    const int32_t* attrib_list) {
-  // Not proxied. The raw creation function is used only in the implementation
-  // of the proxy on the host side.
-  return 0;
 }
 
 PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
