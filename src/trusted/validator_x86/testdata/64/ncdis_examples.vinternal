@@ -2578,9 +2578,8 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
-0000000000000000: 0f ae fc                                     [P] dontcare
-  0f ae / 7 / 4               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm PartialInstruction
-    DontCare
+0000000000000000: 0f ae fc                                     invalid
+  0f ae / 7 / 4               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
 NaClExpVector[0] = {
 };
 0000000000000000: 40 dc 20                                     [P] dontcare [%rax] (u)

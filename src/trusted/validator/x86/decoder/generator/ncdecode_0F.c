@@ -252,12 +252,16 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefine("     0fae/2:   Ldmxcsr $Md",         NACLi_SSE,     st, Uses);
   NaClDefine("     0fae/3:   Stmxcsr $Md",         NACLi_SSE,     st, Sets);
   NaClDefine("     0fae/4:   Invalid",             NACLi_INVALID, st, Other);
-  NaClDefIter("    0fae/5/@i: Lfence", 0, 7,       NACLi_SSE2,    st, Other);
-  NaClDefIter("    0fae/6/@i: Mfence", 0, 7,       NACLi_SSE2,    st, Other);
-  NaClDefIter("    0fae/7/@i: Sfence", 0, 7,       NACLi_SFENCE_CLFLUSH,
+  NaClDefine("     0fae/5/0: Lfence",              NACLi_SSE2,    st, Other);
+  NaClDefine("     0fae/6/0: Mfence",              NACLi_SSE2,    st, Other);
+  NaClDefine("     0fae/7/0: Sfence",              NACLi_SFENCE_CLFLUSH,
                                                                   st, Other);
+  NaClDefIter("    0fae/5/@i: Invalid", 1, 7,      NACLi_INVALID, st, Other);
+  NaClDefIter("    0fae/6/@i: Invalid", 1, 7,      NACLi_INVALID, st, Other);
+  NaClDefIter("    0fae/7/@i: Invalid", 1, 7,      NACLi_INVALID, st, Other);
   NaClDefine("     0fae/7:   Clflush $Mb",         NACLi_SFENCE_CLFLUSH,
                                                                   st, Uses);
+
   NaClDefine("   f20fae:     Invalid",             NACLi_INVALID, st, Other);
   NaClDefine("   660fae:     Invalid",             NACLi_INVALID, st, Other);
   NaClDefine("     0faf:     Imul $Gv, $Ev",       NACLi_386,     st, Binary);

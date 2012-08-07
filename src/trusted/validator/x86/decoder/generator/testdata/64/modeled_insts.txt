@@ -2739,52 +2739,31 @@ Target: x86-64 bit mode
   0f ae / 4                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
   0f ae / 5 / 0               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
     Lfence
-  0f ae / 5 / 1               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Lfence
-  0f ae / 5 / 2               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Lfence
-  0f ae / 5 / 3               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Lfence
-  0f ae / 5 / 4               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Lfence
-  0f ae / 5 / 5               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Lfence
-  0f ae / 5 / 6               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Lfence
-  0f ae / 5 / 7               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Lfence
   0f ae / 6 / 0               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Mfence
-  0f ae / 6 / 1               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Mfence
-  0f ae / 6 / 2               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Mfence
-  0f ae / 6 / 3               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Mfence
-  0f ae / 6 / 4               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Mfence
-  0f ae / 6 / 5               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Mfence
-  0f ae / 6 / 6               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Mfence
-  0f ae / 6 / 7               SSE2 OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
     Mfence
   0f ae / 7 / 0               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
     Sfence
-  0f ae / 7 / 1               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Sfence
-  0f ae / 7 / 2               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Sfence
-  0f ae / 7 / 3               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Sfence
-  0f ae / 7 / 4               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Sfence
-  0f ae / 7 / 5               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Sfence
-  0f ae / 7 / 6               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Sfence
-  0f ae / 7 / 7               SFENCE_CLFLUSH OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm
-    Sfence
+  0f ae / 5 / 1               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 5 / 2               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 5 / 3               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 5 / 4               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 5 / 5               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 5 / 6               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 5 / 7               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 6 / 1               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 6 / 2               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 6 / 3               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 6 / 4               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 6 / 5               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 6 / 6               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 6 / 7               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 7 / 1               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 7 / 2               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 7 / 3               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 7 / 4               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 7 / 5               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 7 / 6               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+  0f ae / 7 / 7               INVALID OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
   0f ae / 7                   SFENCE_CLFLUSH OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
     Clflush $Mb
       Mb_Operand              OpUse

@@ -262,7 +262,7 @@
 -i=0f0b                                  #0000000000000000: 0f 0b                                        ud2
 -i=0f700000                              #0000000000000000: 0f 70 00 00                                  pshufw %mmx0, [%rax], 0x0
 -i=0fae38                                #0000000000000000: 0f ae 38                                     clflush [%rax]
--i=0faefc                                #0000000000000000: 0f ae fc                                     sfence
+-i=0faefc                                #0000000000000000: 0f ae fc                                     invalid
 -i=40dc20                                #0000000000000000: 40 dc 20                                     fsub %st0, [%rax]
 -i=0fba2000                              #0000000000000000: 0f ba 20 00                                  bt [%rax], 0x0
 -i=660f3a150000                          #0000000000000000: 66 0f 3a 15 00 00                            pextrw [%rax], %xmm0, 0x0
