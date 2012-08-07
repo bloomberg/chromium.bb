@@ -30,6 +30,7 @@
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
@@ -49,8 +50,7 @@ bool ShouldUse24HourClock() {
   return base::GetHourClockType() == base::k24HourClock;
 }
 
-FilePath GetScreenshotPath(const FilePath& base_directory,
-                           bool use_24hour_clock) {
+std::string GetScreenShotBaseFilename(bool use_24hour_clock) {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
 
@@ -76,34 +76,28 @@ FilePath GetScreenshotPath(const FilePath& base_directory,
     file_name.append((now.hour >= 12) ? "PM" : "AM");
   }
 
+  return file_name;
+}
+
+FilePath GetScreenshotPath(const FilePath& base_directory,
+                           const std::string& base_name) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   for (int retry = 0; retry < INT_MAX; retry++) {
     std::string retry_suffix;
     if (retry > 0)
       retry_suffix = base::StringPrintf(" (%d)", retry + 1);
 
     FilePath file_path = base_directory.AppendASCII(
-        file_name + retry_suffix + ".png");
+        base_name + retry_suffix + ".png");
     if (!file_util::PathExists(file_path))
       return file_path;
   }
-
   return FilePath();
 }
 
-// |is_logged_in| is used only for ChromeOS.  Otherwise it is always true.
-void SaveScreenshot(const FilePath& screenshot_directory,
-                    bool use_24hour_clock,
-                    scoped_refptr<base::RefCountedBytes> png_data) {
+void SaveScreenshotToLocalFile(scoped_refptr<base::RefCountedBytes> png_data,
+                               const FilePath& screenshot_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  FilePath screenshot_path = GetScreenshotPath(
-      screenshot_directory, use_24hour_clock);
-
-  if (screenshot_path.empty()) {
-    LOG(ERROR) << "Failed to find a screenshot file name.";
-    return;
-  }
-
   if (static_cast<size_t>(file_util::WriteFile(
           screenshot_path,
           reinterpret_cast<char*>(&(png_data->data()[0])),
@@ -111,6 +105,58 @@ void SaveScreenshot(const FilePath& screenshot_directory,
     LOG(ERROR) << "Failed to save to " << screenshot_path.value();
   }
 }
+
+void SaveScreenshot(const FilePath& screenshot_directory,
+                    const std::string& base_name,
+                    scoped_refptr<base::RefCountedBytes> png_data) {
+  FilePath screenshot_path = GetScreenshotPath(screenshot_directory, base_name);
+  if (screenshot_path.empty()) {
+    LOG(ERROR) << "Failed to find a screenshot file name.";
+    return;
+  }
+  SaveScreenshotToLocalFile(png_data, screenshot_path);
+}
+
+// TODO(kinaba): crbug.com/140425, remove this ungly #ifdef dispatch.
+#ifdef OS_CHROMEOS
+void SaveScreenshotToGData(scoped_refptr<base::RefCountedBytes> png_data,
+                           gdata::GDataFileError error,
+                           const FilePath& local_path) {
+  if (error != gdata::GDATA_FILE_OK) {
+    LOG(ERROR) << "Failed to write screenshot image to Google Drive: " << error;
+    return;
+  }
+  SaveScreenshotToLocalFile(png_data, local_path);
+}
+
+void PostSaveScreenshotTask(const FilePath& screenshot_directory,
+                            const std::string& base_name,
+                            scoped_refptr<base::RefCountedBytes> png_data) {
+  if (gdata::util::IsUnderGDataMountPoint(screenshot_directory)) {
+    Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+    if (profile) {
+      // TODO(kinaba,mukai): crbug.com/140749. Take care of the case
+      // "base_name.png" already exists.
+      gdata::util::PrepareWritableFileAndRun(
+          profile,
+          screenshot_directory.Append(base_name + ".png"),
+          base::Bind(&SaveScreenshotToGData, png_data));
+    }
+  } else {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE, FROM_HERE,
+        base::Bind(&SaveScreenshot, screenshot_directory, base_name, png_data));
+  }
+}
+#else
+void PostSaveScreenshotTask(const FilePath& screenshot_directory,
+                            const std::string& base_name,
+                            scoped_refptr<base::RefCountedBytes> png_data) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&SaveScreenshot, screenshot_directory, base_name, png_data));
+}
+#endif
 
 bool AreScreenshotsDisabled() {
   return g_browser_process->local_state()->GetBoolean(
@@ -181,15 +227,12 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
     }
   }
 
-  bool use_24hour_clock = ShouldUse24HourClock();
-
   if (GrabWindowSnapshot(window, rect, &png_data->data())) {
     last_screenshot_timestamp_ = base::Time::Now();
     DisplayVisualFeedback(rect);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveScreenshot, screenshot_directory, use_24hour_clock,
-                   png_data));
+    PostSaveScreenshotTask(screenshot_directory,
+                           GetScreenShotBaseFilename(ShouldUse24HourClock()),
+                           png_data);
   } else {
     LOG(ERROR) << "Failed to grab the window screenshot";
   }
