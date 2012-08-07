@@ -28,6 +28,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scrollbar_size.h"
@@ -270,8 +271,11 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   // this callback for later lookup when the rendering is done.
   static int sequence_num = 0;
   sequence_num++;
+  float scale_factor = ui::GetScaleFactorScale(ui::GetScaleFactorForNativeView(
+      renderer->GetView()->GetNativeView()));
+  gfx::Size desired_size_in_pixel = desired_size.Scale(scale_factor);
   scoped_ptr<TransportDIB> thumbnail_dib(TransportDIB::Create(
-      desired_size.width() * desired_size.height() * 4, sequence_num));
+      desired_size_in_pixel.GetArea() * 4, sequence_num));
 
 #if defined(USE_X11)
   // TODO: IPC a handle to the renderer like Windows.
