@@ -898,8 +898,12 @@ void AddInstallWorkItems(const InstallationState& original_state,
     AddDelegateExecuteWorkItems(installer_state, src_path, new_version,
                                 *product, install_list);
 
+// TODO(gab): This is only disabled for M22 as the shortcut CL using Active
+// Setup will not make it in M22.
+#if 0
     AddActiveSetupWorkItems(installer_state, new_version, *product,
                             install_list);
+#endif
   }
 
   // Add any remaining work items that involve special settings for

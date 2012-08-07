@@ -1046,7 +1046,12 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
 
     ProcessDelegateExecuteWorkItems(installer_state, product);
+
+// TODO(gab): This is only disabled for M22 as the shortcut CL using Active
+// Setup will not make it in M22.
+#if 0
     UninstallActiveSetupEntries(installer_state, product);
+#endif
   }
 
   if (product.is_chrome_frame()) {
