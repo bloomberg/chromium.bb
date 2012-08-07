@@ -24,6 +24,7 @@ class GLSurface;
 class GLShareGroup;
 }
 
+using WebKit::WGC3Dbyte;
 using WebKit::WGC3Dchar;
 using WebKit::WGC3Denum;
 using WebKit::WGC3Dboolean;
@@ -481,6 +482,12 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   // CHROMIUM_shallow_flush
   // Only applies to contexts that use the command buffer.
   virtual void shallowFlushCHROMIUM() { }
+
+  virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox);
+  virtual void produceTextureCHROMIUM(WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
+  virtual void consumeTextureCHROMIUM(WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
 
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();

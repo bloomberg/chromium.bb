@@ -1643,5 +1643,11 @@ DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
 
 DELEGATE_TO_GL(shallowFlushCHROMIUM, ShallowFlushCHROMIUM)
 
+DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
+DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
+                 WGC3Denum, const WGC3Dbyte*)
+DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
+                 WGC3Denum, const WGC3Dbyte*)
+
 }  // namespace gpu
 }  // namespace webkit

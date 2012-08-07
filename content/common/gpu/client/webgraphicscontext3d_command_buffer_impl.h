@@ -41,6 +41,7 @@ class GLES2Implementation;
 
 using WebKit::WebGLId;
 
+using WebKit::WGC3Dbyte;
 using WebKit::WGC3Dchar;
 using WebKit::WGC3Denum;
 using WebKit::WGC3Dboolean;
@@ -247,7 +248,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void enableVertexAttribArray(WGC3Duint index);
   virtual void finish();
   virtual void flush();
-  virtual void shallowFlushCHROMIUM();
   virtual void framebufferRenderbuffer(WGC3Denum target,
                                        WGC3Denum attachment,
                                        WGC3Denum renderbuffertarget,
@@ -573,6 +573,14 @@ class WebGraphicsContext3DCommandBufferImpl
 
   virtual void bindUniformLocationCHROMIUM(WebGLId program, WGC3Dint location,
                                            const WGC3Dchar* uniform);
+
+  virtual void shallowFlushCHROMIUM();
+
+  virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox);
+  virtual void produceTextureCHROMIUM(WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
+  virtual void consumeTextureCHROMIUM(WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
 
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();

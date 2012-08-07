@@ -26,6 +26,7 @@ class GLES2Implementation;
 
 using WebKit::WebGLId;
 
+using WebKit::WGC3Dbyte;
 using WebKit::WGC3Dchar;
 using WebKit::WGC3Denum;
 using WebKit::WGC3Dboolean;
@@ -482,6 +483,12 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
                                            const WGC3Dchar* uniform);
 
   virtual void shallowFlushCHROMIUM();
+
+  virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox);
+  virtual void produceTextureCHROMIUM(WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
+  virtual void consumeTextureCHROMIUM(WGC3Denum target,
+                                      const WGC3Dbyte* mailbox);
 
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();

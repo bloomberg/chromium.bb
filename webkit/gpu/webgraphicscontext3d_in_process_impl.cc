@@ -752,6 +752,21 @@ void WebGraphicsContext3DInProcessImpl::bindUniformLocationCHROMIUM(
   NOTIMPLEMENTED();
 }
 
+void WebGraphicsContext3DInProcessImpl::genMailboxCHROMIUM(
+    WGC3Dbyte* mailbox) {
+  NOTIMPLEMENTED();
+}
+
+void WebGraphicsContext3DInProcessImpl::produceTextureCHROMIUM(
+    WGC3Denum target, const WGC3Dbyte* mailbox) {
+  NOTIMPLEMENTED();
+}
+
+void WebGraphicsContext3DInProcessImpl::consumeTextureCHROMIUM(
+    WGC3Denum target, const WGC3Dbyte* mailbox) {
+  NOTIMPLEMENTED();
+}
+
 WebString WebGraphicsContext3DInProcessImpl::
     getRequestableExtensionsCHROMIUM() {
   return WebString();

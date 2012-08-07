@@ -945,10 +945,6 @@ void WebGraphicsContext3DCommandBufferImpl::flush() {
     gl_->FreeEverything();
 }
 
-void WebGraphicsContext3DCommandBufferImpl::shallowFlushCHROMIUM() {
-  gl_->ShallowFlushCHROMIUM();
-}
-
 DELEGATE_TO_GL_4(framebufferRenderbuffer, FramebufferRenderbuffer,
                  WGC3Denum, WGC3Denum, WGC3Denum, WebGLId)
 
@@ -1535,6 +1531,14 @@ DELEGATE_TO_GL_5(copyTextureCHROMIUM, CopyTextureCHROMIUM,  WGC3Denum,
 
 DELEGATE_TO_GL_3(bindUniformLocationCHROMIUM, BindUniformLocationCHROMIUM,
                  WebGLId, WGC3Dint, const WGC3Dchar*)
+
+DELEGATE_TO_GL(shallowFlushCHROMIUM,ShallowFlushCHROMIUM);
+
+DELEGATE_TO_GL_1(genMailboxCHROMIUM, GenMailboxCHROMIUM, WGC3Dbyte*)
+DELEGATE_TO_GL_2(produceTextureCHROMIUM, ProduceTextureCHROMIUM,
+                 WGC3Denum, const WGC3Dbyte*)
+DELEGATE_TO_GL_2(consumeTextureCHROMIUM, ConsumeTextureCHROMIUM,
+                 WGC3Denum, const WGC3Dbyte*)
 
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();
