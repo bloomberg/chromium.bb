@@ -50,8 +50,8 @@ ChromeWebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
                                   IDS_METRO_FLOW_DESCRIPTION);
   data_source->AddLocalizedString("flowNext",
                                   IDS_METRO_FLOW_SET_DEFAULT);
-  data_source->AddLocalizedString("flowCancel",
-                                  IDS_METRO_FLOW_SET_DEFAULT_CANCEL);
+  data_source->AddLocalizedString("chromeLogoString",
+                                  IDS_METRO_FLOW_LOGO_STRING_ALT);
   data_source->set_json_path("strings.js");
   data_source->add_resource_path("set_as_default_browser.js",
       IDR_SET_AS_DEFAULT_BROWSER_JS);
@@ -83,9 +83,6 @@ class SetAsDefaultBrowserHandler
   // Handler for the 'Next' (or 'make Chrome the Metro browser') button.
   void HandleLaunchSetDefaultBrowserFlow(const ListValue* args);
 
-  // Handler for the 'No, thanks' (Cancel) button.
-  void HandleReturnToBrowser(const ListValue* args);
-
   // Close this web ui.
   void ConcludeInteraction();
 
@@ -115,10 +112,6 @@ void SetAsDefaultBrowserHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SetAsDefaultBrowser:LaunchSetDefaultBrowserFlow",
       base::Bind(&SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "SetAsDefaultBrowser:ReturnToBrowser",
-      base::Bind(&SetAsDefaultBrowserHandler::HandleReturnToBrowser,
                  base::Unretained(this)));
 }
 
@@ -161,10 +154,6 @@ void SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow(
   set_default_returned_ = false;
   set_default_result_ = false;
   default_browser_worker_->StartSetAsDefault();
-}
-
-void SetAsDefaultBrowserHandler::HandleReturnToBrowser(const ListValue* args) {
-  ConcludeInteraction();
 }
 
 void SetAsDefaultBrowserHandler::ConcludeInteraction() {

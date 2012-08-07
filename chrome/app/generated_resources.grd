@@ -17240,7 +17240,7 @@ Battery full
     </message>
     <message name="IDS_METRO_FLOW_TITLE_SHORT"
              desc="The title at the top of the window guiding user through making Chrome default in Metro.">
-      You're almost done.
+      Chrome is almost ready.
     </message>
     <message name="IDS_METRO_FLOW_DESCRIPTION"
              desc="Wordy description of what the set-Chrome-as-Metro flow is all about.">
@@ -17250,9 +17250,9 @@ Battery full
              desc="The label of the button invoking Windows8 default app settings window.">
       Next
     </message>
-    <message name="IDS_METRO_FLOW_SET_DEFAULT_CANCEL"
-             desc="The label of the button closing the flow and returning to Chrome.">
-      No thanks
+    <message name="IDS_METRO_FLOW_LOGO_STRING_ALT"
+             desc="Alt text for the faded chrome logo image.">
+        Chrome logo
     </message>
     <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
 	         desc="Info Bar message to let user do something about the missing plugin">

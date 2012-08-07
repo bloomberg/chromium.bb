@@ -6,14 +6,13 @@
 #metro-setup-outer-container {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
-  -webkit-box-pack: center;
+  -webkit-box-pack: start;
   -webkit-transition: 200ms opacity;
   background-color: rgba(255, 255, 255, 0.75);
   bottom: 0;
   display: -webkit-box;
   left: 0;
   overflow: auto;
-  padding: 20px;
   position: fixed;
   right: 0;
   top: 0;
@@ -28,18 +27,17 @@
   background-color: white;
   color: #333;
   display: -webkit-box;
-  margin-bottom: 6px;
-  margin-top: 6px;
-  min-width: 400px;
-  padding: 0;
+  min-width: 40px;
+  padding-top: 90px;
   position: relative;
-  width: 400px;
+  width: 500px;
 }
 
 #metro-setup-outer-container .page .content-area {
   -webkit-box-flex: 1;
+  margin: 0;
   overflow: auto;
-  padding: 6px 17px 26px;
+  padding: 0;
 }
 
 #metro-setup-overlay {
@@ -57,20 +55,22 @@
 
 #metro-setup-outer-container .page h1 {
   border-bottom: 0;
-  color: rgb(34, 34, 34);
-  font-size: 340%;
+  color: #323232;
+  font-size: 300%;
   font-weight: normal;
   margin: 0;
   padding-bottom: 0;
-  padding-top: 13px;
+  padding-top: 0;
   text-align: center;
 }
 
 #metro-setup-outer-container .page h2 {
   border-bottom: 0;
-  color: rgb(102, 102, 102);
-  font-size: 160%;
+  color: #787878;
+  font-size: 150%;
   font-weight: normal;
+  margin-bottom: 84px;
+  margin-top: 15px;
   text-align: center;
 }
 
@@ -146,11 +146,14 @@
   z-index: 4 !important;
 }
 
-#metro-action-box #return-button {
-  -webkit-margin-end: auto;
-  -webkit-margin-start: 30px;
+.button-strip {
+  margin: 1px;
+  text-align: center;
 }
 
-.button-strip {
-  padding: 7px;
+#chrome-logo-box {
+  bottom: 30px;
+  position: absolute;
+  text-align: center;
+  width: 100%;
 }

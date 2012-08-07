@@ -10,10 +10,6 @@
     $('launch-button').addEventListener('click', function() {
       chrome.send('SetAsDefaultBrowser:LaunchSetDefaultBrowserFlow');
     });
-
-    $('return-button').addEventListener('click', function() {
-      chrome.send('SetAsDefaultBrowser:ReturnToBrowser');
-    });
   }
 
   window.addEventListener('DOMContentLoaded', wireUpWindow);

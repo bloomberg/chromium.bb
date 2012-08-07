@@ -434,7 +434,7 @@
       
       <!-- The width of the make-default-in-metro dialog in characters. -->
       <message name="IDS_METRO_FLOW_WIDTH_CHARS" use_name_for_id="true">
-        72
+        78
       </message>
 
       <!-- The height of the make-default-in-metro dialog in characters. -->
