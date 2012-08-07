@@ -27,10 +27,6 @@ PRUNE_PATHS = set([
     # Assume for now that breakpad has their licensing in order.
     os.path.join('breakpad'),
 
-    # This is just a tiny vsprops file, presumably written by the google-url
-    # authors.  Not third-party code.
-    os.path.join('googleurl','third_party','icu'),
-
     # Assume for now that native client has their licensing in order.
     os.path.join('native_client'),
 
@@ -41,10 +37,7 @@ PRUNE_PATHS = set([
     os.path.join('third_party','nss'),
     os.path.join('net','third_party','nss'),
 
-    # We don't bundle o3d samples into our resulting binaries.
-    os.path.join('o3d','samples'),
-
-    # Not in the public Chromium tree.
+    # Placeholder directory only, not third-party code.
     os.path.join('third_party','adobe'),
 
     # Same license as Chromium.
@@ -53,12 +46,10 @@ PRUNE_PATHS = set([
     # Only binaries, used during development.
     os.path.join('third_party','valgrind'),
 
-    # Two directories that are the same as those in base/third_party.
-    os.path.join('v8','src','third_party','dtoa'),
+    # Directories that are the same as those in base/third_party.
     os.path.join('v8','src','third_party','valgrind'),
 
     # Used for development and test, not in the shipping product.
-    os.path.join('third_party','android_testrunner'),
     os.path.join('third_party','bidichecker'),
     os.path.join('third_party','cygwin'),
     os.path.join('third_party','gold'),
