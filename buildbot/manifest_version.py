@@ -56,6 +56,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
       try:
+        cros_build_lib.RunGitCommand(manifest_dir, ['gc', '--auto'])
         cros_build_lib.GitCleanAndCheckoutUpstream(manifest_dir)
       except cros_build_lib.RunCommandError:
         logging.warning('Could not update manifest-versions checkout.')
