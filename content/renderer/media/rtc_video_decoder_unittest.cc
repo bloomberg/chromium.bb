@@ -220,7 +220,7 @@ class RTCVideoDecoderTest : public testing::Test {
     decoder_->RenderFrame(&video_frame);
   }
 
-  MOCK_METHOD2(FrameReady, void(media::VideoDecoder::DecoderStatus status,
+  MOCK_METHOD2(FrameReady, void(media::VideoDecoder::Status status,
                                 const scoped_refptr<media::VideoFrame>&));
 
   // Fixture members.

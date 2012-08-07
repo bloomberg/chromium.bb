@@ -236,7 +236,7 @@ void GpuVideoDecoder::RequestBufferDecode(
 
     // TODO(acolwell): Add support for reinitializing the decoder when
     // |status| == kConfigChanged. For now we just trigger a decode error.
-    DecoderStatus decoder_status =
+    Status decoder_status =
         (status == DemuxerStream::kAborted) ? kOk : kDecodeError;
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         pending_read_cb_, decoder_status, scoped_refptr<VideoFrame>()));

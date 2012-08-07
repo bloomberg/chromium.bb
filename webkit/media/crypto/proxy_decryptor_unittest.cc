@@ -97,7 +97,7 @@ class ProxyDecryptorTest : public testing::Test {
                             kFakeSessionId);
   }
 
-  MOCK_METHOD2(BufferDecrypted, void(Decryptor::DecryptStatus,
+  MOCK_METHOD2(BufferDecrypted, void(Decryptor::Status,
                                      const scoped_refptr<DecoderBuffer>&));
 
  protected:
