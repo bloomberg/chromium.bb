@@ -41,6 +41,23 @@ SkBitmap PadWithBorder(SkBitmap contents, int desired_size, int source_size) {
   return bitmap;
 }
 
+SkBitmap SampleNearestNeighbor(SkBitmap contents, int desired_size) {
+  SkBitmap bitmap;
+  bitmap.setConfig(
+      SkBitmap::kARGB_8888_Config, desired_size, desired_size);
+  bitmap.allocPixels();
+  if (!contents.isOpaque())
+    bitmap.eraseARGB(0, 0, 0, 0);
+
+  {
+    SkCanvas canvas(bitmap);
+    SkRect dest(SkRect::MakeWH(desired_size, desired_size));
+    canvas.drawBitmapRect(contents, NULL, dest);
+  }
+
+  return bitmap;
+}
+
 SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
                          int desired_size,
                          ui::ScaleFactor scale_factor) {
@@ -76,27 +93,30 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
   }
 
   // 2. Integer multiples are built using nearest neighbor sampling.
-  // TODO(thakis): Implement.
-
   // 3. Else, use Lancosz scaling:
   //    b) If available, from the next bigger variant.
-  int lancosz_candidate = -1;
+  int candidate = -1;
   int min_area = INT_MAX;
   for (size_t i = 0; i < bitmaps.size(); ++i) {
     int area = bitmaps[i].width() * bitmaps[i].height();
     if (bitmaps[i].width() > desired_size &&
         bitmaps[i].height() > desired_size &&
-        (lancosz_candidate == -1 || area < min_area)) {
-      lancosz_candidate = i;
+        (candidate == -1 || area < min_area)) {
+      candidate = i;
       min_area = area;
     }
   }
   //    c) Else, from the biggest smaller variant.
-  if (lancosz_candidate == -1)
-    lancosz_candidate = BiggestCandidate(bitmaps);
+  if (candidate == -1)
+    candidate = BiggestCandidate(bitmaps);
 
+  const SkBitmap& bitmap = bitmaps[candidate];
+  bool is_integer_multiple = desired_size % bitmap.width() == 0 &&
+                             desired_size % bitmap.height() == 0;
+  if (is_integer_multiple)
+    return SampleNearestNeighbor(bitmap, desired_size);
   return skia::ImageOperations::Resize(
-      bitmaps[lancosz_candidate], skia::ImageOperations::RESIZE_LANCZOS3,
+      bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
       desired_size, desired_size);
 }
 
