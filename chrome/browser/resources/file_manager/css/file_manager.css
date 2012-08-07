@@ -1047,7 +1047,7 @@ input.rename {
 #list-container li.table-row[selected] .pin,
 #list-container li.table-row .pin:checked,
 #list-container li.thumbnail-item[selected] .file-checkbox {
-  opacity: 1 !important;
+  opacity: 0.8 !important;
 }
 
 #list-container li.table-row,
@@ -1136,6 +1136,7 @@ input.rename {
 .detail-name > input.common[type='checkbox'] {
   -webkit-margin-end: 4px;
   -webkit-margin-start: -1px;
+  border-color: #444;
 }
 
 list .detail-name > .file-checkbox::before,
