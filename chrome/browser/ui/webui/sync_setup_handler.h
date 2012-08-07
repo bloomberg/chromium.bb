@@ -97,6 +97,9 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   // profile.
   ProfileSyncService* GetSyncService() const;
 
+  // Returns the LoginUIService for the parent profile.
+  LoginUIService* GetLoginUIService() const;
+
  private:
   // Callbacks from the page.
   void OnDidClosePage(const base::ListValue* args);
@@ -169,9 +172,6 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
 
   // Returns the SigninManager for the parent profile.
   SigninManager* GetSignin() const;
-
-  // Returns the LoginUIService for the parent profile.
-  LoginUIService* GetLoginUIService() const;
 
   // The SigninTracker object used to determine when the user has fully signed
   // in (this requires waiting for various services to initialize and tracking
