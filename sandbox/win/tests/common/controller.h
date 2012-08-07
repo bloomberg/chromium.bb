@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_WIN_TESTS_COMMON_CONTROLLER_H_
-#define SANDBOX_WIN_TESTS_COMMON_CONTROLLER_H_
+#ifndef SANDBOX_TESTS_COMMON_CONTROLLER_H_
+#define SANDBOX_TESTS_COMMON_CONTROLLER_H__
 
 #include <windows.h>
 #include <string>
@@ -29,8 +29,6 @@ enum SboxTestResult {
   SBOX_TEST_DENIED,     // Access was denied.
   SBOX_TEST_NOT_FOUND,  // The resource was not found.
   SBOX_TEST_FIRST_ERROR = SBOX_TEST_FIRST_RESULT | SEVERITY_ERROR_FLAGS,
-  SBOX_TEST_SECOND_ERROR,
-  SBOX_TEST_THIRD_ERROR,
   SBOX_TEST_INVALID_PARAMETER,
   SBOX_TEST_FAILED_TO_RUN_TEST,
   SBOX_TEST_FAILED_TO_EXECUTE_COMMAND,
@@ -144,4 +142,4 @@ int DispatchCall(int argc, wchar_t **argv);
 
 }  // namespace sandbox
 
-#endif  // SANDBOX_WIN_TESTS_COMMON_CONTROLLER_H_
+#endif  // SANDBOX_TESTS_COMMON_CONTROLLER_H_
