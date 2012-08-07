@@ -11,6 +11,8 @@
 
 class ResourceType {
  public:
+  // Used in histograms, so please add new types at the end, and rename unused
+  // entries to RESOURCETYPE_UNUSED_0, etc...
   enum Type {
     MAIN_FRAME = 0,  // top level page
     SUB_FRAME,       // frame or iframe
