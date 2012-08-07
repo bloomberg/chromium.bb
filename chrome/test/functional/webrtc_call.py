@@ -10,11 +10,12 @@ import pyauto_functional
 import pyauto
 import webrtc_test_base
 
+
 class MissingRequiredBinaryException(Exception):
   pass
 
 
-class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
+class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
   """Test we can set up a WebRTC call and disconnect it.
 
   Prerequisites: This test case must run on a machine with a webcam, either
@@ -81,8 +82,8 @@ class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
-    self.assertEquals('ok-got-stream', self._GetUserMedia(tab_index=0))
-    self.assertEquals('ok-got-stream', self._GetUserMedia(tab_index=1))
+    self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=0))
+    self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=1))
     self._Connect('user_1', tab_index=0)
     self._Connect('user_2', tab_index=1)
 
@@ -100,8 +101,8 @@ class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
     self._Disconnect(tab_index=1)
 
     # Ensure we didn't miss any errors.
-    self._AssertNoFailures(tab_index=0)
-    self._AssertNoFailures(tab_index=1)
+    self.AssertNoFailures(tab_index=0)
+    self.AssertNoFailures(tab_index=1)
 
   def testSimpleWebRtcJsepCall(self):
     self._SimpleWebRtcCall('webrtc_jsep_test.html')
@@ -117,7 +118,7 @@ class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
     """
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
     self.NavigateToURL(url)
-    self.assertEquals('ok-got-stream', self._GetUserMedia(tab_index=0))
+    self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=0))
     self._StartDetectingVideo(tab_index=0, video_element='local_view')
 
     self._WaitForVideoToPlay()
@@ -128,41 +129,28 @@ class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
-    self._GetUserMedia(tab_index=0)
-    self._GetUserMedia(tab_index=1)
+    self.GetUserMedia(tab_index=0)
+    self.GetUserMedia(tab_index=1)
     self._Connect("user_1", tab_index=0)
     self._Connect("user_2", tab_index=1)
 
     self._EstablishCall(from_tab_with_index=0)
 
     self.assertEquals('failed-with-error-1',
-                      self._GetUserMedia(tab_index=0, action='deny'))
+                      self.GetUserMedia(tab_index=0, action='deny'))
     self.assertEquals('failed-with-error-1',
-                      self._GetUserMedia(tab_index=0, action='dismiss'))
-
-  def _GetUserMedia(self, tab_index, action='allow'):
-    """Acquires webcam or mic for one tab and returns the result."""
-    self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'getUserMedia(true, true)', tab_index=tab_index))
-
-    self.WaitForInfobarCount(1, tab_index=tab_index)
-    self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)
-    self.WaitForGetUserMediaResult(tab_index=0)
-
-    result = self.GetUserMediaResult(tab_index=0)
-    self._AssertNoFailures(tab_index)
-    return result
+                      self.GetUserMedia(tab_index=0, action='dismiss'))
 
   def _Connect(self, user_name, tab_index):
     self.assertEquals('ok-connected', self.ExecuteJavascript(
         'connect("http://localhost:8888", "%s")' % user_name,
         tab_index=tab_index))
-    self._AssertNoFailures(tab_index)
+    self.AssertNoFailures(tab_index)
 
   def _EstablishCall(self, from_tab_with_index):
     self.assertEquals('ok-call-established', self.ExecuteJavascript(
         'call()', tab_index=from_tab_with_index))
-    self._AssertNoFailures(from_tab_with_index)
+    self.AssertNoFailures(from_tab_with_index)
 
     # Double-check the call reached the other side.
     self.assertEquals('yes', self.ExecuteJavascript(
@@ -172,7 +160,7 @@ class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
     self.assertEquals('ok-call-hung-up', self.ExecuteJavascript(
         'hangUp()', tab_index=from_tab_with_index))
     self._VerifyHungUp(from_tab_with_index)
-    self._AssertNoFailures(from_tab_with_index)
+    self.AssertNoFailures(from_tab_with_index)
 
   def _VerifyHungUp(self, tab_index):
     self.assertEquals('no', self.ExecuteJavascript(
@@ -193,10 +181,6 @@ class WebRTCCallTest(webrtc_test_base.WebrtcTestBase):
         expect_retval='video-playing')
     self.assertTrue(video_playing,
                     msg='Timed out while trying to detect video.')
-
-  def _AssertNoFailures(self, tab_index):
-    self.assertEquals('ok-no-errors', self.ExecuteJavascript(
-        'getAnyTestFailures()', tab_index=tab_index))
 
 
 if __name__ == '__main__':

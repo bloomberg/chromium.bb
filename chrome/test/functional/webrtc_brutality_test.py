@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import pyauto_functional
+import webrtc_test_base
+
+
+class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
+  """Tests how WebRTC deals with inconvenient reloads, etc."""
+
+  def testReloadsAfterGetUserMedia(self):
+    """Tests how we deal with reloads.
+
+    This test will quickly reload the page after running getUserMedia, which
+    will remove the pending request. This crashed the browser before the fix
+    for crbug.com/135043.
+
+    The test will make repeated getUserMedia requests with refreshes between
+    them. Sometimes it will click past the bar and then refresh.
+    """
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    self.NavigateToURL(url)
+
+    for i in range(1, 100):
+      if i % 10 == 0:
+        self.GetUserMedia(tab_index=0, action='allow')
+      else:
+        self._GetUserMediaWithoutTakingAction(tab_index=0)
+      self.ReloadTab(tab_index=0)
+
+  def testRepeatedGetUserMediaRequests(self):
+    """Tests how we deal with lots of consecutive getUserMedia requests.
+
+    The test will alternate unanswered requests with requests that get answered.
+    """
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    self.NavigateToURL(url)
+
+    for i in range(1, 100):
+      if i % 10 == 0:
+        self.GetUserMedia(tab_index=0, action='allow')
+      else:
+        self._GetUserMediaWithoutTakingAction(tab_index=0)
+
+  def testSuccessfulGetUserMediaAndThenReload(self):
+    """Waits for WebRTC to respond, and immediately reloads the tab."""
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    self.NavigateToURL(url)
+
+    self.GetUserMedia(tab_index=0, action='allow')
+    self.ReloadTab(tab_index=0)
+
+  def testClosingTabAfterGetUserMedia(self):
+    """Tests closing the tab right after a getUserMedia call."""
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    self.NavigateToURL(url)
+
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    self._GetUserMediaWithoutTakingAction(tab_index=0)
+    tab.Close()
+
+  def testSuccessfulGetUserMediaAndThenClose(self):
+    """Waits for WebRTC to respond, and closes the tab."""
+    url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
+    self.NavigateToURL(url)
+
+    tab = self.GetBrowserWindow(0).GetTab(0)
+    self.GetUserMedia(tab_index=0, action='allow')
+    tab.Close()
+
+  def _GetUserMediaWithoutTakingAction(self, tab_index):
+    self.assertEquals('ok-requested', self.ExecuteJavascript(
+      'getUserMedia(true, true)', tab_index=0))
+
+
+if __name__ == '__main__':
+  pyauto_functional.Main()
