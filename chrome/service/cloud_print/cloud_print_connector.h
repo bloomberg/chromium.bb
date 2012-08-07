@@ -158,6 +158,7 @@ class CloudPrintConnector
       const printing::PrinterCapsAndDefaults& caps_and_defaults);
 
   bool IsSamePrinter(const std::string& name1, const std::string& name2) const;
+  bool InitPrintSystem();
 
   // CloudPrintConnector client.
   Client* client_;
@@ -178,7 +179,7 @@ class CloudPrintConnector
   JobHandlerMap job_handler_map_;
   // Next response handler.
   ResponseHandler next_response_handler_;
-  // The list of peding tasks to be done in the background.
+  // The list of pending tasks to be done in the background.
   std::list<PendingTask> pending_tasks_;
   // The CloudPrintURLFetcher instance for the current request.
   scoped_refptr<CloudPrintURLFetcher> request_;

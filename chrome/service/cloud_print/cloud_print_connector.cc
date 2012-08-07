@@ -34,26 +34,33 @@ CloudPrintConnector::CloudPrintConnector(
   }
 }
 
+bool CloudPrintConnector::InitPrintSystem() {
+  if (print_system_.get())
+    return true;
+  print_system_ = cloud_print::PrintSystem::CreateInstance(
+      print_system_settings_.get());
+  if (!print_system_.get()) {
+    NOTREACHED();
+    return false;  // No memory.
+  }
+  cloud_print::PrintSystem::PrintSystemResult result = print_system_->Init();
+  if (!result.succeeded()) {
+    print_system_.release();
+    // We could not initialize the print system. We need to notify the server.
+    ReportUserMessage(kPrintSystemFailedMessageId, result.message());
+    return false;
+  }
+  return true;
+}
+
 bool CloudPrintConnector::Start() {
-  DCHECK(!print_system_.get());
   VLOG(1) << "CP_CONNECTOR: Starting connector"
           << ", proxy id: " << proxy_id_;
 
   pending_tasks_.clear();
 
-  print_system_ =
-      cloud_print::PrintSystem::CreateInstance(print_system_settings_.get());
-  if (!print_system_.get()) {
-    NOTREACHED();
-    return false;  // No print system available, fail initalization.
-  }
-  cloud_print::PrintSystem::PrintSystemResult result = print_system_->Init();
-  if (!result.succeeded()) {
-    // We could not initialize the print system. We need to notify the server.
-    ReportUserMessage(kPrintSystemFailedMessageId, result.message());
-    print_system_.release();
+  if (!InitPrintSystem())
     return false;
-  }
 
   // Start watching for updates from the print system.
   print_server_watcher_ = print_system_->CreatePrintServerWatcher();
@@ -67,18 +74,15 @@ bool CloudPrintConnector::Start() {
 void CloudPrintConnector::Stop() {
   VLOG(1) << "CP_CONNECTOR: Stopping connector"
           << ", proxy id: " << proxy_id_;
-  DCHECK(print_system_.get());
-  if (print_system_.get()) {
-    // Do uninitialization here.
-    pending_tasks_.clear();
-    print_server_watcher_.release();
-    print_system_.release();
-  }
+  DCHECK(IsRunning());
+  // Do uninitialization here.
+  pending_tasks_.clear();
+  print_server_watcher_.release();
   request_ = NULL;
 }
 
 bool CloudPrintConnector::IsRunning() {
-  return print_system_.get() != NULL;
+  return print_server_watcher_.get() != NULL;
 }
 
 void CloudPrintConnector::GetPrinterIds(std::list<std::string>* printer_ids) {
