@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PANELS_PANEL_VIEW_H_
 #define CHROME_BROWSER_UI_PANELS_PANEL_VIEW_H_
 
-#include <map>
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -191,9 +190,6 @@ class PanelView : public NativePanel,
   // The last view that had focus in the panel. This is saved so that focus can
   // be restored properly when a drag ends.
   views::View* old_focused_view_;
-
-  // A mapping between accelerators and commands.
-  static std::map<ui::Accelerator, int> accelerator_table_;
 
 #if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
   // Used to provide custom taskbar thumbnail for Windows 7 and later.

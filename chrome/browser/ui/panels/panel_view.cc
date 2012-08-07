@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/panels/panel_view.h"
 
 #include "base/logging.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_frame_view.h"
@@ -24,33 +23,6 @@
 #endif
 
 namespace {
-
-// Supported accelerators.
-// Note: We can't use the acclerator table defined in chrome/browser/ui/views
-// due to checkdeps violation.
-struct AcceleratorMapping {
-  ui::KeyboardCode keycode;
-  int modifiers;
-  int command_id;
-};
-const AcceleratorMapping kPanelAcceleratorMap[] = {
-  { ui::VKEY_W, ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
-  { ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
-  { ui::VKEY_F4, ui::EF_ALT_DOWN, IDC_CLOSE_WINDOW },
-  { ui::VKEY_R, ui::EF_CONTROL_DOWN, IDC_RELOAD },
-  { ui::VKEY_F5, ui::EF_NONE, IDC_RELOAD },
-  { ui::VKEY_R, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-      IDC_RELOAD_IGNORING_CACHE },
-  { ui::VKEY_F5, ui::EF_CONTROL_DOWN, IDC_RELOAD_IGNORING_CACHE },
-  { ui::VKEY_F5, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
-  { ui::VKEY_ESCAPE, ui::EF_NONE, IDC_STOP },
-  { ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_MINUS },
-  { ui::VKEY_SUBTRACT, ui::EF_CONTROL_DOWN, IDC_ZOOM_MINUS },
-  { ui::VKEY_0, ui::EF_CONTROL_DOWN, IDC_ZOOM_NORMAL },
-  { ui::VKEY_NUMPAD0, ui::EF_CONTROL_DOWN, IDC_ZOOM_NORMAL },
-  { ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
-  { ui::VKEY_ADD, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
-};
 
 // NativePanelTesting implementation.
 class NativePanelTestingWin : public NativePanelTesting {
@@ -144,9 +116,6 @@ NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
   return new PanelView(panel, bounds);
 }
 
-// static
-std::map<ui::Accelerator, int> PanelView::accelerator_table_;
-
 PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
     : panel_(panel),
       window_(NULL),
@@ -173,23 +142,10 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
 
   OnViewWasResized();
 
-  // Do a one-time initialization for the accelerator table.
-  if (accelerator_table_.empty()) {
-    for (size_t i = 0; i < arraysize(kPanelAcceleratorMap); ++i) {
-      ui::Accelerator accelerator(kPanelAcceleratorMap[i].keycode,
-                                  kPanelAcceleratorMap[i].modifiers);
-      accelerator_table_[accelerator] = kPanelAcceleratorMap[i].command_id;
-    }
-  }
-
-  // Register accelarators supported by panels.
   views::FocusManager* focus_manager = GetFocusManager();
-  for (std::map<ui::Accelerator, int>::const_iterator iter =
-           accelerator_table_.begin();
-       iter != accelerator_table_.end(); ++iter) {
-    focus_manager->RegisterAccelerator(
-        iter->first, ui::AcceleratorManager::kNormalPriority, this);
-  }
+  ui::Accelerator accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
+  focus_manager->RegisterAccelerator(
+        accelerator, ui::AcceleratorManager::kNormalPriority, this);
 }
 
 PanelView::~PanelView() {
@@ -350,16 +306,6 @@ bool PanelView::PreHandlePanelKeyboardEvent(
 
 void PanelView::HandlePanelKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager->shortcut_handling_suspended())
-    return;
-
-  ui::Accelerator accelerator(
-      static_cast<ui::KeyboardCode>(event.windowsKeyCode),
-      content::GetModifiersFromNativeWebKeyboardEvent(event));
-  if (event.type == WebKit::WebInputEvent::KeyUp)
-    accelerator.set_type(ui::ET_KEY_RELEASED);
-  focus_manager->ProcessAccelerator(accelerator);
 }
 
 void PanelView::FullScreenModeChanged(bool is_full_screen) {
@@ -573,10 +519,7 @@ bool PanelView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (mouse_dragging_state_ == DRAGGING_STARTED)
     return true;
 
-  std::map<ui::Accelerator, int>::const_iterator iter =
-      accelerator_table_.find(accelerator);
-  DCHECK(iter != accelerator_table_.end());
-  return panel_->ExecuteCommandIfEnabled(iter->second);
+  return views::View::AcceleratorPressed(accelerator);
 }
 
 void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
