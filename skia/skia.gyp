@@ -823,7 +823,9 @@
         'SK_GAMMA_SRGB',
         #'SK_GAMMA_APPLY_TO_A8',
         'SK_BUILD_NO_IMAGE_ENCODE',
-        'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
+        # TODO(alexeypa): fix quoting in the skia sources,
+        # see http://crbug.com/141132.
+        'GR_GL_CUSTOM_SETUP_HEADER=<GrGLConfig_chrome.h>',
         'GR_STATIC_RECT_VB=1',
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
@@ -1107,7 +1109,9 @@
         'defines': [
           'SK_BUILD_NO_IMAGE_ENCODE',
           'SK_DEFERRED_CANVAS_USES_GPIPE=1',
-          'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
+          # TODO(alexeypa): fix quoting in the skia sources,
+          # see http://crbug.com/141132.
+          'GR_GL_CUSTOM_SETUP_HEADER=<GrGLConfig_chrome.h>',
           'GR_AGGRESSIVE_SHADER_OPTS=1',
         ],
         'conditions': [
