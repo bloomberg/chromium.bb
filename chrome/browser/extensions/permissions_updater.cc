@@ -117,14 +117,12 @@ void PermissionsUpdater::DispatchEvent(
   if (!profile_ || !profile_->GetExtensionEventRouter())
     return;
 
-  ListValue value;
+  scoped_ptr<ListValue> value(new ListValue());
   scoped_ptr<api::permissions::Permissions> permissions =
     PackPermissionSet(changed_permissions);
-  value.Append(permissions->ToValue().release());
-  std::string json_value;
-  base::JSONWriter::Write(&value, &json_value);
+  value->Append(permissions->ToValue().release());
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, event_name, json_value, profile_, GURL());
+      extension_id, event_name, value.Pass(), profile_, GURL());
 }
 
 void PermissionsUpdater::NotifyPermissionsUpdated(

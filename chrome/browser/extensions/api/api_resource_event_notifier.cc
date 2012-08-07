@@ -95,10 +95,10 @@ void ApiResourceEventNotifier::DispatchEventOnUIThread(
     const std::string &extension, DictionaryValue* event) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ListValue args;
-  args.Set(0, event);
-  router_->DispatchEventToExtension(src_extension_id_, extension, args,
-                                    profile_, src_url_);
+  scoped_ptr<ListValue> arguments(new ListValue());
+  arguments->Set(0, event);
+  router_->DispatchEventToExtension(src_extension_id_, extension,
+                                    arguments.Pass(), profile_, src_url_);
 }
 
 DictionaryValue* ApiResourceEventNotifier::CreateApiResourceEvent(

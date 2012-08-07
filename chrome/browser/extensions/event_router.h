@@ -44,22 +44,12 @@ class EventRouter : public content::NotificationObserver,
     USER_GESTURE_NOT_ENABLED = 2,
   };
 
-  // Sends an event via ipc_sender to the given extension. Can be called on
-  // any thread.
+  // Sends an event via ipc_sender to the given extension. Can be called on any
+  // thread.
   static void DispatchEvent(IPC::Sender* ipc_sender,
                             const std::string& extension_id,
                             const std::string& event_name,
-                            const base::Value& event_args,
-                            const GURL& event_url,
-                            UserGestureState user_gesture,
-                            const EventFilteringInfo& info);
-
-  // This invocation is deprecated. All future consumers of this API should be
-  // sending Values as event arguments, using the above version.
-  static void DispatchEvent(IPC::Sender* ipc_sender,
-                            const std::string& extension_id,
-                            const std::string& event_name,
-                            const std::string& event_args,
+                            scoped_ptr<base::ListValue> event_args,
                             const GURL& event_url,
                             UserGestureState user_gesture,
                             const EventFilteringInfo& info);
@@ -116,20 +106,20 @@ class EventRouter : public content::NotificationObserver,
   // |event_url| is not empty, the event is only sent to extension with host
   // permissions for this url.
   void DispatchEventToRenderers(const std::string& event_name,
-                                const std::string& event_args,
+                                scoped_ptr<base::ListValue> event_args,
                                 Profile* restrict_to_profile,
                                 const GURL& event_url,
                                 EventFilteringInfo info);
 
   // As above, but defaults |info| to EventFilteringInfo().
   void DispatchEventToRenderers(const std::string& event_name,
-                                const std::string& event_args,
+                                scoped_ptr<base::ListValue> event_args,
                                 Profile* restrict_to_profile,
                                 const GURL& event_url);
 
   // As above, but enables sending an explicit user gesture indicator.
   void DispatchEventToRenderers(const std::string& event_name,
-                                const std::string& event_args,
+                                scoped_ptr<ListValue> event_args,
                                 Profile* restrict_to_profile,
                                 const GURL& event_url,
                                 UserGestureState user_gesture);
@@ -137,15 +127,7 @@ class EventRouter : public content::NotificationObserver,
   // Same as above, except only send the event to the given extension.
   virtual void DispatchEventToExtension(const std::string& extension_id,
                                         const std::string& event_name,
-                                        const base::Value& event_args,
-                                        Profile* restrict_to_profile,
-                                        const GURL& event_url);
-
-  // This invocation is deprecated. The above variant which uses a Value for
-  // event_args is to be used instead.
-  virtual void DispatchEventToExtension(const std::string& extension_id,
-                                        const std::string& event_name,
-                                        const std::string& event_args,
+                                        scoped_ptr<base::ListValue> event_args,
                                         Profile* restrict_to_profile,
                                         const GURL& event_url);
 
@@ -153,7 +135,7 @@ class EventRouter : public content::NotificationObserver,
   // explicit user gesture indicator.
   virtual void DispatchEventToExtension(const std::string& extension_id,
                                         const std::string& event_name,
-                                        const std::string& event_args,
+                                        scoped_ptr<base::ListValue> event_args,
                                         Profile* restrict_to_profile,
                                         const GURL& event_url,
                                         UserGestureState user_gesture);
@@ -167,9 +149,9 @@ class EventRouter : public content::NotificationObserver,
   // extensions in that profile that can't cross incognito.
   void DispatchEventsToRenderersAcrossIncognito(
       const std::string& event_name,
-      const std::string& event_args,
+      scoped_ptr<base::ListValue> event_args,
       Profile* restrict_to_profile,
-      const std::string& cross_incognito_args,
+      scoped_ptr<base::ListValue> cross_incognito_args,
       const GURL& event_url);
 
   // Record the Event Ack from the renderer. (One less event in-flight.)
@@ -183,6 +165,16 @@ class EventRouter : public content::NotificationObserver,
   // A map between an event name and a set of extensions that are listening
   // to that event.
   typedef std::map<std::string, std::set<ListenerProcess> > ListenerMap;
+
+  // TODO(gdk): Document this.
+  static void DispatchExtensionMessage(
+      IPC::Sender* ipc_sender,
+      const std::string& extension_id,
+      const std::string& event_name,
+      base::ListValue* event_args,
+      const GURL& event_url,
+      UserGestureState user_gesture,
+      const extensions::EventFilteringInfo& info);
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -218,7 +210,7 @@ class EventRouter : public content::NotificationObserver,
   bool CanDispatchEventToProfile(Profile* profile,
                                  const Extension* extension,
                                  const linked_ptr<Event>& event,
-                                 const base::Value** event_args);
+                                 base::ListValue** event_args);
 
   // Possibly loads given extension's background page in preparation to
   // dispatch an event.
@@ -252,33 +244,23 @@ class EventRouter : public content::NotificationObserver,
 
 struct Event {
   std::string event_name;
-  scoped_ptr<Value> event_args;
+  scoped_ptr<base::ListValue> event_args;
   GURL event_url;
   Profile* restrict_to_profile;
-  scoped_ptr<Value> cross_incognito_args;
+  scoped_ptr<base::ListValue> cross_incognito_args;
   EventRouter::UserGestureState user_gesture;
   EventFilteringInfo info;
 
   Event(const std::string& event_name,
-        const Value& event_args,
+        scoped_ptr<base::ListValue> event_args,
         const GURL& event_url,
         Profile* restrict_to_profile,
-        const Value& cross_incognito_args,
-        EventRouter::UserGestureState user_gesture,
-        const EventFilteringInfo& info);
-
-  // TODO(gdk): This variant should be retired once the callers are switched to
-  // providing Values instead of just strings.
-  Event(const std::string& event_name,
-        const std::string& event_args,
-        const GURL& event_url,
-        Profile* restrict_to_profile,
-        const std::string& cross_incognito_args,
+        scoped_ptr<base::ListValue> cross_incognito_args,
         EventRouter::UserGestureState user_gesture,
         const EventFilteringInfo& info);
 
   Event(const std::string& event_name,
-        const Value& event_args,
+        scoped_ptr<base::ListValue> event_args,
         const GURL& event_url,
         Profile* restrict_to_profile,
         EventRouter::UserGestureState user_gesture,

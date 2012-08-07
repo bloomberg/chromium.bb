@@ -14,6 +14,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 
+namespace base {
+class ListValue;
+}
+
 // Observes the Task Manager and routes the notifications as events to the
 // extension system.
 class ExtensionProcessesEventRouter : public TaskManagerModelObserver,
@@ -63,11 +67,12 @@ class ExtensionProcessesEventRouter : public TaskManagerModelObserver,
       content::RenderProcessHost* rph,
       content::RenderProcessHost::RendererClosedDetails* details);
 
-  void NotifyProfiles(const char* event_name, std::string json_args);
+  void NotifyProfiles(const char* event_name,
+                      scoped_ptr<base::ListValue> event_args);
 
   void DispatchEvent(Profile* profile,
                      const char* event_name,
-                     const std::string& json_args);
+                     scoped_ptr<base::ListValue> event_args);
 
   // Determines whether there is a registered listener for the specified event.
   // It helps to avoid collecing data if no one is interested in it.

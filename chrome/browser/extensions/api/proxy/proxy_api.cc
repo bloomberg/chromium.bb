@@ -37,22 +37,19 @@ void ProxyEventRouter::OnProxyError(
     EventRouterForwarder* event_router,
     void* profile,
     int error_code) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetBoolean(keys::kProxyEventFatal, true);
   dict->SetString(keys::kProxyEventError, net::ErrorToString(error_code));
   dict->SetString(keys::kProxyEventDetails, "");
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  args->Append(dict);
 
   if (profile) {
     event_router->DispatchEventToRenderers(
-        keys::kProxyEventOnProxyError, json_args, profile, true, GURL());
+        keys::kProxyEventOnProxyError, args.Pass(), profile, true, GURL());
   } else {
     event_router->BroadcastEventToRenderers(
-        keys::kProxyEventOnProxyError, json_args, GURL());
+        keys::kProxyEventOnProxyError, args.Pass(), GURL());
   }
 }
 
@@ -61,7 +58,7 @@ void ProxyEventRouter::OnPACScriptError(
     void* profile,
     int line_number,
     const string16& error) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetBoolean(keys::kProxyEventFatal, false);
   dict->SetString(keys::kProxyEventError,
@@ -74,17 +71,14 @@ void ProxyEventRouter::OnPACScriptError(
     error_msg = UTF16ToUTF8(error);
   }
   dict->SetString(keys::kProxyEventDetails, error_msg);
-  args.Append(dict);
-
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  args->Append(dict);
 
   if (profile) {
     event_router->DispatchEventToRenderers(
-        keys::kProxyEventOnProxyError, json_args, profile, true, GURL());
+        keys::kProxyEventOnProxyError, args.Pass(), profile, true, GURL());
   } else {
     event_router->BroadcastEventToRenderers(
-        keys::kProxyEventOnProxyError, json_args, GURL());
+        keys::kProxyEventOnProxyError, args.Pass(), GURL());
   }
 }
 

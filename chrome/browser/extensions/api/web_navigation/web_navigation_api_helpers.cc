@@ -36,18 +36,15 @@ double MilliSecondsFromTime(const base::Time& time) {
 // Dispatches events to the extension message service.
 void DispatchEvent(content::BrowserContext* browser_context,
                    const char* event_name,
-                   const ListValue& args,
+                   scoped_ptr<ListValue> args,
                    const GURL& url) {
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-
   EventFilteringInfo info;
   info.SetURL(url);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, profile, GURL(), info);
+        event_name, args.Pass(), profile, GURL(), info);
   }
 }
 
@@ -63,18 +60,18 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
                               int64 frame_id,
                               bool is_main_frame,
                               const GURL& validated_url) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, validated_url.spec());
   dict->SetInteger(keys::kProcessIdKey, render_process_id);
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
+  args->Append(dict);
 
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnBeforeNavigate,
-                args,
+                args.Pass(),
                 validated_url);
 }
 
@@ -86,7 +83,7 @@ void DispatchOnCommitted(const char* event_name,
                          bool is_main_frame,
                          const GURL& url,
                          content::PageTransition transition_type) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
@@ -107,9 +104,10 @@ void DispatchOnCommitted(const char* event_name,
     qualifiers->Append(Value::CreateStringValue("from_address_bar"));
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
+  args->Append(dict);
 
-  DispatchEvent(web_contents->GetBrowserContext(), event_name, args, url);
+  DispatchEvent(web_contents->GetBrowserContext(), event_name, args.Pass(),
+                url);
 }
 
 // Constructs and dispatches an onDOMContentLoaded event.
@@ -117,7 +115,7 @@ void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
                                 const GURL& url,
                                 bool is_main_frame,
                                 int64 frame_id) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
@@ -126,11 +124,11 @@ void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
                    web_contents->GetRenderViewHost()->GetProcess()->GetID());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
+  args->Append(dict);
 
   DispatchEvent(web_contents->GetBrowserContext(),
                 keys::kOnDOMContentLoaded,
-                args,
+                args.Pass(),
                 url);
 }
 
@@ -139,7 +137,7 @@ void DispatchOnCompleted(content::WebContents* web_contents,
                          const GURL& url,
                          bool is_main_frame,
                          int64 frame_id) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
@@ -148,10 +146,10 @@ void DispatchOnCompleted(content::WebContents* web_contents,
                    web_contents->GetRenderViewHost()->GetProcess()->GetID());
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
+  args->Append(dict);
 
-  DispatchEvent(web_contents->GetBrowserContext(), keys::kOnCompleted, args,
-                url);
+  DispatchEvent(web_contents->GetBrowserContext(), keys::kOnCompleted,
+                args.Pass(), url);
 }
 
 // Constructs and dispatches an onCreatedNavigationTarget event.
@@ -169,7 +167,7 @@ void DispatchOnCreatedNavigationTarget(
       Profile::FromBrowserContext(target_web_contents->GetBrowserContext()),
       false, NULL, NULL, NULL, NULL));
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kSourceTabIdKey,
                    ExtensionTabUtil::GetTabId(web_contents));
@@ -181,9 +179,9 @@ void DispatchOnCreatedNavigationTarget(
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(target_web_contents));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
+  args->Append(dict);
 
-  DispatchEvent(browser_context, keys::kOnCreatedNavigationTarget, args,
+  DispatchEvent(browser_context, keys::kOnCreatedNavigationTarget, args.Pass(),
                 target_url);
 }
 
@@ -194,7 +192,7 @@ void DispatchOnErrorOccurred(content::WebContents* web_contents,
                              int64 frame_id,
                              bool is_main_frame,
                              int error_code) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey, ExtensionTabUtil::GetTabId(web_contents));
   dict->SetString(keys::kUrlKey, url.spec());
@@ -202,10 +200,10 @@ void DispatchOnErrorOccurred(content::WebContents* web_contents,
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
   dict->SetString(keys::kErrorKey, net::ErrorToString(error_code));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
+  args->Append(dict);
 
   DispatchEvent(web_contents->GetBrowserContext(), keys::kOnErrorOccurred,
-                args, url);
+                args.Pass(), url);
 }
 
 // Constructs and dispatches an onTabReplaced event.
@@ -213,16 +211,16 @@ void DispatchOnTabReplaced(
     content::WebContents* old_web_contents,
     content::BrowserContext* browser_context,
     content::WebContents* new_web_contents) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kReplacedTabIdKey,
                    ExtensionTabUtil::GetTabId(old_web_contents));
   dict->SetInteger(keys::kTabIdKey,
                    ExtensionTabUtil::GetTabId(new_web_contents));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
-  args.Append(dict);
+  args->Append(dict);
 
-  DispatchEvent(browser_context, keys::kOnTabReplaced, args, GURL());
+  DispatchEvent(browser_context, keys::kOnTabReplaced, args.Pass(), GURL());
 }
 
 }  // namespace web_navigation_api_helpers

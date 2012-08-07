@@ -51,8 +51,9 @@ const char kDescriptionStylesLength[] = "length";
 // static
 void ExtensionOmniboxEventRouter::OnInputStarted(
     Profile* profile, const std::string& extension_id) {
-  profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, events::kOnInputStarted, "[]", profile, GURL());
+  scoped_ptr<ListValue> event_args(new ListValue());
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(extension_id,
+      events::kOnInputStarted, event_args.Pass(), profile, GURL());
 }
 
 // static
@@ -63,14 +64,12 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
         extension_id, events::kOnInputChanged))
     return false;
 
-  ListValue args;
-  args.Set(0, Value::CreateStringValue(input));
-  args.Set(1, Value::CreateIntegerValue(suggest_id));
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Set(0, Value::CreateStringValue(input));
+  args->Set(1, Value::CreateIntegerValue(suggest_id));
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, events::kOnInputChanged, json_args, profile, GURL());
+      extension_id, events::kOnInputChanged, args.Pass(), profile, GURL());
   return true;
 }
 
@@ -88,13 +87,11 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   tab_contents->extension_tab_helper()->active_tab_permission_manager()->
       GrantIfRequested(extension);
 
-  ListValue args;
-  args.Set(0, Value::CreateStringValue(input));
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Set(0, Value::CreateStringValue(input));
 
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, events::kOnInputEntered, json_args, profile, GURL());
+      extension_id, events::kOnInputEntered, args.Pass(), profile, GURL());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
@@ -105,8 +102,9 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 // static
 void ExtensionOmniboxEventRouter::OnInputCancelled(
     Profile* profile, const std::string& extension_id) {
+  scoped_ptr<ListValue> args(new ListValue());
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, events::kOnInputCancelled, "[]", profile, GURL());
+      extension_id, events::kOnInputCancelled, args.Pass(), profile, GURL());
 }
 
 bool OmniboxSendSuggestionsFunction::RunImpl() {

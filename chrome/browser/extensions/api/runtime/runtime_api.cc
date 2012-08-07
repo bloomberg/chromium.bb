@@ -35,9 +35,10 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   // chance to register for events. So we register on its behalf. If the
   // extension does not actually have a listener, the event will just be
   // ignored.
+  scoped_ptr<ListValue> event_args(new ListValue());
   system->event_router()->AddLazyEventListener(kOnInstalledEvent, extension_id);
   system->event_router()->DispatchEventToExtension(
-      extension_id, kOnInstalledEvent, "[]", NULL, GURL());
+      extension_id, kOnInstalledEvent, event_args.Pass(), NULL, GURL());
 }
 
 bool RuntimeGetBackgroundPageFunction::RunImpl() {

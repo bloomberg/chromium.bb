@@ -40,17 +40,15 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   if (!router->HasEventListener(extensions::event_names::kOnInputMethodChanged))
     return;
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   StringValue *input_method_name = new StringValue(
       GetInputMethodForXkb(manager->GetCurrentInputMethod().id()));
-  args.Append(input_method_name);
-  std::string args_json;
-  base::JSONWriter::Write(&args, &args_json);
+  args->Append(input_method_name);
 
   // The router will only send the event to extensions that are listening.
   router->DispatchEventToRenderers(
-      extensions::event_names::kOnInputMethodChanged,
-      args_json, profile, GURL());
+      extensions::event_names::kOnInputMethodChanged, args.Pass(), profile,
+      GURL());
 }
 
 std::string ExtensionInputMethodEventRouter::GetInputMethodForXkb(

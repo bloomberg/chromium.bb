@@ -23,7 +23,8 @@ void ExtensionMediaPlayerEventRouter::Init(Profile* profile) {
 
 void ExtensionMediaPlayerEventRouter::NotifyPlaylistChanged() {
   if (profile_ && profile_->GetExtensionEventRouter()) {
+    scoped_ptr<ListValue> args(new ListValue());
     profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      "mediaPlayerPrivate.onPlaylistChanged", "[]", NULL, GURL());
+      "mediaPlayerPrivate.onPlaylistChanged", args.Pass(), NULL, GURL());
   }
 }

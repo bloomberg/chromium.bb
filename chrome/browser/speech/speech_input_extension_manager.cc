@@ -284,9 +284,9 @@ void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* js_event = new DictionaryValue();
-  args.Append(js_event);
+  args->Append(js_event);
 
   ListValue* js_hypothesis_array = new ListValue();
   js_event->Set(kHypothesesKey, js_hypothesis_array);
@@ -303,10 +303,7 @@ void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
         hypothesis.confidence);
   }
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  VLOG(1) << "Results: " << json_args;
-  DispatchEventToExtension(extension_id, kOnResultEvent, json_args);
+  DispatchEventToExtension(extension_id, kOnResultEvent, args.Pass());
 }
 
 void SpeechInputExtensionManager::OnRecognitionStart(int session_id) {
@@ -434,27 +431,25 @@ void SpeechInputExtensionManager::OnSoundStart(int session_id) {
   DCHECK_EQ(session_id, speech_recognition_session_id_);
   VLOG(1) << "OnSoundStart";
 
-  std::string json_args;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::DispatchEventToExtension,
       this, extension_id_in_use_, std::string(kOnSoundStartEvent),
-      json_args));
+      Passed(scoped_ptr<ListValue>(new ListValue()))));
 }
 
 void SpeechInputExtensionManager::OnSoundEnd(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   VLOG(1) << "OnSoundEnd";
 
-  std::string json_args;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::DispatchEventToExtension,
       this, extension_id_in_use_, std::string(kOnSoundEndEvent),
-      json_args));
+      Passed(scoped_ptr<ListValue>(new ListValue()))));
 }
 
 void SpeechInputExtensionManager::DispatchEventToExtension(
     const std::string& extension_id, const std::string& event,
-    const std::string& json_args) {
+    scoped_ptr<ListValue> event_args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::AutoLock auto_lock(state_lock_);
@@ -462,16 +457,8 @@ void SpeechInputExtensionManager::DispatchEventToExtension(
     return;
 
   if (profile_ && profile_->GetExtensionEventRouter()) {
-    std::string final_args;
-    if (json_args.empty()) {
-      ListValue args;
-      base::JSONWriter::Write(&args, &final_args);
-    } else {
-      final_args = json_args;
-    }
-
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id, event, final_args, profile_, GURL());
+        extension_id, event, event_args.Pass(), profile_, GURL());
   }
 }
 
@@ -498,14 +485,11 @@ void SpeechInputExtensionManager::DispatchError(
 
   // Used for errors that are also reported via the onError event.
   if (dispatch_event) {
-    ListValue args;
+    scoped_ptr<ListValue> args(new ListValue());
     DictionaryValue* js_error = new DictionaryValue();
-    args.Append(js_error);
+    args->Append(js_error);
     js_error->SetString(kErrorCodeKey, error);
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
-    DispatchEventToExtension(extension_id,
-        kOnErrorEvent, json_args);
+    DispatchEventToExtension(extension_id, kOnErrorEvent, args.Pass());
   }
 }
 

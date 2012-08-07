@@ -148,12 +148,14 @@ void BookmarkExtensionEventRouter::Init() {
   model_->AddObserver(this);
 }
 
-void BookmarkExtensionEventRouter::DispatchEvent(Profile *profile,
-                                                 const char* event_name,
-                                                 const std::string& json_args) {
+void BookmarkExtensionEventRouter::DispatchEvent(
+    Profile* profile,
+    const char* event_name,
+    scoped_ptr<ListValue> event_args) {
   if (profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, NULL, GURL(), extensions::EventFilteringInfo());
+        event_name, event_args.Pass(), NULL, GURL(),
+        extensions::EventFilteringInfo());
   }
 }
 
@@ -174,9 +176,9 @@ void BookmarkExtensionEventRouter::BookmarkNodeMoved(
     int old_index,
     const BookmarkNode* new_parent,
     int new_index) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   const BookmarkNode* node = new_parent->GetChild(new_index);
-  args.Append(new StringValue(base::Int64ToString(node->id())));
+  args->Append(new StringValue(base::Int64ToString(node->id())));
   DictionaryValue* object_args = new DictionaryValue();
   object_args->SetString(keys::kParentIdKey,
                          base::Int64ToString(new_parent->id()));
@@ -184,26 +186,22 @@ void BookmarkExtensionEventRouter::BookmarkNodeMoved(
   object_args->SetString(keys::kOldParentIdKey,
                          base::Int64ToString(old_parent->id()));
   object_args->SetInteger(keys::kOldIndexKey, old_index);
-  args.Append(object_args);
+  args->Append(object_args);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  DispatchEvent(model->profile(), keys::kOnBookmarkMoved, json_args);
+  DispatchEvent(model->profile(), keys::kOnBookmarkMoved, args.Pass());
 }
 
 void BookmarkExtensionEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                                      const BookmarkNode* parent,
                                                      int index) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   const BookmarkNode* node = parent->GetChild(index);
-  args.Append(new StringValue(base::Int64ToString(node->id())));
+  args->Append(new StringValue(base::Int64ToString(node->id())));
   scoped_ptr<BookmarkTreeNode> tree_node(
       bookmark_extension_helpers::GetBookmarkTreeNode(node, false, false));
-  args.Append(tree_node->ToValue().release());
+  args->Append(tree_node->ToValue().release());
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  DispatchEvent(model->profile(), keys::kOnBookmarkCreated, json_args);
+  DispatchEvent(model->profile(), keys::kOnBookmarkCreated, args.Pass());
 }
 
 void BookmarkExtensionEventRouter::BookmarkNodeRemoved(
@@ -211,23 +209,21 @@ void BookmarkExtensionEventRouter::BookmarkNodeRemoved(
     const BookmarkNode* parent,
     int index,
     const BookmarkNode* node) {
-  ListValue args;
-  args.Append(new StringValue(base::Int64ToString(node->id())));
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(new StringValue(base::Int64ToString(node->id())));
   DictionaryValue* object_args = new DictionaryValue();
   object_args->SetString(keys::kParentIdKey,
                          base::Int64ToString(parent->id()));
   object_args->SetInteger(keys::kIndexKey, index);
-  args.Append(object_args);
+  args->Append(object_args);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  DispatchEvent(model->profile(), keys::kOnBookmarkRemoved, json_args);
+  DispatchEvent(model->profile(), keys::kOnBookmarkRemoved, args.Pass());
 }
 
 void BookmarkExtensionEventRouter::BookmarkNodeChanged(
     BookmarkModel* model, const BookmarkNode* node) {
-  ListValue args;
-  args.Append(new StringValue(base::Int64ToString(node->id())));
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(new StringValue(base::Int64ToString(node->id())));
 
   // TODO(erikkay) The only three things that BookmarkModel sends this
   // notification for are title, url and favicon.  Since we're currently
@@ -238,11 +234,9 @@ void BookmarkExtensionEventRouter::BookmarkNodeChanged(
   object_args->SetString(keys::kTitleKey, node->GetTitle());
   if (node->is_url())
     object_args->SetString(keys::kUrlKey, node->url().spec());
-  args.Append(object_args);
+  args->Append(object_args);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  DispatchEvent(model->profile(), keys::kOnBookmarkChanged, json_args);
+  DispatchEvent(model->profile(), keys::kOnBookmarkChanged, args.Pass());
 }
 
 void BookmarkExtensionEventRouter::BookmarkNodeFaviconChanged(
@@ -252,8 +246,8 @@ void BookmarkExtensionEventRouter::BookmarkNodeFaviconChanged(
 
 void BookmarkExtensionEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
-  ListValue args;
-  args.Append(new StringValue(base::Int64ToString(node->id())));
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(new StringValue(base::Int64ToString(node->id())));
   int childCount = node->child_count();
   ListValue* children = new ListValue();
   for (int i = 0; i < childCount; ++i) {
@@ -263,33 +257,26 @@ void BookmarkExtensionEventRouter::BookmarkNodeChildrenReordered(
   }
   DictionaryValue* reorder_info = new DictionaryValue();
   reorder_info->Set(keys::kChildIdsKey, children);
-  args.Append(reorder_info);
+  args->Append(reorder_info);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  DispatchEvent(model->profile(),
-                keys::kOnBookmarkChildrenReordered,
-                json_args);
+  DispatchEvent(model->profile(), keys::kOnBookmarkChildrenReordered,
+                args.Pass());
 }
 
 void BookmarkExtensionEventRouter::
     ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
-  ListValue args;
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkImportBegan,
-                json_args);
+                args.Pass());
 }
 
 void BookmarkExtensionEventRouter::ExtensiveBookmarkChangesEnded(
     BookmarkModel* model) {
-  ListValue args;
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
   DispatchEvent(model->profile(),
                 keys::kOnBookmarkImportEnded,
-                json_args);
+                args.Pass());
 }
 
 bool GetBookmarksFunction::RunImpl() {

@@ -817,7 +817,7 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
   DictionaryValue* details = new DictionaryValue();
   event_args->Append(details);
   // Get file definitions. These will be replaced with Entry instances by
-  // chromeHidden.Event.dispatchJSON() method from even_binding.js.
+  // chromeHidden.Event.dispatchEvent() method from event_binding.js.
   ListValue* files_urls = new ListValue();
   details->Set("entries", files_urls);
   for (FileDefinitionList::const_iterator iter = file_list.begin();
@@ -841,11 +841,9 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
       details->SetInteger("tab_id", ExtensionTabUtil::GetTabId(contents));
   }
 
-  std::string json_args;
-  base::JSONWriter::Write(event_args.get(), &json_args);
   event_router->DispatchEventToExtension(
       extension_id_, std::string("fileBrowserHandler.onExecute"),
-      json_args, profile(), GURL());
+      event_args.Pass(), profile(), GURL());
   ExecuteDoneOnUIThread(true);
 }
 
@@ -897,4 +895,3 @@ void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
 }
 
 } // namespace file_handler_util
-

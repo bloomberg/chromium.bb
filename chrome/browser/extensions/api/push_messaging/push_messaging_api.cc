@@ -34,11 +34,11 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
   message.subchannel_id = subchannel;
   message.payload = payload;
 
-  scoped_ptr<base::Value> parameters(glue::OnMessage::Create(message));
+  scoped_ptr<base::ListValue> args(glue::OnMessage::Create(message));
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id,
       event_names::kOnPushMessage,
-      *parameters.get(),
+      args.Pass(),
       profile_,
       GURL());
 }

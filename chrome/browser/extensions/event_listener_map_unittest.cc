@@ -53,8 +53,9 @@ class EventListenerMapUnittest : public testing::Test {
                                 const GURL& url) {
     EventFilteringInfo info;
     info.SetURL(url);
-    scoped_ptr<Event> result(new Event(event_name, "", GURL(),
-        NULL, "", EventRouter::USER_GESTURE_UNKNOWN, info));
+    scoped_ptr<Event> result(new Event(event_name,
+        scoped_ptr<ListValue>(new ListValue()), GURL(), NULL,
+        EventRouter::USER_GESTURE_UNKNOWN, info));
     return result.Pass();
   }
 

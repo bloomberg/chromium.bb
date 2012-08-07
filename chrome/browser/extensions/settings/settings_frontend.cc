@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_path.h"
+#include "base/json/json_reader.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -40,14 +41,15 @@ class DefaultObserver : public SettingsObserver {
       const std::string& extension_id,
       settings_namespace::Namespace settings_namespace,
       const std::string& change_json) OVERRIDE {
+    // TODO(gdk): This is a temporary hack while the refactoring for
+    // string-based event payloads is removed. http://crbug.com/136045
+    scoped_ptr<ListValue> args(new ListValue());
+    args->Append(base::JSONReader::Read(change_json));
+    args->Append(Value::CreateStringValue(settings_namespace::ToString(
+        settings_namespace)));
+
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id,
-        event_names::kOnSettingsChanged,
-        // This is the list of function arguments to pass to the onChanged
-        // handler of extensions, an array of [changes, settings_namespace].
-        std::string("[") + change_json + ",\"" +
-            settings_namespace::ToString(settings_namespace) + "\"]",
-        NULL,
+        extension_id, event_names::kOnSettingsChanged, args.Pass(), NULL,
         GURL());
   }
 

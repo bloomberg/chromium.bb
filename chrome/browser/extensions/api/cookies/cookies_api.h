@@ -55,7 +55,7 @@ class ExtensionCookiesEventRouter : public content::NotificationObserver {
   // This method dispatches events to the extension message service.
   void DispatchEvent(Profile* context,
                      const char* event_name,
-                     const std::string& json_args,
+                     scoped_ptr<base::ListValue> event_args,
                      GURL& cookie_domain);
 
   // Used for tracking registrations to CookieMonster notifications.

@@ -254,9 +254,9 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
     Debuggee debuggee;
     debuggee.tab_id = tab_id_;
 
-    std::string json_args = OnDetach::ToJson(debuggee);
+    scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee));
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, keys::kOnDetach, json_args, profile, GURL());
+        extension_id_, keys::kOnDetach, args.Pass(), profile, GURL());
   }
 }
 
@@ -307,10 +307,9 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     if (dictionary->GetDictionary("params", &params_value))
       params.additional_properties.Swap(params_value);
 
-    std::string json_args = OnEvent::ToJson(debuggee, method_name, params);
-
+    scoped_ptr<ListValue> args(OnEvent::Create(debuggee, method_name, params));
     profile->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, keys::kOnEvent, json_args, profile, GURL());
+        extension_id_, keys::kOnEvent, args.Pass(), profile, GURL());
   } else {
     SendCommandDebuggerFunction* function = pending_requests_[id];
     if (!function)

@@ -38,12 +38,10 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
 
   virtual void OnAlarm(const std::string& extension_id,
                        const Alarm& alarm) {
-    ListValue args;
-    std::string json_args;
-    args.Append(alarm.js_alarm->ToValue().release());
-    base::JSONWriter::Write(&args, &json_args);
+    scoped_ptr<ListValue> args(new ListValue());
+    args->Append(alarm.js_alarm->ToValue().release());
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-        extension_id, kOnAlarmEvent, json_args, NULL, GURL());
+        extension_id, kOnAlarmEvent, args.Pass(), NULL, GURL());
   }
 
  private:

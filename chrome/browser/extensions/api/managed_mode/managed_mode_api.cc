@@ -60,15 +60,14 @@ void ExtensionManagedModeEventRouter::Observe(
       *content::Details<std::string>(details).ptr();
   DCHECK_EQ(std::string(prefs::kInManagedMode), pref_name);
 
-  ListValue args;
   DictionaryValue* dict = new DictionaryValue();
-  args.Append(dict);
   dict->SetBoolean(extension_preference_api_constants::kValue,
       g_browser_process->local_state()->GetBoolean(prefs::kInManagedMode));
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Set(0, dict);
+
   extensions::EventRouter* event_router = profile_->GetExtensionEventRouter();
-  event_router->DispatchEventToRenderers(kChangeEventName, json_args, NULL,
+  event_router->DispatchEventToRenderers(kChangeEventName, args.Pass(), NULL,
                                          GURL(),
                                          extensions::EventFilteringInfo());
 }

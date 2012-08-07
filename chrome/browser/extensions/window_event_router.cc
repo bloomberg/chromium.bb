@@ -67,11 +67,11 @@ void WindowEventRouter::OnWindowControllerAdded(
   if (!profile_->IsSameProfile(window_controller->profile()))
     return;
 
-  base::ListValue args;
+  scoped_ptr<base::ListValue> args(new ListValue());
   DictionaryValue* window_dictionary = window_controller->CreateWindowValue();
-  args.Append(window_dictionary);
+  args->Append(window_dictionary);
   DispatchEvent(event_names::kOnWindowCreated, window_controller->profile(),
-                &args);
+                args.Pass());
 }
 
 void WindowEventRouter::OnWindowControllerRemoved(
@@ -80,10 +80,10 @@ void WindowEventRouter::OnWindowControllerRemoved(
     return;
 
   int window_id = window_controller->GetWindowId();
-  base::ListValue args;
-  args.Append(Value::CreateIntegerValue(window_id));
+  scoped_ptr<base::ListValue> args(new ListValue());
+  args->Append(Value::CreateIntegerValue(window_id));
   DispatchEvent(event_names::kOnWindowRemoved, window_controller->profile(),
-                &args);
+                args.Pass());
 }
 
 #if defined(TOOLKIT_VIEWS)
@@ -132,22 +132,18 @@ void WindowEventRouter::OnActiveWindowChanged(
   focused_profile_ = window_profile;
   focused_window_id_ = window_id;
 
-  base::ListValue real_args;
-  real_args.Append(Value::CreateIntegerValue(window_id));
-  std::string real_json_args;
-  base::JSONWriter::Write(&real_args, &real_json_args);
+  scoped_ptr<base::ListValue> real_args(new ListValue());
+  real_args->Append(Value::CreateIntegerValue(window_id));
 
   // When switching between windows in the default and incognitoi profiles,
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
-  std::string none_json_args;
+  scoped_ptr<base::ListValue> none_args(new ListValue());
   if (focused_profile_ != NULL && previous_focused_profile != NULL &&
       focused_profile_ != previous_focused_profile) {
-    ListValue none_args;
-    none_args.Append(
+    none_args->Append(
         Value::CreateIntegerValue(extension_misc::kUnknownWindowId));
-    base::JSONWriter::Write(&none_args, &none_json_args);
   }
 
   if (!window_profile)
@@ -160,19 +156,17 @@ void WindowEventRouter::OnActiveWindowChanged(
   ExtensionSystem::Get(window_profile)->event_router()->
       DispatchEventsToRenderersAcrossIncognito(
           event_names::kOnWindowFocusedChanged,
-          real_json_args,
+          real_args.Pass(),
           window_profile,
-          none_json_args,
+          none_args.Pass(),
           GURL());
 }
 
 void WindowEventRouter::DispatchEvent(const char* event_name,
                                       Profile* profile,
-                                      base::ListValue* args) {
-  std::string json_args;
-  base::JSONWriter::Write(args, &json_args);
+                                      scoped_ptr<base::ListValue> args) {
   ExtensionSystem::Get(profile)->event_router()->
-      DispatchEventToRenderers(event_name, json_args, profile, GURL());
+      DispatchEventToRenderers(event_name, args.Pass(), profile, GURL());
 }
 
 }  // namespace extensions

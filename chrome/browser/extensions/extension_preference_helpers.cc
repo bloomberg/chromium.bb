@@ -104,8 +104,6 @@ void DispatchEventToExtensions(
       std::string level_of_control =
           GetLevelOfControl(profile, extension_id, browser_pref, incognito);
       dict->SetString(kLevelOfControlKey, level_of_control);
-      std::string json_args;
-      base::JSONWriter::Write(args, &json_args);
 
       // If the extension is in incognito split mode,
       // a) incognito pref changes are visible only to the incognito tabs
@@ -126,8 +124,10 @@ void DispatchEventToExtensions(
         }
       }
 
+      scoped_ptr<ListValue> args_copy(args->DeepCopy());
       router->DispatchEventToExtension(
-          extension_id, event_name, json_args, restrict_to_profile, GURL());
+          extension_id, event_name, args_copy.Pass(), restrict_to_profile,
+          GURL());
     }
   }
 }

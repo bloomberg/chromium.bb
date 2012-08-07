@@ -188,8 +188,8 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
   bool sends_end_event =
       (event_types.find(constants::kEventTypeEnd) != event_types.end());
 
-  ListValue args;
-  args.Set(0, Value::CreateStringValue(utterance->text()));
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Set(0, Value::CreateStringValue(utterance->text()));
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.
@@ -208,24 +208,23 @@ void ExtensionTtsEngineSpeak(Utterance* utterance,
   if (options->HasKey(constants::kOnEventKey))
     options->Remove(constants::kOnEventKey, NULL);
 
-  args.Set(1, options);
-  args.Set(2, Value::CreateIntegerValue(utterance->id()));
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  args->Set(1, options);
+  args->Set(2, Value::CreateIntegerValue(utterance->id()));
 
   utterance->profile()->GetExtensionEventRouter()->DispatchEventToExtension(
       extension->id(),
       events::kOnSpeak,
-      json_args,
+      args.Pass(),
       utterance->profile(),
       GURL());
 }
 
 void ExtensionTtsEngineStop(Utterance* utterance) {
+  scoped_ptr<ListValue> args(new ListValue());
   utterance->profile()->GetExtensionEventRouter()->DispatchEventToExtension(
       utterance->extension_id(),
       events::kOnStop,
-      "[]",
+      args.Pass(),
       utterance->profile(),
       GURL());
 }

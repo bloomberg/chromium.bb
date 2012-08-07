@@ -16,6 +16,10 @@
 
 class Profile;
 
+namespace base {
+class ListValue;
+}
+
 namespace content {
 class NotificationRegistrar;
 struct SpeechRecognitionError;
@@ -172,7 +176,7 @@ class SpeechInputExtensionManager
   void DispatchError(const std::string& error, bool dispatch_event);
   void DispatchEventToExtension(const std::string& extension_id,
                                 const std::string& event,
-                                const std::string& json_args);
+                                scoped_ptr<base::ListValue> event_args);
   void ExtensionUnloaded(const std::string& extension_id);
 
   void ResetToIdleState();

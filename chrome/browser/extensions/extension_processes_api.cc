@@ -311,7 +311,7 @@ void ExtensionProcessesEventRouter::OnItemsAdded(int start, int length) {
     index = model_->GetGroupIndexForResource(start);
   }
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* process = CreateProcessFromModel(
       model_->GetUniqueChildProcessId(index), model_, index, false);
   DCHECK(process != NULL);
@@ -319,11 +319,9 @@ void ExtensionProcessesEventRouter::OnItemsAdded(int start, int length) {
   if (process == NULL)
     return;
 
-  args.Append(process);
+  args->Append(process);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  NotifyProfiles(keys::kOnCreated, json_args);
+  NotifyProfiles(keys::kOnCreated, args.Pass());
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -368,11 +366,9 @@ void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
       processes->Set(base::IntToString(id), it.GetCurrentValue());
     }
 
-    ListValue args;
-    args.Append(processes);
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
-    NotifyProfiles(keys::kOnUpdated, json_args);
+    scoped_ptr<ListValue> args(new ListValue());
+    args->Append(processes);
+    NotifyProfiles(keys::kOnUpdated, args.Pass());
   }
 
   if (updated_memory) {
@@ -389,11 +385,9 @@ void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
         processes->Set(base::IntToString(id), it.GetCurrentValue());
     }
 
-    ListValue args;
-    args.Append(processes);
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
-    NotifyProfiles(keys::kOnUpdatedWithMemory, json_args);
+    scoped_ptr<ListValue> args(new ListValue());
+    args->Append(processes);
+    NotifyProfiles(keys::kOnUpdatedWithMemory, args.Pass());
   }
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
@@ -410,21 +404,19 @@ void ExtensionProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
     return;
 
   // The callback function parameters.
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
 
   // First arg: The id of the process that was closed.
-  args.Append(Value::CreateIntegerValue(
+  args->Append(Value::CreateIntegerValue(
       model_->GetUniqueChildProcessId(start)));
 
   // Second arg: The exit type for the process.
-  args.Append(Value::CreateIntegerValue(0));
+  args->Append(Value::CreateIntegerValue(0));
 
   // Third arg: The exit code for the process.
-  args.Append(Value::CreateIntegerValue(0));
+  args->Append(Value::CreateIntegerValue(0));
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  NotifyProfiles(keys::kOnExited, json_args);
+  NotifyProfiles(keys::kOnExited, args.Pass());
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -452,12 +444,10 @@ void ExtensionProcessesEventRouter::ProcessHangEvent(
   if (process == NULL)
     return;
 
-  ListValue args;
-  args.Append(process);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(process);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  NotifyProfiles(keys::kOnUnresponsive, json_args);
+  NotifyProfiles(keys::kOnUnresponsive, args.Pass());
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
@@ -466,39 +456,40 @@ void ExtensionProcessesEventRouter::ProcessClosedEvent(
     content::RenderProcessHost::RendererClosedDetails* details) {
 #if defined(ENABLE_TASK_MANAGER)
   // The callback function parameters.
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
 
   // First arg: The id of the process that was closed.
-  args.Append(Value::CreateIntegerValue(rph->GetID()));
+  args->Append(Value::CreateIntegerValue(rph->GetID()));
 
   // Second arg: The exit type for the process.
-  args.Append(Value::CreateIntegerValue(details->status));
+  args->Append(Value::CreateIntegerValue(details->status));
 
   // Third arg: The exit code for the process.
-  args.Append(Value::CreateIntegerValue(details->exit_code));
+  args->Append(Value::CreateIntegerValue(details->exit_code));
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
-  NotifyProfiles(keys::kOnExited, json_args);
+  NotifyProfiles(keys::kOnExited, args.Pass());
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ExtensionProcessesEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
-    const std::string& json_args) {
+    scoped_ptr<ListValue> event_args) {
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, NULL, GURL(), extensions::EventFilteringInfo());
+        event_name, event_args.Pass(), NULL, GURL(),
+        extensions::EventFilteringInfo());
   }
 }
 
-void ExtensionProcessesEventRouter::NotifyProfiles(const char* event_name,
-                                                   std::string json_args) {
+void ExtensionProcessesEventRouter::NotifyProfiles(
+    const char* event_name,
+    scoped_ptr<ListValue> event_args) {
   for (ProfileSet::iterator it = profiles_.begin();
        it != profiles_.end(); it++) {
     Profile* profile = *it;
-    DispatchEvent(profile, event_name, json_args);
+    scoped_ptr<ListValue> event_args_copy(event_args->DeepCopy());
+    DispatchEvent(profile, event_name, event_args_copy.Pass());
   }
 }
 

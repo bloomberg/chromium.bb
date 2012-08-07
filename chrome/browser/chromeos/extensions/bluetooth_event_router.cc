@@ -114,29 +114,25 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
   extensions::api::experimental_bluetooth::BluetoothDeviceToApiDevice(
       *device, &extension_device);
 
-  ListValue args;
-  args.Append(extension_device.ToValue().release());
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(extension_device.ToValue().release());
 
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       extensions::event_names::kBluetoothOnDeviceDiscovered,
-      json_args,
+      args.Pass(),
       NULL,
       GURL());
 }
 
 void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
     const char* event_name, bool value) {
-  ListValue args;
-  args.Append(Value::CreateBooleanValue(value));
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(Value::CreateBooleanValue(value));
 
   // TODO(bryeung): only dispatch the event to interested renderers
   // crbug.com/133179
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, json_args, NULL, GURL());
+      event_name, args.Pass(), NULL, GURL());
 }
 
 }  // namespace chromeos

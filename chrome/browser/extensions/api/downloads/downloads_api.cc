@@ -918,13 +918,14 @@ void ExtensionDownloadsEventRouter::ManagerGoingDown(
 void ExtensionDownloadsEventRouter::DispatchEvent(
     const char* event_name, base::Value* arg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::ListValue args;
-  args.Append(arg);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(arg);
   std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  base::JSONWriter::Write(args.get(), &json_args);
+
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       event_name,
-      json_args,
+      args.Pass(),
       profile_,
       GURL(),
       extensions::EventFilteringInfo());

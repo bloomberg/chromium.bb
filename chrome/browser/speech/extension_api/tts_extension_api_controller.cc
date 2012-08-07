@@ -108,7 +108,6 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   if (src_id_ < 0)
     return;
 
-  ListValue args;
   DictionaryValue* event = new DictionaryValue();
   if (char_index != kInvalidCharIndex)
     event->SetInteger(constants::kCharIndexKey, char_index);
@@ -118,14 +117,14 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   }
   event->SetInteger(constants::kSrcIdKey, src_id_);
   event->SetBoolean(constants::kIsFinalEventKey, finished_);
-  args.Set(0, event);
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+
+  scoped_ptr<ListValue> arguments(new ListValue());
+  arguments->Set(0, event);
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       src_extension_id_,
       events::kOnEvent,
-      json_args,
+      arguments.Pass(),
       profile_,
       src_url_);
 }

@@ -107,19 +107,20 @@ class BrowserEventRouter : public TabStripModelObserver,
   // so we avoid duplication by dropping events destined for other profiles.
   void DispatchEvent(Profile* profile,
                      const char* event_name,
-                     const std::string& json_args,
+                     scoped_ptr<base::ListValue> args,
                      EventRouter::UserGestureState user_gesture);
 
   void DispatchEventToExtension(Profile* profile,
                                 const std::string& extension_id,
                                 const char* event_name,
-                                const std::string& json_args,
+                                scoped_ptr<base::ListValue> event_args,
                                 EventRouter::UserGestureState user_gesture);
 
-  void DispatchEventsAcrossIncognito(Profile* profile,
-                                     const char* event_name,
-                                     const std::string& json_args,
-                                     const std::string& cross_incognito_args);
+  void DispatchEventsAcrossIncognito(
+      Profile* profile,
+      const char* event_name,
+      scoped_ptr<base::ListValue> event_args,
+      scoped_ptr<base::ListValue> cross_incognito_args);
 
   void DispatchEventWithTab(Profile* profile,
                             const std::string& extension_id,

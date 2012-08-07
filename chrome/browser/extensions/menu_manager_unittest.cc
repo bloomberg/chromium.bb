@@ -29,6 +29,7 @@
 using content::BrowserThread;
 using testing::_;
 using testing::AtLeast;
+using testing::DeleteArg;
 using testing::InSequence;
 using testing::Return;
 using testing::SaveArg;
@@ -375,14 +376,23 @@ class MockEventRouter : public EventRouter {
   explicit MockEventRouter(Profile* profile) :
       EventRouter(profile) {}
 
-  MOCK_METHOD6(DispatchEventToExtension,
+  MOCK_METHOD6(DispatchEventToExtensionMock,
                void(const std::string& extension_id,
                     const std::string& event_name,
-                    const std::string& event_args,
+                    base::ListValue* event_args,
                     Profile* source_profile,
                     const GURL& event_url,
                     EventRouter::UserGestureState state));
 
+  virtual void DispatchEventToExtension(const std::string& extension_id,
+                                        const std::string& event_name,
+                                        scoped_ptr<base::ListValue> event_args,
+                                        Profile* source_profile,
+                                        const GURL& event_url,
+                                        EventRouter::UserGestureState state) {
+    DispatchEventToExtensionMock(extension_id, event_name, event_args.release(),
+                                 source_profile, event_url, state);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventRouter);
@@ -474,40 +484,32 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
 
   // Use the magic of googlemock to save a parameter to our mock's
   // DispatchEventToExtension method into event_args.
-  std::string event_args;
+  base::ListValue* list = NULL;
   {
     InSequence s;
     EXPECT_CALL(*mock_event_router.get(),
-                DispatchEventToExtension(
+                DispatchEventToExtensionMock(
                     item->extension_id(),
-                  extensions::event_names::kOnContextMenus,
-                  _,
-                  &profile,
-                  GURL(),
-                  EventRouter::USER_GESTURE_ENABLED))
+                    extensions::event_names::kOnContextMenus,
+                    _,
+                    &profile,
+                    GURL(),
+                    EventRouter::USER_GESTURE_ENABLED))
       .Times(1)
-      .WillOnce(SaveArg<2>(&event_args));
+      .WillOnce(SaveArg<2>(&list));
   EXPECT_CALL(*mock_event_router.get(),
-              DispatchEventToExtension(
+              DispatchEventToExtensionMock(
                   item->extension_id(),
                   extensions::event_names::kOnContextMenuClicked,
                   _,
                   &profile,
                   GURL(),
                   EventRouter::USER_GESTURE_ENABLED))
-      .Times(1);
+      .Times(1)
+      .WillOnce(DeleteArg<2>());
   }
   manager_.ExecuteCommand(&profile, NULL /* tab_contents */, params, id);
 
-  // Parse the json event_args, which should turn into a 2-element list where
-  // the first element is a dictionary we want to inspect for the correct
-  // values.
-  scoped_ptr<Value> result(
-      base::JSONReader::Read(event_args, base::JSON_ALLOW_TRAILING_COMMAS));
-  Value* value = result.get();
-  ASSERT_TRUE(result.get() != NULL);
-  ASSERT_EQ(Value::TYPE_LIST, value->GetType());
-  ListValue* list = static_cast<ListValue*>(value);
   ASSERT_EQ(2u, list->GetSize());
 
   DictionaryValue* info;
@@ -532,6 +534,8 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   bool bool_tmp = true;
   ASSERT_TRUE(info->GetBoolean("editable", &bool_tmp));
   ASSERT_EQ(params.is_editable, bool_tmp);
+
+  delete list;
 }
 
 // Test that there is always only one radio item selected.

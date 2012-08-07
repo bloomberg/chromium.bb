@@ -166,15 +166,13 @@ BookmarkManagerExtensionEventRouter::~BookmarkManagerExtensionEventRouter() {
     tab_->bookmark_tab_helper()->SetBookmarkDragDelegate(NULL);
 }
 
-void BookmarkManagerExtensionEventRouter::DispatchEvent(const char* event_name,
-                                                        const ListValue* args) {
+void BookmarkManagerExtensionEventRouter::DispatchEvent(
+    const char* event_name, scoped_ptr<ListValue> args) {
   if (!profile_->GetExtensionEventRouter())
     return;
 
-  std::string json_args;
-  base::JSONWriter::Write(args, &json_args);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, json_args, NULL, GURL(), extensions::EventFilteringInfo());
+      event_name, args.Pass(), NULL, GURL(), extensions::EventFilteringInfo());
 }
 
 void BookmarkManagerExtensionEventRouter::DispatchDragEvent(
@@ -182,9 +180,9 @@ void BookmarkManagerExtensionEventRouter::DispatchDragEvent(
   if (data.size() == 0)
     return;
 
-  ListValue args;
-  BookmarkNodeDataToJSON(profile_, data, &args);
-  DispatchEvent(event_name, &args);
+  scoped_ptr<ListValue> args(new ListValue());
+  BookmarkNodeDataToJSON(profile_, data, args.get());
+  DispatchEvent(event_name, args.Pass());
 }
 
 void BookmarkManagerExtensionEventRouter::OnDragEnter(

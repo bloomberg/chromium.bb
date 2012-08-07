@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
 
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -13,10 +14,6 @@
 struct BookmarkNodeData;
 class Profile;
 class TabContents;
-
-namespace base {
-class ListValue;
-}
 
 // Class that handles the chrome.experimental.bookmarkManager events.
 class BookmarkManagerExtensionEventRouter
@@ -40,7 +37,8 @@ class BookmarkManagerExtensionEventRouter
 
  private:
   // Helper to actually dispatch an event to extension listeners.
-  void DispatchEvent(const char* event_name, const base::ListValue* args);
+  void DispatchEvent(const char* event_name,
+                     scoped_ptr<base::ListValue> args);
 
   void DispatchDragEvent(const BookmarkNodeData& data, const char* event_name);
 

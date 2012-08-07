@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_WINDOW_EVENT_ROUTER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -65,7 +66,7 @@ class WindowEventRouter : public WindowControllerListObserver,
  private:
   void DispatchEvent(const char* event_name,
                      Profile* profile,
-                     base::ListValue* args);
+                     scoped_ptr<base::ListValue> args);
 
   content::NotificationRegistrar registrar_;
   bool initialized_;

@@ -592,9 +592,9 @@ void ExtensionManagementEventRouter::Observe(
       return;
   }
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   if (event_name == events::kOnExtensionUninstalled) {
-    args.Append(Value::CreateStringValue(
+    args->Append(Value::CreateStringValue(
         content::Details<const extensions::Extension>(details).ptr()->id()));
   } else {
     const Extension* extension = NULL;
@@ -606,12 +606,9 @@ void ExtensionManagementEventRouter::Observe(
     }
     CHECK(extension);
     ExtensionService* service = profile->GetExtensionService();
-    args.Append(CreateExtensionInfo(*extension, service));
+    args->Append(CreateExtensionInfo(*extension, service));
   }
 
-  std::string args_json;
-  base::JSONWriter::Write(&args, &args_json);
-
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name, args_json, NULL, GURL(), extensions::EventFilteringInfo());
+      event_name, args.Pass(), NULL, GURL(), extensions::EventFilteringInfo());
 }

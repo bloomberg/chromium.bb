@@ -83,7 +83,7 @@ namespace {
 
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
 static const int64 kMaxExtensionIdleHandlerDelayMs = 5*60*1000;
-static const char kEventDispatchFunction[] = "Event.dispatchJSON";
+static const char kEventDispatchFunction[] = "Event.dispatchEvent";
 static const char kOnUnloadEvent[] = "runtime.onSuspend";
 static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
@@ -1023,7 +1023,7 @@ void Dispatcher::OnUnload(const std::string& extension_id) {
   // event creates.
   ListValue args;
   args.Set(0, Value::CreateStringValue(kOnUnloadEvent));
-  args.Set(1, Value::CreateStringValue("[]"));
+  args.Set(1, new ListValue());
   v8_context_set_.DispatchChromeHiddenMethod(
       extension_id, kEventDispatchFunction, args, NULL, GURL());
 
@@ -1033,7 +1033,7 @@ void Dispatcher::OnUnload(const std::string& extension_id) {
 void Dispatcher::OnCancelUnload(const std::string& extension_id) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(kOnSuspendCanceledEvent));
-  args.Set(1, Value::CreateStringValue("[]"));
+  args.Set(1, new ListValue());
   v8_context_set_.DispatchChromeHiddenMethod(
       extension_id, kEventDispatchFunction, args, NULL, GURL());
 }

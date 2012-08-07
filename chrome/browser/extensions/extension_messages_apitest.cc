@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,16 @@ class MessageSender : public content::NotificationObserver {
   }
 
  private:
+  static scoped_ptr<ListValue> BuildEventArguments(const bool last_message,
+                                                   const std::string& data) {
+    DictionaryValue* event = new DictionaryValue();
+    event->SetBoolean("lastMessage", last_message);
+    event->SetString("data", data);
+    scoped_ptr<ListValue> arguments(new ListValue());
+    arguments->Append(event);
+    return arguments.Pass();
+  }
+
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
@@ -29,22 +40,22 @@ class MessageSender : public content::NotificationObserver {
     // Sends four messages to the extension. All but the third message sent
     // from the origin http://b.com/ are supposed to arrive.
     event_router->DispatchEventToRenderers("test.onMessage",
-        "[{\"lastMessage\":false,\"data\":\"no restriction\"}]",
+        BuildEventArguments(false, "no restriction"),
         content::Source<Profile>(source).ptr(),
         GURL(),
         extensions::EventFilteringInfo());
     event_router->DispatchEventToRenderers("test.onMessage",
-        "[{\"lastMessage\":false,\"data\":\"http://a.com/\"}]",
+        BuildEventArguments(false, "http://a.com/"),
         content::Source<Profile>(source).ptr(),
         GURL("http://a.com/"),
         extensions::EventFilteringInfo());
     event_router->DispatchEventToRenderers("test.onMessage",
-        "[{\"lastMessage\":false,\"data\":\"http://b.com/\"}]",
+        BuildEventArguments(false, "http://b.com/"),
         content::Source<Profile>(source).ptr(),
         GURL("http://b.com/"),
         extensions::EventFilteringInfo());
     event_router->DispatchEventToRenderers("test.onMessage",
-        "[{\"lastMessage\":true,\"data\":\"last message\"}]",
+        BuildEventArguments(true, "last message"),
         content::Source<Profile>(source).ptr(),
         GURL(),
         extensions::EventFilteringInfo());

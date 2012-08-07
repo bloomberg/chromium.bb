@@ -584,7 +584,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
   if (item->type() == MenuItem::RADIO)
     RadioItemSelected(item);
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
 
   DictionaryValue* properties = new DictionaryValue();
   SetIdKeyValue(properties, "menuItemId", item->id());
@@ -614,14 +614,14 @@ void MenuManager::ExecuteCommand(Profile* profile,
 
   properties->SetBoolean("editable", params.is_editable);
 
-  args.Append(properties);
+  args->Append(properties);
 
   // Add the tab info to the argument list.
   // Note: web_contents only NULL in unit tests :(
   if (web_contents)
-    args.Append(ExtensionTabUtil::CreateTabValue(web_contents));
+    args->Append(ExtensionTabUtil::CreateTabValue(web_contents));
   else
-    args.Append(new DictionaryValue());
+    args->Append(new DictionaryValue());
 
   if (item->type() == MenuItem::CHECKBOX ||
       item->type() == MenuItem::RADIO) {
@@ -647,15 +647,13 @@ void MenuManager::ExecuteCommand(Profile* profile,
         GrantIfRequested(extension);
   }
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
   event_router->DispatchEventToExtension(
       item->extension_id(), event_names::kOnContextMenus,
-      json_args, profile, GURL(),
+      scoped_ptr<ListValue>(args->DeepCopy()), profile, GURL(),
       EventRouter::USER_GESTURE_ENABLED);
   event_router->DispatchEventToExtension(
       item->extension_id(), event_names::kOnContextMenuClicked,
-      json_args, profile, GURL(),
+      args.Pass(), profile, GURL(),
       EventRouter::USER_GESTURE_ENABLED);
 }
 

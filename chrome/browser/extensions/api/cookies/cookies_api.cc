@@ -80,7 +80,7 @@ void ExtensionCookiesEventRouter::Observe(
 void ExtensionCookiesEventRouter::CookieChanged(
     Profile* profile,
     ChromeCookieDetails* details) {
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* dict = new DictionaryValue();
   dict->SetBoolean(keys::kRemovedKey, details->removed);
 
@@ -117,22 +117,20 @@ void ExtensionCookiesEventRouter::CookieChanged(
   }
   dict->SetString(keys::kCauseKey, cause);
 
-  args.Append(dict);
+  args->Append(dict);
 
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
   GURL cookie_domain =
       cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
-  DispatchEvent(profile, keys::kOnChanged, json_args, cookie_domain);
+  DispatchEvent(profile, keys::kOnChanged, args.Pass(), cookie_domain);
 }
 
-void ExtensionCookiesEventRouter::DispatchEvent(Profile* profile,
-                                                const char* event_name,
-                                                const std::string& json_args,
-                                                GURL& cookie_domain) {
+void ExtensionCookiesEventRouter::DispatchEvent(
+    Profile* profile, const char* event_name, scoped_ptr<ListValue> event_args,
+    GURL& cookie_domain) {
   if (profile && profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-        event_name, json_args, profile, cookie_domain, EventFilteringInfo());
+        event_name, event_args.Pass(), profile, cookie_domain,
+        EventFilteringInfo());
   }
 }
 

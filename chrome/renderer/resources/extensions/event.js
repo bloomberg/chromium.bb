@@ -210,7 +210,7 @@
   chromeHidden.Event = {};
 
   // callback is a function(args, dispatch). args are the args we receive from
-  // dispatchJSON(), and dispatch is a function(args) that dispatches args to
+  // dispatchEvent(), and dispatch is a function(args) that dispatches args to
   // its listeners.
   chromeHidden.Event.registerArgumentMassager = function(name, callback) {
     if (eventArgumentMassagers[name])
@@ -218,10 +218,9 @@
     eventArgumentMassagers[name] = callback;
   };
 
-  // Dispatches a named event with the given JSON array, which is deserialized
-  // before dispatch. The JSON array is the list of arguments that will be
-  // sent with the event callback.
-  chromeHidden.Event.dispatchJSON = function(name, args, filteringInfo) {
+  // Dispatches a named event with the given argument array. The args array is
+  // the list of arguments that will be sent to the event callback.
+  chromeHidden.Event.dispatchEvent = function(name, args, filteringInfo) {
     var listenerIDs = null;
 
     if (filteringInfo)
@@ -230,12 +229,6 @@
     var event = attachedNamedEvents[name];
     if (!event)
       return;
-
-    // TODO(asargent): This is an antiquity. Until all callers of
-    // dispatchJSON use actual values, this must remain here to catch the
-    // cases where a caller has hard-coded a JSON string to pass in.
-    if (typeof(args) == "string")
-      args = chromeHidden.JSON.parse(args);
 
     var dispatchArgs = function(args) {
       result = event.dispatch_(args, listenerIDs);

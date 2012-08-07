@@ -4,10 +4,11 @@
 
 #include "chrome/browser/extensions/extension_devtools_bridge.h"
 
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_devtools_events.h"
@@ -105,9 +106,10 @@ void ExtensionDevToolsBridge::InspectedContentsClosing() {
 
   // TODO(knorton): Remove this event in favor of the standard tabs.onRemoved
   // event in extensions.
-  std::string json("[{}]");
+  scoped_ptr<base::ListValue> arguments(new base::ListValue());
+  arguments->Set(0, new base::DictionaryValue());
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      on_tab_close_event_name_, json, profile_, GURL(),
+      on_tab_close_event_name_, arguments.Pass(), profile_, GURL(),
       extensions::EventFilteringInfo());
 
   // This may result in this object being destroyed.
@@ -118,9 +120,13 @@ void ExtensionDevToolsBridge::DispatchOnInspectorFrontend(
     const std::string& data) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
-  std::string json = base::StringPrintf("[%s]", data.c_str());
+  scoped_ptr<base::ListValue> arguments(new base::ListValue());
+  if (!data.empty()) {
+    arguments->Append(base::JSONReader::Read(data));
+  }
+
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      on_page_event_name_, json, profile_, GURL(),
+      on_page_event_name_, arguments.Pass(), profile_, GURL(),
       extensions::EventFilteringInfo());
 }
 

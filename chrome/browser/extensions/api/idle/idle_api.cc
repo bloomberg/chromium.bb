@@ -144,13 +144,11 @@ int CheckThresholdBounds(int timeout) {
 void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
                                                  IdleState state) {
   // Prepare the single argument of the current state.
-  ListValue args;
-  args.Append(CreateIdleValue(state));
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(CreateIdleValue(state));
 
   profile->GetExtensionEventRouter()->DispatchEventToRenderers(
-      keys::kOnStateChanged, json_args, profile,
+      keys::kOnStateChanged, args.Pass(), profile,
       GURL(), extensions::EventFilteringInfo());
 }
 

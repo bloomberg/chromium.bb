@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -35,7 +36,7 @@ class EventRouterForwarder
   // on all (original) profiles' EventRouters.
   // May be called on any thread.
   void BroadcastEventToRenderers(const std::string& event_name,
-                                 const std::string& event_args,
+                                 scoped_ptr<base::ListValue> event_args,
                                  const GURL& event_url);
 
   // Calls
@@ -45,7 +46,7 @@ class EventRouterForwarder
   // May be called on any thread.
   void BroadcastEventToExtension(const std::string& extension_id,
                                  const std::string& event_name,
-                                 const std::string& event_args,
+                                 scoped_ptr<base::ListValue> event_args,
                                  const GURL& event_url);
 
   // Calls
@@ -53,7 +54,7 @@ class EventRouterForwarder
   //       use_profile_to_restrict_events ? profile : NULL, event_url)
   // on |profile|'s EventRouter. May be called on any thread.
   void DispatchEventToRenderers(const std::string& event_name,
-                                const std::string& event_args,
+                                scoped_ptr<base::ListValue> event_args,
                                 void* profile,
                                 bool use_profile_to_restrict_events,
                                 const GURL& event_url);
@@ -64,7 +65,7 @@ class EventRouterForwarder
   // on |profile|'s EventRouter. May be called on any thread.
   void DispatchEventToExtension(const std::string& extension_id,
                                 const std::string& event_name,
-                                const std::string& event_args,
+                                scoped_ptr<base::ListValue> event_args,
                                 void* profile,
                                 bool use_profile_to_restrict_events,
                                 const GURL& event_url);
@@ -77,7 +78,7 @@ class EventRouterForwarder
   // Virtual for testing.
   virtual void HandleEvent(const std::string& extension_id,
                            const std::string& event_name,
-                           const std::string& event_args,
+                           scoped_ptr<base::ListValue> event_args,
                            void* profile,
                            bool use_profile_to_restrict_events,
                            const GURL& event_url);
@@ -89,7 +90,7 @@ class EventRouterForwarder
   virtual void CallEventRouter(Profile* profile,
                                const std::string& extension_id,
                                const std::string& event_name,
-                               const std::string& event_args,
+                               scoped_ptr<base::ListValue> event_args,
                                Profile* restrict_to_profile,
                                const GURL& event_url);
 

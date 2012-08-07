@@ -56,7 +56,7 @@ class ExtensionAccessibilityEventRouter : public content::NotificationObserver {
 
   void DispatchEvent(Profile* profile,
                      const char* event_name,
-                     const std::string& json_args);
+                     scoped_ptr<base::ListValue> event_args);
 
   // Used for tracking registrations to history service notifications.
   content::NotificationRegistrar registrar_;

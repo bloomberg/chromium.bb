@@ -49,7 +49,7 @@ const char kOnScreenUnlocked[] = "systemPrivate.onScreenUnlocked";
 const char kOnWokeUp[] = "systemPrivate.onWokeUp";
 
 // Dispatches an extension event with |args|
-void DispatchEvent(const std::string& event_name, const ListValue& args) {
+void DispatchEvent(const std::string& event_name, base::Value* argument) {
   Profile* profile = ProfileManager::GetDefaultProfile();
   if (!profile)
     return;
@@ -57,10 +57,12 @@ void DispatchEvent(const std::string& event_name, const ListValue& args) {
       profile->GetExtensionEventRouter();
   if (!extension_event_router)
     return;
-  std::string json_args;
-  base::JSONWriter::Write(&args, &json_args);
+
+  scoped_ptr<base::ListValue> list_args(new base::ListValue());
+  list_args->Append(argument);
   extension_event_router->DispatchEventToRenderers(
-      event_name, json_args, NULL, GURL(), extensions::EventFilteringInfo());
+      event_name, list_args.Pass(), NULL, GURL(),
+      extensions::EventFilteringInfo());
 }
 
 }  // namespace
@@ -139,31 +141,25 @@ bool GetUpdateStatusFunction::RunImpl() {
 }
 
 void DispatchVolumeChangedEvent(double volume, bool is_volume_muted) {
-  ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetDouble(kVolumeKey, volume);
   dict->SetBoolean(kIsVolumeMutedKey, is_volume_muted);
-  args.Append(dict);
-  DispatchEvent(kOnVolumeChanged, args);
+  DispatchEvent(kOnVolumeChanged, dict);
 }
 
 void DispatchBrightnessChangedEvent(int brightness, bool user_initiated) {
-  ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(kBrightnessKey, brightness);
   dict->SetBoolean(kUserInitiatedKey, user_initiated);
-  args.Append(dict);
-  DispatchEvent(kOnBrightnessChanged, args);
+  DispatchEvent(kOnBrightnessChanged, dict);
 }
 
 void DispatchScreenUnlockedEvent() {
-  ListValue args;
-  DispatchEvent(kOnScreenUnlocked, args);
+  DispatchEvent(kOnScreenUnlocked, NULL);
 }
 
 void DispatchWokeUpEvent() {
-  ListValue args;
-  DispatchEvent(kOnWokeUp, args);
+  DispatchEvent(kOnWokeUp, NULL);
 }
 
 }  // namespace extensions

@@ -155,26 +155,22 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    ListValue args;
-    args.Append(Value::CreateStringValue(engine_id));
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(Value::CreateStringValue(engine_id));
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnActivate, json_args, profile_, GURL());
+        extension_id_, events::kOnActivate, args.Pass(), profile_, GURL());
   }
 
   virtual void OnDeactivated(const std::string& engine_id) {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    ListValue args;
-    args.Append(Value::CreateStringValue(engine_id));
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(Value::CreateStringValue(engine_id));
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnDeactivated, json_args, profile_, GURL());
+        extension_id_, events::kOnDeactivated, args.Pass(), profile_, GURL());
   }
 
   virtual void OnFocus(const InputMethodEngine::InputContext& context) {
@@ -185,26 +181,22 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     dict->SetInteger("contextID", context.id);
     dict->SetString("type", context.type);
 
-    ListValue args;
-    args.Append(dict);
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(dict);
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnFocus, json_args, profile_, GURL());
+        extension_id_, events::kOnFocus, args.Pass(), profile_, GURL());
   }
 
   virtual void OnBlur(int context_id) {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    ListValue args;
-    args.Append(Value::CreateIntegerValue(context_id));
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(Value::CreateIntegerValue(context_id));
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnBlur, json_args, profile_, GURL());
+        extension_id_, events::kOnBlur, args.Pass(), profile_, GURL());
   }
 
   virtual void OnInputContextUpdate(
@@ -216,13 +208,11 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     dict->SetInteger("contextID", context.id);
     dict->SetString("type", context.type);
 
-    ListValue args;
-    args.Append(dict);
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(dict);
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnInputContextUpdate, json_args, profile_,
+        extension_id_, events::kOnInputContextUpdate, args.Pass(), profile_,
         GURL());
   }
 
@@ -244,14 +234,12 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     dict->SetBoolean("ctrlKey", event.ctrl_key);
     dict->SetBoolean("shiftKey", event.shift_key);
 
-    ListValue args;
-    args.Append(Value::CreateStringValue(engine_id));
-    args.Append(dict);
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(Value::CreateStringValue(engine_id));
+    args->Append(dict);
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnKeyEvent, json_args, profile_, GURL());
+        extension_id_, events::kOnKeyEvent, args.Pass(), profile_, GURL());
   }
 
   virtual void OnCandidateClicked(
@@ -261,29 +249,27 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    ListValue args;
-    args.Append(Value::CreateStringValue(engine_id));
-    args.Append(Value::CreateIntegerValue(candidate_id));
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(Value::CreateStringValue(engine_id));
+    args->Append(Value::CreateIntegerValue(candidate_id));
     switch (button) {
       case chromeos::InputMethodEngine::MOUSE_BUTTON_MIDDLE:
-        args.Append(Value::CreateStringValue("middle"));
+        args->Append(Value::CreateStringValue("middle"));
         break;
 
       case chromeos::InputMethodEngine::MOUSE_BUTTON_RIGHT:
-        args.Append(Value::CreateStringValue("right"));
+        args->Append(Value::CreateStringValue("right"));
         break;
 
       case chromeos::InputMethodEngine::MOUSE_BUTTON_LEFT:
       // Default to left.
       default:
-        args.Append(Value::CreateStringValue("left"));
+        args->Append(Value::CreateStringValue("left"));
         break;
     }
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnCandidateClicked, json_args, profile_,
+        extension_id_, events::kOnCandidateClicked, args.Pass(), profile_,
         GURL());
   }
 
@@ -292,14 +278,12 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
     if (profile_ == NULL || extension_id_.empty())
       return;
 
-    ListValue args;
-    args.Append(Value::CreateStringValue(engine_id));
-    args.Append(Value::CreateStringValue(menu_id));
+    scoped_ptr<base::ListValue> args(new ListValue());
+    args->Append(Value::CreateStringValue(engine_id));
+    args->Append(Value::CreateStringValue(menu_id));
 
-    std::string json_args;
-    base::JSONWriter::Write(&args, &json_args);
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        extension_id_, events::kOnMenuItemActivated, json_args, profile_,
+        extension_id_, events::kOnMenuItemActivated, args.Pass(), profile_,
         GURL());
   }
 

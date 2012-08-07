@@ -16,6 +16,10 @@
 #include "chrome/common/extensions/api/history.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace base {
+class ListValue;
+}
+
 typedef std::vector<linked_ptr<
     extensions::api::history::HistoryItem> > HistoryItemList;
 typedef std::vector<linked_ptr<
@@ -44,7 +48,7 @@ class HistoryExtensionEventRouter : public content::NotificationObserver {
 
   void DispatchEvent(Profile* profile,
                      const char* event_name,
-                     const std::string& json_args);
+                     scoped_ptr<base::ListValue> event_args);
 
   // Used for tracking registrations to history service notifications.
   content::NotificationRegistrar registrar_;

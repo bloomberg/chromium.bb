@@ -917,8 +917,6 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     net::URLRequest* request,
     const std::vector<const EventListener*>& listeners,
     const ListValue& args) {
-  std::string json_args;
-
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
@@ -933,11 +931,10 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     if (!((*it)->extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS))
       dict->Remove(keys::kResponseHeadersKey, NULL);
 
-    base::JSONWriter::Write(args_filtered.get(), &json_args);
-
     extensions::EventRouter::DispatchEvent(
         (*it)->ipc_sender.get(), (*it)->extension_id, (*it)->sub_event_name,
-        json_args, GURL(), extensions::EventRouter::USER_GESTURE_UNKNOWN,
+        args_filtered.Pass(), GURL(),
+        extensions::EventRouter::USER_GESTURE_UNKNOWN,
         extensions::EventFilteringInfo());
     if ((*it)->extra_info_spec &
         (ExtraInfoSpec::BLOCKING | ExtraInfoSpec::ASYNC_BLOCKING)) {

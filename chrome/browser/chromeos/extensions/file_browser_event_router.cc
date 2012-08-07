@@ -375,7 +375,7 @@ void FileBrowserEventRouter::OnNetworkManagerChanged(
   }
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       extensions::event_names::kOnFileBrowserNetworkConnectionChanged,
-      "[]", NULL, GURL());
+      scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
 }
 
 void FileBrowserEventRouter::Observe(
@@ -407,7 +407,7 @@ void FileBrowserEventRouter::Observe(
         *pref_name == prefs::kDisableGData) {
       profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
           extensions::event_names::kOnFileBrowserGDataPreferencesChanged,
-          "[]", NULL, GURL());
+          scoped_ptr<ListValue>(new ListValue()), NULL, GURL());
     }
   }
 }
@@ -422,17 +422,13 @@ void FileBrowserEventRouter::OnProgressUpdate(
           file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
           list));
 
-  ListValue args;
-  args.Append(event_list.release());
-
-  std::string args_json;
-  base::JSONWriter::Write(&args,
-                          &args_json);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(event_list.release());
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       std::string(kFileBrowserDomain),
-      extensions::event_names::kOnFileTransfersUpdated, args_json,
-      NULL, GURL());
+      extensions::event_names::kOnFileTransfersUpdated, args.Pass(), NULL,
+      GURL());
 }
 
 void FileBrowserEventRouter::OnDirectoryChanged(
@@ -445,15 +441,13 @@ void FileBrowserEventRouter::OnDocumentFeedFetched(
     int num_accumulated_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ListValue args;
-  args.Append(base::Value::CreateIntegerValue(num_accumulated_entries));
-  std::string args_json;
-  base::JSONWriter::Write(&args, &args_json);
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(base::Value::CreateIntegerValue(num_accumulated_entries));
 
   profile_->GetExtensionEventRouter()->DispatchEventToExtension(
       std::string(kFileBrowserDomain),
-      extensions::event_names::kOnDocumentFeedFetched, args_json,
-      NULL, GURL());
+      extensions::event_names::kOnDocumentFeedFetched, args.Pass(), NULL,
+      GURL());
 }
 
 void FileBrowserEventRouter::OnFileSystemMounted() {
@@ -516,19 +510,16 @@ void FileBrowserEventRouter::DispatchFolderChangeEvent(
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
     GURL target_file_url = GURL(base_url.spec() + virtual_path.value());
-    ListValue args;
+    scoped_ptr<ListValue> args(new ListValue());
     DictionaryValue* watch_info = new DictionaryValue();
-    args.Append(watch_info);
+    args->Append(watch_info);
     watch_info->SetString("fileUrl", target_file_url.spec());
     watch_info->SetString("eventType",
                           got_error ? kPathWatchError : kPathChanged);
 
-    std::string args_json;
-    base::JSONWriter::Write(&args, &args_json);
-
     profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-        iter->first, extensions::event_names::kOnFileChanged, args_json,
-        NULL, GURL());
+        iter->first, extensions::event_names::kOnFileChanged, args.Pass(), NULL,
+        GURL());
   }
 }
 
@@ -540,18 +531,16 @@ void FileBrowserEventRouter::DispatchDiskEvent(
     return;
   }
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* mount_info = new DictionaryValue();
-  args.Append(mount_info);
+  args->Append(mount_info);
   mount_info->SetString("eventType",
                         added ? kDiskAddedEventType : kDiskRemovedEventType);
   DictionaryValue* disk_info = DiskToDictionaryValue(disk);
   mount_info->Set("volumeInfo", disk_info);
 
-  std::string args_json;
-  base::JSONWriter::Write(&args, &args_json);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kOnFileBrowserDiskChanged, args_json, NULL,
+      extensions::event_names::kOnFileBrowserDiskChanged, args.Pass(), NULL,
       GURL());
 }
 
@@ -564,9 +553,9 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
     return;
   }
 
-  ListValue args;
+  scoped_ptr<ListValue> args(new ListValue());
   DictionaryValue* mount_info_value = new DictionaryValue();
-  args.Append(mount_info_value);
+  args->Append(mount_info_value);
   mount_info_value->SetString("eventType",
       event == DiskMountManager::MOUNTING ? "mount" : "unmount");
   mount_info_value->SetString("status", MountErrorToString(error_code));
@@ -599,10 +588,8 @@ void FileBrowserEventRouter::DispatchMountCompletedEvent(
     }
   }
 
-  std::string args_json;
-  base::JSONWriter::Write(&args, &args_json);
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kOnFileBrowserMountCompleted, args_json, NULL,
+      extensions::event_names::kOnFileBrowserMountCompleted, args.Pass(), NULL,
       GURL());
 
   // Do not attempt to open File Manager while the login is in progress or
