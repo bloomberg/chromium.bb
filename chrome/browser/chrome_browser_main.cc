@@ -1392,6 +1392,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 }
 
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
+#if defined(OS_ANDROID)
+  // Chrome on Android does not use default MessageLoop. It has its own
+  // Android specific MessageLoop
+  NOTREACHED();
+  return true;
+#else
   // Set the result code set in PreMainMessageLoopRun or set above.
   *result_code = result_code_;
   if (!run_message_loop_)
@@ -1411,9 +1417,15 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   run_loop.Run();
 
   return true;
+#endif
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopRun() {
+#if defined(OS_ANDROID)
+  // Chrome on Android does not use default MessageLoop. It has its own
+  // Android specific MessageLoop
+  NOTREACHED();
+#else
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
@@ -1459,6 +1471,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   restart_last_session_ = browser_shutdown::ShutdownPreThreadsStop();
   browser_process_->StartTearDown();
+#endif
 }
 
 void ChromeBrowserMainParts::PostDestroyThreads() {

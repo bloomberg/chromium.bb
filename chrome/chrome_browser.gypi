@@ -411,6 +411,8 @@
         'browser/chrome_browser_field_trials.h',
         'browser/chrome_browser_main.cc',
         'browser/chrome_browser_main.h',
+        'browser/chrome_browser_main_android.cc',
+        'browser/chrome_browser_main_android.h',
         'browser/chrome_browser_main_extra_parts.h',
         'browser/chrome_browser_main_linux.cc',
         'browser/chrome_browser_main_linux.h',
@@ -4996,6 +4998,10 @@
             'browser/upgrade_detector.h',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
+
+            # Not used by Android
+            'browser/chrome_browser_main_posix.cc',
+            'browser/chrome_browser_main_posix.h',
           ],
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
