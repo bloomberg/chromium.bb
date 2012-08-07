@@ -197,8 +197,6 @@ ShareGroup::ShareGroup(bool share_resources, bool bind_generates_resource)
     : sharing_resources_(share_resources),
       bind_generates_resource_(bind_generates_resource),
       gles2_(NULL) {
-  GPU_CHECK(ShareGroup::ImplementsThreadSafeReferenceCounting());
-
   if (bind_generates_resource) {
     for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
       if (i == id_namespaces::kProgramsAndShaders) {

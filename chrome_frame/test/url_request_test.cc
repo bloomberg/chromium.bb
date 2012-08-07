@@ -49,10 +49,6 @@ class MockUrlDelegate : public PluginUrlRequestDelegate {
   MOCK_METHOD4(OnCookiesRetrieved, void(bool success, const GURL& url,
       const std::string& cookie, int cookie_id));
 
-  static bool ImplementsThreadSafeReferenceCounting() {
-    return false;
-  }
-
   void PostponeReadRequest(chrome_frame_test::TimedMsgLoop* loop,
                    UrlmonUrlRequest* request, int bytes_to_read) {
     loop->PostTask(FROM_HERE,

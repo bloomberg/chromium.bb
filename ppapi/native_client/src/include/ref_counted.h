@@ -13,8 +13,6 @@ namespace subtle {
 
 class RefCountedBase {
  public:
-  static bool ImplementsThreadSafeReferenceCounting() { return true; }
-
   bool HasOneRef() const {
     nacl::ScopedNaClMutexLock ml(&mu_);
     return (ref_count_ == 1);

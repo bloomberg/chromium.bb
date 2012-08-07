@@ -378,11 +378,6 @@ END_MSG_MAP()
     return !is_privileged();
   }
 
-  // Needed to support PostTask.
-  static bool ImplementsThreadSafeReferenceCounting() {
-    return true;
-  }
-
   static void BringWebBrowserWindowToTop(IWebBrowser2* web_browser2) {
     DCHECK(web_browser2);
     if (web_browser2) {

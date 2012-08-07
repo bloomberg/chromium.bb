@@ -88,7 +88,6 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // Overridden to do nothing so that this class can be used in runnable tasks.
   void AddRef() {}
   void Release() {}
-  static bool ImplementsThreadSafeReferenceCounting() { return false; }
 
  protected:
   virtual ~ViewEventTestBase();

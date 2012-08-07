@@ -69,11 +69,6 @@ class IEEventSink
                                   &DIID_DWebBrowserEvents2>,
       public IUnknown {
  public:
-  // Needed to support PostTask.
-  static bool ImplementsThreadSafeReferenceCounting() {
-    return true;
-  }
-
   typedef IDispEventSimpleImpl<0, IEEventSink,
                                &DIID_DWebBrowserEvents2> DispEventsImpl;
   IEEventSink();

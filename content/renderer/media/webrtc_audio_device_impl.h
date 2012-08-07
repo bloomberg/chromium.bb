@@ -217,9 +217,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t AddRef() OVERRIDE;
   virtual int32_t Release() OVERRIDE;
 
-  // We need this one to support runnable method tasks.
-  static bool ImplementsThreadSafeReferenceCounting() { return true; }
-
   // media::AudioRendererSink::RenderCallback implementation.
   virtual int Render(const std::vector<float*>& audio_data,
                      int number_of_frames,
