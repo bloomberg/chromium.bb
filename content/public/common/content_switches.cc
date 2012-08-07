@@ -504,7 +504,8 @@ const char kPpapiPluginLauncher[]           = "ppapi-plugin-launcher";
 // Argument to the process type that indicates a PPAPI plugin process type.
 const char kPpapiPluginProcess[]            = "ppapi";
 
-// Causes the PPAPI sub process to display a dialog on launch.
+// Causes the PPAPI sub process to display a dialog on launch. Be sure to use
+// --no-sandbox as well or the sandbox won't allow the dialog to display.
 const char kPpapiStartupDialog[]            = "ppapi-startup-dialog";
 
 // Runs a single process for each site (i.e., group of pages from the same
