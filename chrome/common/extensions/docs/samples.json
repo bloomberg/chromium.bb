@@ -1413,7 +1413,7 @@
         "chrome.tabs.update",
         "chrome.webNavigation.onDOMContentLoaded"
       ],
-      "crx_path": "examples/extensions/gmail.crx",
+      "crx_path": null,
       "description": "Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.",
       "features": [
         "alarms",

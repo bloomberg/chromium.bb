@@ -24,15 +24,6 @@ For example:</p>
   ...
 }</pre>
 
-<p class="note">
-<b>Node:</b> If you request the "webRequestBlocking" permission, web requests
-are delayed until the background page of your extension has been loaded. This
-allows you to register event listeners before any web requests are processed.
-In order to avoid deadlocks, you must not start synchronous XmlHttpRequests or
-include scripts from the internet via <code>&lt;script src="..."&gt;</code> tags
-in your background page.
-</p>
-
 <h2 id="life_cycle">Life cycle of requests</h2>
 
 <p>
@@ -144,7 +135,9 @@ are hidden, e.g.,
 <code>other_extension_id</code> is not the ID of the extension to handle
 the request,
 <code>https://www.google.com/chrome</code>,
-and others (this list is not complete).
+and others (this list is not complete). Also synchronous XMLHttpRequests from
+your extension are hidden from blocking event handlers in order to prevent
+deadlocks.
 </p>
 
 <h2 id="concepts">Concepts</h2>
