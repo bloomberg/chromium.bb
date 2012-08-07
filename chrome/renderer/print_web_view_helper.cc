@@ -443,8 +443,13 @@ void PrintHeaderFooterText(
                                           horizontal_position,
                                           vertical_position, offset_to_baseline,
                                           text_width_in_points);
-  paint->SetFontSize(printing::kSettingHeaderFooterFontSize /
-                     webkit_scale_factor);
+  // Set the scaled font size before drawing the text.
+  // This creates a new font instead of calling |paint->SetFontSize()| to work
+  // around a Windows 8 bug. See: http://crbug.com/139206
+  gfx::FontList font_list(
+      gfx::Font(printing::kSettingHeaderFooterFontFamilyName,
+                printing::kSettingHeaderFooterFontSize / webkit_scale_factor));
+  paint->SetFontList(font_list);
   gfx::Size size(paint->GetStringSize());
   gfx::Rect rect(point.x(), point.y() - paint->GetBaseline(),
                  size.width(), size.height());
