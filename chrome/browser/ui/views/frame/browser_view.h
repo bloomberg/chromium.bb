@@ -16,7 +16,6 @@
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/metro_pinned_state_observer.h"
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -94,8 +93,7 @@ class BrowserView : public BrowserWindow,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
                     public views::SingleSplitViewListener,
-                    public gfx::SysColorChangeListener,
-                    public MetroPinnedStateObserver {
+                    public gfx::SysColorChangeListener {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -355,9 +353,6 @@ class BrowserView : public BrowserWindow,
   virtual ToolbarView* GetToolbarView() const OVERRIDE;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabInsertedAt(TabContents* contents,
-                             int index,
-                             bool foreground) OVERRIDE;
   virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
   virtual void TabDeactivated(TabContents* contents) OVERRIDE;
   virtual void ActiveTabChanged(TabContents* old_contents,
@@ -418,10 +413,6 @@ class BrowserView : public BrowserWindow,
 
   // gfx::ScopedSysColorChangeListener overrides:
   virtual void OnSysColorChange() OVERRIDE;
-
-  // MetroPinnedStateObserver overrides:
-  virtual void MetroPinnedStateChanged(content::WebContents* contents,
-                                       bool is_pinned) OVERRIDE;
 
   // Returns the resource ID to use for the OTR icon, which depends on
   // which layout is being shown and whether we are full-screen.

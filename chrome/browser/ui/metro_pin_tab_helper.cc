@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/metro_pinned_state_observer.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_WIN)
@@ -15,8 +14,7 @@
 
 MetroPinTabHelper::MetroPinTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      is_pinned_(false),
-      observer_(NULL) {}
+      is_pinned_(false) {}
 
 MetroPinTabHelper::~MetroPinTabHelper() {}
 
@@ -42,7 +40,8 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
     // TODO(benwells): This will update the state incorrectly if the user
     // cancels. To fix this some sort of callback needs to be introduced as
     // the pinning happens on another thread.
-    SetIsPinned(!is_pinned_);
+    is_pinned_ = !is_pinned_;
+    return;
   }
 #endif
 }
@@ -67,16 +66,9 @@ void MetroPinTabHelper::UpdatePinnedStateForCurrentURL() {
     }
 
     GURL url = web_contents()->GetURL();
-    SetIsPinned(metro_is_pinned_to_start_screen(UTF8ToUTF16(url.spec())) != 0);
+    is_pinned_ = metro_is_pinned_to_start_screen(UTF8ToUTF16(url.spec())) != 0;
     VLOG(1) << __FUNCTION__ << " with url " << UTF8ToUTF16(url.spec())
             << " result: " << is_pinned_;
   }
 #endif
-}
-
-void MetroPinTabHelper::SetIsPinned(bool is_pinned) {
-  bool was_pinned = is_pinned_;
-  is_pinned_ = is_pinned;
-  if (observer_ && is_pinned_ != was_pinned)
-    observer_->MetroPinnedStateChanged(web_contents(), is_pinned_);
 }

@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/metro_pin_tab_helper.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -943,8 +942,6 @@ void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
 void BrowserView::UpdateToolbar(TabContents* contents,
                                 bool should_restore_state) {
   toolbar_->Update(contents->web_contents(), should_restore_state);
-  GetLocationBarView()->SetMetroPinnedState(
-      contents->metro_pin_tab_helper()->is_pinned());
 }
 
 void BrowserView::FocusToolbar() {
@@ -1415,14 +1412,7 @@ ToolbarView* BrowserView::GetToolbarView() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
 
-void BrowserView::TabInsertedAt(TabContents* contents,
-                                int index,
-                                bool foreground) {
-  contents->metro_pin_tab_helper()->set_observer(this);
-}
-
 void BrowserView::TabDetachedAt(TabContents* contents, int index) {
-  contents->metro_pin_tab_helper()->set_observer(NULL);
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
   // browser_->GetActiveWebContents() will return NULL or something else.
@@ -1459,8 +1449,6 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
                                 TabContents* old_contents,
                                 TabContents* new_contents,
                                 int index) {
-  new_contents->metro_pin_tab_helper()->set_observer(this);
-
   if (index != browser_->tab_strip_model()->active_index())
     return;
 
@@ -1882,12 +1870,6 @@ bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
 
 void BrowserView::OnSysColorChange() {
   browser::MaybeShowInvertBubbleView(browser_.get(), contents_);
-}
-
-void BrowserView::MetroPinnedStateChanged(content::WebContents* contents,
-                                          bool is_pinned) {
-  if (contents == chrome::GetActiveWebContents(browser()))
-    GetLocationBarView()->SetMetroPinnedState(is_pinned);
 }
 
 int BrowserView::GetOTRIconResourceID() const {
