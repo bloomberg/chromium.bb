@@ -42,6 +42,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // restored mode regardless of the current mode.
   virtual TabStripInsets GetTabStripInsets(bool force_restored) const = 0;
 
+  // Returns the amount that the theme background should be inset.
+  virtual int GetThemeBackgroundXInset() const = 0;
+
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 

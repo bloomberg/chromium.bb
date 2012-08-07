@@ -240,6 +240,10 @@ OpaqueBrowserFrameView::GetTabStripInsets(bool restored) const {
   return TabStripInsets(top, 0, 0);
 }
 
+int OpaqueBrowserFrameView::GetThemeBackgroundXInset() const {
+  return 0;
+}
+
 void OpaqueBrowserFrameView::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
@@ -710,9 +714,10 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Tile the toolbar image starting at the frame edge on the left and where the
   // horizontal tabstrip is (or would be) on the top.
-  canvas->TileImageInt(*theme_toolbar, x,
-                       bottom_y - GetTabStripInsets(false).top, x,
-                       bottom_y, w, theme_toolbar->height());
+  canvas->TileImageInt(*theme_toolbar,
+                       x + GetThemeBackgroundXInset(),
+                       bottom_y - GetTabStripInsets(false).top,
+                       x, bottom_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.
   gfx::ImageSkia* toolbar_left_mask =

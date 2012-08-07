@@ -334,6 +334,10 @@ PanelBrowserFrameView::GetTabStripInsets(
   return TabStripInsets();
 }
 
+int PanelBrowserFrameView::GetThemeBackgroundXInset() const {
+  return 0;
+}
+
 void PanelBrowserFrameView::UpdateThrobber(bool running) {
   // Tells the title icon to update the throbber when we need to show the
   // animation to indicate we're still loading.

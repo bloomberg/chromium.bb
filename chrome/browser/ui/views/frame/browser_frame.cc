@@ -92,6 +92,10 @@ BrowserNonClientFrameView::TabStripInsets BrowserFrame::GetTabStripInsets(
   return browser_frame_view_->GetTabStripInsets(force_restored);
 }
 
+int BrowserFrame::GetThemeBackgroundXInset() const {
+  return browser_frame_view_->GetThemeBackgroundXInset();
+}
+
 void BrowserFrame::UpdateThrobber(bool running) {
   browser_frame_view_->UpdateThrobber(running);
 }

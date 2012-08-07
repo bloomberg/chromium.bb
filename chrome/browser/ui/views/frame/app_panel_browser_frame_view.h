@@ -31,6 +31,7 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
   virtual TabStripInsets GetTabStripInsets(bool restored) const OVERRIDE;
+  virtual int GetThemeBackgroundXInset() const OVERRIDE;
   virtual void UpdateThrobber(bool running) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 

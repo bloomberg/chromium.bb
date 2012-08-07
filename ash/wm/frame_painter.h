@@ -83,6 +83,9 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
   // Returns the inset from the right edge.
   int GetRightInset() const;
 
+  // Returns the amount that the theme background should be inset.
+  int GetThemeBackgroundXInset() const;
+
   // Paints the frame header.
   void PaintHeader(views::NonClientFrameView* view,
                    gfx::Canvas* canvas,

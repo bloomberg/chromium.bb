@@ -55,6 +55,9 @@ class BrowserFrame : public views::Widget {
   BrowserNonClientFrameView::TabStripInsets GetTabStripInsets(
       bool force_restored) const;
 
+  // Returns the amount that the theme background should be inset.
+  int GetThemeBackgroundXInset() const;
+
   // Tells the frame to update the throbber.
   void UpdateThrobber(bool running);
 

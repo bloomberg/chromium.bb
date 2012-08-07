@@ -232,6 +232,10 @@ AppNonClientFrameViewAura::GetTabStripInsets(bool restored) const {
   return TabStripInsets();
 }
 
+int AppNonClientFrameViewAura::GetThemeBackgroundXInset() const {
+  return 0;
+}
+
 void AppNonClientFrameViewAura::UpdateThrobber(bool running) {
 }
 

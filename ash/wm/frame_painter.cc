@@ -76,7 +76,7 @@ const int kButtonOverlap = 1;
 // we need to copy the theme image for the window header from a few pixels
 // inset to preserve alignment with the NTP image, or else we'll break a bunch
 // of existing themes.  We do something similar on OS X for the same reason.
-const int kThemeFrameImageOffsetX = 5;
+const int kThemeFrameImageInsetX = 5;
 // Duration of crossfade animation for activating and deactivating frame.
 const int kActivationCrossfadeDurationMs = 200;
 // Alpha/opacity value for fully-opaque headers.
@@ -89,7 +89,7 @@ void TileRoundRect(gfx::Canvas* canvas,
                    const SkPaint& paint,
                    const gfx::ImageSkia& image,
                    int corner_radius,
-                   int image_offset_x) {
+                   int image_inset_x) {
   // To get the shader to sample the image |inset_y| pixels in but tile across
   // the whole image, we adjust the target rectangle for the shader to the right
   // and translate the canvas left to compensate.
@@ -103,7 +103,7 @@ void TileRoundRect(gfx::Canvas* canvas,
       0, 0};  // bottom-left
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
-  canvas->DrawImageInPath(image, -image_offset_x, 0, path, paint);
+  canvas->DrawImageInPath(image, -image_inset_x, 0, path, paint);
 }
 
 // Returns true if |window| is a visible, normal window.
@@ -301,6 +301,10 @@ int FramePainter::GetRightInset() const {
       kButtonOverlap;
 }
 
+int FramePainter::GetThemeBackgroundXInset() const {
+  return kThemeFrameImageInsetX;
+}
+
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
                                HeaderMode header_mode,
@@ -341,7 +345,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                     paint,
                     *crossfade_theme_frame,
                     kCornerRadius,
-                    kThemeFrameImageOffsetX);
+                    GetThemeBackgroundXInset());
 
       paint.setAlpha(new_alpha);
     } else {
@@ -358,7 +362,7 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
                 paint,
                 *theme_frame,
                 kCornerRadius,
-                kThemeFrameImageOffsetX);
+                GetThemeBackgroundXInset());
 
   previous_theme_frame_id_ = theme_frame_id;
   previous_opacity_ = opacity;

@@ -124,6 +124,10 @@ GlassBrowserFrameView::GetTabStripInsets(bool restored) const {
   return TabStripInsets(NonClientTopBorderHeight(restored), 0, 0);
 }
 
+int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
+  return 0;
+}
+
 void GlassBrowserFrameView::UpdateThrobber(bool running) {
   if (throbber_running_) {
     if (running) {
@@ -296,7 +300,8 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   // the tabstrip is on the top.
   int y = toolbar_bounds.y();
   int dest_y = y + (kFrameShadowThickness * 2);
-  canvas->TileImageInt(*theme_toolbar, x,
+  canvas->TileImageInt(*theme_toolbar,
+                       x + GetThemeBackgroundXInset(),
                        dest_y - GetTabStripInsets(false).top, x,
                        dest_y, w, theme_toolbar->height());
 

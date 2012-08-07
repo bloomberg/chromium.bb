@@ -257,8 +257,9 @@ void BrowserViewLayout::Layout(views::View* host) {
   vertical_layout_rect_ = browser_view_->GetLocalBounds();
   int top = LayoutTabStripRegion();
   if (browser_view_->IsTabStripVisible()) {
-    tabstrip_->SetBackgroundOffset(gfx::Point(
-        tabstrip_->GetMirroredX() + browser_view_->GetMirroredX(),
+    int x = tabstrip_->GetMirroredX() + browser_view_->GetMirroredX() +
+        browser_view_->frame()->GetThemeBackgroundXInset();
+    tabstrip_->SetBackgroundOffset(gfx::Point(x,
         browser_view_->frame()->GetTabStripInsets(false).top));
   }
   top = LayoutToolbar(top);

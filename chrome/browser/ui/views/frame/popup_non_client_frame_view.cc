@@ -48,5 +48,9 @@ PopupNonClientFrameView::GetTabStripInsets(bool restored) const {
   return TabStripInsets();
 }
 
+int PopupNonClientFrameView::GetThemeBackgroundXInset() const {
+  return 0;
+}
+
 void PopupNonClientFrameView::UpdateThrobber(bool running) {
 }

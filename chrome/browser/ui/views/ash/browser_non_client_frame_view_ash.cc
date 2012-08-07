@@ -206,6 +206,10 @@ BrowserNonClientFrameViewAsh::GetTabStripInsets(bool force_restored) const {
   return TabStripInsets(NonClientTopBorderHeight(force_restored), left, right);
 }
 
+int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
+  return frame_painter_->GetThemeBackgroundXInset();
+}
+
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
@@ -521,7 +525,8 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
       browser_view()->GetToolbarBackgroundImage(mode);
   canvas->TileImageInt(
       *theme_toolbar,
-      x, bottom_y - GetTabStripInsets(false).top,
+      x + GetThemeBackgroundXInset(),
+      bottom_y - GetTabStripInsets(false).top,
       x, bottom_y,
       w, theme_toolbar->height());
 
