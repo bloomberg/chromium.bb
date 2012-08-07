@@ -281,6 +281,14 @@ void CacheStats::ScheduleTimer(TabLoadStats* stats) {
   base::TimeDelta delta =
       base::TimeDelta::FromMilliseconds(kStatsCollectionTimesMs[timer_index]);
   delta -= base::TimeTicks::Now() - stats->load_start_time;
+
+  // If the ScheduleTimer call was delayed significantly, like when one's using
+  // a debugger, don't try to start the timer with a negative time.
+  if (delta < base::TimeDelta()) {
+    RemoveTabLoadStats(stats->render_view_id);
+    return;
+  }
+
   stats->timer.Start(FROM_HERE,
                      delta,
                      base::Bind(&CacheStats::TimerCallback,
