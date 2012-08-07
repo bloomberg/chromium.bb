@@ -871,12 +871,37 @@ static int eg_surface_best(struct radeon_surface_manager *surf_man,
         return 0;
     }
 
-    /* set tile split to row size, optimize latter for multi-sample surface
-     * tile split >= 256 for render buffer surface. Also depth surface want
-     * smaller value for optimal performances.
-     */
-    surf->tile_split = surf_man->hw_info.row_size;
-    surf->stencil_tile_split = surf_man->hw_info.row_size / 2;
+    /* Tweak TILE_SPLIT for performance here. */
+    if (surf->nsamples > 1) {
+        if (surf->flags & (RADEON_SURF_ZBUFFER | RADEON_SURF_SBUFFER)) {
+            switch (surf->nsamples) {
+            case 2:
+                surf->tile_split = 128;
+                break;
+            case 4:
+                surf->tile_split = 128;
+                break;
+            case 8:
+                surf->tile_split = 256;
+                break;
+            case 16: /* cayman only */
+                surf->tile_split = 512;
+                break;
+            default:
+                fprintf(stderr, "radeon: Wrong number of samples %i (%i)\n",
+                        surf->nsamples, __LINE__);
+                return -EINVAL;
+            }
+            surf->stencil_tile_split = 64;
+        } else {
+            /* tile split must be >= 256 for colorbuffer surfaces */
+            surf->tile_split = MAX2(surf->nsamples * surf->bpe * 64, 256);
+        }
+    } else {
+        /* set tile split to row size */
+        surf->tile_split = surf_man->hw_info.row_size;
+        surf->stencil_tile_split = surf_man->hw_info.row_size / 2;
+    }
 
     /* bankw or bankh greater than 1 increase alignment requirement, not
      * sure if it's worth using smaller bankw & bankh to stick with 2D
