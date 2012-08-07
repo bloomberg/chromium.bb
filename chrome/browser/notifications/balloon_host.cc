@@ -138,6 +138,9 @@ void BalloonHost::Init() {
   chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_NOTIFICATION);
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());
+  renderer_preferences_util::UpdateFromSystemSettings(
+      web_contents_->GetMutableRendererPrefs(), balloon_->profile());
+  web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
   web_contents_->GetController().LoadURL(
       balloon_->notification().content_url(), content::Referrer(),
