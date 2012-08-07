@@ -323,7 +323,7 @@ class ManageExceptionsPage(object):
   def __init__(self, driver, content_type):
     self._list_elem = driver.find_element_by_xpath(
         './/*[@id="content-settings-exceptions-area"]'
-        '//*[@contenttype="%s"]//list[@role="listbox"]'
+        '//*[@contenttype="%s"]//list[@role="list"]'
         '[@class="settings-list"]' % content_type)
     self._driver = driver
     self._content_type = content_type
@@ -331,7 +331,7 @@ class ManageExceptionsPage(object):
       self._incognito_list_elem = driver.find_element_by_xpath(
           './/*[@id="content-settings-exceptions-area"]'
           '//*[@contenttype="%s"]//div[not(@hidden)]'
-          '//list[@mode="otr"][@role="listbox"]'
+          '//list[@mode="otr"][@role="list"]'
           '[@class="settings-list"]' % content_type)
     except selenium.common.exceptions.NoSuchElementException:
       self._incognito_list_elem = None
