@@ -31,12 +31,23 @@ class DOMStorageContext {
   // Deletes the local storage data for the given origin.
   virtual void DeleteOrigin(const GURL& origin) = 0;
 
+  // If this is called, sessionStorage data will be stored on disk, and can be
+  // restored after a browser restart (with RecreateSessionStorage). This
+  // function must be called right after DOMStorageContextImpl is created, and
+  // before it's used.
+  virtual void SetSaveSessionStorageOnDisk() = 0;
+
   // Creates a SessionStorageNamespace with the given |persistent_id|. Used
   // after tabs are restored by session restore. When created, the
   // SessionStorageNamespace with the correct |persistent_id| will be
   // associated with the persisted sessionStorage data.
   virtual scoped_refptr<SessionStorageNamespace> RecreateSessionStorage(
       const std::string& persistent_id) = 0;
+
+  // Starts deleting sessionStorages which don't have an associated
+  // SessionStorageNamespace alive. Called when SessionStorageNamespaces have
+  // been created after a session restore, or a session restore won't happen.
+  virtual void StartScavengingUnusedSessionStorage() = 0;
 
  protected:
   virtual ~DOMStorageContext() {}

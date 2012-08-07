@@ -605,6 +605,11 @@ const char kEnablePasswordGeneration[]      = "enable-password-generation";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
+// Enables experimental features of better session restore (backing up
+// sessionStorage on disk). See also kDisableRestoreSessionState which disables
+// the less exprimental features which are on by default.
+const char kEnableRestoreSessionState[]     = "enable-restore-session-state";
+
 // Enables the installation and usage of Portable Native Client.
 const char kEnablePnacl[]                   = "enable-pnacl";
 

@@ -84,6 +84,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -312,6 +313,11 @@ ProfileImpl::ProfileImpl(const FilePath& path,
     OnPrefsLoaded(true);
   } else {
     NOTREACHED();
+  }
+
+  if (command_line->HasSwitch(switches::kEnableRestoreSessionState)) {
+    content::BrowserContext::GetDefaultDOMStorageContext(this)->
+        SetSaveSessionStorageOnDisk();
   }
 }
 

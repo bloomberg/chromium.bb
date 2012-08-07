@@ -24,6 +24,7 @@ using dom_storage::DomStorageWorkerPoolTaskRunner;
 namespace {
 
 const char kLocalStorageDirectory[] = "Local Storage";
+const char kSessionStorageDirectory[] = "Session Storage";
 
 void InvokeUsageInfoCallbackHelper(
       const DOMStorageContext::GetUsageInfoCallback& callback,
@@ -50,12 +51,11 @@ DOMStorageContextImpl::DOMStorageContextImpl(
     const FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
-  // TODO(marja): Pass a nonempty session storage directory when session storage
-  // is backed on disk.
   context_ = new dom_storage::DomStorageContext(
       data_path.empty() ?
           data_path : data_path.AppendASCII(kLocalStorageDirectory),
-      FilePath(),  // Empty session storage directory.
+      data_path.empty() ?
+          data_path : data_path.AppendASCII(kSessionStorageDirectory),
       special_storage_policy,
       new DomStorageWorkerPoolTaskRunner(
           worker_pool,
@@ -85,11 +85,25 @@ void DOMStorageContextImpl::DeleteOrigin(const GURL& origin) {
       base::Bind(&DomStorageContext::DeleteOrigin, context_, origin));
 }
 
+void DOMStorageContextImpl::SetSaveSessionStorageOnDisk() {
+  DCHECK(context_);
+  context_->SetSaveSessionStorageOnDisk();
+}
+
 scoped_refptr<content::SessionStorageNamespace>
 DOMStorageContextImpl::RecreateSessionStorage(
     const std::string& persistent_id) {
   return scoped_refptr<content::SessionStorageNamespace>(
       new SessionStorageNamespaceImpl(this, persistent_id));
+}
+
+void DOMStorageContextImpl::StartScavengingUnusedSessionStorage() {
+  DCHECK(context_);
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE,
+      DomStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&DomStorageContext::StartScavengingUnusedSessionStorage,
+                 context_));
 }
 
 void DOMStorageContextImpl::PurgeMemory() {

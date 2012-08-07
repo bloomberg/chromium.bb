@@ -17,6 +17,7 @@ namespace dom_storage {
 
 class DomStorageArea;
 class DomStorageTaskRunner;
+class SessionStorageDatabase;
 
 // Container for the set of per-origin Areas.
 // See class comments for DomStorageContext for a larger overview.
@@ -28,10 +29,11 @@ class DomStorageNamespace
   DomStorageNamespace(const FilePath& directory,  // may be empty
                       DomStorageTaskRunner* task_runner);
 
-  // Constructor for a SessionStorage namespace with a non-zero id
-  // and no backing directory on disk.
+  // Constructor for a SessionStorage namespace with a non-zero id and an
+  // optional backing on disk via |session_storage_database| (may be NULL).
   DomStorageNamespace(int64 namespace_id,
                       const std::string& persistent_namespace_id,
+                      SessionStorageDatabase* session_storage_database,
                       DomStorageTaskRunner* task_runner);
 
   int64 namespace_id() const { return namespace_id_; }
@@ -79,6 +81,7 @@ class DomStorageNamespace
   FilePath directory_;
   AreaMap areas_;
   scoped_refptr<DomStorageTaskRunner> task_runner_;
+  scoped_refptr<SessionStorageDatabase> session_storage_database_;
 };
 
 }  // namespace dom_storage

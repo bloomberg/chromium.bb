@@ -73,7 +73,7 @@ class DomStorageAreaTest : public testing::Test {
 
 TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
   scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(1, std::string(), kOrigin, NULL));
+      new DomStorageArea(1, std::string(), kOrigin, NULL, NULL));
   string16 old_value;
   NullableString16 old_nullable_value;
   scoped_refptr<DomStorageArea> copy;
@@ -138,12 +138,12 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
     EXPECT_FALSE(file_util::PathExists(kExpectedOriginFilePath));
   }
 
-  // Valid directory and origin but non-local namespace id. Backing should
+  // Valid directory and origin but no session storage backing. Backing should
   // be null.
   {
     scoped_refptr<DomStorageArea> area(
         new DomStorageArea(kSessionStorageNamespaceId, std::string(), kOrigin,
-                           NULL));
+                           NULL, NULL));
     EXPECT_EQ(NULL, area->backing_.get());
     EXPECT_TRUE(area->is_initial_import_done_);
 

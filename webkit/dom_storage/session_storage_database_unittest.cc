@@ -52,6 +52,9 @@ class SessionStorageDatabaseTest : public testing::Test {
   void CompareValuesMaps(const ValuesMap& map1, const ValuesMap& map2) const;
   void CheckNamespaceIds(
       const std::set<std::string>& expected_namespace_ids) const;
+  void CheckOrigins(
+      const std::string& namespace_id,
+      const std::set<GURL>& expected_origins) const;
   std::string GetMapForArea(const std::string& namespace_id,
                             const GURL& origin) const;
   int64 GetMapRefCount(const std::string& map_id) const;
@@ -335,9 +338,20 @@ void SessionStorageDatabaseTest::CheckNamespaceIds(
   EXPECT_EQ(expected_namespace_ids.size(), namespace_ids.size());
   for (std::vector<std::string>::const_iterator it = namespace_ids.begin();
        it != namespace_ids.end(); ++it) {
-    LOG(WARNING) << *it;
     EXPECT_TRUE(expected_namespace_ids.find(*it) !=
                 expected_namespace_ids.end());
+  }
+}
+
+void SessionStorageDatabaseTest::CheckOrigins(
+    const std::string& namespace_id,
+    const std::set<GURL>& expected_origins) const {
+  std::vector<GURL> origins;
+  EXPECT_TRUE(db_->ReadOriginsInNamespace(namespace_id, &origins));
+  EXPECT_EQ(expected_origins.size(), origins.size());
+  for (std::vector<GURL>::const_iterator it = origins.begin();
+       it != origins.end(); ++it) {
+    EXPECT_TRUE(expected_origins.find(*it) != expected_origins.end());
   }
 }
 
@@ -346,7 +360,7 @@ std::string SessionStorageDatabaseTest::GetMapForArea(
   bool exists;
   std::string map_id;
   EXPECT_TRUE(db_->GetMapForArea(namespace_id, origin.spec(),
-                                 &exists, &map_id));
+                                 leveldb::ReadOptions(), &exists, &map_id));
   EXPECT_TRUE(exists);
   return map_id;
 }
@@ -720,6 +734,39 @@ TEST_F(SessionStorageDatabaseTest, ReadNamespaceIds) {
   ASSERT_TRUE(db_->DeleteNamespace(kNamespace1));
   expected_namespace_ids.erase(kNamespace1);
   CheckNamespaceIds(expected_namespace_ids);
+
+  CheckDatabaseConsistency();
+}
+
+TEST_F(SessionStorageDatabaseTest, ReadNamespaceIdsInEmptyDatabase) {
+  std::set<std::string> expected_namespace_ids;
+  CheckNamespaceIds(expected_namespace_ids);
+}
+
+TEST_F(SessionStorageDatabaseTest, ReadOriginsInNamespace) {
+  ValuesMap data1;
+  data1[kKey1] = kValue1;
+  data1[kKey2] = kValue2;
+  data1[kKey3] = kValue3;
+
+  std::set<GURL> expected_origins1;
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, data1));
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin2, false, data1));
+  expected_origins1.insert(kOrigin1);
+  expected_origins1.insert(kOrigin2);
+  CheckOrigins(kNamespace1, expected_origins1);
+
+  std::set<GURL> expected_origins2;
+  ASSERT_TRUE(db_->CommitAreaChanges(kNamespace2, kOrigin2, false, data1));
+  expected_origins2.insert(kOrigin2);
+  CheckOrigins(kNamespace2, expected_origins2);
+
+  ASSERT_TRUE(db_->CloneNamespace(kNamespace1, kNamespaceClone));
+  CheckOrigins(kNamespaceClone, expected_origins1);
+
+  ASSERT_TRUE(db_->DeleteArea(kNamespace1, kOrigin2));
+  expected_origins1.erase(kOrigin2);
+  CheckOrigins(kNamespace1, expected_origins1);
 
   CheckDatabaseConsistency();
 }

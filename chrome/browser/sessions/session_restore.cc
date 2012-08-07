@@ -733,7 +733,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
         100);
 
     if (windows->empty()) {
-      // Restore was unsuccessful.
+      // Restore was unsuccessful. The DOM storage system can also delete its
+      // data, since no session restore will happen at a later point in time.
+      content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
+          StartScavengingUnusedSessionStorage();
       return FinishedTabCreation(false, false);
     }
 
@@ -822,6 +825,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
     Browser* finished_browser = FinishedTabCreation(true, has_tabbed_browser);
     if (finished_browser)
       last_browser = finished_browser;
+
+    // sessionStorages needed for the session restore have now been recreated
+    // by RestoreTab. Now it's safe for the DOM storage system to start
+    // deleting leftover data.
+    content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
+        StartScavengingUnusedSessionStorage();
     return last_browser;
   }
 

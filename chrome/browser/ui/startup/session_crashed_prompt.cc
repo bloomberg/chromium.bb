@@ -12,7 +12,10 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/dom_storage_context.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -23,7 +26,8 @@
 namespace {
 
 // A delegate for the InfoBar shown when the previous session has crashed.
-class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
+class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate,
+                                      public content::NotificationObserver {
  public:
   explicit SessionCrashedInfoBarDelegate(InfoBarTabHelper* infobar_helper);
 
@@ -37,15 +41,40 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
 
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  content::NotificationRegistrar registrar_;
+  bool accepted_;
+  bool removed_notification_received_;
+  Browser* browser_;
+
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
 };
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     InfoBarTabHelper* infobar_helper)
-    : ConfirmInfoBarDelegate(infobar_helper) {
+    : ConfirmInfoBarDelegate(infobar_helper),
+      accepted_(false),
+      removed_notification_received_(false),
+      browser_(browser::FindBrowserWithWebContents(owner()->web_contents())) {
+  // TODO(pkasting,marja): Once InfoBars own they delegates, this is not needed
+  // any more. Then we can rely on delegates getting destroyed, and we can
+  // initiate the session storage scavenging only in the destructor. (Currently,
+  // info bars are leaked if they get closed while they're in background tabs.)
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+                 content::NotificationService::AllSources());
 }
 
 SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {
+  // If the info bar wasn't accepted, it was either dismissed or expired. In
+  // that case, session restore won't happen.
+  if (!accepted_ && !removed_notification_received_) {
+    content::BrowserContext::GetDefaultDOMStorageContext(
+        browser_->profile())->StartScavengingUnusedSessionStorage();
+  }
 }
 
 gfx::Image* SessionCrashedInfoBarDelegate::GetIcon() const {
@@ -69,18 +98,32 @@ string16 SessionCrashedInfoBarDelegate::GetButtonLabel(
 
 bool SessionCrashedInfoBarDelegate::Accept() {
   uint32 behavior = 0;
-  Browser* browser =
-      browser::FindBrowserWithWebContents(owner()->web_contents());
-  if (browser->tab_count() == 1 &&
-      chrome::GetWebContentsAt(browser, 0)->GetURL() ==
+  if (browser_->tab_count() == 1 &&
+      chrome::GetWebContentsAt(browser_, 0)->GetURL() ==
           GURL(chrome::kChromeUINewTabURL)) {
     // There is only one tab and its the new tab page, make session restore
     // clobber it.
     behavior = SessionRestore::CLOBBER_CURRENT_TAB;
   }
   SessionRestore::RestoreSession(
-      browser->profile(), browser, behavior, std::vector<GURL>());
+      browser_->profile(), browser_, behavior, std::vector<GURL>());
+  accepted_ = true;
   return true;
+}
+
+void SessionCrashedInfoBarDelegate::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED);
+  if (content::Details<std::pair<InfoBarDelegate*, bool> >(details)->first !=
+      this)
+    return;
+  if (!accepted_) {
+    content::BrowserContext::GetDefaultDOMStorageContext(
+        browser_->profile())->StartScavengingUnusedSessionStorage();
+    removed_notification_received_ = true;
+  }
 }
 
 }  // namespace

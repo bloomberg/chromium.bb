@@ -73,6 +73,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -630,6 +631,16 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     return false;
 
   AddInfoBarsIfNecessary(browser, chrome::startup::IS_PROCESS_STARTUP);
+
+  // Session restore may occur if the startup preference is "last" or if the
+  // crash infobar is displayed. Otherwise, it's safe for the DOM storage system
+  // to start deleting leftover data.
+  if (pref.type != SessionStartupPref::LAST &&
+      !HasPendingUncleanExit(profile_)) {
+    content::BrowserContext::GetDefaultDOMStorageContext(profile_)->
+        StartScavengingUnusedSessionStorage();
+  }
+
   return true;
 }
 

@@ -52,12 +52,20 @@ void SessionStorageDatabase::ReadAreaValues(const std::string& namespace_id,
   // nothing to be added to the result.
   if (!LazyOpen(false))
     return;
+
+  // While ReadAreaValues is in progress, another thread can call
+  // CommitAreaChanges. CommitAreaChanges might update map ref count key while
+  // this thread is iterating over the map ref count key. To protect the reading
+  // operation, create a snapshot and read from it.
+  leveldb::ReadOptions options;
+  options.snapshot = db_->GetSnapshot();
+
   std::string map_id;
   bool exists;
-  if (!GetMapForArea(namespace_id, origin.spec(), &exists, &map_id))
-    return;
-  if (exists)
-    ReadMap(map_id, result, false);
+  if (GetMapForArea(namespace_id, origin.spec(), options, &exists, &map_id) &&
+      exists)
+    ReadMap(map_id, options, result, false);
+  db_->ReleaseSnapshot(options.snapshot);
 }
 
 bool SessionStorageDatabase::CommitAreaChanges(const std::string& namespace_id,
@@ -78,7 +86,8 @@ bool SessionStorageDatabase::CommitAreaChanges(const std::string& namespace_id,
 
   std::string map_id;
   bool exists;
-  if (!GetMapForArea(namespace_id, origin.spec(), &exists, &map_id))
+  if (!GetMapForArea(namespace_id, origin.spec(), leveldb::ReadOptions(),
+                     &exists, &map_id))
     return false;
   if (exists) {
     int64 ref_count;
@@ -192,7 +201,9 @@ bool SessionStorageDatabase::ReadNamespaceIds(
   std::string namespace_prefix = NamespacePrefix();
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
   it->Seek(namespace_prefix);
-  if (it->status().IsNotFound())
+  // If the key is not found, the status of the iterator won't be IsNotFound(),
+  // but the iterator will be invalid.
+  if (!it->Valid())
     return true;
 
   if (!DatabaseErrorCheck(it->status().ok()))
@@ -220,6 +231,17 @@ bool SessionStorageDatabase::ReadNamespaceIds(
                      key.length() - namespace_prefix.length() - 1));
     }
   }
+  return true;
+}
+
+bool SessionStorageDatabase::ReadOriginsInNamespace(
+    const std::string& namespace_id, std::vector<GURL>* origins) {
+  std::map<std::string, std::string> areas;
+  if (!GetAreasInNamespace(namespace_id, &areas))
+    return false;
+  for (std::map<std::string, std::string>::const_iterator it = areas.begin();
+       it != areas.end(); ++it)
+    origins->push_back(GURL(it->first));
   return true;
 }
 
@@ -337,7 +359,9 @@ bool SessionStorageDatabase::GetAreasInNamespace(
   std::string namespace_start_key = NamespaceStartKey(namespace_id);
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
   it->Seek(namespace_start_key);
-  if (it->status().IsNotFound()) {
+  // If the key is not found, the status of the iterator won't be IsNotFound(),
+  // but the iterator will be invalid.
+  if (!it->Valid()) {
     // The namespace_start_key is not found when the namespace doesn't contain
     // any areas. We don't need to do anything.
     return true;
@@ -373,7 +397,8 @@ bool SessionStorageDatabase::DeleteAreaHelper(
     leveldb::WriteBatch* batch) {
   std::string map_id;
   bool exists;
-  if (!GetMapForArea(namespace_id, origin, &exists, &map_id))
+  if (!GetMapForArea(namespace_id, origin, leveldb::ReadOptions(), &exists,
+                     &map_id))
     return false;
   if (!exists)
     return true;  // Nothing to delete.
@@ -386,9 +411,10 @@ bool SessionStorageDatabase::DeleteAreaHelper(
 
 bool SessionStorageDatabase::GetMapForArea(const std::string& namespace_id,
                                            const std::string& origin,
+                                           const leveldb::ReadOptions& options,
                                            bool* exists, std::string* map_id) {
   std::string namespace_key = NamespaceKey(namespace_id, origin);
-  leveldb::Status s = db_->Get(leveldb::ReadOptions(), namespace_key, map_id);
+  leveldb::Status s = db_->Get(options, namespace_key, map_id);
   if (s.IsNotFound()) {
     *exists = false;
     return true;
@@ -421,13 +447,16 @@ bool SessionStorageDatabase::CreateMapForArea(const std::string& namespace_id,
 }
 
 bool SessionStorageDatabase::ReadMap(const std::string& map_id,
+                                     const leveldb::ReadOptions& options,
                                      ValuesMap* result,
                                      bool only_keys) {
-  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
+  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   std::string map_start_key = MapRefCountKey(map_id);
   it->Seek(map_start_key);
-  // The map needs to exist, otherwise we have a stale map_id in the database.
-  if (!ConsistencyCheck(!it->status().IsNotFound()))
+  // If the key is not found, the status of the iterator won't be IsNotFound(),
+  // but the iterator will be invalid. The map needs to exist, otherwise we have
+  // a stale map_id in the database.
+  if (!ConsistencyCheck(it->Valid()))
     return false;
   if (!DatabaseErrorCheck(it->status().ok()))
     return false;
@@ -518,7 +547,7 @@ bool SessionStorageDatabase::DecreaseMapRefCount(const std::string& map_id,
 bool SessionStorageDatabase::ClearMap(const std::string& map_id,
                                       leveldb::WriteBatch* batch) {
   ValuesMap values;
-  if (!ReadMap(map_id, &values, true))
+  if (!ReadMap(map_id, leveldb::ReadOptions(), &values, true))
     return false;
   for (ValuesMap::const_iterator it = values.begin(); it != values.end(); ++it)
     batch->Delete(MapKey(map_id, UTF16ToUTF8(it->first)));
@@ -549,7 +578,7 @@ bool SessionStorageDatabase::DeepCopyArea(
   // Read the values from the old map here. If we don't need to copy the data,
   // this can stay empty.
   ValuesMap values;
-  if (copy_data && !ReadMap(*map_id, &values, false))
+  if (copy_data && !ReadMap(*map_id, leveldb::ReadOptions(), &values, false))
     return false;
   if (!DecreaseMapRefCount(*map_id, 1, batch))
     return false;

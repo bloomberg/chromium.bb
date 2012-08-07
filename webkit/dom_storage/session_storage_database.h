@@ -19,6 +19,7 @@ class GURL;
 
 namespace leveldb {
 class DB;
+struct ReadOptions;
 class WriteBatch;
 }  // namespace leveldb
 
@@ -27,6 +28,9 @@ namespace dom_storage {
 // SessionStorageDatabase holds the data from multiple namespaces and multiple
 // origins. All DomStorageAreas for session storage share the same
 // SessionStorageDatabase.
+
+// Only one thread is allowed to call the public functions other than
+// ReadAreaValues. Other threads area allowed to call ReadAreaValues.
 class SessionStorageDatabase :
     public base::RefCountedThreadSafe<SessionStorageDatabase> {
  public:
@@ -64,6 +68,10 @@ class SessionStorageDatabase :
 
   // Reads all namespace IDs from the database.
   bool ReadNamespaceIds(std::vector<std::string>* namespace_ids);
+
+  // Reads all origins which have data stored in |namespace_id|.
+  bool ReadOriginsInNamespace(const std::string& namespace_id,
+                              std::vector<GURL>* origins);
 
  private:
   friend class base::RefCountedThreadSafe<SessionStorageDatabase>;
@@ -125,6 +133,7 @@ class SessionStorageDatabase :
   // the map doesn't exist.
   bool GetMapForArea(const std::string& namespace_id,
                      const std::string& origin,
+                     const leveldb::ReadOptions& options,
                      bool* exists,
                      std::string* map_id);
 
@@ -140,6 +149,7 @@ class SessionStorageDatabase :
   // true, only keys are aread from the database and the values in |result| will
   // be empty.
   bool ReadMap(const std::string& map_id,
+               const leveldb::ReadOptions& options,
                ValuesMap* result,
                bool only_keys);
   // Writes |values| into the map |map_id|.
