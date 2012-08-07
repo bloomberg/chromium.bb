@@ -1504,10 +1504,6 @@ const char kUseMockKeychain[]               = "use-mock-keychain";
 // modification or removal.
 const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
 
-// Disables Website Settings. The Website Settings UI will replace the Page Info
-// Bubble.
-const char kDisableWebsiteSettings[]         = "disable-website-settings";
-
 // Enables sync credential caching on Windows 8.
 // See chrome/browser/sync/credential_cache_service_win.h.
 const char kEnableSyncCredentialCaching[]    = "enable-sync-credential-caching";

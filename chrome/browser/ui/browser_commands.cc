@@ -640,18 +640,8 @@ void ShowPageInfo(Browser* browser,
       web_contents->GetBrowserContext());
   TabContents* tab_contents = TabContents::FromWebContents(web_contents);
 
-#if defined(OS_WIN)
-  bool website_settings_enabled = true;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableWebsiteSettings))
-    website_settings_enabled = false;
-#else
-  bool website_settings_enabled = false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebsiteSettings))
-    website_settings_enabled = true;
-#endif
-  if (website_settings_enabled) {
+      switches::kEnableWebsiteSettings)) {
     browser->window()->ShowWebsiteSettings(
         profile, tab_contents, url, ssl, show_history);
   } else {
