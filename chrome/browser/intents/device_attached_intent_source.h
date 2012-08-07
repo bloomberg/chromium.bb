@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_INTENTS_DEVICE_ATTACHED_INTENT_SOURCE_H_
 #define CHROME_BROWSER_INTENTS_DEVICE_ATTACHED_INTENT_SOURCE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/system_monitor/system_monitor.h"
 
 class Browser;
@@ -21,7 +22,8 @@ class WebContentsDelegate;
 //   root_path = the File Path at which the device is accessible
 //   filesystem_id = registered isolated file system identifier
 class DeviceAttachedIntentSource
-    : public base::SystemMonitor::DevicesChangedObserver {
+    : public base::SystemMonitor::DevicesChangedObserver,
+      public base::SupportsWeakPtr<DeviceAttachedIntentSource> {
  public:
   DeviceAttachedIntentSource(Browser* browser,
                              content::WebContentsDelegate* delegate);
@@ -34,6 +36,11 @@ class DeviceAttachedIntentSource
       base::SystemMonitor::MediaDeviceType type,
       const FilePath::StringType& location) OVERRIDE;
   virtual void OnMediaDeviceDetached(const std::string& id) OVERRIDE;
+
+  // Dispatches web intents for the attached media device specified by
+  // |device_info|.
+  void DispatchIntentsForService(
+      const base::SystemMonitor::MediaDeviceInfo& device_info);
 
  private:
   typedef std::map<std::string, base::SystemMonitor::MediaDeviceInfo>
