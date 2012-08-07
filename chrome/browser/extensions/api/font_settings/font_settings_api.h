@@ -5,8 +5,8 @@
 // Defines the classes to realize the Font Settings Extension API as specified
 // in the extension API JSON.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_FONT_SETTINGS_FONT_SETTINGS_API_H__
+#define CHROME_BROWSER_EXTENSIONS_API_FONT_SETTINGS_FONT_SETTINGS_API_H__
 
 #include <map>
 #include <string>
@@ -15,16 +15,18 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 
+namespace extensions {
+
 // This class observes pref changed events on a profile and dispatches the
 // corresponding extension API events to extensions.
-class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
+class FontSettingsEventRouter : public content::NotificationObserver {
  public:
   // Constructor for observing pref changed events on |profile|. Stores a
   // pointer to |profile| but does not take ownership. |profile| must be
   // non-NULL and remain alive for the lifetime of the instance. Init() must be
   // called to start observing pref changed events.
-  explicit ExtensionFontSettingsEventRouter(Profile* profile);
-  virtual ~ExtensionFontSettingsEventRouter();
+  explicit FontSettingsEventRouter(Profile* profile);
+  virtual ~FontSettingsEventRouter();
 
   // Starts observing pref changed events on the profile. Must not be called
   // more than once.
@@ -82,7 +84,7 @@ class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
   // Weak, owns us (transitively via ExtensionService).
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionFontSettingsEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(FontSettingsEventRouter);
 };
 
 // fontSettings.clearFont API function.
@@ -295,4 +297,6 @@ class SetMinimumFontSizeFunction : public SetFontPrefExtensionFunction {
   virtual const char* GetKey() OVERRIDE;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_API_FONT_SETTINGS_FONT_SETTINGS_API_H__

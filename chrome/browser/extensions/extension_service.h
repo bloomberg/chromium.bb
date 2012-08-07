@@ -72,6 +72,7 @@ class CrxInstaller;
 class Extension;
 class ExtensionCookiesEventRouter;
 class ExtensionManagedModeEventRouter;
+class FontSettingsEventRouter;
 class PushMessagingEventRouter;
 class ExtensionSyncData;
 class ExtensionSystem;
@@ -818,7 +819,7 @@ class ExtensionService
 
   scoped_ptr<extensions::WebNavigationEventRouter> web_navigation_event_router_;
 
-  scoped_ptr<ExtensionFontSettingsEventRouter> font_settings_event_router_;
+  scoped_ptr<extensions::FontSettingsEventRouter> font_settings_event_router_;
 
   scoped_ptr<extensions::ExtensionManagedModeEventRouter>
       managed_mode_event_router_;

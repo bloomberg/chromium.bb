@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_script_badge_api.h"
+#include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/i18n/i18n_api.h"
 #include "chrome/browser/extensions/api/idle/idle_api.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/api/web_socket_proxy_private/web_socket_proxy_private_api.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
-#include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
@@ -430,19 +430,19 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::SetContentSettingFunction>();
 
   // Font settings.
-  RegisterFunction<GetFontListFunction>();
-  RegisterFunction<ClearFontFunction>();
-  RegisterFunction<GetFontFunction>();
-  RegisterFunction<SetFontFunction>();
-  RegisterFunction<ClearDefaultFontSizeFunction>();
-  RegisterFunction<GetDefaultFontSizeFunction>();
-  RegisterFunction<SetDefaultFontSizeFunction>();
-  RegisterFunction<ClearDefaultFixedFontSizeFunction>();
-  RegisterFunction<GetDefaultFixedFontSizeFunction>();
-  RegisterFunction<SetDefaultFixedFontSizeFunction>();
-  RegisterFunction<ClearMinimumFontSizeFunction>();
-  RegisterFunction<GetMinimumFontSizeFunction>();
-  RegisterFunction<SetMinimumFontSizeFunction>();
+  RegisterFunction<extensions::GetFontListFunction>();
+  RegisterFunction<extensions::ClearFontFunction>();
+  RegisterFunction<extensions::GetFontFunction>();
+  RegisterFunction<extensions::SetFontFunction>();
+  RegisterFunction<extensions::ClearDefaultFontSizeFunction>();
+  RegisterFunction<extensions::GetDefaultFontSizeFunction>();
+  RegisterFunction<extensions::SetDefaultFontSizeFunction>();
+  RegisterFunction<extensions::ClearDefaultFixedFontSizeFunction>();
+  RegisterFunction<extensions::GetDefaultFixedFontSizeFunction>();
+  RegisterFunction<extensions::SetDefaultFixedFontSizeFunction>();
+  RegisterFunction<extensions::ClearMinimumFontSizeFunction>();
+  RegisterFunction<extensions::GetMinimumFontSizeFunction>();
+  RegisterFunction<extensions::SetMinimumFontSizeFunction>();
 
   // CloudPrint settings.
   RegisterFunction<extensions::CloudPrintSetCredentialsFunction>();

@@ -4,7 +4,7 @@
 
 // Font Settings Extension API implementation.
 
-#include "chrome/browser/extensions/extension_font_settings_api.h"
+#include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -29,9 +29,9 @@
 #include "ui/gfx/platform_font_win.h"
 #endif
 
-using extensions::APIPermission;
+namespace extensions {
 
-namespace fonts = extensions::api::font_settings;
+namespace fonts = api::font_settings;
 
 namespace {
 
@@ -109,12 +109,12 @@ void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
 
 }  // namespace
 
-ExtensionFontSettingsEventRouter::ExtensionFontSettingsEventRouter(
+FontSettingsEventRouter::FontSettingsEventRouter(
     Profile* profile) : profile_(profile) {}
 
-ExtensionFontSettingsEventRouter::~ExtensionFontSettingsEventRouter() {}
+FontSettingsEventRouter::~FontSettingsEventRouter() {}
 
-void ExtensionFontSettingsEventRouter::Init() {
+void FontSettingsEventRouter::Init() {
   registrar_.Init(profile_->GetPrefs());
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,
@@ -141,14 +141,14 @@ void ExtensionFontSettingsEventRouter::Init() {
                                 prefs::kWebKitFantasyFontFamilyMap, this);
 }
 
-void ExtensionFontSettingsEventRouter::AddPrefToObserve(const char* pref_name,
+void FontSettingsEventRouter::AddPrefToObserve(const char* pref_name,
                                                         const char* event_name,
                                                         const char* key) {
   registrar_.Add(pref_name, this);
   pref_event_map_[pref_name] = std::make_pair(event_name, key);
 }
 
-void ExtensionFontSettingsEventRouter::Observe(
+void FontSettingsEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -183,7 +183,7 @@ void ExtensionFontSettingsEventRouter::Observe(
   NOTREACHED();
 }
 
-void ExtensionFontSettingsEventRouter::OnFontNamePrefChanged(
+void FontSettingsEventRouter::OnFontNamePrefChanged(
     PrefService* pref_service,
     const std::string& pref_name,
     const std::string& generic_family,
@@ -216,7 +216,7 @@ void ExtensionFontSettingsEventRouter::OnFontNamePrefChanged(
       pref_name);
 }
 
-void ExtensionFontSettingsEventRouter::OnFontPrefChanged(
+void FontSettingsEventRouter::OnFontPrefChanged(
     PrefService* pref_service,
     const std::string& pref_name,
     const std::string& event_name,
@@ -257,11 +257,10 @@ bool ClearFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  extensions::ExtensionPrefs* prefs =
-      profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(),
                                        pref_path.c_str(),
-                                       extensions::kExtensionPrefsScopeRegular);
+                                       kExtensionPrefsScopeRegular);
   return true;
 }
 
@@ -313,12 +312,11 @@ bool SetFontFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       profile_->GetPrefs()->FindPreference(pref_path.c_str()));
 
-  extensions::ExtensionPrefs* prefs =
-      profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
   prefs->SetExtensionControlledPref(
       extension_id(),
       pref_path.c_str(),
-      extensions::kExtensionPrefsScopeRegular,
+      kExtensionPrefsScopeRegular,
       Value::CreateStringValue(params->details.font_id));
   return true;
 }
@@ -371,11 +369,10 @@ bool ClearFontPrefExtensionFunction::RunImpl() {
     return false;
   }
 
-  extensions::ExtensionPrefs* prefs =
-      profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
   prefs->RemoveExtensionControlledPref(extension_id(),
                                        GetPrefName(),
-                                       extensions::kExtensionPrefsScopeRegular);
+                                       kExtensionPrefsScopeRegular);
   return true;
 }
 
@@ -413,11 +410,10 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
 
-  extensions::ExtensionPrefs* prefs =
-      profile_->GetExtensionService()->extension_prefs();
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
   prefs->SetExtensionControlledPref(extension_id(),
                                     GetPrefName(),
-                                    extensions::kExtensionPrefsScopeRegular,
+                                    kExtensionPrefsScopeRegular,
                                     value->DeepCopy());
   return true;
 }
@@ -481,3 +477,5 @@ const char* SetMinimumFontSizeFunction::GetPrefName() {
 const char* SetMinimumFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
+
+}  // namespace extensions

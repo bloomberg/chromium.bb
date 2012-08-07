@@ -32,6 +32,7 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_api.h"
@@ -46,7 +47,6 @@
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
-#include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
@@ -491,7 +491,7 @@ void ExtensionService::InitEventRouters() {
       new extensions::WebNavigationEventRouter(profile_));
   web_navigation_event_router_->Init();
   font_settings_event_router_.reset(
-      new ExtensionFontSettingsEventRouter(profile_));
+      new extensions::FontSettingsEventRouter(profile_));
   font_settings_event_router_->Init();
   managed_mode_event_router_.reset(
       new extensions::ExtensionManagedModeEventRouter(profile_));
