@@ -260,7 +260,8 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
+// Flaky (sometimes timeout): http://crbug.com/140971
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
