@@ -29,6 +29,7 @@ SO_OBJECTS=\
 	$(OBJDIR)/split_correcting_filter_interpreter.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter.o \
 	$(OBJDIR)/t5r2_correcting_filter_interpreter.o \
+	$(OBJDIR)/trace_marker.o \
 	$(OBJDIR)/util.o
 
 # Objects for unittests

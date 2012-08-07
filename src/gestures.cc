@@ -28,6 +28,7 @@
 #include "gestures/include/split_correcting_filter_interpreter.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
 #include "gestures/include/t5r2_correcting_filter_interpreter.h"
+#include "gestures/include/trace_marker.h"
 #include "gestures/include/util.h"
 
 using std::string;
@@ -284,11 +285,13 @@ GestureInterpreter::GestureInterpreter(int version)
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp);
   interpreter_.reset(temp);
   temp = NULL;
+  TraceMarker::CreateTraceMarker();
 }
 
 GestureInterpreter::~GestureInterpreter() {
   SetTimerProvider(NULL, NULL);
   SetPropProvider(NULL, NULL);
+  TraceMarker::DeleteTraceMarker();
 }
 
 namespace {
