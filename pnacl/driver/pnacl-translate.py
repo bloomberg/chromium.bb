@@ -98,7 +98,11 @@ EXTRA_ENV = {
                       # do the work that would otherwise be done by
                       # linker rewrites which are quite messy in the nacl
                       # case and hence have not been implemented in gold
-                      '${PIC && !SHARED ? -force-tls-non-pic}',
+                      '${PIC && !SHARED ? -force-tls-non-pic} ' +
+                      # this translates the pexe one function at a time
+                      # which is also what the streaming translation does
+                      '-reduce-memory-footprint',
+
 
   'LLC_FLAGS_ARM'    :
     ('-arm-reserve-r9 -sfi-disable-cp ' +
