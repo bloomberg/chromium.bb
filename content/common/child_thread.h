@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/shared_memory.h"
 #include "base/tracked_objects.h"
 #include "content/common/content_export.h"
@@ -100,16 +101,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   void OnProcessFinalRelease();
 
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
-  virtual void OnShutdown();
-
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  virtual void OnSetIPCLoggingEnabled(bool enable);
-#endif
-
-  virtual void OnSetProfilerStatus(tracked_objects::ThreadData::Status status);
-  virtual void OnGetChildProfilerData(int sequence_number);
-
-  virtual void OnDumpHandles();
 
   void set_on_channel_error_called(bool on_channel_error_called) {
     on_channel_error_called_ = on_channel_error_called;
@@ -123,9 +114,19 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
  private:
   void Init();
 
+  // IPC message handlers.
+  void OnShutdown();
+  void OnSetProfilerStatus(tracked_objects::ThreadData::Status status);
+  void OnGetChildProfilerData(int sequence_number);
+  void OnDumpHandles();
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  void OnSetIPCLoggingEnabled(bool enable);
+#endif
 #if defined(USE_TCMALLOC)
   void OnGetTcmallocStats();
 #endif
+
+  void EnsureConnected();
 
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;
@@ -153,6 +154,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_ptr<QuotaDispatcher> quota_dispatcher_;
 
   scoped_refptr<content::ChildHistogramMessageFilter> histogram_message_filter_;
+
+  base::WeakPtrFactory<ChildThread> channel_connected_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };
