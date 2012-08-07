@@ -136,12 +136,12 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
   if (stats.gaming == 0.0)
     LOG(ERROR) << "Could not read gaming score from assessment results.";
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.OverallScore",
-                              stats.overall, 0.0, 50.0, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GraphicsScore",
-                              stats.graphics, 0.0, 50.0, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GamingScore",
-                              stats.gaming, 0.0, 50.0, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.OverallScore2",
+                              stats.overall * 10, 10, 200, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GraphicsScore2",
+                              stats.graphics * 10, 10, 200, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GamingScore2",
+                              stats.gaming * 10, 10, 200, 50);
 
   UMA_HISTOGRAM_TIMES("GPU.WinSAT.ReadResultsFileTime",
                       base::TimeTicks::Now() - start_time);
