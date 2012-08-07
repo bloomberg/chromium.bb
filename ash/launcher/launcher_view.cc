@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/launcher/overflow_bubble.h"
+#include "ash/launcher/overflow_button.h"
 #include "ash/launcher/tabbed_launcher_button.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -293,7 +294,6 @@ LauncherView::~LauncherView() {
 }
 
 void LauncherView::Init() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   model_->AddObserver(this);
 
   const LauncherItems& items(model_->items());
@@ -305,21 +305,7 @@ void LauncherView::Init() {
   }
   UpdateFirstButtonPadding();
 
-  overflow_button_ = new views::ImageButton(this);
-  overflow_button_->set_accessibility_focusable(true);
-  overflow_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                      views::ImageButton::ALIGN_MIDDLE);
-  overflow_button_->SetImage(
-      views::CustomButton::BS_NORMAL,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW).ToImageSkia());
-  overflow_button_->SetImage(
-      views::CustomButton::BS_HOT,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_HOT).ToImageSkia());
-  overflow_button_->SetImage(
-      views::CustomButton::BS_PUSHED,
-      rb.GetImageNamed(IDR_AURA_LAUNCHER_OVERFLOW_PUSHED).ToImageSkia());
-  overflow_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_AURA_LAUNCHER_OVERFLOW_NAME));
+  overflow_button_ = new OverflowButton(this);
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
@@ -332,6 +318,7 @@ void LauncherView::SetAlignment(ShelfAlignment alignment) {
     return;
   alignment_ = alignment;
   UpdateFirstButtonPadding();
+  overflow_button_->SetShelfAlignment(alignment_);
   LayoutToIdealBounds();
   tooltip_->SetArrowLocation(alignment_);
   if (overflow_bubble_.get())

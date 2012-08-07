@@ -113,6 +113,8 @@
         'launcher/launcher_view.h',
         'launcher/overflow_bubble.cc',
         'launcher/overflow_bubble.h',
+        'launcher/overflow_button.cc',
+        'launcher/overflow_button.h',
         'launcher/tabbed_launcher_button.cc',
         'launcher/tabbed_launcher_button.h',
         'magnifier/magnification_controller.cc',

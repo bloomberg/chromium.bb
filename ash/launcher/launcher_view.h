@@ -20,7 +20,6 @@
 
 namespace views {
 class BoundsAnimator;
-class ImageButton;
 class MenuRunner;
 class ViewModel;
 }
@@ -42,6 +41,7 @@ class LauncherButton;
 class LauncherTooltipManager;
 class ShelfLayoutManager;
 class OverflowBubble;
+class OverflowButton;
 
 class ASH_EXPORT LauncherView : public views::View,
                                 public LauncherModelObserver,
@@ -238,7 +238,7 @@ class ASH_EXPORT LauncherView : public views::View,
 
   scoped_ptr<views::BoundsAnimator> bounds_animator_;
 
-  views::ImageButton* overflow_button_;
+  OverflowButton* overflow_button_;
 
   scoped_ptr<OverflowBubble> overflow_bubble_;
 

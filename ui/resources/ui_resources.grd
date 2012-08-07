@@ -66,8 +66,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="ash/new_browser_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="ash/new_browser_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_OVERFLOW" file="ash/launcher_overflow.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_OVERFLOW_HOT" file="ash/launcher_overflow_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="ash/launcher_overflow_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="ash/launcher_underline_active.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="ash/launcher_underline_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="ash/launcher_underline_running.png" />
