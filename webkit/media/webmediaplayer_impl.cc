@@ -241,13 +241,10 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   }
 
   // Media source pipelines can start immediately.
-  scoped_refptr<media::FFmpegVideoDecoder> video_decoder;
   if (BuildMediaSourceCollection(url, GetClient()->sourceURL(), proxy_,
                                  message_loop_factory_.get(),
                                  filter_collection_.get(),
-                                 &decryptor_,
-                                 &video_decoder)) {
-    proxy_->set_video_decoder(video_decoder);
+                                 &decryptor_)) {
     StartPipeline();
     return;
   }
@@ -268,9 +265,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   BuildDefaultCollection(proxy_->data_source(),
                          message_loop_factory_.get(),
                          filter_collection_.get(),
-                         &decryptor_,
-                         &video_decoder);
-  proxy_->set_video_decoder(video_decoder);
+                         &decryptor_);
 }
 
 void WebMediaPlayerImpl::cancelLoad() {

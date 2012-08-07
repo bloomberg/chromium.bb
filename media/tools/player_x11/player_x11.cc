@@ -122,7 +122,8 @@ bool InitPipeline(MessageLoop* message_loop,
   collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
-                 "VideoDecoderThread")));
+                 "VideoDecoderThread"),
+      NULL));
 
   // Create our video renderer and save a reference to it for painting.
   g_video_renderer = new media::VideoRendererBase(

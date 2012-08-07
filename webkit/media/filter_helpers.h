@@ -44,8 +44,7 @@ bool BuildMediaSourceCollection(
     media::ChunkDemuxerClient* client,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
-    media::Decryptor* decryptor,
-    scoped_refptr<media::FFmpegVideoDecoder>* video_decoder);
+    media::Decryptor* decryptor);
 
 // Builds the required filters for handling regular URLs and adds them to
 // |filter_collection| and fills |video_decoder| returning true if successful.
@@ -53,8 +52,7 @@ void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
-    media::Decryptor* decryptor,
-    scoped_refptr<media::FFmpegVideoDecoder>* video_decoder);
+    media::Decryptor* decryptor);
 
 }  // webkit_media
 

@@ -87,7 +87,6 @@ void WebMediaPlayerProxy::Detach() {
   webmediaplayer_ = NULL;
   data_source_ = NULL;
   frame_provider_ = NULL;
-  video_decoder_ = NULL;
 }
 
 void WebMediaPlayerProxy::PipelineInitializationCallback(

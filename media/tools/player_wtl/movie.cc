@@ -80,7 +80,8 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   collection->AddVideoDecoder(new FFmpegVideoDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
-                 "VideoDecoderThread")));
+                 "VideoDecoderThread"),
+      NULL));
 
   // TODO(vrk): Re-enabled audio. (crbug.com/112159)
   collection->AddAudioRenderer(
