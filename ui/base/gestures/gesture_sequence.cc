@@ -675,12 +675,12 @@ void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
   gfx::Point current_center = bounding_box_.CenterPoint();
   int dx = current_center.x() - bounding_box_last_center_.x();
   int dy = current_center.y() - bounding_box_last_center_.y();
-  if (dx == 0 && dy == 0)
-    return;
   if (scroll_type_ == ST_HORIZONTAL)
     dy = 0;
   else if (scroll_type_ == ST_VERTICAL)
     dx = 0;
+  if (dx == 0 && dy == 0)
+    return;
 
   gestures->push_back(CreateGestureEvent(
       GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, dy),
@@ -907,6 +907,22 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
 bool GestureSequence::PinchUpdate(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PINCH);
+
+  // It is possible that the none of the touch-points changed their position,
+  // but their radii changed, and that caused the bounding box to also change.
+  // But in such cases, we do not want to either pinch or scroll.
+  // To avoid small jiggles, it is also necessary to make sure that at least one
+  // of the fingers moved enough before a pinch or scroll update is created.
+  bool did_scroll = false;
+  for (int i = 0; i < kMaxGesturePoints; ++i) {
+    if (!points_[i].in_use() || !points_[i].DidScroll(event, 2))
+      continue;
+    did_scroll = true;
+    break;
+  }
+
+  if (!did_scroll)
+    return false;
 
   float distance = BoundingBoxDiagonal(bounding_box_);
 

@@ -2516,5 +2516,55 @@ TEST_F(GestureRecognizerTest, TwoTapsWithDelayBetween) {
   EXPECT_EQ(1, delegate->tap_count());
 }
 
+// Checks that if the bounding-box of a gesture changes because of change in
+// radius of a touch-point, and not because of change in position, then there
+// are not gesture events from that.
+TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kWindowWidth = 234;
+  const int kWindowHeight = 345;
+  const int kTouchId = 5, kTouchId2 = 7;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), kTouchId,
+      GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
+  EXPECT_TRUE(delegate->bounding_box().IsEmpty());
+
+  delegate->Reset();
+
+  TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(201, 201), kTouchId2,
+      press1.time_stamp() + base::TimeDelta::FromMilliseconds(400));
+  press2.set_radius_x(5);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  EXPECT_FALSE(delegate->pinch_begin());
+
+  delegate->Reset();
+
+  TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(141, 201), kTouchId,
+      press1.time_stamp() + base::TimeDelta::FromMilliseconds(40));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
+  EXPECT_TRUE(delegate->pinch_begin());
+  EXPECT_EQ(gfx::Rect(141, 196, 65, 10).ToString(),
+            delegate->bounding_box().ToString());
+
+  delegate->Reset();
+
+  // The position doesn't move, but the radius changes.
+  TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(101, 201), kTouchId,
+      press2.time_stamp() + base::TimeDelta::FromMilliseconds(40));
+  move2.set_radius_x(50);
+  move2.set_radius_y(60);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->pinch_update());
+
+  delegate->Reset();
+}
+
 }  // namespace test
 }  // namespace aura
