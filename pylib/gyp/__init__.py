@@ -66,7 +66,22 @@ def Load(build_files, format, default_variables={},
   # avoiding collisions with user and automatic variables.
   default_variables['GENERATOR'] = format
 
-  generator_name = 'gyp.generator.' + format
+  # Format can be a custom python file, or by default the name of a module
+  # within gyp.generator.
+  if format.endswith('.py'):
+    generator_name = os.path.splitext(format)[0]
+    path, generator_name = os.path.split(generator_name)
+
+    # Make sure the path to the custom generator is in sys.path
+    # Don't worry about removing it once we are done.  Keeping the path
+    # to each generator that is used in sys.path is likely harmless and
+    # arguably a good idea.
+    path = os.path.abspath(path)
+    if path not in sys.path:
+      sys.path.insert(0, path)
+  else:
+    generator_name = 'gyp.generator.' + format
+
   # These parameters are passed in order (as opposed to by key)
   # because ActivePython cannot handle key parameters to __import__.
   generator = __import__(generator_name, globals(), locals(), generator_name)

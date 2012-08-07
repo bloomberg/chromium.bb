@@ -347,6 +347,16 @@ class TestGypGypd(TestGypBase):
   format = 'gypd'
 
 
+class TestGypCustom(TestGypBase):
+  """
+  Subclass for testing the GYP with custom generator
+  """
+
+  def __init__(self, gyp=None, *args, **kw):
+    self.format = kw.pop("format")
+    super(TestGypCustom, self).__init__(*args, **kw)
+
+
 class TestGypAndroid(TestGypBase):
   """
   Subclass for testing the GYP Android makefile generator. Note that
