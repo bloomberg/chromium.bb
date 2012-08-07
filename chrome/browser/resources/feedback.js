@@ -284,6 +284,7 @@ function setupDialogDefaults(defaults) {
     $('page-url-checkbox').checked = false;
   // User e-mail.
   $('user-email-text').value = defaults.userEmail;
+  $('user-email-checkbox').checked = defaults.emailCheckboxDefault;
 
   // Are screenshots disabled?
   if (!defaults.disableScreenshots)

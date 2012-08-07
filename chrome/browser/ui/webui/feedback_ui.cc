@@ -476,6 +476,16 @@ void FeedbackHandler::HandleGetDialogDefaults(const ListValue*) {
   std::string user_email = GetUserEmail();
   dialog_defaults.SetString("userEmail", user_email);
 
+  // Set email checkbox to checked by default for cros, unchecked for Chrome.
+  dialog_defaults.SetBoolean(
+      "emailCheckboxDefault",
+#if defined(OS_CHROMEOS)
+      true);
+#else
+      false);
+#endif
+
+
 #if defined(OS_CHROMEOS)
   // Trigger the request for system information here.
   chromeos::system::SyslogsProvider* provider =
