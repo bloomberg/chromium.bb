@@ -52,6 +52,11 @@ function unexpectedErrorCallback()
   fail('unexpectedErrorCallback');
 }
 
+function unexpectedBlockedCallback()
+{
+  fail('unexpectedBlockedCallback');
+}
+
 function deleteAllObjectStores(db)
 {
   objectStoreNames = db.objectStoreNames;

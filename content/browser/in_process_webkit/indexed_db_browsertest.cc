@@ -177,4 +177,42 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithGCExposed,
   SimpleTest(GetTestUrl("indexeddb", "database_callbacks_first.html"));
 }
 
+class IndexedDBBrowserTestWithVersion0Schema : public IndexedDBBrowserTest {
+ public:
+  virtual void SetUpOnMainThread() {
+    BrowserThread::PostTask(
+        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
+        base::Bind(
+            &IndexedDBBrowserTestWithVersion0Schema::CopyLevelDBToProfile,
+            shell()));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(BrowserThread::GetMessageLoopProxyForThread(
+            BrowserThread::WEBKIT_DEPRECATED)));
+    ASSERT_TRUE(helper->Run());
+  }
+  static void CopyLevelDBToProfile(Shell* shell) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+    FilePath leveldb_dir(FILE_PATH_LITERAL("file__0.indexeddb.leveldb"));
+    FilePath test_data_dir =
+        GetTestFilePath("indexeddb", "migration_from_0").Append(leveldb_dir);
+    IndexedDBContext* context = BrowserContext::GetIndexedDBContext(
+        shell->web_contents()->GetBrowserContext());
+    IndexedDBContextImpl* context_impl =
+        static_cast<IndexedDBContextImpl*>(context);
+    FilePath dest = context_impl->data_path().Append(leveldb_dir);
+    // If we don't create the destination directory first, the contents of the
+    // leveldb directory are copied directly into profile/IndexedDB instead of
+    // profile/IndexedDB/file__0.xxx/
+    ASSERT_TRUE(file_util::CreateDirectory(dest));
+    const bool kRecursive = true;
+    ASSERT_TRUE(file_util::CopyDirectory(test_data_dir,
+                                         context_impl->data_path(),
+                                         kRecursive));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion0Schema, MigrationTest) {
+  SimpleTest(GetTestUrl("indexeddb", "migration_test.html"));
+}
+
 }  // namespace content
