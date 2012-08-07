@@ -54,10 +54,14 @@ class ScopedCOMInitializer;
 
 namespace content {
 class AudioRendererMixerManager;
-class BrowserPluginChannelManager;
-class BrowserPluginRegistry;
 class MediaStreamCenter;
 class RenderProcessObserver;
+
+namespace old {
+class BrowserPluginChannelManager;
+class BrowserPluginRegistry;
+}
+
 }
 
 namespace v8 {
@@ -165,11 +169,12 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
     return compositor_thread_.get();
   }
 
-  content::BrowserPluginRegistry* browser_plugin_registry() const {
+  content::old::BrowserPluginRegistry* browser_plugin_registry() const {
     return browser_plugin_registry_.get();
   }
 
-  content::BrowserPluginChannelManager* browser_plugin_channel_manager() const {
+  content::old::BrowserPluginChannelManager*
+      browser_plugin_channel_manager() const {
     return browser_plugin_channel_manager_.get();
   }
 
@@ -245,7 +250,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
-  scoped_ptr<content::BrowserPluginChannelManager>
+  scoped_ptr<content::old::BrowserPluginChannelManager>
       browser_plugin_channel_manager_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
@@ -295,7 +300,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   bool compositor_initialized_;
   scoped_ptr<CompositorThread> compositor_thread_;
-  scoped_ptr<content::BrowserPluginRegistry> browser_plugin_registry_;
+  scoped_ptr<content::old::BrowserPluginRegistry> browser_plugin_registry_;
 
   ObserverList<content::RenderProcessObserver> observers_;
 

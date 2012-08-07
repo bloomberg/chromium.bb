@@ -16,6 +16,7 @@ class GuestToEmbedderChannel;
 struct ViewMsg_New_Params;
 
 namespace content {
+namespace old {
 
 // BrowserPluginChannelManager manages the lifetime of GuestToEmbedderChannels.
 // When a new RenderView is requested, it checks the embedder channel name
@@ -76,6 +77,7 @@ class BrowserPluginChannelManager
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginChannelManager);
 };
 
+}  // namespace old
 }  // namespace content
 
 #endif //  CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_CHANNEL_MANAGER_H_

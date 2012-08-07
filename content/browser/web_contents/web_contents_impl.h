@@ -142,7 +142,7 @@ class CONTENT_EXPORT WebContentsImpl
     return java_bridge_dispatcher_host_manager_.get();
   }
 
-  content::BrowserPluginHost* browser_plugin_host() const {
+  content::old::BrowserPluginHost* browser_plugin_host() const {
     return browser_plugin_host_.get();
   }
 
@@ -675,7 +675,7 @@ class CONTENT_EXPORT WebContentsImpl
       java_bridge_dispatcher_host_manager_;
 
   // Manages the browser plugin instances hosted by this WebContents.
-  scoped_ptr<content::BrowserPluginHost> browser_plugin_host_;
+  scoped_ptr<content::old::BrowserPluginHost> browser_plugin_host_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

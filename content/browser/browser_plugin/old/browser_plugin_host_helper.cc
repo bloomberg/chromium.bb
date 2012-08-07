@@ -11,6 +11,7 @@
 #include "ui/gfx/size.h"
 
 namespace content {
+namespace old {
 
 BrowserPluginHostHelper::BrowserPluginHostHelper(
     BrowserPluginHost* browser_plugin_host,
@@ -58,4 +59,5 @@ void BrowserPluginHostHelper::OnResizeGuest(int width, int height) {
   render_view_host()->GetView()->SetSize(gfx::Size(width, height));
 }
 
+}  // namespace old
 }  // namespace content

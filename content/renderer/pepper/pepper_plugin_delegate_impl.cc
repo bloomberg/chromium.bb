@@ -362,7 +362,7 @@ scoped_refptr<webkit::ppapi::PluginModule>
     PepperPluginDelegateImpl::CreateBrowserPluginModule(
         const IPC::ChannelHandle& channel_handle,
         int guest_process_id) {
-  BrowserPluginRegistry* registry =
+  content::old::BrowserPluginRegistry* registry =
       RenderThreadImpl::current()->browser_plugin_registry();
   scoped_refptr<webkit::ppapi::PluginModule> module =
       registry->GetModule(guest_process_id);

@@ -25,6 +25,9 @@ namespace content {
 
 class RenderProcessHost;
 
+namespace old {
+
+
 // A BrowserPluginHost object is used by both embedders and guests.
 // The primary purpose of BrowserPluginHost is to allow an embedder
 // to manage the lifetime of its guests. It cleans up its guests
@@ -127,6 +130,7 @@ class BrowserPluginHost : public WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHost);
 };
 
+}  // namespace old
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_H_

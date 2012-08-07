@@ -7,6 +7,7 @@
 #include "base/logging.h"
 
 namespace content {
+namespace old {
 
 BrowserPluginRegistry::BrowserPluginRegistry() {
 }
@@ -42,4 +43,5 @@ void BrowserPluginRegistry::PluginModuleDead(
   NOTREACHED();  // Should have always found the module above.
 }
 
+}  // namespace old
 }  // namespace content

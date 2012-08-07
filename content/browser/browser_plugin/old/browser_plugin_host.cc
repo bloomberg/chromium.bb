@@ -19,6 +19,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace content {
+namespace old {
 
 BrowserPluginHost::BrowserPluginHost(
     WebContentsImpl* web_contents)
@@ -234,4 +235,5 @@ void BrowserPluginHost::Observe(
   }
 }
 
+}  // namespace old
 }  // namespace content

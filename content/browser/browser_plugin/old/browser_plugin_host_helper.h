@@ -16,6 +16,7 @@ class Size;
 }
 
 namespace content {
+namespace old {
 
 class BrowserPluginHost;
 
@@ -45,6 +46,7 @@ class BrowserPluginHostHelper : public RenderViewHostObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostHelper);
 };
 
+}  // namespace old
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_HELPER_H__

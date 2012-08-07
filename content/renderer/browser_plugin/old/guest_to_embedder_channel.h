@@ -22,6 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 namespace content {
+namespace old {
 
 class BrowserPluginChannelManager;
 
@@ -132,6 +133,7 @@ class GuestToEmbedderChannel
   DISALLOW_COPY_AND_ASSIGN(GuestToEmbedderChannel);
 };
 
+}  // namespace old
 }  // namespace content
 
 #endif // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_GUEST_TO_EMBEDDER_CHANNEL_H_

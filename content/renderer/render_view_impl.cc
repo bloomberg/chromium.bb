@@ -510,7 +510,7 @@ RenderViewImpl::RenderViewImpl(
     bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    content::GuestToEmbedderChannel* guest_to_embedder_channel,
+    content::old::GuestToEmbedderChannel* guest_to_embedder_channel,
     AccessibilityMode accessibility_mode)
     : RenderWidget(WebKit::WebPopupTypeNone, screen_info, swapped_out),
       webkit_preferences_(webkit_prefs),
@@ -732,7 +732,7 @@ RenderViewImpl* RenderViewImpl::Create(
     bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    content::GuestToEmbedderChannel* guest_to_embedder_channel,
+    content::old::GuestToEmbedderChannel* guest_to_embedder_channel,
     AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
@@ -783,13 +783,13 @@ void RenderViewImpl::SetReportLoadProgressEnabled(bool enabled) {
     load_progress_tracker_.reset(new LoadProgressTracker(this));
 }
 
-content::GuestToEmbedderChannel*
+content::old::GuestToEmbedderChannel*
     RenderViewImpl::GetGuestToEmbedderChannel() const {
   return guest_to_embedder_channel_;
 }
 
 void RenderViewImpl::SetGuestToEmbedderChannel(
-    content::GuestToEmbedderChannel* channel) {
+    content::old::GuestToEmbedderChannel* channel) {
   guest_to_embedder_channel_ = channel;
 }
 
@@ -978,7 +978,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
   // If we don't have guest-to-embedder channel associated with this RenderView
   // but we need one, grab one now.
   if (!params.embedder_channel_name.empty() && !GetGuestToEmbedderChannel()) {
-    content::GuestToEmbedderChannel* embedder_channel =
+    content::old::GuestToEmbedderChannel* embedder_channel =
         RenderThreadImpl::current()->browser_plugin_channel_manager()->
             GetChannelByName(params.embedder_channel_name);
     DCHECK(embedder_channel);
@@ -2317,7 +2317,7 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
   }
 
   if (UTF16ToASCII(params.mimeType) == content::kBrowserPluginMimeType)
-    return BrowserPlugin::Create(this, frame, params);
+    return content::old::BrowserPlugin::Create(this, frame, params);
 
   webkit::WebPluginInfo info;
   std::string mime_type;

@@ -17,6 +17,7 @@
 using webkit_glue::WebPreferences;
 
 namespace content {
+namespace old {
 
 BrowserPluginChannelManager::BrowserPluginChannelManager() {
 }
@@ -151,4 +152,5 @@ void BrowserPluginChannelManager::OnAdvanceFocus(int instance_id,
   browser_plugin->AdvanceFocus(reverse);
 }
 
+}  // namespace old
 }  // namespace content

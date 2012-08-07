@@ -7,6 +7,7 @@
 #include "base/logging.h"
 
 namespace content {
+namespace old {
 
 BrowserPluginVarSerializationRules::BrowserPluginVarSerializationRules() {
 }
@@ -48,4 +49,5 @@ void BrowserPluginVarSerializationRules::ReleaseObjectRef(const PP_Var& var) {
   DCHECK(var.type != PP_VARTYPE_OBJECT);
 }
 
+}  // namespace old
 }  // namespace content

@@ -23,6 +23,7 @@
 #include "webkit/plugins/ppapi/event_conversion.h"
 
 namespace content {
+namespace old {
 
 GuestToEmbedderChannel::GuestToEmbedderChannel(
     const std::string& embedder_channel_name,
@@ -312,4 +313,5 @@ void GuestToEmbedderChannel::OnGuestReady(PP_Instance instance,
       GuestReady(instance, embedder_channel_name(), embedder_container_id);
 }
 
+}  // namespace old
 }  // namespace content

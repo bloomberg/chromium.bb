@@ -375,7 +375,7 @@ WebContentsImpl::WebContentsImpl(
       new JavaBridgeDispatcherHostManager(this));
 #endif
 
-  browser_plugin_host_.reset(new content::BrowserPluginHost(this));
+  browser_plugin_host_.reset(new content::old::BrowserPluginHost(this));
 }
 
 WebContentsImpl::~WebContentsImpl() {

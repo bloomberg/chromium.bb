@@ -225,9 +225,9 @@ void RenderThreadImpl::Init() {
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
-  browser_plugin_registry_.reset(new content::BrowserPluginRegistry());
+  browser_plugin_registry_.reset(new content::old::BrowserPluginRegistry());
   browser_plugin_channel_manager_.reset(
-      new content::BrowserPluginChannelManager());
+      new content::old::BrowserPluginChannelManager());
   AddObserver(browser_plugin_channel_manager_.get());
 
   media_stream_center_ = NULL;

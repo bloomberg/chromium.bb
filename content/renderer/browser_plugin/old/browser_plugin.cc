@@ -24,6 +24,9 @@
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 #include "webkit/plugins/webview_plugin.h"
 
+namespace content {
+namespace old {
+
 static int g_next_id = 0;
 
 // The global list of all Browser Plugin Placeholders within a process.
@@ -154,3 +157,6 @@ void BrowserPlugin::Replace(
     plugin_->destroy();
   plugin_ = new_plugin;
 }
+
+}  // namespace old
+}  // namespace content

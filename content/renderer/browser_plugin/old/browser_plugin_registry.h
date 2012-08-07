@@ -10,6 +10,7 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace content {
+namespace old {
 
 // This class holds references to all of the known live browser plugin
 // modules. There is one browser plugin module per guest renderer process.
@@ -31,6 +32,7 @@ class BrowserPluginRegistry
   IDMap<webkit::ppapi::PluginModule> modules_;
 };
 
+}  // namespace old
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_REGISTRY_H_

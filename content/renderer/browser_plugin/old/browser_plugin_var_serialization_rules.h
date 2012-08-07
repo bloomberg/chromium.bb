@@ -8,6 +8,7 @@
 #include "ppapi/proxy/var_serialization_rules.h"
 
 namespace content {
+namespace old {
 
 // Implementation of the VarSerializationRules interface for the browser plugin.
 class BrowserPluginVarSerializationRules :
@@ -30,6 +31,7 @@ class BrowserPluginVarSerializationRules :
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginVarSerializationRules);
 };
 
+}  // namespace old
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_VAR_SERIALIZATION_RULES_H_

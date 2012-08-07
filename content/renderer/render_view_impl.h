@@ -91,7 +91,6 @@ class WebUIBindings;
 
 namespace content {
 class DocumentState;
-class GuestToEmbedderChannel;
 class NavigationState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
@@ -99,6 +98,11 @@ class RenderViewTest;
 class RendererAccessibility;
 struct CustomContextMenuContext;
 struct FileChooserParams;
+
+namespace old {
+class GuestToEmbedderChannel;
+}
+
 }  // namespace content
 
 namespace gfx {
@@ -211,7 +215,7 @@ class RenderViewImpl : public RenderWidget,
       bool swapped_out,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
-      content::GuestToEmbedderChannel* guest_to_embedder_channel,
+      content::old::GuestToEmbedderChannel* guest_to_embedder_channel,
       AccessibilityMode accessibility_mode);
 
   // Returns the RenderViewImpl containing the given WebView.
@@ -276,8 +280,8 @@ class RenderViewImpl : public RenderWidget,
   // Sets whether  the renderer should report load progress to the browser.
   void SetReportLoadProgressEnabled(bool enabled);
 
-  content::GuestToEmbedderChannel* GetGuestToEmbedderChannel() const;
-  void SetGuestToEmbedderChannel(content::GuestToEmbedderChannel* channel);
+  content::old::GuestToEmbedderChannel* GetGuestToEmbedderChannel() const;
+  void SetGuestToEmbedderChannel(content::old::GuestToEmbedderChannel* channel);
   PP_Instance guest_pp_instance() const { return guest_pp_instance_; }
   void set_guest_pp_instance(PP_Instance instance) {
     guest_pp_instance_ = instance;
@@ -826,7 +830,8 @@ class RenderViewImpl : public RenderWidget,
                  bool swapped_out,
                  int32 next_page_id,
                  const WebKit::WebScreenInfo& screen_info,
-                 content::GuestToEmbedderChannel* guest_to_embedder_channel,
+                 content::old::GuestToEmbedderChannel*
+                    guest_to_embedder_channel,
                  AccessibilityMode accessibility_mode);
 
   // Do not delete directly.  This class is reference counted.
@@ -1412,7 +1417,8 @@ class RenderViewImpl : public RenderWidget,
   scoped_ptr<DomAutomationController> dom_automation_controller_;
 
   // Channel for communication with embedding renderer, if it exists.
-  scoped_refptr<content::GuestToEmbedderChannel> guest_to_embedder_channel_;
+  scoped_refptr<content::old::GuestToEmbedderChannel>
+      guest_to_embedder_channel_;
 
   // The pepper instance identifer for this guest RenderView.
   PP_Instance guest_pp_instance_;

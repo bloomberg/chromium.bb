@@ -13,13 +13,15 @@
 #include "ui/gfx/size.h"
 #include "webkit/plugins/webview_plugin.h"
 
-namespace content {
-class RenderView;
-}
-
 namespace WebKit {
 class WebPlugin;
 }
+
+namespace content {
+
+class RenderView;
+
+namespace old {
 
 // A browser plugin is a plugin container that hosts an out-of-process "guest"
 // RenderView. Loading up a new process, creating a new RenderView, navigating
@@ -85,5 +87,8 @@ class BrowserPlugin {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };
+
+}  // namespace old
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
