@@ -240,6 +240,7 @@
         '../third_party/skia/src/core/SkFilterProc.h',
         '../third_party/skia/src/core/SkFlate.cpp',
         '../third_party/skia/src/core/SkFlattenable.cpp',
+        '../third_party/skia/src/core/SkFlattenableBuffers.cpp',
         '../third_party/skia/src/core/SkFloat.cpp',
         '../third_party/skia/src/core/SkFloat.h',
         '../third_party/skia/src/core/SkFloatBits.cpp',

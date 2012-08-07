@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/point.h"
