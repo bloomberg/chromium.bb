@@ -1166,10 +1166,10 @@ void TestingAutomationProvider::OpenNewBrowserWindowOfType(
 void TestingAutomationProvider::OpenNewBrowserWindow(
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
   bool show;
   if (!args->GetBoolean("show", &show)) {
-    reply.SendError("'show' missing or invalid.");
+    AutomationJSONReply(this, reply_message)
+        .SendError("'show' missing or invalid.");
     return;
   }
   new BrowserOpenedNotificationObserver(this, reply_message, true);
