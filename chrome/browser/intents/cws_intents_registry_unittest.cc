@@ -151,13 +151,6 @@ const char kValidManifest[] =
 const char kEditAction[] = "http://webintents.org/edit";
 const char kImagePngType[] = "image/png";
 
-class ScopedLocale {
- public:
-  ScopedLocale() : locale_(extension_l10n_util::CurrentLocaleOrDefault()) {}
-  ~ScopedLocale() { extension_l10n_util::SetProcessLocale(locale_); }
-  std::string locale_;
-};
-
 class CWSIntentsRegistryTest : public testing::Test {
  public:
   virtual void SetUp() {
@@ -241,7 +234,7 @@ TEST_F(CWSIntentsRegistryTest, BuildQueryURL) {
 // registry will use locale_data for "en" key, with or without "all"
 // locale_data present.
 TEST_F(CWSIntentsRegistryTest, LocalizeMatchingLocale) {
-  ScopedLocale restoreLocaleOnExit;
+  extension_l10n_util::ScopedLocaleForTest restoreLocaleOnExit;
 
   std::string response = kCWSResponseValidL10n;
   response += kLocaleDataEn + std::string(",");

@@ -107,6 +107,24 @@ bool ShouldSkipValidation(const FilePath& locales_path,
                           const FilePath& locale_path,
                           const std::set<std::string>& all_locales);
 
+// Sets the process locale for the duration of the current scope, then reverts
+// back to whatever the current locale was before constructing this.
+// For testing purposed only!
+class ScopedLocaleForTest {
+ public:
+  // Only revert back to current locale at end of scope, don't set locale.
+  ScopedLocaleForTest();
+
+  // Set temporary locale for the current scope
+  explicit ScopedLocaleForTest(const std::string& locale);
+
+  ~ScopedLocaleForTest();
+
+ private:
+  std::string locale_;  // The current locale at ctor time.
+};
+
+
 }  // namespace extension_l10n_util
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_

@@ -354,4 +354,16 @@ bool ShouldSkipValidation(const FilePath& locales_path,
   return false;
 }
 
+ScopedLocaleForTest::ScopedLocaleForTest()
+    : locale_(extension_l10n_util::CurrentLocaleOrDefault()) {}
+
+ScopedLocaleForTest::ScopedLocaleForTest(const std::string& locale)
+    : locale_(extension_l10n_util::CurrentLocaleOrDefault()) {
+  extension_l10n_util::SetProcessLocale(locale);
+}
+
+ScopedLocaleForTest::~ScopedLocaleForTest() {
+  extension_l10n_util::SetProcessLocale(locale_);
+}
+
 }  // namespace extension_l10n_util

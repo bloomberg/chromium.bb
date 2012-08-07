@@ -59,6 +59,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -4009,6 +4010,9 @@ TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
 
 // Test loading good extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
+  // Ensure we're testing in "en" and leave global state untouched.
+  extension_l10n_util::ScopedLocaleForTest testLocale("en");
+
   // Initialize the test dir with a good Preferences/extensions.
   FilePath source_install_dir = data_dir_
       .AppendASCII("l10n");
