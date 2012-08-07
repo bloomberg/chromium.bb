@@ -96,9 +96,9 @@ deps = {
     'src/third_party/sfntly/cpp/src':
         Var('git_url') + '/external/sfntly/cpp/src.git@cfb2f1743f0169ad8d01035458617bce97107539',
     'src/third_party/skia/include':
-        Var('git_url') + '/external/skia/include.git@96fe115c17db62f4ee60f20e684950084e1fbf0a',
+        Var('git_url') + '/external/skia/include.git@122c3ae2348aab1901728f51d3ee82278dab3d2b',
     'src/third_party/skia/src':
-        Var('git_url') + '/external/skia/src.git@4d27d6bd78d0a53a487e47aa6b0395edb9db52ec',
+        Var('git_url') + '/external/skia/src.git@e54ef29a2cc707807a3b5581fc01f49f75a3bf86',
     'src/third_party/smhasher/src':
         Var('git_url') + '/external/smhasher.git@6895dced6534c9a041ceba5cabed231d3b2d8518',
     'src/third_party/snappy/src':
@@ -128,7 +128,7 @@ deps = {
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@3f70b8dfa4ce859b714f109beb29ffa8c396ce0b',
     'src/tools/gyp':
-        Var('git_url') + '/external/gyp.git@8731a9a2d0a6aef6250d5ad40bc3ce01745b1bfe',
+        Var('git_url') + '/external/gyp.git@9d0ee5cf35e0572c37a7943c6c49ae69382f8b76',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@bed664c3c6f4200d2ab6b139bddb628dcef6f5ed',
     'src/v8':
