@@ -130,6 +130,15 @@ struct SessionTab {
   SessionTab();
   virtual ~SessionTab();
 
+  // Since the current_navigation_index can be larger than the index for number
+  // of navigations in the current sessions (chrome://newtab is not stored), we
+  // must perform bounds checking.
+  // Returns a normalized bounds-checked navigation_index.
+  int normalized_navigation_index() const {
+    return std::max(0, std::min(current_navigation_index,
+                                static_cast<int>(navigations.size() - 1)));
+  }
+
   // Unique id of the window.
   SessionID window_id;
 
