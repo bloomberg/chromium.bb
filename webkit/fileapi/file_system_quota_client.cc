@@ -7,11 +7,15 @@
 #include <algorithm>
 #include <set>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -21,162 +25,57 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
-using base::SequencedTaskRunner;
-using quota::QuotaThreadTask;
 using quota::StorageType;
 
 namespace fileapi {
 
-class FileSystemQuotaClient::GetOriginUsageTask : public QuotaThreadTask {
- public:
-  GetOriginUsageTask(
-      FileSystemQuotaClient* quota_client,
-      const GURL& origin_url,
-      FileSystemType type)
-      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
-        quota_client_(quota_client),
-        origin_url_(origin_url),
-        type_(type),
-        fs_usage_(0) {
-    DCHECK(quota_client_);
-    file_system_context_ = quota_client_->file_system_context_;
-  }
+namespace {
 
- protected:
-  virtual ~GetOriginUsageTask() {}
+void GetOriginsForTypeOnFileThread(FileSystemContext* context,
+                                   StorageType storage_type,
+                                   std::set<GURL>* origins_ptr) {
+  FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
+  DCHECK(type != kFileSystemTypeUnknown);
 
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type_);
-    if (quota_util)
-      fs_usage_ = quota_util->GetOriginUsageOnFileThread(
-          file_system_context_, origin_url_, type_);
-  }
+  FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
+  if (!quota_util)
+    return;
+  quota_util->GetOriginsForTypeOnFileThread(type, origins_ptr);
+}
 
-  virtual void Completed() OVERRIDE {
-    quota_client_->DidGetOriginUsage(type_, origin_url_, fs_usage_);
-  }
+void GetOriginsForHostOnFileThread(FileSystemContext* context,
+                                   StorageType storage_type,
+                                   const std::string& host,
+                                   std::set<GURL>* origins_ptr) {
+  FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
+  DCHECK(type != kFileSystemTypeUnknown);
 
-  FileSystemQuotaClient* quota_client_;
-  scoped_refptr<FileSystemContext> file_system_context_;
-  GURL origin_url_;
-  FileSystemType type_;
-  int64 fs_usage_;
-};
+  FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
+  if (!quota_util)
+    return;
+  quota_util->GetOriginsForHostOnFileThread(type, host, origins_ptr);
+}
 
-class FileSystemQuotaClient::GetOriginsForTypeTask : public QuotaThreadTask {
- public:
-  GetOriginsForTypeTask(
-      FileSystemQuotaClient* quota_client,
-      FileSystemType type)
-      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
-        quota_client_(quota_client),
-        type_(type) {
-    DCHECK(quota_client_);
-    file_system_context_ = quota_client_->file_system_context_;
-  }
+void DidGetOrigins(
+    const base::Callback<void(const std::set<GURL>&, StorageType)>& callback,
+    std::set<GURL>* origins_ptr,
+    StorageType storage_type) {
+  callback.Run(*origins_ptr, storage_type);
+}
 
- protected:
-  virtual ~GetOriginsForTypeTask() {}
+quota::QuotaStatusCode DeleteOriginOnTargetThread(
+    FileSystemContext* context,
+    const GURL& origin,
+    FileSystemType type) {
+  base::PlatformFileError result =
+      context->sandbox_provider()->DeleteOriginDataOnFileThread(
+          context, context->quota_manager_proxy(), origin, type);
+  if (result == base::PLATFORM_FILE_OK)
+    return quota::kQuotaStatusOk;
+  return quota::kQuotaErrorInvalidModification;
+}
 
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type_);
-    if (quota_util)
-      quota_util->GetOriginsForTypeOnFileThread(type_, &origins_);
-  }
-
-  virtual void Completed() OVERRIDE {
-    quota_client_->DidGetOriginsForType(type_, origins_);
-  }
-
- private:
-  FileSystemQuotaClient* quota_client_;
-  scoped_refptr<FileSystemContext> file_system_context_;
-  std::set<GURL> origins_;
-  FileSystemType type_;
-};
-
-class FileSystemQuotaClient::GetOriginsForHostTask : public QuotaThreadTask {
- public:
-  GetOriginsForHostTask(
-      FileSystemQuotaClient* quota_client,
-      FileSystemType type,
-      const std::string& host)
-      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
-        quota_client_(quota_client),
-        type_(type),
-        host_(host) {
-    DCHECK(quota_client_);
-    file_system_context_ = quota_client_->file_system_context_;
-  }
-
- protected:
-  virtual ~GetOriginsForHostTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type_);
-    if (quota_util)
-      quota_util->GetOriginsForHostOnFileThread(type_, host_, &origins_);
-  }
-
-  virtual void Completed() OVERRIDE {
-    quota_client_->DidGetOriginsForHost(std::make_pair(type_, host_), origins_);
-  }
-
- private:
-  FileSystemQuotaClient* quota_client_;
-  scoped_refptr<FileSystemContext> file_system_context_;
-  std::set<GURL> origins_;
-  FileSystemType type_;
-  std::string host_;
-};
-
-class FileSystemQuotaClient::DeleteOriginTask
-    : public QuotaThreadTask {
- public:
-  DeleteOriginTask(
-      FileSystemQuotaClient* quota_client,
-      const GURL& origin,
-      FileSystemType type,
-      const DeletionCallback& callback)
-      : QuotaThreadTask(quota_client, quota_client->file_task_runner()),
-        file_system_context_(quota_client->file_system_context_),
-        origin_(origin),
-        type_(type),
-        status_(quota::kQuotaStatusUnknown),
-        callback_(callback) {
-  }
-
- protected:
-  virtual ~DeleteOriginTask() {}
-
-  // QuotaThreadTask:
-  virtual void RunOnTargetThread() OVERRIDE {
-    base::PlatformFileError result =
-        file_system_context_->sandbox_provider()->DeleteOriginDataOnFileThread(
-            file_system_context_,
-            file_system_context_->quota_manager_proxy(),
-            origin_,
-            type_);
-    if (result == base::PLATFORM_FILE_OK)
-      status_ = quota::kQuotaStatusOk;
-    else
-      status_ = quota::kQuotaErrorInvalidModification;
-  }
-
-  virtual void Completed() OVERRIDE {
-    callback_.Run(status_);
-  }
-
- private:
-  FileSystemContext* file_system_context_;
-  GURL origin_;
-  FileSystemType type_;
-  quota::QuotaStatusCode status_;
-  DeletionCallback callback_;
-};
+}  // namespace
 
 FileSystemQuotaClient::FileSystemQuotaClient(
     FileSystemContext* file_system_context,
@@ -210,12 +109,22 @@ void FileSystemQuotaClient::GetOriginUsage(
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
 
-  if (pending_usage_callbacks_.Add(
-          std::make_pair(type, origin_url.spec()), callback)) {
-    scoped_refptr<GetOriginUsageTask> task(
-        new GetOriginUsageTask(this, origin_url, type));
-    task->Start();
+  FileSystemQuotaUtil* quota_util = file_system_context_->GetQuotaUtil(type);
+  if (!quota_util) {
+    callback.Run(0);
+    return;
   }
+
+  base::PostTaskAndReplyWithResult(
+      file_task_runner(),
+      FROM_HERE,
+      // It is safe to pass Unretained(quota_util) since context owns it.
+      base::Bind(&FileSystemQuotaUtil::GetOriginUsageOnFileThread,
+                 base::Unretained(quota_util),
+                 file_system_context_,
+                 origin_url,
+                 type),
+      callback);
 }
 
 void FileSystemQuotaClient::GetOriginsForType(
@@ -223,21 +132,24 @@ void FileSystemQuotaClient::GetOriginsForType(
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
 
-  std::set<GURL> origins;
   if (is_incognito_) {
     // We don't support FileSystem in incognito mode yet.
+    std::set<GURL> origins;
     callback.Run(origins, storage_type);
     return;
   }
 
-  FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
-  DCHECK(type != kFileSystemTypeUnknown);
-
-  if (pending_origins_for_type_callbacks_.Add(type, callback)) {
-    scoped_refptr<GetOriginsForTypeTask> task(
-        new GetOriginsForTypeTask(this, type));
-    task->Start();
-  }
+  std::set<GURL>* origins_ptr = new std::set<GURL>();
+  file_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetOriginsForTypeOnFileThread,
+                 file_system_context_,
+                 storage_type,
+                 base::Unretained(origins_ptr)),
+      base::Bind(&DidGetOrigins,
+                 callback,
+                 base::Owned(origins_ptr),
+                 storage_type));
 }
 
 void FileSystemQuotaClient::GetOriginsForHost(
@@ -246,22 +158,25 @@ void FileSystemQuotaClient::GetOriginsForHost(
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
 
-  std::set<GURL> origins;
   if (is_incognito_) {
     // We don't support FileSystem in incognito mode yet.
+    std::set<GURL> origins;
     callback.Run(origins, storage_type);
     return;
   }
 
-  FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
-  DCHECK(type != kFileSystemTypeUnknown);
-
-  if (pending_origins_for_host_callbacks_.Add(
-          std::make_pair(type, host), callback)) {
-    scoped_refptr<GetOriginsForHostTask> task(
-        new GetOriginsForHostTask(this, type, host));
-    task->Start();
-  }
+  std::set<GURL>* origins_ptr = new std::set<GURL>();
+  file_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GetOriginsForHostOnFileThread,
+                 file_system_context_,
+                 storage_type,
+                 host,
+                 base::Unretained(origins_ptr)),
+      base::Bind(&DidGetOrigins,
+                 callback,
+                 base::Owned(origins_ptr),
+                 storage_type));
 }
 
 void FileSystemQuotaClient::DeleteOriginData(const GURL& origin,
@@ -269,31 +184,15 @@ void FileSystemQuotaClient::DeleteOriginData(const GURL& origin,
                                              const DeletionCallback& callback) {
   FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
   DCHECK(fs_type != kFileSystemTypeUnknown);
-  scoped_refptr<DeleteOriginTask> task(
-      new DeleteOriginTask(this, origin, fs_type, callback));
-  task->Start();
-}
 
-void FileSystemQuotaClient::DidGetOriginUsage(
-    FileSystemType type, const GURL& origin_url, int64 usage) {
-  TypeAndHostOrOrigin type_and_origin(std::make_pair(
-      type, origin_url.spec()));
-  DCHECK(pending_usage_callbacks_.HasCallbacks(type_and_origin));
-  pending_usage_callbacks_.Run(type_and_origin, usage);
-}
-
-void FileSystemQuotaClient::DidGetOriginsForType(
-    FileSystemType type, const std::set<GURL>& origins) {
-  DCHECK(pending_origins_for_type_callbacks_.HasCallbacks(type));
-  pending_origins_for_type_callbacks_.Run(type, origins,
-      FileSystemTypeToQuotaStorageType(type));
-}
-
-void FileSystemQuotaClient::DidGetOriginsForHost(
-    const TypeAndHostOrOrigin& type_and_host, const std::set<GURL>& origins) {
-  DCHECK(pending_origins_for_host_callbacks_.HasCallbacks(type_and_host));
-  pending_origins_for_host_callbacks_.Run(type_and_host, origins,
-      FileSystemTypeToQuotaStorageType(type_and_host.first));
+  base::PostTaskAndReplyWithResult(
+      file_task_runner(),
+      FROM_HERE,
+      base::Bind(&DeleteOriginOnTargetThread,
+                 file_system_context_,
+                 origin,
+                 fs_type),
+      callback);
 }
 
 base::SequencedTaskRunner* FileSystemQuotaClient::file_task_runner() const {
