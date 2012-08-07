@@ -13,6 +13,8 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
@@ -28,8 +30,9 @@ namespace gdata {
 
 namespace {
 
-// Maximum number of profile photos that we'll download at once.
-const int kMaxSimultaneousPhotoDownloads = 10;
+// Maximum number of profile photos that we'll download per second.
+// At values above 10, Google starts returning 503 errors.
+const int kMaxPhotoDownloadsPerSecond = 10;
 
 // Field in the top-level object containing the contacts feed.
 const char kFeedField[] = "feed";
@@ -319,15 +322,13 @@ class GDataContactsService::DownloadContactsRequest
                           GDataOperationRunner* runner,
                           SuccessCallback success_callback,
                           FailureCallback failure_callback,
-                          const base::Time& min_update_time,
-                          int max_simultaneous_photo_downloads)
+                          const base::Time& min_update_time)
       : service_(service),
         runner_(runner),
         success_callback_(success_callback),
         failure_callback_(failure_callback),
         min_update_time_(min_update_time),
         contacts_(new ScopedVector<contacts::Contact>),
-        max_simultaneous_photo_downloads_(max_simultaneous_photo_downloads),
         num_in_progress_photo_downloads_(0),
         photo_download_failed_(false) {
     DCHECK(service_);
@@ -374,6 +375,10 @@ class GDataContactsService::DownloadContactsRequest
       return;
     }
 
+    StartPhotoDownloads();
+    photo_download_timer_.Start(
+        FROM_HERE, service_->photo_download_timer_interval_,
+        this, &DownloadContactsRequest::StartPhotoDownloads);
     CheckCompletion();
   }
 
@@ -467,6 +472,7 @@ class GDataContactsService::DownloadContactsRequest
     if (contacts_needing_photo_downloads_.empty() &&
         num_in_progress_photo_downloads_ == 0) {
       VLOG(1) << "Done downloading photos; invoking callback";
+      photo_download_timer_.Stop();
       if (photo_download_failed_)
         failure_callback_.Run();
       else
@@ -474,10 +480,14 @@ class GDataContactsService::DownloadContactsRequest
       service_->OnRequestComplete(this);
       return;
     }
+  }
 
+  // Starts photo downloads for contacts in |contacts_needing_photo_downloads_|.
+  // Should be invoked only once per second.
+  void StartPhotoDownloads() {
     while (!contacts_needing_photo_downloads_.empty() &&
            (num_in_progress_photo_downloads_ <
-            max_simultaneous_photo_downloads_)) {
+            service_->max_photo_downloads_per_second_)) {
       contacts::Contact* contact = contacts_needing_photo_downloads_.back();
       contacts_needing_photo_downloads_.pop_back();
       DCHECK(contact_photo_urls_.count(contact));
@@ -505,10 +515,24 @@ class GDataContactsService::DownloadContactsRequest
             << " (error=" << error << " size=" << download_data->size() << ")";
     num_in_progress_photo_downloads_--;
 
+    if (error == HTTP_INTERNAL_SERVER_ERROR ||
+        error == HTTP_SERVICE_UNAVAILABLE) {
+      LOG(WARNING) << "Got error " << error << " while downloading photo "
+                   << "for " << contact->provider_id() << "; retrying";
+      contacts_needing_photo_downloads_.push_back(contact);
+      return;
+    }
+
+    if (error == HTTP_NOT_FOUND) {
+      LOG(WARNING) << "Got error " << error << " while downloading photo "
+                   << "for " << contact->provider_id() << "; skipping";
+      CheckCompletion();
+      return;
+    }
+
     if (error != HTTP_SUCCESS) {
       LOG(WARNING) << "Got error " << error << " while downloading photo "
-                   << "for " << contact->provider_id();
-      // TODO(derat): Retry several times for temporary failures?
+                   << "for " << contact->provider_id() << "; giving up";
       photo_download_failed_ = true;
       // Make sure we don't start any more downloads.
       contacts_needing_photo_downloads_.clear();
@@ -537,12 +561,12 @@ class GDataContactsService::DownloadContactsRequest
   // Contacts without photos do not appear in this map.
   ContactPhotoUrls contact_photo_urls_;
 
+  // Invokes StartPhotoDownloads() once per second.
+  base::RepeatingTimer<DownloadContactsRequest> photo_download_timer_;
+
   // Contacts that have photos that we still need to start downloading.
   // When we start a download, the contact is removed from this list.
   std::vector<contacts::Contact*> contacts_needing_photo_downloads_;
-
-  // Maximum number of photos we'll try to download at once.
-  int max_simultaneous_photo_downloads_;
 
   // Number of in-progress photo downloads.
   int num_in_progress_photo_downloads_;
@@ -555,7 +579,8 @@ class GDataContactsService::DownloadContactsRequest
 
 GDataContactsService::GDataContactsService(Profile* profile)
     : runner_(new GDataOperationRunner(profile)),
-      max_simultaneous_photo_downloads_(kMaxSimultaneousPhotoDownloads) {
+      max_photo_downloads_per_second_(kMaxPhotoDownloadsPerSecond),
+      photo_download_timer_interval_(base::TimeDelta::FromSeconds(1)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -584,8 +609,7 @@ void GDataContactsService::DownloadContacts(SuccessCallback success_callback,
                                   runner_.get(),
                                   success_callback,
                                   failure_callback,
-                                  min_update_time,
-                                  max_simultaneous_photo_downloads_);
+                                  min_update_time);
   VLOG(1) << "Starting contacts download with request " << request;
   requests_.insert(request);
   request->Run();

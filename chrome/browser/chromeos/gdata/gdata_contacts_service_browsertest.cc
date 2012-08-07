@@ -83,6 +83,8 @@ class GDataContactsServiceTest : public InProcessBrowserTest {
     service_->set_rewrite_photo_url_callback_for_testing(
         base::Bind(&GDataContactsServiceTest::RewritePhotoUrl,
                    base::Unretained(this)));
+    service_->set_photo_download_timer_interval_for_testing(
+        base::TimeDelta::FromMilliseconds(10));
   }
 
   virtual void CleanUpOnMainThread() {
@@ -159,7 +161,11 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, BrokenFeeds) {
   EXPECT_FALSE(Download("no_feed.json", base::Time(), &contacts));
   EXPECT_FALSE(Download("no_category.json", base::Time(), &contacts));
   EXPECT_FALSE(Download("wrong_category.json", base::Time(), &contacts));
-  EXPECT_FALSE(Download("feed_photo_404.json", base::Time(), &contacts));
+
+  // Missing photos should be allowed, though (as this can occur in production).
+  EXPECT_TRUE(Download("feed_photo_404.json", base::Time(), &contacts));
+  ASSERT_EQ(static_cast<size_t>(1), contacts->size());
+  EXPECT_FALSE((*contacts)[0]->has_raw_untrusted_photo());
 }
 
 // Check that we're able to download an empty feed and a normal-looking feed
@@ -238,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, Download) {
 IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, ParallelPhotoDownload) {
   // The feed used for this test contains 8 contacts.
   const int kNumContacts = 8;
-  service()->set_max_simultaneous_photo_downloads_for_testing(2);
+  service()->set_max_photo_downloads_per_second_for_testing(6);
   scoped_ptr<ScopedVector<contacts::Contact> > contacts;
   EXPECT_TRUE(Download("feed_multiple_photos.json", base::Time(), &contacts));
   ASSERT_EQ(static_cast<size_t>(kNumContacts), contacts->size());
