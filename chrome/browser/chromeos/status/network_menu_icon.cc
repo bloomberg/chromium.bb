@@ -831,7 +831,7 @@ void NetworkMenuIcon::SetDisconnectedIconAndText() {
   if (mode_ == MENU_MODE)
     text_ = l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
   else
-    text_ = l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_NONE);
+    text_ = l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_NONE_SELECTED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

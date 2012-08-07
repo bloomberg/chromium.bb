@@ -13584,6 +13584,9 @@ Press any key to continue exploring.
       <message name="IDS_NETWORK_SELECTION_NONE" desc="Text shown in combobox when no network are selected">
         No selection
       </message>
+      <message name="IDS_NETWORK_SELECTION_NONE_SELECTED" desc="Chrome OS Out-Of-Box: Text shown in network selection combobox when no network is selected">
+        Select
+      </message>
       <message name="IDS_NETWORK_SELECTION_CONNECTING" desc="Text shown when known device is connecting to known network">
         Connecting to <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
       </message>
