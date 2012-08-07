@@ -58,12 +58,7 @@ generator_extra_sources_for_rules = []
 # TODO: figure out how to not build extra host objects in the non-cross-compile
 # case when this is enabled, and enable unconditionally.
 generator_supports_multiple_toolsets = (
-  os.environ.get('GYP_CROSSCOMPILE') or
-  os.environ.get('AR_host') or
-  os.environ.get('CC_host') or
-  os.environ.get('CXX_host') or
-  os.environ.get('AR_target') or
-  os.environ.get('CC_target') or
+  os.environ.get('AR_target') or os.environ.get('CC_target') or
   os.environ.get('CXX_target'))
 
 
@@ -710,11 +705,11 @@ class NinjaWriter:
   def WriteSources(self, config_name, config, sources, predepends,
                    precompiled_header):
     """Write build rules to compile all of |sources|."""
-    if self.toolset == 'host':
-      self.ninja.variable('ar', '$ar_host')
-      self.ninja.variable('cc', '$cc_host')
-      self.ninja.variable('cxx', '$cxx_host')
-      self.ninja.variable('ld', '$ld_host')
+    if self.toolset == 'target':
+      self.ninja.variable('ar', '$ar_target')
+      self.ninja.variable('cc', '$cc_target')
+      self.ninja.variable('cxx', '$cxx_target')
+      self.ninja.variable('ld', '$ld_target')
 
     extra_defines = []
     if self.flavor == 'mac':
@@ -1272,13 +1267,6 @@ def OpenOutput(path, mode='w'):
   return open(path, mode)
 
 
-def GetEnvironFallback(var_list, default):
-  for var in var_list:
-    if var in os.environ:
-      return os.environ[var]
-  return default
-
-
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
                             config_name):
   options = params['options']
@@ -1300,41 +1288,24 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   gyp.common.CopyTool(flavor, toplevel_build)
 
   # Grab make settings for CC/CXX.
-  # The rules are
-  # - The priority from low to high is gcc/g++, the 'make_global_settings' in
-  #   gyp, the environment variable.
-  # - If there is no 'make_global_settings' for CC.host/CXX.host or
-  #   'CC_host'/'CXX_host' enviroment variable, cc_host/cxx_host should be set
-  #   to cc/cxx.
   if flavor == 'win':
     cc = cxx = 'cl.exe'
     gyp.msvs_emulation.GenerateEnvironmentFiles(
         toplevel_build, generator_flags, OpenOutput)
   else:
     cc, cxx = 'gcc', 'g++'
-  cc_host = None
-  cxx_host = None
-
   build_file, _, _ = gyp.common.ParseQualifiedTarget(target_list[0])
   make_global_settings = data[build_file].get('make_global_settings', [])
   build_to_root = InvertRelativePath(build_dir)
   for key, value in make_global_settings:
     if key == 'CC': cc = os.path.join(build_to_root, value)
     if key == 'CXX': cxx = os.path.join(build_to_root, value)
-    if key == 'CC.host': cc_host = os.path.join(build_to_root, value)
-    if key == 'CXX.host': cxx_host = os.path.join(build_to_root, value)
 
   flock = 'flock'
   if flavor == 'mac':
     flock = './gyp-mac-tool flock'
-  cc = GetEnvironFallback(['CC_target', 'CC'], cc)
-  master_ninja.variable('cc', cc)
-  cxx = GetEnvironFallback(['CXX_target', 'CXX'], cxx)
-  master_ninja.variable('cxx', cxx)
-
-  if not cc_host: cc_host = cc
-  if not cxx_host: cxx_host = cxx
-
+  master_ninja.variable('cc', os.environ.get('CC', cc))
+  master_ninja.variable('cxx', os.environ.get('CXX', cxx))
   if flavor == 'win':
     master_ninja.variable('ld', 'link.exe')
     master_ninja.variable('idl', 'midl.exe')
@@ -1345,15 +1316,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('use_dep_database', '1')
   else:
     master_ninja.variable('ld', flock + ' linker.lock $cxx')
-    master_ninja.variable('ar', GetEnvironFallback(['AR_target', 'AR'], 'ar'))
+    master_ninja.variable('ar', os.environ.get('AR', 'ar'))
 
-  master_ninja.variable('ar_host', GetEnvironFallback(['AR_host'], 'ar'))
-  master_ninja.variable('cc_host', GetEnvironFallback(['CC_host'], cc_host))
-  master_ninja.variable('cxx_host', GetEnvironFallback(['CXX_host'], cxx_host))
+  master_ninja.variable('ar_target', os.environ.get('AR_target', '$ar'))
+  master_ninja.variable('cc_target', os.environ.get('CC_target', '$cc'))
+  master_ninja.variable('cxx_target', os.environ.get('CXX_target', '$cxx'))
   if flavor == 'win':
-    master_ninja.variable('ld_host', os.environ.get('LD_host', '$ld'))
+    master_ninja.variable('ld_target', os.environ.get('LD_target', '$ld'))
   else:
-    master_ninja.variable('ld_host', flock + ' linker.lock $cxx_host')
+    master_ninja.variable('ld_target', flock + ' linker.lock $cxx_target')
 
   if flavor == 'mac':
     master_ninja.variable('mac_tool', os.path.join('.', 'gyp-mac-tool'))
