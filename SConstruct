@@ -2971,10 +2971,17 @@ def MakeMacEnv():
       PLUGIN_SUFFIX = '.bundle',
   )
 
-  mac_env.Append(
-      CCFLAGS=['-mmacosx-version-min=10.5'],
-      LINKFLAGS=['-mmacosx-version-min=10.5'],
-      CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
+  if platform.mac_ver()[0].startswith('10.8'):
+    mac_env.Append(
+        CCFLAGS=['-mmacosx-version-min=10.7'],
+        LINKFLAGS=['-mmacosx-version-min=10.7'],
+        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_7']])
+  else:
+    mac_env.Append(
+        CCFLAGS=['-mmacosx-version-min=10.5'],
+        LINKFLAGS=['-mmacosx-version-min=10.5'],
+        CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
+
   subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
   mac_env.Append(
       CCFLAGS=[subarch_flag, '-fPIC'],
