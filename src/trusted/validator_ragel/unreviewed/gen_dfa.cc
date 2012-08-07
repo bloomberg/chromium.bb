@@ -820,9 +820,9 @@ namespace {
 "", enabled(Actions::kMarkDataFields) ?
          ">rel8_operand_begin @rel8_operand_end" : "@rel8_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">rel16_operand_begin @rel16_operand_end" : "@rel16_operand",
+         "@~rel16_operand_begin @rel16_operand_end" : "@rel16_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">rel32_operand_begin @rel32_operand_end" : "@rel32_operand");
+         "@~rel32_operand_begin @rel32_operand_end" : "@rel32_operand");
     fprintf(out_file, "\n"
 "  # Displacements.\n"
 "  disp8                = any %s;\n"
@@ -831,9 +831,9 @@ namespace {
 "", enabled(Actions::kMarkDataFields) ?
          ">disp8_operand_begin @disp8_operand_end" : "@disp8_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">disp32_operand_begin @disp32_operand_end" : "@disp32_operand",
+         "@~disp32_operand_begin @disp32_operand_end" : "@disp32_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">disp64_operand_begin @disp64_operand_end" : "@disp64_operand");
+         "@~disp64_operand_begin @disp64_operand_end" : "@disp64_operand");
     fprintf(out_file, "\n"
 "  # Immediates.\n"
 "  imm2 = %s @imm2_operand;\n"
@@ -849,19 +849,19 @@ namespace {
 "", enabled(Actions::kMarkDataFields) ?
          ">imm8_operand_begin @imm8_operand_end" : "@imm8_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">imm8_operand_begin @imm16_operand_end" : "@imm16_operand",
+         "@~imm16_operand_begin @imm16_operand_end" : "@imm16_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">imm8_operand_begin @imm32_operand_end" : "@imm32_operand",
+         "@~imm32_operand_begin @imm32_operand_end" : "@imm32_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">imm8_operand_begin @imm64_operand_end" : "@imm64_operand",
+         "@~imm64_operand_begin @imm64_operand_end" : "@imm64_operand",
        enabled(Actions::kMarkDataFields) ?
          ">imm8_operand_begin @imm8_operand_end" : "@imm8_second_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">imm16_operand_begin @imm16_operand_end" : "@imm16_second_operand",
+         "@~imm16_operand_begin @imm16_operand_end" : "@imm16_second_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">imm32_operand_begin @imm32_operand_end" : "@imm32_second_operand",
+         "@~imm32_operand_begin @imm32_operand_end" : "@imm32_second_operand",
        enabled(Actions::kMarkDataFields) ?
-         ">imm64_operand_begin @imm64_operand_end" : "@imm64_second_operand");
+         "@~imm64_operand_begin @imm64_operand_end" : "@imm64_second_operand");
     fprintf(out_file, "\n"
 "  # Different types of operands.\n"
 "  operand_sib_base_index = (%2$s . %3$s%1$s) |\n"
