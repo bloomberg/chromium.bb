@@ -92,6 +92,16 @@ class DocumentsServiceInterface {
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) = 0;
 
+  // Fetches a changelist from |url| with |start_changestamp|, using Drive V2
+  // API. If this URL is empty the call will use the default URL. Specify |url|
+  // when pagenated request should be issued.
+  // |start_changestamp| specifies the starting point of change list or 0 if
+  // all changes are necessary.
+  // Upon completion, invokes |callback| with results on calling thread.
+  virtual void GetChangelist(const GURL& url,
+                             int64 start_changestamp,
+                             const GetDataCallback& callback) = 0;
+
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
@@ -219,6 +229,9 @@ class DocumentsService : public DocumentsServiceInterface {
                             const std::string& search_query,
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) OVERRIDE;
+  virtual void GetChangelist(const GURL& url,
+                             int64 start_changestamp,
+                             const GetDataCallback& callback) OVERRIDE;
   virtual void GetDocumentEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) OVERRIDE;
 

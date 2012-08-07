@@ -17,16 +17,18 @@ namespace gdata {
 // This class performs the operation for fetching a document list.
 class GetDocumentsOperation : public GetDataOperation {
  public:
+  // |start_changestamp| specifies the starting point of change list or 0 if
+  // all changes are necessary.
+  // |url| specifies URL for documents feed fetching operation. If empty URL is
+  // passed, the default URL is used and returns the first page of the result.
+  // When non-first page result is requested, |url| should be specified.
   GetDocumentsOperation(GDataOperationRegistry* registry,
+                        const GURL& url,
                         int start_changestamp,
                         const std::string& search_string,
                         const std::string& directory_resource_id,
                         const GetDataCallback& callback);
   virtual ~GetDocumentsOperation();
-
-  // Sets |url| for document fetching operation. This URL should be set in use
-  // case when additional 'pages' of document lists are being fetched.
-  void SetUrl(const GURL& url);
 
  protected:
   // Overridden from GetDataOperation.

@@ -103,12 +103,24 @@ void DocumentsService::GetDocuments(const GURL& url,
 
   GetDocumentsOperation* operation =
       new GetDocumentsOperation(operation_registry(),
+                                url,
                                 start_changestamp,
                                 search_query,
                                 directory_resource_id,
                                 callback);
-  if (!url.is_empty())
-    operation->SetUrl(url);
+  runner_->StartOperationWithRetry(operation);
+}
+
+void DocumentsService::GetChangelist(const GURL& url,
+                                     int64 start_changestamp,
+                                     const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetChangelistOperation* operation =
+      new GetChangelistOperation(operation_registry(),
+                                 url,
+                                 start_changestamp,
+                                 callback);
   runner_->StartOperationWithRetry(operation);
 }
 

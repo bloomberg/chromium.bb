@@ -50,7 +50,10 @@ const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 const char kContactsScope[] = "https://www.google.com/m8/feeds/";
 
 // OAuth scope for Drive API.
+const char kDriveScope[] = "https://www.googleapis.com/auth/drive.file";
 const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
+const char kDriveAppsReadonlyScope[] =
+    "https://www.googleapis.com/auth/drive.apps.readonly";
 
 // Parse JSON string to base::Value object.
 void ParseJsonOnBlockingPool(const std::string& data,
@@ -92,12 +95,17 @@ AuthOperation::~AuthOperation() {}
 void AuthOperation::Start() {
   DCHECK(!refresh_token_.empty());
   std::vector<std::string> scopes;
-  scopes.push_back(kDocsListScope);
-  scopes.push_back(kSpreadsheetsScope);
-  scopes.push_back(kUserContentScope);
-  scopes.push_back(kContactsScope);
-  // Drive App scope is required for even WAPI v3 apps access.
-  scopes.push_back(kDriveAppsScope);
+  if (gdata::util::IsDriveV2ApiEnabled()) {
+    scopes.push_back(kDriveScope);
+    scopes.push_back(kDriveAppsReadonlyScope);
+  } else {
+    scopes.push_back(kDocsListScope);
+    scopes.push_back(kSpreadsheetsScope);
+    scopes.push_back(kUserContentScope);
+    scopes.push_back(kContactsScope);
+    // Drive App scope is required for even WAPI v3 apps access.
+    scopes.push_back(kDriveAppsScope);
+  }
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, g_browser_process->system_request_context()));
   NotifyStart();

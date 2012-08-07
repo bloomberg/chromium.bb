@@ -155,21 +155,19 @@ namespace gdata {
 
 GetDocumentsOperation::GetDocumentsOperation(
     GDataOperationRegistry* registry,
+    const GURL& url,
     int start_changestamp,
     const std::string& search_string,
     const std::string& directory_resource_id,
     const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
+      override_url_(url),
       start_changestamp_(start_changestamp),
       search_string_(search_string),
       directory_resource_id_(directory_resource_id) {
 }
 
 GetDocumentsOperation::~GetDocumentsOperation() {}
-
-void GetDocumentsOperation::SetUrl(const GURL& url) {
-  override_url_ = url;
-}
 
 GURL GetDocumentsOperation::GetURL() const {
   int max_docs = search_string_.empty() ? kMaxDocumentsPerFeed :
