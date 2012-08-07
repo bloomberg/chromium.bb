@@ -350,14 +350,11 @@ bool GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
   return true;
 }
 
-bool GDataDirectory::RemoveEntry(GDataEntry* entry) {
+void GDataDirectory::RemoveEntry(GDataEntry* entry) {
   DCHECK(entry);
 
-  if (!RemoveChild(entry))
-    return false;
-
+  RemoveChild(entry);
   delete entry;
-  return true;
 }
 
 GDataEntry* GDataDirectory::FindChild(
@@ -386,25 +383,19 @@ void GDataDirectory::AddChild(GDataEntry* entry) {
     child_directories_.insert(std::make_pair(entry->base_name(), directory));
 }
 
-bool GDataDirectory::RemoveChild(GDataEntry* entry) {
+void GDataDirectory::RemoveChild(GDataEntry* entry) {
   DCHECK(entry);
 
-  const std::string file_name(entry->base_name());
-  GDataEntry* found_entry = FindChild(file_name);
-  if (!found_entry)
-    return false;
-
-  DCHECK_EQ(entry, found_entry);
-
+  const std::string& base_name(entry->base_name());
+  // entry must be present in this directory.
+  DCHECK_EQ(entry, FindChild(base_name));
   // Remove entry from resource map first.
   if (directory_service_)
     directory_service_->RemoveEntryFromResourceMap(entry);
 
   // Then delete it from tree.
-  child_files_.erase(file_name);
-  child_directories_.erase(file_name);
-
-  return true;
+  child_files_.erase(base_name);
+  child_directories_.erase(base_name);
 }
 
 void GDataDirectory::RemoveChildren() {
@@ -619,39 +610,22 @@ void GDataDirectoryService::RemoveEntryFromResourceMap(GDataEntry* entry) {
 
 GDataEntry* GDataDirectoryService::FindEntryByPathSync(
     const FilePath& file_path) {
+  if (file_path == root_->GetFilePath())
+    return root_.get();
+
   std::vector<FilePath::StringType> components;
   file_path.GetComponents(&components);
-
   GDataDirectory* current_dir = root_.get();
-  FilePath directory_path;
 
-  for (size_t i = 0; i < components.size() && current_dir; i++) {
-    directory_path = directory_path.Append(current_dir->base_name());
-
-    // Last element must match, if not last then it must be a directory.
-    if (i == components.size() - 1) {
-      if (current_dir->base_name() == components[i])
-        return current_dir;
-      else
-        return NULL;
-    }
-
-    // Not the last part of the path, search for the next segment.
-    GDataEntry* entry = current_dir->FindChild(components[i + 1]);
-    if (!entry) {
+  for (size_t i = 1; i < components.size() && current_dir; ++i) {
+    GDataEntry* entry = current_dir->FindChild(components[i]);
+    if (!entry)
       return NULL;
-    }
 
-    // Found file, must be the last segment.
-    if (entry->file_info().is_directory) {
-      // Found directory, continue traversal.
+    if (i == components.size() - 1)  // Last component.
+      return entry;
+    else
       current_dir = entry->AsGDataDirectory();
-    } else {
-      if ((i + 1) == (components.size() - 1))
-        return entry;
-      else
-        return NULL;
-    }
   }
   return NULL;
 }

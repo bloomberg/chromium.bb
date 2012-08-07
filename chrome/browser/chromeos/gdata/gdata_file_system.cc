@@ -2860,8 +2860,7 @@ GDataFileError GDataFileSystem::RemoveEntryFromGData(
     *resource_id = entry->AsGDataFile()->resource_id();
 
   GDataDirectory* parent_dir = entry->parent();
-  if (!parent_dir->RemoveEntry(entry))
-    return GDATA_FILE_ERROR_NOT_FOUND;
+  parent_dir->RemoveEntry(entry);
 
   FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
                     OnDirectoryChanged(parent_dir->GetFilePath()));

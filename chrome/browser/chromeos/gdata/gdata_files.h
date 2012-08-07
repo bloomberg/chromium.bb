@@ -307,7 +307,7 @@ class GDataDirectory : public GDataEntry {
 
   // Removes the entry from its children list and destroys the entry instance.
   // TODO(satorux): Remove this. crbug.com/139649
-  bool RemoveEntry(GDataEntry* entry);
+  void RemoveEntry(GDataEntry* entry);
 
   // Takes the ownership of |entry| from its current parent. If this directory
   // is already the current parent of |file|, this method effectively goes
@@ -329,7 +329,7 @@ class GDataDirectory : public GDataEntry {
 
   // Removes the entry from its children without destroying the
   // entry instance.
-  bool RemoveChild(GDataEntry* entry);
+  void RemoveChild(GDataEntry* entry);
 
   // Collection of children GDataEntry items.
   GDataFileCollection child_files_;
