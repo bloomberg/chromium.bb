@@ -44,14 +44,14 @@ class AboutResource {
   // Creates about resource from parsed JSON.
   static scoped_ptr<AboutResource> CreateFrom(const base::Value& value);
 
-  // Returns root folder ID.
-  const std::string& root_folder_id() const { return root_folder_id_; }
+  // Returns the largest change ID number.
+  int64 largest_change_id() const { return largest_change_id_; }
   // Returns total number of quta bytes.
   int64 quota_bytes_total() const { return quota_bytes_total_; }
   // Returns the number of quota bytes used.
   int64 quota_bytes_used() const { return quota_bytes_used_; }
-  // Returns the largest change ID number.
-  int64 largest_change_id() const { return largest_change_id_; }
+  // Returns root folder ID.
+  const std::string& root_folder_id() const { return root_folder_id_; }
 
  private:
   friend class DriveAPIParserTest;
@@ -62,10 +62,10 @@ class AboutResource {
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
 
-  std::string root_folder_id_;
+  int64 largest_change_id_;
   int64 quota_bytes_total_;
   int64 quota_bytes_used_;
-  int64 largest_change_id_;
+  std::string root_folder_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutResource);
 };
@@ -275,6 +275,9 @@ class ParentReference {
   // Returns the file id of the reference.
   const std::string& file_id() const { return file_id_; }
 
+  // Returns the URL for the parent in Drive.
+  const GURL& parent_link() const { return parent_link_; }
+
   // Returns true if the reference is root directory.
   bool is_root() const { return is_root_; }
 
@@ -287,6 +290,7 @@ class ParentReference {
   bool Parse(const base::Value& value);
 
   std::string file_id_;
+  GURL parent_link_;
   bool is_root_;
 
   DISALLOW_COPY_AND_ASSIGN(ParentReference);
@@ -317,19 +321,23 @@ class FileResource {
   // Returns ETag for this file.
   const std::string& etag() const { return etag_; }
 
-  // Returns MIME type of this file.
-  const std::string& mime_type() const { return mime_type_; }
+  // Returns the link to JSON of this file itself.
+  const GURL& self_link() const { return self_link_; }
 
   // Returns the title of this file.
   const std::string& title() const { return title_; }
 
+  // Returns MIME type of this file.
+  const std::string& mime_type() const { return mime_type_; }
+
+  // Returns created time of this file.
+  const base::Time& created_date() const { return created_date_; }
+
   // Returns modification time by the user.
   const base::Time& modified_by_me_date() const { return modified_by_me_date_; }
 
-  // Returns parent references (directories) of this file.
-  const ScopedVector<ParentReference>& parents() const { return parents_; }
-
-  // Returns the download URL.
+  // Returns the short-lived download URL for the file.  This field exists
+  // only when the file content is stored in Drive.
   const GURL& download_url() const { return download_url_; }
 
   // Returns the extension part of the filename.
@@ -340,6 +348,23 @@ class FileResource {
 
   // Returns the size of this file in bytes.
   int64 file_size() const { return file_size_; }
+
+  // Return the link to open the file in Google editor or viewer.
+  // E.g. Google Document, Google Spreadsheet.
+  const GURL& alternate_link() const { return alternate_link_; }
+
+  // Returns the link for embedding the file.
+  const GURL& embed_link() const { return embed_link_; }
+
+  // Returns parent references (directories) of this file.
+  const ScopedVector<ParentReference>& parents() const { return parents_; }
+
+  // Returns the link to the file's thumbnail.
+  const GURL& thumbnail_link() const { return thumbnail_link_; }
+
+  // Returns the link to open its downloadable content, using cookie based
+  // authentication.
+  const GURL& web_content_link() const { return web_content_link_; }
 
  private:
   friend class base::internal::RepeatedMessageConverter<FileResource>;
@@ -353,14 +378,20 @@ class FileResource {
 
   std::string file_id_;
   std::string etag_;
-  std::string mime_type_;
+  GURL self_link_;
   std::string title_;
+  std::string mime_type_;
+  base::Time created_date_;
   base::Time modified_by_me_date_;
-  ScopedVector<ParentReference> parents_;
   GURL download_url_;
   std::string file_extension_;
   std::string md5_checksum_;
   int64 file_size_;
+  GURL alternate_link_;
+  GURL embed_link_;
+  ScopedVector<ParentReference> parents_;
+  GURL thumbnail_link_;
+  GURL web_content_link_;
 
   DISALLOW_COPY_AND_ASSIGN(FileResource);
 };

@@ -32,25 +32,32 @@ bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
 
 // Drive v2 API JSON names.
 
+// Definition order follows the order of documentation in
+// https://developers.google.com/drive/v2/reference/
+
 // Common
 const char kKind[] = "kind";
 const char kId[] = "id";
 const char kETag[] = "etag";
+const char kSelfLink[] = "selfLink";
 const char kItems[] = "items";
 const char kLargestChangeId[] = "largestChangeId";
 
-// About Resource:
+// About Resource
+// https://developers.google.com/drive/v2/reference/about
 const char kAboutKind[] = "drive#about";
-const char kRootFolderId[] = "rootFolderId";
 const char kQuotaBytesTotal[] = "quotaBytesTotal";
 const char kQuotaBytesUsed[] = "quotaBytesUsed";
+const char kRootFolderId[] = "rootFolderId";
 
-// App Icon:
+// App Icon
+// https://developers.google.com/drive/v2/reference/apps
 const char kCategory[] = "category";
 const char kSize[] = "size";
 const char kIconUrl[] = "iconUrl";
 
-// Apps Resource:
+// Apps Resource
+// https://developers.google.com/drive/v2/reference/apps
 const char kAppKind[] = "drive#app";
 const char kName[] = "name";
 const char kObjectType[] = "objectType";
@@ -65,37 +72,50 @@ const char kPrimaryFileExtensions[] = "primaryFileExtensions";
 const char kSecondaryFileExtensions[] = "secondaryFileExtensions";
 const char kIcons[] = "icons";
 
-// Apps List:
+// Apps List
+// https://developers.google.com/drive/v2/reference/apps/list
 const char kAppListKind[] = "drive#appList";
 
-// Parent Resource:
+// Parent Resource
+// https://developers.google.com/drive/v2/reference/parents
 const char kParentReferenceKind[] = "drive#parentReference";
+const char kParentLink[] = "parentLink";
 const char kIsRoot[] = "isRoot";
 
-// File Resource:
+// File Resource
+// https://developers.google.com/drive/v2/reference/files
 const char kFileKind[] = "drive#file";
-const char kMimeType[] = "mimeType";
 const char kTitle[] = "title";
+const char kMimeType[] = "mimeType";
+const char kCreatedDate[] = "createdDate";
 const char kModifiedByMeDate[] = "modifiedByMeDate";
-const char kParents[] = "parents";
 const char kDownloadUrl[] = "downloadUrl";
 const char kFileExtension[] = "fileExtension";
 const char kMd5Checksum[] = "md5Checksum";
 const char kFileSize[] = "fileSize";
+const char kAlternateLink[] = "alternateLink";
+const char kEmbedLink[] = "embedLink";
+const char kParents[] = "parents";
+const char kThumbnailLink[] = "thumbnailLink";
+const char kWebContentLink[] = "webContentLink";
 
 const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
-// Files List:
+// Files List
+// https://developers.google.com/drive/v2/reference/files/list
 const char kFileListKind[] = "drive#fileList";
 const char kNextPageToken[] = "nextPageToken";
 const char kNextLink[] = "nextLink";
 
-// Change Resource:
+// Change Resource
+// https://developers.google.com/drive/v2/reference/changes
 const char kChangeKind[] = "drive#change";
 const char kFileId[] = "fileId";
+const char kDeleted[] = "deleted";
 const char kFile[] = "file";
 
-// Changes List:
+// Changes List
+// https://developers.google.com/drive/v2/reference/changes/list
 const char kChangeListKind[] = "drive#changeList";
 
 // Maps category name to enum IconCategory.
@@ -131,9 +151,9 @@ namespace gdata {
 // AboutResource implementation
 
 AboutResource::AboutResource()
-    : quota_bytes_total_(0),
-      quota_bytes_used_(0),
-      largest_change_id_(0) {}
+    : largest_change_id_(0),
+      quota_bytes_total_(0),
+      quota_bytes_used_(0) {}
 
 AboutResource::~AboutResource() {}
 
@@ -150,17 +170,17 @@ scoped_ptr<AboutResource> AboutResource::CreateFrom(const base::Value& value) {
 // static
 void AboutResource::RegisterJSONConverter(
     base::JSONValueConverter<AboutResource>* converter) {
-  converter->RegisterStringField(kRootFolderId,
-                                 &AboutResource::root_folder_id_);
+  converter->RegisterCustomField<int64>(kLargestChangeId,
+                                        &AboutResource::largest_change_id_,
+                                        &base::StringToInt64);
   converter->RegisterCustomField<int64>(kQuotaBytesTotal,
                                         &AboutResource::quota_bytes_total_,
                                         &base::StringToInt64);
   converter->RegisterCustomField<int64>(kQuotaBytesUsed,
                                         &AboutResource::quota_bytes_used_,
                                         &base::StringToInt64);
-  converter->RegisterCustomField<int64>(kLargestChangeId,
-                                        &AboutResource::largest_change_id_,
-                                        &base::StringToInt64);
+  converter->RegisterStringField(kRootFolderId,
+                                 &AboutResource::root_folder_id_);
 }
 
 bool AboutResource::Parse(const base::Value& value) {
@@ -319,6 +339,9 @@ ParentReference::~ParentReference() {}
 void ParentReference::RegisterJSONConverter(
     base::JSONValueConverter<ParentReference>* converter) {
   converter->RegisterStringField(kId, &ParentReference::file_id_);
+  converter->RegisterCustomField<GURL>(kParentLink,
+                                       &ParentReference::parent_link_,
+                                       GetGURLFromString);
   converter->RegisterBoolField(kIsRoot, &ParentReference::is_root_);
 }
 
@@ -355,14 +378,19 @@ void FileResource::RegisterJSONConverter(
     base::JSONValueConverter<FileResource>* converter) {
   converter->RegisterStringField(kId, &FileResource::file_id_);
   converter->RegisterStringField(kETag, &FileResource::etag_);
-  converter->RegisterStringField(kMimeType, &FileResource::mime_type_);
+  converter->RegisterCustomField<GURL>(kSelfLink,
+                                       &FileResource::self_link_,
+                                       GetGURLFromString);
   converter->RegisterStringField(kTitle, &FileResource::title_);
+  converter->RegisterStringField(kMimeType, &FileResource::mime_type_);
+  converter->RegisterCustomField<base::Time>(
+      kCreatedDate,
+      &FileResource::created_date_,
+      &gdata::util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kModifiedByMeDate,
       &FileResource::modified_by_me_date_,
       &gdata::util::GetTimeFromString);
-  converter->RegisterRepeatedMessage<ParentReference>(kParents,
-                                                      &FileResource::parents_);
   converter->RegisterCustomField<GURL>(kDownloadUrl,
                                        &FileResource::download_url_,
                                        GetGURLFromString);
@@ -372,6 +400,20 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<int64>(kFileSize,
                                         &FileResource::file_size_,
                                         &base::StringToInt64);
+  converter->RegisterCustomField<GURL>(kAlternateLink,
+                                       &FileResource::alternate_link_,
+                                       GetGURLFromString);
+  converter->RegisterCustomField<GURL>(kEmbedLink,
+                                       &FileResource::embed_link_,
+                                       GetGURLFromString);
+  converter->RegisterRepeatedMessage<ParentReference>(kParents,
+                                                      &FileResource::parents_);
+  converter->RegisterCustomField<GURL>(kThumbnailLink,
+                                       &FileResource::thumbnail_link_,
+                                       GetGURLFromString);
+  converter->RegisterCustomField<GURL>(kWebContentLink,
+                                       &FileResource::web_content_link_,
+                                       GetGURLFromString);
 }
 
 // static
@@ -450,6 +492,7 @@ void ChangeResource::RegisterJSONConverter(
                                         &ChangeResource::change_id_,
                                         &base::StringToInt64);
   converter->RegisterStringField(kFileId, &ChangeResource::file_id_);
+  converter->RegisterBoolField(kDeleted, &ChangeResource::deleted_);
   converter->RegisterNestedField(kFile, &ChangeResource::file_);
 }
 
