@@ -46,6 +46,7 @@ static int8_t ExceptionToSignal(int ex) {
     case EXCEPTION_DATATYPE_MISALIGNMENT:
     case EXCEPTION_ACCESS_VIOLATION:
     case EXCEPTION_IN_PAGE_ERROR:
+    case EXCEPTION_PRIV_INSTRUCTION:
       return SIGSEGV;
 
     case EXCEPTION_BREAKPOINT:
@@ -64,7 +65,6 @@ static int8_t ExceptionToSignal(int ex) {
     case EXCEPTION_INT_DIVIDE_BY_ZERO:
     case EXCEPTION_INT_OVERFLOW:
     case EXCEPTION_ILLEGAL_INSTRUCTION:
-    case EXCEPTION_PRIV_INSTRUCTION:
       return SIGILL;
 
     case EXCEPTION_STACK_OVERFLOW:

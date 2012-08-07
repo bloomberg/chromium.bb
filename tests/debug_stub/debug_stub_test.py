@@ -2,12 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
 import struct
 import subprocess
 import sys
 import unittest
 
 import gdb_rsp
+
+
+NACL_SIGTRAP = 5
+NACL_SIGSEGV = 11
 
 
 # These are set up by Main().
@@ -122,7 +127,18 @@ def PopenDebugStub(test):
   return subprocess.Popen(SEL_LDR_COMMAND + ['-c', '-c', '-g', test])
 
 
+def ParseThreadStopReply(reply):
+  match = re.match('T([0-9a-f]{2})thread:([0-9a-f]+);$', reply)
+  if match is None:
+    raise AssertionError('Bad thread stop reply: %r' % reply)
+  return {'signal': int(match.group(1), 16),
+          'thread_id': int(match.group(2), 16)}
+
+
 class DebugStubTest(unittest.TestCase):
+
+  def AssertReplySignal(self, reply, signal):
+    self.assertEquals(ParseThreadStopReply(reply)['signal'], signal)
 
   def test_initial_breakpoint(self):
     # Any arguments to the nexe would work here because we are only
@@ -131,9 +147,12 @@ class DebugStubTest(unittest.TestCase):
     try:
       connection = gdb_rsp.GdbRspConnection()
       reply = connection.RspRequest('?')
-      # TODO(mseaborn): Use a stricter check here when all platforms
-      # report the same signal number for the initial breakpoint.
-      self.assertTrue(reply.startswith('T'))
+      if sys.platform == 'darwin':
+        # TODO(mseaborn): Fix the debug stub on Mac OS X to report
+        # NACL_SIGTRAP here.
+        self.assertEqual(reply, 'T00')
+      else:
+        self.AssertReplySignal(reply, NACL_SIGTRAP)
     finally:
       proc.kill()
       proc.wait()
@@ -258,10 +277,12 @@ class DebugStubTest(unittest.TestCase):
       # Tell the process to continue, because it starts at the
       # breakpoint set at its start address.
       reply = connection.RspRequest('c')
-      # We expect a reply that indicates that the process stopped on hlt.
-      # TODO(eaeltsin): Windows and Linux signals raised for hlt differ.
-      # Investigate/fix that and make a stricter check here.
-      self.assertTrue(reply.startswith('T'))
+      if ARCH == 'arm':
+        # The process should have stopped on a BKPT instruction.
+        self.AssertReplySignal(reply, NACL_SIGTRAP)
+      else:
+        # The process should have stopped on a HLT instruction.
+        self.AssertReplySignal(reply, NACL_SIGSEGV)
 
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
@@ -280,7 +301,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Continue until breakpoint.
       reply = connection.RspRequest('c')
-      self.assertTrue(reply.startswith('T05thread:'))
+      self.AssertReplySignal(reply, NACL_SIGTRAP)
 
       ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
 
@@ -344,8 +365,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Continue, test we stopped on int3.
       reply = connection.RspRequest('c')
-      self.assertTrue(reply.startswith('T05thread:'))
-      self.assertTrue(reply.endswith(';'))
+      self.AssertReplySignal(reply, NACL_SIGTRAP)
 
       self.CheckSingleStep(connection, 's', reply)
     finally:
@@ -370,9 +390,8 @@ class DebugStubTest(unittest.TestCase):
       # Continue using vCont, test we stopped on int3.
       # Get signalled thread id.
       reply = connection.RspRequest('vCont;c')
-      self.assertTrue(reply.startswith('T05thread:'))
-      self.assertTrue(reply.endswith(';'))
-      tid = int(reply[len('T05thread:'):-1], 16)
+      self.AssertReplySignal(reply, NACL_SIGTRAP)
+      tid = ParseThreadStopReply(reply)['thread_id']
 
       self.CheckSingleStep(connection, 'vCont;s:%x' % tid, reply)
 
@@ -414,7 +433,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Single-step.
       reply = connection.RspRequest('s')
-      self.assertTrue(reply.startswith('T05thread:'))
+      self.AssertReplySignal(reply, NACL_SIGTRAP)
     finally:
       proc.kill()
       proc.wait()
@@ -430,14 +449,8 @@ class DebugStubTest(unittest.TestCase):
 
       # We stopped on initial breakpoint. Ask for stop reply.
       reply = connection.RspRequest('?')
-      # Unfortunately, signal raised by initial breakpoint differs across
-      # platforms, so we don't check signal number.
-      self.assertTrue(reply.startswith('T'))
-      # Signal number is 2 digits, skip it.
-      self.assertTrue(reply[len('T??'):].startswith('thread:'))
-      self.assertTrue(reply.endswith(';'))
-      # Extract thread id.
-      tid = int(reply[len('T??thread:'):-1], 16)
+      self.AssertReplySignal(reply, NACL_SIGTRAP)
+      tid = ParseThreadStopReply(reply)['thread_id']
 
       # Continue one thread.
       # Check we stopped on the same thread.
