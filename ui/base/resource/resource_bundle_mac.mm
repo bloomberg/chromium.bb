@@ -51,7 +51,9 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 void ResourceBundle::LoadCommonResources() {
   AddDataPackFromPath(GetResourcesPakFilePath(@"chrome", nil),
                       SCALE_FACTOR_100P);
-  AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_100_percent",
+  AddDataPackFromPath(GetResourcesPakFilePath(@"theme_resources_100_percent",
+                        nil), SCALE_FACTOR_100P);
+  AddDataPackFromPath(GetResourcesPakFilePath(@"ui_resources_100_percent",
                         nil), SCALE_FACTOR_100P);
   AddDataPackFromPath(GetResourcesPakFilePath(@"webkit_resources_100_percent",
                         nil), SCALE_FACTOR_100P);
@@ -60,7 +62,9 @@ void ResourceBundle::LoadCommonResources() {
   // On Mac we load both and let the UI framework decide which one to use.
 #if defined(ENABLE_HIDPI)
   if (base::mac::IsOSLionOrLater()) {
-    AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent",
+    AddDataPackFromPath(GetResourcesPakFilePath(@"theme_resources_200_percent",
+                          nil), SCALE_FACTOR_200P);
+    AddDataPackFromPath(GetResourcesPakFilePath(@"ui_resources_200_percent",
                           nil), SCALE_FACTOR_200P);
     AddDataPackFromPath(GetResourcesPakFilePath(@"webkit_resources_200_percent",
                           nil), SCALE_FACTOR_200P);
