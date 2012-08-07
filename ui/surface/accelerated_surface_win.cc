@@ -4,6 +4,7 @@
 
 #include "ui/surface/accelerated_surface_win.h"
 
+#include <dwmapi.h>
 #include <windows.h>
 #include <algorithm>
 
@@ -859,6 +860,24 @@ void AcceleratedPresenter::DoSuspend() {
 void AcceleratedPresenter::DoReleaseSurface() {
   base::AutoLock locked(lock_);
   source_texture_.Release();
+}
+
+void AcceleratedPresenter::GetPresentationStats(base::TimeTicks* timebase,
+                                                uint32* interval_numerator,
+                                                uint32* interval_denominator) {
+  lock_.AssertAcquired();
+
+  DWM_TIMING_INFO timing_info;
+  timing_info.cbSize = sizeof(timing_info);
+  HRESULT result = DwmGetCompositionTimingInfo(window_, &timing_info);
+  if (result != S_OK)
+    return;
+
+  *timebase = base::TimeTicks::FromQPCValue(
+      static_cast<LONGLONG>(timing_info.qpcVBlank));
+  // Swap the numerator/denominator to convert frequency to period.
+  *interval_numerator = timing_info.rateRefresh.uiDenominator;
+  *interval_denominator = timing_info.rateRefresh.uiNumerator;
 }
 
 AcceleratedSurface::AcceleratedSurface(gfx::NativeWindow window)
