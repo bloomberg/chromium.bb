@@ -356,6 +356,10 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'validator_ragel', default=False,
     desc='Use the R-DFA validator instead of the original validators.')
 
+  BitFromArgument(env, 'x86_64_zero_based_sandbox', default=False,
+    desc='Use the zero-address-based x86-64 sandbox model instead of '
+      'the r15-based model.')
+
   #########################################################################
   # EXPERIMENTAL
   # This is for generating a testing library for use within private test

@@ -26,6 +26,11 @@
         'sel_rt_64.c',
         'tramp_64.S',
       ],
+      'defines': [
+        # For now, we are only supporting the the zero-based sandbox
+        # build in scons.
+        'NACL_X86_64_ZERO_BASED_SANDBOX=0',
+      ],
       'conditions': [
         ['OS=="mac"', {
           'sources' : [

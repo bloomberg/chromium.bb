@@ -18,6 +18,7 @@
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 
 #define FOURGIG     (((size_t) 1) << 32)
@@ -125,6 +126,35 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
           addrsp_size);
 
   CHECK(addrsp_size == FOURGIG);
+
+  if (NACL_X86_64_ZERO_BASED_SANDBOX) {
+    /*
+     * For the zero-based sandbox model, there is 44GB of prereserved
+     * address space.  If this prereserved memory is found, then try
+     * to allocate for it beginning at NACL_TRAMPOLINE_START.
+     */
+    if (NaClFindPrereservedSandboxMemory(mem, 11 * FOURGIG)) {
+      int result;
+      void *tmp_mem = (void *) NACL_TRAMPOLINE_START;
+      NaClAddrSpaceBeforeAlloc(11 * FOURGIG);
+      CHECK(*mem == 0);
+      addrsp_size -= NACL_TRAMPOLINE_START;
+      result = NaCl_page_alloc_at_addr(&tmp_mem, addrsp_size);
+      if (0 != result) {
+        NaClLog(2,
+                "NaClAllocateSpace: NaCl_page_alloc 0x%08"NACL_PRIxPTR
+                " failed\n",
+                (uintptr_t) *mem);
+        return LOAD_NO_MEMORY;
+      }
+      NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
+              (uintptr_t) *mem,
+              addrsp_size);
+      return LOAD_OK;
+    }
+    NaClLog(LOG_ERROR, "Failed to find prereserved memory\n");
+    return LOAD_NO_MEMORY;
+  }
 
   NaClAddrSpaceBeforeAlloc(mem_sz);
 
