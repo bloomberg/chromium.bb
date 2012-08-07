@@ -121,6 +121,13 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
     case Extension::TYPE_HOSTED_APP:
     case Extension::TYPE_PACKAGED_APP:
     case Extension::TYPE_PLATFORM_APP:
+      // Always send a Loaded message before ActivateExtension so that
+      // ExtensionDispatcher knows what Extension is active, not just its ID.
+      // This is important for classifying the Extension's JavaScript context
+      // correctly (see ExtensionDispatcher::ClassifyJavaScriptContext).
+      Send(new ExtensionMsg_Loaded(
+          std::vector<ExtensionMsg_Loaded_Params>(
+              1, ExtensionMsg_Loaded_Params(extension))));
       Send(new ExtensionMsg_ActivateExtension(extension->id()));
       break;
 
