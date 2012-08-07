@@ -159,8 +159,12 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (!web_view)
       return v8::Undefined();
 
+    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
+    if (!render_view_impl)
+      return v8::Undefined();
+
     WebRenderingStats stats;
-    web_view->renderingStats(stats);
+    render_view_impl->GetRenderingStats(stats);
 
     v8::Handle<v8::Object> stats_object = v8::Object::New();
     if (stats.numAnimationFrames)

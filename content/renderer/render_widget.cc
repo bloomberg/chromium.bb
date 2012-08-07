@@ -688,11 +688,19 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // WebKit and filling the background (which can be slow) and just painting
     // the plugin. Unlike the DoDeferredUpdate case, an extra copy is still
     // required.
+    base::TimeTicks paint_begin_ticks = base::TimeTicks::Now();
     optimized_instance->Paint(webkit_glue::ToWebCanvas(canvas),
                               optimized_copy_location, rect);
+    base::TimeDelta paint_time = base::TimeTicks::Now() - paint_begin_ticks;
+    if (!is_accelerated_compositing_active_)
+      software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
   } else {
     // Normal painting case.
+    base::TimeTicks paint_begin_ticks = base::TimeTicks::Now();
     webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
+    base::TimeDelta paint_time = base::TimeTicks::Now() - paint_begin_ticks;
+    if (!is_accelerated_compositing_active_)
+      software_stats_.totalPaintTimeInSeconds += paint_time.InSecondsF();
 
     // Flush to underlying bitmap.  TODO(darin): is this needed?
     skia::GetTopDevice(*canvas)->accessBitmap(false);
@@ -888,6 +896,11 @@ void RenderWidget::DoDeferredUpdate() {
         0.9f * filtered_time_per_frame_ + 0.1f * frame_time_elapsed;
   }
   last_do_deferred_update_time_ = frame_begin_ticks;
+
+  if (!is_accelerated_compositing_active_) {
+    software_stats_.numAnimationFrames++;
+    software_stats_.numFramesSentToScreen++;
+  }
 
   // OK, save the pending update to a local since painting may cause more
   // invalidation.  Some WebCore rendering objects only layout when painted.
@@ -1767,6 +1780,13 @@ void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
       break;
     }
   }
+}
+
+void RenderWidget::GetRenderingStats(WebKit::WebRenderingStats& stats) const {
+  webwidget()->renderingStats(stats);
+  stats.numAnimationFrames += software_stats_.numAnimationFrames;
+  stats.numFramesSentToScreen += software_stats_.numFramesSentToScreen;
+  stats.totalPaintTimeInSeconds += software_stats_.totalPaintTimeInSeconds;
 }
 
 void RenderWidget::BeginSmoothScroll(bool down, bool scroll_far) {

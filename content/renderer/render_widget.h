@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_channel.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
@@ -151,6 +152,12 @@ class CONTENT_EXPORT RenderWidget
   // Called when a plugin window has been destroyed, to make sure the currently
   // pending moves don't try to reference it.
   void CleanupWindowInPluginMoves(gfx::PluginWindowHandle window);
+
+  // Fills in a WebRenderingStats struct containing information about
+  // rendering, e.g. count of frames rendered, time spent painting.
+  // This call is relatively expensive in threaded compositing mode,
+  // as it blocks on the compositor thread.
+  void GetRenderingStats(WebKit::WebRenderingStats&) const;
 
   // Directs the host to begin a smooth scroll. This scroll should have the same
   // performance characteristics as a user-initiated scroll.
@@ -542,6 +549,8 @@ class CONTENT_EXPORT RenderWidget
 
   bool has_disable_gpu_vsync_switch_;
   base::TimeTicks last_do_deferred_update_time_;
+
+  WebKit::WebRenderingStats software_stats_;
 
   // UpdateRect parameters for the current compositing pass. This is used to
   // pass state between DoDeferredUpdate and OnSwapBuffersPosted.
