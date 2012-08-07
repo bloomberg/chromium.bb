@@ -20,7 +20,7 @@ class MockWebPeerConnectionHandlerClient
 
   // WebPeerConnectionHandlerClient implementation.
   virtual void didCompleteICEProcessing();
-  virtual void didGenerateSDP(const WebString& sdp);
+  virtual void didGenerateSDP(const WebString&);
   virtual void didReceiveDataStreamMessage(const char* data, size_t length);
   virtual void didAddRemoteStream(
       const WebMediaStreamDescriptor& stream_descriptor);
@@ -28,11 +28,9 @@ class MockWebPeerConnectionHandlerClient
       const WebMediaStreamDescriptor& stream_descriptor);
 
   const std::string& stream_label() { return stream_label_; }
-  const std::string& sdp() const { return sdp_; }
 
  private:
   std::string stream_label_;
-  std::string sdp_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebPeerConnectionHandlerClient);
 };

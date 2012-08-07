@@ -16,8 +16,7 @@ MockWebPeerConnectionHandlerClient::~MockWebPeerConnectionHandlerClient() {}
 
 void MockWebPeerConnectionHandlerClient::didCompleteICEProcessing() {}
 
-void MockWebPeerConnectionHandlerClient::didGenerateSDP(const WebString& sdp) {
-  sdp_ = UTF16ToUTF8(sdp);
+void MockWebPeerConnectionHandlerClient::didGenerateSDP(const WebString&) {
 }
 
 void MockWebPeerConnectionHandlerClient::didReceiveDataStreamMessage(

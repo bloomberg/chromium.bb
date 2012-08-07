@@ -16,14 +16,10 @@ MockMediaStreamDispatcher::~MockMediaStreamDispatcher() {}
 
 void MockMediaStreamDispatcher::GenerateStream(
     int request_id,
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
+    const base::WeakPtr<MediaStreamDispatcherEventHandler>&,
     media_stream::StreamOptions components,
-    const GURL& security_origin) {
+    const GURL&) {
   request_id_ = request_id;
-  event_handler_ = event_handler;
-  components_ = media_stream::StreamOptions(components.audio,
-                                            components.video);
-  security_origin_ = security_origin;
 
   stream_label_ = StringPrintf("%s%d","local_stream",request_id);
   audio_array_.clear();
