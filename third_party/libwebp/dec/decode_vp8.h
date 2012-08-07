@@ -1,4 +1,4 @@
-// Copyright 2010 Google Inc.
+// Copyright 2010 Google Inc. All Rights Reserved.
 //
 // This code is licensed under the same terms as WebM:
 //  Software License Agreement:  http://www.webmproject.org/license/software/
@@ -12,7 +12,7 @@
 #ifndef WEBP_WEBP_DECODE_VP8_H_
 #define WEBP_WEBP_DECODE_VP8_H_
 
-#include "./decode.h"
+#include "../webp/decode.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
@@ -82,7 +82,7 @@ struct VP8Io {
   int fancy_upsampling;
 
   // Input buffer.
-  uint32_t data_size;
+  size_t data_size;
   const uint8_t* data;
 
   // If true, in-loop filtering will not be performed even if present in the
@@ -99,56 +99,81 @@ struct VP8Io {
   int use_scaling;
   int scaled_width, scaled_height;
 
-  // pointer to the alpha data (if present) corresponding to the rows
+  // If non NULL, pointer to the alpha data (if present) corresponding to the
+  // start of the current row (That is: it is pre-offset by mb_y and takes
+  // cropping into account).
   const uint8_t* a;
 };
 
 // Internal, version-checked, entry point
-WEBP_EXTERN(int) VP8InitIoInternal(VP8Io* const, int);
+int VP8InitIoInternal(VP8Io* const, int);
 
 // Set the custom IO function pointers and user-data. The setter for IO hooks
 // should be called before initiating incremental decoding. Returns true if
 // WebPIDecoder object is successfully modified, false otherwise.
-WEBP_EXTERN(int) WebPISetIOHooks(WebPIDecoder* const idec,
-                                 VP8IoPutHook put,
-                                 VP8IoSetupHook setup,
-                                 VP8IoTeardownHook teardown,
-                                 void* user_data);
+int WebPISetIOHooks(WebPIDecoder* const idec,
+                    VP8IoPutHook put,
+                    VP8IoSetupHook setup,
+                    VP8IoTeardownHook teardown,
+                    void* user_data);
 
 // Main decoding object. This is an opaque structure.
 typedef struct VP8Decoder VP8Decoder;
 
 // Create a new decoder object.
-WEBP_EXTERN(VP8Decoder*) VP8New(void);
+VP8Decoder* VP8New(void);
 
 // Must be called to make sure 'io' is initialized properly.
 // Returns false in case of version mismatch. Upon such failure, no other
 // decoding function should be called (VP8Decode, VP8GetHeaders, ...)
-static inline int VP8InitIo(VP8Io* const io) {
+static WEBP_INLINE int VP8InitIo(VP8Io* const io) {
   return VP8InitIoInternal(io, WEBP_DECODER_ABI_VERSION);
 }
 
 // Start decoding a new picture. Returns true if ok.
-WEBP_EXTERN(int) VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io);
+int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io);
 
 // Decode a picture. Will call VP8GetHeaders() if it wasn't done already.
 // Returns false in case of error.
-WEBP_EXTERN(int) VP8Decode(VP8Decoder* const dec, VP8Io* const io);
+int VP8Decode(VP8Decoder* const dec, VP8Io* const io);
 
 // Return current status of the decoder:
-WEBP_EXTERN(VP8StatusCode) VP8Status(VP8Decoder* const dec);
+VP8StatusCode VP8Status(VP8Decoder* const dec);
 
 // return readable string corresponding to the last status.
-WEBP_EXTERN(const char*) VP8StatusMessage(VP8Decoder* const dec);
+const char* VP8StatusMessage(VP8Decoder* const dec);
 
 // Resets the decoder in its initial state, reclaiming memory.
 // Not a mandatory call between calls to VP8Decode().
-WEBP_EXTERN(void) VP8Clear(VP8Decoder* const dec);
+void VP8Clear(VP8Decoder* const dec);
 
 // Destroy the decoder object.
-WEBP_EXTERN(void) VP8Delete(VP8Decoder* const dec);
+void VP8Delete(VP8Decoder* const dec);
 
 //------------------------------------------------------------------------------
+// Miscellaneous VP8/VP8L bitstream probing functions.
+
+// Returns true if the next 3 bytes in data contain the VP8 signature.
+WEBP_EXTERN(int) VP8CheckSignature(const uint8_t* const data, size_t data_size);
+
+// Validates the VP8 data-header and retrieves basic header information viz
+// width and height. Returns 0 in case of formatting error. *width/*height
+// can be passed NULL.
+WEBP_EXTERN(int) VP8GetInfo(
+    const uint8_t* data,
+    size_t data_size,    // data available so far
+    size_t chunk_size,   // total data size expected in the chunk
+    int* const width, int* const height);
+
+// Returns true if the next byte(s) in data is a VP8L signature.
+WEBP_EXTERN(int) VP8LCheckSignature(const uint8_t* const data, size_t size);
+
+// Validates the VP8L data-header and retrieves basic header information viz
+// width, height and alpha. Returns 0 in case of formatting error.
+// width/height/has_alpha can be passed NULL.
+WEBP_EXTERN(int) VP8LGetInfo(
+    const uint8_t* data, size_t data_size,  // data available so far
+    int* const width, int* const height, int* const has_alpha);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }    // extern "C"
