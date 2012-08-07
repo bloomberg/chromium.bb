@@ -45,6 +45,8 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // The result of clipping. This can be used to determine if the
   // generated thumbnail is good or not.
   enum ClipResult {
+    // Clipping is not done yet.
+    kUnprocessed,
     // The source image is smaller.
     kSourceIsSmaller,
     // Wider than tall by twice or more, clip horizontally.
@@ -113,7 +115,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // Update the thumbnail of the given tab.
   void UpdateThumbnail(content::WebContents* web_contents,
                        const SkBitmap& bitmap,
-                       const ThumbnailGenerator::ClipResult& clip_result);
+                       const ClipResult& clip_result);
 
   // Returns true if we should update the thumbnail of the given URL.
   static bool ShouldUpdateThumbnail(Profile* profile,
@@ -141,12 +143,14 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // AsyncUpdateThumbnail invocation. This runs on the UI thread.
   void UpdateThumbnailWithBitmap(
       content::WebContents* web_contents,
+      ClipResult clip_result,
       const SkBitmap& bitmap);
 
   // Called when the canvas for generating a thumbnail is ready after the
   // AsyncUpdateThumbnail invocation. This runs on the UI thread.
   void UpdateThumbnailWithCanvas(
       content::WebContents* web_contents,
+      ClipResult clip_result,
       skia::PlatformCanvas* temp_canvas,
       bool result);
 
