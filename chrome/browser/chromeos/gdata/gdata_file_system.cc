@@ -516,7 +516,6 @@ GDataFileSystem::GDataFileSystem(
       documents_service_(documents_service),
       webapps_registry_(webapps_registry),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
-      hide_hosted_docs_(false),
       blocking_task_runner_(blocking_task_runner),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
@@ -536,9 +535,6 @@ void GDataFileSystem::Initialize() {
                                              cache_,
                                              blocking_task_runner_));
   feed_loader_->AddObserver(this);
-
-  PrefService* pref_service = profile_->GetPrefs();
-  hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
 
   InitializePreferenceObserver();
 }
@@ -1866,7 +1862,6 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
   if (error != GDATA_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error,
-                   hide_hosted_docs_,
                    scoped_ptr<GDataEntryProtoVector>());
     return;
   }
@@ -1876,7 +1871,6 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
   if (!directory) {
     if (!callback.is_null())
       callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
-                   hide_hosted_docs_,
                    scoped_ptr<GDataEntryProtoVector>());
     return;
   }
@@ -1898,7 +1892,7 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
   }
 
   if (!callback.is_null())
-    callback.Run(GDATA_FILE_OK, hide_hosted_docs_, entries.Pass());
+    callback.Run(GDATA_FILE_OK, entries.Pass());
 }
 
 void GDataFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
@@ -2971,29 +2965,16 @@ void GDataFileSystem::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    PrefService* pref_service = profile_->GetPrefs();
     std::string* pref_name = content::Details<std::string>(details).ptr();
     if (*pref_name == prefs::kDisableGDataHostedFiles) {
-      SetHideHostedDocuments(
-          pref_service->GetBoolean(prefs::kDisableGDataHostedFiles));
+      const FilePath root_path = directory_service_->root()->GetFilePath();
+      // Kick off directory refresh when this setting changes.
+      FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
+                        OnDirectoryChanged(root_path));
     }
   } else {
     NOTREACHED();
   }
-}
-
-void GDataFileSystem::SetHideHostedDocuments(bool hide) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (hide == hide_hosted_docs_)
-    return;
-
-  hide_hosted_docs_ = hide;
-  const FilePath root_path = directory_service_->root()->GetFilePath();
-
-  // Kick off directory refresh when this setting changes.
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
-                    OnDirectoryChanged(root_path));
 }
 
 //============= GDataFileSystem: internal helper functions =====================

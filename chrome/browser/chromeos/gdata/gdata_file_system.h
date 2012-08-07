@@ -600,9 +600,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void FindEntryByPathSyncOnUIThread(const FilePath& search_file_path,
                                      const FindEntryCallback& callback);
 
-  // Changes state of hosted documents visibility, triggers directory refresh.
-  void SetHideHostedDocuments(bool hide);
-
   // Initializes preference change observer.
   void InitializePreferenceObserver();
 
@@ -796,9 +793,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Periodic timer for checking updates.
   base::Timer update_timer_;
-
-  // True if hosted documents should be hidden.
-  bool hide_hosted_docs_;
 
   // The set of paths opened by OpenFile but not yet closed by CloseFile.
   std::set<FilePath> open_files_;

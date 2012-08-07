@@ -170,7 +170,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const FilePath& parent_path,
                              gdata::GDataFileError error,
-                             bool hide_hosted_documents,
                              scoped_ptr<gdata::GDataEntryProtoVector> entries);
 
   // Called when GetResourceIdsOfAllFilesOnUIThread() is complete.
@@ -263,7 +262,6 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     const FilePath& parent_path,
     gdata::GDataFileError error,
-    bool hide_hosted_documents,
     scoped_ptr<gdata::GDataEntryProtoVector> entries) {
   --num_pending_reads_;
   if (error == gdata::GDATA_FILE_OK) {

@@ -13,6 +13,8 @@ namespace fileapi {
 class FileSystemURL;
 }
 
+class Profile;
+
 namespace gdata {
 
 class GDataEntryProto;
@@ -22,7 +24,8 @@ class GDataFileSystemInterface;
 class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
   // |file_system| is the GDataFileSystem instance owned by GDataSystemService.
-  explicit GDataFileSystemProxy(GDataFileSystemInterface* file_system);
+  explicit GDataFileSystemProxy(GDataFileSystemInterface* file_system,
+                                Profile* profile);
 
   // fileapi::RemoteFileSystemProxyInterface overrides.
   virtual void GetFileInfo(
@@ -117,7 +120,6 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
           callback,
       GDataFileError error,
-      bool hide_hosted_documents,
       scoped_ptr<gdata::GDataEntryProtoVector> proto_entries);
 
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
@@ -183,6 +185,9 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // removed, the file manager is already gone). Hence it's safe to use this as
   // a raw pointer.
   GDataFileSystemInterface* file_system_;
+
+  // Profile associated with the file system proxy.
+  Profile* profile_;  // Not owned.
 };
 
 }  // namespace chromeos

@@ -62,7 +62,6 @@ typedef base::Callback<void(GDataFileError error,
 // |entries| are contents, both files and directories, of the directory.
 typedef std::vector<GDataEntryProto> GDataEntryProtoVector;
 typedef base::Callback<void(GDataFileError error,
-                            bool hide_hosted_documents,
                             scoped_ptr<GDataEntryProtoVector> entries)>
     ReadDirectoryCallback;
 

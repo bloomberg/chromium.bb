@@ -803,7 +803,6 @@ class GDataFileSystemTest : public testing::Test {
 
     virtual void ReadDirectoryCallback(
         GDataFileError error,
-        bool /* hide_hosted_documents */,
         scoped_ptr<GDataEntryProtoVector> entries) {
       last_error_ = error;
       directory_entries_ = entries.Pass();

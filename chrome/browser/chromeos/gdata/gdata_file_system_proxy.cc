@@ -15,6 +15,9 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
@@ -177,8 +180,10 @@ base::FileUtilProxy::Entry GDataEntryProtoToFileUtilProxyEntry(
 // GDataFileSystemProxy class implementation.
 
 GDataFileSystemProxy::GDataFileSystemProxy(
-    GDataFileSystemInterface* file_system)
-    : file_system_(file_system) {
+    GDataFileSystemInterface* file_system,
+    Profile* profile)
+    : file_system_(file_system),
+      profile_(profile) {
   // Should be created from the file browser extension API (AddMountFunction)
   // on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -676,9 +681,12 @@ void GDataFileSystemProxy::OnReadDirectory(
     const FileSystemOperationInterface::ReadDirectoryCallback&
     callback,
     GDataFileError error,
-    bool hide_hosted_documents,
     scoped_ptr<gdata::GDataEntryProtoVector> proto_entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  PrefService* pref_service = profile_->GetPrefs();
+  const bool hide_hosted_documents =
+      pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
 
   if (error != GDATA_FILE_OK) {
     callback.Run(util::GDataFileErrorToPlatformError(error),
