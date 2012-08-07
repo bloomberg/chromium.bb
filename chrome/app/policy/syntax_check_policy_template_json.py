@@ -30,6 +30,26 @@ TYPE_TO_SCHEMA = {
   'string-enum': 'string',
 }
 
+# List of boolean policies that have been introduced with negative polarity in
+# the past and should not trigger the negative polarity check.
+LEGACY_INVERTED_POLARITY_WHITELIST = [
+    'DeveloperToolsDisabled',
+    'DeviceAutoUpdateDisabled',
+    'Disable3DAPIs',
+    'DisableAuthNegotiateCnameLookup',
+    'DisablePluginFinder',
+    'DisablePrintPreview',
+    'DisableSafeBrowsingProceedAnyway',
+    'DisableScreenshots',
+    'DisableSpdy',
+    'DisableSSLRecordSplitting',
+    'ExternalStorageDisabledforrealz',
+    'GDataDisabled',
+    'GDataDisabledOverCellular',
+    'SavingBrowserHistoryDisabled',
+    'SyncDisabled',
+]
+
 class PolicyTemplateChecker(object):
 
   def __init__(self):
@@ -127,9 +147,20 @@ class PolicyTemplateChecker(object):
     self._CheckContains(policy, 'schema', dict)
     if isinstance(policy.get('schema'), dict):
       self._CheckContains(policy['schema'], 'type', str)
-      if policy['schema'].get('type') != TYPE_TO_SCHEMA[policy_type]:
+      schema_type = policy['schema'].get('type')
+      if schema_type != TYPE_TO_SCHEMA[policy_type]:
         self._Error('Schema type must match the existing type for policy %s' %
                     policy.get('name'))
+
+      # Checks that boolean policies are not negated (which makes them harder to
+      # reason about).
+      if (schema_type == 'boolean' and
+          'disable' in policy.get('name').lower() and
+          policy.get('name') not in LEGACY_INVERTED_POLARITY_WHITELIST):
+        self._Error(('Boolean policy %s uses negative polarity, please make ' +
+                     'new boolean policies follow the XYZEnabled pattern. ' +
+                     'See also http://crbug.com/85687') % policy.get('name'))
+
 
   def _CheckPolicy(self, policy, is_in_group, policy_ids):
     if not isinstance(policy, dict):
