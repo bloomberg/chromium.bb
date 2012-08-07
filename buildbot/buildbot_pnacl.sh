@@ -25,6 +25,7 @@ RETCODE=0
 # this does not run any tests, though
 readonly SCONS_EVERYTHING=""
 readonly SCONS_S_M_L="small_tests medium_tests large_tests"
+readonly SCONS_S_M_L_IRT="small_tests_irt medium_tests_irt large_tests_irt"
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests large_tests"
 
@@ -436,7 +437,7 @@ mode-buildbot-x86() {
       "nonpexe_tests"
 
   # also run some tests with the irt
-  scons-stage-irt "${arch}" "${flags_run}" "small_tests_irt"
+  scons-stage-irt "${arch}" "${flags_run}" "${SCONS_S_M_L_IRT}"
 
   # PIC
   scons-stage-noirt "${arch}" "${flags_build} nacl_pic=1 pnacl_generate_pexe=0" \
@@ -448,9 +449,11 @@ mode-buildbot-x86() {
   build-sbtc-prerequisites ${arch}
   scons-stage-noirt "${arch}" "${flags_build} use_sandboxed_translator=1" \
       "${SCONS_EVERYTHING}"
-  scons-stage-noirt "${arch}" "${flags_run} use_sandboxed_translator=1" \
-      "${SCONS_S_M_L}"
-
+  scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
+      "${SCONS_S_M_L_IRT}"
+  # translator memory consumption regression test
+  scons-stage-irt "${arch}" "${flags_run} use_sandboxed_translator=1" \
+      "large_code"
   browser-tests "${arch}" "-j8 -k"
 }
 
@@ -478,7 +481,7 @@ mode-buildbot-arm() {
   scons-stage-noirt "arm" "${qemuflags}" "${SCONS_S_M_L}"
 
   # also run some tests with the irt
-  scons-stage-irt "arm" "${qemuflags}" "small_tests_irt"
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_L_IRT}"
 
   # PIC
   # Don't bother to build everything here, just the tests we want to run
@@ -506,7 +509,7 @@ mode-buildbot-arm-hw() {
     "${SCONS_S_M_L}"
 
   # also run some tests with the irt
-  scons-stage-irt "arm" "${hwflags}" "small_tests_irt"
+  scons-stage-irt "arm" "${hwflags}" "${SCONS_S_M_L_IRT}"
 
   scons-stage-noirt "arm" "${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage-noirt "arm" \
@@ -528,7 +531,7 @@ mode-trybot-qemu() {
   scons-stage-noirt "arm" "${qemuflags} -j1" "${SCONS_S_M_L}"
 
   # also run some tests with the irt
-  scons-stage-irt "arm" "${qemuflags}" "small_tests_irt"
+  scons-stage-irt "arm" "${qemuflags}" "${SCONS_S_M_L_IRT}"
 
   scons-stage-noirt "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
       "${SCONS_EVERYTHING}"
