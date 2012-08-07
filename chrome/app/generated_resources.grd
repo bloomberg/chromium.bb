@@ -1284,7 +1284,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </if>
 
       <!-- App menu -->
-      <if expr="pp_ifdef('android') and not pp_ifdef('use_titlecase')">
+      <if expr="pp_ifdef('android')">
         <message name="IDS_SHOW_BOOKMARK_BAR" desc="Mobile: The toggle to show the bookmark bar">
           &amp;Always show bookmarks bar
         </message>
@@ -6221,16 +6221,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
           Load Anyway
         </message>
-        <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Button to prevent insecure content from being displayed">
-          Don't Load (Recommended)
-        </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_ALLOW_INSECURE_CONTENT_BUTTON" desc="Button to allow insecure content to be displayed">
           Load anyway
         </message>
+      </if>
+      <if expr="not pp_ifdef('android') and pp_ifdef('use_titlecase')">
+        <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Button to prevent insecure content from being displayed">
+          Don't Load (Recommended)
+        </message>
+      </if>
+      <if expr="not pp_ifdef('android') and not pp_ifdef('use_titlecase')">
         <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Button to prevent insecure content from being displayed">
           Don't load (recommended)
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_BLOCK_INSECURE_CONTENT_BUTTON" desc="Mobile: Button to prevent insecure content from being displayed">
+          Don't load
         </message>
       </if>
 
@@ -6314,6 +6323,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- about:version strings -->
       <message name="IDS_ABOUT_VERSION_TITLE" desc="Title on the about:version page">
         About Version
+      </message>
+      <message name="IDS_ABOUT_VERSION_APPLICATION" desc="label for the application on the about:version page">
+        Application
       </message>
       <message name="IDS_ABOUT_VERSION_OFFICIAL" desc="official build on the about:version page">
         Official Build
@@ -6679,12 +6691,22 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Password Manager -->
-      <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
-        Save password
-      </message>
-      <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
-        Never for this site
-      </message>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
+          Save password
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
+          Never for this site
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Mobile: Button text for the 'Save Password' infobar's 'Remember password' option">
+          Yes
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Mobile: Button text for the 'Save Password' infobar's 'Never remember for this site' option">
+          Never
+        </message>
+      </if>
 
       <!-- Import Settings Dialog -->
       <message name="IDS_IMPORT_SETTINGS_TITLE" desc="Dialog title for import dialog">
@@ -7786,16 +7808,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Other bookmarks
         </message>
       </if>
-      <if expr="not pp_ifdef('android') and not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
-          Bookmarks bar
-        </message>
-      </if>
-      <if expr="pp_ifdef('android') and not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-          Desktop bookmarks
-        </message>
-      </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the mobile bookmarks folder">
           Mobile Bookmarks
@@ -7805,13 +7817,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
       </if>
       <if expr="not pp_ifdef('android') and pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="In Title Case: Name shown in the tree for the bookmarks bar folder">
           Bookmarks Bar
         </message>
       </if>
-      <if expr="pp_ifdef('android') and pp_ifdef('use_titlecase')">
+      <if expr="not pp_ifdef('android') and not pp_ifdef('use_titlecase')">
+        <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Name shown in the tree for the bookmarks bar folder">
+          Bookmarks bar
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
         <message name="IDS_BOOKMARK_BAR_FOLDER_NAME" desc="Mobile: Name shown in the tree for the desktop bookmarks folder">
-          Desktop Bookmarks
+          Desktop bookmarks
         </message>
       </if>
       <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME" desc="Name for newly created groups">
@@ -8971,6 +8988,22 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
       </if>
 
+      <!-- Android First-run messages -->
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_FIRSTRUN_TAKE_TOUR" desc="Button or link to begin a product tour of Chrome">
+          Take a tour
+        </message>
+        <message name="IDS_FIRSTRUN_SIGNED_IN" desc="Message informing the user that they are now signed in and sync is turned on.">
+          You are now signed in to Chrome. Your open tabs, bookmarks and omnibox data are being synced with your Google Account.
+        </message>
+        <message name="IDS_FIRSTRUN_SETTINGS_LINK" desc="Link to take user to Chrome's settings menu.">
+          Settings
+        </message>
+        <message name="IDS_FIRSTRUN_TOS_EXPLANATION" desc="Message explaining that use of Chrome is governed by Chrome's terms of service.">
+          Your use of Chrome is subject to the Chrome <ph name="BEGIN_LINK1">&lt;a href="$1"&gt;</ph>Terms of Service<ph name="END_LINK1">&lt;/a&gt;</ph> and <ph name="BEGIN_LINK2">&lt;a href="$2"&gt;</ph>Privacy Notice<ph name="END_LINK2">&lt;/a&gt;</ph>.
+        </message>
+      </if>
+
       <!-- First run bubble popup -->
       <message name="IDS_FR_BUBBLE_TITLE" desc="Bubble-like popup dialog title">
         You can search from here with <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph>
@@ -9704,6 +9737,19 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Search settings
       </message>
 
+      <!-- Android welcome page strings -->
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_WELCOME_PAGE_SEARCH_BUBBLE" desc="The message displayed on the search bubble on the welcome page">
+          Search the web directly
+        </message>
+        <message name="IDS_WELCOME_PAGE_TABS_BUBBLE" desc="The message displayed on tabs bubble on the welcome page">
+          Switch between open tabs
+        </message>
+        <message name="IDS_WELCOME_PAGE_LEARN_MORE" desc="The text for the info hyperlink on the welcome page">
+          Learn more
+        </message>
+      </if>
+
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
         Predict network actions to improve page load performance
@@ -9769,9 +9815,17 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
         Sign in
       </message>
-      <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
-        Never offer to sign me in
-      </message>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
+          Never offer to sign me in
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="Mobile: The string used in the autologin infobar button that the user presses to close the infobar without logging in.">
+          Cancel
+        </message>
+      </if>
+
 
       <!-- One click sign in infobar -->
       <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to accept one click sign in.">
@@ -10219,6 +10273,61 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         <message name="IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED"
                  desc="Text for the button that opens the app maximized. (In title case.)">
           Open Maximized
+        </message>
+      </if>
+
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_EDIT_SIMPLE" desc="Generic word 'edit', as opposed to the menu items which have ampersands">
+          Edit
+        </message>
+        <message name="IDS_REMOVE_SIMPLE" desc="Generic word 'remove', as opposed to the menu items which have ampersands">
+          Remove
+        </message>
+        <message name="IDS_DELETE_SIMPLE" desc="Generic word 'delete', as opposed to the menu items which have ampersands">
+          Delete
+        </message>
+        <message name="IDS_RECEIVED_DOCUMENTS" desc="New tab page section header for received documents">
+          Received from other devices
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_NEW_TAB" desc="Context menu description for loading a link in a new tab">
+          Open in new tab
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_INCOGNITO_TAB" desc="Context menu description for loading a link in an incognito tab">
+          Open in incognito tab
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_REMOVE" desc="Context menu description for removing the selected item">
+          Remove
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_EDIT_BOOKMARK" desc="Context menu description for editing the selected bookmark">
+          Edit bookmark
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_DELETE_BOOKMARK" desc="Context menu description for deleting the selected bookmark">
+          Delete bookmark
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_BOOKMARK_SHORTCUT" desc="Context menu description for creating a shortcut to bookmark on home screen">
+          Add to home screen
+        </message>
+        <message name="IDS_BOOKMARK_EDIT_FOLDER" desc="Context menu item for editing a bookmark folder">
+          Edit folder
+        </message>
+        <message name="IDS_BOOKMARK_REMOVE_FOLDER" desc="Context menu item for removing a bookmark folder">
+          Remove folder
+        </message>
+        <message name="IDS_SYNC_PROMO_DESKTOP_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
+          &lt;p&gt;
+          Access the tabs you have open on your computer, right here.
+          &lt;/p&gt;
+          &lt;p&gt;
+          Just open Chrome on your computer, go to the menu, and select "Sign In to Chrome..."
+          &lt;/p&gt;
+        </message>
+        <message name="IDS_SYNC_ENABLE_SYNC" desc="Text that displayed on a link or button that allows the user to enable sync.">
+          &lt;p&gt;
+          Tabs you have opened in Chrome on your other devices will appear here.
+          &lt;/p&gt;
+          &lt;a href="#enablesync"&gt;
+          Enable sync.
+          &lt;/p&gt;
         </message>
       </if>
 
@@ -12022,6 +12131,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_NTP_SYNCED_TO" desc="The message to display in the New Tab Page sync section when the user is in sync.">
         Synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_SYNC_NTP_OPEN_TABS_LAST_SYNCED" desc="The message to display in front of the time of a last synced foreign tab">
+            Last synced
+        </message>
+      </if>
 
       <!-- Sync Promo New Tab Page bubble strings -->
       <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
@@ -12987,11 +13101,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
     </message>
 
     <!-- Geolocation messages -->
-    <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user's physical location">
-      <ph name="URL">
-        $1<ex>maps.google.com</ex>
-      </ph> wants to track your physical location.
-    </message>
+    <if expr="not pp_ifdef('android')">
+      <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user's physical location">
+        <ph name="URL">
+          $1<ex>maps.google.com</ex>
+        </ph> wants to use your computer's location.
+      </message>
+    </if>
+    <if expr="pp_ifdef('android')">
+      <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Mobile: Question asked on the info bar whenever URL wants to access the user's physical location">
+        <ph name="URL">
+          $1<ex>maps.google.com</ex>
+        </ph> wants to use your device's location.
+      </message>
+    </if>
     <message name="IDS_GEOLOCATION_ALLOW_BUTTON" desc="A button in geolocation infobar for allowing access to geolocation for a given domain.">
       Allow
     </message>

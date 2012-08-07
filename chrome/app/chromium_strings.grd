@@ -437,9 +437,16 @@ Chromium is unable to recover your settings.
       <message name="IDS_CRASH_RECOVERY_CONTENT" desc="Text content telling the user the browser has crashed.">
         Whoa! Chromium has crashed. Relaunch now?
       </message>
-      <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password">
-        Do you want Chromium to save your password?
-      </message>
+      <if expr="not pp_ifdef('android')">
+        <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password">
+          Do you want Chromium to save your password?
+        </message>
+      </if>
+      <if expr="pp_ifdef('android')">
+        <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Mobile: Info bar message to save a password">
+          Do you want Chromium to save your password for this site?
+        </message>
+      </if>
       <message name="IDS_FR_BUBBLE_QUESTION" desc="Main text for the bubble">
         Chromium uses your default search engine, which is currently set to <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>. Do you want to keep your default search engine?
       </message>
