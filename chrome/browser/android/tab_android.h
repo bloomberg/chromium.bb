@@ -40,6 +40,10 @@ class TabAndroid {
     return tab_id_;
   }
 
+  virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
+                                         const string16& host,
+                                         const string16& realm) = 0;
+
   // Called to show the regular context menu that is triggered by a long press.
   virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
 

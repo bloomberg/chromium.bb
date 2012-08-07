@@ -16,7 +16,6 @@ import android.view.KeyEvent;
 import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.content.browser.ContentHttpAuthHandler;
 import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
 
 import java.net.URISyntaxException;
@@ -110,14 +109,6 @@ public class ContentViewClient {
 
     @CalledByNative
     public void onReceivedError(int errorCode, String description, String failingUrl) {
-    }
-
-    @CalledByNative
-    public void onReceivedHttpAuthRequest(ContentHttpAuthHandler authHandler, String host,
-                                          String realm) {
-        // Default behavior: cancel the authorization attempt.  Override this method to
-        // provide credentials, or to allow a user to provide credentials.
-        authHandler.cancel();
     }
 
     @CalledByNative

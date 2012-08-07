@@ -98,22 +98,6 @@ void ContentViewClient::OnReceivedError(int error_code,
       jstring_error_description.obj(), jstring_url.obj());
 }
 
-void ContentViewClient::OnReceivedHttpAuthRequest(
-    jobject auth_handler,
-    const string16& host,
-    const string16& realm) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jstring_host =
-      ConvertUTF16ToJavaString(env, host);
-  ScopedJavaLocalRef<jstring> jstring_realm =
-      ConvertUTF16ToJavaString(env, realm);
-  Java_ContentViewClient_onReceivedHttpAuthRequest(
-      env, weak_java_client_.get(env).obj(),
-      auth_handler,
-      jstring_host.obj(),
-      jstring_realm.obj());
-}
-
 void ContentViewClient::OnDidCommitMainFrame(const GURL& url,
                                              const GURL& base_url) {
   JNIEnv* env = AttachCurrentThread();

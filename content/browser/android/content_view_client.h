@@ -82,9 +82,6 @@ class ContentViewClient : public WebContentsDelegate {
   void OnReceivedError(int error_code,
                        const string16& description,
                        const GURL& url);
-  void OnReceivedHttpAuthRequest(jobject auth_handler,
-                                 const string16& host,
-                                 const string16& realm);
   void OnDidCommitMainFrame(const GURL& url,
                             const GURL& base_url);
   void OnInterstitialShown();
