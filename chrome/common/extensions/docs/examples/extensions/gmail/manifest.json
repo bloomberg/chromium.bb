@@ -4,7 +4,7 @@
     "page": "background.html"
   },
   "browser_action": {
-    "default_title": ""
+    "default_icon": "gmail_not_logged_in.png"
   },
   "default_locale": "en",
   "description": "__MSG_gmailcheck_description__",
@@ -14,9 +14,12 @@
   "name": "__MSG_gmailcheck_name__",
   "options_page": "options.html",
   "permissions": [
-    "alarms", "tabs", "http://*.google.com/", "https://*.google.com/"
+    "alarms",
+    "tabs",
+    "webNavigation",
+    "*://*.google.com/"
    ],
-  "version": "4.0",
-  "minimum_chrome_version": "21",
+  "version": "4.1",
+  "minimum_chrome_version": "22",
   "manifest_version": 2
 }

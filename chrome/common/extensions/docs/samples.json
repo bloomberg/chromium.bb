@@ -309,6 +309,7 @@
     "chrome.socket.create": "socket.html#method-create",
     "chrome.socket.destroy": "socket.html#method-destroy",
     "chrome.socket.disconnect": "socket.html#method-disconnect",
+    "chrome.socket.getInfo": "socket.html#method-getInfo",
     "chrome.socket.read": "socket.html#method-read",
     "chrome.socket.recvFrom": "socket.html#method-recvFrom",
     "chrome.socket.sendTo": "socket.html#method-sendTo",
@@ -1404,21 +1405,23 @@
         "chrome.browserAction.setBadgeBackgroundColor",
         "chrome.browserAction.setBadgeText",
         "chrome.browserAction.setIcon",
-        "chrome.extension.getBackgroundPage",
         "chrome.i18n.getMessage",
+        "chrome.runtime.getBackgroundPage",
+        "chrome.runtime.onInstalled",
         "chrome.tabs.create",
         "chrome.tabs.get",
-        "chrome.tabs.onUpdated",
-        "chrome.tabs.update"
+        "chrome.tabs.update",
+        "chrome.webNavigation.onDOMContentLoaded"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/gmail.crx",
       "description": "Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.",
       "features": [
         "alarms",
         "background_page",
         "browser_action",
         "options_page",
-        "tabs"
+        "tabs",
+        "webNavigation"
       ],
       "icon": "icon_128.png",
       "id": "bb57f7a0132cbeb36ad7e7bb0ab75c21704234ca",
@@ -1426,10 +1429,9 @@
       "packaged_app": false,
       "path": "examples/extensions/gmail/",
       "protocols": [
-        "http://",
-        "https://"
+        "*://"
       ],
-      "search_string": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. ALARMS BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE",
+      "search_string": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. ALARMS BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS WEBNAVIGATION CHROME.ALARMS.CREATE CHROME.ALARMS.ONALARM CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.I18N.GETMESSAGE CHROME.RUNTIME.GETBACKGROUNDPAGE CHROME.RUNTIME.ONINSTALLED CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.UPDATE CHROME.WEBNAVIGATION.ONDOMCONTENTLOADED",
       "source_files": [
         "_locales/ar/messages.json",
         "_locales/bg/messages.json",
@@ -1479,7 +1481,7 @@
         "options.html",
         "options.js"
       ],
-      "source_hash": "c8ac69a20f96d6f09f9f0fe0a069582af92ff219",
+      "source_hash": "cee5e6ea982c9a4718733748f445b128abd57dba",
       "zip_path": "examples/extensions/gmail.zip"
     },
     {
