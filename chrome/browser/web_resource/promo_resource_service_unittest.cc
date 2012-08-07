@@ -77,6 +77,13 @@ class NotificationPromoTest {
     ASSERT_TRUE(dict);
     test_json_.reset(dict);
 
+    promo_type_ =
+#if !defined(OS_ANDROID)
+        NotificationPromo::NTP_NOTIFICATION_PROMO;
+#else
+        NotificationPromo::MOBILE_NTP_SYNC_PROMO;
+#endif
+
     promo_text_ = promo_text;
 
 #if defined(OS_ANDROID)
@@ -104,7 +111,7 @@ class NotificationPromoTest {
   }
 
   void InitPromoFromJson(bool should_receive_notification) {
-    notification_promo_.InitFromJson(*test_json_);
+    notification_promo_.InitFromJson(*test_json_, promo_type_);
     EXPECT_EQ(should_receive_notification,
               notification_promo_.new_notification());
 
@@ -156,7 +163,7 @@ class NotificationPromoTest {
   // notification.
   void TestInitFromPrefs() {
     NotificationPromo prefs_notification_promo(profile_);
-    prefs_notification_promo.InitFromPrefs();
+    prefs_notification_promo.InitFromPrefs(promo_type_);
 
     EXPECT_EQ(notification_promo_.prefs_,
               prefs_notification_promo.prefs_);
@@ -236,44 +243,44 @@ class NotificationPromoTest {
     notification_promo_.views_ = notification_promo_.max_views_ - 2;
     notification_promo_.WritePrefs();
 
+    NotificationPromo::HandleViewed(profile_, promo_type_);
     NotificationPromo new_promo(profile_);
-    new_promo.HandleViewed();
+    new_promo.InitFromPrefs(promo_type_);
+    EXPECT_EQ(new_promo.max_views_ - 1, new_promo.views_);
     EXPECT_TRUE(new_promo.CanShow());
-    new_promo.HandleViewed();
+    NotificationPromo::HandleViewed(profile_, promo_type_);
+    new_promo.InitFromPrefs(promo_type_);
+    EXPECT_EQ(new_promo.max_views_, new_promo.views_);
     EXPECT_FALSE(new_promo.CanShow());
-
-    notification_promo_.InitFromPrefs();
-    EXPECT_FALSE(notification_promo_.CanShow());
 
     // Test out of range views.
     for (int i = max_views_; i < max_views_ * 2; ++i) {
-      notification_promo_.views_ = i;
-      EXPECT_FALSE(notification_promo_.CanShow());
+      new_promo.views_ = i;
+      EXPECT_FALSE(new_promo.CanShow());
     }
 
     // Test in range views.
     for (int i = 0; i < max_views_; ++i) {
-      notification_promo_.views_ = i;
-      EXPECT_TRUE(notification_promo_.CanShow());
+      new_promo.views_ = i;
+      EXPECT_TRUE(new_promo.CanShow());
     }
-    notification_promo_.WritePrefs();
+    new_promo.WritePrefs();
   }
 
   void TestClosed() {
     NotificationPromo new_promo(profile_);
-    new_promo.InitFromPrefs();
+    new_promo.InitFromPrefs(promo_type_);
+    EXPECT_FALSE(new_promo.closed_);
     EXPECT_TRUE(new_promo.CanShow());
-    new_promo.HandleClosed();
-    EXPECT_FALSE(new_promo.CanShow());
-    new_promo.InitFromPrefs();
+
+    NotificationPromo::HandleClosed(profile_, promo_type_);
+    new_promo.InitFromPrefs(promo_type_);
+    EXPECT_TRUE(new_promo.closed_);
     EXPECT_FALSE(new_promo.CanShow());
 
-    notification_promo_.closed_ = true;
-    EXPECT_FALSE(notification_promo_.CanShow());
-
-    notification_promo_.closed_ = false;
-    EXPECT_TRUE(notification_promo_.CanShow());
-    notification_promo_.WritePrefs();
+    new_promo.closed_ = false;
+    EXPECT_TRUE(new_promo.CanShow());
+    new_promo.WritePrefs();
   }
 
   void TestPromoText() {
@@ -378,6 +385,7 @@ class NotificationPromoTest {
   bool received_notification_;
   scoped_ptr<DictionaryValue> test_json_;
 
+  NotificationPromo::PromoType promo_type_;
   std::string promo_text_;
 #if defined(OS_ANDROID)
   std::string promo_text_long_;

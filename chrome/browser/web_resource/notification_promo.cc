@@ -105,6 +105,28 @@ const char* ChannelString() {
   }
 }
 
+struct PromoMapEntry {
+  NotificationPromo::PromoType promo_type;
+  const char* promo_type_str;
+};
+
+const PromoMapEntry kPromoMap[] = {
+    { NotificationPromo::NO_PROMO, "" },
+    { NotificationPromo::NTP_NOTIFICATION_PROMO, "ntp_notification_promo" },
+    { NotificationPromo::BUBBLE_PROMO, "bubble_promo" },
+    { NotificationPromo::MOBILE_NTP_SYNC_PROMO, "mobile_ntp_sync_promo" },
+};
+
+// Convert PromoType to appropriate string.
+const char* PromoTypeToString(NotificationPromo::PromoType promo_type) {
+  for (size_t i = 0; i < arraysize(kPromoMap); ++i) {
+    if (kPromoMap[i].promo_type == promo_type)
+      return kPromoMap[i].promo_type_str;
+  }
+  NOTREACHED();
+  return "";
+}
+
 // TODO(achuith): remove this in m23.
 void ClearDeprecatedPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kNtpPromoLine,
@@ -183,17 +205,13 @@ void ClearDeprecatedPrefs(PrefService* prefs) {
 
 }  // namespace
 
-const char NotificationPromo::kNtpNotificationPromoType[] =
-    "ntp_notification_promo";
-const char NotificationPromo::kBubblePromoType[] = "bubble_promo";
-
 NotificationPromo::NotificationPromo(Profile* profile)
     : profile_(profile),
       prefs_(profile_->GetPrefs()),
-      promo_type_(kNtpNotificationPromoType),
+      promo_type_(NO_PROMO),
 #if defined(OS_ANDROID)
       promo_action_args_(new base::ListValue),
-#endif  // defined(OS_ANDROID)
+#endif
       start_(0.0),
       end_(0.0),
       num_groups_(kDefaultGroupSize),
@@ -213,17 +231,14 @@ NotificationPromo::NotificationPromo(Profile* profile)
 
 NotificationPromo::~NotificationPromo() {}
 
-void NotificationPromo::InitFromJson(const DictionaryValue& json) {
+void NotificationPromo::InitFromJson(const DictionaryValue& json,
+                                     PromoType promo_type) {
+  promo_type_ = promo_type;
   const ListValue* promo_list = NULL;
-#if !defined(OS_ANDROID)
-  if (!json.GetList(promo_type_, &promo_list))
-    return;
-#else
-  if (!json.GetList("mobile_ntp_sync_promo", &promo_list)) {
-    LOG(ERROR) << "Malfromed JSON: not a mobile_ntp_sync_promo";
+  if (!json.GetList(PromoTypeToString(promo_type_), &promo_list)) {
+    LOG(ERROR) << "Malformed JSON: not " << PromoTypeToString(promo_type_);
     return;
   }
-#endif  // !defined(OS_ANDROID)
 
   // No support for multiple promos yet. Only consider the first one.
   const DictionaryValue* promo = NULL;
@@ -343,7 +358,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
 
 void NotificationPromo::CheckForNewNotification() {
   NotificationPromo old_promo(profile_);
-  old_promo.InitFromPrefs();
+  old_promo.InitFromPrefs(promo_type_);
   const double old_start = old_promo.start_;
   const double old_end = old_promo.end_;
   const std::string old_promo_text = old_promo.promo_text_;
@@ -400,18 +415,19 @@ void NotificationPromo::WritePrefs() {
   promo_list->Set(0, ntp_promo);  // Only support 1 promo for now.
 
   base::DictionaryValue promo_dict;
-  promo_dict.Set(promo_type_, promo_list);
+  promo_dict.Set(PromoTypeToString(promo_type_), promo_list);
   prefs_->Set(kPrefPromoObject, promo_dict);
 }
 
-void NotificationPromo::InitFromPrefs() {
+void NotificationPromo::InitFromPrefs(PromoType promo_type) {
+  promo_type_ = promo_type;
   const base::DictionaryValue* promo_dict =
       prefs_->GetDictionary(kPrefPromoObject);
   if (!promo_dict)
     return;
 
   const base::ListValue* promo_list(NULL);
-  promo_dict->GetList(promo_type_, &promo_list);
+  promo_dict->GetList(PromoTypeToString(promo_type_), &promo_list);
   if (!promo_list)
     return;
 
@@ -458,21 +474,25 @@ bool NotificationPromo::CanShow() const {
          IsGPlusRequired();
 }
 
-void NotificationPromo::HandleClosed() {
+// static
+void NotificationPromo::HandleClosed(Profile* profile, PromoType promo_type) {
   content::RecordAction(UserMetricsAction("NTPPromoClosed"));
-  InitFromPrefs();
-  if (!closed_) {
-    closed_ = true;
-    WritePrefs();
+  NotificationPromo promo(profile);
+  promo.InitFromPrefs(promo_type);
+  if (!promo.closed_) {
+    promo.closed_ = true;
+    promo.WritePrefs();
   }
 }
 
-bool NotificationPromo::HandleViewed() {
+// static
+bool NotificationPromo::HandleViewed(Profile* profile, PromoType promo_type) {
   content::RecordAction(UserMetricsAction("NTPPromoShown"));
-  InitFromPrefs();
-  ++views_;
-  WritePrefs();
-  return ExceedsMaxViews();
+  NotificationPromo promo(profile);
+  promo.InitFromPrefs(promo_type);
+  ++promo.views_;
+  promo.WritePrefs();
+  return promo.ExceedsMaxViews();
 }
 
 bool NotificationPromo::ExceedsMaxGroup() const {

@@ -410,7 +410,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 
   // Set the promo string for display if there is a valid outstanding promo.
   NotificationPromo notification_promo(profile_);
-  notification_promo.InitFromPrefs();
+  notification_promo.InitFromPrefs(NotificationPromo::NTP_NOTIFICATION_PROMO);
   if (notification_promo.CanShow())
     load_time_data.SetString("serverpromo", notification_promo.promo_text());
 

@@ -179,7 +179,13 @@ std::string PromoResourceService::GetPromoLocale() {
 
 void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   NotificationPromo notification_promo(profile_);
-  notification_promo.InitFromJson(parsed_json);
+  NotificationPromo::PromoType promo_type =
+#if !defined(OS_ANDROID)
+    NotificationPromo::NTP_NOTIFICATION_PROMO;
+#else
+    NotificationPromo::MOBILE_NTP_SYNC_PROMO;
+#endif
+  notification_promo.InitFromJson(parsed_json, promo_type);
 
   if (notification_promo.new_notification()) {
     ScheduleNotification(notification_promo.StartTimeForGroup(),

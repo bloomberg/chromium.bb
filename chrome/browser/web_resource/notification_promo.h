@@ -27,15 +27,19 @@ class NotificationPromo {
  public:
   static GURL PromoServerURL();
 
-  static const char kNtpNotificationPromoType[];
-  static const char kBubblePromoType[];
+  enum PromoType {
+    NO_PROMO,
+    NTP_NOTIFICATION_PROMO,
+    BUBBLE_PROMO,
+    MOBILE_NTP_SYNC_PROMO,
+  };
 
   explicit NotificationPromo(Profile* profile);
   ~NotificationPromo();
 
   // Initialize from json/prefs.
-  void InitFromJson(const base::DictionaryValue& json);
-  void InitFromPrefs();
+  void InitFromJson(const base::DictionaryValue& json, PromoType promo_type);
+  void InitFromPrefs(PromoType promo_type);
 
   // Can this promo be shown?
   bool CanShow() const;
@@ -46,8 +50,11 @@ class NotificationPromo {
   double EndTime() const;
 
   // Helpers for NewTabPageHandler.
-  void HandleClosed();
-  bool HandleViewed();  // returns true if views exceeds maximum allowed.
+  // Mark the promo as closed when the user dismisses it.
+  static void HandleClosed(Profile* profile, PromoType promo_type);
+  // Mark the promo has having been viewed. This returns true if views
+  // exceeds the maximum allowed.
+  static bool HandleViewed(Profile* profile, PromoType promo_type);
 
   bool new_notification() const { return new_notification_; }
 
@@ -91,7 +98,7 @@ class NotificationPromo {
   Profile* profile_;
   PrefService* prefs_;
 
-  std::string promo_type_;
+  PromoType promo_type_;
   std::string promo_text_;
 #if defined(OS_ANDROID) || defined(OS_IOS)
   std::string promo_text_long_;
