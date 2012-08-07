@@ -306,6 +306,7 @@ int main(int argc, char **argv) {
   int use_old_features = 0;
   if (argc == 1) {
     printf("%s: no input files\n", argv[0]);
+    return 2;
   }
   for (;;) {
     if (!strcmp(argv[initial_index], "--repeat")) {
