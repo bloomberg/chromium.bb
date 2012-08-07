@@ -16,33 +16,33 @@ var kPlaceholderArg = false;
 var tests = [
 // Create a single small item in a single object store, then delete everything.
   [testCreateAndDeleteDatabase,  1,    1,    1],
-// Create a single small item in a single object store, then delete everything.
-  [testCreateAndDeleteDatabase,  100,  1,    1],
-// Create a single small item in a single object store, then delete everything.
-  [testCreateAndDeleteDatabase,  1,    100,  1],
-// Create a single small item in a single object store, then delete everything.
-  [testCreateAndDeleteDatabase,  100,    1,  10000],
+// Create many small items in a single object store, then delete everything.
+  [testCreateAndDeleteDatabase,  1000,  1,    1],
+// Create a single small item in many object stores, then delete everything.
+  [testCreateAndDeleteDatabase,  1,    1000,  1],
+// Create many large items in a single object store, then delete everything.
+  [testCreateAndDeleteDatabase,  1000,    1,  10000],
 // Create a single small item in a single object store.
   [testCreateKeysInStores, 1,     1,    1],
 // Create many small items in a single object store.
-  [testCreateKeysInStores, 100,   1,    1],
+  [testCreateKeysInStores, 1000,   1,    1],
 // Create a single small item in many object stores.
-  [testCreateKeysInStores, 1,     100,  1],
+  [testCreateKeysInStores, 1,     1000,  1],
 // Create many large items in a single object store.
-  [testCreateKeysInStores, 100,   1,    10000],
+  [testCreateKeysInStores, 1000,   1,    10000],
 // Read a few random items in each of many transactions.
-  [testRandomReadsAndWrites, 1000,  5,    0,  50, kDontUseIndex],
+  [testRandomReadsAndWrites, 1000,  5,    0,  100, kDontUseIndex],
 // Read many random items in each of a few transactions.
-  [testRandomReadsAndWrites, 1000,  50,   0,  5,  kDontUseIndex],
+  [testRandomReadsAndWrites, 1000,  500,   0,  5,  kDontUseIndex],
 // Read many random items in each of a few transactions, in a large store.
-  [testRandomReadsAndWrites, 5000,  50,   0,  5,  kDontUseIndex],
+  [testRandomReadsAndWrites, 10000,  500,   0,  5,  kDontUseIndex],
 // Read a few random items from an index, in each of many transactions.
-  [testRandomReadsAndWrites, 1000,  5,    0,  50, kUseIndex],
+  [testRandomReadsAndWrites, 1000,  5,    0,  100, kUseIndex],
 // Read many random items from an index, in each of a few transactions.
-  [testRandomReadsAndWrites, 1000,  50,   0,  5,  kUseIndex],
+  [testRandomReadsAndWrites, 1000,  500,   0,  5,  kUseIndex],
 // Read many random items from an index, in each of a few transactions, in a
 // large store.
-  [testRandomReadsAndWrites, 5000,  50,   0,  5,  kUseIndex],
+  [testRandomReadsAndWrites, 10000,  500,   0,  5,  kUseIndex],
 // Read and write a few random items in each of many transactions.
   [testRandomReadsAndWrites, 1000,  5,    5,  50, kDontUseIndex],
 // Read and write a few random items, reading from an index, in each of many
@@ -70,16 +70,16 @@ var tests = [
   [testSporadicWrites, 5, 0],
 // Make large batches of random writes into a store, triggered by periodic
 // setTimeout calls.
-  [testSporadicWrites, 50, 0],
+  [testSporadicWrites, 500, 0],
 // Make batches of random writes into a store with many indices, triggered by
 // periodic setTimeout calls.
   [testSporadicWrites, 5, 10],
 // Make large batches of random writes into a store with many indices, triggered
 // by periodic setTimeout calls.
-  [testSporadicWrites, 50, 10],
+  [testSporadicWrites, 500, 10],
 // Create and delete an index on a store that already contains data [produces
 // a timing result for each of creation and deletion].
-  [testCreateAndDeleteIndex, 1000]
+  [testCreateAndDeleteIndex, 5000]
 ];
 
 var currentTest = 0;
@@ -272,19 +272,31 @@ function testCreateAndDeleteIndex(numKeys, onTestComplete) {
     alterObjectStores(testName, objectStoreNames, f, onIndexCreated, onError);
   }
 
-  var completionFunc;
+  var indexCreationCompleteTime;
   function onIndexCreated(db) {
     db.close();
-    var indexCreationCompleteTime = Date.now();
+    indexCreationCompleteTime = Date.now();
     automation.addResult("testCreateIndex",
         indexCreationCompleteTime - startTime);
-    completionFunc = getCompletionFunc(db, "testDeleteIndex",
-        indexCreationCompleteTime, onTestComplete);
     var f = function(objectStore) {
       objectStore.deleteIndex("index");
     };
     automation.setStatus("Deleting index.");
-    alterObjectStores(testName, objectStoreNames, f, completionFunc, onError);
+    alterObjectStores(testName, objectStoreNames, f, onIndexDeleted, onError);
+  }
+
+  function onIndexDeleted(db) {
+    var duration = Date.now() - indexCreationCompleteTime;
+    // Ignore the cleanup time for this test.
+    automation.addResult("testDeleteIndex", duration);
+    automation.setStatus("Deleting database.");
+    db.close();
+    deleteDatabase(testName, onDeleted);
+  }
+
+  function onDeleted() {
+    automation.setStatus("Deleted database.");
+    onTestComplete();
   }
 }
 
@@ -297,8 +309,8 @@ function testCursorReadsAndRandomWrites(
   // writes, as we create both object stores with the same configurations.
   // We could do that if needed, but it's simpler not to.
   assert(!useIndexForReads || !writeAlso);
-  var numKeys = 1000;
-  var numReadsPerTransaction = 100;
+  var numKeys = 10000;
+  var numReadsPerTransaction = 1000;
   var testName = getDisplayName(arguments);
   var objectStoreNames = ["input store"];
   var outputStoreName;
