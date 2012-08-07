@@ -31,29 +31,7 @@
 
 #if defined(SECCOMP_BPF_SANDBOX)
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-
-// These are fairly new and not defined in all headers yet.
-#if defined(__x86_64__)
-
-#ifndef __NR_process_vm_readv
-  #define __NR_process_vm_readv 310
-#endif
-
-#ifndef __NR_process_vm_writev
-  #define __NR_process_vm_writev 311
-#endif
-
-#elif defined(__i386__)
-
-#ifndef __NR_process_vm_readv
-  #define __NR_process_vm_readv 347
-#endif
-
-#ifndef __NR_process_vm_writev
-  #define __NR_process_vm_writev 348
-#endif
-
-#endif
+#include "sandbox/linux/services/x86_linux_syscalls.h"
 
 namespace {
 
