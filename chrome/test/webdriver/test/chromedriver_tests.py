@@ -1158,6 +1158,8 @@ class ContentSettingsTest(ChromeDriverTest):
     driver.execute_script('window.open("about:blank")')
     self.assertEquals(2, len(driver.window_handles))
 
+  # Failing on win7: crbug.com/141231.
+  @SkipIf(util.IsWin())
   def testPopupsCanBeResized(self):
     """Regression test for chromedriver issue 126."""
     driver = self.GetNewDriver()
