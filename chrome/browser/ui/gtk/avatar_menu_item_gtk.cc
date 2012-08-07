@@ -236,7 +236,7 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
                                          ui::kGdkBlack);
   if (item_.active) {
     char* markup = g_markup_printf_escaped(
-        "<span weight='bold'>%s</span>", UTF16ToUTF8(item_.sync_state).c_str());
+        "<span weight='bold'>%s</span>", UTF16ToUTF8(elided_name).c_str());
     gtk_label_set_markup(GTK_LABEL(name_label), markup);
   }
 
