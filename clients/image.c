@@ -130,6 +130,12 @@ image_create(struct display *display, const char *filename)
 
 	image->filename = strdup(filename);
 	image->image = load_cairo_surface(filename);
+
+	if (!image->image) {
+		fprintf(stderr, "could not find the image %s!\n", b);
+		return NULL;
+	}
+
 	image->window = window_create(display);
 	image->widget = frame_create(image->window, image);
 	window_set_title(image->window, title);
