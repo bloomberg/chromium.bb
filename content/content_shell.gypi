@@ -643,7 +643,7 @@
                 # Pass the build type to ant. Currently it only assumes
                 # debug mode in java. Release mode will break the current
                 # workflow.
-                # 'shell/content_shell_ant_helper.sh',
+                'shell/content_shell_ant_helper.sh',
                 'ant',
                 '-DPRODUCT_DIR=<(ant_build_out)',
                 '-DAPP_ABI=<(android_app_abi)',
@@ -654,7 +654,7 @@
                 '-DANDROID_TOOLCHAIN=<(android_toolchain)',
                 '-buildfile',
                 'shell/android/java/content_shell_apk.xml',
-                # '<(CONFIGURATION_NAME)',
+                '<(CONFIGURATION_NAME)',
               ],
               'dependencies': [
                 'content_java',
