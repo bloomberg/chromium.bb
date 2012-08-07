@@ -85,7 +85,9 @@ cr.define('options', function() {
     didShowPage: function() {
       chrome.send('requestDefaultProfileIcons');
 
-      if (window.location.pathname == '/manageProfile')
+      // Use the hash to specify the profile index. Note: the actual index
+      // is ignored. Only the current profile may be edited.
+      if (window.location.hash.length > 1)
         ManageProfileOverlay.getInstance().prepareForManageDialog_();
 
       $('manage-profile-name').focus();
@@ -288,7 +290,7 @@ cr.define('options', function() {
          loadTimeData.getStringF('createProfileInstructions');
       ManageProfileOverlay.getInstance().hideErrorBubble_('create');
 
-      OptionsPage.showPageByName('manageProfile', false);
+      OptionsPage.navigateToPage('manageProfile');
     },
 
   };
