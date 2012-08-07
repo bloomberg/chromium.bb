@@ -147,9 +147,9 @@ def StaticDocBuilt(static_file, input_api):
   """
   for subdir in [APPS_DIR, EXTENSIONS_DIR]:
     generated_file = _FindFileInAlternateDir(static_file, subdir, input_api)
-    if not _ChangesMatch(generated_file, static_file):
-      return False
-  return True
+    if _ChangesMatch(generated_file, static_file):
+      return True
+  return False
 
 def _FindFileInAlternateDir(affected_file, alt_dir, input_api):
   """Return an AffectFile for the file in |alt_dir| that corresponds to
