@@ -465,25 +465,31 @@ void WebIntentPickerController::OnSendReturnMessage(
   intents_dispatcher_ = NULL;
 }
 
+void WebIntentPickerController::AddServiceToModel(
+    const webkit_glue::WebIntentServiceData& service) {
+  FaviconService* favicon_service = GetFaviconService(tab_contents_);
+
+  picker_model_->AddInstalledService(
+      service.title,
+      service.service_url,
+      ConvertDisposition(service.disposition));
+
+  pending_async_count_++;
+  FaviconService::Handle handle = favicon_service->GetFaviconForURL(
+      service.service_url,
+      history::FAVICON,
+      &favicon_consumer_,
+      base::Bind(
+          &WebIntentPickerController::OnFaviconDataAvailable,
+          weak_ptr_factory_.GetWeakPtr()));
+  favicon_consumer_.SetClientData(
+      favicon_service, handle, picker_model_->GetInstalledServiceCount() - 1);
+}
+
 void WebIntentPickerController::OnWebIntentServicesAvailable(
     const std::vector<webkit_glue::WebIntentServiceData>& services) {
-  FaviconService* favicon_service = GetFaviconService(tab_contents_);
-  for (size_t i = 0; i < services.size(); ++i) {
-    picker_model_->AddInstalledService(
-        services[i].title,
-        services[i].service_url,
-        ConvertDisposition(services[i].disposition));
-
-    pending_async_count_++;
-    FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-        services[i].service_url,
-        history::FAVICON,
-        &favicon_consumer_,
-        base::Bind(
-            &WebIntentPickerController::OnFaviconDataAvailable,
-            weak_ptr_factory_.GetWeakPtr()));
-    favicon_consumer_.SetClientData(favicon_service, handle, i);
-  }
+  for (size_t i = 0; i < services.size(); ++i)
+    AddServiceToModel(services[i]);
 
   RegistryCallsCompleted();
   AsyncOperationFinished();
@@ -497,23 +503,7 @@ void WebIntentPickerController::WebIntentServicesForExplicitIntent(
     if (services[i].service_url != intents_dispatcher_->GetIntent().service)
       continue;
 
-    picker_model_->AddInstalledService(
-        services[i].title,
-        services[i].service_url,
-        ConvertDisposition(services[i].disposition));
-
-    pending_async_count_++;
-    FaviconService* favicon_service = GetFaviconService(tab_contents_);
-    FaviconService::Handle handle = favicon_service->GetFaviconForURL(
-        services[i].service_url,
-        history::FAVICON,
-        &favicon_consumer_,
-        base::Bind(
-            &WebIntentPickerController::OnFaviconDataAvailable,
-            weak_ptr_factory_.GetWeakPtr()));
-    favicon_consumer_.SetClientData(
-        favicon_service, handle,
-        picker_model_->GetInstalledServiceCount() - 1);
+    AddServiceToModel(services[i]);
 
     if (services[i].disposition ==
         webkit_glue::WebIntentServiceData::DISPOSITION_INLINE)

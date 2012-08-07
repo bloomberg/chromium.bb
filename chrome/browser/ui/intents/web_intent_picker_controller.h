@@ -94,6 +94,9 @@ class WebIntentPickerController
   friend class WebIntentPickerControllerBrowserTest;
   friend class WebIntentPickerControllerIncognitoBrowserTest;
 
+  // Adds a service to the data model.
+  void AddServiceToModel(const webkit_glue::WebIntentServiceData& service);
+
   // Gets a notification when the return message is sent to the source tab,
   // so we can close the picker dialog or service tab.
   void OnSendReturnMessage(webkit_glue::WebIntentReplyType reply_type);
