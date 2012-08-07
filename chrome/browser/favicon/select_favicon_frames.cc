@@ -24,8 +24,29 @@ size_t BiggestCandidate(const std::vector<SkBitmap>& bitmaps) {
   return max_index;
 }
 
+SkBitmap PadWithBorder(SkBitmap contents, int desired_size, int source_size) {
+  SkBitmap bitmap;
+  bitmap.setConfig(
+      SkBitmap::kARGB_8888_Config, desired_size, desired_size);
+  bitmap.allocPixels();
+  bitmap.eraseARGB(0, 0, 0, 0);
+
+  {
+    SkCanvas canvas(bitmap);
+    int shift = (desired_size - source_size) / 2;
+    SkRect dest(SkRect::MakeXYWH(shift, shift, source_size, source_size));
+    canvas.drawBitmapRect(contents, NULL, dest);
+  }
+
+  return bitmap;
+}
+
 SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
-                         int desired_size) {
+                         int desired_size,
+                         ui::ScaleFactor scale_factor) {
+  float scale = GetScaleFactorScale(scale_factor);
+  desired_size = static_cast<int>(desired_size * scale + 0.5f);
+
   // Try to find an exact match.
   for (size_t i = 0; i < bitmaps.size(); ++i) {
     if (bitmaps[i].width() == desired_size &&
@@ -35,37 +56,30 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
   }
 
   // If that failed, the following special rules apply:
-  // 1. Integer multiples are built using nearest neighbor sampling.
-  // TODO(thakis): Implement.
-
-  // 2. 24px images are built from 16px images by adding a transparent border.
-  if (desired_size == 24 || desired_size == 48) {
-    int source_size = desired_size == 24 ? 16 : 32;
+  // 1. 17px-24px images are built from 16px images by adding
+  //    a transparent border.
+  if (desired_size > 16 * scale && desired_size <= 24 * scale) {
+    int source_size = static_cast<int>(16 * scale + 0.5f);
     for (size_t i = 0; i < bitmaps.size(); ++i) {
       if (bitmaps[i].width() == source_size &&
           bitmaps[i].height() == source_size) {
-        SkBitmap bitmap;
-        bitmap.setConfig(
-            SkBitmap::kARGB_8888_Config, desired_size, desired_size);
-        bitmap.allocPixels();
-        bitmap.eraseARGB(0, 0, 0, 0);
-
-        {
-          SkCanvas canvas(bitmap);
-          canvas.drawBitmap(bitmaps[i],
-                            SkIntToScalar(source_size / 4),
-                            SkIntToScalar(source_size / 4));
-        }
-
-        return bitmap;
+        return PadWithBorder(bitmaps[i], desired_size, source_size);
+      }
+    }
+    // Try again, with upsizing the base variant.
+    for (size_t i = 0; i < bitmaps.size(); ++i) {
+      if (bitmaps[i].width() * scale == source_size &&
+          bitmaps[i].height() * scale == source_size) {
+        return PadWithBorder(bitmaps[i], desired_size, source_size);
       }
     }
   }
 
+  // 2. Integer multiples are built using nearest neighbor sampling.
+  // TODO(thakis): Implement.
+
   // 3. Else, use Lancosz scaling:
-  //    a) If available, from the next bigger integer multiple variant.
-  //       TODO(thakis): Implement.
-  //    b) Else, from the next bigger variant.
+  //    b) If available, from the next bigger variant.
   int lancosz_candidate = -1;
   int min_area = INT_MAX;
   for (size_t i = 0; i < bitmaps.size(); ++i) {
@@ -105,10 +119,9 @@ gfx::ImageSkia SelectFaviconFrames(
   }
 
   for (size_t i = 0; i < scale_factors.size(); ++i) {
-    int size = static_cast<int>(
-        desired_size * GetScaleFactorScale(scale_factors[i]) + 0.5f);
     multi_image.AddRepresentation(gfx::ImageSkiaRep(
-          SelectCandidate(bitmaps, size), scale_factors[i]));
+          SelectCandidate(bitmaps, desired_size, scale_factors[i]),
+          scale_factors[i]));
   }
 
   return multi_image;

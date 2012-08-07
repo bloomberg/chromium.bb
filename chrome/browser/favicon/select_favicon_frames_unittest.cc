@@ -158,11 +158,44 @@ TEST(SelectFaviconFramesTest, _24_48) {
   EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 0, 0)));
   EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 3, 4)));
   EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 4, 4)));
+  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 19, 19)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 20, 19)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 23, 23)));
 
   EXPECT_EQ(SK_ColorBLUE, GetColor2x(image));
   EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 0, 0)));
   EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 7, 8)));
   EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 8, 8)));
+  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 39, 39)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 40, 39)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 47, 47)));
+}
+
+TEST(SelectFaviconFramesTest, _48_From_16) {
+  vector<SkBitmap> bitmaps;
+  bitmaps.push_back(MakeBitmap(SK_ColorGREEN, 16, 16));
+
+  gfx::ImageSkia image = SelectFaviconFrames(bitmaps, Scale1x2x(), 24);
+  EXPECT_EQ(2u, image.image_reps().size());
+  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_100P));
+  ASSERT_TRUE(image.HasRepresentation(ui::SCALE_FACTOR_200P));
+  EXPECT_EQ(24, image.width());
+  EXPECT_EQ(24, image.height());
+  EXPECT_EQ(SK_ColorGREEN, GetColor1x(image));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 0, 0)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 3, 4)));
+  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 4, 4)));
+  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 19, 19)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 20, 19)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_100P, 23, 23)));
+
+  EXPECT_EQ(SK_ColorGREEN, GetColor2x(image));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 0, 0)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 7, 8)));
+  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 8, 8)));
+  EXPECT_EQ(255u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 39, 39)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 40, 39)));
+  EXPECT_EQ(0u, SkColorGetA(GetColor(image, ui::SCALE_FACTOR_200P, 47, 47)));
 }
 
 }
