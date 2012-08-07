@@ -25,13 +25,6 @@
 
 namespace ash {
 
-namespace {
-
-// Max alpha of the background.
-const int kBackgroundAlpha = 128;
-
-}
-
 // The contents view of the Widget. This view contains LauncherView and
 // sizes it to the width of the widget minus the size of the status area.
 class Launcher::DelegateView : public views::WidgetDelegate,
@@ -105,7 +98,7 @@ Launcher::Launcher(aura::Window* window_container,
       launcher_view_(NULL),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          background_animator_(this, 0, kBackgroundAlpha)) {
+          background_animator_(this, 0, kLauncherBackgroundAlpha)) {
   model_.reset(new LauncherModel);
   if (Shell::GetInstance()->delegate()) {
     delegate_.reset(

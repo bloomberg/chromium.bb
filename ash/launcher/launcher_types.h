@@ -22,6 +22,9 @@ typedef int LauncherID;
 // added/removed.
 ASH_EXPORT extern const int kLauncherPreferredSize;
 
+// Max alpha of the launcher background.
+ASH_EXPORT extern const int kLauncherBackgroundAlpha;
+
 // Type the LauncherItem represents.
 enum LauncherItemType {
   // Represents a tabbed browser.

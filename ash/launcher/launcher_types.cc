@@ -7,6 +7,7 @@
 namespace ash {
 
 const int kLauncherPreferredSize = 48;
+const int kLauncherBackgroundAlpha = 204;
 
 LauncherItem::LauncherItem()
     : type(TYPE_TABBED),

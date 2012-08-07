@@ -19,9 +19,6 @@ namespace internal {
 
 namespace {
 
-// This should be the same color as the darkest launcher bar.
-const SkColor kLauncherColor = SkColorSetARGB(0x80, 0, 0, 0);
-
 // Max bubble size to screen size ratio.
 const float kMaxBubbleSizeToScreenRatio = 0.5f;
 
@@ -121,7 +118,7 @@ void OverflowBubbleView::InitOverflowBubble(LauncherDelegate* delegate,
   set_anchor_view(anchor);
   set_arrow_location(GetBubbleArrowLocation(shelf_alignment));
   set_background(NULL);
-  set_color(kLauncherColor);
+  set_color(SkColorSetARGB(kLauncherBackgroundAlpha, 0, 0, 0));
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   set_move_with_anchor(true);
   views::BubbleDelegateView::CreateBubble(this);
