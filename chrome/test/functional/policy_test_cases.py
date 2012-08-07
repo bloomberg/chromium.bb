@@ -66,14 +66,11 @@ class PolicyPrefsTestCases(object):
     # TODO(frankf): Enable on all OS after crbug.com/121066 is fixed.
     'RemoteAccessHostFirewallTraversal':
         ('kRemoteAccessHostFirewallTraversal', True, [], []),
-#    'RemoteAccessHostRequireTwoFactor':
-#        ('kRemoteAccessHostRequireTwoFactor', False, [],
-#         ['win', 'mac', 'linux']),
-#    'RemoteAccessHostDomain':
-#        ('kRemoteAccessHostDomain', '', [], ['win', 'mac', 'linux']),
-#    'RemoteAccessHostTalkGadgetPrefix':
-#        ('kRemoteAccessHostTalkGadgetPrefix', 'chromoting-host', [],
-#         ['win', 'mac', 'linux']),
+    'RemoteAccessHostRequireTwoFactor':
+        ('kRemoteAccessHostRequireTwoFactor', False, [], []),
+    'RemoteAccessHostDomain': ('kRemoteAccessHostDomain', '', [], []),
+    'RemoteAccessHostTalkGadgetPrefix':
+        ('kRemoteAccessHostTalkGadgetPrefix', 'chromoting-host', [], []),
     'PrintingEnabled': ('kPrintingEnabled', False, [], OS_ALL),
     # Note: supported_on is empty for this policy.
     'CloudPrintProxyEnabled': ('kCloudPrintProxyEnabled', True, [], []),
