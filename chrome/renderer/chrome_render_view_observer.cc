@@ -698,23 +698,21 @@ void ChromeRenderViewObserver::DidStopLoading() {
         routing_id(), render_view()->GetPageId(), osd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
+}
 
+void ChromeRenderViewObserver::DidFinishLoad(WebKit::WebFrame* frame) {
+  if (frame->parent())
+    return;
+
+  // Please note that we are updating favicons only for the _main_ frame.
+  // Updating Favicon URLs at DidFinishLoad ensures that icon loads always get
+  // initiated after all of the other page resources have been fetched, so icon
+  // loads should not compete with page resources for network bandwidth.
   int icon_types = WebIconURL::TypeFavicon;
   if (chrome::kEnableTouchIcon)
     icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
 
-  WebVector<WebIconURL> icon_urls =
-      render_view()->GetWebView()->mainFrame()->iconURLs(icon_types);
-  std::vector<FaviconURL> urls;
-  for (size_t i = 0; i < icon_urls.size(); i++) {
-    WebURL url = icon_urls[i].iconURL();
-    if (!url.isEmpty())
-      urls.push_back(FaviconURL(url, ToFaviconType(icon_urls[i].iconType())));
-  }
-  if (!urls.empty()) {
-    Send(new IconHostMsg_UpdateFaviconURL(
-        routing_id(), render_view()->GetPageId(), urls));
-  }
+  CollectAndUpdateFaviconURLs(frame, icon_types);
 }
 
 void ChromeRenderViewObserver::DidChangeIcon(WebFrame* frame,
@@ -726,14 +724,7 @@ void ChromeRenderViewObserver::DidChangeIcon(WebFrame* frame,
       icon_type != WebIconURL::TypeFavicon)
     return;
 
-  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
-  std::vector<FaviconURL> urls;
-  for (size_t i = 0; i < icon_urls.size(); i++) {
-    urls.push_back(FaviconURL(icon_urls[i].iconURL(),
-                              ToFaviconType(icon_urls[i].iconType())));
-  }
-  Send(new IconHostMsg_UpdateFaviconURL(
-      routing_id(), render_view()->GetPageId(), urls));
+  CollectAndUpdateFaviconURLs(frame, icon_type);
 }
 
 void ChromeRenderViewObserver::DidCommitProvisionalLoad(
@@ -1096,6 +1087,21 @@ SkBitmap ChromeRenderViewObserver::ImageFromDataUrl(const GURL& url) const {
     return decoder.Decode(src_data, data.size());
   }
   return SkBitmap();
+}
+
+void ChromeRenderViewObserver::CollectAndUpdateFaviconURLs(
+    WebKit::WebFrame* frame, int icon_types) {
+  WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_types);
+  std::vector<FaviconURL> urls;
+  for (size_t i = 0; i < icon_urls.size(); i++) {
+    WebURL url = icon_urls[i].iconURL();
+    if (!url.isEmpty())
+      urls.push_back(FaviconURL(url, ToFaviconType(icon_urls[i].iconType())));
+  }
+  if (!urls.empty()) {
+    Send(new IconHostMsg_UpdateFaviconURL(
+        routing_id(), render_view()->GetPageId(), urls));
+  }
 }
 
 bool ChromeRenderViewObserver::IsStrictSecurityHost(const std::string& host) {
