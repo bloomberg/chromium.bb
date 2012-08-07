@@ -41,6 +41,23 @@ bool ShouldSnapToEdge(int distance_from_edge, int grid_size) {
       distance_from_edge > -grid_size * 2;
 }
 
+// Returns true if Ash has more than one root window.
+bool HasSecondaryRootWindow() {
+  return Shell::GetAllRootWindows().size() > 1;
+}
+
+// When there are two root windows, returns one of the root windows which is not
+// |root_window|. Returns NULL if only one root window exists.
+aura::RootWindow* GetAnotherRootWindow(aura::RootWindow* root_window) {
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  if (root_windows.size() < 2)
+    return NULL;
+  DCHECK_EQ(2U, root_windows.size());
+  if (root_windows[0] == root_window)
+    return root_windows[1];
+  return root_windows[0];
+}
+
 }  // namespace
 
 // static
@@ -69,15 +86,23 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
 void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   std::pair<aura::RootWindow*, gfx::Point> actual_location =
       wm::GetRootWindowRelativeToWindow(window()->parent(), location);
-
-  // TODO(yusukes): Implement dragging a window from one display to another.
   aura::RootWindow* current_root = actual_location.first;
-  if (current_root != window()->GetRootWindow())
-    return;
+  gfx::Point location_in_parent = actual_location.second;
+  aura::Window::ConvertPointToWindow(current_root,
+                                     window()->parent(),
+                                     &location_in_parent);
+
+  // Do not use |location| below this point, use |location_in_parent| instead.
+  // When the pointer is on |window()->GetRootWindow()|, |location| and
+  // |location_in_parent| have the same value and both of them are in
+  // |window()->parent()|'s coordinates, but once the pointer enters the
+  // other root window, you will see an unexpected value on the former. See
+  // comments in wm::GetRootWindowRelativeToWindow() for details.
 
   int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
                   0 : ash::Shell::GetInstance()->GetGridSize();
-  gfx::Rect bounds = CalculateBoundsForDrag(details_, location, grid_size);
+  gfx::Rect bounds =  // in |window()->parent()|'s coordinates.
+      CalculateBoundsForDrag(details_, location_in_parent, grid_size);
 
   if (wm::IsWindowNormal(details_.window))
     AdjustBoundsForMainWindow(&bounds, grid_size);
@@ -86,7 +111,20 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
       RestackWindows();
     did_move_or_resize_ = true;
   }
-  UpdatePhantomWindow(location, bounds, grid_size);
+
+  const bool in_original_root = (window()->GetRootWindow() == current_root);
+  // Hide a phantom window for snapping if the cursor is in another root window.
+  if (in_original_root)
+    UpdateSnapPhantomWindow(location_in_parent, bounds, grid_size);
+  else
+    snap_phantom_window_controller_.reset();
+
+  // Show a phantom window for dragging in another root window.
+  if (HasSecondaryRootWindow())
+    UpdateDragPhantomWindow(bounds);
+  else
+    drag_phantom_window_controller_.reset();
+
   if (!attached_windows_.empty())
     LayoutAttachedWindows(bounds, grid_size);
   if (bounds != details_.window->bounds())
@@ -95,7 +133,8 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
-  phantom_window_controller_.reset();
+  drag_phantom_window_controller_.reset();
+  snap_phantom_window_controller_.reset();
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
@@ -140,7 +179,8 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
-  phantom_window_controller_.reset();
+  drag_phantom_window_controller_.reset();
+  snap_phantom_window_controller_.reset();
 
   if (!did_move_or_resize_)
     return;
@@ -233,9 +273,9 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
 gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
     const gfx::Rect& bounds,
     int grid_size) const {
-  if (phantom_window_controller_.get() &&
-      phantom_window_controller_->IsShowing()) {
-    return phantom_window_controller_->bounds();
+  if (snap_phantom_window_controller_.get() &&
+      snap_phantom_window_controller_->IsShowing()) {
+    return snap_phantom_window_controller_->bounds();
   }
   return AdjustBoundsToGrid(bounds, grid_size);
 }
@@ -312,17 +352,23 @@ void WorkspaceWindowResizer::CalculateAttachedSizes(
 
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds, int grid_size) const {
-  // Always keep kMinOnscreenHeight on the bottom.
+  // Always keep kMinOnscreenHeight on the bottom except when an extended
+  // display is available and a window is being dragged.
   gfx::Rect work_area(
       ScreenAsh::GetDisplayWorkAreaBoundsInParent(details_.window));
   int max_y = AlignToGridRoundUp(work_area.bottom() - kMinOnscreenHeight,
                                  grid_size);
-  if (bounds->y() > max_y)
+  if ((details_.window_component != HTCAPTION || !HasSecondaryRootWindow()) &&
+      bounds->y() > max_y) {
     bounds->set_y(max_y);
+  }
 
-  // Don't allow dragging above the top of the display.
-  if (bounds->y() <= work_area.y())
+  // Don't allow dragging above the top of the display except when an extended
+  // display is available and a window is being dragged.
+  if ((details_.window_component != HTCAPTION || !HasSecondaryRootWindow()) &&
+      bounds->y() <= work_area.y()) {
     bounds->set_y(work_area.y());
+  }
 
   if (grid_size >= 0 && details_.window_component == HTCAPTION)
     SnapToWorkAreaEdges(work_area, bounds, grid_size);
@@ -391,16 +437,43 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
   return 0;
 }
 
-void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location,
-                                                 const gfx::Rect& bounds,
-                                                 int grid_size) {
+void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds) {
+  if (!did_move_or_resize_ || details_.window_component != HTCAPTION ||
+      !ShouldAllowMouseWarp()) {
+    return;
+  }
+
+  // It's available. Show a phantom window on the display if needed.
+  aura::RootWindow* another_root =
+      GetAnotherRootWindow(window()->GetRootWindow());
+  const gfx::Rect root_bounds_in_screen(another_root->GetBoundsInScreen());
+  const gfx::Rect bounds_in_screen =
+      ScreenAsh::ConvertRectToScreen(window()->parent(), bounds);
+  const gfx::Rect phantom(root_bounds_in_screen.Intersect(bounds_in_screen));
+
+  if (!phantom.IsEmpty()) {
+    if (!drag_phantom_window_controller_.get()) {
+      drag_phantom_window_controller_.reset(
+          new PhantomWindowController(window()));
+      drag_phantom_window_controller_->Show(phantom);
+    } else {
+      drag_phantom_window_controller_->SetBounds(phantom);  // no animation
+    }
+  } else {
+    drag_phantom_window_controller_.reset();
+  }
+}
+
+void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
+                                                     const gfx::Rect& bounds,
+                                                     int grid_size) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
   SnapType last_type = snap_type_;
   snap_type_ = GetSnapType(location);
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
-    phantom_window_controller_.reset();
+    snap_phantom_window_controller_.reset();
     snap_sizer_.reset();
     if (snap_type_ == SNAP_NONE)
       return;
@@ -413,11 +486,11 @@ void WorkspaceWindowResizer::UpdatePhantomWindow(const gfx::Point& location,
   } else {
     snap_sizer_->Update(location);
   }
-  if (!phantom_window_controller_.get()) {
-    phantom_window_controller_.reset(
+  if (!snap_phantom_window_controller_.get()) {
+    snap_phantom_window_controller_.reset(
         new PhantomWindowController(details_.window));
   }
-  phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
+  snap_phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
       details_.window->parent(), snap_sizer_->target_bounds()));
 }
 

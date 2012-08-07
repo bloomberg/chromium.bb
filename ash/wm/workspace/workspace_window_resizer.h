@@ -11,6 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace aura {
+class RootWindow;
+}  // namespace aura
+
 namespace ash {
 namespace internal {
 
@@ -105,11 +109,13 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   int PrimaryAxisSize(const gfx::Size& size) const;
   int PrimaryAxisCoordinate(int x, int y) const;
 
-  // Updates the bounds of the phantom window.
-  void UpdatePhantomWindow(
-      const gfx::Point& location,
-      const gfx::Rect& bounds,
-      int grid_size);
+  // Updates the bounds of the phantom window for window snapping.
+  void UpdateSnapPhantomWindow(const gfx::Point& location,
+                               const gfx::Rect& bounds,
+                               int grid_size);
+
+  // Updates the bounds of the phantom window for window dragging.
+  void UpdateDragPhantomWindow(const gfx::Rect& bounds);
 
   // Restacks the windows z-order position so that one of the windows is at the
   // top of the z-order, and the rest directly underneath it.
@@ -157,7 +163,12 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Gives a previews of where the the window will end up. Only used if there
   // is a grid and the caption is being dragged.
-  scoped_ptr<PhantomWindowController> phantom_window_controller_;
+  scoped_ptr<PhantomWindowController> snap_phantom_window_controller_;
+
+  // For now, we show a phantom window on the other root window during dragging.
+  // TODO(yusukes): Show a semi-transparent image (screen shot) of the window
+  // instead.
+  scoped_ptr<PhantomWindowController> drag_phantom_window_controller_;
 
   // Used to determine the target position of a snap.
   scoped_ptr<SnapSizer> snap_sizer_;
