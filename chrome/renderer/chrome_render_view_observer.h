@@ -35,7 +35,7 @@ class PhishingClassifierDelegate;
 }
 
 namespace webkit_glue {
-class ImageResourceFetcher;
+class MultiResolutionImageResourceFetcher;
 }
 
 // This class holds the Chrome specific parts of RenderView, and has the same
@@ -167,8 +167,10 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // This callback is triggered when DownloadFavicon completes, either
   // succesfully or with a failure. See DownloadFavicon for more
   // details.
-  void DidDownloadFavicon(webkit_glue::ImageResourceFetcher* fetcher,
-                          const SkBitmap& image);
+  void DidDownloadFavicon(
+      int requested_size,
+      webkit_glue::MultiResolutionImageResourceFetcher* fetcher,
+      const std::vector<SkBitmap>& images);
 
   // Requests to download a favicon image. When done, the RenderView
   // is notified by way of DidDownloadFavicon. Returns true if the
@@ -218,8 +220,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;
 
-  typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
-      ImageResourceFetcherList;
+  typedef std::vector<
+      linked_ptr<webkit_glue::MultiResolutionImageResourceFetcher> >
+    ImageResourceFetcherList;
 
   // ImageResourceFetchers schedule via DownloadImage.
   ImageResourceFetcherList image_fetchers_;

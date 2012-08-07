@@ -60,7 +60,8 @@ class ContentsObserver : public content::WebContentsObserver {
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
-                            const SkBitmap& bitmap) {
+                            int requested_size,
+                            const std::vector<SkBitmap>& bitmaps) {
     ++downloads_received_;
   }
 

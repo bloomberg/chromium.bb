@@ -51,7 +51,7 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/image_decoder.h"
-#include "webkit/glue/image_resource_fetcher.h"
+#include "webkit/glue/multi_resolution_image_resource_fetcher.h"
 #include "webkit/glue/webkit_glue.h"
 #include "v8/include/v8-testing.h"
 
@@ -71,7 +71,7 @@ using WebKit::WebURLRequest;
 using WebKit::WebView;
 using WebKit::WebVector;
 using extensions::APIPermission;
-using webkit_glue::ImageResourceFetcher;
+using webkit_glue::MultiResolutionImageResourceFetcher;
 
 // Delay in milliseconds that we'll wait before capturing the page contents
 // and thumbnail.
@@ -332,15 +332,17 @@ void ChromeRenderViewObserver::OnDownloadFavicon(int id,
     SkBitmap data_image = ImageFromDataUrl(image_url);
     data_image_failed = data_image.empty();
     if (!data_image_failed) {
+      std::vector<SkBitmap> images(1, data_image);
       Send(new IconHostMsg_DidDownloadFavicon(
-          routing_id(), id, image_url, false, data_image));
+          routing_id(), id, image_url, false, image_size, images));
     }
   }
 
   if (data_image_failed ||
       !DownloadFavicon(id, image_url, image_size)) {
     Send(new IconHostMsg_DidDownloadFavicon(
-        routing_id(), id, image_url, true, SkBitmap()));
+        routing_id(), id, image_url, true, image_size,
+        std::vector<SkBitmap>()));
   }
 }
 
@@ -1048,26 +1050,29 @@ bool ChromeRenderViewObserver::DownloadFavicon(int id,
   if (!render_view()->GetWebView())
     return false;
   // Create an image resource fetcher and assign it with a call back object.
-  image_fetchers_.push_back(linked_ptr<ImageResourceFetcher>(
-      new ImageResourceFetcher(
-          image_url, render_view()->GetWebView()->mainFrame(), id, image_size,
+  image_fetchers_.push_back(linked_ptr<MultiResolutionImageResourceFetcher>(
+      new MultiResolutionImageResourceFetcher(
+          image_url, render_view()->GetWebView()->mainFrame(), id,
           WebURLRequest::TargetIsFavicon,
           base::Bind(&ChromeRenderViewObserver::DidDownloadFavicon,
-                     base::Unretained(this)))));
+                     base::Unretained(this), image_size))));
   return true;
 }
 
 void ChromeRenderViewObserver::DidDownloadFavicon(
-    ImageResourceFetcher* fetcher, const SkBitmap& image) {
+    int requested_size,
+    MultiResolutionImageResourceFetcher* fetcher,
+    const std::vector<SkBitmap>& images) {
   // Notify requester of image download status.
   Send(new IconHostMsg_DidDownloadFavicon(routing_id(),
                                           fetcher->id(),
                                           fetcher->image_url(),
-                                          image.isNull(),
-                                          image));
+                                          images.empty(),
+                                          requested_size,
+                                          images));
 
   // Remove the image fetcher from our pending list. We're in the callback from
-  // ImageResourceFetcher, best to delay deletion.
+  // MultiResolutionImageResourceFetcher, best to delay deletion.
   ImageResourceFetcherList::iterator iter;
   for (iter = image_fetchers_.begin(); iter != image_fetchers_.end(); ++iter) {
     if (iter->get() == fetcher) {

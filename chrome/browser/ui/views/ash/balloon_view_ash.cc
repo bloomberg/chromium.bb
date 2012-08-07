@@ -65,11 +65,12 @@ class BalloonViewAsh::IconFetcher : public content::WebContentsObserver {
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
-                            const SkBitmap& bitmap) {
-    if (image_url != icon_url_ || id != request_id_)
+                            int requested_size,
+                            const std::vector<SkBitmap>& bitmaps) {
+    if (image_url != icon_url_ || id != request_id_ || bitmaps.empty())
       return;
     GetWebNotificationTray()->SetNotificationImage(
-        notification_id_, gfx::ImageSkia(bitmap));
+        notification_id_, gfx::ImageSkia(bitmaps[0]));
   }
 
  private:

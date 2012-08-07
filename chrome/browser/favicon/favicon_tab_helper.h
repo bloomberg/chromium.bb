@@ -94,7 +94,8 @@ class FaviconTabHelper : public content::WebContentsObserver,
   void OnDidDownloadFavicon(int id,
                             const GURL& image_url,
                             bool errored,
-                            const SkBitmap& image);
+                            int requested_size,
+                            const std::vector<SkBitmap>& bitmaps);
 
   Profile* profile_;
 
