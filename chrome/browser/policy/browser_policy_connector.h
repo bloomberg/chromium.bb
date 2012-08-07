@@ -48,9 +48,14 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // policy system running.
   void Init();
 
+  // Creates a UserCloudPolicyManager for the given profile, or returns NULL if
+  // it is not supported on this platform. Ownership is transferred to the
+  // caller.
+  scoped_ptr<UserCloudPolicyManager> CreateCloudPolicyManager(Profile* profile);
+
   // Creates a new policy service for the given profile, or a global one if
   // it is NULL. Ownership is transferred to the caller.
-  PolicyService* CreatePolicyService(Profile* profile);
+  scoped_ptr<PolicyService> CreatePolicyService(Profile* profile);
 
   // Returns a weak pointer to the CloudPolicySubsystem corresponding to the
   // device policy managed by this policy connector, or NULL if no such
@@ -140,6 +145,10 @@ class BrowserPolicyConnector : public content::NotificationObserver {
 
   AppPackUpdater* GetAppPackUpdater();
 
+  DeviceManagementService* device_management_service() {
+    return device_management_service_.get();
+  }
+
   // Sets a |provider| that will be included in PolicyServices returned by
   // CreatePolicyService. This is a static method because local state is
   // created immediately after the connector, and tests don't have a chance to
@@ -147,6 +156,10 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // its ownership is not taken.
   static void SetPolicyProviderForTesting(
       ConfigurationPolicyProvider* provider);
+
+  // Gets the URL of the DM server (either the default or a URL provided via the
+  // command line).
+  static std::string GetDeviceManagementUrl();
 
  private:
   // content::NotificationObserver method overrides:
@@ -190,7 +203,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   scoped_ptr<DeviceManagementService> device_management_service_;
 
   ProxyPolicyProvider user_cloud_policy_provider_;
-  scoped_ptr<UserCloudPolicyManager> user_cloud_policy_manager_;
 
   // Used to initialize the device policy subsystem once the message loops
   // are spinning.

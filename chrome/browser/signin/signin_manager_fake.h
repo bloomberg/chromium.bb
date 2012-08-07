@@ -17,7 +17,7 @@ class ProfileKeyedService;
 // and accepts the credentials provided to StartSignIn.
 class FakeSigninManager : public SigninManager {
  public:
-  FakeSigninManager();
+  explicit FakeSigninManager(Profile* profile);
   virtual ~FakeSigninManager();
 
   virtual void StartSignIn(const std::string& username,

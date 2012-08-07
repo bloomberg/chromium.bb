@@ -60,6 +60,7 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
+#include "chrome/browser/policy/user_policy_signin_service_factory.h"
 #endif
 
 #if defined(USE_AURA)
@@ -233,6 +234,10 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   PinnedTabServiceFactory::GetInstance();
 #endif
   PluginPrefsFactory::GetInstance();
+#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+  // Not used on chromeos because signin happens before the profile is loaded.
+  policy::UserPolicySigninServiceFactory::GetInstance();
+#endif
   predictors::AutocompleteActionPredictorFactory::GetInstance();
   predictors::PredictorDatabaseFactory::GetInstance();
   predictors::ResourcePrefetchPredictorFactory::GetInstance();

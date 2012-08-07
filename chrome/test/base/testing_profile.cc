@@ -34,6 +34,7 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -159,30 +160,7 @@ TestingProfile::TestingProfile()
       last_session_exited_cleanly_(true),
       profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
       delegate_(NULL) {
-  if (!temp_dir_.CreateUniqueTempDir()) {
-    LOG(ERROR) << "Failed to create unique temporary directory.";
-
-    // Fallback logic in case we fail to create unique temporary directory.
-    FilePath system_tmp_dir;
-    bool success = PathService::Get(base::DIR_TEMP, &system_tmp_dir);
-
-    // We're severly screwed if we can't get the system temporary
-    // directory. Die now to avoid writing to the filesystem root
-    // or other bad places.
-    CHECK(success);
-
-    FilePath fallback_dir(system_tmp_dir.AppendASCII("TestingProfilePath"));
-    file_util::Delete(fallback_dir, true);
-    file_util::CreateDirectory(fallback_dir);
-    if (!temp_dir_.Set(fallback_dir)) {
-      // That shouldn't happen, but if it does, try to recover.
-      LOG(ERROR) << "Failed to use a fallback temporary directory.";
-
-      // We're screwed if this fails, see CHECK above.
-      CHECK(temp_dir_.Set(system_tmp_dir));
-    }
-  }
-
+  CreateTempProfileDir();
   profile_path_ = temp_dir_.path();
 
   Init();
@@ -217,6 +195,69 @@ TestingProfile::TestingProfile(const FilePath& path,
                                                 base::Unretained(this)));
   } else {
     FinishInit();
+  }
+}
+
+TestingProfile::TestingProfile(
+    const FilePath& path,
+    Delegate* delegate,
+    scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
+    scoped_ptr<PrefService> prefs,
+    scoped_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager)
+    : start_time_(Time::Now()),
+      prefs_(prefs.release()),
+      testing_prefs_(NULL),
+      incognito_(false),
+      last_session_exited_cleanly_(true),
+      extension_special_storage_policy_(extension_policy),
+      user_cloud_policy_manager_(user_cloud_policy_manager.release()),
+      profile_path_(path),
+      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
+      delegate_(delegate) {
+
+  // If no profile path was supplied, create one.
+  if (profile_path_.empty()) {
+    CreateTempProfileDir();
+    profile_path_ = temp_dir_.path();
+  }
+
+  Init();
+  // If caller supplied a delegate, delay the FinishInit invocation until other
+  // tasks have run.
+  // TODO(atwilson): See if this is still required once we convert the current
+  // users of the constructor that takes a Delegate* param.
+  if (delegate_) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(&TestingProfile::FinishInit,
+                                                base::Unretained(this)));
+  } else {
+    FinishInit();
+  }
+}
+
+void TestingProfile::CreateTempProfileDir() {
+  if (!temp_dir_.CreateUniqueTempDir()) {
+    LOG(ERROR) << "Failed to create unique temporary directory.";
+
+    // Fallback logic in case we fail to create unique temporary directory.
+    FilePath system_tmp_dir;
+    bool success = PathService::Get(base::DIR_TEMP, &system_tmp_dir);
+
+    // We're severly screwed if we can't get the system temporary
+    // directory. Die now to avoid writing to the filesystem root
+    // or other bad places.
+    CHECK(success);
+
+    FilePath fallback_dir(system_tmp_dir.AppendASCII("TestingProfilePath"));
+    file_util::Delete(fallback_dir, true);
+    file_util::CreateDirectory(fallback_dir);
+    if (!temp_dir_.Set(fallback_dir)) {
+      // That shouldn't happen, but if it does, try to recover.
+      LOG(ERROR) << "Failed to use a fallback temporary directory.";
+
+      // We're screwed if this fails, see CHECK above.
+      CHECK(temp_dir_.Set(system_tmp_dir));
+    }
   }
 }
 
@@ -494,6 +535,10 @@ net::CookieMonster* TestingProfile::GetCookieMonster() {
       GetCookieMonster();
 }
 
+policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
+  return user_cloud_policy_manager_.get();
+}
+
 policy::PolicyService* TestingProfile::GetPolicyService() {
   if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -732,3 +777,46 @@ base::Callback<ChromeURLDataManagerBackend*(void)>
     TestingProfile::GetChromeURLDataManagerBackendGetter() const {
   return base::Callback<ChromeURLDataManagerBackend*(void)>();
 }
+
+TestingProfile::Builder::Builder()
+    : build_called_(false),
+      delegate_(NULL) {
+}
+
+TestingProfile::Builder::~Builder() {
+}
+
+void TestingProfile::Builder::SetPath(const FilePath& path) {
+  path_ = path;
+}
+
+void TestingProfile::Builder::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+}
+
+void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
+    scoped_refptr<ExtensionSpecialStoragePolicy> policy) {
+  extension_policy_ = policy;
+}
+
+void TestingProfile::Builder::SetPrefService(scoped_ptr<PrefService> prefs) {
+  pref_service_ = prefs.Pass();
+}
+
+void TestingProfile::Builder::SetUserCloudPolicyManager(
+    scoped_ptr<policy::UserCloudPolicyManager> manager) {
+  user_cloud_policy_manager_ = manager.Pass();
+}
+
+scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
+  DCHECK(!build_called_);
+  build_called_ = true;
+  return scoped_ptr<TestingProfile>(new TestingProfile(
+      path_,
+      delegate_,
+      extension_policy_,
+      pref_service_.Pass(),
+      user_cloud_policy_manager_.Pass()));
+}
+
+

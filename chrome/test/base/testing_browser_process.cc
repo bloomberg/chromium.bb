@@ -16,8 +16,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/clipboard/clipboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #if !defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/policy_service_stub.h"
@@ -73,8 +73,10 @@ chrome_variations::VariationsService*
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (!browser_policy_connector_.get())
+  if (!browser_policy_connector_.get()) {
     browser_policy_connector_.reset(new policy::BrowserPolicyConnector());
+    browser_policy_connector_->Init();
+  }
 #endif
   return browser_policy_connector_.get();
 }
@@ -82,8 +84,7 @@ policy::BrowserPolicyConnector*
 policy::PolicyService* TestingBrowserProcess::policy_service() {
   if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-    policy_service_.reset(
-        browser_policy_connector()->CreatePolicyService(NULL));
+    policy_service_ = browser_policy_connector()->CreatePolicyService(NULL);
 #else
     policy_service_.reset(new policy::PolicyServiceStub());
 #endif
@@ -249,8 +250,19 @@ CRLSetFetcher* TestingBrowserProcess::crl_set_fetcher() {
 }
 
 void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
-  if (!local_state && notification_ui_manager_.get())
-    notification_ui_manager_.reset();  // Used local_state_.
+  if (!local_state) {
+    // The local_state_ PrefService is owned outside of TestingBrowserProcess,
+    // but some of the members of TestingBrowserProcess hold references to it
+    // (for example, via PrefNotifier members). But given our test
+    // infrastructure which tears down individual tests before freeing the
+    // TestingBrowserProcess, there's not a good way to make local_state outlive
+    // these dependencies. As a workaround, whenever local_state_ is cleared
+    // (assumedly as part of exiting the test and freeing TestingBrowserProcess)
+    // any components owned by TestingBrowserProcess that depend on local_state
+    // are also freed.
+    notification_ui_manager_.reset();
+    browser_policy_connector_.reset();
+  }
   local_state_ = local_state;
 }
 

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/policy/cloud_policy_provider.h"
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace policy {
 
@@ -83,6 +85,14 @@ void CloudPolicyProvider::Merge() {
   if (!initialization_complete_) {
     initialization_complete_ = true;
     for (size_t i = 0; i < CACHE_SIZE; ++i) {
+#if defined(OS_CHROMEOS)
+      // Ignore the device policy cache if device policy is not enabled.
+      if (i == CACHE_DEVICE &&
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kEnableDevicePolicy)) {
+        continue;
+      }
+#endif
       if (caches_[i] == NULL || !caches_[i]->IsReady()) {
         initialization_complete_ = false;
         break;

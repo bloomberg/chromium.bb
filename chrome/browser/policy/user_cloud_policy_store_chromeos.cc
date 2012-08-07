@@ -9,14 +9,19 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
 #include "chrome/common/net/gaia/gaia_auth_util.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -24,10 +29,15 @@ namespace em = enterprise_management;
 
 namespace policy {
 
-// Decodes a CloudPolicySettings object into a policy map. The implementation is
-// generated code in policy/cloud_policy_generated.cc.
-void DecodePolicy(const em::CloudPolicySettings& policy,
-                  PolicyMap* policies);
+namespace {
+// Subdirectory in the user's profile for storing user policies.
+const FilePath::CharType kPolicyDir[] = FILE_PATH_LITERAL("Device Management");
+// File in the above directory for stroing user policy dmtokens.
+const FilePath::CharType kTokenCacheFile[] = FILE_PATH_LITERAL("Token");
+// File in the above directory for storing user policy data.
+const FilePath::CharType kPolicyCacheFile[] = FILE_PATH_LITERAL("Policy");
+}  // namespace
+
 
 // Helper class for loading legacy policy caches.
 class LegacyPolicyCacheLoader : public UserPolicyTokenCache::Delegate,
@@ -158,10 +168,10 @@ void UserCloudPolicyStoreChromeOS::Store(
     const em::PolicyFetchResponse& policy) {
   // Cancel all pending requests.
   weak_factory_.InvalidateWeakPtrs();
-  Validate(scoped_ptr<em::PolicyFetchResponse>(
-               new em::PolicyFetchResponse(policy)),
-           base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated,
-                      weak_factory_.GetWeakPtr()));
+  Validate(
+      scoped_ptr<em::PolicyFetchResponse>(new em::PolicyFetchResponse(policy)),
+      base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStoreChromeOS::Load() {
@@ -262,33 +272,22 @@ void UserCloudPolicyStoreChromeOS::OnPolicyStored(bool success) {
   }
 }
 
-void UserCloudPolicyStoreChromeOS::InstallPolicy(
-    scoped_ptr<em::PolicyData> policy_data,
-    scoped_ptr<em::CloudPolicySettings> payload) {
-  // Decode the payload.
-  policy_map_.Clear();
-  DecodePolicy(*payload, &policy_map_);
-  policy_ = policy_data.Pass();
-}
-
 void UserCloudPolicyStoreChromeOS::Validate(
     scoped_ptr<em::PolicyFetchResponse> policy,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   // Configure the validator.
-  UserCloudPolicyValidator* validator =
-      UserCloudPolicyValidator::Create(policy.Pass(), callback);
+  scoped_ptr<UserCloudPolicyValidator> validator =
+      CreateValidator(policy.Pass(), callback);
   validator->ValidateUsername(
       chromeos::UserManager::Get()->GetLoggedInUser().email());
-  validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
-  validator->ValidateAgainstCurrentPolicy(policy_.get());
-  validator->ValidatePayload();
 
   // TODO(mnissler): Do a signature check here as well. The key is stored by
   // session_manager in the root-owned cryptohome area, which is currently
   // inaccessible to Chrome though.
 
-  // Start validation.
-  validator->StartValidation();
+  // Start validation. The Validator will free itself once validation is
+  // complete.
+  validator.release()->StartValidation();
 }
 
 void UserCloudPolicyStoreChromeOS::OnLegacyLoadFinished(
@@ -350,6 +349,24 @@ void UserCloudPolicyStoreChromeOS::InstallLegacyTokens(
 void UserCloudPolicyStoreChromeOS::RemoveLegacyCacheDir(const FilePath& dir) {
   if (file_util::PathExists(dir) && !file_util::Delete(dir, true))
     LOG(ERROR) << "Failed to remove cache dir " << dir.value();
+}
+
+// static
+scoped_ptr<CloudPolicyStore> CloudPolicyStore::CreateUserPolicyStore(
+    Profile* profile) {
+  FilePath profile_dir;
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const FilePath policy_dir =
+      profile_dir
+          .Append(command_line->GetSwitchValuePath(switches::kLoginProfile))
+          .Append(kPolicyDir);
+  const FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
+  const FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
+
+  return scoped_ptr<CloudPolicyStore>(new UserCloudPolicyStoreChromeOS(
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+      token_cache_file, policy_cache_file));
 }
 
 }  // namespace policy
