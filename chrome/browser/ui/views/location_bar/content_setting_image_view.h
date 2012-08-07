@@ -17,17 +17,20 @@
 class ContentSettingImageModel;
 class ContentSettingBubbleContents;
 class LocationBarView;
+class TabContents;
 
 namespace content {
 class WebContents;
 }
 
 namespace views {
+class GestureEvent;
 class MouseEvent;
 }
 
 namespace ui {
 class SlideAnimation;
+enum GestureStatus;
 }
 
 class ContentSettingsDelegateView;
@@ -43,10 +46,12 @@ class ContentSettingImageView : public views::ImageView,
 
   // |new_navigation| true if this is a new navigation, false if the tab was
   // just switched to.
-  void UpdateFromWebContents(content::WebContents* web_contents);
+  virtual void Update(TabContents* tab_contents);
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
@@ -58,6 +63,15 @@ class ContentSettingImageView : public views::ImageView,
 
   // TouchableLocationBarView.
   virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
+
+ protected:
+  // Provide styling colors for button look.
+  virtual SkColor ButtonBorderColor() const;
+  virtual SkColor GradientTopColor() const;
+  virtual SkColor GradientBottomColor() const;
+
+  // Invoked when the user clicks on the control.
+  virtual void OnClick();
 
  private:
   // views::ImageView overrides:

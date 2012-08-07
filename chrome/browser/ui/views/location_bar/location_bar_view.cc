@@ -1087,8 +1087,7 @@ void LocationBarView::LayoutView(views::View* view,
 void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->UpdateFromWebContents(model_->input_in_progress() ? NULL :
-                                GetWebContentsFromDelegate(delegate_));
+    (*i)->Update(model_->input_in_progress() ? NULL : GetTabContents());
   }
 }
 
