@@ -13,7 +13,6 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 class PrefService;
-class Profile;
 
 namespace policy {
 
@@ -34,31 +33,22 @@ class UserCloudPolicyManager : public ConfigurationPolicyProvider,
                          bool wait_for_policy_fetch);
   virtual ~UserCloudPolicyManager();
 
-  // Creates a UserCloudPolicyService instance associated with the passed
-  // |profile|.
-  static scoped_ptr<UserCloudPolicyManager> Create(Profile* profile,
-                                                   bool wait_for_policy_fetch);
+#if defined(OS_CHROMEOS)
+  // Creates a UserCloudPolicyService instance for the Chrome OS platform.
+  static scoped_ptr<UserCloudPolicyManager> Create(bool wait_for_policy_fetch);
+#endif
 
-  // Initializes the cloud connection. |local_prefs| and |service| must stay
-  // valid until Shutdown() gets called. Virtual for mocking.
-  virtual void Initialize(PrefService* local_prefs,
-                          DeviceManagementService* service,
-                          UserAffiliation user_affiliation);
-
-  // Virtual for mocks.
-  virtual void Shutdown();
+  // Initializes the cloud connection. |prefs| and |service| must stay valid
+  // until Shutdown() gets called.
+  void Initialize(PrefService* prefs,
+                  DeviceManagementService* service,
+                  UserAffiliation user_affiliation);
+  void Shutdown();
 
   // Cancels waiting for the policy fetch and flags the
   // ConfigurationPolicyProvider ready (assuming all other initialization tasks
   // have completed).
   void CancelWaitForPolicyFetch();
-
-  // Returns true if the underlying CloudPolicyClient is already registered.
-  // Virtual for mocking.
-  virtual bool IsClientRegistered() const;
-
-  // Register the CloudPolicyClient using the passed OAuth token.
-  void RegisterClient(const std::string& access_token);
 
   CloudPolicyService* cloud_policy_service() { return service_.get(); }
 

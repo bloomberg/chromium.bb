@@ -441,7 +441,8 @@ policy::BrowserPolicyConnector* BrowserProcessImpl::browser_policy_connector() {
 policy::PolicyService* BrowserProcessImpl::policy_service() {
   if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-    policy_service_ = browser_policy_connector()->CreatePolicyService(NULL);
+    policy_service_.reset(
+        browser_policy_connector()->CreatePolicyService(NULL));
 #else
     policy_service_.reset(new policy::PolicyServiceStub());
 #endif

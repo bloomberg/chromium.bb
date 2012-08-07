@@ -203,6 +203,7 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
     connector_ = browser_process_->browser_policy_connector();
+    connector_->Init();
 
     RunAllPending();
   }

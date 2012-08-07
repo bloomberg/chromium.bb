@@ -12,8 +12,6 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
-class Profile;
-
 namespace policy {
 
 // Defines the low-level interface used by the cloud policy code to:
@@ -92,12 +90,6 @@ class CloudPolicyStore {
 
   // Removes the specified observer.
   void RemoveObserver(Observer* observer);
-
-  // Factory method to create a CloudPolicyStore appropriate for the current
-  // platform, for storing user policy for the user associated with the passed
-  // |profile|. Implementation is defined in the individual platform store
-  // files.
-  static scoped_ptr<CloudPolicyStore> CreateUserPolicyStore(Profile* profile);
 
  protected:
   // Invokes the corresponding callback on all registered observers.

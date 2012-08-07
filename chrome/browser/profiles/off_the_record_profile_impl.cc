@@ -241,11 +241,6 @@ FaviconService* OffTheRecordProfileImpl::GetFaviconService(
   return NULL;
 }
 
-policy::UserCloudPolicyManager*
-    OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
-  return profile_->GetUserCloudPolicyManager();
-}
-
 policy::PolicyService* OffTheRecordProfileImpl::GetPolicyService() {
   return profile_->GetPolicyService();
 }

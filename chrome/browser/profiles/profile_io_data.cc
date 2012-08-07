@@ -360,7 +360,6 @@ ProfileIOData::GetIsolatedAppRequestContext(
 }
 
 ExtensionInfoMap* ProfileIOData::GetExtensionInfoMap() const {
-  DCHECK(extension_info_map_) << "ExtensionSystem not initialized";
   return extension_info_map_;
 }
 

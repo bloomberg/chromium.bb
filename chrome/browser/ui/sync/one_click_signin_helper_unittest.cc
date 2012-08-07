@@ -35,8 +35,7 @@ namespace {
 
 class SigninManagerMock : public FakeSigninManager {
  public:
-  explicit SigninManagerMock(Profile* profile)
-      : FakeSigninManager(profile) {}
+  SigninManagerMock() {}
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };
 
@@ -79,7 +78,7 @@ void OneClickSigninHelperTest::SetUp() {
 }
 
 static ProfileKeyedService* BuildSigninManagerMock(Profile* profile) {
-  return new SigninManagerMock(profile);
+  return new SigninManagerMock();
 }
 
 content::WebContents* OneClickSigninHelperTest::CreateMockWebContents(

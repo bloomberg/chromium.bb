@@ -341,12 +341,12 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
 
 class SigninManagerMock : public FakeSigninManager {
  public:
-  explicit SigninManagerMock(Profile* profile) : FakeSigninManager(profile) {}
+  SigninManagerMock() {}
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };
 
 static ProfileKeyedService* BuildSigninManagerMock(Profile* profile) {
-  return new SigninManagerMock(profile);
+  return new SigninManagerMock();
 }
 
 // The boolean parameter indicates whether the test is run with ClientOAuth
@@ -367,6 +367,7 @@ class SyncSetupHandlerTest : public testing::TestWithParam<bool> {
 
     error_ = GoogleServiceAuthError::None();
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
+    SyncPromoUI::RegisterUserPrefs(profile_->GetPrefs());
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),

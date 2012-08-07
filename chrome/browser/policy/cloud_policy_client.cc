@@ -31,10 +31,9 @@ CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
       submit_machine_id_(false),
       public_key_version_(-1),
       public_key_version_valid_(false),
-      service_(service),                  // Can be NULL for unit tests.
-      status_provider_(status_provider),  // Can be NULL for unit tests.
-      status_(DM_STATUS_SUCCESS) {
-}
+      service_(service),
+      status_provider_(status_provider),
+      status_(DM_STATUS_SUCCESS) {}
 
 CloudPolicyClient::~CloudPolicyClient() {}
 
@@ -53,7 +52,6 @@ void CloudPolicyClient::SetupRegistration(const std::string& dm_token,
 }
 
 void CloudPolicyClient::Register(const std::string& auth_token) {
-  DCHECK(service_);
   DCHECK(!auth_token.empty());
   DCHECK(!is_registered());
 
@@ -122,7 +120,6 @@ void CloudPolicyClient::FetchPolicy() {
 }
 
 void CloudPolicyClient::Unregister() {
-  DCHECK(service_);
   request_job_.reset(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION));
   request_job_->SetDMToken(dm_token_);

@@ -65,8 +65,8 @@ class FileSystemContext;
 }
 
 namespace history {
-class ShortcutsBackend;
 class TopSites;
+class ShortcutsBackend;
 }
 
 namespace net {
@@ -75,7 +75,6 @@ class SSLConfigService;
 
 namespace policy {
 class PolicyService;
-class UserCloudPolicyManager;
 }
 
 class Profile : public content::BrowserContext {
@@ -249,10 +248,6 @@ class Profile : public content::BrowserContext {
   // Similar to GetHistoryService(), but won't create the history service if it
   // doesn't already exist.
   virtual HistoryService* GetHistoryServiceWithoutCreating() = 0;
-
-  // Returns the UserCloudPolicyManager (if any) that handles this profile's
-  // connection to the cloud-based management service.
-  virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() = 0;
 
   // Returns the PolicyService that provides policies for this profile.
   virtual policy::PolicyService* GetPolicyService() = 0;
