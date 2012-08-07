@@ -5,17 +5,15 @@
 #include "chrome/renderer/extensions/set_icon_natives.h"
 
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/extensions/extension_request_sender.h"
+#include "chrome/renderer/extensions/request_sender.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace extensions {
 
-SetIconNatives::SetIconNatives(
-    ExtensionDispatcher* extension_dispatcher,
-    ExtensionRequestSender* request_sender)
-    : ChromeV8Extension(extension_dispatcher),
-      request_sender_(request_sender) {
+SetIconNatives::SetIconNatives(Dispatcher* dispatcher,
+                               RequestSender* request_sender)
+    : ChromeV8Extension(dispatcher), request_sender_(request_sender) {
   RouteFunction("SetIconCommon",
                 base::Bind(&SetIconNatives::SetIconCommon,
                            base::Unretained(this)));

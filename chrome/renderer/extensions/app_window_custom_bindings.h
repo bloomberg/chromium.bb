@@ -7,14 +7,13 @@
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
-class ExtensionDispatcher;
-
 namespace extensions {
+class Dispatcher;
 
 // Implements custom bindings for the app.window API.
 class AppWindowCustomBindings : public ChromeV8Extension {
  public:
-  explicit AppWindowCustomBindings(ExtensionDispatcher* extension_dispatcher);
+  explicit AppWindowCustomBindings(Dispatcher* dispatcher);
 
  private:
   static v8::Handle<v8::Value> GetView(const v8::Arguments& args);

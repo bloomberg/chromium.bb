@@ -10,6 +10,8 @@
 
 using content::RenderThread;
 
+namespace extensions {
+
 ChromeV8ExtensionHandler::ChromeV8ExtensionHandler(ChromeV8Context* context)
     : context_(context), routing_id_(MSG_ROUTING_NONE) {
 }
@@ -31,3 +33,5 @@ int ChromeV8ExtensionHandler::GetRoutingID() {
 void ChromeV8ExtensionHandler::Send(IPC::Message* message) {
   RenderThread::Get()->Send(message);
 }
+
+}  // namespace extensions

@@ -7,14 +7,13 @@
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
-class ExtensionDispatcher;
-
 namespace extensions {
+class Dispatcher;
 
 // Implements custom bindings for the pageActions API.
 class PageActionsCustomBindings : public ChromeV8Extension {
  public:
-  explicit PageActionsCustomBindings(ExtensionDispatcher* extension_dispatcher);
+  explicit PageActionsCustomBindings(Dispatcher* extension_dispatcher);
 
  private:
   static v8::Handle<v8::Value> GetCurrentPageActions(const v8::Arguments& args);

@@ -8,7 +8,6 @@
 
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"

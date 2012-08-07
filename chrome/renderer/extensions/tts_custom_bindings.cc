@@ -7,7 +7,6 @@
 #include <string>
 
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 

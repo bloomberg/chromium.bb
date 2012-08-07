@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_resource_request_policy.h"
+#include "chrome/renderer/extensions/resource_request_policy.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -17,10 +17,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-using extensions::Extension;
+namespace extensions {
 
 // static
-bool ExtensionResourceRequestPolicy::CanRequestResource(
+bool ResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,
     WebKit::WebFrame* frame,
     const ExtensionSet* loaded_extensions) {
@@ -84,7 +84,7 @@ bool ExtensionResourceRequestPolicy::CanRequestResource(
 }
 
 // static
-bool ExtensionResourceRequestPolicy::CanRequestExtensionResourceScheme(
+bool ResourceRequestPolicy::CanRequestExtensionResourceScheme(
     const GURL& resource_url,
     WebKit::WebFrame* frame) {
   CHECK(resource_url.SchemeIs(chrome::kExtensionResourceScheme));
@@ -105,5 +105,7 @@ bool ExtensionResourceRequestPolicy::CanRequestExtensionResourceScheme(
   return true;
 }
 
-ExtensionResourceRequestPolicy::ExtensionResourceRequestPolicy() {
+ResourceRequestPolicy::ResourceRequestPolicy() {
 }
+
+}  // namespace extensions

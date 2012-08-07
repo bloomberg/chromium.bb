@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_EXTENSIONS_API_DEFINITIONS_NATIVES_H_
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 
 #include "v8/include/v8.h"
 
@@ -15,7 +15,7 @@ namespace extensions {
 // Native functions for JS to get access to the schemas for extension APIs.
 class ApiDefinitionsNatives : public ChromeV8Extension {
  public:
-  explicit ApiDefinitionsNatives(ExtensionDispatcher* extension_dispatcher);
+  explicit ApiDefinitionsNatives(Dispatcher* dispatcher);
 
  private:
   // Returns the list of schemas that are available to the calling context

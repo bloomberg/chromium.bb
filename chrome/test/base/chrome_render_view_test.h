@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,13 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "content/public/test/render_view_test.h"
 
-class ExtensionDispatcher;
-
 namespace autofill {
 class AutofillAgent;
 class PasswordAutofillManager;
+}
+
+namespace extensions {
+class Dispatcher;
 }
 
 class ChromeRenderViewTest : public content::RenderViewTest {
@@ -30,7 +32,7 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   virtual void TearDown() OVERRIDE;
 
   chrome::ChromeContentRendererClient chrome_content_renderer_client_;
-  ExtensionDispatcher* extension_dispatcher_;
+  extensions::Dispatcher* extension_dispatcher_;
 
   autofill::PasswordAutofillManager* password_autofill_;
   autofill::AutofillAgent* autofill_agent_;

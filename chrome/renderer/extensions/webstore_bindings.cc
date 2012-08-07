@@ -23,6 +23,8 @@ using WebKit::WebFrame;
 using WebKit::WebNode;
 using WebKit::WebNodeList;
 
+namespace extensions {
+
 namespace {
 
 const char kWebstoreLinkRelation[] = "chrome-webstore-item";
@@ -49,8 +51,8 @@ int g_next_install_id = 0;
 
 } // anonymous namespace
 
-WebstoreBindings::WebstoreBindings(ExtensionDispatcher* dispatcher,
-    ChromeV8Context* context)
+WebstoreBindings::WebstoreBindings(Dispatcher* dispatcher,
+                                   ChromeV8Context* context)
     : ChromeV8Extension(dispatcher),
       ChromeV8ExtensionHandler(context) {
   RouteFunction("Install",
@@ -216,3 +218,5 @@ void WebstoreBindings::OnInlineWebstoreInstallResponse(
   CHECK(context_->CallChromeHiddenMethod("webstore.onInstallResponse",
                                          arraysize(argv), argv, NULL));
 }
+
+}  // namespace extensions

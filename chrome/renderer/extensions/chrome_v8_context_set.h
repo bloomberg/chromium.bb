@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "v8/include/v8.h"
 
-class ChromeV8Context;
 class GURL;
 
 namespace base {
@@ -25,6 +24,9 @@ class RenderView;
 namespace v8 {
 class Context;
 }
+
+namespace extensions {
+class ChromeV8Context;
 
 // A container of ExtensionBindingsContext. Since calling JavaScript within a
 // context can cause any number of contexts to be created or destroyed, this
@@ -72,5 +74,7 @@ class ChromeV8ContextSet {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8ContextSet);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_SET_H_

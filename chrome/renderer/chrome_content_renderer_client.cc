@@ -36,10 +36,10 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/extensions/extension_resource_request_policy.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
+#include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
@@ -154,7 +154,7 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 
 void ChromeContentRendererClient::RenderThreadStarted() {
   chrome_observer_.reset(new ChromeRenderProcessObserver(this));
-  extension_dispatcher_.reset(new ExtensionDispatcher());
+  extension_dispatcher_.reset(new extensions::Dispatcher());
   net_predictor_.reset(new RendererNetPredictor());
   spellcheck_.reset(new SpellCheck());
   visited_link_slave_.reset(new VisitedLinkSlave());
@@ -257,7 +257,7 @@ void ChromeContentRendererClient::RenderViewCreated(
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());
   }
-  new ExtensionHelper(render_view, extension_dispatcher_.get());
+  new extensions::ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
   new PrintWebViewHelper(render_view);
@@ -321,7 +321,8 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   std::string orig_mime_type = params.mimeType.utf8();
 
   if (orig_mime_type == content::kBrowserPluginMimeType &&
-      ExtensionHelper::Get(render_view)->view_type() == VIEW_TYPE_APP_SHELL)
+      extensions::ExtensionHelper::Get(render_view)->view_type() ==
+          VIEW_TYPE_APP_SHELL)
       return false;
 
   render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
@@ -713,7 +714,7 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 }
 
 bool ChromeContentRendererClient::AllowPopup(const GURL& creator) {
-  ChromeV8Context* current_context =
+  extensions::ChromeV8Context* current_context =
       extension_dispatcher_->v8_context_set().GetCurrent();
   return current_context && current_context->extension();
 }
@@ -780,7 +781,7 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
   // Check whether the request should be allowed. If not allowed, we reset the
   // URL to something invalid to prevent the request and cause an error.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
-      !ExtensionResourceRequestPolicy::CanRequestResource(
+      !extensions::ResourceRequestPolicy::CanRequestResource(
           url,
           frame,
           extension_dispatcher_->extensions())) {
@@ -790,7 +791,7 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
   }
 
   if (url.SchemeIs(chrome::kExtensionResourceScheme) &&
-      !ExtensionResourceRequestPolicy::CanRequestExtensionResourceScheme(
+      !extensions::ResourceRequestPolicy::CanRequestExtensionResourceScheme(
           url,
           frame)) {
     *new_url = GURL("chrome-extension-resource://invalid/");
@@ -871,7 +872,7 @@ bool ChromeContentRendererClient::HandleSetCookieRequest(
 }
 
 void ChromeContentRendererClient::SetExtensionDispatcher(
-    ExtensionDispatcher* extension_dispatcher) {
+    extensions::Dispatcher* extension_dispatcher) {
   extension_dispatcher_.reset(extension_dispatcher);
 }
 

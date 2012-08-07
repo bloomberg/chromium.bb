@@ -9,6 +9,7 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
+namespace extensions {
 class ChromeV8Context;
 
 // A V8 extension that creates an object at window.chrome.webstore. This object
@@ -17,7 +18,7 @@ class ChromeV8Context;
 class WebstoreBindings : public ChromeV8Extension,
                          public ChromeV8ExtensionHandler {
  public:
-  explicit WebstoreBindings(ExtensionDispatcher* dispatcher,
+  explicit WebstoreBindings(Dispatcher* dispatcher,
                             ChromeV8Context* context);
 
   // IPC::Listener
@@ -40,5 +41,7 @@ class WebstoreBindings : public ChromeV8Extension,
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreBindings);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_WEBSTORE_BINDINGS_H_

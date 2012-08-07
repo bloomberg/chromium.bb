@@ -15,8 +15,8 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
@@ -63,10 +63,10 @@ static void ClearPortData(int port_id) {
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";
 
-class ExtensionImpl : public ChromeV8Extension {
+class ExtensionImpl : public extensions::ChromeV8Extension {
  public:
-  explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
-      : ChromeV8Extension(dispatcher) {
+  explicit ExtensionImpl(extensions::Dispatcher* dispatcher)
+      : extensions::ChromeV8Extension(dispatcher) {
     RouteStaticFunction("CloseChannel", &CloseChannel);
     RouteStaticFunction("PortAddRef", &PortAddRef);
     RouteStaticFunction("PortRelease", &PortRelease);
@@ -173,7 +173,7 @@ class ExtensionImpl : public ChromeV8Extension {
 
 namespace extensions {
 
-ChromeV8Extension* MiscellaneousBindings::Get(ExtensionDispatcher* dispatcher) {
+ChromeV8Extension* MiscellaneousBindings::Get(Dispatcher* dispatcher) {
   return new ExtensionImpl(dispatcher);
 }
 
@@ -301,4 +301,4 @@ void MiscellaneousBindings::DispatchOnDisconnect(
   }
 }
 
-}  // namespace extension
+}  // namespace extensions

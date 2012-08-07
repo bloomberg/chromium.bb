@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
@@ -27,9 +27,8 @@ namespace {
 
 }  // namespace
 
-ExtensionCustomBindings::ExtensionCustomBindings(
-    ExtensionDispatcher* extension_dispatcher)
-    : ChromeV8Extension(extension_dispatcher) {
+ExtensionCustomBindings::ExtensionCustomBindings(Dispatcher* dispatcher)
+    : ChromeV8Extension(dispatcher) {
   RouteStaticFunction("GetExtensionViews", &GetExtensionViews);
   RouteStaticFunction("OpenChannelToExtension", &OpenChannelToExtension);
 }

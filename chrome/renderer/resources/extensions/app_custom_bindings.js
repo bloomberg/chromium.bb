@@ -68,7 +68,7 @@ app.installState = function getInstallState(callback) {
 };
 
 // These must match the names in InstallAppBindings() in
-// extension_dispatcher.cc.
+// chrome/renderer/extensions/dispatcher.cc.
 exports.chromeApp = app;
 exports.chromeAppNotifications = appNotifications;
 exports.chromeHiddenApp = chromeHiddenApp;

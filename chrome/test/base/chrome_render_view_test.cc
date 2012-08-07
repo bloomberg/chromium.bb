@@ -11,9 +11,9 @@
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
@@ -53,7 +53,7 @@ ChromeRenderViewTest::~ChromeRenderViewTest() {
 void ChromeRenderViewTest::SetUp() {
   content::GetContentClient()->set_renderer_for_testing(
       &chrome_content_renderer_client_);
-  extension_dispatcher_ = new ExtensionDispatcher();
+  extension_dispatcher_ = new extensions::Dispatcher();
   chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
 
   chrome_render_thread_ = new ChromeMockRenderThread();

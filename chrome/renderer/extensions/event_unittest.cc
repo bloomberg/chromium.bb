@@ -6,6 +6,7 @@
 
 #include "grit/renderer_resources.h"
 
+namespace extensions {
 namespace {
 
 class EventUnittest : public ModuleSystemTest {
@@ -273,3 +274,4 @@ TEST_F(EventUnittest, MaxListeners) {
 }
 
 }  // namespace
+}  // namespace extensions

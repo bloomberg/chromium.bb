@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_request_sender.h"
+#include "chrome/renderer/extensions/request_sender.h"
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -16,6 +16,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using content::V8ValueConverter;
+
+namespace extensions {
 
 // Contains info relevant to a pending API request.
 struct PendingRequest {
@@ -34,24 +36,21 @@ struct PendingRequest {
   std::string extension_id;
 };
 
-ExtensionRequestSender::ExtensionRequestSender(
-    ExtensionDispatcher* extension_dispatcher,
-    ChromeV8ContextSet* context_set)
-    : extension_dispatcher_(extension_dispatcher),
-      context_set_(context_set) {
+RequestSender::RequestSender(Dispatcher* dispatcher,
+                             ChromeV8ContextSet* context_set)
+    : dispatcher_(dispatcher), context_set_(context_set) {
 }
 
-ExtensionRequestSender::~ExtensionRequestSender() {
+RequestSender::~RequestSender() {
 }
 
-void ExtensionRequestSender::InsertRequest(int request_id,
-                                           PendingRequest* pending_request) {
+void RequestSender::InsertRequest(int request_id,
+                                  PendingRequest* pending_request) {
   DCHECK_EQ(0u, pending_requests_.count(request_id));
   pending_requests_[request_id].reset(pending_request);
 }
 
-linked_ptr<PendingRequest> ExtensionRequestSender::RemoveRequest(
-    int request_id) {
+linked_ptr<PendingRequest> RequestSender::RemoveRequest(int request_id) {
   PendingRequestMap::iterator i = pending_requests_.find(request_id);
   if (i == pending_requests_.end())
     return linked_ptr<PendingRequest>();
@@ -60,12 +59,11 @@ linked_ptr<PendingRequest> ExtensionRequestSender::RemoveRequest(
   return result;
 }
 
-void ExtensionRequestSender::StartRequest(
-    const std::string& name,
-    int request_id,
-    bool has_callback,
-    bool for_io_thread,
-    base::ListValue* value_args) {
+void RequestSender::StartRequest(const std::string& name,
+                                 int request_id,
+                                 bool has_callback,
+                                 bool for_io_thread,
+                                 base::ListValue* value_args) {
   ChromeV8Context* current_context = context_set_->GetCurrent();
   if (!current_context)
     return;
@@ -76,8 +74,7 @@ void ExtensionRequestSender::StartRequest(
   if (!renderview)
     return;
 
-  const std::set<std::string>& function_names =
-      extension_dispatcher_->function_names();
+  const std::set<std::string>& function_names = dispatcher_->function_names();
   if (function_names.find(name) == function_names.end()) {
     NOTREACHED() << "Unexpected function " << name <<
         ". Did you remember to register it with ExtensionFunctionRegistry?";
@@ -85,7 +82,7 @@ void ExtensionRequestSender::StartRequest(
   }
 
   // TODO(koz): See if we can make this a CHECK.
-  if (!extension_dispatcher_->CheckCurrentContextAccessToExtensionAPI(name))
+  if (!dispatcher_->CheckCurrentContextAccessToExtensionAPI(name))
     return;
 
   GURL source_url;
@@ -123,10 +120,10 @@ void ExtensionRequestSender::StartRequest(
   }
 }
 
-void ExtensionRequestSender::HandleResponse(int request_id,
-                                            bool success,
-                                            const base::ListValue& responseList,
-                                            const std::string& error) {
+void RequestSender::HandleResponse(int request_id,
+                                   bool success,
+                                   const base::ListValue& responseList,
+                                   const std::string& error) {
   linked_ptr<PendingRequest> request = RemoveRequest(request_id);
 
   if (!request.get()) {
@@ -165,3 +162,5 @@ void ExtensionRequestSender::HandleResponse(int request_id,
   }
 #endif
 }
+
+}  // namespace extensions

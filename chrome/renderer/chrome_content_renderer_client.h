@@ -14,7 +14,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 class ChromeRenderProcessObserver;
-class ExtensionDispatcher;
 class ExtensionSet;
 class RendererNetPredictor;
 class SpellCheck;
@@ -22,6 +21,10 @@ class SpellCheckProvider;
 class VisitedLinkSlave;
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
+
+namespace extensions {
+class Dispatcher;
+}
 
 namespace media {
 class AudioRendererSink;
@@ -122,7 +125,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   bool IsOtherExtensionWithWebRequestInstalled();
 
   // For testing.
-  void SetExtensionDispatcher(ExtensionDispatcher* extension_dispatcher);
+  void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
 
   // Called in low-memory conditions to dump the memory used by the spellchecker
   // and start over.
@@ -162,7 +165,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             WebKit::WebPluginParams* params);
 
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
-  scoped_ptr<ExtensionDispatcher> extension_dispatcher_;
+  scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
   scoped_ptr<SpellCheck> spellcheck_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;

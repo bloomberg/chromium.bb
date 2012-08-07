@@ -6,17 +6,15 @@
 
 #include "base/json/json_reader.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "chrome/renderer/extensions/extension_request_sender.h"
+#include "chrome/renderer/extensions/request_sender.h"
 
 using content::V8ValueConverter;
 
 namespace extensions {
 
-SendRequestNatives::SendRequestNatives(
-    ExtensionDispatcher* extension_dispatcher,
-    ExtensionRequestSender* request_sender)
-    : ChromeV8Extension(extension_dispatcher),
-      request_sender_(request_sender) {
+SendRequestNatives::SendRequestNatives(Dispatcher* dispatcher,
+                                       RequestSender* request_sender)
+    : ChromeV8Extension(dispatcher), request_sender_(request_sender) {
   RouteFunction("GetNextRequestId",
                 base::Bind(&SendRequestNatives::GetNextRequestId,
                            base::Unretained(this)));

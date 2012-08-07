@@ -10,7 +10,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -28,9 +28,8 @@
 
 namespace extensions {
 
-AppWindowCustomBindings::AppWindowCustomBindings(
-    ExtensionDispatcher* extension_dispatcher)
-    : ChromeV8Extension(extension_dispatcher) {
+AppWindowCustomBindings::AppWindowCustomBindings(Dispatcher* dispatcher)
+    : ChromeV8Extension(dispatcher) {
   RouteStaticFunction("GetView", &GetView);
 }
 

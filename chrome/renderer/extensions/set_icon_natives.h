@@ -6,29 +6,27 @@
 #define CHROME_RENDERER_EXTENSIONS_SET_ICON_NATIVES_H_
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 
 #include "v8/include/v8.h"
-
-class ExtensionRequestSender;
 
 namespace base {
 class Value;
 }
 
 namespace extensions {
+class RequestSender;
 
 // Functions exposed to extension JS to implement the setIcon extension API.
 class SetIconNatives : public ChromeV8Extension {
  public:
-  SetIconNatives(ExtensionDispatcher* extension_dispatcher,
-                 ExtensionRequestSender* request_sender);
+  SetIconNatives(Dispatcher* dispatcher, RequestSender* request_sender);
 
  private:
   bool ConvertImageDataToBitmapValue(const v8::Arguments& args,
                                      Value** bitmap_value);
   v8::Handle<v8::Value> SetIconCommon(const v8::Arguments& args);
-  ExtensionRequestSender* request_sender_;
+  RequestSender* request_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(SetIconNatives);
 };

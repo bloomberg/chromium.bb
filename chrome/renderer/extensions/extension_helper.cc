@@ -17,7 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/user_script_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -37,7 +37,6 @@ class ListValue;
 }  // namespace base
 
 using content::ConsoleMessageLevel;
-using extensions::MiscellaneousBindings;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
@@ -47,12 +46,14 @@ using WebKit::WebView;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::ResourceFetcher;
 
+namespace extensions {
+
 namespace {
 // Keeps a mapping from the frame pointer to a UserScriptScheduler object.
 // We store this mapping per process, because a frame can jump from one
 // document to another with adoptNode, and so having the object be a
 // RenderViewObserver means it might miss some notifications after it moves.
-typedef std::map<WebFrame*, extensions::UserScriptScheduler*> SchedulerMap;
+typedef std::map<WebFrame*, UserScriptScheduler*> SchedulerMap;
 static base::LazyInstance<SchedulerMap> g_schedulers =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -60,11 +61,11 @@ static base::LazyInstance<SchedulerMap> g_schedulers =
 // views, looking for a view of the given type, in the given browser window
 // and within the given extension.
 // Used to accumulate the list of views associated with an extension.
-class ExtensionViewAccumulator : public content::RenderViewVisitor {
+class ViewAccumulator : public content::RenderViewVisitor {
  public:
-  ExtensionViewAccumulator(const std::string& extension_id,
-                           int browser_window_id,
-                           chrome::ViewType view_type)
+  ViewAccumulator(const std::string& extension_id,
+                  int browser_window_id,
+                  chrome::ViewType view_type)
       : extension_id_(extension_id),
         browser_window_id_(browser_window_id),
         view_type_(view_type) {
@@ -123,8 +124,7 @@ std::vector<content::RenderView*> ExtensionHelper::GetExtensionViews(
     const std::string& extension_id,
     int browser_window_id,
     chrome::ViewType view_type) {
-  ExtensionViewAccumulator accumulator(
-      extension_id, browser_window_id, view_type);
+  ViewAccumulator accumulator(extension_id, browser_window_id, view_type);
   content::RenderView::ForEach(&accumulator);
   return accumulator.views();
 }
@@ -132,9 +132,8 @@ std::vector<content::RenderView*> ExtensionHelper::GetExtensionViews(
 // static
 content::RenderView* ExtensionHelper::GetBackgroundPage(
     const std::string& extension_id) {
-  ExtensionViewAccumulator accumulator(
-      extension_id, extension_misc::kUnknownWindowId,
-      chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  ViewAccumulator accumulator(extension_id, extension_misc::kUnknownWindowId,
+                              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   content::RenderView::ForEach(&accumulator);
   CHECK_LE(accumulator.views().size(), 1u);
   if (accumulator.views().size() == 0)
@@ -143,10 +142,10 @@ content::RenderView* ExtensionHelper::GetBackgroundPage(
 }
 
 ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
-                                 ExtensionDispatcher* extension_dispatcher)
+                                 Dispatcher* dispatcher)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
-      extension_dispatcher_(extension_dispatcher),
+      dispatcher_(dispatcher),
       pending_app_icon_requests_(0),
       view_type_(chrome::VIEW_TYPE_INVALID),
       tab_id_(-1),
@@ -228,8 +227,8 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
-  extension_dispatcher_->user_script_slave()->InjectScripts(
-      frame, extensions::UserScript::DOCUMENT_END);
+  dispatcher_->user_script_slave()->InjectScripts(
+      frame, UserScript::DOCUMENT_END);
 
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
@@ -243,8 +242,8 @@ void ExtensionHelper::DidFinishLoad(WebKit::WebFrame* frame) {
 }
 
 void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
-  extension_dispatcher_->user_script_slave()->InjectScripts(
-      frame, extensions::UserScript::DOCUMENT_START);
+  dispatcher_->user_script_slave()->InjectScripts(
+      frame, UserScript::DOCUMENT_START);
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
     i->second->DidCreateDocumentElement();
@@ -280,18 +279,17 @@ void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   if (g_schedulers.Get().count(frame))
     return;
 
-  g_schedulers.Get()[frame] = new extensions::UserScriptScheduler(
-      frame, extension_dispatcher_);
+  g_schedulers.Get()[frame] = new UserScriptScheduler(frame, dispatcher_);
 }
 
 void ExtensionHelper::OnExtensionResponse(int request_id,
                                           bool success,
                                           const base::ListValue& response,
                                           const std::string& error) {
-  extension_dispatcher_->OnExtensionResponse(request_id,
-                                             success,
-                                             response,
-                                             error);
+  dispatcher_->OnExtensionResponse(request_id,
+                                   success,
+                                   response,
+                                   error);
 }
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
@@ -304,7 +302,7 @@ void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
     web_user_gesture.reset(new WebScopedUserGesture);
   }
 
-  extension_dispatcher_->v8_context_set().DispatchChromeHiddenMethod(
+  dispatcher_->v8_context_set().DispatchChromeHiddenMethod(
       extension_id, function_name, args, render_view(), event_url);
 }
 
@@ -315,7 +313,7 @@ void ExtensionHelper::OnExtensionDispatchOnConnect(
     const std::string& source_extension_id,
     const std::string& target_extension_id) {
   MiscellaneousBindings::DispatchOnConnect(
-      extension_dispatcher_->v8_context_set().GetAll(),
+      dispatcher_->v8_context_set().GetAll(),
       target_port_id, channel_name, tab_json,
       source_extension_id, target_extension_id,
       render_view());
@@ -323,17 +321,16 @@ void ExtensionHelper::OnExtensionDispatchOnConnect(
 
 void ExtensionHelper::OnExtensionDeliverMessage(int target_id,
                                                 const std::string& message) {
-  MiscellaneousBindings::DeliverMessage(
-      extension_dispatcher_->v8_context_set().GetAll(),
-      target_id,
-      message,
-      render_view());
+  MiscellaneousBindings::DeliverMessage(dispatcher_->v8_context_set().GetAll(),
+                                        target_id,
+                                        message,
+                                        render_view());
 }
 
 void ExtensionHelper::OnExtensionDispatchOnDisconnect(int port_id,
                                                       bool connection_error) {
   MiscellaneousBindings::DispatchOnDisconnect(
-      extension_dispatcher_->v8_context_set().GetAll(),
+      dispatcher_->v8_context_set().GetAll(),
       port_id, connection_error,
       render_view());
 }
@@ -517,3 +514,5 @@ void ExtensionHelper::AddMessageToRootConsole(ConsoleMessageLevel level,
         WebConsoleMessage(target_level, message));
   }
 }
+
+}  // namespace extensions

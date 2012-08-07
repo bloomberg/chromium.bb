@@ -11,6 +11,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
+namespace extensions {
+
 TEST(ChromeV8ContextSet, Lifecycle) {
   MessageLoop loop;
 
@@ -22,12 +24,12 @@ TEST(ChromeV8ContextSet, Lifecycle) {
   // Dirty hack, but we don't actually need the frame, and this is easier than
   // creating a whole webview.
   WebKit::WebFrame* frame = reinterpret_cast<WebKit::WebFrame*>(1);
-  const extensions::Extension* extension = NULL;
+  const Extension* extension = NULL;
   ChromeV8Context* context = new ChromeV8Context(
       v8_context,
       frame,
       extension,
-      extensions::Feature::BLESSED_EXTENSION_CONTEXT);
+      Feature::BLESSED_EXTENSION_CONTEXT);
 
   context_set.Add(context);
   EXPECT_EQ(1u, context_set.GetAll().count(context));
@@ -52,3 +54,5 @@ TEST(ChromeV8ContextSet, Lifecycle) {
   // Run loop to do the actual deletion.
   loop.RunAllPending();
 }
+
+}  // namespace extensions

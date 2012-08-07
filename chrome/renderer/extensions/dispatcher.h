@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_DISPATCHER_H_
+#define CHROME_RENDERER_EXTENSIONS_DISPATCHER_H_
 
 #include <set>
 #include <string>
@@ -21,16 +21,10 @@
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "v8/include/v8.h"
 
-class ExtensionRequestSender;
 class GURL;
 class ModuleSystem;
 class URLPattern;
 struct ExtensionMsg_Loaded_Params;
-
-namespace extensions {
-class FilteredEventRouter;
-class UserScriptSlave;
-}
 
 namespace WebKit {
 class WebFrame;
@@ -44,16 +38,18 @@ namespace content {
 class RenderThread;
 }
 
-namespace extension {
+namespace extensions {
 class Extension;
-}
+class FilteredEventRouter;
+class RequestSender;
+class UserScriptSlave;
 
 // Dispatches extension control messages sent to the renderer and stores
 // renderer extension related state.
-class ExtensionDispatcher : public content::RenderProcessObserver {
+class Dispatcher : public content::RenderProcessObserver {
  public:
-  ExtensionDispatcher();
-  virtual ~ExtensionDispatcher();
+  Dispatcher();
+  virtual ~Dispatcher();
 
   const std::set<std::string>& function_names() const {
     return function_names_;
@@ -64,10 +60,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   const ChromeV8ContextSet& v8_context_set() const {
     return v8_context_set_;
   }
-  extensions::UserScriptSlave* user_script_slave() {
+  UserScriptSlave* user_script_slave() {
     return user_script_slave_.get();
   }
-  extensions::V8SchemaRegistry* v8_schema_registry() {
+  V8SchemaRegistry* v8_schema_registry() {
     return &v8_schema_registry_;
   }
 
@@ -150,13 +146,13 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
       const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions);
   void OnUnloaded(const std::string& id);
   void OnSetScriptingWhitelist(
-      const extensions::Extension::ScriptingWhitelist& extension_ids);
+      const Extension::ScriptingWhitelist& extension_ids);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
   void OnActivateExtension(const std::string& extension_id);
   void OnUpdatePermissions(int reason_id,
                            const std::string& extension_id,
-                           const extensions::APIPermissionSet& apis,
+                           const APIPermissionSet& apis,
                            const URLPatternSet& explicit_hosts,
                            const URLPatternSet& scriptable_hosts);
   void OnUpdateTabSpecificPermissions(int page_id,
@@ -183,10 +179,10 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   void RegisterExtension(v8::Extension* extension, bool restrict_to_extensions);
 
   // Sets up the host permissions for |extension|.
-  void InitOriginPermissions(const extensions::Extension* extension);
+  void InitOriginPermissions(const Extension* extension);
   void AddOrRemoveOriginPermissions(
-      extensions::UpdatedExtensionPermissionsInfo::Reason reason,
-      const extensions::Extension* extension,
+      UpdatedExtensionPermissionsInfo::Reason reason,
+      const Extension* extension,
       const URLPatternSet& origins);
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
@@ -208,10 +204,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   bool IsWithinPlatformApp(const WebKit::WebFrame* frame);
 
   // Returns the Feature::Context type of context for a JavaScript context.
-  extensions::Feature::Context ClassifyJavaScriptContext(
-      const std::string& extension_id,
-      int extension_group,
-      const ExtensionURLInfo& url_info);
+  Feature::Context ClassifyJavaScriptContext(const std::string& extension_id,
+                                             int extension_group,
+                                             const ExtensionURLInfo& url_info);
 
   // True if this renderer is running extensions.
   bool is_extension_process_;
@@ -225,7 +220,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   // There is zero or one for each v8 context.
   ChromeV8ContextSet v8_context_set_;
 
-  scoped_ptr<extensions::UserScriptSlave> user_script_slave_;
+  scoped_ptr<UserScriptSlave> user_script_slave_;
 
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.
@@ -252,20 +247,22 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   ResourceBundleSourceMap source_map_;
 
   // Cache for the v8 representation of extension API schemas.
-  extensions::V8SchemaRegistry v8_schema_registry_;
+  V8SchemaRegistry v8_schema_registry_;
 
   // Bindings that are defined lazily and have BindingInstallers to install
   // them.
   std::map<std::string, BindingInstaller> lazy_bindings_map_;
 
   // Sends API requests to the extension host.
-  scoped_ptr<ExtensionRequestSender> request_sender_;
+  scoped_ptr<RequestSender> request_sender_;
 
   // The current channel. From VersionInfo::GetChannel().
   // TODO(aa): Remove when we can restrict non-permission APIs to dev-only.
   int chrome_channel_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_DISPATCHER_H_
+}  // namespace extensions
+
+#endif  // CHROME_RENDERER_EXTENSIONS_DISPATCHER_H_

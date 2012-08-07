@@ -55,6 +55,6 @@ var chromeHiddenWebstore = {
 };
 
 // These must match the names in InstallWebstoreBindings in
-// extension_dispatcher.cc.
+// chrome/renderer/extensions/dispatcher.cc.
 exports.chromeWebstore = chromeWebstore;
 exports.chromeHiddenWebstore = chromeHiddenWebstore;

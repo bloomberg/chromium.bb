@@ -19,12 +19,15 @@
 
 class ChromeRenderProcessObserver;
 class ContentSettingsObserver;
-class ExtensionDispatcher;
 class ExternalHostBindings;
 class SkBitmap;
 class TranslateHelper;
 struct ThumbnailScore;
 class WebViewColorOverlay;
+
+namespace extensions {
+class Dispatcher;
+}
 
 namespace WebKit {
 class WebView;
@@ -48,7 +51,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
       content::RenderView* render_view,
       ContentSettingsObserver* content_settings,
       ChromeRenderProcessObserver* chrome_render_process_observer,
-      ExtensionDispatcher* extension_dispatcher,
+      extensions::Dispatcher* extension_dispatcher,
       TranslateHelper* translate_helper);
   virtual ~ChromeRenderViewObserver();
 
@@ -197,7 +200,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // Owned by ChromeContentRendererClient and outlive us.
   ChromeRenderProcessObserver* chrome_render_process_observer_;
-  ExtensionDispatcher* extension_dispatcher_;
+  extensions::Dispatcher* extension_dispatcher_;
 
   // Have the same lifetime as us.
   ContentSettingsObserver* content_settings_;

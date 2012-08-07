@@ -14,7 +14,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/public/renderer/render_view.h"
@@ -25,7 +25,8 @@
 
 using WebKit::WebFrame;
 using content::V8ValueConverter;
-using extensions::Extension;
+
+namespace extensions {
 
 namespace {
 
@@ -56,7 +57,7 @@ const char* kInvalidCallbackIdError = "Invalid callbackId";
 
 }  // namespace
 
-AppBindings::AppBindings(ExtensionDispatcher* dispatcher,
+AppBindings::AppBindings(Dispatcher* dispatcher,
                          ChromeV8Context* context)
     : ChromeV8Extension(dispatcher),
       ChromeV8ExtensionHandler(context) {
@@ -78,11 +79,11 @@ AppBindings::AppBindings(ExtensionDispatcher* dispatcher,
 
 v8::Handle<v8::Value> AppBindings::GetIsInstalled(
     const v8::Arguments& args) {
-  const extensions::Extension* extension = context_->extension();
+  const Extension* extension = context_->extension();
 
   // TODO(aa): Why only hosted app?
   bool result = extension && extension->is_hosted_app() &&
-      extension_dispatcher_->IsExtensionActive(extension->id());
+      dispatcher_->IsExtensionActive(extension->id());
   return v8::Boolean::New(result);
 }
 
@@ -135,8 +136,8 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrame(
 
 v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
     WebFrame* frame) {
-  const extensions::Extension* extension =
-      extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
+  const Extension* extension =
+      dispatcher_->extensions()->GetExtensionOrAppByURL(
           ExtensionURLInfo(frame->document().securityOrigin(),
                            frame->document().url()));
   if (!extension)
@@ -216,7 +217,7 @@ v8::Handle<v8::Value> AppBindings::GetRunningState(const v8::Arguments& args) {
   while (parent_frame->parent())
     parent_frame = parent_frame->parent();
 
-  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+  const ExtensionSet* extensions = dispatcher_->extensions();
 
   // The app associated with the top level frame.
   const Extension* parent_app = extensions->GetHostedAppByURL(
@@ -230,7 +231,7 @@ v8::Handle<v8::Value> AppBindings::GetRunningState(const v8::Arguments& args) {
     return v8::String::New(extension_misc::kAppStateCannotRun);
 
   const char* state = NULL;
-  if (extension_dispatcher_->IsExtensionActive(parent_app->id())) {
+  if (dispatcher_->IsExtensionActive(parent_app->id())) {
     if (parent_app == this_app)
       state = extension_misc::kAppStateRunning;
     else
@@ -277,3 +278,5 @@ void AppBindings::OnAppInstallStateResponse(
   CHECK(context_->CallChromeHiddenMethod("app.onInstallStateResponse",
                                          arraysize(argv), argv, NULL));
 }
+
+}  // namespace extensions

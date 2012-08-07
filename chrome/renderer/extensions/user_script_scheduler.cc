@@ -9,7 +9,7 @@
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -36,13 +36,13 @@ using WebKit::WebView;
 
 namespace extensions {
 
-UserScriptScheduler::UserScriptScheduler(
-    WebFrame* frame, ExtensionDispatcher* extension_dispatcher)
+UserScriptScheduler::UserScriptScheduler(WebFrame* frame,
+                                         Dispatcher* dispatcher)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       frame_(frame),
       current_location_(UserScript::UNDEFINED),
       has_run_idle_(false),
-      extension_dispatcher_(extension_dispatcher) {
+      dispatcher_(dispatcher) {
   for (int i = UserScript::UNDEFINED; i < UserScript::RUN_LOCATION_LAST; ++i) {
     pending_execution_map_[static_cast<UserScript::RunLocation>(i)] =
       std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >();
@@ -115,7 +115,7 @@ void UserScriptScheduler::MaybeRun() {
 
   if (!has_run_idle_ && current_location_ == UserScript::DOCUMENT_IDLE) {
     has_run_idle_ = true;
-    extension_dispatcher_->user_script_slave()->InjectScripts(
+    dispatcher_->user_script_slave()->InjectScripts(
         frame_, UserScript::DOCUMENT_IDLE);
   }
 
@@ -134,7 +134,7 @@ void UserScriptScheduler::MaybeRun() {
 
 void UserScriptScheduler::ExecuteCodeImpl(
     const ExtensionMsg_ExecuteCode_Params& params) {
-  const Extension* extension = extension_dispatcher_->extensions()->GetByID(
+  const Extension* extension = dispatcher_->extensions()->GetByID(
       params.extension_id);
   content::RenderView* render_view =
       content::RenderView::FromWebView(frame_->view());
@@ -211,7 +211,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
         std::vector<WebScriptSource> sources;
         sources.push_back(source);
         frame->executeScriptInIsolatedWorld(
-            extension_dispatcher_->user_script_slave()->
+            dispatcher_->user_script_slave()->
                 GetIsolatedWorldIdForExtension(extension, frame),
             &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS,
             &results);

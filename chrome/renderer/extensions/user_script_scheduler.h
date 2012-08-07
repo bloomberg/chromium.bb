@@ -12,7 +12,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 
-class ExtensionDispatcher;
 class RenderView;
 struct ExtensionMsg_ExecuteCode_Params;
 
@@ -21,6 +20,7 @@ class WebFrame;
 }
 
 namespace extensions {
+class Dispatcher;
 
 // Implements support for injecting scripts at different times in the document
 // loading process. The different possible time are described in
@@ -39,12 +39,11 @@ namespace extensions {
 // NOTE: this class does not inherit from RenderViewObserver on purpose.  The
 // reason is that this object is per frame, and a frame can move across
 // RenderViews thanks to adoptNode.  So we have each RenderView's
-// ExtensionHelper proxy these calls to the renderer process'
-// ExtensionDispatcher, which contains the mapping from WebFrame to us.
+// ExtensionHelper proxy these calls to the renderer process' Dispatcher,
+// which contains the mapping from WebFrame to us.
 class UserScriptScheduler {
  public:
-  UserScriptScheduler(WebKit::WebFrame* frame,
-                      ExtensionDispatcher* extension_dispatcher);
+  UserScriptScheduler(WebKit::WebFrame* frame, Dispatcher* dispatcher);
   ~UserScriptScheduler();
 
   void ExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
@@ -88,7 +87,7 @@ class UserScriptScheduler {
   // This is only used if we're for the main frame.
   std::map<UserScript::RunLocation, ExecutionQueue> pending_execution_map_;
 
-  ExtensionDispatcher* extension_dispatcher_;
+  Dispatcher* dispatcher_;
 };
 
 }  // namespace extensions

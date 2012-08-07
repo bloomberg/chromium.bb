@@ -7,14 +7,13 @@
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 
-class ExtensionDispatcher;
-
 namespace extensions {
+class Dispatcher;
 
 // Implements custom bindings for the extension API.
 class ExtensionCustomBindings : public ChromeV8Extension {
  public:
-  explicit ExtensionCustomBindings(ExtensionDispatcher* extension_dispatcher);
+  explicit ExtensionCustomBindings(Dispatcher* dispatcher);
 
  private:
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args);

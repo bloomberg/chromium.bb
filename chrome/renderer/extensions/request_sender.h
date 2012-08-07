@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_REQUEST_SENDER_H_
-#define CHROME_RENDERER_EXTENSIONS_EXTENSION_REQUEST_SENDER_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_REQUEST_SENDER_H_
+#define CHROME_RENDERER_EXTENSIONS_REQUEST_SENDER_H_
 
 #include <string>
 #include <map>
@@ -11,22 +11,23 @@
 #include "base/memory/linked_ptr.h"
 #include "v8/include/v8.h"
 
-class ChromeV8ContextSet;
-class ExtensionDispatcher;
-
 namespace base {
 class ListValue;
 }
+
+namespace extensions {
+class ChromeV8ContextSet;
+class Dispatcher;
 
 struct PendingRequest;
 
 // Responsible for sending requests for named extension API functions to the
 // extension host and routing the responses back to the caller.
-class ExtensionRequestSender {
+class RequestSender {
  public:
-  explicit ExtensionRequestSender(ExtensionDispatcher* extension_dispatcher,
-                                  ChromeV8ContextSet* context_set);
-  ~ExtensionRequestSender();
+  explicit RequestSender(Dispatcher* dispatcher,
+                         ChromeV8ContextSet* context_set);
+  ~RequestSender();
 
   // Makes a call to the API function |name| that is to be handled by the
   // extension host. The response to this request will be received in
@@ -51,11 +52,13 @@ class ExtensionRequestSender {
   void InsertRequest(int request_id, PendingRequest* pending_request);
   linked_ptr<PendingRequest> RemoveRequest(int request_id);
 
-  ExtensionDispatcher* extension_dispatcher_;
+  Dispatcher* dispatcher_;
   PendingRequestMap pending_requests_;
   ChromeV8ContextSet* context_set_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionRequestSender);
+  DISALLOW_COPY_AND_ASSIGN(RequestSender);
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_REQUEST_SENDER_H_
+}  // namespace extensions
+
+#endif  // CHROME_RENDERER_EXTENSIONS_REQUEST_SENDER_H_

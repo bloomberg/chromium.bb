@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -30,7 +30,6 @@
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_helper.h"
-#include "chrome/renderer/extensions/extension_request_sender.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
 #include "chrome/renderer/extensions/file_system_natives.h"
@@ -39,6 +38,7 @@
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
 #include "chrome/renderer/extensions/page_actions_custom_bindings.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
+#include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/runtime_custom_bindings.h"
 #include "chrome/renderer/extensions/send_request_natives.h"
 #include "chrome/renderer/extensions/set_icon_natives.h"
@@ -76,34 +76,8 @@ using WebKit::WebVector;
 using WebKit::WebView;
 using content::RenderThread;
 using content::RenderView;
-using extensions::APIPermission;
-using extensions::APIPermissionSet;
-using extensions::ApiDefinitionsNatives;
-using extensions::AppWindowCustomBindings;
-using extensions::ContextMenusCustomBindings;
-using extensions::Extension;
-using extensions::ExperimentalAppCustomBindings;
-using extensions::ExperimentalUsbCustomBindings;
-using extensions::ExtensionAPI;
-using extensions::ExtensionCustomBindings;
-using extensions::Feature;
-using extensions::FileBrowserHandlerCustomBindings;
-using extensions::FileBrowserPrivateCustomBindings;
-using extensions::FileSystemNatives;
-using extensions::I18NCustomBindings;
-using extensions::MiscellaneousBindings;
-using extensions::MediaGalleryCustomBindings;
-using extensions::PageActionsCustomBindings;
-using extensions::PageCaptureCustomBindings;
-using extensions::PermissionSet;
-using extensions::RuntimeCustomBindings;
-using extensions::SendRequestNatives;
-using extensions::SetIconNatives;
-using extensions::TTSCustomBindings;
-using extensions::TabFinder;
-using extensions::TabsCustomBindings;
-using extensions::UpdatedExtensionPermissionsInfo;
-using extensions::WebRequestCustomBindings;
+
+namespace extensions {
 
 namespace {
 
@@ -149,7 +123,7 @@ class PrintNativeHandler : public NativeHandler {
 
 class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
  public:
-  explicit LazyBackgroundPageNativeHandler(ExtensionDispatcher* dispatcher)
+  explicit LazyBackgroundPageNativeHandler(Dispatcher* dispatcher)
       : ChromeV8Extension(dispatcher) {
     RouteFunction("IncrementKeepaliveCount",
         base::Bind(&LazyBackgroundPageNativeHandler::IncrementKeepaliveCount,
@@ -160,8 +134,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   }
 
   v8::Handle<v8::Value> IncrementKeepaliveCount(const v8::Arguments& args) {
-    ChromeV8Context* context =
-        extension_dispatcher()->v8_context_set().GetCurrent();
+    ChromeV8Context* context = dispatcher()->v8_context_set().GetCurrent();
     if (!context)
       return v8::Undefined();
     RenderView* render_view = context->GetRenderView();
@@ -173,8 +146,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   }
 
   v8::Handle<v8::Value> DecrementKeepaliveCount(const v8::Arguments& args) {
-    ChromeV8Context* context =
-        extension_dispatcher()->v8_context_set().GetCurrent();
+    ChromeV8Context* context = dispatcher()->v8_context_set().GetCurrent();
     if (!context)
       return v8::Undefined();
     RenderView* render_view = context->GetRenderView();
@@ -200,7 +172,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
 class ProcessInfoNativeHandler : public ChromeV8Extension {
  public:
   explicit ProcessInfoNativeHandler(
-      ExtensionDispatcher* dispatcher,
+      Dispatcher* dispatcher,
       const std::string& extension_id,
       const std::string& context_type,
       bool is_incognito_context,
@@ -326,7 +298,7 @@ static v8::Handle<v8::Object> GetOrCreateChrome(
 
 }  // namespace
 
-ExtensionDispatcher::ExtensionDispatcher()
+Dispatcher::Dispatcher()
     : is_webkit_initialized_(false),
       webrequest_adblock_(false),
       webrequest_adblock_plus_(false),
@@ -343,19 +315,18 @@ ExtensionDispatcher::ExtensionDispatcher()
         kInitialExtensionIdleHandlerDelayMs);
   }
 
-  user_script_slave_.reset(new extensions::UserScriptSlave(&extensions_));
-  request_sender_.reset(new ExtensionRequestSender(this, &v8_context_set_));
+  user_script_slave_.reset(new UserScriptSlave(&extensions_));
+  request_sender_.reset(new RequestSender(this, &v8_context_set_));
   PopulateSourceMap();
   PopulateLazyBindingsMap();
 }
 
-ExtensionDispatcher::~ExtensionDispatcher() {
+Dispatcher::~Dispatcher() {
 }
 
-bool ExtensionDispatcher::OnControlMessageReceived(
-    const IPC::Message& message) {
+bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionDispatcher, message)
+  IPC_BEGIN_MESSAGE_MAP(Dispatcher, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetChannel, OnSetChannel)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect, OnDispatchOnConnect)
@@ -384,7 +355,7 @@ bool ExtensionDispatcher::OnControlMessageReceived(
   return handled;
 }
 
-void ExtensionDispatcher::WebKitInitialized() {
+void Dispatcher::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
   if (is_extension_process_) {
@@ -405,7 +376,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   is_webkit_initialized_ = true;
 }
 
-void ExtensionDispatcher::IdleNotification() {
+void Dispatcher::IdleNotification() {
   if (is_extension_process_) {
     // Dampen the forced delay as well if the extension stays idle for long
     // periods of time.
@@ -419,22 +390,22 @@ void ExtensionDispatcher::IdleNotification() {
   }
 }
 
-void ExtensionDispatcher::OnSetFunctionNames(
+void Dispatcher::OnSetFunctionNames(
     const std::vector<std::string>& names) {
   function_names_.clear();
   for (size_t i = 0; i < names.size(); ++i)
     function_names_.insert(names[i]);
 }
 
-void ExtensionDispatcher::OnSetChannel(int channel) {
+void Dispatcher::OnSetChannel(int channel) {
   chrome_channel_ = channel;
 }
 
-void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
-                                          const std::string& function_name,
-                                          const ListValue& args,
-                                          const GURL& event_url,
-                                          bool user_gesture) {
+void Dispatcher::OnMessageInvoke(const std::string& extension_id,
+                                 const std::string& function_name,
+                                 const ListValue& args,
+                                 const GURL& event_url,
+                                 bool user_gesture) {
   scoped_ptr<WebScopedUserGesture> web_user_gesture;
   if (user_gesture) {
     web_user_gesture.reset(new WebScopedUserGesture);
@@ -464,12 +435,11 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
   }
 }
 
-void ExtensionDispatcher::OnDispatchOnConnect(
-    int target_port_id,
-    const std::string& channel_name,
-    const std::string& tab_json,
-    const std::string& source_extension_id,
-    const std::string& target_extension_id) {
+void Dispatcher::OnDispatchOnConnect(int target_port_id,
+                                     const std::string& channel_name,
+                                     const std::string& tab_json,
+                                     const std::string& source_extension_id,
+                                     const std::string& target_extension_id) {
   MiscellaneousBindings::DispatchOnConnect(
       v8_context_set_.GetAll(),
       target_port_id, channel_name, tab_json,
@@ -477,8 +447,8 @@ void ExtensionDispatcher::OnDispatchOnConnect(
       NULL);  // All render views.
 }
 
-void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
-                                           const std::string& message) {
+void Dispatcher::OnDeliverMessage(int target_port_id,
+                                  const std::string& message) {
   MiscellaneousBindings::DeliverMessage(
       v8_context_set_.GetAll(),
       target_port_id,
@@ -486,15 +456,14 @@ void ExtensionDispatcher::OnDeliverMessage(int target_port_id,
       NULL);  // All render views.
 }
 
-void ExtensionDispatcher::OnDispatchOnDisconnect(int port_id,
-                                                bool connection_error) {
+void Dispatcher::OnDispatchOnDisconnect(int port_id, bool connection_error) {
   MiscellaneousBindings::DispatchOnDisconnect(
       v8_context_set_.GetAll(),
       port_id, connection_error,
       NULL);  // All render views.
 }
 
-void ExtensionDispatcher::OnLoaded(
+void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
   std::vector<WebString> platform_app_patterns;
 
@@ -536,7 +505,7 @@ void ExtensionDispatcher::OnLoaded(
   }
 }
 
-void ExtensionDispatcher::OnUnloaded(const std::string& id) {
+void Dispatcher::OnUnloaded(const std::string& id) {
   extensions_.Remove(id);
   active_extension_ids_.erase(id);
 
@@ -550,12 +519,12 @@ void ExtensionDispatcher::OnUnloaded(const std::string& id) {
   // extension's URL just won't match anything anymore.
 }
 
-void ExtensionDispatcher::OnSetScriptingWhitelist(
+void Dispatcher::OnSetScriptingWhitelist(
     const Extension::ScriptingWhitelist& extension_ids) {
   Extension::SetScriptingWhitelist(extension_ids);
 }
 
-bool ExtensionDispatcher::IsExtensionActive(
+bool Dispatcher::IsExtensionActive(
     const std::string& extension_id) const {
   bool is_active =
       active_extension_ids_.find(extension_id) != active_extension_ids_.end();
@@ -564,7 +533,7 @@ bool ExtensionDispatcher::IsExtensionActive(
   return is_active;
 }
 
-bool ExtensionDispatcher::AllowScriptExtension(
+bool Dispatcher::AllowScriptExtension(
     WebFrame* frame,
     const std::string& v8_extension_name,
     int extension_group) {
@@ -583,17 +552,16 @@ static int g_hack_extension_group = 0;
 
 }
 
-bool ExtensionDispatcher::AllowScriptExtension(
-    WebFrame* frame,
-    const std::string& v8_extension_name,
-    int extension_group,
-    int world_id) {
+bool Dispatcher::AllowScriptExtension(WebFrame* frame,
+                                      const std::string& v8_extension_name,
+                                      int extension_group,
+                                      int world_id) {
   g_hack_extension_group = extension_group;
   return true;
 }
 
-void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
-                                                 ChromeV8Context* context) {
+void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
+                                        ChromeV8Context* context) {
   module_system->RegisterNativeHandler("event_bindings",
       scoped_ptr<NativeHandler>(EventBindings::Get(this)));
   module_system->RegisterNativeHandler("miscellaneous_bindings",
@@ -650,7 +618,7 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
 }
 
-void ExtensionDispatcher::PopulateSourceMap() {
+void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("event_bindings", IDR_EVENT_BINDINGS_JS);
   source_map_.RegisterSource("miscellaneous_bindings",
       IDR_MISCELLANEOUS_BINDINGS_JS);
@@ -719,12 +687,12 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
 }
 
-void ExtensionDispatcher::PopulateLazyBindingsMap() {
+void Dispatcher::PopulateLazyBindingsMap() {
   lazy_bindings_map_["app"] = InstallAppBindings;
   lazy_bindings_map_["webstore"] = InstallWebstoreBindings;
 }
 
-void ExtensionDispatcher::InstallBindings(ModuleSystem* module_system,
+void Dispatcher::InstallBindings(ModuleSystem* module_system,
                                           v8::Handle<v8::Context> v8_context,
                                           const std::string& api) {
   std::map<std::string, BindingInstaller>::const_iterator lazy_binding =
@@ -741,7 +709,7 @@ void ExtensionDispatcher::InstallBindings(ModuleSystem* module_system,
   }
 }
 
-void ExtensionDispatcher::DidCreateScriptContext(
+void Dispatcher::DidCreateScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int extension_group,
     int world_id) {
   // TODO(koz): If the caller didn't pass extension_group, use the last value.
@@ -765,7 +733,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
   }
 
   ExtensionURLInfo url_info(frame->document().securityOrigin(),
-      extensions::UserScriptSlave::GetDataSourceURLForFrame(frame));
+      UserScriptSlave::GetDataSourceURLForFrame(frame));
 
   Feature::Context context_type =
       ClassifyJavaScriptContext(extension_id, extension_group, url_info);
@@ -855,7 +823,7 @@ void ExtensionDispatcher::DidCreateScriptContext(
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
-std::string ExtensionDispatcher::GetExtensionID(const WebFrame* frame,
+std::string Dispatcher::GetExtensionID(const WebFrame* frame,
                                                 int world_id) {
   if (world_id != 0) {
     // Isolated worlds (content script).
@@ -863,18 +831,18 @@ std::string ExtensionDispatcher::GetExtensionID(const WebFrame* frame,
   }
 
   // Extension pages (chrome-extension:// URLs).
-  GURL frame_url = extensions::UserScriptSlave::GetDataSourceURLForFrame(frame);
+  GURL frame_url = UserScriptSlave::GetDataSourceURLForFrame(frame);
   return extensions_.GetExtensionOrAppIDByURL(
       ExtensionURLInfo(frame->document().securityOrigin(), frame_url));
 }
 
-bool ExtensionDispatcher::IsWithinPlatformApp(const WebFrame* frame) {
+bool Dispatcher::IsWithinPlatformApp(const WebFrame* frame) {
   const Extension* extension =
       extensions_.GetByID(GetExtensionID(frame->top(), 0));
   return extension && extension->is_platform_app();
 }
 
-void ExtensionDispatcher::WillReleaseScriptContext(
+void Dispatcher::WillReleaseScriptContext(
     WebFrame* frame, v8::Handle<v8::Context> v8_context, int world_id) {
   ChromeV8Context* context = v8_context_set_.GetByV8Context(v8_context);
   if (!context)
@@ -886,8 +854,7 @@ void ExtensionDispatcher::WillReleaseScriptContext(
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
-void ExtensionDispatcher::OnActivateExtension(
-    const std::string& extension_id) {
+void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   active_extension_ids_.insert(extension_id);
   const Extension* extension = extensions_.GetByID(extension_id);
   CHECK(extension);
@@ -902,7 +869,7 @@ void ExtensionDispatcher::OnActivateExtension(
     InitOriginPermissions(extension);
 }
 
-void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
+void Dispatcher::InitOriginPermissions(const Extension* extension) {
   // TODO(jstritar): We should try to remove this special case. Also, these
   // whitelist entries need to be updated when the kManagement permission
   // changes.
@@ -920,7 +887,7 @@ void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
       extension->GetActivePermissions()->explicit_hosts());
 }
 
-void ExtensionDispatcher::AddOrRemoveOriginPermissions(
+void Dispatcher::AddOrRemoveOriginPermissions(
     UpdatedExtensionPermissionsInfo::Reason reason,
     const Extension* extension,
     const URLPatternSet& origins) {
@@ -946,12 +913,11 @@ void ExtensionDispatcher::AddOrRemoveOriginPermissions(
   }
 }
 
-void ExtensionDispatcher::OnUpdatePermissions(
-    int reason_id,
-    const std::string& extension_id,
-    const extensions::APIPermissionSet& apis,
-    const URLPatternSet& explicit_hosts,
-    const URLPatternSet& scriptable_hosts) {
+void Dispatcher::OnUpdatePermissions(int reason_id,
+                                     const std::string& extension_id,
+                                     const APIPermissionSet& apis,
+                                     const URLPatternSet& explicit_hosts,
+                                     const URLPatternSet& scriptable_hosts) {
   const Extension* extension = extensions_.GetByID(extension_id);
   if (!extension)
     return;
@@ -977,7 +943,7 @@ void ExtensionDispatcher::OnUpdatePermissions(
   AddOrRemoveOriginPermissions(reason, extension, explicit_hosts);
 }
 
-void ExtensionDispatcher::OnUpdateTabSpecificPermissions(
+void Dispatcher::OnUpdateTabSpecificPermissions(
     int page_id,
     int tab_id,
     const std::string& extension_id,
@@ -1000,7 +966,7 @@ void ExtensionDispatcher::OnUpdateTabSpecificPermissions(
       new PermissionSet(APIPermissionSet(), origin_set, URLPatternSet()));
 }
 
-void ExtensionDispatcher::OnClearTabSpecificPermissions(
+void Dispatcher::OnClearTabSpecificPermissions(
     int tab_id,
     const std::vector<std::string>& extension_ids) {
   for (std::vector<std::string>::const_iterator it = extension_ids.begin();
@@ -1011,14 +977,14 @@ void ExtensionDispatcher::OnClearTabSpecificPermissions(
   }
 }
 
-void ExtensionDispatcher::OnUpdateUserScripts(
+void Dispatcher::OnUpdateUserScripts(
     base::SharedMemoryHandle scripts) {
   DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
   user_script_slave_->UpdateScripts(scripts);
   UpdateActiveExtensions();
 }
 
-void ExtensionDispatcher::UpdateActiveExtensions() {
+void Dispatcher::UpdateActiveExtensions() {
   // In single-process mode, the browser process reports the active extensions.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
@@ -1028,7 +994,7 @@ void ExtensionDispatcher::UpdateActiveExtensions() {
   child_process_logging::SetActiveExtensions(active_extensions);
 }
 
-void ExtensionDispatcher::RegisterExtension(v8::Extension* extension,
+void Dispatcher::RegisterExtension(v8::Extension* extension,
                                             bool restrict_to_extensions) {
   if (restrict_to_extensions)
     restricted_v8_extensions_.insert(extension->name());
@@ -1036,20 +1002,20 @@ void ExtensionDispatcher::RegisterExtension(v8::Extension* extension,
   RenderThread::Get()->RegisterExtension(extension);
 }
 
-void ExtensionDispatcher::OnUsingWebRequestAPI(
+void Dispatcher::OnUsingWebRequestAPI(
     bool adblock, bool adblock_plus, bool other) {
   webrequest_adblock_ = adblock;
   webrequest_adblock_plus_ = adblock_plus;
   webrequest_other_ = other;
 }
 
-void ExtensionDispatcher::OnShouldUnload(const std::string& extension_id,
+void Dispatcher::OnShouldUnload(const std::string& extension_id,
                                          int sequence_id) {
   RenderThread::Get()->Send(
       new ExtensionHostMsg_ShouldUnloadAck(extension_id, sequence_id));
 }
 
-void ExtensionDispatcher::OnUnload(const std::string& extension_id) {
+void Dispatcher::OnUnload(const std::string& extension_id) {
   // Dispatch the unload event. This doesn't go through the standard event
   // dispatch machinery because it requires special handling. We need to let
   // the browser know when we are starting and stopping the event dispatch, so
@@ -1064,7 +1030,7 @@ void ExtensionDispatcher::OnUnload(const std::string& extension_id) {
   RenderThread::Get()->Send(new ExtensionHostMsg_UnloadAck(extension_id));
 }
 
-void ExtensionDispatcher::OnCancelUnload(const std::string& extension_id) {
+void Dispatcher::OnCancelUnload(const std::string& extension_id) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(kOnSuspendCanceledEvent));
   args.Set(1, Value::CreateStringValue("[]"));
@@ -1072,7 +1038,7 @@ void ExtensionDispatcher::OnCancelUnload(const std::string& extension_id) {
       extension_id, kEventDispatchFunction, args, NULL, GURL());
 }
 
-Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
+Feature::Context Dispatcher::ClassifyJavaScriptContext(
     const std::string& extension_id,
     int extension_group,
     const ExtensionURLInfo& url_info) {
@@ -1103,14 +1069,14 @@ Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
   return Feature::UNSPECIFIED_CONTEXT;
 }
 
-void ExtensionDispatcher::OnExtensionResponse(int request_id,
-                                              bool success,
-                                              const base::ListValue& response,
-                                              const std::string& error) {
+void Dispatcher::OnExtensionResponse(int request_id,
+                                     bool success,
+                                     const base::ListValue& response,
+                                     const std::string& error) {
   request_sender_->HandleResponse(request_id, success, response, error);
 }
 
-bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
+bool Dispatcher::CheckCurrentContextAccessToExtensionAPI(
     const std::string& function_name) const {
   ChromeV8Context* context = v8_context_set().GetCurrent();
   if (!context) {
@@ -1162,8 +1128,10 @@ bool ExtensionDispatcher::CheckCurrentContextAccessToExtensionAPI(
   // we should abort.
   WebKit::WebFrame* frame = context->web_frame();
   ExtensionURLInfo url_info(frame->document().securityOrigin(),
-      extensions::UserScriptSlave::GetDataSourceURLForFrame(frame));
+      UserScriptSlave::GetDataSourceURLForFrame(frame));
   CHECK(!extensions_.IsSandboxedPage(url_info));
 
   return true;
 }
+
+}  // namespace extensions

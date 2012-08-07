@@ -9,8 +9,6 @@
 
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 
-class ChromeV8Extension;
-class ExtensionDispatcher;
 
 namespace content {
 class RenderView;
@@ -21,6 +19,8 @@ class Extension;
 }
 
 namespace extensions {
+class ChromeV8Extension;
+class Dispatcher;
 
 // Manually implements some random JavaScript bindings for the extension system.
 //
@@ -30,7 +30,7 @@ namespace extensions {
 class MiscellaneousBindings {
  public:
   // Creates an instance of the extension.
-  static ChromeV8Extension* Get(ExtensionDispatcher* dispatcher);
+  static ChromeV8Extension* Get(Dispatcher* dispatcher);
 
   // Dispatches the Port.onConnect content script messaging event to some
   // contexts in |contexts|. If |restrict_to_render_view| is specified, only

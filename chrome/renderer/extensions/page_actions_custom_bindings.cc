@@ -7,15 +7,15 @@
 #include <string>
 
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 
 namespace extensions {
 
 PageActionsCustomBindings::PageActionsCustomBindings(
-    ExtensionDispatcher* extension_dispatcher)
-    : ChromeV8Extension(extension_dispatcher) {
+    Dispatcher* dispatcher)
+    : ChromeV8Extension(dispatcher) {
   RouteStaticFunction("GetCurrentPageActions", &GetCurrentPageActions);
 }
 
@@ -27,7 +27,7 @@ v8::Handle<v8::Value> PageActionsCustomBindings::GetCurrentPageActions(
   std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
   CHECK(!extension_id.empty());
   const Extension* extension =
-      self->extension_dispatcher_->extensions()->GetByID(extension_id);
+      self->dispatcher_->extensions()->GetByID(extension_id);
   CHECK(extension);
 
   v8::Local<v8::Array> page_action_vector = v8::Array::New();

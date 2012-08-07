@@ -16,7 +16,6 @@
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
 
-class ExtensionDispatcher;
 class GURL;
 class SkBitmap;
 struct ExtensionMsg_ExecuteCode_Params;
@@ -30,6 +29,9 @@ namespace webkit_glue {
 class ResourceFetcher;
 class ImageResourceFetcher;
 }
+
+namespace extensions {
+class Dispatcher;
 
 // RenderView-level plumbing for extension features.
 class ExtensionHelper
@@ -48,8 +50,7 @@ class ExtensionHelper
   static content::RenderView* GetBackgroundPage(
       const std::string& extension_id);
 
-  ExtensionHelper(content::RenderView* render_view,
-                  ExtensionDispatcher* extension_dispatcher);
+  ExtensionHelper(content::RenderView* render_view, Dispatcher* dispatcher);
   virtual ~ExtensionHelper();
 
   // Starts installation of the page in the specified frame as a web app. The
@@ -112,7 +113,7 @@ class ExtensionHelper
   void AddMessageToRootConsole(content::ConsoleMessageLevel level,
                                const string16& message);
 
-  ExtensionDispatcher* extension_dispatcher_;
+  Dispatcher* dispatcher_;
 
   // The app info that we are processing. This is used when installing an app
   // via application definition. The in-progress web app is stored here while
@@ -142,5 +143,7 @@ class ExtensionHelper
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHelper);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_HELPER_H_

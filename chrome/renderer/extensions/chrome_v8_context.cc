@@ -18,7 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
-using extensions::Feature;
+namespace extensions {
 
 namespace {
 
@@ -33,7 +33,7 @@ const char kValidateAPI[] = "validateAPI";
 
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
-                                 const extensions::Extension* extension,
+                                 const Extension* extension,
                                  Feature::Context context_type)
     : v8_context_(v8::Persistent<v8::Context>::New(v8_context)),
       web_frame_(web_frame),
@@ -144,10 +144,10 @@ bool ChromeV8Context::CallChromeHiddenMethod(
 const std::set<std::string>& ChromeV8Context::GetAvailableExtensionAPIs() {
   if (!available_extension_apis_.get()) {
     available_extension_apis_ =
-        extensions::ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
+        ExtensionAPI::GetSharedInstance()->GetAPIsForContext(
             context_type_,
             extension_,
-            extensions::UserScriptSlave::GetDataSourceURLForFrame(
+            UserScriptSlave::GetDataSourceURLForFrame(
                 web_frame_)).Pass();
   }
   return *(available_extension_apis_.get());
@@ -181,3 +181,5 @@ std::string ChromeV8Context::GetContextTypeDescription() {
   NOTREACHED();
   return "";
 }
+
+}  // namespace extensions

@@ -20,8 +20,8 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_thread.h"
@@ -41,6 +41,8 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebURL;
 using content::RenderThread;
 using extensions::Extension;
+
+namespace extensions {
 
 namespace {
 
@@ -71,7 +73,7 @@ base::LazyInstance<extensions::EventFilter> g_event_filter =
 class ExtensionImpl : public ChromeV8Extension {
  public:
 
-  explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
+  explicit ExtensionImpl(Dispatcher* dispatcher)
       : ChromeV8Extension(dispatcher) {
     RouteStaticFunction("AttachEvent", &AttachEvent);
     RouteStaticFunction("DetachEvent", &DetachEvent);
@@ -91,14 +93,12 @@ class ExtensionImpl : public ChromeV8Extension {
     if (args[0]->IsString()) {
       ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
       std::string event_name = *v8::String::AsciiValue(args[0]->ToString());
-      ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
-      const ChromeV8ContextSet& context_set =
-          extension_dispatcher->v8_context_set();
+      Dispatcher* dispatcher = self->dispatcher();
+      const ChromeV8ContextSet& context_set = dispatcher->v8_context_set();
       ChromeV8Context* context = context_set.GetCurrent();
       CHECK(context);
 
-      if (!extension_dispatcher->CheckCurrentContextAccessToExtensionAPI(
-              event_name))
+      if (!dispatcher->CheckCurrentContextAccessToExtensionAPI(event_name))
         return v8::Undefined();
 
       std::string extension_id = context->GetExtensionID();
@@ -130,9 +130,8 @@ class ExtensionImpl : public ChromeV8Extension {
       bool is_manual = args[1]->BooleanValue();
 
       ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-      ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
-      const ChromeV8ContextSet& context_set =
-          extension_dispatcher->v8_context_set();
+      Dispatcher* dispatcher = self->dispatcher();
+      const ChromeV8ContextSet& context_set = dispatcher->v8_context_set();
       ChromeV8Context* context = context_set.GetCurrent();
       if (!context)
         return v8::Undefined();
@@ -169,9 +168,8 @@ class ExtensionImpl : public ChromeV8Extension {
     DCHECK(args[1]->IsObject());
 
     ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-    ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
-    const ChromeV8ContextSet& context_set =
-        extension_dispatcher->v8_context_set();
+    Dispatcher* dispatcher = self->dispatcher();
+    const ChromeV8ContextSet& context_set = dispatcher->v8_context_set();
     ChromeV8Context* context = context_set.GetCurrent();
     DCHECK(context);
     if (!context)
@@ -179,8 +177,7 @@ class ExtensionImpl : public ChromeV8Extension {
 
     std::string event_name = *v8::String::AsciiValue(args[0]);
     // This method throws an exception if it returns false.
-    if (!extension_dispatcher->CheckCurrentContextAccessToExtensionAPI(
-            event_name))
+    if (!dispatcher->CheckCurrentContextAccessToExtensionAPI(event_name))
       return v8::Undefined();
 
     std::string extension_id = context->GetExtensionID();
@@ -253,9 +250,8 @@ class ExtensionImpl : public ChromeV8Extension {
     DCHECK(args[1]->IsBoolean());
     bool is_manual = args[1]->BooleanValue();
     ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
-    ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
-    const ChromeV8ContextSet& context_set =
-        extension_dispatcher->v8_context_set();
+    Dispatcher* dispatcher = self->dispatcher();
+    const ChromeV8ContextSet& context_set = dispatcher->v8_context_set();
     ChromeV8Context* context = context_set.GetCurrent();
     if (!context)
       return v8::Undefined();
@@ -335,6 +331,8 @@ class ExtensionImpl : public ChromeV8Extension {
 }  // namespace
 
 // static
-ChromeV8Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
+ChromeV8Extension* EventBindings::Get(Dispatcher* dispatcher) {
   return new ExtensionImpl(dispatcher);
 }
+
+}  // namespace extensions

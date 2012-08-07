@@ -15,6 +15,8 @@
 static const char kJsonSchema[] = "json_schema.js";
 static const char kJsonSchemaTest[] = "json_schema_test.js";
 
+namespace extensions {
+
 class JsonSchemaTest : public V8UnitTest {
  public:
   JsonSchemaTest() {}
@@ -106,3 +108,5 @@ TEST_F(JsonSchemaTest, TestIsValidSchemaType) {
 TEST_F(JsonSchemaTest, TestCheckSchemaOverlap) {
   TestFunction("testCheckSchemaOverlap");
 }
+
+}  // namespace extensions

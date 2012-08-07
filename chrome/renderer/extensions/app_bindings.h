@@ -15,14 +15,16 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
+namespace extensions {
 class ChromeV8Context;
 
 // Implements the chrome.app JavaScript object.
 //
 // TODO(aa): Add unit testing for this class.
-class AppBindings : public ChromeV8Extension, public ChromeV8ExtensionHandler {
+class AppBindings : public ChromeV8Extension,
+                    public ChromeV8ExtensionHandler {
  public:
-  explicit AppBindings(ExtensionDispatcher* dispatcher,
+  explicit AppBindings(Dispatcher* dispatcher,
                        ChromeV8Context* context);
 
  private:
@@ -46,5 +48,7 @@ class AppBindings : public ChromeV8Extension, public ChromeV8ExtensionHandler {
 
   DISALLOW_COPY_AND_ASSIGN(AppBindings);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_APP_BINDINGS_H_

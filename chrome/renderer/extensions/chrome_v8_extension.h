@@ -16,16 +16,15 @@
 #include <set>
 #include <string>
 
-class ChromeV8Context;
-class ExtensionDispatcher;
 
 namespace content {
 class RenderView;
 }
 
 namespace extensions {
+class ChromeV8Context;
+class Dispatcher;
 class Extension;
-}
 
 // This is a base class for chrome extension bindings.  Common features that
 // are shared by different modules go here.
@@ -35,10 +34,10 @@ class ChromeV8Extension : public NativeHandler {
   typedef std::set<ChromeV8Extension*> InstanceSet;
   static const InstanceSet& GetAll();
 
-  explicit ChromeV8Extension(ExtensionDispatcher* extension_dispatcher);
+  explicit ChromeV8Extension(Dispatcher* dispatcher);
   virtual ~ChromeV8Extension();
 
-  ExtensionDispatcher* extension_dispatcher() { return extension_dispatcher_; }
+  Dispatcher* dispatcher() { return dispatcher_; }
 
  protected:
   template<class T>
@@ -54,15 +53,17 @@ class ChromeV8Extension : public NativeHandler {
   // Note: do not call this function before or during the chromeHidden.onLoad
   // event dispatch. The URL might not have been committed yet and might not
   // be an extension URL.
-  const extensions::Extension* GetExtensionForCurrentRenderView() const;
+  const Extension* GetExtensionForCurrentRenderView() const;
 
   // Returns the chromeHidden object for the current context.
   static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
 
-  ExtensionDispatcher* extension_dispatcher_;
+  Dispatcher* dispatcher_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Extension);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_CHROME_V8_EXTENSION_H_

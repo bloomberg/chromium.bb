@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "content/public/renderer/v8_value_converter.h"
 

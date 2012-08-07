@@ -22,7 +22,6 @@ class RenderView;
 
 namespace extensions {
 class Extension;
-}
 
 // Chrome's wrapper for a v8 context.
 //
@@ -33,15 +32,15 @@ class ChromeV8Context {
  public:
   ChromeV8Context(v8::Handle<v8::Context> context,
                   WebKit::WebFrame* frame,
-                  const extensions::Extension* extension,
-                  extensions::Feature::Context context_type);
+                  const Extension* extension,
+                  Feature::Context context_type);
   ~ChromeV8Context();
 
   v8::Handle<v8::Context> v8_context() const {
     return v8_context_;
   }
 
-  const extensions::Extension* extension() const {
+  const Extension* extension() const {
     return extension_.get();
   }
 
@@ -52,7 +51,7 @@ class ChromeV8Context {
     web_frame_ = NULL;
   }
 
-  extensions::Feature::Context context_type() const {
+  Feature::Context context_type() const {
     return context_type_;
   }
 
@@ -118,10 +117,10 @@ class ChromeV8Context {
 
   // The extension associated with this context, or NULL if there is none. This
   // might be a hosted app in the case that this context is hosting a web URL.
-  scoped_refptr<const extensions::Extension> extension_;
+  scoped_refptr<const Extension> extension_;
 
   // The type of context.
-  extensions::Feature::Context context_type_;
+  Feature::Context context_type_;
 
   // Owns and structures the JS that is injected to set up extension bindings.
   scoped_ptr<ModuleSystem> module_system_;
@@ -131,5 +130,7 @@ class ChromeV8Context {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Context);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_CHROME_V8_CONTEXT_H_

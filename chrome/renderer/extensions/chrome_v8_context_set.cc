@@ -24,6 +24,8 @@
 using content::RenderThread;
 using content::V8ValueConverter;
 
+namespace extensions {
+
 namespace {
 
 // Returns true if the extension running in the given |render_view| has
@@ -119,7 +121,7 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
       continue;
 
     if (!extension_id.empty()) {
-      const extensions::Extension* extension = (*it)->extension();
+      const Extension* extension = (*it)->extension();
       if (!extension || (extension_id != extension->id()))
         continue;
     }
@@ -147,3 +149,5 @@ void ChromeV8ContextSet::DispatchChromeHiddenMethod(
         method_name, v8_arguments.size(), &v8_arguments[0], &retval);
   }
 }
+
+}  // namespace extensions

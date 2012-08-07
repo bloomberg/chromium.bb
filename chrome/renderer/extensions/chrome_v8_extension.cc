@@ -12,17 +12,18 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using extensions::ExtensionAPI;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebView;
+
+namespace extensions {
 
 namespace {
 
@@ -30,7 +31,6 @@ static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
 
 // static
 content::RenderView* ChromeV8Extension::GetCurrentRenderView() {
@@ -48,8 +48,8 @@ content::RenderView* ChromeV8Extension::GetCurrentRenderView() {
   return renderview;
 }
 
-ChromeV8Extension::ChromeV8Extension(ExtensionDispatcher* extension_dispatcher)
-    : extension_dispatcher_(extension_dispatcher) {
+ChromeV8Extension::ChromeV8Extension(Dispatcher* dispatcher)
+    : dispatcher_(dispatcher) {
   g_instances.Get().insert(this);
 }
 
@@ -62,15 +62,14 @@ const ChromeV8Extension::InstanceSet& ChromeV8Extension::GetAll() {
   return g_instances.Get();
 }
 
-const extensions::Extension*
-    ChromeV8Extension::GetExtensionForCurrentRenderView() const {
+const Extension* ChromeV8Extension::GetExtensionForCurrentRenderView() const {
   content::RenderView* renderview = GetCurrentRenderView();
   if (!renderview)
     return NULL;  // this can happen as a tab is closing.
 
   WebDocument document = renderview->GetWebView()->mainFrame()->document();
   GURL url = document.url();
-  const ExtensionSet* extensions = extension_dispatcher_->extensions();
+  const ExtensionSet* extensions = dispatcher_->extensions();
   if (!extensions->ExtensionBindingsAllowed(
       ExtensionURLInfo(document.securityOrigin(), url)))
     return NULL;
@@ -78,3 +77,5 @@ const extensions::Extension*
   return extensions->GetExtensionOrAppByURL(
       ExtensionURLInfo(document.securityOrigin(), url));
 }
+
+}  // namespace extensions

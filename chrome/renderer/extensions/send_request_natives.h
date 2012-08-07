@@ -6,20 +6,18 @@
 #define CHROME_RENDERER_EXTENSIONS_SEND_REQUEST_NATIVES_H_
 
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "chrome/renderer/extensions/extension_dispatcher.h"
+#include "chrome/renderer/extensions/dispatcher.h"
 
 #include "v8/include/v8.h"
 
-class ExtensionRequestSender;
-
 namespace extensions {
+class RequestSender;
 
 // Native functions exposed to extensions via JS for calling API functions in
 // the browser.
 class SendRequestNatives : public ChromeV8Extension {
  public:
-  SendRequestNatives(ExtensionDispatcher* extension_dispatcher,
-                     ExtensionRequestSender* request_sender);
+  SendRequestNatives(Dispatcher* dispatcher, RequestSender* request_sender);
 
  private:
   v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args);
@@ -27,7 +25,7 @@ class SendRequestNatives : public ChromeV8Extension {
   // callback will be dispatched to EventBindings::HandleResponse.
   v8::Handle<v8::Value> StartRequest(const v8::Arguments& args);
 
-  ExtensionRequestSender* request_sender_;
+  RequestSender* request_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(SendRequestNatives);
 };
