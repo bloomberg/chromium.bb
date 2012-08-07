@@ -74,7 +74,7 @@ TEST_F(L10nUtilTest, DISABLED_GetString) {
 // Cocoa.
 
 void SetDefaultLocaleForTest(const std::string& tag, base::Environment* env) {
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   env->SetVar("LANGUAGE", tag);
 #else
   base::i18n::SetICUDefaultLocale(tag);
@@ -118,7 +118,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Keep a copy of ICU's default locale before we overwrite it.
   icu::Locale locale = icu::Locale::getDefault();
 
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   env.reset(base::Environment::Create());
 
   // Test the support of LANGUAGE environment variable.
@@ -170,7 +170,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   SetDefaultLocaleForTest("ca_ES.UTF8@valencia", env.get());
   EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
-#endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
   SetDefaultLocaleForTest("en-US", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
@@ -178,9 +178,10 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   SetDefaultLocaleForTest("xx", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
 
-#if defined(OS_CHROMEOS)
-  // ChromeOS honors preferred locale first in GetApplicationLocale(),
-  // defaulting to en-US, while other targets first honor other signals.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  // ChromeOS and Android honor preferred locale first in
+  // GetApplicationLocale(), defaulting to en-US, while other
+  // targets first honor other signals.
   base::i18n::SetICUDefaultLocale("en-GB");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
 
@@ -198,7 +199,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   base::i18n::SetICUDefaultLocale("en-US");
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-ZA"));
-#else  // defined(OS_CHROMEOS)
+#else  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   SetDefaultLocaleForTest("en-GB", env.get());
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
 
@@ -237,7 +238,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   SetDefaultLocaleForTest("en-ZA", env.get());
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
-#endif  // defined (OS_CHROMEOS)
+#endif  // defined (OS_CHROMEOS) || defined(OS_ANDROID)
 
 #if defined(OS_WIN)
   // We don't allow user prefs for locale on linux/mac.
