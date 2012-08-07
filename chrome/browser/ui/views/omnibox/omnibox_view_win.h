@@ -24,8 +24,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class LocationBarView;
-class OmniboxEditController;
-class OmniboxEditModel;
 class OmniboxPopupView;
 
 namespace views {
@@ -75,10 +73,6 @@ class OmniboxViewWin
   views::View* parent_view() const;
 
   // OmniboxView:
-  virtual OmniboxEditModel* model() OVERRIDE { return model_.get(); }
-  virtual const OmniboxEditModel* model() const OVERRIDE {
-    return model_.get();
-  }
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void Update(
       const content::WebContents* tab_for_state_restoring) OVERRIDE;
@@ -87,9 +81,6 @@ class OmniboxViewWin
                          const GURL& alternate_nav_url,
                          size_t index) OVERRIDE;
   virtual string16 GetText() const OVERRIDE;
-  virtual bool IsEditingOrEmpty() const OVERRIDE;
-  virtual int GetIcon() const OVERRIDE;
-  virtual void SetUserText(const string16& text) OVERRIDE;
   virtual void SetUserText(const string16& text,
                            const string16& display_text,
                            bool update_popup) OVERRIDE;
@@ -105,7 +96,6 @@ class OmniboxViewWin
   virtual void SelectAll(bool reversed) OVERRIDE;
   virtual void RevertAll() OVERRIDE;
   virtual void UpdatePopup() OVERRIDE;
-  virtual void ClosePopup() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
   virtual void OnTemporaryTextMaybeChanged(
       const string16& display_text,
@@ -117,7 +107,6 @@ class OmniboxViewWin
   virtual bool OnAfterPossibleChange() OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetRelativeWindowForPopup() const OVERRIDE;
-  virtual CommandUpdater* GetCommandUpdater() OVERRIDE;
   virtual void SetInstantSuggestion(const string16& suggestion,
                                     bool animate_to_complete) OVERRIDE;
   virtual int TextWidth() const OVERRIDE;
@@ -199,9 +188,6 @@ class OmniboxViewWin
   virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
   virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id) OVERRIDE;
-
-  // Returns true if the caret is at the end of the content.
-  bool IsCaretAtEnd() const;
 
  private:
   enum MouseButton {
@@ -334,10 +320,12 @@ class OmniboxViewWin
   // click.  Sadly, we need to clip slightly differently in this case.
   LONG ClipXCoordToVisibleText(LONG x, bool is_triple_click) const;
 
+  virtual int GetOmniboxTextLength() const OVERRIDE;
+
   // Parses the contents of the control for the scheme and the host name.
   // Highlights the scheme in green or red depending on it security level.
   // If a host name is found, it makes it visually stronger.
-  void EmphasizeURLComponents();
+  virtual void EmphasizeURLComponents() OVERRIDE;
 
   // Erases the portion of the selection in the font's y-adjustment area.  For
   // some reason the edit draws the selection rect here even though it's not
@@ -357,7 +345,7 @@ class OmniboxViewWin
                          const CRect& paint_clip_rect);
 
   // Internally invoked whenever the text changes in some way.
-  void TextChanged();
+  void TextChanged() OVERRIDE;
 
   // Getter for the text_object_model_.  Note that the pointer returned here is
   // only valid as long as the AutocompleteEdit is still alive.  Also, if the
@@ -397,21 +385,11 @@ class OmniboxViewWin
   // Common implementation for performing a drop on the edit view.
   int OnPerformDropImpl(const views::DropTargetEvent& event, bool in_drag);
 
-  scoped_ptr<OmniboxEditModel> model_;
-
   scoped_ptr<OmniboxPopupView> popup_view_;
-
-  OmniboxEditController* controller_;
 
   // The parent view for the edit, used to align the popup and for
   // accessibility.
   LocationBarView* parent_view_;
-
-  ToolbarModel* toolbar_model_;
-
-  // The object that handles additional command functionality exposed on the
-  // edit, such as invoking the keyword editor.
-  CommandUpdater* command_updater_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (font size / color). This is used for popups.

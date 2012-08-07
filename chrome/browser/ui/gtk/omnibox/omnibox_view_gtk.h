@@ -25,8 +25,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
-class OmniboxEditController;
-class OmniboxEditModel;
 class OmniboxPopupView;
 class Profile;
 
@@ -76,22 +74,10 @@ class OmniboxViewGtk : public OmniboxView,
   int WidthOfTextAfterCursor();
 
   // OmniboxView:
-  virtual OmniboxEditModel* model() OVERRIDE;
-  virtual const OmniboxEditModel* model() const OVERRIDE;
   virtual void SaveStateToTab(content::WebContents* tab) OVERRIDE;
   virtual void Update(
       const content::WebContents* tab_for_state_restoring) OVERRIDE;
-  virtual void OpenMatch(const AutocompleteMatch& match,
-                         WindowOpenDisposition disposition,
-                         const GURL& alternate_nav_url,
-                         size_t index) OVERRIDE;
   virtual string16 GetText() const OVERRIDE;
-  virtual bool IsEditingOrEmpty() const OVERRIDE;
-  virtual int GetIcon() const OVERRIDE;
-  virtual void SetUserText(const string16& text) OVERRIDE;
-  virtual void SetUserText(const string16& text,
-                           const string16& display_text,
-                           bool update_popup) OVERRIDE;
   virtual void SetWindowTextAndCaretPos(const string16& text,
                                         size_t caret_pos,
                                         bool update_popup,
@@ -102,9 +88,7 @@ class OmniboxViewGtk : public OmniboxView,
   virtual void GetSelectionBounds(string16::size_type* start,
                                   string16::size_type* end) const OVERRIDE;
   virtual void SelectAll(bool reversed) OVERRIDE;
-  virtual void RevertAll() OVERRIDE;
   virtual void UpdatePopup() OVERRIDE;
-  virtual void ClosePopup() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
   virtual void OnTemporaryTextMaybeChanged(
       const string16& display_text,
@@ -116,7 +100,6 @@ class OmniboxViewGtk : public OmniboxView,
   virtual bool OnAfterPossibleChange() OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetRelativeWindowForPopup() const OVERRIDE;
-  virtual CommandUpdater* GetCommandUpdater() OVERRIDE;
   virtual void SetInstantSuggestion(const string16& suggestion,
                                     bool animate_to_complete) OVERRIDE;
   virtual string16 GetInstantSuggestion() const OVERRIDE;
@@ -234,6 +217,10 @@ class OmniboxViewGtk : public OmniboxView,
 
   void HandleCopyOrCutClipboard(bool copy);
 
+  // OmniboxView overrides.
+  virtual int GetOmniboxTextLength() const OVERRIDE;
+  virtual void EmphasizeURLComponents() OVERRIDE;
+
   // Common implementation for performing a drop on the edit view.
   bool OnPerformDropImpl(const string16& text);
 
@@ -273,20 +260,8 @@ class OmniboxViewGtk : public OmniboxView,
                           GtkTextIter* iter_min,
                           GtkTextIter* iter_max);
 
-  // Return the number of characters in the current buffer.
-  int GetTextLength() const;
-
-  // Places the caret at the given position. This clears any selection.
-  void PlaceCaretAt(int pos);
-
   // Returns true if the caret is at the end of the content.
   bool IsCaretAtEnd() const;
-
-  // Try to parse the current text as a URL and colorize the components.
-  void EmphasizeURLComponents();
-
-  // Internally invoked whenever the text changes in some way.
-  void TextChanged();
 
   // Save |selected_text| as the PRIMARY X selection. Unlike
   // OwnPrimarySelection(), this won't set an owner or use callbacks.
@@ -364,14 +339,7 @@ class OmniboxViewGtk : public OmniboxView,
   // be used.
   GtkTextMark* instant_mark_;
 
-  scoped_ptr<OmniboxEditModel> model_;
   scoped_ptr<OmniboxPopupView> popup_view_;
-  OmniboxEditController* controller_;
-  ToolbarModel* toolbar_model_;
-
-  // The object that handles additional command functionality exposed on the
-  // edit, such as invoking the keyword editor.
-  CommandUpdater* command_updater_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.

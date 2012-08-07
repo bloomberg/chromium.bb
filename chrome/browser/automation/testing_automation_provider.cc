@@ -3285,8 +3285,7 @@ void TestingAutomationProvider::OmniboxMovePopupSelection(
     reply.SendError("The specified browser does not have a location bar.");
     return;
   }
-  OmniboxEditModel* model = loc_bar->GetLocationEntry()->model();
-  model->OnUpOrDownKeyPressed(count);
+  loc_bar->GetLocationEntry()->model()->OnUpOrDownKeyPressed(count);
   reply.SendSuccess(NULL);
 }
 

@@ -439,14 +439,12 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
                                bool popup_window_mode,
                                views::View* location_bar,
                                views::View* popup_parent_view)
-    : model_(new OmniboxEditModel(this, controller, parent_view->profile())),
+    : OmniboxView(parent_view->profile(), controller, toolbar_model,
+          command_updater),
       popup_view_(OmniboxPopupContentsView::Create(
-          parent_view->font(), this, model_.get(), location_bar,
+          parent_view->font(), this, model(), location_bar,
           popup_parent_view)),
-      controller_(controller),
       parent_view_(parent_view),
-      toolbar_model_(toolbar_model),
-      command_updater_(command_updater),
       popup_window_mode_(popup_window_mode),
       force_hidden_(false),
       tracking_click_(),
@@ -546,7 +544,7 @@ views::View* OmniboxViewWin::parent_view() const {
 void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
 
-  const OmniboxEditModel::State model_state(model_->GetStateForTabSwitch());
+  const OmniboxEditModel::State model_state(model()->GetStateForTabSwitch());
 
   CHARRANGE selection;
   GetSelection(selection);
@@ -558,10 +556,10 @@ void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
 
 void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
   const bool visibly_changed_permanent_text =
-      model_->UpdatePermanentText(toolbar_model_->GetText());
+      model()->UpdatePermanentText(toolbar_model()->GetText());
 
   const ToolbarModel::SecurityLevel security_level =
-      toolbar_model_->GetSecurityLevel();
+      toolbar_model()->GetSecurityLevel();
   const bool changed_security_level = (security_level != security_level_);
 
   // Bail early when no visible state will actually change (prevents an
@@ -585,7 +583,7 @@ void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
     const AutocompleteEditState* state = GetStateAccessor()->GetProperty(
         tab_for_state_restoring->GetPropertyBag());
     if (state) {
-      model_->RestoreState(state->model_state);
+      model()->RestoreState(state->model_state);
 
       // Restore user's selection.  We do this after restoring the user_text
       // above so we're selecting in the correct string.
@@ -628,15 +626,12 @@ void OmniboxViewWin::OpenMatch(const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                const GURL& alternate_nav_url,
                                size_t selected_line) {
-  if (!match.destination_url.is_valid())
-    return;
-
   // When we navigate, we first revert to the unedited state, then if necessary
   // synchronously change the permanent text to the new URL.  If we don't freeze
   // here, the user could potentially see a flicker of the current URL before
   // the new one reappears, which would look glitchy.
   ScopedFreeze freeze(this, GetTextObjectModel());
-  model_->OpenMatch(match, disposition, alternate_nav_url, selected_line);
+  OmniboxView::OpenMatch(match, disposition, alternate_nav_url, selected_line);
 }
 
 string16 OmniboxViewWin::GetText() const {
@@ -647,28 +642,12 @@ string16 OmniboxViewWin::GetText() const {
   return str;
 }
 
-bool OmniboxViewWin::IsEditingOrEmpty() const {
-  return model_->user_input_in_progress() || (GetTextLength() == 0);
-}
-
-int OmniboxViewWin::GetIcon() const {
-  return IsEditingOrEmpty() ?
-      AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
-      toolbar_model_->GetIcon();
-}
-
-void OmniboxViewWin::SetUserText(const string16& text) {
-  SetUserText(text, text, true);
-}
-
 void OmniboxViewWin::SetUserText(const string16& text,
                                  const string16& display_text,
                                  bool update_popup) {
   ScopedFreeze freeze(this, GetTextObjectModel());
-  model_->SetUserText(text);
   saved_selection_for_focus_change_.cpMin = -1;
-  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
-      true);
+  OmniboxView::SetUserText(text, display_text, update_popup);
 }
 
 void OmniboxViewWin::SetWindowTextAndCaretPos(const string16& text,
@@ -689,7 +668,7 @@ void OmniboxViewWin::SetForcedQuery() {
   const string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceWide);
   if (start == string16::npos || (current_text[start] != '?'))
-    SetUserText(L"?");
+    OmniboxView::SetUserText(L"?");
   else
     SetSelection(current_text.length(), start + 1);
 }
@@ -721,21 +700,20 @@ void OmniboxViewWin::SelectAll(bool reversed) {
 
 void OmniboxViewWin::RevertAll() {
   ScopedFreeze freeze(this, GetTextObjectModel());
-  ClosePopup();
   saved_selection_for_focus_change_.cpMin = -1;
-  model_->Revert();
+  OmniboxView::RevertAll();
 }
 
 void OmniboxViewWin::UpdatePopup() {
   ScopedFreeze freeze(this, GetTextObjectModel());
-  model_->SetInputInProgress(true);
+  model()->SetInputInProgress(true);
 
   // Don't allow the popup to open while the candidate window is open, so
   // they don't overlap.
   if (ime_candidate_window_open_)
     return;
 
-  if (!model_->has_focus()) {
+  if (!model()->has_focus()) {
     // When we're in the midst of losing focus, don't rerun autocomplete.  This
     // can happen when losing focus causes the IME to cancel/finalize a
     // composition.  We still want to note that user input is in progress, we
@@ -754,12 +732,8 @@ void OmniboxViewWin::UpdatePopup() {
   //   * The user is trying to compose something in an IME
   CHARRANGE sel;
   GetSel(sel);
-  model_->StartAutocomplete(sel.cpMax != sel.cpMin,
+  model()->StartAutocomplete(sel.cpMax != sel.cpMin,
                             (sel.cpMax < GetTextLength()) || IsImeComposing());
-}
-
-void OmniboxViewWin::ClosePopup() {
-  model_->StopAutocomplete();
 }
 
 void OmniboxViewWin::SetFocus() {
@@ -892,12 +866,12 @@ bool OmniboxViewWin::OnAfterPossibleChangeInternal(bool force_text_changed) {
       (new_sel.cpMin <= std::min(sel_before_change_.cpMin,
                                  sel_before_change_.cpMax));
 
-  const bool something_changed = model_->OnAfterPossibleChange(
+  const bool something_changed = model()->OnAfterPossibleChange(
       text_before_change_, new_text, new_sel.cpMin, new_sel.cpMax,
       selection_differs, text_differs, just_deleted_text, !IsImeComposing());
 
   if (selection_differs)
-    controller_->OnSelectionBoundsChanged();
+    controller()->OnSelectionBoundsChanged();
 
   if (something_changed && text_differs)
     TextChanged();
@@ -914,7 +888,7 @@ bool OmniboxViewWin::OnAfterPossibleChangeInternal(bool force_text_changed) {
         ui::AccessibilityTypes::EVENT_SELECTION_CHANGED,
         true);
   } else if (delete_at_end_pressed_) {
-    model_->OnChanged();
+    model()->OnChanged();
   }
 
   return something_changed;
@@ -939,10 +913,6 @@ gfx::NativeView OmniboxViewWin::GetRelativeWindowForNativeView(
 
 gfx::NativeView OmniboxViewWin::GetRelativeWindowForPopup() const {
   return GetRelativeWindowForNativeView(GetNativeView());
-}
-
-CommandUpdater* OmniboxViewWin::GetCommandUpdater() {
-  return command_updater_;
 }
 
 void OmniboxViewWin::SetInstantSuggestion(const string16& suggestion,
@@ -1010,7 +980,7 @@ int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
     string16 title;
     if (data.GetURLAndTitle(&url, &title)) {
       string16 text(StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
-      SetUserText(text);
+      OmniboxView::SetUserText(text);
       model()->AcceptInput(CURRENT_TAB, true);
       return CopyOrLinkDragOperation(event.source_operations());
     }
@@ -1028,8 +998,8 @@ int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
           InsertText(string_drop_position, text);
       } else {
         string16 collapsed_text(CollapseWhitespace(text, true));
-        if (model_->CanPasteAndGo(collapsed_text))
-          model_->PasteAndGo(collapsed_text);
+        if (model()->CanPasteAndGo(collapsed_text))
+          model()->PasteAndGo(collapsed_text);
       }
       return CopyOrLinkDragOperation(event.source_operations());
     }
@@ -1058,7 +1028,7 @@ bool OmniboxViewWin::SkipDefaultKeyEventProcessing(
   switch (key) {
     case ui::VKEY_ESCAPE: {
       ScopedFreeze freeze(this, GetTextObjectModel());
-      return model_->OnEscapeKeyPressed();
+      return model()->OnEscapeKeyPressed();
     }
 
     case ui::VKEY_RETURN:
@@ -1109,10 +1079,10 @@ bool OmniboxViewWin::IsCommandIdEnabled(int command_id) const {
     case IDC_CUT:          return !!CanCut();
     case IDC_COPY:         return !!CanCopy();
     case IDC_PASTE:        return !!CanPaste();
-    case IDS_PASTE_AND_GO: return model_->CanPasteAndGo(GetClipboardText());
+    case IDS_PASTE_AND_GO: return model()->CanPasteAndGo(GetClipboardText());
     case IDS_SELECT_ALL:   return !!CanSelectAll();
     case IDS_EDIT_SEARCH_ENGINES:
-      return command_updater_->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES);
+      return command_updater()->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES);
     default:
       NOTREACHED();
       return false;
@@ -1134,7 +1104,7 @@ bool OmniboxViewWin::IsItemForCommandIdDynamic(int command_id) const {
 string16 OmniboxViewWin::GetLabelForCommandId(int command_id) const {
   DCHECK_EQ(IDS_PASTE_AND_GO, command_id);
   return l10n_util::GetStringUTF16(
-      model_->IsPasteAndSearch(GetClipboardText()) ?
+      model()->IsPasteAndSearch(GetClipboardText()) ?
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
 
@@ -1143,7 +1113,7 @@ void OmniboxViewWin::ExecuteCommand(int command_id) {
   if (command_id == IDS_PASTE_AND_GO) {
     // This case is separate from the switch() below since we don't want to wrap
     // it in OnBefore/AfterPossibleChange() calls.
-    model_->PasteAndGo(GetClipboardText());
+    model()->PasteAndGo(GetClipboardText());
     return;
   }
 
@@ -1170,7 +1140,7 @@ void OmniboxViewWin::ExecuteCommand(int command_id) {
       break;
 
     case IDS_EDIT_SEARCH_ENGINES:
-      command_updater_->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
+      command_updater()->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
       break;
 
     default:
@@ -1360,7 +1330,7 @@ void OmniboxViewWin::OnCopy() {
   GetSel(sel);
   // GetSel() doesn't preserve selection direction, so sel.cpMin will always be
   // the smaller value.
-  model_->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
+  model()->AdjustTextForCopy(sel.cpMin, IsSelectAll(), &text, &url, &write_url);
   ui::ScopedClipboardWriter scw(g_browser_process->clipboard(),
                                 ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(text);
@@ -1421,7 +1391,7 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
   switch (wparam) {
     case IMN_OPENCANDIDATE:
       ime_candidate_window_open_ = true;
-      ClosePopup();
+      CloseOmniboxPopup();
       break;
     case IMN_CLOSECANDIDATE:
       ime_candidate_window_open_ = false;
@@ -1431,7 +1401,7 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
       // text. For example, Baidu Japanese IME sends IMN_CLOSECANDIDATE when
       // composition mode is entered, but the user may not have input anything
       // yet.
-      if (model_->user_input_in_progress())
+      if (model()->user_input_in_progress())
         UpdatePopup();
 
       break;
@@ -1444,7 +1414,7 @@ LRESULT OmniboxViewWin::OnImeNotify(UINT message,
 LRESULT OmniboxViewWin::OnPointerDown(UINT message,
                                       WPARAM wparam,
                                       LPARAM lparam) {
-  if (!model_->has_focus())
+  if (!model()->has_focus())
     SetFocus();
 
   if (IS_POINTER_FIRSTBUTTON_WPARAM(wparam)) {
@@ -1491,7 +1461,7 @@ void OmniboxViewWin::OnKeyUp(TCHAR key,
                              UINT repeat_count,
                              UINT flags) {
   if (key == VK_CONTROL)
-    model_->OnControlKeyChanged(false);
+    model()->OnControlKeyChanged(false);
 
   // On systems with RTL input languages, ctrl+shift toggles the reading order
   // (depending on which shift key is pressed). But by default the CRichEditCtrl
@@ -1529,16 +1499,16 @@ void OmniboxViewWin::OnKillFocus(HWND focus_wnd) {
   }
 
   // This must be invoked before ClosePopup.
-  model_->OnWillKillFocus(focus_wnd);
+  model()->OnWillKillFocus(focus_wnd);
 
   // Close the popup.
-  ClosePopup();
+  CloseOmniboxPopup();
 
   // Save the user's existing selection to restore it later.
   GetSelection(saved_selection_for_focus_change_);
 
   // Tell the model to reset itself.
-  model_->OnKillFocus();
+  model()->OnKillFocus();
 
   // Let the CRichEditCtrl do its default handling.  This will complete any
   // in-progress IME composition.  We must do this after setting has_focus_ to
@@ -1674,7 +1644,7 @@ LRESULT OmniboxViewWin::OnMouseActivate(HWND window,
   // reached before OnXButtonDown(), preventing us from detecting this properly
   // there.  Also in those cases, we need to already know in OnSetFocus() that
   // we should not restore the saved selection.
-  if (!model_->has_focus() &&
+  if (!model()->has_focus() &&
       ((mouse_message == WM_LBUTTONDOWN || mouse_message == WM_RBUTTONDOWN ||
         mouse_message == WM_POINTERDOWN)) &&
       (result == MA_ACTIVATE)) {
@@ -1835,7 +1805,7 @@ void OmniboxViewWin::OnPaste() {
   const string16 text(GetClipboardText());
   if (!text.empty()) {
     // Record this paste, so we can do different behavior.
-    model_->on_paste();
+    model()->on_paste();
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted into the
     // text box.
@@ -1873,7 +1843,7 @@ void OmniboxViewWin::OnSetFocus(HWND focus_wnd) {
     NOTREACHED();
   }
 
-  model_->OnSetFocus(GetKeyState(VK_CONTROL) < 0);
+  model()->OnSetFocus(GetKeyState(VK_CONTROL) < 0);
 
   // Restore saved selection if available.
   if (saved_selection_for_focus_change_.cpMin != -1) {
@@ -1985,17 +1955,17 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
         GetSel(selection);
         return (selection.cpMin == selection.cpMax) &&
             (selection.cpMin == GetTextLength()) &&
-            model_->CommitSuggestedText(true);
+            model()->CommitSuggestedText(true);
       }
 
     case VK_RETURN:
-      model_->AcceptInput((flags & KF_ALTDOWN) ?
+      model()->AcceptInput((flags & KF_ALTDOWN) ?
           NEW_FOREGROUND_TAB : CURRENT_TAB, false);
       return true;
 
     case VK_PRIOR:
     case VK_NEXT:
-      count = model_->result().size();
+      count = model()->result().size();
       // FALL THROUGH
     case VK_UP:
     case VK_DOWN:
@@ -2003,7 +1973,7 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
       if ((flags & KF_ALTDOWN) && !(flags & KF_EXTENDED))
         return false;
 
-      model_->OnUpOrDownKeyPressed(((key == VK_PRIOR) || (key == VK_UP)) ?
+      model()->OnUpOrDownKeyPressed(((key == VK_PRIOR) || (key == VK_UP)) ?
           -count : count);
       return true;
 
@@ -2049,12 +2019,12 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
           Cut();
           OnAfterPossibleChange();
         } else {
-          if (model_->popup_model()->IsOpen()) {
+          if (model()->popup_model()->IsOpen()) {
             // This is a bit overloaded, but we hijack Shift-Delete in this
             // case to delete the current item from the pop-up.  We prefer
             // cutting to this when possible since that's the behavior more
             // people expect from Shift-Delete, and it's more commonly useful.
-            model_->popup_model()->TryDeletingCurrentItem();
+            model()->popup_model()->TryDeletingCurrentItem();
           }
         }
       }
@@ -2090,8 +2060,8 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
       return true;
 
     case VK_BACK: {
-      if ((flags & KF_ALTDOWN) || model_->is_keyword_hint() ||
-          model_->keyword().empty())
+      if ((flags & KF_ALTDOWN) || model()->is_keyword_hint() ||
+          model()->keyword().empty())
         return false;
 
       {
@@ -2104,22 +2074,22 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
       // We're showing a keyword and the user pressed backspace at the beginning
       // of the text. Delete the selected keyword.
       ScopedFreeze freeze(this, GetTextObjectModel());
-      model_->ClearKeyword(GetText());
+      model()->ClearKeyword(GetText());
       return true;
     }
 
     case VK_TAB: {
       const bool shift_pressed = GetKeyState(VK_SHIFT) < 0;
-      if (model_->is_keyword_hint() && !shift_pressed) {
+      if (model()->is_keyword_hint() && !shift_pressed) {
         // Accept the keyword.
         ScopedFreeze freeze(this, GetTextObjectModel());
-        model_->AcceptKeyword();
+        model()->AcceptKeyword();
       } else if (shift_pressed &&
-                 model_->popup_model()->selected_line_state() ==
+                 model()->popup_model()->selected_line_state() ==
                     OmniboxPopupModel::KEYWORD) {
-        model_->ClearKeyword(GetText());
+        model()->ClearKeyword(GetText());
       } else {
-        model_->OnUpOrDownKeyPressed(shift_pressed ? -count : count);
+        model()->OnUpOrDownKeyPressed(shift_pressed ? -count : count);
       }
       return true;
     }
@@ -2141,7 +2111,7 @@ bool OmniboxViewWin::OnKeyDownAllModes(TCHAR key,
 
   switch (key) {
     case VK_CONTROL:
-      model_->OnControlKeyChanged(true);
+      model()->OnControlKeyChanged(true);
       return false;
 
     case VK_INSERT:
@@ -2261,6 +2231,10 @@ LONG OmniboxViewWin::ClipXCoordToVisibleText(LONG x,
   return is_triple_click ? (right_bound - 1) : right_bound;
 }
 
+int OmniboxViewWin::GetOmniboxTextLength() const {
+  return static_cast<int>(GetTextLength());
+}
+
 void OmniboxViewWin::EmphasizeURLComponents() {
   ITextDocument* const text_object_model = GetTextObjectModel();
   ScopedFreeze freeze(this, text_object_model);
@@ -2278,8 +2252,8 @@ void OmniboxViewWin::EmphasizeURLComponents() {
   // And Go system uses.
   url_parse::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
-      GetText(), model_->GetDesiredTLD(), &scheme, &host);
-  const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
+      GetText(), model()->GetDesiredTLD(), &scheme, &host);
+  const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
   // Set the baseline emphasis.
   CHARFORMAT cf = {0};
@@ -2306,7 +2280,7 @@ void OmniboxViewWin::EmphasizeURLComponents() {
 
   // Emphasize the scheme for security UI display purposes (if necessary).
   insecure_scheme_component_.reset();
-  if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
+  if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
       (security_level_ != ToolbarModel::NONE)) {
     if (security_level_ == ToolbarModel::SECURITY_ERROR) {
       insecure_scheme_component_.begin = scheme.begin;
@@ -2457,8 +2431,7 @@ void OmniboxViewWin::DrawDropHighlight(HDC hdc,
 
 void OmniboxViewWin::TextChanged() {
   ScopedFreeze freeze(this, GetTextObjectModel());
-  EmphasizeURLComponents();
-  model_->OnChanged();
+  OmniboxView::TextChanged();
 }
 
 ITextDocument* OmniboxViewWin::GetTextObjectModel() const {
@@ -2516,7 +2489,7 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
     string16 title;
     SkBitmap favicon;
     if (is_all_selected)
-      model_->GetDataForURLExport(&url, &title, &favicon);
+      model()->GetDataForURLExport(&url, &title, &favicon);
     button_drag_utils::SetURLAndDragImage(url, title, favicon, &data,
                                           native_view_host_->GetWidget());
     supported_modes |= DROPEFFECT_LINK;
@@ -2665,11 +2638,4 @@ int OmniboxViewWin::WidthNeededToDisplay(const string16& text) const {
   // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
   // PosFromChar(i) might return 0 when i is greater than 1.
   return font_.GetStringWidth(text) + GetHorizontalMargin();
-}
-
-bool OmniboxViewWin::IsCaretAtEnd() const {
-  long length = GetTextLength();
-  CHARRANGE sel;
-  GetSelection(sel);
-  return sel.cpMin == sel.cpMax && sel.cpMin == length;
 }

@@ -10,9 +10,11 @@
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "ui/base/clipboard/clipboard.h"
 
+// static
 string16 OmniboxView::StripJavascriptSchemas(const string16& text) {
   const string16 kJsPrefix(ASCIIToUTF16(chrome::kJavaScriptScheme) +
                            ASCIIToUTF16(":"));
@@ -65,4 +67,75 @@ string16 OmniboxView::GetClipboardText() {
   }
 
   return string16();
+}
+
+OmniboxView::~OmniboxView() {
+}
+
+void OmniboxView::OpenMatch(const AutocompleteMatch& match,
+                            WindowOpenDisposition disposition,
+                            const GURL& alternate_nav_url,
+                            size_t selected_line) {
+  // Invalid URLs such as chrome://history can end up here.
+  if (!match.destination_url.is_valid())
+    return;
+  if (model_.get())
+    model_->OpenMatch(match, disposition, alternate_nav_url, selected_line);
+}
+
+bool OmniboxView::IsEditingOrEmpty() const {
+  return (model_.get() && model_->user_input_in_progress()) ||
+      (GetOmniboxTextLength() == 0);
+}
+
+int OmniboxView::GetIcon() const {
+  if (IsEditingOrEmpty()) {
+    return AutocompleteMatch::TypeToIcon(model_.get() ?
+          model_->CurrentTextType() : AutocompleteMatch::URL_WHAT_YOU_TYPED);
+  } else {
+    return toolbar_model_->GetIcon();
+  }
+}
+
+void OmniboxView::SetUserText(const string16& text) {
+  SetUserText(text, text, true);
+}
+
+void OmniboxView::SetUserText(const string16& text,
+                              const string16& display_text,
+                              bool update_popup) {
+  if (model_.get())
+    model_->SetUserText(text);
+  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
+                           true);
+}
+
+void OmniboxView::RevertAll() {
+  CloseOmniboxPopup();
+  if (model_.get())
+    model_->Revert();
+  TextChanged();
+}
+
+void OmniboxView::CloseOmniboxPopup() {
+  if (model_.get())
+    model_->StopAutocomplete();
+}
+
+OmniboxView::OmniboxView(Profile* profile,
+                         OmniboxEditController* controller,
+                         ToolbarModel* toolbar_model,
+                         CommandUpdater* command_updater)
+    : controller_(controller),
+      toolbar_model_(toolbar_model),
+      command_updater_(command_updater) {
+  // |profile| can be NULL in tests.
+  if (profile)
+    model_.reset(new OmniboxEditModel(this, controller, profile));
+}
+
+void OmniboxView::TextChanged() {
+  EmphasizeURLComponents();
+  if (model_.get())
+    model_->OnChanged();
 }

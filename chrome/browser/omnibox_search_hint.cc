@@ -221,7 +221,7 @@ void OmniboxSearchHint::ShowEnteringQuery() {
   omnibox_view->SelectAll(false);
   // Entering text in the omnibox view triggers the suggestion popup that we
   // don't want to show in this case.
-  omnibox_view->ClosePopup();
+  omnibox_view->CloseOmniboxPopup();
 }
 
 void OmniboxSearchHint::DisableHint() {

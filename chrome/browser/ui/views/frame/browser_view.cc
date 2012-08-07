@@ -1701,7 +1701,7 @@ void BrowserView::OnWidgetMove() {
   // Close the omnibox popup, if any.
   LocationBarView* location_bar_view = GetLocationBarView();
   if (location_bar_view)
-    location_bar_view->GetLocationEntry()->ClosePopup();
+    location_bar_view->GetLocationEntry()->CloseOmniboxPopup();
 }
 
 views::Widget* BrowserView::GetWidget() {

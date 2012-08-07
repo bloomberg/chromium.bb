@@ -17,13 +17,17 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class CommandUpdater;
 class GURL;
-class OmniboxEditModel;
+class OmniboxEditController;
+class Profile;
+class ToolbarModel;
 
 namespace content {
 class WebContents;
@@ -43,9 +47,14 @@ class View;
 
 class OmniboxView {
  public:
+  virtual ~OmniboxView();
+
   // Used by the automation system for getting at the model from the view.
-  virtual OmniboxEditModel* model() = 0;
-  virtual const OmniboxEditModel* model() const = 0;
+  OmniboxEditModel* model() { return model_.get(); }
+  const OmniboxEditModel* model() const { return model_.get(); }
+
+  CommandUpdater* command_updater() { return command_updater_; }
+  const CommandUpdater* command_updater() const { return command_updater_; }
 
   // For use when switching tabs, this saves the current state onto the tab so
   // that it can be restored during a later call to Update().
@@ -68,7 +77,7 @@ class OmniboxView {
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
-                         size_t selected_line) = 0;
+                         size_t selected_line);
 
   // Returns the current text of the edit control, which could be the
   // "temporary" text set by the popup, the "permanent" text set by the
@@ -77,18 +86,18 @@ class OmniboxView {
 
   // |true| if the user is in the process of editing the field, or if
   // the field is empty.
-  virtual bool IsEditingOrEmpty() const = 0;
+  bool IsEditingOrEmpty() const;
 
   // Returns the resource ID of the icon to show for the current text.
-  virtual int GetIcon() const = 0;
+  int GetIcon() const;
 
   // The user text is the text the user has manually keyed in.  When present,
   // this is shown in preference to the permanent text; hitting escape will
   // revert to the permanent text.
-  virtual void SetUserText(const string16& text) = 0;
+  void SetUserText(const string16& text);
   virtual void SetUserText(const string16& text,
                            const string16& display_text,
-                           bool update_popup) = 0;
+                           bool update_popup);
 
   // Sets the window text and the caret position.
   virtual void SetWindowTextAndCaretPos(const string16& text,
@@ -123,14 +132,16 @@ class OmniboxView {
 
   // Reverts the edit and popup back to their unedited state (permanent text
   // showing, popup closed, no user input in progress).
-  virtual void RevertAll() = 0;
+  virtual void RevertAll();
 
   // Updates the autocomplete popup and other state after the text has been
   // changed by the user.
   virtual void UpdatePopup() = 0;
 
-  // Closes the autocomplete popup, if it's open.
-  virtual void ClosePopup() = 0;
+  // Closes the autocomplete popup, if it's open. The name |ClosePopup|
+  // conflicts with the OSX class override as that has a base class that also
+  // defines a method with that name.
+  virtual void CloseOmniboxPopup();
 
   // Sets the focus to the autocomplete view.
   virtual void SetFocus() = 0;
@@ -169,9 +180,6 @@ class OmniboxView {
   // to the rich edit control, the IME window is the relative window. Otherwise,
   // the top-most window is the relative window.
   virtual gfx::NativeView GetRelativeWindowForPopup() const = 0;
-
-  // Returns the command updater for this view.
-  virtual CommandUpdater* GetCommandUpdater() = 0;
 
   // Shows the instant suggestion text. If |animate_to_complete| is true the
   // view should start an animation that when done commits the text.
@@ -215,7 +223,35 @@ class OmniboxView {
   // from bookmarks on the clipboard.
   static string16 GetClipboardText();
 
-  virtual ~OmniboxView() {}
+ protected:
+  OmniboxView(Profile* profile,
+              OmniboxEditController* controller,
+              ToolbarModel* toolbar_model,
+              CommandUpdater* command_updater);
+
+  // Internally invoked whenever the text changes in some way.
+  virtual void TextChanged();
+
+  // Return the number of characters in the current buffer. The name
+  // |GetTextLength| can't be used as the Windows override of this class
+  // inherits from a class that defines a method with that name.
+  virtual int GetOmniboxTextLength() const = 0;
+
+  // Try to parse the current text as a URL and colorize the components.
+  virtual void EmphasizeURLComponents() = 0;
+
+  OmniboxEditController* controller() { return controller_; }
+  ToolbarModel* toolbar_model() { return toolbar_model_; }
+
+ private:
+  // |model_| can be NULL in tests.
+  scoped_ptr<OmniboxEditModel> model_;
+  OmniboxEditController* controller_;
+  ToolbarModel* toolbar_model_;
+
+  // The object that handles additional command functionality exposed on the
+  // edit, such as invoking the keyword editor.
+  CommandUpdater* command_updater_;
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_VIEW_H_

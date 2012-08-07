@@ -225,12 +225,9 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
                                    CommandUpdater* command_updater,
                                    bool popup_window_mode,
                                    LocationBarView* location_bar)
-    : textfield_(NULL),
+    : OmniboxView(profile, controller, toolbar_model, command_updater),
+      textfield_(NULL),
       popup_window_mode_(popup_window_mode),
-      model_(new OmniboxEditModel(this, controller, profile)),
-      controller_(controller),
-      toolbar_model_(toolbar_model),
-      command_updater_(command_updater),
       security_level_(ToolbarModel::NONE),
       ime_composing_before_change_(false),
       delete_at_end_pressed_(false),
@@ -253,7 +250,6 @@ OmniboxViewViews::~OmniboxViewViews() {
   // Explicitly teardown members which have a reference to us.  Just to be safe
   // we want them to be destroyed before destroying any other internal state.
   popup_view_.reset();
-  model_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -282,7 +278,7 @@ void OmniboxViewViews::Init(views::View* popup_parent_view) {
   // Create popup view using the same font as |textfield_|'s.
   popup_view_.reset(
       OmniboxPopupContentsView::Create(
-          textfield_->font(), this, model_.get(), location_bar_view_,
+          textfield_->font(), this, model(), location_bar_view_,
           popup_parent_view));
 
   // A null-border to zero out the focused border on textfield.
@@ -313,43 +309,43 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
                                            bool handled) {
   if (event.key_code() == ui::VKEY_RETURN) {
     bool alt_held = event.IsAltDown();
-    model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
+    model()->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
     handled = true;
   } else if (!handled && event.key_code() == ui::VKEY_ESCAPE) {
     // We can handle the Escape key if textfield did not handle it.
     // If it's not handled by us, then we need to propagate it up to the parent
     // widgets, so that Escape accelerator can still work.
-    handled = model_->OnEscapeKeyPressed();
+    handled = model()->OnEscapeKeyPressed();
   } else if (event.key_code() == ui::VKEY_CONTROL) {
     // Omnibox2 can switch its contents while pressing a control key. To switch
     // the contents of omnibox2, we notify the OmniboxEditModel class when the
     // control-key state is changed.
-    model_->OnControlKeyChanged(true);
+    model()->OnControlKeyChanged(true);
   } else if (!handled && event.key_code() == ui::VKEY_DELETE &&
              event.IsShiftDown()) {
     // If shift+del didn't change the text, we let this delete an entry from
     // the popup.  We can't check to see if the IME handled it because even if
     // nothing is selected, the IME or the TextView still report handling it.
-    if (model_->popup_model()->IsOpen())
-      model_->popup_model()->TryDeletingCurrentItem();
+    if (model()->popup_model()->IsOpen())
+      model()->popup_model()->TryDeletingCurrentItem();
   } else if (!handled && event.key_code() == ui::VKEY_UP) {
-    model_->OnUpOrDownKeyPressed(-1);
+    model()->OnUpOrDownKeyPressed(-1);
     handled = true;
   } else if (!handled && event.key_code() == ui::VKEY_DOWN) {
-    model_->OnUpOrDownKeyPressed(1);
+    model()->OnUpOrDownKeyPressed(1);
     handled = true;
   } else if (!handled &&
              event.key_code() == ui::VKEY_TAB &&
              !event.IsControlDown()) {
-    if (model_->is_keyword_hint() && !event.IsShiftDown()) {
-      handled = model_->AcceptKeyword();
-    } else if (model_->popup_model()->IsOpen()) {
+    if (model()->is_keyword_hint() && !event.IsShiftDown()) {
+      handled = model()->AcceptKeyword();
+    } else if (model()->popup_model()->IsOpen()) {
       if (event.IsShiftDown() &&
-          model_->popup_model()->selected_line_state() ==
+          model()->popup_model()->selected_line_state() ==
               OmniboxPopupModel::KEYWORD) {
-        model_->ClearKeyword(GetText());
+        model()->ClearKeyword(GetText());
       } else {
-        model_->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
+        model()->OnUpOrDownKeyPressed(event.IsShiftDown() ? -1 : 1);
       }
       handled = true;
     } else {
@@ -379,7 +375,7 @@ bool OmniboxViewViews::HandleKeyReleaseEvent(const views::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_CONTROL) {
     // TODO(oshima): investigate if we need to support keyboard with two
     // controls.
-    model_->OnControlKeyChanged(false);
+    model()->OnControlKeyChanged(false);
     return true;
   }
   return false;
@@ -407,8 +403,8 @@ void OmniboxViewViews::HandleMouseReleaseEvent(const views::MouseEvent& event) {
 
 void OmniboxViewViews::HandleFocusIn() {
   // TODO(oshima): Get control key state.
-  model_->OnSetFocus(false);
-  // Don't call controller_->OnSetFocus as this view has already
+  model()->OnSetFocus(false);
+  // Don't call controller()->OnSetFocus as this view has already
   // acquired the focus.
 }
 
@@ -422,12 +418,12 @@ void OmniboxViewViews::HandleFocusOut() {
       native_view = root->GetFocusManager()->GetFocusedWindow();
   }
 #endif
-  model_->OnWillKillFocus(native_view);
+  model()->OnWillKillFocus(native_view);
   // Close the popup.
-  ClosePopup();
+  CloseOmniboxPopup();
   // Tell the model to reset itself.
-  model_->OnKillFocus();
-  controller_->OnKillFocus();
+  model()->OnKillFocus();
+  controller()->OnKillFocus();
 }
 
 void OmniboxViewViews::SetLocationEntryFocusable(bool focusable) {
@@ -469,14 +465,6 @@ void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxViewViews, AutocopmleteEditView implementation:
 
-OmniboxEditModel* OmniboxViewViews::model() {
-  return model_.get();
-}
-
-const OmniboxEditModel* OmniboxViewViews::model() const {
-  return model_.get();
-}
-
 void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
 
@@ -489,7 +477,7 @@ void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
   }
 
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
-  OmniboxEditModel::State model_state = model_->GetStateForTabSwitch();
+  OmniboxEditModel::State model_state = model()->GetStateForTabSwitch();
   gfx::SelectionModel selection;
   textfield_->GetSelectionModel(&selection);
   GetStateAccessor()->SetProperty(
@@ -500,9 +488,9 @@ void OmniboxViewViews::SaveStateToTab(WebContents* tab) {
 void OmniboxViewViews::Update(const WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
-      model_->UpdatePermanentText(toolbar_model_->GetText());
+      model()->UpdatePermanentText(toolbar_model()->GetText());
   ToolbarModel::SecurityLevel security_level =
-        toolbar_model_->GetSecurityLevel();
+        toolbar_model()->GetSecurityLevel();
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
@@ -514,7 +502,7 @@ void OmniboxViewViews::Update(const WebContents* contents) {
     const AutocompleteEditState* state =
         GetStateAccessor()->GetProperty(contents->GetPropertyBag());
     if (state) {
-      model_->RestoreState(state->model_state);
+      model()->RestoreState(state->model_state);
 
       // Move the marks for the cursor and the other end of the selection to
       // the previously-saved offsets (but preserve PRIMARY).
@@ -530,41 +518,9 @@ void OmniboxViewViews::Update(const WebContents* contents) {
   }
 }
 
-void OmniboxViewViews::OpenMatch(const AutocompleteMatch& match,
-                                 WindowOpenDisposition disposition,
-                                 const GURL& alternate_nav_url,
-                                 size_t selected_line) {
-  if (!match.destination_url.is_valid())
-    return;
-
-  model_->OpenMatch(match, disposition, alternate_nav_url, selected_line);
-}
-
 string16 OmniboxViewViews::GetText() const {
   // TODO(oshima): IME support
   return textfield_->text();
-}
-
-bool OmniboxViewViews::IsEditingOrEmpty() const {
-  return model_->user_input_in_progress() || (GetTextLength() == 0);
-}
-
-int OmniboxViewViews::GetIcon() const {
-  return IsEditingOrEmpty() ?
-      AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
-      toolbar_model_->GetIcon();
-}
-
-void OmniboxViewViews::SetUserText(const string16& text) {
-  SetUserText(text, text, true);
-}
-
-void OmniboxViewViews::SetUserText(const string16& text,
-                                   const string16& display_text,
-                                   bool update_popup) {
-  model_->SetUserText(text);
-  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
-      true);
 }
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const string16& text,
@@ -618,17 +574,11 @@ void OmniboxViewViews::SelectAll(bool reversed) {
   textfield_->SelectAll(reversed);
 }
 
-void OmniboxViewViews::RevertAll() {
-  ClosePopup();
-  model_->Revert();
-  TextChanged();
-}
-
 void OmniboxViewViews::UpdatePopup() {
-  model_->SetInputInProgress(true);
+  model()->SetInputInProgress(true);
   if (ime_candidate_window_open_)
     return;
-  if (!model_->has_focus())
+  if (!model()->has_focus())
     return;
 
   // Don't inline autocomplete when the caret/selection isn't at the end of
@@ -638,11 +588,7 @@ void OmniboxViewViews::UpdatePopup() {
   bool no_inline_autocomplete =
       sel.GetMax() < GetTextLength() || textfield_->IsIMEComposing();
 
-  model_->StartAutocomplete(!sel.is_empty(), no_inline_autocomplete);
-}
-
-void OmniboxViewViews::ClosePopup() {
-  model_->StopAutocomplete();
+  model()->StartAutocomplete(!sel.is_empty(), no_inline_autocomplete);
 }
 
 void OmniboxViewViews::SetFocus() {
@@ -703,12 +649,12 @@ bool OmniboxViewViews::OnAfterPossibleChange() {
       (text_before_change_.length() > new_text.length()) &&
       (new_sel.start() <= sel_before_change_.GetMin());
 
-  const bool something_changed = model_->OnAfterPossibleChange(
+  const bool something_changed = model()->OnAfterPossibleChange(
       text_before_change_, new_text, new_sel.start(), new_sel.end(),
       selection_differs, text_changed, just_deleted_text,
       !textfield_->IsIMEComposing());
 
-  // If only selection was changed, we don't need to call |model_|'s
+  // If only selection was changed, we don't need to call model()'s
   // OnChanged() method, which is called in TextChanged().
   // But we still need to call EmphasizeURLComponents() to make sure the text
   // attributes are updated correctly.
@@ -717,7 +663,7 @@ bool OmniboxViewViews::OnAfterPossibleChange() {
   else if (selection_differs)
     EmphasizeURLComponents();
   else if (delete_at_end_pressed_)
-    model_->OnChanged();
+    model()->OnChanged();
 
   return something_changed;
 }
@@ -728,10 +674,6 @@ gfx::NativeView OmniboxViewViews::GetNativeView() const {
 
 gfx::NativeView OmniboxViewViews::GetRelativeWindowForPopup() const {
   return GetWidget()->GetTopLevelWidget()->GetNativeView();
-}
-
-CommandUpdater* OmniboxViewViews::GetCommandUpdater() {
-  return command_updater_;
 }
 
 void OmniboxViewViews::SetInstantSuggestion(const string16& input,
@@ -786,7 +728,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
 
   if (event.key_code() == ui::VKEY_BACK) {
     // Checks if it's currently in keyword search mode.
-    if (model_->is_keyword_hint() || model_->keyword().empty())
+    if (model()->is_keyword_hint() || model()->keyword().empty())
       return false;
     // If there is selection, let textfield handle the backspace.
     if (textfield_->HasSelection())
@@ -794,7 +736,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     // If not at the begining of the text, let textfield handle the backspace.
     if (textfield_->GetCursorPosition())
       return false;
-    model_->ClearKeyword(GetText());
+    model()->ClearKeyword(GetText());
     return true;
   }
 
@@ -824,7 +766,7 @@ void OmniboxViewViews::OnAfterCutOrCopy() {
   const string16 text = textfield_->text();
   GURL url;
   bool write_url;
-  model_->AdjustTextForCopy(selection_range.GetMin(), selected_text == text,
+  model()->AdjustTextForCopy(selection_range.GetMin(), selected_text == text,
       &selected_text, &url, &write_url);
   ui::ScopedClipboardWriter scw(cb, ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(selected_text);
@@ -842,7 +784,7 @@ void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {
   const string16 text = textfield_->text();
   GURL url;
   bool write_url;
-  model_->AdjustTextForCopy(selection_range.start(), selected_text == text,
+  model()->AdjustTextForCopy(selection_range.start(), selected_text == text,
       &selected_text, &url, &write_url);
   data->SetString(selected_text);
   if (write_url)
@@ -864,8 +806,8 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   return (command_id == IDS_PASTE_AND_GO) ?
-      model_->CanPasteAndGo(GetClipboardText()) :
-      command_updater_->IsCommandEnabled(command_id);
+      model()->CanPasteAndGo(GetClipboardText()) :
+      command_updater()->IsCommandEnabled(command_id);
 }
 
 bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
@@ -875,7 +817,7 @@ bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
 string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   if (command_id == IDS_PASTE_AND_GO) {
     return l10n_util::GetStringUTF16(
-        model_->IsPasteAndSearch(GetClipboardText()) ?
+        model()->IsPasteAndSearch(GetClipboardText()) ?
         IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
   }
 
@@ -884,18 +826,18 @@ string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
 
 void OmniboxViewViews::ExecuteCommand(int command_id) {
   if (command_id == IDS_PASTE_AND_GO) {
-    model_->PasteAndGo(GetClipboardText());
+    model()->PasteAndGo(GetClipboardText());
     return;
   }
 
-  command_updater_->ExecuteCommand(command_id);
+  command_updater()->ExecuteCommand(command_id);
 }
 
 #if defined(OS_CHROMEOS)
 void OmniboxViewViews::CandidateWindowOpened(
       chromeos::input_method::InputMethodManager* manager) {
   ime_candidate_window_open_ = true;
-  ClosePopup();
+  CloseOmniboxPopup();
 }
 
 void OmniboxViewViews::CandidateWindowClosed(
@@ -913,6 +855,10 @@ size_t OmniboxViewViews::GetTextLength() const {
   return textfield_->text().length();
 }
 
+int OmniboxViewViews::GetOmniboxTextLength() const {
+  return static_cast<int>(GetTextLength());
+}
+
 void OmniboxViewViews::EmphasizeURLComponents() {
   // See whether the contents are a URL with a non-empty host portion, which we
   // should emphasize.  To check for a URL, rather than using the type returned
@@ -922,9 +868,9 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   // And Go system uses.
   string16 text = GetText();
   url_parse::Component scheme, host;
-  AutocompleteInput::ParseForEmphasizeComponents(text, model_->GetDesiredTLD(),
+  AutocompleteInput::ParseForEmphasizeComponents(text, model()->GetDesiredTLD(),
                                                  &scheme, &host);
-  const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
+  const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
 
   SkColor base_color = LocationBarView::GetColor(
       security_level_,
@@ -938,7 +884,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   }
 
   // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
+  if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
       (security_level_ != ToolbarModel::NONE)) {
     SkColor security_color = LocationBarView::GetColor(
         security_level_, LocationBarView::SECURITY_TEXT);
@@ -946,11 +892,6 @@ void OmniboxViewViews::EmphasizeURLComponents() {
     ApplyURLStyle(textfield_, scheme.begin, scheme.end(),
                   security_color, use_strikethrough);
   }
-}
-
-void OmniboxViewViews::TextChanged() {
-  EmphasizeURLComponents();
-  model_->OnChanged();
 }
 
 void OmniboxViewViews::SetTextAndSelectedRange(const string16& text,

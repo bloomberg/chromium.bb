@@ -449,7 +449,7 @@ void OmniboxEditModel::StopAutocomplete() {
 }
 
 bool OmniboxEditModel::CanPasteAndGo(const string16& text) const {
-  if (!view_->GetCommandUpdater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
+  if (!view_->command_updater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
     return false;
 
   AutocompleteMatch match;

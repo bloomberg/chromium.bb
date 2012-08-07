@@ -160,7 +160,9 @@ OmniboxViewGtk::OmniboxViewGtk(OmniboxEditController* controller,
                                CommandUpdater* command_updater,
                                bool popup_window_mode,
                                GtkWidget* location_bar)
-    : browser_(browser),
+    : OmniboxView(browser->profile(), controller, toolbar_model,
+                  command_updater),
+      browser_(browser),
       text_view_(NULL),
       tag_table_(NULL),
       text_buffer_(NULL),
@@ -171,10 +173,6 @@ OmniboxViewGtk::OmniboxViewGtk(OmniboxEditController* controller,
       instant_anchor_tag_(NULL),
       instant_view_(NULL),
       instant_mark_(NULL),
-      model_(new OmniboxEditModel(this, controller, browser->profile())),
-      controller_(controller),
-      toolbar_model_(toolbar_model),
-      command_updater_(command_updater),
       popup_window_mode_(popup_window_mode),
       security_level_(ToolbarModel::NONE),
       mark_set_handler_id_(0),
@@ -195,14 +193,13 @@ OmniboxViewGtk::OmniboxViewGtk(OmniboxEditController* controller,
       going_to_focus_(NULL) {
   popup_view_.reset(
       new OmniboxPopupViewGtk
-          (GetFont(), this, model_.get(), location_bar));
+          (GetFont(), this, model(), location_bar));
 }
 
 OmniboxViewGtk::~OmniboxViewGtk() {
   // Explicitly teardown members which have a reference to us.  Just to be safe
   // we want them to be destroyed before destroying any other internal state.
   popup_view_.reset();
-  model_.reset();
 
   // We own our widget and TextView related objects.
   if (alignment_.get()) {  // Init() has been called.
@@ -422,14 +419,6 @@ int OmniboxViewGtk::WidthOfTextAfterCursor() {
   return -1;
 }
 
-OmniboxEditModel* OmniboxViewGtk::model() {
-  return model_.get();
-}
-
-const OmniboxEditModel* OmniboxViewGtk::model() const {
-  return model_.get();
-}
-
 void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
   // If any text has been selected, register it as the PRIMARY selection so it
@@ -437,7 +426,7 @@ void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
   if (!selected_text_.empty())
     SavePrimarySelection(selected_text_);
   // NOTE: GetStateForTabSwitch may affect GetSelection, so order is important.
-  OmniboxEditModel::State model_state = model_->GetStateForTabSwitch();
+  OmniboxEditModel::State model_state = model()->GetStateForTabSwitch();
   GetStateAccessor()->SetProperty(
       tab->GetPropertyBag(),
       AutocompleteEditState(model_state, ViewState(GetSelection())));
@@ -446,10 +435,10 @@ void OmniboxViewGtk::SaveStateToTab(WebContents* tab) {
 void OmniboxViewGtk::Update(const WebContents* contents) {
   // NOTE: We're getting the URL text here from the ToolbarModel.
   bool visibly_changed_permanent_text =
-      model_->UpdatePermanentText(toolbar_model_->GetText());
+      model()->UpdatePermanentText(toolbar_model()->GetText());
 
   ToolbarModel::SecurityLevel security_level =
-        toolbar_model_->GetSecurityLevel();
+        toolbar_model()->GetSecurityLevel();
   bool changed_security_level = (security_level != security_level_);
   security_level_ = security_level;
 
@@ -459,7 +448,7 @@ void OmniboxViewGtk::Update(const WebContents* contents) {
     const AutocompleteEditState* state =
         GetStateAccessor()->GetProperty(contents->GetPropertyBag());
     if (state) {
-      model_->RestoreState(state->model_state);
+      model()->RestoreState(state->model_state);
 
       // Move the marks for the cursor and the other end of the selection to
       // the previously-saved offsets (but preserve PRIMARY).
@@ -473,16 +462,6 @@ void OmniboxViewGtk::Update(const WebContents* contents) {
   } else if (changed_security_level) {
     EmphasizeURLComponents();
   }
-}
-
-void OmniboxViewGtk::OpenMatch(const AutocompleteMatch& match,
-                               WindowOpenDisposition disposition,
-                               const GURL& alternate_nav_url,
-                               size_t selected_line) {
-  if (!match.destination_url.is_valid())
-    return;
-
-  model_->OpenMatch(match, disposition, alternate_nav_url, selected_line);
 }
 
 string16 OmniboxViewGtk::GetText() const {
@@ -503,29 +482,6 @@ string16 OmniboxViewGtk::GetText() const {
     }
   }
   return out;
-}
-
-bool OmniboxViewGtk::IsEditingOrEmpty() const {
-  return model_->user_input_in_progress() || (GetTextLength() == 0);
-}
-
-int OmniboxViewGtk::GetIcon() const {
-  return IsEditingOrEmpty() ?
-      AutocompleteMatch::TypeToIcon(model_->CurrentTextType()) :
-      toolbar_model_->GetIcon();
-}
-
-void OmniboxViewGtk::SetUserText(const string16& text) {
-  SetUserText(text, text, true);
-}
-
-void OmniboxViewGtk::SetUserText(const string16& text,
-                                 const string16& display_text,
-                                 bool update_popup) {
-  model_->SetUserText(text);
-  // TODO(deanm): something about selection / focus change here.
-  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
-      true);
 }
 
 void OmniboxViewGtk::SetWindowTextAndCaretPos(const string16& text,
@@ -584,27 +540,18 @@ void OmniboxViewGtk::SelectAll(bool reversed) {
   SelectAllInternal(reversed, false);
 }
 
-void OmniboxViewGtk::RevertAll() {
-  ClosePopup();
-  model_->Revert();
-  TextChanged();
-}
-
 void OmniboxViewGtk::UpdatePopup() {
-  model_->SetInputInProgress(true);
-  if (!update_popup_without_focus_ && !model_->has_focus())
+  model()->SetInputInProgress(true);
+  if (!update_popup_without_focus_ && !model()->has_focus())
     return;
 
   // Don't inline autocomplete when the caret/selection isn't at the end of
   // the text, or in the middle of composition.
   CharRange sel = GetSelection();
   bool no_inline_autocomplete =
-      std::max(sel.cp_max, sel.cp_min) < GetTextLength() || IsImeComposing();
-  model_->StartAutocomplete(sel.cp_min != sel.cp_max, no_inline_autocomplete);
-}
-
-void OmniboxViewGtk::ClosePopup() {
-  model_->StopAutocomplete();
+      std::max(sel.cp_max, sel.cp_min) < GetOmniboxTextLength() ||
+      IsImeComposing();
+  model()->StartAutocomplete(sel.cp_min != sel.cp_max, no_inline_autocomplete);
 }
 
 void OmniboxViewGtk::OnTemporaryTextMaybeChanged(
@@ -644,7 +591,7 @@ void OmniboxViewGtk::OnBeforePossibleChange() {
   // Record this paste, so we can do different behavior.
   if (paste_clipboard_requested_) {
     paste_clipboard_requested_ = false;
-    model_->on_paste();
+    model()->on_paste();
   }
 
   // This method will be called in HandleKeyPress() method just before
@@ -682,7 +629,7 @@ bool OmniboxViewGtk::OnAfterPossibleChange() {
   }
 
   const CharRange new_sel = GetSelection();
-  const int length = GetTextLength();
+  const int length = GetOmniboxTextLength();
   const bool selection_differs =
       ((new_sel.cp_min != new_sel.cp_max) ||
        (sel_before_change_.cp_min != sel_before_change_.cp_max)) &&
@@ -711,12 +658,12 @@ bool OmniboxViewGtk::OnAfterPossibleChange() {
 
   delete_at_end_pressed_ = false;
 
-  const bool something_changed = model_->OnAfterPossibleChange(
+  const bool something_changed = model()->OnAfterPossibleChange(
       text_before_change_, new_text, new_sel.selection_min(),
       new_sel.selection_max(), selection_differs, text_changed_,
       just_deleted_text, !IsImeComposing());
 
-  // If only selection was changed, we don't need to call |controller_|'s
+  // If only selection was changed, we don't need to call the controller's
   // OnChanged() method, which is called in TextChanged().
   // But we still need to call EmphasizeURLComponents() to make sure the text
   // attributes are updated correctly.
@@ -726,7 +673,7 @@ bool OmniboxViewGtk::OnAfterPossibleChange() {
     EmphasizeURLComponents();
   } else if (delete_was_pressed_ && at_end_of_edit) {
     delete_at_end_pressed_ = true;
-    model_->OnChanged();
+    model()->OnChanged();
   }
   delete_was_pressed_ = false;
 
@@ -741,10 +688,6 @@ gfx::NativeView OmniboxViewGtk::GetRelativeWindowForPopup() const {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GetNativeView());
   DCHECK(gtk_widget_is_toplevel(toplevel));
   return toplevel;
-}
-
-CommandUpdater* OmniboxViewGtk::GetCommandUpdater() {
-  return command_updater_;
 }
 
 void OmniboxViewGtk::SetInstantSuggestion(const string16& suggestion,
@@ -835,7 +778,7 @@ void OmniboxViewGtk::Observe(int type,
 }
 
 void OmniboxViewGtk::AnimationEnded(const ui::Animation* animation) {
-  model_->CommitSuggestedText(false);
+  model()->CommitSuggestedText(false);
 }
 
 void OmniboxViewGtk::AnimationProgressed(const ui::Animation* animation) {
@@ -1067,26 +1010,26 @@ gboolean OmniboxViewGtk::HandleKeyPress(GtkWidget* widget, GdkEventKey* event) {
 
   if (enter_was_pressed_ && enter_was_inserted_) {
     bool alt_held = (event->state & GDK_MOD1_MASK);
-    model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
+    model()->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
     result = TRUE;
   } else if (!result && event->keyval == GDK_Escape &&
              (event->state & gtk_accelerator_get_default_mod_mask()) == 0) {
     // We can handle the Escape key if |text_view_| did not handle it.
     // If it's not handled by us, then we need to propagate it up to the parent
     // widgets, so that Escape accelerator can still work.
-    result = model_->OnEscapeKeyPressed();
+    result = model()->OnEscapeKeyPressed();
   } else if (event->keyval == GDK_Control_L || event->keyval == GDK_Control_R) {
     // Omnibox2 can switch its contents while pressing a control key. To switch
     // the contents of omnibox2, we notify the OmniboxEditModel class when the
     // control-key state is changed.
-    model_->OnControlKeyChanged(true);
+    model()->OnControlKeyChanged(true);
   } else if (!text_changed_ && event->keyval == GDK_Delete &&
              event->state & GDK_SHIFT_MASK) {
     // If shift+del didn't change the text, we let this delete an entry from
     // the popup.  We can't check to see if the IME handled it because even if
     // nothing is selected, the IME or the TextView still report handling it.
-    if (model_->popup_model()->IsOpen())
-      model_->popup_model()->TryDeletingCurrentItem();
+    if (model()->popup_model()->IsOpen())
+      model()->popup_model()->TryDeletingCurrentItem();
   }
 
   // Set |enter_was_pressed_| to false, to make sure OnAfterPossibleChange() can
@@ -1118,7 +1061,7 @@ gboolean OmniboxViewGtk::HandleKeyRelease(GtkWidget* widget,
     GdkModifierType mod;
     gdk_display_get_pointer(display, NULL, NULL, NULL, &mod);
     if (!(mod & GDK_CONTROL_MASK))
-      model_->OnControlKeyChanged(false);
+      model()->OnControlKeyChanged(false);
   }
 
   // Even though we handled the press ourselves, let GtkTextView handle the
@@ -1139,11 +1082,11 @@ gboolean OmniboxViewGtk::HandleViewButtonPress(GtkWidget* sender,
     button_1_pressed_ = true;
 
     // Button press event may change the selection, we need to record the change
-    // and report it to |model_| later when button is released.
+    // and report it to model() later when button is released.
     OnBeforePossibleChange();
   } else if (event->button == 2) {
     // GtkTextView pastes PRIMARY selection with middle click.
-    // We can't call model_->on_paste_replacing_all() here, because the actual
+    // We can't call model()->on_paste_replacing_all() here, because the actual
     // paste clipboard action may not be performed if the clipboard is empty.
     paste_clipboard_requested_ = true;
   }
@@ -1165,7 +1108,7 @@ gboolean OmniboxViewGtk::HandleViewButtonRelease(GtkWidget* sender,
   GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(text_view_);
   klass->button_release_event(text_view_, event);
 
-  // Inform |model_| about possible text selection change. We may get a button
+  // Inform model() about possible text selection change. We may get a button
   // release with no press (e.g. if the user clicks in the omnibox to dismiss a
   // bubble).
   if (button_1_was_pressed)
@@ -1182,8 +1125,8 @@ gboolean OmniboxViewGtk::HandleViewFocusIn(GtkWidget* sender,
   GdkModifierType modifiers;
   GdkWindow* gdk_window = gtk_widget_get_window(text_view_);
   gdk_window_get_pointer(gdk_window, NULL, NULL, &modifiers);
-  model_->OnSetFocus((modifiers & GDK_CONTROL_MASK) != 0);
-  controller_->OnSetFocus();
+  model()->OnSetFocus((modifiers & GDK_CONTROL_MASK) != 0);
+  controller()->OnSetFocus();
   // TODO(deanm): Some keyword hit business, etc here.
 
   g_signal_connect(
@@ -1205,13 +1148,13 @@ gboolean OmniboxViewGtk::HandleViewFocusOut(GtkWidget* sender,
     view_getting_focus = going_to_focus_;
 
   // This must be invoked before ClosePopup.
-  model_->OnWillKillFocus(view_getting_focus);
+  model()->OnWillKillFocus(view_getting_focus);
 
   // Close the popup.
-  ClosePopup();
+  CloseOmniboxPopup();
   // Tell the model to reset itself.
-  model_->OnKillFocus();
-  controller_->OnKillFocus();
+  model()->OnKillFocus();
+  controller()->OnKillFocus();
 
   g_signal_handlers_disconnect_by_func(
       gdk_keymap_get_for_display(gtk_widget_get_display(text_view_)),
@@ -1248,7 +1191,7 @@ void OmniboxViewGtk::HandleViewMoveCursor(
     if (has_selection) {
       // We have a selection and start / end are in ascending order.
       // Cursor placement will remove the selection, so we need inform
-      // |model_| about this change by
+      // model() about this change by
       // calling On{Before|After}PossibleChange() methods.
       OnBeforePossibleChange();
       gtk_text_buffer_place_cursor(
@@ -1256,20 +1199,20 @@ void OmniboxViewGtk::HandleViewMoveCursor(
       OnAfterPossibleChange();
       handled = true;
     } else if (count == count_towards_end && !IsCaretAtEnd()) {
-      handled = model_->CommitSuggestedText(true);
+      handled = model()->CommitSuggestedText(true);
     }
   } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
     // Multiply by count for the direction (if we move too much that's ok).
-    model_->OnUpOrDownKeyPressed(model_->result().size() * count);
+    model()->OnUpOrDownKeyPressed(model()->result().size() * count);
     handled = true;
   } else if (step == GTK_MOVEMENT_DISPLAY_LINES) {  // Arrow up and down.
-    model_->OnUpOrDownKeyPressed(count);
+    model()->OnUpOrDownKeyPressed(count);
     handled = true;
   }
 
   if (!handled) {
     // Cursor movement may change the selection, we need to record the change
-    // and report it to |model_|.
+    // and report it to model().
     if (has_selection || extend_selection)
       OnBeforePossibleChange();
 
@@ -1300,7 +1243,7 @@ void OmniboxViewGtk::HandlePopupMenuDeactivate(GtkWidget* sender) {
   // is activated, the focus comes back to |text_view_|, but only after the
   // check in UpdatePopup(). We set this flag to make UpdatePopup() aware that
   // it will be receiving focus again.
-  if (!model_->has_focus())
+  if (!model()->has_focus())
     update_popup_without_focus_ = true;
 }
 
@@ -1317,7 +1260,7 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   g_signal_connect(search_engine_menuitem, "activate",
                    G_CALLBACK(HandleEditSearchEnginesThunk), this);
   gtk_widget_set_sensitive(search_engine_menuitem,
-      command_updater_->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES));
+      command_updater()->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES));
   gtk_widget_show(search_engine_menuitem);
 
   // Detect the Paste menu item by searching for the one that
@@ -1350,13 +1293,13 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   g_free(text);
   GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
       ui::ConvertAcceleratorsFromWindowsStyle(l10n_util::GetStringUTF8(
-          model_->IsPasteAndSearch(sanitized_text_for_paste_and_go_) ?
+          model()->IsPasteAndSearch(sanitized_text_for_paste_and_go_) ?
               IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
   gtk_menu_shell_insert(GTK_MENU_SHELL(menu), paste_go_menuitem, index);
   g_signal_connect(paste_go_menuitem, "activate",
                    G_CALLBACK(HandlePasteAndGoThunk), this);
   gtk_widget_set_sensitive(paste_go_menuitem,
-      model_->CanPasteAndGo(sanitized_text_for_paste_and_go_));
+      model()->CanPasteAndGo(sanitized_text_for_paste_and_go_));
   gtk_widget_show(paste_go_menuitem);
 
   g_signal_connect(menu, "deactivate",
@@ -1364,11 +1307,11 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
 }
 
 void OmniboxViewGtk::HandleEditSearchEngines(GtkWidget* sender) {
-  command_updater_->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
+  command_updater()->ExecuteCommand(IDC_EDIT_SEARCH_ENGINES);
 }
 
 void OmniboxViewGtk::HandlePasteAndGo(GtkWidget* sender) {
-  model_->PasteAndGo(sanitized_text_for_paste_and_go_);
+  model()->PasteAndGo(sanitized_text_for_paste_and_go_);
 }
 
 void OmniboxViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
@@ -1498,7 +1441,7 @@ void OmniboxViewGtk::HandleDragBegin(GtkWidget* widget,
   CharRange selection = GetSelection();
   GURL url;
   bool write_url;
-  model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
+  model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
   if (write_url) {
     selected_text_ = UTF16ToUTF8(text);
@@ -1550,7 +1493,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
       base::WriteUnicodeCharacter(c, &filtered_text);
   }
 
-  if (model_->is_pasting())
+  if (model()->is_pasting())
     filtered_text = StripJavascriptSchemas(
         CollapseWhitespace(filtered_text, true));
 
@@ -1573,7 +1516,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
 
 void OmniboxViewGtk::HandleBackSpace(GtkWidget* sender) {
   // Checks if it's currently in keyword search mode.
-  if (model_->is_keyword_hint() || model_->keyword().empty())
+  if (model()->is_keyword_hint() || model()->keyword().empty())
     return;  // Propgate into GtkTextView.
 
   DCHECK(text_view_);
@@ -1591,7 +1534,7 @@ void OmniboxViewGtk::HandleBackSpace(GtkWidget* sender) {
 
   // We're showing a keyword and the user pressed backspace at the beginning
   // of the text. Delete the selected keyword.
-  model_->ClearKeyword(GetText());
+  model()->ClearKeyword(GetText());
 
   // Stop propagating the signal emission into GtkTextView.
   static guint signal_id = g_signal_lookup("backspace", GTK_TYPE_TEXT_VIEW);
@@ -1608,15 +1551,15 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
   bool handled = false;
 
   // Trigger Tab to search behavior only when Tab key is pressed.
-  if (model_->is_keyword_hint() && !shift_was_pressed_) {
-    handled = model_->AcceptKeyword();
-  } else if (model_->popup_model()->IsOpen()) {
+  if (model()->is_keyword_hint() && !shift_was_pressed_) {
+    handled = model()->AcceptKeyword();
+  } else if (model()->popup_model()->IsOpen()) {
     if (shift_was_pressed_ &&
-        model_->popup_model()->selected_line_state() ==
+        model()->popup_model()->selected_line_state() ==
             OmniboxPopupModel::KEYWORD)
-      model_->ClearKeyword(GetText());
+      model()->ClearKeyword(GetText());
     else
-      model_->OnUpOrDownKeyPressed(shift_was_pressed_ ? -1 : 1);
+      model()->OnUpOrDownKeyPressed(shift_was_pressed_ ? -1 : 1);
 
     handled = true;
   }
@@ -1625,10 +1568,10 @@ void OmniboxViewGtk::HandleViewMoveFocus(GtkWidget* widget,
     handled = true;
 
   if (!handled && gtk_widget_get_visible(instant_view_))
-    handled = model_->CommitSuggestedText(true);
+    handled = model()->CommitSuggestedText(true);
 
   if (!handled)
-    handled = model_->AcceptCurrentInstantPreview();
+    handled = model()->AcceptCurrentInstantPreview();
 
   if (handled) {
     static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
@@ -1663,7 +1606,7 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
   GURL url;
   string16 text(UTF8ToUTF16(GetSelectedText()));
   bool write_url;
-  model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
+  model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
 
   if (write_url) {
@@ -1687,11 +1630,90 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
   OwnPrimarySelection(UTF16ToUTF8(text));
 }
 
+int OmniboxViewGtk::GetOmniboxTextLength() const {
+  GtkTextIter end;
+  gtk_text_buffer_get_iter_at_mark(text_buffer_, &end, instant_mark_);
+  if (supports_pre_edit_) {
+    // We need to count the length of the text being composed, because we treat
+    // it as part of the content in GetText().
+    return gtk_text_iter_get_offset(&end) + pre_edit_.size();
+  }
+  return gtk_text_iter_get_offset(&end);
+}
+
+void OmniboxViewGtk::EmphasizeURLComponents() {
+  if (supports_pre_edit_) {
+    // We can't change the text style easily, if the pre-edit string (the text
+    // being composed by the input method) is not empty, which is not treated as
+    // a part of the text content inside GtkTextView. And it's ok to simply
+    // return in this case, as this method will be called again when the
+    // pre-edit string gets committed.
+    if (pre_edit_.size()) {
+      strikethrough_ = CharRange();
+      return;
+    }
+  }
+  // See whether the contents are a URL with a non-empty host portion, which we
+  // should emphasize.  To check for a URL, rather than using the type returned
+  // by Parse(), ask the model, which will check the desired page transition for
+  // this input.  This can tell us whether an UNKNOWN input string is going to
+  // be treated as a search or a navigation, and is the same method the Paste
+  // And Go system uses.
+  url_parse::Component scheme, host;
+  string16 text(GetText());
+  AutocompleteInput::ParseForEmphasizeComponents(
+      text, model()->GetDesiredTLD(), &scheme, &host);
+  const bool emphasize = model()->CurrentTextIsURL() && (host.len > 0);
+
+  // Set the baseline emphasis.
+  GtkTextIter start, end;
+  GetTextBufferBounds(&start, &end);
+  gtk_text_buffer_remove_all_tags(text_buffer_, &start, &end);
+  if (emphasize) {
+    gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
+
+    // We've found a host name, give it more emphasis.
+    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &start, 0,
+                                           GetUTF8Offset(text,
+                                                         host.begin));
+    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &end, 0,
+                                           GetUTF8Offset(text,
+                                                         host.end()));
+
+    gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
+  } else {
+    gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
+  }
+
+  strikethrough_ = CharRange();
+  // Emphasize the scheme for security UI display purposes (if necessary).
+  if (!model()->user_input_in_progress() && scheme.is_nonempty() &&
+      (security_level_ != ToolbarModel::NONE)) {
+    CharRange scheme_range = CharRange(GetUTF8Offset(text, scheme.begin),
+                                       GetUTF8Offset(text, scheme.end()));
+    ItersFromCharRange(scheme_range, &start, &end);
+
+    if (security_level_ == ToolbarModel::SECURITY_ERROR) {
+      strikethrough_ = scheme_range;
+      // When we draw the strikethrough, we don't want to include the ':' at the
+      // end of the scheme.
+      strikethrough_.cp_max--;
+
+      gtk_text_buffer_apply_tag(text_buffer_, security_error_scheme_tag_,
+                                &start, &end);
+    } else if (security_level_ == ToolbarModel::SECURITY_WARNING) {
+      gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
+    } else {
+      gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_, &start, &end);
+    }
+  }
+}
+
 bool OmniboxViewGtk::OnPerformDropImpl(const string16& text) {
   string16 sanitized_string(StripJavascriptSchemas(
       CollapseWhitespace(text, true)));
-  if (model_->CanPasteAndGo(sanitized_string)) {
-    model_->PasteAndGo(sanitized_string);
+  if (model()->CanPasteAndGo(sanitized_string)) {
+    model()->PasteAndGo(sanitized_string);
     return true;
   }
 
@@ -1746,7 +1768,7 @@ void OmniboxViewGtk::OwnPrimarySelection(const std::string& text) {
 }
 
 void OmniboxViewGtk::HandlePasteClipboard(GtkWidget* sender) {
-  // We can't call model_->on_paste_replacing_all() here, because the actual
+  // We can't call model()->on_paste_replacing_all() here, because the actual
   // paste clipboard action may not be performed if the clipboard is empty.
   paste_clipboard_requested_ = true;
 }
@@ -1883,95 +1905,10 @@ void OmniboxViewGtk::ItersFromCharRange(const CharRange& range,
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_max, range.cp_max);
 }
 
-int OmniboxViewGtk::GetTextLength() const {
-  GtkTextIter end;
-  gtk_text_buffer_get_iter_at_mark(text_buffer_, &end, instant_mark_);
-  if (supports_pre_edit_) {
-    // We need to count the length of the text being composed, because we treat
-    // it as part of the content in GetText().
-    return gtk_text_iter_get_offset(&end) + pre_edit_.size();
-  }
-  return gtk_text_iter_get_offset(&end);
-}
-
-void OmniboxViewGtk::PlaceCaretAt(int pos) {
-  GtkTextIter cursor;
-  gtk_text_buffer_get_iter_at_offset(text_buffer_, &cursor, pos);
-  gtk_text_buffer_place_cursor(text_buffer_, &cursor);
-}
-
 bool OmniboxViewGtk::IsCaretAtEnd() const {
   const CharRange selection = GetSelection();
   return selection.cp_min == selection.cp_max &&
-      selection.cp_min == GetTextLength();
-}
-
-void OmniboxViewGtk::EmphasizeURLComponents() {
-  if (supports_pre_edit_) {
-    // We can't change the text style easily, if the pre-edit string (the text
-    // being composed by the input method) is not empty, which is not treated as
-    // a part of the text content inside GtkTextView. And it's ok to simply
-    // return in this case, as this method will be called again when the
-    // pre-edit string gets committed.
-    if (pre_edit_.size()) {
-      strikethrough_ = CharRange();
-      return;
-    }
-  }
-  // See whether the contents are a URL with a non-empty host portion, which we
-  // should emphasize.  To check for a URL, rather than using the type returned
-  // by Parse(), ask the model, which will check the desired page transition for
-  // this input.  This can tell us whether an UNKNOWN input string is going to
-  // be treated as a search or a navigation, and is the same method the Paste
-  // And Go system uses.
-  url_parse::Component scheme, host;
-  string16 text(GetText());
-  AutocompleteInput::ParseForEmphasizeComponents(
-      text, model_->GetDesiredTLD(), &scheme, &host);
-  const bool emphasize = model_->CurrentTextIsURL() && (host.len > 0);
-
-  // Set the baseline emphasis.
-  GtkTextIter start, end;
-  GetTextBufferBounds(&start, &end);
-  gtk_text_buffer_remove_all_tags(text_buffer_, &start, &end);
-  if (emphasize) {
-    gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
-
-    // We've found a host name, give it more emphasis.
-    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &start, 0,
-                                           GetUTF8Offset(text,
-                                                         host.begin));
-    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &end, 0,
-                                           GetUTF8Offset(text,
-                                                         host.end()));
-
-    gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
-  } else {
-    gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
-  }
-
-  strikethrough_ = CharRange();
-  // Emphasize the scheme for security UI display purposes (if necessary).
-  if (!model_->user_input_in_progress() && scheme.is_nonempty() &&
-      (security_level_ != ToolbarModel::NONE)) {
-    CharRange scheme_range = CharRange(GetUTF8Offset(text, scheme.begin),
-                                       GetUTF8Offset(text, scheme.end()));
-    ItersFromCharRange(scheme_range, &start, &end);
-
-    if (security_level_ == ToolbarModel::SECURITY_ERROR) {
-      strikethrough_ = scheme_range;
-      // When we draw the strikethrough, we don't want to include the ':' at the
-      // end of the scheme.
-      strikethrough_.cp_max--;
-
-      gtk_text_buffer_apply_tag(text_buffer_, security_error_scheme_tag_,
-                                &start, &end);
-    } else if (security_level_ == ToolbarModel::SECURITY_WARNING) {
-      gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
-    } else {
-      gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_, &start, &end);
-    }
-  }
+      selection.cp_min == GetOmniboxTextLength();
 }
 
 void OmniboxViewGtk::StopAnimation() {
@@ -1979,11 +1916,6 @@ void OmniboxViewGtk::StopAnimation() {
   instant_animation_->set_delegate(NULL);
   instant_animation_->Stop();
   UpdateInstantViewColors();
-}
-
-void OmniboxViewGtk::TextChanged() {
-  EmphasizeURLComponents();
-  model_->OnChanged();
 }
 
 void OmniboxViewGtk::SavePrimarySelection(const std::string& selected_text) {
@@ -2180,7 +2112,7 @@ void OmniboxViewGtk::UpdatePrimarySelectionIfValidURL() {
   CharRange selection = GetSelection();
   GURL url;
   bool write_url;
-  model_->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
+  model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
   if (write_url) {
     selected_text_ = UTF16ToUTF8(text);
