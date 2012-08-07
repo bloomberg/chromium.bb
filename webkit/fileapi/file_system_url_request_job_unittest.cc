@@ -29,6 +29,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -72,8 +73,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     // TODO(adamk): Run this on the FILE thread we've created as well.
     file_system_context_ =
         new FileSystemContext(
-            base::MessageLoopProxy::current(),
-            base::MessageLoopProxy::current(),
+            FileSystemTaskRunners::CreateMockTaskRunners(),
             special_storage_policy_, NULL,
             temp_dir_.path(),
             CreateDisallowFileAccessOptions());

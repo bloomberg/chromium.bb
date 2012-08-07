@@ -9,20 +9,15 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/special_storage_policy.h"
 
 class FilePath;
-
-namespace base {
-class SequencedTaskRunner;
-class SingleThreadTaskRunner;
-}
 
 namespace quota {
 class QuotaManagerProxy;
@@ -40,6 +35,7 @@ class FileSystemMountPointProvider;
 class FileSystemOperationInterface;
 class FileSystemOptions;
 class FileSystemQuotaUtil;
+class FileSystemTaskRunners;
 class FileSystemURL;
 class IsolatedMountPointProvider;
 class SandboxMountPointProvider;
@@ -52,14 +48,15 @@ class FILEAPI_EXPORT FileSystemContext
     : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
  public:
-  // |file_task_runner| is used for all file operations and file related
-  // meta operations.
-  // The code assumes that file_task_runner->RunsTasksOnCurrentThread() returns
-  // false if the current task is not running on the thread that allows
+  // task_runners->file_task_runner() is used as default TaskRunner.
+  // Unless a MountPointProvired is override in CreateFileSystemOperation,
+  // it is used for all file operations and file related meta operations.
+  // The code assumes that
+  // task_runners->file_task_runner()->RunsTasksOnCurrentThread()
+  // returns false if the current task is not running on the thread that allows
   // blocking file operations (like SequencedWorkerPool implementation does).
   FileSystemContext(
-      base::SequencedTaskRunner* file_task_runner,
-      base::SingleThreadTaskRunner* io_task_runner,
+      scoped_ptr<FileSystemTaskRunners> task_runners,
       quota::SpecialStoragePolicy* special_storage_policy,
       quota::QuotaManagerProxy* quota_manager_proxy,
       const FilePath& profile_path,
@@ -69,10 +66,6 @@ class FILEAPI_EXPORT FileSystemContext
 
   quota::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();
-  }
-
-  base::SequencedTaskRunner* file_task_runner() const {
-    return file_task_runner_.get();
   }
 
   // Returns a quota util for a given filesystem type.  This may
@@ -150,6 +143,8 @@ class FILEAPI_EXPORT FileSystemContext
   void RegisterMountPointProvider(FileSystemType type,
                                   FileSystemMountPointProvider* provider);
 
+  FileSystemTaskRunners* task_runners() { return task_runners_.get(); }
+
  private:
   friend struct DefaultContextDeleter;
   friend class base::DeleteHelper<FileSystemContext>;
@@ -159,8 +154,7 @@ class FILEAPI_EXPORT FileSystemContext
 
   void DeleteOnCorrectThread() const;
 
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_ptr<FileSystemTaskRunners> task_runners_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
 

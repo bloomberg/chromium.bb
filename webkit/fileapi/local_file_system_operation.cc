@@ -5,7 +5,7 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 
 #include "base/bind.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
@@ -16,6 +16,7 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -27,6 +28,22 @@
 using webkit_blob::ShareableFileReference;
 
 namespace fileapi {
+
+namespace {
+
+bool IsMediaFileSystemType(FileSystemType type) {
+  return type == kFileSystemTypeNativeMedia ||
+      type == kFileSystemTypeDeviceMedia;
+}
+
+bool IsCrossOperationAllowed(FileSystemType src_type,
+                                                FileSystemType dest_type) {
+  // If two types are supposed to run on different task runners we should not
+  // allow cross FileUtil operations at this layer.
+  return IsMediaFileSystemType(src_type) == IsMediaFileSystemType(dest_type);
+}
+
+}  // namespace
 
 class LocalFileSystemOperation::ScopedQuotaNotifier {
  public:
@@ -118,6 +135,10 @@ void LocalFileSystemOperation::Copy(const FileSystemURL& src_url,
   base::PlatformFileError result = SetUp(src_url, &src_util_, SETUP_FOR_READ);
   if (result == base::PLATFORM_FILE_OK)
     result = SetUp(dest_url, &dest_util_, SETUP_FOR_CREATE);
+  if (result == base::PLATFORM_FILE_OK) {
+    if (!IsCrossOperationAllowed(src_url.type(), dest_url.type()))
+      result = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  }
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     delete this;
@@ -140,6 +161,10 @@ void LocalFileSystemOperation::Move(const FileSystemURL& src_url,
   base::PlatformFileError result = SetUp(src_url, &src_util_, SETUP_FOR_WRITE);
   if (result == base::PLATFORM_FILE_OK)
     result = SetUp(dest_url, &dest_util_, SETUP_FOR_CREATE);
+  if (result == base::PLATFORM_FILE_OK) {
+    if (!IsCrossOperationAllowed(src_url.type(), dest_url.type()))
+      result = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  }
   if (result != base::PLATFORM_FILE_OK) {
     callback.Run(result);
     return;
@@ -684,7 +709,7 @@ void LocalFileSystemOperation::DidCreateSnapshotFile(
       snapshot_policy == FileSystemFileUtil::kSnapshotFileTemporary) {
     file_ref = ShareableFileReference::GetOrCreate(
         platform_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-        file_system_context()->file_task_runner());
+        file_system_context()->task_runners()->file_task_runner());
   }
   callback.Run(result, file_info, platform_path, file_ref);
 }

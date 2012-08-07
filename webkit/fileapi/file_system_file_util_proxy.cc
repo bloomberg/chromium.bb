@@ -114,7 +114,7 @@ bool FileSystemFileUtilProxy::Delete(
     bool recursive,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
-      context->file_task_runner(), FROM_HERE,
+      context->task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Delete, context, file_util, url, recursive),
       callback);
 }
@@ -127,7 +127,7 @@ bool FileSystemFileUtilProxy::CreateOrOpen(
     int file_flags,
     const CreateOrOpenCallback& callback) {
   return base::FileUtilProxy::RelayCreateOrOpen(
-      context->file_task_runner(),
+      context->task_runner(),
       Bind(&FileSystemFileUtil::CreateOrOpen, Unretained(file_util),
            context, url, file_flags),
       Bind(&FileSystemFileUtil::Close, Unretained(file_util),
@@ -144,7 +144,7 @@ bool FileSystemFileUtilProxy::Copy(
     const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
-      context->file_task_runner(), FROM_HERE,
+      context->task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Copy,
            context, src_util, dest_util, src_url, dest_url),
       callback);
@@ -159,7 +159,7 @@ bool FileSystemFileUtilProxy::Move(
       const FileSystemURL& dest_url,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
-      context->file_task_runner(), FROM_HERE,
+      context->task_runner(), FROM_HERE,
       Bind(&FileUtilHelper::Move,
            context, src_util, dest_util, src_url, dest_url),
       callback);
@@ -172,7 +172,7 @@ bool FileSystemFileUtilProxy::EnsureFileExists(
     const FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
   EnsureFileExistsHelper* helper = new EnsureFileExistsHelper;
-  return context->file_task_runner()->PostTaskAndReply(
+  return context->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&EnsureFileExistsHelper::RunWork, Unretained(helper),
              file_util, context, url),
@@ -188,7 +188,7 @@ bool FileSystemFileUtilProxy::CreateDirectory(
     bool recursive,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
-      context->file_task_runner(), FROM_HERE,
+      context->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::CreateDirectory, Unretained(file_util),
            context, url, exclusive, recursive),
       callback);
@@ -201,7 +201,7 @@ bool FileSystemFileUtilProxy::GetFileInfo(
     const FileSystemURL& url,
     const GetFileInfoCallback& callback) {
   GetFileInfoHelper* helper = new GetFileInfoHelper;
-  return context->file_task_runner()->PostTaskAndReply(
+  return context->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&GetFileInfoHelper::GetFileInfo, Unretained(helper),
              file_util, context, url),
@@ -215,7 +215,7 @@ bool FileSystemFileUtilProxy::CreateSnapshotFile(
     const FileSystemURL& url,
     const SnapshotFileCallback& callback) {
   GetFileInfoHelper* helper = new GetFileInfoHelper;
-  return context->file_task_runner()->PostTaskAndReply(
+  return context->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&GetFileInfoHelper::CreateSnapshotFile, Unretained(helper),
              file_util, context, url),
@@ -229,7 +229,7 @@ bool FileSystemFileUtilProxy::ReadDirectory(
     const FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   ReadDirectoryHelper* helper = new ReadDirectoryHelper;
-  return context->file_task_runner()->PostTaskAndReply(
+  return context->task_runner()->PostTaskAndReply(
         FROM_HERE,
         Bind(&ReadDirectoryHelper::RunWork, Unretained(helper),
              file_util, context, url),
@@ -245,7 +245,7 @@ bool FileSystemFileUtilProxy::Touch(
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
-      context->file_task_runner(), FROM_HERE,
+      context->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Touch, Unretained(file_util),
            context, url, last_access_time, last_modified_time),
       callback);
@@ -259,7 +259,7 @@ bool FileSystemFileUtilProxy::Truncate(
     int64 length,
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
-      context->file_task_runner(), FROM_HERE,
+      context->task_runner(), FROM_HERE,
       Bind(&FileSystemFileUtil::Truncate, Unretained(file_util),
            context, url, length),
       callback);

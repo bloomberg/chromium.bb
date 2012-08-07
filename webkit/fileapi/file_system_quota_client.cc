@@ -11,11 +11,12 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_quota_util.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -296,7 +297,7 @@ void FileSystemQuotaClient::DidGetOriginsForHost(
 }
 
 base::SequencedTaskRunner* FileSystemQuotaClient::file_task_runner() const {
-  return file_system_context_->file_task_runner();
+  return file_system_context_->task_runners()->file_task_runner();
 }
 
 }  // namespace fileapi

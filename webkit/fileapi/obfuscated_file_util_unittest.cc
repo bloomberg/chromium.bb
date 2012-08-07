@@ -17,6 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
@@ -121,8 +122,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
     // creates another path manager, another sandbox_mount_point_provider, and
     // another OFU.  We need to pass in the context to skip all that.
     file_system_context_ = new FileSystemContext(
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
+        FileSystemTaskRunners::CreateMockTaskRunners(),
         storage_policy,
         quota_manager_->proxy(),
         data_dir_.path(),

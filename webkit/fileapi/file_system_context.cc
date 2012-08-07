@@ -13,6 +13,7 @@
 #include "webkit/fileapi/file_system_operation_interface.h"
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_client.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
@@ -47,21 +48,21 @@ void DidOpenFileSystem(
 }  // anonymous namespace
 
 FileSystemContext::FileSystemContext(
-    base::SequencedTaskRunner* file_task_runner,
-    base::SingleThreadTaskRunner* io_task_runner,
+    scoped_ptr<FileSystemTaskRunners> task_runners,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy,
     const FilePath& profile_path,
     const FileSystemOptions& options)
-    : file_task_runner_(file_task_runner),
-      io_task_runner_(io_task_runner),
+    : task_runners_(task_runners.Pass()),
       quota_manager_proxy_(quota_manager_proxy),
       sandbox_provider_(
           new SandboxMountPointProvider(
-              file_task_runner,
+              task_runners_->file_task_runner(),
               profile_path,
               options)),
       isolated_provider_(new IsolatedMountPointProvider(profile_path)) {
+  DCHECK(task_runners_.get());
+
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(CreateQuotaClient(
             this, options.is_incognito()));
@@ -74,7 +75,7 @@ FileSystemContext::FileSystemContext(
 
 bool FileSystemContext::DeleteDataForOriginOnFileThread(
     const GURL& origin_url) {
-  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runners_->file_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(sandbox_provider());
 
   // Delete temporary and persistent data.
@@ -208,8 +209,8 @@ void FileSystemContext::RegisterMountPointProvider(
 FileSystemContext::~FileSystemContext() {}
 
 void FileSystemContext::DeleteOnCorrectThread() const {
-  if (!io_task_runner_->RunsTasksOnCurrentThread() &&
-      io_task_runner_->DeleteSoon(FROM_HERE, this)) {
+  if (!task_runners_->io_task_runner()->RunsTasksOnCurrentThread() &&
+      task_runners_->io_task_runner()->DeleteSoon(FROM_HERE, this)) {
     return;
   }
   STLDeleteContainerPairSecondPointers(provider_map_.begin(),

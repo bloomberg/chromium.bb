@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_options.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -459,7 +460,7 @@ void SandboxMountPointProvider::DeleteFileSystem(
     FileSystemContext* context,
     const DeleteFileSystemCallback& callback) {
   base::PostTaskAndReplyWithResult(
-      context->file_task_runner(),
+      context->task_runners()->file_task_runner(),
       FROM_HERE,
       // It is safe to pass Unretained(this) since context owns it.
       base::Bind(&SandboxMountPointProvider::DeleteOriginDataOnFileThread,

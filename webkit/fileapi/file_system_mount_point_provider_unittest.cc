@@ -19,6 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -210,8 +211,7 @@ class FileSystemMountPointProviderTest : public testing::Test {
  protected:
   void SetupNewContext(const FileSystemOptions& options) {
     file_system_context_ = new FileSystemContext(
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
+        FileSystemTaskRunners::CreateMockTaskRunners(),
         special_storage_policy_,
         NULL,
         data_dir_.path(),

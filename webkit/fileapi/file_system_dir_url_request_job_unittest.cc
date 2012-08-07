@@ -24,6 +24,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
@@ -48,13 +49,10 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    file_thread_proxy_ = base::MessageLoopProxy::current();
-
     special_storage_policy_ = new quota::MockSpecialStoragePolicy;
     file_system_context_ =
         new FileSystemContext(
-            file_thread_proxy_,
-            base::MessageLoopProxy::current(),
+            FileSystemTaskRunners::CreateMockTaskRunners(),
             special_storage_policy_, NULL,
             temp_dir_.path(),
             CreateAllowFileAccessOptions());
@@ -208,10 +206,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
   }
 
   // Put the message loop at the top, so that it's the last thing deleted.
-  MessageLoop message_loop_;
   // Delete all MessageLoopProxy objects before the MessageLoop, to help prevent
   // leaks caused by tasks posted during shutdown.
-  scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
+  MessageLoop message_loop_;
 
   ScopedTempDir temp_dir_;
   net::URLRequestContext empty_context_;

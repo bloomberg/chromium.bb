@@ -46,6 +46,8 @@
         'file_system_quota_util.cc',
         'file_system_quota_util.h',
         'file_system_types.h',
+        'file_system_task_runners.cc',
+        'file_system_task_runners.h',
         'file_system_url.cc',
         'file_system_url.h',
         'file_system_url_request_job.cc',

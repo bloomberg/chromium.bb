@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/blob/blob_storage_controller.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
@@ -43,9 +44,10 @@ using WebKit::WebVector;
 
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
-using fileapi::FileSystemURL;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationInterface;
+using fileapi::FileSystemTaskRunners;
+using fileapi::FileSystemURL;
 
 namespace {
 MessageLoop* g_io_thread;
@@ -74,8 +76,7 @@ void RegisterBlob(const GURL& blob_url, const FilePath& file_path) {
 SimpleFileSystem::SimpleFileSystem() {
   if (file_system_dir_.CreateUniqueTempDir()) {
     file_system_context_ = new FileSystemContext(
-        base::MessageLoopProxy::current(),
-        base::MessageLoopProxy::current(),
+        FileSystemTaskRunners::CreateMockTaskRunners(),
         NULL /* special storage policy */,
         NULL /* quota manager */,
         file_system_dir_.path(),

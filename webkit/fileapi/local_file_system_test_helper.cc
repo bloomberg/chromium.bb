@@ -10,6 +10,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/file_util_helper.h"
@@ -68,8 +69,7 @@ void LocalFileSystemTestOriginHelper::SetUp(
       new quota::MockSpecialStoragePolicy;
   special_storage_policy->SetAllUnlimited(unlimited_quota);
   file_system_context_ = new FileSystemContext(
-      base::MessageLoopProxy::current(),
-      base::MessageLoopProxy::current(),
+      FileSystemTaskRunners::CreateMockTaskRunners(),
       special_storage_policy,
       quota_manager_proxy,
       base_dir,
@@ -78,8 +78,9 @@ void LocalFileSystemTestOriginHelper::SetUp(
   if (type_ == kFileSystemTypeTest) {
     file_system_context_->RegisterMountPointProvider(
         type_,
-        new TestMountPointProvider(file_system_context_->file_task_runner(),
-                                   base_dir));
+        new TestMountPointProvider(
+            file_system_context_->task_runners()->file_task_runner(),
+            base_dir));
   }
 
   // Prepare the origin's root directory.

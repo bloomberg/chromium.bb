@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_interface.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/media/native_media_file_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
@@ -94,8 +95,7 @@ class NativeMediaFileUtilTest : public testing::Test {
 
     file_system_context_ =
         new FileSystemContext(
-            base::MessageLoopProxy::current(),
-            base::MessageLoopProxy::current(),
+            FileSystemTaskRunners::CreateMockTaskRunners(),
             storage_policy,
             NULL,
             data_dir_.path(),

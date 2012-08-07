@@ -14,6 +14,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_quota_client.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -47,8 +48,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     file_system_context_ =
         new FileSystemContext(
-            base::MessageLoopProxy::current(),
-            base::MessageLoopProxy::current(),
+            FileSystemTaskRunners::CreateMockTaskRunners(),
             NULL, NULL,
             data_dir_.path(),
             CreateDisallowFileAccessOptions());

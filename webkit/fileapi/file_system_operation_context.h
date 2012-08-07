@@ -7,6 +7,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -17,10 +18,6 @@
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
 #include "webkit/fileapi/media/media_device_interface_impl.h"
 #endif
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace fileapi {
 
@@ -50,7 +47,14 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
   }
 #endif
 
-  base::SequencedTaskRunner* file_task_runner() const;
+  // Returns TaskRunner which the operation is performed on.
+  base::SequencedTaskRunner* task_runner() const {
+    return task_runner_.get();
+  }
+
+  // Overrides TaskRunner which the operation is performed on.
+  // file_system_context_->task_runners()->file_task_runner() is used otherwise.
+  void set_task_runner(base::SequencedTaskRunner* task_runner);
 
   void set_media_path_filter(MediaPathFilter* media_path_filter) {
     media_path_filter_ = media_path_filter;
@@ -62,6 +66,7 @@ class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
 
  private:
   scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   int64 allowed_bytes_growth_;
   MediaPathFilter* media_path_filter_;

@@ -4,20 +4,23 @@
 
 #include "webkit/fileapi/file_system_operation_context.h"
 
+#include "base/single_thread_task_runner.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 
 namespace fileapi {
 
 FileSystemOperationContext::FileSystemOperationContext(
     FileSystemContext* context)
     : file_system_context_(context),
+      task_runner_(file_system_context_->task_runners()->file_task_runner()),
       allowed_bytes_growth_(0) {}
 
 FileSystemOperationContext::~FileSystemOperationContext() {}
 
-base::SequencedTaskRunner*
-FileSystemOperationContext::file_task_runner() const {
-  return file_system_context_->file_task_runner();
+void FileSystemOperationContext::set_task_runner(
+    base::SequencedTaskRunner* task_runner) {
+  task_runner_ = task_runner;
 }
 
 }  // namespace fileapi

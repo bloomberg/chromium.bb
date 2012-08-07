@@ -15,6 +15,7 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
+#include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
@@ -43,7 +44,7 @@ IsolatedContext* isolated_context() {
 MediaDeviceInterfaceImpl* GetDeviceForUrl(const FileSystemURL& url,
                                           FileSystemContext* context) {
   return MediaDeviceMapService::GetInstance()->CreateOrGetMediaDevice(
-      url.filesystem_id(), context->file_task_runner());
+      url.filesystem_id(), context->task_runners()->media_task_runner());
 }
 #endif
 
@@ -136,8 +137,11 @@ IsolatedMountPointProvider::CreateFileSystemOperation(
   scoped_ptr<FileSystemOperationContext> operation_context(
       new FileSystemOperationContext(context));
   if (url.type() == kFileSystemTypeNativeMedia ||
-      url.type() == kFileSystemTypeDeviceMedia)
+      url.type() == kFileSystemTypeDeviceMedia) {
     operation_context->set_media_path_filter(media_path_filter_.get());
+    operation_context->set_task_runner(
+        context->task_runners()->media_task_runner());
+  }
 
 #if defined(SUPPORT_MEDIA_FILESYSTEM)
   if (url.type() == kFileSystemTypeDeviceMedia) {
@@ -155,7 +159,8 @@ IsolatedMountPointProvider::CreateFileStreamReader(
     int64 offset,
     FileSystemContext* context) const {
   return new webkit_blob::LocalFileStreamReader(
-      context->file_task_runner(), url.path(), offset, base::Time());
+      context->task_runners()->file_task_runner(),
+      url.path(), offset, base::Time());
 }
 
 FileStreamWriter* IsolatedMountPointProvider::CreateFileStreamWriter(
