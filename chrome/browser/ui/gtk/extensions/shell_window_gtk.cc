@@ -30,6 +30,10 @@ ShellWindowGtk::ShellWindowGtk(Profile* profile,
   gtk_window_set_default_size(
       window_, params.bounds.width(), params.bounds.height());
 
+  // Hide titlebar when {frame: 'none'} specified on ShellWindow.
+  if (params.frame == ShellWindow::CreateParams::FRAME_NONE)
+    gtk_window_set_decorated(window_, false);
+
   int min_width = params.minimum_size.width();
   int min_height = params.minimum_size.height();
   int max_width = params.maximum_size.width();
