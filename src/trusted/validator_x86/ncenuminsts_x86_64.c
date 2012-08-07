@@ -65,66 +65,6 @@ Bool NaClInstDecodesCorrectly(NaClInstStruct *inst) {
   return NaClInstStateIsValid(inst);
 }
 
-/* Checks that if a memory reference is a segment address, the segment is
- * one of the ignored segment registers.
- *
- * Note: This is a simplified validator test from NaClMemoryReferenceValidator
- * in file nc_memory_protect.c, pulling out the check on ignored segment
- * registers.
- */
-static void NaClSafeSegmentReference(NaClValidatorState* state,
-                                     NaClInstIter* iter,
-                                     void* ignore) {
-  uint32_t i;
-  NaClInstState* inst_state = state->cur_inst_state;
-  NaClExpVector* vector = state->cur_inst_vector;
-
-  DEBUG({
-      struct Gio* g = NaClLogGetGio();
-      NaClLog(LOG_INFO, "Validating segments:\n");
-      NaClInstStateInstPrint(g, inst_state);
-      NaClInstPrint(g, state->decoder_tables, state->cur_inst);
-      NaClExpVectorPrint(g, inst_state);
-    });
-  /* Look for references to a segment address. */
-  for (i = 0; i < vector->number_expr_nodes; ++i) {
-    NaClExp* node = &vector->node[i];
-    if (state->quit) break;
-    DEBUG(NaClLog(LOG_INFO, "processing argument %"NACL_PRIu32"\n", i));
-    if (ExprSegmentAddress == node->kind) {
-        int seg_prefix_reg_index;
-        NaClOpKind seg_prefix_reg;
-        DEBUG(NaClLog(LOG_INFO,
-                      "found segment assign at node %"NACL_PRIu32"\n", i));
-
-        /* Only allow if 64 bit segment addresses. */
-        if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
-          NaClValidatorInstMessage(
-              LOG_ERROR, state, inst_state,
-              "Assignment to non-64 bit segment address\n");
-          continue;
-        }
-        /* Only allow segment prefix registers that are treated as
-         * null prefixes.
-         */
-        seg_prefix_reg_index = NaClGetExpKidIndex(vector, i, 0);
-        seg_prefix_reg = NaClGetExpVectorRegister(vector, seg_prefix_reg_index);
-        switch (seg_prefix_reg) {
-          case RegCS:
-          case RegDS:
-          case RegES:
-          case RegSS:
-            continue;
-          default:
-            break;
-        }
-        /* If reached, we don't know how to handle the segment reference. */
-        NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
-                                 "Segment memory reference not allowed\n");
-    }
-  }
-}
-
 Bool NaClInstValidates(uint8_t* mbase,
                        uint8_t size,
                        NaClPcAddress vbase,
@@ -146,9 +86,8 @@ Bool NaClInstValidates(uint8_t* mbase,
     state->cur_inst = NaClInstStateInst(state->cur_inst_state);
     state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
     NaClValidateInstructionLegal(state);
-    NaClSafeSegmentReference(state, state->cur_iter, NULL);
-    NaClMemoryReferenceValidator(state);
     NaClBaseRegisterValidator(state);
+    NaClMemoryReferenceValidator(state);
     NaClJumpValidator(state);
     validates = NaClValidatesOk(state);
     NaClInstIterDestroy(state->cur_iter);
