@@ -305,6 +305,10 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
 
 void ExistingUserController::CompleteLogin(const std::string& username,
                                            const std::string& password) {
+  if (!host_) {
+    // Complete login event was generated already from UI. Ignore notification.
+    return;
+  }
   if (!time_init_.is_null()) {
     base::TimeDelta delta = base::Time::Now() - time_init_;
     UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
