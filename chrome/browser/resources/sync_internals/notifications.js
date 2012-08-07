@@ -6,11 +6,11 @@
 
 // TODO(akalin): Use table.js.
 
-function updateNotificationsEnabledInfo(notificationsEnabled) {
-  var notificationsEnabledInfo = $('notificationsEnabledInfo');
+function updateNotificationStateInfo(notificationState) {
+  var notificationStateInfo = $('notificationStateInfo');
   jstProcess(
-      new JsEvalContext({ 'notificationsEnabled': notificationsEnabled }),
-      notificationsEnabledInfo);
+      new JsEvalContext({ 'notificationState': notificationState }),
+      notificationStateInfo);
 }
 
 // Contains all notification data.  The keys are sync types (as strings) and
@@ -76,10 +76,10 @@ function updateNotificationInfo(notificationInfo) {
 }
 
 function onLoad() {
-  chrome.sync.getNotificationState(updateNotificationsEnabledInfo);
+  chrome.sync.getNotificationState(updateNotificationStateInfo);
   chrome.sync.getNotificationInfo(updateNotificationInfo);
   chrome.sync.onNotificationStateChange.addListener(
-      function(details) { updateNotificationsEnabledInfo(details.enabled); });
+      function(details) { updateNotificationStateInfo(details.state); });
 
   chrome.sync.onIncomingNotification.addListener(function(details) {
     var changedTypes = details.changedTypes;

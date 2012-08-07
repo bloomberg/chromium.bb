@@ -273,7 +273,7 @@ TEST_F(ProfileSyncServiceTest, JsControllerProcessJsMessageBasic) {
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateBooleanValue(false));
+  arg_list1.Append(Value::CreateStringValue("TRANSIENT_NOTIFICATION_ERROR"));
   syncer::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));
@@ -297,7 +297,7 @@ TEST_F(ProfileSyncServiceTest,
   StrictMock<syncer::MockJsReplyHandler> reply_handler;
 
   ListValue arg_list1;
-  arg_list1.Append(Value::CreateBooleanValue(false));
+  arg_list1.Append(Value::CreateStringValue("TRANSIENT_NOTIFICATION_ERROR"));
   syncer::JsArgList args1(&arg_list1);
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState", HasArgs(args1)));

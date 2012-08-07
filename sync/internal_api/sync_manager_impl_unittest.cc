@@ -973,12 +973,13 @@ TEST_F(SyncManagerTest, ProcessJsMessage) {
 
   StrictMock<MockJsReplyHandler> reply_handler;
 
-  ListValue false_args;
-  false_args.Append(Value::CreateBooleanValue(false));
+  ListValue disabled_args;
+  disabled_args.Append(
+      Value::CreateStringValue("TRANSIENT_NOTIFICATION_ERROR"));
 
   EXPECT_CALL(reply_handler,
               HandleJsReply("getNotificationState",
-                            HasArgsAsList(false_args)));
+                            HasArgsAsList(disabled_args)));
 
   // This message should be dropped.
   SendJsMessage("unknownMessage", kNoArgs, reply_handler.AsWeakHandle());
@@ -1261,17 +1262,17 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
   InSequence dummy;
   StrictMock<MockJsEventHandler> event_handler;
 
-  DictionaryValue true_details;
-  true_details.SetBoolean("enabled", true);
-  DictionaryValue false_details;
-  false_details.SetBoolean("enabled", false);
+  DictionaryValue enabled_details;
+  enabled_details.SetString("state", "NO_NOTIFICATION_ERROR");
+  DictionaryValue disabled_details;
+  disabled_details.SetString("state", "TRANSIENT_NOTIFICATION_ERROR");
 
   EXPECT_CALL(event_handler,
               HandleJsEvent("onNotificationStateChange",
-                            HasDetailsAsDictionary(true_details)));
+                            HasDetailsAsDictionary(enabled_details)));
   EXPECT_CALL(event_handler,
               HandleJsEvent("onNotificationStateChange",
-                            HasDetailsAsDictionary(false_details)));
+                            HasDetailsAsDictionary(disabled_details)));
 
   SimulateEnableNotificationsForTest();
   SimulateDisableNotificationsForTest(TRANSIENT_NOTIFICATION_ERROR);
