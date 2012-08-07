@@ -24,9 +24,7 @@ namespace {
 // The place where the Android layout test script will put the required tools
 // and resources. Must keep consistent with DEVICE_DRT_DIR in
 // WebKit/Tools/Scripts/webkitpy/layout_tests/port/chromium_android.py.
-// TODO(wangxianzhu): Allow running DRT on non-rooted device by putting
-// the tools and resources into the apk or under /data/local/tmp.
-const char kDumpRenderTreeDir[] = "/data/drt";
+const char kDumpRenderTreeDir[] = "/data/local/tmp/drt";
 
 }
 
@@ -34,6 +32,11 @@ namespace webkit_support {
 
 void BeforeInitialize(bool unit_test_mode) {
   base::InitAndroidTestPaths();
+
+  // Place cache under kDumpRenderTreeDir to allow the NRWT script to clear it.
+  FilePath path(kDumpRenderTreeDir);
+  path = path.Append("cache");
+  PathService::Override(base::DIR_CACHE, path);
 
   // Set XML_CATALOG_FILES environment variable to blank to prevent libxml from
   // loading and complaining the non-exsistent /etc/xml/catalog file.
