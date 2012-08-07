@@ -26,6 +26,7 @@ const float kMinMagnifiedScaleThreshold = 1.1f;
 const float kNonMagnifiedScale = 1.0f;
 
 const float kInitialMagnifiedScale = 2.0f;
+const float kScrollScaleChangeFactor = 0.05f;
 
 }  // namespace
 
@@ -421,6 +422,14 @@ bool MagnificationControllerImpl::PreHandleKeyEvent(aura::Window* target,
 
 bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
                                                       aura::MouseEvent* event) {
+  if (event->type() == ui::ET_SCROLL && event->IsAltDown()) {
+    aura::ScrollEvent* scroll_event = static_cast<aura::ScrollEvent*>(event);
+    float scale = GetScale();
+    scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
+    SetScale(scale, true);
+    return true;
+  }
+
   if (IsMagnified() && event->type() == ui::ET_MOUSE_MOVED) {
     aura::RootWindow* current_root = target->GetRootWindow();
     gfx::Rect root_bounds = current_root->bounds();
