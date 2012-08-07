@@ -25,6 +25,7 @@
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "jni/LibraryLoader_jni.h"
+#include "ui/gfx/android/gfx_jni_registrar.h"
 
 namespace {
 base::AtExitManager* g_at_exit_manager = NULL;
@@ -75,6 +76,9 @@ static jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
     return JNI_FALSE;
 
   if (!media::RegisterJni(env))
+    return JNI_FALSE;
+
+  if (!gfx::RegisterJni(env))
     return JNI_FALSE;
 
   return JNI_TRUE;
