@@ -420,8 +420,19 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
       GetThemeProvider()->GetImageSkiaNamed(background_id);
   int offset_y = GetThemeProvider()->HasCustomImage(background_id) ?
       0 : background_offset_.y();
-  canvas.TileImageInt(*background, GetMirroredX() + background_offset_.x(),
-                      newtab_button_v_offset() + offset_y, 0, 0, width, height);
+
+  // The new tab background is mirrored in RTL mode, but the theme background
+  // should never be mirrored. Mirror it here to compensate.
+  float x_scale = 1.0f;
+  int x = GetMirroredX() + background_offset_.x();
+  if (base::i18n::IsRTL()) {
+    x_scale = -1.0f;
+    // Offset by |width| such that the same region is painted as if there was no
+    // flip.
+    x += width;
+  }
+  canvas.TileImageInt(*background, x, newtab_button_v_offset() + offset_y,
+                      x_scale, 1.0f, 0, 0, width, height);
 
   if (alpha != 255) {
     SkPaint paint;
