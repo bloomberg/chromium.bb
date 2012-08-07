@@ -223,6 +223,35 @@ void UpdateChunkRanges(SafeBrowsingStore* store,
   }
 }
 
+// Helper for deleting chunks left over from obsolete lists.
+void DeleteChunksFromStore(SafeBrowsingStore* store, int listid){
+  std::vector<int> add_chunks;
+  size_t adds_deleted = 0;
+  store->GetAddChunks(&add_chunks);
+  for (std::vector<int>::const_iterator iter = add_chunks.begin();
+       iter != add_chunks.end(); ++iter) {
+    if (GetListIdBit(*iter) == GetListIdBit(listid)) {
+      adds_deleted++;
+      store->DeleteAddChunk(*iter);
+    }
+  }
+  if (adds_deleted > 0)
+    UMA_HISTOGRAM_COUNTS("SB2.DownloadBinhashAddsDeleted", adds_deleted);
+
+  std::vector<int> sub_chunks;
+  size_t subs_deleted = 0;
+  store->GetSubChunks(&sub_chunks);
+  for (std::vector<int>::const_iterator iter = sub_chunks.begin();
+       iter != sub_chunks.end(); ++iter) {
+    if (GetListIdBit(*iter) == GetListIdBit(listid)) {
+      subs_deleted++;
+      store->DeleteSubChunk(*iter);
+    }
+  }
+  if (subs_deleted > 0)
+    UMA_HISTOGRAM_COUNTS("SB2.DownloadBinhashSubsDeleted", subs_deleted);
+}
+
 // Order |SBAddFullHash| on the prefix part.  |SBAddPrefixLess()| from
 // safe_browsing_store.h orders on both chunk-id and prefix.
 bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
@@ -992,18 +1021,31 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
   UpdateChunkRanges(browse_store_.get(), browse_listnames, lists);
 
   if (download_store_.get()) {
+    // This store used to contain kBinHashList in addition to
+    // kBinUrlList.  Strip the stale data before generating the chunk
+    // ranges to request.  UpdateChunkRanges() will traverse the chunk
+    // list, so this is very cheap if there are no kBinHashList chunks.
+    const int listid =
+        safe_browsing_util::GetListId(safe_browsing_util::kBinHashList);
+    DeleteChunksFromStore(download_store_.get(), listid);
+
+    // The above marks the chunks for deletion, but they are not
+    // actually deleted until the database is rewritten.  The
+    // following code removes the kBinHashList part of the request
+    // before continuing so that UpdateChunkRanges() doesn't break.
     std::vector<std::string> download_listnames;
     download_listnames.push_back(safe_browsing_util::kBinUrlList);
     download_listnames.push_back(safe_browsing_util::kBinHashList);
     UpdateChunkRanges(download_store_.get(), download_listnames, lists);
     DCHECK_EQ(lists->back().name,
               std::string(safe_browsing_util::kBinHashList));
-    // Remove kBinHashList entry so that we do not request updates for it from
-    // the server.  The existing data will still be retained by
-    // SafeBrowsingStoreFile::DoUpdate.
-    // TODO(mattm): write some code to remove the kBinHashList data from the
-    // file?
     lists->pop_back();
+
+    // TODO(shess): This problem could also be handled in
+    // BeginUpdate() by detecting the chunks to delete and rewriting
+    // the database before it's used.  When I implemented that, it
+    // felt brittle, it might be easier to just wait for some future
+    // format change.
   }
 
   if (csd_whitelist_store_.get()) {
