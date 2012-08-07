@@ -393,7 +393,7 @@ IPC_MESSAGE_ROUTED3(AutomationMsg_OpenURL,
 //   - int: handle of the tab
 // Response:
 //  - bool: whether the operation was successful.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForTabToBeRestored,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_WaitForTabToBeRestored,
                             int, bool)
 
 // This message is an outgoing message from Chrome to an external host.
@@ -416,7 +416,7 @@ IPC_MESSAGE_ROUTED1(AutomationMsg_DidNavigate,
 //                     no ssl was used).
 //  - int: the insecure content state, 0 means no insecure contents.
 
-IPC_SYNC_MESSAGE_CONTROL1_4(AutomationMsg_GetSecurityState,
+IPC_SYNC_MESSAGE_CONTROL1_4(AutomationMsg_DEPRECATED_GetSecurityState,
                             int,
                             bool,
                             content::SecurityStyle,
@@ -430,7 +430,7 @@ IPC_SYNC_MESSAGE_CONTROL1_4(AutomationMsg_GetSecurityState,
 // Response:
 //  - bool: whether the operation was successful.
 //  - PageType: the type of the page currently displayed.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetPageType,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_GetPageType,
                             int,
                             bool,
                             content::PageType)
@@ -443,7 +443,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetPageType,
 //   - bool: whether to proceed or abort the navigation
 // Response:
 //  - AutomationMsg_NavigationResponseValues: result of the operation.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_ActionOnSSLBlockingPage,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_ActionOnSSLBlockingPage,
                             int,
                             bool,
                             AutomationMsg_NavigationResponseValues)

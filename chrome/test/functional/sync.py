@@ -75,7 +75,7 @@ class SyncTest(pyauto.PyUITest):
         'No set up sync button.')
 
     self.assertTrue(self.SignInToSync(username, password))
-    self.GetBrowserWindow(0).GetTab(1).Reload()
+    self.ReloadTab(1)
     self.assertTrue(self.WaitUntil(
         lambda: self.FindInPage(username, tab_index=1)['match_count'],
                 expect_retval=1),

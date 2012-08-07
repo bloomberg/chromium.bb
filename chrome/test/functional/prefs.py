@@ -58,14 +58,12 @@ class PrefsTest(pyauto.PyUITest):
             'http://dev.chromium.org/',)
     for url in urls:
       self.NavigateToURL(url)
-    tab = self.GetBrowserWindow(0).GetTab(0)
-    tab.GoBack()
+    self.TabGoBack()
     self.assertEqual(self.GetActiveTabURL().spec(), urls[-2])
     self.SetPrefs(pyauto.kRestoreOnStartup, 1)  # set pref to restore session
     self.RestartBrowser(clear_profile=False)
     # Verify that navigation state (forward/back state) is restored.
-    tab = self.GetBrowserWindow(0).GetTab(0)
-    tab.GoBack()
+    self.TabGoBack()
     self.assertEqual(self.GetActiveTabURL().spec(), urls[0])
     for i in (-2, -1):
       tab.GoForward()
@@ -166,7 +164,7 @@ class PrefsTest(pyauto.PyUITest):
     self.SetPrefs(pyauto.kGeolocationDefaultContentSetting, 2)
     self.assertEqual(2,
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationDefaultContentSetting))
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     # Fails on Win7/Vista Chromium bots.  crbug.com/89000
     if (self.IsWin7() or self.IsWinVista()) and branding == 'Chromium':
       return

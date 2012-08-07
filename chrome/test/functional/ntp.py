@@ -179,7 +179,7 @@ class NTPTest(pyauto.PyUITest):
     """Tests that closing a tab populates the recently closed list"""
     self.RemoveNTPDefaultThumbnails()
     self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.CloseTab(tab_index=1)
     self.assertEqual(self.PAGES[1]['url'],
                      self.GetNTPRecentlyClosed()[0]['url'])
     self.assertEqual(self.PAGES[1]['title'],
@@ -209,8 +209,8 @@ class NTPTest(pyauto.PyUITest):
     self.RemoveNTPDefaultThumbnails()
     self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
     self.AppendTab(pyauto.GURL(self.PAGES[1]['url']))
-    self.GetBrowserWindow(0).GetTab(2).Close(True)
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.CloseTab(tab_index=2)
+    self.CloseTab(tab_index=1)
     expected = [{ u'type': u'tab',
                   u'url': self.PAGES[0]['url']
                 },
@@ -270,7 +270,7 @@ class NTPTest(pyauto.PyUITest):
     self.NavigateToURL(self.PAGES[0]['url'], 1, 0)
     self.AppendTab(pyauto.GURL(self.PAGES[0]['url']), 1)
     self.AppendTab(pyauto.GURL(self.PAGES[1]['url']), 1)
-    self.GetBrowserWindow(1).GetTab(0).Close(True)
+    self.CloseTab(windex=1)
     self.assertFalse(self.GetNTPRecentlyClosed())
     self.CloseBrowserWindow(1)
     self.assertFalse(self.GetNTPRecentlyClosed())

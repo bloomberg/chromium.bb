@@ -343,55 +343,6 @@ void TabProxy::HandleMessageFromExternalHost(const std::string& message,
 }
 #endif  // defined(OS_WIN)
 
-bool TabProxy::WaitForTabToBeRestored(uint32 timeout_ms) {
-  if (!is_valid())
-    return false;
-  bool succeeded = false;
-  return sender_->Send(
-      new AutomationMsg_WaitForTabToBeRestored(handle_, &succeeded)) &&
-      succeeded;
-}
-
-bool TabProxy::GetSecurityState(content::SecurityStyle* security_style,
-                                net::CertStatus* ssl_cert_status,
-                                int* insecure_content_status) {
-  DCHECK(security_style && ssl_cert_status && insecure_content_status);
-
-  if (!is_valid())
-    return false;
-
-  bool succeeded = false;
-
-  sender_->Send(new AutomationMsg_GetSecurityState(
-      handle_, &succeeded, security_style, ssl_cert_status,
-      insecure_content_status));
-
-  return succeeded;
-}
-
-bool TabProxy::GetPageType(content::PageType* type) {
-  DCHECK(type);
-
-  if (!is_valid())
-    return false;
-
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_GetPageType(handle_, &succeeded, type));
-  return succeeded;
-}
-
-bool TabProxy::TakeActionOnSSLBlockingPage(bool proceed) {
-  if (!is_valid())
-    return false;
-
-  AutomationMsg_NavigationResponseValues result =
-      AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_ActionOnSSLBlockingPage(handle_, proceed,
-                                                          &result));
-  return result == AUTOMATION_MSG_NAVIGATION_SUCCESS ||
-      result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;
-}
-
 bool TabProxy::PrintAsync() {
   if (!is_valid())
     return false;

@@ -182,7 +182,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     self.WaitUntil(
         lambda: self.GetDOMValue('document.getElementById("status").innerHTML'),
                                  expect_retval='cached')
-    self.GetBrowserWindow(0).GetTab(0).GoBack()
+    self.TabGoBack()
     test_utils.StringContentCheck(
         self, self.GetTabContents(),
         ['Manifest',
@@ -194,7 +194,7 @@ class SpecialTabsTest(pyauto.PyUITest):
        Also confirms that prefetching DNS records propogate."""
     # Navigate to a page to activate DNS prefetching.
     self.NavigateToURL('http://www.google.com')
-    self.GetBrowserWindow(0).GetTab(0).GoBack()
+    self.TabGoBack()
     test_utils.StringContentCheck(self, self.GetTabContents(),
                                   ['Host name', 'How long ago', 'Motivation'],
                                   [])

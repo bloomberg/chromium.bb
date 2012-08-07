@@ -190,24 +190,6 @@ class TabProxy : public AutomationResourceProxy {
                                      const std::string& target);
 #endif  // defined(OS_WIN)
 
-  // Waits for the tab to finish being restored. Returns true on success.
-  // timeout_ms gives the max amount of time to wait for restore to complete.
-  bool WaitForTabToBeRestored(uint32 timeout_ms) WARN_UNUSED_RESULT;
-
-  // Retrieves the different security states for the current tab.
-  bool GetSecurityState(content::SecurityStyle* security_style,
-                        net::CertStatus* ssl_cert_status,
-                        int* insecure_content_status) WARN_UNUSED_RESULT;
-
-  // Returns the type of the page currently showing (normal, interstitial,
-  // error).
-  bool GetPageType(content::PageType* page_type) WARN_UNUSED_RESULT;
-
-  // Simulates the user action on the SSL blocking page.  if |proceed| is true,
-  // this is equivalent to clicking the 'Proceed' button, if false to 'Take me
-  // out of there' button.
-  bool TakeActionOnSSLBlockingPage(bool proceed) WARN_UNUSED_RESULT;
-
   // Sends off an asynchronous request for printing.
   bool PrintAsync() WARN_UNUSED_RESULT;
 

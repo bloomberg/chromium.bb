@@ -49,9 +49,9 @@ class NavigationTest(pyauto.PyUITest):
       self.assertEqual(2, self.GetTabCount(windex))
       self.AppendTab(pyauto.GURL(urls[1]), windex)
       self.assertEqual(3, self.GetTabCount(windex))
-      self.GetBrowserWindow(windex).GetTab(2).Close(True)
+      self.CloseTab(tab_index=2, windex=windex)
       self.assertEqual(2, self.GetTabCount(windex))
-      self.GetBrowserWindow(windex).GetTab(1).Close(True)
+      self.CloseTab(tab_index=1, windex=windex)
       self.assertEqual(1, self.GetTabCount(windex))
     _OpenCloseTabsInWindow(0)
     self.OpenNewBrowserWindow(True)
@@ -63,13 +63,12 @@ class NavigationTest(pyauto.PyUITest):
     assert len(urls) >= 3, 'Need at least 3 urls.'
     for url in urls:
       self.NavigateToURL(url)
-    tab = self.GetBrowserWindow(0).GetTab(0)
     self.assertEqual(self.GetActiveTabURL().spec(), urls[-1])
     for i in [-2, -3]:
-      tab.GoBack()
+      self.TabGoBack()
       self.assertEqual(self.GetActiveTabURL().spec(), urls[i])
     for i in [-2, -1]:
-      tab.GoForward()
+      self.TabGoForward()
       self.assertEqual(self.GetActiveTabURL().spec(), urls[i])
 
   def testCanDuplicateTab(self):

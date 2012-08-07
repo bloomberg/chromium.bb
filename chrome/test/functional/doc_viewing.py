@@ -59,7 +59,7 @@ class DocViewingTest(pyauto.PyUITest):
                         expect_retval=fname),
                         msg='"%s" does not open.' % fname)
         # Close the document viewing tab after use.
-        self.GetBrowserWindow(0).GetTab(1).Close(True)
+        self.CloseTab(tab_index=1)
 
 
 if __name__ == '__main__':

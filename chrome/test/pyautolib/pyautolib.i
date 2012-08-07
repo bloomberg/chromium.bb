@@ -61,8 +61,6 @@ class scoped_refptr {
   T* get() const;
   T* operator->() const;
 };
-%template(scoped_refptr__BrowserProxy) scoped_refptr<BrowserProxy>;
-%template(scoped_refptr__TabProxy) scoped_refptr<TabProxy>;
 
 // GURL
 %feature("docstring", "Represent a URL. Call spec() to get the string.") GURL;
@@ -90,107 +88,6 @@ class FilePath {
       FilePath;
   FilePath();
   explicit FilePath(const StringType& path);
-};
-
-// BrowserProxy
-%feature("docstring", "Proxy handle to a browser window.") BrowserProxy;
-%nodefaultctor BrowserProxy;
-%nodefaultdtor BrowserProxy;
-class BrowserProxy {
- public:
-  %feature("docstring", "Activate the tab at the given zero-based index")
-      ActivateTab;
-  bool ActivateTab(int tab_index);
-
-  %feature("docstring", "Activate the browser's window and bring it to front.")
-      BringToFront;
-  bool BringToFront();
-
-  %feature("docstring", "Get proxy to the tab at the given zero-based index")
-      GetTab;
-  scoped_refptr<TabProxy> GetTab(int tab_index) const;
-};
-
-// TabProxy
-%feature("docstring", "Proxy handle to a tab.") TabProxy;
-%nodefaultctor TabProxy;
-%nodefaultdtor TabProxy;
-class TabProxy {
- public:
-  // Navigation
-  %feature("docstring", "Navigates to a given GURL. "
-           "Blocks until the navigation completes. ") NavigateToURL;
-  AutomationMsg_NavigationResponseValues NavigateToURL(const GURL& url);
-  %feature("docstring", "Navigates to a given GURL. Blocks until the given "
-           "number of navigations complete.")
-      NavigateToURLBlockUntilNavigationsComplete;
-  AutomationMsg_NavigationResponseValues
-      NavigateToURLBlockUntilNavigationsComplete(
-          const GURL& url, int number_of_navigations);
-  %feature("docstring", "Navigates to a given GURL asynchronously. "
-           "Does not wait for the navigation to complete, or even begin; "
-           "Use NavigateToURL() if you want to wait.") NavigateToURLAsync;
-  bool TabProxy::NavigateToURLAsync(const GURL& url);
-  %feature("docstring", "Equivalent to hitting the Back button. "
-           "Blocks until navigation completes.") GoBack;
-  AutomationMsg_NavigationResponseValues GoBack();
-  %feature("docstring", "Equivalent to hitting the Forward button. "
-           "Blocks until navigation completes.") GoForward;
-  AutomationMsg_NavigationResponseValues GoForward();
-  %feature("docstring", "Equivalent to hitting the Reload button. "
-           "Blocks until navigation completes.") Reload;
-  AutomationMsg_NavigationResponseValues Reload();
-  %feature("docstring", "Closes the tab. Supply True to wait "
-           "until the tab has closed, else it'll wait only until the call "
-           "has been initiated. Be careful while closing the last tab "
-           "since it might close the browser.") Close;
-  bool Close();
-  bool Close(bool wait_until_closed);
-  %feature("docstring", "Blocks until tab is completely restored.")
-      WaitForTabToBeRestored;
-  bool WaitForTabToBeRestored(uint32 timeout_ms);
-  %feature("docstring", "Simulates user action on the SSL blocking page."
-          "if |proceed| is true, this is equivalent to clicking the 'Proceed' "
-          "button, if false to 'Take me out of there' button.")
-      TakeActionOnSSLBlockingPage;
-  bool TakeActionOnSSLBlockingPage(bool proceed);
-  %extend {
-    %feature("docstring", "Retrieves the different security states for the "
-             "current tab.")
-        GetSecurityState;
-    PyObject* GetSecurityState() {
-      content::SecurityStyle security_style;
-      net::CertStatus ssl_cert_status;
-      int insecure_content_status;
-      PyObject* result_dict = PyDict_New();
-      if ($self->GetSecurityState(
-          &security_style, &ssl_cert_status, &insecure_content_status)) {
-        PyDict_SetItem(result_dict, PyString_FromString("security_style"),
-                       PyInt_FromLong(security_style));
-        PyDict_SetItem(result_dict, PyString_FromString("ssl_cert_status"),
-                       PyInt_FromLong(ssl_cert_status));
-        PyDict_SetItem(result_dict,
-                       PyString_FromString("insecure_content_status"),
-                       PyInt_FromLong(insecure_content_status));
-      }
-      return result_dict;
-    }
-  };
-  %extend {
-    %feature("docstring", "Returns the type of page currently showing "
-             "(normal, interstitial, error.")
-        GetPageType;
-    PyObject* GetPageType() {
-      content::PageType page_type;
-      PyObject* result_dict = PyDict_New();
-      if ($self->GetPageType(&page_type)) {
-        PyDict_SetItem(result_dict, PyString_FromString("page_type"),
-                       PyInt_FromLong(page_type));
-      }
-      return result_dict;
-    }
-  };
-
 };
 
 class PyUITestSuiteBase {
@@ -330,11 +227,6 @@ class PyUITestBase {
 
   %feature("docstring", "Remove (delete) a bookmark.") RemoveBookmark;
   bool RemoveBookmark(std::wstring id, int window_index=0);
-
-  // Misc methods
-  %feature("docstring", "Get a proxy to the browser window at the given "
-                        "zero-based index.") GetBrowserWindow;
-  scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
 
   // Meta-method
   %feature("docstring", "Send a sync JSON request to Chrome.  "

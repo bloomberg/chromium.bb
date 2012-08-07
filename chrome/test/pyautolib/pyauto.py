@@ -1084,7 +1084,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Navigate the given tab to the given URL.
 
     Note that this method also activates the corresponding tab/window if it's
-    not active already. Blocks until page has loaded.
+    not active already. Blocks until |navigation_count| navigations have
+    completed.
 
     Args:
       url: The URL to which to navigate, can be a string or GURL object.
@@ -1108,6 +1109,13 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'navigation_count': navigation_count,
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def NavigateToURLAsync(self, url, windex=0, tab_index=None):
+    """Initiate a URL navigation.
+
+    A wrapper for NavigateToURL with navigation_count set to 0.
+    """
+    self.NavigateToURL(url, windex, tab_index, 0)
 
   def ApplyAccelerator(self, accelerator, windex=0):
     """Apply the accelerator with the given id.
@@ -1176,6 +1184,30 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None).get('enabled')
 
+  def TabGoForward(self, tab_index=0, windex=0):
+    """Navigate a tab forward in history.
+
+    Equivalent to clicking the Forward button in the UI. Activates the tab as a
+    side effect.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    self.ActivateTab(tab_index, windex)
+    self.RunCommand(IDC_FORWARD, windex)
+
+  def TabGoBack(self, tab_index=0, windex=0):
+    """Navigate a tab backwards in history.
+
+    Equivalent to clicking the Back button in the UI. Activates the tab as a
+    side effect.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    self.ActivateTab(tab_index, windex)
+    self.RunCommand(IDC_BACK, windex)
+
   def ReloadTab(self, tab_index=0, windex=0):
     """Reload the given tab.
 
@@ -1189,12 +1221,50 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
+    self.ActivateTab(tab_index, windex)
+    self.RunCommand(IDC_RELOAD, windex)
+
+  def CloseTab(self, tab_index=0, windex=0, wait_until_closed=True):
+    """Close the given tab.
+
+    Note: Be careful closing the last tab in a window as it may close the
+        browser.
+
+    Args:
+      tab_index: The index of the tab to reload. Defaults to 0.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+      wait_until_closed: Whether to block until the tab finishes closing.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
     cmd_dict = {
-        'command': 'Reload',
+        'command': 'CloseTab',
+        'tab_index': tab_index,
+        'windex': windex,
+        'wait_until_closed': wait_until_closed,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def WaitForTabToBeRestored(self, tab_index=0, windex=0, timeout=-1):
+    """Wait for the given tab to be restored.
+
+    Args:
+      tab_index: The index of the tab to reload. Defaults to 0.
+      windex: The index of the browser window to work on. Defaults to the first
+          window.
+      timeout: Timeout in milliseconds.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'CloseTab',
         'tab_index': tab_index,
         'windex': windex,
     }
-    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None, timeout=timeout)
 
   def ReloadActiveTab(self, windex=0):
     """Reload an active tab.
@@ -1420,6 +1490,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     return GURL(str(self.GetTabInfo(self.GetActiveTabIndex(windex),
                                     windex)['url']))
+
+  def ActionOnSSLBlockingPage(self, tab_index=0, windex=0, proceed=True):
+    """Take action on an interstitial page.
+
+    Calling this when an interstitial page is not showing is an error.
+
+    Args:
+      tab_index: Integer index of the tab to activate; defaults to 0.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+      proceed: Whether to proceed to the URL or not.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'ActionOnSSLBlockingPage',
+        'tab_index': tab_index,
+        'windex': windex,
+        'proceed': proceed,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
   def GetBookmarkModel(self, windex=0):
     """Return the bookmark model as a BookmarkModel object.
@@ -2346,6 +2438,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'tab_index': tab_index,
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
+  def GetSecurityState(self, tab_index=0, windex=0):
+    """Get security details for a given tab.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      window_index: The window index, default is 0.
+
+    Returns:
+      a dictionary.
+      Sample:
+      { "security_style": SECURITY_STYLE_AUTHENTICATED,
+        "ssl_cert_status": 3,  // bitmask of status flags
+        "insecure_content_status": 1,  // bitmask of status flags
+      }
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetSecurityState',
+      'tab_index': tab_index,
+      'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
   def GetHistoryInfo(self, search_text=''):
     """Return info about browsing history.

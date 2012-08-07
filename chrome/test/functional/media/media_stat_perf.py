@@ -75,7 +75,7 @@ class MediaStatsPerfTest(pyauto.PyUITest):
       pyauto_utils.PrintPerfResult('dropped_frames', file_name, dropped_frames,
                                    'frames')
 
-      self.GetBrowserWindow(0).GetTab(1).Close(True)
+      self.CloseTab(tab_index=1)
 
 
 if __name__ == '__main__':

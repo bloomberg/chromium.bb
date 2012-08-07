@@ -147,29 +147,9 @@ class TestingAutomationProvider : public AutomationProvider,
   // Retrieves a Browser from a Window and vice-versa.
   void GetWindowForBrowser(int window_handle, bool* success, int* handle);
 
-  void WaitForTabToBeRestored(int tab_handle, IPC::Message* reply_message);
-
-  // Gets the security state for the tab associated to the specified |handle|.
-  void GetSecurityState(int handle,
-                        bool* success,
-                        content::SecurityStyle* security_style,
-                        net::CertStatus* ssl_cert_status,
-                        int* insecure_content_status);
-
-  // Gets the page type for the tab associated to the specified |handle|.
-  void GetPageType(int handle, bool* success, content::PageType* page_type);
-
   // Gets the duration in ms of the last event matching |event_name|.
   // |duration_ms| is -1 if the event hasn't occurred yet.
   void GetMetricEventDuration(const std::string& event_name, int* duration_ms);
-
-  // Simulates an action on the SSL blocking page at the tab specified by
-  // |handle|. If |proceed| is true, it is equivalent to the user pressing the
-  // 'Proceed' button, if false the 'Get me out of there button'.
-  // Not that this fails if the tab is not displaying a SSL blocking page.
-  void ActionOnSSLBlockingPage(int handle,
-                               bool proceed,
-                               IPC::Message* reply_message);
 
   // Brings the browser window to the front and activates it.
   void BringBrowserToFront(int browser_handle, bool* success);
@@ -1441,6 +1421,37 @@ class TestingAutomationProvider : public AutomationProvider,
   //          }
   //   output: none
   void ActivateTabJSON(base::DictionaryValue* args, IPC::Message* message);
+
+  // Blocks until the given tab is restored.
+  // Uses the JSON interface.
+  void WaitForTabToBeRestored(DictionaryValue* args,
+                              IPC::Message* reply_message);
+
+  // Simulates an action on the SSL blocking page at the specified tab.
+  // If |proceed| is true, it is equivalent to the user pressing the
+  // 'Proceed' button, if false the 'Get me out of there button'.
+  // Note that this fails if the tab is not displaying a SSL blocking page.
+  // Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "proceed": true
+  //          }
+  //   output: none
+  void ActionOnSSLBlockingPage(DictionaryValue* args,
+                               IPC::Message* reply_message);
+
+  // Gets the security state for the given tab. Uses the JSON interface.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //          }
+  //   output: { "security_style": SECURITY_STYLE_AUTHENTICATED,
+  //             "ssl_cert_status": 3,  // bitmask of status flags
+  //             "insecure_content_status": 1,  // bitmask of ContentStatusFlags
+  //           }
+  void GetSecurityState(DictionaryValue* args,
+                        IPC::Message* reply_message);
 
   // Brings the given brower's window to the front.
   // Example:

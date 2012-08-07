@@ -63,10 +63,8 @@ class SSLTest(pyauto.PyUITest):
                    self._https_server_mismatched):
       url = server.GetURL('google.html').spec()
       self.NavigateToURL(url)
-      tab_proxy = self.GetBrowserWindow(0).GetTab(0)
       # Equivalent to clicking 'proceed anyway' button.
-      self.assertTrue(tab_proxy.TakeActionOnSSLBlockingPage(True),
-                      msg="Did not proceed from the interstitial page.")
+      self.ActionOnSSLBlockingPage(proceed=True)
       self.assertTrue(
           'google' in self.GetActiveTabTitle().lower(),
           msg="Did not correctly proceed from the interstitial page.")
@@ -83,10 +81,8 @@ class SSLTest(pyauto.PyUITest):
       first_page_title = self.GetActiveTabTitle()
       self.NavigateToURL(
           server.GetURL('google.html').spec())
-      tab_proxy = self.GetBrowserWindow(0).GetTab(0)
       # Equivalent to clicking 'back to safety' button.
-      self.assertTrue(tab_proxy.TakeActionOnSSLBlockingPage(False),
-                      msg="Was not able to go back from the interstitial page.")
+      self.ActionOnSSLBlockingPage(proceed=False)
       self.assertEqual(self.GetActiveTabTitle(), first_page_title,
                        msg="Did not go back to previous page correctly.")
 
@@ -97,15 +93,12 @@ class SSLTest(pyauto.PyUITest):
     """
     url = self._https_server_ok.GetURL('google.html').spec()
     self.NavigateToURL(url)
-    tab_proxy = self.GetBrowserWindow(0).GetTab(0)
-    result_dict = tab_proxy.GetPageType()
+    result_dict = self.GetNavigationInfo()
     self.assertTrue(result_dict, msg='Could not determine the type of the page')
-    page_type_dict = {
-        pyauto.PAGE_TYPE_INTERSTITIAL: 'interstitial',
-        pyauto.PAGE_TYPE_ERROR: 'error'}
     self.assertEqual(
-        result_dict['page_type'], pyauto.PAGE_TYPE_NORMAL,
-        msg='Cert OK did not display page type normal.')
+        result_dict['page_type'], 'NORMAL_PAGE',
+        msg='Cert OK did not display page type normal (page_type=%s).' %
+            result_dict['page_type'])
 
   def testSSLCertIsExpiredAndCertNameMismatches(self):
     """Verify Certificate Expiration and Certificate Mismatched name."""
@@ -115,7 +108,7 @@ class SSLTest(pyauto.PyUITest):
          pyauto.CERT_STATUS_COMMON_NAME_INVALID),
         ('Cert has not expired', 'Cert name does not mismatch')):
       self.NavigateToURL(server.GetURL('google.html').spec())
-      result_dict = self.GetBrowserWindow(0).GetTab(0).GetSecurityState()
+      result_dict = self.GetSecurityState()
       self.assertTrue(result_dict, msg='Could not get security state info')
       self.assertTrue(
           result_dict['ssl_cert_status'] & pyauto.uint32_ptr.frompointer(
@@ -126,7 +119,7 @@ class SSLTest(pyauto.PyUITest):
     """Verify Certificate OK is valid."""
     self.NavigateToURL(
         self._https_server_mismatched.GetURL('google.html').spec())
-    result_dict = self.GetBrowserWindow(0).GetTab(0).GetSecurityState()
+    result_dict = self.GetSecurityState()
     self.assertTrue(result_dict, msg='Could not get security state info')
     self.assertFalse(
         result_dict['ssl_cert_status'] & pyauto.uint32_ptr.frompointer(

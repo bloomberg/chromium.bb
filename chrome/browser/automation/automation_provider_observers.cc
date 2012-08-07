@@ -254,8 +254,8 @@ void NavigationControllerRestoredObserver::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (FinishedRestoring()) {
-    SendDone();
     registrar_.RemoveAll();
+    SendDone();
   }
 }
 
@@ -265,12 +265,11 @@ bool NavigationControllerRestoredObserver::FinishedRestoring() {
 }
 
 void NavigationControllerRestoredObserver::SendDone() {
-  if (!automation_)
-    return;
-
-  AutomationMsg_WaitForTabToBeRestored::WriteReplyParams(reply_message_.get(),
-                                                         true);
-  automation_->Send(reply_message_.release());
+  if (automation_) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(NULL);
+  }
+  delete this;
 }
 
 NavigationNotificationObserver::NavigationNotificationObserver(

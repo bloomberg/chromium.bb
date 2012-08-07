@@ -155,8 +155,7 @@ class HistoryTest(pyauto.PyUITest):
     assert not self.GetHistoryInfo().History(), 'Expecting clean history.'
     file_url = self.GetFileURLForDataPath('History', 'redirector.html')
     landing_url = self.GetFileURLForDataPath('History', 'landing.html')
-    tab = self.GetBrowserWindow(0).GetTab(0)
-    tab.NavigateToURLBlockUntilNavigationsComplete(pyauto.GURL(file_url), 2)
+    self.NavigateToURL(file_url, tab_index=0, windex=0, navigation_count=2)
     self.assertEqual(landing_url, self.GetActiveTabURL().spec())
     # We should have two history items
     history = self.GetHistoryInfo().History()
@@ -271,8 +270,7 @@ class HistoryTest(pyauto.PyUITest):
     self.AppendTab(pyauto.GURL(url2))
     self._CheckHistory(title2, url2, 2)
 
-    self.ActivateTab(0)
-    self.ReloadActiveTab()
+    self.ReloadTab()
     self._CheckHistory(title1, url1, 2)
 
   def testBackForwardBringPageToTop(self):
@@ -285,10 +283,9 @@ class HistoryTest(pyauto.PyUITest):
     title2 = 'Title Of More Awesomeness'
     self._NavigateAndCheckHistory(title2, 'title3.html', 2)
 
-    tab = self.GetBrowserWindow(0).GetTab(0)
-    tab.GoBack()
+    self.TabGoBack()
     self._CheckHistory(title1, url1, 2)
-    tab.GoForward()
+    self.TabGoForward()
     self._CheckHistory(title2, url2, 2)
 
   def testAppendTabAddPage(self):

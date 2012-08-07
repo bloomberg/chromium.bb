@@ -167,14 +167,14 @@ class InstantTest(pyauto.PyUITest):
     self.NavigateToURL('about:blank');
     self._BringUpInstant()
     self.AppendTab(pyauto.GURL('chrome://newtab'))
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.CloseTab(tab_index=1)
     self.assertEqual(self.GetActiveTabTitle(), 'about:blank')
 
   def testExtnPageCanDismissInstant(self):
     """Test that instant preview is dismissed by extension page."""
     self._BringUpInstant()
     self.AppendTab(pyauto.GURL('chrome://extensions'))
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.CloseTab(tab_index=1)
     self.assertEqual(self.GetActiveTabTitle(), 'New Tab')
 
   def testNewWindowCanDismissInstant(self):

@@ -123,7 +123,7 @@ class PopupsTest(pyauto.PyUITest):
     self.NavigateToURL('http://www.popuptest.com/popuptest1.html')
     self.assertEqual(7, self.GetBrowserWindowCount(),
                      msg='Popups did not launch from the external site.')
-    self.GetBrowserWindow(0).GetTab(0).GoBack()
+    self.TabGoBack()
     # Check if two additional popups launch when navigating away from the page.
     self.assertEqual(9, self.GetBrowserWindowCount(),
                      msg='Additional popups did not launch.')
@@ -134,7 +134,7 @@ class PopupsTest(pyauto.PyUITest):
     self.AppendTab(pyauto.GURL('http://www.popuptest.com/popuptest12.html'))
     self.assertEqual(4, self.GetBrowserWindowCount(),
                      msg='Popups did not launch from the external site.')
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.CloseTab(tab_index=1)
     # Check if last popup is launched when the tab is closed.
     self.assertEqual(5, self.GetBrowserWindowCount(),
                      msg='Last popup did not launch when the tab is closed.')

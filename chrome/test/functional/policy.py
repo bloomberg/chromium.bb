@@ -367,7 +367,7 @@ class PolicyTest(policy_base.PolicyTestBase):
         msg='SPDY is not disabled.')
     policy = {'DisableSpdy': False}
     self.SetUserPolicy(policy)
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     self.assertEquals(
         1,
         self.FindInPage('SPDY Enabled: true', tab_index=0)['match_count'],

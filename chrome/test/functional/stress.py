@@ -159,7 +159,7 @@ class StressTest(pyauto.PyUITest):
     """Close all but one tab in first window."""
     tab_count = self.GetTabCount(0)
     for tab_index in xrange(tab_count - 1, 0, -1):
-      self.GetBrowserWindow(0).GetTab(tab_index).Close(True)
+      self.CloseTab(tab_index)
 
   def _CloseAllWindows(self):
     """Close all windows except one."""
@@ -170,7 +170,7 @@ class StressTest(pyauto.PyUITest):
   def _ReloadAllTabs(self):
     """Reload all the tabs in first window."""
     for tab_index in range(self.GetTabCount()):
-      self.GetBrowserWindow(0).GetTab(tab_index).Reload()
+      self.ReloadTab(tab_index)
 
   def _LoadFlashInMultipleTabs(self):
     """Load Flash in multiple tabs in first window."""
@@ -341,10 +341,9 @@ class StressTest(pyauto.PyUITest):
       window_index: the index of the browser window to work on.
     """
     for nback in range(48):  # Go back 48 times.
-      tab = self.GetBrowserWindow(window_index).GetTab(0)
       if nback % 4 == 0:   # Bookmark every 5th url when going back.
         self._BookMarkEvery5thURL(window_index)
-      tab.GoBack()
+      self.TabGoBack(tab_index=0, windex=window_index)
 
   def _BrowserGoForward(self, window_index):
     """Go Forward in the browser history.
@@ -355,10 +354,9 @@ class StressTest(pyauto.PyUITest):
       window_index: the index of the browser window to work on.
     """
     for nforward in range(48):  # Go back 48 times.
-      tab = self.GetBrowserWindow(window_index).GetTab(0)
       if nforward % 4 == 0:  # Bookmark every 5th url when going Forward
            self._BookMarkEvery5thURL(window_index)
-      tab.GoForward()
+      self.TabGoForward(tab_index=0, windex=window_index)
 
   def _AddToListAndBookmark(self, newname, url):
     """Bookmark the url to bookmarkbar and to he list of bookmarks.

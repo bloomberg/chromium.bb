@@ -101,7 +101,7 @@ class IndexedDBTest(pyauto.PyUITest):
 
     self.KillRendererProcess(pid)
     self.assertEqual(self.GetTabCount(), 2)
-    self.GetBrowserWindow(0).GetTab(0).Close(True)
+    self.CloseTab()
 
     self._WaitForAndAssertResult('setVersion(2) complete')
 

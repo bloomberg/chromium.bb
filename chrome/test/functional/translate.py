@@ -212,7 +212,7 @@ class TranslateTest(pyauto.PyUITest):
     translate_info = self.GetTranslateInfo()
     self.assertTrue(translate_info['page_translated'])
     # Reload the tab and confirm the page was translated.
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     self.assertTrue(self.WaitForInfobarCount(1))
     success = self.WaitUntilTranslateComplete()
     # Sometimes the translation fails. Continue clicking until it succeeds.
@@ -225,7 +225,7 @@ class TranslateTest(pyauto.PyUITest):
     self.assertTrue(translate_info['page_translated'])
     self.assertFalse('translate_bar' in translate_info)
     # Reload the tab and confirm that the page has not been translated.
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     translate_info = self.GetTranslateInfo()
     self.assertFalse(translate_info['page_translated'])
     self.assertTrue('translate_bar' in translate_info)
@@ -267,7 +267,7 @@ class TranslateTest(pyauto.PyUITest):
     self.assertFalse('translate_bar' in self.GetTranslateInfo())
     # Go back to the page that should be translated and assert that the
     # translate bar re-appears.
-    self.GetBrowserWindow(0).GetTab(0).GoBack()
+    self.TabGoBack()
     self.assertTrue(self.WaitForInfobarCount(1))
     self.assertTrue('translate_bar' in self.GetTranslateInfo())
 
@@ -276,11 +276,11 @@ class TranslateTest(pyauto.PyUITest):
     translate_info = self.GetTranslateInfo()
     self.assertFalse('translate_bar' in translate_info)
     self._AssertTranslateWorks(trans_url, self.spanish)
-    self.GetBrowserWindow(0).GetTab(0).GoBack()
+    self.TabGoBack()
     self.assertTrue(self.WaitForInfobarCount(0))
     translate_info = self.GetTranslateInfo()
     self.assertFalse('translate_bar' in translate_info)
-    self.GetBrowserWindow(0).GetTab(0).GoForward()
+    self.TabGoForward()
     self.assertTrue(self.WaitForInfobarCount(1))
     translate_info = self.GetTranslateInfo()
     self.assertTrue(translate_info['can_translate_page'])
@@ -319,7 +319,7 @@ class TranslateTest(pyauto.PyUITest):
     # 'Translate' for a language 3 times.
     for unused in range(3):
       self._ClickTranslateUntilSuccess()
-      self.GetBrowserWindow(0).GetTab(0).Reload()
+      self.ReloadTab()
 
     # Click the 'Always Translate' button.
     self.assertTrue(self.GetTranslateInfo()\
@@ -342,7 +342,7 @@ class TranslateTest(pyauto.PyUITest):
     # 'Nope' for a language 3 times.
     for unused in range(3):
       self.SelectTranslateOption('decline_translation')
-      self.GetBrowserWindow(0).GetTab(0).Reload()
+      self.ReloadTab()
 
     # Click the 'Never Translate' button.
     self.assertTrue(self.GetTranslateInfo()\
@@ -372,7 +372,7 @@ class TranslateTest(pyauto.PyUITest):
     # Select always translate Spanish to French.
     self.SelectTranslateOption('toggle_always_translate')
     # Reload the page and assert that the page has been translated to French.
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     self.WaitUntilTranslateComplete()
     translate_info = self.GetTranslateInfo()
     self.assertTrue(translate_info['page_translated'])

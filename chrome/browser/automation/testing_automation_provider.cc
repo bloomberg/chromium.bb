@@ -404,14 +404,8 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_OpenNewBrowserWindowOfType,
                                     OpenNewBrowserWindowOfType)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowForBrowser, GetWindowForBrowser)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForTabToBeRestored,
-                                    WaitForTabToBeRestored)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetSecurityState, GetSecurityState)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetPageType, GetPageType)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetMetricEventDuration,
                         GetMetricEventDuration)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ActionOnSSLBlockingPage,
-                                    ActionOnSSLBlockingPage)
     IPC_MESSAGE_HANDLER(AutomationMsg_BringBrowserToFront, BringBrowserToFront)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindWindowVisibility,
                         GetFindWindowVisibility)
@@ -1247,98 +1241,11 @@ void TestingAutomationProvider::GetWindowForBrowser(int browser_handle,
   }
 }
 
-void TestingAutomationProvider::WaitForTabToBeRestored(
-    int tab_handle,
-    IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
-    restore_tracker_.reset(
-        new NavigationControllerRestoredObserver(this, tab, reply_message));
-  } else {
-    AutomationMsg_WaitForTabToBeRestored::WriteReplyParams(
-        reply_message, false);
-    Send(reply_message);
-  }
-}
-
-void TestingAutomationProvider::GetSecurityState(
-    int handle,
-    bool* success,
-    content::SecurityStyle* security_style,
-    net::CertStatus* ssl_cert_status,
-    int* insecure_content_status) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    NavigationEntry* entry = tab->GetActiveEntry();
-    *success = true;
-    *security_style = entry->GetSSL().security_style;
-    *ssl_cert_status = entry->GetSSL().cert_status;
-    *insecure_content_status = entry->GetSSL().content_status;
-  } else {
-    *success = false;
-    *security_style = content::SECURITY_STYLE_UNKNOWN;
-    *ssl_cert_status = 0;
-    *insecure_content_status = 0;
-  }
-}
-
-void TestingAutomationProvider::GetPageType(
-    int handle,
-    bool* success,
-    content::PageType* page_type) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    NavigationEntry* entry = tab->GetActiveEntry();
-    *page_type = entry->GetPageType();
-    *success = true;
-    // In order to return the proper result when an interstitial is shown and
-    // no navigation entry were created for it we need to ask the WebContents.
-    if (*page_type == content::PAGE_TYPE_NORMAL &&
-        tab->GetWebContents()->ShowingInterstitialPage())
-      *page_type = content::PAGE_TYPE_INTERSTITIAL;
-  } else {
-    *success = false;
-    *page_type = content::PAGE_TYPE_NORMAL;
-  }
-}
-
 void TestingAutomationProvider::GetMetricEventDuration(
     const std::string& event_name,
     int* duration_ms) {
   *duration_ms = metric_event_duration_observer_->GetEventDurationMs(
       event_name);
-}
-
-void TestingAutomationProvider::ActionOnSSLBlockingPage(
-    int handle,
-    bool proceed,
-    IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    NavigationEntry* entry = tab->GetActiveEntry();
-    if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
-      WebContents* web_contents = tab->GetWebContents();
-      InterstitialPage* ssl_blocking_page =
-          InterstitialPage::GetInterstitialPage(web_contents);
-      if (ssl_blocking_page) {
-        if (proceed) {
-          new NavigationNotificationObserver(tab, this, reply_message, 1,
-                                             false, false);
-          ssl_blocking_page->Proceed();
-          return;
-        }
-        ssl_blocking_page->DontProceed();
-        AutomationMsg_ActionOnSSLBlockingPage::WriteReplyParams(
-            reply_message, AUTOMATION_MSG_NAVIGATION_SUCCESS);
-        Send(reply_message);
-        return;
-      }
-    }
-  }
-  // We failed.
-  AutomationMsg_ActionOnSSLBlockingPage::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-  Send(reply_message);
 }
 
 void TestingAutomationProvider::BringBrowserToFront(int browser_handle,
@@ -1746,6 +1653,10 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::GetAppModalDialogMessage;
   handler_map_["AcceptOrDismissAppModalDialog"] =
       &TestingAutomationProvider::AcceptOrDismissAppModalDialog;
+  handler_map_["ActionOnSSLBlockingPage"] =
+      &TestingAutomationProvider::ActionOnSSLBlockingPage;
+  handler_map_["GetSecurityState"] =
+      &TestingAutomationProvider::GetSecurityState;
   handler_map_["GetChromeDriverAutomationVersion"] =
       &TestingAutomationProvider::GetChromeDriverAutomationVersion;
   handler_map_["IsPageActionVisible"] =
@@ -2131,7 +2042,8 @@ void TestingAutomationProvider::SendJSONRequest(Browser* browser,
     (this->*handler_map_[command])(dict_value.get(), reply_message);
   // Command has no handler.
   } else {
-    error_string = "Unknown command. Options: ";
+    error_string = StringPrintf("Unknown command '%s'. Options: ",
+                                command.c_str());
     for (std::map<std::string, JsonHandler>::const_iterator it =
          handler_map_.begin(); it != handler_map_.end(); ++it) {
       error_string += it->first + ", ";
@@ -4494,6 +4406,61 @@ void TestingAutomationProvider::TriggerBrowserActionById(
   }
 }
 
+void TestingAutomationProvider::ActionOnSSLBlockingPage(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  WebContents* web_contents;
+  bool proceed;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  if (!args->GetBoolean("proceed", &proceed)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "'proceed' is missing or invalid");
+    return;
+  }
+  NavigationController& controller = web_contents->GetController();
+  NavigationEntry* entry = controller.GetActiveEntry();
+  if (entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
+    InterstitialPage* ssl_blocking_page =
+        InterstitialPage::GetInterstitialPage(web_contents);
+    if (ssl_blocking_page) {
+      if (proceed) {
+        new NavigationNotificationObserver(&controller, this, reply_message, 1,
+                                           false, true);
+        ssl_blocking_page->Proceed();
+        return;
+      }
+      ssl_blocking_page->DontProceed();
+      AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+      return;
+    }
+  }
+  AutomationJSONReply(this, reply_message).SendError(error);
+}
+
+void TestingAutomationProvider::GetSecurityState(DictionaryValue* args,
+                                                 IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  WebContents* web_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
+    reply.SendError(error);
+    return;
+  }
+  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
+  DictionaryValue dict;
+  dict.SetInteger("security_style",
+                  static_cast<int>(entry->GetSSL().security_style));
+  dict.SetInteger("ssl_cert_status",
+                  static_cast<int>(entry->GetSSL().cert_status));
+  dict.SetInteger("insecure_content_status",
+                  static_cast<int>(entry->GetSSL().content_status));
+  reply.SendSuccess(&dict);
+}
+
 // Sample json input: { "command": "UpdateExtensionsNow" }
 // Sample json output: {}
 void TestingAutomationProvider::UpdateExtensionsNow(
@@ -6094,6 +6061,19 @@ void TestingAutomationProvider::WaitForAllViewsToStopLoading(
       this, reply_message, profile()->GetExtensionProcessManager());
 }
 
+void TestingAutomationProvider::WaitForTabToBeRestored(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  WebContents* web_contents;
+  std::string error;
+  if (!GetTabFromJSONArgs(args, &web_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  NavigationController& controller = web_contents->GetController();
+  new NavigationControllerRestoredObserver(this, &controller, reply_message);
+}
+
 void TestingAutomationProvider::GetPolicyDefinitionList(
     DictionaryValue* args,
     IPC::Message* reply_message) {
@@ -6244,9 +6224,13 @@ void TestingAutomationProvider::NavigateToURL(
         .SendError("'navigation_count' missing or invalid");
     return;
   }
-  new NavigationNotificationObserver(
-      &web_contents->GetController(), this, reply_message,
-      navigation_count, false, true);
+  if (navigation_count > 0) {
+    new NavigationNotificationObserver(
+        &web_contents->GetController(), this, reply_message,
+        navigation_count, false, true);
+  } else {
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+  }
   OpenURLParams params(
       GURL(url), content::Referrer(), CURRENT_TAB,
       content::PageTransitionFromInt(
@@ -6949,13 +6933,19 @@ void TestingAutomationProvider::CloseTabJSON(
   Browser* browser;
   WebContents* tab;
   std::string error;
+  bool wait_until_closed = false;  // ChromeDriver does not use this.
+  args->GetBoolean("wait_until_closed", &wait_until_closed);
   // Close tabs synchronously.
   if (GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
+    if (wait_until_closed) {
+      new TabClosedNotificationObserver(this, wait_until_closed, reply_message,
+                                        true);
+    }
     chrome::CloseWebContents(browser, tab);
-    reply.SendSuccess(NULL);
+    if (!wait_until_closed)
+      reply.SendSuccess(NULL);
     return;
   }
-
   // Close other types of views asynchronously.
   RenderViewHost* view;
   if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {

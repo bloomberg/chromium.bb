@@ -188,8 +188,8 @@ class BrowserTest(pyauto.PyUITest):
     self.KillRendererProcess(shared_pid)
 
     # Reload the parent and popup windows.
-    self.GetBrowserWindow(0).GetTab(0).Reload()
-    self.GetBrowserWindow(1).GetTab(0).Reload()
+    self.ReloadTab()
+    self.ReloadTab(windex=1)
     # Check if both are sharing a process id.
     self.assertEquals(
         self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'],

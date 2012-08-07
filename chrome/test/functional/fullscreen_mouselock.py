@@ -420,7 +420,7 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     """
     self.NavigateToURL(self.GetHttpURLForDataPath('google', 'google.html'))
     self._InitiateTabFullscreen()
-    self.GetBrowserWindow().GetTab().GoBack()
+    self.TabGoBack()
     self.assertFalse(
         self.IsFullscreenForTab(),
         msg='Tab fullscreen did not exit when navigating to a new page.')
@@ -458,7 +458,7 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     lock_result = self._EnableAndReturnLockMouseResult()
     self.assertEqual(
         lock_result, 'success', msg='Mouse is not locked.')
-    self.GetBrowserWindow().GetTab().GoBack()
+    self.TabGoBack()
     self.assertFalse(
         self.IsMouseLocked(),
         msg='Mouse lock did not exit when navigating to the prev page.')

@@ -119,7 +119,7 @@ class PluginsTest(pyauto.PyUITest):
       self.assertTrue(self.WaitUntil(
           lambda: self._GetPluginPID(plugin_name) is None),
           msg='Expected %s plugin to die after killing' % plugin_name)
-      self.GetBrowserWindow(0).GetTab(0).Reload()
+      self.ReloadTab()
       self.assertTrue(self.WaitUntil(
           lambda: self._GetPluginPID(plugin_name)),
           msg='No plugin process for %s after reloading' % plugin_name)
@@ -161,7 +161,7 @@ class PluginsTest(pyauto.PyUITest):
         continue  # crbug.com/71223
       # Enable
       self._TogglePlugin(plugin_name)
-      self.GetBrowserWindow(0).GetTab(0).Reload()
+      self.ReloadTab()
       if self._PluginNeedsAuthorization(plugin_name):
         self.assertTrue(self.WaitForInfobarCount(1))
         self.PerformActionOnInfobar('accept', 0)
@@ -188,7 +188,7 @@ class PluginsTest(pyauto.PyUITest):
     # Set the preference to block all plugins.
     self.SetPrefs(pyauto.kDefaultContentSettings, {'plugins': 2})
 
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     self.assertFalse(self._GetPluginPID('Shockwave Flash'),
                      msg='Plug-in not blocked.')
 
@@ -229,7 +229,7 @@ class PluginsTest(pyauto.PyUITest):
     # Add an exception to block plugins on localhost.
     self.SetPrefs(pyauto.kContentSettingsPatternPairs,
                  {'[*.]hulu.com,*': {'plugins': 2}})
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     self.assertFalse(self._GetPluginPID('Shockwave Flash'),
                      msg='Shockwave Flash Plug-in not blocked.')
 

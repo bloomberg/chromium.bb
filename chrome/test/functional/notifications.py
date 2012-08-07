@@ -480,7 +480,7 @@ class NotificationsTest(pyauto.PyUITest):
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
-    self.GetBrowserWindow(0).GetTab(0).Close(True)
+    self.CloseTab()
 
   def testNavigateAwayWithPermissionInfobar(self):
     """Test navigating away when an infobar is present, then trying to create a

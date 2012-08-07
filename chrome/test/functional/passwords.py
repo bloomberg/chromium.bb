@@ -267,7 +267,7 @@ class PasswordTest(pyauto.PyUITest):
     self.PerformActionOnInfobar(
         'accept', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
             self, self.INFOBAR_TYPE))
-    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.ReloadTab()
     test_utils.AssertInfobarTypeDoesNotAppear(self, self.INFOBAR_TYPE)
 
   def testPasswdInfoNotStoredWhenAutocompleteOff(self):

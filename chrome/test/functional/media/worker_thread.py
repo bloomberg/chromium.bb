@@ -105,7 +105,7 @@ class WorkerThread(threading.Thread):
       self.AppendTab(unique_url)
       if not self.RunTask(unique_url, task):
         self.failures += 1
-      self.CloseTab(unique_url)
+      self.CloseTabByURL(unique_url)
       self.__tasks.task_done()
 
   def __FindTabLocked(self, url):
@@ -138,10 +138,9 @@ class WorkerThread(threading.Thread):
                                             tab_index=self.__FindTabLocked(url))
 
   @synchronized
-  def CloseTab(self, url):
+  def CloseTabByURL(self, url):
     """Closes the tab with the given url."""
-    return self.__pyauto.GetBrowserWindow(0).GetTab(
-        self.__FindTabLocked(url)).Close(True)
+    self.CloseTab(tab_index=self.__FindTabLocked(url))
 
   @synchronized
   def GetDOMValue(self, name, url=None):

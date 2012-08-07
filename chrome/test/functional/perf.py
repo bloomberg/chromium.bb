@@ -593,7 +593,7 @@ class BasePerfTest(pyauto.PyUITest):
       self.assertEqual(1 + num_tabs, self.GetTabCount(),
                        msg='Did not open %d new tab(s).' % num_tabs)
       for _ in range(num_tabs):
-        self.GetBrowserWindow(0).GetTab(1).Close(True)
+        self.CloseTab(tab_index=1)
 
     self._PrintSummaryResults(description, timings, 'milliseconds', graph_name)
 
@@ -738,7 +738,7 @@ class BenchmarkPerfTest(BasePerfTest):
         benchmark_name = match.group(1)
         benchmark_score = match.group(2)
         result_dict[benchmark_name] = int(benchmark_score)
-      self.GetBrowserWindow(0).GetTab(1).Close(True)
+      self.CloseTab(tab_index=1)
       return result_dict
 
     timings = {}
@@ -1437,14 +1437,14 @@ class GPUPerfTest(BasePerfTest):
       status2 = self._GetStdAvgAndCompare(avg_fps, desc_array[index + 1],
                                           ref_dict)
       # Go Back to previous demo
-      self.GetBrowserWindow(0).GetTab(0).GoBack();
+      self.TabGoBack()
       # Measures performance for first demo when moved back
       avg_fps = self._MeasureFpsOverTime()
       status3 = self._GetStdAvgAndCompare(
           avg_fps, desc_array[index] + '_backward',
           ref_dict)
       # Go Forward to previous demo
-      self.GetBrowserWindow(0).GetTab(0).GoForward();
+      self.TabGoForward()
       # Measures performance for second demo when moved forward
       avg_fps = self._MeasureFpsOverTime()
       status4 = self._GetStdAvgAndCompare(
@@ -1721,7 +1721,7 @@ class BaseScrollTest(BasePerfTest):
       }));
     """
     results = eval(self.ExecuteJavascript(results_js, tab_index=1))
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
+    self.CloseTab(tab_index=1)
     return ScrollResults(results['first_paint_time'], results['frame_times'])
 
   def RunScrollTest(self, url, description, graph_name, setup_js=''):
@@ -2357,7 +2357,7 @@ class MemoryTest(BasePerfTest):
                               duration)
 
       for _ in xrange(len(tabs)):
-        self.GetBrowserWindow(0).GetTab(1).Close(True)
+        self.CloseTab(tab_index=1)
 
       self._RecordMemoryStats(description, '0Tabs%d' % (iteration_num + 1),
                               duration)

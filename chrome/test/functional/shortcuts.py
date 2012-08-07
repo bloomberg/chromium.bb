@@ -35,7 +35,7 @@ class ShortcutsTest(pyauto.PyUITest):
     url = self.GetFileURLForPath(os.path.join(self.DataDir(), 'title2.html'))
     self.NavigateToURL(url)
     title = self.GetActiveTabTitle()
-    self.GetBrowserWindow(0).GetTab(1).Close()
+    self.CloseTab(tab_index=1)
     self.assertEqual(1, self.GetTabCount(), msg='Can not close a tab.')
     # Verify shortcut reopens the correct tab.
     self.RunCommand(pyauto.IDC_RESTORE_TAB)
