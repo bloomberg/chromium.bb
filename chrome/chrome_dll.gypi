@@ -289,9 +289,8 @@
                 'app/theme/otr_icon.pdf',
                 'browser/mac/install.sh',
                 '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
-                '<(grit_out_dir)/theme_resources_100_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
                 '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
                 # Note: pseudo_locales are generated via the packed_resources
                 # dependency but not copied to the final target.  See
@@ -532,9 +531,7 @@
                 }],
                 ['enable_hidpi==1', {
                   'mac_bundle_resources': [
-                    '<(grit_out_dir)/theme_resources_200_percent.pak',
-                    '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_200_percent.pak',
-                    '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_200_percent.pak',
+                    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_200_percent.pak',
                   ],
                 }],
               ],  # conditions
