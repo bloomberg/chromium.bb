@@ -1358,8 +1358,8 @@ class ValidationPool(object):
       else:
         msg.append('One of the following changes is probably at fault: %s'
                    % other_suspects_str)
-
-      msg.append('The Commit Queue will retry your change automatically.')
+      msg.insert(
+          0, 'NOTE: The Commit Queue will retry your change automatically.')
 
     return '\n\n'.join(msg)
 
