@@ -218,8 +218,8 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
     paint.setAntiAlias(true);
     paint.setColor(kButtonColor);
     canvas->sk_canvas()->drawCircle(button_cx, button_cy, kButtonRadius, paint);
-    View::OnPaint(canvas);
   }
+  View::OnPaint(canvas);
 }
 
 bool Slider::OnMousePressed(const views::MouseEvent& event) {
