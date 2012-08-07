@@ -21,6 +21,11 @@
                   '|ui/base/accessibility/' \
                   '|ui/views/accessibility/'
     },
+    'android_infra': {
+      'filepath': 'build/android/' \
+                  '|testing/android/' \
+                  '|tools/android/'
+    },
     'app_list': {
       'filepath': 'ui/app_list/',
     },
@@ -418,6 +423,9 @@
                       'hashimoto+watch@chromium.org',
                       'yoshiki+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
+    'android_infra': ['peter+watch@chromium.org',
+                      'bulach+watch@chromium.org',
+                      'yfriedman+watch@chromium.org'],
     'app_list': ['tfarina@chromium.org'],
     'appcache': ['michaeln@chromium.org'],
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
