@@ -93,6 +93,68 @@ TEST_F(ImageTest, SkiaToSkiaRef) {
     EXPECT_FALSE(image.HasRepresentation(gt::GetPlatformRepresentationType()));
 }
 
+TEST_F(ImageTest, SkiaToPNGEncodeAndDecode) {
+  gfx::Image image(gt::CreateBitmap(25, 25));
+  const std::vector<unsigned char>* png = image.ToImagePNG();
+  EXPECT_TRUE(png);
+  EXPECT_FALSE(png->empty());
+  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
+
+  gfx::Image from_png(&png->front(), png->size());
+  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
+  EXPECT_TRUE(gt::IsEqual(from_png, image));
+}
+
+TEST_F(ImageTest, PlatformToPNGEncodeAndDecode) {
+  gfx::Image image(gt::CreatePlatformImage());
+  const std::vector<unsigned char>* png = image.ToImagePNG();
+  EXPECT_TRUE(png);
+  EXPECT_FALSE(png->empty());
+  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
+
+  gfx::Image from_png(&png->front(), png->size());
+  EXPECT_TRUE(image.HasRepresentation(gfx::Image::kImageRepPNG));
+  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image)));
+}
+
+// The platform types use the platform provided encoding/decoding of PNGs. Make
+// sure these work with the Skia Encode/Decode.
+TEST_F(ImageTest, PNGEncodeFromSkiaDecodeToPlatform) {
+  // Force the conversion sequence skia to png to platform_type.
+  gfx::Image from_skia(gt::CreateBitmap(25, 25));
+  const std::vector<unsigned char>* png = from_skia.ToImagePNG();
+  gfx::Image from_png(&png->front(), png->size());
+  gfx::Image from_platform(gt::CopyPlatformType(from_png));
+
+  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(from_platform)));
+  EXPECT_TRUE(gt::IsEqual(from_skia, from_platform));
+}
+
+TEST_F(ImageTest, PNGEncodeFromPlatformDecodeToSkia) {
+  // Force the conversion sequence platform_type to png to skia.
+  gfx::Image from_platform(gt::CreatePlatformImage());
+  const std::vector<unsigned char>* png = from_platform.ToImagePNG();
+  gfx::Image from_png(&png->front(), png->size());
+  gfx::Image from_skia(*from_png.ToImageSkia());
+
+  EXPECT_TRUE(gt::IsEqual(from_skia, from_platform));
+}
+
+TEST_F(ImageTest, PNGDecodeToSkiaFailure) {
+  std::vector<unsigned char> png(100, 0);
+  gfx::Image image(&png.front(), png.size());
+  const SkBitmap* bitmap = image.ToSkBitmap();
+
+  SkAutoLockPixels auto_lock(*bitmap);
+  gt::CheckColor(bitmap->getColor(10, 10), true);
+}
+
+TEST_F(ImageTest, PNGDecodeToPlatformFailure) {
+  std::vector<unsigned char> png(100, 0);
+  gfx::Image image(&png.front(), png.size());
+  gt::CheckColor(gt::GetPlatformImageColor(gt::ToPlatformType(image)), true);
+}
+
 TEST_F(ImageTest, SkiaToPlatform) {
   gfx::Image image(gt::CreateBitmap(25, 25));
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
@@ -196,11 +258,10 @@ TEST_F(ImageTest, SkiaToCocoaCopy) {
 
 TEST_F(ImageTest, CheckSkiaColor) {
   gfx::Image image(gt::CreatePlatformImage());
-  const SkBitmap* bitmap = image.ToSkBitmap();
 
+  const SkBitmap* bitmap = image.ToSkBitmap();
   SkAutoLockPixels auto_lock(*bitmap);
-  uint32_t* pixel = bitmap->getAddr32(10, 10);
-  EXPECT_EQ(SK_ColorRED, *pixel);
+  gt::CheckColor(bitmap->getColor(10, 10), false);
 }
 
 TEST_F(ImageTest, SwapRepresentations) {

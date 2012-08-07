@@ -55,12 +55,19 @@ class UI_EXPORT Image {
     kImageRepCocoa,
     kImageRepCairo,
     kImageRepSkia,
+    kImageRepPNG,
   };
 
   typedef std::map<RepresentationType, internal::ImageRep*> RepresentationMap;
 
   // Creates an empty image with no representations.
   Image();
+
+  // Creates a new image by copying the PNG-encoded input for use as the default
+  // representation. For example (from an std::vector):
+  // std::vector<unsigned char> png = ...;
+  // gfx::Image image(&png.front(), png.size());
+  Image(const unsigned char* png, size_t input_size);
 
   // Creates a new image by copying the ImageSkia for use as the default
   // representation.
@@ -98,6 +105,7 @@ class UI_EXPORT Image {
   // Converts the Image to the desired representation and stores it internally.
   // The returned result is a weak pointer owned by and scoped to the life of
   // the Image. Must only be called if IsEmpty() is false.
+  const std::vector<unsigned char>* ToImagePNG() const;
   const SkBitmap* ToSkBitmap() const;
   const ImageSkia* ToImageSkia() const;
 #if defined(TOOLKIT_GTK)
@@ -125,6 +133,7 @@ class UI_EXPORT Image {
   // backing pixels are shared amongst all copies (a fact of each of the
   // converted representations, rather than a limitation imposed by Image) and
   // so the result should be considered immutable.
+  std::vector<unsigned char>* CopyImagePNG() const;
   ImageSkia* CopyImageSkia() const;
   SkBitmap* CopySkBitmap() const;
 #if defined(TOOLKIT_GTK)

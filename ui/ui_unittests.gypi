@@ -101,6 +101,7 @@
         'gfx/image/image_unittest.cc',
         'gfx/image/image_unittest_util.cc',
         'gfx/image/image_unittest_util.h',
+        'gfx/image/image_unittest_util_mac.mm',
         'gfx/image/image_util_unittest.cc',
         'gfx/insets_unittest.cc',
         'gfx/rect_unittest.cc',

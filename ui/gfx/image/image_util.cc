@@ -7,17 +7,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
 
 Image* ImageFromPNGEncodedData(const unsigned char* input, size_t input_size) {
-  SkBitmap bitmap;
-  if (gfx::PNGCodec::Decode(input, input_size, &bitmap))
-    return new Image(bitmap);
-
-  return NULL;
+  Image* image = new Image(input, input_size);
+  return image;
 }
 
 Image ImageFromJPEGEncodedData(const unsigned char* input, size_t input_size) {
@@ -30,8 +27,8 @@ Image ImageFromJPEGEncodedData(const unsigned char* input, size_t input_size) {
 
 bool PNGEncodedDataFromImage(const Image& image,
                              std::vector<unsigned char>* dst) {
-  const SkBitmap& bitmap = *image.ToSkBitmap();
-  return gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, dst);
+  *dst = *image.ToImagePNG();
+  return !dst->empty();
 }
 
 bool JPEGEncodedDataFromImage(const Image& image, int quality,

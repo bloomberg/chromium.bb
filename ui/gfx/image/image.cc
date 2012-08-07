@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
 
@@ -16,6 +17,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdk.h>
 #include <glib-object.h>
+#include "ui/base/gtk/scoped_gobject.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
@@ -41,8 +43,69 @@ const ImageSkia ImageSkiaFromGdkPixbuf(GdkPixbuf* pixbuf) {
   cairo_paint(cr);
   return ImageSkia(canvas.ExtractImageRep());
 }
-#endif
 
+GdkPixbuf* GdkPixbufFromPNG(const std::vector<unsigned char>& png) {
+  GdkPixbuf* pixbuf = NULL;
+  ui::ScopedGObject<GdkPixbufLoader>::Type loader(gdk_pixbuf_loader_new());
+
+  bool ok = gdk_pixbuf_loader_write(loader.get(),
+      reinterpret_cast<const guint8*>(&png.front()), png.size(), NULL);
+
+  // Calling gdk_pixbuf_loader_close forces the data to be parsed by the
+  // loader. This must be done before calling gdk_pixbuf_loader_get_pixbuf.
+  if (ok)
+    ok = gdk_pixbuf_loader_close(loader.get(), NULL);
+  if (ok)
+    pixbuf = gdk_pixbuf_loader_get_pixbuf(loader.get());
+
+  if (pixbuf) {
+    // The pixbuf is owned by the scoped loader which will delete its ref when
+    // it goes out of scope. Add a ref so that the pixbuf still exists.
+    g_object_ref(pixbuf);
+  } else {
+    LOG(WARNING) << "Unable to decode PNG.";
+    // Return a 16x16 red image to visually show error.
+    pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 16, 16);
+    gdk_pixbuf_fill(pixbuf, 0xff0000ff);
+  }
+
+  return pixbuf;
+}
+
+void PNGFromGdkPixbuf(GdkPixbuf* pixbuf, std::vector<unsigned char>* png) {
+  gchar* image = NULL;
+  gsize image_size;
+  GError* error = NULL;
+  CHECK(gdk_pixbuf_save_to_buffer(
+      pixbuf, &image, &image_size, "png", &error, NULL));
+  png->assign(image, image + image_size);
+  g_free(image);
+}
+
+#endif // defined(TOOLKIT_GTK)
+
+#if defined(OS_MACOSX)
+void PNGFromNSImage(NSImage* nsimage, std::vector<unsigned char>* png);
+NSImage* NSImageFromPNG(const std::vector<unsigned char>& png);
+#endif // defined(OS_MACOSX)
+
+ImageSkia* ImageSkiaFromPNG(const std::vector<unsigned char>& png) {
+  SkBitmap bitmap;
+  if (!gfx::PNGCodec::Decode(&png.front(), png.size(), &bitmap)) {
+    LOG(WARNING) << "Unable to decode PNG.";
+    // Return a 16x16 red image to visually show error.
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
+    bitmap.allocPixels();
+    bitmap.eraseRGB(0xff, 0, 0);
+  }
+  return new ImageSkia(bitmap);
+}
+
+void PNGFromImageSkia(const ImageSkia* skia, std::vector<unsigned char>* png) {
+  CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(*skia->bitmap(), false, png));
+}
+
+class ImageRepPNG;
 class ImageRepSkia;
 class ImageRepGdk;
 class ImageRepCairo;
@@ -61,6 +124,11 @@ class ImageRep {
   virtual ~ImageRep() {}
 
   // Cast helpers ("fake RTTI").
+  ImageRepPNG* AsImageRepPNG() {
+    CHECK_EQ(type_, Image::kImageRepPNG);
+    return reinterpret_cast<ImageRepPNG*>(this);
+  }
+
   ImageRepSkia* AsImageRepSkia() {
     CHECK_EQ(type_, Image::kImageRepSkia);
     return reinterpret_cast<ImageRepSkia*>(this);
@@ -89,6 +157,26 @@ class ImageRep {
 
  private:
   Image::RepresentationType type_;
+};
+
+class ImageRepPNG : public ImageRep {
+ public:
+  ImageRepPNG(const unsigned char* input, size_t input_size)
+      : ImageRep(Image::kImageRepPNG),
+        image_(input, input + input_size) {
+  }
+  ImageRepPNG() : ImageRep(Image::kImageRepPNG) {
+  }
+
+  virtual ~ImageRepPNG() {
+  }
+
+  std::vector<unsigned char>* image() { return &image_; }
+
+ private:
+  std::vector<unsigned char> image_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageRepPNG);
 };
 
 class ImageRepSkia : public ImageRep {
@@ -221,6 +309,12 @@ Image::Image() {
   // |storage_| is NULL for empty Images.
 }
 
+Image::Image(const unsigned char* png, size_t input_size)
+    : storage_(new internal::ImageStorage(Image::kImageRepPNG)) {
+  internal::ImageRepPNG* rep = new internal::ImageRepPNG(png, input_size);
+  AddRepresentation(rep);
+}
+
 Image::Image(const ImageSkia& image)
     : storage_(new internal::ImageStorage(Image::kImageRepSkia)) {
   internal::ImageRepSkia* rep = new internal::ImageRepSkia(
@@ -269,6 +363,42 @@ Image& Image::operator=(const Image& other) {
 Image::~Image() {
 }
 
+const std::vector<unsigned char>* Image::ToImagePNG() const {
+  internal::ImageRep* rep = GetRepresentation(kImageRepPNG, false);
+  if (!rep) {
+    internal::ImageRepPNG* png_rep = new internal::ImageRepPNG();
+    switch (DefaultRepresentationType()) {
+#if defined(TOOLKIT_GTK)
+      case kImageRepGdk: {
+        internal::ImageRepGdk* gdk_rep =
+            GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
+        internal::PNGFromGdkPixbuf(gdk_rep->pixbuf(), png_rep->image());
+        break;
+      }
+#elif defined(OS_MACOSX)
+      case kImageRepCocoa: {
+        internal::ImageRepCocoa* cocoa_rep =
+            GetRepresentation(kImageRepCocoa, true)->AsImageRepCocoa();
+        internal::PNGFromNSImage(cocoa_rep->image(), png_rep->image());
+        break;
+      }
+#endif
+      case kImageRepSkia: {
+        internal::ImageRepSkia* skia_rep =
+            GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
+        internal::PNGFromImageSkia(skia_rep->image(), png_rep->image());
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+    rep = png_rep;
+    CHECK(rep);
+    AddRepresentation(rep);
+  }
+  return rep->AsImageRepPNG()->image();
+}
+
 const SkBitmap* Image::ToSkBitmap() const {
   // Possibly create and cache an intermediate ImageRepSkia.
   return ToImageSkia()->bitmap();
@@ -277,17 +407,34 @@ const SkBitmap* Image::ToSkBitmap() const {
 const ImageSkia* Image::ToImageSkia() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepSkia, false);
   if (!rep) {
+    switch (DefaultRepresentationType()) {
+      case kImageRepPNG: {
+        internal::ImageRepPNG* png_rep =
+            GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
+        rep = new internal::ImageRepSkia(
+            internal::ImageSkiaFromPNG(*png_rep->image()));
+        break;
+      }
 #if defined(TOOLKIT_GTK)
-    internal::ImageRepGdk* native_rep =
-        GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
-    rep = new internal::ImageRepSkia(new ImageSkia(
-        internal::ImageSkiaFromGdkPixbuf(native_rep->pixbuf())));
+      case kImageRepGdk: {
+        internal::ImageRepGdk* native_rep =
+            GetRepresentation(kImageRepGdk, true)->AsImageRepGdk();
+        rep = new internal::ImageRepSkia(new ImageSkia(
+            internal::ImageSkiaFromGdkPixbuf(native_rep->pixbuf())));
+        break;
+      }
 #elif defined(OS_MACOSX)
-    internal::ImageRepCocoa* native_rep =
-        GetRepresentation(kImageRepCocoa, true)->AsImageRepCocoa();
-    rep = new internal::ImageRepSkia(new ImageSkia(
-        ImageSkiaFromNSImage(native_rep->image())));
+      case kImageRepCocoa: {
+        internal::ImageRepCocoa* native_rep =
+            GetRepresentation(kImageRepCocoa, true)->AsImageRepCocoa();
+        rep = new internal::ImageRepSkia(new ImageSkia(
+            ImageSkiaFromNSImage(native_rep->image())));
+        break;
+      }
 #endif
+      default:
+        NOTREACHED();
+    }
     CHECK(rep);
     AddRepresentation(rep);
   }
@@ -298,10 +445,24 @@ const ImageSkia* Image::ToImageSkia() const {
 GdkPixbuf* Image::ToGdkPixbuf() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepGdk, false);
   if (!rep) {
-    internal::ImageRepSkia* skia_rep =
-        GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
-    rep = new internal::ImageRepGdk(gfx::GdkPixbufFromSkBitmap(
-        *skia_rep->image()->bitmap()));
+    switch (DefaultRepresentationType()) {
+      case kImageRepPNG: {
+        internal::ImageRepPNG* png_rep =
+            GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
+        rep = new internal::ImageRepGdk(internal::GdkPixbufFromPNG(
+            *png_rep->image()));
+        break;
+      }
+      case kImageRepSkia: {
+        internal::ImageRepSkia* skia_rep =
+            GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
+        rep = new internal::ImageRepGdk(gfx::GdkPixbufFromSkBitmap(
+            *skia_rep->image()->bitmap()));
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
     CHECK(rep);
     AddRepresentation(rep);
   }
@@ -325,17 +486,35 @@ CairoCachedSurface* const Image::ToCairo() const {
 NSImage* Image::ToNSImage() const {
   internal::ImageRep* rep = GetRepresentation(kImageRepCocoa, false);
   if (!rep) {
-    internal::ImageRepSkia* skia_rep =
-        GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
-    NSImage* image = NSImageFromImageSkia(*skia_rep->image());
-    base::mac::NSObjectRetain(image);
-    rep = new internal::ImageRepCocoa(image);
+    switch (DefaultRepresentationType()) {
+      case kImageRepPNG: {
+        internal::ImageRepPNG* png_rep =
+            GetRepresentation(kImageRepPNG, true)->AsImageRepPNG();
+        rep = new internal::ImageRepCocoa(internal::NSImageFromPNG(
+            *png_rep->image()));
+        break;
+      }
+      case kImageRepSkia: {
+        internal::ImageRepSkia* skia_rep =
+            GetRepresentation(kImageRepSkia, true)->AsImageRepSkia();
+        NSImage* image = NSImageFromImageSkia(*skia_rep->image());
+        base::mac::NSObjectRetain(image);
+        rep = new internal::ImageRepCocoa(image);
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
     CHECK(rep);
     AddRepresentation(rep);
   }
   return rep->AsImageRepCocoa()->image();
 }
 #endif
+
+std::vector<unsigned char>* Image::CopyImagePNG() const {
+  return new std::vector<unsigned char>(*ToImagePNG());
+}
 
 SkBitmap Image::AsBitmap() const {
   return IsEmpty() ? SkBitmap() : *ToSkBitmap();
