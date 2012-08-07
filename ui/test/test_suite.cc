@@ -44,9 +44,13 @@ void UITestSuite::Initialize() {
   base::mac::SetOverrideFrameworkBundlePath(path);
 #elif defined(OS_POSIX)
   FilePath pak_dir;
+#if defined(OS_ANDROID)
+  PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_dir);
+#else
   PathService::Get(base::DIR_MODULE, &pak_dir);
   pak_dir = pak_dir.AppendASCII("ui_unittests_strings");
   PathService::Override(ui::DIR_LOCALES, pak_dir);
+#endif  // defined(OS_ANDROID)
 #endif  // defined(OS_MACOSX)
 
   // Force unittests to run using en-US so if we test against string
