@@ -10,8 +10,10 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "webkit/fileapi/media/filtering_file_enumerator.h"
 #include "webkit/fileapi/media/media_device_interface_impl.h"
 #include "webkit/fileapi/media/media_device_map_service.h"
+#include "webkit/fileapi/media/media_path_filter.h"
 
 using base::PlatformFileError;
 using base::PlatformFileInfo;
@@ -65,7 +67,15 @@ PlatformFileError DeviceMediaFileUtil::GetFileInfo(
     FilePath* platform_path) {
   if (!context->media_device())
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  return context->media_device()->GetFileInfo(url.path(), file_info);
+  PlatformFileError error =
+      context->media_device()->GetFileInfo(url.path(), file_info);
+  if (error != base::PLATFORM_FILE_OK)
+    return error;
+
+  if (file_info->is_directory ||
+      context->media_path_filter()->Match(url.path()))
+    return base::PLATFORM_FILE_OK;
+  return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
 FileSystemFileUtil::AbstractFileEnumerator*
@@ -75,7 +85,10 @@ DeviceMediaFileUtil::CreateFileEnumerator(
     bool recursive) {
   if (!context->media_device())
     return new FileSystemFileUtil::EmptyFileEnumerator();
-  return context->media_device()->CreateFileEnumerator(url.path(), recursive);
+  return new FilteringFileEnumerator(
+      make_scoped_ptr(
+          context->media_device()->CreateFileEnumerator(url.path(), recursive)),
+      context->media_path_filter());
 }
 
 PlatformFileError DeviceMediaFileUtil::GetLocalFilePath(
@@ -108,7 +121,11 @@ bool DeviceMediaFileUtil::PathExists(
     const FileSystemURL& url) {
   if (!context->media_device())
     return false;
-  return context->media_device()->PathExists(url.path());
+
+  FilePath path;
+  PlatformFileInfo file_info;
+  PlatformFileError error = GetFileInfo(context, url, &file_info, &path);
+  return error == base::PLATFORM_FILE_OK;
 }
 
 bool DeviceMediaFileUtil::DirectoryExists(
@@ -124,7 +141,16 @@ bool DeviceMediaFileUtil::IsDirectoryEmpty(
     const FileSystemURL& url) {
   if (!context->media_device())
     return false;
-  return context->media_device()->IsDirectoryEmpty(url.path());
+
+  scoped_ptr<AbstractFileEnumerator> enumerator(
+      CreateFileEnumerator(context, url, false));
+  FilePath path;
+  while (!(path = enumerator->Next()).empty()) {
+    if (enumerator->IsDirectory() ||
+        context->media_path_filter()->Match(path))
+      return false;
+  }
+  return true;
 }
 
 PlatformFileError DeviceMediaFileUtil::CopyOrMoveFile(

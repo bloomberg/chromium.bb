@@ -7,6 +7,7 @@
 #include "net/base/mime_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/media/media_path_filter.h"
+#include "webkit/fileapi/media/filtering_file_enumerator.h"
 
 using base::PlatformFileError;
 using base::PlatformFileInfo;
@@ -14,49 +15,6 @@ using base::PlatformFileInfo;
 namespace fileapi {
 
 class MediaPathFilter;
-
-namespace {
-
-class FilteringFileEnumerator
-    : public FileSystemFileUtil::AbstractFileEnumerator {
- public:
-  FilteringFileEnumerator(
-      scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> base_enumerator,
-      MediaPathFilter* filter)
-      : base_enumerator_(base_enumerator.Pass()),
-        filter_(filter) {
-    DCHECK(base_enumerator_.get());
-    DCHECK(filter);
-  }
-
-  virtual FilePath Next() OVERRIDE {
-    while (true) {
-      FilePath next = base_enumerator_->Next();
-      if (next.empty() ||
-          base_enumerator_->IsDirectory() ||
-          filter_->Match(next))
-        return next;
-    }
-  }
-
-  virtual int64 Size() OVERRIDE {
-    return base_enumerator_->Size();
-  }
-
-  virtual base::Time LastModifiedTime() OVERRIDE {
-    return base_enumerator_->LastModifiedTime();
-  }
-
-  virtual bool IsDirectory() OVERRIDE {
-    return base_enumerator_->IsDirectory();
-  }
-
- private:
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> base_enumerator_;
-  MediaPathFilter* filter_;
-};
-
-}  // namespace
 
 NativeMediaFileUtil::NativeMediaFileUtil() {
 }
@@ -67,7 +25,7 @@ PlatformFileError NativeMediaFileUtil::CreateOrOpen(
     int file_flags,
     PlatformFile* file_handle,
     bool* created) {
-  // TODO(tzik): Apply context()->mime_path_filter() here when we support write
+  // TODO(tzik): Apply context()->media_path_filter() here when we support write
   // access.
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -75,7 +33,7 @@ PlatformFileError NativeMediaFileUtil::CreateOrOpen(
 PlatformFileError NativeMediaFileUtil::EnsureFileExists(
     FileSystemOperationContext* context,
     const FileSystemURL& url, bool* created) {
-  // TODO(tzik): Apply context()->mime_path_filter() here when we support write
+  // TODO(tzik): Apply context()->media_path_filter() here when we support write
   // access.
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -99,7 +57,7 @@ PlatformFileError NativeMediaFileUtil::Touch(
     const FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  // TODO(tzik): Apply context()->mime_path_filter() here when we support write
+  // TODO(tzik): Apply context()->media_path_filter() here when we support write
   // access.
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -108,7 +66,7 @@ PlatformFileError NativeMediaFileUtil::Truncate(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
     int64 length) {
-  // TODO(tzik): Apply context()->mime_path_filter() here when we support write
+  // TODO(tzik): Apply context()->media_path_filter() here when we support write
   // access.
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -147,7 +105,7 @@ PlatformFileError NativeMediaFileUtil::CopyOrMoveFile(
     const FileSystemURL& src_url,
     const FileSystemURL& dest_url,
     bool copy) {
-  // TODO(tzik): Apply context()->mime_path_filter() here when we support write
+  // TODO(tzik): Apply context()->media_path_filter() here when we support write
   // access.
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
@@ -156,7 +114,7 @@ PlatformFileError NativeMediaFileUtil::CopyInForeignFile(
     FileSystemOperationContext* context,
     const FilePath& src_file_path,
     const FileSystemURL& dest_url) {
-  // TODO(tzik): Apply context()->mime_path_filter() here when we support write
+  // TODO(tzik): Apply context()->media_path_filter() here when we support write
   // access.
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }

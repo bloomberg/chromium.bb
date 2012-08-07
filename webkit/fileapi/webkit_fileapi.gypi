@@ -72,6 +72,8 @@
         'local_file_stream_writer.h',
         'local_file_system_operation.cc',
         'local_file_system_operation.h',
+        'media/filtering_file_enumerator.cc',
+        'media/filtering_file_enumerator.h',
         'media/media_file_system_config.h',
         'media/media_path_filter.cc',
         'media/media_path_filter.h',
