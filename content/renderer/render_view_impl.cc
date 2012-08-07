@@ -1416,6 +1416,13 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   if (!frame->parent()) {
     // Top-level navigation.
 
+    // Reset the zoom limits in case a plugin had changed them previously. This
+    // will also call us back which will cause us to send a message to
+    // update WebContentsImpl.
+    webview()->zoomLimitsChanged(
+        WebView::zoomFactorToZoomLevel(content::kMinimumZoomFactor),
+        WebView::zoomFactorToZoomLevel(content::kMaximumZoomFactor));
+
     // Set zoom level, but don't do it for full-page plugin since they don't use
     // the same zoom settings.
     HostZoomLevels::iterator host_zoom =
@@ -1434,13 +1441,6 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       // send us a new, up-to-date zoom level.
       host_zoom_levels_.erase(host_zoom);
     }
-
-    // Reset the zoom limits in case a plugin had changed them previously. This
-    // will also call us back which will cause us to send a message to
-    // update WebContentsImpl.
-    webview()->zoomLimitsChanged(
-        WebView::zoomFactorToZoomLevel(content::kMinimumZoomFactor),
-        WebView::zoomFactorToZoomLevel(content::kMaximumZoomFactor));
 
     // Update contents MIME type for main frame.
     params.contents_mime_type = ds->response().mimeType().utf8();

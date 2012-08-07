@@ -803,6 +803,7 @@ class RenderViewImpl : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
 #endif
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SetHistoryLengthAndPrune);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ZoomLimit);
 
   typedef std::map<GURL, double> HostZoomLevels;
 
@@ -983,7 +984,8 @@ class RenderViewImpl : public RenderWidget,
   void OnSetWindowVisibility(bool visible);
 #endif
   void OnSetZoomLevel(double zoom_level);
-  void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
+  CONTENT_EXPORT void OnSetZoomLevelForLoadingURL(const GURL& url,
+                                                  double zoom_level);
   void OnExitFullscreen();
   void OnShouldClose();
   void OnStop();

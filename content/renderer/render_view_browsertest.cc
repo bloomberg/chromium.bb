@@ -1698,3 +1698,33 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   }
   view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
 }
+
+TEST_F(RenderViewImplTest, ZoomLimit) {
+  const double kMinZoomLevel =
+      WebKit::WebView::zoomFactorToZoomLevel(content::kMinimumZoomFactor);
+  const double kMaxZoomLevel =
+      WebKit::WebView::zoomFactorToZoomLevel(content::kMaximumZoomFactor);
+
+  ViewMsg_Navigate_Params params;
+  params.page_id = -1;
+  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+
+  // Verifies navigation to a URL with preset zoom level indeed sets the level.
+  // Regression test for http://crbug.com/139559, where the level was not
+  // properly set when it is out of the default zoom limits of WebView.
+  params.url = GURL("data:text/html,min_zoomlimit_test");
+  view()->OnSetZoomLevelForLoadingURL(params.url, kMinZoomLevel);
+  view()->OnNavigate(params);
+  ProcessPendingMessages();
+  EXPECT_DOUBLE_EQ(kMinZoomLevel, view()->GetWebView()->zoomLevel());
+
+  // It should work even when the zoom limit is temporarily changed in the page.
+  view()->GetWebView()->zoomLimitsChanged(
+      WebKit::WebView::zoomFactorToZoomLevel(1.0),
+      WebKit::WebView::zoomFactorToZoomLevel(1.0));
+  params.url = GURL("data:text/html,max_zoomlimit_test");
+  view()->OnSetZoomLevelForLoadingURL(params.url, kMaxZoomLevel);
+  view()->OnNavigate(params);
+  ProcessPendingMessages();
+  EXPECT_DOUBLE_EQ(kMaxZoomLevel, view()->GetWebView()->zoomLevel());
+}
