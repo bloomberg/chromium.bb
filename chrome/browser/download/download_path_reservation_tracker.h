@@ -5,12 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
 
-#include <map>
-
 #include "base/callback_forward.h"
-#include "base/file_path.h"
-#include "base/lazy_instance.h"
-#include "content/public/browser/download_id.h"
 
 // DownloadPathReservationTracker: Track download paths that are in use by
 // active downloads.
@@ -72,10 +67,12 @@ namespace content {
 class DownloadItem;
 }
 
+class FilePath;
+
 // Issues and tracks download paths that are in use by the download system. When
 // a target path is set for a download, this object tracks the path and the
 // associated download item so that subsequent downloads can avoid using the
-// same path. All non-static methods must be invoked on the FILE thread.
+// same path.
 class DownloadPathReservationTracker {
  public:
   // Callback used with |GetReservedPath|. |target_path| specifies the target
@@ -95,9 +92,8 @@ class DownloadPathReservationTracker {
   static const int kMaxUniqueFiles = 100;
 
   // Called on the UI thread to request a download path reservation. Begins
-  // observing |download_item| and invokes ReserveInternal() on the FILE thread
-  // to create the path reservation. Will not modify any state of
-  // |download_item|.
+  // observing |download_item| and initiates creating a reservation on the FILE
+  // thread. Will not modify any state of |download_item|.
   //
   // |default_download_path| is the user's default download path. If this
   // directory does not exist and is the parent directory of
@@ -108,47 +104,9 @@ class DownloadPathReservationTracker {
                               bool should_uniquify_path,
                               const ReservedPathCallback& callback);
 
- private:
-  friend class DownloadPathReservationTrackerTest;
-  friend struct base::DefaultLazyInstanceTraits<DownloadPathReservationTracker>;
-
-  typedef std::map<content::DownloadId, FilePath> ReservationMap;
-
-  DownloadPathReservationTracker();
-  ~DownloadPathReservationTracker();
-
-  // Called on the FILE thread to reserve a download path. This method:
-  // - Creates directory |default_download_path| if it doesn't exist.
-  // - Verifies that the parent directory of |suggested_path| exists and is
-  //   writeable.
-  // - Uniquifies |suggested_path| if |should_uniquify_path| is true.
-  // - Schedules |callback| on the UI thread with the reserved path and a flag
-  //   indicating whether the returned path has been successfully verified.
-  void ReserveInternal(content::DownloadId download_id,
-                       const FilePath& suggested_path,
-                       const FilePath& default_download_path,
-                       bool should_uniquify_path,
-                       const ReservedPathCallback& callback);
-
-  // Returns true if the given path is in use by any path reservation or the
-  // file system. Called on the FILE thread.
-  bool IsPathInUse(const FilePath& path) const;
-
-  // Called on the FILE thread to update the path of the reservation associated
-  // with |download_id| to |new_path|.
-  void Update(content::DownloadId download_id, const FilePath& new_path);
-
-  // Called on the FILE thread to remove the path reservation associated with
-  // |download_id|.
-  void Revoke(content::DownloadId download_id);
-
-  // Get a pointer to the browser global instace of this object. Called on the
-  // UI thread.
-  static DownloadPathReservationTracker* GetInstance();
-
-  ReservationMap reservations_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadPathReservationTracker);
+  // Returns true if |path| is in use by an existing path reservation. Should
+  // only be called on the FILE thread. Currently only used by tests.
+  static bool IsPathInUseForTesting(const FilePath& path);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PATH_RESERVATION_TRACKER_H_
