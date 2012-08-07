@@ -51,7 +51,7 @@ class BookmarkIndexTest : public testing::Test {
   }
 
   void ExpectMatches(const std::string& query,
-                     const std::vector<std::string> expected_titles) {
+                     const std::vector<std::string>& expected_titles) {
     std::vector<bookmark_utils::TitleMatch> matches;
     model_->GetBookmarksWithTitlesMatching(ASCIIToUTF16(query), 1000, &matches);
     ASSERT_EQ(expected_titles.size(), matches.size());
