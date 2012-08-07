@@ -21,5 +21,15 @@ public class ProcessUtils {
         nativeToggleWebKitSharedTimers(suspend);
     }
 
+    /**
+     * We have keep-alives enabled for network connections as without it some routers will
+     * kill the connection, causing web pages to hang. This call closes such
+     * idle-but-kept-alive connections.
+     */
+    public static void closeIdleConnections() {
+        nativeCloseIdleConnections();
+    }
+
     private static native void nativeToggleWebKitSharedTimers(boolean suspend);
+    private static native void nativeCloseIdleConnections();
 }

@@ -112,6 +112,8 @@
         'browser/android/android_protocol_adapter.h',
         'browser/android/android_stream_reader_url_request_job.cc',
         'browser/android/android_stream_reader_url_request_job.h',
+        'browser/android/chrome_jni_registrar.cc',
+        'browser/android/chrome_jni_registrar.h',
         'browser/android/chrome_startup_flags.cc',
         'browser/android/chrome_startup_flags.h',
         'browser/android/devtools_server.cc',
