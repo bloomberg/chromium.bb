@@ -882,14 +882,23 @@ def PanProjectChecks(input_api, output_api,
       r'.+\.json$',
   ))
   project_name = project_name or 'Chromium'
+
+  # Accept any year number from 2006 to the current year, or the special
+  # 2006-2008 string used on the oldest files. 2006-2008 is deprecated, but
+  # tolerate it until it's removed from all files.
+  current_year = int(input_api.time.strftime('%Y'))
+  allowed_years = (str(s) for s in reversed(xrange(2006, current_year + 1)))
+  years_re = '(' + '|'.join(allowed_years) + '|2006-2008)'
+
+  # The (c) is deprecated, but tolerate it until it's removed from all files.
   license_header = license_header or (
-      r'.*? Copyright \(c\) %(year)s The %(project)s Authors\. '
+      r'.*? Copyright (\(c\) )?%(year)s The %(project)s Authors\. '
         r'All rights reserved\.\n'
       r'.*? Use of this source code is governed by a BSD-style license that '
         r'can be\n'
       r'.*? found in the LICENSE file\.(?: \*/)?\n'
   ) % {
-      'year': input_api.time.strftime('%Y'),
+      'year': years_re,
       'project': project_name,
   }
 
