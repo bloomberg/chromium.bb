@@ -1214,7 +1214,8 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DetachWithSqueeze) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, AttachWithSqueeze) {
+// Flaky (sometimes timeout): http://crbug.com/141156
+IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DISABLED_AttachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
