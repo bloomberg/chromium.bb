@@ -45,7 +45,7 @@ _CNS_PORT = 9000
 
 # Base CNS URL, only requires & separated parameter names appended.
 if WINDOWS:
-  CNS_BASE_URL = 'http://chromeperf34.chrome:%d/ServeConstrained?' % _CNS_PORT
+  CNS_BASE_URL = 'http://chromeperf34:%d/ServeConstrained?' % _CNS_PORT
 else:
   CNS_BASE_URL = 'http://127.0.0.1:%d/ServeConstrained?' % _CNS_PORT
 
