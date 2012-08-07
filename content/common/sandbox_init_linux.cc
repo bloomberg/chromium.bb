@@ -21,7 +21,6 @@ void InitializeSandbox() {
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
 
-
   // No matter what, it's always an error to call InitializeSandbox() after
   // threads have been created.
   if (!linux_sandbox->IsSingleThreaded()) {

@@ -424,38 +424,16 @@ void WarmupPolicy(playground2::Sandbox::EvaluateSyscall policy) {
 #endif
 }
 
-// Is the sandbox fully disabled for this process?
-bool ShouldDisableBpfSandbox(const CommandLine& command_line,
-                             const std::string& process_type) {
-  if (process_type == switches::kGpuProcess) {
-    // The GPU sandbox is disabled by default in ChromeOS, enabled by default on
-    // generic Linux.
-    // TODO(jorgelo): when we feel comfortable, make this a policy decision
-    // instead. (i.e. move this to GetProcessSyscallPolicy) and return an
-    // AllowAllPolicy for lack of "--enable-gpu-sandbox".
-    bool should_disable;
-    if (IsChromeOS()) {
-      should_disable = true;
-    } else {
-      should_disable = false;
-    }
-
-    if (command_line.HasSwitch(switches::kEnableGpuSandbox))
-      should_disable = false;
-    if (command_line.HasSwitch(switches::kDisableGpuSandbox))
-      should_disable = true;
-    return should_disable;
-  }
-
-  return false;
-}
-
 playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     const CommandLine& command_line,
     const std::string& process_type) {
 #if defined(__x86_64__)
   if (process_type == switches::kGpuProcess) {
-    return GpuProcessPolicy_x86_64;
+    // On Chrome OS, --enable-gpu-sandbox enables the more restrictive policy.
+    if (IsChromeOS() && !command_line.HasSwitch(switches::kEnableGpuSandbox))
+      return BlacklistPtracePolicy;
+    else
+      return GpuProcessPolicy_x86_64;
   }
 
   if (process_type == switches::kPpapiPluginProcess) {
@@ -514,7 +492,10 @@ bool SandboxSeccompBpf::ShouldEnableSeccompBpf(
     const std::string& process_type) {
 #if defined(SECCOMP_BPF_SANDBOX)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return !ShouldDisableBpfSandbox(command_line, process_type);
+  if (process_type == switches::kGpuProcess)
+    return !command_line.HasSwitch(switches::kDisableGpuSandbox);
+
+  return true;
 #endif
   return false;
 }
