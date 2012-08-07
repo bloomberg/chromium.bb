@@ -9,6 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -27,6 +29,83 @@
 using content::BrowserThread;
 using content::WebContents;
 
+namespace {
+
+const extensions::Extension* GetExtension(int render_process_id,
+                                          int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
+  if (!web_contents)
+    return NULL;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return NULL;
+
+  ExtensionService* extension_service = profile->GetExtensionService();
+  if (!extension_service)
+    return NULL;
+
+  return extension_service->extensions()->GetExtensionOrAppByURL(
+      ExtensionURLInfo(web_contents->GetURL()));
+}
+
+// Gets the security originator of the tab. It returns a string with no '/'
+// at the end to display in the UI.
+string16 GetSecurityOrigin(int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* tab_content = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
+  if (!tab_content)
+    return string16();
+
+  std::string security_origin = tab_content->GetURL().GetOrigin().spec();
+
+  // Remove the last character if it is a '/'.
+  if (!security_origin.empty()) {
+    std::string::iterator it = security_origin.end() - 1;
+    if (*it == '/')
+      security_origin.erase(it);
+  }
+
+  return UTF8ToUTF16(security_origin);
+}
+
+string16 GetTitle(int render_process_id, int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const extensions::Extension* extension =
+      GetExtension(render_process_id, render_view_id);
+  if (extension)
+    return UTF8ToUTF16(extension->name());
+
+  WebContents* tab_content = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
+  if (!tab_content)
+    return string16();
+
+  string16 tab_title = tab_content->GetTitle();
+
+  if (tab_title.empty()) {
+    // If the page's title is empty use its security originator.
+    tab_title = GetSecurityOrigin(render_process_id, render_view_id);
+  } else {
+    // If the page's title matches its URL, use its security originator.
+    std::string languages =
+        content::GetContentClient()->browser()->GetAcceptLangs(
+            tab_content->GetBrowserContext());
+    if (tab_title == net::FormatUrl(tab_content->GetURL(), languages))
+      tab_title = GetSecurityOrigin(render_process_id, render_view_id);
+  }
+
+  return tab_title;
+}
+
+}  // namespace
+
 MediaStreamCaptureIndicator::TabEquals::TabEquals(int render_process_id,
                                                   int render_view_id)
     : render_process_id_(render_process_id),
@@ -42,7 +121,9 @@ MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
     : status_icon_(NULL),
       mic_image_(NULL),
       camera_image_(NULL),
-      balloon_image_(NULL) {
+      balloon_image_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
+      request_index_(0) {
 }
 
 MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
@@ -178,10 +259,9 @@ void MediaStreamCaptureIndicator::ShowBalloon(
     int render_process_id,
     int render_view_id,
     bool audio,
-    bool video) const {
+    bool video) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(audio || video);
-  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 
   int message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_AUDIO_AND_VIDEO;
   if (audio && !video)
@@ -189,10 +269,40 @@ void MediaStreamCaptureIndicator::ShowBalloon(
   else if (!audio && video)
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_BALLOON_BODY_VIDEO_ONLY;
 
-  string16 body = l10n_util::GetStringFUTF16(
-      message_id, GetSecurityOrigin(render_process_id, render_view_id));
+  const extensions::Extension* extension =
+      GetExtension(render_process_id, render_view_id);
+  if (extension) {
+    pending_messages_[request_index_++] =
+        l10n_util::GetStringFUTF16(message_id,
+                                   UTF8ToUTF16(extension->name()));
+    tracker_.LoadImage(
+        extension,
+        extension->GetIconResource(32, ExtensionIconSet::MATCH_BIGGER),
+        gfx::Size(32, 32),
+        ImageLoadingTracker::CACHE);
+    return;
+  }
 
+  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  string16 body = l10n_util::GetStringFUTF16(message_id,
+      GetSecurityOrigin(render_process_id, render_view_id));
   status_icon_->DisplayBalloon(*balloon_image_, title, body);
+}
+
+void MediaStreamCaptureIndicator::OnImageLoaded(
+    const gfx::Image& image,
+    const std::string& extension_id,
+    int index) {
+  string16 message;
+  message.swap(pending_messages_[index]);
+  pending_messages_.erase(index);
+
+  status_icon_->DisplayBalloon(
+      !image.IsEmpty() ? *image.ToImageSkia() :
+          *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_APP_DEFAULT_ICON),
+      string16(),
+      message);
 }
 
 void MediaStreamCaptureIndicator::Hide() {
@@ -335,47 +445,3 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
     UpdateStatusTrayIconContextMenu();
 }
 
-string16 MediaStreamCaptureIndicator::GetTitle(int render_process_id,
-                                               int render_view_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebContents* tab_content = tab_util::GetWebContentsByID(
-      render_process_id, render_view_id);
-  if (!tab_content)
-    return string16();
-
-  string16 tab_title = tab_content->GetTitle();
-
-  if (tab_title.empty()) {
-    // If the page's title is empty use its security originator.
-    tab_title = GetSecurityOrigin(render_process_id, render_view_id);
-  } else {
-    // If the page's title matches its URL, use its security originator.
-    std::string languages =
-        content::GetContentClient()->browser()->GetAcceptLangs(
-            tab_content->GetBrowserContext());
-    if (tab_title == net::FormatUrl(tab_content->GetURL(), languages))
-      tab_title = GetSecurityOrigin(render_process_id, render_view_id);
-  }
-
-  return tab_title;
-}
-
-string16 MediaStreamCaptureIndicator::GetSecurityOrigin(
-    int render_process_id, int render_view_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  WebContents* tab_content = tab_util::GetWebContentsByID(
-      render_process_id, render_view_id);
-  if (!tab_content)
-    return string16();
-
-  std::string security_origin = tab_content->GetURL().GetOrigin().spec();
-
-  // Remove the last character if it is a '/'.
-  if (!security_origin.empty()) {
-    std::string::iterator it = security_origin.end() - 1;
-    if (*it == '/')
-      security_origin.erase(it);
-  }
-
-  return UTF8ToUTF16(security_origin);
-}
