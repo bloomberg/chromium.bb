@@ -322,7 +322,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::InstallBundleFunction>();
   RegisterFunction<extensions::BeginInstallWithManifestFunction>();
   RegisterFunction<extensions::CompleteInstallFunction>();
-  RegisterFunction<extensions::SilentlyInstallFunction>();
   RegisterFunction<extensions::GetWebGLStatusFunction>();
 
   // WebNavigation.
