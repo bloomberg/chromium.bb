@@ -4015,16 +4015,6 @@ FileManager.prototype = {
     var self = this;
 
     function showBanner(type, messageId) {
-      if (!self.dialogContainer_.hasAttribute('gdrive-welcome-style')) {
-        self.dialogContainer_.setAttribute('gdrive-welcome-style', true);
-        var style = self.document_.createElement('link');
-        style.rel = 'stylesheet';
-        style.href = 'css/gdrive_welcome.css';
-        self.document_.head.appendChild(style);
-        style.onload = function() { showBanner(type, messageId) };
-        return;
-      }
-
       self.showGDataWelcome_(type);
 
       var container = self.dialogDom_.querySelector('.gdrive-welcome.' + type);
@@ -4084,6 +4074,16 @@ FileManager.prototype = {
       if (!self.isOnGData()) {
         self.showGDataWelcome_('none');
         previousDirWasOnGData = false;
+        return;
+      }
+
+      if (!self.dialogContainer_.hasAttribute('gdrive-welcome-style')) {
+        self.dialogContainer_.setAttribute('gdrive-welcome-style', true);
+        var style = self.document_.createElement('link');
+        style.rel = 'stylesheet';
+        style.href = 'css/gdrive_welcome.css';
+        self.document_.head.appendChild(style);
+        style.onload = function() { maybeShowBanner() };
         return;
       }
 
