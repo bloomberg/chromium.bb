@@ -27,6 +27,7 @@
 # If you found bugs with hungarian grade1 table, report it with following address:
 # Attila Hammer <hammer.attila@infoalap.hu
 #If you have a Launchpad account, report table related requests with following bug tracker address: https://bugs.launchpad.net/belin
+include hu-backtranslate-correction.dis
 include hu-chardefs.cti
 include hu-exceptionwords.cti
 include braille-patterns.cti
@@ -98,10 +99,13 @@ always zs 345	General need replacing zs letters with a combined dot combination
 always zzs 345-345	General need replacing zs letters with a combined dot combination
 
 #Special punctuation simbols
-prepunc " 236
-postpunc " 356
-always ( 2346
-always ) 1356
+prepunc " 236	Opening quotation simbol
+postpunc " 356	Closing quotation simbol
+always " 236	Need this rule to present one left quotation mark if the user firsttyping the " character
+prepunc ( 2346	Opening left parenthese
+postpunc ) 1356	Closing right parenthese
+always ( 2346	Need this rule to the user always see 2346 dot combination if type first ( character a text
+always ) 1356	Need this rule to the user always see 2346 dot combination if type first ) character a text
 prepunc « 236
 postpunc » 356
 prepunc ‘ 236
@@ -117,12 +121,9 @@ prepunc < 5-13
 postpunc > 46-2
 
 #Other exceptions With need marking different dot combination
-always q 12346
 always Q 12346
-always z 126
 always Z 126
 always # 123456
-always & 5-12346
 always $ 5-145
 always % 3456-245-356
 always ~ 5-2345
@@ -138,5 +139,6 @@ always \\ 16
 always ^ 2346
 always ` 4
 always Æ 1
+always lyú 456-346
+always lysz 456-156
 undefined 26
-
