@@ -8,9 +8,9 @@ var currentPage;
 var result = {};
 
 function init() {
-  if (window.layoutTestController) {
-    layoutTestController.dumpAsText();
-    layoutTestController.waitUntilDone();
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
   } else {
     console.error("No layout test controller");
   }
@@ -47,8 +47,8 @@ function done() {
         "#BEGIN" + JSON.stringify(result) + "#END");
     preNode.appendChild(textNode);
     document.getElementsByTagName("body")[0].appendChild(preNode);
-    if (window.layoutTestController)
-      layoutTestController.notifyDone();
+    if (window.testRunner)
+      testRunner.notifyDone();
   }
 }
     </script>
