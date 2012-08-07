@@ -5,6 +5,7 @@
 #ifndef ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 #define ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 
+#include "ash/shell_window_ids.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -33,18 +34,6 @@ class RootWindowLayoutManager : public aura::LayoutManager {
   explicit RootWindowLayoutManager(aura::Window* owner);
   virtual ~RootWindowLayoutManager();
 
-  views::Widget* background_widget() { return background_widget_; }
-  ui::Layer* background_layer() { return background_layer_.get(); }
-
-  // Sets the background to |widget|. Closes and destroys the old widget if it
-  // exists and differs from the new widget.
-  void SetBackgroundWidget(views::Widget* widget);
-
-  // Sets a background layer, taking ownership of |layer|.  This is provided as
-  // a lightweight alternative to SetBackgroundWidget(); layers can be simple
-  // colored quads instead of being textured.
-  void SetBackgroundLayer(ui::Layer* layer);
-
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
@@ -57,10 +46,6 @@ class RootWindowLayoutManager : public aura::LayoutManager {
 
  private:
   aura::Window* owner_;
-
-  // May be NULL if we're not painting a background.
-  views::Widget* background_widget_;
-  scoped_ptr<ui::Layer> background_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };

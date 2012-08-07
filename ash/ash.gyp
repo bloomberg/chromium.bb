@@ -63,6 +63,8 @@
         'desktop_background/desktop_background_resources.h',
         'desktop_background/desktop_background_view.cc',
         'desktop_background/desktop_background_view.h',
+        'desktop_background/desktop_background_widget_controller.cc',
+        'desktop_background/desktop_background_widget_controller.h',
         'display/display_controller.cc',
         'display/display_controller.h',
         'display/mouse_cursor_event_filter.cc',

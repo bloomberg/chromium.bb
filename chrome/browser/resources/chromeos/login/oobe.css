@@ -28,7 +28,7 @@ html[oobe=new]:not([screen=lock]) body {
 }
 
 html[oobe=new][screen=lock] body {
-  -webkit-background-size: 100% 100%;
+  background-color: transparent;
 }
 
 progress {
