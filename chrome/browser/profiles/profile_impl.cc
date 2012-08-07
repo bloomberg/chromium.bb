@@ -56,6 +56,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -286,10 +287,17 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   session_restore_enabled_ =
       !command_line->HasSwitch(switches::kDisableRestoreSessionState);
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  policy_service_.reset(
-      g_browser_process->browser_policy_connector()->CreatePolicyService(this));
+  // TODO(atwilson): Change these to ProfileKeyedServices once PrefService is
+  // a ProfileKeyedService (policy must be initialized before PrefService
+  // because PrefService depends on policy loading to get overridden pref
+  // values).
+  cloud_policy_manager_ =
+      g_browser_process->browser_policy_connector()->CreateCloudPolicyManager(
+          this);
+  policy_service_ =
+      g_browser_process->browser_policy_connector()->CreatePolicyService(this);
 #else
-    policy_service_.reset(new policy::PolicyServiceStub());
+  policy_service_.reset(new policy::PolicyServiceStub());
 #endif
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     prefs_.reset(PrefService::CreatePrefService(
@@ -647,6 +655,10 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
   Version profile_version(ChromeVersionService::GetVersion(prefs_.get()));
   Version arg_version(version);
   return (profile_version.CompareTo(arg_version) >= 0);
+}
+
+policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
+  return cloud_policy_manager_.get();
 }
 
 policy::PolicyService* ProfileImpl::GetPolicyService() {

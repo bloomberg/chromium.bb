@@ -87,6 +87,7 @@ class ProfileImpl : public Profile,
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
+  virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
   virtual PrefService* GetOffTheRecordPrefs() OVERRIDE;
@@ -186,9 +187,12 @@ class ProfileImpl : public Profile,
   //  that the declaration occurs AFTER things it depends on as destruction
   //  happens in reverse order of declaration.
 
-  // |prefs_| depends on |policy_service_|.
-  // TODO(bauerb): Once |prefs_| is a ProfileKeyedService, |policy_service_|
-  // should become one as well.
+  // |prefs_| depends on |policy_service_|, which depends on
+  // |user_cloud_policy_manager_|.
+  // TODO(bauerb, mnissler): Once |prefs_| is a ProfileKeyedService,
+  // |policy_service_| and |user_cloud_policy_manager_| should become
+  // ProfiledKeyedServices as well.
+  scoped_ptr<policy::UserCloudPolicyManager> cloud_policy_manager_;
   scoped_ptr<policy::PolicyService> policy_service_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,

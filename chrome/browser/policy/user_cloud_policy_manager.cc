@@ -56,32 +56,21 @@ UserCloudPolicyManager::~UserCloudPolicyManager() {
   store_->RemoveObserver(this);
 }
 
-#if defined(OS_CHROMEOS)
 // static
 scoped_ptr<UserCloudPolicyManager> UserCloudPolicyManager::Create(
+    Profile* profile,
     bool wait_for_policy_fetch) {
-  FilePath profile_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const FilePath policy_dir =
-      profile_dir
-          .Append(command_line->GetSwitchValuePath(switches::kLoginProfile))
-          .Append(kPolicyDir);
-  const FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
-  const FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
-
-  scoped_ptr<CloudPolicyStore> store(
-      new UserCloudPolicyStoreChromeOS(
-          chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-          token_cache_file, policy_cache_file));
+  scoped_ptr<CloudPolicyStore> store =
+      CloudPolicyStore::CreateUserPolicyStore(profile);
   return scoped_ptr<UserCloudPolicyManager>(
       new UserCloudPolicyManager(store.Pass(), wait_for_policy_fetch));
 }
-#endif
 
 void UserCloudPolicyManager::Initialize(PrefService* prefs,
                                         DeviceManagementService* service,
                                         UserAffiliation user_affiliation) {
+  DCHECK(service);
+  DCHECK(prefs);
   DCHECK(!service_.get());
   prefs_ = prefs;
   scoped_ptr<CloudPolicyClient> client(
@@ -127,6 +116,18 @@ void UserCloudPolicyManager::CancelWaitForPolicyFetch() {
             prefs::kUserPolicyRefreshRate,
             MessageLoop::current()->message_loop_proxy()));
   }
+}
+
+bool UserCloudPolicyManager::IsClientRegistered() const {
+  if (!service_.get())
+    return false;
+  return service_->client()->is_registered();
+}
+
+void UserCloudPolicyManager::RegisterClient(const std::string& access_token) {
+  DCHECK(cloud_policy_service()) << "Callers must invoke Initialize() first";
+  if (!cloud_policy_service()->client()->is_registered())
+    cloud_policy_service()->client()->Register(access_token);
 }
 
 bool UserCloudPolicyManager::IsInitializationComplete() const {

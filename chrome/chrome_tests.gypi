@@ -1452,8 +1452,10 @@
         'browser/policy/testing_policy_url_fetcher_factory.h',
         'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/policy/user_cloud_policy_manager_unittest.cc',
+        'browser/policy/user_cloud_policy_store_unittest.cc',
         'browser/policy/user_cloud_policy_store_chromeos_unittest.cc',
         'browser/policy/user_policy_cache_unittest.cc',
+        'browser/policy/user_policy_signin_service_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_unittest.cc',
         'browser/predictors/resource_prefetch_predictor_unittest.cc',
@@ -2186,6 +2188,9 @@
             ['exclude', '^browser/media_gallery/media_device_notifications_linux_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
+            ['exclude', '^browser/policy/user_cloud_policy_store_unittest.cc'],
+            ['exclude', '^browser/policy/user_policy_signin_service_unittest.cc'],
+
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
           ],
           'sources': [

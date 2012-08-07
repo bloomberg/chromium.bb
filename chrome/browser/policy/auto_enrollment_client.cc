@@ -111,15 +111,12 @@ bool AutoEnrollmentClient::IsDisabled() {
 // static
 AutoEnrollmentClient* AutoEnrollmentClient::Create(
     const base::Closure& completion_callback) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-
   // The client won't do anything if |service| is NULL.
   DeviceManagementService* service = NULL;
   if (IsDisabled()) {
     VLOG(1) << "Auto-enrollment is disabled";
   } else {
-    std::string url =
-        command_line->GetSwitchValueASCII(switches::kDeviceManagementUrl);
+    std::string url = BrowserPolicyConnector::GetDeviceManagementUrl();
     if (!url.empty()) {
       service = new DeviceManagementService(url);
       service->ScheduleInitialization(0);

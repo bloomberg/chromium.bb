@@ -49,6 +49,9 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud_policy_service.h"
+#include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -487,6 +490,23 @@ void LoginUtilsImpl::PrepareProfile(
   // initialization code sees the cached policy settings.
   connector->InitializeUserPolicy(username, wait_for_policy_fetch);
 
+  // The default profile will have been changed because the ProfileManager
+  // will process the notification that the UserManager sends out.
+  ProfileManager::CreateDefaultProfileAsync(
+      base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr()));
+
+  // The default profile is only partially initialized at this point.
+  // Setup the UserCloudPolicyManager so profile initialization can complete.
+  Profile* user_profile = ProfileManager::GetDefaultProfile();
+
+  // Initialize the new cloud policy framework, if enabled.
+  if (user_profile->GetUserCloudPolicyManager()) {
+    user_profile->GetUserCloudPolicyManager()->Initialize(
+        g_browser_process->local_state(),
+        connector->device_management_service(),
+        connector->GetUserAffiliation(username));
+  }
+
   if (wait_for_policy_fetch) {
     // Profile creation will block until user policy is fetched, which
     // requires the DeviceManagement token. Try to fetch it now.
@@ -495,11 +515,6 @@ void LoginUtilsImpl::PrepareProfile(
         new PolicyOAuthFetcher(authenticator_->authentication_profile()));
     policy_oauth_fetcher_->Start();
   }
-
-  // The default profile will have been changed because the ProfileManager
-  // will process the notification that the UserManager sends out.
-  ProfileManager::CreateDefaultProfileAsync(
-      base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr()));
 }
 
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {

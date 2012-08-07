@@ -13,9 +13,11 @@
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace policy {
 
@@ -36,6 +38,13 @@ ConfigDirPolicyLoader::ConfigDirPolicyLoader(const FilePath& config_dir,
 ConfigDirPolicyLoader::~ConfigDirPolicyLoader() {}
 
 void ConfigDirPolicyLoader::InitOnFile() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  // Some unit tests create a File thread that shares a MessageLoop with the
+  // UI thread, and this causes DCHECKs because IO operations aren't allowed on
+  // that thread. So if this is running in the context of one of those tests,
+  // just exit.
+  if (!MessageLoop::current()->IsType(MessageLoop::TYPE_IO))
+    return;
   base::files::FilePathWatcher::Callback callback =
       base::Bind(&ConfigDirPolicyLoader::OnFileUpdated, base::Unretained(this));
   mandatory_watcher_.Watch(config_dir_.Append(kMandatoryConfigDir), callback);

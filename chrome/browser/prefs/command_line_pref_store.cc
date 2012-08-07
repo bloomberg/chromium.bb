@@ -64,6 +64,8 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kEnableTouchpadThreeFingerClick,
           prefs::kEnableTouchpadThreeFingerClick, true },
 #endif
+      { switches::kLoadCloudPolicyOnSignin, prefs::kLoadCloudPolicyOnSignin,
+        true },
 };
 
 const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry

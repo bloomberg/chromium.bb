@@ -78,7 +78,7 @@ TEST(SyncUIUtilTest, PassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  FakeSigninManager signin;
+  FakeSigninManager signin(profile.get());
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
@@ -99,7 +99,7 @@ TEST(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  FakeSigninManager signin;
+  FakeSigninManager signin(profile.get());
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
@@ -153,7 +153,7 @@ TEST(SyncUIUtilTest, AuthStateGlobalError) {
     { GoogleServiceAuthError::HOSTED_NOT_ALLOWED, true },
   };
 
-  FakeSigninManager signin;
+  FakeSigninManager signin(profile.get());
   for (size_t i = 0; i < sizeof(table)/sizeof(*table); ++i) {
     VerifySyncGlobalErrorResult(
         &service, signin, table[i].error_state, true, table[i].is_error);

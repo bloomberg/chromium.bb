@@ -71,7 +71,8 @@ class CloudPolicySubsystem
   };
 
   CloudPolicySubsystem(CloudPolicyDataStore* data_store,
-                       CloudPolicyCacheBase* policy_cache);
+                       CloudPolicyCacheBase* policy_cache,
+                       const std::string& device_management_url);
   virtual ~CloudPolicySubsystem();
 
   // Initializes the subsystem. The first network request will only be made

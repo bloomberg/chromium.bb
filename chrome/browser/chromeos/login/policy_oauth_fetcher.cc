@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 
@@ -94,6 +96,18 @@ void PolicyOAuthFetcher::OnOAuthWrapBridgeFailure(
 void PolicyOAuthFetcher::SetPolicyToken(const std::string& token) {
   policy_token_ = token;
   g_browser_process->browser_policy_connector()->RegisterForUserPolicy(token);
+
+  // The Profile object passed in to the constructor is destroyed after the
+  // login process is complete. Get the UserCloudPolicyManager from the user's
+  // default profile instead.
+  policy::UserCloudPolicyManager* cloud_policy_manager =
+      ProfileManager::GetDefaultProfile()->GetUserCloudPolicyManager();
+  if (cloud_policy_manager) {
+    if (token.empty())
+      cloud_policy_manager->CancelWaitForPolicyFetch();
+    else
+      cloud_policy_manager->RegisterClient(token);
+  }
 }
 
 }  // namespace chromeos

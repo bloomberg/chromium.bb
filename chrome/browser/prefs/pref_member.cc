@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,8 @@ void PrefMemberBase::Init(const char* pref_name,
   prefs_ = prefs;
   pref_name_ = pref_name;
   // Check that the preference is registered.
-  DCHECK(prefs_->FindPreference(pref_name_.c_str()));
+  DCHECK(prefs_->FindPreference(pref_name_.c_str()))
+      << pref_name << " not registered.";
 
   // Add ourselves as a pref observer so we can keep our local value in sync.
   prefs_->AddPrefObserver(pref_name, this);

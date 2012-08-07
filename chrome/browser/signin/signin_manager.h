@@ -140,6 +140,11 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+ protected:
+  // Weak pointer to parent profile (protected so FakeSigninManager can access
+  // it).
+  Profile* profile_;
+
  private:
   enum SigninType {
     SIGNIN_TYPE_NONE,
@@ -172,8 +177,6 @@ class SigninManager : public GaiaAuthConsumer,
   // transient signin data if |clear_transient_data| is true.
   void HandleAuthError(const GoogleServiceAuthError& error,
                        bool clear_transient_data);
-
-  Profile* profile_;
 
   // ClientLogin identity.
   std::string possibly_invalid_username_;
