@@ -285,24 +285,23 @@ void DaemonCommandLineInstallerWin::Install() {
     return;
   }
 
+  // presubmit: allow wstring
   std::wstring google_update;
-  result = update_key.ReadValue(kOmahaPathValueName,
-                                &google_update);
+  result = update_key.ReadValue(kOmahaPathValueName, &google_update);
   if (result != ERROR_SUCCESS) {
     Done(HRESULT_FROM_WIN32(result));
     return;
   }
 
   // Launch the updater process and wait for its termination.
-  std::wstring command_line =
+  string16 command_line = WideToUTF16(
       StringPrintf(kGoogleUpdateCommandLineFormat,
                    google_update.c_str(),
                    kHostOmahaAppid,
-                   kOmahaLanguage);
+                   kOmahaLanguage));
 
   base::LaunchOptions options;
-  if (!base::LaunchProcess(WideToUTF16(command_line), options,
-                           process_.Receive())) {
+  if (!base::LaunchProcess(command_line, options, process_.Receive())) {
     result = GetLastError();
     Done(HRESULT_FROM_WIN32(result));
     return;

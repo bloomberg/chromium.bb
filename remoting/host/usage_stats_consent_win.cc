@@ -24,6 +24,7 @@ const wchar_t kOmahaClientStateMedium[] = L"ClientStateMedium";
 const wchar_t kOmahaUsagestatsValue[] = L"usagestats";
 
 LONG ReadUsageStatsValue(const wchar_t* state_key, DWORD* usagestats_out) {
+  // presubmit: allow wstring
   std::wstring client_state = StringPrintf(kOmahaClientStateKeyFormat,
                                            state_key,
                                            remoting::kHostOmahaAppid);
@@ -71,6 +72,7 @@ bool IsUsageStatsAllowed() {
 
 bool SetUsageStatsConsent(bool allowed) {
   DWORD value = allowed;
+  // presubmit: allow wstring
   std::wstring client_state = StringPrintf(kOmahaClientStateKeyFormat,
                                            kOmahaClientStateMedium,
                                            kHostOmahaAppid);

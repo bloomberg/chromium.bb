@@ -25,8 +25,7 @@ namespace {
 
 class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
  public:
-  HostEventLoggerWin(ChromotingHost* host,
-                     const std::string& application_name);
+  HostEventLoggerWin(ChromotingHost* host, const std::string& application_name);
 
   virtual ~HostEventLoggerWin();
 
@@ -43,7 +42,7 @@ class HostEventLoggerWin : public HostEventLogger, public HostStatusObserver {
 
  private:
   void LogString(WORD type, DWORD event_id, const std::string& string);
-  void Log(WORD type, DWORD event_id, const std::vector<string16>& strings);
+  void Log(WORD type, DWORD event_id, const std::vector<std::string>& strings);
 
   scoped_refptr<ChromotingHost> host_;
 
@@ -60,7 +59,7 @@ HostEventLoggerWin::HostEventLoggerWin(ChromotingHost* host,
     : host_(host),
       event_log_(NULL) {
   event_log_ = RegisterEventSourceW(NULL,
-                                    ASCIIToUTF16(application_name).c_str());
+                                    UTF8ToUTF16(application_name).c_str());
   if (event_log_ != NULL) {
     host_->AddStatusObserver(this);
   } else {
@@ -92,13 +91,12 @@ void HostEventLoggerWin::OnClientRouteChange(
     const std::string& jid,
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
-  std::vector<string16> strings(5);
-  strings[0] = ASCIIToUTF16(jid);
-  strings[1] = ASCIIToUTF16(route.remote_address.ToString());
-  strings[2] = ASCIIToUTF16(route.local_address.ToString());
-  strings[3] = ASCIIToUTF16(channel_name);
-  strings[4] = ASCIIToUTF16(
-      protocol::TransportRoute::GetTypeString(route.type));
+  std::vector<std::string> strings(5);
+  strings[0] = jid;
+  strings[1] = route.remote_address.ToString();
+  strings[2] = route.local_address.ToString();
+  strings[3] = channel_name;
+  strings[4] = protocol::TransportRoute::GetTypeString(route.type);
   Log(EVENTLOG_INFORMATION_TYPE, MSG_HOST_CLIENT_ROUTING_CHANGED, strings);
 }
 
@@ -107,15 +105,17 @@ void HostEventLoggerWin::OnShutdown() {
 
 void HostEventLoggerWin::Log(WORD type,
                              DWORD event_id,
-                             const std::vector<string16>& strings) {
+                             const std::vector<std::string>& strings) {
   if (event_log_ == NULL)
     return;
 
   // ReportEventW() takes an array of raw string pointers. They should stay
   // valid for the duration of the call.
   std::vector<const WCHAR*> raw_strings(strings.size());
+  std::vector<string16> utf16_strings(strings.size());
   for (size_t i = 0; i < strings.size(); ++i) {
-    raw_strings[i] = strings[i].c_str();
+    utf16_strings[i] = UTF8ToUTF16(strings[i]);
+    raw_strings[i] = utf16_strings[i].c_str();
   }
 
   if (!ReportEventW(event_log_,
@@ -134,8 +134,8 @@ void HostEventLoggerWin::Log(WORD type,
 void HostEventLoggerWin::LogString(WORD type,
                                    DWORD event_id,
                                    const std::string& string) {
-  std::vector<string16> strings;
-  strings.push_back(ASCIIToUTF16(string));
+  std::vector<std::string> strings;
+  strings.push_back(string);
   Log(type, event_id, strings);
 }
 

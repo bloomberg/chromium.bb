@@ -23,6 +23,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
@@ -47,7 +48,7 @@ const FilePath::CharType kMe2meHostBinaryName[] =
     FILE_PATH_LITERAL("remoting_me2me_host.exe");
 
 // Match the pipe name prefix used by Chrome IPC channels.
-const wchar_t kChromePipeNamePrefix[] = L"\\\\.\\pipe\\chrome.";
+const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
 
 // The IPC channel name is passed to the host in the command line.
 const char kChromotingIpcSwitchName[] = "chromoting-ipc";
@@ -150,8 +151,8 @@ bool CreateSessionToken(uint32 session_id,
 
 // Generates random channel ID.
 // N.B. Stolen from src/content/common/child_process_host_impl.cc
-std::wstring GenerateRandomChannelId(void* instance) {
-  return base::StringPrintf(L"%d.%p.%d",
+std::string GenerateRandomChannelId(void* instance) {
+  return base::StringPrintf("%d.%p.%d",
                             base::GetCurrentProcId(), instance,
                             base::RandInt(0, std::numeric_limits<int>::max()));
 }
@@ -159,7 +160,7 @@ std::wstring GenerateRandomChannelId(void* instance) {
 // Creates the server end of the Chromoting IPC channel.
 // N.B. This code is based on IPC::Channel's implementation.
 bool CreatePipeForIpcChannel(void* instance,
-                             std::wstring* channel_name_out,
+                             std::string* channel_name_out,
                              ScopedHandle* pipe_out) {
   // Create security descriptor for the channel.
   SECURITY_ATTRIBUTES security_attributes;
@@ -179,15 +180,15 @@ bool CreatePipeForIpcChannel(void* instance,
   }
 
   // Generate a random channel name.
-  std::wstring channel_name(GenerateRandomChannelId(instance));
+  std::string channel_name(GenerateRandomChannelId(instance));
 
   // Convert it to the pipe name.
-  std::wstring pipe_name(kChromePipeNamePrefix);
+  std::string pipe_name(kChromePipeNamePrefix);
   pipe_name.append(channel_name);
 
   // Create the server end of the pipe. This code should match the code in
   // IPC::Channel with exception of passing a non-default security descriptor.
-  HANDLE pipe = CreateNamedPipeW(pipe_name.c_str(),
+  HANDLE pipe = CreateNamedPipeW(UTF8ToUTF16(pipe_name).c_str(),
                                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED |
                                      FILE_FLAG_FIRST_PIPE_INSTANCE,
                                  PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
@@ -259,7 +260,7 @@ void WtsSessionProcessLauncher::LaunchProcess() {
   }
   FilePath host_binary = dir_path.Append(kMe2meHostBinaryName);
 
-  std::wstring channel_name;
+  std::string channel_name;
   ScopedHandle pipe;
   if (CreatePipeForIpcChannel(this, &channel_name, &pipe)) {
     // Wrap the pipe into an IPC channel.
@@ -272,7 +273,7 @@ void WtsSessionProcessLauncher::LaunchProcess() {
     // Create the host process command line passing the name of the IPC channel
     // to use and copying known switches from the service's command line.
     CommandLine command_line(host_binary);
-    command_line.AppendSwitchNative(kChromotingIpcSwitchName, channel_name);
+    command_line.AppendSwitchASCII(kChromotingIpcSwitchName, channel_name);
     command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
                                   kCopiedSwitchNames,
                                   _countof(kCopiedSwitchNames));

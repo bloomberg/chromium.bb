@@ -100,9 +100,6 @@ class HostService : public WtsConsoleMonitor {
   // The action routine to be executed.
   int (HostService::*run_routine_)();
 
-  // The service name.
-  std::wstring service_name_;
-
   // The service status handle.
   SERVICE_STATUS_HANDLE service_status_handle_;
 

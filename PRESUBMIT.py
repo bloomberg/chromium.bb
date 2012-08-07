@@ -292,14 +292,21 @@ def _CheckNoNewWStrings(input_api, output_api):
         f.LocalPath().endswith('test.cc')):
       continue
 
+    allowWString = False
     for line_num, line in f.ChangedContents():
-      if 'wstring' in line:
+      if 'presubmit: allow wstring' in line:
+        allowWString = True
+      elif not allowWString and 'wstring' in line:
         problems.append('    %s:%d' % (f.LocalPath(), line_num))
+        allowWString = False
+      else:
+        allowWString = False
 
   if not problems:
     return []
   return [output_api.PresubmitPromptWarning('New code should not use wstrings.'
-      '  If you are calling an API that accepts a wstring, fix the API.\n' +
+      '  If you are calling a cross-platform API that accepts a wstring, '
+      'fix the API.\n' +
       '\n'.join(problems))]
 
 

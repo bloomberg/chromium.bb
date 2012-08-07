@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
 
@@ -16,7 +17,7 @@ namespace remoting {
 // Launches |binary| in the security context of the user represented by
 // |user_token|. The session ID specified by the token is respected as well.
 bool LaunchProcessWithToken(const FilePath& binary,
-                            const std::wstring& command_line,
+                            const CommandLine::StringType& command_line,
                             HANDLE user_token,
                             base::Process* process_out);
 

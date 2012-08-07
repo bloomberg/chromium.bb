@@ -91,7 +91,6 @@ namespace remoting {
 HostService::HostService() :
   console_session_id_(kInvalidSessionId),
   run_routine_(&HostService::RunAsService),
-  service_name_(kWindowsServiceName),
   service_status_handle_(0),
   stopped_event_(true, false) {
 }
@@ -228,7 +227,7 @@ void HostService::RunMessageLoop(MessageLoop* message_loop) {
 
 int HostService::RunAsService() {
   SERVICE_TABLE_ENTRYW dispatch_table[] = {
-    { const_cast<LPWSTR>(service_name_.c_str()), &HostService::ServiceMain },
+    { const_cast<LPWSTR>(kWindowsServiceName), &HostService::ServiceMain },
     { NULL, NULL }
   };
 
@@ -348,7 +347,7 @@ VOID WINAPI HostService::ServiceMain(DWORD argc, WCHAR* argv[]) {
 
   // Register the service control handler.
   self->service_status_handle_ =
-      RegisterServiceCtrlHandlerExW(self->service_name_.c_str(),
+      RegisterServiceCtrlHandlerExW(kWindowsServiceName,
                                     &HostService::ServiceControlHandler,
                                     self);
   if (self->service_status_handle_ == 0) {

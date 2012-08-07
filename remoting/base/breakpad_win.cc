@@ -153,14 +153,15 @@ google_breakpad::CustomClientInfo* BreakpadWin::GetCustomInfo() {
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfoForModule(binary));
 
-  std::wstring version;
-  if (version_info.get())
-    version = UTF16ToWide(version_info->product_version());
-  if (version.empty())
-    version = kBreakpadVersionDefault;
+  static wchar_t version[64];
+  if (version_info.get()) {
+    wcscpy_s(version, UTF16ToWide(version_info->product_version()).c_str());
+  } else {
+    wcscpy_s(version, kBreakpadVersionDefault);
+  }
 
   static google_breakpad::CustomInfoEntry ver_entry(
-      kBreakpadVersionEntry, version.c_str());
+      kBreakpadVersionEntry, version);
   static google_breakpad::CustomInfoEntry prod_entry(
       kBreakpadProdEntry, kBreakpadProductName);
   static google_breakpad::CustomInfoEntry plat_entry(
