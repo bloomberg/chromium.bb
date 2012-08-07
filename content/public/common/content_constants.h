@@ -54,7 +54,8 @@ extern const int kStatsMaxCounters;
 CONTENT_EXPORT extern const int kHistogramSynchronizerReservedSequenceNumber;
 
 CONTENT_EXPORT extern const char kGpuCompositingFieldTrialName[];
-CONTENT_EXPORT extern const char kGpuCompositingFieldTrialEnabledName[];
+CONTENT_EXPORT extern const char
+    kGpuCompositingFieldTrialForceCompositingEnabledName[];
 CONTENT_EXPORT extern const char kGpuCompositingFieldTrialThreadEnabledName[];
 
 }  // namespace content

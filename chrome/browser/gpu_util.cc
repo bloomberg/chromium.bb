@@ -18,6 +18,7 @@
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
@@ -169,27 +170,15 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
 }
 #endif  // OS_WIN
 
-bool InForceThreadedCompositingModeTrial() {
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
-  return trial && trial->group_name() ==
-      content::kGpuCompositingFieldTrialThreadEnabledName;
-}
-
 }  // namespace
 
 namespace gpu_util {
 
-void InitializeForceCompositingModeFieldTrial() {
+void InitializeCompositingFieldTrial() {
 // Enable the field trial only on desktop OS's.
 #if !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
   return;
 #endif
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  // Only run the trial on the Canary and Dev channels.
-  if (channel != chrome::VersionInfo::CHANNEL_CANARY &&
-      channel != chrome::VersionInfo::CHANNEL_DEV)
-    return;
 #if defined(OS_WIN)
   // Don't run the trial on Windows XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
@@ -208,9 +197,7 @@ void InitializeForceCompositingModeFieldTrial() {
   // Don't activate the field trial if force-compositing-mode has been
   // explicitly disabled from the command line.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableForceCompositingMode) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableThreadedCompositing))
+          switches::kDisableForceCompositingMode))
     return;
 
   const base::FieldTrial::Probability kDivisor = 3;
@@ -221,27 +208,41 @@ void InitializeForceCompositingModeFieldTrial() {
 
   // Produce the same result on every run of this client.
   trial->UseOneTimeRandomization();
-  // 1/3 probability of being in the enabled or thread group.
-  const base::FieldTrial::Probability kEnableProbability = 1;
-  int enable_group = trial->AppendGroup(
-      content::kGpuCompositingFieldTrialEnabledName, kEnableProbability);
+
+  base::FieldTrial::Probability force_compositing_mode_probability = 0;
+  base::FieldTrial::Probability threaded_compositing_probability = 0;
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
+      channel == chrome::VersionInfo::CHANNEL_BETA) {
+    // Stable and Beta channels: Non-threaded force-compositing-mode on by
+    // default (mac and windows only).
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    force_compositing_mode_probability = 3;
+#endif
+  } else if (channel == chrome::VersionInfo::CHANNEL_DEV ||
+             channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    // Dev and Canary channels: force-compositing-mode and
+    // threaded-compositing on with 1/3 probability each.
+    force_compositing_mode_probability = 1;
+
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableThreadedCompositing))
+        threaded_compositing_probability = 1;
+  }
+
+  int force_compositing_group = trial->AppendGroup(
+      content::kGpuCompositingFieldTrialForceCompositingEnabledName,
+      force_compositing_mode_probability);
   int thread_group = trial->AppendGroup(
-      content::kGpuCompositingFieldTrialThreadEnabledName, kEnableProbability);
+      content::kGpuCompositingFieldTrialThreadEnabledName,
+      threaded_compositing_probability);
 
-  bool enabled = (trial->group() == enable_group);
+  bool force_compositing = (trial->group() == force_compositing_group);
   bool thread = (trial->group() == thread_group);
-  UMA_HISTOGRAM_BOOLEAN("GPU.InForceCompositingModeFieldTrial", enabled);
+  UMA_HISTOGRAM_BOOLEAN("GPU.InForceCompositingModeFieldTrial",
+                        force_compositing);
   UMA_HISTOGRAM_BOOLEAN("GPU.InCompositorThreadFieldTrial", thread);
-}
-
-bool InForceCompositingModeOrThreadTrial() {
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
-  if (!trial)
-    return false;
-  return trial->group_name() == content::kGpuCompositingFieldTrialEnabledName ||
-         trial->group_name() ==
-             content::kGpuCompositingFieldTrialThreadEnabledName;
 }
 
 GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
@@ -417,16 +418,10 @@ Value* GetFeatureStatus() {
             (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
              (flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
           status += "_readback";
-        bool has_thread =
-            (command_line.HasSwitch(switches::kEnableThreadedCompositing) &&
-             !command_line.HasSwitch(switches::kDisableThreadedCompositing)) ||
-            InForceThreadedCompositingModeTrial();
+        bool has_thread = content::IsThreadedCompositingEnabled();
         if (kGpuFeatureInfo[i].name == "compositing") {
           bool force_compositing =
-              (command_line.HasSwitch(switches::kForceCompositingMode) &&
-               !command_line.HasSwitch(
-                   switches::kDisableForceCompositingMode)) ||
-              InForceCompositingModeOrThreadTrial();
+              content::IsForceCompositingModeEnabled();
           if (force_compositing)
             status += "_force";
           if (has_thread)

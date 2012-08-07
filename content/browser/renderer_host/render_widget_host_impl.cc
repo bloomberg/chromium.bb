@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -171,6 +172,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
         routing_id_);
     DCHECK(surface_id_);
   }
+
+  is_threaded_compositing_enabled_ = IsThreadedCompositingEnabled();
 
   process_->Attach(this, routing_id_);
   // Because the widget initializes as is_hidden_ == false,
@@ -1991,18 +1994,7 @@ void RenderWidgetHostImpl::AcknowledgeBufferPresent(
 }
 
 void RenderWidgetHostImpl::AcknowledgeSwapBuffersToRenderer() {
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
-  bool is_thread_trial = trial && trial->group_name() ==
-      content::kGpuCompositingFieldTrialThreadEnabledName;
-  bool has_enable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableThreadedCompositing);
-  bool has_disable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableThreadedCompositing);
-  DCHECK(!is_thread_trial || !has_disable);
-  bool enable_threaded_compositing =
-      is_thread_trial || (has_enable && !has_disable);
-  if (!enable_threaded_compositing)
+  if (!is_threaded_compositing_enabled_)
     Send(new ViewMsg_SwapBuffers_ACK(routing_id_));
 }
 

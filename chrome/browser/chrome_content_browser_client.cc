@@ -37,7 +37,6 @@
 #include "chrome/browser/extensions/message_handler.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/gpu_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -93,6 +92,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_descriptors.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
@@ -1493,7 +1493,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         extension, view_type, web_prefs);
   }
 
-  if (gpu_util::InForceCompositingModeOrThreadTrial())
+  if (content::IsForceCompositingModeEnabled())
     web_prefs->force_compositing_mode = true;
 
   if (view_type == chrome::VIEW_TYPE_NOTIFICATION) {

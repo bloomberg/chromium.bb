@@ -631,6 +631,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // True when a page is rendered directly via the GPU process.
   bool is_accelerated_compositing_active_;
 
+  // True if threaded compositing is enabled on this view.
+  bool is_threaded_compositing_enabled_;
+
   // Set if we are waiting for a repaint ack for the view.
   bool repaint_ack_pending_;
 

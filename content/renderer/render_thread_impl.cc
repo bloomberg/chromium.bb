@@ -40,6 +40,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
+#include "content/public/common/compositor_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -492,21 +493,12 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   webkit_platform_support_.reset(new RendererWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
 
-  base::FieldTrial* thread_trial =
-      base::FieldTrialList::Find(content::kGpuCompositingFieldTrialName);
-  bool is_thread_trial = thread_trial && thread_trial->group_name() ==
-      content::kGpuCompositingFieldTrialThreadEnabledName;
-  bool has_enable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableThreadedCompositing);
-  bool has_disable = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableThreadedCompositing);
   // TODO(fsamuel): Guests don't currently support threaded compositing.
   // This should go away with the new design of the browser plugin.
   // The new design can be tracked at: http://crbug.com/134492.
   bool is_guest = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kGuestRenderer);
-  DCHECK(!is_thread_trial || !has_disable);
-  bool enable = (is_thread_trial || (has_enable && !has_disable)) && !is_guest;
+  bool enable = content::IsThreadedCompositingEnabled() && !is_guest;
   if (enable) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());

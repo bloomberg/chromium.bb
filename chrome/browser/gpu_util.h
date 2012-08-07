@@ -70,12 +70,8 @@ base::DictionaryValue* GpuInfoAsDictionaryValue();
 // Send UMA histograms about the enabled features.
 void UpdateStats();
 
-// Returns whether this client has been selected for the force-compositing-mode
-// or threaded-compositor trial.
-bool InForceCompositingModeOrThreadTrial();
-
-// Sets up the force-compositing-mode field trial.
-void InitializeForceCompositingModeFieldTrial();
+// Sets up force-compositing-mode and threaded compositing field trials.
+void InitializeCompositingFieldTrial();
 
 }  // namespace gpu_util
 

@@ -120,7 +120,7 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   PredictorFieldTrial();
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
-  gpu_util::InitializeForceCompositingModeFieldTrial();
+  gpu_util::InitializeCompositingFieldTrial();
   SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
   DisableNewTabFieldTrialIfNecesssary();

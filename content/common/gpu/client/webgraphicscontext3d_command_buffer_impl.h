@@ -713,6 +713,7 @@ class WebGraphicsContext3DCommandBufferImpl
   Error last_error_;
   int frame_number_;
   bool bind_generates_resources_;
+  bool use_echo_for_swap_ack_;
 };
 
 #endif  // CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_
