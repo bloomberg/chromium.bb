@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <AvailabilityMacros.h>
+#include <crt_externs.h>
 #include <dlfcn.h>
 #include <string.h>
 #include <sys/event.h>
@@ -264,22 +265,20 @@ int RelauncherMain(const content::MainFunctionParams& main_parameters) {
   // after the separator should be given to the relaunched process; it's also
   // important to not treat the path to the relaunched process as a "loose"
   // argument. NXArgc and NXArgv are pointers to the original argc and argv as
-  // passed to main(), so use those. The typical mechanism to do this is to
-  // provide "extern" declarations to access these, but they're only present
-  // in the crt1.o start file. This function will be linked into the framework
-  // dylib, having no direct access to anything in crt1.o. dlsym to the
-  // rescue.
-  const int* argcp = static_cast<const int*>(dlsym(RTLD_MAIN_ONLY, "NXArgc"));
+  // passed to main(), so use those. Access them through _NSGetArgc and
+  // _NSGetArgv because NXArgc and NXArgv are normally only available to a
+  // main executable via crt1.o and this code will run from a dylib, and
+  // because of http://crbug.com/139902.
+  const int* argcp = _NSGetArgc();
   if (!argcp) {
-    LOG(ERROR) << "dlsym NXArgc: " << dlerror();
+    NOTREACHED();
     return 1;
   }
   int argc = *argcp;
 
-  const char* const** argvp =
-      static_cast<const char* const**>(dlsym(RTLD_MAIN_ONLY, "NXArgv"));
+  const char* const* const* argvp = _NSGetArgv();
   if (!argvp) {
-    LOG(ERROR) << "dlsym NXArgv: " << dlerror();
+    NOTREACHED();
     return 1;
   }
   const char* const* argv = *argvp;

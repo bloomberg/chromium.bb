@@ -13,8 +13,6 @@
 
 # Chromium-specific symbols.
 _main
-_NXArgc
-_NXArgv
 
 # AddressSanitizer-specific symbols.
 ___asan_init
