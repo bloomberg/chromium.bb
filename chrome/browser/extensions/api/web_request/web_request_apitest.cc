@@ -86,7 +86,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
       message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestAuthRequired) {
+// Flaky (sometimes crash): http://crbug.com/140976
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       DISABLED_WebRequestAuthRequired) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_auth_required.html")) <<
@@ -224,4 +226,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // Test split without incognito permission.
   RunPermissionTest("split", false, false, "redirected1", "");
 }
-
