@@ -334,6 +334,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
 void WebsiteSettingsPopupView::OnPermissionChanged(
     PermissionSelectorView* permission_selector) {
   DCHECK(permission_selector);
+  // It's not necessary to check that the |presenter_| is not NULL since for
+  // internal chrome pages OnPermissionChanged can't be called.
   presenter_->OnSitePermissionChanged(
       permission_selector->GetPermissionType(),
       permission_selector->GetSelectedSetting());
@@ -348,7 +350,8 @@ gfx::Rect WebsiteSettingsPopupView::GetAnchorRect() {
 }
 
 void WebsiteSettingsPopupView::OnWidgetClosing(views::Widget* widget) {
-  presenter_->OnUIClosing();
+  if (presenter_.get())
+    presenter_->OnUIClosing();
 }
 
 void WebsiteSettingsPopupView::ButtonPressed(

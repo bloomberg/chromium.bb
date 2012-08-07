@@ -116,7 +116,8 @@ class WebsiteSettingsPopupView
   // tab.
   TabContents* tab_contents_;
 
-  // The presenter that controlls the Website Settings UI.
+  // The presenter that controlls the Website Settings UI. |presenter_| is null
+  // if the popup is opened for a internal chrome url.
   scoped_ptr<WebsiteSettings> presenter_;
 
   PopupHeaderView* header_;  // Owned by views hierarchy.
