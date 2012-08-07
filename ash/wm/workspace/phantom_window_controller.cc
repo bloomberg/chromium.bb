@@ -106,7 +106,8 @@ void PhantomWindowController::SetBounds(const gfx::Rect& bounds) {
 }
 
 void PhantomWindowController::Hide() {
-  phantom_widget_->Close();
+  if (phantom_widget_)
+    phantom_widget_->Close();
   phantom_widget_ = NULL;
 }
 
