@@ -9,7 +9,6 @@
 #include "crypto/rsa_private_key.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/negotiating_authenticator.h"
-#include "remoting/protocol/v1_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {

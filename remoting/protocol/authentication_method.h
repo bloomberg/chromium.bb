@@ -6,7 +6,6 @@
 // configuration. It knows how to parse and format authentication
 // method names.
 // Currently the following methods are supported:
-//   v1_token - deprecated V1 authentication mechanism,
 //   spake2_plain - SPAKE2 without hashing applied to the password.
 //   spake2_hmac - SPAKE2 with HMAC hashing of the password.
 

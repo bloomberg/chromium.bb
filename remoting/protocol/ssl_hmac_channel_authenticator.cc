@@ -47,17 +47,10 @@ SslHmacChannelAuthenticator::CreateForHost(
 SslHmacChannelAuthenticator::SslHmacChannelAuthenticator(
     const std::string& auth_key)
     : auth_key_(auth_key),
-      local_private_key_(NULL),
-      legacy_mode_(NONE) {
+      local_private_key_(NULL) {
 }
 
 SslHmacChannelAuthenticator::~SslHmacChannelAuthenticator() {
-}
-
-void SslHmacChannelAuthenticator::SetLegacyOneWayMode(LegacyMode legacy_mode) {
-  // Must be called before SecureAndAuthenticate().
-  DCHECK(done_callback_.is_null());
-  legacy_mode_ = legacy_mode;
 }
 
 void SslHmacChannelAuthenticator::SecureAndAuthenticate(
@@ -130,34 +123,29 @@ void SslHmacChannelAuthenticator::OnConnected(int result) {
     return;
   }
 
-  if (legacy_mode_ != RECEIVE_ONLY) {
-    // Generate authentication digest to write to the socket.
-    std::string auth_bytes = GetAuthBytes(
-        socket_.get(), is_ssl_server() ?
-        kHostAuthSslExporterLabel : kClientAuthSslExporterLabel, auth_key_);
-    if (auth_bytes.empty()) {
-      NotifyError(net::ERR_FAILED);
-      return;
-    }
-
-    // Allocate a buffer to write the digest.
-    auth_write_buf_ = new net::DrainableIOBuffer(
-        new net::StringIOBuffer(auth_bytes), auth_bytes.size());
+  // Generate authentication digest to write to the socket.
+  std::string auth_bytes = GetAuthBytes(
+      socket_.get(), is_ssl_server() ?
+      kHostAuthSslExporterLabel : kClientAuthSslExporterLabel, auth_key_);
+  if (auth_bytes.empty()) {
+    NotifyError(net::ERR_FAILED);
+    return;
   }
 
-  if (legacy_mode_ != SEND_ONLY) {
-    // Read an incoming token.
-    auth_read_buf_ = new net::GrowableIOBuffer();
-    auth_read_buf_->SetCapacity(kAuthDigestLength);
-  }
+  // Allocate a buffer to write the digest.
+  auth_write_buf_ = new net::DrainableIOBuffer(
+      new net::StringIOBuffer(auth_bytes), auth_bytes.size());
+
+  // Read an incoming token.
+  auth_read_buf_ = new net::GrowableIOBuffer();
+  auth_read_buf_->SetCapacity(kAuthDigestLength);
 
   // If WriteAuthenticationBytes() results in |done_callback_| being
   // called then we must not do anything else because this object may
   // be destroyed at that point.
   bool callback_called = false;
-  if (legacy_mode_ != RECEIVE_ONLY)
-    WriteAuthenticationBytes(&callback_called);
-  if (!callback_called && legacy_mode_ != SEND_ONLY)
+  WriteAuthenticationBytes(&callback_called);
+  if (!callback_called)
     ReadAuthenticationBytes();
 }
 

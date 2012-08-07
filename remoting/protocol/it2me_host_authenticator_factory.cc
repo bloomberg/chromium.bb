@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "crypto/rsa_private_key.h"
-#include "remoting/protocol/v1_authenticator.h"
 #include "remoting/protocol/negotiating_authenticator.h"
 
 namespace remoting {
@@ -28,14 +27,9 @@ scoped_ptr<Authenticator> It2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& local_jid,
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
-  if (NegotiatingAuthenticator::IsNegotiableMessage(first_message)) {
-    return NegotiatingAuthenticator::CreateForHost(
-        local_cert_, *local_private_key_, shared_secret_,
-        AuthenticationMethod::NONE);
-  }
-
-  return scoped_ptr<Authenticator>(new V1HostAuthenticator(
-      local_cert_, *local_private_key_, shared_secret_, remote_jid));
+  return NegotiatingAuthenticator::CreateForHost(
+      local_cert_, *local_private_key_, shared_secret_,
+      AuthenticationMethod::NONE);
 }
 
 }  // namespace protocol

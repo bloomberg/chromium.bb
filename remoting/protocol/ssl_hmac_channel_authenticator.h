@@ -54,10 +54,6 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
       crypto::RSAPrivateKey* local_private_key,
       const std::string& auth_key);
 
-  // TODO(sergeyu): This method is used only for the legacy
-  // V1Authenticator. Remove it when V1Authenticator is removed.
-  void SetLegacyOneWayMode(LegacyMode legacy_mode);
-
   virtual ~SslHmacChannelAuthenticator();
 
   // ChannelAuthenticator interface.
@@ -94,8 +90,6 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator,
   // Used in the CLIENT mode only.
   std::string remote_cert_;
   scoped_ptr<net::CertVerifier> cert_verifier_;
-
-  LegacyMode legacy_mode_;
 
   scoped_ptr<net::SSLSocket> socket_;
   DoneCallback done_callback_;
