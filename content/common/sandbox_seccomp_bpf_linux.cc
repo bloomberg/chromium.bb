@@ -227,54 +227,67 @@ intptr_t GpuOpenSIGSYS_Handler(const struct arch_seccomp_data& args,
 
 #if defined(__x86_64__)
 // x86_64 only because it references system calls that are multiplexed on IA32.
-playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
-  switch(sysno) {
-    case __NR_read:
-    case __NR_ioctl:
-    case __NR_poll:
-    case __NR_epoll_wait:
-    case __NR_recvfrom:
-    case __NR_write:
-    case __NR_writev:
-    case __NR_gettid:
-    case __NR_sched_yield:  // Nvidia binary driver.
-
-    case __NR_futex:
-    case __NR_madvise:
-    case __NR_sendmsg:
-    case __NR_recvmsg:
-    case __NR_eventfd2:
-    case __NR_pipe:
-    case __NR_mmap:
-    case __NR_mprotect:
-    case __NR_clone:  // TODO(jln) restrict flags.
-    case __NR_set_robust_list:
-    case __NR_getuid:
-    case __NR_geteuid:
-    case __NR_getgid:
-    case __NR_getegid:
-    case __NR_epoll_create:
-    case __NR_fcntl:
-    case __NR_socketpair:
-    case __NR_epoll_ctl:
-    case __NR_prctl:
-    case __NR_fstat:
-    case __NR_close:
-    case __NR_restart_syscall:
-    case __NR_rt_sigreturn:
+bool IsGpuAndFlashPolicyAllowed_x86_64(int sysno) {
+  switch (sysno) {
     case __NR_brk:
-    case __NR_rt_sigprocmask:
-    case __NR_munmap:
+    case __NR_clone:  // TODO(jln) restrict flags.
+    case __NR_close:
     case __NR_dup:
-    case __NR_mlock:
-    case __NR_munlock:
+    case __NR_epoll_create:
+    case __NR_epoll_ctl:
+    case __NR_epoll_wait:
     case __NR_exit:
     case __NR_exit_group:
+    case __NR_fcntl:
+    case __NR_fstat:
+    case __NR_futex:
+    case __NR_getegid:
+    case __NR_geteuid:
+    case __NR_getgid:
+    case __NR_gettid:
+    case __NR_getuid:
     case __NR_lseek:
+    case __NR_madvise:
+    case __NR_mmap:
+    case __NR_mprotect:
+    case __NR_munmap:
+    case __NR_pipe:
+    case __NR_prctl:
+    case __NR_read:
+    case __NR_recvmsg:
+    case __NR_restart_syscall:
+    case __NR_rt_sigaction:  // Breakpad signal handler.
+    case __NR_rt_sigprocmask:
+    case __NR_rt_sigreturn:
+    case __NR_sched_yield:
+    case __NR_sendmsg:
+    case __NR_set_robust_list:
+    case __NR_shutdown:
+    case __NR_socketpair:
+    case __NR_write:
+      return true;
+    default:
+      if (IsGettimeSyscall(sysno) ||
+          IsKillSyscall(sysno)) {
+        return true;
+      } else {
+        return false;
+      }
+  }
+}
+
+// x86_64 only because it references system calls that are multiplexed on IA32.
+playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
+  switch(sysno) {
+    case __NR_eventfd2:
     case __NR_getpid:  // Nvidia binary driver.
     case __NR_getppid:  // ATI binary driver.
-    case __NR_shutdown:  // Virtual driver.
-    case __NR_rt_sigaction:  // Breakpad signal handler.
+    case __NR_ioctl:
+    case __NR_mlock:
+    case __NR_munlock:
+    case __NR_poll:
+    case __NR_recvfrom:
+    case __NR_writev:
       return playground2::Sandbox::SB_ALLOWED;
     case __NR_socket:
       return EACCES;  // Nvidia binary driver.
@@ -296,8 +309,7 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
         return playground2::Sandbox::ErrorCode(GpuOpenSIGSYS_Handler, NULL);
       }
     default:
-      if (IsGettimeSyscall(sysno) ||
-          IsKillSyscall(sysno)) { // GPU watchdog.
+      if (IsGpuAndFlashPolicyAllowed_x86_64(sysno)) {
         return playground2::Sandbox::SB_ALLOWED;
       }
       // Generally, filename-based syscalls will fail with ENOENT to behave
@@ -313,58 +325,21 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
 // x86_64 only because it references system calls that are multiplexed on IA32.
 playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
-    case __NR_futex:
-    case __NR_write:
-    case __NR_epoll_wait:
-    case __NR_read:
-    case __NR_times:
-    case __NR_clone:  // TODO(jln): restrict flags.
-    case __NR_set_robust_list:
-    case __NR_getuid:
-    case __NR_geteuid:
-    case __NR_getgid:
-    case __NR_getegid:
-    case __NR_epoll_create:
-    case __NR_fcntl:
-    case __NR_socketpair:
-    case __NR_pipe:
-    case __NR_epoll_ctl:
-    case __NR_gettid:
-    case __NR_prctl:
-    case __NR_fstat:
-    case __NR_sendmsg:
-    case __NR_mmap:
-    case __NR_munmap:
-    case __NR_mprotect:
-    case __NR_madvise:
-    case __NR_rt_sigaction:
-    case __NR_rt_sigprocmask:
-    case __NR_wait4:
-    case __NR_exit_group:
-    case __NR_exit:
-    case __NR_rt_sigreturn:
-    case __NR_restart_syscall:
-    case __NR_close:
-    case __NR_recvmsg:
-    case __NR_lseek:
-    case __NR_brk:
-    case __NR_sched_yield:
-    case __NR_shutdown:
     case __NR_sched_getaffinity:
     case __NR_sched_setscheduler:
-    case __NR_dup:  // Flash Access.
     // These are under investigation, and hopefully not here for the long term.
-    case __NR_shmctl:
     case __NR_shmat:
+    case __NR_shmctl:
     case __NR_shmdt:
+    case __NR_times:
+    case __NR_wait4:
       return playground2::Sandbox::SB_ALLOWED;
     case __NR_ioctl:
       return ENOTTY;  // Flash Access.
     case __NR_socket:
       return EACCES;
     default:
-      if (IsGettimeSyscall(sysno) ||
-          IsKillSyscall(sysno)) {
+      if (IsGpuAndFlashPolicyAllowed_x86_64(sysno)) {
         return playground2::Sandbox::SB_ALLOWED;
       }
       if (IsFileSystemSyscall(sysno)) {
