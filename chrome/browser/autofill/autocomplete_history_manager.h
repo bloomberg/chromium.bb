@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_
-#define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_
+#ifndef CHROME_BROWSER_AUTOFILL_AUTOCOMPLETE_HISTORY_MANAGER_H_
+#define CHROME_BROWSER_AUTOFILL_AUTOCOMPLETE_HISTORY_MANAGER_H_
 
 #include <vector>
 
@@ -98,4 +98,4 @@ class AutocompleteHistoryManager : public content::WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(AutocompleteHistoryManager);
 };
 
-#endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_MANAGER_H_
+#endif  // CHROME_BROWSER_AUTOFILL_AUTOCOMPLETE_HISTORY_MANAGER_H_

@@ -10,13 +10,13 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/autocomplete_history_manager.h",
   "!chrome/browser/browser_process.h",
   "!chrome/browser/feedback/proto/extension.pb.h",
   "!chrome/browser/infobars/infobar_tab_helper.h",
   "!chrome/browser/password_manager/encryptor.h",
   "!chrome/browser/password_manager/password_manager.h",
   "!chrome/browser/prefs/pref_change_registrar.h",
+  "!chrome/browser/prefs/pref_member.h",
   "!chrome/browser/prefs/pref_service.h",
   "!chrome/browser/profiles/profile.h",
   "!chrome/browser/profiles/profile_dependency_manager.h",
