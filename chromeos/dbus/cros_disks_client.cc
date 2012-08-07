@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/cros_disks_client.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -246,7 +248,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
         cros_disks::kMountCompleted,
         base::Bind(&CrosDisksClientImpl::OnMountCompleted,
                    weak_ptr_factory_.GetWeakPtr(),
-                   mount_completed_handler ),
+                   mount_completed_handler),
         base::Bind(&CrosDisksClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -415,7 +417,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   DISALLOW_COPY_AND_ASSIGN(CrosDisksClientStubImpl);
 };
 
-} // namespace
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DiskInfo
@@ -435,7 +437,7 @@ DiskInfo::DiskInfo(const std::string& device_path, dbus::Response* response)
 DiskInfo::~DiskInfo() {
 }
 
-// Initialize |this| from |response| given by the cros-disks service.
+// Initializes |this| from |response| given by the cros-disks service.
 // Below is an example of |response|'s raw message (long string is ellipsized).
 //
 //

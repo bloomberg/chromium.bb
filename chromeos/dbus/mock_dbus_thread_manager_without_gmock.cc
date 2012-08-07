@@ -135,6 +135,12 @@ IntrospectableClient*
   return NULL;
 }
 
+MediaTransferProtocolDaemonClient*
+    MockDBusThreadManagerWithoutGMock::GetMediaTransferProtocolDaemonClient() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 ModemMessagingClient*
     MockDBusThreadManagerWithoutGMock::GetModemMessagingClient() {
   NOTIMPLEMENTED();

@@ -52,6 +52,8 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE;
   virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE;
   virtual IntrospectableClient* GetIntrospectableClient() OVERRIDE;
+  virtual MediaTransferProtocolDaemonClient*
+  GetMediaTransferProtocolDaemonClient() OVERRIDE;
   virtual ModemMessagingClient* GetModemMessagingClient() OVERRIDE;
   virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE;
   virtual SessionManagerClient* GetSessionManagerClient() OVERRIDE;

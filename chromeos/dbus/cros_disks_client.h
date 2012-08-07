@@ -71,14 +71,14 @@ class DiskInfo {
   ~DiskInfo();
 
   // Device path. (e.g. /sys/devices/pci0000:00/.../8:0:0:0/block/sdb/sdb1)
-  std::string device_path() const { return device_path_; }
+  const std::string& device_path() const { return device_path_; }
 
   // Disk mount path. (e.g. /media/removable/VOLUME)
-  std::string mount_path() const { return mount_path_; }
+  const std::string& mount_path() const { return mount_path_; }
 
   // Disk system path given by udev.
   // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/block/sdb/sdb1)
-  std::string system_path() const { return system_path_; }
+  const std::string& system_path() const { return system_path_; }
 
   // Is a drive or not. (i.e. true with /dev/sdb, false with /dev/sdb1)
   bool is_drive() const { return is_drive_; }
@@ -90,13 +90,13 @@ class DiskInfo {
   bool on_boot_device() const { return on_boot_device_; }
 
   // Disk file path (e.g. /dev/sdb).
-  std::string file_path() const { return file_path_; }
+  const std::string& file_path() const { return file_path_; }
 
   // Disk label.
-  std::string label() const { return label_; }
+  const std::string& label() const { return label_; }
 
   // Disk model. (e.g. "TransMemory")
-  std::string drive_label() const { return drive_model_; }
+  const std::string& drive_label() const { return drive_model_; }
 
   // Device type. Not working well, yet.
   DeviceType device_type() const { return device_type_; }
@@ -111,7 +111,7 @@ class DiskInfo {
   bool is_hidden() const { return is_hidden_; }
 
   // Returns file system uuid.
-  std::string uuid() const { return uuid_; }
+  const std::string& uuid() const { return uuid_; }
 
  private:
   void InitializeFromResponse(dbus::Response* response);
@@ -146,34 +146,40 @@ class CHROMEOS_EXPORT CrosDisksClient {
 
   // A callback to handle the result of Unmount.
   // The argument is the device path.
-  typedef base::Callback<void(const std::string&)> UnmountCallback;
+  typedef base::Callback<void(const std::string& device_path)> UnmountCallback;
 
   // A callback to handle the result of EnumerateAutoMountableDevices.
   // The argument is the enumerated device paths.
-  typedef base::Callback<void(const std::vector<std::string>&)
+  typedef base::Callback<void(const std::vector<std::string>& device_paths)
                          > EnumerateAutoMountableDevicesCallback;
 
   // A callback to handle the result of FormatDevice.
   // The first argument is the device path.
   // The second argument is true when formatting succeeded, false otherwise.
-  typedef base::Callback<void(const std::string&, bool)> FormatDeviceCallback;
+  typedef base::Callback<void(const std::string& device_path,
+                              bool format_succeeded)> FormatDeviceCallback;
 
   // A callback to handle the result of GetDeviceProperties.
   // The argument is the information about the specified device.
-  typedef base::Callback<void(const DiskInfo&)> GetDevicePropertiesCallback;
+  typedef base::Callback<void(const DiskInfo& disk_info)
+                         > GetDevicePropertiesCallback;
 
   // A callback to handle MountCompleted signal.
   // The first argument is the error code.
   // The second argument is the source path.
   // The third argument is the mount type.
   // The fourth argument is the mount path.
-  typedef base::Callback<void(MountError, const std::string&, MountType,
-                              const std::string&)> MountCompletedHandler;
+  typedef base::Callback<void(MountError error_code,
+                              const std::string& source_path,
+                              MountType mount_type,
+                              const std::string& mount_path)
+                         > MountCompletedHandler;
 
   // A callback to handle mount events.
   // The first argument is the event type.
   // The second argument is the device path.
-  typedef base::Callback<void(MountEventType, const std::string&)
+  typedef base::Callback<void(MountEventType event_type,
+                              const std::string& device_path)
                          > MountEventHandler;
 
   virtual ~CrosDisksClient();
