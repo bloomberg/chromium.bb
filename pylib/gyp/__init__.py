@@ -39,9 +39,16 @@ def FindBuildFiles():
   files = os.listdir(os.getcwd())
   build_files = []
   for file in files:
-    if file[-len(extension):] == extension:
+    if file.endswith(extension):
       build_files.append(file)
   return build_files
+
+
+class GypError(Exception):
+  """Error class representing an error, which is to be presented
+  to the user.  The main entry point will catch and display this.
+  """
+  pass
 
 
 def Load(build_files, format, default_variables={},
@@ -272,7 +279,7 @@ class RegeneratableOptionParser(optparse.OptionParser):
     values._regeneration_metadata = self.__regeneratable_options
     return values, args
 
-def main(args):
+def gyp_main(args):
   my_name = os.path.basename(sys.argv[0])
 
   parser = RegeneratableOptionParser()
@@ -384,9 +391,8 @@ def main(args):
   if not build_files:
     build_files = FindBuildFiles()
   if not build_files:
-    print >>sys.stderr, (usage + '\n\n%s: error: no build_file') % \
-                        (my_name, my_name)
-    return 1
+    raise GypError((usage + '\n\n%s: error: no build_file') %
+                   (my_name, my_name))
 
   # TODO(mark): Chromium-specific hack!
   # For Chromium, the gyp "depth" variable should always be a relative path
@@ -411,10 +417,9 @@ def main(args):
         break
 
     if not options.depth:
-      raise Exception, \
-            'Could not automatically locate src directory.  This is a ' + \
-            'temporary Chromium feature that will be removed.  Use ' + \
-            '--depth as a workaround.'
+      raise GypError('Could not automatically locate src directory.  This is'
+                     'a temporary Chromium feature that will be removed.  Use'
+                     '--depth as a workaround.')
 
   # If toplevel-dir is not set, we assume that depth is the root of our source
   # tree.
@@ -500,6 +505,13 @@ def main(args):
   # Done
   return 0
 
+
+def main(args):
+  try:
+    return gyp_main(args)
+  except GypError, e:
+    sys.stderr.write("gyp: %s\n" % e)
+    return 1
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

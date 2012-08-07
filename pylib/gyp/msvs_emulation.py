@@ -113,19 +113,22 @@ def _FindDirectXInstallation():
   """Try to find an installation location for the DirectX SDK. Check for the
   standard environment variable, and if that doesn't exist, try to find
   via the registry. May return None if not found in either location."""
-  global dxsdk_dir
+  # Return previously calculated value, if there is one
+  if hasattr(_FindDirectXInstallation, 'dxsdk_dir'):
+    return _FindDirectXInstallation.dxsdk_dir
+
   dxsdk_dir = os.environ.get('DXSDK_DIR')
-  if not dxsdk_dir and not _FindDirectXInstallation.did_run:
-    _FindDirectXInstallation.did_run = True
+  if not dxsdk_dir:
     # Setup params to pass to and attempt to launch reg.exe.
     cmd = ['reg.exe', 'query', r'HKLM\Software\Microsoft\DirectX', '/s']
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     for line in p.communicate()[0].splitlines():
       if 'InstallPath' in line:
         dxsdk_dir = line.split('    ')[3] + "\\"
-  return dxsdk_dir
 
-_FindDirectXInstallation.did_run = False
+  # Cache return value
+  _FindDirectXInstallation.dxsdk_dir = dxsdk_dir
+  return dxsdk_dir
 
 
 class MsvsSettings(object):
