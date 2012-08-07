@@ -66,23 +66,24 @@ class Handler : public content::WebContentsObserver {
 
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE {
     base::ListValue val;
-    callback_.Run(false, -1, kRendererDestroyed, val);
+    callback_.Run(kRendererDestroyed, -1, GURL(""), val);
     delete this;
   }
 
  private:
   void OnExecuteCodeFinished(int request_id,
-                             bool success,
-                             int32 page_id,
                              const std::string& error,
+                             int32 on_page_id,
+                             const GURL& on_url,
                              const base::ListValue& script_result) {
     if (observer_list_) {
       FOR_EACH_OBSERVER(ScriptExecutor::Observer, *observer_list_,
-                        OnExecuteScriptFinished(extension_id_, success,
-                                                page_id, error, script_result));
+                        OnExecuteScriptFinished(extension_id_, error,
+                                                on_page_id, on_url,
+                                                script_result));
     }
 
-    callback_.Run(success, page_id, error, script_result);
+    callback_.Run(error, on_page_id, on_url, script_result);
     delete this;
   }
 

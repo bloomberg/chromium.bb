@@ -100,25 +100,23 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   return true;
 }
 
-void ExecuteCodeInTabFunction::OnExecuteCodeFinished(bool success,
-                                                     int32 page_id,
-                                                     const std::string& error,
+void ExecuteCodeInTabFunction::OnExecuteCodeFinished(const std::string& error,
+                                                     int32 on_page_id,
+                                                     const GURL& on_url,
                                                      const ListValue& result) {
-  if (!error.empty()) {
-    CHECK(!success);
+  if (!error.empty())
     SetError(error);
-  }
 
-  SendResponse(success);
+  SendResponse(error.empty());
 }
 
-void TabsExecuteScriptFunction::OnExecuteCodeFinished(bool success,
-                                                      int32 page_id,
-                                                      const std::string& error,
+void TabsExecuteScriptFunction::OnExecuteCodeFinished(const std::string& error,
+                                                      int32 on_page_id,
+                                                      const GURL& on_url,
                                                       const ListValue& result) {
   if (error.empty())
     SetResult(result.DeepCopy());
-  ExecuteCodeInTabFunction::OnExecuteCodeFinished(success, page_id, error,
+  ExecuteCodeInTabFunction::OnExecuteCodeFinished(error, on_page_id, on_url,
                                                   result);
 }
 

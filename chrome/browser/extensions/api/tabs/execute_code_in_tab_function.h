@@ -32,9 +32,9 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Message handler.
-  virtual void OnExecuteCodeFinished(bool success,
-                                     int32 page_id,
-                                     const std::string& error,
+  virtual void OnExecuteCodeFinished(const std::string& error,
+                                     int32 on_page_id,
+                                     const GURL& on_url,
                                      const ListValue& script_result);
 
  private:
@@ -76,8 +76,9 @@ class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
  private:
   virtual ~TabsExecuteScriptFunction() {}
 
-  virtual void OnExecuteCodeFinished(bool success, int32 page_id,
-                                     const std::string& error,
+  virtual void OnExecuteCodeFinished(const std::string& error,
+                                     int32 on_page_id,
+                                     const GURL& on_url,
                                      const ListValue& script_result) OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.executeScript")

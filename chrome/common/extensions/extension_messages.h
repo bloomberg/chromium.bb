@@ -14,6 +14,7 @@
 #include "chrome/common/view_type.h"
 #include "chrome/common/web_apps.h"
 #include "content/public/common/common_param_traits.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
@@ -431,9 +432,9 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ExtensionHostMsg_GetMessageBundle,
 // Sent from the renderer to the browser to return the script running result.
 IPC_MESSAGE_ROUTED5(ExtensionHostMsg_ExecuteCodeFinished,
                     int /* request id */,
-                    bool /* whether the script ran successfully */,
+                    std::string /* error; empty implies success */,
                     int32 /* page_id the code executed on, if successful */,
-                    std::string /* error message, if unsuccessful */,
+                    GURL /* URL of the code executed on, if successful */,
                     ListValue /* result of the script */)
 
 // Sent from the renderer to the browser to notify that content scripts are
@@ -441,9 +442,10 @@ IPC_MESSAGE_ROUTED5(ExtensionHostMsg_ExecuteCodeFinished,
 // Note that the page_id is for the parent (or more accurately the topmost)
 // frame (e.g. if executing in an iframe this is the page ID of the parent,
 // unless the parent is an iframe... etc).
-IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
+IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ContentScriptsExecuting,
                     std::set<std::string> /* extensions that have scripts */,
-                    int32 /* page_id of the _topmost_ frame */)
+                    int32 /* page_id of the _topmost_ frame */,
+                    GURL /* url of the _topmost_ frame */)
 
 IPC_MESSAGE_ROUTED2(ExtensionHostMsg_DidGetApplicationInfo,
                     int32 /* page_id */,

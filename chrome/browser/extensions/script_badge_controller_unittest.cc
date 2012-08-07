@@ -120,10 +120,11 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
 
   ListValue val;
   script_badge_controller_->OnExecuteScriptFinished(
-      extension->id(), true,
+      extension->id(),
+      "",  // no error
       tab_contents()->web_contents()->GetController().GetActiveEntry()->
       GetPageID(),
-      "",
+      GURL(""),
       val);
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
               testing::ElementsAre(extension->script_badge()));
@@ -147,10 +148,11 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
 
     ListValue val;
     script_badge_controller_->OnExecuteScriptFinished(
-        extension->id(), true,
+        extension->id(),
+        "",  // no error
         tab_contents()->web_contents()->GetController().GetActiveEntry()->
             GetPageID(),
-        "",
+        GURL(""),
         val);
 
     EXPECT_THAT(script_badge_controller_->GetCurrentActions(),

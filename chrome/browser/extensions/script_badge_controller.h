@@ -20,6 +20,7 @@
 
 class ExtensionAction;
 class ExtensionService;
+class GURL;
 class TabContents;
 
 namespace base {
@@ -65,14 +66,17 @@ class ScriptBadgeController
 
   // ScriptExecutor::Observer implementation.
   virtual void OnExecuteScriptFinished(
-      const std::string& extension_id, bool success, int32 page_id,
-      const std::string& error, const base::ListValue& script_result) OVERRIDE;
+      const std::string& extension_id,
+      const std::string& error,
+      int32 on_page_id,
+      const GURL& on_url,
+      const base::ListValue& script_result) OVERRIDE;
 
  private:
   // Gets the ExtensionService for |tab_contents_|.
   ExtensionService* GetExtensionService();
 
-  // Gets the current page ID.
+  // Gets the current page ID, or -1 if no navigation entry has been committed.
   int32 GetPageID();
 
   // content::WebContentsObserver implementation.
@@ -88,7 +92,8 @@ class ScriptBadgeController
 
   // IPC::Message handlers.
   void OnContentScriptsExecuting(const std::set<std::string>& extension_ids,
-                                 int32 page_id);
+                                 int32 page_id,
+                                 const GURL& on_url);
 
   // Adds the extension's icon to the list of script badges.  Returns
   // the script badge ExtensionAction that was added, or NULL if

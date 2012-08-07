@@ -1347,18 +1347,15 @@ void UpdateTabFunction::PopulateResult() {
   }
 }
 
-void UpdateTabFunction::OnExecuteCodeFinished(bool success,
-                                              int32 page_id,
-                                              const std::string& error,
+void UpdateTabFunction::OnExecuteCodeFinished(const std::string& error,
+                                              int32 on_page_id,
+                                              const GURL& url,
                                               const ListValue& script_result) {
-  if (!error.empty()) {
-    CHECK(!success);
-    error_ = error;
-  }
-
-  if (success)
+  if (error.empty())
     PopulateResult();
-  SendResponse(success);
+  else
+    error_ = error;
+  SendResponse(error.empty());
 }
 
 bool MoveTabsFunction::RunImpl() {

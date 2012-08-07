@@ -339,16 +339,14 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
   // Notify the browser if any extensions are now executing scripts.
   if (!extensions_executing_scripts.empty()) {
-    WebKit::WebFrame* target_frame = frame;
-    while (target_frame->parent())
-      target_frame = target_frame->parent();
-
+    WebKit::WebFrame* top_frame = frame->top();
     content::RenderView* render_view =
-        content::RenderView::FromWebView(target_frame->view());
+        content::RenderView::FromWebView(top_frame->view());
     render_view->Send(new ExtensionHostMsg_ContentScriptsExecuting(
         render_view->GetRoutingID(),
         extensions_executing_scripts,
-        render_view->GetPageId()));
+        render_view->GetPageId(),
+        GetDataSourceURLForFrame(top_frame)));
   }
 
   // Log debug info.

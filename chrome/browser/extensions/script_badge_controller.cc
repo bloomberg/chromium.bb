@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/script_badge_controller.h"
 
+#include "base/logging.h"
+#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -20,6 +23,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -103,11 +107,27 @@ LocationBarController::Action ScriptBadgeController::OnClicked(
 
 void ScriptBadgeController::OnExecuteScriptFinished(
     const std::string& extension_id,
-    bool success,
-    int32 page_id,
     const std::string& error,
+    int32 on_page_id,
+    const GURL& on_url,
     const base::ListValue& script_results) {
-  if (success && page_id == GetPageID()) {
+  int32 current_page_id = GetPageID();
+
+  // Tracking down http://crbug.com/138323.
+  if (current_page_id < 0) {
+    std::string message = base::StringPrintf(
+        "Expected a page ID of %d on URL \"%s\", but there was no navigation "
+        "entry. Current URL is \"%s\", extension ID is %s.",
+        on_page_id,
+        on_url.spec().c_str(),
+        tab_contents_->web_contents()->GetURL().spec().c_str(),
+        extension_id.c_str());
+    char buf[1024];
+    base::snprintf(buf, arraysize(buf), "%s", message.c_str());
+    CHECK(false) << message;
+  }
+
+  if (error.empty() && on_page_id == current_page_id) {
     if (MarkExtensionExecuting(extension_id))
       NotifyChange();
   }
@@ -119,8 +139,9 @@ ExtensionService* ScriptBadgeController::GetExtensionService() {
 }
 
 int32 ScriptBadgeController::GetPageID() {
-  return tab_contents_->web_contents()->GetController().GetActiveEntry()->
-      GetPageID();
+  content::NavigationEntry* nav_entry =
+      tab_contents_->web_contents()->GetController().GetActiveEntry();
+  return nav_entry ? nav_entry->GetPageID() : -1;
 }
 
 void ScriptBadgeController::NotifyChange() {
@@ -160,9 +181,34 @@ bool ScriptBadgeController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+namespace {
+std::string JoinExtensionIDs(const std::set<std::string>& ids) {
+  std::vector<std::string> as_vector(ids.begin(), ids.end());
+  return "[" + JoinString(as_vector, ',') + "]";
+}
+}  // namespace
+
 void ScriptBadgeController::OnContentScriptsExecuting(
-    const std::set<std::string>& extension_ids, int32 page_id) {
-  if (page_id != GetPageID())
+    const std::set<std::string>& extension_ids,
+    int32 on_page_id,
+    const GURL& on_url) {
+  int32 current_page_id = GetPageID();
+
+  // Tracking down http://crbug.com/138323.
+  if (current_page_id < 0) {
+    std::string message = base::StringPrintf(
+        "Expected a page ID of %d on URL \"%s\", but there was no navigation "
+        "entry. Current URL is \"%s\", extension IDs are %s.",
+        on_page_id,
+        on_url.spec().c_str(),
+        tab_contents_->web_contents()->GetURL().spec().c_str(),
+        JoinExtensionIDs(extension_ids).c_str());
+    char buf[1024];
+    base::snprintf(buf, arraysize(buf), "%s", message.c_str());
+    CHECK(false) << message;
+  }
+
+  if (on_page_id != current_page_id)
     return;
 
   bool changed = false;

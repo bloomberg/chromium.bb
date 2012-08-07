@@ -345,7 +345,7 @@ void ExtensionHelper::OnExecuteCode(
   if (!main_frame) {
     ListValue val;
     Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        routing_id(), params.request_id, false, -1, "", val));
+        routing_id(), params.request_id, "No main frame", -1, GURL(""), val));
     return;
   }
 
