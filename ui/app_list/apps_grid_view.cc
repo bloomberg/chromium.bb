@@ -149,9 +149,9 @@ void AppsGridView::Layout() {
     } else {
       const int col = i % cols_;
       if (transition_offset > 0)
-        x_offset += transition_offset * col;
+        x_offset += transition_offset * (col + 1);
       else
-        x_offset += transition_offset * (cols_ - col - 1);
+        x_offset += transition_offset * (cols_ - col);
     }
 
     gfx::Rect adjusted_slot(tile_slot);
