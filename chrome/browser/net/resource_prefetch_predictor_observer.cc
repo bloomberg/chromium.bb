@@ -40,12 +40,14 @@ bool SummarizeResponse(net::URLRequest* request,
   request->GetMimeType(&summary->mime_type);
   summary->was_cached = request->was_cached();
 
-  // We want to rely on the mime_type to determine the resource type since we
-  // dont want types such as PREFETCH, SUB_RESOURCE, etc.
-  summary->resource_type =
-      ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
-          summary->mime_type,
-          summary->resource_type);
+  // Use the mime_type to determine the resource type for subresources since
+  // types such as PREFETCH, SUB_RESOURCE, etc are not useful.
+  if (summary->resource_type != ResourceType::MAIN_FRAME) {
+    summary->resource_type =
+        ResourcePrefetchPredictor::GetResourceTypeFromMimeType(
+            summary->mime_type,
+            summary->resource_type);
+  }
   return true;
 }
 
@@ -55,7 +57,7 @@ namespace chrome_browser_net {
 
 ResourcePrefetchPredictorObserver::ResourcePrefetchPredictorObserver(
     ResourcePrefetchPredictor* predictor)
-        : predictor_(predictor->AsWeakPtr()) {
+    : predictor_(predictor->AsWeakPtr()) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
