@@ -505,7 +505,12 @@ void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
   if (toggled_into_fullscreen_) {
     window_->EnterFullscreen(url, GetFullscreenExitBubbleType());
   } else {
-    window_->ExitFullscreen();
+#if defined(OS_MACOSX)
+    if (window_->InPresentationMode())
+      window_->ExitPresentationMode();
+    else
+#endif
+      window_->ExitFullscreen();
     extension_caused_fullscreen_ = GURL();
   }
   UpdateFullscreenExitBubbleContent();
@@ -525,10 +530,10 @@ void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
     tab_fullscreen_accepted_ = toggled_into_fullscreen_ &&
         GetFullscreenSetting(url) == CONTENT_SETTING_ALLOW;
   }
-  if (toggled_into_fullscreen_)
+  if (!window_->InPresentationMode())
     window_->EnterPresentationMode(url, GetFullscreenExitBubbleType());
   else
-    window_->ExitPresentationMode();
+    window_->ExitFullscreen();
   UpdateFullscreenExitBubbleContent();
 
   // WindowFullscreenStateChanged will be called by BrowserWindowController

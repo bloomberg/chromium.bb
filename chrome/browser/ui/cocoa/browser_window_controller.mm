@@ -2057,11 +2057,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
         [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
     }
   } else {
-    // The user is currently in presentation mode and is now exiting it, which
-    // also exits fullscreen using the Lion machinery.
-    NSWindow* window = [self window];
-    if ([window isKindOfClass:[FramedBrowserWindow class]])
-      [static_cast<FramedBrowserWindow*>(window) toggleSystemFullScreen];
+    // Exiting presentation mode does not exit system fullscreen; it merely
+    // switches from presentation mode to normal fullscreen.
+    [self setPresentationModeInternal:NO forceDropdown:NO];
   }
 }
 
@@ -2072,7 +2070,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (void)exitPresentationMode {
   // url: and bubbleType: are ignored when leaving presentation mode.
- [self setPresentationMode:NO url:GURL() bubbleType:FEB_TYPE_NONE];
+  [self setPresentationMode:NO url:GURL() bubbleType:FEB_TYPE_NONE];
 }
 
 - (BOOL)inPresentationMode {
