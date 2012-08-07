@@ -9,8 +9,7 @@ import optparse
 import os
 import sys
 
-from make_rules import BuildDefineList, BuildLibList, BuildToolDict
-from make_rules import BuildIncludeList, GetBuildRule, BUILD_RULES
+from make_rules import MakeRules, SetVar, GenerateCleanRules, GenerateNMFRules
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
@@ -24,7 +23,6 @@ PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import getos
 
-SUPPORTED_HOSTS = ['win']
 
 def ErrorExit(text):
   ErrorMsgFunc(text)
@@ -43,24 +41,6 @@ def WriteReplaced(srcpath, dstpath, replacements):
   text = open(srcpath, 'rb').read()
   text = Replace(text, replacements)
   open(dstpath, 'wb').write(text)
-
-
-def SetVar(varname, values):
-  if not values:
-    return varname + ':=\n'
-
-  line = varname + ':='
-  out = ''
-  for value in values:
-    if len(line) + len(value) > 78:
-      out += line[:-1] + '\n'
-      line = '%s+=%s ' % (varname, value)
-    else:
-      line += value + ' '
-
-  if line:
-    out += line[:-1] + '\n'
-  return out
 
 
 def GenerateSourceCopyList(desc):
@@ -89,6 +69,14 @@ def GetSourcesDict(sources):
   return source_map
 
 
+def GetProjectObjects(source_dict):
+  object_list = []
+  for key in ['.c', '.cc']:
+    for src in source_dict[key]:
+      object_list.append(os.path.splitext(src)[0])
+  return object_list
+
+
 def GetPlatforms(plat_list, plat_filter):
   platforms = []
   for plat in plat_list:
@@ -100,7 +88,7 @@ def GetPlatforms(plat_list, plat_filter):
 def GenerateToolDefaults(desc, tools):
   defaults = ''
   for tool in tools:
-    defaults += BUILD_RULES[tool]['DEFS']
+    defaults += MakeRules(tool).BuildDefaults()
   return defaults
 
 
@@ -108,130 +96,85 @@ def GenerateSettings(desc, tools):
   settings = SetVar('VALID_TOOLCHAINS', tools)
   settings+= 'TOOLCHAIN?=%s\n\n' % tools[0]
   for target in desc['TARGETS']:
-    name = target['NAME']
-    macro = name.upper()
+    project = target['NAME']
+    macro = project.upper()
     srcs = GetSourcesDict(target['SOURCES'])
 
-    if srcs['.c']:
-      flags = target.get('CCFLAGS', ['$(NACL_CCFLAGS)'])
-      settings += SetVar(macro + '_CC', srcs['.c'])
-      settings += SetVar(macro + '_CCFLAGS', flags)
+    c_flags = target.get('CCFLAGS')
+    cc_flags = target.get('CXXFLAGS')
+    ld_flags = target.get('LDFLAGS')
 
-    if srcs['.cc']:
-      flags = target.get('CXXFLAGS', ['$(NACL_CXXFLAGS)'])
-      settings += SetVar(macro + '_CXX', srcs['.cc'])
-      settings += SetVar(macro + '_CXXFLAGS', flags)
-
-    flags = target.get('LDFLAGS', ['$(NACL_LDFLAGS)'])
-    settings += SetVar(macro + '_LDFLAGS', flags)
+    if c_flags:
+      settings += SetVar(macro + '_CCFLAGS', c_flags)
+    if cc_flags:
+      settings += SetVar(macro + '_CXXFLAGS', cc_flags)
+    if ld_flags:
+      settings += SetVar(macro + '_LDFLAGS', ld_flags)
   return settings
-
-
-def GetTarget(tool, targ_type, replace):
-  pattern = BUILD_RULES[tool]['TOOL'][targ_type]
-  return Replace(pattern, replace)
-
-
-def GenerateCompile(target, tool, arch, srcs):
-  """Generates a Compile target.
-
-  For the given target, toolset and architecture, returns a rule to generate
-  the object files for the set of sources.
-
-  Returns:
-    Returns a tuple containin the objects and the rule.
-  """
-  rules = ''
-  name = target['NAME']
-  object_sets = []
-
-  defs = BuildDefineList(tool, target.get('DEFINES', []))
-  includes = BuildIncludeList(tool, target.get('INCLUDES', []))
-
-  if srcs['.c']:
-    replace = BuildToolDict(tool, name, arch, 'c',
-        DEFLIST=defs, INCLUDELIST=includes)
-    compile_rule = GetBuildRule(tool, 'CC')
-    rules += Replace(compile_rule, replace)
-    object_sets.append('$(%s)' % replace['<OBJS>'])
-
-  if srcs['.cc']:
-    replace = BuildToolDict(tool, name, arch, 'cc',
-        DEFLIST=defs, INCLUDELIST=includes)
-    compile_rule = GetBuildRule(tool, 'CXX')
-    rules += Replace(compile_rule, replace)
-    object_sets.append('$(%s)' % replace['<OBJS>'])
-
-  return (' '.join(object_sets), rules)
-
-
-def GenerateLink(target, tool, arch, objs):
-  """Generate a Link target.
-
-  Returns:
-    Returns a tuple containing the rule and target.
-  """
-  targ_type =  target['TYPE']
-  link_rule = GetBuildRule(tool, targ_type.upper())
-  libs = target.get('LIBS', [])
-  libs = BuildLibList(tool, libs)
-  replace = BuildToolDict(tool, target['NAME'], arch, 'nexe',
-                          OBJS=objs, LIBLIST=libs)
-  rule = Replace(link_rule, replace)
-  target_out = GetTarget(tool, targ_type, replace)
-  return target_out, rule
-
-
-def GenerateNMF(target, tool):
-  nmf_rule = BUILD_RULES[tool]['NMF']
-  replace = BuildToolDict(tool, target['NAME'])
-  rule = Replace(nmf_rule, replace)
-  target_out = GetTarget(tool, 'nmf', replace)
-  return  target_out, rule
 
 
 def GenerateRules(desc, tools):
   all_targets = []
-  rules = ''
   clean = []
+  rules = '#\n# Per target object lists\n#\n'
+
+  #Determine which projects are in the NMF files.
+  main = None
+  dlls = []
+  project_list = []
+  glibc_rename = []
+
+  for target in desc['TARGETS']:
+    ptype = target['TYPE'].upper()
+    project = target['NAME']
+    project_list.append(project)
+    srcs = GetSourcesDict(target['SOURCES'])
+    if ptype == 'MAIN':
+      main = project
+    if ptype == 'SO':
+      dlls.append(project)
+      for arch in ['x86_32', 'x86_64']:
+        glibc_rename.append('-n %s_%s.so,%s.so' % (project, arch, project))
+
+    objects = GetProjectObjects(srcs)
+    rules += SetVar('%s_OBJS' % project.upper(), objects)
+    if glibc_rename:
+      rules += SetVar('GLIBC_REMAP', glibc_rename)
+
+  configs = desc.get('CONFIGS', ['Debug', 'Release'])
   for tc in tools:
-    rules += '\n#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
-        tc, tc, tc)
-    main = None
-    for target in desc['TARGETS']:
-      name = target['NAME']
-      srcs = GetSourcesDict(target['SOURCES'])
-      for arch in BUILD_RULES[tc]['ARCHES']:
-        objs, comp_rule = GenerateCompile(target, tc, arch, srcs)
-        targs, link_rule = GenerateLink(target, tc, arch, objs)
-        rules += comp_rule + link_rule
-        clean.append(objs)
-        if target['TYPE'] == 'lib':
-          all_targets.append(targs)
+    makeobj = MakeRules(tc)
+    arches = makeobj.GetArches()
+    rules += makeobj.BuildDirectoryRules(configs)
+    for cfg in configs:
+      makeobj.SetConfig(cfg)
+      for target in desc['TARGETS']:
+        project = target['NAME']
+        ptype = target['TYPE']
+        srcs = GetSourcesDict(target['SOURCES'])
+        objs = GetProjectObjects(srcs)
+        defs = target.get('DEFINES', [])
+        incs = target.get('INCLUDES', [])
+        libs = target.get('LIBS', [])
+        lpaths = target.get('LIBPATHS', [])
+        ipaths = target.get('INCPATHS', [])
+        makeobj.SetProject(project, ptype, defs=defs, incs=incs, libs=libs)
+        for arch in arches:
+          makeobj.SetArch(arch)
+          for src in srcs.get('.c', []):
+            rules += makeobj.BuildCompileRule('CC', src)
+          for src in srcs.get('.cc', []):
+            rules += makeobj.BuildCompileRule('CXX', src)
+          rules += '\n'
+          rules += makeobj.BuildObjectList()
+          rules += makeobj.BuildLinkRule()
+      if main:
+        rules += GenerateNMFRules(tc, main, dlls, cfg, arches)
 
-      if target['TYPE'] == 'main':
-        main = target
+  rules += GenerateCleanRules(tools, configs)
+  rules += '\nall: $(ALL_TARGETS)\n'
+  return '', rules
 
-    if main:
-      targs, nmf_rule = GenerateNMF(main, tc)
-      rules += nmf_rule
-      all_targets.append(targs)
-  rules += '\n.PHONY : clean\nclean:\n\t$(RM) $(DEPFILES) ' + ' '.join(clean)
-  rules += '\n\n-include $(DEPFILES)'
-  return ' '.join(all_targets), rules
-
-
-def GenerateTargets(desc, tools):
-  targets = []
-  rules = ''
-  for tc in tools:
-    for target in desc['TARGETS']:
-      name = target['NAME']
-      replace = BuildToolDict(tc, name)
-      target = GetTarget(tc, target['TYPE'], replace)
-      if target:
-        targets.append(target)
-  return targets
 
 
 def GenerateReplacements(desc, tools):
@@ -246,8 +189,7 @@ def GenerateReplacements(desc, tools):
   prerun = desc.get('PRE', '')
   postlaunch = desc.get('POST', '')
 
-  targets = GenerateTargets(desc, tools)
-  target_def = 'all: ' +  all_targets
+  target_def = 'all:'
 
   return {
       '__PROJECT_SETTINGS__' : settings,
@@ -263,6 +205,7 @@ def GenerateReplacements(desc, tools):
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
     'TOOLS' : (list, ['newlib', 'glibc', 'pnacl', 'win'], True),
+    'CONFIGS' : (list, ['Debug', 'Release'], False),
     'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
         'NAME': (str, '', True),
@@ -417,20 +360,26 @@ def IsNexe(desc):
 def ProcessHTML(srcroot, dstroot, desc, toolchains):
   name = desc['NAME']
   outdir = os.path.join(dstroot, desc['DEST'], name)
-
   srcfile = os.path.join(srcroot, 'index.html')
   tools = GetPlatforms(toolchains, desc['TOOLS'])
+
+  configs = ['Debug', 'Release']
+
   for tool in tools:
-    dstfile = os.path.join(outdir, 'index_%s.html' % tool);
-    print 'Writting from %s to %s' % (srcfile, dstfile)
-    replace = {
-      '<NAME>': name,
-      '<TITLE>': desc['TITLE'],
-      '<tc>': tool
-    }
-    WriteReplaced(srcfile, dstfile, replace)
+    for cfg in configs:
+      dstfile = os.path.join(outdir, 'index_%s_%s.html' % (tool, cfg))
+      print 'Writing from %s to %s' % (srcfile, dstfile)
+      replace = {
+        '<config>': cfg,
+        '<NAME>': name,
+        '<TITLE>': desc['TITLE'],
+        '<tc>': tool
+      }
+      WriteReplaced(srcfile, dstfile, replace)
 
   replace['<tc>'] = tools[0]
+  replace['<config>'] = configs[0]
+
   srcfile = os.path.join(SDK_SRC_DIR, 'build_tools', 'redirect.html')
   dstfile = os.path.join(outdir, 'index.html')
   WriteReplaced(srcfile, dstfile, replace)
@@ -560,6 +509,7 @@ def main(argv):
     print 'Using default toolchains: ' + ' '.join(toolchains)
 
   master_projects = {}
+
   for filename in args:
     desc = LoadProject(filename, toolchains)
     if not desc:

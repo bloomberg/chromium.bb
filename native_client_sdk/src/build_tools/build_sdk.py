@@ -460,6 +460,10 @@ def BuildStepCopyExamples(pepperdir, toolchains, build_experimental):
   plat = getos.GetPlatform()
   for arch in LIB_DICT[plat]:
     buildbot_common.MakeDir(os.path.join(libdir, '%s_%s_host' % (plat, arch)))
+    for config in ['Debug', 'Release']:
+      buildbot_common.MakeDir(os.path.join(libdir, '%s_%s_host' % (plat, arch),
+			      config))
+    
 
   srcdir = os.path.join(pepperdir, 'src')
   buildbot_common.RemoveDir(srcdir)

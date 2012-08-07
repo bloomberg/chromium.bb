@@ -89,7 +89,7 @@
           function(bytes) {
             common.updateStatus(
                 'Allocated '+bytes+' bytes of persistant storage.');
-            common.createNaClModule('<NAME>', '<tc>', 200, 200);
+            common.createNaClModule('<NAME>', '<tc>', '<config>', 200, 200);
             common.attachDefaultListeners();
           },
           function(e) { alert('Failed to allocate space') });

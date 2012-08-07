@@ -19,13 +19,13 @@ var common = (function () {
    * @param {number} width The width to create the plugin.
    * @param {number} height The height to create the plugin.
    */
-  function createNaClModule(name, tool, width, height) {
+  function createNaClModule(name, tool, config, width, height) {
     var moduleEl = document.createElement('embed');
     moduleEl.setAttribute('name', 'nacl_module');
     moduleEl.setAttribute('id', 'nacl_module');
     moduleEl.setAttribute('width', width);
     moduleEl.setAttribute('height',height);
-    moduleEl.setAttribute('src', tool + '/' + name + '.nmf');
+    moduleEl.setAttribute('src', tool + '/' + config + '/' + name + '.nmf');
     moduleEl.setAttribute('type', 'application/x-nacl');
 
     // The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
@@ -148,7 +148,7 @@ var common = (function () {
    * @param {number} width The width to create the plugin.
    * @param {number} height The height to create the plugin.
    */
-  function pageDidLoad(name, tool, width, height) {
+  function pageDidLoad(name, tool, config, width, height) {
     // If the page loads before the Native Client module loads, then set the
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
@@ -160,7 +160,7 @@ var common = (function () {
       // plug-in graphic, if there is a problem.
       width = typeof width !== 'undefined' ? width : 200;
       height = typeof height !== 'undefined' ? height : 200;
-      createNaClModule(name, tool, width, height);
+      createNaClModule(name, tool, config, width, height);
       attachDefaultListeners();
     } else {
       // It's possible that the Native Client module onload event fired

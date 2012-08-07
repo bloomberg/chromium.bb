@@ -46,7 +46,7 @@ found in the LICENSE file.
           function(bytes) {
             common.updateStatus(
                 'Allocated '+bytes+' bytes of persistent storage.');
-            common.createNaClModule('<NAME>', '<tc>', 800, 600);
+            common.createNaClModule('<NAME>', '<tc>', '<config>', 800, 600);
             common.attachDefaultListeners();
           },
           function(e) { alert('Failed to allocate space'); });

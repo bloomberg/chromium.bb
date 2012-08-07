@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 
 #
 # Default macros for various platforms.
@@ -13,8 +15,8 @@ NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c -std=gnu++98
 NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -Wl,-as-needed
 NEWLIB_LIB?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-ar r
 NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
-NEWLIB_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
-NEWLIB_LDFLAGS?=-g -pthread
+NEWLIB_CCFLAGS?=-MMD -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
+NEWLIB_LDFLAGS?=-pthread
 """
 
 GLIBC_DEFAULTS = """
@@ -25,8 +27,8 @@ GLIBC_LIB?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-ar r
 GLIBC_DUMP?=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
 GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
 GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
-GLIBC_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
-GLIBC_LDFLAGS?=-g -pthread
+GLIBC_CCFLAGS?=-MMD -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
+GLIBC_LDFLAGS?=-pthread
 """
 
 PNACL_DEFAULTS = """
@@ -35,79 +37,72 @@ PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c -std=gnu++
 PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++
 PNACL_LIB?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-ar r
 PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
-PNACL_CCFLAGS?=-O0 -MMD -g -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
-PNACL_LDFLAGS?=-g -pthread
+PNACL_CCFLAGS?=-MMD -pthread $(NACL_WARNINGS) -idirafter $(NACL_SDK_ROOT)/include
+PNACL_LDFLAGS?=-pthread
 TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
 
 WIN_DEFAULTS = """
-WIN_CC?=cl.exe
-WIN_CXX?=cl.exe
-WIN_LINK?=link.exe
-WIN_LIB?=lib.exe
+WIN_CC?=cl.exe /nologo
+WIN_CXX?=cl.exe /nologo
+WIN_LINK?=link.exe /nologo
+WIN_LIB?=lib.exe /nologo
 WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -D _WIN32
-WIN_LDFLAGS=/LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host
 """
 
 #
 # Compile rules for various platforms.
 #
-NACL_CC_RULE = """
-<OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
-DEPFILES+=$(<OBJS>:.o=.d)
-$(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) -o $@ $< <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLUDELIST>
-"""
+CC_RULE = '<tc>/<config>/<name>_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>/<config>'
+NACL_CC_RULES = {
+  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>',
+}
 
-SO_CC_RULE = """
-<OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
-DEPFILES+=$(<OBJS>:.o=.d)
-$(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) -o $@ $< <MACH> -fPIC -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLUDELIST>
-"""
+SO_CC_RULES = {
+  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -fPIC $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) -o $@ $< -02 <MACH> -fPIC $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>'
+}
 
-WIN_CC_RULE = """
-<OBJS>:=$(patsubst %.<ext>, <tc>/%.obj,$(<PROJ>_<EXT>))
-$(<OBJS>) : <tc>/%.obj : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) /Fo$@ /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLUDELIST>
-"""
+WIN_CC_RULES = {
+  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) /O2 /Fo$@ /MT /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLIST>'
+}
 
 #
 # Link rules for various platforms.
 #
-NEXE_LINK_RULE = """
-<tc>/<proj>_<ARCH>.nexe : <OBJS>
-<TAB>$(<LINK>) -o $@ $^ <MACH> $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>
-<TC>_NMF+=<tc>/<proj>_<ARCH>.nexe
-"""
+NEXE_LINK_RULES = {
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>'
+}
 
-PEXE_LINK_RULE = """
-<tc>/<proj>.pexe : <OBJS>
-<TAB>$(<LINK>) -o $@ $^ $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>
+SO_LINK_RULES = {
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) <LIBLIST>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) <LIBLIST>',
+}
 
-<tc>/<proj>_x86_32.nexe : <tc>/<proj>.pexe
-<TAB>$(TRANSLATE) -arch x86-32 $< -o $@ 
+PEXE_TRANSLATE_RULE = """
+<tc>/<config>/<proj>_x86_32.nexe : <tc>/<config>/<proj>.pexe
+<TAB>$(TRANSLATE) -arch x86-32 $< -o $@
 
-<tc>/<proj>_x86_64.nexe : <tc>/<proj>.pexe
-<TAB>$(TRANSLATE) -arch x86-64 $< -o $@ 
+<tc>/<config>/<proj>_x86_64.nexe : <tc>/<config>/<proj>.pexe
+<TAB>$(TRANSLATE) -arch x86-64 $< -o $@
 
-<tc>/<proj>_arm.nexe : <tc>/<proj>.pexe
-<TAB>$(TRANSLATE) -arch arm $< -o $@ 
-PNACL_NMF:=<tc>/<proj>_x86_32.nexe <tc>/<proj>_x86_64.nexe <tc>/<proj>_arm.nexe
-"""
+<tc>/<config>/<proj>_arm.nexe : <tc>/<config>/<proj>.pexe
+<TAB>$(TRANSLATE) -arch arm $< -o $@"""
 
-SO_LINK_RULE = """
-<tc>/<proj>_<ARCH>.so : <OBJS>
-<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) <LIBLIST>
-GLIBC_REMAP+= -n <proj>_<ARCH>.so,<proj>.so
-<TC>_NMF+=<tc>/<proj>_<ARCH>.so
-"""
+PEXE_LINK_RULES = {
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
+  'Release': '<TAB>$(<LINK>) -o $@ $^ $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
+}
 
-WIN_LINK_RULE = """
-win/<proj>.dll : <OBJS>
-<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_<EXT>FLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib $^ <LIBLIST> $(WIN_LDFLAGS)
-<TC>_NMF+=<tc>/<proj>.dll
+WIN_LINK_RULES = {
+  'Debug': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Debug $^ <LIBLIST> $(WIN_LDFLAGS)',
+  'Release': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Release $^ <LIBLIST> $(WIN_LDFLAGS)'
+}
 
+WIN_LAUNCH_RULES = """
 HOST_ARGS:=--register-pepper-plugins=$(abspath win/<proj>.dll);application/x-nacl
 LAUNCH_HOST: CHECK_FOR_CHROME all
 <TAB>$(CHROME_PATH) $(HOST_ARGS) "localhost:5103/index_win.html"
@@ -116,34 +111,38 @@ LAUNCH_HOST: CHECK_FOR_CHROME all
 #
 # Lib rules for various platforms.
 #
-POSIX_LIB_RULE = """
-$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/lib<proj>.a : <OBJS>
-<TAB>$(MKDIR) -p $(dir $@)
-<TAB>$(<LIB>) $@ $^
-"""
+POSIX_LIB_RULES = {
+  'Debug':
+      '<TAB>$(MKDIR) -p $(dir $@)\n'
+      '<TAB>$(<LIB>) $@ $^',
+  'Release':
+      '<TAB>$(MKDIR) -p $(dir $@)\n'
+      '<TAB>$(<LIB>) $@ $^',
+}
 
-WIN_LIB_RULE = """
-$(NACL_SDK_ROOT)/lib/win_<ARCH>_host/<proj>.lib : <OBJS>
-<TAB>$(<LIB>) /OUT:$@ $^ $(<PROJ>_<EXT>FLAGS) <LIBLIST>
-"""
+WIN_LIB_RULES = {
+  'Debug': '<TAB>$(<LIB>) /OUT:$@ $^ $(WIN_LDFLAGS) <LIBLIST>',
+  'Release': '<TAB>$(<LIB>) /OUT:$@ $^ $(WIN_LDFLAGS) <LIBLIST>'
+}
 
 
-
+#
+# NMF rules for various platforms.
+#
 NMF_RULE = """
-<tc>/<proj>.nmf : $(<TC>_NMF)
-<TAB>$(NMF) -D $(<DUMP>) -o $@ $^ -t <tc> -s <tc>
+<tc>/<config>/<proj>.nmf : <NMF_TARGETS>
+<TAB>$(NMF) -D $(<DUMP>) -o $@ $^ -t <tc> -s <tc>/<config>
 """
 
 NMF_EMPTY = """
-<tc>/<proj>.nmf : $(<TC>_NMF) | <tc>
+<tc>/<config>/<proj>.nmf : <NMF_TARGETS> | <tc>/<config>
 <TAB>echo {} > $@
 """
 
 GLIBC_NMF_RULE = """
-<tc>/<proj>.nmf : $(<TC>_NMF)
-<TAB>$(NMF) -D $(<DUMP>) -o $@ $(GLIBC_PATHS) $^ -t <tc> -s <tc> $(<TC>_REMAP)
+<tc>/<config>/<proj>.nmf : <NMF_TARGETS>
+<TAB>$(NMF) -D $(<DUMP>) -o $@ $(GLIBC_PATHS) $^ -t <tc> -s <tc>/<config> $(GLIBC_REMAP)
 """
-
 
 EXT_MAP = {
   'c': 'CC',
@@ -154,20 +153,33 @@ WIN_TOOL = {
   'DEFINE': '-D%s',
   'INCLUDE': '/I%s',
   'LIBRARY': '%s.lib',
-  'main': '<tc>/<proj>.dll',
-  'nmf': '<tc>/<proj>.nmf',
-  'so': None,
-  'lib': '$(NACL_SDK_ROOT)/lib/win_<ARCH>_host/<proj>.lib',
+  'MAIN': '<tc>/<config>/<proj>.dll',
+  'NMFMAIN': '<tc>/<config>/<proj>.dll',
+  'SO': None,
+  'LIB': '$(NACL_SDK_ROOT)/lib/win_<ARCH>_host/<config>/<proj>.lib',
 }
 
 NACL_TOOL = {
   'DEFINE': '-D%s',
   'INCLUDE': '-I%s',
   'LIBRARY': '-l%s',
-  'main': '<tc>/<proj>_<ARCH>.nexe',
-  'nmf': '<tc>/<proj>.nmf',
-  'so': '<tc>/<proj>_<ARCH>.so',
-  'lib': '$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/lib<proj>.a',
+  'MAIN': '<tc>/<config>/<proj>_<ARCH>.nexe',
+  'NMFMAIN': '<tc>/<config>/<proj>_<ARCH>.nexe',
+  'SO': '<tc>/<config>/<proj>_<ARCH>.so',
+  'LIB': '$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config>/lib<proj>.a',
+}
+
+PNACL_TOOL = {
+  'DEFINE': '-D%s',
+  'INCLUDE': '-I%s',
+  'LIBRARY': '-l%s',
+  'MAIN': '<tc>/<config>/<proj>.pexe',
+  'NMFMAIN':
+      '<tc>/<config>/<proj>_x86_32.nexe '
+      '<tc>/<config>/<proj>_x86_64.nexe '
+      '<tc>/<config>/<proj>_arm.nexe',
+  'SO': None,
+  'LIB': '$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config>/lib<proj>.a',
 }
 
 
@@ -200,104 +212,234 @@ BUILD_RULES = {
   'newlib' : {
     'ARCHES': [NACL_X86_32, NACL_X86_64],
     'DEFS': NEWLIB_DEFAULTS,
-    'CC' : NACL_CC_RULE,
-    'CXX' : NACL_CC_RULE,
+    'CC' : NACL_CC_RULES,
+    'CXX' : NACL_CC_RULES,
     'NMF' : NMF_RULE,
-    'MAIN': NEXE_LINK_RULE,
-    'LIB': POSIX_LIB_RULE,
+    'MAIN': NEXE_LINK_RULES,
+    'LIB': POSIX_LIB_RULES,
     'SO' : None,
     'TOOL': NACL_TOOL,
   },
   'glibc' : {
     'ARCHES': [NACL_X86_32, NACL_X86_64],
     'DEFS': GLIBC_DEFAULTS,
-    'CC': NACL_CC_RULE,
-    'CXX': NACL_CC_RULE,
+    'CC': NACL_CC_RULES,
+    'CXX': NACL_CC_RULES,
     'NMF' : GLIBC_NMF_RULE,
-    'MAIN': NEXE_LINK_RULE,
-    'LIB': POSIX_LIB_RULE,
-    'SO': SO_LINK_RULE,
+    'MAIN': NEXE_LINK_RULES,
+    'LIB': POSIX_LIB_RULES,
+    'SO': SO_LINK_RULES,
     'TOOL': NACL_TOOL,
   },
   'pnacl' : {
     'ARCHES': [NACL_PNACL],
     'DEFS': PNACL_DEFAULTS,
-    'CC': NACL_CC_RULE,
-    'CXX': NACL_CC_RULE,
+    'CC': NACL_CC_RULES,
+    'CXX': NACL_CC_RULES,
     'NMF' : NMF_RULE,
-    'MAIN': PEXE_LINK_RULE,
-    'LIB': POSIX_LIB_RULE,
+    'MAIN': PEXE_LINK_RULES,
+    'LIB': POSIX_LIB_RULES,
     'SO': None,
-    'TOOL': NACL_TOOL
+    'TOOL': PNACL_TOOL
   },
   'win' : {
     'ARCHES': [WIN_32],
     'DEFS': WIN_DEFAULTS,
-    'CC': WIN_CC_RULE,
-    'CXX': WIN_CC_RULE,
+    'CC': WIN_CC_RULES,
+    'CXX': WIN_CC_RULES,
     'NMF' : NMF_EMPTY,
-    'MAIN': WIN_LINK_RULE,
-    'LIB': WIN_LIB_RULE,
+    'MAIN': WIN_LINK_RULES,
+    'LIB': WIN_LIB_RULES,
     'SO': None,
     'TOOL': WIN_TOOL
   }
 }
 
+class MakeRules(object):
+  """MakeRules generates Tool, Config, and Arch dependend makefile settings.
 
-def GetBuildRule(tool, ext):
-  return BUILD_RULES[tool][ext]
+  The MakeRules object generates strings used in the makefile based on the
+  current object settings such as toolchain, configuration, architecture...
+  It stores settings such as includes, defines, and lists, and converts them
+  to the appropriate format whenever the toolchain changes.
+  """
+
+  def __init__(self, tc, cfg=None, arch=None):
+    self.tc = tc
+    self.defines = []
+    self.includes = []
+    self.libraries = []
+    self.vars = {
+      '<TAB>': '\t',
+    }
+    self.SetToolchain(tc)
+    if cfg:
+      self.SetConfig(cfg)
+    if arch:
+      self.SetArch(arch)
+
+  def _BuildList(self, key, items):
+    pattern = BUILD_RULES[self.tc]['TOOL'][key]
+    if pattern and items:
+      items = [pattern % item for item in items]
+      return ' '.join(items)
+    return ''
+
+  def BuildDefaults(self):
+    return BUILD_RULES[self.tc]['DEFS']
+
+  def BuildDirectoryRules(self, configs):
+    tc = self.tc
+    rules = '\n#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
+        tc, tc, tc)
+    for cfg in configs:
+      rules += '%s/%s: | %s\n\t$(MKDIR) %s/%s\n' % (tc, cfg, tc, tc, cfg)
+
+    rules += '\n# Include header dependency files.\n'
+    for cfg in configs:
+      rules += '-include %s/%s/*.d\n' % (tc, cfg)
+    return rules + '\n'
+
+  def BuildCompileRule(self, EXT, src):
+    self.vars['<EXT>'] = EXT
+    out = '<tc>/<config>/%s_<ARCH>.o : %s $(THIS_MAKE) | <tc>/<config>\n' % (
+        os.path.splitext(src)[0], src)
+    out+= BUILD_RULES[self.tc][EXT][self.cfg] + '\n\n'
+    return self.Replace(out)
+
+  def BuildLinkRule(self):
+    target = BUILD_RULES[self.tc]['TOOL'][self.ptype.upper()]
+    out = ''
+    if self.ptype == 'lib':
+      out = 'ALL_TARGETS+=%s\n' % target
+    out += target + ' : $(<PROJ>_<TC>_<CONFIG>_<ARCH>_O)\n'
+    out += BUILD_RULES[self.tc][self.ptype.upper()][self.cfg] + '\n\n'
+    return self.Replace(out)
+
+  def BuildObjectList(self):
+    obj_list = self.GetObjectList()
+    sub_str = '$(patsubst %%,%s/%s/%%_%s.o,$(%s_OBJS))' % (
+        self.tc, self.cfg, self.arch['<ARCH>'], self.project.upper())
+    return '%s:=%s\n' % (obj_list, sub_str)
+
+  def GetArches(self):
+    return BUILD_RULES[self.tc]['ARCHES']
+
+  def GetObjectList(self):
+    return '%s_%s_%s_%s_O' % (self.project.upper(), self.tc.upper(),
+                              self.cfg.upper(), self.arch['<ARCH>'])
+
+  def SetArch(self, arch):
+    self.arch = arch
+    for key in arch:
+      self.vars[key] = arch[key]
+
+  def SetConfig(self, config):
+    self.cfg = config
+    self.vars['<config>'] = config
+    self.vars['<CONFIG>'] = config.upper()
+
+  def SetDefines(self, defs):
+    self.defines = defs
+    self.vars['<DEFLIST>'] = self._BuildList('DEFINE', defs)
+
+  def SetIncludes(self, incs):
+    self.includes = incs
+    self.vars['<INCLIST>'] = self._BuildList('INCLUDE', incs)
+
+  def SetLibraries(self, libs):
+    self.libraries = libs
+    self.vars['<LIBLIST>'] = self._BuildList('LIBRARY', libs)
+
+  def SetProject(self, proj, ptype, defs=None, incs=None, libs=None):
+    self.project = proj
+    self.ptype = ptype
+    self.vars['<proj>'] = proj
+    self.vars['<PROJ>'] = proj.upper()
+    self.SetDefines(defs)
+    self.SetIncludes(incs)
+    self.SetLibraries(libs)
+
+  def SetSource(self, src):
+    self.source = source
+    self.vars['<src>'] = src
+
+  def SetToolchain(self, tc):
+    TC = tc.upper()
+    self.vars['<CC>'] = '%s_CC' % TC
+    self.vars['<CXX>'] = '%s_CXX' % TC
+    self.vars['<DUMP>'] = '%s_DUMP' % TC
+    self.vars['<LIB>'] = '%s_LIB' % TC
+    self.vars['<LINK>'] = '%s_LINK' % TC
+    self.vars['<tc>'] = tc
+    self.vars['<TC>'] = TC
+    self.SetDefines(self.defines)
+    self.SetIncludes(self.includes)
+    self.SetLibraries(self.libraries)
+
+  def SetVars(self, **kwargs):
+    # Add other passed in replacements
+    for key in kwargs:
+      self.vars['<%s>' % key] = kwargs[key]
+    self.var_set = kwargs
+
+  def Replace(self, text):
+    return Replace(text, self.vars)
 
 
-def BuildList(tool, key, items):
-  pattern = BUILD_RULES[tool]['TOOL'][key]
-  items = [(pattern % name) for name in items]
-  return ' '.join(items)
-
-def BuildDefineList(tool, defs):
-  return BuildList(tool, 'DEFINE', defs)
-
-
-def BuildIncludeList(tool, includes):
-  return BuildList(tool, 'INCLUDE', includes)
+def Replace(text, replacements):
+  for key in replacements:
+    val = replacements[key]
+    if val is not None:
+      text = text.replace(key, val)
+  return text
 
 
-def BuildLibList(tool, libs):
-  return BuildList(tool, 'LIBRARY', libs)
+def SetVar(varname, values):
+  if not values:
+    return varname + ':=\n'
 
-
-def BuildToolDict(toolchain, project, arch = {}, ext='nexe', **kwargs):
-  tc = toolchain
-  TC = toolchain.upper()
-  proj = project
-  PROJ = proj.upper()
-  EXT = EXT_MAP.get(ext, ext.upper())
-
-  replace = {
-    '<CC>' : '%s_%s' % (TC, EXT),
-    '<DUMP>': '%s_DUMP' % TC,
-    '<ext>' : ext,
-    '<EXT>' : EXT,
-    '<LIB>': '%s_LIB' % TC,
-    '<LINK>': '%s_LINK' % TC,
-    '<proj>': proj,
-    '<PROJ>': PROJ,
-    '<TAB>': '\t',
-    '<tc>' : tc,
-    '<TC>' : TC
-  }
-
-  # Add replacements for this platform/architecture
-  for key in arch:
-    replace[key] = arch[key]
-
-  # Add other passed in replacements
-  for key in kwargs:
-    replace['<%s>' % key] = kwargs[key]
-
-  if '<OBJS>' not in replace:
-    if replace.get('<ARCH>', ''):
-      replace['<OBJS>'] = '%s_%s_%s_%s_O' % (TC, PROJ, replace['<ARCH>'], EXT)
+  line = varname + ':='
+  out = ''
+  for value in values:
+    if len(line) + len(value) > 78:
+      out += line[:-1] + '\n'
+      line = '%s+=%s ' % (varname, value)
     else:
-      replace['<OBJS>'] = '%s_%s_%s_O' % (TC, PROJ, EXT)
-  return replace
+      line += value + ' '
 
+  if line:
+    out += line[:-1] + '\n'
+  return out
+
+
+def GenerateCleanRules(tools, configs):
+  rules = '#\n# Target to remove temporary files\n#\n.PHONY: clean\nclean:\n'
+  for tc in tools:
+    for cfg in configs:
+      rules += '\t$(RM) -fr %s/%s\n' % (tc, cfg)
+  return rules + '\n'
+
+
+def GenerateNMFRules(tc, main, dlls, cfg, arches):
+  target = BUILD_RULES[tc]['TOOL']['NMFMAIN']
+  dll_target = BUILD_RULES[tc]['TOOL']['SO']
+  nmf_targets = []
+
+  for arch in arches:
+    replace = {
+      '<ARCH>' : arch['<ARCH>'],
+      '<config>' : cfg,
+      '<DUMP>' : '%s_DUMP' % tc.upper(),
+      '<TAB>' : '\t',
+      '<tc>' : tc
+    }
+    for dll in dlls:
+      replace['<proj>'] = dll
+      nmf_targets.append(Replace(dll_target, replace))
+    replace['<proj>'] = main
+    nmf_targets.append(Replace(target, replace))
+
+  replace['<NMF_TARGETS>'] = ' '.join(nmf_targets)
+  rules = Replace(BUILD_RULES[tc]['NMF'], replace)
+  return '\nALL_TARGETS+=%s/%s/%s.nmf' % (tc, cfg, main) + rules + '\n'
