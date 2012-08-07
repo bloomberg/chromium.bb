@@ -73,7 +73,7 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
 
   std::vector<FilePath> user_data_paths;
   product->GetUserDataPaths(&user_data_paths);
-  EXPECT_LE(static_cast<size_t>(1), user_data_paths.size());
+  EXPECT_GE(user_data_paths.size(), static_cast<size_t>(1));
   const FilePath& user_data = user_data_paths[0];
   EXPECT_FALSE(user_data_paths[0].empty());
   EXPECT_NE(std::wstring::npos,
