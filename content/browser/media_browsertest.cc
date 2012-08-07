@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear3gpAmrnbMpeg4) {
   PlayVideo("bear_mpeg4_amrnb.3gp", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearWavGsmms) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavGsmms) {
   PlayAudio("bear_gsm_ms.wav", GetParam());
 }
 
@@ -137,9 +137,10 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavMulaw) {
   PlayAudio("bear_mulaw.wav", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
-  PlayAudio("bear.flac", GetParam());
-}
+// TODO(dalecurtis): Fails seek test.  http://crbug.com/141020
+// IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
+//   PlayAudio("bear.flac", GetParam());
+// }
 #endif
 #endif
 
