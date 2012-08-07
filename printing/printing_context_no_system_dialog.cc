@@ -52,7 +52,7 @@ PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {
   int32_t height = 0;
   UErrorCode error = U_ZERO_ERROR;
   ulocdata_getPaperSize(app_locale_.c_str(), &height, &width, &error);
-  if (error != U_ZERO_ERROR) {
+  if (error > U_ZERO_ERROR) {
     // If the call failed, assume a paper size of 8.5 x 11 inches.
     LOG(WARNING) << "ulocdata_getPaperSize failed, using 8.5 x 11, error: "
                  << error;
