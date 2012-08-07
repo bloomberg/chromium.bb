@@ -103,7 +103,15 @@ TabContents* DevToolsWindow::GetDevToolsContents(WebContents* inspected_tab) {
 
 // static
 bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
-  return AsDevToolsWindow(window_rvh) != NULL;
+  if (g_instances == NULL)
+    return false;
+  DevToolsWindowList& instances = g_instances.Get();
+  for (DevToolsWindowList::iterator it = instances.begin();
+       it != instances.end(); ++it) {
+    if ((*it)->tab_contents_->web_contents()->GetRenderViewHost() == window_rvh)
+      return true;
+  }
+  return false;
 }
 
 // static
@@ -608,14 +616,6 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     RenderViewHost* inspected_rvh,
     bool force_open,
     DevToolsToggleAction action) {
-  if (!force_open) {
-    DevToolsWindow* currentDevToolsWindow = AsDevToolsWindow(inspected_rvh);
-    if (currentDevToolsWindow) {
-      chrome::CloseAllTabs(currentDevToolsWindow->browser());
-      return currentDevToolsWindow;
-    }
-  }
-
   DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
       inspected_rvh);
   DevToolsManager* manager = DevToolsManager::GetInstance();
@@ -658,19 +658,6 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
     if ((*it)->frontend_host_ == client_host)
-      return *it;
-  }
-  return NULL;
-}
-
-// static
-DevToolsWindow* DevToolsWindow::AsDevToolsWindow(RenderViewHost* rvh) {
-  if (g_instances == NULL)
-    return NULL;
-  DevToolsWindowList& instances = g_instances.Get();
-  for (DevToolsWindowList::iterator it = instances.begin();
-       it != instances.end(); ++it) {
-    if ((*it)->tab_contents_->web_contents()->GetRenderViewHost() == rvh)
       return *it;
   }
   return NULL;

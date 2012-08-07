@@ -220,10 +220,6 @@ const char kCrashOnHangThreads[]            = "crash-on-hang-threads";
 //                          other threads are not responsive.
 const char kCrashOnLive[]                   = "crash-on-live";
 
-// Enables recursive devtools frontend debugging by enforcing the
-// "Inspect Element" context menu item in devtools windows.
-const char kDebugDevTools[]                 = "debug-devtools";
-
 // Path to the inspector files on disk (allows reloading of devtool files
 // without having to restart the browser).
 const char kDebugDevToolsFrontend[]         = "debug-devtools-frontend";

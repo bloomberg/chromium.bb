@@ -132,7 +132,6 @@ class DevToolsWindow : private content::NotificationObserver,
       bool force_open,
       DevToolsToggleAction action);
   static DevToolsWindow* AsDevToolsWindow(content::DevToolsClientHost*);
-  static DevToolsWindow* AsDevToolsWindow(content::RenderViewHost*);
 
   // content::DevToolsClientHandlerDelegate overrides.
   virtual void ActivateWindow() OVERRIDE;

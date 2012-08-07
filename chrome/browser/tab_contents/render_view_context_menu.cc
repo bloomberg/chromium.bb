@@ -730,8 +730,7 @@ void RenderViewContextMenu::AppendDeveloperItems() {
   bool show_developer_items = !IsDevToolsURL(params_.page_url);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDebugDevToolsFrontend) ||
-      command_line.HasSwitch(switches::kDebugDevTools))
+  if (command_line.HasSwitch(switches::kDebugDevToolsFrontend))
     show_developer_items = true;
 
 #if defined(DEBUG_DEVTOOLS)
