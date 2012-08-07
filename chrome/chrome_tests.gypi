@@ -3813,6 +3813,7 @@
         'browser/sync/test/integration/autofill_helper.h',
         'browser/sync/test/integration/bookmarks_helper.cc',
         'browser/sync/test/integration/bookmarks_helper.h',
+        'browser/sync/test/integration/cross_platform_sync_test.cc',
         'browser/sync/test/integration/enable_disable_test.cc',
         'browser/sync/test/integration/extension_settings_helper.cc',
         'browser/sync/test/integration/extension_settings_helper.h',
