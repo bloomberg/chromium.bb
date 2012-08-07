@@ -289,6 +289,21 @@ Luckily, Google and a few other companies have been working on an <a href="http:
   'app_name': 'My Google Docs Extension'
 });
 </pre>
+<p>
+To use the OAuth library,
+you must declare the "tabs" permision in the
+<a href="http://code.google.com/chrome/extensions/manifest.html">extension manifest</a>.
+You must also declare the sites you are using
+including the request URL, the authorize URL, access URL,
+and, if necessary, the scope URL.
+For example:
+</p>
+<pre>"permissions": [ "tabs", "https://docs.google.com/feeds/*",
+  "https://www.google.com/accounts/OAuthGetRequestToken",
+  "https://www.google.com/accounts/OAuthAuthorizeToken",
+  "https://www.google.com/accounts/OAuthGetAccessToken"
+]
+</pre>
 <h3 id="request-token">Fetching and authorizing a request token</h3>
 <p>
 Once you have your background page set up, call the <code>authorize()</code> function to begin the OAuth dance and redirect the user to the OAuth provider. The client library abstracts most of this process, so all you need to do is pass a callback to the <code>authorize()</code> function, and a new tab will open and redirect the user.
