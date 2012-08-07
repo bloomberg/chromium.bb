@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 
+#include <math.h>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -747,11 +748,103 @@ void RenderWidgetHostImpl::EnableFullAccessibilityMode() {
   SetAccessibilityMode(AccessibilityModeComplete);
 }
 
+static WebGestureEvent MakeGestureEvent(WebInputEvent::Type type,
+                                        double timestamp_seconds,
+                                        int x,
+                                        int y,
+                                        float delta_x,
+                                        float delta_y,
+                                        int modifiers) {
+  WebGestureEvent result;
+
+  result.type = type;
+  result.x = x;
+  result.y = y;
+  result.deltaX = delta_x;
+  result.deltaY = delta_y;
+  result.timeStampSeconds = timestamp_seconds;
+  result.modifiers = modifiers;
+
+  return result;
+}
+
+void RenderWidgetHostImpl::SimulateTouchGestureWithMouse(
+    const WebMouseEvent& mouse_event) {
+  int x = mouse_event.x, y = mouse_event.y;
+  float dx = mouse_event.movementX, dy = mouse_event.movementY;
+  static int startX = 0, startY = 0;
+
+  switch (mouse_event.button) {
+    case WebMouseEvent::ButtonLeft:
+      if (mouse_event.type == WebInputEvent::MouseDown) {
+        startX = x;
+        startY = y;
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollBegin, mouse_event.timeStampSeconds,
+            x, y, 0, 0, 0));
+      }
+      if (dx != 0 || dy != 0) {
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollUpdate, mouse_event.timeStampSeconds,
+            x, y, dx, dy, 0));
+      }
+      if (mouse_event.type == WebInputEvent::MouseUp) {
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureScrollEnd, mouse_event.timeStampSeconds,
+            x, y, dx, dy, 0));
+      }
+      break;
+    case WebMouseEvent::ButtonMiddle:
+      if (mouse_event.type == WebInputEvent::MouseDown) {
+        startX = x;
+        startY = y;
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureTapDown, mouse_event.timeStampSeconds,
+            x, y, 0, 0, 0));
+      }
+      if (mouse_event.type == WebInputEvent::MouseUp) {
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GestureTap, mouse_event.timeStampSeconds,
+            x, y, dx, dy, 0));
+      }
+      break;
+    case WebMouseEvent::ButtonRight:
+      if (mouse_event.type == WebInputEvent::MouseDown) {
+        startX = x;
+        startY = y;
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GesturePinchBegin, mouse_event.timeStampSeconds,
+            x, y, 1, 1, 0));
+      }
+      if (dx != 0 || dy != 0) {
+        dx = pow(dy < 0 ? 0.998f : 1.002f, fabs(dy));
+        dy = dx;
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GesturePinchUpdate, mouse_event.timeStampSeconds,
+            startX, startY, dx, dy, 0));
+      }
+      if (mouse_event.type == WebInputEvent::MouseUp) {
+        ForwardGestureEvent(MakeGestureEvent(
+            WebInputEvent::GesturePinchEnd, mouse_event.timeStampSeconds,
+            x, y, dx, dy, 0));
+      }
+      break;
+    case WebMouseEvent::ButtonNone:
+      break;
+  }
+}
+
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   TRACE_EVENT2("renderer_host", "RenderWidgetHostImpl::ForwardMouseEvent",
                "x", mouse_event.x, "y", mouse_event.y);
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSimulateTouchScreenWithMouse)) {
+    SimulateTouchGestureWithMouse(mouse_event);
+    return;
+  }
 
   // Avoid spamming the renderer with mouse move events.  It is important
   // to note that WM_MOUSEMOVE events are anyways synthetic, but since our

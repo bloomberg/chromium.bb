@@ -587,6 +587,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // previously queued coalesced gesture if it exists.
   void ProcessGestureAck(bool processed, int type);
 
+  void SimulateTouchGestureWithMouse(const WebKit::WebMouseEvent& mouse_event);
+
   // Called on OnMsgInputEventAck() to process a touch event ack message.
   // This can result in a gesture event being generated and sent back to the
   // renderer.
