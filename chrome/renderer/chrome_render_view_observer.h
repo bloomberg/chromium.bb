@@ -66,7 +66,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidChangeIcon(WebKit::WebFrame* frame,
                              WebKit::WebIconURL::Type icon_type) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
@@ -184,9 +183,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // Decodes a data: URL image or returns an empty image in case of failure.
   SkBitmap ImageFromDataUrl(const GURL&) const;
-
-  // Collects favicons of given types from the frame and sends UpdateFaviconURL.
-  void CollectAndUpdateFaviconURLs(WebKit::WebFrame* frame, int icon_types);
 
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
