@@ -361,7 +361,7 @@ requests if and only if all listed criteria are met. The following
 </p>
 <pre>var matcher = new chrome.declarativeWebRequest.RequestMatcher({
   url: { hostSuffix: 'example.com', schemes: ['http'] },
-  resourceType: 'main_frame'
+  resourceType: ['main_frame']
   });
 </pre>
 <p>
@@ -799,6 +799,36 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
               </em>
           </dt>
           <dd>Matches if the MIME media type of a response (from the HTTP Content-Type header) is contained in the list.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>excludeContentType</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the MIME media type of a response (from the HTTP Content-Type header) is <em>not</em> contained in the list.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

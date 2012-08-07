@@ -29,6 +29,12 @@
             "description": "Matches if the MIME media type of a response (from the HTTP Content-Type header) is contained in the list.",
             "items": { "type": "string" }
           },
+          "excludeContentType": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if the MIME media type of a response (from the HTTP Content-Type header) is <em>not</em> contained in the list.",
+            "items": { "type": "string" }
+          },
           "instanceType": {
             "type": "string", "enum": ["declarativeWebRequest.RequestMatcher"],
             "nodoc": true

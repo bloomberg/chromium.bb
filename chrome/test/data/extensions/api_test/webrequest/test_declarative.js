@@ -104,7 +104,8 @@ runTests([
                  'schemes': ["http"]
              },
              'resourceType': ["main_frame"],
-             'contentType': ["text/html"]})],
+             'contentType': ["text/html"],
+             'excludeContentType': ["image/png"]})],
          'actions': [new CancelRequest()]}
       ],
       function() {navigateAndWait(getURLHttpWithHeaders());}

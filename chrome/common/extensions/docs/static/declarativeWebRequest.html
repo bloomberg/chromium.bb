@@ -49,7 +49,7 @@ requests if and only if all listed criteria are met. The following
 <pre>
 var matcher = new chrome.declarativeWebRequest.RequestMatcher({
   url: { hostSuffix: 'example.com', schemes: ['http'] },
-  resourceType: 'main_frame'
+  resourceType: ['main_frame']
   });
 </pre>
 

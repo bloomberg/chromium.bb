@@ -124,9 +124,11 @@ class WebRequestConditionAttributeContentType
 
  private:
   explicit WebRequestConditionAttributeContentType(
-      const std::vector<std::string>& content_types);
+      const std::vector<std::string>& include_content_types,
+      bool inclusive);
 
   std::vector<std::string> content_types_;
+  bool inclusive_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeContentType);
 };

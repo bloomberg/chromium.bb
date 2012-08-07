@@ -62,7 +62,7 @@ TEST(WebRequestConditionAttributeTest, CreateConditionAttribute) {
             result->GetType());
 }
 
-TEST(WebRequestConditionAttributeTest, TestResourceType) {
+TEST(WebRequestConditionAttributeTest, ResourceType) {
   // Necessary for TestURLRequest.
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
@@ -91,7 +91,7 @@ TEST(WebRequestConditionAttributeTest, TestResourceType) {
       WebRequestRule::RequestData(&url_request_fail, ON_BEFORE_REQUEST)));
 }
 
-TEST(WebRequestConditionAttributeTest, TestContentType) {
+TEST(WebRequestConditionAttributeTest, ContentType) {
   // Necessary for TestURLRequest.
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
@@ -114,28 +114,44 @@ TEST(WebRequestConditionAttributeTest, TestContentType) {
 
   ListValue content_types;
   content_types.Append(Value::CreateStringValue("text/html"));
-  scoped_ptr<WebRequestConditionAttribute> attribute_ok =
+  scoped_ptr<WebRequestConditionAttribute> attribute_include =
       WebRequestConditionAttribute::Create(
           keys::kContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
-  ASSERT_TRUE(attribute_ok.get());
-
-  EXPECT_FALSE(attribute_ok->IsFulfilled(
+  ASSERT_TRUE(attribute_include.get());
+  EXPECT_FALSE(attribute_include->IsFulfilled(
       WebRequestRule::RequestData(&url_request, ON_BEFORE_REQUEST,
                                   url_request.response_headers())));
-  EXPECT_TRUE(attribute_ok->IsFulfilled(
+  EXPECT_TRUE(attribute_include->IsFulfilled(
+      WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
+                                  url_request.response_headers())));
+
+  scoped_ptr<WebRequestConditionAttribute> attribute_exclude =
+      WebRequestConditionAttribute::Create(
+          keys::kExcludeContentTypeKey, &content_types, &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(attribute_exclude.get());
+  EXPECT_FALSE(attribute_exclude->IsFulfilled(
       WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
                                   url_request.response_headers())));
 
   content_types.Clear();
   content_types.Append(Value::CreateStringValue("something/invalid"));
-  scoped_ptr<WebRequestConditionAttribute> attribute_fail =
+  scoped_ptr<WebRequestConditionAttribute> attribute_unincluded =
       WebRequestConditionAttribute::Create(
           keys::kContentTypeKey, &content_types, &error);
   EXPECT_EQ("", error);
-  ASSERT_TRUE(attribute_fail.get());
+  ASSERT_TRUE(attribute_unincluded.get());
+  EXPECT_FALSE(attribute_unincluded->IsFulfilled(
+      WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
+                                  url_request.response_headers())));
 
-  EXPECT_FALSE(attribute_fail->IsFulfilled(
+  scoped_ptr<WebRequestConditionAttribute> attribute_unexcluded =
+      WebRequestConditionAttribute::Create(
+          keys::kExcludeContentTypeKey, &content_types, &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(attribute_unexcluded.get());
+  EXPECT_TRUE(attribute_unexcluded->IsFulfilled(
       WebRequestRule::RequestData(&url_request, ON_HEADERS_RECEIVED,
                                   url_request.response_headers())));
 }

@@ -144,8 +144,10 @@ WebRequestConditionAttributeResourceType::GetType() const {
 
 WebRequestConditionAttributeContentType::
 WebRequestConditionAttributeContentType(
-    const std::vector<std::string>& content_types)
-    : content_types_(content_types) {}
+    const std::vector<std::string>& content_types,
+    bool inclusive)
+    : content_types_(content_types),
+      inclusive_(inclusive) {}
 
 WebRequestConditionAttributeContentType::
 ~WebRequestConditionAttributeContentType() {}
@@ -153,7 +155,8 @@ WebRequestConditionAttributeContentType::
 // static
 bool WebRequestConditionAttributeContentType::IsMatchingType(
     const std::string& instance_type) {
-  return instance_type == keys::kContentTypeKey;
+  return instance_type == keys::kContentTypeKey ||
+      instance_type == keys::kExcludeContentTypeKey;
 }
 
 // static
@@ -162,27 +165,27 @@ WebRequestConditionAttributeContentType::Create(
       const std::string& name,
       const base::Value* value,
       std::string* error) {
-  std::vector<std::string> content_types;
+  DCHECK(IsMatchingType(name));
 
   const ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
-                                                     keys::kContentTypeKey);
+    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
   }
-
+  std::vector<std::string> content_types;
   for (ListValue::const_iterator it = value_as_list->begin();
        it != value_as_list->end(); ++it) {
     std::string content_type;
     if (!(*it)->GetAsString(&content_type)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue,
-                                                       keys::kContentTypeKey);
+      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
       return scoped_ptr<WebRequestConditionAttribute>(NULL);
     }
     content_types.push_back(content_type);
   }
+
   return scoped_ptr<WebRequestConditionAttribute>(
-      new WebRequestConditionAttributeContentType(content_types));
+      new WebRequestConditionAttributeContentType(
+          content_types, name == keys::kContentTypeKey));
 }
 
 int WebRequestConditionAttributeContentType::GetStages() const {
@@ -202,8 +205,13 @@ bool WebRequestConditionAttributeContentType::IsFulfilled(
   net::HttpUtil::ParseContentType(
       content_type, &mime_type, &charset, &had_charset, NULL);
 
-  return std::find(content_types_.begin(), content_types_.end(),
-                   mime_type) != content_types_.end();
+  if (inclusive_) {
+    return std::find(content_types_.begin(), content_types_.end(),
+                     mime_type) != content_types_.end();
+  } else {
+    return std::find(content_types_.begin(), content_types_.end(),
+                     mime_type) == content_types_.end();
+  }
 }
 
 WebRequestConditionAttribute::Type

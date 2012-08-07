@@ -18,6 +18,7 @@ extern const char kCookieKey[];
 extern const char kContentTypeKey[];
 extern const char kDirectionKey[];
 extern const char kDomainKey[];
+extern const char kExcludeContentTypeKey[];
 extern const char kExpiresKey[];
 extern const char kFilterKey[];
 extern const char kFromKey[];
