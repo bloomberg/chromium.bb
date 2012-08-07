@@ -2951,8 +2951,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)insertText:(id)string {
-  // This is a method on NSTextInput, not NSTextInputClient. But on 10.5, this
-  // gets called anyway. Forward to the right method. http://crbug.com/47890
   [self insertText:string replacementRange:NSMakeRange(NSNotFound, 0)];
 }
 
