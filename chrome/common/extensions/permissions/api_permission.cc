@@ -117,9 +117,6 @@ void APIPermission::RegisterAllPermissions(
     { kTtsEngine, "ttsEngine", kFlagCannotBeOptional,
       IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
       PermissionMessage::kTtsEngine },
-    { kUsb, "usb", kFlagNone,
-      IDS_EXTENSION_PROMPT_WARNING_USB,
-      PermissionMessage::kNone },
     { kWebNavigation, "webNavigation", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_TABS, PermissionMessage::kTabs },
     { kWebRequest, "webRequest" },
@@ -157,6 +154,7 @@ void APIPermission::RegisterAllPermissions(
       PermissionMessage::kFullAccess },
 
     // Platform-app permissions.
+    { kSerial, "serial", kFlagCannotBeOptional },
     { kSocket, "socket", kFlagCannotBeOptional },
     { kAppWindow, "app.window" },
     { kAudioCapture, "audioCapture", kFlagNone,

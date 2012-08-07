@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const serial = chrome.serial;
+
 // TODO(miket): opening Bluetooth ports on OSX is unreliable. Investigate.
 function shouldSkipPort(portName) {
   return portName.match(/[Bb]luetooth/);
@@ -33,34 +35,31 @@ var testSerial = function() {
   var doNextOperation = function() {
     switch (operation++) {
       case 0:
-      chrome.experimental.serial.getPorts(onGetPorts);
+      serial.getPorts(onGetPorts);
       break;
       case 1:
       var bitrate = 57600;
       console.log('Opening serial device ' + serialPort + ' at ' +
                   bitrate + ' bps.');
-      chrome.experimental.serial.open(serialPort, {bitrate: bitrate},
-                                      onOpen);
+      serial.open(serialPort, {bitrate: bitrate}, onOpen);
       break;
       case 2:
-      chrome.experimental.serial.setControlSignals(
-          connectionId, {dtr: true}, onSetControlSignals);
+      serial.setControlSignals(connectionId, {dtr: true}, onSetControlSignals);
       break;
       case 3:
-      chrome.experimental.serial.getControlSignals(connectionId,
-                                                   onGetControlSignals);
+      serial.getControlSignals(connectionId,onGetControlSignals);
       break;
       case 4:
-      chrome.experimental.serial.write(connectionId, writeBuffer, onWrite);
+      serial.write(connectionId, writeBuffer, onWrite);
       break;
       case 5:
-      chrome.experimental.serial.read(connectionId, bytesToRead, onRead);
+      serial.read(connectionId, bytesToRead, onRead);
       break;
       case 6:
-      chrome.experimental.serial.flush(connectionId, onFlush);
+      serial.flush(connectionId, onFlush);
       break;
       case 50:  // GOTO 4 EVER
-      chrome.experimental.serial.close(connectionId, onClose);
+      serial.close(connectionId, onClose);
       break;
       default:
       // Beware! If you forget to assign a case for your next test, the whole
@@ -94,9 +93,8 @@ var testSerial = function() {
     bytesToRead -= readInfo.bytesRead;
     var readBufferIndex = bufferLength - readInfo.bytesRead;
     var messageUint8View = new Uint8Array(readInfo.data);
-    for (var i = 0; i < readInfo.bytesRead; i++) {
+    for (var i = 0; i < readInfo.bytesRead; i++)
       readBufferUint8View[i + readBufferIndex] = messageUint8View[i];
-    }
     if (bytesToRead == 0) {
       chrome.test.assertEq(writeBufferUint8View, readBufferUint8View,
                            'Buffer read was not equal to buffer written.');

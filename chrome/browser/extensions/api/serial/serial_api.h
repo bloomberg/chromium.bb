@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/common/extensions/api/experimental_serial.h"
+#include "chrome/common/extensions/api/serial.h"
 #include "net/base/io_buffer.h"
 
 namespace extensions {
@@ -35,7 +35,7 @@ class SerialAsyncApiFunction : public AsyncApiFunction {
 
 class SerialGetPortsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.getPorts")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.getPorts")
 
   SerialGetPortsFunction();
 
@@ -50,7 +50,7 @@ class SerialGetPortsFunction : public SerialAsyncApiFunction {
 
 class SerialOpenFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.open")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.open")
 
   SerialOpenFunction();
 
@@ -71,7 +71,7 @@ class SerialOpenFunction : public SerialAsyncApiFunction {
   virtual bool DoesPortExist(const std::string& port);
 
  private:
-  scoped_ptr<api::experimental_serial::Open::Params> params_;
+  scoped_ptr<api::serial::Open::Params> params_;
   int src_id_;
   int bitrate_;
 
@@ -81,7 +81,7 @@ class SerialOpenFunction : public SerialAsyncApiFunction {
 
 class SerialCloseFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.close")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.close")
 
   SerialCloseFunction();
 
@@ -94,12 +94,12 @@ class SerialCloseFunction : public SerialAsyncApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_serial::Close::Params> params_;
+  scoped_ptr<api::serial::Close::Params> params_;
 };
 
 class SerialReadFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.read")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.read")
 
   SerialReadFunction();
 
@@ -112,12 +112,12 @@ class SerialReadFunction : public SerialAsyncApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_serial::Read::Params> params_;
+  scoped_ptr<api::serial::Read::Params> params_;
 };
 
 class SerialWriteFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.write")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.write")
 
   SerialWriteFunction();
 
@@ -130,14 +130,14 @@ class SerialWriteFunction : public SerialAsyncApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_serial::Write::Params> params_;
+  scoped_ptr<api::serial::Write::Params> params_;
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t io_buffer_size_;
 };
 
 class SerialFlushFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.flush")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.flush")
 
   SerialFlushFunction();
 
@@ -150,12 +150,12 @@ class SerialFlushFunction : public SerialAsyncApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_serial::Flush::Params> params_;
+  scoped_ptr<api::serial::Flush::Params> params_;
 };
 
 class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.getControlSignals")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.getControlSignals")
 
   SerialGetControlSignalsFunction();
 
@@ -168,13 +168,13 @@ class SerialGetControlSignalsFunction : public SerialAsyncApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_serial::GetControlSignals::Params> params_;
+  scoped_ptr<api::serial::GetControlSignals::Params> params_;
   bool api_response_;
 };
 
 class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.setControlSignals")
+  DECLARE_EXTENSION_FUNCTION_NAME("serial.setControlSignals")
 
   SerialSetControlSignalsFunction();
 
@@ -187,7 +187,7 @@ class SerialSetControlSignalsFunction : public SerialAsyncApiFunction {
   virtual bool Respond() OVERRIDE;
 
  private:
-  scoped_ptr<api::experimental_serial::SetControlSignals::Params> params_;
+  scoped_ptr<api::serial::SetControlSignals::Params> params_;
 };
 
 }  // namespace extensions

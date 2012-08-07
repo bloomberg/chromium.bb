@@ -236,7 +236,7 @@
     "min_manifest_version": 2
   },
   "serial": {
-    "channel": "stable",
+    "channel": "dev",
     "extension_types": ["platform_app"]
   },
   "socket": {
@@ -282,10 +282,6 @@
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
-  },
-  "usb": {
-    "channel": "stable",
-    "extension_types": ["platform_app"]
   },
   "videoCapture": {
     "channel": "stable",

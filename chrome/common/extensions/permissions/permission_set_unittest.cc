@@ -608,8 +608,8 @@ TEST(PermissionsTest, PermissionMessages) {
 
   // Platform apps. TODO(miket): must we skip?
   skip.insert(APIPermission::kFileSystem);
+  skip.insert(APIPermission::kSerial);
   skip.insert(APIPermission::kSocket);
-  skip.insert(APIPermission::kUsb);
 
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet permissions = info->GetAll();

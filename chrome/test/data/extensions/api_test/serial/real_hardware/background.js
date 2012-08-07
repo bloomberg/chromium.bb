@@ -16,7 +16,7 @@ var testGetPorts = function() {
     chrome.test.succeed();
   }
 
-  chrome.experimental.serial.getPorts(onGetPorts);
+  chrome.serial.getPorts(onGetPorts);
 };
 
 var testMaybeOpenPort = function() {
@@ -44,7 +44,7 @@ var testMaybeOpenPort = function() {
       var onOpen = function(connectionInfo) {
         var id = connectionInfo.connectionId;
         if (id > 0)
-          chrome.experimental.serial.close(id, onClose);
+          chrome.serial.close(id, onClose);
         else
           onFinishedWithPort();
       };
@@ -56,7 +56,7 @@ var testMaybeOpenPort = function() {
           onFinishedWithPort();
         } else {
           console.log("Opening serial device " + port);
-          chrome.experimental.serial.open(port, onOpen);
+          chrome.serial.open(port, onOpen);
         }
       }
 
@@ -67,7 +67,7 @@ var testMaybeOpenPort = function() {
     }
   }
 
-  chrome.experimental.serial.getPorts(onGetPorts);
+  chrome.serial.getPorts(onGetPorts);
 };
 
 var tests = [testGetPorts, testMaybeOpenPort];

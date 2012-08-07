@@ -9,7 +9,6 @@
     }
   },
   "permissions": [
-    "experimental",
-    "dns"
+    "experimental"
   ]
 }

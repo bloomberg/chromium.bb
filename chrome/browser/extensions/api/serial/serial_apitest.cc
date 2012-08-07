@@ -172,10 +172,10 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
 
 #if SIMULATE_SERIAL_PORTS
   ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-      "experimental.serial.getPorts",
+      "serial.getPorts",
       FakeSerialGetPortsFunctionFactory));
   ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-      "experimental.serial.open",
+      "serial.open",
       FakeSerialOpenFunctionFactory));
 #endif
 

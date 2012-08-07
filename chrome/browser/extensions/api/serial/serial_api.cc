@@ -89,7 +89,7 @@ SerialOpenFunction::~SerialOpenFunction() {
 bool SerialOpenFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::experimental_serial::Open::Params::Create(*args_);
+  params_ = api::serial::Open::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   if (params_->options.get()) {
@@ -166,7 +166,7 @@ SerialCloseFunction::~SerialCloseFunction() {
 bool SerialCloseFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::experimental_serial::Close::Params::Create(*args_);
+  params_ = api::serial::Close::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   return true;
@@ -197,7 +197,7 @@ SerialReadFunction::~SerialReadFunction() {
 bool SerialReadFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::experimental_serial::Read::Params::Create(*args_);
+  params_ = api::serial::Read::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   if (params_->bytes_to_read <= 0 || params_->bytes_to_read >= 1024 * 1024) {
     error_ = kSerialReadInvalidBytesToRead;
@@ -242,7 +242,7 @@ SerialWriteFunction::~SerialWriteFunction() {
 bool SerialWriteFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::experimental_serial::Write::Params::Create(*args_);
+  params_ = api::serial::Write::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   io_buffer_size_ = params_->data.size();
@@ -277,7 +277,7 @@ SerialFlushFunction::~SerialFlushFunction() {
 bool SerialFlushFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::experimental_serial::Flush::Params::Create(*args_);
+  params_ = api::serial::Flush::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -307,7 +307,7 @@ SerialGetControlSignalsFunction::~SerialGetControlSignalsFunction() {
 bool SerialGetControlSignalsFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::experimental_serial::GetControlSignals::Params::Create(
+  params_ = api::serial::GetControlSignals::Params::Create(
       *args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
@@ -347,7 +347,7 @@ SerialSetControlSignalsFunction::~SerialSetControlSignalsFunction() {
 bool SerialSetControlSignalsFunction::Prepare() {
   set_work_thread_id(BrowserThread::FILE);
 
-  params_ = api::experimental_serial::SetControlSignals::Params::Create(
+  params_ = api::serial::SetControlSignals::Params::Create(
       *args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
