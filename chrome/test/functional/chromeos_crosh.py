@@ -58,6 +58,29 @@ class CroshTest(pyauto.PyUITest):
     self.assertEqual(node['name'], name)
     self.assertEqual(url.spec(), node['url'])
 
+  def testMultipleWindowCrosh(self):
+    """Test that crosh can be opened in multiple windows."""
+    test_utils.OpenCroshVerification(self)
+
+    for windex in range (1, 4):  # 3 new windows
+      self.OpenNewBrowserWindow(True)
+      self.OpenCrosh()
+      self.assertEqual('crosh', self.GetActiveTabTitle())
+
+      # Verify crosh prompt.
+      self.WaitForHtermText(text='crosh> ', tab_index=1, windex=windex,
+          msg='Could not find "crosh> " prompt')
+      self.assertTrue(
+        self.GetHtermRowsText(start=0, end=2, tab_index=1,
+                              windex=windex).endswith('crosh> '),
+        msg='Could not find "crosh> " prompt')
+
+      # Exit crosh.
+      self.SendKeysToHterm('exit\\n', tab_index=1, windex=windex)
+      self.WaitForHtermText(text='command crosh completed with exit code 0',
+          tab_index=1, windex=windex,
+          msg='Could not exit crosh.')
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
