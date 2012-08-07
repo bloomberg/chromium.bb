@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -86,6 +87,9 @@ void PageActionController::NotifyChange() {
 void PageActionController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  if (details.is_in_page)
+    return;
+
   const std::vector<ExtensionAction*> current_actions = GetCurrentActions();
 
   if (current_actions.empty())
