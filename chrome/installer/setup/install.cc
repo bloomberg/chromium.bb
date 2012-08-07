@@ -392,7 +392,7 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
   AddChromeToMediaPlayerList();
 
   // Make Chrome the default browser if desired when possible. Otherwise, only
-  // register it for shell integration.
+  // register it with Windows.
   BrowserDistribution* dist = product.distribution();
   const string16 chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe).value());

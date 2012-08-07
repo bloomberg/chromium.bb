@@ -124,6 +124,9 @@ class ShellUtil {
   // Registry value name for the DelegateExecute verb handler.
   static const wchar_t* kRegDelegateExecute;
 
+  // Registry value name for the OpenWithProgids entry for file associations.
+  static const wchar_t* kRegOpenWithProgids;
+
   // Returns true if |chrome_exe| is registered in HKLM with |suffix|.
   // Note: This only checks one deterministic key in HKLM for |chrome_exe| and
   // doesn't otherwise validate a full Chrome install in HKLM.

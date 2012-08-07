@@ -592,19 +592,19 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   // For user-level installs we now only write these entries in HKCU, but since
   // old installs did install them to HKLM we will try to remove them in HKLM as
   // well anyways.
-  string16 html_prog_id(ShellUtil::kRegClasses);
-  html_prog_id.push_back(FilePath::kSeparators[0]);
-  html_prog_id.append(ShellUtil::kChromeHTMLProgId);
-  html_prog_id.append(browser_entry_suffix);
-  InstallUtil::DeleteRegistryKey(root, html_prog_id);
+  const string16 prog_id(ShellUtil::kChromeHTMLProgId + browser_entry_suffix);
+  string16 reg_prog_id(ShellUtil::kRegClasses);
+  reg_prog_id.push_back(FilePath::kSeparators[0]);
+  reg_prog_id.append(prog_id);
+  InstallUtil::DeleteRegistryKey(root, reg_prog_id);
 
   // Delete Software\Classes\Chrome (Same comment as above applies for this too)
-  string16 chrome_app_id(ShellUtil::kRegClasses);
-  chrome_app_id.push_back(FilePath::kSeparators[0]);
+  string16 reg_app_id(ShellUtil::kRegClasses);
+  reg_app_id.push_back(FilePath::kSeparators[0]);
   // Append the requested suffix manually here (as ShellUtil::GetBrowserModelId
   // would otherwise try to figure out the currently installed suffix).
-  chrome_app_id.append(dist->GetBaseAppId() + browser_entry_suffix);
-  InstallUtil::DeleteRegistryKey(root, chrome_app_id);
+  reg_app_id.append(dist->GetBaseAppId() + browser_entry_suffix);
+  InstallUtil::DeleteRegistryKey(root, reg_app_id);
 
   // Delete all Start Menu Internet registrations that refer to this Chrome.
   {
@@ -644,7 +644,8 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   InstallUtil::DeleteRegistryValue(root, ShellUtil::kRegRegisteredApplications,
       dist->GetBaseAppName() + browser_entry_suffix);
 
-  // Delete Software\Classes\Applications\chrome.exe
+  // Delete the App Paths and Applications keys that let Explorer find Chrome:
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
   string16 app_key(ShellUtil::kRegClasses);
   app_key.push_back(FilePath::kSeparators[0]);
   app_key.append(L"Applications");
@@ -652,23 +653,31 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   app_key.append(installer::kChromeExe);
   InstallUtil::DeleteRegistryKey(root, app_key);
 
-  // Delete the App Paths key that lets explorer find Chrome.
   string16 app_path_key(ShellUtil::kAppPathsRegistryKey);
   app_path_key.push_back(FilePath::kSeparators[0]);
   app_path_key.append(installer::kChromeExe);
   InstallUtil::DeleteRegistryKey(root, app_path_key);
 
-  // Cleanup OpenWithList
-  string16 open_with_key;
-  for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
-    open_with_key.assign(ShellUtil::kRegClasses);
-    open_with_key.push_back(FilePath::kSeparators[0]);
-    open_with_key.append(ShellUtil::kFileAssociations[i]);
-    open_with_key.push_back(FilePath::kSeparators[0]);
-    open_with_key.append(L"OpenWithList");
-    open_with_key.push_back(FilePath::kSeparators[0]);
-    open_with_key.append(installer::kChromeExe);
-    InstallUtil::DeleteRegistryKey(root, open_with_key);
+  // Cleanup OpenWithList and OpenWithProgids:
+  // http://msdn.microsoft.com/en-us/library/bb166549
+  string16 file_assoc_key;
+  string16 open_with_list_key;
+  string16 open_with_progids_key;
+  for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; ++i) {
+    file_assoc_key.assign(ShellUtil::kRegClasses);
+    file_assoc_key.push_back(FilePath::kSeparators[0]);
+    file_assoc_key.append(ShellUtil::kFileAssociations[i]);
+    file_assoc_key.push_back(FilePath::kSeparators[0]);
+
+    open_with_list_key.assign(file_assoc_key);
+    open_with_list_key.append(L"OpenWithList");
+    open_with_list_key.push_back(FilePath::kSeparators[0]);
+    open_with_list_key.append(installer::kChromeExe);
+    InstallUtil::DeleteRegistryKey(root, open_with_list_key);
+
+    open_with_progids_key.assign(file_assoc_key);
+    open_with_progids_key.append(ShellUtil::kRegOpenWithProgids);
+    InstallUtil::DeleteRegistryValue(root, open_with_progids_key, prog_id);
   }
 
   // Cleanup in case Chrome had been made the default browser.
@@ -1025,7 +1034,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     // GetCurrentInstallationSuffix() above)).
     // TODO(gab): This can still leave parts of a suffixed install behind. To be
     // able to remove them we would need to be able to remove only suffixed
-    // entries (as it is now some of the shell integration entries are
+    // entries (as it is now some of the registry entries (e.g. App Paths) are
     // unsuffixed; thus removing suffixed installs is prohibited in HKLM if
     // !|remove_all| for now).
     if (installer_state.system_install() ||
