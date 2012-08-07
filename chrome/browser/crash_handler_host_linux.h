@@ -92,10 +92,6 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
   bool shutting_down_;
 #endif
 
-#if defined(ADDRESS_SANITIZER)
-  char* asan_report_str_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };
 

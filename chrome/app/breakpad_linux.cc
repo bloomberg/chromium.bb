@@ -54,10 +54,6 @@
 #include "sandbox/linux/seccomp-legacy/linux_syscall_support.h"
 #endif
 
-#if defined(ADDRESS_SANITIZER)
-#include <ucontext.h> // for getcontext().
-#endif
-
 #if defined(OS_ANDROID)
 #define STAT_STRUCT struct stat
 #define FSTAT_FUNC fstat
@@ -72,23 +68,13 @@
 // spurious compiler warnings.
 #define IGNORE_RET(x) do { if (x); } while (0)
 
-#if !defined(ADDRESS_SANITIZER)
 static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
-#else
-// AddressSanitizer should currently upload the crash reports to the staging
-// crash server.
-static const char kUploadURL[] =
-    "https://clients2.google.com/cr/staging_report";
-#endif
 
 static bool g_is_crash_reporter_enabled = false;
 static uint64_t g_process_start_time = 0;
 static char* g_crash_log_path = NULL;
 static google_breakpad::ExceptionHandler* g_breakpad = NULL;
-#if defined(ADDRESS_SANITIZER)
-static char* g_asan_report_str = NULL;
-#endif
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -183,9 +169,6 @@ const char g_form_data_msg[] = "Content-Disposition: form-data; name=\"";
 const char g_quote_msg[] = "\"";
 const char g_dashdash_msg[] = "--";
 const char g_dump_msg[] = "upload_file_minidump\"; filename=\"dump\"";
-#if defined(ADDRESS_SANITIZER)
-const char g_log_msg[] = "upload_file_log\"; filename=\"log\"";
-#endif
 const char g_content_type_msg[] = "Content-Type: application/octet-stream";
 
 // MimeWriter manages an iovec for writing MIMEs to a file.
@@ -225,10 +208,10 @@ class MimeWriter {
                            size_t chunk_size,
                            bool strip_trailing_spaces);
 
-  // Add binary file contents to be uploaded with the specified filename.
-  void AddFileContents(const char* filename_msg,
-                       uint8_t* file_data,
-                       size_t file_size);
+  // Add binary file dump. Currently this is only done once, so the name is
+  // fixed.
+  void AddFileDump(uint8_t* file_data,
+                   size_t file_size);
 
   // Flush any pending iovecs to the output file.
   void Flush() {
@@ -327,10 +310,10 @@ void MimeWriter::AddPairDataInChunks(const char* msg_type,
   }
 }
 
-void MimeWriter::AddFileContents(const char* filename_msg, uint8_t* file_data,
-                                 size_t file_size) {
+void MimeWriter::AddFileDump(uint8_t* file_data,
+                             size_t file_size) {
   AddString(g_form_data_msg);
-  AddString(filename_msg);
+  AddString(g_dump_msg);
   AddString(g_rn);
   AddString(g_content_type_msg);
   AddString(g_rn);
@@ -376,60 +359,40 @@ size_t WriteLog(const char* buf, size_t nbytes) {
 
 }  // namespace
 
-void LoadDataFromFile(google_breakpad::PageAllocator& allocator,
-                      const BreakpadInfo& info, int* fd,
-                      uint8_t** file_data, size_t* size,
-                      const char* filename) {
+void HandleCrashDump(const BreakpadInfo& info) {
   // WARNING: this code runs in a compromised context. It may not call into
   // libc nor allocate memory normally.
-  *fd = sys_open(filename, O_RDONLY, 0);
-  *size = 0;
 
-  if (*fd < 0) {
+  const int dumpfd = sys_open(info.filename, O_RDONLY, 0);
+  if (dumpfd < 0) {
     static const char msg[] = "Cannot upload crash dump: failed to open\n";
     WriteLog(msg, sizeof(msg));
     return;
   }
   STAT_STRUCT st;
-  if (FSTAT_FUNC(*fd, &st) != 0) {
+  if (FSTAT_FUNC(dumpfd, &st) != 0) {
     static const char msg[] = "Cannot upload crash dump: stat failed\n";
     WriteLog(msg, sizeof(msg));
-    IGNORE_RET(sys_close(*fd));
+    IGNORE_RET(sys_close(dumpfd));
     return;
   }
 
-  *file_data = reinterpret_cast<uint8_t*>(allocator.Alloc(st.st_size));
-  if (!(*file_data)) {
+  google_breakpad::PageAllocator allocator;
+
+  uint8_t* dump_data = reinterpret_cast<uint8_t*>(allocator.Alloc(st.st_size));
+  if (!dump_data) {
     static const char msg[] = "Cannot upload crash dump: cannot alloc\n";
     WriteLog(msg, sizeof(msg));
-    IGNORE_RET(sys_close(*fd));
+    IGNORE_RET(sys_close(dumpfd));
     return;
   }
-  my_memset(*file_data, 0xf, st.st_size);
 
-  *size = st.st_size;
-  sys_read(*fd, *file_data, *size);
-  IGNORE_RET(sys_close(*fd));
-}
-
-void HandleCrashDump(const BreakpadInfo& info) {
-  int dumpfd;
-  size_t dump_size;
-  uint8_t *dump_data;
-  google_breakpad::PageAllocator allocator;
-  LoadDataFromFile(allocator, info, &dumpfd, &dump_data, &dump_size,
-                   info.filename);
-#if defined(ADDRESS_SANITIZER)
-  int logfd;
-  size_t log_size;
-  uint8_t *log_data;
-  // Load the AddressSanitizer log into log_data.
-  LoadDataFromFile(allocator, info, &logfd, &log_data, &log_size,
-                   info.log_filename);
-#endif
+  sys_read(dumpfd, dump_data, st.st_size);
+  IGNORE_RET(sys_close(dumpfd));
 
   // We need to build a MIME block for uploading to the server. Since we are
   // going to fork and run wget, it needs to be written to a temp file.
+
   const int ufd = sys_open("/dev/urandom", O_RDONLY, 0);
   if (ufd < 0) {
     static const char msg[] = "Cannot upload crash dump because /dev/urandom"
@@ -761,12 +724,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.Flush();
   }
 
-  writer.AddFileContents(g_dump_msg, dump_data, dump_size);
-#if defined(ADDRESS_SANITIZER)
-  // Append a multipart boundary and the contents of the AddressSanitizer log.
-  writer.AddBoundary();
-  writer.AddFileContents(g_log_msg, log_data, log_size);
-#endif
+  writer.AddFileDump(dump_data, st.st_size);
   writer.AddEnd();
   writer.Flush();
 
@@ -947,9 +905,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
 
     // Helper process.
     IGNORE_RET(sys_unlink(info.filename));
-#if defined(ADDRESS_SANITIZER)
-    IGNORE_RET(sys_unlink(info.log_filename));
-#endif
     IGNORE_RET(sys_unlink(temp_file));
     sys__exit(0);
   }
@@ -980,15 +935,9 @@ static bool CrashDone(const char* dump_path,
   memcpy(path + dump_path_len + 1, minidump_id, minidump_id_len);
   memcpy(path + dump_path_len + 1 + minidump_id_len, ".dmp", 4);
   path[dump_path_len + 1 + minidump_id_len + 4] = 0;
-  char* const log_path = reinterpret_cast<char*>(allocator.Alloc(
-      dump_path_len + 1 /* '/' */ + minidump_id_len +
-      4 /* ".log" */ + 1 /* NUL */));
-  memcpy(log_path, path, dump_path_len + 1 + minidump_id_len + 4);
-  memcpy(log_path + dump_path_len + 1 + minidump_id_len, ".log", 4);
 
   BreakpadInfo info;
   info.filename = path;
-  info.log_filename = log_path;
   info.process_type = "browser";
   info.process_type_length = 7;
   info.crash_url = NULL;
@@ -1022,20 +971,6 @@ static bool CrashDoneUpload(const char* dump_path,
   return CrashDone(dump_path, minidump_id, true, succeeded);
 }
 #endif
-
-extern "C"
-void __asan_set_error_report_callback(void (*cb)(const char*));
-
-extern "C"
-void AsanLinuxBreakpadCallback(const char* report) {
-  g_asan_report_str = const_cast<char*>(report);
-  // Send minidump here.
-  siginfo_t siginfo;
-  my_memset(&siginfo, 0, sizeof(siginfo_t));
-  struct ucontext context;
-  getcontext(&context);
-  g_breakpad->HandleSignal(9, &siginfo, &context);
-}
 
 static void EnableCrashDumping(bool unattended) {
   g_is_crash_reporter_enabled = true;
@@ -1114,12 +1049,7 @@ static bool NonBrowserCrashHandler(const void* crash_context,
   static const unsigned kControlMsgSpaceSize = CMSG_SPACE(kControlMsgSize);
   static const unsigned kControlMsgLenSize = CMSG_LEN(kControlMsgSize);
 
-#if !defined(ADDRESS_SANITIZER)
   const size_t kIovSize = 8;
-#else
-  // Additional field to pass the AddressSanitizer log to the crash handler.
-  const size_t kIovSize = 9;
-#endif
   struct kernel_msghdr msg;
   my_memset(&msg, 0, sizeof(struct kernel_msghdr));
   struct kernel_iovec iov[kIovSize];
@@ -1139,10 +1069,6 @@ static bool NonBrowserCrashHandler(const void* crash_context,
   iov[6].iov_len = sizeof(g_process_start_time);
   iov[7].iov_base = &base::g_oom_size;
   iov[7].iov_len = sizeof(base::g_oom_size);
-#if defined(ADDRESS_SANITIZER)
-  iov[8].iov_base = g_asan_report_str;
-  iov[8].iov_len = kMaxAsanReportSize + 1;
-#endif
 
   msg.msg_iov = iov;
   msg.msg_iovlen = kIovSize;
@@ -1235,10 +1161,6 @@ void InitCrashReporter() {
     g_process_start_time = 0;
 
   logging::SetDumpWithoutCrashingFunction(&DumpProcess);
-#if defined(ADDRESS_SANITIZER)
-  // Register the callback for AddressSanitizer error reporting.
-  __asan_set_error_report_callback(AsanLinuxBreakpadCallback);
-#endif
 }
 
 bool IsCrashReporterEnabled() {
