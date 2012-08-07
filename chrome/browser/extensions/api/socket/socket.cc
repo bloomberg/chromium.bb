@@ -74,6 +74,10 @@ void Socket::OnWriteComplete(int result) {
     WriteData();
 }
 
+bool Socket::IsConnected() {
+  return is_connected_;
+}
+
 bool Socket::SetKeepAlive(bool enable, int delay) {
   return false;
 }

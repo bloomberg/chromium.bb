@@ -279,6 +279,23 @@ class SocketSetNoDelayFunction : public SocketAsyncApiFunction {
   scoped_ptr<api::socket::SetNoDelay::Params> params_;
 };
 
+class SocketGetInfoFunction : public SocketAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("socket.getInfo");
+
+  SocketGetInfoFunction();
+
+ protected:
+  virtual ~SocketGetInfoFunction();
+
+  // AsyncApiFunction:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+
+ private:
+  scoped_ptr<api::socket::GetInfo::Params> params_;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKET_SOCKET_API_H_

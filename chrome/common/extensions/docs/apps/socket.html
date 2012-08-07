@@ -180,6 +180,8 @@
               </li><li>
                 <a href="#method-disconnect">disconnect</a>
               </li><li>
+                <a href="#method-getInfo">getInfo</a>
+              </li><li>
                 <a href="#method-read">read</a>
               </li><li>
                 <a href="#method-recvFrom">recvFrom</a>
@@ -219,6 +221,10 @@
                 </ol>
               </li><li>
                 <a href="#type-socket.RecvFromInfo">socket.RecvFromInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-experimental.socket.SocketInfo">experimental.socket.SocketInfo</a>
                 <ol>
                 </ol>
               </li>
@@ -415,7 +421,7 @@
                       <var><span>port</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>ConnectCallback</span></var></span>)</div>
               <div class="description">
-                <p>Connects the socket to the remote machine.</p>
+                <p>Connects the socket to the remote machine (for a <code>tcp</code> socket). For a <code>udp</code> socket, this sets the default address which packets are sent to and read from for <code>read()</code> and <code>write()</code> calls.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -758,6 +764,108 @@
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getInfo"></a> <!-- method-anchor -->
+              <h4>getInfo</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.socket.getInfo</span>(<span class="null"><span>integer</span>
+                      <var><span>socketId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>GetInfoCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Retrieves the state of the given socket.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>socketId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The socketId.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>GetInfoCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.socket.html#type-experimental.socket.SocketInfo">experimental.socket.SocketInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
         </div>
                   </div>
                 </dl>
@@ -1206,7 +1314,7 @@
                       <var><span>delay</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>SetKeepAliveCallback</span></var></span>)</div>
               <div class="description">
-                <p>Enable/disable keep-alive functionality for a TCP connection.</p>
+                <p>Enables or disables the keep-alive functionality for a TCP connection.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1356,7 +1464,7 @@
                       <var><span>noDelay</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>SetNoDelayCallback</span></var></span>)</div>
               <div class="description">
-                <p>Enable/disable Nagle algorithm.</p>
+                <p>Sets or clears <code>TCP_NODELAY</code> for a TCP connection. Nagle's algorithm will be disabled when <code>TCP_NODELAY</code> is set.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1400,7 +1508,7 @@
                 </div>
               </em>
           </dt>
-          <dd>If true, disable Nagle algorithm.</dd>
+          <dd>If true, disables Nagle's algorithm.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1967,6 +2075,179 @@
               </em>
           </dt>
           <dd>The resultCode returned from the underlying recvfrom() call.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-experimental.socket.SocketInfo"></a>
+              <h4>experimental.socket.SocketInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>connected</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Whether or not the underlying socket is connected. For <code>tcp</code> sockets, this will remain true even if the remote peer has disconnected. Reading or writing to the socket may then result in an error, hinting that this socket should be disconnected via <code>disconnect()</code>. For <code>udp</code> sockets, this just represents whether a default remote address has been specified for reading and writing packets.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>localAddress</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>If the underlying socket is bound or connected, contains its local IPv4/6 address.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>localPort</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>If the underlying socket is bound or connected, contains its local port.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>peerAddress</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>If the underlying socket is connected, contains the IPv4/6 address of the peer.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>peerPort</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>If the underlying socket is connected, contains the port of the connected peer.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>socketType</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.socket.html#type-experimental.socket.SocketType">experimental.socket.SocketType</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The type of the passed socket. This will be <code>tcp</code> or <code>udp</code>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

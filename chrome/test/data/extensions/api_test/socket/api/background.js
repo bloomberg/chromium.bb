@@ -42,8 +42,16 @@ function arrayBuffer2String(buf, callback) {
 }
 
 var testSocketCreation = function() {
-  function onCreate(socketInfo) {
-    chrome.test.assertTrue(socketInfo.socketId > 0);
+  function onGetInfo(info) {
+    chrome.test.assertEq(info.socketType, protocol);
+    chrome.test.assertFalse(info.connected);
+
+    if (info.peerAddress || info.peerPort) {
+      chrome.test.fail('Unconnected socket should not have peer');
+    }
+    if (info.localAddress || info.localPort) {
+      chrome.test.fail('Unconnected socket should not have local binding');
+    }
 
     // TODO(miket): this doesn't work yet. It's possible this will become
     // automatic, but either way we can't forget to clean up.
@@ -53,7 +61,19 @@ var testSocketCreation = function() {
     chrome.test.succeed();
   }
 
+  function onCreate(socketInfo) {
+    chrome.test.assertTrue(socketInfo.socketId > 0);
+
+    // Obtaining socket information before a connect() call should be safe, but
+    // return empty values.
+    socket.getInfo(socketInfo.socketId, onGetInfo);
+  }
+
   socket.create(protocol, {}, onCreate);
+};
+
+
+var testGetInfo = function() {
 };
 
 function onDataRead(readInfo) {
@@ -103,11 +123,37 @@ function onSetNoDelay(result) {
   socket.setKeepAlive(socketId, true, 1000, onSetKeepAlive);
 }
 
+function onGetInfo(result) {
+  chrome.test.assertTrue(!!result.localAddress,
+                         "Bound socket should always have local address");
+  chrome.test.assertTrue(!!result.localPort,
+                         "Bound socket should always have local port");
+  chrome.test.assertEq(result.socketType, protocol, "Unexpected socketType");
+
+  if (protocol == "tcp") {
+    // NOTE: We're always called with 'localhost', but getInfo will only return
+    // IPs, not names.
+    chrome.test.assertEq(result.peerAddress, "127.0.0.1",
+                         "Peer addresss should be the listen server");
+    chrome.test.assertEq(result.peerPort, port,
+                         "Peer port should be the listen server");
+    chrome.test.assertTrue(result.connected, "Socket should be connected");
+  } else {
+    chrome.test.assertFalse(result.connected, "UDP socket was not connected");
+    chrome.test.assertTrue(!result.peerAddress,
+        "Unconnected UDP socket should not have peer address");
+    chrome.test.assertTrue(!result.peerPort,
+        "Unconnected UDP socket should not have peer port");
+  }
+
+  socket.setNoDelay(socketId, true, onSetNoDelay);
+}
+
 function onConnectOrBindComplete(result) {
   chrome.test.assertEq(0, result,
                        "Connect or bind failed with error " + result);
   if (result == 0) {
-    socket.setNoDelay(socketId, true, onSetNoDelay);
+    socket.getInfo(socketId, onGetInfo);
   }
 }
 

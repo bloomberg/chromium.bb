@@ -185,6 +185,18 @@ void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
     OnSendToComplete(result);
 }
 
+bool UDPSocket::IsTCPSocket() {
+  return false;
+}
+
+bool UDPSocket::GetPeerAddress(net::IPEndPoint* address) {
+  return !socket_.GetPeerAddress(address);
+}
+
+bool UDPSocket::GetLocalAddress(net::IPEndPoint* address) {
+  return !socket_.GetLocalAddress(address);
+}
+
 void UDPSocket::OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
                                int result) {
   DCHECK(!read_callback_.is_null());
