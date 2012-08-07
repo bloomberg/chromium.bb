@@ -23,19 +23,13 @@
             'build_glibc': 0,
             'build_newlib': 1,
           },
-          'defines': [
-            'NACL_PPAPI_IPC_PROXY',
-          ],
           'include_dirs': [
-            '..',
-            '../third_party/khronos',
+            '../third_party/skia/include/config',
           ],
           'dependencies': [
-            '../native_client/tools.gyp:prep_toolchain',
+            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            '../gpu/command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
-            '../gpu/gpu_untrusted.gyp:command_buffer_client_untrusted',
-            '../gpu/gpu_untrusted.gyp:gles2_implementation_untrusted',
+            '../ipc/ipc_untrusted.gyp:ipc_untrusted',
           ],
         },
       ],

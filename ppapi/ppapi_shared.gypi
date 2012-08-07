@@ -245,6 +245,8 @@
           ['>(nacl_untrusted_build)==1', {
             'sources!': [
               'shared_impl/ppb_audio_input_shared.cc',
+              'shared_impl/ppb_graphics_3d_shared.cc',
+              'shared_impl/ppb_opengles2_shared.cc',
               'shared_impl/ppb_url_util_shared.cc',
               'shared_impl/ppb_video_decoder_shared.cc',
               'shared_impl/ppb_video_capture_shared.cc',
@@ -277,6 +279,7 @@
               'thunk/ppb_flash_thunk.cc',
               'thunk/ppb_flash_message_loop_thunk.cc',
               'thunk/ppb_gles_chromium_texture_mapping_thunk.cc',
+              'thunk/ppb_graphics_3d_thunk.cc',
               'thunk/ppb_graphics_3d_trusted_thunk.cc',
               'thunk/ppb_host_resolver_private_thunk.cc',
               'thunk/ppb_image_data_trusted_thunk.cc',

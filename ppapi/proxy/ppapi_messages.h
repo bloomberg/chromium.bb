@@ -873,6 +873,7 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics2D_Dev_SetScale,
                     ppapi::HostResource /* graphics_2d */,
                     float /* scale */)
 
+#if !defined(OS_NACL)
 // PPB_Graphics3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
                            PP_Instance /* instance */,
@@ -911,6 +912,7 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer,
                            uint32 /* size */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                     ppapi::HostResource /* graphics_3d */)
+#endif  // !defined(OS_NACL)
 
 // PPB_ImageData.
 IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_Create,

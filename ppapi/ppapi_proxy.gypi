@@ -172,6 +172,7 @@
           ['>(nacl_untrusted_build)==1', {
             'sources!': [
               'proxy/broker_dispatcher.cc',
+              'proxy/ppapi_command_buffer_proxy.cc',
               'proxy/ppb_audio_input_proxy.cc',
               'proxy/ppb_broker_proxy.cc',
               'proxy/ppb_buffer_proxy.cc',
@@ -180,6 +181,7 @@
               'proxy/ppb_flash_proxy.cc',
               'proxy/ppb_flash_menu_proxy.cc',
               'proxy/ppb_flash_message_loop_proxy.cc',
+              'proxy/ppb_graphics_3d_proxy.cc',
               'proxy/ppb_host_resolver_private_proxy.cc',
               'proxy/ppb_network_monitor_private_proxy.cc',
               'proxy/ppb_pdf_proxy.cc',
@@ -191,6 +193,7 @@
               'proxy/ppb_video_capture_proxy.cc',
               'proxy/ppb_video_decoder_proxy.cc',
               'proxy/ppb_x509_certificate_private_proxy.cc',
+              'proxy/ppp_graphics_3d_proxy.cc',
               'proxy/ppp_instance_private_proxy.cc',
               'proxy/ppp_video_decoder_proxy.cc',
               'proxy/serialized_flash_menu.cc',

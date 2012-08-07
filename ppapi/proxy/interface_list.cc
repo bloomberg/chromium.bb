@@ -194,6 +194,7 @@ InterfaceList::InterfaceList() {
          PPB_Core_Proxy::GetPPB_Core_Interface());
   AddPPB(PPB_MESSAGELOOP_DEV_INTERFACE_0_1, API_ID_NONE,
          PPB_MessageLoop_Proxy::GetInterface());
+#if !defined(OS_NACL)
   AddPPB(PPB_OPENGLES2_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetInterface());
   AddPPB(PPB_OPENGLES2_INSTANCEDARRAYS_INTERFACE_1_0, API_ID_NONE,
@@ -210,7 +211,6 @@ InterfaceList::InterfaceList() {
          PPB_OpenGLES2_Shared::GetChromiumMapSubInterface());
   AddPPB(PPB_OPENGLES2_QUERY_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetQueryInterface());
-#if !defined(OS_NACL)
   AddPPB(PPB_FLASH_PRINT_INTERFACE_1_0, API_ID_PPB_FLASH,
          PPB_Flash_Proxy::GetFlashPrintInterface());
 #endif
@@ -250,8 +250,8 @@ InterfaceList::InterfaceList() {
   AddPPP(PPP_InputEvent_Proxy::GetInfo());
   AddPPP(PPP_Messaging_Proxy::GetInfo());
   AddPPP(PPP_MouseLock_Proxy::GetInfo());
-  AddPPP(PPP_Graphics3D_Proxy::GetInfo());
 #if !defined(OS_NACL)
+  AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_Instance_Private_Proxy::GetInfo());
   AddPPP(PPP_VideoCapture_Proxy::GetInfo());
   AddPPP(PPP_VideoDecoder_Proxy::GetInfo());

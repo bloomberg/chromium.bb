@@ -10,6 +10,7 @@
 PROXIED_API(PPB_AudioInput)
 PROXIED_API(PPB_Buffer)
 UNPROXIED_API(PPB_DirectoryReader)
+PROXIED_API(PPB_Graphics3D)
 UNPROXIED_API(PPB_LayerCompositor)
 UNPROXIED_API(PPB_Scrollbar)
 PROXIED_API(PPB_VideoCapture)

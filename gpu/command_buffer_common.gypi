@@ -11,6 +11,10 @@
       '<(DEPTH)/third_party/khronos',
     ],
   },
+  'dependencies': [
+    '../base/base.gyp:base',
+    'command_buffer/command_buffer.gyp:gles2_utils',
+  ],
   'sources': [
     'command_buffer/common/bitfield_helpers.h',
     'command_buffer/common/buffer.h',

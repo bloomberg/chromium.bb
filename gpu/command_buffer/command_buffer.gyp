@@ -6,16 +6,13 @@
   'variables': {
     'chromium_code': 1,
   },
-  'includes': [
-    'command_buffer.gypi',
-  ],
   'targets': [
     {
       'target_name': 'gles2_utils',
       'type': '<(component)',
-      'variables': {
-        'gles2_utils_target': 1,
-      },
+      'include_dirs': [
+        '<(DEPTH)/third_party/khronos',
+      ],
       'all_dependent_settings': {
         'include_dirs': [
           '<(DEPTH)/third_party/khronos',
@@ -26,6 +23,17 @@
       ],
       'export_dependent_settings': [
         '../../base/base.gyp:base',
+      ],
+      'defines': [
+        'GLES2_UTILS_IMPLEMENTATION',
+      ],
+      'sources': [
+        'common/gles2_cmd_format.h',
+        'common/gles2_cmd_utils.cc',
+        'common/gles2_cmd_utils.h',
+        'common/gles2_utils_export.h',
+        'common/logging.cc',
+        'common/logging.h',
       ],
     },
   ],
