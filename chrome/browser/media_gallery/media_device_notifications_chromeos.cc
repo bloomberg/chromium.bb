@@ -22,20 +22,18 @@ namespace {
 bool GetDeviceInfo(const std::string& source_path, std::string* device_id,
                    string16* device_label) {
   // Get the media device uuid and label if exists.
-  const disks::DiskMountManager::DiskMap& disks =
-      disks::DiskMountManager::GetInstance()->disks();
-  disks::DiskMountManager::DiskMap::const_iterator it = disks.find(source_path);
-  if (it == disks.end())
+  const disks::DiskMountManager::Disk* disk =
+      disks::DiskMountManager::GetInstance()->FindDiskBySourcePath(source_path);
+  if (!disk)
     return false;
 
-  const disks::DiskMountManager::Disk& disk = *(it->second);
-  *device_id = disk.fs_uuid();
+  *device_id = disk->fs_uuid();
 
   // TODO(kmadhusu): If device label is empty, extract vendor and model details
   // and use them as device_label.
-  *device_label = UTF8ToUTF16(disk.device_label().empty() ?
+  *device_label = UTF8ToUTF16(disk->device_label().empty() ?
                               FilePath(source_path).BaseName().value() :
-                              disk.device_label());
+                              disk->device_label());
   return true;
 }
 

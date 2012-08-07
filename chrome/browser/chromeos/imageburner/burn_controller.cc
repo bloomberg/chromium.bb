@@ -334,8 +334,9 @@ class BurnControllerImpl
   int64 GetDeviceSize(const std::string& device_path) {
     disks::DiskMountManager* disk_mount_manager =
         disks::DiskMountManager::GetInstance();
-    const disks::DiskMountManager::DiskMap& disks = disk_mount_manager->disks();
-    return disks.find(device_path)->second->total_size_in_bytes();
+    const disks::DiskMountManager::Disk* disk =
+        disk_mount_manager->FindDiskBySourcePath(device_path);
+    return disk ? disk->total_size_in_bytes() : 0;
   }
 
   bool CheckNetwork() {

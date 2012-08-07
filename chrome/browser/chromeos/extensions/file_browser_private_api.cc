@@ -108,15 +108,10 @@ const DiskMountManager::Disk* GetVolumeAsDisk(const std::string& mount_path) {
   if (mount_point_it == disk_mount_manager->mount_points().end())
     return NULL;
 
-  DiskMountManager::DiskMap::const_iterator disk_it =
-      disk_mount_manager->disks().find(mount_point_it->second.source_path);
+  const DiskMountManager::Disk* disk = disk_mount_manager->FindDiskBySourcePath(
+      mount_point_it->second.source_path);
 
-  if (disk_it == disk_mount_manager->disks().end() ||
-      disk_it->second->is_hidden()) {
-    return NULL;
-  }
-
-  return disk_it->second;
+  return (disk && disk->is_hidden()) ? NULL : disk;
 }
 
 base::DictionaryValue* CreateValueFromDisk(

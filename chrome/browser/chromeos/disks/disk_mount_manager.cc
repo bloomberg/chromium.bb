@@ -230,6 +230,12 @@ class DiskMountManagerImpl : public DiskMountManager {
   // DiskMountManager override.
   const DiskMap& disks() const OVERRIDE { return disks_; }
 
+  // DiskMountManager override.
+  virtual const Disk* FindDiskBySourcePath(const std::string& source_path)
+      const OVERRIDE {
+    DiskMap::const_iterator disk_it = disks_.find(source_path);
+    return disk_it == disks_.end() ? NULL : disk_it->second;
+  }
 
   // DiskMountManager override.
   const MountPointMap& mount_points() const OVERRIDE { return mount_points_; }

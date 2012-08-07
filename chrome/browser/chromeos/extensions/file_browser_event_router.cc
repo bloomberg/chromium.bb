@@ -340,12 +340,10 @@ void FileBrowserEventRouter::MountCompleted(
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
       event_type == DiskMountManager::MOUNTING) {
     DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-    DiskMountManager::DiskMap::const_iterator disk_it =
-        disk_mount_manager->disks().find(mount_info.source_path);
-    if (disk_it == disk_mount_manager->disks().end()) {
+    const DiskMountManager::Disk* disk =
+        disk_mount_manager->FindDiskBySourcePath(mount_info.source_path);
+    if (!disk)
       return;
-    }
-    DiskMountManager::Disk* disk = disk_it->second;
 
     notifications_->ManageNotificationsOnMountCompleted(
         disk->system_path_prefix(), disk->drive_label(), disk->is_parent(),

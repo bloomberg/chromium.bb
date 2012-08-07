@@ -26,6 +26,8 @@ class MockDiskMountManager : public DiskMountManager {
   MOCK_METHOD1(AddObserver, void(DiskMountManager::Observer*));
   MOCK_METHOD1(RemoveObserver, void(DiskMountManager::Observer*));
   MOCK_CONST_METHOD0(disks, const DiskMountManager::DiskMap&(void));
+  MOCK_CONST_METHOD1(FindDiskBySourcePath,
+                     const DiskMountManager::Disk*(const std::string&));
   MOCK_CONST_METHOD0(mount_points,
                      const DiskMountManager::MountPointMap&(void));
   MOCK_METHOD0(RequestMountInfoRefresh, void(void));
@@ -69,8 +71,11 @@ class MockDiskMountManager : public DiskMountManager {
   // Is used to implement disks.
   const DiskMountManager::DiskMap& disksInternal() const { return disks_; }
 
-  // This function is primarily for MediaDeviceNotificationsTest.
   const DiskMountManager::MountPointMap& mountPointsInternal() const;
+
+  // Returns Disk object associated with the |source_path| or NULL on failure.
+  const DiskMountManager::Disk* FindDiskBySourcePathInternal(
+      const std::string& source_path) const;
 
   // Notifies observers about device status update.
   void NotifyDeviceChanged(DiskMountManagerEventType event,

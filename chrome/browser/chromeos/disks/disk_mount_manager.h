@@ -198,6 +198,10 @@ class DiskMountManager {
   // Gets the list of disks found.
   virtual const DiskMap& disks() const = 0;
 
+  // Returns Disk object corresponding to |source_path| or NULL on failure.
+  virtual const Disk* FindDiskBySourcePath(
+      const std::string& source_path) const = 0;
+
   // Gets the list of mount points.
   virtual const MountPointMap& mount_points() const = 0;
 

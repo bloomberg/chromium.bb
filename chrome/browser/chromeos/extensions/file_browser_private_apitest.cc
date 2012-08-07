@@ -15,6 +15,7 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::ReturnRef;
 using ::testing::StrEq;
 using content::BrowserContext;
@@ -152,6 +153,11 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
     chromeos::disks::DiskMountManager::InitializeForTesting(
         disk_mount_manager_mock_);
     disk_mount_manager_mock_->SetupDefaultReplies();
+
+    // OVERRIDE FindDiskBySourcePath mock function.
+    ON_CALL(*disk_mount_manager_mock_, FindDiskBySourcePath(_)).
+        WillByDefault(Invoke(
+            this, &ExtensionFileBrowserPrivateApiTest::FindVolumeBySourcePath));
   }
 
   // ExtensionApiTest override
@@ -208,6 +214,13 @@ class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
 
       }
     }
+  }
+
+  const DiskMountManager::Disk* FindVolumeBySourcePath(
+      const std::string& source_path) {
+    DiskMountManager::DiskMap::const_iterator volume_it =
+        volumes_.find(source_path);
+    return (volume_it == volumes_.end()) ? NULL : volume_it->second;
   }
 
  protected:
