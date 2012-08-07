@@ -154,7 +154,7 @@ static void surf_minify(struct radeon_surface *surf,
     surf->level[level].nblk_x = (surf->level[level].npix_x + surf->blk_w - 1) / surf->blk_w;
     surf->level[level].nblk_y = (surf->level[level].npix_y + surf->blk_h - 1) / surf->blk_h;
     surf->level[level].nblk_z = (surf->level[level].npix_z + surf->blk_d - 1) / surf->blk_d;
-    if (surf->level[level].mode == RADEON_SURF_MODE_2D) {
+    if (surf->nsamples == 1 && surf->level[level].mode == RADEON_SURF_MODE_2D) {
         if (surf->level[level].nblk_x < xalign || surf->level[level].nblk_y < yalign) {
             surf->level[level].mode = RADEON_SURF_MODE_1D;
             return;
@@ -382,6 +382,12 @@ static int r6_surface_init(struct radeon_surface_manager *surf_man,
     unsigned mode;
     int r;
 
+    /* MSAA surfaces support the 2D mode only. */
+    if (surf->nsamples > 1) {
+        surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+        surf->flags |= RADEON_SURF_SET(RADEON_SURF_MODE_2D, MODE);
+    }
+
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
 
@@ -401,6 +407,10 @@ static int r6_surface_init(struct radeon_surface_manager *surf_man,
 
     /* force 1d on kernel that can't do 2d */
     if (!surf_man->hw_info.allow_2d && mode > RADEON_SURF_MODE_1D) {
+        if (surf->nsamples > 1) {
+            fprintf(stderr, "radeon: Cannot use 2D tiling for an MSAA surface (%i).\n", __LINE__);
+            return -EFAULT;
+        }
         mode = RADEON_SURF_MODE_1D;
         surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
         surf->flags |= RADEON_SURF_SET(mode, MODE);
@@ -548,7 +558,7 @@ static void eg_surf_minify(struct radeon_surface *surf,
     surf->level[level].nblk_x = (surf->level[level].npix_x + surf->blk_w - 1) / surf->blk_w;
     surf->level[level].nblk_y = (surf->level[level].npix_y + surf->blk_h - 1) / surf->blk_h;
     surf->level[level].nblk_z = (surf->level[level].npix_z + surf->blk_d - 1) / surf->blk_d;
-    if (surf->level[level].mode == RADEON_SURF_MODE_2D) {
+    if (surf->nsamples == 1 && surf->level[level].mode == RADEON_SURF_MODE_2D) {
         if (surf->level[level].nblk_x < mtilew || surf->level[level].nblk_y < mtileh) {
             surf->level[level].mode = RADEON_SURF_MODE_1D;
             return;
@@ -687,6 +697,10 @@ static int eg_surface_sanity(struct radeon_surface_manager *surf_man,
 
     /* force 1d on kernel that can't do 2d */
     if (!surf_man->hw_info.allow_2d && mode > RADEON_SURF_MODE_1D) {
+        if (surf->nsamples > 1) {
+            fprintf(stderr, "radeon: Cannot use 2D tiling for an MSAA surface (%i).\n", __LINE__);
+            return -EFAULT;
+        }
         mode = RADEON_SURF_MODE_1D;
         surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
         surf->flags |= RADEON_SURF_SET(mode, MODE);
@@ -753,6 +767,12 @@ static int eg_surface_init(struct radeon_surface_manager *surf_man,
 {
     unsigned mode;
     int r;
+
+    /* MSAA surfaces support the 2D mode only. */
+    if (surf->nsamples > 1) {
+        surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+        surf->flags |= RADEON_SURF_SET(RADEON_SURF_MODE_2D, MODE);
+    }
 
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
