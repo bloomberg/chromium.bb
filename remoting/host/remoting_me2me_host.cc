@@ -116,24 +116,19 @@ class HostProcess
     FilePath default_config_dir = remoting::GetConfigDir();
     if (cmd_line->HasSwitch(kAuthConfigSwitchName)) {
       FilePath path = cmd_line->GetSwitchValuePath(kAuthConfigSwitchName);
-      if (!config_.AddConfigPath(path)) {
-        return false;
-      }
+      config_.AddConfigPath(path);
     }
 
     host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
     if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
       host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
     }
-    if (!config_.AddConfigPath(host_config_path_)) {
-      return false;
-    }
+    config_.AddConfigPath(host_config_path_);
 
     return true;
   }
 
   void ConfigUpdated() {
-    // The timer should be set and cleaned up on the same thread.
     DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
 
     // Call ConfigUpdatedDelayed after a short delay, so that this object won't
@@ -145,7 +140,10 @@ class HostProcess
   }
 
   void ConfigUpdatedDelayed() {
+    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+
     if (LoadConfig()) {
+      // PostTask to create new authenticator factory in case PIN has changed.
       context_->network_task_runner()->PostTask(
           FROM_HERE,
           base::Bind(&HostProcess::CreateAuthenticatorFactory,
@@ -197,6 +195,7 @@ class HostProcess
   }
 
   void CreateAuthenticatorFactory() {
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
     scoped_ptr<protocol::AuthenticatorFactory> factory(
         new protocol::Me2MeHostAuthenticatorFactory(
             key_pair_.GenerateCertificate(),
@@ -251,6 +250,17 @@ class HostProcess
 
   // Read host config, returning true if successful.
   bool LoadConfig() {
+    DCHECK(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
+
+    // TODO(sergeyu): There is a potential race condition: this function is
+    // called on the main thread while the class members it mutates are used on
+    // the network thread. Fix it. http://crbug.com/140986 .
+
+    if (!config_.Read()) {
+      LOG(ERROR) << "Failed to read config file.";
+      return false;
+    }
+
     if (!config_.GetString(kHostIdConfigPath, &host_id_)) {
       LOG(ERROR) << "host_id is not defined in the config.";
       return false;

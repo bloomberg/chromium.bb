@@ -14,18 +14,22 @@ CompositeHostConfig::CompositeHostConfig() {
 CompositeHostConfig::~CompositeHostConfig() {
 }
 
-bool CompositeHostConfig::AddConfigPath(const FilePath& path) {
-  scoped_ptr<JsonHostConfig> config(new JsonHostConfig(path));
-  if (!config->Read()) {
-    return false;
+void CompositeHostConfig::AddConfigPath(const FilePath& path) {
+  configs_.push_back(new JsonHostConfig(path));
+}
+
+bool CompositeHostConfig::Read() {
+  bool result = true;
+  for (ScopedVector<JsonHostConfig>::iterator it = configs_.begin();
+       it != configs_.end(); ++it) {
+    result = result && (*it)->Read();
   }
-  configs_.push_back(config.release());
-  return true;
+  return result;
 }
 
 bool CompositeHostConfig::GetString(const std::string& path,
                                     std::string* out_value) const {
-  for (std::vector<HostConfig*>::const_iterator it = configs_.begin();
+  for (ScopedVector<JsonHostConfig>::const_iterator it = configs_.begin();
        it != configs_.end(); ++it) {
     if ((*it)->GetString(path, out_value))
       return true;
@@ -35,7 +39,7 @@ bool CompositeHostConfig::GetString(const std::string& path,
 
 bool CompositeHostConfig::GetBoolean(const std::string& path,
                                      bool* out_value) const {
-  for (std::vector<HostConfig*>::const_iterator it = configs_.begin();
+  for (ScopedVector<JsonHostConfig>::const_iterator it = configs_.begin();
        it != configs_.end(); ++it) {
     if ((*it)->GetBoolean(path, out_value))
       return true;

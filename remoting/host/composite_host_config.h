@@ -14,17 +14,22 @@ class FilePath;
 
 namespace remoting {
 
+class JsonHostConfig;
+
 // CompositeConfig reads multiple configuration files and merges them together.
 class CompositeHostConfig : public HostConfig {
  public:
   CompositeHostConfig();
   virtual ~CompositeHostConfig();
 
-  // Add configuration file specified stored at |path|. Returns false if the
-  // file with the specified name doesn't exist or can't be opened. When the
-  // same parameter is present in more than one file priority is given to those
-  // that are added first.
-  bool AddConfigPath(const FilePath& path);
+  // Add configuration file specified stored at |path|. When the same parameter
+  // is present in more than one file priority is given to those that are added
+  // first.
+  void AddConfigPath(const FilePath& path);
+
+  // Reads all configuration files. Returns false if it fails to load any of the
+  // files.
+  bool Read();
 
   // HostConfig interface.
   virtual bool GetString(const std::string& path,
@@ -33,7 +38,7 @@ class CompositeHostConfig : public HostConfig {
                           bool* out_value) const OVERRIDE;
 
  private:
-  ScopedVector<HostConfig> configs_;
+  ScopedVector<JsonHostConfig> configs_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositeHostConfig);
 };
