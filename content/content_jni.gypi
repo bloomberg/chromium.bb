@@ -22,7 +22,6 @@
     'public/android/java/src/org/chromium/content/browser/DownloadController.java',
     'public/android/java/src/org/chromium/content/browser/ImeAdapter.java',
     'public/android/java/src/org/chromium/content/browser/LocationProvider.java',
-    'public/android/java/src/org/chromium/content/browser/RemoteDebuggingController.java',
     'public/android/java/src/org/chromium/content/browser/SandboxedProcessLauncher.java',
     'public/android/java/src/org/chromium/content/browser/TouchPoint.java',
     'public/android/java/src/org/chromium/content/common/CommandLine.java',

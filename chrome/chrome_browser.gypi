@@ -114,6 +114,8 @@
         'browser/android/android_stream_reader_url_request_job.h',
         'browser/android/chrome_startup_flags.cc',
         'browser/android/chrome_startup_flags.h',
+        'browser/android/devtools_server.cc',
+        'browser/android/devtools_server.h',
         'browser/android/intent_helper.cc',
         'browser/android/intent_helper.h',
         'browser/android/process_utils.cc',

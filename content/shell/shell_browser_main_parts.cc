@@ -80,6 +80,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
 
+#if defined(OS_ANDROID)
+  devtools_delegate_ = new ShellDevToolsDelegate(
+      0,  // On android the port number isn't used.
+      browser_context_->GetRequestContext());
+#else
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
     std::string port_str =
@@ -93,6 +98,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }
   }
+#endif
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     Shell::CreateNewWindow(browser_context_.get(),

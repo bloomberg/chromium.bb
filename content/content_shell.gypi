@@ -75,6 +75,7 @@
         'shell/shell_content_renderer_client.cc',
         'shell/shell_content_renderer_client.h',
         'shell/shell_devtools_delegate.cc',
+        'shell/shell_devtools_delegate_android.cc',
         'shell/shell_devtools_delegate.h',
         'shell/shell_download_manager_delegate.cc',
         'shell/shell_download_manager_delegate.h',
@@ -134,18 +135,21 @@
             },
           },
         }],  # OS=="win"
-        ['OS!="android"', {
-          'dependencies': [
-            # This dependency is for running DRT against the content shell, and
-            # this combination is not yet supported on Android.
-            '../webkit/support/webkit_support.gyp:webkit_support',
-          ],
-        }, {  # else: OS=="android"
+        ['OS=="android"', {
           'dependencies': [
             'content_shell_jni_headers',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/content/shell',
+          ],
+          'sources!': [
+            'shell/shell_devtools_delegate.cc',
+          ],
+        }, {  # else: OS!="android"
+          'dependencies': [
+            # This dependency is for running DRT against the content shell, and
+            # this combination is not yet supported on Android.
+            '../webkit/support/webkit_support.gyp:webkit_support',
           ],
         }],  # OS=="android"
         ['os_posix==1 and use_aura==1 and linux_use_tcmalloc==1', {
