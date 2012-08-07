@@ -56,7 +56,10 @@ typedef InProcessBrowserTest ProfileBrowserTest;
 
 // Test OnProfileCreate is called with is_new_profile set to true when
 // creating a new profile synchronously.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
+//
+// Flaky (sometimes timeout): http://crbug.com/141141
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       DISABLED_CreateNewProfileSynchronous) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
