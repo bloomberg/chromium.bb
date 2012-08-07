@@ -134,6 +134,8 @@ static float ScaleFactor(NSView* view) {
 - (void)windowChangedScreen:(NSNotification*)notification;
 - (void)checkForPluginImeCancellation;
 - (void)updateTabBackingStoreScaleFactor;
+- (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
+                             actualRange:(NSRangePointer)actualRange;
 @end
 
 // NSEvent subtype for scroll gestures events.
@@ -765,7 +767,7 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
                                                size_t offset,
                                                const ui::Range& range) {
   if (range.is_empty() || text.empty()) {
-      selected_text_.clear();
+    selected_text_.clear();
   } else {
     size_t pos = range.GetMin() - offset;
     size_t n = range.length();
@@ -779,7 +781,7 @@ void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
   }
 
   [cocoa_view_ setSelectedRange:range.ToNSRange()];
-  // Updaes markedRange when there is no marked text so that retrieving
+  // Updates markedRange when there is no marked text so that retrieving
   // markedRange immediately after calling setMarkdText: returns the current
   // caret position.
   if (![cocoa_view_ hasMarkedText]) {
@@ -1397,6 +1399,25 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
         render_widget_host_->GetRoutingID(), GetBoundsInRootWindow(),
         GetViewBounds()));
   }
+}
+
+void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
+  // Brings up either Dictionary.app or a light-weight dictionary panel,
+  // depending on system settings.
+  NSRange selection_range = [cocoa_view_ selectedRange];
+  NSAttributedString* attr_string =
+      [cocoa_view_ attributedSubstringForProposedRange:selection_range
+                                           actualRange:nil];
+  NSRect rect = [cocoa_view_ firstViewRectForCharacterRange:selection_range
+                                                actualRange:nil];
+
+  // Set |rect.origin| to the text baseline based on |attr_string|'s font,
+  // since -baselineDeltaForCharacterAtIndex: is currently not implemented.
+  NSDictionary* attrs = [attr_string attributesAtIndex:0 effectiveRange:nil];
+  NSFont* font = [attrs objectForKey:NSFontAttributeName];
+  rect.origin.y += NSHeight(rect) - [font ascender];
+  [cocoa_view_ showDefinitionForAttributedString:attr_string
+                                         atPoint:rect.origin];
 }
 
 void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
@@ -2797,8 +2818,8 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return index;
 }
 
-- (NSRect)firstRectForCharacterRange:(NSRange)theRange
-                         actualRange:(NSRangePointer)actualRange {
+- (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
+                             actualRange:(NSRangePointer)actualRange {
   NSRect rect;
   if (!renderWidgetHostView_->GetCachedFirstRectForCharacterRange(
           theRange,
@@ -2813,10 +2834,18 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   }
 
   // The returned rectangle is in WebKit coordinates (upper left origin), so
-  // flip the coordinate system and then convert it into screen coordinates for
-  // return.
+  // flip the coordinate system.
   NSRect viewFrame = [self frame];
   rect.origin.y = NSHeight(viewFrame) - NSMaxY(rect);
+  return rect;
+}
+
+- (NSRect)firstRectForCharacterRange:(NSRange)theRange
+                         actualRange:(NSRangePointer)actualRange {
+  NSRect rect = [self firstViewRectForCharacterRange:theRange
+                                         actualRange:actualRange];
+
+  // Convert into screen coordinates for return.
   rect = [self convertRect:rect toView:nil];
   rect.origin = [[self window] convertBaseToScreen:rect.origin];
   return rect;

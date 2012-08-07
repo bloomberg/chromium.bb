@@ -209,6 +209,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase {
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE;
   virtual void SetWindowVisibility(bool visible) OVERRIDE;
   virtual void WindowFrameChanged() OVERRIDE;
+  virtual void ShowDefinitionForSelection() OVERRIDE;
   virtual bool SupportsSpeech() const OVERRIDE;
   virtual void SpeakSelection() OVERRIDE;
   virtual bool IsSpeaking() const OVERRIDE;

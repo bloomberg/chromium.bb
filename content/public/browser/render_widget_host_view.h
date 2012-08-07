@@ -125,6 +125,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Informs the view that its containing window's frame changed.
   virtual void WindowFrameChanged() = 0;
 
+  // Brings up the dictionary showing a definition for the selected text.
+  virtual void ShowDefinitionForSelection() = 0;
+
   // Returns |true| if Mac OS X text to speech is supported.
   virtual bool SupportsSpeech() const = 0;
   // Tells the view to speak the currently selected text.
