@@ -378,12 +378,12 @@ void ContentViewCoreImpl::AddJavascriptInterface(
     jobject /* obj */,
     jobject object,
     jstring name,
-    jboolean allow_inherited_methods) {
+    jboolean require_annotation) {
   ScopedJavaLocalRef<jobject> scoped_object(env, object);
   // JavaBoundObject creates the NPObject with a ref count of 1, and
   // JavaBridgeDispatcherHostManager takes its own ref.
   NPObject* bound_object = JavaBoundObject::Create(scoped_object,
-                                                   allow_inherited_methods);
+                                                   require_annotation);
   web_contents_->java_bridge_dispatcher_host_manager()->AddNamedObject(
       ConvertJavaStringToUTF16(env, name), bound_object);
   WebKit::WebBindings::releaseObject(bound_object);

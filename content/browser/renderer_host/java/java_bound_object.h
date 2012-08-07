@@ -23,13 +23,14 @@
 // created and destroyed on different threads.
 class JavaBoundObject {
  public:
-  // Takes a Java object and creates a JavaBoundObject around it. Also takes
-  // a boolean that determines whether or not inherited methods are allowed
-  // to be called as well.  This property propagates to all Objects that get
-  // implicitly exposed as return values as well. Returns an NPObject with
-  // a ref count of one which owns the JavaBoundObject.
+  // Takes a Java object and creates a JavaBoundObject around it. The
+  // |require_annotation| flag specifies whether or not only methods with the
+  // JavascriptInterface annotation are exposed to JavaScript.  This property
+  // propagates to all Objects that get implicitly exposed as return values as
+  // well. Returns an NPObject with a ref count of one which owns the
+  // JavaBoundObject.
   static NPObject* Create(const base::android::JavaRef<jobject>& object,
-                          bool allow_inherited_methods);
+                          bool require_annotation);
 
   virtual ~JavaBoundObject();
 
@@ -43,9 +44,11 @@ class JavaBoundObject {
   bool Invoke(const std::string& name, const NPVariant* args, size_t arg_count,
               NPVariant* result);
 
+  static bool RegisterJavaBoundObject(JNIEnv* env);
+
  private:
   explicit JavaBoundObject(const base::android::JavaRef<jobject>& object,
-                           bool allow_inherited_methods);
+                           bool require_annotation);
 
   void EnsureMethodsAreSetUp() const;
 
@@ -60,7 +63,7 @@ class JavaBoundObject {
   mutable JavaMethodMap methods_;
   mutable bool are_methods_set_up_;
 
-  bool allow_inherited_methods_;
+  const bool require_annotation_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(JavaBoundObject);
 };

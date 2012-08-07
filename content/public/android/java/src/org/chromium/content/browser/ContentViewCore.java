@@ -1030,13 +1030,12 @@ public class ContentViewCore implements MotionEventDelegate {
      * @param object The Java object to inject into the ContentViewCore's
      *               JavaScript context. Null values are ignored.
      * @param name The name used to expose the instance in JavaScript.
-     * @param allowInheritedMethods Whether or not inherited methods may be
-     *                              called from JavaScript.
+     * @param requireAnnotation Restrict exposed methods to ones with the
+     *                          {@link JavascriptInterface} annotation.
      */
-    public void addJavascriptInterface(Object object, String name, boolean allowInheritedMethods) {
+    public void addJavascriptInterface(Object object, String name, boolean requireAnnotation) {
         if (mNativeContentViewCore != 0 && object != null) {
-            nativeAddJavascriptInterface(mNativeContentViewCore, object, name,
-                    allowInheritedMethods);
+            nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requireAnnotation);
         }
     }
 
@@ -1200,7 +1199,7 @@ public class ContentViewCore implements MotionEventDelegate {
     private native int nativeEvaluateJavaScript(String script);
 
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
-                                                     String name, boolean allowInheritedMethods);
+                                                     String name, boolean requireAnnotation);
 
     private native void nativeRemoveJavascriptInterface(int nativeContentViewCoreImpl, String name);
 }

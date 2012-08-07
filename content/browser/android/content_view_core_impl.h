@@ -117,7 +117,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                               jobject obj,
                               jobject object,
                               jstring name,
-                              jboolean allow_inherited_methods);
+                              jboolean require_annotation);
   void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
 
   // --------------------------------------------------------------------------
