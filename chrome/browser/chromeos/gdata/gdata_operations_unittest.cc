@@ -20,9 +20,8 @@ namespace {
 class JsonParseTestGetDataOperation : public GetDataOperation {
  public:
   JsonParseTestGetDataOperation(GDataOperationRegistry* registry,
-                                Profile* profile,
                                 const GetDataCallback& callback)
-      : GetDataOperation(registry, profile, callback) {
+      : GetDataOperation(registry, callback) {
   }
 
   virtual ~JsonParseTestGetDataOperation() {
@@ -86,9 +85,7 @@ TEST_F(GDataOperationsTest, GetDataOperationParseJson) {
                                          &error,
                                          &value);
   JsonParseTestGetDataOperation* getData =
-      new JsonParseTestGetDataOperation(runner_->operation_registry(),
-                                        profile_.get(),
-                                        cb);
+      new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
   getData->NotifyStart();
 
   // Parses a valid json string.
@@ -157,9 +154,7 @@ TEST_F(GDataOperationsTest, GetDataOperationParseInvalidJson) {
                                          &error,
                                          &value);
   JsonParseTestGetDataOperation* getData =
-      new JsonParseTestGetDataOperation(runner_->operation_registry(),
-                                        profile_.get(),
-                                        cb);
+      new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
   getData->NotifyStart();
 
   // Parses an invalid json string.

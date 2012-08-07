@@ -16,11 +16,9 @@ namespace gdata {
 
 //============================== GetAboutOperation =============================
 
-GetAboutOperation::GetAboutOperation(
-    GDataOperationRegistry* registry,
-    Profile* profile,
-    const GetDataCallback& callback)
-    : GetDataOperation(registry, profile, callback) {}
+GetAboutOperation::GetAboutOperation(GDataOperationRegistry* registry,
+                                     const GetDataCallback& callback)
+    : GetDataOperation(registry, callback) {}
 
 GetAboutOperation::~GetAboutOperation() {}
 
@@ -30,11 +28,9 @@ GURL GetAboutOperation::GetURL() const {
 
 //============================== GetApplistOperation ===========================
 
-GetApplistOperation::GetApplistOperation(
-    GDataOperationRegistry* registry,
-    Profile* profile,
-    const GetDataCallback& callback)
-    : GetDataOperation(registry, profile, callback) {}
+GetApplistOperation::GetApplistOperation(GDataOperationRegistry* registry,
+                                         const GetDataCallback& callback)
+    : GetDataOperation(registry, callback) {}
 
 GetApplistOperation::~GetApplistOperation() {}
 

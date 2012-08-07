@@ -15,7 +15,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class Profile;
 class OAuth2AccessTokenFetcher;
 
 namespace gdata {
@@ -27,7 +26,6 @@ class AuthOperation : public GDataOperationRegistry::Operation,
                       public OAuth2AccessTokenConsumer {
  public:
   AuthOperation(GDataOperationRegistry* registry,
-                Profile* profile,
                 const AuthStatusCallback& callback,
                 const std::string& refresh_token);
   virtual ~AuthOperation();
@@ -42,7 +40,6 @@ class AuthOperation : public GDataOperationRegistry::Operation,
   virtual void DoCancel() OVERRIDE;
 
  private:
-  Profile* profile_;
   std::string refresh_token_;
   AuthStatusCallback callback_;
   scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
@@ -89,11 +86,10 @@ class UrlFetchOperationBase : public GDataOperationInterface,
       const ReAuthenticateCallback& callback) OVERRIDE;
 
  protected:
-  UrlFetchOperationBase(GDataOperationRegistry* registry, Profile* profile);
+  UrlFetchOperationBase(GDataOperationRegistry* registry);
   UrlFetchOperationBase(GDataOperationRegistry* registry,
                         GDataOperationRegistry::OperationType type,
-                        const FilePath& path,
-                        Profile* profile);
+                        const FilePath& path);
   virtual ~UrlFetchOperationBase();
 
   // Gets URL for the request.
@@ -143,7 +139,6 @@ class UrlFetchOperationBase : public GDataOperationInterface,
   std::string GetResponseHeadersAsString(
       const net::URLFetcher* url_fetcher);
 
-  Profile* profile_;
   ReAuthenticateCallback re_authenticate_callback_;
   int re_authenticate_count_;
   bool save_temp_file_;
@@ -159,7 +154,6 @@ class UrlFetchOperationBase : public GDataOperationInterface,
 class EntryActionOperation : public UrlFetchOperationBase {
  public:
   EntryActionOperation(GDataOperationRegistry* registry,
-                       Profile* profile,
                        const EntryActionCallback& callback,
                        const GURL& document_url);
   virtual ~EntryActionOperation();
@@ -184,7 +178,6 @@ class EntryActionOperation : public UrlFetchOperationBase {
 class GetDataOperation : public UrlFetchOperationBase {
  public:
   GetDataOperation(GDataOperationRegistry* registry,
-                   Profile* profile,
                    const GetDataCallback& callback);
   virtual ~GetDataOperation();
 

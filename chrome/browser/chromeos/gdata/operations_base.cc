@@ -81,11 +81,10 @@ namespace gdata {
 //================================ AuthOperation ===============================
 
 AuthOperation::AuthOperation(GDataOperationRegistry* registry,
-                             Profile* profile,
                              const AuthStatusCallback& callback,
                              const std::string& refresh_token)
     : GDataOperationRegistry::Operation(registry),
-      profile_(profile), refresh_token_(refresh_token), callback_(callback) {
+      refresh_token_(refresh_token), callback_(callback) {
 }
 
 AuthOperation::~AuthOperation() {}
@@ -155,10 +154,8 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
 
 //============================ UrlFetchOperationBase ===========================
 
-UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry,
-                                             Profile* profile)
+UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry)
     : GDataOperationRegistry::Operation(registry),
-      profile_(profile),
       re_authenticate_count_(0),
       save_temp_file_(false),
       started_(false) {
@@ -167,10 +164,8 @@ UrlFetchOperationBase::UrlFetchOperationBase(GDataOperationRegistry* registry,
 UrlFetchOperationBase::UrlFetchOperationBase(
     GDataOperationRegistry* registry,
     GDataOperationRegistry::OperationType type,
-    const FilePath& path,
-    Profile* profile)
+    const FilePath& path)
     : GDataOperationRegistry::Operation(registry, type, path),
-      profile_(profile),
       re_authenticate_count_(0),
       save_temp_file_(false) {
 }
@@ -335,10 +330,9 @@ std::string UrlFetchOperationBase::GetResponseHeadersAsString(
 //============================ EntryActionOperation ============================
 
 EntryActionOperation::EntryActionOperation(GDataOperationRegistry* registry,
-                                           Profile* profile,
                                            const EntryActionCallback& callback,
                                            const GURL& document_url)
-    : UrlFetchOperationBase(registry, profile),
+    : UrlFetchOperationBase(registry),
       callback_(callback),
       document_url_(document_url) {
 }
@@ -362,9 +356,8 @@ void EntryActionOperation::RunCallbackOnPrematureFailure(GDataErrorCode code) {
 //============================== GetDataOperation ==============================
 
 GetDataOperation::GetDataOperation(GDataOperationRegistry* registry,
-                                   Profile* profile,
                                    const GetDataCallback& callback)
-    : UrlFetchOperationBase(registry, profile),
+    : UrlFetchOperationBase(registry),
       callback_(callback),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
@@ -436,7 +429,7 @@ void GetDataOperation::OnDataParsed(
   DCHECK(!value->get());
 
   OnProcessURLFetchResultsComplete(success);
-  // |value| will be deleted after return beause it is base::Owned()'d.
+  // |value| will be deleted after return because it is base::Owned()'d.
 }
 
 void GetDataOperation::RunCallback(GDataErrorCode fetch_error_code,

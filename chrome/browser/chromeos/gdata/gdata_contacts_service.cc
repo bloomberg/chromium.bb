@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -317,14 +316,12 @@ class GDataContactsService::DownloadContactsRequest
     : public base::SupportsWeakPtr<DownloadContactsRequest> {
  public:
   DownloadContactsRequest(GDataContactsService* service,
-                          Profile* profile,
                           GDataOperationRunner* runner,
                           SuccessCallback success_callback,
                           FailureCallback failure_callback,
                           const base::Time& min_update_time,
                           int max_simultaneous_photo_downloads)
       : service_(service),
-        profile_(profile),
         runner_(runner),
         success_callback_(success_callback),
         failure_callback_(failure_callback),
@@ -334,14 +331,12 @@ class GDataContactsService::DownloadContactsRequest
         num_in_progress_photo_downloads_(0),
         photo_download_failed_(false) {
     DCHECK(service_);
-    DCHECK(profile_);
     DCHECK(runner_);
   }
 
   ~DownloadContactsRequest() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     service_ = NULL;
-    profile_ = NULL;
     runner_ = NULL;
   }
 
@@ -350,7 +345,6 @@ class GDataContactsService::DownloadContactsRequest
     GetContactsOperation* operation =
         new GetContactsOperation(
             runner_->operation_registry(),
-            profile_,
             min_update_time_,
             base::Bind(&DownloadContactsRequest::HandleFeedData,
                        base::Unretained(this)));
@@ -494,7 +488,6 @@ class GDataContactsService::DownloadContactsRequest
       runner_->StartOperationWithRetry(
           new GetContactPhotoOperation(
               runner_->operation_registry(),
-              profile_,
               GURL(url),
               base::Bind(&DownloadContactsRequest::HandlePhotoData,
                          AsWeakPtr(), contact)));
@@ -531,7 +524,6 @@ class GDataContactsService::DownloadContactsRequest
   typedef std::map<contacts::Contact*, std::string> ContactPhotoUrls;
 
   GDataContactsService* service_;  // not owned
-  Profile* profile_;  // not owned
   GDataOperationRunner* runner_;  // not owned
 
   SuccessCallback success_callback_;
@@ -562,11 +554,9 @@ class GDataContactsService::DownloadContactsRequest
 };
 
 GDataContactsService::GDataContactsService(Profile* profile)
-    : profile_(profile),
-      runner_(new GDataOperationRunner(profile)),
+    : runner_(new GDataOperationRunner(profile)),
       max_simultaneous_photo_downloads_(kMaxSimultaneousPhotoDownloads) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_);
 }
 
 GDataContactsService::~GDataContactsService() {
@@ -591,7 +581,6 @@ void GDataContactsService::DownloadContacts(SuccessCallback success_callback,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadContactsRequest* request =
       new DownloadContactsRequest(this,
-                                  profile_,
                                   runner_.get(),
                                   success_callback,
                                   failure_callback,

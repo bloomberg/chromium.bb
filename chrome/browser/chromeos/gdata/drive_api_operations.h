@@ -19,7 +19,6 @@ namespace gdata {
 class GetAboutOperation : public GetDataOperation {
  public:
   GetAboutOperation(GDataOperationRegistry* registry,
-                    Profile* profile,
                     const GetDataCallback& callback);
   virtual ~GetAboutOperation();
 
@@ -37,7 +36,6 @@ class GetAboutOperation : public GetDataOperation {
 class GetApplistOperation : public GetDataOperation {
  public:
   GetApplistOperation(GDataOperationRegistry* registry,
-                      Profile* profile,
                       const GetDataCallback& callback);
   virtual ~GetApplistOperation();
 

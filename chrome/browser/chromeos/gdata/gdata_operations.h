@@ -18,7 +18,6 @@ namespace gdata {
 class GetDocumentsOperation : public GetDataOperation {
  public:
   GetDocumentsOperation(GDataOperationRegistry* registry,
-                        Profile* profile,
                         int start_changestamp,
                         const std::string& search_string,
                         const std::string& directory_resource_id,
@@ -48,7 +47,6 @@ class GetDocumentsOperation : public GetDataOperation {
 class GetDocumentEntryOperation : public GetDataOperation {
  public:
   GetDocumentEntryOperation(GDataOperationRegistry* registry,
-                            Profile* profile,
                             const std::string& resource_id,
                             const GetDataCallback& callback);
   virtual ~GetDocumentEntryOperation();
@@ -70,7 +68,6 @@ class GetDocumentEntryOperation : public GetDataOperation {
 class GetAccountMetadataOperation : public GetDataOperation {
  public:
   GetAccountMetadataOperation(GDataOperationRegistry* registry,
-                              Profile* profile,
                               const GetDataCallback& callback);
   virtual ~GetAccountMetadataOperation();
 
@@ -89,7 +86,6 @@ class DownloadFileOperation : public UrlFetchOperationBase {
  public:
   DownloadFileOperation(
       GDataOperationRegistry* registry,
-      Profile* profile,
       const DownloadActionCallback& download_action_callback,
       const GetDownloadDataCallback& get_download_data_callback,
       const GURL& document_url,
@@ -125,7 +121,6 @@ class DownloadFileOperation : public UrlFetchOperationBase {
 class DeleteDocumentOperation : public EntryActionOperation {
  public:
   DeleteDocumentOperation(GDataOperationRegistry* registry,
-                          Profile* profile,
                           const EntryActionCallback& callback,
                           const GURL& document_url);
   virtual ~DeleteDocumentOperation();
@@ -149,7 +144,6 @@ class CreateDirectoryOperation : public GetDataOperation {
  public:
   // Empty |parent_content_url| will create the directory in the root folder.
   CreateDirectoryOperation(GDataOperationRegistry* registry,
-                           Profile* profile,
                            const GetDataCallback& callback,
                            const GURL& parent_content_url,
                            const FilePath::StringType& directory_name);
@@ -177,7 +171,6 @@ class CreateDirectoryOperation : public GetDataOperation {
 class CopyDocumentOperation : public GetDataOperation {
  public:
   CopyDocumentOperation(GDataOperationRegistry* registry,
-                        Profile* profile,
                         const GetDataCallback& callback,
                         const std::string& resource_id,
                         const FilePath::StringType& new_name);
@@ -205,7 +198,6 @@ class CopyDocumentOperation : public GetDataOperation {
 class RenameResourceOperation : public EntryActionOperation {
  public:
   RenameResourceOperation(GDataOperationRegistry* registry,
-                          Profile* profile,
                           const EntryActionCallback& callback,
                           const GURL& document_url,
                           const FilePath::StringType& new_name);
@@ -233,7 +225,6 @@ class RenameResourceOperation : public EntryActionOperation {
 class AuthorizeAppsOperation : public GetDataOperation {
  public:
   AuthorizeAppsOperation(GDataOperationRegistry* registry,
-                          Profile* profile,
                           const GetDataCallback& callback,
                           const GURL& document_url,
                           const std::string& app_ids);
@@ -269,7 +260,6 @@ class AuthorizeAppsOperation : public GetDataOperation {
 class AddResourceToDirectoryOperation : public EntryActionOperation {
  public:
   AddResourceToDirectoryOperation(GDataOperationRegistry* registry,
-                                  Profile* profile,
                                   const EntryActionCallback& callback,
                                   const GURL& parent_content_url,
                                   const GURL& document_url);
@@ -295,7 +285,6 @@ class AddResourceToDirectoryOperation : public EntryActionOperation {
 class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
  public:
   RemoveResourceFromDirectoryOperation(GDataOperationRegistry* registry,
-                                       Profile* profile,
                                        const EntryActionCallback& callback,
                                        const GURL& parent_content_url,
                                        const GURL& document_url,
@@ -321,7 +310,6 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 class InitiateUploadOperation : public UrlFetchOperationBase {
  public:
   InitiateUploadOperation(GDataOperationRegistry* registry,
-                          Profile* profile,
                           const InitiateUploadCallback& callback,
                           const InitiateUploadParams& params);
   virtual ~InitiateUploadOperation();
@@ -353,7 +341,6 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
 class ResumeUploadOperation : public UrlFetchOperationBase {
  public:
   ResumeUploadOperation(GDataOperationRegistry* registry,
-                        Profile* profile,
                         const ResumeUploadCallback& callback,
                         const ResumeUploadParams& params);
   virtual ~ResumeUploadOperation();
@@ -390,7 +377,6 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
 class GetContactsOperation : public GetDataOperation {
  public:
   GetContactsOperation(GDataOperationRegistry* registry,
-                       Profile* profile,
                        const base::Time& min_update_time,
                        const GetDataCallback& callback);
   virtual ~GetContactsOperation();
@@ -420,7 +406,6 @@ class GetContactsOperation : public GetDataOperation {
 class GetContactPhotoOperation : public UrlFetchOperationBase {
  public:
   GetContactPhotoOperation(GDataOperationRegistry* registry,
-                           Profile* profile,
                            const GURL& photo_url,
                            const GetDownloadDataCallback& callback);
   virtual ~GetContactPhotoOperation();

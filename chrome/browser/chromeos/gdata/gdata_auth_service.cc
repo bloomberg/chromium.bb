@@ -81,8 +81,7 @@ void GDataAuthService::StartAuthenticationOnUIThread(
     const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We have refresh token, let's gets authenticated.
-  (new AuthOperation(registry, profile_,
-                     callback, refresh_token_))->Start();
+  (new AuthOperation(registry, callback, refresh_token_))->Start();
 }
 
 void GDataAuthService::OnAuthCompleted(
