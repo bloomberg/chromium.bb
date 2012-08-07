@@ -30,7 +30,7 @@ CONTENT_EXPORT extern const char kDisableAcceleratedPlugins[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideo[];
 CONTENT_EXPORT extern const char kDisableAltWinstation[];
 CONTENT_EXPORT extern const char kDisableApplicationCache[];
-extern const char kDisableAudio[];
+CONTENT_EXPORT extern const char kDisableAudio[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char kDisableDatabases[];
 extern const char kDisableDataTransferItems[];
