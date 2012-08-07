@@ -16,24 +16,44 @@
 
 namespace gestures {
 
+Interpreter::Interpreter(PropRegistry* prop_reg) : log_(prop_reg) {
+#ifdef DEEP_LOGS
+  logging_enabled_ = true;
+#else
+  logging_enabled_ = false;
+#endif
+}
+
+Interpreter::Interpreter() : log_(NULL) {
+#ifdef DEEP_LOGS
+  logging_enabled_ = true;
+#else
+  logging_enabled_ = false;
+#endif
+}
+
 Gesture* Interpreter::SyncInterpret(HardwareState* hwstate,
                                     stime_t* timeout) {
-  if (hwstate)
+  if (logging_enabled_ && hwstate)
     log_.LogHardwareState(*hwstate);
   Gesture* result = SyncInterpretImpl(hwstate, timeout);
-  LogOutputs(result, timeout);
+  if (logging_enabled_)
+    LogOutputs(result, timeout);
   return result;
 }
 
 Gesture* Interpreter::HandleTimer(stime_t now, stime_t* timeout) {
-  log_.LogTimerCallback(now);
+  if (logging_enabled_)
+    log_.LogTimerCallback(now);
   Gesture* result = HandleTimerImpl(now, timeout);
-  LogOutputs(result, timeout);
+  if (logging_enabled_)
+    LogOutputs(result, timeout);
   return result;
 }
 
 void Interpreter::SetHardwareProperties(const HardwareProperties& hwprops) {
-  log_.SetHardwareProperties(hwprops);
+  if (logging_enabled_)
+    log_.SetHardwareProperties(hwprops);
   SetHardwarePropertiesImpl(hwprops);
 }
 

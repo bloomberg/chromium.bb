@@ -21,6 +21,7 @@ LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
     : FilterInterpreter(prop_reg, next),
       logging_notify_(prop_reg, "Logging Notify", 0, this),
       logging_reset_(prop_reg, "Logging Reset", 0, this) {
+  logging_enabled_ = true;
   if (prop_reg)
     prop_reg->set_activity_log(&log_);
 }

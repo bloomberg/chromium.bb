@@ -59,16 +59,16 @@ TEST(LoggingFilterInterpreterTest, LogResetHandlerTest) {
   };
   stime_t timeout = -1.0;
   interpreter.SyncInterpret(&hardware_state, &timeout);
-  EXPECT_EQ(base_interpreter->log_.size(), 1);
+  EXPECT_EQ(interpreter.log_.size(), 1);
 
   interpreter.SyncInterpret(&hardware_state, &timeout);
-  EXPECT_EQ(base_interpreter->log_.size(), 2);
+  EXPECT_EQ(interpreter.log_.size(), 2);
 
   // Assume the ResetLog property is set.
   interpreter.logging_reset_.HandleGesturesPropWritten();
-  EXPECT_EQ(base_interpreter->log_.size(), 0);
+  EXPECT_EQ(interpreter.log_.size(), 0);
 
   interpreter.SyncInterpret(&hardware_state, &timeout);
-  EXPECT_EQ(base_interpreter->log_.size(), 1);
+  EXPECT_EQ(interpreter.log_.size(), 1);
 }
 }  // namespace gestures

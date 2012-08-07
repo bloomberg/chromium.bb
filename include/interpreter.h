@@ -29,12 +29,9 @@ class Interpreter {
   FRIEND_TEST(InterpreterTest, ResetLogTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, LogResetHandlerTest);
  public:
+  Interpreter(PropRegistry* prop_reg);
+  Interpreter();
   virtual ~Interpreter() {}
-
-  Interpreter(PropRegistry* prop_reg)
-    : log_(prop_reg) {}
-
-  Interpreter() : log_(NULL) {}
 
   // Called to interpret the current state and optionally produce 1
   // resulting gesture. The passed |hwstate| may be modified.
@@ -67,6 +64,7 @@ class Interpreter {
   std::string GetName();
 
  protected:
+  bool logging_enabled_;
   ActivityLog log_;
 
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,

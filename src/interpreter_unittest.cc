@@ -31,6 +31,7 @@ class InterpreterTestInterpreter : public Interpreter {
         int_prop_(prop_reg, "IntProp", 0),
         short_prop_(prop_reg, "ShortProp", 0),
         string_prop_(prop_reg, "StringProp", "") {
+    logging_enabled_ = true;
   }
 
   Gesture return_value_;
@@ -168,7 +169,9 @@ TEST(InterpreterTest, SimpleTest) {
 
 class InterpreterResetLogTestInterpreter : public Interpreter {
  public:
-  InterpreterResetLogTestInterpreter() {}
+  InterpreterResetLogTestInterpreter() {
+    logging_enabled_ = true;
+  }
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                      stime_t* timeout) {
