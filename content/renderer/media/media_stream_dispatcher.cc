@@ -240,7 +240,7 @@ void MediaStreamDispatcher::OnDevicesEnumerationFailed(int request_id) {
     Request& request = *it;
     if (request.ipc_request == request_id) {
       if (request.handler) {
-        request.handler->OnStreamGenerationFailed(request.request_id);
+        request.handler->OnDevicesEnumerationFailed(request.request_id);
         DVLOG(1) << "MediaStreamDispatcher::OnDevicesEnumerationFailed("
                  << request.request_id << ")\n";
       }
