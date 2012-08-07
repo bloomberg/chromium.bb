@@ -257,7 +257,13 @@ class OldPanelBrowserTest : public OldBasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CheckDockedPanelProperties) {
+// http://crbug.com/141013
+#if defined(OS_WIN)
+#define MAYBE_CheckDockedPanelProperties DISABLED_CheckDockedPanelProperties
+#else
+#define MAYBE_CheckDockedPanelProperties CheckDockedPanelProperties
+#endif
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
