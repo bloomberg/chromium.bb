@@ -141,7 +141,7 @@ void GDataSystemService::AddDriveMountPoint() {
   if (provider && !provider->HasMountPoint(mount_point)) {
     provider->AddRemoteMountPoint(
         mount_point,
-        new GDataFileSystemProxy(file_system_.get(), profile_));
+        new GDataFileSystemProxy(file_system_.get()));
   }
 
   file_system_->Initialize();
