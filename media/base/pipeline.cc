@@ -151,7 +151,6 @@ bool Pipeline::IsInitialized() const {
     case kSeeking:
     case kStarting:
     case kStarted:
-    case kEnded:
       return true;
     default:
       return false;
@@ -796,7 +795,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   DCHECK(!IsPipelineStopPending());
 
   // Suppress seeking if we're not fully started.
-  if (state_ != kStarted && state_ != kEnded) {
+  if (state_ != kStarted) {
     // TODO(scherkus): should we run the callback?  I'm tempted to say the API
     // will only execute the first Seek() request.
     DVLOG(1) << "Media pipeline has not started, ignoring seek to "
@@ -809,7 +808,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   // We'll need to pause every filter before seeking.  The state transition
   // is as follows:
-  //   kStarted/kEnded
+  //   kStarted
   //   kPausing (for each filter)
   //   kSeeking (for each filter)
   //   kStarting (for each filter)
@@ -854,8 +853,6 @@ void Pipeline::OnRendererEndedTask() {
     return;
   }
 
-  // Transition to ended, executing the callback if present.
-  SetState(kEnded);
   {
     base::AutoLock auto_lock(lock_);
     clock_->EndOfStream();
@@ -990,7 +987,6 @@ void Pipeline::TeardownStateTransitionTask() {
     case kStarting:
     case kStopped:
     case kStarted:
-    case kEnded:
       NOTREACHED() << "Unexpected state for teardown: " << state_;
       break;
     // default: intentionally left out to force new states to cause compiler
@@ -1219,7 +1215,6 @@ void Pipeline::TearDownPipeline() {
       break;
 
     case kStarted:
-    case kEnded:
       SetState(kPausing);
       DoPause(base::Bind(&Pipeline::OnTeardownStateTransition, this));
       break;
