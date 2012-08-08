@@ -188,6 +188,11 @@ void WebMediaPlayerProxy::DemuxerStartWaitingForSeek() {
     chunk_demuxer_->StartWaitingForSeek();
 }
 
+void WebMediaPlayerProxy::DemuxerCancelPendingSeek() {
+  if (chunk_demuxer_.get())
+    chunk_demuxer_->CancelPendingSeek();
+}
+
 media::ChunkDemuxer::Status WebMediaPlayerProxy::DemuxerAddId(
     const std::string& id,
     const std::string& type,

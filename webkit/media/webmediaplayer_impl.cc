@@ -313,6 +313,7 @@ void WebMediaPlayerImpl::seek(float seconds) {
   if (seeking_) {
     pending_seek_ = true;
     pending_seek_seconds_ = seconds;
+    proxy_->DemuxerCancelPendingSeek();
     return;
   }
 

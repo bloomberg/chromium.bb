@@ -88,6 +88,7 @@ class WebMediaPlayerProxy
 
   // Methods for Demuxer communication.
   void DemuxerStartWaitingForSeek();
+  void DemuxerCancelPendingSeek();
   media::ChunkDemuxer::Status DemuxerAddId(const std::string& id,
                                            const std::string& type,
                                            std::vector<std::string>& codecs);
