@@ -5297,6 +5297,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NACL_GDB_SCRIPT_DESCRIPTION" desc="Description of the 'Script executed by Native Client application debugger at startup' lab.">
         Set path to script with gdb commands which will be executed by nacl-gdb at startup.
       </message>
+      <message name="IDS_FLAGS_ENABLE_PNACL_NAME" desc="Name of the 'Enable Portable Native Client' lab.">
+        Portable Native Client.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_PNACL_DESCRIPTION" desc="Description of the 'Enable Portable Native Client' lab.">
+        Enable support for Portable Native Client.
+      </message>
       <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_NAME" desc="Name of the 'New Downloads UI' lab.">
         New Downloads UI
       </message>
