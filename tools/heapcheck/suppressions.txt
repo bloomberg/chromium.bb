@@ -1525,6 +1525,19 @@
    fun:policy::AsyncPolicyLoader::Init
 }
 {
+   bug_141255_c
+   Heapcheck:Leak
+   ...
+   fun:policy::ConfigDirPolicyLoader::InitOnFile
+   fun:policy::AsyncPolicyLoader::Init
+}
+{
+   bug_141255_d
+   Heapcheck:Leak
+   fun:base::Bind
+   fun:policy::AsyncPolicyProvider::InitWithLoopsReady
+}
+{
    bug_141322
    Heapcheck:Leak
    ...
