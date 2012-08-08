@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_LOCALIZED_ERROR_H_
-#define CHROME_RENDERER_LOCALIZED_ERROR_H_
+#ifndef CHROME_COMMON_LOCALIZED_ERROR_H_
+#define CHROME_COMMON_LOCALIZED_ERROR_H_
 
 #include <string>
 
@@ -29,7 +29,8 @@ class LocalizedError {
   // Fills |error_strings| with values to be used to build an error page used
   // on HTTP errors, like 404 or connection reset.
   static void GetStrings(const WebKit::WebURLError& error,
-                         base::DictionaryValue* strings);
+                         base::DictionaryValue* strings,
+                         const std::string& locale);
 
   // Returns a description of the encountered error.
   static string16 GetErrorDetails(const WebKit::WebURLError& error);
@@ -59,4 +60,4 @@ class LocalizedError {
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalizedError);
 };
 
-#endif  // CHROME_RENDERER_LOCALIZED_ERROR_H_
+#endif  // CHROME_COMMON_LOCALIZED_ERROR_H_

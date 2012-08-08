@@ -210,6 +210,8 @@
         'common/json_schema_validator.h',
         'common/jstemplate_builder.cc',
         'common/jstemplate_builder.h',
+        'common/localized_error.cc',
+        'common/localized_error.h',
         'common/logging_chrome.cc',
         'common/logging_chrome.h',
         'common/mac/app_mode_common.h',

@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/external_ipc_fuzzer.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/localized_error.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/autofill/autofill_agent.h"
@@ -42,7 +43,6 @@
 #include "chrome/renderer/extensions/resource_request_policy.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
-#include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
@@ -686,7 +686,8 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
       if (is_repost) {
         LocalizedError::GetFormRepostStrings(failed_url, &error_strings);
       } else {
-        LocalizedError::GetStrings(error, &error_strings);
+        LocalizedError::GetStrings(error, &error_strings,
+                                   RenderThread::Get()->GetLocale());
       }
       resource_id = IDR_NET_ERROR_HTML;
     }
