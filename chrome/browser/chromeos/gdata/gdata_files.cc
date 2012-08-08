@@ -66,6 +66,18 @@ bool IsValidRootDirectoryProto(const GDataDirectoryProto& proto) {
 
 }  // namespace
 
+EntryInfoResult::EntryInfoResult() : error(GDATA_FILE_ERROR_FAILED) {
+}
+
+EntryInfoResult::~EntryInfoResult() {
+}
+
+EntryInfoPairResult::EntryInfoPairResult() {
+}
+
+EntryInfoPairResult::~EntryInfoPairResult() {
+}
+
 // GDataEntry class.
 
 GDataEntry::GDataEntry(GDataDirectory* parent,
@@ -698,6 +710,23 @@ void GDataDirectoryService::ReadDirectoryByPath(
       base::Bind(callback, error, base::Passed(&entries)));
 }
 
+void GDataDirectoryService::GetEntryInfoPairByPaths(
+    const FilePath& first_path,
+    const FilePath& second_path,
+    const GetEntryInfoPairCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // Get the first entry.
+  GetEntryInfoByPath(
+      first_path,
+      base::Bind(&GDataDirectoryService::GetEntryInfoPairByPathsAfterGetFirst,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 first_path,
+                 second_path,
+                 callback));
+}
+
 void GDataDirectoryService::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
   DCHECK(fresh_file.get());
 
@@ -1142,6 +1171,53 @@ scoped_ptr<GDataEntry> GDataDirectoryService::FromProtoString(
     }
   }
   return entry.Pass();
+}
+
+void GDataDirectoryService::GetEntryInfoPairByPathsAfterGetFirst(
+    const FilePath& first_path,
+    const FilePath& second_path,
+    const GetEntryInfoPairCallback& callback,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<EntryInfoPairResult> result(new EntryInfoPairResult);
+  result->first.path = first_path;
+  result->first.error = error;
+  result->first.proto = entry_proto.Pass();
+
+  // If the first one is not found, don't continue.
+  if (error != GDATA_FILE_OK) {
+    callback.Run(result.Pass());
+    return;
+  }
+
+  // Get the second entry.
+  GetEntryInfoByPath(
+      second_path,
+      base::Bind(&GDataDirectoryService::GetEntryInfoPairByPathsAfterGetSecond,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 second_path,
+                 callback,
+                 base::Passed(&result)));
+}
+
+void GDataDirectoryService::GetEntryInfoPairByPathsAfterGetSecond(
+    const FilePath& second_path,
+    const GetEntryInfoPairCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(result.get());
+
+  result->second.path = second_path;
+  result->second.error = error;
+  result->second.proto = entry_proto.Pass();
+
+  callback.Run(result.Pass());
 }
 
 }  // namespace gdata

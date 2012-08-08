@@ -88,6 +88,30 @@ typedef base::Callback<void(GDataFileError error,
                             scoped_ptr<GDataEntryProtoVector> entries)>
     ReadDirectoryCallback;
 
+// This is a part of EntryInfoPairResult.
+struct EntryInfoResult {
+  EntryInfoResult();
+  ~EntryInfoResult();
+
+  FilePath path;
+  GDataFileError error;
+  scoped_ptr<GDataEntryProto> proto;
+};
+
+// The result of GetEntryInfoPairCallback(). Used to get a pair of entries
+// in one function call.
+struct EntryInfoPairResult {
+  EntryInfoPairResult();
+  ~EntryInfoPairResult();
+
+  EntryInfoResult first;
+  EntryInfoResult second;  // Only filled if the first entry is found.
+};
+
+// Used to receive the result from GetEntryInfoPairCallback().
+typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
+    GetEntryInfoPairCallback;
+
 // Base class for representing files and directories in gdata virtual file
 // system.
 class GDataEntry {
@@ -429,6 +453,17 @@ class GDataDirectoryService {
   void ReadDirectoryByPath(const FilePath& file_path,
                            const ReadDirectoryCallback& callback);
 
+  // Similar to GetEntryInfoByPath() but this function finds a pair of
+  // entries by |first_path| and |second_path|. If the entry for
+  // |first_path| is not found, this function does not try to get the
+  // entry of |second_path|.
+  //
+  // Must be called from UI thread. |callback| is run on UI thread.
+  void GetEntryInfoPairByPaths(
+      const FilePath& first_path,
+      const FilePath& second_path,
+      const GetEntryInfoPairCallback& callback);
+
   // Replaces file entry with the same resource id as |fresh_file| with its
   // fresh value |fresh_file|.
   void RefreshFile(scoped_ptr<GDataFile> fresh_file);
@@ -462,6 +497,22 @@ class GDataDirectoryService {
   // Creates GDataEntry from serialized string.
   scoped_ptr<GDataEntry> FromProtoString(
       const std::string& serialized_proto);
+
+  // ...
+  void GetEntryInfoPairByPathsAfterGetFirst(
+      const FilePath& first_path,
+      const FilePath& second_path,
+      const GetEntryInfoPairCallback& callback,
+      GDataFileError error,
+      scoped_ptr<GDataEntryProto> entry_proto);
+
+  // ...
+  void GetEntryInfoPairByPathsAfterGetSecond(
+      const FilePath& second_path,
+      const GetEntryInfoPairCallback& callback,
+      scoped_ptr<EntryInfoPairResult> result,
+      GDataFileError error,
+      scoped_ptr<GDataEntryProto> entry_proto);
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

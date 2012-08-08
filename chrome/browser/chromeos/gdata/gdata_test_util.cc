@@ -93,5 +93,13 @@ void CopyResultsFromReadDirectoryCallback(
   *out_entries = entries.Pass();
 }
 
+void CopyResultsFromGetEntryInfoPairCallback(
+    scoped_ptr<EntryInfoPairResult>* out_result,
+    scoped_ptr<EntryInfoPairResult> result) {
+  DCHECK(out_result);
+
+  *out_result = result.Pass();
+}
+
 }  // namespace test_util
 }  // namespace gdata

@@ -520,6 +520,73 @@ TEST(GDataDirectoryServiceTest, ReadDirectoryByPath) {
   EXPECT_FALSE(entries.get());
 }
 
+TEST(GDataDirectoryServiceTest, GetEntryInfoPairByPaths) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+  GDataDirectoryService directory_service;
+  InitDirectoryService(&directory_service);
+
+  // Confirm that existing two files are found.
+  scoped_ptr<EntryInfoPairResult> pair_result;
+  directory_service.GetEntryInfoPairByPaths(
+      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      FilePath::FromUTF8Unsafe("drive/dir1/file5"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
+                 &pair_result));
+  test_util::RunBlockingPoolTask();
+  // The first entry should be found.
+  EXPECT_EQ(GDATA_FILE_OK, pair_result->first.error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+            pair_result->first.path);
+  ASSERT_TRUE(pair_result->first.proto.get());
+  EXPECT_EQ("file4", pair_result->first.proto->base_name());
+  // The second entry should be found.
+  EXPECT_EQ(GDATA_FILE_OK, pair_result->second.error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file5"),
+            pair_result->second.path);
+  ASSERT_TRUE(pair_result->second.proto.get());
+  EXPECT_EQ("file5", pair_result->second.proto->base_name());
+
+  // Confirm that the first non existent file is not found.
+  pair_result.reset();
+  directory_service.GetEntryInfoPairByPaths(
+      FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+      FilePath::FromUTF8Unsafe("drive/dir1/file5"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
+                 &pair_result));
+  test_util::RunBlockingPoolTask();
+  // The first entry should not be found.
+  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, pair_result->first.error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+            pair_result->first.path);
+  ASSERT_FALSE(pair_result->first.proto.get());
+  // The second entry should not be found, because the first one failed.
+  EXPECT_EQ(GDATA_FILE_ERROR_FAILED, pair_result->second.error);
+  EXPECT_EQ(FilePath(), pair_result->second.path);
+  ASSERT_FALSE(pair_result->second.proto.get());
+
+  // Confirm that the second non existent file is not found.
+  pair_result.reset();
+  directory_service.GetEntryInfoPairByPaths(
+      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoPairCallback,
+                 &pair_result));
+  test_util::RunBlockingPoolTask();
+  // The first entry should be found.
+  EXPECT_EQ(GDATA_FILE_OK, pair_result->first.error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+            pair_result->first.path);
+  ASSERT_TRUE(pair_result->first.proto.get());
+  EXPECT_EQ("file4", pair_result->first.proto->base_name());
+  // The second entry should not be found.
+  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, pair_result->second.error);
+  EXPECT_EQ(FilePath::FromUTF8Unsafe("drive/dir1/non_existent"),
+            pair_result->second.path);
+  ASSERT_FALSE(pair_result->second.proto.get());
+}
+
 TEST(GDataDirectoryServiceTest, DBTest) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,

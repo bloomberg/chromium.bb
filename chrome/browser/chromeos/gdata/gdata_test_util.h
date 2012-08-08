@@ -65,6 +65,12 @@ void CopyResultsFromReadDirectoryCallback(
     GDataFileError error,
     scoped_ptr<GDataEntryProtoVector> entries);
 
+// Copies |result| |out_result|. Used to run asynchronous functions that take
+// GetEntryInfoPairCallback from tests.
+void CopyResultsFromGetEntryInfoPairCallback(
+    scoped_ptr<EntryInfoPairResult>* out_result,
+    scoped_ptr<EntryInfoPairResult> result);
+
 }  // namespace test_util
 }  // namespace gdata
 
