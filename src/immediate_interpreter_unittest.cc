@@ -1659,6 +1659,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
 
     {0, 0, 0, 0, 50, 0, 50, 40, 95, 0},  // 32
     {0, 0, 0, 0, 50, 0, 70, 40, 96, GESTURES_FINGER_NO_TAP},
+
+    {0, 0, 0, 0, 50, 0, 4, 4, 91, GESTURES_FINGER_PALM},  // 34
   };
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
@@ -1855,6 +1857,11 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {C,{ 1.00, 0, 2, 2, &fs[6] },  -1, MkSet(95, 96), 0, 0, kIdl, false },
     {C,{ 1.01, 0, 1, 1, &fs[17] }, -1, MkSet(91),     0, 0, kIdl, false },
     {C,{ 1.02, 0, 0, 0, NULL },    -1, MkSet(),       0, 0, kIdl, false },
+    // 1-finger tap that's at first classified as a palm
+    {S,{ 0.00, 0, 1, 1, &fs[34] }, -1,  MkSet(),   0, 0, kIdl, false },
+    {C,{ 0.01, 0, 1, 1, &fs[0]  }, -1,  MkSet(91), 0, 0, kIdl, false },
+    {C,{ 0.02, 0, 0, 0, NULL    }, -1,  MkSet(),   0, 0, kIdl, false },
+    //{C,{ 0.08, 0, 0, 0, NULL    }, .07, MkSet(),   0, 0, kIdl, false },
     // Two fingers seem to tap, the bigger of which is the only one that
     // meets the minimum pressure threshold. Then that higher pressure finger
     // is no longer gesturing (e.g., it gets classified as a thumb).

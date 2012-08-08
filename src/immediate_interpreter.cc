@@ -1076,7 +1076,7 @@ void ImmediateInterpreter::UpdateTapState(
     // See if fingers were added
     for (set<short, kMaxGesturingFingers>::const_iterator it =
              tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it)
-      if (!SetContainsValue(prev_tap_gs_fingers_, *it)) {
+      if (!prev_state_.GetFingerState(*it)) {
         // Gesturing finger wasn't in prev state. It's new.
         const FingerState* fs = hwstate->GetFingerState(*it);
         if (FingerTooCloseToTap(*hwstate, *fs) ||
