@@ -276,7 +276,8 @@ void Shell::URLEntered(std::string url_string) {
   }
 }
 
-void Shell::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void Shell::HandleKeyboardEvent(WebContents* source,
+                                const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser)
     return;
 

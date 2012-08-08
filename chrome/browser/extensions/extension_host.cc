@@ -453,7 +453,8 @@ WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
   }
 }
 
-bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+bool ExtensionHost::PreHandleKeyboardEvent(WebContents* source,
+                                           const NativeWebKeyboardEvent& event,
                                            bool* is_keyboard_shortcut) {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP &&
       event.type == NativeWebKeyboardEvent::RawKeyDown &&
@@ -466,13 +467,14 @@ bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // Handle higher priority browser shortcuts such as Ctrl-w.
   Browser* browser = view() ? view()->browser() : NULL;
   if (browser)
-    return browser->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+    return browser->PreHandleKeyboardEvent(source, event, is_keyboard_shortcut);
 
   *is_keyboard_shortcut = false;
   return false;
 }
 
-void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void ExtensionHost::HandleKeyboardEvent(WebContents* source,
+                                        const NativeWebKeyboardEvent& event) {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP) {
     if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
         event.windowsKeyCode == ui::VKEY_ESCAPE) {
@@ -480,7 +482,7 @@ void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
       return;
     }
   }
-  UnhandledKeyboardEvent(event);
+  UnhandledKeyboardEvent(source, event);
 }
 
 bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
@@ -523,11 +525,12 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
 }
 
 void ExtensionHost::UnhandledKeyboardEvent(
+    WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   // Handle lower priority browser shortcuts such as Ctrl-f.
   Browser* browser = view() ? view()->browser() : NULL;
   if (browser)
-    return browser->HandleKeyboardEvent(event);
+    return browser->HandleKeyboardEvent(source, event);
 }
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {

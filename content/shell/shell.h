@@ -116,6 +116,7 @@ class Shell : public WebContentsDelegate,
   virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void HandleKeyboardEvent(
+      WebContents* source,
       const NativeWebKeyboardEvent& event) OVERRIDE;
 #endif
   virtual bool AddMessageToConsole(WebContents* source,

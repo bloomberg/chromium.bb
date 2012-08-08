@@ -54,6 +54,7 @@ class ConstrainedWebDialogDelegateViews
 
   // contents::WebContentsDelegate
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE {
     unhandled_keyboard_event_handler_.HandleKeyboardEvent(
         event, view_->GetFocusManager());

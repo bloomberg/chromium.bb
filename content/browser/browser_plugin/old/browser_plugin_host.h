@@ -96,7 +96,7 @@ class BrowserPluginHost : public WebContentsObserver,
   void DestroyGuests();
 
   // WebContentsDelegate implementation.
-  virtual bool TakeFocus(bool reverse) OVERRIDE;
+  virtual bool TakeFocus(WebContents* web_contents, bool reverse) OVERRIDE;
 
   // WebContentObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

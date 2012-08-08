@@ -198,7 +198,7 @@ void WebContentsViewAndroid::GotFocus() {
 // iterated past the last focusable element on the page).
 void WebContentsViewAndroid::TakeFocus(bool reverse) {
   if (web_contents_->GetDelegate() &&
-      web_contents_->GetDelegate()->TakeFocus(reverse))
+      web_contents_->GetDelegate()->TakeFocus(web_contents_, reverse))
     return;
   web_contents_->GetRenderWidgetHostView()->Focus();
 }

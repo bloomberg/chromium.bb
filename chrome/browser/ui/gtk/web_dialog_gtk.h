@@ -52,6 +52,7 @@ class WebDialogGtk : public ui::WebDialogWebContentsDelegate,
 
   // Overridden from content::WebContentsDelegate:
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(

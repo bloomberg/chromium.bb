@@ -593,7 +593,8 @@ gfx::NativeWindow ExternalTabContainerWin::GetFrameNativeWindow() {
   return hwnd();
 }
 
-bool ExternalTabContainerWin::TakeFocus(bool reverse) {
+bool ExternalTabContainerWin::TakeFocus(content::WebContents* source,
+                                        bool reverse) {
   if (automation_) {
     automation_->Send(new AutomationMsg_TabbedOut(tab_handle_,
         base::win::IsShiftPressed()));
@@ -725,12 +726,14 @@ bool ExternalTabContainerWin::ExecuteContextMenuCommand(int command) {
 }
 
 bool ExternalTabContainerWin::PreHandleKeyboardEvent(
+    content::WebContents* source,
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
   return false;
 }
 
 void ExternalTabContainerWin::HandleKeyboardEvent(
+    content::WebContents* source,
     const NativeWebKeyboardEvent& event) {
   ProcessUnhandledKeyStroke(event.os_event.hwnd, event.os_event.message,
                             event.os_event.wParam, event.os_event.lParam);

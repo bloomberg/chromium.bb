@@ -1121,12 +1121,12 @@ bool WebContentsImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
   return delegate_ &&
-      delegate_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+      delegate_->PreHandleKeyboardEvent(this, event, is_keyboard_shortcut);
 }
 
 void WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (delegate_)
-    delegate_->HandleKeyboardEvent(event);
+    delegate_->HandleKeyboardEvent(this, event);
 }
 
 void WebContentsImpl::HandleMouseDown() {
@@ -2685,7 +2685,7 @@ void WebContentsImpl::DidCancelLoading() {
 
 void WebContentsImpl::DidChangeLoadProgress(double progress) {
   if (delegate_)
-    delegate_->LoadProgressChanged(progress);
+    delegate_->LoadProgressChanged(this, progress);
 }
 
 void WebContentsImpl::DocumentAvailableInMainFrame(

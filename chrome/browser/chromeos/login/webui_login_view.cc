@@ -297,7 +297,8 @@ bool WebUILoginView::HandleContextMenu(
 #endif
 }
 
-void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void WebUILoginView::HandleKeyboardEvent(content::WebContents* source,
+                                         const NativeWebKeyboardEvent& event) {
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
 
@@ -315,7 +316,7 @@ bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
   return true;
 }
 
-bool WebUILoginView::TakeFocus(bool reverse) {
+bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
   ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
   if (tray && tray->GetWidget()->IsVisible()) {
     tray->SetNextFocusableView(this);

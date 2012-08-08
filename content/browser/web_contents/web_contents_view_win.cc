@@ -303,7 +303,7 @@ void WebContentsViewWin::GotFocus() {
 
 void WebContentsViewWin::TakeFocus(bool reverse) {
   if (web_contents_->GetDelegate() &&
-      !web_contents_->GetDelegate()->TakeFocus(reverse) &&
+      !web_contents_->GetDelegate()->TakeFocus(web_contents_, reverse) &&
       delegate_.get()) {
     delegate_->TakeFocus(reverse);
   }

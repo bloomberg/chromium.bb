@@ -119,7 +119,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // loaded).
   // Note that to receive this notification, you must have called
   // SetReportLoadProgressEnabled(true) in the render view.
-  virtual void LoadProgressChanged(double progress) {}
+  virtual void LoadProgressChanged(WebContents* source,
+                                   double progress) {}
 
   // Request the delegate to close this web contents, and do whatever cleanup
   // it needs to do.
@@ -206,7 +207,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // This is called when WebKit tells us that it is done tabbing through
   // controls on the page. Provides a way for WebContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.
-  virtual bool TakeFocus(bool reverse);
+  virtual bool TakeFocus(WebContents* soruce,
+                         bool reverse);
 
   // Invoked when the page loses mouse capture.
   virtual void LostCapture() {}
@@ -246,12 +248,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns true if the |event| was handled. Otherwise, if the |event| would be
   // handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
   // |*is_keyboard_shortcut| should be set to true.
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+  virtual bool PreHandleKeyboardEvent(WebContents* source,
+                                      const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
 
   // Allows delegates to handle unhandled keyboard messages coming back from
   // the renderer.
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual void HandleKeyboardEvent(WebContents* source,
+                                   const NativeWebKeyboardEvent& event) {}
 
   virtual void HandleMouseDown() {}
   virtual void HandleMouseUp() {}

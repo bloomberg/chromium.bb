@@ -162,6 +162,7 @@ class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate,
 
   // Overridden from WebDialogWebContentsDelegate:
   virtual void HandleKeyboardEvent(
+      WebContents* source,
       const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Overridden from CoreTabHelperDelegate:
@@ -193,6 +194,7 @@ bool PrintPreviewWebContentDelegate::CanSaveContents(
 }
 
 void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
+    WebContents* source,
     const NativeWebKeyboardEvent& event) {
   // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)

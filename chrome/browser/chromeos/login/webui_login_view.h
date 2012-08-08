@@ -101,10 +101,11 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
-  virtual bool TakeFocus(bool reverse) OVERRIDE;
+  virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
   virtual void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest* request,

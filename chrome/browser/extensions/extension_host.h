@@ -145,9 +145,11 @@ class ExtensionHost : public content::WebContentsDelegate,
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
   virtual bool PreHandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* source,
                                      const gfx::Size& new_size) OVERRIDE;
@@ -196,6 +198,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Platform specific implementation may override this method to handle the
   // event in platform specific way.
   virtual void UnhandledKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event);
 
   // Returns true if we're hosting a background page.

@@ -22,6 +22,7 @@ class ExtensionHostMac : public ExtensionHost {
 
  private:
   virtual void UnhandledKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHostMac);

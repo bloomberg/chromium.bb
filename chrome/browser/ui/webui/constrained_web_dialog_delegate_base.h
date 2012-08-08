@@ -40,6 +40,7 @@ class ConstrainedWebDialogDelegateBase
 
   // WebDialogWebContentsDelegate interface.
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
  protected:

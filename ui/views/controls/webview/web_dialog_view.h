@@ -96,6 +96,7 @@ class VIEWS_EXPORT WebDialogView : public views::ClientView,
   virtual void MoveContents(content::WebContents* source,
                             const gfx::Rect& pos) OVERRIDE;
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual content::WebContents* OpenURLFromTab(

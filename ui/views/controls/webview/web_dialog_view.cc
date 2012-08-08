@@ -246,7 +246,8 @@ void WebDialogView::MoveContents(WebContents* source, const gfx::Rect& pos) {
 // A simplified version of BrowserView::HandleKeyboardEvent().
 // We don't handle global keyboard shortcuts here, but that's fine since
 // they're all browser-specific. (This may change in the future.)
-void WebDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void WebDialogView::HandleKeyboardEvent(content::WebContents* source,
+                                        const NativeWebKeyboardEvent& event) {
 #if defined(USE_AURA)
   aura::KeyEvent aura_event(event.os_event->native_event(), false);
   views::NativeWidgetAura* aura_widget =

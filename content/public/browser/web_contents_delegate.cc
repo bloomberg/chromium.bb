@@ -59,7 +59,7 @@ bool WebContentsDelegate::ShouldFocusPageAfterCrash() {
   return true;
 }
 
-bool WebContentsDelegate::TakeFocus(bool reverse) {
+bool WebContentsDelegate::TakeFocus(WebContents* soruce, bool reverse) {
   return false;
 }
 
@@ -106,6 +106,7 @@ void WebContentsDelegate::ViewSourceForFrame(WebContents* source,
 }
 
 bool WebContentsDelegate::PreHandleKeyboardEvent(
+    WebContents* source,
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
   return false;

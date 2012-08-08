@@ -57,7 +57,7 @@ void BrowserPluginHost::RegisterContainerInstance(
   guests_by_container_id_[container_id] = observer;
 }
 
-bool BrowserPluginHost::TakeFocus(bool reverse) {
+bool BrowserPluginHost::TakeFocus(WebContents* web_contents, bool reverse) {
   embedder_render_process_host()->Send(
       new OldBrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
   return true;

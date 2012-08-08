@@ -115,9 +115,11 @@ class DevToolsWindow : private content::NotificationObserver,
                               bool user_gesture) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE {}
   virtual bool PreHandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;

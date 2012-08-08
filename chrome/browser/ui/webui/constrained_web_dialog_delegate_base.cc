@@ -97,5 +97,6 @@ TabContents* ConstrainedWebDialogDelegateBase::tab() {
 }
 
 void ConstrainedWebDialogDelegateBase::HandleKeyboardEvent(
+    content::WebContents* source,
     const NativeWebKeyboardEvent& event) {
 }

@@ -118,6 +118,7 @@ bool PanelHost::HandleContextMenu(const content::ContextMenuParams& params) {
 }
 
 void PanelHost::HandleKeyboardEvent(
+    content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   return panel_->HandleKeyboardEvent(event);
 }

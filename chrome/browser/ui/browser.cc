@@ -1172,7 +1172,8 @@ void Browser::TabStripEmpty() {
       FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
 }
 
-bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+bool Browser::PreHandleKeyboardEvent(content::WebContents* source,
+                                     const NativeWebKeyboardEvent& event,
                                      bool* is_keyboard_shortcut) {
   // Escape exits tabbed fullscreen mode.
   // TODO(koz): Write a test for this http://crbug.com/100441.
@@ -1183,7 +1184,8 @@ bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 
-void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void Browser::HandleKeyboardEvent(content::WebContents* source,
+                                  const NativeWebKeyboardEvent& event) {
   window()->HandleKeyboardEvent(event);
 }
 
@@ -1358,7 +1360,8 @@ void Browser::WebContentsFocused(WebContents* contents) {
   window_->WebContentsFocused(contents);
 }
 
-bool Browser::TakeFocus(bool reverse) {
+bool Browser::TakeFocus(content::WebContents* source,
+                        bool reverse) {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
       content::Source<Browser>(this),

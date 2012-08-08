@@ -116,6 +116,7 @@ WebContents* RegistrationScreen::OpenURLFromTab(WebContents* source,
 }
 
 void RegistrationScreen::HandleKeyboardEvent(
+    content::WebContents* source,
     const NativeWebKeyboardEvent& event) {
   unhandled_keyboard_handler_.HandleKeyboardEvent(event,
                                                   view()->GetFocusManager());

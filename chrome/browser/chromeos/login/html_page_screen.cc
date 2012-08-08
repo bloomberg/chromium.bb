@@ -65,7 +65,8 @@ HTMLPageView* HTMLPageScreen::AllocateView() {
   return new HTMLPageView(ProfileManager::GetDefaultProfile());
 }
 
-void HTMLPageScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void HTMLPageScreen::HandleKeyboardEvent(content::WebContents* source,
+                                         const NativeWebKeyboardEvent& event) {
   unhandled_keyboard_handler_.HandleKeyboardEvent(event,
                                                   view()->GetFocusManager());
 }

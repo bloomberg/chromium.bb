@@ -436,9 +436,11 @@ class Browser : public TabStripModelObserver,
 
   // Overridden from content::WebContentsDelegate:
   virtual bool PreHandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event,
       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(
+      content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
 
   // Figure out if there are tabs that have beforeunload handlers.
@@ -543,7 +545,7 @@ class Browser : public TabStripModelObserver,
                                   bool motion) OVERRIDE;
   virtual void ContentsZoomChange(bool zoom_in) OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* content) OVERRIDE;
-  virtual bool TakeFocus(bool reverse) OVERRIDE;
+  virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
   virtual bool IsApplication() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void BeforeUnloadFired(content::WebContents* source,

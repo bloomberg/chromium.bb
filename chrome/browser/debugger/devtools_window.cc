@@ -589,6 +589,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
 }
 
 bool DevToolsWindow::PreHandleKeyboardEvent(
+    content::WebContents* source,
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   if (docked_) {
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
@@ -599,7 +600,8 @@ bool DevToolsWindow::PreHandleKeyboardEvent(
   return false;
 }
 
-void DevToolsWindow::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void DevToolsWindow::HandleKeyboardEvent(content::WebContents* source,
+                                         const NativeWebKeyboardEvent& event) {
   if (docked_) {
     if (event.windowsKeyCode == 0x08) {
       // Do not navigate back in history on Windows (http://crbug.com/74156).
