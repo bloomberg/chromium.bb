@@ -377,25 +377,37 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
       render_view_host != pending_render_view_host_)
     return;
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
-  FrameNavigationState::FrameID id_to_skip;
-  if (render_view_host == render_view_host_)
-    id_to_skip = frame_id;
-  if (is_main_frame)
-    SendErrorEvents(web_contents(), render_view_host_, id_to_skip);
-  render_view_host_ = render_view_host;
-  pending_render_view_host_ = NULL;
-
-  if (!navigation_state_.CanSendEvents(frame_id))
-    return;
 
   bool is_reference_fragment_navigation =
       IsReferenceFragmentNavigation(frame_id, url);
-  bool is_history_navigation =
+  bool is_history_state_modification =
       navigation_state_.GetNavigationCommitted(frame_id);
+
+  if (is_main_frame && render_view_host_ == render_view_host) {
+    // Changing the reference fragment or the history state using
+    // history.pushState or history.replaceState does not cancel on-going
+    // iframe navigations.
+    if (!is_reference_fragment_navigation && !is_history_state_modification)
+      SendErrorEvents(web_contents(), render_view_host_, frame_id);
+    if (pending_render_view_host_) {
+      SendErrorEvents(web_contents(),
+                      pending_render_view_host_,
+                      FrameNavigationState::FrameID());
+      pending_render_view_host_ = NULL;
+    }
+  } else if (pending_render_view_host_ == render_view_host) {
+    SendErrorEvents(
+        web_contents(), render_view_host_, FrameNavigationState::FrameID());
+    render_view_host_ = pending_render_view_host_;
+    pending_render_view_host_ = NULL;
+  }
 
   // Update the URL as it might have changed.
   navigation_state_.UpdateFrame(frame_id, url);
   navigation_state_.SetNavigationCommitted(frame_id);
+
+  if (!navigation_state_.CanSendEvents(frame_id))
+    return;
 
   if (is_reference_fragment_navigation) {
     helpers::DispatchOnCommitted(
@@ -406,10 +418,7 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
         url,
         transition_type);
     navigation_state_.SetNavigationCompleted(frame_id);
-  } else if (is_history_navigation) {
-    // Make the transition type match the one for reference fragment updates.
-    transition_type = static_cast<content::PageTransition>(
-        transition_type | content::PAGE_TRANSITION_CLIENT_REDIRECT);
+  } else if (is_history_state_modification) {
     helpers::DispatchOnCommitted(
         keys::kOnHistoryStateUpdated,
         web_contents(),

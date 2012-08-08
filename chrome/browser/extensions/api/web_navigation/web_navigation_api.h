@@ -113,7 +113,11 @@ class WebNavigationTabObserver : public content::NotificationObserver,
   // Used for tracking registrations to redirect notifications.
   content::NotificationRegistrar registrar_;
 
+  // The current RenderViewHost of the observed WebContents.
   content::RenderViewHost* render_view_host_;
+
+  // During a cross site navigation, the WebContents has a second, pending
+  // RenderViewHost.
   content::RenderViewHost* pending_render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationTabObserver);

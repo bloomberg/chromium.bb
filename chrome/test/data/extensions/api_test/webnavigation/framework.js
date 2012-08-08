@@ -98,7 +98,7 @@ function captureEvent(name, details) {
       return;
     }
     // Strip query parameter as it is hard to predict.
-    details.url = details.url.replace(new RegExp('\\?.*'), '');
+    details.url = details.url.replace(new RegExp('\\?[^#]*'), '');
   }
   // normalize details.
   if ('timeStamp' in details) {
