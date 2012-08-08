@@ -1945,6 +1945,7 @@ binutils-configure() {
           --enable-shared=${shared} \
           --enable-gold=yes \
           --enable-ld=yes \
+          --disable-nls \
           --enable-plugins \
           --disable-werror \
           --without-gas \
@@ -3295,10 +3296,12 @@ driver-install-python() {
   cp findpython.sh "${destdir}"
   for name in $@; do
     local dest="${destdir}/${name/.py}"
-    cp redirect.sh "${dest}"
+    # In some situations cygwin cp messes up the permissions of the redirector
+    # shell/batch scripts. Using cp -a seems to make sure it preserves them.
+    cp -a redirect.sh "${dest}"
     chmod +x "${dest}"
     if ${BUILD_PLATFORM_WIN}; then
-      cp redirect.bat "${dest}".bat
+      cp -a redirect.bat "${dest}".bat
     fi
   done
   spopd
