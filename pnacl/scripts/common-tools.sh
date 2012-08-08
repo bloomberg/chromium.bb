@@ -46,6 +46,7 @@ BUILD_PLATFORM_WIN=false
 if [ "${BUILD_PLATFORM}" == "linux" ] ; then
   BUILD_PLATFORM_LINUX=true
   SCONS_BUILD_PLATFORM=linux
+  BUILD_ARCH=${BUILD_ARCH:-$(uname -m)}
   EXEC_EXT=
   SO_PREFIX=lib
   SO_EXT=.so
@@ -87,7 +88,6 @@ readonly SO_PREFIX
 readonly SO_EXT
 readonly SO_DIR
 
-BUILD_ARCH=$(uname -m)
 BUILD_ARCH_X8632=false
 BUILD_ARCH_X8664=false
 BUILD_ARCH_ARM=false

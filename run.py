@@ -64,7 +64,7 @@ def SetupEnvironment():
                                 env.scons_os + '_x86')
 
   # Path to PNaCl toolchain
-  pnacl_label = 'pnacl_%s_%s' % (GetBuildOS(), GetBuildArch())
+  pnacl_label = 'pnacl_%s_%s' % (GetSconsOS(), GetBuildArch().replace('-','_'))
   env.pnacl_base = os.path.join(env.nacl_root, 'toolchain', pnacl_label)
   env.pnacl_root_newlib = os.path.join(env.pnacl_base, 'newlib')
   env.pnacl_root_glibc = os.path.join(env.pnacl_base, 'glibc')
@@ -555,7 +555,7 @@ def ReadELFInfo(f):
 
 
 def GetSconsOS():
-  name = GetBuildOS()
+  name = platform.system().lower()
   if name == 'linux':
     return 'linux'
   if name == 'darwin':
@@ -564,15 +564,8 @@ def GetSconsOS():
     return 'win'
   Fatal('Unsupported platform "%s"' % name)
 
-
-def GetBuildOS():
-  name = platform.system().lower()
-  if name not in ('linux', 'darwin'):
-    Fatal('Unsupported platform "%s"' % (name,))
-  return name
-
 def GetBuildArch():
-  return platform.machine()
+  return FixArch(platform.machine())
 
 
 def FindBaseDir():
