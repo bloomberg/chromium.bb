@@ -85,9 +85,8 @@ cr.define('options', function() {
     didShowPage: function() {
       chrome.send('requestDefaultProfileIcons');
 
-      // Use the hash to specify the profile index. Note: the actual index
-      // is ignored. Only the current profile may be edited.
-      if (window.location.hash.length > 1)
+      // Just ignore the manage profile dialog on Chrome OS, they use /accounts.
+      if (!cr.isChromeOS && window.location.pathname == '/manageProfile')
         ManageProfileOverlay.getInstance().prepareForManageDialog_();
 
       $('manage-profile-name').focus();
@@ -290,7 +289,7 @@ cr.define('options', function() {
          loadTimeData.getStringF('createProfileInstructions');
       ManageProfileOverlay.getInstance().hideErrorBubble_('create');
 
-      OptionsPage.navigateToPage('manageProfile');
+      OptionsPage.showPageByName('manageProfile', false);
     },
 
   };
