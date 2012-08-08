@@ -70,8 +70,7 @@ std::vector<Alarm> AlarmsFromValue(const base::ListValue* list) {
   return alarms;
 }
 
-scoped_ptr<base::ListValue> AlarmsToValue(
-    const std::vector<Alarm>& alarms) {
+scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
   scoped_ptr<base::ListValue> list(new ListValue());
   for (size_t i = 0; i < alarms.size(); ++i) {
     scoped_ptr<base::DictionaryValue> alarm =

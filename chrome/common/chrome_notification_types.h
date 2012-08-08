@@ -562,7 +562,8 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_POPUP_VIEW_READY,
 
   // Sent when a browser action's state has changed. The source is the
-  // ExtensionAction* that changed.  There are no details.
+  // ExtensionAction* that changed.  The details are the Profile* that the
+  // browser action belongs to.
   NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
 
   // Sent when the count of page actions has changed. Note that some of them

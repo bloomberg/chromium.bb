@@ -32,6 +32,7 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
 #include "chrome/browser/extensions/api/managed_mode/managed_mode_api.h"
 #include "chrome/browser/extensions/api/management/management_api.h"
@@ -400,6 +401,9 @@ ExtensionService::ExtensionService(Profile* profile,
   // Set this as the ExtensionService for extension sorting to ensure it
   // cause syncs if required.
   extension_prefs_->extension_sorting()->SetExtensionService(this);
+
+  extension_action_storage_manager_.reset(
+      new extensions::ExtensionActionStorageManager(profile_));
 
   // How long is the path to the Extensions directory?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",

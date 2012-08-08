@@ -175,7 +175,8 @@ ExtensionAction::IconAnimation::ScopedObserver::~ScopedObserver() {
 ExtensionAction::ExtensionAction(const std::string& extension_id,
                                  Type action_type)
     : extension_id_(extension_id),
-      action_type_(action_type) {
+      action_type_(action_type),
+      has_changed_(false) {
 }
 
 ExtensionAction::~ExtensionAction() {

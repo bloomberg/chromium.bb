@@ -132,6 +132,9 @@ class ExtensionAction {
   std::vector<std::string>* icon_paths() { return &icon_paths_; }
   const std::vector<std::string>* icon_paths() const { return &icon_paths_; }
 
+  bool has_changed() const { return has_changed_; }
+  void set_has_changed(bool value) { has_changed_ = value; }
+
   // Set the url which the popup will load when the user clicks this action's
   // icon.  Setting an empty URL will disable the popup for a given tab.
   void SetPopupUrl(int tab_id, const GURL& url);
@@ -316,6 +319,10 @@ class ExtensionAction {
 
   // Saves the arguments from CacheIcon() calls.
   std::map<std::string, gfx::Image> path_to_icon_cache_;
+
+  // True if the ExtensionAction's settings have changed from what was
+  // specified in the manifest.
+  bool has_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAction);
 };

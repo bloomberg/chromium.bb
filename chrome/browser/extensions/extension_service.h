@@ -70,6 +70,7 @@ class ComponentLoader;
 class ContentSettingsStore;
 class CrxInstaller;
 class Extension;
+class ExtensionActionStorageManager;
 class ExtensionCookiesEventRouter;
 class ExtensionManagedModeEventRouter;
 class FontSettingsEventRouter;
@@ -855,6 +856,9 @@ class ExtensionService
   AppShortcutManager app_shortcut_manager_;
 
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
+
+  scoped_ptr<extensions::ExtensionActionStorageManager>
+      extension_action_storage_manager_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

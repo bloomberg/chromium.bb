@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_ACTIONS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_EXTENSION_ACTION_EXTENSION_ACTIONS_API_H_
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class DictionaryValue;
@@ -15,6 +18,34 @@ namespace extensions {
 class TabHelper;
 }
 class TabContents;
+
+namespace extensions {
+
+// This class manages reading and writing browser action values from storage.
+class ExtensionActionStorageManager
+    : public content::NotificationObserver,
+      public base::SupportsWeakPtr<ExtensionActionStorageManager> {
+ public:
+  explicit ExtensionActionStorageManager(Profile* profile);
+  virtual ~ExtensionActionStorageManager();
+
+ private:
+  // NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Reads/Writes the ExtensionAction's default values to/from storage.
+  void WriteToStorage(ExtensionAction* extension_action);
+  void ReadFromStorage(
+      const std::string& extension_id, scoped_ptr<base::Value> value);
+
+  Profile* profile_;
+  content::NotificationRegistrar registrar_;
+};
+
+}  // namespace extensions
+
 
 // Implementation of the browserAction, pageAction, and scriptBadge APIs.
 //

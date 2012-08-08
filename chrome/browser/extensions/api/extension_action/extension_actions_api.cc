@@ -6,14 +6,17 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/extension_action/extension_page_actions_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
+#include "chrome/browser/extensions/state_store.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -26,13 +29,208 @@
 
 namespace {
 
+const char kBrowserActionStorageKey[] = "browser_action";
+const char kPopupUrlStorageKey[] = "poupup_url";
+const char kTitleStorageKey[] = "title";
+const char kIconStorageKey[] = "icon";
+const char kBadgeTextStorageKey[] = "badge_text";
+const char kBadgeBackgroundColorStorageKey[] = "badge_background_color";
+const char kBadgeTextColorStorageKey[] = "badge_text_color";
+const char kAppearanceStorageKey[] = "appearance";
+
 // Errors.
 const char kNoExtensionActionError[] =
     "This extension has no action specified.";
 const char kNoTabError[] = "No tab with id: *.";
 const char kIconIndexOutOfBounds[] = "Page action icon index out of bounds.";
 
+// Conversion function for reading/writing to storage.
+SkColor RawStringToSkColor(const std::string& str) {
+  uint64 value = 0;
+  base::StringToUint64(str, &value);
+  SkColor color = static_cast<SkColor>(value);
+  DCHECK(value == color);  // ensure value fits into color's 32 bits
+  return color;
 }
+
+// Conversion function for reading/writing to storage.
+std::string SkColorToRawString(SkColor color) {
+  return base::Uint64ToString(color);
+}
+
+// Conversion function for reading/writing to storage.
+bool StringToSkBitmap(const std::string& str, SkBitmap* bitmap) {
+  // TODO(mpcomplete): Remove the base64 encode/decode step when
+  // http://crbug.com/140546 is fixed.
+  std::string raw_str;
+  if (!base::Base64Decode(str, &raw_str))
+    return false;
+  IPC::Message bitmap_pickle(raw_str.data(), raw_str.size());
+  PickleIterator iter(bitmap_pickle);
+  return IPC::ReadParam(&bitmap_pickle, &iter, bitmap);
+}
+
+// Conversion function for reading/writing to storage.
+std::string ImageToString(const gfx::Image& image) {
+  IPC::Message bitmap_pickle;
+  IPC::WriteParam(&bitmap_pickle, image.AsBitmap());
+  std::string raw_str(static_cast<const char*>(bitmap_pickle.data()),
+                      bitmap_pickle.size());
+  std::string base64_str;
+  if (!base::Base64Encode(raw_str, &base64_str))
+    return std::string();
+  return base64_str;
+}
+
+// Set |action|'s default values to those specified in |dict|.
+void SetDefaultsFromValue(const base::DictionaryValue* dict,
+                          ExtensionAction* action) {
+  const int kTabId = ExtensionAction::kDefaultTabId;
+  std::string str_value;
+  int int_value;
+  SkBitmap bitmap;
+
+  if (dict->GetString(kPopupUrlStorageKey, &str_value))
+    action->SetPopupUrl(kTabId, GURL(str_value));
+  if (dict->GetString(kTitleStorageKey, &str_value))
+    action->SetTitle(kTabId, str_value);
+  if (dict->GetString(kBadgeTextStorageKey, &str_value))
+    action->SetBadgeText(kTabId, str_value);
+  if (dict->GetString(kBadgeBackgroundColorStorageKey, &str_value))
+    action->SetBadgeBackgroundColor(kTabId, RawStringToSkColor(str_value));
+  if (dict->GetString(kBadgeTextColorStorageKey, &str_value))
+    action->SetBadgeTextColor(kTabId, RawStringToSkColor(str_value));
+  if (dict->GetInteger(kAppearanceStorageKey, &int_value))
+    action->SetAppearance(kTabId,
+                          static_cast<ExtensionAction::Appearance>(int_value));
+  if (dict->GetString(kIconStorageKey, &str_value) &&
+      StringToSkBitmap(str_value, &bitmap))
+    action->SetIcon(kTabId, bitmap);
+}
+
+// Store |action|'s default values in a DictionaryValue for use in storing to
+// disk.
+scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
+  const int kTabId = ExtensionAction::kDefaultTabId;
+  scoped_ptr<base::DictionaryValue> dict(new DictionaryValue());
+
+  dict->SetString(kPopupUrlStorageKey, action->GetPopupUrl(kTabId).spec());
+  dict->SetString(kTitleStorageKey, action->GetTitle(kTabId));
+  dict->SetString(kBadgeTextStorageKey, action->GetBadgeText(kTabId));
+  dict->SetString(kBadgeBackgroundColorStorageKey,
+                  SkColorToRawString(action->GetBadgeBackgroundColor(kTabId)));
+  dict->SetString(kBadgeTextColorStorageKey,
+                  SkColorToRawString(action->GetBadgeTextColor(kTabId)));
+  dict->SetInteger(kAppearanceStorageKey,
+                   action->GetIsVisible(kTabId) ?
+                       ExtensionAction::ACTIVE : ExtensionAction::INVISIBLE);
+  dict->SetString(kIconStorageKey, ImageToString(action->GetIcon(kTabId)));
+
+  return dict.Pass();
+}
+
+}  // namespace
+
+namespace extensions {
+
+//
+// ExtensionActionStorageManager
+//
+
+ExtensionActionStorageManager::ExtensionActionStorageManager(Profile* profile)
+    : profile_(profile) {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+
+  StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
+  if (storage)
+    storage->RegisterKey(kBrowserActionStorageKey);
+}
+
+ExtensionActionStorageManager::~ExtensionActionStorageManager() {
+}
+
+void ExtensionActionStorageManager::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      if (!extension->browser_action())
+        break;
+
+      StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
+      if (storage) {
+        storage->GetExtensionValue(extension->id(), kBrowserActionStorageKey,
+            base::Bind(&ExtensionActionStorageManager::ReadFromStorage,
+                       AsWeakPtr(), extension->id()));
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED: {
+      ExtensionAction* extension_action =
+          content::Source<ExtensionAction>(source).ptr();
+      Profile* profile = content::Details<Profile>(details).ptr();
+      if (profile != profile_)
+        break;
+
+      extension_action->set_has_changed(true);
+      WriteToStorage(extension_action);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void ExtensionActionStorageManager::WriteToStorage(
+    ExtensionAction* extension_action) {
+  StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
+  if (!storage)
+    return;
+
+  scoped_ptr<base::DictionaryValue> defaults =
+      DefaultsToValue(extension_action);
+  storage->SetExtensionValue(extension_action->extension_id(),
+                             kBrowserActionStorageKey,
+                             defaults.PassAs<base::Value>());
+}
+
+void ExtensionActionStorageManager::ReadFromStorage(
+    const std::string& extension_id, scoped_ptr<base::Value> value) {
+  const Extension* extension =
+      ExtensionSystem::Get(profile_)->extension_service()->
+          GetExtensionById(extension_id, true);
+  if (!extension)
+    return;
+
+  CHECK(extension->browser_action());
+
+  // Don't load values from storage if the extension has updated a value
+  // already. The extension may have only updated some of the values, but
+  // this is a good first approximation. If the extension is doing stuff
+  // to the browser action, we can assume it is ready to take over.
+  if (extension->browser_action()->has_changed())
+    return;
+
+  base::DictionaryValue* dict = NULL;
+  if (!value.get() || !value->GetAsDictionary(&dict))
+    return;
+
+  SetDefaultsFromValue(dict, extension->browser_action());
+}
+
+}  // namespace extensions
+
+
+//
+// ExtensionActionFunction
+//
 
 ExtensionActionFunction::ExtensionActionFunction()
     : details_(NULL),
@@ -137,7 +335,7 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
       content::Source<ExtensionAction>(extension_action_),
-      content::NotificationService::NoDetails());
+      content::Details<Profile>(profile()));
 }
 
 void ExtensionActionFunction::NotifyLocationBarChange() {
@@ -210,8 +408,7 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
     IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
     PickleIterator iter(bitmap_pickle);
     SkBitmap bitmap;
-    EXTENSION_FUNCTION_VALIDATE(
-        IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));
+    EXTENSION_FUNCTION_VALIDATE(IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));
     extension_action_->SetIcon(tab_id_, bitmap);
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
     // If --enable-script-badges is on there might legitimately be an iconIndex
