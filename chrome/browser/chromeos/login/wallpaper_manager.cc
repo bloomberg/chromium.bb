@@ -52,7 +52,7 @@ const int kThumbnailHeight = 80;
 // Also see ash::WallpaperInfo kDefaultWallpapers in
 // desktop_background_resources.cc
 #if defined(GOOGLE_CHROME_BUILD)
-const int kDefaultOOBEWallpaperIndex = 16; // IDR_AURA_WALLPAPERS_3_URBAN0
+const int kDefaultOOBEWallpaperIndex = 20; // IDR_AURA_WALLPAPERS_2_LANDSCAPE8
 #else
 const int kDefaultOOBEWallpaperIndex = 0;  // IDR_AURA_WALLPAPERS_ROMAINGUY_0
 #endif

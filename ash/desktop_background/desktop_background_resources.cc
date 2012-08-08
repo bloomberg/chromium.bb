@@ -296,20 +296,20 @@ const ash::WallpaperInfo kDefaultWallpapers[] = {
         "Neil Kremer",
         "http://lightshedimagery.smugmug.com"
     },
-#endif
     {
         {
-            IDR_AURA_WALLPAPERS_5_GRADIENT0_LARGE,
-            ash::TILE
+            IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE,
+            ash::CENTER_CROPPED
         },
         {
-            IDR_AURA_WALLPAPERS_5_GRADIENT0_SMALL,
-            ash::TILE
+            IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL,
+            ash::CENTER
         },
-        IDR_AURA_WALLPAPERS_5_GRADIENT0_THUMB,
-        "Chromium",
-        "http://www.chromium.org"
+        IDR_AURA_WALLPAPERS_2_LANDSCAPE8_THUMB,
+        "Clemens Günthermann",
+        "http://www.clegue.com"
     },
+#endif
     {
         {
             IDR_AURA_WALLPAPERS_5_GRADIENT1_LARGE,
@@ -411,14 +411,14 @@ const int kSolidColorIndex = -2;
 // TODO(saintlou): These hardcoded indexes, although checked against the size
 // of the array are really hacky.
 #if defined(GOOGLE_CHROME_BUILD)
-const int kDefaultWallpaperIndex = 16; // IDR_AURA_WALLPAPERS_3_URBAN0
+const int kDefaultWallpaperIndex = 20; // IDR_AURA_WALLPAPERS_2_LANDSCAPE8
 const int kLastRandomWallpaperIndex = 19; // The first 20 are random.
-const int kGuestWallpaperIndex = 26;   // IDR_AURA_WALLPAPERS_5_GRADIENT6
+const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
 #else
 // Set default wallpaper to the grey background for faster wallpaper loading
 // time in browser tests. Otherwise, some of the tests will finish before
 // wallpaper loaded and cause crashes.
-const int kDefaultWallpaperIndex = 6;  // IDR_AURA_WALLPAPERS_5_GRADIENT5
+const int kDefaultWallpaperIndex = 5;  // IDR_AURA_WALLPAPERS_5_GRADIENT5
 const int kLastRandomWallpaperIndex = 8;
 const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
 #endif

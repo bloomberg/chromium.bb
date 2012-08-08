@@ -523,6 +523,9 @@
         <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_LARGE" file="aura/google_wallpapers/large/2-landscape7.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_SMALL" file="aura/google_wallpapers/small/2-landscape7.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE7_THUMB" file="aura/google_wallpapers/2-landscape7_thumb.png" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_LARGE" file="aura/google_wallpapers/large/2-landscape8.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_SMALL" file="aura/google_wallpapers/small/2-landscape8.jpg" type="BINDATA" />
+        <include name="IDR_AURA_WALLPAPERS_2_LANDSCAPE8_THUMB" file="aura/google_wallpapers/2-landscape8_thumb.png" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_3_URBAN0_LARGE" file="aura/google_wallpapers/large/3-urban0.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_3_URBAN0_SMALL" file="aura/google_wallpapers/small/3-urban0.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_3_URBAN0_THUMB" file="aura/google_wallpapers/3-urban0_thumb.png" type="BINDATA" />
@@ -539,9 +542,6 @@
 
       <!-- Wallpapers (gradients) used by Ash. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_AURA_WALLPAPERS_5_GRADIENT0_LARGE" file="aura/wallpapers/large/5-gradient0.png" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPERS_5_GRADIENT0_SMALL" file="aura/wallpapers/small/5-gradient0.png" type="BINDATA" />
-        <include name="IDR_AURA_WALLPAPERS_5_GRADIENT0_THUMB" file="aura/wallpapers/5-gradient0_thumb.png" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_LARGE" file="aura/wallpapers/large/5-gradient1.png" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_SMALL" file="aura/wallpapers/small/5-gradient1.png" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPERS_5_GRADIENT1_THUMB" file="aura/wallpapers/5-gradient1_thumb.png" type="BINDATA" />
