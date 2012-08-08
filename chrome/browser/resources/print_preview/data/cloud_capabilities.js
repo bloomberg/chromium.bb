@@ -283,7 +283,7 @@ cr.define('print_preview', function() {
    * @type {!RegExp}
    * @const
    */
-  ColorCapability.BW_REGEX = /(.*gray.*|.*mono.*|.*black.*|false)/i;
+  ColorCapability.BW_REGEX = /(.*gray.*|.*mono.*|.*black.*|false|grey_k)/i;
 
   ColorCapability.prototype = {
     __proto__: CloudCapability.prototype,
