@@ -41,7 +41,7 @@ typedef base::Callback<void(GDataFileError error,
                             GDataFileType file_type)> GetFileCallback;
 
 // Used to get entry info from the file system, with the gdata file path.
-// If |error| is not PLATFORM_FILE_OK, |file_info| is set to NULL.
+// If |error| is not GDATA_FILE_OK, |file_info| is set to NULL.
 //
 // |gdata_file_path| parameter is provided as GDataEntryProto does not contain
 // the gdata file path (i.e. only contains the base name without parent
@@ -51,23 +51,18 @@ typedef base::Callback<void(GDataFileError error,
                             scoped_ptr<GDataEntryProto> file_proto)>
     GetEntryInfoWithFilePathCallback;
 
-// Used to get entry info from the file system.
-// If |error| is not PLATFORM_FILE_OK, |entry_info| is set to NULL.
-typedef base::Callback<void(GDataFileError error,
-                            scoped_ptr<GDataEntryProto> entry_proto)>
-    GetEntryInfoCallback;
-
 // Used to read a directory from the file system.
-// If |error| is not PLATFORM_FILE_OK, |entries| is set to NULL.
+// Similar to ReadDirectoryCallback but this one provides
+// |hide_hosted_documents|
+// If |error| is not GDATA_FILE_OK, |entries| is set to NULL.
 // |entries| are contents, both files and directories, of the directory.
-typedef std::vector<GDataEntryProto> GDataEntryProtoVector;
 typedef base::Callback<void(GDataFileError error,
                             bool hide_hosted_documents,
                             scoped_ptr<GDataEntryProtoVector> entries)>
-    ReadDirectoryCallback;
+    ReadDirectoryWithSettingCallback;
 
 // Used to get drive content search results.
-// If |error| is not PLATFORM_FILE_OK, |result_paths| is empty.
+// If |error| is not GDATA_FILE_OK, |result_paths| is empty.
 typedef base::Callback<void(
     GDataFileError error,
     const GURL& next_feed,
@@ -308,8 +303,9 @@ class GDataFileSystemInterface {
   // and refresh file system content from server and disk cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void ReadDirectoryByPath(const FilePath& file_path,
-                                   const ReadDirectoryCallback& callback) = 0;
+  virtual void ReadDirectoryByPath(
+      const FilePath& file_path,
+      const ReadDirectoryWithSettingCallback& callback) = 0;
 
   // Requests a refresh of the directory pointed by |file_path| (i.e. fetches
   // the latest metadata of files in the target directory).

@@ -651,6 +651,53 @@ void GDataDirectoryService::GetEntryByResourceIdAsync(
   callback.Run(entry);
 }
 
+void GDataDirectoryService::GetEntryInfoByPath(
+    const FilePath& path,
+    const GetEntryInfoCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<GDataEntryProto> entry_proto;
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+
+  GDataEntry* entry = FindEntryByPathSync(path);
+  if (entry) {
+    entry_proto.reset(new GDataEntryProto);
+    entry->ToProtoFull(entry_proto.get());
+    error = GDATA_FILE_OK;
+  } else {
+    error = GDATA_FILE_ERROR_NOT_FOUND;
+  }
+
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, error, base::Passed(&entry_proto)));
+}
+
+void GDataDirectoryService::ReadDirectoryByPath(
+    const FilePath& path,
+    const ReadDirectoryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  scoped_ptr<GDataEntryProtoVector> entries;
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+
+  GDataEntry* entry = FindEntryByPathSync(path);
+  if (entry && entry->AsGDataDirectory()) {
+    entries = entry->AsGDataDirectory()->ToProtoVector();
+    error = GDATA_FILE_OK;
+  } else if (entry && !entry->AsGDataDirectory()) {
+    error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
+  } else {
+    error = GDATA_FILE_ERROR_NOT_FOUND;
+  }
+
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, error, base::Passed(&entries)));
+}
+
 void GDataDirectoryService::RefreshFile(scoped_ptr<GDataFile> fresh_file) {
   DCHECK(fresh_file.get());
 
@@ -996,6 +1043,26 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
     GDataDirectory* dir = iter->second;
     dir->ToProto(proto->add_child_directories());
   }
+}
+
+scoped_ptr<GDataEntryProtoVector> GDataDirectory::ToProtoVector() const {
+  scoped_ptr<GDataEntryProtoVector> entries(new GDataEntryProtoVector);
+  for (GDataFileCollection::const_iterator iter = child_files().begin();
+       iter != child_files().end(); ++iter) {
+    GDataEntryProto proto;
+    iter->second->ToProto(&proto);
+    entries->push_back(proto);
+  }
+  for (GDataDirectoryCollection::const_iterator iter =
+           child_directories().begin();
+       iter != child_directories().end(); ++iter) {
+    GDataEntryProto proto;
+    // Convert to GDataEntry, as we don't want to include children in |proto|.
+    static_cast<const GDataEntry*>(iter->second)->ToProtoFull(&proto);
+    entries->push_back(proto);
+  }
+
+  return entries.Pass();
 }
 
 void GDataEntry::SerializeToString(std::string* serialized_proto) const {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -198,7 +199,7 @@ TEST(GDataEntryTest, FromProto_DetectBadUploadUrl) {
   EXPECT_EQ(kResumableEditMediaUrl, entry.upload_url().spec());
 }
 
-TEST(GDataRootDirectoryTest, VersionCheck) {
+TEST(GDataDirectoryServiceTest, VersionCheck) {
   // Set up the root directory.
   GDataRootDirectoryProto proto;
   GDataEntryProto* mutable_entry =
@@ -234,7 +235,7 @@ TEST(GDataRootDirectoryTest, VersionCheck) {
   ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
 }
 
-TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
+TEST(GDataDirectoryServiceTest, ParseFromString_DetectBadTitle) {
   GDataRootDirectoryProto proto;
   proto.set_version(kProtoVersion);
 
@@ -272,7 +273,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadTitle) {
   ASSERT_EQ(kGDataRootDirectory, root->title());
 }
 
-TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
+TEST(GDataDirectoryServiceTest, ParseFromString_DetectBadResourceID) {
   GDataRootDirectoryProto proto;
   proto.set_version(kProtoVersion);
 
@@ -304,7 +305,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectBadResourceID) {
 // We have a similar test in FromProto_DetectBadUploadUrl, but the test here
 // is to ensure that an error in GDataFile::FromProto() is properly
 // propagated to GDataRootDirectory::ParseFromString().
-TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
+TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
   // Set up the root directory properly.
   GDataRootDirectoryProto root_directory_proto;
   root_directory_proto.set_version(kProtoVersion);
@@ -371,7 +372,7 @@ TEST(GDataRootDirectoryTest, ParseFromString_DetectNoUploadUrl) {
   ASSERT_EQ(FROM_CACHE, directory_service.origin());
 }
 
-TEST(GDataRootDirectoryTest, RefreshFile) {
+TEST(GDataDirectoryServiceTest, RefreshFile) {
   MessageLoopForUI message_loop;
   GDataDirectoryService directory_service;
   GDataDirectory* root(directory_service.root());
@@ -427,7 +428,7 @@ TEST(GDataRootDirectoryTest, RefreshFile) {
   EXPECT_FALSE(directory_service.GetEntryByResourceId("file:does_not_exist"));
 }
 
-TEST(GDataRootDirectoryTest, GetEntryByResourceId_RootDirectory) {
+TEST(GDataDirectoryServiceTest, GetEntryByResourceId_RootDirectory) {
   GDataDirectoryService directory_service;
   // Look up the root directory by its resource ID.
   GDataEntry* entry = directory_service.GetEntryByResourceId(
@@ -436,7 +437,90 @@ TEST(GDataRootDirectoryTest, GetEntryByResourceId_RootDirectory) {
   EXPECT_EQ(kGDataRootDirectoryResourceId, entry->resource_id());
 }
 
-TEST(GDataRootDirectoryTest, DBTest) {
+TEST(GDataDirectoryServiceTest, GetEntryInfoByPath) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+  GDataDirectoryService directory_service;
+  InitDirectoryService(&directory_service);
+
+  // Confirm that an existing file is found.
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  scoped_ptr<GDataEntryProto> entry_proto;
+  directory_service.GetEntryInfoByPath(
+      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_OK, error);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("file4", entry_proto->base_name());
+
+  // Confirm that a non existing file is not found.
+  error = GDATA_FILE_ERROR_FAILED;
+  entry_proto.reset();
+  directory_service.GetEntryInfoByPath(
+      FilePath::FromUTF8Unsafe("drive/dir1/non_existing"),
+      base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
+                 &error, &entry_proto));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_FALSE(entry_proto.get());
+}
+
+TEST(GDataDirectoryServiceTest, ReadDirectoryByPath) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+  GDataDirectoryService directory_service;
+  InitDirectoryService(&directory_service);
+
+  // Confirm that an existing directory is found.
+  GDataFileError error = GDATA_FILE_ERROR_FAILED;
+  scoped_ptr<GDataEntryProtoVector> entries;
+  directory_service.ReadDirectoryByPath(
+      FilePath::FromUTF8Unsafe("drive/dir1"),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_OK, error);
+  ASSERT_TRUE(entries.get());
+  ASSERT_EQ(3U, entries->size());
+
+  // The order is not guaranteed so we should sort the base names.
+  std::vector<std::string> base_names;
+  for (size_t i = 0; i < 3; ++i)
+    base_names.push_back(entries->at(i).base_name());
+  std::sort(base_names.begin(), base_names.end());
+
+  EXPECT_EQ("dir3", base_names[0]);
+  EXPECT_EQ("file4", base_names[1]);
+  EXPECT_EQ("file5", base_names[2]);
+
+  // Confirm that a non existing directory is not found.
+  error = GDATA_FILE_ERROR_FAILED;
+  entries.reset();
+  directory_service.ReadDirectoryByPath(
+      FilePath::FromUTF8Unsafe("drive/non_existing"),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_FALSE(entries.get());
+
+  // Confirm that reading a file results in GDATA_FILE_ERROR_NOT_A_DIRECTORY.
+  error = GDATA_FILE_ERROR_FAILED;
+  entries.reset();
+  directory_service.ReadDirectoryByPath(
+      FilePath::FromUTF8Unsafe("drive/dir1/file4"),
+      base::Bind(&test_util::CopyResultsFromReadDirectoryCallback,
+                 &error, &entries));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(GDATA_FILE_ERROR_NOT_A_DIRECTORY, error);
+  EXPECT_FALSE(entries.get());
+}
+
+TEST(GDataDirectoryServiceTest, DBTest) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);

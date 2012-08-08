@@ -111,7 +111,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GetEntryInfoCallback& callback) OVERRIDE;
   virtual void ReadDirectoryByPath(
       const FilePath& file_path,
-      const ReadDirectoryCallback& callback) OVERRIDE;
+      const ReadDirectoryWithSettingCallback& callback) OVERRIDE;
   virtual void RequestDirectoryRefresh(
       const FilePath& file_path) OVERRIDE;
   virtual void GetAvailableSpace(
@@ -612,7 +612,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                       GDataEntry* entry);
 
   // Called when an entry is found for ReadDirectoryByPath().
-  void OnReadDirectory(const ReadDirectoryCallback& callback,
+  void OnReadDirectory(const ReadDirectoryWithSettingCallback& callback,
                        GDataFileError error,
                        GDataEntry* entry);
 
@@ -718,7 +718,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GetEntryInfoWithFilePathCallback& callback);
   void ReadDirectoryByPathAsyncOnUIThread(
       const FilePath& file_path,
-      const ReadDirectoryCallback& callback);
+      const ReadDirectoryWithSettingCallback& callback);
   void RequestDirectoryRefreshOnUIThread(
       const FilePath& file_path);
   void OnRequestDirectoryRefresh(GetDocumentsParams* params,

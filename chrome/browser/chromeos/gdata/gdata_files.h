@@ -74,6 +74,20 @@ const int32 kProtoVersion = 1;
 typedef base::Callback<void(GDataFileError error)>
     FileOperationCallback;
 
+// Used to get entry info from the file system.
+// If |error| is not GDATA_FILE_OK, |entry_info| is set to NULL.
+typedef base::Callback<void(GDataFileError error,
+                            scoped_ptr<GDataEntryProto> entry_proto)>
+    GetEntryInfoCallback;
+
+// Used to read a directory from the file system.
+// If |error| is not GDATA_FILE_OK, |entries| is set to NULL.
+// |entries| are contents, both files and directories, of the directory.
+typedef std::vector<GDataEntryProto> GDataEntryProtoVector;
+typedef base::Callback<void(GDataFileError error,
+                            scoped_ptr<GDataEntryProtoVector> entries)>
+    ReadDirectoryCallback;
+
 // Base class for representing files and directories in gdata virtual file
 // system.
 class GDataEntry {
@@ -281,6 +295,9 @@ class GDataDirectory : public GDataEntry {
   bool FromProto(const GDataDirectoryProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataDirectoryProto* proto) const;
 
+  // Converts the children as a vector of GDataEntryProto.
+  scoped_ptr<GDataEntryProtoVector> ToProtoVector() const;
+
   // Removes child elements.
   void RemoveChildren();
   void RemoveChildFiles();
@@ -399,6 +416,18 @@ class GDataDirectoryService {
   // |resource_id|. TODO(achuith): Rename this to GetEntryByResourceId.
   void GetEntryByResourceIdAsync(const std::string& resource_id,
                                  const GetEntryByResourceIdCallback& callback);
+
+  // Finds an entry (a file or a directory) by |file_path|.
+  //
+  // Must be called from UI thread. |callback| is run on UI thread.
+  void GetEntryInfoByPath(const FilePath& file_path,
+                          const GetEntryInfoCallback& callback);
+
+  // Finds and reads a directory by |file_path|.
+  //
+  // Must be called from UI thread. |callback| is run on UI thread.
+  void ReadDirectoryByPath(const FilePath& file_path,
+                           const ReadDirectoryCallback& callback);
 
   // Replaces file entry with the same resource id as |fresh_file| with its
   // fresh value |fresh_file|.

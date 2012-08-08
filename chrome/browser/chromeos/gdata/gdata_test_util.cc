@@ -69,5 +69,29 @@ void CopyErrorCodeFromFileOperationCallback(GDataFileError* output,
   *output = error;
 }
 
+void CopyResultsFromGetEntryInfoCallback(
+    GDataFileError* out_error,
+    scoped_ptr<GDataEntryProto>* out_entry_proto,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(out_error);
+  DCHECK(out_entry_proto);
+
+  *out_error = error;
+  *out_entry_proto = entry_proto.Pass();
+}
+
+void CopyResultsFromReadDirectoryCallback(
+    GDataFileError* out_error,
+    scoped_ptr<GDataEntryProtoVector>* out_entries,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProtoVector> entries) {
+  DCHECK(out_error);
+  DCHECK(out_entries);
+
+  *out_error = error;
+  *out_entries = entries.Pass();
+}
+
 }  // namespace test_util
 }  // namespace gdata

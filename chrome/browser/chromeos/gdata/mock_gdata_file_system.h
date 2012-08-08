@@ -78,7 +78,7 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                                         const GetEntryInfoCallback& callback));
   MOCK_METHOD2(ReadDirectoryByPath,
                void(const FilePath& file_path,
-                    const ReadDirectoryCallback& callback));
+                    const ReadDirectoryWithSettingCallback& callback));
   MOCK_METHOD1(RequestDirectoryRefresh,
                void(const FilePath& file_path));
   MOCK_METHOD1(GetAvailableSpace,

@@ -5,10 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#include "chrome/browser/chromeos/gdata/gdata_files.h"
 
 namespace gdata {
 
+class GDataEntryProto;
 class GDataCacheEntry;
 
 namespace test_util {
@@ -44,6 +47,23 @@ bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b);
 void CopyErrorCodeFromFileOperationCallback(
     GDataFileError* output, GDataFileError error);
 
+// Copies |error| and |entry_proto| to |out_error| and |out_entry_proto|
+// respectively. Used to run asynchronous functions that take
+// GetEntryInfoCallback from tests.
+void CopyResultsFromGetEntryInfoCallback(
+    GDataFileError* out_error,
+    scoped_ptr<GDataEntryProto>* out_entry_proto,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto);
+
+// Copies |error| and |entries| to |out_error| and |out_entries|
+// respectively. Used to run asynchronous functions that take
+// GetEntryInfoCallback from tests.
+void CopyResultsFromReadDirectoryCallback(
+    GDataFileError* out_error,
+    scoped_ptr<GDataEntryProtoVector>* out_entries,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProtoVector> entries);
 
 }  // namespace test_util
 }  // namespace gdata

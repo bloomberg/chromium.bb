@@ -1836,7 +1836,7 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
 
 void GDataFileSystem::ReadDirectoryByPath(
     const FilePath& file_path,
-    const ReadDirectoryCallback& callback) {
+    const ReadDirectoryWithSettingCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
@@ -1848,7 +1848,7 @@ void GDataFileSystem::ReadDirectoryByPath(
 
 void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
     const FilePath& file_path,
-    const ReadDirectoryCallback& callback) {
+    const ReadDirectoryWithSettingCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FindEntryByPathAsyncOnUIThread(
@@ -1858,9 +1858,10 @@ void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
                  callback));
 }
 
-void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
-                                      GDataFileError error,
-                                      GDataEntry* entry) {
+void GDataFileSystem::OnReadDirectory(
+    const ReadDirectoryWithSettingCallback& callback,
+    GDataFileError error,
+    GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != GDATA_FILE_OK) {
@@ -1881,21 +1882,7 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
     return;
   }
 
-  scoped_ptr<GDataEntryProtoVector> entries(new GDataEntryProtoVector);
-  for (GDataFileCollection::const_iterator iter =
-           directory->child_files().begin();
-       iter != directory->child_files().end(); ++iter) {
-    GDataEntryProto proto;
-    static_cast<const GDataEntry*>(iter->second)->ToProtoFull(&proto);
-    entries->push_back(proto);
-  }
-  for (GDataDirectoryCollection::const_iterator iter =
-           directory->child_directories().begin();
-       iter != directory->child_directories().end(); ++iter) {
-    GDataEntryProto proto;
-    static_cast<const GDataEntry*>(iter->second)->ToProtoFull(&proto);
-    entries->push_back(proto);
-  }
+  scoped_ptr<GDataEntryProtoVector> entries(directory->ToProtoVector());
 
   if (!callback.is_null())
     callback.Run(GDATA_FILE_OK, hide_hosted_docs_, entries.Pass());
