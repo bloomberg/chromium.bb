@@ -5,7 +5,6 @@
 #include "content/test/content_browser_test.h"
 
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -50,11 +49,6 @@ void ContentBrowserTest::SetUp() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kContentBrowserTest);
 
-#if defined(OS_LINUX)
-  // http://crbug.com/139209
-  command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
-#endif
-
   SetUpCommandLine(command_line);
 
   // Single-process mode is not set in BrowserMain, so process it explicitly,
@@ -87,23 +81,9 @@ void ContentBrowserTest::TearDown() {
   shell_main_delegate_.reset();
 }
 
-#if defined(OS_POSIX)
-// On SIGTERM (sent by the runner on timeouts), dump a stack trace (to make
-// debugging easier) and also exit with a known error code (so that the test
-// framework considers this a failure -- http://crbug.com/57578).
-static void DumpStackTraceSignalHandler(int signal) {
-  base::debug::StackTrace().PrintBacktrace();
-  _exit(128 + signal);
-}
-#endif  // defined(OS_POSIX)
-
 void ContentBrowserTest::RunTestOnMainThreadLoop() {
   CHECK_EQ(Shell::windows().size(), 1u);
   shell_ = Shell::windows()[0];
-
-#if defined(OS_POSIX)
-  signal(SIGTERM, DumpStackTraceSignalHandler);
-#endif  // defined(OS_POSIX)
 
 #if defined(OS_MACOSX)
   // On Mac, without the following autorelease pool, code which is directly

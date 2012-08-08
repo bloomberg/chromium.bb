@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -60,9 +59,6 @@ const char kBrowserTestType[] = "browser";
 
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL)
-#if defined(OS_POSIX)
-      , handle_sigterm_(true)
-#endif
 #if defined(OS_MACOSX)
       , autorelease_pool_(NULL)
 #endif  // OS_MACOSX
@@ -316,22 +312,7 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
 }
 #endif
 
-#if defined(OS_POSIX)
-// On SIGTERM (sent by the runner on timeouts), dump a stack trace (to make
-// debugging easier) and also exit with a known error code (so that the test
-// framework considers this a failure -- http://crbug.com/57578).
-static void DumpStackTraceSignalHandler(int signal) {
-  base::debug::StackTrace().PrintBacktrace();
-  _exit(128 + signal);
-}
-#endif  // defined(OS_POSIX)
-
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
-#if defined(OS_POSIX)
-  if (handle_sigterm_)
-    signal(SIGTERM, DumpStackTraceSignalHandler);
-#endif  // defined(OS_POSIX)
-
   // Pump startup related events.
   content::RunAllPendingInMessageLoop();
 

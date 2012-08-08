@@ -60,6 +60,14 @@ class BrowserTestBase : public testing::Test {
   const net::TestServer* test_server() const { return test_server_.get(); }
   net::TestServer* test_server() { return test_server_.get(); }
 
+#if defined(OS_POSIX)
+  // This is only needed by a test that raises SIGTERM to ensure that a specific
+  // codepath is taken.
+  void DisableSIGTERMHandling() {
+    handle_sigterm_ = false;
+  }
+#endif
+
   // This function is meant only for classes that directly derive from this
   // class to construct the test server in their constructor. They might need to
   // call this after setting up the paths. Actual test cases should never call
@@ -73,6 +81,10 @@ class BrowserTestBase : public testing::Test {
 
   // Testing server, started on demand.
   scoped_ptr<net::TestServer> test_server_;
+
+#if defined(OS_POSIX)
+  bool handle_sigterm_;
+#endif
 };
 
 #endif  // CONTENT_TEST_BROWSER_TEST_BASE_H_

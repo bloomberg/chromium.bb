@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
+#include "base/process_util.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "sandbox/win/src/dep.h"
@@ -17,10 +19,33 @@
 
 extern int BrowserMain(const content::MainFunctionParams&);
 
+namespace {
+
+#if defined(OS_POSIX)
+// On SIGTERM (sent by the runner on timeouts), dump a stack trace (to make
+// debugging easier) and also exit with a known error code (so that the test
+// framework considers this a failure -- http://crbug.com/57578).
+// Note: We only want to do this in the browser process, and not forked
+// processes. That might lead to hangs because of locks inside tcmalloc or the
+// OS. See http://crbug.com/141302.
+static int g_browser_process_pid;
+static void DumpStackTraceSignalHandler(int signal) {
+  if (g_browser_process_pid == base::GetCurrentProcId())
+    base::debug::StackTrace().PrintBacktrace();
+  _exit(128 + signal);
+}
+#endif  // defined(OS_POSIX)
+
+}  // namespace
+
 BrowserTestBase::BrowserTestBase() {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
   base::SystemMonitor::AllocateSystemIOPorts();
+#endif
+
+#if defined(OS_POSIX)
+  handle_sigterm_ = true;
 #endif
 }
 
@@ -49,6 +74,12 @@ void BrowserTestBase::TearDown() {
 }
 
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
+#if defined(OS_POSIX)
+  if (handle_sigterm_) {
+    g_browser_process_pid = base::GetCurrentProcId();
+    signal(SIGTERM, DumpStackTraceSignalHandler);
+  }
+#endif  // defined(OS_POSIX)
   RunTestOnMainThreadLoop();
 }
 
