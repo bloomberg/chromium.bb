@@ -10,6 +10,7 @@ for more details about the presubmit API built into gcl.
 
 
 import re
+import subprocess
 import sys
 
 
@@ -435,6 +436,22 @@ def _CheckUnwantedDependencies(input_api, output_api):
   return results
 
 
+def _CheckFilePermissions(input_api, output_api):
+  """Check that all files have their permissions properly set."""
+  args = [sys.executable, 'tools/checkperms/checkperms.py', '--root',
+          input_api.change.RepositoryRoot()]
+  for f in input_api.AffectedFiles():
+    args += ['--file', f.LocalPath()]
+  errors = []
+  (errors, stderrdata) = subprocess.Popen(args).communicate()
+
+  results = []
+  if errors:
+    results.append(output_api.PreSubmitError('checkperms.py failed.',
+                                             errors))
+  return results
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -450,6 +467,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoBannedFunctions(input_api, output_api))
   results.extend(_CheckNoPragmaOnce(input_api, output_api))
   results.extend(_CheckUnwantedDependencies(input_api, output_api))
+  results.extend(_CheckFilePermissions(input_api, output_api))
   return results
 
 

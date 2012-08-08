@@ -260,6 +260,62 @@ def has_shebang(full_path):
   with open(full_path, 'rb') as f:
     return f.read(3) == '#!/'
 
+def check_file(full_path, bare_output):
+  """Checks file_path's permissions and returns an error if it is
+  inconsistent.
+
+  It is assumed that the file is not ignored by is_ignored().
+
+  If the file name is matched with must_be_executable() or
+  must_not_be_executable(), only its executable bit is checked.
+  Otherwise, the 3 first bytes of the file are read to verify if it has a
+  shebang and compares this with the executable bit on the file.
+  """
+  try:
+    bit = has_executable_bit(full_path)
+  except OSError:
+    # It's faster to catch exception than call os.path.islink(). Chromium
+    # tree happens to have invalid symlinks under
+    # third_party/openssl/openssl/test/.
+    return None
+
+  if must_be_executable(full_path):
+    if not bit:
+      if bare_output:
+        return full_path
+      return '%s: Must have executable bit set' % full_path
+    return
+  if must_not_be_executable(full_path):
+    if bit:
+      if bare_output:
+        return full_path
+      return '%s: Must not have executable bit set' % full_path
+    return
+
+  # For the others, it depends on the shebang.
+  shebang = has_shebang(full_path)
+  if bit != shebang:
+    if bare_output:
+      return full_path
+    if bit:
+      return '%s: Has executable bit but not shebang' % full_path
+    else:
+      return '%s: Has shebang but not executable bit' % full_path
+
+
+def check_files(root, files, bare_output):
+  errors = []
+  for file_path in files:
+    if is_ignored(file_path):
+      continue
+
+    full_file_path = os.path.join(root, file_path)
+
+    error = check_file(full_file_path, bare_output)
+    if error:
+      errors.append(error)
+
+  return errors
 
 class ApiBase(object):
   def __init__(self, root_dir, bare_output):
@@ -269,51 +325,15 @@ class ApiBase(object):
     self.count_shebang = 0
 
   def check_file(self, rel_path):
-    """Checks file_path's permissions and returns an error if it is
-    inconsistent.
-
-    It is assumed that the file is not ignored by is_ignored().
-
-    If the file name is matched with must_be_executable() or
-    must_not_be_executable(), only its executable bit is checked.
-    Otherwise, the 3 first bytes of the file are read to verify if it has a
-    shebang and compares this with the executable bit on the file.
-    """
     logging.debug('check_file(%s)' % rel_path)
     self.count += 1
 
+    if (not must_be_executable(rel_path) and
+        not must_not_be_executable(rel_path)):
+      self.count_shebang += 1
+
     full_path = os.path.join(self.root_dir, rel_path)
-    try:
-      bit = has_executable_bit(full_path)
-    except OSError:
-      # It's faster to catch exception than call os.path.islink(). Chromium
-      # tree happens to have invalid symlinks under
-      # third_party/openssl/openssl/test/.
-      return None
-
-    if must_be_executable(rel_path):
-      if not bit:
-        if self.bare_output:
-          return rel_path
-        return '%s: Must have executable bit set' % rel_path
-      return
-    if must_not_be_executable(rel_path):
-      if bit:
-        if self.bare_output:
-          return rel_path
-        return '%s: Must not have executable bit set' % rel_path
-      return
-
-    # For the others, it depends on the shebang.
-    shebang = has_shebang(full_path)
-    self.count_shebang += 1
-    if bit != shebang:
-      if self.bare_output:
-        return rel_path
-      if bit:
-        return '%s: Has executable bit but not shebang' % rel_path
-      else:
-        return '%s: Has shebang but not executable bit' % rel_path
+    return check_file(full_path, self.bare_output)
 
   def check_dir(self, rel_path):
     return self.check(rel_path)
@@ -440,6 +460,10 @@ Examples:
       action='store_true',
       default=False,
       help='Prints the bare filename triggering the checks')
+  parser.add_option(
+      '--file', action='append', dest='files',
+      help='Specifics a list of files to check the permissions of. Only these '
+      'files will be checked')
   options, args = parser.parse_args()
 
   levels = [logging.ERROR, logging.INFO, logging.DEBUG]
@@ -450,6 +474,11 @@ Examples:
 
   if options.root:
     options.root = os.path.abspath(options.root)
+
+  if options.files:
+    errors = check_files(options.root, options.files, options.bare)
+    print '\n'.join(errors)
+    return bool(errors)
 
   api = get_scm(options.root, options.bare)
   if args:
