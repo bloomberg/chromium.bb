@@ -104,7 +104,7 @@ class WinTool(object):
         '/proxy', proxy,
         idl]
     env = self._GetEnv(arch)
-    popen = subprocess.Popen(args, shell=False, env=env,
+    popen = subprocess.Popen(args, shell=True, env=env,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out, _ = popen.communicate()
     # Filter junk out of stdout, and write filtered versions. Output we want
@@ -125,7 +125,7 @@ class WinTool(object):
     # MSVS doesn't assemble x64 asm files.
     if arch == 'environment.x64':
       return 0
-    popen = subprocess.Popen(args, shell=False, env=env,
+    popen = subprocess.Popen(args, shell=True, env=env,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out, _ = popen.communicate()
     for line in out.splitlines():
@@ -140,7 +140,7 @@ class WinTool(object):
     """Filter logo banner from invocations of rc.exe. Older versions of RC
     don't support the /nologo flag."""
     env = self._GetEnv(arch)
-    popen = subprocess.Popen(args, shell=False, env=env,
+    popen = subprocess.Popen(args, shell=True, env=env,
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     out, _ = popen.communicate()
     for line in out.splitlines():

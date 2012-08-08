@@ -1038,8 +1038,6 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
               'AdditionalIncludeDirectories', include_dirs)
   _ToolAppend(tools, 'VCResourceCompilerTool',
               'AdditionalIncludeDirectories', resource_include_dirs)
-  _ToolAppend(tools, 'VCMIDLTool',
-              'AdditionalIncludeDirectories', include_dirs)
   # Add in libraries.
   _ToolAppend(tools, 'VCLinkerTool', 'AdditionalDependencies', libraries)
   if out_file:
@@ -1048,7 +1046,6 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
   _ToolAppend(tools, 'VCCLCompilerTool', 'PreprocessorDefinitions', defines)
   _ToolAppend(tools, 'VCResourceCompilerTool', 'PreprocessorDefinitions',
               defines)
-  _ToolAppend(tools, 'VCMIDLTool', 'PreprocessorDefinitions', defines)
   # Change program database directory to prevent collisions.
   _ToolAppend(tools, 'VCCLCompilerTool', 'ProgramDataBaseFileName',
               '$(IntDir)\\$(ProjectName)\\vc80.pdb', only_if_unset=True)
@@ -2769,8 +2766,6 @@ def _FinalizeMSBuildSettings(spec, configuration):
               'AdditionalIncludeDirectories', include_dirs)
   _ToolAppend(msbuild_settings, 'ResourceCompile',
               'AdditionalIncludeDirectories', resource_include_dirs)
-  _ToolAppend(msbuild_settings, 'Midl',
-              'AdditionalIncludeDirectories', include_dirs)
   # Add in libraries.
   _ToolAppend(msbuild_settings, 'Link', 'AdditionalDependencies', libraries)
   if out_file:
@@ -2781,7 +2776,6 @@ def _FinalizeMSBuildSettings(spec, configuration):
               'PreprocessorDefinitions', defines)
   _ToolAppend(msbuild_settings, 'ResourceCompile',
               'PreprocessorDefinitions', defines)
-  _ToolAppend(msbuild_settings, 'Midl', 'PreprocessorDefinitions', defines)
   # Add disabled warnings.
   _ToolAppend(msbuild_settings, 'ClCompile',
               'DisableSpecificWarnings', disabled_warnings)

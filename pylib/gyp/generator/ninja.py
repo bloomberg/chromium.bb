@@ -1428,7 +1428,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       description='IDL $in',
       command=('%s gyp-win-tool midl-wrapper $arch $outdir '
                '$tlb $h $dlldata $iid $proxy $in '
-               '$defines $includes $idlflags' % sys.executable))
+               '$idlflags' % sys.executable))
     master_ninja.rule(
       'rc',
       description='RC $in',
