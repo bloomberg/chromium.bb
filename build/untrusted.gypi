@@ -160,6 +160,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
+                    '>(source_list_newlib64)',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -199,6 +200,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib64)',
+                    '>(source_list_newlib64)',
                  ],
                  'outputs': ['>(out_newlib64)'],
                  'action': [
@@ -238,6 +240,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
+                    '>(source_list_newlib32)',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -277,6 +280,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_newlib32)',
+                    '>(source_list_newlib32)',
                  ],
                  'outputs': ['>(out_newlib32)'],
                  'action': [
@@ -322,6 +326,7 @@
                   '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_newlib_arm)',
+                  '>(source_list_newlib_arm)',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -361,6 +366,7 @@
                   '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                   '>@(extra_deps_newlib_arm)',
+                  '>(source_list_newlib_arm)',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
@@ -406,6 +412,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
+                    '>(source_list_glibc64)',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -445,6 +452,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
+                    '>(source_list_glibc32)',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
@@ -484,6 +492,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc64)',
+                    '>(source_list_glibc64)',
                  ],
                  'outputs': ['>(out_glibc64)'],
                  'action': [
@@ -523,6 +532,7 @@
                     '<(DEPTH)/ppapi/ppapi_cpp.gypi',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
                     '>@(extra_deps_glibc32)',
+                    '>(source_list_glibc32)',
                  ],
                  'outputs': ['>(out_glibc32)'],
                  'action': [
