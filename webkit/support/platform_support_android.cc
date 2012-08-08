@@ -51,12 +51,12 @@ void BeforeInitialize(bool unit_test_mode) {
 }
 
 void AfterInitialize(bool unit_test_mode) {
-  if (unit_test_mode)
-    return;  // We don't have a resource pack when running the unit-tests.
-
   FilePath data_path(kDumpRenderTreeDir);
   data_path = data_path.Append("DumpRenderTree.pak");
   ResourceBundle::InitSharedInstanceWithPakPath(data_path);
+
+  if (unit_test_mode)
+    return;
 
   // We enable file-over-http to bridge the file protocol to http protocol
   // in here, which can

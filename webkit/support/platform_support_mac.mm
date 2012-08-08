@@ -99,18 +99,27 @@ static void SwizzleNSPasteboard() {
 }
 
 void AfterInitialize(bool unit_test_mode) {
-  if (unit_test_mode)
-    return;  // We don't have a resource pack when running the unit-tests.
-
   // Load a data pack.
   g_resource_data_pack = new ui::DataPack(ui::SCALE_FACTOR_100P);
-  NSString* resource_path =
-      [base::mac::FrameworkBundle() pathForResource:@"DumpRenderTree"
-                                             ofType:@"pak"];
-  FilePath resources_pak_path([resource_path fileSystemRepresentation]);
+  FilePath resources_pak_path;
+  if (unit_test_mode) {
+    PathService::Get(base::DIR_EXE, &resources_pak_path);
+    resources_pak_path = resources_pak_path.Append("DumpRenderTree.app")
+        .Append("Contents")
+        .Append("Resources")
+        .Append("DumpRenderTree.pak");
+  } else {
+    NSString* resource_path =
+        [base::mac::FrameworkBundle() pathForResource:@"DumpRenderTree"
+                                               ofType:@"pak"];
+    resources_pak_path = FilePath([resource_path fileSystemRepresentation]);
+  }
   if (!g_resource_data_pack->LoadFromPath(resources_pak_path)) {
     LOG(FATAL) << "failed to load DumpRenderTree.pak";
   }
+
+  if (unit_test_mode)
+    return;
 
   // Load font files in the resource folder.
   static const char* const fontFileNames[] = {
