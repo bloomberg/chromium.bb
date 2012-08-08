@@ -1031,6 +1031,8 @@
         'browser/download/chrome_download_manager_delegate.h',
         'browser/download/download_completion_blocker.cc',
         'browser/download/download_completion_blocker.h',
+        'browser/download/download_completion_observer_win.cc',
+        'browser/download/download_completion_observer_win.h',
         'browser/download/download_crx_util.cc',
         'browser/download/download_crx_util.h',
         'browser/download/download_crx_util_android.cc',
