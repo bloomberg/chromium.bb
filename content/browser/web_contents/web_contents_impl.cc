@@ -375,7 +375,7 @@ WebContentsImpl::WebContentsImpl(
       new JavaBridgeDispatcherHostManager(this));
 #endif
 
-  browser_plugin_host_.reset(new content::old::BrowserPluginHost(this));
+  old_browser_plugin_host_.reset(new content::old::BrowserPluginHost(this));
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -3151,8 +3151,8 @@ void WebContentsImpl::GetBrowserPluginEmbedderInfo(
     std::string* embedder_channel_name,
     int* embedder_container_id) {
   content::RenderProcessHost* embedder_render_process_host =
-      browser_plugin_host()->embedder_render_process_host();
-  *embedder_container_id = browser_plugin_host()->instance_id();
+      old_browser_plugin_host()->embedder_render_process_host();
+  *embedder_container_id = old_browser_plugin_host()->instance_id();
   int embedder_process_id =
       embedder_render_process_host ? embedder_render_process_host->GetID() : -1;
   if (embedder_process_id != -1) {

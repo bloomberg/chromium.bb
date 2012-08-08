@@ -142,8 +142,8 @@ class CONTENT_EXPORT WebContentsImpl
     return java_bridge_dispatcher_host_manager_.get();
   }
 
-  content::old::BrowserPluginHost* browser_plugin_host() const {
-    return browser_plugin_host_.get();
+  content::old::BrowserPluginHost* old_browser_plugin_host() const {
+    return old_browser_plugin_host_.get();
   }
 
   // Like GetController from WebContents, but returns the concrete object.
@@ -674,8 +674,10 @@ class CONTENT_EXPORT WebContentsImpl
   scoped_ptr<JavaBridgeDispatcherHostManager>
       java_bridge_dispatcher_host_manager_;
 
+  // TODO(fsamuel): Remove this once upstreaming of the new browser plugin
+  // implmentation is complete.
   // Manages the browser plugin instances hosted by this WebContents.
-  scoped_ptr<content::old::BrowserPluginHost> browser_plugin_host_;
+  scoped_ptr<content::old::BrowserPluginHost> old_browser_plugin_host_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

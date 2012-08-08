@@ -104,7 +104,7 @@ void BrowserPluginHost::NavigateGuestFromEmbedder(
                 NULL  // session storage namespace
             ));
     guest_observer =
-        guest_web_contents->browser_plugin_host();
+        guest_web_contents->old_browser_plugin_host();
     guest_observer->set_embedder_render_process_host(
         render_view_host->GetProcess());
     guest_observer->set_instance_id(container_instance_id);
