@@ -34,6 +34,8 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
@@ -1314,11 +1316,8 @@ void TestingAutomationProvider::GetTimeInfo(Browser* browser,
       use_24hour_clock ? base::k24HourClock : base::k12HourClock;
   string16 display_time = base::TimeFormatTimeOfDayWithHourClockType(
       time, hour_clock_type, base::kDropAmPm);
-  icu::UnicodeString unicode;
-  chromeos::system::TimezoneSettings::GetInstance()->GetTimezone().getID(
-      unicode);
-  std::string timezone;
-  UTF16ToUTF8(unicode.getBuffer(), unicode.length(), &timezone);
+  string16 timezone =
+      chromeos::system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID();
   return_value->SetString("display_time", display_time);
   return_value->SetString("display_date", base::TimeFormatFriendlyDate(time));
   return_value->SetString("timezone", timezone);
@@ -1332,18 +1331,15 @@ void TestingAutomationProvider::GetTimeInfo(DictionaryValue* args,
 
 void TestingAutomationProvider::SetTimezone(DictionaryValue* args,
                                             IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
   std::string timezone_id;
   if (!args->GetString("timezone", &timezone_id)) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Invalid or missing args.");
+    reply.SendError("Invalid or missing args.");
     return;
   }
-
-  icu::TimeZone* timezone =
-      icu::TimeZone::createTimeZone(icu::UnicodeString::fromUTF8(timezone_id));
-  chromeos::system::TimezoneSettings::GetInstance()->SetTimezone(*timezone);
-  delete timezone;
-  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+  chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
+  settings->SetString(chromeos::kSystemTimezone, timezone_id);
+  reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,
@@ -1423,7 +1419,7 @@ void TestingAutomationProvider::SetMute(DictionaryValue* args,
 }
 
 void TestingAutomationProvider::OpenCrosh(DictionaryValue* args,
-                                        IPC::Message* reply_message) {
+                                          IPC::Message* reply_message) {
   new NavigationNotificationObserver(
       NULL, this, reply_message, 1, false, true);
   ash::Shell::GetInstance()->delegate()->OpenCrosh();

@@ -46,10 +46,13 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/cros_user_policy_cache.h"
 #include "chrome/browser/policy/device_policy_cache.h"
@@ -149,17 +152,14 @@ void BrowserPolicyConnector::Init() {
 
   InitializeDevicePolicy();
 
-  // Don't bother updating the cache if this is a unit test.
-  if (!MessageLoop::current())
-    return;
-
-  // Create the AppPackUpdater to start updating the cache. It requires the
-  // system request context, which isn't available yet; therefore it is
-  // created only once the loops are running.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&BrowserPolicyConnector::GetAppPackUpdater),
-                 weak_ptr_factory_.GetWeakPtr()));
+  // Skip the final initialization if this is a unit test.
+  if (MessageLoop::current()) {
+    // Complete the initialization once the message loops are spinning.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserPolicyConnector::CompleteInitialization,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 #endif
 }
 
@@ -545,16 +545,6 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
           device_data_store_.get(),
           device_policy_cache,
           GetDeviceManagementUrl()));
-
-      // Skip the final initialization if this is a unit test.
-      if (!MessageLoop::current())
-        return;
-
-      // Initialize the subsystem once the message loops are spinning.
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&BrowserPolicyConnector::CompleteInitialization,
-                     weak_ptr_factory_.GetWeakPtr()));
     }
   }
 #endif
@@ -562,6 +552,12 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
 
 void BrowserPolicyConnector::CompleteInitialization() {
 #if defined(OS_CHROMEOS)
+
+  // Create the AppPackUpdater to start updating the cache. It requires the
+  // system request context, which isn't available in Init(); therefore it is
+  // created only once the loops are running.
+  GetAppPackUpdater();
+
   if (device_cloud_policy_subsystem_.get()) {
     // Read serial number and machine model. This must be done before we call
     // CompleteInitialization() below such that the serial number is available
@@ -594,6 +590,28 @@ void BrowserPolicyConnector::CompleteInitialization() {
           g_browser_process->local_state(),
           chromeos::system::StatisticsProvider::GetInstance(),
           NULL));
+
+  SetTimezoneIfPolicyAvailable();
+#endif
+}
+
+void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
+#if defined(OS_CHROMEOS)
+  typedef chromeos::CrosSettingsProvider Provider;
+  Provider::TrustedStatus result =
+      chromeos::CrosSettings::Get()->PrepareTrustedValues(
+          base::Bind(&BrowserPolicyConnector::SetTimezoneIfPolicyAvailable,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+  if (result != Provider::TRUSTED)
+    return;
+
+  std::string timezone;
+  if (chromeos::CrosSettings::Get()->GetString(
+          chromeos::kSystemTimezonePolicy, &timezone)) {
+    chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+        UTF8ToUTF16(timezone));
+  }
 #endif
 }
 

@@ -722,6 +722,16 @@ void DevicePolicyCache::DecodeGenericPolicies(
                     urls);
     }
   }
+
+  if (policy.has_system_timezone()) {
+    if (policy.system_timezone().has_timezone()) {
+      policies->Set(key::kDeviceTimezone,
+                    POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE,
+                    Value::CreateStringValue(
+                        policy.system_timezone().timezone()));
+    }
+  }
 }
 
 }  // namespace policy

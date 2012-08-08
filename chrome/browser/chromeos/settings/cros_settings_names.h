@@ -19,6 +19,7 @@ extern const char kSettingProxyEverywhere[];
 
 extern const char kSignedDataRoamingEnabled[];
 
+extern const char kSystemTimezonePolicy[];
 extern const char kSystemTimezone[];
 
 extern const char kDeviceOwner[];
