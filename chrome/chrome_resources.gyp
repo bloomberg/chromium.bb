@@ -221,53 +221,6 @@
         'theme_resources_gen',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
       ],
-      'conditions': [
-        ['OS != "mac"', {
-          # Copy pak files to the product directory. These files will be picked
-          # up by the following installer scripts:
-          #   - Windows: chrome/installer/mini_installer/chrome.release
-          #   - Linux: chrome/installer/linux/internal/common/installer.include
-          # Ensure that the above scripts are updated when adding or removing
-          # pak files.
-          # Copying files to the product directory is not needed on the Mac
-          # since the framework build phase will copy them into the framework
-          # bundle directly.
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                '<(grit_out_dir)/theme_resources_100_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
-              ],
-            },
-          ],
-        }],
-        ['(OS != "mac" and enable_hidpi == 1) or chromeos == 1', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                '<(grit_out_dir)/theme_resources_200_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_200_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_200_percent.pak',
-              ],
-            },
-          ],
-        }],
-        ['enable_touch_ui==1', {
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                '<(grit_out_dir)/theme_resources_touch_100_percent.pak',
-                '<(grit_out_dir)/theme_resources_touch_200_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_touch_100_percent.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_touch_200_percent.pak',
-              ],
-            },
-          ],
-        }],
-      ],
     },
     {
       'target_name': 'packed_extra_resources',
@@ -330,16 +283,41 @@
         {
           'includes': ['chrome_repack_pseudo_locales.gypi']
         },
+        {
+          'includes': ['chrome_repack_chrome_100_percent.gypi']
+        },
+        {
+          'includes': ['chrome_repack_chrome_200_percent.gypi']
+        },
+        {
+          'includes': ['chrome_repack_chrome_touch_100_percent.gypi']
+        },
+        {
+          'includes': ['chrome_repack_chrome_touch_200_percent.gypi']
+        },
       ],
       'conditions': [
         ['OS != "mac"', {
-          # We'll install the resource files to the product directory.  The Mac
-          # copies the results over as bundle resources in its own special way.
+          # Copy pak files to the product directory. These files will be picked
+          # up by the following installer scripts:
+          #   - Windows: chrome/installer/mini_installer/chrome.release
+          #   - Linux: chrome/installer/linux/internal/common/installer.include
+          # Ensure that the above scripts are updated when adding or removing
+          # pak files.
+          # Copying files to the product directory is not needed on the Mac
+          # since the framework build phase will copy them into the framework
+          # bundle directly.
           'copies': [
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [
                 '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak'
+              ],
+            },
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak'
               ],
             },
             {
@@ -366,6 +344,36 @@
                   # needs to be dropped inside the framework.
                   'destination': '<(PRODUCT_DIR)/default_apps',
                   'files': ['<@(default_apps_list)']
+                },
+              ],
+            }],
+            ['enable_hidpi == 1 or chromeos == 1', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)',
+                  'files': [
+                    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_200_percent.pak',
+                  ],
+                },
+              ],
+            }],
+            ['enable_touch_ui==1', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)',
+                  'files': [
+                    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_touch_100_percent.pak',
+                  ],
+                },
+              ],
+            }],
+            ['enable_hidpi == 1 and enable_touch_ui==1', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)',
+                  'files': [
+                    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_touch_200_percent.pak',
+                  ],
                 },
               ],
             }],
