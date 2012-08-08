@@ -861,7 +861,7 @@ void ToggleFullscreenMode(Browser* browser) {
 void ClearCache(Browser* browser) {
   BrowsingDataRemover* remover = new BrowsingDataRemover(browser->profile(),
       BrowsingDataRemover::EVERYTHING,
-      base::Time());
+      base::Time::Now());
   remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover takes care of deleting itself when done.

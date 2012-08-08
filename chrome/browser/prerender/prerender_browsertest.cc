@@ -102,7 +102,7 @@ void ClearBrowsingData(Browser* browser, int remove_mask) {
   BrowsingDataRemover* remover =
       new BrowsingDataRemover(browser->profile(),
                               BrowsingDataRemover::EVERYTHING,
-                              base::Time());
+                              base::Time::Now());
   remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
 }

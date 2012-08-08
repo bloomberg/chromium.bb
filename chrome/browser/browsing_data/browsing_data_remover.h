@@ -308,7 +308,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   const base::Time delete_begin_;
 
   // End time to delete to.
-  const base::Time delete_end_;
+  base::Time delete_end_;
 
   // True if Remove has been invoked.
   static bool removing_;

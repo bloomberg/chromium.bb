@@ -1085,7 +1085,7 @@ void SigninScreenHandler::StartClearingCookies() {
   cookie_remover_ = new BrowsingDataRemover(
       Profile::FromWebUI(web_ui()),
       BrowsingDataRemover::EVERYTHING,
-      base::Time());
+      base::Time::Now());
   cookie_remover_->AddObserver(this);
   cookie_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
                           BrowsingDataHelper::UNPROTECTED_WEB);

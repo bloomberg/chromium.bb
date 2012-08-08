@@ -1562,7 +1562,7 @@ void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
       rvh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
-      base::Time());
+      base::Time::Now());
   remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover takes care of deleting itself when done.
@@ -1573,7 +1573,7 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
       rvh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
-      base::Time());
+      base::Time::Now());
   int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
   remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover takes care of deleting itself when done.

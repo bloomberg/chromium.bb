@@ -493,7 +493,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth() {
   browsing_data_remover_ =
       new BrowsingDataRemover(profile,
                               BrowsingDataRemover::EVERYTHING,
-                              base::Time());
+                              base::Time::Now());
   browsing_data_remover_->AddObserver(this);
   browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
       BrowsingDataHelper::UNPROTECTED_WEB);

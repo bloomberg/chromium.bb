@@ -146,7 +146,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
   remover_ = new BrowsingDataRemover(profile,
       static_cast<BrowsingDataRemover::TimePeriod>(period_selected),
-      base::Time());
+      base::Time::Now());
   remover_->AddObserver(this);
   remover_->Remove(remove_mask, origin_mask);
 }
