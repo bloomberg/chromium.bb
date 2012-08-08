@@ -68,6 +68,10 @@ class TabDragController : public content::WebContentsDelegate,
     REORDER
   };
 
+  // Amount above or below the tabstrip the user has to drag before detaching.
+  static const int kTouchVerticalDetachMagnetism;
+  static const int kVerticalDetachMagnetism;
+
   TabDragController();
   virtual ~TabDragController();
 
@@ -291,9 +295,9 @@ class TabDragController : public content::WebContentsDelegate,
   // or isn't compatible.
   TabStrip* GetTabStripForWindow(gfx::NativeWindow window);
 
-  // Returns the compatible TabStrip that is under the specified point (screen
+  // Returns the compatible TabStrip to drag to at the specified point (screen
   // coordinates), or NULL if there is none.
-  TabStrip* GetTabStripForPoint(const gfx::Point& point_in_screen);
+  TabStrip* GetTargetTabStripForPoint(const gfx::Point& point_in_screen);
 
   // Returns true if |tabstrip| contains the specified point in screen
   // coordinates.

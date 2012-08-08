@@ -1013,19 +1013,20 @@ void TabStrip::MaybeStartDrag(
       TabDragController::DETACHABLE;
   TabDragController::MoveBehavior move_behavior =
       TabDragController::REORDER;
-  // Use MOVE_VISIBILE_TABS in the following two conditions:
+  // Use MOVE_VISIBILE_TABS in the following conditions:
   // . Mouse event generated from touch and the left button is down (the right
   //   button corresponds to a long press, which we want to reorder).
+  // . Gesture begin and control key isn't down.
   // . Real mouse event and control is down. This is mostly for testing.
   DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
          event.type() == ui::ET_GESTURE_BEGIN);
-  if (touch_layout_.get() &&
+  if (adjust_layout_ &&
       ((event.type() == ui::ET_MOUSE_PRESSED &&
         (((event.flags() & ui::EF_FROM_TOUCH) &&
           static_cast<const views::MouseEvent&>(event).IsLeftMouseButton()) ||
          (!(event.flags() & ui::EF_FROM_TOUCH) &&
           static_cast<const views::MouseEvent&>(event).IsControlDown()))) ||
-       (event.type() == ui::ET_GESTURE_BEGIN))) {
+       (event.type() == ui::ET_GESTURE_BEGIN && !event.IsControlDown()))) {
     move_behavior = TabDragController::MOVE_VISIBILE_TABS;
   }
 #if defined(OS_WIN)

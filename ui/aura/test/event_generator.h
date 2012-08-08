@@ -36,6 +36,12 @@ class EventGenerator {
 
   virtual ~EventGenerator();
 
+  // Explicitly sets the location used by mouse/touch events. This is set by the
+  // various methods that take a location but can be manipulated directly,
+  // typically for touch.
+  void set_current_location(const gfx::Point& location) {
+    current_location_ = location;
+  }
   const gfx::Point& current_location() const { return current_location_; }
 
   // Resets the event flags bitmask.
@@ -89,6 +95,9 @@ class EventGenerator {
 
   // Generates a touch press event.
   void PressTouch();
+
+  // Generates a ET_TOUCH_MOVED event to |point|.
+  void MoveTouch(const gfx::Point& point);
 
   // Generates a touch release event.
   void ReleaseTouch();

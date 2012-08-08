@@ -158,12 +158,12 @@ class InProcessBrowserTest : public BrowserTestBase {
   void AddBlankTabAndShow(Browser* browser);
 
 #if !defined OS_MACOSX
-  // Return a CommandLine object  that is used to relaunch the browser_test binary
-  // as a browser process. This function is deliberately not defined on the Mac
-  // because re-using an existing browser process when launching from the command
-  // line isn't a concept that we support on the Mac; AppleEvents are the Mac
-  // solution for the same need. Any test based on these functions doesn't apply
-  // to the Mac.
+  // Return a CommandLine object that is used to relaunch the browser_test
+  // binary as a browser process. This function is deliberately not defined on
+  // the Mac because re-using an existing browser process when launching from
+  // the command line isn't a concept that we support on the Mac; AppleEvents
+  // are the Mac solution for the same need. Any test based on these functions
+  // doesn't apply to the Mac.
   CommandLine GetCommandLineForRelaunch();
 #endif
 
@@ -216,7 +216,7 @@ class InProcessBrowserTest : public BrowserTestBase {
 #if defined(OS_POSIX)
   bool handle_sigterm_;
 #endif
-  
+
 #if defined(OS_CHROMEOS)
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
 #endif  // defined(OS_CHROMEOS)

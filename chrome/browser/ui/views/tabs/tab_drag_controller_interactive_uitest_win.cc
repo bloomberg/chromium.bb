@@ -65,6 +65,9 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragInSameWindow) {
 IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
   // Create another browser.
   Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
@@ -262,6 +265,9 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DeleteSourceDetached) {
 IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragAllToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
+
   // Create another browser.
   Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
@@ -307,6 +313,9 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragAllToSeparateWindow) {
 IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
                        DragAllToSeparateWindowAndCancel) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
+
+  // Add another tab to browser().
+  AddTabAndResetBrowser(browser());
 
   // Create another browser.
   Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();

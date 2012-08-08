@@ -137,6 +137,13 @@ void EventGenerator::PressTouch() {
   Dispatch(touchev);
 }
 
+void EventGenerator::MoveTouch(const gfx::Point& point) {
+  TestTouchEvent touchev(ui::ET_TOUCH_MOVED, point, flags_);
+  Dispatch(touchev);
+
+  current_location_ = point;
+}
+
 void EventGenerator::ReleaseTouch() {
   TestTouchEvent touchev(ui::ET_TOUCH_RELEASED, current_location_, flags_);
   Dispatch(touchev);
@@ -144,12 +151,7 @@ void EventGenerator::ReleaseTouch() {
 
 void EventGenerator::PressMoveAndReleaseTouchTo(const gfx::Point& point) {
   PressTouch();
-
-  TestTouchEvent touchev(ui::ET_TOUCH_MOVED, point, flags_);
-  Dispatch(touchev);
-
-  current_location_ = point;
-
+  MoveTouch(point);
   ReleaseTouch();
 }
 
