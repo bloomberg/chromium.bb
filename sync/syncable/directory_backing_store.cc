@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/base64.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
@@ -1081,6 +1082,37 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
       "next_id INT default -2, "
       "cache_guid TEXT )");
   return db_->Execute(query.c_str());
+}
+
+// This function checks to see if the given list of Metahandles has any nodes
+// whose PREV_ID, PARENT_ID or NEXT_ID values refer to ID values that do not
+// actually exist.  Returns true on success.
+bool DirectoryBackingStore::VerifyReferenceIntegrity(
+    const syncable::MetahandlesIndex &index) {
+  TRACE_EVENT0("sync", "SyncDatabaseIntegrityCheck");
+  using namespace syncable;
+  typedef base::hash_set<std::string> IdsSet;
+
+  IdsSet ids_set;
+  bool is_ok = true;
+
+  for (MetahandlesIndex::const_iterator it = index.begin();
+       it != index.end(); ++it) {
+    EntryKernel* entry = *it;
+    bool is_duplicate_id = !(ids_set.insert(entry->ref(ID).value()).second);
+    is_ok = is_ok && !is_duplicate_id;
+  }
+
+  IdsSet::iterator end = ids_set.end();
+  for (MetahandlesIndex::const_iterator it = index.begin();
+       it != index.end(); ++it) {
+    EntryKernel* entry = *it;
+    bool prev_exists = (ids_set.find(entry->ref(PREV_ID).value()) != end);
+    bool parent_exists = (ids_set.find(entry->ref(PARENT_ID).value()) != end);
+    bool next_exists = (ids_set.find(entry->ref(NEXT_ID).value()) != end);
+    is_ok = is_ok && prev_exists && parent_exists && next_exists;
+  }
+  return is_ok;
 }
 
 }  // namespace syncable

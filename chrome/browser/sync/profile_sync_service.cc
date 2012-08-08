@@ -700,6 +700,13 @@ void ProfileSyncService::OnBackendInitialized(
     // Keep the directory around for now so that on restart we will retry
     // again and potentially succeed in presence of transient file IO failures
     // or permissions issues, etc.
+    //
+    // TODO(rlarocque): Consider making this UnrecoverableError less special.
+    // Unlike every other UnrecoverableError, it does not delete our sync data.
+    // This exception made sense at the time it was implemented, but our new
+    // directory corruption recovery mechanism makes it obsolete.  By the time
+    // we get here, we will have already tried and failed to delete the
+    // directory.  It would be no big deal if we tried to delete it again.
     OnInternalUnrecoverableError(FROM_HERE,
                                  "BackendInitialize failure",
                                  false,

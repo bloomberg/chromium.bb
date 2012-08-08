@@ -17,11 +17,25 @@ class OnDiskDirectoryBackingStore : public DirectoryBackingStore {
  public:
   OnDiskDirectoryBackingStore(const std::string& dir_name,
                               const FilePath& backing_filepath);
+  virtual ~OnDiskDirectoryBackingStore();
   virtual DirOpenResult Load(
       MetahandlesIndex* entry_bucket,
       Directory::KernelLoadInfo* kernel_load_info) OVERRIDE;
 
+  // A helper function that will make one attempt to load the directory.
+  // Unlike Load(), it does not attempt to recover from failure.
+  DirOpenResult TryLoad(
+      MetahandlesIndex* entry_bucket,
+      Directory::KernelLoadInfo* kernel_load_info);
+
+ protected:
+  // Subclasses may override this to avoid a possible DCHECK.
+  virtual void ReportFirstTryOpenFailure();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MinorCorruption);
+
+  bool allow_failure_for_test_;
   FilePath backing_filepath_;
 };
 

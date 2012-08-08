@@ -36,41 +36,6 @@ void InitializeIndexEntry(EntryKernel* entry,
   }
 }
 
-// This function checks to see if the given list of Metahandles has any nodes
-// whose PREV_ID, PARENT_ID or NEXT_ID values refer to ID values that do not
-// actually exist.  Returns true on success.
-//
-// This function is "Unsafe" because it does not attempt to acquire any locks
-// that may be protecting this list that gets passed in.  The caller is
-// responsible for ensuring that no one modifies this list while the function is
-// running.
-bool VerifyReferenceIntegrityUnsafe(const syncable::MetahandlesIndex &index) {
-  TRACE_EVENT0("sync", "SyncDatabaseIntegrityCheck");
-  using namespace syncable;
-  typedef base::hash_set<std::string> IdsSet;
-
-  IdsSet ids_set;
-  bool is_ok = true;
-
-  for (MetahandlesIndex::const_iterator it = index.begin();
-       it != index.end(); ++it) {
-    EntryKernel* entry = *it;
-    bool is_duplicate_id = !(ids_set.insert(entry->ref(ID).value()).second);
-    is_ok = is_ok && !is_duplicate_id;
-  }
-
-  IdsSet::iterator end = ids_set.end();
-  for (MetahandlesIndex::const_iterator it = index.begin();
-       it != index.end(); ++it) {
-    EntryKernel* entry = *it;
-    bool prev_exists = (ids_set.find(entry->ref(PREV_ID).value()) != end);
-    bool parent_exists = (ids_set.find(entry->ref(PARENT_ID).value()) != end);
-    bool next_exists = (ids_set.find(entry->ref(NEXT_ID).value()) != end);
-    is_ok = is_ok && prev_exists && parent_exists && next_exists;
-  }
-  return is_ok;
-}
-
 }
 
 // static
@@ -235,9 +200,6 @@ DirOpenResult Directory::OpenImpl(
   DirOpenResult result = store_->Load(&metas_bucket, &info);
   if (OPENED != result)
     return result;
-
-  if (!VerifyReferenceIntegrityUnsafe(metas_bucket))
-    return FAILED_LOGICAL_CORRUPTION;
 
   kernel_ = new Kernel(name, info, delegate, transaction_observer);
   kernel_->metahandles_index->swap(metas_bucket);

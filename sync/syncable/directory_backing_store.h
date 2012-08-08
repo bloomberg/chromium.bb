@@ -126,6 +126,9 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   // with an error message.
   bool CheckIntegrity(sqlite3* handle, std::string* error) const;
 
+  // Checks that the references between sync nodes is consistent.
+  static bool VerifyReferenceIntegrity(const MetahandlesIndex& entries);
+
   // Migration utilities.
   bool RefreshColumns();
   bool SetVersion(int version);

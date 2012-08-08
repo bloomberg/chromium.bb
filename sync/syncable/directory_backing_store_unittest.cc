@@ -2083,22 +2083,69 @@ TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   }
 }
 
-// TODO(109668): This had to be disabled because the latest API will
-// intentionally crash when a database is this badly corrupted.
-TEST_F(DirectoryBackingStoreTest, DISABLED_Corruption) {
+namespace {
+
+class OnDiskDirectoryBackingStoreForTest : public OnDiskDirectoryBackingStore {
+ public:
+  OnDiskDirectoryBackingStoreForTest(const std::string& dir_name,
+                                     const FilePath& backing_filepath);
+  virtual ~OnDiskDirectoryBackingStoreForTest();
+  bool DidFailFirstOpenAttempt();
+
+ protected:
+  virtual void ReportFirstTryOpenFailure() OVERRIDE;
+
+ private:
+  bool first_open_failed_;
+};
+
+OnDiskDirectoryBackingStoreForTest::OnDiskDirectoryBackingStoreForTest(
+    const std::string& dir_name,
+    const FilePath& backing_filepath) :
+  OnDiskDirectoryBackingStore(dir_name, backing_filepath),
+  first_open_failed_(false) { }
+
+OnDiskDirectoryBackingStoreForTest::~OnDiskDirectoryBackingStoreForTest() { }
+
+void OnDiskDirectoryBackingStoreForTest::ReportFirstTryOpenFailure() {
+  // Do nothing, just like we would in release-mode.  In debug mode, we DCHECK.
+  first_open_failed_ = true;
+}
+
+bool OnDiskDirectoryBackingStoreForTest::DidFailFirstOpenAttempt() {
+  return first_open_failed_;
+}
+
+}  // namespace
+
+// This is a whitebox test intended to exercise the code path where the on-disk
+// directory load code decides to delete the current directory and start fresh.
+//
+// This is considered "minor" corruption because the database recreation is
+// expected to succeed.  The alternative, where recreation does not succeed (ie.
+// due to read-only file system), is not tested here.
+TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
   {
     scoped_ptr<OnDiskDirectoryBackingStore> dbs(
         new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
     EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
   }
-  std::string bad_data("BAD DATA");
-  EXPECT_TRUE(file_util::WriteFile(GetDatabasePath(), bad_data.data(),
-                                   bad_data.size()));
-  {
-    scoped_ptr<OnDiskDirectoryBackingStore> dbs(
-        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
 
-    EXPECT_FALSE(LoadAndIgnoreReturnedData(dbs.get()));
+  // Corrupt the root node.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(connection.Execute(
+            "UPDATE metas SET parent_id='bogus' WHERE id = 'r';"));
+  }
+
+  {
+    scoped_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
+        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
+                                               GetDatabasePath()));
+
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+    EXPECT_TRUE(dbs->DidFailFirstOpenAttempt());
   }
 }
 

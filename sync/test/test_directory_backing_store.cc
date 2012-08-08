@@ -35,6 +35,8 @@ DirOpenResult TestDirectoryBackingStore::Load(
     return FAILED_DATABASE_CORRUPT;
   if (!LoadInfo(kernel_load_info))
     return FAILED_DATABASE_CORRUPT;
+  if (!VerifyReferenceIntegrity(*entry_bucket))
+    return FAILED_DATABASE_CORRUPT;
 
   return OPENED;
 }
