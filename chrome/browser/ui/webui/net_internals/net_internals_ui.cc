@@ -1084,32 +1084,18 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
   connection_tester_->RunAllTests(url);
 }
 
-void SPKIHashesToString(const net::HashValueVector& hashes,
+void SPKIHashesToString(const net::FingerprintVector& hashes,
                         std::string* string) {
-  for (net::HashValueVector::const_iterator
+  for (net::FingerprintVector::const_iterator
        i = hashes.begin(); i != hashes.end(); ++i) {
-    std::string label;
-    switch (i->tag) {
-      case net::HASH_VALUE_SHA1:
-        label = "sha1/";
-        break;
-      case net::HASH_VALUE_SHA256:
-        label = "sha256/";
-        break;
-      default:
-        NOTREACHED();
-        LOG(WARNING) << "Invalid fingerprint of unknown type " << i->tag;
-        label = "unknown/";
-    }
-
-    base::StringPiece hash_str(reinterpret_cast<const char*>(i->data()),
-                               i->size());
+    base::StringPiece hash_str(reinterpret_cast<const char*>(i->data),
+                               arraysize(i->data));
     std::string encoded;
     base::Base64Encode(hash_str, &encoded);
 
     if (i != hashes.begin())
       *string += ",";
-    *string += label + encoded;
+    *string += "sha1/" + encoded;
   }
 }
 
@@ -1185,7 +1171,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
          i = type_and_b64s.begin(); i != type_and_b64s.end(); ++i) {
       std::string type_and_b64;
       RemoveChars(*i, " \t\r\n", &type_and_b64);
-      net::HashValue hash;
+      net::SHA1Fingerprint hash;
       if (!net::TransportSecurityState::ParsePin(type_and_b64, &hash))
         continue;
 
