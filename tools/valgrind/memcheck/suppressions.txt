@@ -3654,29 +3654,6 @@
    fun:_ZN22ResourceDispatcherHost12BeginRequestEiRK23ResourceHostMsg_RequestPN3IPC7MessageEi
 }
 {
-   bug_96101a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net16UploadDataStream6CreateEPNS_10UploadDataEPi
-   fun:_ZN3net22HttpNetworkTransaction14DoBuildRequestEv
-   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
-   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
-   fun:_ZN3net22HttpNetworkTransaction13OnStreamReadyERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
-   fun:_ZN3net21HttpStreamFactoryImpl7Request13OnStreamReadyEPNS0_3JobERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
-   fun:_ZN3net21HttpStreamFactoryImpl3Job21OnStreamReadyCallbackEv
-}
-{
-   bug_96101b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net22HttpNetworkTransaction14DoBuildRequestEv
-   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
-   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
-   fun:_ZN3net22HttpNetworkTransaction13OnStreamReadyERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
-   fun:_ZN3net21HttpStreamFactoryImpl7Request13OnStreamReadyEPNS0_3JobERKNS_9SSLConfigERKNS_9ProxyInfoEPNS_10HttpStreamE
-   fun:_ZN3net21HttpStreamFactoryImpl3Job21OnStreamReadyCallbackEv
-}
-{
    bug_96103
    Memcheck:Leak
    fun:_Znw*
