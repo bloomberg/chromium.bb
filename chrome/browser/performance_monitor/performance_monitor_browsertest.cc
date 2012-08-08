@@ -20,7 +20,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,6 +33,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -38,6 +41,7 @@ using extensions::Extension;
 using performance_monitor::Event;
 
 namespace {
+
 // Helper struct to store the information of an extension; this is needed if the
 // pointer to the extension ever becomes invalid (e.g., if we uninstall the
 // extension).
@@ -148,6 +152,19 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     windowed_observer.Wait();
   }
 
+  // A handle for gathering statistics from the database, which must be done on
+  // the background thread. Since we are testing, we can mock synchronicity with
+  // FlushForTesting().
+  void GatherStatistics() {
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        Database::kDatabaseSequenceToken,
+        FROM_HERE,
+        base::Bind(&PerformanceMonitor::GatherStatisticsOnBackgroundThread,
+                   base::Unretained(performance_monitor())));
+
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  }
+
   void GetEventsOnBackgroundThread(std::vector<linked_ptr<Event> >* events) {
     // base::Time is potentially flaky in that there is no guarantee that it
     // won't actually decrease between successive calls. If we call GetEvents
@@ -177,6 +194,31 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
 
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     return events;
+  }
+
+  void GetStatsOnBackgroundThread(Database::MetricInfoVector* metrics,
+                                  MetricType type) {
+    *metrics = performance_monitor_->database()->GetStatsForActivityAndMetric(
+        type, base::Time(), base::Time::FromInternalValue(kint64max));
+  }
+
+  // A handle for getting statistics from the database (see previous comments on
+  // GetEvents() and GetEventsOnBackgroundThread).
+  Database::MetricInfoVector GetStats(MetricType type) {
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    content::RunAllPendingInMessageLoop();
+
+    Database::MetricInfoVector metrics;
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        Database::kDatabaseSequenceToken,
+        FROM_HERE,
+        base::Bind(&PerformanceMonitorBrowserTest::GetStatsOnBackgroundThread,
+                   base::Unretained(this),
+                   &metrics,
+                   type));
+
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    return metrics;
   }
 
   // A handle for inserting a state value into the database, which must be done
@@ -460,6 +502,45 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
   ASSERT_EQ(kOldVersion, previous_version);
   ASSERT_TRUE(value->GetString("currentVersion", &current_version));
   ASSERT_EQ(version_string, current_version);
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, GatherStatistics) {
+  GatherStatistics();
+
+  // No stats should be recorded for this CPUUsage because this was the first
+  // call to GatherStatistics.
+  Database::MetricInfoVector stats = GetStats(METRIC_CPU_USAGE);
+  ASSERT_EQ(0u, stats.size());
+
+  stats = GetStats(METRIC_PRIVATE_MEMORY_USAGE);
+  ASSERT_EQ(1u, stats.size());
+  EXPECT_GT(stats[0].value, 0);
+
+  stats = GetStats(METRIC_SHARED_MEMORY_USAGE);
+  ASSERT_EQ(1u, stats.size());
+  EXPECT_GT(stats[0].value, 0);
+
+  // Open new tabs to incur CPU usage.
+  for (int i = 0; i < 3; ++i) {
+    chrome::NavigateParams params(browser(), GURL("http://www.google.com"),
+                                  content::PAGE_TRANSITION_LINK);
+    params.disposition = NEW_BACKGROUND_TAB;
+    ui_test_utils::NavigateToURL(&params);
+  }
+  GatherStatistics();
+
+  // One CPUUsage stat should exist now.
+  stats = GetStats(METRIC_CPU_USAGE);
+  ASSERT_EQ(1u, stats.size());
+  EXPECT_GT(stats[0].value, 0);
+
+  stats = GetStats(METRIC_PRIVATE_MEMORY_USAGE);
+  ASSERT_EQ(2u, stats.size());
+  EXPECT_GT(stats[1].value, 0);
+
+  stats = GetStats(METRIC_SHARED_MEMORY_USAGE);
+  ASSERT_EQ(2u, stats.size());
+  EXPECT_GT(stats[1].value, 0);
 }
 
 #if !defined(OS_WIN)
