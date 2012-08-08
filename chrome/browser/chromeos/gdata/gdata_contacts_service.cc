@@ -9,6 +9,7 @@
 #include <map>
 #include <utility>
 
+#include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -34,6 +35,19 @@ namespace {
 // At values above 10, Google starts returning 503 errors.
 const int kMaxPhotoDownloadsPerSecond = 10;
 
+// Hardcoded system group ID for the "My Contacts" group, per
+// https://developers.google.com/google-apps/contacts/v3/#contact_group_entry.
+const char kMyContactsSystemGroupId[] = "Contacts";
+
+// Top-level field in a contact groups feed containing the list of entries.
+const char kGroupEntryField[] = "feed.entry";
+
+// Field in group entries containing the system group ID (e.g. ID "Contacts"
+// for the "My Contacts" system group).  See
+// https://developers.google.com/google-apps/contacts/v3/#contact_group_entry
+// for more details.
+const char kSystemGroupIdField[] = "gContact$systemGroup.id";
+
 // Field in the top-level object containing the contacts feed.
 const char kFeedField[] = "feed";
 
@@ -50,8 +64,10 @@ const char kCategoryTermValue[] =
 // Field in the contacts feed containing a list of contact entries.
 const char kEntryField[] = "entry";
 
-// Top-level fields in contact entries.
+// Field in group and contact entries containing the item's ID.
 const char kIdField[] = "id.$t";
+
+// Top-level fields in contact entries.
 const char kDeletedField[] = "gd$deleted";
 const char kFullNameField[] = "gd$name.gd$fullName.$t";
 const char kGivenNameField[] = "gd$name.gd$givenName.$t";
@@ -306,17 +322,73 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   return true;
 }
 
+// Structure into which we parse the contact groups feed using
+// JSONValueConverter.
+struct ContactGroups {
+  struct ContactGroup {
+    // Group ID, e.g.
+    // "http://www.google.com/m8/feeds/groups/user%40gmail.com/base/6".
+    std::string group_id;
+
+    // System group ID (e.g. "Contacts" for the "My Contacts" system group) if
+    // this is a system group, and empty otherwise.  See http://goo.gl/oWVnN
+    // for more details.
+    std::string system_group_id;
+  };
+
+  // Given a system group ID, returns the corresponding group ID or an empty
+  // string if the requested system group wasn't present.
+  std::string GetGroupIdForSystemGroup(const std::string& system_group_id) {
+    for (size_t i = 0; i < groups.size(); ++i) {
+      const ContactGroup& group = *groups[i];
+      if (group.system_group_id == system_group_id)
+        return group.group_id;
+    }
+    return std::string();
+  }
+
+  // Given |value| corresponding to a dictionary in a contact group feed's
+  // "entry" list, fills |result| with information about the group.
+  static bool GetContactGroup(const base::Value* value, ContactGroup* result) {
+    DCHECK(value);
+    DCHECK(result);
+    const base::DictionaryValue* dict = NULL;
+    if (!value->GetAsDictionary(&dict))
+      return false;
+
+    dict->GetString(kIdField, &result->group_id);
+    dict->GetString(kSystemGroupIdField, &result->system_group_id);
+    return true;
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<ContactGroups>* converter) {
+    DCHECK(converter);
+    converter->RegisterRepeatedCustomValue<ContactGroup>(
+        kGroupEntryField, &ContactGroups::groups, &GetContactGroup);
+  }
+
+  ScopedVector<ContactGroup> groups;
+};
+
 }  // namespace
 
 // This class handles a single request to download all of a user's contacts.
 //
-// First, the contacts feed is downloaded via GetContactsOperation and parsed.
+// First, the feed containing the user's contact groups is downloaded via
+// GetContactGroupsOperation and examined to find the ID for the "My Contacts"
+// group (by default, the contacts API also returns suggested contacts).  The
+// group ID is cached in GDataContactsService so that this step can be skipped
+// by later DownloadContactRequests.
+//
+// Next, the contacts feed is downloaded via GetContactsOperation and parsed.
 // Individual contacts::Contact objects are created using the data from the
-// feed.  Next, GetContactPhotoOperations are created and used to start
-// downloading contacts' photos in parallel.  When all photos have been
-// downloaded, the contacts are passed to the passed-in callback.
-class GDataContactsService::DownloadContactsRequest
-    : public base::SupportsWeakPtr<DownloadContactsRequest> {
+// feed.
+//
+// Finally, GetContactPhotoOperations are created and used to start downloading
+// contacts' photos in parallel.  When all photos have been downloaded, the
+// contacts are passed to the passed-in callback.
+class GDataContactsService::DownloadContactsRequest {
  public:
   DownloadContactsRequest(GDataContactsService* service,
                           GDataOperationRunner* runner,
@@ -329,8 +401,11 @@ class GDataContactsService::DownloadContactsRequest
         failure_callback_(failure_callback),
         min_update_time_(min_update_time),
         contacts_(new ScopedVector<contacts::Contact>),
+        my_contacts_group_id_(service->cached_my_contacts_group_id_),
         num_in_progress_photo_downloads_(0),
-        photo_download_failed_(false) {
+        photo_download_failed_(false),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(service_);
     DCHECK(runner_);
   }
@@ -341,37 +416,103 @@ class GDataContactsService::DownloadContactsRequest
     runner_ = NULL;
   }
 
-  // Issues the initial request to download the contact feed.
-  void Run() {
-    GetContactsOperation* operation =
-        new GetContactsOperation(
-            runner_->operation_registry(),
-            min_update_time_,
-            base::Bind(&DownloadContactsRequest::HandleFeedData,
-                       base::Unretained(this)));
-    if (!service_->feed_url_for_testing_.is_empty())
-      operation->set_feed_url_for_testing(service_->feed_url_for_testing_);
+  const std::string my_contacts_group_id() const {
+    return my_contacts_group_id_;
+  }
 
-    runner_->StartOperationWithRetry(operation);
+  // Begins the contacts-downloading process.  If the ID for the "My Contacts"
+  // group has previously been cached, then the contacts download is started.
+  // Otherwise, the contact groups download is started.
+  void Run() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (!my_contacts_group_id_.empty()) {
+      StartContactsDownload();
+    } else {
+      GetContactGroupsOperation* operation =
+          new GetContactGroupsOperation(
+              runner_->operation_registry(),
+              base::Bind(&DownloadContactsRequest::HandleGroupsFeedData,
+                         weak_ptr_factory_.GetWeakPtr()));
+      if (!service_->groups_feed_url_for_testing_.is_empty()) {
+        operation->set_feed_url_for_testing(
+            service_->groups_feed_url_for_testing_);
+      }
+      runner_->StartOperationWithRetry(operation);
+    }
   }
 
  private:
-  // Callback for GetContactsOperation calls.
-  void HandleFeedData(GDataErrorCode error,
-                      scoped_ptr<base::Value> feed_data) {
+  // Invokes the failure callback and notifies GDataContactsService that the
+  // request is done.
+  void ReportFailure() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    failure_callback_.Run();
+    service_->OnRequestComplete(this);
+  }
+
+  // Callback for GetContactGroupsOperation calls.  Starts downloading the
+  // actual contacts after finding the "My Contacts" group ID.
+  void HandleGroupsFeedData(GDataErrorCode error,
+                            scoped_ptr<base::Value> feed_data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (error != HTTP_SUCCESS) {
-      LOG(WARNING) << "Got error " << error << " while downloading contacts";
-      failure_callback_.Run();
-      service_->OnRequestComplete(this);
+      LOG(WARNING) << "Got error " << error << " while downloading groups";
+      ReportFailure();
       return;
     }
 
-    VLOG(2) << "Got feed data:\n" << PrettyPrintValue(*(feed_data.get()));
-    if (!ProcessFeedData(*feed_data.get())) {
-      LOG(WARNING) << "Unable to process feed data";
-      failure_callback_.Run();
-      service_->OnRequestComplete(this);
+    VLOG(2) << "Got groups feed data:\n"
+            << PrettyPrintValue(*(feed_data.get()));
+    ContactGroups groups;
+    base::JSONValueConverter<ContactGroups> converter;
+    if (!converter.Convert(*feed_data, &groups)) {
+      LOG(WARNING) << "Unable to parse groups feed";
+      ReportFailure();
+      return;
+    }
+
+    my_contacts_group_id_ =
+        groups.GetGroupIdForSystemGroup(kMyContactsSystemGroupId);
+    if (!my_contacts_group_id_.empty()) {
+      StartContactsDownload();
+    } else {
+      LOG(WARNING) << "Unable to find ID for \"My Contacts\" group";
+      ReportFailure();
+    }
+  }
+
+  // Starts a download of the contacts from the "My Contacts" group.
+  void StartContactsDownload() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    GetContactsOperation* operation =
+        new GetContactsOperation(
+            runner_->operation_registry(),
+            my_contacts_group_id_,
+            min_update_time_,
+            base::Bind(&DownloadContactsRequest::HandleContactsFeedData,
+                       weak_ptr_factory_.GetWeakPtr()));
+    if (!service_->contacts_feed_url_for_testing_.is_empty()) {
+      operation->set_feed_url_for_testing(
+          service_->contacts_feed_url_for_testing_);
+    }
+    runner_->StartOperationWithRetry(operation);
+  }
+
+  // Callback for GetContactsOperation calls.
+  void HandleContactsFeedData(GDataErrorCode error,
+                              scoped_ptr<base::Value> feed_data) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (error != HTTP_SUCCESS) {
+      LOG(WARNING) << "Got error " << error << " while downloading contacts";
+      ReportFailure();
+      return;
+    }
+
+    VLOG(2) << "Got contacts feed data:\n"
+            << PrettyPrintValue(*(feed_data.get()));
+    if (!ProcessContactsFeedData(*feed_data.get())) {
+      LOG(WARNING) << "Unable to process contacts feed data";
+      ReportFailure();
       return;
     }
 
@@ -384,7 +525,8 @@ class GDataContactsService::DownloadContactsRequest
 
   // Processes the raw contacts feed from |feed_data| and fills |contacts_|.
   // Returns true on success.
-  bool ProcessFeedData(const base::Value& feed_data) {
+  bool ProcessContactsFeedData(const base::Value& feed_data) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     const DictionaryValue* toplevel_dict = NULL;
     if (!feed_data.GetAsDictionary(&toplevel_dict)) {
       LOG(WARNING) << "Top-level object is not a dictionary";
@@ -473,11 +615,12 @@ class GDataContactsService::DownloadContactsRequest
         num_in_progress_photo_downloads_ == 0) {
       VLOG(1) << "Done downloading photos; invoking callback";
       photo_download_timer_.Stop();
-      if (photo_download_failed_)
-        failure_callback_.Run();
-      else
+      if (photo_download_failed_) {
+        ReportFailure();
+      } else {
         success_callback_.Run(contacts_.Pass());
-      service_->OnRequestComplete(this);
+        service_->OnRequestComplete(this);
+      }
       return;
     }
   }
@@ -485,6 +628,7 @@ class GDataContactsService::DownloadContactsRequest
   // Starts photo downloads for contacts in |contacts_needing_photo_downloads_|.
   // Should be invoked only once per second.
   void StartPhotoDownloads() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     while (!contacts_needing_photo_downloads_.empty() &&
            (num_in_progress_photo_downloads_ <
             service_->max_photo_downloads_per_second_)) {
@@ -500,7 +644,8 @@ class GDataContactsService::DownloadContactsRequest
               runner_->operation_registry(),
               GURL(url),
               base::Bind(&DownloadContactsRequest::HandlePhotoData,
-                         AsWeakPtr(), contact)));
+                         weak_ptr_factory_.GetWeakPtr(),
+                         contact)));
       num_in_progress_photo_downloads_++;
     }
   }
@@ -544,7 +689,6 @@ class GDataContactsService::DownloadContactsRequest
     CheckCompletion();
   }
 
- private:
   typedef std::map<contacts::Contact*, std::string> ContactPhotoUrls;
 
   GDataContactsService* service_;  // not owned
@@ -556,6 +700,9 @@ class GDataContactsService::DownloadContactsRequest
   base::Time min_update_time_;
 
   scoped_ptr<ScopedVector<contacts::Contact> > contacts_;
+
+  // ID of the "My Contacts" contacts group.
+  std::string my_contacts_group_id_;
 
   // Map from a contact to the URL at which its photo is located.
   // Contacts without photos do not appear in this map.
@@ -573,6 +720,10 @@ class GDataContactsService::DownloadContactsRequest
 
   // Did we encounter a fatal error while downloading a photo?
   bool photo_download_failed_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DownloadContactsRequest> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadContactsRequest);
 };
@@ -619,6 +770,8 @@ void GDataContactsService::OnRequestComplete(DownloadContactsRequest* request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(request);
   VLOG(1) << "Download request " << request << " complete";
+  if (!request->my_contacts_group_id().empty())
+    cached_my_contacts_group_id_ = request->my_contacts_group_id();
   requests_.erase(request);
   delete request;
 }

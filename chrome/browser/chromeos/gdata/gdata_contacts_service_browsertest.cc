@@ -35,6 +35,9 @@ const FilePath::CharType kTestDataPath[] =
 // Base URL where feeds are located on the test server.
 const char kFeedBaseUrl[] = "files/chromeos/gdata/contacts/";
 
+// Filename of JSON feed containing contact groups.
+const char kGroupsFeedFilename[] = "groups.json";
+
 // Width and height of /photo.png on the test server.
 const int kPhotoSize = 48;
 
@@ -83,6 +86,8 @@ class GDataContactsServiceTest : public InProcessBrowserTest {
     service_->set_rewrite_photo_url_callback_for_testing(
         base::Bind(&GDataContactsServiceTest::RewritePhotoUrl,
                    base::Unretained(this)));
+    service_->set_groups_feed_url_for_testing(
+        test_server_.GetURL(std::string(kFeedBaseUrl) + kGroupsFeedFilename));
     service_->set_photo_download_timer_interval_for_testing(
         base::TimeDelta::FromMilliseconds(10));
   }
@@ -92,8 +97,6 @@ class GDataContactsServiceTest : public InProcessBrowserTest {
   }
 
  protected:
-  GDataContactsService* service() { return service_.get(); }
-
   // Downloads contacts from |feed_filename| (within the chromeos/gdata/contacts
   // test data directory).  |min_update_time| is appended to the URL and the
   // resulting contacts are swapped into |contacts|.  Returns false if the
@@ -102,7 +105,7 @@ class GDataContactsServiceTest : public InProcessBrowserTest {
                 const base::Time& min_update_time,
                 scoped_ptr<ScopedVector<contacts::Contact> >* contacts) {
     DCHECK(contacts);
-    service_->set_feed_url_for_testing(
+    service_->set_contacts_feed_url_for_testing(
         test_server_.GetURL(kFeedBaseUrl + feed_filename));
     service_->DownloadContacts(
         base::Bind(&GDataContactsServiceTest::OnSuccess,
@@ -114,6 +117,9 @@ class GDataContactsServiceTest : public InProcessBrowserTest {
     contacts->swap(downloaded_contacts_);
     return download_was_successful_;
   }
+
+  net::TestServer test_server_;
+  scoped_ptr<GDataContactsService> service_;
 
  private:
   // Rewrites |original_url|, a photo URL from a contacts feed, to instead point
@@ -137,9 +143,6 @@ class GDataContactsServiceTest : public InProcessBrowserTest {
     downloaded_contacts_.reset(new ScopedVector<contacts::Contact>());
     MessageLoop::current()->Quit();
   }
-
-  net::TestServer test_server_;
-  scoped_ptr<GDataContactsService> service_;
 
   // Was the last download successful?  Used to pass the result back from
   // OnSuccess() and OnFailure() to Download().
@@ -168,6 +171,27 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, BrokenFeeds) {
   EXPECT_FALSE((*contacts)[0]->has_raw_untrusted_photo());
 }
 
+// We should report failure when we're unable to download the contact group
+// feed.
+IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, MissingGroupsFeed) {
+  scoped_ptr<ScopedVector<contacts::Contact> > contacts;
+  service_->set_groups_feed_url_for_testing(
+      test_server_.GetURL(std::string(kFeedBaseUrl) + "404"));
+  EXPECT_FALSE(Download("feed.json", base::Time(), &contacts));
+  EXPECT_TRUE(service_->cached_my_contacts_group_id_for_testing().empty());
+}
+
+// We should also fail when the "My Contacts" group isn't listed in the group
+// feed.
+IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, NoMyContactsGroup) {
+  scoped_ptr<ScopedVector<contacts::Contact> > contacts;
+  service_->set_groups_feed_url_for_testing(
+      test_server_.GetURL(std::string(kFeedBaseUrl) +
+                          "groups_no_my_contacts.json"));
+  EXPECT_FALSE(Download("feed.json", base::Time(), &contacts));
+  EXPECT_TRUE(service_->cached_my_contacts_group_id_for_testing().empty());
+}
+
 // Check that we're able to download an empty feed and a normal-looking feed
 // with two regular contacts and one deleted one.
 IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, Download) {
@@ -176,6 +200,12 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, Download) {
   EXPECT_TRUE(contacts->empty());
 
   EXPECT_TRUE(Download("feed.json", base::Time(), &contacts));
+
+  // Check that we got the group ID for the "My Contacts" group that's hardcoded
+  // in the groups feed.
+  EXPECT_EQ(
+      "http://www.google.com/m8/feeds/groups/test.user%40gmail.com/base/6",
+      service_->cached_my_contacts_group_id_for_testing());
 
   // All of these expected values are hardcoded in the feed.
   scoped_ptr<contacts::Contact> contact1(new contacts::Contact);
@@ -244,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, Download) {
 IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, ParallelPhotoDownload) {
   // The feed used for this test contains 8 contacts.
   const int kNumContacts = 8;
-  service()->set_max_photo_downloads_per_second_for_testing(6);
+  service_->set_max_photo_downloads_per_second_for_testing(6);
   scoped_ptr<ScopedVector<contacts::Contact> > contacts;
   EXPECT_TRUE(Download("feed_multiple_photos.json", base::Time(), &contacts));
   ASSERT_EQ(static_cast<size_t>(kNumContacts), contacts->size());

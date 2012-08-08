@@ -49,6 +49,10 @@ const char kGetDocumentEntryURLFormat[] =
 const char kAccountMetadataURL[] =
     "https://docs.google.com/feeds/metadata/default";
 
+// URL requesting all contact groups.
+const char kGetContactGroupsURL[] =
+    "https://www.google.com/m8/feeds/groups/default/full?alt=json";
+
 // URL requesting all contacts.
 // TODO(derat): Per https://goo.gl/AufHP, "The feed may not contain all of the
 // user's contacts, because there's a default limit on the number of results
@@ -56,6 +60,10 @@ const char kAccountMetadataURL[] =
 const char kGetContactsURL[] =
     "https://www.google.com/m8/feeds/contacts/default/full"
     "?alt=json&showdeleted=true&max-results=10000";
+
+// Query parameter optionally appended to |kGetContactsURL| to return contacts
+// from a specific group (as opposed to all contacts).
+const char kGetContactsGroupParam[] = "group";
 
 // Query parameter optionally appended to |kGetContactsURL| to return only
 // recently-updated contacts.
@@ -875,12 +883,30 @@ void ResumeUploadOperation::OnURLFetchUploadProgress(
   NotifyProgress(params_.start_range + current, params_.content_length);
 }
 
+//========================== GetContactGroupsOperation =========================
+
+GetContactGroupsOperation::GetContactGroupsOperation(
+    GDataOperationRegistry* registry,
+    const GetDataCallback& callback)
+    : GetDataOperation(registry, callback) {
+}
+
+GetContactGroupsOperation::~GetContactGroupsOperation() {}
+
+GURL GetContactGroupsOperation::GetURL() const {
+  return !feed_url_for_testing_.is_empty() ?
+         feed_url_for_testing_ :
+         GURL(kGetContactGroupsURL);
+}
+
 //============================ GetContactsOperation ============================
 
 GetContactsOperation::GetContactsOperation(GDataOperationRegistry* registry,
+                                           const std::string& group_id,
                                            const base::Time& min_update_time,
                                            const GetDataCallback& callback)
     : GetDataOperation(registry, callback),
+      group_id_(group_id),
       min_update_time_(min_update_time) {
 }
 
@@ -891,6 +917,11 @@ GURL GetContactsOperation::GetURL() const {
     return GURL(feed_url_for_testing_);
 
   GURL url(kGetContactsURL);
+
+  if (!group_id_.empty()) {
+    url = chrome_common_net::AppendQueryParameter(
+              url, kGetContactsGroupParam, group_id_);
+  }
   if (!min_update_time_.is_null()) {
     std::string time_rfc3339 = util::FormatTimeAsString(min_update_time_);
     url = chrome_common_net::AppendQueryParameter(

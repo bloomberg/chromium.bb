@@ -68,14 +68,21 @@ class GDataContactsService : public GDataContactsServiceInterface {
 
   GDataAuthService* auth_service_for_testing();
 
+  const std::string& cached_my_contacts_group_id_for_testing() const {
+    return cached_my_contacts_group_id_;
+  }
+
   void set_max_photo_downloads_per_second_for_testing(int max_downloads) {
     max_photo_downloads_per_second_ = max_downloads;
   }
   void set_photo_download_timer_interval_for_testing(base::TimeDelta interval) {
     photo_download_timer_interval_ = interval;
   }
-  void set_feed_url_for_testing(const GURL& url) {
-    feed_url_for_testing_ = url;
+  void set_groups_feed_url_for_testing(const GURL& url) {
+    groups_feed_url_for_testing_ = url;
+  }
+  void set_contacts_feed_url_for_testing(const GURL& url) {
+    contacts_feed_url_for_testing_ = url;
   }
   void set_rewrite_photo_url_callback_for_testing(RewritePhotoUrlCallback cb) {
     rewrite_photo_url_callback_for_testing_ = cb;
@@ -98,6 +105,10 @@ class GDataContactsService : public GDataContactsServiceInterface {
 
   scoped_ptr<GDataOperationRunner> runner_;
 
+  // Group ID for the "My Contacts" system contacts group.
+  // Cached after a DownloadContactsRequest has completed.
+  std::string cached_my_contacts_group_id_;
+
   // In-progress download requests.  Pointers are owned by this class.
   std::set<DownloadContactsRequest*> requests_;
 
@@ -110,10 +121,9 @@ class GDataContactsService : public GDataContactsServiceInterface {
   // be set to a lower value for tests to make them complete more quickly.
   base::TimeDelta photo_download_timer_interval_;
 
-  // If non-empty, URL that will be used to fetch the feed.  URLs contained
-  // within the feed will also be modified to use the host and port from this
-  // member.
-  GURL feed_url_for_testing_;
+  // If non-empty, URLs that will be used to fetch feeds.
+  GURL groups_feed_url_for_testing_;
+  GURL contacts_feed_url_for_testing_;
 
   // Callback that's invoked to rewrite photo URLs for tests.
   // This is needed for tests that serve static feed data from a host/port

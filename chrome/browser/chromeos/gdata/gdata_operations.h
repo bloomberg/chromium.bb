@@ -373,12 +373,37 @@ class ResumeUploadOperation : public UrlFetchOperationBase {
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };
 
+//========================== GetContactGroupsOperation =========================
+
+// This class fetches a JSON feed containing a user's contact groups.
+class GetContactGroupsOperation : public GetDataOperation {
+ public:
+  GetContactGroupsOperation(GDataOperationRegistry* registry,
+                            const GetDataCallback& callback);
+  virtual ~GetContactGroupsOperation();
+
+  void set_feed_url_for_testing(const GURL& url) {
+    feed_url_for_testing_ = url;
+  }
+
+ protected:
+  // Overridden from GetDataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  // If non-empty, URL of the feed to fetch.
+  GURL feed_url_for_testing_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetContactGroupsOperation);
+};
+
 //============================ GetContactsOperation ============================
 
-// This class fetches a user's contacts.
+// This class fetches a JSON feed containing a user's contacts.
 class GetContactsOperation : public GetDataOperation {
  public:
   GetContactsOperation(GDataOperationRegistry* registry,
+                       const std::string& group_id,
                        const base::Time& min_update_time,
                        const GetDataCallback& callback);
   virtual ~GetContactsOperation();
@@ -394,6 +419,11 @@ class GetContactsOperation : public GetDataOperation {
  private:
   // If non-empty, URL of the feed to fetch.
   GURL feed_url_for_testing_;
+
+  // If non-empty, contains the ID of the group whose contacts should be
+  // returned.  Group IDs generally look like this:
+  // http://www.google.com/m8/feeds/groups/user%40gmail.com/base/6
+  std::string group_id_;
 
   // If is_null() is false, contains a minimum last-updated time that will be
   // used to filter contacts.
