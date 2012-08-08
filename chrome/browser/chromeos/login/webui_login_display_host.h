@@ -67,6 +67,9 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   // Loads given URL. Creates WebUILoginView if needed.
   void LoadURL(const GURL& url);
 
+  // Shows OOBE/sign in WebUI that was previously initialized in hidden state.
+  void ShowWebUI();
+
   // Starts postponed WebUI (OOBE/sign in) if it was waiting for
   // wallpaper animation end.
   void StartPostponedWebUI();
@@ -87,10 +90,20 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost,
   // received.
   bool is_wallpaper_loaded_;
 
+  // True if WebUI is initialized hidden in parallel with wallpaper animation.
+  // Otherwise it is postponed and only starts initializing when animation
+  // finishes. Makes sense only if |waiting_for_wallpaper_load_| is true.
+  // By default is true. Could be used to tune performance if needed.
+  bool initialize_webui_in_parallel_;
+
+  // Stores status area current visibility to be applied once login WebUI
+  // is shown.
+  bool status_area_saved_visibility_;
+
   // True if should not show WebUI on first StartWizard/StartSignInScreen call
   // but wait for wallpaper load animation to finish.
-  // Used in OOBE (first boot, boot after update) i.e. till
-  // device is marked as registered to postpone loading OOBE screen / sign in.
+  // OOBE/sign in WebUI is either initialized hidden or postponed i.e. loaded
+  // only when wallpaper animation finishes.
   bool waiting_for_wallpaper_load_;
 
   content::NotificationRegistrar registrar_;

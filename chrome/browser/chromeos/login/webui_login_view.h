@@ -70,6 +70,11 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Opens proxy settings dialog.
   void OpenProxySettings();
 
+  // Called when WebUI is being shown after being initilized hidden.
+  void OnPostponedShow();
+
+  void set_is_hidden(bool hidden) { is_hidden_ = hidden; }
+
   // Toggles status area visibility.
   void SetStatusAreaVisible(bool visible);
 
@@ -139,6 +144,15 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Whether the host window is frozen.
   bool host_window_frozen_;
+
+  // True when WebUI is being initialized hidden.
+  bool is_hidden_;
+
+  // True when NOTIFICATION_LOGIN_WEBUI_VISIBLE notification has fired.
+  bool login_visible_notification_fired_;
+
+  // True is login-prompt-visible event has been already handled.
+  bool login_prompt_visible_handled_;
 
   // Should we emit the login-prompt-visible signal when the login page is
   // displayed?

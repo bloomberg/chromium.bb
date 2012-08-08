@@ -1349,6 +1349,11 @@ const char kTabletUI[]                      = "tablet-ui";
 #endif
 
 #if defined(OS_CHROMEOS)
+// When wallpaper boot animation is not disabled this switch
+// is used to override OOBE/sign in WebUI init type.
+// Possible values: parallel|postpone. Default: parallel.
+const char kAshWebUIInit[]                  = "ash-webui-init";
+
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 

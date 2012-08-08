@@ -115,6 +115,9 @@ WebUILoginView::WebUILoginView()
     : webui_login_(NULL),
       login_window_(NULL),
       host_window_frozen_(false),
+      is_hidden_(false),
+      login_visible_notification_fired_(false),
+      login_prompt_visible_handled_(false),
       should_emit_login_prompt_visible_(true) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
@@ -231,6 +234,13 @@ void WebUILoginView::OpenProxySettings() {
   dialog->Show();
 }
 
+void WebUILoginView::OnPostponedShow() {
+  set_is_hidden(false);
+  // If notification will happen later let it fire login-prompt-visible signal.
+  if (login_visible_notification_fired_)
+    OnLoginPromptVisible();
+}
+
 void WebUILoginView::SetStatusAreaVisible(bool visible) {
   ash::SystemTray* tray = ash::Shell::GetInstance()->system_tray();
   if (tray) {
@@ -270,6 +280,7 @@ void WebUILoginView::Observe(int type,
                              const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
+      login_visible_notification_fired_ = true;
       OnLoginPromptVisible();
       registrar_.RemoveAll();
       break;
@@ -342,10 +353,15 @@ void WebUILoginView::RequestMediaAccessPermission(
 }
 
 void WebUILoginView::OnLoginPromptVisible() {
+  // If we're hidden than will generate this signal once we're shown.
+  if (is_hidden_ || login_prompt_visible_handled_)
+    return;
+
   if (should_emit_login_prompt_visible_) {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         EmitLoginPromptVisible();
   }
+  login_prompt_visible_handled_ = true;
 
   OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI()->GetController());
   // Notify OOBE that the login frame has been rendered. Currently

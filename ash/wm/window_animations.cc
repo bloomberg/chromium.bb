@@ -71,7 +71,7 @@ const float kCrossFadeDurationMinMs = 100.f;
 const float kCrossFadeDurationMaxMs = 400.f;
 
 // Durations for the brightness/grayscale fade animation, in milliseconds.
-const int kBrightnessGrayscaleFadeDurationMs = 2000;
+const int kBrightnessGrayscaleFadeDurationMs = 1000;
 
 // Brightness/grayscale values for hide/show window animations.
 const float kWindowAnimation_HideBrightnessGrayscale = 1.f;
@@ -506,16 +506,21 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
   scoped_ptr<ui::LayerAnimationSequence> grayscale_sequence(
       new ui::LayerAnimationSequence());
 
-  brightness_sequence->AddElement(
+  scoped_ptr<ui::LayerAnimationElement> brightness_element(
       ui::LayerAnimationElement::CreateBrightnessElement(
           end_value,
           base::TimeDelta::FromMilliseconds(
               kBrightnessGrayscaleFadeDurationMs)));
-  grayscale_sequence->AddElement(
+  brightness_element->set_tween_type(ui::Tween::EASE_OUT);
+  brightness_sequence->AddElement(brightness_element.release());
+
+  scoped_ptr<ui::LayerAnimationElement> grayscale_element(
       ui::LayerAnimationElement::CreateGrayscaleElement(
           end_value,
           base::TimeDelta::FromMilliseconds(
               kBrightnessGrayscaleFadeDurationMs)));
+  grayscale_element->set_tween_type(ui::Tween::EASE_OUT);
+  grayscale_sequence->AddElement(grayscale_element.release());
 
    std::vector<ui::LayerAnimationSequence*> animations;
    animations.push_back(brightness_sequence.release());
