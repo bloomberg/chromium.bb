@@ -127,7 +127,8 @@ void PepperDeviceEnumerationEventHandler::NotifyDevicesEnumerated(
     const media_stream::StreamDeviceInfoArray& device_array) {
   EnumerateCallbackMap::iterator iter = enumerate_callbacks_.find(request_id);
   if (iter == enumerate_callbacks_.end()) {
-    NOTREACHED();
+    // This might be enumerated result sent before StopEnumerateDevices is
+    // called since EnumerateDevices is persistent request.
     return;
   }
 

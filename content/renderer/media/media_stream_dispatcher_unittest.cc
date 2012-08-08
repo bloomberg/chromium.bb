@@ -22,6 +22,7 @@ const int kRequestId1 = 10;
 const int kRequestId2 = 20;
 const int kRequestId3 = 30;
 const int kRequestId4 = 40;
+static const char kLabel[] = "test";
 
 class MockMediaStreamDispatcherEventHandler
     : public MediaStreamDispatcherEventHandler,
@@ -88,6 +89,7 @@ class MockMediaStreamDispatcherEventHandler
 }  // namespace
 
 TEST(MediaStreamDispatcherTest, BasicStream) {
+  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
@@ -163,21 +165,24 @@ TEST(MediaStreamDispatcherTest, BasicStream) {
 }
 
 TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
+  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
-      handler(new MockMediaStreamDispatcherEventHandler);
+      handler1(new MockMediaStreamDispatcherEventHandler);
+  scoped_ptr<MockMediaStreamDispatcherEventHandler>
+      handler2(new MockMediaStreamDispatcherEventHandler);
   GURL security_origin;
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
-  dispatcher->EnumerateDevices(kRequestId1, handler.get()->AsWeakPtr(),
+  dispatcher->EnumerateDevices(kRequestId1, handler1.get()->AsWeakPtr(),
                                content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
                                security_origin);
   int ipc_request_id2 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
-  dispatcher->EnumerateDevices(kRequestId2, handler.get()->AsWeakPtr(),
+  dispatcher->EnumerateDevices(kRequestId2, handler2.get()->AsWeakPtr(),
                                content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
                                security_origin);
-  EXPECT_EQ(dispatcher->requests_.size(), size_t(2));
+  EXPECT_EQ(dispatcher->video_enumeration_state_.requests.size(), size_t(2));
 
   media_stream::StreamDeviceInfoArray video_device_array(1);
   media_stream::StreamDeviceInfo video_device_info;
@@ -188,27 +193,23 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
   video_device_info.session_id = kVideoSessionId;
   video_device_array[0] = video_device_info;
 
-  // Complete the enumeration of request 1.
+  // Complete the enumeration request and all requesters should receive reply.
   dispatcher->OnMessageReceived(MediaStreamMsg_DevicesEnumerated(
-      kRouteId, ipc_request_id1, video_device_array));
-  EXPECT_EQ(handler->request_id_, kRequestId1);
+      kRouteId, ipc_request_id1, kLabel, video_device_array));
+  EXPECT_EQ(handler1->request_id_, kRequestId1);
+  EXPECT_EQ(handler2->request_id_, kRequestId2);
 
-  // Complete the enumeration of request 2.
-  dispatcher->OnMessageReceived(MediaStreamMsg_DevicesEnumerated(
-      kRouteId, ipc_request_id2, video_device_array));
-  EXPECT_EQ(handler->request_id_, kRequestId2);
-
-  EXPECT_EQ(dispatcher->requests_.size(), size_t(0));
+  EXPECT_EQ(dispatcher->video_enumeration_state_.requests.size(), size_t(2));
   EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(0));
 
   int ipc_request_id3 = dispatcher->next_ipc_id_;
-  dispatcher->OpenDevice(kRequestId3, handler.get()->AsWeakPtr(),
+  dispatcher->OpenDevice(kRequestId3, handler1.get()->AsWeakPtr(),
                          video_device_info.device_id,
                          content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
                          security_origin);
   int ipc_request_id4 = dispatcher->next_ipc_id_;
   EXPECT_NE(ipc_request_id3, ipc_request_id4);
-  dispatcher->OpenDevice(kRequestId4, handler.get()->AsWeakPtr(),
+  dispatcher->OpenDevice(kRequestId4, handler1.get()->AsWeakPtr(),
                          video_device_info.device_id,
                          content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE,
                          security_origin);
@@ -218,13 +219,13 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
   std::string stream_label1 = std::string("stream1");
   dispatcher->OnMessageReceived(MediaStreamMsg_DeviceOpened(
       kRouteId, ipc_request_id3, stream_label1, video_device_info));
-  EXPECT_EQ(handler->request_id_, kRequestId3);
+  EXPECT_EQ(handler1->request_id_, kRequestId3);
 
   // Complete the OpenDevice of request 2.
   std::string stream_label2 = std::string("stream2");
   dispatcher->OnMessageReceived(MediaStreamMsg_DeviceOpened(
       kRouteId, ipc_request_id4, stream_label2, video_device_info));
-  EXPECT_EQ(handler->request_id_, kRequestId4);
+  EXPECT_EQ(handler1->request_id_, kRequestId4);
 
   EXPECT_EQ(dispatcher->requests_.size(), size_t(0));
   EXPECT_EQ(dispatcher->label_stream_map_.size(), size_t(2));
@@ -250,6 +251,7 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
 }
 
 TEST(MediaStreamDispatcherTest, TestFailure) {
+  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
@@ -316,6 +318,7 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
 }
 
 TEST(MediaStreamDispatcherTest, CancelGenerateStream) {
+  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);

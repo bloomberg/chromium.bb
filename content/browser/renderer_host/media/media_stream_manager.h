@@ -30,6 +30,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
@@ -72,7 +73,8 @@ class DeviceThread : public base::Thread {
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
       public MessageLoop::DestructionObserver,
-      public SettingsRequester {
+      public SettingsRequester,
+      public base::SystemMonitor::DevicesChangedObserver {
  public:
   // This class takes the ownerships of the |audio_input_device_manager|
   // and |video_capture_manager|.
@@ -107,6 +109,9 @@ class CONTENT_EXPORT MediaStreamManager
   // Gets a list of devices of |type|.
   // The request is identified using |label|, which is pointing to a
   // std::string.
+  // The request is persistent, which means the client keeps listening to
+  // device changes, such as plug/unplug, and expects new device list for
+  // such a change, till the client stops the request.
   void EnumerateDevices(MediaStreamRequester* requester,
                         int render_process_id,
                         int render_view_id,
@@ -141,6 +146,10 @@ class CONTENT_EXPORT MediaStreamManager
                                const StreamDeviceInfoArray& devices) OVERRIDE;
   virtual void SettingsError(const std::string& label) OVERRIDE;
 
+  // Implements base::SystemMonitor::DevicesChangedObserver.
+  virtual void OnDevicesChanged(
+      base::SystemMonitor::DeviceType device_type) OVERRIDE;
+
   // Used by unit test to make sure fake devices are used instead of a real
   // devices, which is needed for server based testing.
   // TODO(xians): Remove this hack since we can create our own
@@ -156,6 +165,15 @@ class CONTENT_EXPORT MediaStreamManager
   // Contains all data needed to keep track of requests.
   struct DeviceRequest;
 
+  // Cache enumerated device list.
+  struct EnumerationCache {
+    EnumerationCache();
+    ~EnumerationCache();
+
+    bool valid;
+    StreamDeviceInfoArray devices;
+  };
+
   // Helpers for signaling the media observer that new capture devices are
   // opened/closed.
   void NotifyObserverDevicesOpened(DeviceRequest* request);
@@ -168,10 +186,25 @@ class CONTENT_EXPORT MediaStreamManager
   MediaStreamProvider* GetDeviceManager(MediaStreamType stream_type);
   void StartEnumeration(DeviceRequest* new_request,
                         std::string* label);
+  void AddRequest(DeviceRequest* new_request, std::string* label);
+  bool HasEnumerationRequest(MediaStreamType type);
+  bool HasEnumerationRequest();
+  void ClearEnumerationCache(EnumerationCache* cache);
 
   // Helper to ensure the device thread and pass the message loop to device
   // managers, it also register itself as the listener to the device managers.
   void EnsureDeviceThreadAndListener();
+
+  // Sends cached device list to a client corresponding to the request
+  // identified by |label|.
+  void SendCachedDeviceList(EnumerationCache* cache, const std::string& label);
+
+  // Stop the request of enumerating devices indentified by |label|.
+  void StopEnumerateDevices(const std::string& label);
+
+  // Helpers to start and stop monitoring devices.
+  void StartMonitoring();
+  void StopMonitoring();
 
   // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
   scoped_ptr<base::Thread> device_thread_;
@@ -180,9 +213,17 @@ class CONTENT_EXPORT MediaStreamManager
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
 
-  // Keeps track of device types currently being enumerated to not enumerate
-  // when not necessary.
-  std::vector<bool> enumeration_in_progress_;
+  // Indicator of device monitoring state.
+  bool monitoring_started_;
+
+  // Stores most recently enumerated device lists. The cache is cleared when
+  // monitoring is stopped or there is no request for that type of device.
+  EnumerationCache audio_enumeration_cache_;
+  EnumerationCache video_enumeration_cache_;
+
+  // Keeps track of live enumeration commands sent to VideoCaptureManager or
+  // AudioInputDeviceManager, in order to only enumerate when necessary.
+  int active_enumeration_ref_count_[content::NUM_MEDIA_STREAM_DEVICE_TYPES];
 
   // All non-closed request.
   typedef std::map<std::string, DeviceRequest> DeviceRequests;

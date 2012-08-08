@@ -175,6 +175,10 @@ void PPB_AudioInput_Impl::EnumerateDevicesCallbackFunc(
   if (succeeded)
     devices_data_ = devices;
 
+  PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
+  if (plugin_delegate)
+    plugin_delegate->StopEnumerateDevices(request_id);
+
   OnEnumerateDevicesComplete(succeeded ? PP_OK : PP_ERROR_FAILED, devices);
 }
 

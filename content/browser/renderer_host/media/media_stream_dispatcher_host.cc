@@ -100,10 +100,9 @@ void MediaStreamDispatcherHost::DevicesEnumerated(
   StreamMap::iterator it = streams_.find(label);
   DCHECK(it != streams_.end());
   StreamRequest request = it->second;
-  streams_.erase(it);
 
   Send(new MediaStreamMsg_DevicesEnumerated(
-      request.render_view_id, request.page_request_id, devices));
+      request.render_view_id, request.page_request_id, label, devices));
 }
 
 void MediaStreamDispatcherHost::DeviceOpened(
@@ -196,7 +195,6 @@ void MediaStreamDispatcherHost::OnStopGeneratedStream(
            << ", {label = " << label <<  "})";
 
   StreamMap::iterator it = streams_.find(label);
-  DCHECK(it != streams_.end());
   GetManager()->StopGeneratedStream(label);
   streams_.erase(it);
 }
