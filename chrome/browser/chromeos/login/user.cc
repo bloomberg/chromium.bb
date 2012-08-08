@@ -8,6 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 
@@ -55,7 +57,9 @@ void User::SetImageURL(const GURL& image_url) {
 }
 
 void User::SetStubImage(int image_index) {
-  user_image_ = UserImage();
+  user_image_ = UserImage(
+      *ResourceBundle::GetSharedInstance().
+          GetImageSkiaNamed(IDR_PROFILE_PICTURE_LOADING));
   image_index_ = image_index;
   image_is_stub_ = true;
 }

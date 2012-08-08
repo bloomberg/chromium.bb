@@ -570,8 +570,7 @@ void UserManagerImpl::SaveUserImageFromProfileImage(
         UserImage::CreateAndEncode(downloaded_profile_image_));
   } else {
     // No profile image - use the stub image (gray avatar).
-    SetUserImage(username, User::kProfileImageIndex,
-                 GURL(), UserImage::CreateAndEncode(SkBitmap()));
+    SetUserImage(username, User::kProfileImageIndex, GURL(), UserImage());
     SaveImageToLocalState(username, "", User::kProfileImageIndex,
                           GURL(), false);
   }
@@ -1107,6 +1106,7 @@ bool UserManagerImpl::SaveBitmapToFile(const UserImage& user_image,
 
 void UserManagerImpl::InitDownloadedProfileImage() {
   DCHECK(logged_in_user_);
+  DCHECK_EQ(logged_in_user_->image_index(), User::kProfileImageIndex);
   if (downloaded_profile_image_.empty() && !logged_in_user_->image_is_stub()) {
     VLOG(1) << "Profile image initialized";
     downloaded_profile_image_ = logged_in_user_->image();
