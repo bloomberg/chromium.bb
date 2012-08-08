@@ -180,6 +180,7 @@
         '../third_party/skia/src/core/SkAlphaRuns.cpp',
         '../third_party/skia/src/core/SkAntiRun.h',
         '../third_party/skia/src/core/SkBitmap.cpp',
+        '../third_party/skia/src/core/SkBitmapHeap.cpp',
         '../third_party/skia/src/core/SkBitmapProcShader.cpp',
         '../third_party/skia/src/core/SkBitmapProcShader.h',
         '../third_party/skia/src/core/SkBitmapProcState.cpp',
