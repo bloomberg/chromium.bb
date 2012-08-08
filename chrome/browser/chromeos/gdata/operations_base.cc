@@ -50,7 +50,7 @@ const char kUserContentScope[] = "https://docs.googleusercontent.com/";
 const char kContactsScope[] = "https://www.google.com/m8/feeds/";
 
 // OAuth scope for Drive API.
-const char kDriveScope[] = "https://www.googleapis.com/auth/drive.file";
+const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsScope[] = "https://www.googleapis.com/auth/drive.apps";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
