@@ -63,6 +63,10 @@ class AnalyzerResultMap:
       for (k, value) in test_info_map.iteritems():
         self.result_map['whole'][k] = value
         if 'te_info' in value:
+          # Don't count SLOW PASS tests as failures.
+          if any([True for x in value['te_info'] if set(x.keys()) ==
+                 set(['SLOW', 'PASS', 'Bugs', 'Comments'])]):
+            continue
           if any([True for x in value['te_info'] if 'SKIP' in x]):
             self.result_map['skip'][k] = value
           else:
