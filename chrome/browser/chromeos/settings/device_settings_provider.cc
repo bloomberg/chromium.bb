@@ -61,7 +61,6 @@ const char* kKnownSettings[] = {
   kSignedDataRoamingEnabled,
   kStartUpUrls,
   kStatsReportingPref,
-  kSystemTimezonePolicy,
 };
 
 // Upper bound for number of retries to fetch a signed setting.
@@ -299,7 +298,6 @@ void DeviceSettingsProvider::SetInPolicy() {
     //   kScreenSaverExtensionId
     //   kScreenSaverTimeout
     //   kStartUpUrls
-    //   kSystemTimezonePolicy
 
     NOTREACHED();
   }
@@ -528,14 +526,6 @@ void DeviceSettingsProvider::DecodeGenericPolicies(
       policy.has_release_channel() &&
       policy.release_channel().has_release_channel_delegated() &&
       policy.release_channel().release_channel_delegated());
-
-  if (policy.has_system_timezone()) {
-    if (policy.system_timezone().has_timezone()) {
-      new_values_cache->SetString(
-          kSystemTimezonePolicy,
-          policy.system_timezone().timezone());
-    }
-  }
 }
 
 void DeviceSettingsProvider::UpdateValuesCache() {
