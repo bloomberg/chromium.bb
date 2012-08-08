@@ -73,14 +73,11 @@ void NetworkLibraryImplStub::Init() {
   // If these change, the expectations in network_library_unittest and
   // network_menu_icon_unittest need to be changed also.
 
-  // Networks are added in priority order.
-  network_priority_order_ = 0;
-
   Network* ethernet = new EthernetNetwork("eth1");
   ethernet->set_name("Fake Ethernet");
-  ethernet->set_is_active(true);
   ethernet->set_connected();
   AddStubNetwork(ethernet, PROFILE_SHARED);
+  ethernet->set_is_active(ethernet->connected());
 
   WifiNetwork* wifi1 = new WifiNetwork("wifi1");
   wifi1->set_name("Fake WiFi1");
@@ -287,7 +284,8 @@ void NetworkLibraryImplStub::Init() {
 
   // Ensure our active network is connected and vice versa, otherwise our
   // autotest browser_tests sometimes conclude the device is offline.
-  CHECK(active_network()->connected());
+  CHECK(active_network()->connected())
+      << "Active: " << active_network()->name();
   CHECK(connected_network()->is_active());
 
   std::string test_blob(
@@ -325,7 +323,8 @@ bool NetworkLibraryImplStub::IsCros() const {
 
 void NetworkLibraryImplStub::AddStubNetwork(
     Network* network, NetworkProfileType profile_type) {
-  network->priority_order_ = network_priority_order_++;
+  // Currently we don't prioritize networks in Shill so don't do so in the stub.
+  // network->priority_order_ = network_priority_order_++;
   network->CalculateUniqueId();
   if (!network->unique_id().empty())
     network_unique_id_map_[network->unique_id()] = network;
@@ -405,6 +404,12 @@ void NetworkLibraryImplStub::ConnectToNetwork(Network* network) {
       NetworkConnectCompleted(network, CONNECT_FAILED);
       return;
     }
+  }
+
+  // Disconnect ethernet when connecting to a new network (for UI testing).
+  if (network->type() != TYPE_VPN) {
+    ethernet_->set_is_active(false);
+    ethernet_->set_disconnected();
   }
 
   // Set connected state.

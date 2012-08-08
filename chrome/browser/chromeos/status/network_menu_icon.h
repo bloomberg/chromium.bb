@@ -86,6 +86,9 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Sets the resource color theme (e.g. light or dark icons).
   void SetResourceColorTheme(ResourceColorTheme color);
 
+  // Returns true if the icon should be visible in a system tray.
+  bool ShouldShowIconInTray();
+
   // Generates and returns the icon image. If |text| is not NULL, sets it to
   // the tooltip or display text to show, based on the value of mode_.
   const gfx::ImageSkia GetIconAndText(string16* text);
@@ -113,9 +116,6 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Returns an image associated with |network|, reflecting its current state.
   static const gfx::ImageSkia GetImage(const Network* network,
                                        ResourceColorTheme color);
-
-  // Returns an image representing an unconnected VPN.
-  static const gfx::ImageSkia GetVpnImage();
 
   // Access a specific image of the specified color theme. If index is out of
   // range, an empty image will be returned.
