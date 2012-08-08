@@ -41,6 +41,7 @@ class ASH_EXPORT BackgroundAnimator : public ui::AnimationDelegate {
   // is |CHANGE_IMMEDIATE| and an animation is not in progress this notifies
   // the delegate immediately (synchronously from this method).
   void SetPaintsBackground(bool value, ChangeType type);
+  bool paints_background() const { return paints_background_; }
 
   // Current alpha.
   int alpha() const { return alpha_; }

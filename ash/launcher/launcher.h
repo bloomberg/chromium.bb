@@ -56,6 +56,9 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
   void SetPaintsBackground(
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
+  bool paints_background() const {
+    return background_animator_.paints_background();
+  }
 
   // Sets the size of the status area.
   void SetStatusSize(const gfx::Size& size);

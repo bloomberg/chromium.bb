@@ -106,11 +106,12 @@ void WorkspaceLayoutManager::ShowStateChanged(
                !workspace_manager_->Contains(window)) {
       workspace_manager_->AddWindow(window);
     }
-  } else {
-    workspace_manager_->UpdateShelfVisibility();
   }
   BaseLayoutManager::ShowStateChanged(window, last_show_state);
   workspace_manager_->ShowStateChanged(window);
+  // As BaseLayoutManager::ShowStateChanged() may change the visibility of the
+  // window we need to invoke UpdateShelfVisibility() after ShowStateChanged().
+  workspace_manager_->UpdateShelfVisibility();
 }
 
 }  // namespace internal

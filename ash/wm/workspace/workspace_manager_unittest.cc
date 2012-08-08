@@ -695,5 +695,18 @@ TEST_F(WorkspaceManagerTest, MaximizeDontPersistEndsUpInOwnWorkspace) {
   EXPECT_FALSE(manager_->Contains(w1.get()));
 }
 
+// Verifies going from maximized to minimized sets the right state for painting
+// the background of the launcher.
+TEST_F(WorkspaceManagerTest, MinimizeResetsVisibility) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE,
+            Shell::GetInstance()->shelf()->visibility_state());
+  EXPECT_FALSE(Shell::GetInstance()->launcher()->paints_background());
+}
+
 }  // namespace internal
 }  // namespace ash
