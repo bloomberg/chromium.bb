@@ -1296,14 +1296,14 @@ Target: x86-64 bit mode
   d9 / 3                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     [P] DontCare $Md (s)
       Mv_Operand              OpSet
-  d9 / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (u)
+  d9 / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (u)
       M_Operand               OpUse
   d9 / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     [P] DontCare $Mw (u)
       Mw_Operand              OpUse
-  d9 / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (s)
+  d9 / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (s)
       M_Operand               OpSet
   d9 / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     [P] DontCare $Mw (s)
@@ -1347,12 +1347,12 @@ Target: x86-64 bit mode
     [P] DontCare $Md (s)
       Mv_Operand              OpSet
   db / 4                      INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
-  db / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (u)
+  db / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (u)
       M_Operand               OpUse
   db / 6                      INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
-  db / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (s)
+  db / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (s)
       M_Operand               OpSet
   --- dc ---
   dc / 0                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
@@ -1392,12 +1392,12 @@ Target: x86-64 bit mode
   dd / 3                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     [P] DontCare $Mq (s)
       Mo_Operand              OpSet
-  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (u)
+  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (u)
       M_Operand               OpUse
   dd / 5                      INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
-  dd / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (s)
+  dd / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (s)
       M_Operand               OpSet
   dd / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     [P] DontCare $Mw (s)
@@ -1440,17 +1440,17 @@ Target: x86-64 bit mode
   df / 3                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     [P] DontCare $Mw (s)
       Mw_Operand              OpSet
-  df / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (u)
+  df / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (u)
       M_Operand               OpUse
-  df / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (u)
+  df / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (u)
       M_Operand               OpUse
-  df / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (s)
+  df / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (s)
       M_Operand               OpSet
-  df / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    [P] DontCare $M (s)
+  df / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    [P] DontCare $Mf (s)
       M_Operand               OpSet
   --- e0 ---
   e0                          386 OpcodeHasImmed OperandSize_b ConditionalJump PartialInstruction
@@ -2448,9 +2448,9 @@ Target: x86-64 bit mode
       G_Operand               OpUse
       RegCL                   OpUse
   --- ae ---
-  0f ae / 0                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 NaClIllegal PartialInstruction
+  0f ae / 0                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal PartialInstruction
     [P] DontCare(illegal)
-  0f ae / 1                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 NaClIllegal PartialInstruction
+  0f ae / 1                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal PartialInstruction
     [P] DontCare(illegal)
   0f ae / 2                   SSE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     [P] DontCare $Md (u)

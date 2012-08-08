@@ -674,6 +674,10 @@ static void NaClOperandForm_Mdq() {
   NaClDefOp(Mdq_Operand, NACL_EMPTY_OPFLAGS);
 }
 
+static void NaClOperandForm_Mf() {
+  NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
+}
+
 static void NaClOperandForm_MdSlq() {
   /* Note: For Ed/q we assume that only sizes d (32) and q (64) are possible.
    * Hence, we don't allow a data 66 prefix effect the size.
@@ -1556,6 +1560,7 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Md",      NaClOperandForm_Md,        defop_st);
     NaClSymbolTablePutDefOp("Md/q",    NaClOperandForm_MdSlq,     defop_st);
     NaClSymbolTablePutDefOp("Mdq",     NaClOperandForm_Mdq,       defop_st);
+    NaClSymbolTablePutDefOp("Mf",      NaClOperandForm_Mf,        defop_st);
     NaClSymbolTablePutDefOp("Mp",      NaClOperandForm_Mp,        defop_st);
     NaClSymbolTablePutDefOp("Mq",      NaClOperandForm_Mq,        defop_st);
     NaClSymbolTablePutDefOp("Ms",      NaClOperandForm_Ms,        defop_st);

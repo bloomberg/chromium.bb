@@ -616,8 +616,8 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: dd 24 00                                     [P] dontcare [%rax+%rax*1] (u)
-  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    DontCare $M
+  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    DontCare $Mf
       M_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
@@ -628,8 +628,8 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 67 dd 24 00                                  [P] dontcare [%eax+%eax*1] (u)
-  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    DontCare $M
+  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    DontCare $Mf
       M_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
@@ -2234,8 +2234,8 @@ NaClExpVector[0] = {
 NaClExpVector[0] = {
 };
 0000000000000000: 41 db 2c 07                                  [P] dontcare [%r15+%rax*1] (u)
-  db / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 PartialInstruction
-    DontCare $M
+  db / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
+    DontCare $Mf
       M_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },

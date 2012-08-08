@@ -16,7 +16,7 @@
  *
  * 1) Doesn't model condition flags.
  * 2) Doesn't model floating point stack adjustments.
- * 3) Doesn't model all differences in size of pointed to memory ($M is used
+ * 3) Doesn't model all differences in size of pointed to memory ($Mf is used
  *    in such cases).
  *
  * Note: %st0 and %st1 have been inserted and made explicit, when necessary
@@ -62,9 +62,9 @@ void NaClDefX87Insts(struct NaClSymbolTable* st) {
   NaClDefine("d9/1: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("d9/2: Fst $Md, %st0", NACLi_X87, st, Move);
   NaClDefine("d9/3: Fstp $Md, %st0", NACLi_X87, st, Move);
-  NaClDefine("d9/4: Fldenv $M", NACLi_X87, st, Uses);
+  NaClDefine("d9/4: Fldenv $Mf", NACLi_X87, st, Uses);
   NaClDefine("d9/5: Fldcw $Mw", NACLi_X87, st, Uses);
-  NaClDefine("d9/6: Fnstenv $M", NACLi_X87, st, UnarySet);
+  NaClDefine("d9/6: Fnstenv $Mf", NACLi_X87, st, UnarySet);
   NaClDefine("d9/7: Fnstcw $Mw", NACLi_X87, st, UnarySet);
   NaClDefIter("d9c0+@i: Fld %st0, %st@i", 0, 7, NACLi_X87, st, Move);
   NaClDefIter("d9c8+@i: Fxch %st0, %st@i", 0, 7, NACLi_X87, st, Exchange);
@@ -131,9 +131,9 @@ void NaClDefX87Insts(struct NaClSymbolTable* st) {
   NaClDefine("db/2: Fist $Md, %st0", NACLi_X87, st, Move);
   NaClDefine("db/3: Fistp $Md, %st0", NACLi_X87, st, Move);
   NaClDefine("db/4: Invalid", NACLi_INVALID, st, Other);
-  NaClDefine("db/5: Fld %st0, $M", NACLi_X87, st, Move);
+  NaClDefine("db/5: Fld %st0, $Mf", NACLi_X87, st, Move);
   NaClDefine("db/6: Invalid", NACLi_INVALID, st, Other);
-  NaClDefine("db/7: Fstp $M, %st0", NACLi_X87, st, Move);
+  NaClDefine("db/7: Fstp $Mf, %st0", NACLi_X87, st, Move);
   NaClDefIter("dbc0+@i: Fcmovnb %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
   NaClDefIter("dbc8+@i: Fcmovne %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
   NaClDefIter("dbd0+@i: Fcmovnbe %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
@@ -171,9 +171,9 @@ void NaClDefX87Insts(struct NaClSymbolTable* st) {
   NaClDefine("dd/1: Fisttp $Mq, %st0", NACLi_X87, st, Move);
   NaClDefine("dd/2: Fst $Mq, %st0", NACLi_X87, st, Move);
   NaClDefine("dd/3: Fstp $Mq, %st0", NACLi_X87, st, Move);
-  NaClDefine("dd/4: Frstor $M", NACLi_X87, st, Uses);
+  NaClDefine("dd/4: Frstor $Mf", NACLi_X87, st, Uses);
   NaClDefine("dd/5: Invalid", NACLi_INVALID, st, Other);
-  NaClDefine("dd/6: Fnsave $M", NACLi_X87, st, UnarySet);
+  NaClDefine("dd/6: Fnsave $Mf", NACLi_X87, st, UnarySet);
   NaClDefine("dd/7: Fnstsw $Mw", NACLi_X87, st, UnarySet);
   NaClDefIter("ddc0+@i: Ffree %st@i", 0, 7, NACLi_X87, st, Other);
   NaClDefIter("ddc8+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
@@ -211,10 +211,10 @@ void NaClDefX87Insts(struct NaClSymbolTable* st) {
   NaClDefine("df/1: Fisttp $Mw, %st0", NACLi_X87, st, Move);
   NaClDefine("df/2: Fist $Mw, %st0", NACLi_X87, st, Move);
   NaClDefine("df/3: Fistp $Mw, %st0", NACLi_X87, st, Move);
-  NaClDefine("df/4: Fbld %st0, $M", NACLi_X87, st, Move);
-  NaClDefine("df/5: Fild %st0, $M", NACLi_X87, st, Move);
-  NaClDefine("df/6: Fbstp $M, %st0", NACLi_X87, st , Move);
-  NaClDefine("df/7: Fistp $M, %st0", NACLi_X87, st, Move);
+  NaClDefine("df/4: Fbld %st0, $Mf", NACLi_X87, st, Move);
+  NaClDefine("df/5: Fild %st0, $Mf", NACLi_X87, st, Move);
+  NaClDefine("df/6: Fbstp $Mf, %st0", NACLi_X87, st , Move);
+  NaClDefine("df/7: Fistp $Mf, %st0", NACLi_X87, st, Move);
   NaClDefIter("dfc0+@i: Invalid", 0, 7, NACLi_X87, st, Other);
   NaClDefIter("dfc8+@i: Invalid", 0, 7, NACLi_X87, st, Other);
   NaClDefIter("dfd0+@i: Invalid", 0, 7, NACLi_X87, st, Other);

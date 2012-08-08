@@ -141,9 +141,9 @@ static const NaClOp g_Operands[306] = {
   /* 132 */ { RegCL, NACL_OPFLAG(OpUse), "%cl" },
   /* 133 */ { Mv_Operand, NACL_OPFLAG(OpUse), "$Md" },
   /* 134 */ { Mw_Operand, NACL_OPFLAG(OpSet), "$Mw" },
-  /* 135 */ { M_Operand, NACL_OPFLAG(OpSet), "$M" },
+  /* 135 */ { M_Operand, NACL_OPFLAG(OpSet), "$Mf" },
   /* 136 */ { Mw_Operand, NACL_OPFLAG(OpUse), "$Mw" },
-  /* 137 */ { M_Operand, NACL_OPFLAG(OpUse), "$M" },
+  /* 137 */ { M_Operand, NACL_OPFLAG(OpUse), "$Mf" },
   /* 138 */ { Mv_Operand, NACL_OPFLAG(OpSet), "$Md" },
   /* 139 */ { Mo_Operand, NACL_OPFLAG(OpUse), "$Mq" },
   /* 140 */ { Mo_Operand, NACL_OPFLAG(OpSet), "$Mq" },
@@ -1253,7 +1253,7 @@ static const NaClInst g_Opcodes[578] = {
     InstDontCare, 0x07, 1, 134, NACL_OPCODE_NULL_OFFSET  },
   /* 234 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x06, 1, 135, 233  },
   /* 235 */
   { NACLi_X87,
@@ -1261,7 +1261,7 @@ static const NaClInst g_Opcodes[578] = {
     InstDontCare, 0x05, 1, 136, 234  },
   /* 236 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x04, 1, 137, 235  },
   /* 237 */
   { NACLi_X87,
@@ -1281,7 +1281,7 @@ static const NaClInst g_Opcodes[578] = {
     InstDontCare, 0x00, 1, 133, 239  },
   /* 241 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x07, 1, 135, NACL_OPCODE_NULL_OFFSET  },
   /* 242 */
   { NACLi_INVALID,
@@ -1289,7 +1289,7 @@ static const NaClInst g_Opcodes[578] = {
     InstInvalid, 0x06, 0, 0, 241  },
   /* 243 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x05, 1, 137, 242  },
   /* 244 */
   { NACLi_INVALID,
@@ -1349,7 +1349,7 @@ static const NaClInst g_Opcodes[578] = {
     InstInvalid, 0x05, 0, 0, 234  },
   /* 258 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x04, 1, 137, 257  },
   /* 259 */
   { NACLi_X87,
@@ -1401,15 +1401,15 @@ static const NaClInst g_Opcodes[578] = {
     InstDontCare, 0x00, 1, 136, 269  },
   /* 271 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x06, 1, 135, 241  },
   /* 272 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x05, 1, 137, 271  },
   /* 273 */
   { NACLi_X87,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x04, 1, 137, 272  },
   /* 274 */
   { NACLi_X87,
@@ -2045,11 +2045,11 @@ static const NaClInst g_Opcodes[578] = {
     InstDontCare, 0x02, 1, 133, 430  },
   /* 432 */
   { NACLi_FXSAVE,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x01, 0, 0, 431  },
   /* 433 */
   { NACLi_FXSAVE,
-    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
+    NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3) | NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(NaClIllegal) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 0, 0, 432  },
   /* 434 */
   { NACLi_386,

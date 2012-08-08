@@ -247,8 +247,8 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefine("     0fac:     Shrd $Ev, $Gv, $Ib",  NACLi_386,     st, Nary);
   NaClDefine("     0fad:     Shrd $Ev, $Gv, %cl",  NACLi_386,     st, Nary);
 
-  NaClDefine("     0fae/0:   Fxsave $M",           NACLi_FXSAVE,  st, Sets);
-  NaClDefine("     0fae/1:   Fxrstor $M",          NACLi_FXSAVE,  st, Uses);
+  NaClDefine("     0fae/0:   Fxsave $Mf",          NACLi_FXSAVE,  st, Sets);
+  NaClDefine("     0fae/1:   Fxrstor $Mf",         NACLi_FXSAVE,  st, Uses);
   NaClDefine("     0fae/2:   Ldmxcsr $Md",         NACLi_SSE,     st, Uses);
   NaClDefine("     0fae/3:   Stmxcsr $Md",         NACLi_SSE,     st, Sets);
   NaClDefine("     0fae/4:   Invalid",             NACLi_INVALID, st, Other);

@@ -305,6 +305,14 @@ typedef void (*NaClDefOperand)();
  *       if the effective operand size is 32 or 64 bits.
  *   zw - A word only when the effective operand size matches.
  *   zd - A doubleword only when the effective operand size is 32 or 64 bits.
+ *   f - A memory access (of small size, i.e. less than 100 bytes),
+ *       irrespective of the operand size (as modified by the prefix 66,
+         and the Rex.w prefix). Should only be used with $M arguments.
+ *       When this size modifier $Mf is used (unlike $M which allows
+ *       prefix 66), prefix 66 is illegal.
+ *       Note: When $Mf is used, the (small) size differences are not
+ *       important for the validator. Hence, it doesn't matter if we are
+ *       more accurate.
  *
  * Note: vw, vd, vq, zw, and zd are not in the manual cited above. However,
  * they have been added so that sub-variants of an v/z instruction (not

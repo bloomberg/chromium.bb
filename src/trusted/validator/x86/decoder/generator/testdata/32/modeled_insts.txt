@@ -1488,14 +1488,14 @@ Target: x86-32 bit mode
     Fstp $Md, %st0
       Mv_Operand              OpSet
       RegST0                  OpUse
-  d9 / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fldenv $M
+  d9 / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fldenv $Mf
       M_Operand               OpUse
   d9 / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
     Fldcw $Mw
       Mw_Operand              OpUse
-  d9 / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fnstenv $M
+  d9 / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fnstenv $Mf
       M_Operand               OpSet
   d9 / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
     Fnstcw $Mw
@@ -1551,13 +1551,13 @@ Target: x86-32 bit mode
       Mv_Operand              OpSet
       RegST0                  OpUse
   db / 4                      INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
-  db / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fld %st0, $M
+  db / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fld %st0, $Mf
       RegST0                  OpSet
       M_Operand               OpUse
   db / 6                      INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
-  db / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fstp $M, %st0
+  db / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fstp $Mf, %st0
       M_Operand               OpSet
       RegST0                  OpUse
   --- dc ---
@@ -1610,12 +1610,12 @@ Target: x86-32 bit mode
     Fstp $Mq, %st0
       Mo_Operand              OpSet
       RegST0                  OpUse
-  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Frstor $M
+  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Frstor $Mf
       M_Operand               OpUse
   dd / 5                      INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
-  dd / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fnsave $M
+  dd / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fnsave $Mf
       M_Operand               OpSet
   dd / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
     Fnstsw $Mw
@@ -1670,20 +1670,20 @@ Target: x86-32 bit mode
     Fistp $Mw, %st0
       Mw_Operand              OpSet
       RegST0                  OpUse
-  df / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fbld %st0, $M
+  df / 4                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fbld %st0, $Mf
       RegST0                  OpSet
       M_Operand               OpUse
-  df / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fild %st0, $M
+  df / 5                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fild %st0, $Mf
       RegST0                  OpSet
       M_Operand               OpUse
-  df / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fbstp $M, %st0
+  df / 6                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fbstp $Mf, %st0
       M_Operand               OpSet
       RegST0                  OpUse
-  df / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16
-    Fistp $M, %st0
+  df / 7                      X87 OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
+    Fistp $Mf, %st0
       M_Operand               OpSet
       RegST0                  OpUse
   --- e0 ---
@@ -2817,11 +2817,11 @@ Target: x86-32 bit mode
       G_Operand               OpUse
       RegCL                   OpUse
   --- ae ---
-  0f ae / 0                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 NaClIllegal
-    Fxsave $M
+  0f ae / 0                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
+    Fxsave $Mf
       M_Operand               OpSet
-  0f ae / 1                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 NaClIllegal
-    Fxrstor $M
+  0f ae / 1                   FXSAVE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
+    Fxrstor $Mf
       M_Operand               OpUse
   0f ae / 2                   SSE OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm
     Ldmxcsr $Md
