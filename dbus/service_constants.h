@@ -643,6 +643,7 @@ const char kTransmitByteCountProperty[] = "TransmitByteCount";
 const char kLinkMonitorResponseTimeProperty[] = "LinkMonitorResponseTime";
 
 // Manager property names.
+const char kDefaultServiceProperty[] = "DefaultService";
 const char kHostNameProperty[] = "HostName";
 const char kLinkMonitorTechnologiesProperty[] =
     "LinkMonitorTechnologies";
