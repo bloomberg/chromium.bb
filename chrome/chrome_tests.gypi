@@ -2974,6 +2974,8 @@
         'browser/ui/webui/options2/options_ui_browsertest.cc',
         'browser/ui/webui/options2/options_ui_browsertest.h',
         'browser/ui/webui/options2/password_manager_browsertest.js',
+        'browser/ui/webui/options2/preferences_browsertest.cc',
+        'browser/ui/webui/options2/preferences_browsertest.h',
         'browser/ui/webui/options2/search_engine_manager_browsertest.js',
         'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
         'browser/ui/webui/sync_setup_browsertest.js',

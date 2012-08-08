@@ -44,19 +44,6 @@ bool IsSettingOwnerOnly(const std::string& pref) {
   return std::find(kNonOwnerSettings, end, pref) == end;
 }
 
-// Create a settings value with "managed" and "disabled" property.
-// "managed" property is true if the setting is managed by administrator.
-// "disabled" property is true if the UI for the setting should be disabled.
-base::Value* CreateSettingsValue(base::Value *value,
-                                 bool managed,
-                                 bool disabled) {
-  DictionaryValue* dict = new DictionaryValue;
-  dict->Set("value", value);
-  dict->Set("managed", base::Value::CreateBooleanValue(managed));
-  dict->Set("disabled", base::Value::CreateBooleanValue(disabled));
-  return dict;
-}
-
 // Returns true if |username| is the logged-in owner.
 bool IsLoggedInOwner(const std::string& username) {
   UserManager* user_manager = UserManager::Get();
@@ -157,20 +144,18 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
   if (!pref_value)
     return base::Value::CreateNullValue();
 
-  // Lists don't get the standard pref decoration.
-  if (pref_value->GetType() == base::Value::TYPE_LIST) {
-    if (pref_name == kAccountsPrefUsers)
-      return CreateUsersWhitelist(pref_value);
-    // Return a copy because the UI will take ownership of this object.
-    return pref_value->DeepCopy();
-  }
-  // All other prefs are decorated the same way.
-  bool enabled = (UserManager::Get()->IsCurrentUserOwner() ||
-                  !IsSettingOwnerOnly(pref_name));
-  return CreateSettingsValue(
-      pref_value->DeepCopy(),  // The copy will be owned by the dictionary.
-      g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
-      !enabled);
+  // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
+  DictionaryValue* dict = new DictionaryValue;
+  if (pref_name == kAccountsPrefUsers)
+    dict->Set("value", CreateUsersWhitelist(pref_value));
+  else
+    dict->Set("value", pref_value->DeepCopy());
+  if (g_browser_process->browser_policy_connector()->IsEnterpriseManaged())
+    dict->SetString("controlledBy", "policy");
+  dict->SetBoolean("disabled",
+                   IsSettingOwnerOnly(pref_name) &&
+                       !UserManager::Get()->IsCurrentUserOwner());
+  return dict;
 }
 
 void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {

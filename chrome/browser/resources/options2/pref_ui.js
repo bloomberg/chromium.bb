@@ -55,7 +55,7 @@ cr.define('options', function() {
 
     updateDisabledState_(el, 'notUserModifiable', event.value.disabled);
 
-    el.controlledBy = event.value['controlledBy'];
+    el.controlledBy = event.value.controlledBy;
 
     OptionsPage.updateManagedBannerVisibility();
   }
@@ -88,10 +88,7 @@ cr.define('options', function() {
 
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref, function(event) {
-        var value = event.value && event.value['value'] != undefined ?
-            event.value['value'] : event.value;
-
-        self.prefValue_ = Boolean(value);
+        self.prefValue_ = Boolean(event.value.value);
         self.resetPrefState();
 
         updateElementState_(self, event);
@@ -224,9 +221,7 @@ cr.define('options', function() {
           function(event) {
             if (self.customChangeHandler(event))
               return;
-            var value = event.value && event.value['value'] != undefined ?
-                event.value['value'] : event.value;
-            self.checked = String(value) == self.value;
+            self.checked = String(event.value.value) == self.value;
             self.storedValue_ = self.checked;
 
             updateElementState_(self, event);
@@ -325,8 +320,7 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.value = event.value && event.value['value'] != undefined ?
-                event.value['value'] : event.value;
+            self.value = event.value.value;
 
             updateElementState_(self, event);
           });
@@ -447,8 +441,7 @@ cr.define('options', function() {
      * @private
      */
     onPrefChange_: function(event) {
-      var value = event.value && event.value['value'] != undefined ?
-          event.value['value'] : event.value;
+      var value = event.value.value;
       if (value != undefined)
         this.value = this.valueMap ? this.valueMap.indexOf(value) : value;
     },
@@ -558,12 +551,9 @@ cr.define('options', function() {
 
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref, function(event) {
-        var value = event.value && event.value['value'] != undefined ?
-            event.value['value'] : event.value;
-
         // Make sure |value| is a string, because the value is stored as a
         // string in the HTMLOptionElement.
-        value = value.toString();
+        value = event.value.value.toString();
 
         updateElementState_(self, event);
         self.prefValue_ = value;
@@ -728,8 +718,7 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.value = event.value && event.value['value'] != undefined ?
-                event.value['value'] : event.value;
+            self.value = event.value.value;
 
             updateElementState_(self, event);
 
@@ -813,8 +802,8 @@ cr.define('options', function() {
           function(event) {
             var e = {
               value: {
-                'disabled': event.value['disabled'] && !event.value['value'],
-                'controlledBy': event.value['controlledBy']
+                'disabled': event.value.disabled && !event.value.value,
+                'controlledBy': event.value.controlledBy
               }
             };
             updateElementState_(self, e);

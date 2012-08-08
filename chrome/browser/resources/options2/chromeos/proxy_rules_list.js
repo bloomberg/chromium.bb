@@ -34,7 +34,7 @@ cr.define('options.proxyexceptions', function() {
       // Listens to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.load_(event.value);
+            self.load_(event.value.value);
           });
     },
 

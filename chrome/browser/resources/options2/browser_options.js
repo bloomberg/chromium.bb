@@ -484,15 +484,15 @@ cr.define('options', function() {
       /** @const */ var showPagesValue = Number($('startup-show-pages').value);
       /** @const */ var showHomePageValue = 0;
 
-      $('startup-set-pages').disabled = event.value['disabled'] &&
-                                        event.value['value'] != showPagesValue;
+      $('startup-set-pages').disabled = event.value.disabled &&
+                                        event.value.value != showPagesValue;
 
-      if (event.value['value'] == showHomePageValue) {
+      if (event.value.value == showHomePageValue) {
         // If the user previously selected "Show the homepage", the
         // preference will already be migrated to "Open a specific page". So
         // the only way to reach this code is if the 'restore on startup'
         // preference is managed.
-        assert(event.value['controlledBy']);
+        assert(event.value.controlledBy);
 
         // Select "open the following pages" and lock down the list of URLs
         // to reflect the intention of the policy.
@@ -685,12 +685,12 @@ cr.define('options', function() {
       var section = $('change-home-page-section');
       if (this.onShowHomeButtonChangedCalled_) {
         var container = $('change-home-page-section-container');
-        if (event.value['value'])
+        if (event.value.value)
           this.showSectionWithAnimation_(section, container);
         else
           this.hideSectionWithAnimation_(section, container);
       } else {
-        section.hidden = !event.value['value'];
+        section.hidden = !event.value.value;
         this.onShowHomeButtonChangedCalled_ = true;
       }
     },
@@ -701,8 +701,8 @@ cr.define('options', function() {
      * @param {Event} event The preference change event.
      */
     onHomePageIsNtpChanged_: function(event) {
-      $('home-page-url').hidden = event.value['value'];
-      $('home-page-ntp').hidden = !event.value['value'];
+      $('home-page-url').hidden = event.value.value;
+      $('home-page-ntp').hidden = !event.value.value;
     },
 
     /**
@@ -711,7 +711,7 @@ cr.define('options', function() {
      * @param {Event} event The preference change event.
      */
     onHomePageChanged_: function(event) {
-      $('home-page-url').textContent = this.stripHttp_(event.value['value']);
+      $('home-page-url').textContent = this.stripHttp_(event.value.value);
     },
 
     /**
@@ -741,7 +741,7 @@ cr.define('options', function() {
      * @private
      */
     onInstantConfirmDialogShownChanged_: function(event) {
-      this.instantConfirmDialogShown_ = event.value['value'];
+      this.instantConfirmDialogShown_ = event.value.value;
     },
 
     /**
@@ -751,7 +751,7 @@ cr.define('options', function() {
      * @private
      */
     onSpellcheckConfirmDialogShownChanged_: function(event) {
-      this.spellcheckConfirmDialogShown_ = event.value['value'];
+      this.spellcheckConfirmDialogShown_ = event.value.value;
     },
 
     /**
@@ -761,7 +761,7 @@ cr.define('options', function() {
      * @private
      */
     onDefaultDownloadDirectoryChanged_: function(event) {
-      $('downloadLocationPath').value = event.value['value'];
+      $('downloadLocationPath').value = event.value.value;
       if (cr.isChromeOS) {
         // On ChromeOS, strip out /special for drive paths, and
         // /home/chronos/user for local files.

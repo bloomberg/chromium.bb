@@ -762,8 +762,7 @@ cr.define('options.network', function() {
       var prefs = options.Preferences.getInstance();
       prefs.addEventListener('cros.signed.data_roaming_enabled',
           function(event) {
-            enableDataRoaming_ = event.value && event.value['value'] !=
-                undefined ? event.value['value'] : event.value;
+            enableDataRoaming_ = event.value.value;
           });
     },
 
