@@ -129,8 +129,10 @@ bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
     case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM:
       return true;
     case CookieTreeNode::DetailedInfo::TYPE_QUOTA:
-      return true;
+      return false;
     case CookieTreeNode::DetailedInfo::TYPE_SERVER_BOUND_CERT:
+      return false;
+    case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO:
       return false;
     default:
       break;
