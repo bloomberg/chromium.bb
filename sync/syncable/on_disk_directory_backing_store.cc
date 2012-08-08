@@ -5,6 +5,7 @@
 #include "sync/syncable/on_disk_directory_backing_store.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/metrics/histogram.h"
 #include "sync/syncable/syncable-inl.h"
 
@@ -72,7 +73,7 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
 
   // The fallback: delete the current database and return a fresh one.  We can
   // fetch the user's data from the could.
-  entry_bucket->clear();
+  STLDeleteElements(entry_bucket);
   db_.reset(new sql::Connection);
   file_util::Delete(backing_filepath_, false);
 
