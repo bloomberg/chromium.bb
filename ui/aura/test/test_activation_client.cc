@@ -62,7 +62,7 @@ Window* TestActivationClient::GetActiveWindow() {
 }
 
 bool TestActivationClient::OnWillFocusWindow(Window* window,
-                                             const Event* event) {
+                                             const ui::Event* event) {
   return true;
 }
 

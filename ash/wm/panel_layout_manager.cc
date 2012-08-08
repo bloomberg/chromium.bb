@@ -274,7 +274,7 @@ void PanelLayoutManager::Relayout() {
     }
 
     gfx::Point icon_origin = icon_bounds.origin();
-    aura::Window::ConvertPointToWindow(panel_container_->GetRootWindow(),
+    aura::Window::ConvertPointToTarget(panel_container_->GetRootWindow(),
                                        panel_container_, &icon_origin);
 
     // TODO(dcheng): Need to clamp to screen edges.

@@ -968,7 +968,7 @@ void ToolbarView::LayoutLocationBarNTP() {
     return;
 
   gfx::Point location_container_origin;
-  aura::Window::ConvertPointToWindow(
+  aura::Window::ConvertPointToTarget(
       contents_view, browser_window, &location_container_origin);
   views::View::ConvertPointFromWidget(location_bar_container_->parent(),
                                       &location_container_origin);

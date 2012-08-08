@@ -14,10 +14,10 @@
 #include "ui/app_list/app_list_view.h"
 #include "ui/app_list/icon_cache.h"
 #include "ui/app_list/pagination_model.h"
-#include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform_util.h"
@@ -202,7 +202,7 @@ void AppListController::ScheduleAnimation() {
 }
 
 void AppListController::ProcessLocatedEvent(aura::Window* target,
-                                            const aura::LocatedEvent& event) {
+                                            const ui::LocatedEvent& event) {
   // If the event happened on a menu, then the event should not close the app
   // list.
   if (target) {
@@ -234,12 +234,12 @@ void AppListController::UpdateBounds() {
 // AppListController, aura::EventFilter implementation:
 
 bool AppListController::PreHandleKeyEvent(aura::Window* target,
-                                          aura::KeyEvent* event) {
+                                          ui::KeyEvent* event) {
   return false;
 }
 
 bool AppListController::PreHandleMouseEvent(aura::Window* target,
-                                            aura::MouseEvent* event) {
+                                            ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     ProcessLocatedEvent(target, *event);
   return false;
@@ -247,13 +247,13 @@ bool AppListController::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus AppListController::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus AppListController::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   if (event->type() == ui::ET_GESTURE_TAP)
     ProcessLocatedEvent(target, *event);
   return ui::GESTURE_STATUS_UNKNOWN;

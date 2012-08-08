@@ -11,9 +11,9 @@
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 
 namespace ash {
 
@@ -34,14 +34,15 @@ class WindowCycleEventFilter : public aura::EventFilter {
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilter);
 };
@@ -55,7 +56,7 @@ WindowCycleEventFilter::~WindowCycleEventFilter() {
 
 bool WindowCycleEventFilter::PreHandleKeyEvent(
     aura::Window* target,
-    aura::KeyEvent* event) {
+    ui::KeyEvent* event) {
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
       event->type() == ui::ET_KEY_RELEASED) {
@@ -67,19 +68,19 @@ bool WindowCycleEventFilter::PreHandleKeyEvent(
 
 bool WindowCycleEventFilter::PreHandleMouseEvent(
     aura::Window* target,
-    aura::MouseEvent* event) {
+    ui::MouseEvent* event) {
   return false;  // Not handled.
 }
 
 ui::TouchStatus WindowCycleEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
 }
 
 ui::GestureStatus WindowCycleEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 

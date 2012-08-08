@@ -11,9 +11,11 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class LocatedEvent;
-class MouseEvent;
 class Window;
+}
+
+namespace ui {
+class LocatedEvent;
 }
 
 namespace ash {
@@ -27,14 +29,15 @@ class PanelWindowEventFilter : public aura::EventFilter {
 
   // Overriden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
  private:
   enum DragState {
@@ -43,7 +46,7 @@ class PanelWindowEventFilter : public aura::EventFilter {
     DRAG_STARTED
   };
 
-  bool HandleDrag(aura::Window* target, aura::LocatedEvent* event);
+  bool HandleDrag(aura::Window* target, ui::LocatedEvent* event);
   void FinishDrag();
 
   aura::Window* panel_container_;

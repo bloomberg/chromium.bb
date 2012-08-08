@@ -56,7 +56,7 @@ void ScreenPositionController::ConvertPointToScreen(
     const aura::Window* window,
     gfx::Point* point) {
   const aura::RootWindow* root = window->GetRootWindow();
-  aura::Window::ConvertPointToWindow(window, root, point);
+  aura::Window::ConvertPointToTarget(window, root, point);
   if (DisplayController::IsExtendedDesktopEnabled()) {
     const gfx::Point display_origin =
         gfx::Screen::GetDisplayNearestWindow(
@@ -75,7 +75,7 @@ void ScreenPositionController::ConvertPointFromScreen(
             const_cast<aura::RootWindow*>(root)).bounds().origin();
     point->Offset(-display_origin.x(), -display_origin.y());
   }
-  aura::Window::ConvertPointToWindow(root, window, point);
+  aura::Window::ConvertPointToTarget(root, window, point);
 }
 
 void ScreenPositionController::SetBounds(

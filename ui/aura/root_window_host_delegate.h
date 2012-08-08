@@ -9,22 +9,25 @@ namespace gfx {
 class Size;
 }
 
-namespace aura {
-
+namespace ui {
 class KeyEvent;
 class MouseEvent;
-class RootWindow;
 class ScrollEvent;
-class TouchEvent;
+class TouchEventImpl;
+}
+
+namespace aura {
+
+class RootWindow;
 
 // A private interface used by RootWindowHost implementations to communicate
 // with their owning RootWindow.
 class AURA_EXPORT RootWindowHostDelegate {
  public:
-  virtual bool OnHostKeyEvent(KeyEvent* event) = 0;
-  virtual bool OnHostMouseEvent(MouseEvent* event) = 0;
-  virtual bool OnHostScrollEvent(ScrollEvent* event) = 0;
-  virtual bool OnHostTouchEvent(TouchEvent* event) = 0;
+  virtual bool OnHostKeyEvent(ui::KeyEvent* event) = 0;
+  virtual bool OnHostMouseEvent(ui::MouseEvent* event) = 0;
+  virtual bool OnHostScrollEvent(ui::ScrollEvent* event) = 0;
+  virtual bool OnHostTouchEvent(ui::TouchEventImpl* event) = 0;
 
   virtual void OnHostLostCapture() = 0;
 

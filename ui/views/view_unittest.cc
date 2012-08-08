@@ -40,7 +40,6 @@
 #include "ui/views/test/test_views_delegate.h"
 #endif
 #if defined(USE_AURA)
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #endif

@@ -8,8 +8,15 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
+
+namespace ui {
+class GestureEventImpl;
+class KeyEvent;
+class LocatedEvent;
+class MouseEvent;
+class TouchEventImpl;
+}
 
 namespace aura {
 class CursorManager;
@@ -25,7 +32,7 @@ namespace shared {
 // consumed by any of those filters. If an event is consumed by a filter, the
 // rest of the filter(s) and CompoundEventFilter will not see the consumed
 // event.
-class AURA_EXPORT CompoundEventFilter : public aura::EventFilter {
+class AURA_EXPORT CompoundEventFilter : public EventFilter {
  public:
   CompoundEventFilter();
   virtual ~CompoundEventFilter();
@@ -39,41 +46,40 @@ class AURA_EXPORT CompoundEventFilter : public aura::EventFilter {
 
   // Adds/removes additional event filters. This does not take ownership of
   // the EventFilter.
-  void AddFilter(aura::EventFilter* filter);
-  void RemoveFilter(aura::EventFilter* filter);
+  void AddFilter(EventFilter* filter);
+  void RemoveFilter(EventFilter* filter);
   size_t GetFilterCount() const;
 
   // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(Window* target,
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
-      aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      Window* target,
+      ui::GestureEventImpl* event) OVERRIDE;
 
  private:
   // Updates the cursor if the target provides a custom one, and provides
   // default resize cursors for window edges.
-  void UpdateCursor(aura::Window* target, aura::MouseEvent* event);
+  void UpdateCursor(Window* target, ui::MouseEvent* event);
 
   // Dispatches event to additional filters. Returns false or
   // ui::TOUCH_STATUS_UNKNOWN if event is consumed.
-  bool FilterKeyEvent(aura::Window* target, aura::KeyEvent* event);
-  bool FilterMouseEvent(aura::Window* target, aura::MouseEvent* event);
-  ui::TouchStatus FilterTouchEvent(aura::Window* target,
-                                   aura::TouchEvent* event);
+  bool FilterKeyEvent(Window* target, ui::KeyEvent* event);
+  bool FilterMouseEvent(Window* target, ui::MouseEvent* event);
+  ui::TouchStatus FilterTouchEvent(Window* target, ui::TouchEventImpl* event);
 
   // Sets the visibility of the cursor if the event is not synthesized and
   // |update_cursor_visibility_| is true.
   void SetCursorVisibilityOnEvent(aura::Window* target,
-                                  aura::LocatedEvent* event,
+                                  ui::LocatedEvent* event,
                                   bool show);
 
   // Additional event filters that pre-handles events.
-  ObserverList<aura::EventFilter, true> filters_;
+  ObserverList<EventFilter, true> filters_;
 
   // Should we show the mouse cursor when we see mouse movement and hide it when
   // we see a touch event?

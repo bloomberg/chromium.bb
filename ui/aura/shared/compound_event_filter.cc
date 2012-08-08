@@ -7,11 +7,11 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 
 namespace aura {
@@ -19,15 +19,15 @@ namespace shared {
 
 namespace {
 
-aura::Window* FindFocusableWindowFor(aura::Window* window) {
+Window* FindFocusableWindowFor(Window* window) {
   while (window && !window->CanFocus())
     window = window->parent();
   return window;
 }
 
-aura::Window* GetActiveWindow(aura::Window* window) {
+Window* GetActiveWindow(Window* window) {
   DCHECK(window->GetRootWindow());
-  return aura::client::GetActivationClient(window->GetRootWindow())->
+  return client::GetActivationClient(window->GetRootWindow())->
       GetActiveWindow();
 }
 
@@ -70,11 +70,11 @@ gfx::NativeCursor CompoundEventFilter::CursorForWindowComponent(
   }
 }
 
-void CompoundEventFilter::AddFilter(aura::EventFilter* filter) {
+void CompoundEventFilter::AddFilter(EventFilter* filter) {
   filters_.AddObserver(filter);
 }
 
-void CompoundEventFilter::RemoveFilter(aura::EventFilter* filter) {
+void CompoundEventFilter::RemoveFilter(EventFilter* filter) {
   filters_.RemoveObserver(filter);
 }
 
@@ -85,13 +85,13 @@ size_t CompoundEventFilter::GetFilterCount() const {
 ////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, EventFilter implementation:
 
-bool CompoundEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                              aura::KeyEvent* event) {
+bool CompoundEventFilter::PreHandleKeyEvent(Window* target,
+                                            ui::KeyEvent* event) {
   return FilterKeyEvent(target, event);
 }
 
-bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                              aura::MouseEvent* event) {
+bool CompoundEventFilter::PreHandleMouseEvent(Window* target,
+                                              ui::MouseEvent* event) {
   WindowTracker window_tracker;
   window_tracker.Add(target);
 
@@ -123,8 +123,8 @@ bool CompoundEventFilter::PreHandleMouseEvent(aura::Window* target,
 }
 
 ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
-    aura::Window* target,
-    aura::TouchEvent* event) {
+    Window* target,
+    ui::TouchEventImpl* event) {
   ui::TouchStatus status = FilterTouchEvent(target, event);
   if (status == ui::TOUCH_STATUS_UNKNOWN &&
       event->type() == ui::ET_TOUCH_PRESSED) {
@@ -134,12 +134,12 @@ ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
 }
 
 ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
-    aura::Window* target,
-    aura::GestureEvent* event) {
+    Window* target,
+    ui::GestureEventImpl* event) {
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
   if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    aura::EventFilter* filter;
+    ObserverListBase<EventFilter>::Iterator it(filters_);
+    EventFilter* filter;
     while (status == ui::GESTURE_STATUS_UNKNOWN &&
         (filter = it.GetNext()) != NULL) {
       status = filter->PreHandleGestureEvent(target, event);
@@ -160,10 +160,9 @@ ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
 ////////////////////////////////////////////////////////////////////////////////
 // CompoundEventFilter, private:
 
-void CompoundEventFilter::UpdateCursor(aura::Window* target,
-                                       aura::MouseEvent* event) {
-  aura::client::CursorClient* client =
-      aura::client::GetCursorClient(target->GetRootWindow());
+void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
+  client::CursorClient* client =
+      client::GetCursorClient(target->GetRootWindow());
   if (client) {
     gfx::NativeCursor cursor = target->GetCursor(event->location());
     if (event->flags() & ui::EF_IS_NON_CLIENT) {
@@ -176,24 +175,23 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
   }
 }
 
-bool CompoundEventFilter::FilterKeyEvent(aura::Window* target,
-                                    aura::KeyEvent* event) {
+bool CompoundEventFilter::FilterKeyEvent(Window* target, ui::KeyEvent* event) {
   bool handled = false;
   if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    aura::EventFilter* filter;
+    ObserverListBase<EventFilter>::Iterator it(filters_);
+    EventFilter* filter;
     while (!handled && (filter = it.GetNext()) != NULL)
       handled = filter->PreHandleKeyEvent(target, event);
   }
   return handled;
 }
 
-bool CompoundEventFilter::FilterMouseEvent(aura::Window* target,
-                                             aura::MouseEvent* event) {
+bool CompoundEventFilter::FilterMouseEvent(Window* target,
+                                           ui::MouseEvent* event) {
   bool handled = false;
   if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    aura::EventFilter* filter;
+    ObserverListBase<EventFilter>::Iterator it(filters_);
+    EventFilter* filter;
     while (!handled && (filter = it.GetNext()) != NULL)
       handled = filter->PreHandleMouseEvent(target, event);
   }
@@ -201,12 +199,12 @@ bool CompoundEventFilter::FilterMouseEvent(aura::Window* target,
 }
 
 ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
-    aura::Window* target,
-    aura::TouchEvent* event) {
+    Window* target,
+    ui::TouchEventImpl* event) {
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
   if (filters_.might_have_observers()) {
-    ObserverListBase<aura::EventFilter>::Iterator it(filters_);
-    aura::EventFilter* filter;
+    ObserverListBase<EventFilter>::Iterator it(filters_);
+    EventFilter* filter;
     while (status == ui::TOUCH_STATUS_UNKNOWN &&
         (filter = it.GetNext()) != NULL) {
       status = filter->PreHandleTouchEvent(target, event);
@@ -216,11 +214,11 @@ ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
 }
 
 void CompoundEventFilter::SetCursorVisibilityOnEvent(aura::Window* target,
-                                                     aura::LocatedEvent* event,
+                                                     ui::LocatedEvent* event,
                                                      bool show) {
   if (update_cursor_visibility_ && !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
-    aura::client::CursorClient* client =
-        aura::client::GetCursorClient(target->GetRootWindow());
+    client::CursorClient* client =
+        client::GetCursorClient(target->GetRootWindow());
     if (client)
       client->ShowCursor(show);
   }

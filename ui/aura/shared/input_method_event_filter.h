@@ -24,26 +24,25 @@ namespace shared {
 // An event filter that forwards a KeyEvent to a system IME, and dispatches a
 // TranslatedKeyEvent to the root window as needed.
 class AURA_EXPORT InputMethodEventFilter
-    : public aura::EventFilter,
+    : public EventFilter,
       public ui::internal::InputMethodDelegate {
  public:
   InputMethodEventFilter();
   virtual ~InputMethodEventFilter();
 
-  void SetInputMethodPropertyInRootWindow(aura::RootWindow* root_window);
+  void SetInputMethodPropertyInRootWindow(RootWindow* root_window);
 
  private:
-  // Overridden from aura::EventFilter:
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
+  // Overridden from EventFilter:
+  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(Window* target,
+                                   ui::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(
-      aura::Window* target,
-      aura::TouchEvent* event) OVERRIDE;
+      Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
-      aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      Window* target,
+      ui::GestureEventImpl* event) OVERRIDE;
 
   // Overridden from ui::internal::InputMethodDelegate.
   virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;

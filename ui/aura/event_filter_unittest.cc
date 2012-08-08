@@ -6,13 +6,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/base/event.h"
 
 #if defined(OS_WIN)
 // Windows headers define macros for these function names which screw with us.
@@ -45,19 +45,20 @@ class TestEventFilterWindowDelegate : public TestWindowDelegate {
   int touch_event_count() const { return touch_event_count_; }
 
   // Overridden from TestWindowDelegate:
-  virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE {
+  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     ++key_event_count_;
     return true;
   }
-  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
+  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     ++mouse_event_count_;
     return true;
   }
-  virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) OVERRIDE {
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) OVERRIDE {
     ++touch_event_count_;
     return ui::TOUCH_STATUS_UNKNOWN;
   }
-  virtual ui::GestureStatus OnGestureEvent(GestureEvent* event) OVERRIDE {
+  virtual ui::GestureStatus OnGestureEvent(
+      ui::GestureEventImpl* event) OVERRIDE {
     return ui::GESTURE_STATUS_UNKNOWN;
   }
 
@@ -106,7 +107,7 @@ TEST_F(EventFilterTest, Basic) {
   // and the w1111's delegate should receive the event.
   EventGenerator generator(root_window(), w1111.get());
   generator.PressLeftButton();
-  KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(&key_event);
 
   // TODO(sadrul): TouchEvent!

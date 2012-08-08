@@ -7,8 +7,8 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 
@@ -62,7 +62,7 @@ AcceleratorFilter::~AcceleratorFilter() {
 // AcceleratorFilter, EventFilter implementation:
 
 bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
-                                          aura::KeyEvent* event) {
+                                          ui::KeyEvent* event) {
   const ui::EventType type = event->type();
   if (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED)
     return false;
@@ -79,19 +79,19 @@ bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
 }
 
 bool AcceleratorFilter::PreHandleMouseEvent(aura::Window* target,
-                                            aura::MouseEvent* event) {
+                                            ui::MouseEvent* event) {
   return false;
 }
 
 ui::TouchStatus AcceleratorFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus AcceleratorFilter::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

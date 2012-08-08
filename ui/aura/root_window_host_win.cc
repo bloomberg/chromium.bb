@@ -11,8 +11,8 @@
 #include "base/message_loop.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 #include "ui/base/view_prop.h"
 
 using std::max;
@@ -309,7 +309,7 @@ LRESULT RootWindowHostWin::OnKeyEvent(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
-  KeyEvent keyev(msg, message == WM_CHAR);
+  ui::KeyEvent keyev(msg, message == WM_CHAR);
   SetMsgHandled(delegate_->OnHostKeyEvent(&keyev));
   return 0;
 }
@@ -319,7 +319,7 @@ LRESULT RootWindowHostWin::OnMouseRange(UINT message,
                                         LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
-  MouseEvent event(msg);
+  ui::MouseEvent event(msg);
   bool handled = false;
   if (!(event.flags() & ui::EF_IS_NON_CLIENT))
     handled = delegate_->OnHostMouseEvent(&event);

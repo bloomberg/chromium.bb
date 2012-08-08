@@ -12,6 +12,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/base/event.h"
 
 namespace {
 base::TimeDelta GetTime() {
@@ -60,23 +61,24 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   TestVisibleClient cursor_client;
   aura::client::SetCursorClient(root_window(), &cursor_client);
 
-  MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),
       gfx::Point(10, 10), 0);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&mouse);
   EXPECT_TRUE(cursor_client.IsCursorVisible());
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
-  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
+  ui::TouchEventImpl press(
+      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1,
-                  GetTime());
+  ui::TouchEventImpl move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 1, GetTime());
+  ui::TouchEventImpl release(
+      ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 

@@ -17,9 +17,11 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class LocatedEvent;
-class MouseEvent;
 class Window;
+}
+
+namespace ui {
+class LocatedEvent;
 }
 
 namespace ash {
@@ -41,14 +43,15 @@ class ASH_EXPORT ToplevelWindowEventFilter :
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
   // Overridden form aura::client::WindowMoveClient:
   virtual void RunMoveLoop(aura::Window* source) OVERRIDE;
@@ -71,15 +74,15 @@ class ASH_EXPORT ToplevelWindowEventFilter :
 
   // Called during a drag to resize/position the window.
   // The return value is returned by OnMouseEvent() above.
-  bool HandleDrag(aura::Window* target, aura::LocatedEvent* event);
+  bool HandleDrag(aura::Window* target, ui::LocatedEvent* event);
 
   // Called during mouse moves to update window resize shadows.
   // Return value is returned by OnMouseEvent() above.
-  bool HandleMouseMoved(aura::Window* target, aura::LocatedEvent* event);
+  bool HandleMouseMoved(aura::Window* target, ui::LocatedEvent* event);
 
   // Called for mouse exits to hide window resize shadows.
   // Return value is returned by OnMouseEvent() above.
-  bool HandleMouseExited(aura::Window* target, aura::LocatedEvent* event);
+  bool HandleMouseExited(aura::Window* target, ui::LocatedEvent* event);
 
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;

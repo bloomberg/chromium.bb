@@ -10,7 +10,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/event.h"
+#include "ui/base/event.h"
 
 #if defined(OS_CHROMEOS)
 #include <X11/keysym.h>
@@ -45,7 +45,7 @@ std::string GetRewrittenEventAsString(EventRewriter* rewriter,
                                       unsigned int x_state) {
   XEvent xev;
   InitXKeyEvent(ui_keycode, ui_flags, ui_type, x_keycode, x_state, &xev);
-  aura::KeyEvent keyevent(&xev, false /* is_char */);
+  ui::KeyEvent keyevent(&xev, false /* is_char */);
   rewriter->RewriteForTesting(&keyevent);
   return StringPrintf(
       "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
@@ -1627,7 +1627,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
     InitXKeyEvent(ui::VKEY_CONTROL, 0, ui::ET_KEY_PRESSED,
                   keycode_control_l_, 0U, &xev);
     xev.xkey.send_event = True;  // XSendEvent() always does this.
-    aura::KeyEvent keyevent(&xev, false /* is_char */);
+    ui::KeyEvent keyevent(&xev, false /* is_char */);
     rewriter.RewriteForTesting(&keyevent);
     rewritten_event = StringPrintf(
         "ui_keycode=%d ui_flags=%d ui_type=%d "

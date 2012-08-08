@@ -10,9 +10,9 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/base/ui_base_types.h"
 
 namespace ash {
@@ -75,25 +75,25 @@ WindowModalityController::~WindowModalityController() {
 // WindowModalityController, aura::EventFilter implementation:
 
 bool WindowModalityController::PreHandleKeyEvent(aura::Window* target,
-                                                 aura::KeyEvent* event) {
+                                                 ui::KeyEvent* event) {
   return !!wm::GetWindowModalTransient(target);
 }
 
 bool WindowModalityController::PreHandleMouseEvent(aura::Window* target,
-                                                   aura::MouseEvent* event) {
+                                                   ui::MouseEvent* event) {
   return ProcessLocatedEvent(target, event);
 }
 
 ui::TouchStatus WindowModalityController::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ProcessLocatedEvent(target, event) ? ui::TOUCH_STATUS_CONTINUE :
                                               ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus WindowModalityController::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   // TODO: make gestures work with modals.
   return ui::GESTURE_STATUS_UNKNOWN;
 }
@@ -122,7 +122,7 @@ void WindowModalityController::OnWindowDestroyed(aura::Window* window) {
 }
 
 bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
-                                                   aura::LocatedEvent* event) {
+                                                   ui::LocatedEvent* event) {
   aura::Window* modal_transient_child = wm::GetWindowModalTransient(target);
   if (modal_transient_child && (event->type() == ui::ET_MOUSE_PRESSED ||
                                 event->type() == ui::ET_TOUCH_PRESSED)) {

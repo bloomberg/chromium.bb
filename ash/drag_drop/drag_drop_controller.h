@@ -8,7 +8,6 @@
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -52,23 +51,24 @@ class ASH_EXPORT DragDropController
                                const gfx::Point& root_location,
                                int operation) OVERRIDE;
   virtual void DragUpdate(aura::Window* target,
-                          const aura::LocatedEvent& event) OVERRIDE;
+                          const ui::LocatedEvent& event) OVERRIDE;
   virtual void Drop(aura::Window* target,
-                    const aura::LocatedEvent& event) OVERRIDE;
+                    const ui::LocatedEvent& event) OVERRIDE;
   virtual void DragCancel() OVERRIDE;
   virtual bool IsDragDropInProgress() OVERRIDE;
   virtual gfx::NativeCursor GetDragCursor() OVERRIDE;
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;

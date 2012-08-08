@@ -24,7 +24,7 @@ void FocusManager::RemoveObserver(FocusChangeObserver* observer) {
 }
 
 void FocusManager::SetFocusedWindow(Window* focused_window,
-                                    const Event* event) {
+                                    const ui::Event* event) {
   if (focused_window == focused_window_)
     return;
   if (focused_window && !focused_window->CanFocus())

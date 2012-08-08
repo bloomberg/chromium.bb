@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/x11_atom_cache.h"
 #include "ui/views/views_export.h"
@@ -39,14 +38,15 @@ class VIEWS_EXPORT X11WindowEventFilter : public aura::EventFilter {
 
   // Overridden from EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
  private:
   // Dispatches a _NET_WM_MOVERESIZE message to the window manager to tell it

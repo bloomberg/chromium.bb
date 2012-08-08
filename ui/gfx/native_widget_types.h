@@ -46,8 +46,10 @@
 
 class SkRegion;
 namespace aura {
-class Event;
 class Window;
+}
+namespace ui {
+class Event;
 }
 #endif  // defined(USE_AURA)
 
@@ -101,7 +103,7 @@ typedef ui::Cursor NativeCursor;
 typedef aura::Window* NativeView;
 typedef aura::Window* NativeWindow;
 typedef SkRegion* NativeRegion;
-typedef aura::Event* NativeEvent;
+typedef ui::Event* NativeEvent;
 #elif defined(OS_WIN)
 typedef HCURSOR NativeCursor;
 typedef HWND NativeView;

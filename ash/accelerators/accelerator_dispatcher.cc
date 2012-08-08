@@ -17,10 +17,10 @@
 #include "ash/shell.h"
 #include "ash/wm/event_rewriter_event_filter.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 
 namespace ash {
@@ -70,7 +70,7 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
   if (IsKeyEvent(event)) {
     // Modifiers can be changed by the user preference, so we need to rewrite
     // the event explicitly.
-    aura::KeyEvent key_event(event, false);
+    ui::KeyEvent key_event(event, false);
     aura::EventFilter* event_rewriter =
         ash::Shell::GetInstance()->event_rewriter_filter();
     DCHECK(event_rewriter);

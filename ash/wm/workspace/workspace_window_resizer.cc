@@ -88,7 +88,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
       wm::GetRootWindowRelativeToWindow(window()->parent(), location);
   aura::RootWindow* current_root = actual_location.first;
   gfx::Point location_in_parent = actual_location.second;
-  aura::Window::ConvertPointToWindow(current_root,
+  aura::Window::ConvertPointToTarget(current_root,
                                      window()->parent(),
                                      &location_in_parent);
 

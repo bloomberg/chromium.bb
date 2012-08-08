@@ -9,12 +9,15 @@
 #include "ui/aura/aura_export.h"
 #include "ui/base/events.h"
 
-namespace aura {
-
-class GestureEvent;
+namespace ui {
+class GestureEventImpl;
 class KeyEvent;
 class MouseEvent;
-class TouchEvent;
+class TouchEventImpl;
+}
+
+namespace aura {
+
 class Window;
 
 // An object that filters events sent to an owner window. The filter can stop
@@ -44,18 +47,19 @@ class AURA_EXPORT EventFilter {
   // filter may still perform some action, the return value simply indicates
   // that further processing can occur.
 
-  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) = 0;
-  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) = 0;
+  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) = 0;
+  virtual bool PreHandleMouseEvent(Window* target, ui::MouseEvent* event) = 0;
 
   // Returns a value other than ui::TOUCH_STATUS_UNKNOWN if the event is
   // consumed.
   virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
-                                              TouchEvent* event) = 0;
+                                              ui::TouchEventImpl* event) = 0;
 
   // Returns a value other than ui::GESTURE_STATUS_UNKNOWN if the gesture is
   // consumed.
-  virtual ui::GestureStatus PreHandleGestureEvent(Window* target,
-                                                  GestureEvent* event) = 0;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      Window* target,
+      ui::GestureEventImpl* event) = 0;
 };
 
 }  // namespace aura

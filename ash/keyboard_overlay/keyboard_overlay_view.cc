@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "grit/ash_strings.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -47,7 +48,7 @@ void KeyboardOverlayView::Cancel() {
     widget->Close();
 }
 
-bool KeyboardOverlayView::IsCancelingKeyEvent(aura::KeyEvent* event) {
+bool KeyboardOverlayView::IsCancelingKeyEvent(ui::KeyEvent* event) {
   if (event->type() != ui::ET_KEY_PRESSED)
     return false;
   for (size_t i = 0; i < arraysize(kCancelKeys); ++i) {

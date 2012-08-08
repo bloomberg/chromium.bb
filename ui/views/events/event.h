@@ -1,3 +1,4 @@
+
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -16,19 +17,15 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
+class Event;
 class OSExchangeData;
 }
 
-#if defined(USE_AURA)
-namespace aura {
-class Event;
-}
-#endif
 
 namespace views {
 
 #if defined(USE_AURA)
-typedef aura::Event* NativeEvent;
+typedef ui::Event* NativeEvent;
 #else
 typedef base::NativeEvent NativeEvent;
 #endif

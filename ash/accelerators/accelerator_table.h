@@ -6,7 +6,7 @@
 #define ASH_ACCELERATORS_ACCELERATOR_TABLE_H_
 
 #include "ash/ash_export.h"
-#include "ui/aura/event.h"
+#include "ui/base/events.h"
 
 namespace ash {
 

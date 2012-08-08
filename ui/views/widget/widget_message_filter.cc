@@ -7,7 +7,6 @@
 #include "base/event_types.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/canvas_skia_paint.h"

@@ -51,7 +51,7 @@ class EventRewriter : public ash::EventRewriterDelegate,
   DeviceType DeviceAddedForTesting(int device_id,
                                    const std::string& device_name);
   // Calls Rewrite.
-  void RewriteForTesting(aura::KeyEvent* event);
+  void RewriteForTesting(ui::KeyEvent* event);
 
   const std::map<int, DeviceType>& device_id_to_type_for_testing() const {
     return device_id_to_type_;
@@ -74,9 +74,9 @@ class EventRewriter : public ash::EventRewriterDelegate,
  private:
   // ash::EventRewriterDelegate overrides:
   virtual ash::EventRewriterDelegate::Action RewriteOrFilterKeyEvent(
-      aura::KeyEvent* event) OVERRIDE;
+      ui::KeyEvent* event) OVERRIDE;
   virtual ash::EventRewriterDelegate::Action RewriteOrFilterLocatedEvent(
-      aura::LocatedEvent* event) OVERRIDE;
+      ui::LocatedEvent* event) OVERRIDE;
 
   // aura::RootWindowObserver overrides:
   virtual void OnKeyboardMappingChanged(const aura::RootWindow* root) OVERRIDE;
@@ -95,15 +95,15 @@ class EventRewriter : public ash::EventRewriterDelegate,
 #endif
 
   // Rewrites the |event| by applying all RewriteXXX functions as needed.
-  void Rewrite(aura::KeyEvent* event);
+  void Rewrite(ui::KeyEvent* event);
 
   // Rewrites a modifier key press/release following the current user
   // preferences.
-  bool RewriteModifiers(aura::KeyEvent* event);
+  bool RewriteModifiers(ui::KeyEvent* event);
 
   // Rewrites a NumPad key press/release without Num Lock to a corresponding key
   // press/release with the lock.  Returns true when |event| is rewritten.
-  bool RewriteNumPadKeys(aura::KeyEvent* event);
+  bool RewriteNumPadKeys(ui::KeyEvent* event);
 
   // Rewrites Backspace and Arrow keys following the Chrome OS keyboard spec.
   //  * Alt+Backspace -> Delete
@@ -111,13 +111,13 @@ class EventRewriter : public ash::EventRewriterDelegate,
   //  * Alt+Down -> Next (aka PageDown)
   //  * Ctrl+Alt+Up -> Home
   //  * Ctrl+Alt+Down -> End
-  bool RewriteBackspaceAndArrowKeys(aura::KeyEvent* event);
+  bool RewriteBackspaceAndArrowKeys(ui::KeyEvent* event);
 
   // Rewrites the located |event|.
-  void RewriteLocatedEvent(aura::LocatedEvent* event);
+  void RewriteLocatedEvent(ui::LocatedEvent* event);
 
   // Overwrites |event| with the keycodes and flags.
-  void OverwriteEvent(aura::KeyEvent* event,
+  void OverwriteEvent(ui::KeyEvent* event,
                       unsigned int new_native_keycode,
                       unsigned int new_native_state,
                       ui::KeyboardCode new_keycode,

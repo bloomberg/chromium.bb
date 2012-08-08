@@ -46,7 +46,7 @@ class DesktopScreenPositionClient
   virtual void ConvertPointToScreen(const aura::Window* window,
                                     gfx::Point* point) OVERRIDE {
     const aura::RootWindow* root_window = window->GetRootWindow();
-    aura::Window::ConvertPointToWindow(window, root_window, point);
+    aura::Window::ConvertPointToTarget(window, root_window, point);
     gfx::Point origin = root_window->GetHostOrigin();
     point->Offset(origin.x(), origin.y());
   }
@@ -56,14 +56,14 @@ class DesktopScreenPositionClient
     const aura::RootWindow* root_window = window->GetRootWindow();
     gfx::Point origin = root_window->GetHostOrigin();
     point->Offset(-origin.x(), -origin.y());
-    aura::Window::ConvertPointToWindow(root_window, window, point);
+    aura::Window::ConvertPointToTarget(root_window, window, point);
   }
 
   virtual void SetBounds(aura::Window* window,
                          const gfx::Rect& bounds) OVERRIDE {
     gfx::Point origin = bounds.origin();
     aura::RootWindow* root = window->GetRootWindow();
-    aura::Window::ConvertPointToWindow(window->parent(), root, &origin);
+    aura::Window::ConvertPointToTarget(window->parent(), root, &origin);
 
 #if !defined(OS_WIN)
     if  (window->type() == aura::client::WINDOW_TYPE_CONTROL) {

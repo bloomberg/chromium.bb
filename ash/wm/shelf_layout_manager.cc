@@ -18,9 +18,9 @@
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
 #include "ui/aura/client/activation_client.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -59,14 +59,15 @@ class ShelfLayoutManager::AutoHideEventFilter : public aura::EventFilter {
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
  private:
   ShelfLayoutManager* shelf_;
@@ -88,13 +89,13 @@ ShelfLayoutManager::AutoHideEventFilter::~AutoHideEventFilter() {
 
 bool ShelfLayoutManager::AutoHideEventFilter::PreHandleKeyEvent(
     aura::Window* target,
-    aura::KeyEvent* event) {
+    ui::KeyEvent* event) {
   return false;  // Always let the event propagate.
 }
 
 bool ShelfLayoutManager::AutoHideEventFilter::PreHandleMouseEvent(
     aura::Window* target,
-    aura::MouseEvent* event) {
+    ui::MouseEvent* event) {
   // This also checks IsShelfWindow() to make sure we don't attempt to hide the
   // shelf if the mouse down occurs on the shelf.
   in_mouse_drag_ = (event->type() == ui::ET_MOUSE_DRAGGED ||
@@ -108,14 +109,14 @@ bool ShelfLayoutManager::AutoHideEventFilter::PreHandleMouseEvent(
 
 ui::TouchStatus ShelfLayoutManager::AutoHideEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
 }
 
 ui::GestureStatus
 ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 

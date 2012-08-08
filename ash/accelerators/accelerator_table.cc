@@ -5,7 +5,6 @@
 #include "ash/accelerators/accelerator_table.h"
 
 #include "base/basictypes.h"
-#include "ui/base/events.h"
 
 namespace ash {
 

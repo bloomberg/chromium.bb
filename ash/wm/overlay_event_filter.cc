@@ -7,6 +7,7 @@
 #include "ash/wm/partial_screenshot_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/event.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -21,7 +22,7 @@ OverlayEventFilter::~OverlayEventFilter() {
 }
 
 bool OverlayEventFilter::PreHandleKeyEvent(
-    aura::Window* target, aura::KeyEvent* event) {
+    aura::Window* target, ui::KeyEvent* event) {
   if (!delegate_)
     return false;
 
@@ -48,7 +49,7 @@ bool OverlayEventFilter::PreHandleKeyEvent(
 }
 
 bool OverlayEventFilter::PreHandleMouseEvent(
-    aura::Window* target, aura::MouseEvent* event) {
+    aura::Window* target, ui::MouseEvent* event) {
   if (delegate_) {
     DCHECK_EQ(target, delegate_->GetWindow());
     target->delegate()->OnMouseEvent(event);
@@ -58,12 +59,12 @@ bool OverlayEventFilter::PreHandleMouseEvent(
 }
 
 ui::TouchStatus OverlayEventFilter::PreHandleTouchEvent(
-    aura::Window* target, aura::TouchEvent* event) {
+    aura::Window* target, ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
 }
 
 ui::GestureStatus OverlayEventFilter::PreHandleGestureEvent(
-    aura::Window* target, aura::GestureEvent* event) {
+    aura::Window* target, ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 

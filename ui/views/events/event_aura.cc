@@ -5,7 +5,7 @@
 #include "ui/views/events/event.h"
 
 #include "base/logging.h"
-#include "ui/aura/event.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 
 namespace views {
@@ -15,7 +15,7 @@ namespace views {
 
 LocatedEvent::LocatedEvent(const NativeEvent& native_event)
     : Event(native_event, native_event->type(), native_event->flags()),
-      location_(static_cast<aura::LocatedEvent*>(native_event)->location()) {
+      location_(static_cast<ui::LocatedEvent*>(native_event)->location()) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,11 +23,12 @@ LocatedEvent::LocatedEvent(const NativeEvent& native_event)
 
 TouchEvent::TouchEvent(const NativeEvent& event)
     : LocatedEvent(event),
-      touch_id_(static_cast<aura::TouchEvent*>(event)->touch_id()),
-      radius_x_(static_cast<aura::TouchEvent*>(event)->radius_x()),
-      radius_y_(static_cast<aura::TouchEvent*>(event)->radius_y()),
-      rotation_angle_(static_cast<aura::TouchEvent*>(event)->rotation_angle()),
-      force_(static_cast<aura::TouchEvent*>(event)->force()) {
+      touch_id_(static_cast<ui::TouchEventImpl*>(event)->touch_id()),
+      radius_x_(static_cast<ui::TouchEventImpl*>(event)->radius_x()),
+      radius_y_(static_cast<ui::TouchEventImpl*>(event)->radius_y()),
+      rotation_angle_(
+          static_cast<ui::TouchEventImpl*>(event)->rotation_angle()),
+      force_(static_cast<ui::TouchEventImpl*>(event)->force()) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,7 +36,7 @@ TouchEvent::TouchEvent(const NativeEvent& event)
 
 KeyEvent::KeyEvent(const NativeEvent& native_event)
     : Event(native_event, native_event->type(), native_event->flags()),
-      key_code_(static_cast<aura::KeyEvent*>(native_event)->key_code()),
+      key_code_(static_cast<ui::KeyEvent*>(native_event)->key_code()),
       character_(ui::GetCharacterFromKeyCode(key_code_, flags())),
       unmodified_character_(0) {
 }
@@ -73,11 +74,11 @@ ScrollEvent::ScrollEvent(const NativeEvent& native_event)
 
 GestureEvent::GestureEvent(const NativeEvent& event)
     : LocatedEvent(event),
-      details_(static_cast<aura::GestureEvent*>(event)->details()) {
+      details_(static_cast<ui::GestureEventImpl*>(event)->details()) {
 }
 
 int GestureEvent::GetLowestTouchId() const {
-  return native_event() ?  static_cast<aura::GestureEvent*>(
+  return native_event() ?  static_cast<ui::GestureEventImpl*>(
       native_event())->GetLowestTouchId() : 0;
 }
 

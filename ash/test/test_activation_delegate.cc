@@ -7,6 +7,7 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 
 namespace ash {
 namespace test {
@@ -37,7 +38,7 @@ void TestActivationDelegate::SetWindow(aura::Window* window) {
   aura::client::SetActivationDelegate(window, this);
 }
 
-bool TestActivationDelegate::ShouldActivate(const aura::Event* event) {
+bool TestActivationDelegate::ShouldActivate(const ui::Event* event) {
   should_activate_count_++;
   return activate_;
 }

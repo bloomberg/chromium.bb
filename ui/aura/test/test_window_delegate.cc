@@ -5,8 +5,8 @@
 #include "ui/aura/test/test_window_delegate.h"
 
 #include "base/stringprintf.h"
-#include "ui/aura/event.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -38,7 +38,7 @@ void TestWindowDelegate::OnFocus(Window* old_focused_window) {
 void TestWindowDelegate::OnBlur() {
 }
 
-bool TestWindowDelegate::OnKeyEvent(KeyEvent* event) {
+bool TestWindowDelegate::OnKeyEvent(ui::KeyEvent* event) {
   return false;
 }
 
@@ -56,15 +56,16 @@ bool TestWindowDelegate::ShouldDescendIntoChildForEventHandling(
   return true;
 }
 
-bool TestWindowDelegate::OnMouseEvent(MouseEvent* event) {
+bool TestWindowDelegate::OnMouseEvent(ui::MouseEvent* event) {
   return false;
 }
 
-ui::TouchStatus TestWindowDelegate::OnTouchEvent(TouchEvent* event) {
+ui::TouchStatus TestWindowDelegate::OnTouchEvent(ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus TestWindowDelegate::OnGestureEvent(GestureEvent* event) {
+ui::GestureStatus TestWindowDelegate::OnGestureEvent(
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
@@ -108,7 +109,7 @@ ColorTestWindowDelegate::ColorTestWindowDelegate(SkColor color)
 ColorTestWindowDelegate::~ColorTestWindowDelegate() {
 }
 
-bool ColorTestWindowDelegate::OnKeyEvent(KeyEvent* event) {
+bool ColorTestWindowDelegate::OnKeyEvent(ui::KeyEvent* event) {
   last_key_code_ = event->key_code();
   return true;
 }
@@ -147,7 +148,7 @@ EventCountDelegate::EventCountDelegate()
     key_release_count_(0) {
 }
 
-bool EventCountDelegate::OnMouseEvent(MouseEvent* event) {
+bool EventCountDelegate::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       mouse_move_count_++;
@@ -170,7 +171,7 @@ bool EventCountDelegate::OnMouseEvent(MouseEvent* event) {
   return false;
 }
 
-bool EventCountDelegate::OnKeyEvent(KeyEvent* event) {
+bool EventCountDelegate::OnKeyEvent(ui::KeyEvent* event) {
   switch (event->type()) {
     case ui::ET_KEY_PRESSED:
       key_press_count_++;

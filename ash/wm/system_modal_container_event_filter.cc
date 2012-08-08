@@ -5,7 +5,7 @@
 #include "ash/wm/system_modal_container_event_filter.h"
 
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
-#include "ui/aura/event.h"
+#include "ui/base/event.h"
 
 namespace ash {
 namespace internal {
@@ -20,26 +20,26 @@ SystemModalContainerEventFilter::~SystemModalContainerEventFilter() {
 
 bool SystemModalContainerEventFilter::PreHandleKeyEvent(
     aura::Window* target,
-    aura::KeyEvent* event) {
+    ui::KeyEvent* event) {
   return !delegate_->CanWindowReceiveEvents(target);
 }
 
 bool SystemModalContainerEventFilter::PreHandleMouseEvent(
     aura::Window* target,
-    aura::MouseEvent* event) {
+    ui::MouseEvent* event) {
   return !delegate_->CanWindowReceiveEvents(target);
 }
 
 ui::TouchStatus SystemModalContainerEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus SystemModalContainerEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   // TODO(sad):
   return ui::GESTURE_STATUS_UNKNOWN;
 }

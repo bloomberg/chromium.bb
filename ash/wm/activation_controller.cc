@@ -85,7 +85,7 @@ bool VisibilityMatches(aura::Window* window, ActivateVisibilityType type) {
 // A window manager typically defines some notion of "top level window" that
 // supports activation/deactivation.
 bool CanActivateWindowWithEvent(aura::Window* window,
-                                const aura::Event* event,
+                                const ui::Event* event,
                                 ActivateVisibilityType visibility_type) {
   return window &&
       VisibilityMatches(window, visibility_type) &&
@@ -130,7 +130,7 @@ ActivationController::~ActivationController() {
 // static
 aura::Window* ActivationController::GetActivatableWindow(
     aura::Window* window,
-    const aura::Event* event) {
+    const ui::Event* event) {
   aura::Window* parent = window->parent();
   aura::Window* child = window;
   while (parent) {
@@ -178,7 +178,7 @@ aura::Window* ActivationController::GetActiveWindow() {
 }
 
 bool ActivationController::OnWillFocusWindow(aura::Window* window,
-                                             const aura::Event* event) {
+                                             const ui::Event* event) {
   return CanActivateWindowWithEvent(
       GetActivatableWindow(window, event), event, CURRENT_VISIBILITY);
 }
@@ -230,7 +230,7 @@ void ActivationController::OnWindowFocused(aura::Window* window) {
 // ActivationController, private:
 
 void ActivationController::ActivateWindowWithEvent(aura::Window* window,
-                                                   const aura::Event* event) {
+                                                   const ui::Event* event) {
   aura::Window* window_modal_transient = wm::GetWindowModalTransient(window);
   if (window_modal_transient) {
     ActivateWindow(window_modal_transient);

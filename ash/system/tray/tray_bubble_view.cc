@@ -15,9 +15,9 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
-#include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
@@ -456,12 +456,12 @@ void TrayBubbleView::Host::InitializeAndShowBubble(views::Widget* widget,
 }
 
 bool TrayBubbleView::Host::PreHandleKeyEvent(aura::Window* target,
-                                             aura::KeyEvent* event) {
+                                             ui::KeyEvent* event) {
   return false;
 }
 
 bool TrayBubbleView::Host::PreHandleMouseEvent(aura::Window* target,
-                                               aura::MouseEvent* event) {
+                                               ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
     ProcessLocatedEvent(*event);
   return false;
@@ -469,7 +469,7 @@ bool TrayBubbleView::Host::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus TrayBubbleView::Host::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED)
     ProcessLocatedEvent(*event);
   return ui::TOUCH_STATUS_UNKNOWN;
@@ -477,12 +477,12 @@ ui::TouchStatus TrayBubbleView::Host::PreHandleTouchEvent(
 
 ui::GestureStatus TrayBubbleView::Host::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 void TrayBubbleView::Host::ProcessLocatedEvent(
-    const aura::LocatedEvent& event) {
+    const ui::LocatedEvent& event) {
   if (!widget_)
     return;
   gfx::Rect bounds = widget_->GetNativeWindow()->GetBoundsInRootWindow();

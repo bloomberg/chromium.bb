@@ -97,7 +97,7 @@ Window* DesktopActivationClient::GetActiveWindow() {
 }
 
 bool DesktopActivationClient::OnWillFocusWindow(Window* window,
-                                                const Event* event) {
+                                                const ui::Event* event) {
   return CanActivateWindow(GetActivatableWindow(window));
 }
 

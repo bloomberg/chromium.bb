@@ -34,16 +34,16 @@ class ASH_EXPORT UserActivityDetector : public aura::EventFilter {
   // aura::EventFilter implementation.
   virtual bool PreHandleKeyEvent(
       aura::Window* target,
-      aura::KeyEvent* event) OVERRIDE;
+      ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(
       aura::Window* target,
-      aura::MouseEvent* event) OVERRIDE;
+      ui::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(
       aura::Window* target,
-      aura::TouchEvent* event) OVERRIDE;
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
  private:
   // Notifies observers if enough time has passed since the last notification.

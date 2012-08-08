@@ -35,7 +35,7 @@ std::pair<aura::RootWindow*, gfx::Point> GetRootWindowRelativeToWindow(
     const gfx::Point& location) {
   aura::RootWindow* root_window = window->GetRootWindow();
   gfx::Point location_in_root(location);
-  aura::Window::ConvertPointToWindow(window, root_window, &location_in_root);
+  aura::Window::ConvertPointToTarget(window, root_window, &location_in_root);
 
 #if defined(USE_X11)
   // This conversion is necessary for dealing with the "pointer warp" feature in

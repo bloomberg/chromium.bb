@@ -15,11 +15,11 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -497,17 +497,17 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
   // The accelerator is processed only once.
 #if defined(OS_WIN)
   MSG msg1 = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
-  aura::TranslatedKeyEvent key_event1(msg1, false);
+  ui::TranslatedKeyEvent key_event1(msg1, false);
   EXPECT_TRUE(Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->
       OnHostKeyEvent(&key_event1));
 
   MSG msg2 = { NULL, WM_CHAR, L'A', 0 };
-  aura::TranslatedKeyEvent key_event2(msg2, true);
+  ui::TranslatedKeyEvent key_event2(msg2, true);
   EXPECT_FALSE(Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->
       OnHostKeyEvent(&key_event2));
 
   MSG msg3 = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
-  aura::TranslatedKeyEvent key_event3(msg3, false);
+  ui::TranslatedKeyEvent key_event3(msg3, false);
   EXPECT_FALSE(Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->
       OnHostKeyEvent(&key_event3));
 #elif defined(USE_X11)
@@ -516,11 +516,11 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
                               ui::VKEY_A,
                               0,
                               &key_event);
-  aura::TranslatedKeyEvent key_event1(&key_event, false);
+  ui::TranslatedKeyEvent key_event1(&key_event, false);
   EXPECT_TRUE(Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->
       OnHostKeyEvent(&key_event1));
 
-  aura::TranslatedKeyEvent key_event2(&key_event, true);
+  ui::TranslatedKeyEvent key_event2(&key_event, true);
   EXPECT_FALSE(Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->
       OnHostKeyEvent(&key_event2));
 
@@ -528,7 +528,7 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
                               ui::VKEY_A,
                               0,
                               &key_event);
-  aura::TranslatedKeyEvent key_event3(&key_event, false);
+  ui::TranslatedKeyEvent key_event3(&key_event, false);
   EXPECT_FALSE(Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->
       OnHostKeyEvent(&key_event3));
 #endif

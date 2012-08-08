@@ -21,7 +21,7 @@ class AppListView;
 class PaginationModel;
 }
 
-namespace aura {
+namespace ui {
 class LocatedEvent;
 }
 
@@ -68,21 +68,22 @@ class AppListController : public aura::EventFilter,
   void ScheduleAnimation();
 
   void ProcessLocatedEvent(aura::Window* target,
-                           const aura::LocatedEvent& event);
+                           const ui::LocatedEvent& event);
 
   // Makes app list bubble update its bounds.
   void UpdateBounds();
 
   // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
   // aura::FocusChangeObserver overrides:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;

@@ -8,13 +8,13 @@
 #include "ash/test/ash_test_base.h"
 #include "base/location.h"
 #include "base/utf_string_conversions.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/event.h"
 #include "ui/views/events/event.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
@@ -136,12 +136,12 @@ class TestDragDropController : public internal::DragDropController {
   }
 
   void DragUpdate(aura::Window* target,
-                  const aura::LocatedEvent& event) OVERRIDE {
+                  const ui::LocatedEvent& event) OVERRIDE {
     DragDropController::DragUpdate(target, event);
     num_drag_updates_++;
   }
 
-  void Drop(aura::Window* target, const aura::LocatedEvent& event) OVERRIDE {
+  void Drop(aura::Window* target, const ui::LocatedEvent& event) OVERRIDE {
     DragDropController::Drop(target, event);
     drop_received_ = true;
   }
@@ -606,8 +606,8 @@ TEST_F(DragDropControllerTest, SyntheticEventsDuringDragDrop) {
     // EventGenerator since it implicitly turns these into mouse drag events.
     // The DragDropController should simply ignore these events.
     gfx::Point mouse_move_location = drag_view->bounds().CenterPoint();
-    aura::MouseEvent mouse_move(ui::ET_MOUSE_MOVED,
-                                mouse_move_location, mouse_move_location, 0);
+    ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, mouse_move_location,
+                              mouse_move_location, 0);
     Shell::GetPrimaryRootWindow()->AsRootWindowHostDelegate()->OnHostMouseEvent(
         &mouse_move);
   }

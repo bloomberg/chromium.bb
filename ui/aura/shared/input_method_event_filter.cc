@@ -5,8 +5,8 @@
 #include "ui/aura/shared/input_method_event_filter.h"
 
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 
@@ -38,13 +38,13 @@ void InputMethodEventFilter::SetInputMethodPropertyInRootWindow(
 // InputMethodEventFilter, EventFilter implementation:
 
 bool InputMethodEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                               aura::KeyEvent* event) {
+                                               ui::KeyEvent* event) {
   const ui::EventType type = event->type();
   if (type == ui::ET_TRANSLATED_KEY_PRESS ||
       type == ui::ET_TRANSLATED_KEY_RELEASE) {
     // The |event| is already handled by this object, change the type of the
     // event to ui::ET_KEY_* and pass it to the next filter.
-    static_cast<aura::TranslatedKeyEvent*>(event)->ConvertToKeyEvent();
+    static_cast<ui::TranslatedKeyEvent*>(event)->ConvertToKeyEvent();
     return false;
   } else {
     // If the focused window is changed, all requests to IME will be
@@ -57,19 +57,19 @@ bool InputMethodEventFilter::PreHandleKeyEvent(aura::Window* target,
 }
 
 bool InputMethodEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                 aura::MouseEvent* event) {
+                                                 ui::MouseEvent* event) {
   return false;
 }
 
 ui::TouchStatus InputMethodEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus InputMethodEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
@@ -81,7 +81,7 @@ void InputMethodEventFilter::DispatchKeyEventPostIME(
 #if defined(OS_WIN)
   DCHECK(event.message != WM_CHAR);
 #endif
-  aura::TranslatedKeyEvent aura_event(event, false /* is_char */);
+  ui::TranslatedKeyEvent aura_event(event, false /* is_char */);
   target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(&aura_event);
 }
 
@@ -89,8 +89,8 @@ void InputMethodEventFilter::DispatchFabricatedKeyEventPostIME(
     ui::EventType type,
     ui::KeyboardCode key_code,
     int flags) {
-  aura::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
-                                      flags);
+  ui::TranslatedKeyEvent aura_event(type == ui::ET_KEY_PRESSED, key_code,
+                                    flags);
   target_root_window_->AsRootWindowHostDelegate()->OnHostKeyEvent(&aura_event);
 }
 

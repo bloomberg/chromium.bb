@@ -40,7 +40,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/event.h"
+#include "ui/base/event.h"
 #endif
 
 #if defined(USE_AURA) && defined(USE_X11)
@@ -176,7 +176,7 @@ class RenderViewImplTest : public content::RenderViewTest {
     // WM_CHAR sends a composed Unicode character.
     MSG msg1 = { NULL, WM_KEYDOWN, key_code, 0 };
 #if defined(USE_AURA)
-    aura::KeyEvent evt1(msg1, false);
+    ui::KeyEvent evt1(msg1, false);
     NativeWebKeyboardEvent keydown_event(&evt1);
 #else
     NativeWebKeyboardEvent keydown_event(msg1);
@@ -185,7 +185,7 @@ class RenderViewImplTest : public content::RenderViewTest {
 
     MSG msg2 = { NULL, WM_CHAR, (*output)[0], 0 };
 #if defined(USE_AURA)
-    aura::KeyEvent evt2(msg2, true);
+    ui::KeyEvent evt2(msg2, true);
     NativeWebKeyboardEvent char_event(&evt2);
 #else
     NativeWebKeyboardEvent char_event(msg2);
@@ -194,7 +194,7 @@ class RenderViewImplTest : public content::RenderViewTest {
 
     MSG msg3 = { NULL, WM_KEYUP, key_code, 0 };
 #if defined(USE_AURA)
-    aura::KeyEvent evt3(msg3, false);
+    ui::KeyEvent evt3(msg3, false);
     NativeWebKeyboardEvent keyup_event(&evt3);
 #else
     NativeWebKeyboardEvent keyup_event(msg3);
@@ -213,7 +213,7 @@ class RenderViewImplTest : public content::RenderViewTest {
                             static_cast<ui::KeyboardCode>(key_code),
                             flags,
                             &xevent1);
-    aura::KeyEvent event1(&xevent1, false);
+    ui::KeyEvent event1(&xevent1, false);
     NativeWebKeyboardEvent keydown_event(&event1);
     SendNativeKeyEvent(keydown_event);
 
@@ -222,7 +222,7 @@ class RenderViewImplTest : public content::RenderViewTest {
                             static_cast<ui::KeyboardCode>(key_code),
                             flags,
                             &xevent2);
-    aura::KeyEvent event2(&xevent2, true);
+    ui::KeyEvent event2(&xevent2, true);
     NativeWebKeyboardEvent char_event(&event2);
     SendNativeKeyEvent(char_event);
 
@@ -231,7 +231,7 @@ class RenderViewImplTest : public content::RenderViewTest {
                             static_cast<ui::KeyboardCode>(key_code),
                             flags,
                             &xevent3);
-    aura::KeyEvent event3(&xevent3, false);
+    ui::KeyEvent event3(&xevent3, false);
     NativeWebKeyboardEvent keyup_event(&event3);
     SendNativeKeyEvent(keyup_event);
 

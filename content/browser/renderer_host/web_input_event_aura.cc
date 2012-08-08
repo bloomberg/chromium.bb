@@ -4,8 +4,8 @@
 
 #include "content/browser/renderer_host/web_input_event_aura.h"
 
-#include "ui/aura/event.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 
 namespace content {
 
@@ -21,45 +21,45 @@ WebKit::WebGestureEvent MakeWebGestureEventFromNativeEvent(
 WebKit::WebTouchPoint* UpdateWebTouchEventFromNativeEvent(
     base::NativeEvent native_event, WebKit::WebTouchEvent* web_event);
 #else
-WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(aura::MouseEvent* event);
+WebKit::WebMouseEvent MakeWebMouseEventFromAuraEvent(ui::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
-    aura::MouseEvent* event);
+    ui::MouseEvent* event);
 WebKit::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
-    aura::ScrollEvent* event);
+    ui::ScrollEvent* event);
 WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
-    aura::KeyEvent* event);
+    ui::KeyEvent* event);
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
-    aura::GestureEvent* event);
+    ui::GestureEventImpl* event);
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
-    aura::ScrollEvent* event);
+    ui::ScrollEvent* event);
 WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
-    aura::TouchEvent* event, WebKit::WebTouchEvent* web_event);
+    ui::TouchEventImpl* event, WebKit::WebTouchEvent* web_event);
 #endif
 
 // General approach:
 //
-// aura::Event only carries a subset of possible event data provided to Aura by
+// ui::Event only carries a subset of possible event data provided to Aura by
 // the host platform. WebKit utilizes a larger subset of that information than
 // Aura itself. WebKit includes some built in cracking functionality that we
 // rely on to obtain this information cleanly and consistently.
 //
-// The only place where an aura::Event's data differs from what the underlying
+// The only place where an ui::Event's data differs from what the underlying
 // base::NativeEvent would provide is position data, since we would like to
 // provide coordinates relative to the aura::Window that is hosting the
 // renderer, not the top level platform window.
 //
 // The approach is to fully construct a WebKit::WebInputEvent from the
-// aura::Event's base::NativeEvent, and then replace the coordinate fields with
-// the translated values from the aura::Event.
+// ui::Event's base::NativeEvent, and then replace the coordinate fields with
+// the translated values from the ui::Event.
 //
-// The exception is mouse events on linux. The aura::MouseEvent contains enough
+// The exception is mouse events on linux. The ui::MouseEvent contains enough
 // necessary information to construct a WebMouseEvent. So instead of extracting
 // the information from the XEvent, which can be tricky when supporting both
 // XInput2 and XInput, the WebMouseEvent is constructed from the
-// aura::MouseEvent. This will not be necessary once only XInput2 is supported.
+// ui::MouseEvent. This will not be necessary once only XInput2 is supported.
 //
 
-WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
+WebKit::WebMouseEvent MakeWebMouseEvent(ui::MouseEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
   WebKit::WebMouseEvent webkit_event =
@@ -80,7 +80,7 @@ WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event) {
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::MouseEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
   WebKit::WebMouseWheelEvent webkit_event =
@@ -102,7 +102,7 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event) {
+WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(ui::ScrollEvent* event) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
   WebKit::WebMouseWheelEvent webkit_event =
@@ -124,12 +124,12 @@ WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event) {
   return webkit_event;
 }
 
-WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event) {
+WebKit::WebKeyboardEvent MakeWebKeyboardEvent(ui::KeyEvent* event) {
   // Windows can figure out whether or not to construct a RawKeyDown or a Char
   // WebInputEvent based on the type of message carried in
   // event->native_event(). X11 is not so fortunate, there is no separate
   // translated event type, so DesktopHostLinux sends an extra KeyEvent with
-  // is_char() == true. We need to pass the aura::KeyEvent to the X11 function
+  // is_char() == true. We need to pass the ui::KeyEvent to the X11 function
   // to detect this case so the right event type can be constructed.
 #if defined(OS_WIN)
   // Key events require no translation by the aura system.
@@ -139,7 +139,7 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event) {
 #endif
 }
 
-WebKit::WebGestureEvent MakeWebGestureEvent(aura::GestureEvent* event) {
+WebKit::WebGestureEvent MakeWebGestureEvent(ui::GestureEventImpl* event) {
   WebKit::WebGestureEvent gesture_event;
 #if defined(OS_WIN)
   gesture_event = MakeWebGestureEventFromNativeEvent(event->native_event());
@@ -157,7 +157,7 @@ WebKit::WebGestureEvent MakeWebGestureEvent(aura::GestureEvent* event) {
   return gesture_event;
 }
 
-WebKit::WebGestureEvent MakeWebGestureEvent(aura::ScrollEvent* event) {
+WebKit::WebGestureEvent MakeWebGestureEvent(ui::ScrollEvent* event) {
   WebKit::WebGestureEvent gesture_event;
 
 #if defined(OS_WIN)
@@ -184,7 +184,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFlingCancel() {
   return gesture_event;
 }
 
-WebKit::WebTouchPoint* UpdateWebTouchEvent(aura::TouchEvent* event,
+WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEventImpl* event,
                                            WebKit::WebTouchEvent* web_event) {
 #if defined(OS_WIN)
   return UpdateWebTouchEventFromNativeEvent(event->native_event(), web_event);

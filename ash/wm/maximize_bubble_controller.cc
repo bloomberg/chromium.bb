@@ -11,7 +11,6 @@
 #include "base/timer.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
-#include "ui/aura/event.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"

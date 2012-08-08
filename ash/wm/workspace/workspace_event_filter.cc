@@ -11,9 +11,9 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -78,7 +78,7 @@ WorkspaceEventFilter::~WorkspaceEventFilter() {
 }
 
 bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                               aura::MouseEvent* event) {
+                                               ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED: {
       int component =
@@ -145,7 +145,7 @@ void WorkspaceEventFilter::UpdateHoveredWindow(
 
 void WorkspaceEventFilter::HandleVerticalResizeDoubleClick(
     aura::Window* target,
-    aura::MouseEvent* event) {
+    ui::MouseEvent* event) {
   if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
       !wm::IsWindowMaximized(target)) {
     int component =

@@ -106,6 +106,12 @@ LocatedEvent::LocatedEvent(EventType type,
       root_location_(root_location) {
 }
 
+LocatedEvent::LocatedEvent(const LocatedEvent& model)
+    : Event(model),
+      location_(model.location_),
+      root_location_(model.root_location_) {
+}
+
 void LocatedEvent::UpdateForRootTransform(const Transform& root_transform) {
   // Transform has to be done at root level.
   DCHECK_EQ(root_location_.x(), location_.x());
@@ -168,7 +174,7 @@ int MouseEvent::GetRepeatCount(const MouseEvent& event) {
       click_count = last_click_event_->GetClickCount() + 1;
     delete last_click_event_;
   }
-  last_click_event_ = new MouseEvent(event.native_event());
+  last_click_event_ = new MouseEvent(event);
   if (click_count > 3)
     click_count = 3;
   last_click_event_->SetClickCount(click_count);
@@ -213,6 +219,9 @@ void MouseEvent::SetClickCount(int click_count) {
       break;
   }
   set_flags(f);
+}
+
+MouseEvent::MouseEvent(const MouseEvent& model) : LocatedEvent(model) {
 }
 
 TouchEventImpl::TouchEventImpl(const base::NativeEvent& native_event)

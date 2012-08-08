@@ -39,12 +39,15 @@ class TestEventFilter : public EventFilter {
   }
 
   // Overridden from EventFilter:
-  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
-                                              TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus PreHandleGestureEvent(Window* target,
-                                                  GestureEvent* event) OVERRIDE;
+  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE;
+  virtual bool PreHandleMouseEvent(Window* target,
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
+  virtual ui::GestureStatus PreHandleGestureEvent(
+      Window* target,
+      ui::GestureEventImpl* event) OVERRIDE;
 
  private:
   int key_event_count_;

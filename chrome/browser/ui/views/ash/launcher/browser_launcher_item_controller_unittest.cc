@@ -25,6 +25,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/event.h"
 
 namespace {
 
@@ -152,7 +153,7 @@ class BrowserLauncherItemControllerTest :
     }
 
     // aura::client::ActivationDelegate overrides.
-    virtual bool ShouldActivate(const aura::Event* event) OVERRIDE {
+    virtual bool ShouldActivate(const ui::Event* event) OVERRIDE {
       return true;
     }
     virtual void OnActivated() OVERRIDE {

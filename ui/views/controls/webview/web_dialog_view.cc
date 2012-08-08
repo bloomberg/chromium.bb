@@ -24,7 +24,7 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/event.h"
+#include "ui/base/event.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
@@ -249,7 +249,7 @@ void WebDialogView::MoveContents(WebContents* source, const gfx::Rect& pos) {
 void WebDialogView::HandleKeyboardEvent(content::WebContents* source,
                                         const NativeWebKeyboardEvent& event) {
 #if defined(USE_AURA)
-  aura::KeyEvent aura_event(event.os_event->native_event(), false);
+  ui::KeyEvent aura_event(event.os_event->native_event(), false);
   views::NativeWidgetAura* aura_widget =
       static_cast<views::NativeWidgetAura*>(GetWidget()->native_widget());
   aura_widget->OnKeyEvent(&aura_event);

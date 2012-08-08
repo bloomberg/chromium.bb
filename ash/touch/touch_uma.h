@@ -13,8 +13,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace aura {
-class GestureEvent;
-class TouchEvent;
 class Window;
 }
 
@@ -29,9 +27,9 @@ class TouchUMA {
   ~TouchUMA();
 
   void RecordGestureEvent(aura::Window* target,
-                          const aura::GestureEvent& event);
+                          const ui::GestureEventImpl& event);
   void RecordTouchEvent(aura::Window* target,
-                        const aura::TouchEvent& event);
+                        const ui::TouchEventImpl& event);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchUMA);

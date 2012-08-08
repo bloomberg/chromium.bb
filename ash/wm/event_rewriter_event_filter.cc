@@ -6,7 +6,7 @@
 
 #include "ash/event_rewriter_delegate.h"
 #include "base/logging.h"
-#include "ui/aura/event.h"
+#include "ui/base/event.h"
 
 namespace ash {
 namespace internal {
@@ -21,7 +21,7 @@ void EventRewriterEventFilter::SetEventRewriterDelegate(
 }
 
 bool EventRewriterEventFilter::PreHandleKeyEvent(
-    aura::Window* target, aura::KeyEvent* event) {
+    aura::Window* target, ui::KeyEvent* event) {
   if (!delegate_.get())
     return false;
 
@@ -43,7 +43,7 @@ bool EventRewriterEventFilter::PreHandleKeyEvent(
 }
 
 bool EventRewriterEventFilter::PreHandleMouseEvent(
-    aura::Window* target, aura::MouseEvent* event) {
+    aura::Window* target, ui::MouseEvent* event) {
   if (!delegate_.get())
     return false;
 
@@ -59,12 +59,12 @@ bool EventRewriterEventFilter::PreHandleMouseEvent(
 }
 
 ui::TouchStatus EventRewriterEventFilter::PreHandleTouchEvent(
-    aura::Window* target, aura::TouchEvent* event) {
+    aura::Window* target, ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;  // Not handled.
 }
 
 ui::GestureStatus EventRewriterEventFilter::PreHandleGestureEvent(
-    aura::Window* target, aura::GestureEvent* event) {
+    aura::Window* target, ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 

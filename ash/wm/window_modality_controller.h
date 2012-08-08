@@ -13,7 +13,7 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window_observer.h"
 
-namespace aura {
+namespace ui {
 class LocatedEvent;
 }
 
@@ -39,14 +39,15 @@ class WindowModalityController : public aura::EventFilter,
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
   // Overridden from aura::EnvObserver:
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
@@ -60,7 +61,7 @@ class WindowModalityController : public aura::EventFilter,
   // Processes a mouse/touch event, and returns true if the event should be
   // consumed.
   bool ProcessLocatedEvent(aura::Window* target,
-                           aura::LocatedEvent* event);
+                           ui::LocatedEvent* event);
 
   std::vector<aura::Window*> windows_;
 

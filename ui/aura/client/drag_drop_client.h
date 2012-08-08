@@ -6,9 +6,14 @@
 #define UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
-#include "ui/aura/event.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace gfx {
+class Point;
+}
 
 namespace ui {
+class LocatedEvent;
 class OSExchangeData;
 }
 
@@ -30,10 +35,12 @@ class AURA_EXPORT DragDropClient {
                                int operation) = 0;
 
   // Called when mouse is dragged during a drag and drop.
-  virtual void DragUpdate(aura::Window* target, const LocatedEvent& event) = 0;
+  virtual void DragUpdate(aura::Window* target,
+                          const ui::LocatedEvent& event) = 0;
 
   // Called when mouse is released during a drag and drop.
-  virtual void Drop(aura::Window* target, const LocatedEvent& event) = 0;
+  virtual void Drop(aura::Window* target,
+                    const ui::LocatedEvent& event) = 0;
 
   // Called when a drag and drop session is cancelled.
   virtual void DragCancel() = 0;

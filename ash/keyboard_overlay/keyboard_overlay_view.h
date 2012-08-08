@@ -32,7 +32,7 @@ class ASH_EXPORT KeyboardOverlayView
 
   // Overridden from ash::internal::OverlayEventFilter::Delegate:
   virtual void Cancel() OVERRIDE;
-  virtual bool IsCancelingKeyEvent(aura::KeyEvent* event) OVERRIDE;
+  virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual aura::Window* GetWindow() OVERRIDE;
 
   // Shows the keyboard overlay.

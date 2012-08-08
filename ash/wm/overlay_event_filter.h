@@ -7,7 +7,6 @@
 
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 
 namespace ash {
@@ -29,7 +28,7 @@ class OverlayEventFilter : public aura::EventFilter,
     virtual void Cancel() = 0;
 
     // Returns true if the overlay should be canceled in response to |event|.
-    virtual bool IsCancelingKeyEvent(aura::KeyEvent* event) = 0;
+    virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) = 0;
 
     // Returns the window that needs to receive events.
     virtual aura::Window* GetWindow() = 0;
@@ -52,13 +51,13 @@ class OverlayEventFilter : public aura::EventFilter,
 
   // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(
-      aura::Window* target, aura::KeyEvent* event) OVERRIDE;
+      aura::Window* target, ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(
-      aura::Window* target, aura::MouseEvent* event) OVERRIDE;
+      aura::Window* target, ui::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(
-      aura::Window* target, aura::TouchEvent* event) OVERRIDE;
+      aura::Window* target, ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
-      aura::Window* target, aura::GestureEvent* event) OVERRIDE;
+      aura::Window* target, ui::GestureEventImpl* event) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;

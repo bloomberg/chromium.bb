@@ -10,6 +10,7 @@
 #include "ash/wm/overlay_event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
@@ -70,7 +71,7 @@ void PartialScreenshotView::Cancel() {
     widget->Close();
 }
 
-bool PartialScreenshotView::IsCancelingKeyEvent(aura::KeyEvent* event) {
+bool PartialScreenshotView::IsCancelingKeyEvent(ui::KeyEvent* event) {
   return event->key_code() == ui::VKEY_ESCAPE;
 }
 

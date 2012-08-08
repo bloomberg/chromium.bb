@@ -14,6 +14,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/compositor/layer.h"
@@ -96,7 +97,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 }
 
 void DragDropController::DragUpdate(aura::Window* target,
-                                    const aura::LocatedEvent& event) {
+                                    const ui::LocatedEvent& event) {
   aura::client::DragDropDelegate* delegate = NULL;
   if (target != drag_window_) {
     if (drag_window_) {
@@ -107,19 +108,19 @@ void DragDropController::DragUpdate(aura::Window* target,
     drag_window_ = target;
     drag_window_->AddObserver(this);
     if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
-      aura::DropTargetEvent e(*drag_data_,
-                              event.location(),
-                              event.root_location(),
-                              drag_operation_);
+      ui::DropTargetEvent e(*drag_data_,
+                            event.location(),
+                            event.root_location(),
+                            drag_operation_);
       e.set_flags(event.flags());
       delegate->OnDragEntered(e);
     }
   } else {
     if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
-      aura::DropTargetEvent e(*drag_data_,
-                              event.location(),
-                              event.root_location(),
-                              drag_operation_);
+      ui::DropTargetEvent e(*drag_data_,
+                            event.location(),
+                            event.root_location(),
+                            drag_operation_);
       e.set_flags(event.flags());
       int op = delegate->OnDragUpdated(e);
       gfx::NativeCursor cursor = ui::kCursorNoDrop;
@@ -142,7 +143,7 @@ void DragDropController::DragUpdate(aura::Window* target,
 }
 
 void DragDropController::Drop(aura::Window* target,
-                              const aura::LocatedEvent& event) {
+                              const ui::LocatedEvent& event) {
   drag_cursor_ = ui::kCursorPointer;
   ash::Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
@@ -155,7 +156,7 @@ void DragDropController::Drop(aura::Window* target,
   DCHECK(target == drag_window_);
 
   if ((delegate = aura::client::GetDragDropDelegate(target))) {
-    aura::DropTargetEvent e(
+    ui::DropTargetEvent e(
         *drag_data_, event.location(), event.root_location(), drag_operation_);
     e.set_flags(event.flags());
     drag_operation_ = delegate->OnPerformDrop(e);
@@ -200,7 +201,7 @@ gfx::NativeCursor DragDropController::GetDragCursor() {
 }
 
 bool DragDropController::PreHandleKeyEvent(aura::Window* target,
-                                           aura::KeyEvent* event) {
+                                           ui::KeyEvent* event) {
   if (drag_drop_in_progress_ && event->key_code() == ui::VKEY_ESCAPE) {
     DragCancel();
     return true;
@@ -209,7 +210,7 @@ bool DragDropController::PreHandleKeyEvent(aura::Window* target,
 }
 
 bool DragDropController::PreHandleMouseEvent(aura::Window* target,
-                                             aura::MouseEvent* event) {
+                                             ui::MouseEvent* event) {
   if (!drag_drop_in_progress_)
     return false;
   switch (event->type()) {
@@ -231,7 +232,7 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus DragDropController::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   // TODO(sad): Also check for the touch-id.
   if (!drag_drop_in_progress_)
     return ui::TOUCH_STATUS_UNKNOWN;
@@ -253,7 +254,7 @@ ui::TouchStatus DragDropController::PreHandleTouchEvent(
 
 ui::GestureStatus DragDropController::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

@@ -19,7 +19,6 @@
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/layout_manager.h"
@@ -243,7 +242,7 @@ gfx::Rect Window::GetBoundsInRootWindow() const {
   if (!GetRootWindow())
     return bounds();
   gfx::Point origin = bounds().origin();
-  Window::ConvertPointToWindow(parent_, GetRootWindow(), &origin);
+  ConvertPointToTarget(parent_, GetRootWindow(), &origin);
   return gfx::Rect(origin, bounds().size());
 }
 
@@ -432,7 +431,7 @@ const Window* Window::GetChildById(int id) const {
 }
 
 // static
-void Window::ConvertPointToWindow(const Window* source,
+void Window::ConvertPointToTarget(const Window* source,
                                   const Window* target,
                                   gfx::Point* point) {
   if (!source)
@@ -459,7 +458,7 @@ void Window::MoveCursorTo(const gfx::Point& point_in_window) {
   RootWindow* root_window = GetRootWindow();
   DCHECK(root_window);
   gfx::Point point_in_root(point_in_window);
-  ConvertPointToWindow(this, root_window, &point_in_root);
+  ConvertPointToTarget(this, root_window, &point_in_root);
   root_window->MoveCursorTo(point_in_root);
 }
 
@@ -484,7 +483,7 @@ bool Window::ContainsPointInRoot(const gfx::Point& point_in_root) const {
   if (!root_window)
     return false;
   gfx::Point local_point(point_in_root);
-  ConvertPointToWindow(root_window, this, &local_point);
+  ConvertPointToTarget(root_window, this, &local_point);
   return gfx::Rect(GetTargetBounds().size()).Contains(local_point);
 }
 
@@ -753,7 +752,7 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
       continue;
 
     gfx::Point point_in_child_coords(local_point);
-    Window::ConvertPointToWindow(this, child, &point_in_child_coords);
+    ConvertPointToTarget(this, child, &point_in_child_coords);
     if (for_event_handling && delegate_ &&
         !delegate_->ShouldDescendIntoChildForEventHandling(
             child, local_point)) {

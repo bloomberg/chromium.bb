@@ -5,7 +5,7 @@
 #ifndef ASH_EVENT_REWRITER_DELEGATE_H_
 #define ASH_EVENT_REWRITER_DELEGATE_H_
 
-namespace aura {
+namespace ui {
 class KeyEvent;
 class LocatedEvent;
 }  // namespace aura
@@ -25,8 +25,8 @@ class EventRewriterDelegate {
   // A derived class can do either of the following:
   // 1) Just return ACTION_DROP_EVENT to drop the |event|.
   // 2) Rewrite the |event| and return ACTION_REWRITE_EVENT.
-  virtual Action RewriteOrFilterKeyEvent(aura::KeyEvent* event) = 0;
-  virtual Action RewriteOrFilterLocatedEvent(aura::LocatedEvent* event) = 0;
+  virtual Action RewriteOrFilterKeyEvent(ui::KeyEvent* event) = 0;
+  virtual Action RewriteOrFilterLocatedEvent(ui::LocatedEvent* event) = 0;
 };
 
 }  // namespace ash

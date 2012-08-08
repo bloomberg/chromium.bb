@@ -25,25 +25,28 @@ void TestEventFilter::ResetCounts() {
   touch_event_count_ = 0;
 }
 
-bool TestEventFilter::PreHandleKeyEvent(Window* target, KeyEvent* event) {
+bool TestEventFilter::PreHandleKeyEvent(Window* target, ui::KeyEvent* event) {
   ++key_event_count_;
   return consumes_key_events_;
 }
 
-bool TestEventFilter::PreHandleMouseEvent(Window* target, MouseEvent* event) {
+bool TestEventFilter::PreHandleMouseEvent(Window* target,
+                                          ui::MouseEvent* event) {
   ++mouse_event_count_;
   return consumes_mouse_events_;
 }
 
-ui::TouchStatus TestEventFilter::PreHandleTouchEvent(Window* target,
-                                                     TouchEvent* event) {
+ui::TouchStatus TestEventFilter::PreHandleTouchEvent(
+    Window* target,
+    ui::TouchEventImpl* event) {
   ++touch_event_count_;
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus TestEventFilter::PreHandleGestureEvent(Window* target,
-                                                         GestureEvent* event) {
+ui::GestureStatus TestEventFilter::PreHandleGestureEvent(
+    Window* target,
+    ui::GestureEventImpl* event) {
   // TODO(sad):
   return ui::GESTURE_STATUS_UNKNOWN;
 }

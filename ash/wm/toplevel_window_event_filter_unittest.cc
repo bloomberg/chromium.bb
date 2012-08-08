@@ -12,12 +12,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 

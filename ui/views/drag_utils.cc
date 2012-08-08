@@ -47,7 +47,7 @@ void RunShellDrag(gfx::NativeView view,
 #if defined(USE_AURA)
   gfx::Point root_location(location);
   aura::RootWindow* root_window = view->GetRootWindow();
-  aura::Window::ConvertPointToWindow(view, root_window, &root_location);
+  aura::Window::ConvertPointToTarget(view, root_window, &root_location);
   if (aura::client::GetDragDropClient(root_window)) {
     aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
         data, root_location, operation);

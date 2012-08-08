@@ -5,12 +5,12 @@
 #include "ash/magnifier/magnification_controller.h"
 
 #include "ash/shell.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/base/event.h"
 #include "ui/gfx/point3.h"
 #include "ui/gfx/screen.h"
 #include "ui/compositor/dip_util.h"
@@ -99,14 +99,15 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
   aura::RootWindow* root_window_;
 
@@ -416,14 +417,14 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
 // MagnificationControllerImpl: aura::EventFilter implementation
 
 bool MagnificationControllerImpl::PreHandleKeyEvent(aura::Window* target,
-                                                    aura::KeyEvent* event) {
+                                                    ui::KeyEvent* event) {
   return false;
 }
 
 bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
-                                                      aura::MouseEvent* event) {
+                                                      ui::MouseEvent* event) {
   if (event->type() == ui::ET_SCROLL && event->IsAltDown()) {
-    aura::ScrollEvent* scroll_event = static_cast<aura::ScrollEvent*>(event);
+    ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
     float scale = GetScale();
     scale += scroll_event->y_offset() * kScrollScaleChangeFactor;
     SetScale(scale, true);
@@ -447,13 +448,13 @@ bool MagnificationControllerImpl::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus MagnificationControllerImpl::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus MagnificationControllerImpl::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

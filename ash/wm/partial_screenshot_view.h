@@ -32,7 +32,7 @@ class ASH_EXPORT PartialScreenshotView
 
   // Overridden from internal::OverlayEventFilter::Delegate:
   virtual void Cancel() OVERRIDE;
-  virtual bool IsCancelingKeyEvent(aura::KeyEvent* event) OVERRIDE;
+  virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual aura::Window* GetWindow() OVERRIDE;
 
  private:

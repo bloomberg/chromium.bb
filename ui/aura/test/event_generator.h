@@ -13,8 +13,11 @@ namespace base {
 class TimeDelta;
 }
 
-namespace aura {
+namespace ui {
 class Event;
+}
+
+namespace aura {
 class RootWindow;
 class Window;
 
@@ -165,7 +168,7 @@ class EventGenerator {
   void ReleaseKey(ui::KeyboardCode key_code, int flags);
 
   // Dispatch the |event| to the RootWindow.
-  void Dispatch(Event& event);
+  void Dispatch(ui::Event& event);
 
  private:
   // Dispatch a key event to the RootWindow.

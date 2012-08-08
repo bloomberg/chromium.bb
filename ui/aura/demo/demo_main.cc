@@ -10,12 +10,12 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -42,7 +42,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
                                const gfx::Rect& new_bounds) OVERRIDE {}
   virtual void OnFocus(aura::Window* old_focused_window) OVERRIDE {}
   virtual void OnBlur() OVERRIDE {}
-  virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE {
+  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     return false;
   }
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE {
@@ -56,13 +56,14 @@ class DemoWindowDelegate : public aura::WindowDelegate {
       const gfx::Point& location) OVERRIDE {
     return true;
   }
-  virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE {
+  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     return true;
   }
-  virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE {
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) OVERRIDE {
     return ui::TOUCH_STATUS_END;
   }
-  virtual ui::GestureStatus OnGestureEvent(aura::GestureEvent* event) OVERRIDE {
+  virtual ui::GestureStatus OnGestureEvent(
+      ui::GestureEventImpl* event) OVERRIDE {
     return ui::GESTURE_STATUS_UNKNOWN;
   }
   virtual bool CanFocus() OVERRIDE { return true; }

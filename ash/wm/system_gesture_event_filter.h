@@ -17,10 +17,11 @@
 #include <map>
 
 namespace aura {
-class KeyEvent;
-class LocatedEvent;
-class MouseEvent;
 class Window;
+}
+
+namespace ui {
+class LocatedEvent;
 }
 
 namespace ash {
@@ -58,7 +59,7 @@ class LongPressAffordanceAnimation : public ui::AnimationDelegate,
   virtual ~LongPressAffordanceAnimation();
 
   // Display or removes long press affordance according to the |event|.
-  void ProcessEvent(aura::Window* target, aura::LocatedEvent* event);
+  void ProcessEvent(aura::Window* target, ui::LocatedEvent* event);
 
  private:
   friend class ash::test::SystemGestureEventFilterTest;
@@ -92,14 +93,15 @@ class SystemGestureEventFilter : public aura::EventFilter,
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowVisibilityChanged(aura::Window* window,
@@ -114,15 +116,15 @@ class SystemGestureEventFilter : public aura::EventFilter,
 
   // Handle events meant for volume / brightness. Returns true when no further
   // events from this gesture should be sent.
-  bool HandleDeviceControl(aura::Window* target, aura::GestureEvent* event);
+  bool HandleDeviceControl(aura::Window* target, ui::GestureEventImpl* event);
 
   // Handle events meant for showing the launcher. Returns true when no further
   // events from this gesture should be sent.
-  bool HandleLauncherControl(aura::GestureEvent* event);
+  bool HandleLauncherControl(ui::GestureEventImpl* event);
 
   // Handle events meant to switch through applications. Returns true when no
   // further events from this gesture should be sent.
-  bool HandleApplicationControl(aura::GestureEvent* event);
+  bool HandleApplicationControl(ui::GestureEventImpl* event);
 
   typedef std::map<aura::Window*, SystemPinchHandler*> WindowPinchHandlerMap;
   // Created on demand when a system-level pinch gesture is initiated. Destroyed

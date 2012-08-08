@@ -31,22 +31,22 @@ class Size;
 }
 
 namespace ui {
+class GestureEventImpl;
 class GestureRecognizer;
+class KeyEvent;
 class LayerAnimationSequence;
+class MouseEvent;
+class ScrollEvent;
+class TouchEventImpl;
 class Transform;
 }
 
 namespace aura {
 
 class FocusManager;
-class GestureEvent;
-class KeyEvent;
-class MouseEvent;
 class RootWindow;
 class RootWindowHost;
 class RootWindowObserver;
-class ScrollEvent;
-class TouchEvent;
 
 // This class represents a lock on the compositor, that can be used to prevent a
 // compositing pass from happening while we're waiting for an asynchronous
@@ -145,7 +145,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Handles a gesture event. Returns true if handled. Unlike the other
   // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
   // events are dispatched from GestureRecognizer instead of RootWindowHost.
-  bool DispatchGestureEvent(GestureEvent* event);
+  bool DispatchGestureEvent(ui::GestureEventImpl* event);
 
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);
@@ -267,12 +267,13 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
-  void HandleMouseMoved(const MouseEvent& event, Window* target);
+  void HandleMouseMoved(const ui::MouseEvent& event, Window* target);
 
-  bool ProcessMouseEvent(Window* target, MouseEvent* event);
-  bool ProcessKeyEvent(Window* target, KeyEvent* event);
-  ui::TouchStatus ProcessTouchEvent(Window* target, TouchEvent* event);
-  ui::GestureStatus ProcessGestureEvent(Window* target, GestureEvent* event);
+  bool ProcessMouseEvent(Window* target, ui::MouseEvent* event);
+  bool ProcessKeyEvent(Window* target, ui::KeyEvent* event);
+  ui::TouchStatus ProcessTouchEvent(Window* target, ui::TouchEventImpl* event);
+  ui::GestureStatus ProcessGestureEvent(Window* target,
+                                        ui::GestureEventImpl* event);
   bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
   // Called when a Window is attached or detached from the RootWindow.
@@ -310,10 +311,10 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
       ui::LayerAnimationSequence* animation) OVERRIDE;
 
   // Overridden from aura::RootWindowHostDelegate:
-  virtual bool OnHostKeyEvent(KeyEvent* event) OVERRIDE;
-  virtual bool OnHostMouseEvent(MouseEvent* event) OVERRIDE;
-  virtual bool OnHostScrollEvent(ScrollEvent* event) OVERRIDE;
-  virtual bool OnHostTouchEvent(TouchEvent* event) OVERRIDE;
+  virtual bool OnHostKeyEvent(ui::KeyEvent* event) OVERRIDE;
+  virtual bool OnHostMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual bool OnHostScrollEvent(ui::ScrollEvent* event) OVERRIDE;
+  virtual bool OnHostTouchEvent(ui::TouchEventImpl* event) OVERRIDE;
   virtual void OnHostLostCapture() OVERRIDE;
   virtual void OnHostPaint() OVERRIDE;
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE;
@@ -326,8 +327,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // drag needs dispatching or a matching ReleaseMouseMoves() is called.
   // NOTE: because these methods dispatch events from RootWindowHost the
   // coordinates are in terms of the root.
-  bool DispatchMouseEventImpl(MouseEvent* event);
-  bool DispatchMouseEventToTarget(MouseEvent* event, Window* target);
+  bool DispatchMouseEventImpl(ui::MouseEvent* event);
+  bool DispatchMouseEventToTarget(ui::MouseEvent* event, Window* target);
   void DispatchHeldMouseMove();
 
   // Parses the switch describing the initial size for the host window and
@@ -390,7 +391,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // How many holds are outstanding. We try to defer dispatching mouse moves
   // while the count is > 0.
   int mouse_move_hold_count_;
-  scoped_ptr<MouseEvent> held_mouse_move_;
+  scoped_ptr<ui::MouseEvent> held_mouse_move_;
   // Used to schedule DispatchHeldMouseMove() when |mouse_move_hold_count_| goes
   // to 0.
   base::WeakPtrFactory<RootWindow> held_mouse_event_factory_;

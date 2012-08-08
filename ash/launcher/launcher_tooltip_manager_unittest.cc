@@ -9,9 +9,9 @@
 #include "ash/wm/window_util.h"
 #include "base/string16.h"
 #include "base/time.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/widget/widget.h"
@@ -141,12 +141,12 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   aura::EventFilter* event_filter = GetEventFilter();
 
   // Should not hide for key events.
-  aura::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   EXPECT_FALSE(event_filter->PreHandleKeyEvent(root_window, &key_event));
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for touch events.
-  aura::TouchEvent touch_event(
+  ui::TouchEventImpl touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
   EXPECT_EQ(ui::TOUCH_STATUS_UNKNOWN,
             event_filter->PreHandleTouchEvent(root_window, &touch_event));
@@ -161,7 +161,7 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for gesture events.
-  aura::GestureEvent gesture_event(
+  ui::GestureEventImpl gesture_event(
       ui::ET_GESTURE_BEGIN, 0, 0, ui::EF_NONE, base::Time(),
       ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f), 0);
   EXPECT_EQ(ui::GESTURE_STATUS_UNKNOWN,
@@ -181,9 +181,9 @@ TEST_F(LauncherTooltipManagerTest, HideForMouseEvent) {
   ASSERT_FALSE(tooltip_rect.IsEmpty());
 
   // Shouldn't hide if the mouse is in the tooltip.
-  aura::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, tooltip_rect.CenterPoint(),
-                               tooltip_rect.CenterPoint(), ui::EF_NONE);
-  aura::LocatedEvent::TestApi test_api(&mouse_event);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, tooltip_rect.CenterPoint(),
+                             tooltip_rect.CenterPoint(), ui::EF_NONE);
+  ui::LocatedEvent::TestApi test_api(&mouse_event);
 
   EXPECT_FALSE(event_filter->PreHandleMouseEvent(root_window, &mouse_event));
   EXPECT_TRUE(TooltipIsVisible());

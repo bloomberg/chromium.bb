@@ -13,9 +13,9 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -44,15 +44,15 @@ class FrameMaximizeButton::EscapeEventFilter : public aura::EventFilter {
 
   // EventFilter overrides:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(
       aura::Window* target,
-      aura::TouchEvent* event) OVERRIDE;
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
  private:
   FrameMaximizeButton* button_;
@@ -72,7 +72,7 @@ FrameMaximizeButton::EscapeEventFilter::~EscapeEventFilter() {
 
 bool FrameMaximizeButton::EscapeEventFilter::PreHandleKeyEvent(
     aura::Window* target,
-    aura::KeyEvent* event) {
+    ui::KeyEvent* event) {
   if (event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
     button_->Cancel(false);
@@ -82,19 +82,19 @@ bool FrameMaximizeButton::EscapeEventFilter::PreHandleKeyEvent(
 
 bool FrameMaximizeButton::EscapeEventFilter::PreHandleMouseEvent(
     aura::Window* target,
-    aura::MouseEvent* event) {
+    ui::MouseEvent* event) {
   return false;
 }
 
 ui::TouchStatus FrameMaximizeButton::EscapeEventFilter::PreHandleTouchEvent(
-      aura::Window* target,
-      aura::TouchEvent* event) {
+    aura::Window* target,
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus FrameMaximizeButton::EscapeEventFilter::PreHandleGestureEvent(
-      aura::Window* target,
-      aura::GestureEvent* event) {
+    aura::Window* target,
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

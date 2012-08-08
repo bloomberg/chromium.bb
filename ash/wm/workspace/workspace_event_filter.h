@@ -10,7 +10,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace aura {
-class MouseEvent;
 class Window;
 }
 
@@ -27,7 +26,7 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
 
   // Overridden from ToplevelWindowEventFilter:
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
 
   // Overridden from WindowObserver:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
@@ -51,7 +50,7 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
   // window between its restored state and the full available height of the
   // workspace.
   void HandleVerticalResizeDoubleClick(aura::Window* target,
-                                       aura::MouseEvent* event);
+                                       ui::MouseEvent* event);
 
   // Top-level window under the mouse cursor.
   aura::Window* hovered_window_;

@@ -20,9 +20,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ui_resources.h"
-#include "ui/aura/event.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
@@ -268,17 +268,17 @@ class LauncherViewTest : public AshTestBase {
 
     // Mouse down.
     views::View* button = test_api_->GetButton(button_index);
-    aura::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
-                                 button->bounds().origin(),
-                                 button->bounds().origin(), 0);
+    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
+                               button->bounds().origin(),
+                               button->bounds().origin(), 0);
     views::MouseEvent views_click_event(&click_event);
     button_host->PointerPressedOnButton(button, pointer, views_click_event);
 
     // Drag.
     views::View* destination = test_api_->GetButton(destination_index);
-    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
-                                destination->bounds().origin(),
-                                destination->bounds().origin(), 0);
+    ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
+                              destination->bounds().origin(),
+                              destination->bounds().origin(), 0);
     views::MouseEvent views_drag_event(&drag_event);
     button_host->PointerDraggedOnButton(button, pointer, views_drag_event);
     return button;

@@ -7,11 +7,11 @@
 #include "ash/wm/window_util.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -34,12 +34,12 @@ PanelWindowEventFilter::~PanelWindowEventFilter() {
 }
 
 bool PanelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                               aura::KeyEvent* event) {
+                                               ui::KeyEvent* event) {
   return false;
 }
 
 bool PanelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                 aura::MouseEvent* event) {
+                                                 ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
       int hitResult = target->delegate()->
@@ -97,21 +97,21 @@ bool PanelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus PanelWindowEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus PanelWindowEventFilter::PreHandleGestureEvent(
-    aura::Window* target, aura::GestureEvent* event) {
+    aura::Window* target, ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 
 bool PanelWindowEventFilter::HandleDrag(aura::Window* target,
-                                        aura::LocatedEvent* event) {
+                                        ui::LocatedEvent* event) {
   gfx::Rect target_bounds = dragged_panel_->bounds();
   gfx::Point event_location_in_parent(event->location());
-  aura::Window::ConvertPointToWindow(target,
+  aura::Window::ConvertPointToTarget(target,
                                      target->parent(),
                                      &event_location_in_parent);
   target_bounds.set_x(

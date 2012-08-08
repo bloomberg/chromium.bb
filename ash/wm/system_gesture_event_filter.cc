@@ -25,8 +25,8 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/gestures/gesture_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -291,7 +291,7 @@ LongPressAffordanceAnimation::LongPressAffordanceAnimation()
 LongPressAffordanceAnimation::~LongPressAffordanceAnimation() {}
 
 void LongPressAffordanceAnimation::ProcessEvent(aura::Window* target,
-                                                aura::LocatedEvent* event) {
+                                                ui::LocatedEvent* event) {
   // Once we have a target, we are only interested in events on that target.
   if (tap_down_target_ && tap_down_target_ != target)
     return;
@@ -374,7 +374,7 @@ class SystemPinchHandler {
   ~SystemPinchHandler() {
   }
 
-  SystemGestureStatus ProcessGestureEvent(const aura::GestureEvent& event) {
+  SystemGestureStatus ProcessGestureEvent(const ui::GestureEventImpl& event) {
     // The target has changed, somehow. Let's bale.
     if (!widget_ || !widget_->widget_delegate()->CanResize())
       return SYSTEM_GESTURE_END;
@@ -526,12 +526,12 @@ SystemGestureEventFilter::~SystemGestureEventFilter() {
 }
 
 bool SystemGestureEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                                 aura::KeyEvent* event) {
+                                                 ui::KeyEvent* event) {
   return false;
 }
 
 bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                                   aura::MouseEvent* event) {
+                                                   ui::MouseEvent* event) {
 #if defined(OS_CHROMEOS)
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
       ui::TouchFactory::GetInstance()->IsTouchDevicePresent()) {
@@ -544,14 +544,14 @@ bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   touch_uma_.RecordTouchEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event);
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
-    aura::Window* target, aura::GestureEvent* event) {
+    aura::Window* target, ui::GestureEventImpl* event) {
   touch_uma_.RecordGestureEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event);
   if (!target || target == target->GetRootWindow()) {
@@ -675,8 +675,9 @@ void SystemGestureEventFilter::ClearGestureHandlerForWindow(
   window->RemoveObserver(this);
 }
 
-bool SystemGestureEventFilter::HandleDeviceControl(aura::Window* target,
-                                                   aura::GestureEvent* event) {
+bool SystemGestureEventFilter::HandleDeviceControl(
+    aura::Window* target,
+    ui::GestureEventImpl* event) {
   gfx::Rect screen = gfx::Screen::GetDisplayNearestWindow(target).bounds();
   double percent = 100.0 * (event->y() - screen.y()) / screen.height();
   if (percent > 100.0)
@@ -703,7 +704,7 @@ bool SystemGestureEventFilter::HandleDeviceControl(aura::Window* target,
 }
 
 bool SystemGestureEventFilter::HandleLauncherControl(
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   if (start_location_ == BEZEL_START_BOTTOM &&
       event->details().scroll_y() < 0) {
     ash::AcceleratorController* accelerator =
@@ -716,7 +717,7 @@ bool SystemGestureEventFilter::HandleLauncherControl(
 }
 
 bool SystemGestureEventFilter::HandleApplicationControl(
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   ash::AcceleratorController* accelerator =
       ash::Shell::GetInstance()->accelerator_controller();
   if (start_location_ == BEZEL_START_LEFT && event->details().scroll_x() > 0)

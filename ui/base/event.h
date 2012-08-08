@@ -132,12 +132,11 @@ class UI_EXPORT LocatedEvent : public Event {
                const gfx::Point& root_location,
                int flags);
 
+  LocatedEvent(const LocatedEvent& model);
+
   gfx::Point location_;
 
   gfx::Point root_location_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LocatedEvent);
 };
 
 class UI_EXPORT MouseEvent : public LocatedEvent {
@@ -183,14 +182,14 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   void SetClickCount(int click_count);
 
  private:
+  explicit MouseEvent(const MouseEvent& model);
+
   gfx::Point root_location_;
 
   static MouseEvent* last_click_event_;
   // Returns the repeat count based on the previous mouse click, if it is
   // recent enough and within a small enough distance.
   static int GetRepeatCount(const MouseEvent& click_event);
-
-  DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
 // TODO(beng): rename to TouchEvent after conversion is complete.

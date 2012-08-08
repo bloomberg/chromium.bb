@@ -159,15 +159,16 @@ class RenderWidgetHostViewAura
                                const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnFocus(aura::Window* old_focused_window) OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE;
+  virtual bool OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
   virtual bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) OVERRIDE;
-  virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(aura::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(aura::GestureEvent* event) OVERRIDE;
+  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      ui::GestureEventImpl* event) OVERRIDE;
   virtual bool CanFocus() OVERRIDE;
   virtual void OnCaptureLost() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
@@ -179,7 +180,7 @@ class RenderWidgetHostViewAura
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from aura::client::ActivationDelegate:
-  virtual bool ShouldActivate(const aura::Event* event) OVERRIDE;
+  virtual bool ShouldActivate(const ui::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
   virtual void OnLostActive() OVERRIDE;
 

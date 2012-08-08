@@ -13,7 +13,6 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/aura/shared/root_window_capture_client.h"

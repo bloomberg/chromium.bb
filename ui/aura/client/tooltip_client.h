@@ -6,7 +6,6 @@
 #define UI_AURA_CLIENT_TOOLTIP_CLIENT_H_
 
 #include "ui/aura/aura_export.h"
-#include "ui/aura/event.h"
 #include "ui/gfx/font.h"
 
 namespace aura {

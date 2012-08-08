@@ -9,13 +9,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/base/event.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -48,7 +48,7 @@ class NonClientDelegate : public test::TestWindowDelegate {
     self->non_client_location_ = location;
     return HTTOPLEFT;
   }
-  virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
+  virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     mouse_event_count_++;
     mouse_event_location_ = event->location();
     mouse_event_flags_ = event->flags();
@@ -81,20 +81,21 @@ class EventCountFilter : public EventFilter {
   }
 
   // EventFilter overrides:
-  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
+  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE {
     num_key_events_++;
     return true;
   }
-  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
+  virtual bool PreHandleMouseEvent(Window* target,
+                                   ui::MouseEvent* event) OVERRIDE {
     num_mouse_events_++;
     return true;
   }
   virtual ui::TouchStatus PreHandleTouchEvent(
-      Window* target, TouchEvent* event) OVERRIDE {
+      Window* target, ui::TouchEventImpl* event) OVERRIDE {
     return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual ui::GestureStatus PreHandleGestureEvent(
-      Window* target, GestureEvent* event) OVERRIDE {
+      Window* target, ui::GestureEventImpl* event) OVERRIDE {
     return ui::GESTURE_STATUS_UNKNOWN;
   }
 
@@ -128,7 +129,7 @@ TEST_F(RootWindowTest, OnHostMouseEvent) {
 
   // Send a mouse event to window1.
   gfx::Point point(101, 201);
-  MouseEvent event1(
+  ui::MouseEvent event1(
       ui::ET_MOUSE_PRESSED, point, point, ui::EF_LEFT_MOUSE_BUTTON);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&event1);
 
@@ -152,10 +153,10 @@ TEST_F(RootWindowTest, MouseButtonState) {
   EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
 
   gfx::Point location;
-  scoped_ptr<MouseEvent> event;
+  scoped_ptr<ui::MouseEvent> event;
 
   // Press the left button.
-  event.reset(new MouseEvent(
+  event.reset(new ui::MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
       location,
@@ -164,7 +165,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
 
   // Additionally press the right.
-  event.reset(new MouseEvent(
+  event.reset(new ui::MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
       location,
@@ -173,7 +174,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
 
   // Release the left button.
-  event.reset(new MouseEvent(
+  event.reset(new ui::MouseEvent(
       ui::ET_MOUSE_RELEASED,
       location,
       location,
@@ -182,7 +183,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   EXPECT_TRUE(Env::GetInstance()->is_mouse_button_down());
 
   // Release the right button.  We should ignore the Shift-is-down flag.
-  event.reset(new MouseEvent(
+  event.reset(new ui::MouseEvent(
       ui::ET_MOUSE_RELEASED,
       location,
       location,
@@ -191,7 +192,7 @@ TEST_F(RootWindowTest, MouseButtonState) {
   EXPECT_FALSE(Env::GetInstance()->is_mouse_button_down());
 
   // Press the middle button.
-  event.reset(new MouseEvent(
+  event.reset(new ui::MouseEvent(
       ui::ET_MOUSE_PRESSED,
       location,
       location,
@@ -205,13 +206,13 @@ TEST_F(RootWindowTest, TranslatedEvent) {
       gfx::Rect(50, 50, 100, 100), NULL));
 
   gfx::Point origin(100, 100);
-  MouseEvent root(ui::ET_MOUSE_PRESSED, origin, origin, 0);
+  ui::MouseEvent root(ui::ET_MOUSE_PRESSED, origin, origin, 0);
 
   EXPECT_EQ("100,100", root.location().ToString());
   EXPECT_EQ("100,100", root.root_location().ToString());
 
-  MouseEvent translated_event(
-      root, root_window(), w1.get(),
+  ui::MouseEvent translated_event(
+      root, static_cast<Window*>(root_window()), w1.get(),
       ui::ET_MOUSE_ENTERED, root.flags());
   EXPECT_EQ("50,50", translated_event.location().ToString());
   EXPECT_EQ("100,100", translated_event.root_location().ToString());
@@ -333,12 +334,12 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
   EventCountFilter* filter = new EventCountFilter;
   root_window()->SetEventFilter(filter);  // passes ownership
 
-  KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+  ui::KeyEvent unknown_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
   EXPECT_FALSE(root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &unknown_event));
   EXPECT_EQ(0, filter->num_key_events());
 
-  KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
+  ui::KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   EXPECT_TRUE(root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &known_event));
   EXPECT_EQ(1, filter->num_key_events());
@@ -356,22 +357,24 @@ class EventFilterRecorder : public EventFilter {
   Events& events() { return events_; }
 
   // EventFilter overrides:
-  virtual bool PreHandleKeyEvent(Window* target, KeyEvent* event) OVERRIDE {
+  virtual bool PreHandleKeyEvent(Window* target, ui::KeyEvent* event) OVERRIDE {
     events_.push_back(event->type());
     return true;
   }
-  virtual bool PreHandleMouseEvent(Window* target, MouseEvent* event) OVERRIDE {
+  virtual bool PreHandleMouseEvent(Window* target,
+                                   ui::MouseEvent* event) OVERRIDE {
     events_.push_back(event->type());
     return true;
   }
-  virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
-                                              TouchEvent* event) OVERRIDE {
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      Window* target,
+      ui::TouchEventImpl* event) OVERRIDE {
     events_.push_back(event->type());
     return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual ui::GestureStatus PreHandleGestureEvent(
       Window* target,
-      GestureEvent* event) OVERRIDE {
+      ui::GestureEventImpl* event) OVERRIDE {
     events_.push_back(event->type());
     return ui::GESTURE_STATUS_UNKNOWN;
   }
@@ -462,8 +465,8 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(0, 0, 100, 100), NULL));
 
-  MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
-                              gfx::Point(0, 0), 0);
+  ui::MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                                  gfx::Point(0, 0), 0);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_move_event);
   // Discard MOUSE_ENTER.
@@ -472,16 +475,16 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   root_window()->HoldMouseMoves();
 
   // Check that we don't immediately dispatch the MOUSE_DRAGGED event.
-  MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0),
-                              gfx::Point(0, 0), 0);
+  ui::MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0),
+                                     gfx::Point(0, 0), 0);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   EXPECT_TRUE(filter->events().empty());
 
   // Check that we do dispatch the held MOUSE_DRAGGED event before another type
   // of event.
-  MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
-                                 gfx::Point(0, 0), 0);
+  ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
+                                     gfx::Point(0, 0), 0);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_pressed_event);
   EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
@@ -489,8 +492,8 @@ TEST_F(RootWindowTest, HoldMouseMove) {
   filter->events().clear();
 
   // Check that we coalesce held MOUSE_DRAGGED events.
-  MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
-                                  gfx::Point(1, 1), 0);
+  ui::MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
+                                      gfx::Point(1, 1), 0);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_dragged_event);
   root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(

@@ -13,6 +13,7 @@
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/native_widget_aura.h"
 
@@ -90,12 +91,12 @@ void X11WindowEventFilter::SetUseHostWindowBorders(bool use_os_border) {
 }
 
 bool X11WindowEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                             aura::KeyEvent* event) {
+                                             ui::KeyEvent* event) {
   return false;
 }
 
 bool X11WindowEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                               aura::MouseEvent* event) {
+                                               ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return false;
 
@@ -130,13 +131,13 @@ bool X11WindowEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus X11WindowEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    aura::TouchEvent* event) {
+    ui::TouchEventImpl* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus X11WindowEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    aura::GestureEvent* event) {
+    ui::GestureEventImpl* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

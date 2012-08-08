@@ -9,9 +9,12 @@
 #include "base/observer_list.h"
 #include "ui/aura/aura_export.h"
 
+namespace ui {
+class Event;
+}
+
 namespace aura {
 
-class Event;
 class FocusChangeObserver;
 class Window;
 
@@ -30,7 +33,7 @@ class AURA_EXPORT FocusManager {
   // notification, and after it is changed the new focused window is sent a
   // focused notification. Nothing happens if |window| and GetFocusedWindow()
   // match.
-  void SetFocusedWindow(Window* window, const Event* event);
+  void SetFocusedWindow(Window* window, const ui::Event* event);
 
   // Returns the currently focused window or NULL if there is none.
   Window* GetFocusedWindow();

@@ -12,9 +12,9 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -290,13 +290,13 @@ bool LauncherTooltipManager::IsVisible() {
 }
 
 bool LauncherTooltipManager::PreHandleKeyEvent(aura::Window* target,
-                                               aura::KeyEvent* event) {
+                                               ui::KeyEvent* event) {
   // Not handled.
   return false;
 }
 
 bool LauncherTooltipManager::PreHandleMouseEvent(aura::Window* target,
-                                                 aura::MouseEvent* event) {
+                                                 ui::MouseEvent* event) {
   DCHECK(target);
   DCHECK(event);
   if (!widget_ || !widget_->IsVisible())
@@ -311,12 +311,12 @@ bool LauncherTooltipManager::PreHandleMouseEvent(aura::Window* target,
   }
 
   gfx::Point location_in_launcher_view = event->location();
-  aura::Window::ConvertPointToWindow(
+  aura::Window::ConvertPointToTarget(
       target, launcher_view_->GetWidget()->GetNativeWindow(),
       &location_in_launcher_view);
 
   gfx::Point location_on_screen = event->location();
-  aura::Window::ConvertPointToWindow(
+  aura::Window::ConvertPointToTarget(
       target, target->GetRootWindow(), &location_on_screen);
   gfx::Rect bubble_rect = widget_->GetWindowBoundsInScreen();
 
@@ -331,14 +331,14 @@ bool LauncherTooltipManager::PreHandleMouseEvent(aura::Window* target,
 }
 
 ui::TouchStatus LauncherTooltipManager::PreHandleTouchEvent(
-    aura::Window* target, aura::TouchEvent* event) {
+    aura::Window* target, ui::TouchEventImpl* event) {
   if (widget_ && widget_->IsVisible() && widget_->GetNativeWindow() != target)
     Close();
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
 ui::GestureStatus LauncherTooltipManager::PreHandleGestureEvent(
-    aura::Window* target, aura::GestureEvent* event) {
+    aura::Window* target, ui::GestureEventImpl* event) {
   if (widget_ && widget_->IsVisible()) {
     // Because this mouse event may arrive to |view_|, here we just schedule
     // the closing event rather than directly calling Close().

@@ -31,7 +31,8 @@ class TestActivationClient : public client::ActivationClient,
   virtual void ActivateWindow(Window* window) OVERRIDE;
   virtual void DeactivateWindow(Window* window) OVERRIDE;
   virtual Window* GetActiveWindow() OVERRIDE;
-  virtual bool OnWillFocusWindow(Window* window, const Event* event) OVERRIDE;
+  virtual bool OnWillFocusWindow(Window* window,
+                                 const ui::Event* event) OVERRIDE;
   virtual bool CanActivateWindow(Window* window) const OVERRIDE;
 
   // Overridden from WindowObserver:

@@ -11,8 +11,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 
 #if defined(OS_CHROMEOS)
@@ -173,19 +173,19 @@ EventRewriter::DeviceType EventRewriter::GetDeviceType(
   return kDeviceUnknown;
 }
 
-void EventRewriter::RewriteForTesting(aura::KeyEvent* event) {
+void EventRewriter::RewriteForTesting(ui::KeyEvent* event) {
   Rewrite(event);
 }
 
 ash::EventRewriterDelegate::Action EventRewriter::RewriteOrFilterKeyEvent(
-    aura::KeyEvent* event) {
+    ui::KeyEvent* event) {
   if (event->HasNativeEvent())
     Rewrite(event);
   return ash::EventRewriterDelegate::ACTION_REWRITE_EVENT;
 }
 
 ash::EventRewriterDelegate::Action EventRewriter::RewriteOrFilterLocatedEvent(
-    aura::LocatedEvent* event) {
+    ui::LocatedEvent* event) {
   if (event->HasNativeEvent())
     RewriteLocatedEvent(event);
   return ash::EventRewriterDelegate::ACTION_REWRITE_EVENT;
@@ -332,7 +332,7 @@ KeyCode EventRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
 }
 #endif
 
-void EventRewriter::Rewrite(aura::KeyEvent* event) {
+void EventRewriter::Rewrite(ui::KeyEvent* event) {
 #if defined(OS_CHROMEOS)
   // Do not rewrite an event sent by ui_controls::SendKeyPress(). See
   // crbug.com/136465.
@@ -409,7 +409,7 @@ void EventRewriter::GetRemappedModifierMasks(
 #endif
 }
 
-bool EventRewriter::RewriteModifiers(aura::KeyEvent* event) {
+bool EventRewriter::RewriteModifiers(ui::KeyEvent* event) {
   // Do nothing if we have just logged in as guest but have not restarted chrome
   // process yet (so we are still on the login screen). In this situations we
   // have no user profile so can not do anything useful.
@@ -500,7 +500,7 @@ bool EventRewriter::RewriteModifiers(aura::KeyEvent* event) {
 #endif
 }
 
-bool EventRewriter::RewriteNumPadKeys(aura::KeyEvent* event) {
+bool EventRewriter::RewriteNumPadKeys(ui::KeyEvent* event) {
   bool rewritten = false;
 #if defined(OS_CHROMEOS)
   XEvent* xev = event->native_event();
@@ -582,7 +582,7 @@ bool EventRewriter::RewriteNumPadKeys(aura::KeyEvent* event) {
   return rewritten;
 }
 
-bool EventRewriter::RewriteBackspaceAndArrowKeys(aura::KeyEvent* event) {
+bool EventRewriter::RewriteBackspaceAndArrowKeys(ui::KeyEvent* event) {
   bool rewritten = false;
 #if defined(OS_CHROMEOS)
   XEvent* xev = event->native_event();
@@ -629,7 +629,7 @@ bool EventRewriter::RewriteBackspaceAndArrowKeys(aura::KeyEvent* event) {
   return rewritten;
 }
 
-void EventRewriter::RewriteLocatedEvent(aura::LocatedEvent* event) {
+void EventRewriter::RewriteLocatedEvent(ui::LocatedEvent* event) {
 #if defined(OS_CHROMEOS)
   XEvent* xevent = event->native_event();
   if (!xevent || xevent->type != GenericEvent)
@@ -668,7 +668,7 @@ void EventRewriter::RewriteLocatedEvent(aura::LocatedEvent* event) {
 #endif
 }
 
-void EventRewriter::OverwriteEvent(aura::KeyEvent* event,
+void EventRewriter::OverwriteEvent(ui::KeyEvent* event,
                                    unsigned int new_native_keycode,
                                    unsigned int new_native_state,
                                    ui::KeyboardCode new_keycode,

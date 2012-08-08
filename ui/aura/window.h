@@ -215,7 +215,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Converts |point| from |source|'s coordinates to |target|'s. If |source| is
   // NULL, the function returns without modifying |point|. |target| cannot be
   // NULL.
-  static void ConvertPointToWindow(const Window* source,
+  static void ConvertPointToTarget(const Window* source,
                                    const Window* target,
                                    gfx::Point* point);
 

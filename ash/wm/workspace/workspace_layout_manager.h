@@ -12,7 +12,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace aura {
-class MouseEvent;
 class RootWindow;
 class Window;
 }

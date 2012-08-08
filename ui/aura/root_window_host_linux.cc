@@ -22,9 +22,9 @@
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
-#include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_factory.h"
@@ -585,12 +585,12 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       delegate_->AsRootWindow()->ScheduleFullDraw();
       break;
     case KeyPress: {
-      KeyEvent keydown_event(xev, false);
+      ui::KeyEvent keydown_event(xev, false);
       delegate_->OnHostKeyEvent(&keydown_event);
       break;
     }
     case KeyRelease: {
-      KeyEvent keyup_event(xev, false);
+      ui::KeyEvent keyup_event(xev, false);
       delegate_->OnHostKeyEvent(&keyup_event);
       break;
     }
@@ -609,7 +609,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       }
     }  // fallthrough
     case ButtonRelease: {
-      MouseEvent mouseev(xev);
+      ui::MouseEvent mouseev(xev);
       delegate_->OnHostMouseEvent(&mouseev);
       break;
     }
@@ -652,7 +652,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         case ui::ET_TOUCH_PRESSED:
         case ui::ET_TOUCH_RELEASED:
         case ui::ET_TOUCH_MOVED: {
-          TouchEvent touchev(xev);
+          ui::TouchEventImpl touchev(xev);
           delegate_->OnHostTouchEvent(&touchev);
           break;
         }
@@ -688,14 +688,14 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
               break;
             }
           }
-          MouseEvent mouseev(xev);
+          ui::MouseEvent mouseev(xev);
           delegate_->OnHostMouseEvent(&mouseev);
           break;
         }
         case ui::ET_SCROLL_FLING_START:
         case ui::ET_SCROLL_FLING_CANCEL:
         case ui::ET_SCROLL: {
-          ScrollEvent scrollev(xev);
+          ui::ScrollEvent scrollev(xev);
           delegate_->OnHostScrollEvent(&scrollev);
           break;
         }
@@ -768,7 +768,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         }
       }
 
-      MouseEvent mouseev(xev);
+      ui::MouseEvent mouseev(xev);
       delegate_->OnHostMouseEvent(&mouseev);
       break;
     }

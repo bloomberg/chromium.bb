@@ -11,8 +11,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace aura {
-class MouseEvent;
-class KeyEvent;
 class Window;
 }
 
@@ -38,14 +36,15 @@ class TouchObserverHUD : public aura::EventFilter,
 
   // Overriden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
+                                 ui::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
+                                   ui::MouseEvent* event) OVERRIDE;
+  virtual ui::TouchStatus PreHandleTouchEvent(
+      aura::Window* target,
+      ui::TouchEventImpl* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
+      ui::GestureEventImpl* event) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

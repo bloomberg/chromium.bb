@@ -8,8 +8,11 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 
-namespace aura {
+namespace ui {
 class Event;
+}
+
+namespace aura {
 class RootWindow;
 
 namespace client {
@@ -30,11 +33,11 @@ class AURA_EXPORT ActivationClient {
   virtual void DeactivateWindow(Window* window) = 0;
 
   // Retrieves the active window, or NULL if there is none.
-  virtual aura::Window* GetActiveWindow() = 0;
+  virtual Window* GetActiveWindow() = 0;
 
   // Invoked prior to |window| getting focus as a result of the |event|. |event|
   // may be NULL. Returning false blocks |window| from getting focus.
-  virtual bool OnWillFocusWindow(Window* window, const Event* event) = 0;
+  virtual bool OnWillFocusWindow(Window* window, const ui::Event* event) = 0;
 
   // Returns true if |window| can be activated, false otherwise. If |window| has
   // a modal child it can not be activated.

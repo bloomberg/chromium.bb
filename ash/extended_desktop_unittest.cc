@@ -457,7 +457,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
 }
 
 namespace internal {
-// Test if the Window::ConvertPointToWindow works across root windows.
+// Test if the Window::ConvertPointToTarget works across root windows.
 // TODO(oshima): Move multiple display suport and this test to aura.
 TEST_F(ExtendedDesktopTest, ConvertPoint) {
   UpdateDisplay("1000x600,600x400");
@@ -478,18 +478,18 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
 
   // Convert point in the Root2's window to the Root1's window Coord.
   gfx::Point p(0, 0);
-  aura::Window::ConvertPointToWindow(root_windows[1], root_windows[0], &p);
+  aura::Window::ConvertPointToTarget(root_windows[1], root_windows[0], &p);
   EXPECT_EQ("1000,0", p.ToString());
   p.SetPoint(0, 0);
-  aura::Window::ConvertPointToWindow(d2, d1, &p);
+  aura::Window::ConvertPointToTarget(d2, d1, &p);
   EXPECT_EQ("1010,10", p.ToString());
 
   // Convert point in the Root1's window to the Root2's window Coord.
   p.SetPoint(0, 0);
-  aura::Window::ConvertPointToWindow(root_windows[0], root_windows[1], &p);
+  aura::Window::ConvertPointToTarget(root_windows[0], root_windows[1], &p);
   EXPECT_EQ("-1000,0", p.ToString());
   p.SetPoint(0, 0);
-  aura::Window::ConvertPointToWindow(d1, d2, &p);
+  aura::Window::ConvertPointToTarget(d1, d2, &p);
   EXPECT_EQ("-1010,-10", p.ToString());
 
   // Move the 2nd display to the bottom and test again.
@@ -501,18 +501,18 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
 
   // Convert point in Root2's window to Root1's window Coord.
   p.SetPoint(0, 0);
-  aura::Window::ConvertPointToWindow(root_windows[1], root_windows[0], &p);
+  aura::Window::ConvertPointToTarget(root_windows[1], root_windows[0], &p);
   EXPECT_EQ("0,600", p.ToString());
   p.SetPoint(0, 0);
-  aura::Window::ConvertPointToWindow(d2, d1, &p);
+  aura::Window::ConvertPointToTarget(d2, d1, &p);
   EXPECT_EQ("10,610", p.ToString());
 
   // Convert point in Root1's window to Root2's window Coord.
   p.SetPoint(0, 0);
-  aura::Window::ConvertPointToWindow(root_windows[0], root_windows[1], &p);
+  aura::Window::ConvertPointToTarget(root_windows[0], root_windows[1], &p);
   EXPECT_EQ("0,-600", p.ToString());
   p.SetPoint(0, 0);
-  aura::Window::ConvertPointToWindow(d1, d2, &p);
+  aura::Window::ConvertPointToTarget(d1, d2, &p);
   EXPECT_EQ("-10,-610", p.ToString());
 }
 

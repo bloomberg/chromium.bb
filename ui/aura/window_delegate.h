@@ -17,13 +17,14 @@ class Rect;
 class Size;
 }
 
-namespace aura {
-
-class Event;
-class GestureEvent;
+namespace ui {
+class GestureEventImpl;
 class KeyEvent;
 class MouseEvent;
-class TouchEvent;
+class TouchEventImpl;
+}
+
+namespace aura {
 
 // Delegate interface for aura::Window.
 class AURA_EXPORT WindowDelegate {
@@ -39,7 +40,7 @@ class AURA_EXPORT WindowDelegate {
   virtual void OnFocus(aura::Window* old_focused_window) = 0;
   virtual void OnBlur() = 0;
 
-  virtual bool OnKeyEvent(KeyEvent* event) = 0;
+  virtual bool OnKeyEvent(ui::KeyEvent* event) = 0;
 
   // Returns the native cursor for the specified point, in window coordinates,
   // or NULL for the default cursor.
@@ -55,11 +56,11 @@ class AURA_EXPORT WindowDelegate {
       Window* child,
       const gfx::Point& location) = 0;
 
-  virtual bool OnMouseEvent(MouseEvent* event) = 0;
+  virtual bool OnMouseEvent(ui::MouseEvent* event) = 0;
 
-  virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) = 0;
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) = 0;
 
-  virtual ui::GestureStatus OnGestureEvent(GestureEvent* event) = 0;
+  virtual ui::GestureStatus OnGestureEvent(ui::GestureEventImpl* event) = 0;
 
   // Returns true of the window can be focused.
   virtual bool CanFocus() = 0;
