@@ -28,6 +28,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace {
 
@@ -81,7 +82,6 @@ views::Widget* CreateTooltip() {
   params.type = views::Widget::InitParams::TYPE_TOOLTIP;
   params.keep_on_top = true;
   params.accept_events = false;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
   return widget;
 }
@@ -92,9 +92,9 @@ namespace ash {
 namespace internal {
 
 // Displays a widget with tooltip using a views::Label.
-class TooltipController::Tooltip {
+class TooltipController::Tooltip : public views::WidgetObserver {
  public:
-  Tooltip() {
+  Tooltip() : widget_(NULL) {
     label_.set_background(
         views::Background::CreateSolidBackground(kTooltipBackground));
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraNoShadows)) {
@@ -103,12 +103,13 @@ class TooltipController::Tooltip {
                                            kTooltipBorder));
     }
     label_.set_owned_by_client();
-    widget_.reset(CreateTooltip());
-    widget_->SetContentsView(&label_);
   }
 
   ~Tooltip() {
-    widget_->Close();
+    if (widget_) {
+      widget_->RemoveObserver(this);
+      widget_->Close();
+    }
   }
 
   // Updates the text on the tooltip and resizes to fit.
@@ -131,21 +132,28 @@ class TooltipController::Tooltip {
 
   // Shows the tooltip.
   void Show() {
-    widget_->Show();
+    GetWidget()->Show();
   }
 
   // Hides the tooltip.
   void Hide() {
-    widget_->Hide();
+    if (widget_)
+      widget_->Hide();
   }
 
   bool IsVisible() {
-    return widget_->IsVisible();
+    return widget_? widget_->IsVisible() : false;
+  }
+
+  // Overriden from views::WidgetObserver.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE {
+    DCHECK_EQ(widget_, widget);
+    widget_ = NULL;
   }
 
  private:
   views::Label label_;
-  scoped_ptr<views::Widget> widget_;
+  views::Widget* widget_;
 
   // Adjusts the bounds given by the arguments to fit inside the desktop
   // and applies the adjusted bounds to the label_.
@@ -171,9 +179,17 @@ class TooltipController::Tooltip {
     if (tooltip_rect.bottom() > display_bounds.bottom())
       tooltip_rect.set_y(mouse_pos.y() - tooltip_height);
 
-    widget_->SetBounds(tooltip_rect.AdjustToFit(display_bounds));
+    GetWidget()->SetBounds(tooltip_rect.AdjustToFit(display_bounds));
   }
 
+  views::Widget* GetWidget() {
+    if (!widget_) {
+      widget_ = CreateTooltip();
+      widget_->SetContentsView(&label_);
+      widget_->AddObserver(this);
+    }
+    return widget_;
+  }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

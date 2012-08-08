@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/tooltips/tooltip_controller.h"
@@ -43,17 +44,22 @@ class TooltipTestView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TooltipTestView);
 };
 
-views::Widget* CreateNewWidget() {
+views::Widget* CreateNewWidgetWithBounds(const gfx::Rect& bounds) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = Shell::GetPrimaryRootWindow();
+  params.parent_widget = NULL;
   params.child = true;
+  params.bounds = bounds;
   widget->Init(params);
   widget->Show();
   return widget;
+}
+
+views::Widget* CreateNewWidget() {
+  return CreateNewWidgetWithBounds(gfx::Rect());
 }
 
 void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
@@ -68,7 +74,8 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
   gfx::Rect contents_view_bounds = contents_view->bounds();
   contents_view_bounds = contents_view_bounds.Union(view->bounds());
   contents_view->SetBoundsRect(contents_view_bounds);
-  widget->SetBounds(contents_view_bounds);
+  widget->SetBounds(gfx::Rect(widget->GetWindowBoundsInScreen().origin(),
+                              contents_view_bounds.size()));
 }
 
 ash::internal::TooltipController* GetController() {
@@ -469,6 +476,46 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
   EXPECT_EQ(expected_tooltip, aura::client::GetTooltipText(window));
   EXPECT_EQ(expected_tooltip, GetTooltipText());
   EXPECT_EQ(window, GetTooltipWindow());
+}
+
+TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
+  internal::DisplayController::SetExtendedDesktopEnabled(true);
+  UpdateDisplay("1000x600,600x400");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  scoped_ptr<views::Widget> widget1(CreateNewWidgetWithBounds(
+      gfx::Rect(10, 10, 100, 100)));
+  TooltipTestView* view1 = new TooltipTestView;
+  AddViewToWidgetAndResize(widget1.get(), view1);
+  view1->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
+  EXPECT_EQ(widget1->GetNativeView()->GetRootWindow(), root_windows[0]);
+
+  scoped_ptr<views::Widget> widget2(CreateNewWidgetWithBounds(
+      gfx::Rect(1200, 10, 100, 100)));
+  TooltipTestView* view2 = new TooltipTestView;
+  AddViewToWidgetAndResize(widget2.get(), view2);
+  view2->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 2"));
+  EXPECT_EQ(widget2->GetNativeView()->GetRootWindow(), root_windows[1]);
+
+  // Show tooltip on second display.
+  aura::test::EventGenerator generator(root_windows[1]);
+  generator.MoveMouseRelativeTo(widget2->GetNativeView(),
+                                view2->bounds().CenterPoint());
+  FireTooltipTimer();
+  EXPECT_TRUE(IsTooltipVisible());
+
+  // Get rid of secondary display. This destroy's the tooltip's aura window. If
+  // we have handled this case, we will not crash in the following statement.
+  UpdateDisplay("1000x600");
+  EXPECT_FALSE(IsTooltipVisible());
+  EXPECT_EQ(widget2->GetNativeView()->GetRootWindow(), root_windows[0]);
+
+  // The tooltip should create a new aura window for itself, so we should still
+  // be able to show tooltips on the primary display.
+  aura::test::EventGenerator generator1(root_windows[0]);
+  generator1.MoveMouseRelativeTo(widget1->GetNativeView(),
+                                 view1->bounds().CenterPoint());
+  FireTooltipTimer();
+  EXPECT_TRUE(IsTooltipVisible());
 }
 
 }  // namespace test
