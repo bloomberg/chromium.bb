@@ -104,6 +104,7 @@ bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
 
 }  // namespace
 
+
 // static
 void RenderWidgetHost::RemoveAllBackingStores() {
   BackingStoreManager::RemoveAllBackingStores();
@@ -152,7 +153,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      tap_suppression_controller_(new TapSuppressionController(this)) {
+      tap_suppression_controller_(new TapSuppressionController(this)),
+      fling_in_progress_(false) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();
@@ -494,6 +496,7 @@ void RenderWidgetHostImpl::ViewDestroyed() {
 
 void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
   is_loading_ = is_loading;
+  fling_in_progress_ = false;
   if (!view_)
     return;
   view_->SetIsLoading(is_loading);
@@ -926,8 +929,14 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
   if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
+  if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
+    if (ShouldDiscardFlingCancelEvent(gesture_event))
+      return;
+    fling_in_progress_ = false;
+  }
+
   if (gesture_event_pending_) {
-   if (coalesced_gesture_events_.empty() ||
+    if (coalesced_gesture_events_.empty() ||
        !ShouldCoalesceGestureEvents(coalesced_gesture_events_.back(),
                                     gesture_event)) {
      coalesced_gesture_events_.push_back(gesture_event);
@@ -944,9 +953,13 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
   }
   gesture_event_pending_ = true;
 
-  if (gesture_event.type == WebInputEvent::GestureFlingCancel)
+  if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
     tap_suppression_controller_->GestureFlingCancel(
         gesture_event.timeStampSeconds);
+  } else if (gesture_event.type == WebInputEvent::GestureFlingStart) {
+    fling_in_progress_ = true;
+  }
+
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
 }
 
@@ -1008,6 +1021,8 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
     // handler.
     key_queue_.push_back(key_event);
     HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
+
+    fling_in_progress_ = false; // Key events always stop flings.
 
     // Only forward the non-native portions of our event.
     ForwardInputEvent(key_event, sizeof(WebKeyboardEvent),
@@ -1607,6 +1622,23 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
     active_smooth_scroll_gesture_.reset();
     // TODO(nduca): send "smooth scroll done" event to RenderWidget.
   }
+}
+
+bool RenderWidgetHostImpl::ShouldDiscardFlingCancelEvent(
+    const WebKit::WebGestureEvent& gesture_event) {
+  DCHECK(gesture_event.type == WebInputEvent::GestureFlingCancel);
+  if (coalesced_gesture_events_.empty() && fling_in_progress_)
+    return false;
+  GestureEventQueue::reverse_iterator it =
+      coalesced_gesture_events_.rbegin();
+  while (it != coalesced_gesture_events_.rend()) {
+    if (it->type == WebInputEvent::GestureFlingStart)
+      return false;
+    if (it->type == WebInputEvent::GestureFlingCancel)
+      return true;
+    it++;
+  }
+  return true;
 }
 
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {

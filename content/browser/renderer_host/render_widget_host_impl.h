@@ -602,6 +602,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // initiated by OnMsgBeginSmoothScroll.
   void TickActiveSmoothScrollGesture();
 
+  // Returns |true| if the given GestureFlingCancel should be discarded
+  // as unnecessary.
+  bool ShouldDiscardFlingCancelEvent(
+      const WebKit::WebGestureEvent& gesture_event);
+
   // Our delegate, which wants to know mainly about keyboard events.
   RenderWidgetHostDelegate* delegate_;
 
@@ -781,6 +786,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   scoped_ptr<TapSuppressionController> tap_suppression_controller_;
+
+  bool fling_in_progress_;
 
   scoped_ptr<SmoothScrollGesture> active_smooth_scroll_gesture_;
 

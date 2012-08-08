@@ -224,6 +224,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
   using RenderWidgetHostImpl::coalesced_gesture_events_;
+  using RenderWidgetHostImpl::fling_in_progress_;
 
   bool unresponsive_timer_fired() const {
     return unresponsive_timer_fired_;
@@ -852,6 +853,87 @@ TEST_F(RenderWidgetHostTest, CoalescesGesturesEvents) {
   SendInputEventACK(WebInputEvent::GestureScrollEnd, true);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(0U, process_->sink().message_count());
+}
+
+TEST_F(RenderWidgetHostTest, GestureFlingCancelsFiltered) {
+  process_->sink().ClearMessages();
+  // GFC without previous GFS is dropped.
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->coalesced_gesture_events_.size());
+
+  // GFC after previous GFS is dispatched and acked.
+  process_->sink().ClearMessages();
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingStart);
+  EXPECT_TRUE(host_->fling_in_progress_);
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunAllPending();
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(2U, process_->sink().message_count());
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(0U, host_->coalesced_gesture_events_.size());
+
+  // GFC before previous GFS is acked.
+  process_->sink().ClearMessages();
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingStart);
+  EXPECT_TRUE(host_->fling_in_progress_);
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  EXPECT_FALSE(host_->coalesced_gesture_events_.empty());
+
+  // Advance state realistically.
+  SendInputEventACK(WebInputEvent::GestureFlingStart, true);
+  MessageLoop::current()->RunAllPending();
+  SendInputEventACK(WebInputEvent::GestureFlingCancel, true);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(0U, host_->coalesced_gesture_events_.size());
+
+  // GFS is added to the queue if another event is pending
+  process_->sink().ClearMessages();
+  SimulateGestureEvent(8, -7, 0, WebInputEvent::GestureScrollUpdate);
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingStart);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  WebGestureEvent merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(1U, host_->coalesced_gesture_events_.size());
+
+  // GFS in queue means that a GFC is added to the queue
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
+  merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(2U, host_->coalesced_gesture_events_.size());
+
+
+  // Adding a second GFC is dropped.
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(2U, host_->coalesced_gesture_events_.size());
+
+  // Adding another GFS will add it to the queue.
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingStart);
+  merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureFlingStart, merged_event.type);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(3U, host_->coalesced_gesture_events_.size());
+
+  // GFS in queue means that a GFC is added to the queue
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
+  merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(4U, host_->coalesced_gesture_events_.size());
+
+  // Adding another GFC with a GFC already there is dropped.
+  SimulateGestureEvent(0, -10, 0, WebInputEvent::GestureFlingCancel);
+  merged_event = host_->coalesced_gesture_events_.back();
+  EXPECT_EQ(WebInputEvent::GestureFlingCancel, merged_event.type);
+  EXPECT_FALSE(host_->fling_in_progress_);
+  EXPECT_EQ(4U, host_->coalesced_gesture_events_.size());
 }
 
 // Test that the hang monitor timer expires properly if a new timer is started
