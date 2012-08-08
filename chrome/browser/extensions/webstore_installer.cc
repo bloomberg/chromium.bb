@@ -167,7 +167,7 @@ WebstoreInstaller::Approval::~Approval() {}
 
 const WebstoreInstaller::Approval* WebstoreInstaller::GetAssociatedApproval(
     const DownloadItem& download) {
-  return static_cast<const Approval*>(download.GetExternalData(kApprovalKey));
+  return static_cast<const Approval*>(download.GetUserData(kApprovalKey));
 }
 
 WebstoreInstaller::WebstoreInstaller(Profile* profile,
@@ -283,7 +283,7 @@ void WebstoreInstaller::OnDownloadStarted(DownloadId id, net::Error error) {
   download_item_ = download_manager->GetActiveDownloadItem(id.local());
   download_item_->AddObserver(this);
   if (approval_.get())
-    download_item_->SetExternalData(kApprovalKey, approval_.release());
+    download_item_->SetUserData(kApprovalKey, approval_.release());
 }
 
 void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {

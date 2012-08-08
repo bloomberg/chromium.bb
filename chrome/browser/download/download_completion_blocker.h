@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_COMPLETION_BLOCKER_H_
 
 #include "base/callback.h"
+#include "base/supports_user_data.h"
 #include "content/public/browser/download_item.h"
 
 // A subsystem may use a DownloadCompletionBlocker in conjunction with
 // DownloadManagerDelegate::ShouldCompleteDownload() in order to block the
 // completion of a DownloadItem. CompleteDownload() will run the most recent
 // callback set.
-class DownloadCompletionBlocker : public content::DownloadItem::ExternalData {
+class DownloadCompletionBlocker : public base::SupportsUserData::Data {
  public:
   DownloadCompletionBlocker();
   virtual ~DownloadCompletionBlocker();

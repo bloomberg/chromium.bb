@@ -157,9 +157,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(OffThreadCancel, void());
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
   MOCK_METHOD0(MockDownloadOpenForTesting, void());
-  MOCK_METHOD1(GetExternalData, ExternalData*(const void*));
-  MOCK_CONST_METHOD1(GetExternalData, const ExternalData*(const void*));
-  MOCK_METHOD2(SetExternalData, void(const void*, ExternalData*));
 };
 
 class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
@@ -641,8 +638,6 @@ TEST_F(DownloadManagerTest, OnDownloadStopped_Persisted) {
   MockDownloadItemImpl& item(AddItemToManager());
   int download_id = item.GetId();
   int64 db_handle = 0x7;
-  EXPECT_CALL(item, GetExternalData(_))
-      .WillOnce(Return(static_cast<DownloadItem::ExternalData*>(NULL)));
   EXPECT_CALL(GetMockObserver(), ModelChanged(download_manager_.get()))
       .WillOnce(Return());
   AddItemToHistory(item, db_handle);

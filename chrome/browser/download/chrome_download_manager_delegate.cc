@@ -252,12 +252,12 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-      item->GetExternalData(&safe_browsing_id));
+      item->GetUserData(&safe_browsing_id));
   DCHECK(!state);
   if (!state)
     state = new SafeBrowsingState();
   state->SetVerdict(DownloadProtectionService::SAFE);
-  item->SetExternalData(&safe_browsing_id, state);
+  item->SetUserData(&safe_browsing_id, state);
 #endif
 }
 
@@ -266,7 +266,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     const base::Closure& internal_complete_callback) {
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-      item->GetExternalData(&safe_browsing_id));
+      item->GetUserData(&safe_browsing_id));
   if (!state) {
     // Begin the safe browsing download protection check.
     DownloadProtectionService* service = GetDownloadProtectionService();
@@ -275,7 +275,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
               << item->DebugString(false);
       state = new SafeBrowsingState();
       state->set_callback(internal_complete_callback);
-      item->SetExternalData(&safe_browsing_id, state);
+      item->SetUserData(&safe_browsing_id, state);
       service->CheckClientDownload(
           DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
           base::Bind(
@@ -609,7 +609,7 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
   }
 
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-      item->GetExternalData(&safe_browsing_id));
+      item->GetUserData(&safe_browsing_id));
   state->SetVerdict(result);
 }
 

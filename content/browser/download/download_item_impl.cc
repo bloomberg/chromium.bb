@@ -301,8 +301,6 @@ DownloadItemImpl::~DownloadItemImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TransitionTo(REMOVING);
-  STLDeleteContainerPairSecondPointers(
-      external_data_map_.begin(), external_data_map_.end());
   delegate_->AssertStateConsistent(this);
   delegate_->Detach();
 }
@@ -1170,31 +1168,3 @@ content::DownloadInterruptReason DownloadItemImpl::GetLastReason() const {
   return last_reason_;
 }
 void DownloadItemImpl::MockDownloadOpenForTesting() { open_enabled_ = false; }
-
-DownloadItem::ExternalData*
-DownloadItemImpl::GetExternalData(const void* key) {
-  // The behavior of the const overload is identical with the exception of the
-  // constness of |this| and the return value.
-  return const_cast<DownloadItem::ExternalData*>(
-      static_cast<const DownloadItemImpl&>(*this).GetExternalData(key));
-}
-
-const DownloadItem::ExternalData*
-DownloadItemImpl::GetExternalData(const void* key) const {
-  std::map<const void*, ExternalData*>::const_iterator it =
-      external_data_map_.find(key);
-  return (it == external_data_map_.end()) ? NULL : it->second;
-}
-
-void DownloadItemImpl::SetExternalData(
-    const void* key, DownloadItem::ExternalData* data) {
-  std::map<const void*, ExternalData*>::iterator it =
-      external_data_map_.find(key);
-
-  if (it == external_data_map_.end()) {
-    external_data_map_[key] = data;
-  } else if (it->second != data) {
-    delete it->second;
-    it->second = data;
-  }
-}

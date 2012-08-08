@@ -23,6 +23,7 @@
 
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "base/supports_user_data.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/common/page_transition_types.h"
@@ -49,7 +50,7 @@ struct DownloadPersistentStoreInfo;
 // Destination tab's download view, may refer to a given DownloadItem.
 //
 // This is intended to be used only on the UI thread.
-class CONTENT_EXPORT DownloadItem {
+class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
  public:
   enum DownloadState {
     // Download is actively progressing.
@@ -109,13 +110,6 @@ class CONTENT_EXPORT DownloadItem {
 
    protected:
     virtual ~Observer() {}
-  };
-
-  // Interface for data that can be stored associated with (and owned
-  // by) an object of this class via GetExternalData/SetExternalData.
-  class ExternalData {
-   public:
-    virtual ~ExternalData() {};
   };
 
   virtual ~DownloadItem() {}
@@ -290,22 +284,6 @@ class CONTENT_EXPORT DownloadItem {
   // This returns the same path as GetTargetFilePath() for safe downloads
   // but does not for dangerous downloads until the name is verified.
   virtual FilePath GetUserVerifiedFilePath() const = 0;
-
-  // Manage data owned by other subsystems associated with the
-  // DownloadItem.  By custom, key is the address of a
-  // static char subsystem_specific_string[] = ".."; defined
-  // in the subsystem, but the only requirement of this interface
-  // is that the key be unique over all data stored with this
-  // DownloadItem.
-  //
-  // Note that SetExternalData takes ownership of the
-  // passed object; it will be destroyed when the DownloadItem is.
-  // If an object is already held by the DownloadItem associated with
-  // the passed key, it will be destroyed if overwriten by a new pointer
-  // (overwrites by the same pointer are ignored).
-  virtual       ExternalData* GetExternalData(const void* key) = 0;
-  virtual const ExternalData* GetExternalData(const void* key) const = 0;
-  virtual void SetExternalData(const void* key, ExternalData* data) = 0;
 
   virtual std::string DebugString(bool verbose) const = 0;
 

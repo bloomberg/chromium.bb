@@ -11,14 +11,15 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/supports_user_data.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/base/net_errors.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 
 class FilePath;
 class Profile;
@@ -57,7 +58,7 @@ class WebstoreInstaller :public content::NotificationObserver,
   // be skipped or modified. If one of these is present, it means that a CRX
   // download was initiated by WebstoreInstaller. The Approval instance should
   // be checked further for additional details.
-  struct Approval : public content::DownloadItem::ExternalData {
+  struct Approval : public base::SupportsUserData::Data {
     static scoped_ptr<Approval> CreateWithInstallPrompt(Profile* profile);
     static scoped_ptr<Approval> CreateWithNoInstallPrompt(
         Profile* profile,

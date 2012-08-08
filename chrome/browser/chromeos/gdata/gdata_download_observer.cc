@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/supports_user_data.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
@@ -27,18 +28,18 @@ namespace {
 // Threshold file size after which we stream the file.
 const int64 kStreamingFileSize = 1 << 20;  // 1MB
 
-// Keys for DownloadItem::ExternalData.
+// Keys for base::SupportsUserData::Data.
 const char kUploadingKey[] = "Uploading";
 const char kGDataPathKey[] = "GDataPath";
 
-// External Data stored in DownloadItem for ongoing uploads.
-class UploadingExternalData : public DownloadCompletionBlocker {
+// User Data stored in DownloadItem for ongoing uploads.
+class UploadingUserData : public DownloadCompletionBlocker {
  public:
-  explicit UploadingExternalData(GDataUploader* uploader)
+  explicit UploadingUserData(GDataUploader* uploader)
       : uploader_(uploader),
         upload_id_(-1) {
   }
-  virtual ~UploadingExternalData() {}
+  virtual ~UploadingUserData() {}
 
   GDataUploader* uploader() { return uploader_; }
   void set_upload_id(int upload_id) { upload_id_ = upload_id; }
@@ -54,14 +55,14 @@ class UploadingExternalData : public DownloadCompletionBlocker {
   FilePath virtual_dir_path_;
   scoped_ptr<DocumentEntry> entry_;
 
-  DISALLOW_COPY_AND_ASSIGN(UploadingExternalData);
+  DISALLOW_COPY_AND_ASSIGN(UploadingUserData);
 };
 
-// External Data stored in DownloadItem for gdata path.
-class GDataExternalData : public DownloadItem::ExternalData {
+// User Data stored in DownloadItem for gdata path.
+class GDataUserData : public base::SupportsUserData::Data {
  public:
-  explicit GDataExternalData(const FilePath& path) : file_path_(path) {}
-  virtual ~GDataExternalData() {}
+  explicit GDataUserData(const FilePath& path) : file_path_(path) {}
+  virtual ~GDataUserData() {}
 
   const FilePath& file_path() const { return file_path_; }
 
@@ -69,16 +70,16 @@ class GDataExternalData : public DownloadItem::ExternalData {
   FilePath file_path_;
 };
 
-// Extracts UploadingExternalData* from |download|.
-UploadingExternalData* GetUploadingExternalData(DownloadItem* download) {
-  return static_cast<UploadingExternalData*>(
-      download->GetExternalData(&kUploadingKey));
+// Extracts UploadingUserData* from |download|.
+UploadingUserData* GetUploadingUserData(DownloadItem* download) {
+  return static_cast<UploadingUserData*>(
+      download->GetUserData(&kUploadingKey));
 }
 
-// Extracts GDataExternalData* from |download|.
-GDataExternalData* GetGDataExternalData(DownloadItem* download) {
-  return static_cast<GDataExternalData*>(
-      download->GetExternalData(&kGDataPathKey));
+// Extracts GDataUserData* from |download|.
+GDataUserData* GetGDataUserData(DownloadItem* download) {
+  return static_cast<GDataUserData*>(
+      download->GetUserData(&kGDataPathKey));
 }
 
 void RunSubstituteGDataDownloadCallback(
@@ -233,15 +234,15 @@ void GDataDownloadObserver::SetDownloadParams(const FilePath& gdata_path,
     return;
 
   if (gdata::util::IsUnderGDataMountPoint(gdata_path)) {
-    download->SetExternalData(&kGDataPathKey,
-                              new GDataExternalData(gdata_path));
+    download->SetUserData(&kGDataPathKey,
+                          new GDataUserData(gdata_path));
     download->SetDisplayName(gdata_path.BaseName());
     download->SetIsTemporary(true);
   } else if (IsGDataDownload(download)) {
     // This may have been previously set if the default download folder is
     // /drive, and the user has now changed the download target to a local
     // folder.
-    download->SetExternalData(&kGDataPathKey, NULL);
+    download->SetUserData(&kGDataPathKey, NULL);
     download->SetDisplayName(gdata_path);
     // TODO(achuith): This is not quite right.
     download->SetIsTemporary(false);
@@ -250,7 +251,7 @@ void GDataDownloadObserver::SetDownloadParams(const FilePath& gdata_path,
 
 // static
 FilePath GDataDownloadObserver::GetGDataPath(DownloadItem* download) {
-  GDataExternalData* data = GetGDataExternalData(download);
+  GDataUserData* data = GetGDataUserData(download);
   // If data is NULL, we've somehow lost the gdata path selected by the file
   // picker.
   DCHECK(data);
@@ -259,9 +260,9 @@ FilePath GDataDownloadObserver::GetGDataPath(DownloadItem* download) {
 
 // static
 bool GDataDownloadObserver::IsGDataDownload(DownloadItem* download) {
-  // We use the existence of the GDataExternalData object in download as a
+  // We use the existence of the GDataUserData object in download as a
   // signal that this is a GDataDownload.
-  return !!GetGDataExternalData(download);
+  return !!GetGDataUserData(download);
 }
 
 // static
@@ -275,7 +276,7 @@ bool GDataDownloadObserver::IsReadyToComplete(
   // 2. The upload has completed.
   if (!IsGDataDownload(download))
     return true;
-  UploadingExternalData* upload_data = GetUploadingExternalData(download);
+  UploadingUserData* upload_data = GetUploadingUserData(download);
   DCHECK(upload_data);
   if (upload_data->is_complete())
     return true;
@@ -285,7 +286,7 @@ bool GDataDownloadObserver::IsReadyToComplete(
 
 // static
 int64 GDataDownloadObserver::GetUploadedBytes(DownloadItem* download) {
-  UploadingExternalData* upload_data = GetUploadingExternalData(download);
+  UploadingUserData* upload_data = GetUploadingUserData(download);
   if (!upload_data || !upload_data->uploader())
     return 0;
   return upload_data->uploader()->GetUploadedBytes(upload_data->upload_id());
@@ -294,7 +295,7 @@ int64 GDataDownloadObserver::GetUploadedBytes(DownloadItem* download) {
 // static
 int GDataDownloadObserver::PercentComplete(DownloadItem* download) {
   // Progress is unknown until the upload starts.
-  if (!GetUploadingExternalData(download))
+  if (!GetUploadingUserData(download))
     return -1;
   int64 complete = GetUploadedBytes(download);
   // Once AllDataSaved() is true, we can use the GetReceivedBytes() as the total
@@ -400,8 +401,8 @@ void GDataDownloadObserver::RemovePendingDownload(DownloadItem* download) {
 }
 
 void GDataDownloadObserver::DetachFromDownload(DownloadItem* download) {
-  download->SetExternalData(&kUploadingKey, NULL);
-  download->SetExternalData(&kGDataPathKey, NULL);
+  download->SetUserData(&kUploadingKey, NULL);
+  download->SetUserData(&kGDataPathKey, NULL);
   download->RemoveObserver(this);
 }
 
@@ -412,9 +413,9 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
   if (!ShouldUpload(download))
     return;
 
-  // Initialize uploading external data.
-  download->SetExternalData(&kUploadingKey,
-                            new UploadingExternalData(gdata_uploader_));
+  // Initialize uploading userdata.
+  download->SetUserData(&kUploadingKey,
+                            new UploadingUserData(gdata_uploader_));
 
   // Create UploadFileInfo structure for the download item.
   CreateUploadFileInfo(download);
@@ -423,9 +424,9 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
 void GDataDownloadObserver::UpdateUpload(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadingExternalData* upload_data = GetUploadingExternalData(download);
+  UploadingUserData* upload_data = GetUploadingUserData(download);
   if (!upload_data) {
-    DVLOG(1) << "No UploadingExternalData for download " << download->GetId();
+    DVLOG(1) << "No UploadingUserData for download " << download->GetId();
     return;
   }
 
@@ -441,7 +442,7 @@ bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
   return (pending_downloads_.count(download->GetId()) != 0) &&
          (download->AllDataSaved() ||
           download->GetReceivedBytes() > kStreamingFileSize) &&
-         (GetUploadingExternalData(download) == NULL);
+         (GetUploadingUserData(download) == NULL);
 }
 
 void GDataDownloadObserver::CreateUploadFileInfo(DownloadItem* download) {
@@ -512,7 +513,7 @@ void GDataDownloadObserver::StartUpload(
   DVLOG(1) << "Starting upload for download ID " << download_id;
   DownloadItem* download_item = iter->second;
 
-  UploadingExternalData* upload_data = GetUploadingExternalData(download_item);
+  UploadingUserData* upload_data = GetUploadingUserData(download_item);
   DCHECK(upload_data);
   upload_data->set_virtual_dir_path(upload_file_info->gdata_path.DirName());
 
@@ -538,7 +539,7 @@ void GDataDownloadObserver::OnUploadComplete(
   DVLOG(1) << "Completing upload for download ID " << download_id;
   DownloadItem* download_item = iter->second;
 
-  UploadingExternalData* upload_data = GetUploadingExternalData(download_item);
+  UploadingUserData* upload_data = GetUploadingUserData(download_item);
   DCHECK(upload_data);
 
   // Take ownership of the DocumentEntry from UploadFileInfo. This is used by
@@ -553,7 +554,7 @@ void GDataDownloadObserver::OnUploadComplete(
 void GDataDownloadObserver::MoveFileToGDataCache(DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadingExternalData* upload_data = GetUploadingExternalData(download);
+  UploadingUserData* upload_data = GetUploadingUserData(download);
   if (!upload_data) {
     NOTREACHED();
     return;

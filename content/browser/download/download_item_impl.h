@@ -195,9 +195,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual FilePath GetUserVerifiedFilePath() const OVERRIDE;
   virtual std::string DebugString(bool verbose) const OVERRIDE;
   virtual void MockDownloadOpenForTesting() OVERRIDE;
-  virtual ExternalData* GetExternalData(const void* key) OVERRIDE;
-  virtual const ExternalData* GetExternalData(const void* key) const OVERRIDE;
-  virtual void SetExternalData(const void* key, ExternalData* data) OVERRIDE;
 
  private:
   // Construction common to all constructors. |active| should be true for new
@@ -403,10 +400,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_;
-
-  // External Data storage.  All objects in the store
-  // are owned by the DownloadItemImpl.
-  std::map<const void*, ExternalData*> external_data_map_;
 
   // Net log to use for this download.
   const net::BoundNetLog bound_net_log_;

@@ -15,6 +15,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
 #include "build/build_config.h"
@@ -52,26 +53,26 @@ using content::WebContents;
 namespace {
 
 // This is just used to remember which DownloadItems come from SavePage.
-class SavePageExternalData : public DownloadItem::ExternalData {
+class SavePageData : public base::SupportsUserData::Data {
  public:
   // A spoonful of syntactic sugar.
   static bool Get(DownloadItem* item) {
-    return item->GetExternalData(kKey) != NULL;
+    return item->GetUserData(kKey) != NULL;
   }
 
-  explicit SavePageExternalData(DownloadItem* item) {
-    item->SetExternalData(kKey, this);
+  explicit SavePageData(DownloadItem* item) {
+    item->SetUserData(kKey, this);
   }
 
-  virtual ~SavePageExternalData() {}
+  virtual ~SavePageData() {}
 
  private:
   static const char kKey[];
 
-  DISALLOW_COPY_AND_ASSIGN(SavePageExternalData);
+  DISALLOW_COPY_AND_ASSIGN(SavePageData);
 };
 
-const char SavePageExternalData::kKey[] = "DownloadItem SavePageExternalData";
+const char SavePageData::kKey[] = "DownloadItem SavePageData";
 
 void BeginDownload(content::DownloadUrlParameters* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -566,9 +567,9 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
 
   DCHECK(!ContainsKey(downloads_, download->GetId()));
   downloads_[download->GetId()] = download;
-  DCHECK(!SavePageExternalData::Get(download));
-  new SavePageExternalData(download);
-  DCHECK(SavePageExternalData::Get(download));
+  DCHECK(!SavePageData::Get(download));
+  new SavePageData(download);
+  DCHECK(SavePageData::Get(download));
 
   // TODO(benjhayden): Fire OnDownloadCreated for SavePackage downloads when
   // we're comfortable with the user interacting with them.
@@ -928,7 +929,7 @@ void DownloadManagerImpl::OnItemAddedToPersistentStore(int32 download_id,
 
   DownloadItemImpl* item = downloads_[download_id];
   AddDownloadItemToHistory(item, db_handle);
-  if (SavePageExternalData::Get(item)) {
+  if (SavePageData::Get(item)) {
     OnSavePageItemAddedToPersistentStore(item);
   } else {
     OnDownloadItemAddedToPersistentStore(item);
