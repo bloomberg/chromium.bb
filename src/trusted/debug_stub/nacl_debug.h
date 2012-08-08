@@ -56,19 +56,6 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) NO_THROW;
 
 
 /*
- * This function notifies the debug stub that the system is ready to
- * allow debugging, and should finish preparation for debuggers to attach.
- * The function will launch a new thread to act as a sever processing GDB
- * RSP based connections.  How a remote debugger connects to the debugging
- * stub is controlled by the following environment variables:
- *   NACL_DEBUG_ENABLE - if defined, debugging is allowed
- *   NACL_DEBUG_IP - IPv4 address on which to bind (default "127.0.0.1")
- *   NACL_DEBUG_PORT - Port(s) on which to listen (default "8000:8010")
- */
-int NaClDebugStart(void) NO_THROW;
-
-
-/*
  * Signals the debugging thread (if one has started), that it should
  * release all debugging resources and halt.  Prior to closing any
  * connections, the debugging stub has the opportunity to notify

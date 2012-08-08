@@ -62,46 +62,13 @@ using gdb_rsp::Target;
   }
 
 
-enum NaClDebugStatus {
-  NDS_DISABLED = 0,
-  NDS_ENABLED = 1,
-  NDS_STOPPED = 2
-};
-
-struct NaClDebugState {
-  NaClDebugState() : target_(NULL), app_(NULL),
-                     status_(NDS_DISABLED) {}
-
-  bool Init() {
-    NaClDebugStubInit();
-    target_ = new Target();
-
-    CHECK((NULL != target_) && (target_->Init()));
-
-    status_ = NDS_ENABLED;
-    return true;
-  }
-
-  ~NaClDebugState() {
-    /*
-     * TODO(mlinck): It is not safe to call this destructor, since there is an
-     * unjoinable thread potentially accessing target_.
-     */
-    delete target_;
-  }
-
-  Target* target_;
-  struct NaClApp *app_;
-  NaClDebugStatus status_;
-};
-
 static const struct NaClDebugCallbacks debug_callbacks = {
   NaClDebugThreadPrepDebugging,
   NaClDebugThreadStopDebugging,
   NaClDebugStop,
 };
 
-static NaClDebugState *g_nacl_debug_state = NULL;
+static Target *g_target = NULL;
 
 void WINAPI NaClStubThread(void *ptr) {
   Target *targ = reinterpret_cast<Target*>(ptr);
@@ -142,8 +109,8 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
 
   uint32_t id = IPlatform::GetCurrentThread();
   IThread* thread = IThread::Create(id, natp);
-  g_nacl_debug_state->target_->SetMemoryBase(natp->nap->mem_start);
-  g_nacl_debug_state->target_->TrackThread(thread);
+  g_target->SetMemoryBase(natp->nap->mem_start);
+  g_target->TrackThread(thread);
 }
 
 void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
@@ -151,30 +118,9 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
 
   uint32_t id = IPlatform::GetCurrentThread();
   IThread* thread = IThread::Acquire(id);
-  g_nacl_debug_state->target_->IgnoreThread(thread);
+  g_target->IgnoreThread(thread);
   IThread::Release(thread);  /* for Acquire */
   IThread::Release(thread);  /* for Create at NaClDebugThreadPrepDebugging */
-}
-
-int NaClDebugStart(void) throw() {
-  NaClThread *thread = new NaClThread;
-
-  if (NULL == thread) return false;
-
-  /* Add a temp breakpoint. */
-  struct NaClApp* app = g_nacl_debug_state->app_;
-  if (0 != app->user_entry_pt) {
-    g_nacl_debug_state->target_->AddTemporaryBreakpoint(app->user_entry_pt +
-                                                        app->mem_start);
-  }
-  g_nacl_debug_state->target_->AddTemporaryBreakpoint(app->initial_entry_pt +
-                                                      app->mem_start);
-
-  NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
-  IThread::SetExceptionCatch(NaClExceptionCatcher,
-                             g_nacl_debug_state->target_);
-  return NaClThreadCtor(thread, NaClStubThread, g_nacl_debug_state->target_,
-                        NACL_KERN_STACK_SIZE);
 }
 
 void NaClDebugStop(int ErrCode) throw() {
@@ -184,8 +130,7 @@ void NaClDebugStop(int ErrCode) throw() {
    * resources but not the object itself.  Instead we mark it as
    * STOPPED to prevent it from getting recreated.
    */
-  g_nacl_debug_state->target_->Exit(ErrCode);
-  g_nacl_debug_state->status_ = NDS_STOPPED;
+  g_target->Exit(ErrCode);
   try {
     NaClDebugStubFini();
   } DBG_CATCH_ALL
@@ -196,14 +141,27 @@ void NaClDebugStop(int ErrCode) throw() {
  * declares the function so it does not need to be declared in our header.
  */
 int NaClDebugInit(struct NaClApp *nap) {
-  static bool initialised = 0;
-  CHECK(!initialised && NULL == g_nacl_debug_state);
-  initialised = 1;
   nap->debug_stub_callbacks = &debug_callbacks;
   NaClDebugStubInit();
-  g_nacl_debug_state = new NaClDebugState();
-  CHECK(g_nacl_debug_state->Init());
-  g_nacl_debug_state->app_ = nap;
-  NaClDebugStart();
+
+  CHECK(g_target == NULL);
+  g_target = new Target();
+  CHECK(g_target != NULL);
+  g_target->Init();
+
+  NaClThread *thread = new NaClThread;
+  CHECK(thread != NULL);
+
+  /* Add a temp breakpoint. */
+  if (0 != nap->user_entry_pt) {
+    g_target->AddTemporaryBreakpoint(nap->user_entry_pt + nap->mem_start);
+  }
+  g_target->AddTemporaryBreakpoint(nap->initial_entry_pt + nap->mem_start);
+
+  NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
+  IThread::SetExceptionCatch(NaClExceptionCatcher, g_target);
+  CHECK(NaClThreadCtor(thread, NaClStubThread, g_target,
+                       NACL_KERN_STACK_SIZE));
+
   return 1;
 }
