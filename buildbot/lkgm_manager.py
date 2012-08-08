@@ -38,15 +38,6 @@ class PromoteCandidateException(Exception):
   pass
 
 
-def _SyncGitRepo(local_dir):
-  """"Clone Given git repo
-  Args:
-    local_dir: location with repo that should be synced.
-  """
-  cros_build_lib.RunCommand(['git', 'remote', 'update'], cwd=local_dir)
-  cros_build_lib.RunCommand(['git', 'rebase', 'origin/master'], cwd=local_dir)
-
-
 class _LKGMCandidateInfo(manifest_version.VersionInfo):
   """Class to encapsualte the chrome os lkgm candidate info
 
@@ -376,30 +367,27 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       return None
 
-  def GetBuildersStatus(self, builders_array, version_file):
+  def GetBuildersStatus(self, builders_array):
     """Returns a build-names->status dictionary of build statuses."""
     builders_completed = set()
     builder_statuses = {}
 
     def _CheckStatusOfBuildersArray():
       """Helper function that iterates through current statuses."""
-      _SyncGitRepo(self.manifest_dir)
-      version_info = _LKGMCandidateInfo(version_file=version_file,
-                                        incr_type=self.incr_type)
       for b in builders_array:
         cached_status = builder_statuses.get(b)
         if not cached_status or not cached_status.Completed():
           logging.debug("Checking for builder %s's status", b)
-          builder_status = self.GetBuildStatus(b, version_info)
+          builder_status = self.GetBuildStatus(b, self.current_version)
           builder_statuses[b] = builder_status
-          if builder_status.Passed():
+          if builder_status is None:
+            logging.warn('No status found for builder %s.', b)
+          elif builder_status.Passed():
             builders_completed.add(b)
             logging.info('Builder %s completed with status passed', b)
           elif builder_status.Failed():
             builders_completed.add(b)
             logging.info('Builder %s completed with status failed', b)
-          elif not builder_status.status:
-            logging.debug('No status found for builder %s.', b)
 
 
       if len(builders_completed) < len(builders_array):

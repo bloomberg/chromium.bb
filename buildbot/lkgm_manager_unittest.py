@@ -11,8 +11,6 @@ import os
 import shutil
 import sys
 import tempfile
-import threading
-import time
 import unittest
 from xml.dom import minidom
 
@@ -29,7 +27,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
-# pylint: disable=W0212,R0904
+# pylint: disable=E1120,W0212,R0904
 FAKE_VERSION_STRING = '1.2.4-rc3'
 FAKE_VERSION_STRING_NEXT = '1.2.4-rc4'
 CHROME_BRANCH = '13'
@@ -151,7 +149,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.manager.specs_for_builder = os.path.join(manifest_dir,
                                                   self.manager.rel_working_dir,
                                                   'build-name', '%(builder)s')
-    self.manager.SLEEP_TIMEOUT = 1
+    self.manager.SLEEP_TIMEOUT = 0
 
   def _GetPathToManifest(self, info):
     return os.path.join(self.manager.all_specs_dir, '%s.xml' %
@@ -341,7 +339,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
     self.mox.ReplayAll()
-    self.manager.LONG_MAX_TIMEOUT_SECONDS = 1 # Only run once.
+    self.manager.SLEEP_TIMEOUT = 0.2
+    self.manager.LONG_MAX_TIMEOUT_SECONDS = 0.1 # Only run once.
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
@@ -356,104 +355,42 @@ class LKGMManagerTest(mox.MoxTestBase):
     manifest_version_unittest.TouchFile(manifest)
     return manifest, dir_pfx
 
-  @staticmethod
-  def _FinishBuilderHelper(manifest, path_for_builder, dir_pfx, status, wait=0):
-    time.sleep(wait)
-    manifest_version.CreateSymlink(
-        manifest, os.path.join(path_for_builder, status, dir_pfx,
-                               os.path.basename(manifest)))
+  def _GetBuildersStatus(self, builders, status_runs):
+    """Test a call to LKGMManager.GetBuildersStatus.
 
-  def _FinishBuild(self, manifest, path_for_builder, dir_pfx, status, wait=0):
-    """Finishes a build by marking a status with optional delay."""
-    if wait > 0:
-      thread = threading.Thread(target=self._FinishBuilderHelper,
-                                args=(manifest, path_for_builder, dir_pfx,
-                                      status, wait))
-      thread.start()
-      return thread
-    else:
-      self._FinishBuilderHelper(manifest, path_for_builder, dir_pfx, status, 0)
+    Args:
+      builders: List of builders to get status for.
+      status_runs: List of expected (builder, status) tuples.
+    """
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetBuildStatus')
+    for builder, status in status_runs:
+      # GetBuildStatus returns None if the builder has not even started yet
+      # (e.g. because the builder is down.)
+      if status is not None:
+        status = manifest_version.BuilderStatus(status, None)
+      lkgm_manager.LKGMManager.GetBuildStatus(
+          builder, mox.IgnoreArg()).AndReturn(status)
+
+    self.mox.ReplayAll()
+    statuses = self.manager.GetBuildersStatus(builders)
+    self.mox.VerifyAll()
+    return statuses
 
   def testGetBuildersStatusBothFinished(self):
     """Tests GetBuilderStatus where both builds have finished."""
-    fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
-    self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
-
-    manifest, dir_pfx = self._CreateManifest()
-    print manifest, dir_pfx
-    for_build1 = os.path.join(self.manager.manifest_dir,
-                              self.manager.rel_working_dir,
-                              'build-name', 'build1')
-    for_build2 = os.path.join(self.manager.manifest_dir,
-                              self.manager.rel_working_dir,
-                              'build-name', 'build2')
-
-    self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
-    self._FinishBuild(manifest, for_build2, dir_pfx, 'pass')
-
-    lkgm_manager._SyncGitRepo(self.manager.manifest_dir)
-    self.mox.ReplayAll()
-    statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
-                                              fake_version_file)
+    status_runs = [('build1', 'fail'), ('build2', 'pass')]
+    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
-    self.mox.VerifyAll()
 
-  @cros_build_lib.TimeoutDecorator(10)
-  def testGetBuildersStatusWaitForOne(self):
-    """Tests GetBuilderStatus where both builds have finished with one delay."""
-    fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
-    self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
-
-    manifest, dir_pfx = self._CreateManifest()
-    for_build1 = os.path.join(self.manager.manifest_dir,
-                              self.manager.rel_working_dir,
-                              'build-name', 'build1')
-    for_build2 = os.path.join(self.manager.manifest_dir,
-                              self.manager.rel_working_dir,
-                              'build-name', 'build2')
-
-    self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
-    self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=3)
-
-    lkgm_manager._SyncGitRepo(self.manager.manifest_dir).MultipleTimes()
-    self.mox.ReplayAll()
-
-    statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
-                                              fake_version_file)
+  def testGetBuildersStatusLoop(self):
+    """Tests GetBuilderStatus where builds are inflight."""
+    status_runs = [('build1', 'inflight'), ('build2', None),
+                   ('build1', 'fail'), ('build2', 'inflight'),
+                   ('build2', 'pass')]
+    statuses = self._GetBuildersStatus(['build1', 'build2'], status_runs)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
-    self.mox.VerifyAll()
-
-  @cros_build_lib.TimeoutDecorator(20)
-  def testGetBuildersStatusReachTimeout(self):
-    """Tests GetBuilderStatus where one build finishes and one never does."""
-    fake_version_file = LKGMCandidateInfoTest.CreateFakeVersionFile(self.tmpdir)
-    self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
-
-    manifest, dir_pfx = self._CreateManifest()
-    for_build1 = os.path.join(self.manager.manifest_dir,
-                              self.manager.rel_working_dir,
-                              'build-name', 'build1')
-    for_build2 = os.path.join(self.manager.manifest_dir,
-                              self.manager.rel_working_dir,
-                              'build-name', 'build2')
-
-    self._FinishBuild(manifest, for_build1, dir_pfx, 'fail', wait=3)
-    thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=10)
-
-    try:
-      lkgm_manager._SyncGitRepo(self.manager.manifest_dir).MultipleTimes()
-      self.mox.ReplayAll()
-      # Let's reduce this.
-      self.manager.LONG_MAX_TIMEOUT_SECONDS = 5
-      statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
-                                              fake_version_file)
-      self.assertTrue(statuses['build1'].Failed())
-      self.assertEqual(statuses['build2'].status, None)
-    finally:
-      thread.join()
-    self.mox.VerifyAll()
 
   def testGenerateBlameListSinceLKGM(self):
     """Tests that we can generate a blamelist from two commit messages.

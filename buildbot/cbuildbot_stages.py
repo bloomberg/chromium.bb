@@ -694,25 +694,22 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     # If debugging or a slave, just check its local status.
     if not self._build_config['master'] or self._options.debug:
       return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-        [self._bot_id], os.path.join(self._build_root, constants.VERSION_FILE))
+        [self._bot_id])
 
     if not LKGMCandidateSyncStage.sub_manager:
       return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-          self._GetSlavesForMaster(), os.path.join(self._build_root,
-                                                   constants.VERSION_FILE))
+          self._GetSlavesForMaster())
     else:
       public_builders, private_builders = self._GetSlavesForUnifiedMaster()
       statuses = {}
       if public_builders:
         statuses.update(
           LKGMCandidateSyncStage.sub_manager.GetBuildersStatus(
-              public_builders, os.path.join(self._build_root,
-                                            constants.VERSION_FILE)))
+              public_builders))
       if private_builders:
         statuses.update(
             ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-                private_builders, os.path.join(self._build_root,
-                                          constants.VERSION_FILE)))
+                private_builders))
       return statuses
 
   def HandleSuccess(self):

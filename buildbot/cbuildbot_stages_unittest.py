@@ -337,12 +337,8 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     status2 = dict(s3='pass')
 
     bs.BuilderStage._GetSlavesForUnifiedMaster().AndReturn((p_bs, pr_bs,))
-    lkgm_manager.LKGMManager.GetBuildersStatus(
-        p_bs, os.path.join(self.build_root, constants.VERSION_FILE)).AndReturn(
-            status1)
-    lkgm_manager.LKGMManager.GetBuildersStatus(
-        pr_bs, os.path.join(self.build_root, constants.VERSION_FILE)).AndReturn(
-            status2)
+    lkgm_manager.LKGMManager.GetBuildersStatus(p_bs).AndReturn(status1)
+    lkgm_manager.LKGMManager.GetBuildersStatus(pr_bs).AndReturn(status2)
 
     self.mox.ReplayAll()
     stage = self.ConstructStage()

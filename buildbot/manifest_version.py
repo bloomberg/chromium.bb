@@ -307,13 +307,13 @@ class VersionInfo(object):
     return ''
 
 
-class BuilderStatus():
+class BuilderStatus(object):
   """Object representing the status of a build."""
     # Various status builds can be in.
   STATUS_FAILED = 'fail'
   STATUS_PASSED = 'pass'
+  STATUS_INFLIGHT = 'inflight'
   STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
-  MESSAGE_FILE_SUFFIX = '_message.pck'
 
   def __init__(self, status, message):
     self.status = status
@@ -331,10 +331,7 @@ class BuilderStatus():
 
   def Inflight(self):
     """Returns True if the Builder is still inflight."""
-    # TODO(davidjames): Update this function to check Google Storage so that
-    # we can detect the situation where the builder is started, but not
-    # completed.
-    return self.status not in BuilderStatus.STATUS_COMPLETED
+    return self.status == BuilderStatus.STATUS_INFLIGHT
 
   def Completed(self):
     """Returns True if the Builder has completed."""
@@ -515,70 +512,29 @@ class BuildSpecsManager(object):
     """Returns True if this is our first build or the last build succeeded."""
     return self.latest_processed == self.latest_passed
 
-  def _GetPathToStatusMessage(self, status_path):
-    """Returns the path the corresponding status message file."""
-    return os.path.join(
-        os.path.dirname(status_path), '%s%s' % (
-            self.current_version, BuilderStatus.MESSAGE_FILE_SUFFIX))
-
-  # TODO(sosa): Write unittests for these methods below
-  def _SetAdditionalStatusMessage(self, status_path, message):
-    """Stores an additional message for the corresponding status file.
-
-    Builds have a corresponding status i.e. PASS/FAIL/INFLIGHT for each build.
-    These statuses may contain additional status messages. This method takes
-    a string and stores it along with the status file.
-
-    Args:
-      status_path: Path to the status symlink.
-      message: Message to store along.
-    """
-    message_file = self._GetPathToStatusMessage(status_path)
-    with open(message_file, 'w') as f:
-      cPickle.dump(message, f, protocol=cPickle.HIGHEST_PROTOCOL)
-
-  def _GetAdditionalStatusMessage(self, status_path):
-    """Returns a string containing any additional message for the status
-
-    Builds have a corresponding status i.e. PASS/FAIL/INFLIGHT for each build.
-    These statuses may contain additional status messages. This method takes
-    a path to a status file and returns any additional messaging.
-
-    Args:
-      status_path - Path to the status symlink.
-
-    Returns - String containing any additional status message or None if None
-      exists.
-    """
-    message_file = self._GetPathToStatusMessage(status_path)
-    if os.path.exists(message_file):
-      with open(message_file) as f:
-        return cPickle.load(f)
-
-  def GetBuildStatus(self, builder, version_info):
+  def GetBuildStatus(self, builder, version):
     """Returns a BuilderStatus instance for the given the builder.
 
+    Args:
+      builder: Builder to look at.
+      version: Version string.
+
     Returns:
-      A dictionary containing the builder name, success boolean,
-      and any optional message associated with the status passed by the builder.
+      A BuilderStatus instance containing the builder status and any optional
+      message associated with the status passed by the builder.
     """
-    xml_name = self.current_version + '.xml'
-    dir_pfx = version_info.DirPrefix()
-    specs_for_build = self.specs_for_builder % {'builder': builder}
-    pass_file = os.path.join(specs_for_build, BuilderStatus.STATUS_PASSED,
-                             dir_pfx, xml_name)
-    fail_file = os.path.join(specs_for_build, BuilderStatus.STATUS_FAILED,
-                             dir_pfx, xml_name)
-
-    status = None
-    message = None
-    if os.path.lexists(pass_file):
-      status = BuilderStatus.STATUS_PASSED
-    elif os.path.lexists(fail_file):
-      message = self._GetAdditionalStatusMessage(fail_file)
-      status = BuilderStatus.STATUS_FAILED
-
-    return BuilderStatus(status=status, message=message)
+    url = self._GetStatusUrl(builder, version)
+    cmd = [gs.GSUTIL_BIN, 'cat', url]
+    try:
+      # TODO(davidjames): Use chromite.lib.gs here.
+      result = cros_build_lib.RunCommandWithRetries(
+          3, cmd, redirect_stdout=True, redirect_stderr=True)
+    except cros_build_lib.RunCommandError as ex:
+      # If the file does not exist, InvalidUriError is returned.
+      if ex.result.error.startswith('InvalidUriError:'):
+        return None
+      raise
+    return BuilderStatus(**cPickle.loads(result.output))
 
   def GetLocalManifest(self, version=None):
     """Return path to local copy of manifest given by version.
@@ -661,35 +617,55 @@ class BuildSpecsManager(object):
       self.RefreshManifestCheckout()
       raise GenerateBuildSpecException(last_error)
 
-  def SetInFlight(self, version):
-    """Marks the buildspec as inflight in Google Storage."""
-    # Create the inflight file, if it is not already present. Because we
-    # pass in the fail_if_already_exists HTTP header, Google Storage will
-    # return the PreconditionFailed error message if the file already exists.
-    fail_if_already_exists = 'x-goog-if-sequence-number-match: 0'
-    inflight_suffix = '%s/inflight/%s' % (version, self.build_name)
-    cmd = [gs.GSUTIL_BIN, '-h', fail_if_already_exists, 'cp',
-           '/dev/null', '%s/%s' % (BUILD_STATUS_URL, inflight_suffix)]
+  def _GetStatusUrl(self, builder, version):
+    """Get the status URL in Google Storage for a given builder / version."""
+    return os.path.join(BUILD_STATUS_URL, version, builder)
+
+  def _UploadStatus(self, version, status, message=None, fail_if_exists=False):
+    """Upload build status to Google Storage.
+
+    Args:
+      version: Version number to use. Must be a string.
+      status: Status string.
+      message: Additional message explaining the status.
+      fail_if_exists: If set, fail if the status already exists.
+    """
+
+    cmd = [gs.GSUTIL_BIN]
+    if fail_if_exists:
+      # This HTTP header tells Google Storage toreturn the PreconditionFailed
+      # error message if the file already exists.
+      cmd += ['-h', 'x-goog-if-sequence-number-match: 0']
+    url = self._GetStatusUrl(self.build_name, version)
+    cmd += ['cp', '-', url]
+
+    # Create a BuilderStatus object and pickle it.
+    data = cPickle.dumps(dict(status=status, message=message))
 
     if self.dry_run:
       logging.info('Would have run: %s', ' '.join(cmd))
     else:
-      try:
-        cros_build_lib.RunCommandWithRetries(3, cmd, redirect_stdout=True,
-                                             combine_stdout_stderr=True)
-      except cros_build_lib.RunCommandError as e:
-        if 'code=PreconditionFailed' in e.result.output:
-          raise GenerateBuildSpecException('Builder already inflight')
-        raise GenerateBuildSpecException(e)
+      # TODO(davidjames): Use chromite.lib.gs here.
+      cros_build_lib.RunCommandWithRetries(
+          3, cmd, redirect_stdout=True, redirect_stderr=True, input=data)
 
-  def _SetFailed(self, failure_message=None):
+  def SetInFlight(self, version):
+    """Marks the buildspec as inflight in Google Storage."""
+    try:
+      self._UploadStatus(version, BuilderStatus.STATUS_INFLIGHT,
+                         fail_if_exists=True)
+    except cros_build_lib.RunCommandError as e:
+      if 'code=PreconditionFailed' in e.result.error:
+        raise GenerateBuildSpecException('Builder already inflight')
+      raise GenerateBuildSpecException(e)
+
+  def _SetFailed(self):
     """Marks the buildspec as failed by creating a symlink in fail dir."""
-    dest_file = '%s.xml' % os.path.join(self.fail_dir, self.current_version)
-    src_file = '%s.xml' % os.path.join(self.all_specs_dir, self.current_version)
+    filename = '%s.xml' % self.current_version
+    dest_file = os.path.join(self.fail_dir, filename)
+    src_file = os.path.join(self.all_specs_dir, filename)
     logging.debug('Setting build to failed  %s: %s', src_file, dest_file)
     CreateSymlink(src_file, dest_file)
-    if failure_message:
-      self._SetAdditionalStatusMessage(dest_file, failure_message)
 
   def _SetPassed(self):
     """Marks the buildspec as passed by creating a symlink in passed dir."""
@@ -729,7 +705,7 @@ class BuildSpecsManager(object):
         if success:
           self._SetPassed()
         else:
-          self._SetFailed(failure_message=message)
+          self._SetFailed()
 
         self.PushSpecChanges(commit_message)
       except cros_build_lib.RunCommandError as e:
@@ -740,6 +716,8 @@ class BuildSpecsManager(object):
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
                       retries)
       else:
+        # Upload status to Google Storage as well.
+        self._UploadStatus(self.current_version, status, message=message)
         return
     else:
       # Cleanse any failed local changes and throw an exception.
