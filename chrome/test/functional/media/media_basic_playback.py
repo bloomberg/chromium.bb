@@ -34,6 +34,13 @@ _EXPECTED_EVENTS_n = [('abort', 1), ('emptied', 1)] + _EXPECTED_EVENTS_0
 class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
   """PyAuto test container.  See file doc string for more information."""
 
+  def ExtraChromeFlags(self):
+    """Run with --disable-audio to avoid issues with bots with no audio output.
+
+    TODO(shadi): Remove extra flag once issue (crbug.com/120749) is resolved.
+    """
+    return pyauto.PyUITest.ExtraChromeFlags(self) + ['--disable-audio']
+
   def testBasicPlaybackMatrix(self):
     """Launches HTML test which plays each video until end, seeks, and replays.
 
