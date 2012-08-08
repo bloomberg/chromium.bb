@@ -184,6 +184,10 @@
             <a href="#types">Types</a>
             <ol>
               <li>
+                <a href="#type-fileSystem.AcceptOption">fileSystem.AcceptOption</a>
+                <ol>
+                </ol>
+              </li><li>
                 <a href="#type-fileSystem.ChooseFileOptions">fileSystem.ChooseFileOptions</a>
                 <ol>
                 </ol>
@@ -647,6 +651,121 @@
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
+              <a name="type-fileSystem.AcceptOption"></a>
+              <h4>fileSystem.AcceptOption</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>description</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>This is the optional text description for this option. If not present, a description will be automatically generated; typically containing an expanded list of valid extensions (e.g. \"text/html\" may expand to \"*.html, *.htm\").</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>extensions</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Extensions to accept, e.g. \"jpg\", \"gif\", \"crx\".</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>mimeTypes</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Mime-types to accept, e.g. \"image/jpeg\" or \"audio/*\". One of mimeTypes or extensions must contain at least one valid element.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
               <a name="type-fileSystem.ChooseFileOptions"></a>
               <h4>fileSystem.ChooseFileOptions</h4>
               <div>
@@ -671,6 +790,60 @@
           <dd>
             <dl>
               <div>
+                <div>
+          <dt>
+            <var>accepts</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="fileSystem.html#type-fileSystem.AcceptOption">fileSystem.AcceptOption</a>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The optional list of accept options for this file opener. Each option will be presented as a unique group to the end-user.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>acceptsAllTypes</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Whether to accept all file types, in addition to the options specified in the accepts argument. The default is true. If the accepts field is unset or contains no valid entries, this will always be reset to true.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
                 <div>
           <dt>
             <var>suggestedName</var>

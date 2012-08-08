@@ -1226,6 +1226,7 @@
         'browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc',
         'browser/extensions/api/discovery/discovery_api_unittest.cc',
         'browser/extensions/api/extension_action/extension_browser_actions_api_unittest.cc',
+        'browser/extensions/api/file_system/file_system_api_unittest.cc',
         'browser/extensions/api/identity/web_auth_flow_unittest.cc',
         'browser/extensions/api/idle/idle_api_unittest.cc',
         'browser/extensions/api/omnibox/omnibox_unittest.cc',

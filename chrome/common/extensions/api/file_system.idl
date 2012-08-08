@@ -5,6 +5,21 @@
 // File-level comment to appease parser. Eventually this will not be necessary.
 
 namespace fileSystem {
+  dictionary AcceptOption {
+    // This is the optional text description for this option. If not present,
+    // a description will be automatically generated; typically containing an
+    // expanded list of valid extensions (e.g. "text/html" may expand to
+    // "*.html, *.htm").
+    DOMString? description;
+
+    // Mime-types to accept, e.g. "image/jpeg" or "audio/*". One of mimeTypes or
+    // extensions must contain at least one valid element.
+    DOMString[]? mimeTypes;
+
+    // Extensions to accept, e.g. "jpg", "gif", "crx".
+    DOMString[]? extensions;
+  };
+
   dictionary ChooseFileOptions {
     // Type of the prompt to show. Valid types are 'openFile',
     // 'openWritableFile' or 'saveFile'.
@@ -22,6 +37,15 @@ namespace fileSystem {
     // The suggested file name that will be presented to the user as the
     // default name to read or write. This is optional.
     DOMString? suggestedName;
+
+    // The optional list of accept options for this file opener. Each option
+    // will be presented as a unique group to the end-user.
+    AcceptOption[]? accepts;
+
+    // Whether to accept all file types, in addition to the options specified
+    // in the accepts argument. The default is true. If the accepts field is
+    // unset or contains no valid entries, this will always be reset to true.
+    boolean? acceptsAllTypes;
   };
   callback GetDisplayPathCallback = void (DOMString displayPath);
   callback FileEntryCallback = void ([instanceOf=FileEntry] object fileEntry);

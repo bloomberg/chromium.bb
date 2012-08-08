@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/api/file_system.h"
 #include "ui/base/dialogs/select_file_dialog.h"
 
 namespace extensions {
@@ -72,12 +73,25 @@ class FileSystemChooseFileFunction : public FileSystemEntryFunction {
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.chooseFile");
 
+  typedef std::vector<linked_ptr<extensions::api::file_system::AcceptOption> >
+      AcceptOptions;
+
+  static void BuildFileTypeInfo(
+      ui::SelectFileDialog::FileTypeInfo* file_type_info,
+      const FilePath::StringType& suggested_extension,
+      const AcceptOptions* accepts,
+      const bool* acceptsAllTypes);
+  static void BuildSuggestion(const std::string* opt_name,
+                              FilePath* suggested_name,
+                              FilePath::StringType* suggested_extension);
+
  protected:
   class FilePicker;
 
   virtual ~FileSystemChooseFileFunction() {}
   virtual bool RunImpl() OVERRIDE;
   bool ShowPicker(const FilePath& suggested_path,
+                  const ui::SelectFileDialog::FileTypeInfo& file_type_info,
                   ui::SelectFileDialog::Type picker_type,
                   EntryType entry_type);
 

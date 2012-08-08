@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/platform_util.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "grit/generated_resources.h"
+#include "net/base/mime_util.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,6 +26,8 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/dialogs/select_file_dialog.h"
 
 using fileapi::IsolatedContext;
 
@@ -130,6 +135,76 @@ bool DoCheckWritableFile(const FilePath& path) {
   base::CreatePlatformFile(path, creation_flags, NULL, &error);
   return error == base::PLATFORM_FILE_OK ||
          error == base::PLATFORM_FILE_ERROR_EXISTS;
+}
+
+// Expand the mime-types and extensions provided in an AcceptOption, returning
+// them within the passed extension vector. Returns false if no valid types
+// were found.
+bool GetFileTypesFromAcceptOption(
+    const file_system::AcceptOption& accept_option,
+    std::vector<FilePath::StringType>* extensions,
+    string16* description) {
+  std::set<FilePath::StringType> extension_set;
+  int description_id = 0;
+  bool valid_type = false;
+
+  if (accept_option.mime_types.get()) {
+    std::vector<std::string>* list = accept_option.mime_types.get();
+    for (std::vector<std::string>::const_iterator iter = list->begin();
+         iter != list->end(); ++iter) {
+      std::vector<FilePath::StringType> inner;
+      std::string accept_type = *iter;
+      StringToLowerASCII(&accept_type);
+
+      if (*iter == "image/*") {
+        description_id = IDS_IMAGE_FILES;
+        net::GetImageExtensions(&inner);
+      } else if (*iter == "audio/*") {
+        description_id = IDS_AUDIO_FILES;
+        net::GetAudioExtensions(&inner);
+      } else if (*iter == "video/*") {
+        description_id = IDS_VIDEO_FILES;
+        net::GetVideoExtensions(&inner);
+      } else {
+        net::GetExtensionsForMimeType(*iter, &inner);
+      }
+
+      if (inner.empty())
+        continue;
+
+      if (description_id && valid_type)
+        description_id = 0; // We already have an accept type with label; if
+                            // we find another, give up and use the default.
+
+      extension_set.insert(inner.begin(), inner.end());
+      valid_type = true;
+    }
+  }
+
+  if (accept_option.extensions.get()) {
+    std::vector<std::string>* list = accept_option.extensions.get();
+    for (std::vector<std::string>::const_iterator iter = list->begin();
+         iter != list->end(); ++iter) {
+      std::string extension = *iter;
+      StringToLowerASCII(&extension);
+#if defined(OS_WIN)
+      extension_set.insert(UTF8ToWide(*iter));
+#else
+      extension_set.insert(*iter);
+#endif
+    }
+  }
+
+  extensions->assign(extension_set.begin(), extension_set.end());
+  if (extensions->empty())
+    return false;
+
+  if (accept_option.description.get())
+    *description = UTF8ToUTF16(*accept_option.description.get());
+  else if (description_id)
+    *description = l10n_util::GetStringUTF16(description_id);
+
+  return true;
 }
 
 }  // namespace
@@ -264,6 +339,7 @@ class FileSystemChooseFileFunction::FilePicker
   FilePicker(FileSystemChooseFileFunction* function,
              content::WebContents* web_contents,
              const FilePath& suggested_name,
+             const ui::SelectFileDialog::FileTypeInfo& file_type_info,
              ui::SelectFileDialog::Type picker_type,
              EntryType entry_type)
       : suggested_name_(suggested_name),
@@ -271,14 +347,6 @@ class FileSystemChooseFileFunction::FilePicker
         function_(function) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
-    ui::SelectFileDialog::FileTypeInfo file_type_info;
-    FilePath::StringType extension = suggested_name.Extension();
-    if (!extension.empty()) {
-      extension.erase(extension.begin());  // drop the .
-      file_type_info.extensions.resize(1);
-      file_type_info.extensions[0].push_back(extension);
-    }
-    file_type_info.include_all_files = true;
     gfx::NativeWindow owning_window = web_contents ?
         platform_util::GetTopLevel(web_contents->GetNativeView()) : NULL;
 
@@ -309,7 +377,7 @@ class FileSystemChooseFileFunction::FilePicker
   virtual ~FilePicker() {}
 
  private:
-  // SelectFileDialog::Listener implementation.
+  // ui::SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE {
@@ -334,6 +402,7 @@ class FileSystemChooseFileFunction::FilePicker
 
 bool FileSystemChooseFileFunction::ShowPicker(
     const FilePath& suggested_name,
+    const ui::SelectFileDialog::FileTypeInfo& file_type_info,
     ui::SelectFileDialog::Type picker_type,
     EntryType entry_type) {
   ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile());
@@ -350,7 +419,7 @@ bool FileSystemChooseFileFunction::ShowPicker(
   // user has selected a file or cancelled the picker. At that point, the picker
   // will delete itself, which will also free the function instance.
   new FilePicker(this, shell_window->web_contents(), suggested_name,
-      picker_type, entry_type);
+      file_type_info, picker_type, entry_type);
   return true;
 }
 
@@ -390,11 +459,72 @@ void FileSystemChooseFileFunction::FileSelectionCanceled() {
   SendResponse(false);
 }
 
+void FileSystemChooseFileFunction::BuildFileTypeInfo(
+    ui::SelectFileDialog::FileTypeInfo* file_type_info,
+    const FilePath::StringType& suggested_extension,
+    const AcceptOptions* accepts,
+    const bool* acceptsAllTypes) {
+  file_type_info->include_all_files = true;
+  if (acceptsAllTypes)
+    file_type_info->include_all_files = *acceptsAllTypes;
+
+  bool need_suggestion = !file_type_info->include_all_files &&
+                         !suggested_extension.empty();
+
+  if (accepts) {
+    typedef file_system::AcceptOption AcceptOption;
+    for (std::vector<linked_ptr<AcceptOption> >::const_iterator iter =
+            accepts->begin(); iter != accepts->end(); ++iter) {
+      string16 description;
+      std::vector<FilePath::StringType> extensions;
+
+      if (!GetFileTypesFromAcceptOption(**iter, &extensions, &description))
+        continue;  // No extensions were found.
+
+      file_type_info->extensions.push_back(extensions);
+      file_type_info->extension_description_overrides.push_back(description);
+
+      // If we still need to find suggested_extension, hunt for it inside the
+      // extensions returned from GetFileTypesFromAcceptOption.
+      if (need_suggestion && std::find(extensions.begin(),
+              extensions.end(), suggested_extension) != extensions.end()) {
+        need_suggestion = false;
+      }
+    }
+  }
+
+  // If there's nothing in our accepted extension list or we couldn't find the
+  // suggested extension required, then default to accepting all types.
+  if (file_type_info->extensions.empty() || need_suggestion)
+    file_type_info->include_all_files = true;
+}
+
+void FileSystemChooseFileFunction::BuildSuggestion(
+    const std::string *opt_name,
+    FilePath* suggested_name,
+    FilePath::StringType* suggested_extension) {
+  if (opt_name) {
+    *suggested_name = FilePath::FromUTF8Unsafe(*opt_name);
+
+    // Don't allow any path components; shorten to the base name. This should
+    // result in a relative path, but in some cases may not. Clear the
+    // suggestion for safety if this is the case.
+    *suggested_name = suggested_name->BaseName();
+    if (suggested_name->IsAbsolute())
+      *suggested_name = FilePath();
+
+    *suggested_extension = suggested_name->Extension();
+    if (!suggested_extension->empty())
+      suggested_extension->erase(suggested_extension->begin());  // drop the .
+  }
+}
+
 bool FileSystemChooseFileFunction::RunImpl() {
   scoped_ptr<ChooseFile::Params> params(ChooseFile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   FilePath suggested_name;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
   EntryType entry_type = READ_ONLY;
   ui::SelectFileDialog::Type picker_type =
       ui::SelectFileDialog::SELECT_OPEN_FILE;
@@ -413,18 +543,12 @@ bool FileSystemChooseFileFunction::RunImpl() {
       }
     }
 
-    if (options->suggested_name.get()) {
-      suggested_name = FilePath::FromUTF8Unsafe(
-          *options->suggested_name.get());
+    FilePath::StringType suggested_extension;
+    BuildSuggestion(options->suggested_name.get(), &suggested_name,
+        &suggested_extension);
 
-      // Don't allow any path components; shorten to the base name. This should
-      // result in a relative path, but in some cases may not. Clear the
-      // suggestion for safety if this is the case.
-      suggested_name = suggested_name.BaseName();
-      if (suggested_name.IsAbsolute()) {
-        suggested_name = FilePath();
-      }
-    }
+    BuildFileTypeInfo(&file_type_info, suggested_extension,
+        options->accepts.get(), options->accepts_all_types.get());
   }
 
   if (entry_type == WRITABLE && !HasFileSystemWritePermission()) {
@@ -432,7 +556,7 @@ bool FileSystemChooseFileFunction::RunImpl() {
     return false;
   }
 
-  return ShowPicker(suggested_name, picker_type, entry_type);
+  return ShowPicker(suggested_name, file_type_info, picker_type, entry_type);
 }
 
 }  // namespace extensions
