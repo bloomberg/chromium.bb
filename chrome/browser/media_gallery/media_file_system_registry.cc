@@ -148,16 +148,29 @@ void MediaFileSystemRegistry::Observe(
   UnregisterForRPHGoneNotifications(rph);
 }
 
+std::string MediaFileSystemRegistry::GetDeviceIdFromPath(
+    const FilePath& path) const {
+  // TODO(vandebo) Do something better here, at least iterate system monitor
+  // attached media devices looking for a match.  If not, return the path.
+  return path.AsUTF8Unsafe();
+}
+
 /******************
  * Private methods
  ******************/
 
 MediaFileSystemRegistry::MediaFileSystemRegistry() {
-  SystemMonitor::Get()->AddDevicesChangedObserver(this);
+  // SystemMonitor may be NULL in unit tests.
+  SystemMonitor* system_monitor = SystemMonitor::Get();
+  if (system_monitor)
+    system_monitor->AddDevicesChangedObserver(this);
 }
 
 MediaFileSystemRegistry::~MediaFileSystemRegistry() {
-  SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
+  // SystemMonitor may be NULL in unit tests.
+  SystemMonitor* system_monitor = SystemMonitor::Get();
+  if (system_monitor)
+    system_monitor->RemoveDevicesChangedObserver(this);
 }
 
 void MediaFileSystemRegistry::RegisterForRPHGoneNotifications(

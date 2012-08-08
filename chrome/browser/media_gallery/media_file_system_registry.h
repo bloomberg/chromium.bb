@@ -62,6 +62,8 @@ class MediaFileSystemRegistry
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  std::string GetDeviceIdFromPath(const FilePath& path) const;
+
  private:
   friend struct base::DefaultLazyInstanceTraits<MediaFileSystemRegistry>;
 

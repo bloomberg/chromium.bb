@@ -325,10 +325,13 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Set and retrieve permissions for media galleries as identified by the
   // gallery id.
   void SetMediaGalleryPermission(const std::string& extension_id,
-                                 MediaGalleryPrefId gallery, bool has_access);
-  std::vector<MediaGalleryPermission> GetMediaGalleryPermissions(
+                                 chrome::MediaGalleryPrefId gallery,
+                                 bool has_access);
+  void UnsetMediaGalleryPermission(const std::string& extension_id,
+                                   chrome::MediaGalleryPrefId gallery);
+  std::vector<chrome::MediaGalleryPermission> GetMediaGalleryPermissions(
       const std::string& extension_id);
-  void RemoveMediaGalleryPermissions(MediaGalleryPrefId gallery_id);
+  void RemoveMediaGalleryPermissions(chrome::MediaGalleryPrefId gallery_id);
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved

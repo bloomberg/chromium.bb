@@ -41,7 +41,7 @@ void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
 }
 
 void MediaGalleriesHandler::InitializeHandler() {
-  if (!MediaGalleriesPreferences::UserInteractionIsEnabled())
+  if (!chrome::MediaGalleriesPreferences::UserInteractionIsEnabled())
     return;
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -50,7 +50,7 @@ void MediaGalleriesHandler::InitializeHandler() {
 }
 
 void MediaGalleriesHandler::InitializePage() {
-  if (!MediaGalleriesPreferences::UserInteractionIsEnabled())
+  if (!chrome::MediaGalleriesPreferences::UserInteractionIsEnabled())
     return;
 
   OnGalleriesChanged();
@@ -93,7 +93,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
   // TODO(estade): use uint64.
   int id;
   CHECK(ExtractIntegerValue(args, &id));
-  MediaGalleriesPreferences* prefs =
+  chrome::MediaGalleriesPreferences* prefs =
       MediaGalleriesPreferencesFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
   prefs->ForgetGalleryById(id);
@@ -101,7 +101,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
 
 void MediaGalleriesHandler::FileSelected(
     const FilePath& path, int index, void* params) {
-  MediaGalleriesPreferences* prefs =
+    chrome::MediaGalleriesPreferences* prefs =
       MediaGalleriesPreferencesFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
   prefs->AddGalleryByPath(path);

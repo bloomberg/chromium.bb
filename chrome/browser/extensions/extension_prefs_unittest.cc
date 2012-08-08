@@ -104,9 +104,9 @@ TEST_F(ExtensionPrefsLastPingDay, LastPingDay) {}
 
 namespace {
 
-void AddGalleryPermission(MediaGalleryPrefId gallery, bool has_access,
-                          std::vector<MediaGalleryPermission>* vector) {
-  MediaGalleryPermission permission;
+void AddGalleryPermission(chrome::MediaGalleryPrefId gallery, bool has_access,
+                          std::vector<chrome::MediaGalleryPermission>* vector) {
+  chrome::MediaGalleryPermission permission;
   permission.pref_id = gallery;
   permission.has_permission = has_access;
   vector->push_back(permission);
@@ -153,12 +153,16 @@ class MediaGalleriesPermissions : public ExtensionPrefsTest {
     extension2_expectation_.erase(extension2_expectation_.begin() + 1);
     extension3_expectation_.erase(extension3_expectation_.begin());
     Verify();
+
+    prefs()->UnsetMediaGalleryPermission(extension1_id_, 1);
+    extension1_expectation_.erase(extension1_expectation_.begin());
+    Verify();
   }
 
   virtual void Verify() {
     struct TestData {
       std::string* id;
-      std::vector<MediaGalleryPermission>* expectation;
+      std::vector<chrome::MediaGalleryPermission>* expectation;
     };
 
     const TestData test_data[] = {{&extension1_id_, &extension1_expectation_},
@@ -166,7 +170,7 @@ class MediaGalleriesPermissions : public ExtensionPrefsTest {
                                   {&extension3_id_, &extension3_expectation_},
                                   {&extension4_id_, &extension4_expectation_}};
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); i++) {
-      std::vector<MediaGalleryPermission> actual =
+      std::vector<chrome::MediaGalleryPermission> actual =
           prefs()->GetMediaGalleryPermissions(*test_data[i].id);
       EXPECT_EQ(test_data[i].expectation->size(), actual.size());
       for (size_t permission_entry = 0;
@@ -187,10 +191,10 @@ class MediaGalleriesPermissions : public ExtensionPrefsTest {
   std::string extension3_id_;
   std::string extension4_id_;
 
-  std::vector<MediaGalleryPermission> extension1_expectation_;
-  std::vector<MediaGalleryPermission> extension2_expectation_;
-  std::vector<MediaGalleryPermission> extension3_expectation_;
-  std::vector<MediaGalleryPermission> extension4_expectation_;
+  std::vector<chrome::MediaGalleryPermission> extension1_expectation_;
+  std::vector<chrome::MediaGalleryPermission> extension2_expectation_;
+  std::vector<chrome::MediaGalleryPermission> extension3_expectation_;
+  std::vector<chrome::MediaGalleryPermission> extension4_expectation_;
 };
 TEST_F(MediaGalleriesPermissions, MediaGalleries) {}
 

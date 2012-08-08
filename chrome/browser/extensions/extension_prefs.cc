@@ -1164,7 +1164,7 @@ namespace {
 
 bool GetMediaGalleryPermissionFromDictionary(
     const DictionaryValue* dict,
-    MediaGalleryPermission* out_permission) {
+    chrome::MediaGalleryPermission* out_permission) {
   std::string string_id;
   if (dict->GetString(kMediaGalleryIdKey, &string_id) &&
       base::StringToUint64(string_id, &out_permission->pref_id) &&
@@ -1176,9 +1176,10 @@ bool GetMediaGalleryPermissionFromDictionary(
   return false;
 }
 
-void RemoveMediaGalleryPermissionsFromExtension(PrefService* prefs,
-                                                const std::string& extension_id,
-                                                MediaGalleryPrefId gallery_id) {
+void RemoveMediaGalleryPermissionsFromExtension(
+    PrefService* prefs,
+    const std::string& extension_id,
+    chrome::MediaGalleryPrefId gallery_id) {
   ScopedExtensionPrefUpdate update(prefs, extension_id);
   DictionaryValue* extension_dict = update.Get();
   ListValue* permissions = NULL;
@@ -1191,7 +1192,7 @@ void RemoveMediaGalleryPermissionsFromExtension(PrefService* prefs,
     const DictionaryValue* dict = NULL;
     if (!(*it)->GetAsDictionary(&dict))
       continue;
-    MediaGalleryPermission perm;
+    chrome::MediaGalleryPermission perm;
     if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
       continue;
     if (perm.pref_id == gallery_id) {
@@ -1203,9 +1204,10 @@ void RemoveMediaGalleryPermissionsFromExtension(PrefService* prefs,
 
 }  // namespace
 
-void ExtensionPrefs::SetMediaGalleryPermission(const std::string& extension_id,
-                                               MediaGalleryPrefId gallery,
-                                               bool has_access) {
+void ExtensionPrefs::SetMediaGalleryPermission(
+    const std::string& extension_id,
+    chrome::MediaGalleryPrefId gallery,
+    bool has_access) {
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
   DictionaryValue* extension_dict = update.Get();
   ListValue* permissions = NULL;
@@ -1220,7 +1222,7 @@ void ExtensionPrefs::SetMediaGalleryPermission(const std::string& extension_id,
       DictionaryValue* dict = NULL;
       if (!(*it)->GetAsDictionary(&dict))
         continue;
-      MediaGalleryPermission perm;
+      chrome::MediaGalleryPermission perm;
       if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
         continue;
       if (perm.pref_id == gallery) {
@@ -1236,9 +1238,15 @@ void ExtensionPrefs::SetMediaGalleryPermission(const std::string& extension_id,
   permissions->Append(dict);
 }
 
-std::vector<MediaGalleryPermission> ExtensionPrefs::GetMediaGalleryPermissions(
-        const std::string& extension_id) {
-  std::vector<MediaGalleryPermission> result;
+void ExtensionPrefs::UnsetMediaGalleryPermission(
+    const std::string& extension_id,
+    chrome::MediaGalleryPrefId gallery) {
+  RemoveMediaGalleryPermissionsFromExtension(prefs_, extension_id, gallery);
+}
+
+std::vector<chrome::MediaGalleryPermission>
+ExtensionPrefs::GetMediaGalleryPermissions(const std::string& extension_id) {
+  std::vector<chrome::MediaGalleryPermission> result;
   const ListValue* permissions = NULL;
   if (ReadExtensionPrefList(extension_id, kMediaGalleriesPermissions,
                             &permissions)) {
@@ -1248,7 +1256,7 @@ std::vector<MediaGalleryPermission> ExtensionPrefs::GetMediaGalleryPermissions(
       DictionaryValue* dict = NULL;
       if (!(*it)->GetAsDictionary(&dict))
         continue;
-      MediaGalleryPermission perm;
+      chrome::MediaGalleryPermission perm;
       if (!GetMediaGalleryPermissionFromDictionary(dict, &perm))
         continue;
       result.push_back(perm);
@@ -1258,7 +1266,7 @@ std::vector<MediaGalleryPermission> ExtensionPrefs::GetMediaGalleryPermissions(
 }
 
 void ExtensionPrefs::RemoveMediaGalleryPermissions(
-    MediaGalleryPrefId gallery_id) {
+    chrome::MediaGalleryPrefId gallery_id) {
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
   if (!extensions)
     return;
