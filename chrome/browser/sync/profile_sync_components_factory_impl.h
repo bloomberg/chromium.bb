@@ -64,6 +64,11 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 
  private:
+  // Register data types which are enabled on desktop platforms only.
+  void RegisterDesktopDataTypes(ProfileSyncService* pss);
+  // Register data types which are enabled on both desktop and mobile.
+  void RegisterCommonDataTypes(ProfileSyncService* pss);
+
   Profile* profile_;
   CommandLine* command_line_;
   // Set on the UI thread (since extensions::ExtensionSystemFactory is
