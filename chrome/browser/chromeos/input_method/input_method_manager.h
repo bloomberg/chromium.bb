@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/logging.h"  // for NOTIMPLEMENTED()
 #include "chrome/browser/chromeos/input_method/input_method_config.h"
@@ -19,6 +20,7 @@ class Accelerator;
 }  // namespace ui
 
 namespace chromeos {
+class InputMethodEngine;
 namespace input_method {
 
 class XKeyboard;
@@ -116,11 +118,13 @@ class InputMethodManager {
                                     const std::string& config_name,
                                     const InputMethodConfigValue& value) = 0;
 
-  // Adds an input method extension.
+  // Adds an input method extension. This function does not takes ownership of
+  // |instance|.
   virtual void AddInputMethodExtension(const std::string& id,
                                        const std::string& name,
                                        const std::vector<std::string>& layouts,
-                                       const std::string& language) = 0;
+                                       const std::string& language,
+                                       InputMethodEngine* instance) = 0;
 
   // Removes an input method extension.
   virtual void RemoveInputMethodExtension(const std::string& id) = 0;

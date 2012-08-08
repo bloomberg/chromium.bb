@@ -24,6 +24,8 @@ class IBusController {
    public:
     virtual ~Observer() {}
     virtual void PropertyChanged() = 0;
+    virtual void OnConnected() = 0;
+    virtual void OnDisconnected() = 0;
     // TODO(yusukes): Add functions for IPC error handling.
   };
 

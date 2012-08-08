@@ -809,7 +809,8 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       std::string(kExtensionImePrefix) + "deadbeef",
       "deadbeef input method",
       layouts,
-      "en-US");
+      "en-US",
+      NULL);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, controller_->start_count_);  // should be started.
   {
@@ -824,7 +825,8 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       std::string(kExtensionImePrefix) + "cafebabe",
       "cafebabe input method",
       layouts,
-      "en-US");
+      "en-US",
+      NULL);
   EXPECT_EQ(3U, manager_->GetNumActiveInputMethods());
   {
     scoped_ptr<InputMethodDescriptors> methods(
@@ -867,7 +869,8 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
       std::string(kExtensionImePrefix) + "deadbeef",
       "deadbeef input method",
       layouts,
-      "en-US");
+      "en-US",
+      NULL);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
   EXPECT_EQ(1, observer.input_method_changed_count_);
 

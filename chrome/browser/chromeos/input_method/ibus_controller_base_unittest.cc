@@ -73,6 +73,8 @@ class TestObserver : public IBusController::Observer {
  public:
   // IBusController::Observer overrides:
   virtual void PropertyChanged() OVERRIDE {}
+  virtual void OnConnected() OVERRIDE {}
+  virtual void OnDisconnected() OVERRIDE {}
 };
 
 class IBusControllerBaseTest : public testing::Test {

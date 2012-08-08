@@ -4,70 +4,68 @@
 
 #include "chrome/browser/chromeos/input_method/ibus_keymap.h"
 
-#if defined(HAVE_IBUS)
-#include <ibus.h>
-#endif
+#define XK_MISCELLANY
+#include <X11/keysymdef.h>
 
 namespace chromeos {
 namespace input_method {
 
-#if defined(HAVE_IBUS)
 std::string GetIBusKey(int keyval) {
   // TODO: Ensure all keys are supported.
   switch (keyval) {
-    case IBUS_Escape:
+    case XK_Escape:
       return "Esc";
-    case IBUS_F1:
+    case XK_F1:
       return "HistoryBack";
-    case IBUS_F2:
+    case XK_F2:
       return "HistoryForward";
-    case IBUS_F3:
+    case XK_F3:
       return "BrowserRefresh";
-    case IBUS_F4:
+    case XK_F4:
       return "ChromeOSFullscreen";  // TODO: Check this value
-    case IBUS_F5:
+    case XK_F5:
       return "ChromeOSSwitchWindow";  // TODO: Check this value
-    case IBUS_F6:
+    case XK_F6:
       return "BrightnessDown";
-    case IBUS_F7:
+    case XK_F7:
       return "BrightnessUp";
-    case IBUS_F8:
+    case XK_F8:
       return "AudioVolumeMute";
-    case IBUS_F9:
+    case XK_F9:
       return "AudioVolumeDown";
-    case IBUS_F10:
+    case XK_F10:
       return "AudioVolumeUp";
-    case IBUS_BackSpace:
+    case XK_BackSpace:
       return "Backspace";
-    case IBUS_Delete:
-    case IBUS_KP_Delete:
+    case XK_Delete:
+    case XK_KP_Delete:
       return "Delete";
-    case IBUS_Tab:
+    case XK_Tab:
       return "Tab";
-    case IBUS_KP_Enter:
-    case IBUS_Return:
+    case XK_KP_Enter:
+    case XK_Return:
       return "Enter";
-    case IBUS_Meta_L:
+    case XK_Meta_L:
       return "BrowserSearch";
-    case IBUS_Up:
-    case IBUS_KP_Up:
+    case XK_Up:
+    case XK_KP_Up:
       return "Up";
-    case IBUS_Down:
-    case IBUS_KP_Down:
+    case XK_Down:
+    case XK_KP_Down:
       return "Down";
-    case IBUS_Left:
-    case IBUS_KP_Left:
+    case XK_Left:
+    case XK_KP_Left:
       return "Left";
-    case IBUS_Right:
-    case IBUS_KP_Right:
+    case XK_Right:
+    case XK_KP_Right:
       return "Right";
-    case IBUS_Page_Up:
+    case XK_Page_Up:
       return "PageUp";
-    case IBUS_Page_Down:
+    case XK_Page_Down:
       return "PageDown";
-    case IBUS_Home:
+    case XK_Home:
       return "Home";
-    case IBUS_End:
+    case XK_End:
       return "End";
     default: {
       // TODO: Properly support unicode characters.
@@ -83,16 +81,6 @@ std::string GetIBusKeyCode(int keycode) {
   // TODO: Support keyboard layouts properly.
   return GetIBusKey(keycode);
 }
-#else
-std::string GetIBusKey(int keyval) {
-  return "";
-}
-
-std::string GetIBusKeyCode(int keycode) {
-  return "";
-}
-
-#endif // HAVE_IBUS
 
 }  // namespace input_method
 }  // namespace chromeos

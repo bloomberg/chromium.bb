@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 
 namespace chromeos {
+class InputMethodEngineIBus;
 namespace input_method {
 
 // The implementation of InputMethodManager.
@@ -54,7 +55,8 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::string& id,
       const std::string& name,
       const std::vector<std::string>& layouts,
-      const std::string& language) OVERRIDE;
+      const std::string& language,
+      InputMethodEngine* instance) OVERRIDE;
   virtual void RemoveInputMethodExtension(const std::string& id) OVERRIDE;
   virtual bool SwitchToNextInputMethod() OVERRIDE;
   virtual bool SwitchToPreviousInputMethod() OVERRIDE;
@@ -84,6 +86,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // IBusController overrides:
   virtual void PropertyChanged() OVERRIDE;
+  virtual void OnConnected() OVERRIDE;
+  virtual void OnDisconnected() OVERRIDE;
+
 
   // CandidateWindowController::Observer overrides:
   virtual void CandidateWindowOpened() OVERRIDE;
@@ -148,6 +153,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Extra input methods that have been explicitly added to the menu, such as
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_methods_;
+  std::map<std::string, InputMethodEngineIBus*> extra_input_method_instances_;
 
   // The browser state monitor is used to receive notifications from the browser
   // and call SetState() method of |this| class.

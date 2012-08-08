@@ -1074,6 +1074,9 @@ void IBusControllerImpl::IBusDaemonInitializationDone(
   ui::InputMethodIBus* input_method_ibus = controller->GetInputMethod();
   DCHECK(input_method_ibus);
   input_method_ibus->OnConnected();
+
+  FOR_EACH_OBSERVER(Observer, controller->observers_, OnConnected());
+
   VLOG(1) << "The ibus-daemon initialization is done.";
 }
 
@@ -1126,6 +1129,9 @@ void IBusControllerImpl::OnIBusDaemonExit(GPid pid,
   ui::InputMethodIBus* input_method_ibus = controller->GetInputMethod();
   DCHECK(input_method_ibus);
   input_method_ibus->OnDisconnected();
+
+  FOR_EACH_OBSERVER(Observer, controller->observers_, OnDisconnected());
+
   if (on_exit_state == IBUS_DAEMON_SHUTTING_DOWN) {
     // Normal exitting, so do nothing.
     return;

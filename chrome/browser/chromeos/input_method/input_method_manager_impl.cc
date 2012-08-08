@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/input_method/browser_state_monitor.h"
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -292,7 +293,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     const std::string& id,
     const std::string& name,
     const std::vector<std::string>& layouts,
-    const std::string& language) {
+    const std::string& language,
+    InputMethodEngine* engine) {
   if (state_ == STATE_TERMINATING)
     return;
 
@@ -316,6 +318,9 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   // Ensure that the input method daemon is running.
   MaybeInitializeCandidateWindowController();
   ibus_controller_->Start();
+
+  extra_input_method_instances_[id] =
+      static_cast<InputMethodEngineIBus*>(engine);
 }
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
@@ -338,6 +343,16 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
   // If |current_input_method| is no longer in |active_input_method_ids_|,
   // switch to the first one in |active_input_method_ids_|.
   ChangeInputMethod(current_input_method_.id());
+
+  std::map<std::string, InputMethodEngineIBus*>::iterator ite =
+      extra_input_method_instances_.find(id);
+  if (ite == extra_input_method_instances_.end()) {
+    DVLOG(1) << "The engine instance of " << id << " has already gone.";
+  } else {
+    // Do NOT release the actual instance here. This class does not take an
+    // onwership of engine instance.
+    extra_input_method_instances_.erase(ite);
+  }
 }
 
 bool InputMethodManagerImpl::SwitchToNextInputMethod() {
@@ -471,6 +486,24 @@ XKeyboard* InputMethodManagerImpl::GetXKeyboard() {
 
 InputMethodUtil* InputMethodManagerImpl::GetInputMethodUtil() {
   return &util_;
+}
+
+void InputMethodManagerImpl::OnConnected() {
+  for (std::map<std::string, InputMethodEngineIBus*>::iterator ite =
+          extra_input_method_instances_.begin();
+       ite != extra_input_method_instances_.end();
+       ite++) {
+    ite->second->OnConnected();
+  }
+}
+
+void InputMethodManagerImpl::OnDisconnected() {
+  for (std::map<std::string, InputMethodEngineIBus*>::iterator ite =
+          extra_input_method_instances_.begin();
+       ite != extra_input_method_instances_.end();
+       ite++) {
+    ite->second->OnDisconnected();
+  }
 }
 
 void InputMethodManagerImpl::Init() {
