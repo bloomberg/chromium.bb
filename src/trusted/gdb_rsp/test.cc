@@ -51,76 +51,6 @@ class MutexMock : public IMutex {
 IMutex* IMutex::Allocate() { return new MutexMock; }
 void IMutex::Free(IMutex* mtx) { delete static_cast<MutexMock*>(mtx); }
 
-class EventMock : public IEvent {
-  void Signal() {}
-  void Wait() {}
-};
-
-IEvent* IEvent::Allocate() { return new EventMock; }
-void IEvent::Free(IEvent* e) { delete static_cast<EventMock*>(e); }
-
-class ThreadMock : public IThread {
- public:
-  explicit ThreadMock(uint32_t id) {
-    id_ = id;
-    ctx_ = new uint8_t[gdb_rsp::Abi::Get()->GetContextSize()];
-  }
-  ~ThreadMock() { delete[] ctx_; }
-
-  uint32_t GetId() { return id_; }
-
-  bool SetStep(bool on) {
-    (void) on;
-    return true;
-  }
-
-  bool GetRegister(uint32_t index, void *dst, uint32_t len) {
-    const gdb_rsp::Abi* abi = gdb_rsp::Abi::Get();
-    const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
-    memcpy(dst, ctx_ + reg->offset_, len);
-    return true;
-  }
-
-  bool SetRegister(uint32_t index, void *src, uint32_t len) {
-    const gdb_rsp::Abi* abi = gdb_rsp::Abi::Get();
-    const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
-    memcpy(ctx_ + reg->offset_, src, len);
-    return true;
-  }
-
-  virtual struct NaClSignalContext *GetContext() { return NULL; }
-
- private:
-  uint8_t *ctx_;
-  uint32_t id_;
-};
-
-IThread* IThread::Create(uint32_t id, struct NaClAppThread *) {
-  return new ThreadMock(id);
-}
-
-void IThread::SuspendAllThreadsExceptSignaled(uint32_t) {
-}
-
-void IThread::ResumeAllThreadsExceptSignaled(uint32_t) {
-}
-
-
-bool port::IPlatform::GetMemory(uint64_t addr, uint32_t len, void *dst) {
-  intptr_t iptr = static_cast<intptr_t>(addr);
-  void *src = reinterpret_cast<void*>(iptr);
-  memcpy(dst, src, len);
-  return true;
-}
-
-bool port::IPlatform::SetMemory(uint64_t addr, uint32_t len, void *src) {
-  intptr_t iptr = static_cast<intptr_t>(addr);
-  void *dst = reinterpret_cast<void*>(iptr);
-  memcpy(dst, src, len);
-  return true;
-}
-
-
 }  // End of namespace port
 
 int main(int argc, const char *argv[]) {
@@ -140,9 +70,6 @@ int main(int argc, const char *argv[]) {
 
   printf("Testing Session.\n");
   errs += TestSession();
-
-  printf("Testing Target.\n");
-  errs += TestTarget();
 
   if (errs) printf("FAILED with %d errors.\n", errs);
   return errs;

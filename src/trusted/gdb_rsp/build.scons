@@ -23,8 +23,6 @@ rsp_test_sources = [
     'abi_test.cc',
     'packet_test.cc',
     'session_test.cc',
-    'session_mock.cc',
-    'target_test.cc',
     'util_test.cc',
     'test.cc'
     ]

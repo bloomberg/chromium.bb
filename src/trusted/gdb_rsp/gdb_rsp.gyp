@@ -49,10 +49,7 @@
     'gdb_test_sources': [
         'abi_test.cc',
         'packet_test.cc',
-        'session_mock.h',
-        'session_mock.cc',
         'session_test.cc',
-        'target_test.cc',
         'util_test.cc',
         'test.cc',
         'test.h',
