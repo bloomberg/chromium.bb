@@ -78,6 +78,9 @@ POLICY_DEEP_1 = 'POLICY_DEEP_1'
 # mmap regions are distincted w/ the allocation_type column.
 POLICY_DEEP_2 = 'POLICY_DEEP_2'
 
+# POLICY_DEEP_3 is in JSON format.
+POLICY_DEEP_3 = 'POLICY_DEEP_3'
+
 
 class EmptyDumpException(Exception):
   def __init__(self, value):
@@ -133,10 +136,10 @@ class DelayedStaticSymbols(object):
 class Rule(object):
   """Represents one matching rule in a policy file."""
 
-  def __init__(self, name, mmap, pattern):
+  def __init__(self, name, mmap, stacktrace_pattern):
     self.name = name
     self.mmap = mmap
-    self.condition = re.compile(pattern + r'\Z')
+    self.stacktrace_pattern = re.compile(stacktrace_pattern + r'\Z')
 
 
 class Policy(object):
@@ -170,7 +173,7 @@ def get_component(rule_list, bucket, symbols):
   stacktrace = ''.join(symbols[a] + ' ' for a in bucket.stacktrace).strip()
 
   for rule in rule_list:
-    if bucket.mmap == rule.mmap and rule.condition.match(stacktrace):
+    if bucket.mmap == rule.mmap and rule.stacktrace_pattern.match(stacktrace):
       bucket.component_cache = rule.name
       return rule.name
 
@@ -653,18 +656,20 @@ def update_symbols(
     sys.stderr.write('  All symbols resolved.\n')
 
 
-def parse_policy(policy_path):
-  """Parses policy file.
+def parse_policy_text(policy_path):
+  """Parses policy file in text format.
 
   A policy file contains component's names and their
   stacktrace pattern written in regular expression.
   Those patterns are matched against each symbols of
   each stacktraces in the order written in the policy file
 
+  TODO(dmikurube): Deprecate this function after a while.
+
   Args:
        policy_path: A path for a policy file.
   Returns:
-       A list containing component's name and its regex object
+       A loaded policy object.
   """
   with open(policy_path, mode='r') as policy_f:
     policy_lines = policy_f.readlines()
@@ -700,7 +705,30 @@ def parse_policy(policy_path):
     sys.stderr.write('  invalid heap profile policy version: %s\n' % (
         policy_version))
 
-  return rule_list, policy_version, components
+  return Policy(rule_list, policy_version, components)
+
+
+def parse_policy_json(policy_path):
+  """Parses policy file in json format.
+
+  A policy file contains component's names and their
+  stacktrace pattern written in regular expression.
+  Those patterns are matched against each symbols of
+  each stacktraces in the order written in the policy file
+
+  Args:
+       policy_path: A path for a policy file.
+  Returns:
+       A loaded policy object.
+  """
+  with open(policy_path, mode='r') as f:
+    policy = json.load(f)
+
+  rules = []
+  for rule in policy['rules']:
+    rules.append(Rule(
+        rule['name'], rule['allocator'] == 'mmap', rule['stacktrace']))
+  return Policy(rules, policy['version'], policy['components'])
 
 
 def find_prefix(path):
@@ -800,18 +828,27 @@ def load_default_policies():
 
 def load_policy(policies_dict, policy_label):
   policy_file = policies_dict[policy_label]['file']
+  policy_format = policies_dict[policy_label]['format']
   policy_path = os.path.join(os.path.dirname(__file__), policy_file)
-  rule_list, policy_version, components = parse_policy(policy_path)
+  policy = None
+  if policy_format == 'json':
+    policy = parse_policy_json(policy_path)
+  elif policy_format == 'text':
+    policy = parse_policy_text(policy_path)
+  else:
+    return None
   sys.stderr.write('  %s: %s (version: %s)\n' %
-                   (policy_label, policy_path, policy_version))
-  return Policy(rule_list, policy_version, components)
+                   (policy_label, policy_path, policy.version))
+  return policy
 
 
 def load_policies_dict(policies_dict):
   sys.stderr.write('Loading policy files.\n')
   policies = {}
   for policy_label in policies_dict:
-    policies[policy_label] = load_policy(policies_dict, policy_label)
+    loaded_policy = load_policy(policies_dict, policy_label)
+    if loaded_policy:
+      policies[policy_label] = loaded_policy
   return policies
 
 

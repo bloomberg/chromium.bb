@@ -1,11 +1,14 @@
 {
   "l0": {
-    "file": "policy.l0.txt"
+    "file": "policy.l0.json",
+    "format": "json"
   },
   "l1": {
-    "file": "policy.l1.txt"
+    "file": "policy.l1.json",
+    "format": "json"
   },
   "l2": {
-    "file": "policy.l2.txt"
+    "file": "policy.l2.json",
+    "format": "json"
   }
 }
