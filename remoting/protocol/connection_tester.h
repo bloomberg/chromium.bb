@@ -34,6 +34,7 @@ class StreamConnectionTester {
   ~StreamConnectionTester();
 
   void Start();
+  bool done() { return done_; }
   void CheckResults();
 
  protected:

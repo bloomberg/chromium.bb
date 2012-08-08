@@ -15,6 +15,7 @@
         'control.proto',
         'event.proto',
         'internal.proto',
+        'mux.proto',
         'video.proto',
       ],
       'variables': {

@@ -55,7 +55,9 @@ bool BufferedSocketWriterBase::Write(
   buffer_size_ += data->size();
 
   DoWrite();
-  return true;
+
+  // DoWrite() may trigger OnWriteError() to be called.
+  return !closed_;
 }
 
 void BufferedSocketWriterBase::DoWrite() {

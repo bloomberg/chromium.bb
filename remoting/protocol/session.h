@@ -7,16 +7,12 @@
 
 #include <string>
 
-#include "base/callback.h"
-#include "base/threading/non_thread_safe.h"
-#include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/protocol/channel_factory.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/session_config.h"
 
 namespace net {
 class IPEndPoint;
-class Socket;
-class StreamSocket;
 }  // namespace net
 
 namespace remoting {
@@ -27,7 +23,7 @@ struct TransportRoute;
 // Generic interface for Chromotocol connection used by both client and host.
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
-class Session : public base::NonThreadSafe {
+class Session : public ChannelFactory {
  public:
   enum State {
     // Created, but not connecting yet.
@@ -74,12 +70,6 @@ class Session : public base::NonThreadSafe {
                                        bool ready) {}
   };
 
-  // TODO(sergeyu): Specify connection error code when channel
-  // connection fails.
-  typedef base::Callback<void(scoped_ptr<net::StreamSocket>)>
-      StreamChannelCallback;
-  typedef base::Callback<void(scoped_ptr<net::Socket>)>
-      DatagramChannelCallback;
 
   Session() {}
   virtual ~Session() {}
@@ -90,23 +80,6 @@ class Session : public base::NonThreadSafe {
 
   // Returns error code for a failed session.
   virtual ErrorCode error() = 0;
-
-  // Creates new channels for this connection. The specified callback
-  // is called when then new channel is created and connected. The
-  // callback is called with NULL if connection failed for any reason.
-  // All channels must be destroyed before the session is
-  // destroyed. Can be called only when in CONNECTING, CONNECTED or
-  // AUTHENTICATED states.
-  virtual void CreateStreamChannel(
-      const std::string& name, const StreamChannelCallback& callback) = 0;
-  virtual void CreateDatagramChannel(
-      const std::string& name, const DatagramChannelCallback& callback) = 0;
-
-  // Cancels a pending CreateStreamChannel() or CreateDatagramChannel()
-  // operation for the named channel. If the channel creation already
-  // completed then cancelling it has no effect. When shutting down
-  // this method must be called for each channel pending creation.
-  virtual void CancelChannelCreation(const std::string& name) = 0;
 
   // JID of the other side.
   virtual const std::string& jid() = 0;
