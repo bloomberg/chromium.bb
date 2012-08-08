@@ -634,7 +634,10 @@ cr.define('print_preview', function() {
       if (isFirstUpdate) {
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.INITIALIZE);
       } else {
+        // Reset user selection for certain ticket items.
+        this.duplex_.updateValue(null);
         this.customMargins_.updateValue(null);
+
         if (this.marginsType_.getValue() ==
             print_preview.ticket_items.MarginsType.Value.CUSTOM) {
           this.marginsType_.updateValue(

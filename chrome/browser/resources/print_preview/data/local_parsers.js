@@ -49,9 +49,7 @@ cr.define('print_preview', function() {
     if (hasDuplexCapability =
         settingsInfo['printerDefaultDuplexValue'] !=
         print_preview.NativeLayer.DuplexMode.UNKNOWN_DUPLEX_MODE) {
-      defaultIsDuplexEnabled =
-          settingsInfo['printerDefaultDuplexValue'] ==
-          print_preview.NativeLayer.DuplexMode.LONG_EDGE;
+      defaultIsDuplexEnabled = settingsInfo['setDuplexAsDefault'] || false;
     }
 
     return new print_preview.ChromiumCapabilities(
