@@ -13,8 +13,9 @@ import tempfile
 import time
 import urllib2
 
-from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
+
 
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
 
@@ -297,7 +298,7 @@ def GrabRemotePackageIndex(binhost_url):
         return None
       raise
   elif binhost_url.startswith('gs://'):
-    cmd = [constants.GSUTIL_BIN, 'cat', url]
+    cmd = [gs.GSUTIL_BIN, 'cat', url]
     try:
       output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
                                          print_cmd=False).output

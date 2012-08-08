@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,59 +10,80 @@ import os
 
 from chromite.lib import cros_build_lib
 
-BOTO_DEFAULT = os.path.expanduser('~/.boto')
+
+# Default pathway; stored here rather than usual buildbot.constants since
+# we don't want to import buildbot code from here.  Note this is also
+# designed to fallback- not all systems are builders
+# Note this is left here for compatibility with code that directly
+# invokes GSUTIL_BIN; consuming code should be invoking
+# GSContext.GetDefaultGSUtilBin()- or just using the API.
+GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
+
 
 class GSContextException(Exception):
   """Thrown when expected google storage preconditions are not met."""
 
-class GSContextPreconditionFailed(Exception):
+
+class GSContextPreconditionFailed(GSContextException):
   """Thrown when google storage returns code=PreconditionFailed."""
+
 
 class GSContext(object):
   """A class to wrap common google storage operations."""
 
+  DEFAULT_BOTO_FILE = os.path.expanduser('~/.boto')
+  # This is set for ease of testing.
+  DEFAULT_GSUTIL_BIN = None
   # How many times to retry uploads.
-  _RETRIES = 10
+  DEFAULT_RETRIES = 10
 
   # Multiplier for how long to sleep (in seconds) between retries; will delay
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
-  _SLEEP_TIME = 60
+  DEFAULT_SLEEP_TIME = 60
 
-  def __init__(self, gsutil_bin, boto_file=None, acl_file=None,
-               dry_run=False):
+  @classmethod
+  def GetDefaultGSUtilBin(cls):
+    if cls.DEFAULT_GSUTIL_BIN is None:
+      gsutil_bin = GSUTIL_BIN
+      if not os.path.exists(GSUTIL_BIN):
+        gsutil_bin = cros_build_lib.RunCommandCaptureOutput(
+            ['which', 'gsutil']).output.strip()
+        cls.DEFAULT_GSUTIL_BIN = gsutil_bin
+    return cls.DEFAULT_GSUTIL_BIN
+
+  def __init__(self, boto_file=None, acl_file=None,
+               dry_run=False, gsutil_bin=None, retries=None, sleep=None):
     """Constructor.
 
     Args:
-      gsutil_bin: Fully qualified path to the gsutil utility.
       boto_file: Fully qualified path to user's .boto credential file.
       acl_file: A permission file capable of setting different permissions
-                for differnt sets of users.
+        for different sets of users.
       dry_run: Testing mode that prints commands that would be run.
+      gsutil_bin: If given, the absolute path to the gsutil binary.  Else
+        the default fallback will be used.
+      retries: Number of times to retry a command before failing.
+      sleep: Amount of time to sleep between failures.
     """
+    if gsutil_bin is not None:
+      self._CheckFile('gsutil not found', gsutil_bin)
+    else:
+      gsutil_bin = self.GetDefaultGSUtilBin()
     self.gsutil_bin = gsutil_bin
-    self._CheckFile('gsutil not found', self.gsutil_bin)
 
+    # Prefer boto_file if specified, else prefer the env then the default.
+    if boto_file is None:
+      boto_file = os.environ.get('BOTO_CONFIG', self.DEFAULT_BOTO_FILE)
+    self._CheckFile('Boto credentials not found', boto_file)
     self.boto_file = boto_file
 
-    # Prefer any boto file specified on the command line first
-    if self.boto_file is not None:
-      self._CheckFile('Boto credentials not found', self.boto_file)
-
-    # If told which boto to use, abide; else use the default boto value
-    if self.boto_file is None:
-      self.boto_file = os.environ.get('BOTO_CONFIG', BOTO_DEFAULT)
-    self._CheckFile('Boto credentials not found', self.boto_file)
-
+    if acl_file is not None:
+      self._CheckFile('Not a valid permissions file', acl_file)
     self.acl_file = acl_file
-    if self.acl_file is not None:
-      self._CheckFile('Not a valid permissions file', self.acl_file)
 
     self.dry_run = dry_run
-
-    cmd = [self.gsutil_bin, 'version']
-    cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG,
-                              extra_env={'BOTO_CONFIG': self.boto_file},
-                              log_output=True)
+    self._retries = self.DEFAULT_RETRIES if retries is None else int(retries)
+    self._sleep_time = self.DEFAULT_SLEEP_TIME if sleep is None else int(sleep)
 
   def _CheckFile(self, errmsg, afile):
     """Pre-flight check for valid inputs.
@@ -75,8 +95,57 @@ class GSContext(object):
     if not os.path.isfile(afile):
       raise GSContextException('%s, %s is not a file' % (errmsg, afile))
 
-  def _Upload(self, local_file, remote_file, acl=None, retries=_RETRIES,
-              gsutil_opts=()):
+  def CopyTo(self, local_path, remote_path, acl=None, version=None):
+    """Upload a file to a specific google storage url.
+
+    Args:
+      local_path: Local file path to copy.
+      remote_path: Full gs:// url to copy to.
+      acl: If given, a canned ACL.
+      version: If given, the sequence-number; essentially the version we intend
+        to replace/update.  This is useful for distributed reasons- for example,
+        to ensure you don't overwrite someone else's creation, a version of
+        0 states "only update if no version exists".
+    """
+    return self._Copy(local_path, remote_path, acl=acl, version=version)
+
+  def CopyInto(self, local_path, remote_dir, filename=None, acl=None,
+               version=None):
+    """Upload a local file into a directory in google storage.
+
+    Args:
+      local_path: Local file path to copy.
+      remote_dir: Full gs:// url of the directory to transfer the file into.
+      filename: If given, the filename to place the content at; if not given,
+        it's discerned from basename(local_path).
+      acl: If given, a canned ACL.
+      version: If given, the sequence-number; essentially the version we intend
+        to replace/update.  This is useful for distributed reasons- for example,
+        to ensure you don't overwrite someone else's creation, a version of
+        0 states "only update if no version exists".
+    """
+    filename = filename if filename is not None else local_path
+    # Basename it even if an explicit filename was given; we don't want
+    # people using filename as a multi-directory path fragment.
+    return self._Copy(local_path,
+                      '%s/%s' % (remote_dir, os.path.basename(filename)),
+                      acl=acl, version=version)
+
+  def _DoCommand(self, gsutil_cmd, headers=()):
+    """Run a gsutil command, suppressing output, and setting retry/sleep."""
+    cmd = [self.gsutil_bin]
+    for header in headers:
+      cmd += ['-h', header]
+    cmd.extend(gsutil_cmd)
+
+    if self.dry_run:
+      logging.debug("%s: would've ran %r", self.__class__.__name__, cmd)
+    else:
+      cros_build_lib.RetryCommand(
+          cros_build_lib.RunCommandCaptureOutput, self._retries, cmd,
+          sleep=self._sleep_time, extra_env={'BOTO_CONFIG': self.boto_file})
+
+  def _Copy(self, local_file, remote_path, acl=None, version=None):
     """Upload to GS bucket.
 
     Canned ACL permissions can be specified on the gsutil cp command line.
@@ -85,50 +154,41 @@ class GSContext(object):
     https://developers.google.com/storage/docs/accesscontrol#applyacls
 
     Args:
-       local_file: Fully qualified path of local file.
-       remote_file: Full gs:// path of remote_file.
-       acl: One of the google storage canned_acls to apply.
-       retries: Number of times to retry the google storage operation.
-       gsutil_opts: Additional gsutil command line switch behavior.
+      local_file: Fully qualified path of local file.
+      remote_file: Full gs:// path of remote_file.
+      acl: One of the google storage canned_acls to apply.
+      version: If given, the sequence-number; essentially the version we intend
+        to replace/update.  This is useful for distributed reasons- for example,
+        to ensure you don't overwrite someone else's creation, a version of
+        0 states "only update if no version exists".
 
     Returns:
        Return the arg tuple of two if the upload failed.
     """
-    cp_opts = ['cp']
+    cmd, headers = [], []
+
+    if version is not None:
+      headers = ['x-goog-if-sequence-number-match:%d' % version]
+
+    cmd.append('cp')
+
+    acl = self.acl_file if acl is None else acl
     if acl is not None:
-      cp_opts += ['-a', acl]
+      cmd += ['-a', acl]
 
-    cmd = [self.gsutil_bin] + list(gsutil_opts) + cp_opts + [local_file,
-                                                             remote_file]
-    if not self.dry_run:
-      try:
-        cros_build_lib.RunCommandWithRetries(
-            retries, cmd, sleep=self._SLEEP_TIME,
-            extra_env={'BOTO_CONFIG': self.boto_file},
-            debug_level=logging.DEBUG, log_output=True,
-            combine_stdout_stderr=True)
+    cmd += ['--', local_file, remote_path]
 
-      # gsutil uses the same exit code for any failure, so we are left to
-      # parse the output as needed.
-      except cros_build_lib.RunCommandError as e:
-        if 'code=PreconditionFailed' in e.result.output:
-          raise GSContextPreconditionFailed(e)
-        raise
-    else:
-      logging.debug('RunCommand: %r', cmd)
+    try:
+      # For ease of testing, only pass headers if we got some.
+      kwds = {'headers': headers} if headers else {}
+      self._DoCommand(cmd, **kwds)
 
-  def Upload(self, local_path, upload_url, filename=None, acl=None):
-    """Upload a file to google storage and possibly set a canned ACL.
-
-    Args:
-      local_path: Local path (directory) to artifact.
-      upload_url: Path portion of gs:// url that artifact will be copied to.
-      filename: Required. Filename of artifact to upload.
-      acl: A canned ACL.
-    """
-    full_filename = os.path.join(local_path, filename)
-    full_url = os.path.join(upload_url, filename)
-    self._Upload(full_filename, full_url, acl)
+    # gsutil uses the same exit code for any failure, so we are left to
+    # parse the output as needed.
+    except cros_build_lib.RunCommandError as e:
+      if 'code=PreconditionFailed' in e.result.output:
+        raise GSContextPreconditionFailed(e)
+      raise
 
   def SetACL(self, upload_url, acl=None):
     """Set access on a file already in google storage.
@@ -138,30 +198,9 @@ class GSContext(object):
       acl: An ACL permissions file or canned ACL.
     """
     if acl is None:
+      if not self.acl_file:
+        raise GSContextException(
+            "SetAcl invoked w/out a specified acl, nor a default acl.")
       acl = self.acl_file
 
-    acl_cmd = [self.gsutil_bin, 'setacl', acl, upload_url]
-    if not self.dry_run:
-      cros_build_lib.RunCommandWithRetries(
-          self._RETRIES, acl_cmd, sleep=self._SLEEP_TIME,
-          debug_level=logging.DEBUG, extra_env={'BOTO_CONFIG': self.boto_file})
-    else:
-      logging.debug('RunCommand: %r', acl_cmd)
-
-  def UploadOnMatch(self, local_path, upload_url, filename=None, acl=None,
-                    version=0):
-    """Copy if the preconditions are met.
-
-    Args:
-      local_path: Local path (directory) to artifact.
-      upload_url: Path portion of gs:// url that artifact will be copied to.
-      filename: Required. Filename of artifact to upload.
-      acl: A canned ACL.
-      sequence: Useful to determine if a file exists yet or not with value 0
-                Should be positive integer values.
-    """
-    full_filename = os.path.join(local_path, filename)
-    full_url = os.path.join(upload_url, filename)
-    gsutil_opts = ['-h', 'x-goog-if-sequence-number-match:%d' % version]
-    self._Upload(full_filename, full_url, acl=acl, retries=0,
-                 gsutil_opts=gsutil_opts)
+    self._DoCommand(['setacl', acl, upload_url])

@@ -27,8 +27,8 @@ import sys
 import tempfile
 
 from chromite.buildbot import cbuildbot_background as bg
-from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import binpkg
 
@@ -172,13 +172,13 @@ def _GsUpload(local_file, remote_file, acl):
                  'authenticated-read', 'bucket-owner-full-control',
                  'public-read-write']
   if acl in CANNED_ACLS:
-    cmd = [constants.GSUTIL_BIN, 'cp', '-a', acl, local_file, remote_file]
+    cmd = [gs.GSUTIL_BIN, 'cp', '-a', acl, local_file, remote_file]
     acl_cmd = None
   else:
     # For private uploads we assume that the overlay board is set up properly
     # and a googlestore_acl.xml is present. Otherwise, this script errors.
-    cmd = [constants.GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
-    acl_cmd = [constants.GSUTIL_BIN, 'setacl', acl, remote_file]
+    cmd = [gs.GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
+    acl_cmd = [gs.GSUTIL_BIN, 'setacl', acl, remote_file]
 
   cros_build_lib.RunCommandWithRetries(_RETRIES, cmd, print_cmd=True,
                                        sleep=_SLEEP_TIME,

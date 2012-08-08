@@ -17,6 +17,7 @@ import time
 
 from chromite.buildbot import constants, repository
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 
 
@@ -667,7 +668,7 @@ class BuildSpecsManager(object):
     # return the PreconditionFailed error message if the file already exists.
     fail_if_already_exists = 'x-goog-if-sequence-number-match: 0'
     inflight_suffix = '%s/inflight/%s' % (version, self.build_name)
-    cmd = [constants.GSUTIL_BIN, '-h', fail_if_already_exists, 'cp',
+    cmd = [gs.GSUTIL_BIN, '-h', fail_if_already_exists, 'cp',
            '/dev/null', '%s/%s' % (BUILD_STATUS_URL, inflight_suffix)]
 
     if self.dry_run:

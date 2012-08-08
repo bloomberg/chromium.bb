@@ -11,15 +11,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 
-import logging
 import mox
-import tempfile
 import unittest
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
+from chromite.lib import osutils
 
+
+#pylint: disable=E1101,W0212
 class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
   """Tests for GSContext()"""
 
@@ -29,278 +30,185 @@ class GSContextTest(cros_test_lib.TempDirMixin, mox.MoxTestBase):
         reason=Precondition Failed."""
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
     cros_test_lib.TempDirMixin.setUp(self)
+    for attr in ('gsutil_bin', 'boto_file', 'acl_file'):
+      path = os.path.join(self.tempdir, attr)
+      osutils.WriteFile(path, '')
+      setattr(self, attr, path)
+    self.defaults = {'DEFAULT_BOTO_FILE': self.boto_file,
+                     'DEFAULT_GSUTIL_BIN': self.gsutil_bin}
+    self.bad_path = os.path.join(self.tempdir, 'nonexistent')
 
-    fd0, self.gsutil_test = tempfile.mkstemp()
-    fd1, self.boto_test = tempfile.mkstemp()
-    fd2, self.acl_test = tempfile.mkstemp()
+    self._boto_config_env = os.environ.pop("BOTO_CONFIG", None)
+    mox.MoxTestBase.setUp(self)
 
-    os.close(fd0)
-    os.close(fd1)
-    os.close(fd2)
-
-    self.boto_env = {'BOTO_CONFIG': self.boto_test}
+    # No command should be ran w/out us explicitly asseting it.
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
   def tearDown(self):
+    mox.MoxTestBase.tearDown(self)
     cros_test_lib.TempDirMixin.tearDown(self)
+    if self._boto_config_env is not None:
+      os.environ['BOTO_CONFIG'] = self._boto_config_env
 
-  def _contextSetup(self):
-    """Common mock out constructor."""
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    cmd = [self.gsutil_test, 'version']
-    cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG,
-                              extra_env=self.boto_env,
-                              log_output=True)
+  def MkContext(self, *args, **kwds):
+    # Note we derive on the fly here so we can ensure that
+    # there always is a valid fallback for boto_file; we
+    # do so in a way that allows us to also check that
+    # behaviour when the default is missing.
 
-  def _Run(self, cmd):
-    """Common RunCommand invocation."""
-    return cros_build_lib.RunCommandWithRetries(gs.GSContext._RETRIES,
-                                                cmd,
-                                                sleep=gs.GSContext._SLEEP_TIME,
-                                                debug_level=logging.DEBUG,
-                                                extra_env=self.boto_env,
-                                                log_output=True,
-                                                combine_stdout_stderr=True)
+    class Context(gs.GSContext):
+      # This bit of voodoo is basically a way to scrape
+      # default overrides out of keywords into the class
+      # scope; used for testing the defaults.
+      # First inject in our defaults, then the overrides.
+      locals().update(self.defaults)
+      locals().update((key, kwds.pop(key)) for key in list(kwds)
+                      if key.startswith("DEFAULT_"))
 
-  def _RunACL(self, cmd):
-    """RunCommand invocation for SetACL method."""
-    return cros_build_lib.RunCommandWithRetries(gs.GSContext._RETRIES,
-                                                cmd,
-                                                sleep=gs.GSContext._SLEEP_TIME,
-                                                debug_level=logging.DEBUG,
-                                                extra_env=self.boto_env)
+    suppress_DoCommand = kwds.pop('suppress_DoCommand', True)
+    context = Context(*args, **kwds)
+    if suppress_DoCommand:
+      self.mox.StubOutWithMock(context, '_DoCommand')
+    return context
 
-  def testContextGSBinExists(self):
-    """Test we use the given gsutil binary."""
-    self._contextSetup()
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    self.mox.VerifyAll()
+  def testInitGsutilBin(self):
+    """Test we use the given gsutil binary, erroring where appropriate."""
 
-    self.assertEqual(self.gsutil_test, my_gs.gsutil_bin)
+    self.assertEqual(self.MkContext().gsutil_bin, self.gsutil_bin)
+    self.assertRaises(gs.GSContextException, self.MkContext,
+                      DEFAULT_BOTO_FILE=self.bad_path)
+    self.assertEqual(
+        self.MkContext(gsutil_bin=self.boto_file).gsutil_bin,
+        self.boto_file)
+    self.assertRaises(gs.GSContextException, self.MkContext,
+                      gsutil_bin=self.bad_path)
 
-  def testContextGSBinNotExists(self):
-    """Test if the path to the gsutil binary does not exist."""
-    self.assertRaises(gs.GSContextException, gs.GSContext, '/does/not/exist')
+  def testInitBotoFile(self):
+    """Test we use the given boto_file, erroring where appropriate."""
 
-  def testContextBotoExists(self):
-    """Test a given boto file is used."""
-    self._contextSetup()
-    self.mox.ReplayAll()
-    gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    self.mox.VerifyAll()
+    self.assertEqual(self.MkContext().boto_file, self.boto_file)
+    self.assertRaises(gs.GSContextException, self.MkContext,
+                      DEFAULT_BOTO_FILE=self.bad_path)
+    # Check env usage next; no need to cleanup, teardown handles it,
+    # and we want the env var to persist for the next part of this test.
+    os.environ['BOTO_CONFIG'] = self.bad_path
+    self.assertRaises(gs.GSContextException, self.MkContext)
+    os.environ['BOTO_CONFIG'] = self.gsutil_bin
+    self.assertEqual(self.MkContext().boto_file, self.gsutil_bin)
 
-  def testContextBotoNotExists(self):
-    """Test a given boto file exists."""
-    self.assertRaises(gs.GSContextException, gs.GSContext, self.gsutil_test,
-                      '/boto/does/not/exist')
+    self.assertEqual(self.MkContext(boto_file=self.acl_file).boto_file,
+                     self.acl_file)
+    self.assertRaises(gs.GSContextException, self.MkContext,
+                      boto_file=self.bad_path)
 
-  def testContextAclExists(self):
-    """Test a given acl file is set."""
-    self._contextSetup()
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test,
-                        acl_file=self.acl_test)
-    self.mox.VerifyAll()
+  def testInitAclFile(self):
+    self.assertEqual(self.MkContext().acl_file, None)
+    self.assertEqual(self.MkContext(acl_file=self.acl_file).acl_file,
+                     self.acl_file)
+    self.assertRaises(gs.GSContextException, self.MkContext,
+                      acl_file=self.bad_path)
 
-    self.assertEqual(self.acl_test, my_gs.acl_file)
+  def assertGSCommand(self, context, cmd, **kwds):
+    return context._DoCommand(cmd, **kwds)
 
-  def testContextAclNotExists(self):
-    """Test a given acl file exists."""
-    self.assertRaises(gs.GSContextException, gs.GSContext, self.gsutil_test,
-                      self.boto_test, '/acl/does/not/exist')
+  def testCopyTo(self, functor=None, filename=None):
+    """Test CopyTo functionality."""
 
-  def test_UploadNoAcl(self):
-    """Test _Upload with no ACL."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    remote_file = 'gs://test/path/file1.txt'
+    local_path = lambda  x: '/tmp/file%s' % x
+    if filename is not None:
+      given_remote = lambda x: 'gs://test/path/%s' % x
+      expected_remote = lambda x: 'gs://test/path/%s/%s' % (x, filename)
+    else:
+      given_remote = expected_remote = lambda x: 'gs://test/path/file%s' % x
 
-    cmd = [self.gsutil_test, 'cp', local_path, remote_file]
-    self._Run(cmd)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    my_gs._Upload(local_path, remote_file)
-    self.mox.VerifyAll()
-
-  def test_UploadWithAcl(self):
-    """Test _Upload with ACL."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    remote_file = 'gs://test/path/file1.txt'
-
-    cmd = [self.gsutil_test, 'cp', '-a', 'private', local_path, remote_file]
-    self._Run(cmd)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    my_gs._Upload(local_path, remote_file, 'private')
-    self.mox.VerifyAll()
-
-  def test_UploadRaisesPreconditionFailed(self):
-    """Test _Upload with a failed precondition."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    remote_file = 'gs://test/path/file1.txt'
-
-    result = cros_build_lib.CommandResult()
-    result.output = self._GSResponsePreconditionFailed
-    error = cros_build_lib.RunCommandError('Your command is not working.',
-                                           result)
-
-    cmd = [self.gsutil_test, 'cp', local_path, remote_file]
-    ret = self._Run(cmd)
-    ret.AndRaise(error)
+    ctx1 = self.MkContext()
+    self.assertGSCommand(ctx1, ['cp', '--', local_path(1), expected_remote(1)])
+    ctx2 = self.MkContext(acl_file=self.acl_file)
+    self.assertGSCommand(ctx2, ['cp', '-a', self.acl_file, '--',
+                                local_path(2), expected_remote(2)])
+    ctx3 = self.MkContext()
+    self.assertGSCommand(ctx3, ['cp', '-a', self.gsutil_bin, '--',
+                                local_path('brass'),
+                                expected_remote('brass')])
+    ctx4 = self.MkContext(acl_file=self.gsutil_bin)
+    self.assertGSCommand(ctx4, ['cp', '-a', self.acl_file, '--',
+                                local_path('monkey'),
+                                expected_remote('monkey')])
+    ctx5 = self.MkContext()
+    self.assertGSCommand(ctx5, ['cp', '--', local_path(5),
+                                expected_remote(5)],
+                         headers=['x-goog-if-sequence-number-match:0'])
+    ctx6 = self.MkContext()
+    self.assertGSCommand(ctx6, ['cp', '--', self.gsutil_bin,
+                                expected_remote(6)],
+                         headers=['x-goog-if-sequence-number-match:6'])
+    ctx7 = self.MkContext()
+    ret = self.assertGSCommand(ctx7, ['cp', '--', local_path(7),
+                                      expected_remote(7)])
+    ret.AndRaise(cros_build_lib.RunCommandError(
+        'blah', cros_build_lib.CommandResult(returncode=1, output='')))
+    ctx8 = self.MkContext()
+    ret = self.assertGSCommand(ctx8, ['cp', '--', local_path(8),
+                                      expected_remote(8)])
+    ret.AndRaise(cros_build_lib.RunCommandError(
+        'blah', cros_build_lib.CommandResult(returncode=1,
+                                             output='code=PreconditionFailed')))
 
     self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    self.assertRaises(gs.GSContextPreconditionFailed,
-                      my_gs._Upload, local_path, remote_file)
-    self.mox.VerifyAll()
-
-  def test_UploadRaisesRunCommandError(self):
-    """Test _Upload is capable of throwing an error."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    remote_file = 'gs://test/path/file1.txt'
-
-    result = cros_build_lib.CommandResult()
-    result.output = 'Not a precondition failed error.'
-    error = cros_build_lib.RunCommandError('Your command is not working.',
-                                           result)
-
-    cmd = [self.gsutil_test, 'cp', local_path, remote_file]
-    ret = self._Run(cmd)
-    ret.AndRaise(error)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
+    if functor is None:
+      functor = lambda ctx:ctx.CopyTo
+    functor(ctx1)(local_path(1), given_remote(1))
+    functor(ctx2)(local_path(2), given_remote(2))
+    functor(ctx3)(local_path('brass'), given_remote('brass'),
+                  acl=self.gsutil_bin)
+    functor(ctx4)(local_path('monkey'), given_remote('monkey'),
+                  acl=self.acl_file)
+    functor(ctx5)(local_path(5), given_remote(5), version=0)
+    functor(ctx6)(self.gsutil_bin, given_remote(6), version=6)
     self.assertRaises(cros_build_lib.RunCommandError,
-                      my_gs._Upload, local_path, remote_file)
+                      functor(ctx7), local_path(7), given_remote(7))
+    self.assertRaises(gs.GSContextException,
+                      functor(ctx8), local_path(8), given_remote(8))
     self.mox.VerifyAll()
 
+  def testCopyInto(self):
+    def functor(ctx):
+      return lambda *args, **kwds:ctx.CopyInto(*args, filename='blah', **kwds)
+    self.testCopyTo(functor=functor, filename='blah')
 
-  def testUpload(self):
-    """Test Upload works correctly."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    upload_url = 'gs://test/path/'
-    filename = 'file1.txt'
-
-    cmd = [self.gsutil_test, 'cp', os.path.join(local_path, filename),
-           os.path.join(upload_url, filename)]
-    self._Run(cmd)
+  def testDoCommand(self):
+    """Verify the internal DoCommand function works correctly."""
+    self.mox.StubOutWithMock(cros_build_lib, 'RetryCommand')
+    ctx1 = self.MkContext(suppress_DoCommand=False)
+    cros_build_lib.RetryCommand(
+       cros_build_lib.RunCommandCaptureOutput, ctx1._retries,
+       [self.gsutil_bin, 'cp', '--', '/blah', 'gs://foon'],
+       sleep=ctx1._sleep_time, extra_env={'BOTO_CONFIG':self.boto_file})
+    ctx2 = self.MkContext(suppress_DoCommand=False, retries=2, sleep=1)
+    cros_build_lib.RetryCommand(
+       cros_build_lib.RunCommandCaptureOutput, ctx2._retries,
+       [self.gsutil_bin, '-h',  'x-goog-if-sequence-number-match:1',
+        'cp', '--', '/blah', 'gs://foon'],
+       sleep=ctx2._sleep_time, extra_env={'BOTO_CONFIG':self.boto_file})
 
     self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    my_gs.Upload(local_path, upload_url, filename)
+    ctx1.CopyTo('/blah', 'gs://foon')
+    ctx2.CopyTo('/blah', 'gs://foon', version=1)
     self.mox.VerifyAll()
 
-  def testUploadACL(self):
-    """Test Upload with ACL works correctly."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    upload_url = 'gs://test/path/'
-    filename = 'file1.txt'
-    acl = 'public-read'
-
-    cmd = [self.gsutil_test, 'cp', '-a', acl,
-           os.path.join(local_path, filename),
-           os.path.join(upload_url, filename)]
-    self._Run(cmd)
+  def testSetAcl(self):
+    ctx1 = self.MkContext()
+    self.assertGSCommand(ctx1, ['setacl', 'monkeys', 'gs://abc/1'])
+    ctx2 = self.MkContext(acl_file=self.acl_file)
+    self.assertGSCommand(ctx2, ['setacl', self.acl_file, 'gs://abc/2'])
+    # Ensure it blows up if there isn't an acl specified in any fashion.
+    ctx3 = self.MkContext()
 
     self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    my_gs.Upload(local_path, upload_url, filename, acl)
-    self.mox.VerifyAll()
-
-  def testSetACLInit(self):
-    """Test SetACL works when ACL set via constructor."""
-    self._contextSetup()
-    upload_url = 'gs://test/path/file1.txt'
-    acl = self.acl_test
-
-    cmd = [self.gsutil_test, 'setacl', acl, upload_url]
-    self._RunACL(cmd)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test,
-                         acl_file=self.acl_test)
-    # Should not have to specify acl here if we gave it to the constructor.
-    my_gs.SetACL(upload_url)
-    self.mox.VerifyAll()
-
-  def testSetACLWithFile(self):
-    """Test SetACL works given a permissions file."""
-    self._contextSetup()
-    upload_url = 'gs://test/path/file1.txt'
-    acl = '/my/perms/acl.txt'
-
-    cmd = [self.gsutil_test, 'setacl', acl, upload_url]
-    self._RunACL(cmd)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    my_gs.SetACL(upload_url, acl)
-    self.mox.VerifyAll()
-
-  def testSetACLCanned(self):
-    """Test SetACL works with a canned ACL."""
-    self._contextSetup()
-    upload_url = 'gs://test/path/file1.txt'
-    acl = 'public-read'
-
-    cmd = [self.gsutil_test, 'setacl', acl, upload_url]
-    self._RunACL(cmd)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    my_gs.SetACL(upload_url, acl)
-    self.mox.VerifyAll()
-
-  def testUploadOnMatch(self):
-    """Test UploadOnMatch with successful precondition match."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    upload_url = 'gs://test/path/'
-    filename = 'file1.txt'
-    match = 0
-
-    cmd = [self.gsutil_test, '-h', 'x-goog-if-sequence-number-match:%d'
-           % match, 'cp', os.path.join(local_path, filename),
-           os.path.join(upload_url, filename)]
-    self._Run(cmd)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    my_gs.UploadOnMatch(local_path, upload_url, filename, version=match)
-    self.mox.VerifyAll()
-
-  def testUploadOnMatchFailed(self):
-    """Test UploadOnMatch with a failed precondition match."""
-    self._contextSetup()
-    local_path = '/tmp/file1.txt'
-    upload_url = 'gs://test/path/'
-    filename = 'file1.txt'
-    match = 0
-
-    result = cros_build_lib.CommandResult()
-    result.output = self._GSResponsePreconditionFailed
-    error = cros_build_lib.RunCommandError('UploadOnMatch has failed.',
-                                           result)
-
-    cmd = [self.gsutil_test, '-h', 'x-goog-if-sequence-number-match:%d'
-           % match, 'cp', os.path.join(local_path, filename),
-           os.path.join(upload_url, filename)]
-    ret = self._Run(cmd)
-    ret.AndRaise(error)
-
-    self.mox.ReplayAll()
-    my_gs = gs.GSContext(self.gsutil_test, boto_file=self.boto_test)
-    self.assertRaises(gs.GSContextPreconditionFailed, my_gs.UploadOnMatch,
-                      local_path, upload_url, filename, version=match)
+    ctx1.SetACL('gs://abc/1', 'monkeys')
+    ctx2.SetACL('gs://abc/2')
+    self.assertRaises(gs.GSContextException, ctx3.SetACL, 'gs://abc/3')
     self.mox.VerifyAll()
 
 if __name__ == '__main__':
