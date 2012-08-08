@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -220,27 +220,6 @@ lea (%r15, %rdi), %rdi
 rep movsb %ds:(%rsi), %es:(%rdi)
 // %rsi should not be regarded as zero-extended here.
 mov (%r15, %rsi), %ebx
-""")
-TestCase(accept=False, asm="""
-mov %esi, %esi
-lea (%r15, %rsi), %rsi
-xchg %esi, %edi
-lea (%r15, %rdi), %rdi
-rep movsb %ds:(%rsi), %es:(%rdi)
-""")
-TestCase(accept=False, asm="""
-mov %esi, %esi
-lea (%r15, %rsi), %rsi
-xchg %edi, %esi
-lea (%r15, %rdi), %rdi
-rep movsb %ds:(%rsi), %es:(%rdi)
-""")
-TestCase(accept=True, asm="""
-mov %esi, %esi
-lea (%r15, %rsi), %rsi
-xchg %edi, %edi
-lea (%r15, %rdi), %rdi
-rep movsb %ds:(%rsi), %es:(%rdi)
 """)
 
 # Non-%r15-based memory accesses.

@@ -214,14 +214,6 @@ static FORCEINLINE void rel32_operand(const uint8_t *rip,
   }
 }
 
-enum {
-  kNoRestrictedReg           = 0x1f,
-  kSandboxedRsi              = 0x20 | kNoRestrictedReg,
-  kSandboxedRdi              = 0x40 | kNoRestrictedReg,
-  kSandboxedRsiRestrictedRdi = 0x20 | REG_RDI,
-  kSandboxedRsiSandboxedRdi  = 0x20 | 0x40 | kNoRestrictedReg
-};
-
 static INLINE void check_access(ptrdiff_t instruction_start,
                                 enum register_name base,
                                 enum register_name index,
@@ -230,7 +222,7 @@ static INLINE void check_access(ptrdiff_t instruction_start,
                                 uint32_t *errors_detected) {
   if ((base == REG_RIP) || (base == REG_R15) ||
       (base == REG_RSP) || (base == REG_RBP)) {
-    if (index == (restricted_register & 0x1f)) {
+    if (index == restricted_register) {
       BitmapClearBit(valid_targets, instruction_start);
     } else if ((index != NO_REG) && (index != REG_RIZ)) {
       *errors_detected |= UNRESTRICTED_INDEX_REGISTER;
@@ -241,7 +233,7 @@ static INLINE void check_access(ptrdiff_t instruction_start,
 }
 
 
-static INLINE void process_0_operands(uint8_t *restricted_register,
+static INLINE void process_0_operands(enum register_name *restricted_register,
                                       uint32_t *errors_detected) {
   /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
    * instruction, not with regular instruction.  */
@@ -250,16 +242,13 @@ static INLINE void process_0_operands(uint8_t *restricted_register,
   } else if (*restricted_register == REG_RBP) {
     *errors_detected |= RESTRICTED_RBP_UNPROCESSED;
   }
-  *restricted_register = kNoRestrictedReg;
+  *restricted_register = NO_REG;
 }
 
-static INLINE void process_1_operands(uint8_t *restricted_register,
+static INLINE void process_1_operands(enum register_name *restricted_register,
                                       uint32_t *errors_detected,
                                       uint8_t rex_prefix,
-                                      uint32_t operand_states,
-                                      const uint8_t *instruction_start,
-                                      const uint8_t
-                                               **sandboxed_rsi_restricted_rdi) {
+                                      uint32_t operand_states) {
   /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
    * instruction, not with regular instruction.  */
   if (*restricted_register == REG_RSP) {
@@ -267,44 +256,28 @@ static INLINE void process_1_operands(uint8_t *restricted_register,
   } else if (*restricted_register == REG_RBP) {
     *errors_detected |= RESTRICTED_RBP_UNPROCESSED;
   }
-  /* If Sandboxed Rsi is destroyed then we must detect that.  */
-  if (*restricted_register == kSandboxedRsi) {
-    if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
-        CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted)) {
-      *restricted_register = kNoRestrictedReg;
-    }
-  }
-  if ((*restricted_register == kSandboxedRsi) &&
-      CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
-    *sandboxed_rsi_restricted_rdi = instruction_start;
-    *restricted_register = kSandboxedRsiRestrictedRdi;
-  } else {
-    *restricted_register = kNoRestrictedReg;
-    if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
-        CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
-        CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-      *errors_detected |= R15_MODIFIED;
-    } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
-               CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-      *errors_detected |= BPL_MODIFIED;
-    } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
-               CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-      *errors_detected |= SPL_MODIFIED;
-    /* Take 2 bits of operand type from operand_states as *restricted_register,
-     * make sure operand_states denotes a register (4th bit == 0). */
-    } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
-      *restricted_register = operand_states & 0x0f;
-    }
+  *restricted_register = NO_REG;
+  if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
+    *errors_detected |= R15_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
+             CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
+    *errors_detected |= BPL_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
+             CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
+    *errors_detected |= SPL_MODIFIED;
+  /* Take 2 bits of operand type from operand_states as *restricted_register,
+   * make sure operand_states denotes a register (4th bit == 0). */
+  } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
+    *restricted_register = operand_states & 0x0f;
   }
 }
 
-static INLINE void process_2_operands(uint8_t *restricted_register,
+static INLINE void process_2_operands(enum register_name *restricted_register,
                                       uint32_t *errors_detected,
                                       uint8_t rex_prefix,
-                                      uint32_t operand_states,
-                                      const uint8_t *instruction_start,
-                                      const uint8_t
-                                               **sandboxed_rsi_restricted_rdi) {
+                                      uint32_t operand_states) {
   /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
    * instruction, not with regular instruction.  */
   if (*restricted_register == REG_RSP) {
@@ -312,49 +285,37 @@ static INLINE void process_2_operands(uint8_t *restricted_register,
   } else if (*restricted_register == REG_RBP) {
     *errors_detected |= RESTRICTED_RBP_UNPROCESSED;
   }
-  /* If Sandboxed Rsi is destroyed then we must detect that.  */
-  if (*restricted_register == kSandboxedRsi) {
-    if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
-        CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted) ||
-        CHECK_OPERAND(1, REG_RSI, OperandSandboxRestricted) ||
-        CHECK_OPERAND(1, REG_RSI, OperandSandboxUnrestricted)) {
-      *restricted_register = kNoRestrictedReg;
+  *restricted_register = NO_REG;
+  if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+      CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted) ||
+      CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
+      CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
+      CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
+    *errors_detected |= R15_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
+             CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
+             (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
+             CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
+    *errors_detected |= BPL_MODIFIED;
+  } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
+             CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
+             (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
+             CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
+    *errors_detected |= SPL_MODIFIED;
+  /* Take 2 bits of operand type from operand_states as *restricted_register,
+   * make sure operand_states denotes a register (4th bit == 0).  */
+  } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
+    *restricted_register = operand_states & 0x0f;
+    if (CHECK_OPERAND(1, REG_RSP, OperandSandboxRestricted)) {
+      *errors_detected |= RESTRICTED_RSP_UNPROCESSED;
+    } else if (CHECK_OPERAND(1, REG_RBP, OperandSandboxRestricted)) {
+      *errors_detected |= RESTRICTED_RBP_UNPROCESSED;
     }
-  }
-  if ((*restricted_register == kSandboxedRsi) &&
-      (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted) ||
-       CHECK_OPERAND(1, REG_RDI, OperandSandboxRestricted))) {
-    *sandboxed_rsi_restricted_rdi = instruction_start;
-    *restricted_register = kSandboxedRsiRestrictedRdi;
-  } else {
-    *restricted_register = kNoRestrictedReg;
-    if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
-        CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
-        CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted) ||
-        CHECK_OPERAND(1, REG_R15, OperandSandbox8bit) ||
-        CHECK_OPERAND(1, REG_R15, OperandSandboxRestricted) ||
-        CHECK_OPERAND(1, REG_R15, OperandSandboxUnrestricted)) {
-      *errors_detected |= R15_MODIFIED;
-    } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
-               CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted) ||
-               (CHECK_OPERAND(1, REG_RBP, OperandSandbox8bit) && rex_prefix) ||
-               CHECK_OPERAND(1, REG_RBP, OperandSandboxUnrestricted)) {
-      *errors_detected |= BPL_MODIFIED;
-    } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
-               CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted) ||
-               (CHECK_OPERAND(1, REG_RSP, OperandSandbox8bit) && rex_prefix) ||
-               CHECK_OPERAND(1, REG_RSP, OperandSandboxUnrestricted)) {
-      *errors_detected |= SPL_MODIFIED;
-    /* Take 2 bits of operand type from operand_states as *restricted_register,
-     * make sure operand_states denotes a register (4th bit == 0).  */
-    } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
-      *restricted_register = operand_states & 0x0f;
-    /* Take 2 bits of operand type from operand_states as *restricted_register,
-     * make sure operand_states denotes a register (12th bit == 0).  */
-    } else if ((operand_states & 0x7000) ==
-        (OperandSandboxRestricted << (5 + 8))) {
-      *restricted_register = (operand_states & 0x0f00) >> 8;
-    }
+  /* Take 2 bits of operand type from operand_states as *restricted_register,
+   * make sure operand_states denotes a register (12th bit == 0).  */
+  } else if ((operand_states & 0x7000) == (OperandSandboxRestricted << 13)) {
+    *restricted_register = (operand_states & 0x0f00) >> 8;
   }
 }
 

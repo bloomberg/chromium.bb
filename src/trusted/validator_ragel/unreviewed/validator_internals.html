@@ -16,7 +16,7 @@
 </ol>
 <li><a href="#5">Validation for x86-64 mode.</a></li>
 <ol>
-<li><a href="#5-1">“Secondary” DFA.</a></li>
+<li><a href="#5-1">“Secondary” states.</a></li>
 <li><a href="#5-2">“Normal” instructions.</a></li>
 <li><a href="#5-3">Operands handling.</a></li>
 </ol>
@@ -147,43 +147,13 @@ IOW: it's pretty straighforward and simple, but there are a twist: <code>CPUFeat
 
 <p>While validator for ia32 mode is very simple and short (it also produces pretty compact code) validator for x86-64 mode is different. It still has all the same properties validator for ia32 mode had (<code>valid_targets</code> and <code>jump_dests</code> arrays, “normal” and “special” instructions, bundles and <code>rel8_operand</code>/<code>rel32_operand</code> actions), but it adds quite a few additional twists to the whole scheme.</p>
 
-<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-1">5.1. “Secondary” DFA.</a></h3>
+<h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-1">5.1. “Secondary” states.</a></h3>
 
-<p>First of all: ia32 mode validator had one DFA in it, but x86-64 has two—one is huge one, similar to what ia32 mode validator uses and another one is much simpler but it's much harder to see as such because it's not formally defined in some formal language, but is implemented using actions… embedded in the first DFA! It's state is tracked by <code>restricted_register</code> variable. In reality low five bits keep the current “restricted register” state and high bits are used for other purposes.</p>
-
-<p style="margin-bottom:0px;">Thankfully this second DFA is much simpler than the primary one and only includes one states:</p>
-<ol style="margin-top:0px;">
-<li><code>kNoRestrictedReg</code>—initial state.</li>
-<li><code>REG_RAX</code>—register <code>%rax</code> is restricted.</li>
-<li><code>REG_RCX</code>—register <code>%rcx</code> is restricted.</li>
-<li><code>REG_RDX</code>—register <code>%rdx</code> is restricted.</li>
-<li><code>REG_RBX</code>—register <code>%rbx</code> is restricted.</li>
-<li><code>REG_RSP</code>—register <code>%rsp</code> is restricted.</li>
-<li><code>REG_RBP</code>—register <code>%rbp</code> is restricted.</li>
-<li><code>REG_RSI</code>—register <code>%rsi</code> is restricted.</li>
-<li><code>REG_RDI</code>—register <code>%rdi</code> is restricted.</li>
-<li><code>REG_R8</code>—register <code>%r8</code> is restricted.</li>
-<li><code>REG_R9</code>—register <code>%r9</code> is restricted.</li>
-<li><code>REG_R10</code>—register <code>%r10</code> is restricted.</li>
-<li><code>REG_R11</code>—register <code>%r11</code> is restricted.</li>
-<li><code>REG_R12</code>—register <code>%r12</code> is restricted.</li>
-<li><code>REG_R13</code>—register <code>%r13</code> is restricted.</li>
-<li><code>REG_R14</code>—register <code>%r14</code> is restricted.</li>
-<li><code>kSandboxedRsi</code>—register <code>%rsi</code> is sandboxed (low bits are identical to <code>kNoRestrictedReg</code> here).</li>
-<li><code>kSandboxedRdi</code>—register <code>%rdi</code> is sandboxed (low bits are identical to <code>kNoRestrictedReg</code> here).</li>
-<li><code>kSandboxedRsiRestrictedRdi</code>—register <code>%rsi</code> is sandboxed while simultaneously register <code>%rdi</code> is restricted (low bits are identical to <code>REG_RDI</code> here).</li>
-<li><code>kSandboxedRsiSandboxedRdi</code>—registers <code>%rsi</code> and <code>%rdi</code> are both sandboxed (low bits are identical to <code>kNoRestrictedReg</code> here).</li>
-</ol>
-
-<p>Most states are final, but two are not: <code>REG_RSP</code> and <code>REG_RBP</code>. Security model of x86-64 nacl declares that the instruction which makes them restricted should be immediately followed by <code>add&nbsp;%r15,%rsp</code>/<code>lea&nbsp;(%rsp,%r15,1),%rsp</code> or <code>add&nbsp;%r15,%rbp</code>/<code>lea&nbsp;(%rbp,%r15,1),%rbp</code> to restore the invariant again.</p>
-
-<p>The last four instructions are needed to make it possible to handle string instructions. Note that it's easy to describe canonical string instructions as described in <a href="http://www.chromium.org/nativeclient/design-documents/nacl-sfi-model-on-x86-64-systems">the documentation</a> with a simple superinstruction (like it's done with <code>naclcall</code>/<code>nacljmp</code>), but if we want to allow any instruction which writes to <code>%rsi</code>/<code>%rdi</code> to be usable in these “special” instructions then we need to use these four additional states (and also three additional variables to keep track of instruction boundaries).</p>
-
-<p>The part visible in ValidateChunkAMD64 is pretty easy: it ensures that secondary DFA starts from kNoRestrictedReg at the beginning of each bundle and also reports error if it ends in non-final state (<code>REG_RSP</code> or <code>REG_RBP</code>). Easy!</p>
+<p>First of all: ia32 mode validator had one DFA in it and two arrays which kept track of the instruction boundaries but x86-64 has few more state variables. Most of them (<code>rex_prefix</code>, <code>vex_prefix2</code>, <code>vex_prefix3</code>, <code>operand_states</code>, <code>base</code>, and <code>index</code>) keep track of the instruction parts (and thus they are cleared before each instruction), but one variable called <code>restricted_register</code> is used to tie different instructions together. It keeps track of the <code>restricted_register</code> (if any). Note that not all restricted registers are born equal: most registers can be restricted and then forgotten (if you write to <code>%eax</code> and do nothing with the value before <code>call</code>), but <code>%esp</code> and <code>%ebp</code> are exceptions. If you write to the <code>%esp</code> then the very next instruction must be <code>add %r15,%rbp</code> or <code>lea (%r15,%rbp,1),%rbp</code>. This means that if at the end of a bundle restricted register is <code>%rsp</code> or <code>%rbp</code> then program is inavlid. For the same reason if then at beginning of a normal instruction (this includes first instruction in the “compound”) we see restricted <code>%rsp</code> or restricted <code>%rbp</code> then it's an error, too. On the other hand few rare special instructions which are used to restore the SFI invariant WRT <code>%rsp</code> or <code>%rbp</code> will only be accepted if restricted register is <code>%rsp</code> xor <code>%rbp</code> (depending on special instruction).</p>
 
 <h3><div style="float:right"><a href="#TOC">▲</a></div><a name="5-2">5.2. “Normal” instructions.</a></h3>
 
-<p>The hard part is, as before, in the DFA (the main, ragel-processed, one). First of all, the main machine is similar to what we had in ia32 mode, but subtly different: it's “<code>(normal_instruction | special_instruction)*</code>” now. I.e.: <code>one_instruction</code> is replaced with <code>normal_instruction</code>. And what is <code>normal_instruction</code>? Why, it's “<code>one_instruction - special_instruction</code>”, of course! Well… this is unexpected: why will we want to remove <code>special_instruction</code>s from <code>normal_instruction</code>s only to add them back? The answer is related to actions: recall how <a href="#actions">actions</a> work. When we remove <code>special_instruction</code> from <code>one_instruction</code> we also remove the associated actions. This important in x86-64 case because some special instructions are just a normal instructions which are permitted to violate the usual rules! E.g. “special” instruction <code>and $~0x1f,%rsp</code> (which is used to align the stack pointer) changes the <code>%rsp</code> directly which is usually forbidden, but because of properties of <code>and $xxx,…</code> (for any <code>$xxx</code> &lt; <code>0</code>) we know that invariants will not be violated.</p>
+<p>The hard part is, as before, in the DFA. First of all, main machine is similar to what we had in ia32 mode, but subtly different: it's “<code>(normal_instruction | special_instruction)*</code>” now. I.e.: <code>one_instruction</code> is replaced with <code>normal_instruction</code>. And what is <code>normal_instruction</code>? Why, it's “<code>one_instruction - special_instruction</code>”, of course! Well… this is unexpected: why will we want to remove <code>special_instruction</code>s from <code>normal_instruction</code>s only to add them back? The answer is related to actions: recall how <a href="#actions">actions</a> work. When we remove <code>special_instruction</code> from <code>one_instruction</code> we also remove the associated actions. This important in x86-64 case because some special instructions are just a normal instructions which are permitted to violate the usual rules! E.g. “special” instruction <code>and $~0x1f,%rsp</code> (which is used to align the stack pointer) changes the <code>%rsp</code> directly which is usually forbidden, but because of properties of <code>and $xxx,…</code> (for any <code>$xxx</code> &lt; <code>0</code>) we know that invariants will not be violated.</p>
 
 <p>This approach works well, but only if violations are detected at the instruction end. E.g. the aforementioned <code>and $~0x1f,%rsp</code> instruction is encoded as </code>0x48&nbsp;0x83&nbsp;0xe4&nbsp;0xe0</code> and after we've read </code>0x48&nbsp;0x83&nbsp;0xe4</code> we already know it's normal instruction (opcode <code>0x83</code> means it's <code>and</code>) which writes to <code>%rsp</code> (<code>0x48&nbsp;</code><i>opcode</i><code>&nbsp;0xe4</code> means it's some instruction which accepts some kind of immediate and writes to <code>%rsp</code>) and we'll signal the error at this point then the fact that later we'll find out it's <code>special_instruction</code> which is accepted anyway will not matter: <code>SPL_MODIFIED</code> error will be triggered which will mean that code is rejected!</p>
 

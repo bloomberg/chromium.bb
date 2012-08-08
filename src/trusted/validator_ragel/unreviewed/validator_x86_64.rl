@@ -56,13 +56,11 @@
   }
   action process_1_operands {
     process_1_operands(&restricted_register, &errors_detected, rex_prefix,
-                       operand_states, instruction_start,
-                       &sandboxed_rsi_restricted_rdi);
+                       operand_states);
   }
   action process_2_operands {
     process_2_operands(&restricted_register, &errors_detected, rex_prefix,
-                       operand_states, instruction_start,
-                       &sandboxed_rsi_restricted_rdi);
+                       operand_states);
   }
 
   include decode_x86_64 "validator_x86_64_instruction.rl";
@@ -86,7 +84,7 @@
     @{ if (restricted_register != REG_RBP) {
          errors_detected |= UNRESTRICTED_RBP_PROCESSED;
        }
-       restricted_register = kNoRestrictedReg;
+       restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
     };
 
@@ -105,7 +103,7 @@
     @{ if (restricted_register != REG_RSP) {
          errors_detected |= UNRESTRICTED_RSP_PROCESSED;
        }
-       restricted_register = kNoRestrictedReg;
+       restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
     };
 
@@ -135,7 +133,7 @@
     @{
        BitmapClearBit(valid_targets, (current_position - data) - 6);
        BitmapClearBit(valid_targets, (current_position - data) - 1);
-       restricted_register = kNoRestrictedReg;
+       restricted_register = NO_REG;
     } |
     (((0x83 0xe0 0xe0 0x4d 0x8d any 0x07 any{3})  | # and $~0x1f, %eax
       (0x83 0xe1 0xe0 0x4d 0x8d any 0x0f any{3})  | #   lea (%r15,%rax),%rXX
@@ -160,7 +158,7 @@
     @{
        BitmapClearBit(valid_targets, (current_position - data) - 7);
        BitmapClearBit(valid_targets, (current_position - data) - 2);
-       restricted_register = kNoRestrictedReg;
+       restricted_register = NO_REG;
     };
 
   # naclcall or nacljmp - this the form used by contemporary toolchain
@@ -176,7 +174,7 @@
     @{
        BitmapClearBit(valid_targets, (current_position - data) - 4);
        BitmapClearBit(valid_targets, (current_position - data) - 1);
-       restricted_register = kNoRestrictedReg;
+       restricted_register = NO_REG;
     } |
     (0x41 0x83 0xe0 0xe0 0x4d 0x01 0xf8 0x41 0xff (0xd0|0xe0) | # naclcall/jmp
      0x41 0x83 0xe1 0xe0 0x4d 0x01 0xf9 0x41 0xff (0xd1|0xe1) | #    %r8d, %r15
@@ -188,22 +186,11 @@
     @{
        BitmapClearBit(valid_targets, (current_position - data) - 5);
        BitmapClearBit(valid_targets, (current_position - data) - 2);
-       restricted_register = kNoRestrictedReg;
+       restricted_register = NO_REG;
     };
 
-  # Special %rsi sandboxing for string instructions
-  rsi_sandboxing =
-    (0x49 0x8d 0x34 0x37) # lea (%r15,%rsi,1),%rsi
-    @{ if (restricted_register == REG_RSI) {
-         sandboxed_rsi = instruction_start;
-         restricted_register = kSandboxedRsi;
-       } else {
-         restricted_register = kNoRestrictedReg;
-       }
-    };
-
-  # Special %rdi sandboxing for EMMS/SSE2/AVX instructions
-  mmx_sse_rdi_sandboxing =
+  # EMMS/SSE2/AVX instructions which have implicit %ds:(%rsi) operand
+  mmx_sse_rdi_instructions =
     (REX_WRXB? (0x0f 0xf7)
       @CPUFeature_EMMX modrm_registers | # maskmovq %mmX,%mmY
      0x66 REX_WRXB? (0x0f 0xf7) @not_data16_prefix
@@ -212,78 +199,65 @@
       (0xc5 (0x79 | 0xf9) @vex_prefix_short)) 0xf7
       @CPUFeature_AVX modrm_registers);  # vmaskmovdqu %xmmX, %xmmY
 
-  # Special %rdi sandboxing for string instructions
-  string_rdi_sandboxing =
-    0x49 0x8d 0x3c 0x3f;                 # lea (%r15,%rdi,1),%rdi
-
-  rdi_sandboxing =
-    (#mmx_sse_rdi_sandboxing |
-     string_rdi_sandboxing)
-    @{ if (restricted_register == REG_RDI) {
-         sandboxed_rdi = instruction_start;
-         restricted_register = kSandboxedRdi;
-       } else if (restricted_register == kSandboxedRsiRestrictedRdi) {
-         sandboxed_rdi = instruction_start;
-         restricted_register = kSandboxedRsiSandboxedRdi;
-       } else {
-         restricted_register = kNoRestrictedReg;
-       }
-    };
-
   # String instructions which use only %ds:(%rsi)
   string_instructions_rsi_no_rdi =
     (rep? 0xac                 | # lods   %ds:(%rsi),%al
      data16rep 0xad            | # lods   %ds:(%rsi),%ax
-     rep? REXW_NONE? 0xad)       # lods   %ds:(%rsi),%eax/%rax
-    @{ if (restricted_register != kSandboxedRsi) {
-         errors_detected |= RSI_UNSANDBOXDED;
-       } else {
-         BitmapClearBit(valid_targets, (instruction_start - data));
-         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
-       }
-       restricted_register = kNoRestrictedReg;
-    };
+     rep? REXW_NONE? 0xad)     ; # lods   %ds:(%rsi),%eax/%rax
 
   # String instructions which use only %ds:(%rdi)
   string_instructions_rdi_no_rsi =
-    (condrep? 0xae             | # scas   %es:(%rdi),%al
-     data16condrep 0xaf        | # scas   %es:(%rdi),%ax
-     condrep? REXW_NONE? 0xaf  | # scas   %es:(%rdi),%eax/%rax
+    condrep? 0xae             | # scas   %es:(%rdi),%al
+    data16condrep 0xaf        | # scas   %es:(%rdi),%ax
+    condrep? REXW_NONE? 0xaf  | # scas   %es:(%rdi),%eax/%rax
 
-     rep? 0xaa                 | # stos   %al,%es:(%rdi)
-     data16rep 0xab            | # stos   %ax,%es:(%rdi)
-     rep? REXW_NONE? 0xab)       # stos   %eax/%rax,%es:(%rdi)
-    @{ if (restricted_register != kSandboxedRdi &&
-           restricted_register != kSandboxedRsiSandboxedRdi) {
-         errors_detected |= RDI_UNSANDBOXDED;
-       } else {
-         BitmapClearBit(valid_targets, (instruction_start - data));
-         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
-       }
-       restricted_register = kNoRestrictedReg;
-    };
+    rep? 0xaa                 | # stos   %al,%es:(%rdi)
+    data16rep 0xab            | # stos   %ax,%es:(%rdi)
+    rep? REXW_NONE? 0xab      ; # stos   %eax/%rax,%es:(%rdi)
 
   # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
   string_instructions_rsi_rdi =
-    (condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
-     data16condrep 0xa7       | # cmpsw    %es:(%rdi),%ds:(%rsi)
-     condrep? REXW_NONE? 0xa7 | # cmps[lq] %es:(%rdi),%ds:(%rsi)
+    condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
+    data16condrep 0xa7       | # cmpsw    %es:(%rdi),%ds:(%rsi)
+    condrep? REXW_NONE? 0xa7 | # cmps[lq] %es:(%rdi),%ds:(%rsi)
 
-     rep? 0xa4                | # movsb    %es:(%rdi),%ds:(%rsi)
-     data16rep 0xa5           | # movsw    %es:(%rdi),%ds:(%rsi)
-     rep? REXW_NONE? 0xa5)      # movs[lq] %es:(%rdi),%ds:(%rsi)
-    @{ if (restricted_register != kSandboxedRsiSandboxedRdi) {
-         errors_detected |= RDI_UNSANDBOXDED;
-         if (restricted_register != kSandboxedRsi) {
-           errors_detected |= RSI_UNSANDBOXDED;
-         }
-       } else {
-         BitmapClearBit(valid_targets, (instruction_start - data));
-         BitmapClearBit(valid_targets, (sandboxed_rsi - data));
-         BitmapClearBit(valid_targets, (sandboxed_rsi_restricted_rdi - data));
-         BitmapClearBit(valid_targets, (sandboxed_rdi - data));
-       }
-       restricted_register = kNoRestrictedReg;
+    rep? 0xa4                | # movsb    %es:(%rdi),%ds:(%rsi)
+    data16rep 0xa5           | # movsw    %es:(%rdi),%ds:(%rsi)
+    rep? REXW_NONE? 0xa5     ; # movs[lq] %es:(%rdi),%ds:(%rsi)
+
+  sandbox_string_instructions_rsi_no_rdi =
+    (0x89 | 0x8b) 0xf6         . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37        . # lea (%r15,%rsi,1),%rsi
+    string_instructions_rsi_no_rdi
+    @{
+       BitmapClearBit(valid_targets, (instruction_start - data));
+       BitmapClearBit(valid_targets, (instruction_start - 4 - data));
+       restricted_register = NO_REG;
+    };
+
+  sandbox_string_instructions_rdi_no_rsi =
+    (0x89 | 0x8b) 0xff         . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f        . # lea (%r15,%rdi,1),%rdi
+    string_instructions_rdi_no_rsi
+    @{
+       BitmapClearBit(valid_targets, (instruction_start - data));
+       BitmapClearBit(valid_targets, (instruction_start - 4 - data));
+       restricted_register = NO_REG;
+    };
+
+  # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
+  sandbox_string_instructions_rsi_rdi =
+    (0x89 | 0x8b) 0xf6        . # mov %esi,%esi
+    0x49 0x8d 0x34 0x37       . # lea (%r15,%rsi,1),%rsi
+    (0x89 | 0x8b) 0xff        . # mov %edi,%edi
+    0x49 0x8d 0x3c 0x3f       . # lea (%r15,%rdi,1),%rdi
+    string_instructions_rsi_rdi
+    @{
+       BitmapClearBit(valid_targets, (instruction_start - data));
+       BitmapClearBit(valid_targets, (instruction_start - 4 - data));
+       BitmapClearBit(valid_targets, (instruction_start - 6 - data));
+       BitmapClearBit(valid_targets, (instruction_start - 10 - data));
+       restricted_register = NO_REG;
     };
 
   special_instruction =
@@ -293,11 +267,9 @@
     rsp_sandboxing |
     old_naclcall_or_nacljmp |
     naclcall_or_nacljmp |
-    rsi_sandboxing |
-    rdi_sandboxing |
-    string_instructions_rsi_no_rdi |
-    string_instructions_rdi_no_rsi |
-    string_instructions_rsi_rdi;
+    sandbox_string_instructions_rsi_no_rdi |
+    sandbox_string_instructions_rdi_no_rsi |
+    sandbox_string_instructions_rsi_rdi;
 
   # Remove special instructions which are only allowed in special cases.
   normal_instruction = one_instruction - special_instruction;
@@ -350,12 +322,6 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   enum register_name base = NO_REG;
   enum register_name index = NO_REG;
   int result = 0;
-  /* These are borders of the appropriate instructions.  Initialize them to make
-   * compiler happy: they are never used uninitialized even without explicit
-   * initialization but GCC is not sophysicated enough to prove that.  */
-  const uint8_t *sandboxed_rsi = 0;
-  const uint8_t *sandboxed_rsi_restricted_rdi = 0;
-  const uint8_t *sandboxed_rdi = 0;
 
   size_t i;
 
@@ -369,8 +335,8 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
     const uint8_t *end_of_bundle = current_position + kBundleSize;
+    enum register_name restricted_register = NO_REG;
     int current_state;
-    uint8_t restricted_register = kNoRestrictedReg;
 
     %% write init;
     %% write exec;
