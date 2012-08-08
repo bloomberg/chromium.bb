@@ -116,6 +116,9 @@ void BrowsingDataExtensionFunction::OnBrowsingDataRemoverDone() {
 }
 
 bool BrowsingDataExtensionFunction::RunImpl() {
+  // If we don't have a profile, something's pretty wrong.
+  DCHECK(profile());
+
   if (BrowsingDataRemover::is_removing()) {
     error_ = extension_browsing_data_api_constants::kOneAtATimeError;
     return false;
@@ -147,13 +150,12 @@ bool BrowsingDataExtensionFunction::RunImpl() {
   if (removal_mask_ & BrowsingDataRemover::REMOVE_PLUGIN_DATA) {
     // If we're being asked to remove plugin data, check whether it's actually
     // supported.
-    Profile* profile = GetCurrentBrowser()->profile();
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(
             &BrowsingDataExtensionFunction::CheckRemovingPluginDataSupported,
             this,
-            PluginPrefs::GetForProfile(profile)));
+            PluginPrefs::GetForProfile(profile())));
   } else {
     StartRemoving();
   }
@@ -180,8 +182,8 @@ void BrowsingDataExtensionFunction::StartRemoving() {
   // that we're notified after removal) and call remove() with the arguments
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
-  BrowsingDataRemover* remover = new BrowsingDataRemover(
-      GetCurrentBrowser()->profile(), remove_since_, base::Time::Now());
+  BrowsingDataRemover* remover = new BrowsingDataRemover(profile(),
+      remove_since_, base::Time::Now());
   remover->AddObserver(this);
   remover->Remove(removal_mask_, origin_set_mask_);
 }
