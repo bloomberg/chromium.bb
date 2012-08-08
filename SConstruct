@@ -866,6 +866,11 @@ Alias('sel_ldr_sled_tests', [])
 Alias('small_tests', [])
 Alias('medium_tests', [])
 Alias('large_tests', [])
+
+Alias('small_tests_irt', [])
+Alias('medium_tests_irt', [])
+Alias('large_tests_irt', [])
+
 Alias('pepper_browser_tests', [])
 Alias('chrome_browser_tests', [])
 Alias('pyauto_tests', [])
