@@ -138,6 +138,20 @@ class EventGenerator {
                              const base::TimeDelta& duration,
                              int steps);
 
+  // Generates press, move, release touch-events to generate a sequence of
+  // multi-finger scroll events. |count| specifies the number of touch-points
+  // that should generate the scroll events. |start| are the starting positions
+  // of all the touch points. |steps| and |event_separation_time_ms| are
+  // relevant when testing velocity/fling/swipe, otherwise these can be any
+  // non-zero value. |delta_x| and |delta_y| are the amount that each finger
+  // should be moved.
+  void GestureMultiFingerScroll(int count,
+                                const gfx::Point* start,
+                                int event_separation_time_ms,
+                                int steps,
+                                int move_x,
+                                int move_y);
+
   // Generates a key press event. On platforms except Windows and X11, a key
   // event without native_event() is generated. Note that ui::EF_ flags should
   // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.

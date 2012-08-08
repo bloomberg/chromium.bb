@@ -205,6 +205,45 @@ void EventGenerator::GestureScrollSequence(const gfx::Point& start,
   Dispatch(release);
 }
 
+void EventGenerator::GestureMultiFingerScroll(int count,
+                                              const gfx::Point* start,
+                                              int event_separation_time_ms,
+                                              int steps,
+                                              int move_x,
+                                              int move_y) {
+  const int kMaxTouchPoints = 10;
+  gfx::Point points[kMaxTouchPoints];
+  CHECK_LE(count, kMaxTouchPoints);
+  CHECK_GT(steps, 0);
+
+  int delta_x = move_x / steps;
+  int delta_y = move_y / steps;
+
+  base::TimeDelta press_time = base::Time::NowFromSystemTime() - base::Time();
+  for (int i = 0; i < count; ++i) {
+    points[i] = start[i];
+    TouchEvent press(ui::ET_TOUCH_PRESSED, points[i], i, press_time);
+    Dispatch(press);
+  }
+
+  for (int step = 0; step < steps; ++step) {
+    base::TimeDelta move_time = press_time +
+        base::TimeDelta::FromMilliseconds(event_separation_time_ms * step);
+    for (int i = 0; i < count; ++i) {
+      points[i].Offset(delta_x, delta_y);
+      TouchEvent move(ui::ET_TOUCH_MOVED, points[i], i, move_time);
+      Dispatch(move);
+    }
+  }
+
+  base::TimeDelta release_time = press_time +
+      base::TimeDelta::FromMilliseconds(event_separation_time_ms * steps);
+  for (int i = 0; i < count; ++i) {
+    TouchEvent release(ui::ET_TOUCH_RELEASED, points[i], i, release_time);
+    Dispatch(release);
+  }
+}
+
 void EventGenerator::PressKey(ui::KeyboardCode key_code, int flags) {
   DispatchKeyEvent(true, key_code, flags);
 }

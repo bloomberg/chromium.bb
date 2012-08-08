@@ -17,8 +17,10 @@
 #include "base/time.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
 namespace test {
@@ -92,6 +94,17 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate,
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyBrightnessControlDelegate);
+};
+
+class ResizableWidgetDelegate : public views::WidgetDelegateView {
+ public:
+  ResizableWidgetDelegate() {}
+  virtual ~ResizableWidgetDelegate() {}
+
+ private:
+  virtual bool CanResize() const OVERRIDE { return true; }
+
+  DISALLOW_COPY_AND_ASSIGN(ResizableWidgetDelegate);
 };
 
 } // namespace
@@ -428,6 +441,61 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   // Check if state has reset.
   EXPECT_EQ(NULL, GetLongPressAffordanceTarget());
   EXPECT_EQ(NULL, GetLongPressAffordanceView());
+}
+
+TEST_F(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  views::Widget* toplevel = views::Widget::CreateWindowWithBounds(
+      new ResizableWidgetDelegate, gfx::Rect(0, 0, 100, 100));
+  toplevel->Show();
+
+  const int kSteps = 15;
+  const int kTouchPoints = 4;
+  gfx::Point points[kTouchPoints] = {
+    gfx::Point(10, 30),
+    gfx::Point(30, 20),
+    gfx::Point(50, 30),
+    gfx::Point(80, 50)
+  };
+
+  aura::test::EventGenerator generator(root_window,
+                                       toplevel->GetNativeWindow());
+
+  // Swipe down to minimize.
+  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
+  EXPECT_TRUE(wm::IsWindowMinimized(toplevel->GetNativeWindow()));
+
+  toplevel->Restore();
+
+  // Swipe up to maximize.
+  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, -150);
+  EXPECT_TRUE(wm::IsWindowMaximized(toplevel->GetNativeWindow()));
+
+  toplevel->Restore();
+
+  // Swipe right to snap.
+  gfx::Rect normal_bounds = toplevel->GetWindowBoundsInScreen();
+  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 150, 0);
+  gfx::Rect right_tile_bounds = toplevel->GetWindowBoundsInScreen();
+  EXPECT_NE(normal_bounds.ToString(), right_tile_bounds.ToString());
+
+  // Swipe left to snap.
+  gfx::Point left_points[kTouchPoints];
+  for (int i = 0; i < kTouchPoints; ++i) {
+    left_points[i] = points[i];
+    left_points[i].Offset(right_tile_bounds.x(), right_tile_bounds.y());
+  }
+  generator.GestureMultiFingerScroll(kTouchPoints, left_points, 15, kSteps,
+      -150, 0);
+  gfx::Rect left_tile_bounds = toplevel->GetWindowBoundsInScreen();
+  EXPECT_NE(normal_bounds.ToString(), left_tile_bounds.ToString());
+  EXPECT_NE(right_tile_bounds.ToString(), left_tile_bounds.ToString());
+
+  // Swipe right again.
+  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 150, 0);
+  gfx::Rect current_bounds = toplevel->GetWindowBoundsInScreen();
+  EXPECT_NE(current_bounds.ToString(), left_tile_bounds.ToString());
+  EXPECT_EQ(current_bounds.ToString(), right_tile_bounds.ToString());
 }
 
 }  // namespace test
