@@ -634,6 +634,9 @@ const char kUnknownString[] = "UNKNOWN";
 }  // namespace flimflam
 
 namespace shill {
+// Function names.
+const char kRefreshFunction[] = "Refresh";
+
 // Device property names.
 const char kReceiveByteCountProperty[] = "ReceiveByteCount";
 const char kTransmitByteCountProperty[] = "TransmitByteCount";
@@ -659,6 +662,12 @@ const char kStaticIPMtuProperty[] = "StaticIP.Mtu";
 const char kStaticIPNameServersProperty[] = "StaticIP.NameServers";
 const char kStaticIPPeerAddressProperty[] = "StaticIP.PeerAddress";
 const char kStaticIPPrefixlenProperty[] = "StaticIP.Prefixlen";
+const char kSavedIPAddressProperty[] = "SavedIP.Address";
+const char kSavedIPGatewayProperty[] = "SavedIP.Gateway";
+const char kSavedIPMtuProperty[] = "SavedIP.Mtu";
+const char kSavedIPNameServersProperty[] = "SavedIP.NameServers";
+const char kSavedIPPeerAddressProperty[] = "SavedIP.PeerAddress";
+const char kSavedIPPrefixlenProperty[] = "SavedIP.Prefixlen";
 const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
 
 // WiFi Service Vendor Information dictionary properties.
