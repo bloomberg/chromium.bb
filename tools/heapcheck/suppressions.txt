@@ -1508,3 +1508,11 @@
    fun:ReloadButton::ReloadButton
    fun:ReloadButtonTest::ReloadButtonTest
 }
+{
+   bug_141255
+   Heapcheck:Leak
+   ...
+   fun:policy::BrowserPolicyConnector::CreatePlatformProvider
+   fun:policy::BrowserPolicyConnector::Init
+   fun:TestingBrowserProcess::browser_policy_connector
+}
