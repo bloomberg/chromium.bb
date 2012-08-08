@@ -15,7 +15,6 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
  public:
   ButtonDropDownDragTest()
       : button_(NULL),
-        ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
         menu_shown_(false),
         menu_closed_(false) {
   }
@@ -25,7 +24,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
 
   // ViewEventTestBase implementation.
   virtual void SetUp() OVERRIDE {
-    button_ = new views::ButtonDropDown(NULL, &menu_model_);
+    button_ = new views::ButtonDropDown(NULL, new ui::SimpleMenuModel(this));
 
     ViewEventTestBase::SetUp();
   }
@@ -125,7 +124,6 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
 
  private:
   views::ButtonDropDown* button_;
-  ui::SimpleMenuModel menu_model_;
   bool menu_shown_;
   bool menu_closed_;
 };

@@ -1762,7 +1762,7 @@ class ButtonDropDownTest : public ViewTest {
 
   virtual void SetUp() OVERRIDE {
     ViewTest::SetUp();
-    test_dialog_ = new TestDialog(&mock_menu_model_);
+    test_dialog_ = new TestDialog(new MockMenuModel());
     Widget* window =
         Widget::CreateWindowWithBounds(test_dialog_, gfx::Rect(0, 0, 100, 100));
     test_dialog_->widget_ = window;
@@ -1779,7 +1779,6 @@ class ButtonDropDownTest : public ViewTest {
   }
 
   TestDialog* test_dialog_;
-  MockMenuModel mock_menu_model_;
   // This is owned by test_dialog_.
   View* button_as_view_;
 

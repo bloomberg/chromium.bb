@@ -175,8 +175,8 @@ void ButtonDropDown::ShowDropDownMenu() {
   menu_showing_ = true;
 
   // Create and run menu.  Display an empty menu if model is NULL.
-  if (model_) {
-    MenuModelAdapter menu_delegate(model_);
+  if (model_.get()) {
+    MenuModelAdapter menu_delegate(model_.get());
     menu_delegate.set_triggerable_event_flags(triggerable_event_flags());
     menu_runner_.reset(new MenuRunner(menu_delegate.CreateMenu()));
     MenuRunner::RunResult result =

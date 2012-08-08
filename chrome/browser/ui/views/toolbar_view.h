@@ -214,9 +214,6 @@ class ToolbarView : public views::AccessiblePaneView,
   // of |this|.
   void SetLocationBarContainerBounds(const gfx::Rect& bounds);
 
-  scoped_ptr<BackForwardMenuModel> back_menu_model_;
-  scoped_ptr<BackForwardMenuModel> forward_menu_model_;
-
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 

@@ -220,12 +220,8 @@ ToolbarView::~ToolbarView() {
 
 void ToolbarView::Init(views::View* location_bar_parent,
                        views::View* popup_parent_view) {
-  back_menu_model_.reset(new BackForwardMenuModel(
+  back_ = new views::ButtonDropDown(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
-  forward_menu_model_.reset(new BackForwardMenuModel(
-      browser_, BackForwardMenuModel::FORWARD_MENU));
-
-  back_ = new views::ButtonDropDown(this, back_menu_model_.get());
   back_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                      ui::EF_MIDDLE_MOUSE_BUTTON);
   back_->set_tag(IDC_BACK);
@@ -235,7 +231,8 @@ void ToolbarView::Init(views::View* location_bar_parent,
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->set_id(VIEW_ID_BACK_BUTTON);
 
-  forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
+  forward_ = new views::ButtonDropDown(this, new BackForwardMenuModel(
+      browser_, BackForwardMenuModel::FORWARD_MENU));
   forward_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                         ui::EF_MIDDLE_MOUSE_BUTTON);
   forward_->set_tag(IDC_FORWARD);

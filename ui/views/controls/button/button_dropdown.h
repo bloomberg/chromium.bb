@@ -29,6 +29,7 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton {
   // The button's class name.
   static const char kViewClassName[];
 
+  // Takes ownership of the |model|.
   ButtonDropDown(ButtonListener* listener, ui::MenuModel* model);
   virtual ~ButtonDropDown();
 
@@ -67,7 +68,7 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton {
 
  private:
   // The model that populates the attached menu.
-  ui::MenuModel* model_;
+  scoped_ptr<ui::MenuModel> model_;
 
   // Indicates if menu is currently showing.
   bool menu_showing_;
