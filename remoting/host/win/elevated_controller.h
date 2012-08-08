@@ -16,10 +16,9 @@
 
 namespace remoting {
 
-class ATL_NO_VTABLE __declspec(uuid(DAEMON_CONTROLLER_CLSID)) ElevatedController
+class ATL_NO_VTABLE ElevatedController
     : public ATL::CComObjectRootEx<ATL::CComSingleThreadModel>,
-      public ATL::CComCoClass<ElevatedController,
-                              &__uuidof(ElevatedController)>,
+      public ATL::CComCoClass<ElevatedController, &CLSID_ElevatedController>,
       public ATL::IDispatchImpl<IDaemonControl2, &IID_IDaemonControl2,
                                 &LIBID_ChromotingElevatedControllerLib, 1, 1> {
  public:
@@ -58,7 +57,7 @@ class ATL_NO_VTABLE __declspec(uuid(DAEMON_CONTROLLER_CLSID)) ElevatedController
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 };
 
-OBJECT_ENTRY_AUTO(__uuidof(ElevatedController), ElevatedController)
+OBJECT_ENTRY_AUTO(CLSID_ElevatedController, ElevatedController)
 
 } // namespace remoting
 
