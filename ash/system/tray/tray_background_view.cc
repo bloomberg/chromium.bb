@@ -7,6 +7,8 @@
 #include "ash/launcher/background_animator.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -137,8 +139,6 @@ TrayBackgroundView::TrayBackgroundView(
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_IMMEDIATE);
 
-  SetBorder();
-
   tray_container_ = new TrayContainer(shelf_alignment_);
   SetContents(tray_container_);
 }
@@ -193,20 +193,24 @@ void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
 }
 
 void TrayBackgroundView::SetBorder() {
+  views::View* parent = status_area_widget_->status_area_widget_delegate();
+  int child_count = parent->child_count();
+  DCHECK(child_count > 0);
+  int on_edge = (this == parent->child_at(child_count-1));
   // Change the border padding for different shelf alignment.
   if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-    set_border(views::Border::CreateEmptyBorder(0, 0,
-        kPaddingFromBottomOfScreenBottomAlignment,
-        kPaddingFromRightEdgeOfScreenBottomAlignment));
+    set_border(views::Border::CreateEmptyBorder(
+        0, 0, kPaddingFromBottomOfScreenBottomAlignment,
+        on_edge ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0));
   } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
-    set_border(views::Border::CreateEmptyBorder(0,
-        kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
-        kPaddingFromBottomOfScreenVerticalAlignment,
+    set_border(views::Border::CreateEmptyBorder(
+        0, kPaddingFromOuterEdgeOfLauncherVerticalAlignment,
+        on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
         kPaddingFromInnerEdgeOfLauncherVerticalAlignment));
   } else {
-    set_border(views::Border::CreateEmptyBorder(0,
-        kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
-        kPaddingFromBottomOfScreenVerticalAlignment,
+    set_border(views::Border::CreateEmptyBorder(
+        0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+        on_edge ? kPaddingFromBottomOfScreenVerticalAlignment : 0,
         kPaddingFromOuterEdgeOfLauncherVerticalAlignment));
   }
 }

@@ -20,7 +20,7 @@
 
 namespace {
 
-int kTraySpacing = 1;
+int kTraySpacing = 8;
 
 }  // namespace
 

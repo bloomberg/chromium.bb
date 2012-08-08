@@ -276,20 +276,20 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 namespace internal {
 
 StatusAreaWidget::StatusAreaWidget()
-    : widget_delegate_(new internal::StatusAreaWidgetDelegate),
+    : status_area_widget_delegate_(new internal::StatusAreaWidgetDelegate),
       system_tray_(NULL),
       web_notification_tray_(NULL),
       login_status_(user::LOGGED_IN_NONE) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.delegate = widget_delegate_;
+  params.delegate = status_area_widget_delegate_;
   params.parent =
       Shell::GetPrimaryRootWindowController()->GetContainer(
           ash::internal::kShellWindowId_StatusContainer);
   params.transparent = true;
   Init(params);
   set_focus_on_creation(false);
-  SetContentsView(widget_delegate_);
+  SetContentsView(status_area_widget_delegate_);
   GetNativeView()->SetName("StatusAreaWidget");
 }
 
@@ -297,8 +297,11 @@ StatusAreaWidget::~StatusAreaWidget() {
 }
 
 void StatusAreaWidget::CreateTrayViews(ShellDelegate* shell_delegate) {
-  AddWebNotificationTray(new WebNotificationTray(this));
-  AddSystemTray(new SystemTray(this), shell_delegate);
+  AddWebNotificationTray();
+  AddSystemTray(shell_delegate);
+  // SetBorder() must be called after all trays have been created.
+  web_notification_tray_->SetBorder();
+  system_tray_->SetBorder();
 }
 
 void StatusAreaWidget::Shutdown() {
@@ -312,36 +315,34 @@ void StatusAreaWidget::Shutdown() {
   web_notification_tray_ = NULL;
 }
 
-void StatusAreaWidget::AddSystemTray(SystemTray* system_tray,
-                                     ShellDelegate* shell_delegate) {
-  system_tray_ = system_tray;
-  widget_delegate_->AddTray(system_tray);
+void StatusAreaWidget::AddSystemTray(ShellDelegate* shell_delegate) {
+  system_tray_ = new SystemTray(this);
+  status_area_widget_delegate_->AddTray(system_tray_);
   system_tray_->Initialize();  // Called after added to widget.
 
   if (shell_delegate) {
     system_tray_delegate_.reset(
-        shell_delegate->CreateSystemTrayDelegate(system_tray));
+        shell_delegate->CreateSystemTrayDelegate(system_tray_));
   }
   if (!system_tray_delegate_.get())
     system_tray_delegate_.reset(new DummySystemTrayDelegate());
 
-  system_tray->CreateItems();  // Called after delegate is created.
+  system_tray_->CreateItems();  // Called after delegate is created.
   UpdateAfterLoginStatusChange(system_tray_delegate_->GetUserLoginStatus());
 }
 
-void StatusAreaWidget::AddWebNotificationTray(
-    WebNotificationTray* web_notification_tray) {
-  web_notification_tray_ = web_notification_tray;
-  widget_delegate_->AddTray(web_notification_tray);
+void StatusAreaWidget::AddWebNotificationTray() {
+  web_notification_tray_ = new WebNotificationTray(this);
+  status_area_widget_delegate_->AddTray(web_notification_tray_);
 }
 
 void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
-  widget_delegate_->set_alignment(alignment);
+  status_area_widget_delegate_->set_alignment(alignment);
   if (system_tray_)
     system_tray_->SetShelfAlignment(alignment);
   if (web_notification_tray_)
     web_notification_tray_->SetShelfAlignment(alignment);
-  widget_delegate_->UpdateLayout();
+  status_area_widget_delegate_->UpdateLayout();
 }
 
 void StatusAreaWidget::SetPaintsBackground(

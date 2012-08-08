@@ -56,6 +56,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // notification tray.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
+  internal::StatusAreaWidgetDelegate* status_area_widget_delegate() {
+    return status_area_widget_delegate_;
+  }
   SystemTray* system_tray() { return system_tray_; }
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
@@ -67,12 +70,12 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   user::LoginStatus login_status() const { return login_status_; }
 
  private:
-  void AddSystemTray(SystemTray* system_tray, ShellDelegate* shell_delegate);
-  void AddWebNotificationTray(WebNotificationTray* web_notification_tray);
+  void AddSystemTray(ShellDelegate* shell_delegate);
+  void AddWebNotificationTray();
 
   scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
   // Weak pointers to View classes that are parented to StatusAreaWidget:
-  internal::StatusAreaWidgetDelegate* widget_delegate_;
+  internal::StatusAreaWidgetDelegate* status_area_widget_delegate_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
   user::LoginStatus login_status_;

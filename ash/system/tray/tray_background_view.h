@@ -81,6 +81,10 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
 
+  // Called after all status area trays have been created. Sets the border
+  // based on the position of the view.
+  void SetBorder();
+
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;
   }
@@ -88,8 +92,6 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
 
  private:
-  void SetBorder();
-
   // Unowned pointer to parent widget.
   StatusAreaWidget* status_area_widget_;
 
