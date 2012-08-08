@@ -149,6 +149,10 @@ CONTENT_EXPORT bool PageTransitionIsRedirect(PageTransition type);
 // Return the qualifier
 CONTENT_EXPORT int32 PageTransitionGetQualifier(PageTransition type);
 
+// Returns true if the transition can be triggered by the web instead of
+// through UI or similar.
+CONTENT_EXPORT bool PageTransitionIsWebTriggerable(PageTransition type);
+
 // Return a string version of the core type values.
 CONTENT_EXPORT const char* PageTransitionGetCoreTransitionString(
     PageTransition type);

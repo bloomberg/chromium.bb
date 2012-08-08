@@ -11,6 +11,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -23,6 +24,7 @@ namespace extensions {
 bool ResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,
     WebKit::WebFrame* frame,
+    content::PageTransition transition_type,
     const ExtensionSet* loaded_extensions) {
   CHECK(resource_url.SchemeIs(chrome::kExtensionScheme));
 
@@ -66,8 +68,11 @@ bool ResourceRequestPolicy::CanRequestResource(
     //     to support the devtools extension APIs)
     bool is_dev_tools = page_url.SchemeIs(chrome::kChromeDevToolsScheme) &&
         !extension->devtools_url().is_empty();
+    bool transition_allowed =
+        !content::PageTransitionIsWebTriggerable(transition_type);
 
-    if (!is_empty_origin && !is_own_resource && !is_dev_tools) {
+    if (!is_empty_origin && !is_own_resource &&
+        !is_dev_tools && !transition_allowed) {
       std::string message = base::StringPrintf(
           "Denying load of %s. Resources must be listed in the "
           "web_accessible_resources manifest key in order to be loaded by "

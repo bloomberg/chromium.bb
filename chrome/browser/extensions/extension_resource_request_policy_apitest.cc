@@ -206,6 +206,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       L"window.domAutomationController.send(document.title)",
     &result));
   EXPECT_EQ("Loading CER:// failed.", result);
+
+  GURL newtab_page("chrome://newtab");
+  GURL accessible_newtab_override(
+      test_server()->GetURL(
+          "files/extensions/api_test/extension_resource_request_policy/"
+          "web_accessible/accessible_history_navigation.html"));
+  ui_test_utils::NavigateToURL(browser(), newtab_page);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), accessible_newtab_override, 2);
+  ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
+    chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(document.title)",
+    &result));
+  EXPECT_EQ("New Tab Page Loaded Successfully", result);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,

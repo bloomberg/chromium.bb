@@ -90,6 +90,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                           bool is_initial_navigation,
                           bool* send_referrer) OVERRIDE;
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
+                               content::PageTransition transition_type,
                                const GURL& url,
                                GURL* new_url) OVERRIDE;
   virtual bool ShouldPumpEventsDuringCookieMessage() OVERRIDE;

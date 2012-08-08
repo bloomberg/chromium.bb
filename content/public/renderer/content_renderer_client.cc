@@ -63,9 +63,11 @@ bool ContentRendererClient::ShouldFork(WebKit::WebFrame* frame,
   return false;
 }
 
-bool ContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
-                                            const GURL& url,
-                                            GURL* new_url) {
+bool ContentRendererClient::WillSendRequest(
+    WebKit::WebFrame* frame,
+    PageTransition transition_type,
+    const GURL& url,
+    GURL* new_url) {
   return false;
 }
 

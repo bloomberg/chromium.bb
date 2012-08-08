@@ -5,6 +5,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -777,14 +778,16 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
 }
 
 bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
-                                                  const GURL& url,
-                                                  GURL* new_url) {
+    content::PageTransition transition_type,
+    const GURL& url,
+    GURL* new_url) {
   // Check whether the request should be allowed. If not allowed, we reset the
   // URL to something invalid to prevent the request and cause an error.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
       !extensions::ResourceRequestPolicy::CanRequestResource(
           url,
           frame,
+          transition_type,
           extension_dispatcher_->extensions())) {
     *new_url = GURL("chrome-extension://invalid/");
     return true;

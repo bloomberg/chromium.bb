@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_message.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/page_transition_types.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageVisibilityState.h"
 #include "v8/include/v8.h"
 
@@ -138,6 +139,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Notifies the embedder that the given frame is requesting the resource at
   // |url|.  If the function returns true, the url is changed to |new_url|.
   virtual bool WillSendRequest(WebKit::WebFrame* frame,
+                               PageTransition transition_type,
                                const GURL& url,
                                GURL* new_url);
 

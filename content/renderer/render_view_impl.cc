@@ -1301,9 +1301,9 @@ void RenderViewImpl::OnSelectRange(const gfx::Point& start,
 
 void RenderViewImpl::OnSetHistoryLengthAndPrune(int history_length,
                                                 int32 minimum_page_id) {
-  DCHECK(history_length >= 0);
+  DCHECK_GE(history_length, 0);
   DCHECK(history_list_offset_ == history_list_length_ - 1);
-  DCHECK(minimum_page_id >= -1);
+  DCHECK_GE(minimum_page_id, -1);
 
   // Generate the new list.
   std::vector<int32> new_history_page_ids(history_length, -1);
@@ -2803,10 +2803,10 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
 
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  if (content_initiated)
+  if (content_initiated) {
     document_state->set_navigation_state(
         NavigationState::CreateContentInitiated());
-  else {
+  } else {
     document_state->set_navigation_state(CreateNavigationStateFromPending());
     pending_navigation_params_.reset();
   }
@@ -2940,7 +2940,7 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
       int width, height;
       if (base::StringToInt(tokens[0], &width) &&
           base::StringToInt(tokens[1], &height))
-        webview()->setFixedLayoutSize(WebSize(width,height));
+        webview()->setFixedLayoutSize(WebSize(width, height));
     }
   }
 }
@@ -3320,20 +3320,21 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : top_data_source;
 
-  GURL request_url(request.url());
-  GURL new_url;
-  if (content::GetContentClient()->renderer()->WillSendRequest(
-      frame, request_url, &new_url)) {
-    request.setURL(WebURL(new_url));
-  }
-
   content::PageTransition transition_type = content::PAGE_TRANSITION_LINK;
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
   DCHECK(document_state);
   NavigationState* navigation_state = document_state->navigation_state();
+  transition_type = navigation_state->transition_type();
+
+  GURL request_url(request.url());
+  GURL new_url;
+  if (content::GetContentClient()->renderer()->WillSendRequest(
+      frame, transition_type, request_url, &new_url)) {
+    request.setURL(WebURL(new_url));
+  }
+
   if (document_state->is_cache_policy_override_set())
     request.setCachePolicy(document_state->cache_policy_override());
-  transition_type = navigation_state->transition_type();
 
   WebKit::WebReferrerPolicy referrer_policy;
   if (document_state && document_state->is_referrer_policy_set()) {
@@ -4545,7 +4546,7 @@ void RenderViewImpl::OnScriptEvalRequest(const string16& frame_xpath,
 void RenderViewImpl::OnPostMessageEvent(
     const ViewMsg_PostMessage_Params& params) {
   // TODO(creis): Support sending to subframes.
-  WebFrame *frame = webview()->mainFrame();
+  WebFrame* frame = webview()->mainFrame();
 
   // Find the source frame if it exists.
   // TODO(creis): Support source subframes.
@@ -5301,7 +5302,6 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 #endif
       (*plugin_it)->SetContentAreaFocus(enable);
     }
-
   }
   // Notify all Pepper plugins.
   pepper_delegate_.OnSetFocus(enable);
