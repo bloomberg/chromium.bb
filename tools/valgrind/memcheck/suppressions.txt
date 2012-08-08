@@ -5829,6 +5829,24 @@
    fun:_ZN6policy22BrowserPolicyConnector4InitEv
    fun:_ZN21TestingBrowserProcess24browser_policy_connectorEv
 }
+{
+   bug_141322_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions16SettingsFrontendC1ERK13scoped_refptrINS_22SettingsStorageFactoryEEP7Profile
+   fun:_ZN10extensions16SettingsFrontend6CreateEP7Profile
+   fun:_ZN16ExtensionServiceC1EP7ProfilePK11CommandLineRK8FilePathPN10extensions14ExtensionPrefsEbb
+   fun:_ZN10extensions19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRK8FilePathb
+   fun:_ZN6chrome12_GLOBAL__N_129MediaGalleriesPreferencesTest5SetUpEv
+}
+{
+   bug_141322_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16ExtensionServiceC1EP7ProfilePK11CommandLineRK8FilePathPN10extensions14ExtensionPrefsEbb
+   fun:_ZN10extensions19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRK8FilePathb
+   fun:_ZN6chrome12_GLOBAL__N_129MediaGalleriesPreferencesTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
