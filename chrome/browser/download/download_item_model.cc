@@ -315,6 +315,7 @@ string16 BaseDownloadItemModel::InterruptReasonMessage(int reason) {
 
   switch (reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_NONE:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS;
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_ACCESS_DENIED;

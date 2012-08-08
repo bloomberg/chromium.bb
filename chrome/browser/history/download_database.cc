@@ -38,6 +38,43 @@ static const char kSchema[] =
   "end_time INTEGER NOT NULL,"        // When the download completed.
   "opened INTEGER NOT NULL)";         // 1 if it has ever been opened else 0
 
+// These constants and next two functions are used to allow
+// DownloadItem::DownloadState to change without breaking the database schema.
+// They guarantee that the values of the |state| field in the database are one
+// of the values returned by StateToInt, and that the values of the |state|
+// field of the DownloadPersistentStoreInfos returned by QueryDownloads() are
+// one of the values returned by IntToState().
+static const int kStateInvalid = -1;
+static const int kStateInProgress = 0;
+static const int kStateComplete = 1;
+static const int kStateCancelled = 2;
+static const int kStateBug140687 = 3;
+static const int kStateInterrupted = 4;
+
+int StateToInt(DownloadItem::DownloadState state) {
+  switch (state) {
+    case DownloadItem::IN_PROGRESS: return kStateInProgress;
+    case DownloadItem::COMPLETE: return kStateComplete;
+    case DownloadItem::CANCELLED: return kStateCancelled;
+    case DownloadItem::REMOVING: return kStateInvalid;
+    case DownloadItem::INTERRUPTED: return kStateInterrupted;
+    case DownloadItem::MAX_DOWNLOAD_STATE: return kStateInvalid;
+    default: return kStateInvalid;
+  }
+}
+
+DownloadItem::DownloadState IntToState(int state) {
+  switch (state) {
+    case kStateInProgress: return DownloadItem::IN_PROGRESS;
+    case kStateComplete: return DownloadItem::COMPLETE;
+    case kStateCancelled: return DownloadItem::CANCELLED;
+    // We should not need kStateBug140687 here because MigrateDownloadState()
+    // is called in HistoryDatabase::Init().
+    case kStateInterrupted: return DownloadItem::INTERRUPTED;
+    default: return DownloadItem::MAX_DOWNLOAD_STATE;
+  }
+}
+
 #if defined(OS_POSIX)
 
 // Binds/reads the given file path to the given column of the given statement.
@@ -92,6 +129,14 @@ bool DownloadDatabase::EnsureColumnExists(
          GetDB().Execute(add_col.c_str());
 }
 
+bool DownloadDatabase::MigrateDownloadsState() {
+  sql::Statement statement(GetDB().GetUniqueStatement(
+        "UPDATE downloads SET state=? WHERE state=?"));
+  statement.BindInt(0, kStateInterrupted);
+  statement.BindInt(1, kStateBug140687);
+  return statement.Run();
+}
+
 bool DownloadDatabase::InitDownloadTable() {
   CheckThread();
   GetMetaTable().GetValue(kNextDownloadId, &next_id_);
@@ -130,10 +175,10 @@ void DownloadDatabase::QueryDownloads(
     info.start_time = base::Time::FromTimeT(statement.ColumnInt64(3));
     info.received_bytes = statement.ColumnInt64(4);
     info.total_bytes = statement.ColumnInt64(5);
-    info.state = statement.ColumnInt(6);
+    int state = statement.ColumnInt(6);
+    info.state = IntToState(state);
     info.end_time = base::Time::FromTimeT(statement.ColumnInt64(7));
     info.opened = statement.ColumnInt(8) != 0;
-    results->push_back(info);
     if (info.db_handle >= next_db_handle_)
       next_db_handle_ = info.db_handle + 1;
     if (!db_handles.insert(info.db_handle).second) {
@@ -141,17 +186,27 @@ void DownloadDatabase::QueryDownloads(
       base::debug::Alias(&info.db_handle);
       DCHECK(false);
     }
+    if (info.state == DownloadItem::MAX_DOWNLOAD_STATE) {
+      UMA_HISTOGRAM_COUNTS("Download.DatabaseInvalidState", state);
+      continue;
+    }
+    results->push_back(info);
   }
 }
 
 bool DownloadDatabase::UpdateDownload(const DownloadPersistentStoreInfo& data) {
   CheckThread();
   DCHECK(data.db_handle > 0);
+  int state = StateToInt(data.state);
+  if (state == kStateInvalid) {
+    // TODO(benjhayden) [D]CHECK instead.
+    return false;
+  }
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads "
       "SET received_bytes=?, state=?, end_time=?, opened=? WHERE id=?"));
   statement.BindInt64(0, data.received_bytes);
-  statement.BindInt(1, data.state);
+  statement.BindInt(1, state);
   statement.BindInt64(2, data.end_time.ToTimeT());
   statement.BindInt(3, (data.opened ? 1 : 0));
   statement.BindInt64(4, data.db_handle);
@@ -175,8 +230,8 @@ bool DownloadDatabase::CleanUpInProgressEntries() {
   CheckThread();
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads SET state=? WHERE state=?"));
-  statement.BindInt(0, DownloadItem::CANCELLED);
-  statement.BindInt(1, DownloadItem::IN_PROGRESS);
+  statement.BindInt(0, kStateCancelled);
+  statement.BindInt(1, kStateInProgress);
 
   return statement.Run();
 }
@@ -193,6 +248,10 @@ int64 DownloadDatabase::CreateDownload(
     CHECK_NE(0, next_db_handle_);
   }
 
+  int state = StateToInt(info.state);
+  if (state == kStateInvalid)
+    return false;
+
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
       "(id, full_path, url, start_time, received_bytes, total_bytes, state, "
@@ -207,7 +266,7 @@ int64 DownloadDatabase::CreateDownload(
   statement.BindInt64(3, info.start_time.ToTimeT());
   statement.BindInt64(4, info.received_bytes);
   statement.BindInt64(5, info.total_bytes);
-  statement.BindInt(6, info.state);
+  statement.BindInt(6, state);
   statement.BindInt64(7, info.end_time.ToTimeT());
   statement.BindInt(8, info.opened ? 1 : 0);
 
@@ -245,9 +304,9 @@ bool DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
     count.BindInt64(
         1,
         end_time ? end_time : std::numeric_limits<int64>::max());
-    count.BindInt(2, DownloadItem::COMPLETE);
-    count.BindInt(3, DownloadItem::CANCELLED);
-    count.BindInt(4, DownloadItem::INTERRUPTED);
+    count.BindInt(2, kStateComplete);
+    count.BindInt(3, kStateCancelled);
+    count.BindInt(4, kStateInterrupted);
     if (count.Step())
       num_downloads_deleted = count.ColumnInt(0);
   }
@@ -265,9 +324,9 @@ bool DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
     statement.BindInt64(
         1,
         end_time ? end_time : std::numeric_limits<int64>::max());
-    statement.BindInt(2, DownloadItem::COMPLETE);
-    statement.BindInt(3, DownloadItem::CANCELLED);
-    statement.BindInt(4, DownloadItem::INTERRUPTED);
+    statement.BindInt(2, kStateComplete);
+    statement.BindInt(3, kStateCancelled);
+    statement.BindInt(4, kStateInterrupted);
 
     success = statement.Run();
   }

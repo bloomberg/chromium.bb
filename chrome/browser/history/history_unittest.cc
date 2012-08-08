@@ -42,6 +42,7 @@
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
@@ -185,7 +186,7 @@ class HistoryTest : public testing::Test {
     MessageLoop::current()->Run();
   }
 
-  int64 AddDownload(int32 state, const Time& time) {
+  int64 AddDownload(DownloadItem::DownloadState state, const Time& time) {
     DownloadPersistentStoreInfo download(
         FilePath(FILE_PATH_LITERAL("foo-path")),
         GURL("foo-url"),
@@ -323,7 +324,7 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_EQ(0U, downloads.size());
 
   // Keep track of these as we need to update them later during the test.
-  DownloadID in_progress, removing;
+  DownloadID in_progress;
 
   // Create one with a 0 time.
   EXPECT_NE(0, AddDownload(DownloadItem::COMPLETE, Time()));
@@ -336,23 +337,23 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_NE(0, in_progress = AddDownload(DownloadItem::IN_PROGRESS, month_ago));
   EXPECT_NE(0, AddDownload(DownloadItem::CANCELLED, month_ago));
   EXPECT_NE(0, AddDownload(DownloadItem::INTERRUPTED, month_ago));
-  EXPECT_NE(0, removing = AddDownload(DownloadItem::REMOVING, month_ago));
+  EXPECT_EQ(0, AddDownload(DownloadItem::REMOVING, month_ago));
 
   // Test to see if inserts worked.
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(9U, downloads.size());
+  EXPECT_EQ(8U, downloads.size());
 
   // Try removing from current timestamp. This should delete the one in the
   // future and one very recent one.
   db_->RemoveDownloadsBetween(now, Time());
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(7U, downloads.size());
+  EXPECT_EQ(6U, downloads.size());
 
   // Try removing from two months ago. This should not delete items that are
   // 'in progress' or in 'removing' state.
   db_->RemoveDownloadsBetween(now - TimeDelta::FromDays(60), Time());
   db_->QueryDownloads(&downloads);
-  EXPECT_EQ(3U, downloads.size());
+  EXPECT_EQ(2U, downloads.size());
 
   // Download manager converts to TimeT, which is lossy, so we do the same
   // for comparison.
@@ -364,9 +365,6 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_EQ(DownloadItem::IN_PROGRESS, downloads[1].state);
   EXPECT_EQ(month_ago_lossy.ToInternalValue(),
             downloads[1].start_time.ToInternalValue());
-  EXPECT_EQ(DownloadItem::REMOVING, downloads[2].state);
-  EXPECT_EQ(month_ago_lossy.ToInternalValue(),
-            downloads[2].start_time.ToInternalValue());
 
   // Change state so we can delete the downloads.
   DownloadPersistentStoreInfo data;
@@ -375,9 +373,6 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   data.end_time = base::Time::Now();
   data.opened = false;
   data.db_handle = in_progress;
-  EXPECT_TRUE(db_->UpdateDownload(data));
-  data.state = DownloadItem::CANCELLED;
-  data.db_handle = removing;
   EXPECT_TRUE(db_->UpdateDownload(data));
 
   // Try removing from Time=0. This should delete all.
@@ -400,6 +395,77 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   db_->RemoveDownloadsBetween(Time(), Time());
   db_->QueryDownloads(&downloads);
   EXPECT_EQ(0U, downloads.size());
+}
+
+TEST_F(HistoryTest, MigrateDownloadsState) {
+  // Create the db and close it so that we can reopen it directly.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    {
+      // Manually force the version to 22.
+      sql::Statement version22(db.GetUniqueStatement(
+            "UPDATE meta SET value=22 WHERE key='version'"));
+      ASSERT_TRUE(version22.Run());
+    }
+    // Manually insert corrupted rows; there's infrastructure in place now to
+    // make this impossible, at least according to the test above.
+    for (int state = 0; state < 5; ++state) {
+      sql::Statement s(db.GetUniqueStatement(
+            "INSERT INTO downloads (id, full_path, url, start_time, "
+            "received_bytes, total_bytes, state, end_time, opened) VALUES "
+            "(?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      s.BindInt64(0, 1 + state);
+      s.BindString(1, "path");
+      s.BindString(2, "url");
+      s.BindInt64(3, base::Time::Now().ToTimeT());
+      s.BindInt64(4, 100);
+      s.BindInt64(5, 100);
+      s.BindInt(6, state);
+      s.BindInt64(7, base::Time::Now().ToTimeT());
+      s.BindInt(8, state % 2);
+      ASSERT_TRUE(s.Run());
+    }
+  }
+
+  // Re-open the db using the HistoryDatabase, which should migrate from version
+  // 22 to 23, fixing just the row whose state was 3. Then close the db so that
+  // we can re-open it directly.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(chrome::kHistoryFilename)));
+    {
+      // The version should have been updated.
+      int cur_version = HistoryDatabase::GetCurrentVersion();
+      ASSERT_LT(22, cur_version);
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      sql::Statement statement(db.GetUniqueStatement(
+          "SELECT id, state, opened "
+          "FROM downloads "
+          "ORDER BY id"));
+      int counter = 0;
+      while (statement.Step()) {
+        EXPECT_EQ(1 + counter, statement.ColumnInt64(0));
+        // The only thing that migration should have changed was state from 3 to
+        // 4.
+        EXPECT_EQ(((counter == 3) ? 4 : counter), statement.ColumnInt(1));
+        EXPECT_EQ(counter % 2, statement.ColumnInt(2));
+        ++counter;
+      }
+      EXPECT_EQ(5, counter);
+    }
+  }
 }
 
 TEST_F(HistoryTest, AddPage) {

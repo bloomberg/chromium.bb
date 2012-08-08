@@ -70,6 +70,11 @@ class DownloadDatabase {
   // Returns the meta-table object for the functions in this interface.
   virtual sql::MetaTable& GetMetaTable() = 0;
 
+  // Returns true if able to successfully rewrite the invalid values for the
+  // |state| field from 3 to 4. Returns false if there was an error fixing the
+  // database. See http://crbug.com/140687
+  bool MigrateDownloadsState();
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 

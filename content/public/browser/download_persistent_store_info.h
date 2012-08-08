@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
@@ -30,7 +31,7 @@ struct CONTENT_EXPORT DownloadPersistentStoreInfo {
                               const base::Time& end,
                               int64 received,
                               int64 total,
-                              int32 download_state,
+                              DownloadItem::DownloadState download_state,
                               int64 handle,
                               bool download_opened);
   ~DownloadPersistentStoreInfo();  // For linux-clang.
@@ -58,7 +59,7 @@ struct CONTENT_EXPORT DownloadPersistentStoreInfo {
   int64 total_bytes;
 
   // The current state of the download.
-  int32 state;
+  DownloadItem::DownloadState state;
 
   // The handle of the download in the database. Is not changed by
   // UpdateEntry().
