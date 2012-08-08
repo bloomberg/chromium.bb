@@ -11,16 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-
-namespace base {
-class MessageLoopProxy;
-}
 
 class RenderViewImpl;
 
@@ -57,11 +52,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
       media_stream::MediaStreamType type,
       const GURL& security_origin);
 
-  // Request to stop enumerating devices.
-  void StopEnumerateDevices(
-      int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler);
-
   // Request to open a device.
   void OpenDevice(
       int request_id,
@@ -93,31 +83,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // opened it.
   struct Stream;
 
-  struct EnumerationRequest {
-    EnumerationRequest(
-        const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
-        int request_id);
-    ~EnumerationRequest();
-
-    base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
-    int request_id;
-  };
-
-  // List of requests made to EnumerateDevices.
-  typedef std::list<EnumerationRequest> EnumerationRequestList;
-
-  struct EnumerationState {
-    EnumerationState();
-    ~EnumerationState();
-
-    struct CachedDevices;
-
-    // If |ipc_id| >= 0, then we've started.
-    int ipc_id;
-    scoped_ptr<CachedDevices> cached_devices;
-    EnumerationRequestList requests;
-  };
-
   // Messages from the browser.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnStreamGenerated(
@@ -130,7 +95,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
   void OnAudioDeviceFailed(const std::string& label, int index);
   void OnDevicesEnumerated(
       int request_id,
-      const std::string& label,
       const media_stream::StreamDeviceInfoArray& device_array);
   void OnDevicesEnumerationFailed(int request_id);
   void OnDeviceOpened(
@@ -139,20 +103,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const media_stream::StreamDeviceInfo& device_info);
   void OnDeviceOpenFailed(int request_id);
 
-  void RemoveEnumerationRequest(
-      int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      EnumerationState* state);
-
-  // Used for DCHECKs so methods calls won't execute in the wrong thread.
-  scoped_refptr<base::MessageLoopProxy> main_loop_;
-
   int next_ipc_id_;
   typedef std::map<std::string, Stream> LabelStreamMap;
   LabelStreamMap label_stream_map_;
-
-  EnumerationState audio_enumeration_state_;
-  EnumerationState video_enumeration_state_;
 
   // List of calls made to GenerateStream that has not yet completed.
   typedef std::list<Request> RequestList;

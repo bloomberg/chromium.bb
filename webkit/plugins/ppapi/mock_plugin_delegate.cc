@@ -451,9 +451,6 @@ int MockPluginDelegate::EnumerateDevices(
   return -1;
 }
 
-void MockPluginDelegate::StopEnumerateDevices(int request_id) {
-}
-
 webkit_glue::ClipboardClient*
 MockPluginDelegate::CreateClipboardClient() const {
   return NULL;

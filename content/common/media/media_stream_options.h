@@ -39,8 +39,6 @@ struct CONTENT_EXPORT StreamDeviceInfo {
                    const std::string& name_param,
                    const std::string& device_param,
                    bool opened);
-  static bool IsEqual(const StreamDeviceInfo& first,
-                      const StreamDeviceInfo& second);
 
   // Describes the capture type.
   MediaStreamType stream_type;
