@@ -1538,6 +1538,46 @@
    fun:policy::AsyncPolicyProvider::InitWithLoopsReady
 }
 {
+   bug_141255_e
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:ExtensionServiceTestBase::ExtensionServiceTestBase
+}
+{
+   bug_141255_f
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:ExtensionUITest::ExtensionUITest
+   fun:ExtensionUITest_*
+}
+{
+   bug_141255_g
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:MessageLoopForUI::MessageLoopForUI
+   fun:RenderViewHostTestHarnesss
+   fun:ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness
+   fun:TabContentsTestHarness::TabContentsTestHarness
+}
+{
+   bug_141255_h
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:ExtensionServiceTestSimple_Enabledness_Test::TestBody
+}
+{
+   bug_141255_i
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:ChromeLauncherControllerTest::ChromeLauncherControllerTest
+}
+{
+   bug_141255_j
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:ExtensionUpdaterTest
+}
+{
    bug_141322
    Heapcheck:Leak
    ...
