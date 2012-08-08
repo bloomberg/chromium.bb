@@ -15,6 +15,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/rendering_benchmark.h"
 #include "content/renderer/rendering_benchmark_results.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
@@ -35,11 +36,24 @@ const char kGpuBenchmarkingExtensionName[] = "v8/GpuBenchmarking";
 
 namespace {
 
+// Always called on the main render thread.
+// Does not need to be thread-safe.
+void InitSkGraphics() {
+  static bool init = false;
+  if (!init) {
+    SkGraphics::Init();
+    init = true;
+  }
+}
+
 class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
  public:
   explicit SkPictureRecorder(const FilePath& dirpath)
       : dirpath_(dirpath),
         layer_id_(0) {
+    // Let skia register known effect subclasses. This basically enables
+    // reflection on those subclasses required for picture serialization.
+    InitSkGraphics();
   }
 
   virtual WebCanvas* willPaint(const WebSize& size) {
