@@ -1,4 +1,3 @@
-<!-- BEGIN AUTHORED CONTENT -->
 <p>Use browser actions to put icons
   in the main Google Chrome toolbar,
   to the right of the address bar.
@@ -8,6 +7,7 @@
   a <a href="#badge">badge</a>,
   and a <a href="#popups">popup</a>.
   </p>
+
 <p>
 In the following figure,
 the multicolored square
@@ -15,24 +15,31 @@ to the right of the address bar
 is the icon for a browser action.
 A popup is below the icon.
 </p>
+
 <img src="{{static}}/images/browser-action.png"
   width="363" height="226" />
+
 <p>
 If you want to create an icon that isn't always visible,
 use a <a href="pageAction.html">page action</a>
 instead of a browser action.
 </p>
+
 <p class="caution">
 <strong>Note:</strong>
 Packaged apps cannot use browser actions.
 </p>
-<!-- [PENDING: We should show tooltips and badges, as well.] -->
+
+
+
 <h2 id="manifest">Manifest</h2>
+
 <p>
 Register your browser action in the
 <a href="manifest.html">extension manifest</a>
 like this:
 </p>
+
 <pre>{
   "name": "My extension",
   ...
@@ -43,17 +50,22 @@ like this:
   }</b>,
   ...
 }</pre>
+
 <h2 id="ui">Parts of the UI</h2>
+
 <p>
 A browser action can have an <a href="#icon">icon</a>,
 a <a href="#tooltip">tooltip</a>,
 a <a href="#badge">badge</a>,
 and a <a href="#popups">popup</a>.
 </p>
+
 <h3 id="icon">Icon</h3>
+
 <p>Browser action icons can be up to 19 pixels wide and high.
   Larger icons are resized to fit, but for best results,
   use a 19-pixel square icon.</p>
+
 <p>You can set the icon in two ways:
   using a static image or using the
   HTML5 <a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html">canvas element</a>.
@@ -62,14 +74,19 @@ and a <a href="#popups">popup</a>.
   such as smooth animation &mdash;
   using the canvas element.
   </p>
+
 <p>Static images can be in any format WebKit can display,
   including BMP, GIF, ICO, JPEG, or PNG.
   </p>
+
 <p>To set the icon,
 use the <b>default_icon</b> field of <b>browser_action</b>
 in the <a href="#manifest">manifest</a>,
 or call the <a href="#method-setIcon">setIcon()</a> method.
+
+
 <h3 id="tooltip">Tooltip</h3>
+
 <p>
 To set the tooltip,
 use the <b>default_title</b> field of <b>browser_action</b>
@@ -78,28 +95,36 @@ or call the <a href="#method-setTitle">setTitle()</a> method.
 You can specify locale-specific strings for the <b>default_title</b> field;
 see <a href="i18n.html">Internationalization</a> for details.
 </p>
+
 <h3 id="badge">Badge</h3>
+
 <p>Browser actions can optionally display a <em>badge</em> &mdash;
   a bit of text that is layered over the icon.
   Badges make it easy to update the browser action
   to display a small amount of information
   about the state of the extension.</p>
+
 <p>Because the badge has limited space,
    it should have 4 characters or less.
   </p>
+
 <p>
 Set the text and color of the badge using
 <a href="#method-setBadgeText">setBadgeText()</a> and
 <a href="#method-setBadgeBackgroundColor">setBadgeBackgroundColor()</a>,
 respectively.
-<!-- [PENDING: if you have a color but no text, will anything display?] -->
+
 </p>
+
+
 <h3 id="popups">Popup</h3>
+
 <p>If a browser action has a popup,
   the popup appears when the user clicks the icon.
   The popup can contain any HTML contents that you like,
   and it's automatically sized to fit its contents.
   </p>
+
 <p>
 To add a popup to your browser action,
 create an HTML file with the popup's contents.
@@ -107,9 +132,12 @@ Specify the HTML file in the <b>default_popup</b> field of <b>browser_action</b>
 in the <a href="#manifest">manifest</a>, or call the
 <a href="#method-setPopup">setPopup()</a> method.
 </p>
+
 <h2>Tips</h2>
+
 <p>For the best visual impact,
   follow these guidelines:</p>
+
 <ul>
   <li><b>Do</b> use browser actions for features
     that make sense on most pages.
@@ -132,7 +160,9 @@ in the <a href="#manifest">manifest</a>, or call the
   <li><b>Don't</b> constantly animate your icon.
     That's just annoying.
 </ul>
+
 <h2 id="examples"> Examples </h2>
+
 <p>
 You can find simple examples of using browser actions in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/">examples/api/browserAction</a>
@@ -140,4 +170,3 @@ directory.
 For other examples and for help in viewing the source code, see
 <a href="samples.html">Samples</a>.
 </p>
-<!-- END AUTHORED CONTENT -->

@@ -1,8 +1,8 @@
-<!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.webRequest</code> module to intercept, block,
 or modify requests in-flight and to observe and analyze traffic.
 </p>
+
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "webRequest" permission in the <a
   href="manifest.html">extension manifest</a> to use the web request
@@ -20,20 +20,15 @@ For example:</p>
   ]</b>,
   ...
 }</pre>
-<p class="note">
-<b>Node:</b> If you request the "webRequestBlocking" permission, web requests
-are delayed until the background page of your extension has been loaded. This
-allows you to register event listeners before any web requests are processed.
-In order to avoid deadlocks, you must not start synchronous XmlHttpRequests or
-include scripts from the internet via <code>&lt;script src="..."&gt;</code> tags
-in your background page.
-</p>
+
 <h2 id="life_cycle">Life cycle of requests</h2>
+
 <p>
 The web request API defines a set of events that follow the life cycle of a web
 request. You can use these events to observe and analyze traffic. Certain
 synchronous events will allow you to intercept, block, or modify a request.
 </p>
+
 <p>
 The event life cycle for successful requests is illustrated here, followed by
 event definitions:<br/>
@@ -42,6 +37,7 @@ event definitions:<br/>
   alt="Life cycle of a web request from the perspective of the webrequest API"
   style="margin-left: auto; margin-right: auto; display: block"/>
 </p>
+
 <p>
 <dl>
   <dt><code>onBeforeRequest</code> (optionally synchronous)</dt>
@@ -91,6 +87,7 @@ The web request API guarantees that for each request either
 event with one exception: If a request is redirected to a <code>data://</code>
 URL, <code>onBeforeRedirect</code> is the last reported event.
 </p>
+
 <p id="life_cycle_footnote">(*) Note that the web request API presents an
 abstraction of the network stack to the extension. Internally, one URL request
 can be split into several HTTP requests (for example to fetch individual byte
@@ -98,6 +95,7 @@ ranges from a large file) or can be handled by the network stack without
 communicating with the network. For this reason, the API does not provide the
 final HTTP headers that are sent to the network. For example, all headers that
 are related to caching are invisible to the extension.</p>
+
 <p>The following headers are currently <b>not provided</b> to the
 <code>onBeforeSendHeaders</code> event. This list is not guaranteed to be
 complete nor stable.
@@ -117,6 +115,7 @@ complete nor stable.
   <li>Transfer-Encoding</li>
 </ul>
 </p>
+
 <p>
 The webRequest API only exposes requests that the extension has
 permission to see, given its
@@ -133,24 +132,33 @@ are hidden, e.g.,
 <code>other_extension_id</code> is not the ID of the extension to handle
 the request,
 <code>https://www.google.com/chrome</code>,
-and others (this list is not complete).
+and others (this list is not complete). Also synchronous XMLHttpRequests from
+your extension are hidden from blocking event handlers in order to prevent
+deadlocks.
 </p>
+
 <h2 id="concepts">Concepts</h2>
+
 <p>As the following sections explain, events in the web request API use request
 IDs, and you can optionally specify filters and extra information when you
 register event listeners.</p>
+
 <h3 id="Request IDs">Request IDs</h3>
+
 <p>Each request is identified by a request ID. This ID is unique within a
 browser session and the context of an extension. It remains constant during the
 the life cycle of a request and can be used to match events for the same
 request. Note that several HTTP requests are mapped to one web request in case
 of HTTP redirection or HTTP authentication.</p>
+
 <h3 id="subscription">Registering event listeners</h3>
+
 <p>To register an event listener for a web request, you use a variation on the
 <a href="events.html">usual <code>addListener()</code> function</a>.
 In addition to specifying a callback function,
 you have to specify a filter argument and you may specify an optional extra info
 argument.</p>
+
 <p>The three arguments to the web request API's <code>addListener()</code> have
 the following definitions:</p>
 <pre>
@@ -158,17 +166,20 @@ var callback = function(details) {...};
 var filter = {...};
 var opt_extraInfoSpec = [...];
 </pre>
+
 <p>Here's an example of listening for the <code>onBeforeRequest</code>
 event:</p>
 <pre>
 chrome.webRequest.onBeforeRequest.addListener(
   callback, filter, opt_extraInfoSpec);
 </pre>
+
 <p>Each <code>addListener()</code> call takes a mandatory callback function as
 the first parameter. This callback function is passed a dictionary containing
 information about the current URL request. The information in this dictionary
 depends on the specific event type as well as the content of
 <code>opt_extraInfoSpec</code>.</p>
+
 <p>If the optional <code>opt_extraInfoSpec</code> array contains the string
 <code>'blocking'</code> (only allowed for specific events), the callback
 function is handled synchronously. That means that the request is blocked until
@@ -179,6 +190,7 @@ cancelling or redirecting a request (<code>onBeforeRequest</code>), cancelling a
 request or modifying headers (<code>onBeforeSendHeaders</code>,
 <code>onHeadersReceived</code>), or providing authentication credentials
 (<code>onAuthRequired</code>).</p>
+
 <p>The <a href="#type-webRequest.RequestFilter">RequestFilter</a>
 <code>filter</code> allows limiting the requests for which events are
 triggered in various dimensions:
@@ -196,13 +208,17 @@ triggered in various dimensions:
   <dt>Window ID</dt>
   <dd>The identifier for a window.</dd>
 </p>
+
 <p>Depending on the event type, you can specify strings in
 <code>opt_extraInfoSpec</code> to ask for additional information about the
 request. This is used to provide detailed information on request's data only
 if explicitly requested.</p>
+
 <h2 id="implementation">Implementation details</h2>
+
 <p>Several implementation details can be important to understand when developing
 an extension that uses the web request API:</p>
+
 <h3>Conflict resolution</h3>
 <p>In the current implementation of the web request API, a request is considered
 as cancelled if at least one extension instructs to cancel the request. If
@@ -212,6 +228,7 @@ request or modify a header at a time. If more than one extension attempts to
 modify the request, the most recently installed extension wins and all others
 are ignored. An extension is not notified if its instruction to modify or
 redirect has been ignored.</p>
+
 <h3>Caching</h3>
 <p>
 Chrome employs two caches &mdash; an on-disk cache and a very fast in-memory
@@ -225,6 +242,7 @@ behavior.  To make sure the behavior change goes through, call
 it often; flushing the cache is a very expensive operation. You don't need to
 call <code>handlerBehaviorChanged()</code> after registering or unregistering an
 event listener.</p>
+
 <h3>Timestamps</h3>
 <p>
 The <code>timestamp</code> property of web request events is only guaranteed to
@@ -233,7 +251,9 @@ you the correct offset between them, but comparing them to the current time
 inside the extension (via <code>(new Date()).getTime()</code>, for instance)
 might give unexpected results.
 </p>
+
 <h2 id="examples">Examples</h2>
+
 <p>The following example illustrates how to block all requests to
 <code>www.evil.com</code>:</p>
 <pre>
@@ -244,8 +264,10 @@ chrome.webRequest.onBeforeRequest.addListener(
   {urls: ["&lt;all_urls&gt;"]},
   ["blocking"]);
 </pre>
+
 <p>As this function uses a blocking event handler, it requires the "webRequest"
 as well as the "webRequestBlocking" permission in the manifest file.</p>
+
 <p>The following example achieves the same goal in a more efficient way because
 requests that are not targeted to <code>www.evil.com</code> do not need to be
 passed to the extension:</p>
@@ -255,6 +277,7 @@ chrome.webRequest.onBeforeRequest.addListener(
   {urls: ["*://www.evil.com/*"]},
   ["blocking"]);
 </pre>
+
 <p>The following example illustrates how to delete the User-Agent header from
 all requests:</p>
 <pre>
@@ -271,6 +294,6 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
   {urls: ["&lt;all_urls&gt;"]},
   ["blocking", "requestHeaders"]);
 </pre>
+
 <p> For more example code, see the <a href="samples.html#webrequest">web request
 samples</a>.</p>
-<!-- END AUTHORED CONTENT -->

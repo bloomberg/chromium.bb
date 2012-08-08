@@ -1,4 +1,3 @@
-<!-- BEGIN AUTHORED CONTENT -->
 <p>
 The content settings module allows you to change settings that control whether
 websites can use features such as cookies, JavaScript, and plug-ins.
@@ -6,6 +5,7 @@ More generally speaking, content settings allow you to customize Chrome's
 behavior on a per-site basis instead of globally.</p>
 <p>
 </p>
+
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "contentSettings" permission
 in your extension's manifest to use the API.
@@ -18,6 +18,8 @@ For example:</p>
   ]</b>,
   ...
 }</pre>
+
+
 <h2 id="patterns">Content setting patterns</h2>
 <p>
 You can use patterns to specify the websites that each content setting affects.
@@ -34,6 +36,7 @@ that port. If no port number is specified, the pattern matches all ports.
 </li>
 </ul>
 </p>
+
 <h3 id="pattern-precedence">Pattern precedence</h3>
 <p>
 When more than one content setting rule applies for a given site, the rule with
@@ -72,6 +75,7 @@ the scheme.</li>
 Lower because although it specifies the port and scheme, it has a wildcard
 in the hostname.</li>
 </ol>
+
 <h2 id="primary-secondary">Primary and secondary patterns</h2>
 <p>
 The URL taken into account when deciding which content setting to apply depends
@@ -111,6 +115,7 @@ is ordered by precedence:</p>
   <td><code>&lt;all_urls&gt;</code></td>
 </tr>
 </table>
+
 <h2 id="resource-identifiers">Resource identifiers</h2>
 <p>
 Resource identifiers allow you to specify content settings for specific
@@ -134,9 +139,10 @@ You can get a list of resource identifiers for a content type by calling the
 can change with the set of installed plug-ins on the user's machine, but Chrome
 tries to keep the identifiers stable across plug-in updates.
 </p>
+
 <h2 id="examples">Examples</h2>
+
 <p>
 You can find samples of this API on the
 <a href="samples.html#contentSettings">sample page</a>.
 </p>
-<!-- END AUTHORED CONTENT -->

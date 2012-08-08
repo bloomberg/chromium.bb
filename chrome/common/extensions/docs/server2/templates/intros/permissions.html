@@ -1,4 +1,3 @@
-<!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
   Use the <code>chrome.permissions</code> module to implement
   optional permissions. You can request optional permissions during your
@@ -6,19 +5,24 @@
   understand why the permissions are needed and use only those that are
   necessary.
 </p>
+
 <p>
   For general information about permissions and details about each permission,
   see the <a href="manifest.html#permissions">permissions</a> section of the
   manifest documentation.
 </p>
+
 <h2 id="howto"> Implementing optional permissions </h2>
 
-<h3 id="types"> Step 1: Decide which permissions are optional and required </h3>
+<h3 id="types">
+  Step 1: Decide which permissions are optional and required
+</h3>
 <p>
   Extensions should generally require permissions when they are needed for the
   extension's basic functionality and employ optional permissions for optional
   features.
 </p>
+
 <p>
   Advantages of optional permissions:
   <ul>
@@ -35,6 +39,7 @@
     </li>
   </ul>
 </p>
+
 <p>
   Advantages of required permissions:
   <ul>
@@ -47,12 +52,15 @@
     </li>
   </ul>
 </p>
+
+
 <h3 id="manifest"> Step 2: Declare optional permissions in the manifest </h3>
 <p>
   Declare optional permissions in your <a href="manifest.html">extension
   manifest</a> with the <code>optional_permissions</code> key, using the
   same format as the <a href="manifest.html#permissions">permissions</a>
   field:
+
 <pre>{
   "name": "My extension",
   ...
@@ -60,6 +68,7 @@
   ...
 }</pre>
 </p>
+
 <p>
 You can specify any of the following as optional permissions:
 <ul>
@@ -85,10 +94,12 @@ You can specify any of the following as optional permissions:
   <li>webRequestBlocking</li>
 </ul>
 </p>
+
 <p class="note">
   <b>Version note:</b> This list is correct as of Chrome 17.
   More optional permissions might be allowed in future releases.
 </p>
+
 <h3 id="request"> Step 3: Request optional permissions </h3>
 <p>
   Request the permissions from within a user gesture using
@@ -111,22 +122,26 @@ document.querySelector('#my-button').addEventListener('click', function(event) {
 });
 </pre>
 </p>
+
 <p>
   Chrome prompts the user if adding the permissions results in different
   <a href="permission_warnings.html">warning messages</a> than the user has
   already seen and accepted. For example, the previous code might result in
   a prompt like this:
 </p>
+
 <p style="text-align: center">
   <img src="{{static}}/images/perms-optional.png"
        alt="example permission confirmation prompt"
        width="416" height="234">
 </p>
+
 <h3 id="contains"> Step 4: Check the extension's current permissions </h3>
 <p>
   To check whether your extension has a specific permission or set of
   permissions, use <code>permission.contains()</code>:
 </p>
+
 <pre>
 chrome.permissions.contains({
   permissions: ['tabs'],
@@ -139,6 +154,7 @@ chrome.permissions.contains({
   }
 });
 </pre>
+
 <h3 id="remove"> Step 5: Remove the permissions </h3>
 <p>
   You should remove permissions when you no longer need them.
@@ -146,6 +162,7 @@ chrome.permissions.contains({
   <code>permissions.request()</code> usually adds the permission back without
   prompting the user.
 </p>
+
 <pre>
 chrome.permissions.remove({
   permissions: ['tabs'],
@@ -159,4 +176,3 @@ chrome.permissions.remove({
   }
 });
 </pre>
-<!-- END AUTHORED CONTENT -->

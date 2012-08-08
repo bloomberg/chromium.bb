@@ -12,7 +12,8 @@ import handler
 from handler import Handler
 
 KNOWN_FAILURES = [
-  'webstore.html',
+  # Exception in schema compiler (model.py). See http://crbug.com/141279.
+  'app.html',
 ]
 
 class _MockResponse(object):
@@ -34,7 +35,7 @@ class IntegrationTest(unittest.TestCase):
     for path, dirs, files in os.walk(base_path):
       for name in files:
         filename = os.path.join(path, name)
-        if filename in KNOWN_FAILURES or filename.startswith('.'):
+        if name in KNOWN_FAILURES or '.' in path or name.startswith('.'):
           continue
         request = _MockRequest(filename.split('/', 2)[-1])
         response = _MockResponse()

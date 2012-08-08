@@ -2,9 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-
 from HTMLParser import HTMLParser
+import re
 
 from docs_server_utils import FormatKey
 from third_party.handlebar import Handlebar
@@ -58,10 +57,12 @@ class IntroDataSource(object):
   def __init__(self, cache_builder, base_paths):
     self._cache = cache_builder.build(self._MakeIntroDict)
     self._base_paths = base_paths
+    self._intro_regex = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
   def _MakeIntroDict(self, intro):
     parser = _IntroParser()
     parser.feed(intro)
+    intro = re.sub(self._intro_regex, '', intro, count=1)
     return {
       'intro': Handlebar(intro),
       'toc': parser.toc,

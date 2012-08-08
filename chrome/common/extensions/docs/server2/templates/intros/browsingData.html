@@ -1,13 +1,15 @@
-<!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
   Use the <code>chrome.browsingData</code> module to remove browsing data from a
   user's local profile.
 </p>
+
 <h2 id="manifest">Manifest</h2>
+
 <p>
   You must declare the "browsingData" permission in the
   <a href="manifest.html">extension manifest</a> to use this API.
 </p>
+
 <pre>{
   "name": "My extension",
   ...
@@ -16,7 +18,9 @@
   ]</b>,
   ...
 }</pre>
+
 <h2 id="usage">Usage</h2>
+
 <p>
   The simplest use-case for this API is a a time-based mechanism for clearing a
   user's browsing data. Your code should provide a timestamp which indicates the
@@ -25,13 +29,16 @@
   (which can be retrieved from a JavaScript <code>Date</code> object via the
   <code>getTime</code> method).
 </p>
+
 <p>
   For example, to clear all of a user's browsing data from the last week, you
   might write code as follows:
 </p>
+
 <pre>var callback = function () {
   // Do something clever here once data has been removed.
 };
+
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
 chrome.browsingData.remove({
@@ -50,6 +57,7 @@ chrome.browsingData.remove({
   "passwords": true,
   "webSQL": true
 }, callback);</pre>
+
 <p>
   The <code>chrome.browsingData.remove</code> method allows you to remove
   various types of browsing data with a single call, and will be much faster
@@ -57,21 +65,26 @@ chrome.browsingData.remove({
   clear one specific type of browsing data (cookies, for example), the more
   granular methods offer a readable alternative to a call filled with JSON.
 </p>
+
 <pre>var callback = function () {
   // Do something clever here once data has been removed.
 };
+
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
 chrome.browsingData.removeCookies({
   "since": oneWeekAgo
 }, callback);</pre>
+
 <p class="caution">
   <strong>Important</strong>: Removing browsing data involves a good deal of
   heavy lifting in the background, and can take <em>tens of seconds</em> to
   complete, depending on a user's profile. You should use the callback mechanism
   to keep your users up to date on the removal's status.
 </p>
+
 <h2 id="origin_types">Origin Types</h2>
+
 <p>
   Adding an <code>originType</code> property to the API's options object allows
   you to specify which types of origins ought to be effected. Currently, origins
@@ -107,6 +120,7 @@ chrome.browsingData.removeCookies({
 <pre>var callback = function () {
   // Do something clever here once data has been removed.
 };
+
 var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
 var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
 chrome.browsingData.remove({
@@ -128,15 +142,16 @@ chrome.browsingData.remove({
   "passwords": true,
   "webSQL": true
 }, callback);</pre>
+
 <p class="caution">
   <strong>Seriously</strong>: Be careful with <code>protectedWeb</code> and
   <code>extension</code>. These are destructive operations that your users
   will write angry email about if they're not well-informed about what to
   expect when your extension removes data on their behalf.
 </p>
+
 <h2 id="samples">Examples</h2>
 <p>
   Samples for the <code>browsingData</code> API are available
   <a href="http://code.google.com/chrome/extensions/trunk/samples.html#chrome.browsingData">on the samples page</a>.
 </p>
-<!-- END AUTHORED CONTENT -->

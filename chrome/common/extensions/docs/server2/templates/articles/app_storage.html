@@ -1,0 +1,229 @@
+<h1>Manage Data</h1>
+
+
+<p>
+Almost every aspect of app development involves some element
+of sending or receiving data.
+Starting with the basics,
+you should use an MVC framework to help you design and implement your app
+so that data is completely separate from the app's view on that data
+(see <a href="app_frameworks.html">MVC Architecture</a>).
+</p>
+
+<p>
+You also need to think about how data is handled when your app is offline
+(see <a href="offline_apps.html">Offline First</a>).
+This doc briefly introduces the storage options
+for sending, receiving, and saving data locally;
+the remainder of the doc shows you how
+to use Chrome's File System API
+(see also the <a href="fileSystem.html">fileSystem API</a>).
+</p>
+
+<p class="note">
+<b>API Samples: </b>
+Want to play with the code?
+Check out the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/filesystem-access">filesystem-access</a>
+and <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/storage">storage</a> samples.
+</p>
+
+<h2 id="options">Storage options</h2>
+
+<p>
+Packaged apps use many different mechanisms
+to send and receive data.
+For external data (resources, web pages),
+you need to be aware of the
+<a href="app_csp.html">Content Security Policy (CSP)</a>.
+Similar to Chrome Extensions,
+you can use
+<a href="app_external.html#external">cross-origin XMLHttpRequests</a>
+to communicate with remote servers.
+You can also isolate external pages,
+so that the rest of your app is secure
+(see <a href="app_external.html#objecttag">Embed external web pages</a>).
+With Web Intents,
+your app can share data with other apps
+(see <a href="app_intents.html">Connect Apps with Web Intents</a>).
+</p>
+
+<p>
+When saving data locally,
+you can use the <a href="storage.html">Chrome Storage API</a>
+to save small amounts of string data and
+IndexedDB to save structured data.
+With IndexedDB, you can persist JavaScript objects
+to an object store and use the store's indexes to query data
+(to learn more, see HTML5 Rock's
+<a href="http://www.html5rocks.com/tutorials/indexeddb/todo/">Simple Todo List Tutorial</a>).
+For all other types of data,
+like binary data,
+use the Filesystem API.
+</p>
+
+<p>
+Chrome's Filesystem API extends the
+<a href="http://www.html5rocks.com/tutorials/file/filesystem/">HTML5 FileSystem API</a>;
+apps can create, read, navigate,
+and write to a sandboxed section
+of the user's local file system.
+With Chrome's File System API,
+packaged apps can read and write files
+to user-selected locations.
+For example,
+a photo-sharing app can use the File System API
+to read and write any photos that a user selects.
+</p>
+
+<h2 id="manifest">Adding file system permission</h2>
+
+<p>
+To use Chrome's File System API,
+you need to add the "fileSystem" permission to the manifest,
+so that you can obtain permission from the user
+to store persistent data.
+
+<pre>
+"permissions": [
+  "...",
+  "fileSystem"
+]
+</pre>
+
+<h2 id="import">User-options for selecting files</h2>
+
+<p>
+Users expect to select files
+in the same way they always do.
+At a minimum,
+they expect a 'choose file' button
+and standard file-chooser.
+If your app makes heavy use of file-handing,
+you should also implement drag-and-drop
+(see below and also check out 
+<a href="http://www.html5rocks.com/tutorials/dnd/basics/">Native HTML5 Drag and Drop</a>).
+</p>
+
+<p>
+If your app connects with other apps using
+<a href="app_intents.html">Web Intents</a>
+you can set up data sharing with those apps.
+Users can view and/or write
+to their files using a connected app
+without having to do all sorts of extra steps
+to move files back and forth.
+</p>
+
+<h2 id="path">Obtaining the path of a fileEntry</h2>
+
+<p>
+To get the full path
+of the file the user selected,
+<code>fileEntry</code>,
+call <code>getDisplayPath()</code>:
+</p>
+
+<pre>
+function displayPath(fileEntry) {
+  chrome.fileSystem.getDisplayPath(fileEntry, function(path) {
+    console.log(path)
+  });
+}
+</pre>
+
+<h2 id="drag">Implementing drag-and-drop</h2>
+
+<p>
+If you need to implement drag-and-drop selection,
+the drag-and-drop file controller
+(<code>dnd.js</code>) in
+the <a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/filesystem-access">filesystem-access</a>
+sample is a good starting point.
+The controller creates a file entry
+from a <code>DataTransferItem</code>
+via drag-and-drop.
+In this example,
+the <code>fileEntry</code> is set
+to the first dropped item.
+</p>
+
+<pre>
+var dnd = new DnDFileController('body', function(data) {
+  var fileEntry = data.items[0].webkitGetAsEntry();
+  displayPath(fileEntry);
+});
+</pre>
+
+<h2 id="read">Reading a file</h2>
+
+<p>
+The following code opens the file (read-only) and
+reads it as text using a <code>FileReader</code> object.
+If the file doesn't exist, an error is thrown.
+</p>
+
+<pre>
+var chosenFileEntry = null;
+
+chooseFileButton.addEventListener('click', function(e) {
+  chrome.fileSystem.chooseFile({type: 'openFile'}, function(readOnlyEntry) {
+ 
+    readOnlyEntry.file(function(file) {
+      var reader = new FileReader();
+
+      reader.onerror = errorHandler;
+      reader.onloadend = function(e) {
+        console.log(e.target.result);
+      };
+
+      reader.readAsText(file);
+    });
+	});
+});
+</pre>
+
+<h2 id="write">Writing a file</h2>
+
+<p>
+The two common use-cases
+for writing a file are "Save" and "Save as".
+The following code creates a
+<code>writableFileEntry</code>
+from the read-only <code>chosenFileEntry</code> and
+writes the selected file to it.
+</p>
+
+<pre>
+ chrome.fileSystem.getWritableFileEntry(chosenFileEntry, function(writableFileEntry) {
+    writableFileEntry.createWriter(function(writer) {
+      writer.onerror = errorHandler;
+      writer.onwriteend = callback;
+
+    chosenFileEntry.file(function(file) {
+      writer.write(file);
+    });   
+  }, errorHandler);
+});
+</pre>
+
+<p>
+The following code creates a new file
+with "Save as" functionality and
+writes the new blob to the file
+using the <code>writer.write()</code> method.
+</p>
+
+<pre>
+chrome.fileSystem.chooseFile({type: 'saveFile'}, function(writableFileEntry) {
+    writableFileEntry.createWriter(function(writer) {
+      writer.onerror = errorHandler;
+      writer.onwriteend = function(e) {
+        console.log('write complete');
+      };
+      writer.write(new Blob(['1234567890'], {type: 'text/plain'}));  
+    }, errorHandler);
+});
+</pre>
+
+<p class="backtotop"><a href="#top">Back to top</a></p>

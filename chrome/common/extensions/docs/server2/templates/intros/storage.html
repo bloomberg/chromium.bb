@@ -1,4 +1,3 @@
-<!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.storage</code> module
 to store, retrieve, and track changes to user data.
@@ -8,6 +7,7 @@ It provides the same storage capabilities as the
 <a href="https://developer.mozilla.org/en/DOM/Storage#localStorage">localStorage API</a>
 with the following key differences:
 </p>
+
 <ul>
   <li>User data can be automatically synced with Chrome sync
   (using <code>storage.sync</code>).</li>
@@ -19,6 +19,7 @@ with the following key differences:
   <li>User data can be stored as objects
   (the <code>localStorage API</code> stores data in strings).</li>
 </ul>
+
 <h2 id="manifest">Manifest</h2>
 <p>You must declare the "storage" permission in the <a
   href="manifest.html">extension manifest</a>
@@ -32,7 +33,9 @@ with the following key differences:
   ]</b>,
   ...
 }</pre>
+
 <h2 id="using-sync">Usage</h2>
+
 <p>
 To store user data for your extension,
 you can use either
@@ -43,6 +46,7 @@ the stored data will automatically be synced
 to any Chrome browser that the user is logged into,
 provided the user has sync enabled.
 </p>
+
 <p>
 When Chrome is offline,
 Chrome stores the data locally.
@@ -53,11 +57,14 @@ Even if a user disables syncing,
 In this case, it will behave identically
 to <code>storage.local</code>.
 </p>
+
 <p class="warning">
 Confidential user information should not be stored!
 The storage area isn't encrypted.
 </p>
+
 <h2 id="limits">Storage and throttling limits</h2>
+
 <p><code>chrome.storage</code> is not a big truck.
 It's a series of tubes.
 And if you don't understand,
@@ -68,17 +75,22 @@ it gets in line,
 and it's going to be delayed
 by anyone that puts into that tube
 enormous amounts of material.
+
 <p>For details on the current limits
 of the storage API, and what happens
 when those limits are exceeded, please
 see the <a href="#apiReference">API reference</a>.
+
+
 <h2 id="examples">Examples</h2>
+
 <p>
 The following example checks for
 CSS code saved by a user on a form,
 and if found,
 stores it.
 </p>
+
 <pre>
 function saveChanges() {
   // Get a value saved in a form.
@@ -95,6 +107,7 @@ function saveChanges() {
   });
 }
 </pre>
+
 <p>
 If you're interested in tracking changes made
 to a data object,
@@ -105,6 +118,7 @@ that event fires.
 Here's sample code
 to listen for saved changes:
 </p>
+
 <pre>
 chrome.storage.onChanged.addListener(function(changes, namespace) {
   for (key in changes) {
@@ -118,8 +132,8 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
   }
 });
 </pre>
+
 <p>
 You can find examples that use this API on the
 <a href="samples.html#sty">Samples page</a>.
 </p>
-<!-- END AUTHORED CONTENT -->

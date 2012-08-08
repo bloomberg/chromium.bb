@@ -1,0 +1,161 @@
+<h1>Cross-Origin XMLHttpRequest</h1>
+
+
+<p id="classSummary">
+Regular web pages can use the
+<a href="http://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
+object to send and receive data from remote servers,
+but they're limited by the
+<a href="http://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
+Extensions aren't so limited.
+An extension can talk to remote servers outside of its origin,
+as long as it first requests cross-origin permissions.</p>
+
+<p class="note">
+<b>Version note:</b>
+As of Chrome 13,
+content scripts can make cross-origin requests
+to the same servers as the rest of the extension.
+Before Chrome 13, a content script couldn't directly make requests;
+instead, it had to
+send a message to its parent extension
+asking the extension to make a cross-origin request.
+</p>
+
+<h2 id="extension-origin">Extension origin</h2>
+<p>Each running extension exists within its own separate security origin. Without
+requesting additional privileges, the extension can use
+XMLHttpRequest to get resources within its installation. For example, if
+an extension contains a JSON configuration file called <code>config.json</code>,
+in a <code>config_resources</code> folder, the extension can retrieve the file's contents like
+this:</p>
+
+<pre>
+var xhr = new XMLHttpRequest();
+xhr.onreadystatechange = handleStateChange; // Implemented elsewhere.
+xhr.open("GET", chrome.extension.getURL('/config_resources/config.json'), true);
+xhr.send();
+</pre>
+
+<p>If the extension attempts to use a security origin other than itself,
+say http://www.google.com,
+the browser disallows it
+unless the extension has requested the appropriate cross-origin permissions.
+</p>
+
+<h2 id="requesting-permission">Requesting cross-origin permissions</h2>
+
+<p>By adding hosts or host match patterns (or both) to the
+<a href="manifest.html#permissions">permissions</a> section of the
+<a href="manifest.html">manifest</a> file, the extension can request access to
+remote servers outside of its origin.</p>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "http://www.google.com/"
+  ]</b>,
+  ...
+}</pre>
+
+<p>Cross-origin permission values can be fully qualified host names,
+like these:</p>
+
+<ul>
+  <li> "http://www.google.com/" </li>
+  <li> "http://www.gmail.com/" </li>
+</ul>
+
+<p>Or they can be match patterns, like these:</p>
+
+<ul>
+  <li> "http://*.google.com/" </li>
+  <li> "http://*/" </li>
+</ul>
+
+<p>
+A match pattern of "http://*/" allows HTTP access to all reachable domains.
+Note that here,
+match patterns are similar to <a href="match_patterns.html">content script
+match patterns</a>,
+but any path information following the host is ignored.</p>
+
+<p>Also note that access is granted both by host and by scheme. If an extension
+wants both secure and non-secure HTTP access to a given host or set
+of hosts, it must declare the permissions separately:</p>
+
+<pre>"permissions": [
+  "http://www.google.com/",
+  "https://www.google.com/"
+]
+</pre>
+
+<h2 id="security-considerations">Security considerations</h2>
+
+<p>
+When using resources retrieved via XMLHttpRequest, your background page should
+be careful not to fall victim to <a
+href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
+scripting</a>.  Specifically, avoid using dangerous APIs such as the below:
+</p>
+<pre>background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // WARNING! Might be evaluating an evil script!
+    var resp = eval("(" + xhr.responseText + ")");
+    ...
+  }
+}
+xhr.send();
+
+background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // WARNING! Might be injecting a malicious script!
+    document.getElementById("resp").innerHTML = xhr.responseText;
+    ...
+  }
+}
+xhr.send();
+</pre>
+<p>
+Instead, prefer safer APIs that do not run scripts:
+</p>
+<pre>background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // JSON.parse does not evaluate the attacker's scripts.
+    var resp = JSON.parse(xhr.responseText);
+  }
+}
+xhr.send();
+
+background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // innerText does not let the attacker inject HTML elements.
+    document.getElementById("resp").innerText = xhr.responseText;
+  }
+}
+xhr.send();
+</pre>
+<p>
+Additionally, be especially careful of resources retrieved via HTTP.  If your
+extension is used on a hostile network, an network attacker (aka a <a
+href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"</a>)
+could modify the response and, potentially, attack your extension.  Instead,
+prefer HTTPS whenever possible.
+</p>
