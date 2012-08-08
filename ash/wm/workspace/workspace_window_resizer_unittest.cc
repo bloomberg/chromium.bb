@@ -126,12 +126,6 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizerTest);
 };
 
-// TODO(oshima): Disabling these tests because these tests
-// depends on the window to be specific size, but bots doesn't
-// have enough space and the actual window gets smaller, which
-// causing mismatch.
-#if !defined(OS_WIN)
-
 // Assertions around attached window resize dragging from the right with 2
 // windows.
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_RIGHT_2) {
@@ -655,8 +649,6 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
   resizer->CompleteDrag(ui::EF_CONTROL_DOWN);
   EXPECT_EQ("106,124 320x160", window_->bounds().ToString());
 }
-
-#endif
 
 }  // namespace
 }  // namespace test
