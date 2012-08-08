@@ -46,6 +46,7 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
  private:
   class HueView;
   class SaturationValueView;
+  class SelectedColorPatchView;
 
   // WidgetDelegate overrides:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
@@ -76,6 +77,9 @@ class VIEWS_EXPORT ColorChooserView : public WidgetDelegateView,
 
   // The textfield to write the color explicitly.
   Textfield* textfield_;
+
+  // The rectangle to denote the selected color.
+  SelectedColorPatchView* selected_color_patch_;
 
   DISALLOW_COPY_AND_ASSIGN(ColorChooserView);
 };
