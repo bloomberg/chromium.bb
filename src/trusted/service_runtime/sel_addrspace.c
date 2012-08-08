@@ -122,6 +122,16 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
 
   NaClLog(3, "Protecting guard pages for 0x%08"NACL_PRIxPTR"\n",
           nap->mem_start);
+  /* Add the zero page to the mmap */
+  if (!NaClVmmapAdd(&nap->mem_map,
+                    0,
+                    NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
+                    PROT_NONE,
+                    (struct NaClMemObj *) NULL)) {
+    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
+                        " (NULL pointer guard page)\n"));
+    return LOAD_MPROTECT_FAIL;
+  }
   err = NaClMprotectGuards(nap);
   if (err != LOAD_OK) return err;
 

@@ -85,28 +85,6 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
   int err;
   void *guard_base = (void *) (((uintptr_t) 1) << nap->addr_bits);
-  /*
-   * In ARM implementation kernel does not allow us to mmap address space at
-   * address 0x0, so we mmap it at the start of a trampoline region.
-   * Therefore, there is not need to mprotect at the start_addr.
-   *
-   * However, we do create a vmmap entry to describe it.
-   */
-  NaClLog(3,
-          ("NULL detection region start 0x%08"NACL_PRIxPTR", "
-           "size 0x%08x, end 0x%08"NACL_PRIxPTR"\n"),
-          0, NACL_SYSCALL_START_ADDR,
-          NACL_SYSCALL_START_ADDR);
-
-  if (!NaClVmmapAdd(&nap->mem_map,
-                    nap->mem_start >> NACL_PAGESHIFT,
-                    NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
-                    PROT_NONE,
-                    (struct NaClMemObj *) NULL)) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                        " (NULL pointer guard page)\n"));
-    return LOAD_MPROTECT_FAIL;
-  }
 
   /*
    * We need to create a two-page guard region at the base of
