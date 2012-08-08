@@ -43,7 +43,7 @@ LEGACY_INVERTED_POLARITY_WHITELIST = [
     'DisableScreenshots',
     'DisableSpdy',
     'DisableSSLRecordSplitting',
-    'ExternalStorageDisabledforrealz',
+    'ExternalStorageDisabled',
     'GDataDisabled',
     'GDataDisabledOverCellular',
     'SavingBrowserHistoryDisabled',
