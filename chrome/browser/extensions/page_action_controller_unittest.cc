@@ -78,6 +78,13 @@ TEST_F(PageActionControllerTest, NavigationClearsState) {
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
             extension->page_action()->GetPopupUrl(tab_id()));
 
+  // Within-page navigation should keep the settings.
+  NavigateAndCommit(GURL("http://www.google.com/#hash"));
+
+  EXPECT_EQ("Goodbye", extension->page_action()->GetTitle(tab_id()));
+  EXPECT_EQ(extension->GetResourceURL("popup.html"),
+            extension->page_action()->GetPopupUrl(tab_id()));
+
   // Should discard the settings, and go back to the defaults.
   NavigateAndCommit(GURL("http://www.yahoo.com"));
 
