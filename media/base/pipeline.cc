@@ -615,6 +615,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
       state_ = kInitAudioRenderer;
     } else {
       SetError(last_stage_status);
+      return;
     }
   }
 
