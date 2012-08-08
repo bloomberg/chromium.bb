@@ -506,38 +506,6 @@
         }],
       ],
     },
-    # ash_unittests was formerly named aura_shell_unittests.  While the build
-    # bots are being switched to use the new name we need to support both
-    # executables.
-    # TODO(jamescook): Remove this section when build bots are building and
-    # running ash_unittests.
-    {
-      'target_name': 'aura_shell_unittests',
-      'type': 'none',
-      'dependencies': [
-        'ash_unittests',
-      ],
-      'actions': [
-        {
-          'message': 'TEMPORARY: Copy ash_unittests to aura_shell_unittests',
-          'action_name': 'copy_ash_unittests',
-          'variables': {
-            'source_file': '<(PRODUCT_DIR)/ash_unittests<(EXECUTABLE_SUFFIX)',
-            'dest_file': '<(PRODUCT_DIR)/aura_shell_unittests<(EXECUTABLE_SUFFIX)',
-          },
-          'inputs': [
-            '<(DEPTH)/build/cp.py',
-            '<(source_file)',
-          ],
-          'outputs': [
-            '<(dest_file)',
-          ],
-          'action': [
-            'python', '<(DEPTH)/build/cp.py', '<(source_file)', '<(dest_file)', 
-          ],
-        },
-      ],
-    },
     {
       'target_name': 'ash_shell',
       'type': 'executable',
