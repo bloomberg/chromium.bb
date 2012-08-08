@@ -522,7 +522,7 @@ deps_os = {
 
     "src/third_party/android_tools":
       Var("chromium_git") + "/android_tools.git" +
-      "@21f9993b4ce955f1af6a88e5dc1135ba645920a7",
+      "@201b7ff1c6c435c55303baf9391a4dec8f4c628c",
   },
 }
 

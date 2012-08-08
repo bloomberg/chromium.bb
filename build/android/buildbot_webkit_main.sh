@@ -14,6 +14,5 @@ ROOT=$(cd "$(dirname $0)"; pwd)
 ## bb_force_bot_green_and_exit
 
 bb_baseline_setup "${ROOT}"/../..
-bb_install_build_deps "${ROOT}"/../..
 bb_compile
 

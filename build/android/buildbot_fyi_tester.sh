@@ -13,7 +13,6 @@ BB_SRC_ROOT="$(cd "$(dirname $0)/../.."; pwd)"
 . "${BB_SRC_ROOT}/build/android/buildbot_functions.sh"
 
 bb_baseline_setup "$BB_SRC_ROOT" "$@"
-bb_install_build_deps "$BB_SRC_ROOT"
 bb_extract_build
 bb_run_tests
 bb_run_content_shell_instrumentation_test
