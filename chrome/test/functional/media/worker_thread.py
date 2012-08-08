@@ -140,7 +140,7 @@ class WorkerThread(threading.Thread):
   @synchronized
   def CloseTabByURL(self, url):
     """Closes the tab with the given url."""
-    self.CloseTab(tab_index=self.__FindTabLocked(url))
+    self.__pyauto.CloseTab(tab_index=self.__FindTabLocked(url))
 
   @synchronized
   def GetDOMValue(self, name, url=None):
