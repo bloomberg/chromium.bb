@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
-#define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
+#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_OLD_BROWSER_PLUGIN_H_
+#define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_OLD_BROWSER_PLUGIN_H_
 
 #include "base/process.h"
 #include "content/renderer/render_view_impl.h"
@@ -91,4 +91,4 @@ class BrowserPlugin {
 }  // namespace old
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
+#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_OLD_BROWSER_PLUGIN_H_

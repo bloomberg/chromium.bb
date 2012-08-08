@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_H__
-#define CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_H__
+#ifndef CONTENT_BROWSER_BROWSER_PLUGIN_OLD_OLD_BROWSER_PLUGIN_HOST_H__
+#define CONTENT_BROWSER_BROWSER_PLUGIN_OLD_OLD_BROWSER_PLUGIN_HOST_H__
 
 #include <map>
 
@@ -133,4 +133,4 @@ class BrowserPluginHost : public WebContentsObserver,
 }  // namespace old
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_H_
+#endif  // CONTENT_BROWSER_BROWSER_PLUGIN_OLD_OLD_BROWSER_PLUGIN_HOST_H_

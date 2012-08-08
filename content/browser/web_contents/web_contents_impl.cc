@@ -15,7 +15,7 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_plugin/old/browser_plugin_host.h"
+#include "content/browser/browser_plugin/old/old_browser_plugin_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"

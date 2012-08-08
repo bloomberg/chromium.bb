@@ -55,7 +55,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/browser_plugin/old/browser_plugin.h"
+#include "content/renderer/browser_plugin/old/old_browser_plugin.h"
 #include "content/renderer/browser_plugin/old/browser_plugin_channel_manager.h"
 #include "content/renderer/browser_plugin/old/browser_plugin_constants.h"
 #include "content/renderer/browser_plugin/old/guest_to_embedder_channel.h"
