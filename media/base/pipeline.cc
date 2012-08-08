@@ -17,6 +17,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_renderer.h"
+#include "media/base/buffers.h"
 #include "media/base/clock.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
@@ -68,12 +69,28 @@ struct Pipeline::PipelineInitState {
 Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
     : message_loop_(message_loop->message_loop_proxy()),
       media_log_(media_log),
+      running_(false),
+      seek_pending_(false),
+      stop_pending_(false),
+      tearing_down_(false),
+      error_caused_teardown_(false),
+      playback_rate_change_pending_(false),
+      did_loading_progress_(false),
+      total_bytes_(0),
+      natural_size_(0, 0),
+      volume_(1.0f),
+      playback_rate_(0.0f),
+      pending_playback_rate_(0.0f),
       clock_(new Clock(&base::Time::Now)),
       waiting_for_clock_update_(false),
+      status_(PIPELINE_OK),
+      has_audio_(false),
+      has_video_(false),
       state_(kCreated),
+      seek_timestamp_(kNoTimestamp()),
+      audio_disabled_(false),
       creation_time_(base::Time::Now()) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
-  ResetState();
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::PIPELINE_CREATED));
 }
@@ -242,30 +259,6 @@ void Pipeline::SetClockForTesting(Clock* clock) {
   clock_.reset(clock);
 }
 
-void Pipeline::ResetState() {
-  base::AutoLock auto_lock(lock_);
-  const TimeDelta kZero;
-  running_          = false;
-  stop_pending_     = false;
-  seek_pending_     = false;
-  tearing_down_     = false;
-  error_caused_teardown_ = false;
-  playback_rate_change_pending_ = false;
-  buffered_byte_ranges_.clear();
-  did_loading_progress_ = false;
-  total_bytes_      = 0;
-  natural_size_.SetSize(0, 0);
-  volume_           = 1.0f;
-  playback_rate_    = 0.0f;
-  pending_playback_rate_ = 0.0f;
-  status_           = PIPELINE_OK;
-  has_audio_        = false;
-  has_video_        = false;
-  waiting_for_clock_update_ = false;
-  audio_disabled_   = false;
-  clock_->Reset();
-}
-
 void Pipeline::SetState(State next_state) {
   if (state_ != kStarted && next_state == kStarted &&
       !creation_time_.is_null()) {
@@ -322,6 +315,7 @@ void Pipeline::FinishInitialization() {
   // Execute the seek callback, if present.  Note that this might be the
   // initial callback passed into Start().
   ReportStatus(seek_cb_, status_);
+  seek_timestamp_ = kNoTimestamp();
   seek_cb_.Reset();
 }
 
@@ -914,6 +908,7 @@ void Pipeline::FilterStateTransitionTask() {
   SetState(FindNextState(state_));
   if (state_ == kSeeking) {
     base::AutoLock auto_lock(lock_);
+    DCHECK(seek_timestamp_ != kNoTimestamp());
     clock_->SetTime(seek_timestamp_, seek_timestamp_);
   }
 
@@ -1016,7 +1011,11 @@ void Pipeline::FinishDestroyingFiltersTask() {
 
   if (stop_pending_) {
     stop_pending_ = false;
-    ResetState();
+    {
+      base::AutoLock l(lock_);
+      running_ = false;
+    }
+
     // Notify the client that stopping has finished.
     base::ResetAndReturn(&stop_cb_).Run();
   }
