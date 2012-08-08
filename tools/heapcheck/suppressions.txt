@@ -1509,10 +1509,19 @@
    fun:ReloadButtonTest::ReloadButtonTest
 }
 {
-   bug_141255
+   bug_141255_a
    Heapcheck:Leak
    ...
    fun:policy::BrowserPolicyConnector::CreatePlatformProvider
    fun:policy::BrowserPolicyConnector::Init
    fun:TestingBrowserProcess::browser_policy_connector
 }
+{
+   bug_141255_b
+   Heapcheck:Leak
+   fun:base::internal::WeakReferenceOwner::GetRef
+   fun:base::WeakPtrFactory::GetWeakPtr
+   fun:policy::AsyncPolicyLoader::ScheduleNextReload
+   fun:policy::AsyncPolicyLoader::Init
+}
+
