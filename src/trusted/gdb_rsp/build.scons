@@ -13,7 +13,6 @@ if env.Bit('windows'):
 
 rsp_sources = [
     'abi.cc',
-    'host.cc',
     'packet.cc',
     'session.cc',
     'target.cc',
@@ -22,7 +21,6 @@ rsp_sources = [
 
 rsp_test_sources = [
     'abi_test.cc',
-    'host_test.cc',
     'packet_test.cc',
     'session_test.cc',
     'session_mock.cc',

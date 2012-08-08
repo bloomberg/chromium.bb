@@ -141,9 +141,6 @@ int main(int argc, const char *argv[]) {
   printf("Testing Session.\n");
   errs += TestSession();
 
-  printf("Testing Host.\n");
-  errs += TestHost();
-
   printf("Testing Target.\n");
   errs += TestTarget();
 

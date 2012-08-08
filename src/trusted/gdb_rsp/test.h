@@ -13,7 +13,6 @@
 #include "native_client/src/trusted/port/transport.h"
 
 #include "native_client/src/trusted/gdb_rsp/abi.h"
-#include "native_client/src/trusted/gdb_rsp/host.h"
 #include "native_client/src/trusted/gdb_rsp/packet.h"
 #include "native_client/src/trusted/gdb_rsp/session.h"
 #include "native_client/src/trusted/gdb_rsp/target.h"
@@ -27,7 +26,6 @@ int VerifyPacket(gdb_rsp::Packet *wr, gdb_rsp::Packet *rd,
                  void *ctx, PacketFunc_t tx);
 
 int TestAbi();
-int TestHost();
 int TestPacket();
 int TestSession();
 int TestTarget();

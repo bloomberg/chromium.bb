@@ -37,8 +37,6 @@
     'gdb_rsp_sources': [
         'abi.cc',
         'abi.h',
-        'host.cc',
-        'host.h',
         'packet.cc',
         'packet.h',
         'session.cc',
@@ -51,7 +49,6 @@
     'gdb_test_sources': [
         'abi_test.cc',
         'packet_test.cc',
-        'host_test.cc',
         'session_mock.h',
         'session_mock.cc',
         'session_test.cc',
