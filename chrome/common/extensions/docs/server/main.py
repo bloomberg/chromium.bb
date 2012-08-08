@@ -17,7 +17,7 @@ import app_known_issues
 
 DEFAULT_CACHE_TIME = 300
 VIEW_VC_ROOT = 'http://src.chromium.org'
-CHROME_DOMAIN_URL = 'http://developer.chrome.com'
+
 
 class Channel():
   def __init__(self, name, tag):
@@ -180,17 +180,6 @@ class MainPage(webapp.RequestHandler):
     return self.redirectToIndexIfNecessary()
 
 
-  def redirectDomain(self):
-    if (self.request.url.startswith('http://code.google.com')):
-      for channel in ['dev', 'beta', 'stable', 'trunk']:
-        if channel in self.path:
-          position = self.path.index(channel)
-          self.path.pop(position)
-          self.path.insert(0, channel)
-      self.redirect(CHROME_DOMAIN_URL + '/' + '/'.join(self.path), True)
-    return False
-
-
   def fetchContent(self):
     logging.info("fetching: %s" % str((self.branch, self.docFamily, self.path)))
 
@@ -223,8 +212,7 @@ class MainPage(webapp.RequestHandler):
     if (not self.initPath() or
         not self.stripPathPrefix() or
         not self.initChannel() or
-        not self.initDocFamily() or
-        not self.redirectDomain()):
+        not self.initDocFamily()):
       return
 
     cacheKey = str((self.channel.name, self.docFamily, self.path))
