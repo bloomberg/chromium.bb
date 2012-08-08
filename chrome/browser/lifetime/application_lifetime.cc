@@ -242,13 +242,10 @@ void AttemptUserExit() {
 }
 
 void AttemptRestart() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRestoreSessionState)) {
-    // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
-    BrowserList::const_iterator it;
-    for (it = BrowserList::begin(); it != BrowserList::end(); ++it)
-      content::BrowserContext::SaveSessionState((*it)->profile());
-  }
+  // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
+  BrowserList::const_iterator it;
+  for (it = BrowserList::begin(); it != BrowserList::end(); ++it)
+    content::BrowserContext::SaveSessionState((*it)->profile());
 
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kWasRestarted, true);

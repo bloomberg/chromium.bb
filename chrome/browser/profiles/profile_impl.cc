@@ -263,8 +263,7 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       favicon_service_created_(false),
       start_time_(Time::Now()),
       delegate_(delegate),
-      predictor_(NULL),
-      session_restore_enabled_(false) {
+      predictor_(NULL) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
 
@@ -281,8 +280,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
       !command_line->HasSwitch(switches::kDisablePreconnect),
       g_browser_process->profile_manager() == NULL);
 
-  session_restore_enabled_ =
-      !command_line->HasSwitch(switches::kDisableRestoreSessionState);
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // TODO(atwilson): Change these to ProfileKeyedServices once PrefService is
   // a ProfileKeyedService (policy must be initialized before PrefService
@@ -407,7 +404,6 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
           *CommandLine::ForCurrentProcess(), this).type;
 #endif
   bool restore_old_session_cookies =
-      session_restore_enabled_ &&
       (!DidLastSessionExitCleanly() ||
        startup_pref_type == SessionStartupPref::LAST);
 

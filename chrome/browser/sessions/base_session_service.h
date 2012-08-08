@@ -189,10 +189,6 @@ class BaseSessionService : public CancelableRequestProvider,
   static const int max_persist_navigation_count;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, KeepPostDataWithoutPasswords);
-  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RemovePostData);
-  FRIEND_TEST_ALL_PREFIXES(SessionServiceTest, RemovePostDataWithPasswords);
-
   // The profile. This may be null during testing.
   Profile* profile_;
 
@@ -211,9 +207,6 @@ class BaseSessionService : public CancelableRequestProvider,
 
   // The number of commands sent to the backend before doing a reset.
   int commands_since_reset_;
-
-  // Whether to save the HTTP bodies of the POST requests.
-  bool save_post_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSessionService);
 };

@@ -769,44 +769,7 @@ TEST_F(SessionServiceTest, DontPersistDefault) {
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, windows[0]->show_state);
 }
 
-TEST_F(SessionServiceTest, RemovePostData) {
-  helper_.service()->save_post_data_ = false;
-
-  SessionID tab_id;
-  ASSERT_NE(window_id.id(), tab_id.id());
-
-  std::string content_state("dummy_content_state");
-  // Create a TabNavigation containing content_state and representing a POST
-  // request.
-  TabNavigation nav1(0, GURL("http://google.com"), content::Referrer(),
-                     ASCIIToUTF16("title"), content_state,
-                     content::PAGE_TRANSITION_QUALIFIER_MASK);
-  nav1.set_type_mask(TabNavigation::HAS_POST_DATA);
-
-  // Create a TabNavigation containing content_state and representing a normal
-  // request.
-  TabNavigation nav2(0, GURL("http://google.com/nopost"), content::Referrer(),
-                     ASCIIToUTF16("title"), content_state,
-                     content::PAGE_TRANSITION_QUALIFIER_MASK);
-
-  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
-  UpdateNavigation(window_id, tab_id, nav1, 0, true);
-  UpdateNavigation(window_id, tab_id, nav2, 1, true);
-
-  ScopedVector<SessionWindow> windows;
-  ReadWindows(&(windows.get()));
-
-  helper_.AssertSingleWindowWithSingleTab(windows.get(), 2);
-
-  // Expected: the HTTP body was removed from the content state of the POST
-  // navigation but the content state of the normal navigation is intact.
-  EXPECT_NE(content_state, windows[0]->tabs[0]->navigations[0].state());
-  helper_.AssertNavigationEquals(nav2, windows[0]->tabs[0]->navigations[1]);
-}
-
 TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
-  helper_.service()->save_post_data_ = true;
-
   SessionID tab_id;
   ASSERT_NE(window_id.id(), tab_id.id());
 
@@ -848,8 +811,6 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
 }
 
 TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
-  helper_.service()->save_post_data_ = true;
-
   SessionID tab_id;
   ASSERT_NE(window_id.id(), tab_id.id());
 

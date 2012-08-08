@@ -256,8 +256,6 @@ class ProfileImpl : public Profile,
 
   chrome_browser_net::Predictor* predictor_;
 
-  bool session_restore_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };
 
