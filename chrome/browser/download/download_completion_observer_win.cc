@@ -44,12 +44,10 @@ void DownloadCompletionObserver::ManagerGoingDown(DownloadManager* manager) {
 }
 
 void DownloadCompletionObserver::OnDownloadUpdated(DownloadItem* download) {
-  if (!base::win::IsMetroProcess())
-    return;
-
   switch (download->GetState()) {
     case DownloadItem::COMPLETE: {
-      if (!download->GetOpenWhenComplete() &&
+      if (base::win::IsMetroProcess() &&
+          !download->GetOpenWhenComplete() &&
           !download->ShouldOpenFileBasedOnExtension() &&
           !download->IsTemporary() &&
           !download->GetAutoOpened()) {
