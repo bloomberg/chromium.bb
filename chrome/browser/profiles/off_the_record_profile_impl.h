@@ -46,8 +46,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
-  virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
-  virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
@@ -59,7 +57,6 @@ class OffTheRecordProfileImpl : public Profile,
       const std::string& app_id) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual Time GetStartTime() const OVERRIDE;

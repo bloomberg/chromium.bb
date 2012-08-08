@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "content/public/browser/browser_context.h"
 
-class BookmarkModel;
 class ChromeAppCacheService;
 class ChromeURLDataManager;
 class ExtensionProcessManager;
@@ -24,7 +23,6 @@ class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class GAIAInfoUpdateService;
-class HistoryService;
 class HostContentSettingsMap;
 class PasswordStore;
 class PrefService;
@@ -233,23 +231,6 @@ class Profile : public content::BrowserContext {
   // Accessor. The instance is created upon first access.
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() = 0;
 
-  // Retrieves a pointer to the HistoryService associated with this
-  // profile.  The HistoryService is lazily created the first time
-  // that this method is called.
-  //
-  // Although HistoryService is refcounted, this will not addref, and callers
-  // do not need to do any reference counting as long as they keep the pointer
-  // only for the local scope (which they should do anyway since the browser
-  // process may decide to shut down).
-  //
-  // |access| defines what the caller plans to do with the service. See
-  // the ServiceAccessType definition above.
-  virtual HistoryService* GetHistoryService(ServiceAccessType access) = 0;
-
-  // Similar to GetHistoryService(), but won't create the history service if it
-  // doesn't already exist.
-  virtual HistoryService* GetHistoryServiceWithoutCreating() = 0;
-
   // Returns the UserCloudPolicyManager (if any) that handles this profile's
   // connection to the cloud-based management service.
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() = 0;
@@ -283,9 +264,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the Hostname <-> Content settings map for this profile.
   virtual HostContentSettingsMap* GetHostContentSettingsMap() = 0;
-
-  // Returns the BookmarkModel, creating if not yet created.
-  virtual BookmarkModel* GetBookmarkModel() = 0;
 
   // Returns the ProtocolHandlerRegistry, creating if not yet created.
   // TODO(smckay): replace this with access via ProtocolHandlerRegistryFactory.

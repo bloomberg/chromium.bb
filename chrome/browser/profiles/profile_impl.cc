@@ -21,7 +21,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -42,8 +41,6 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -514,13 +511,6 @@ ProfileImpl::~ProfileImpl() {
 
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
-  // The HistoryService maintains threads for background processing. Its
-  // possible each thread still has tasks on it that have increased the ref
-  // count of the service. In such a situation, when we decrement the refcount,
-  // it won't be 0, and the threads/databases aren't properly shut down. By
-  // explicitly calling Cleanup/Shutdown we ensure the databases are properly
-  // closed.
-
   if (top_sites_.get())
     top_sites_->Shutdown();
 
@@ -781,14 +771,6 @@ GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {
   return gaia_info_update_service_.get();
 }
 
-HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
-  return HistoryServiceFactory::GetForProfile(this, sat).get();
-}
-
-HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
-  return HistoryServiceFactory::GetForProfileWithoutCreating(this).get();
-}
-
 DownloadManagerDelegate* ProfileImpl::GetDownloadManagerDelegate() {
   return DownloadServiceFactory::GetForProfile(this)->
       GetDownloadManagerDelegate();
@@ -803,10 +785,6 @@ bool ProfileImpl::DidLastSessionExitCleanly() {
 
 quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
   return GetExtensionSpecialStoragePolicy();
-}
-
-BookmarkModel* ProfileImpl::GetBookmarkModel() {
-  return BookmarkModelFactory::GetForProfile(this);
 }
 
 ProtocolHandlerRegistry* ProfileImpl::GetProtocolHandlerRegistry() {

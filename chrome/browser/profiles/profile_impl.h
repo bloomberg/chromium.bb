@@ -85,8 +85,6 @@ class ProfileImpl : public Profile,
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
-  virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
-  virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
@@ -97,7 +95,6 @@ class ProfileImpl : public Profile,
       const std::string& app_id) OVERRIDE;
   virtual net::SSLConfigService* GetSSLConfigService() OVERRIDE;
   virtual HostContentSettingsMap* GetHostContentSettingsMap() OVERRIDE;
-  virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;

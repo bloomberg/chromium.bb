@@ -219,19 +219,6 @@ GAIAInfoUpdateService* OffTheRecordProfileImpl::GetGAIAInfoUpdateService() {
   return NULL;
 }
 
-HistoryService* OffTheRecordProfileImpl::GetHistoryService(
-    ServiceAccessType sat) {
-  if (sat == EXPLICIT_ACCESS)
-    return profile_->GetHistoryService(sat);
-
-  NOTREACHED() << "This profile is OffTheRecord";
-  return NULL;
-}
-
-HistoryService* OffTheRecordProfileImpl::GetHistoryServiceWithoutCreating() {
-  return profile_->GetHistoryServiceWithoutCreating();
-}
-
 FaviconService* OffTheRecordProfileImpl::GetFaviconService(
     ServiceAccessType sat) {
   if (sat == EXPLICIT_ACCESS)
@@ -348,10 +335,6 @@ bool OffTheRecordProfileImpl::DidLastSessionExitCleanly() {
 quota::SpecialStoragePolicy*
     OffTheRecordProfileImpl::GetSpecialStoragePolicy() {
   return GetExtensionSpecialStoragePolicy();
-}
-
-BookmarkModel* OffTheRecordProfileImpl::GetBookmarkModel() {
-  return profile_->GetBookmarkModel();
 }
 
 ProtocolHandlerRegistry* OffTheRecordProfileImpl::GetProtocolHandlerRegistry() {

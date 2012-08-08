@@ -217,8 +217,6 @@ class TestingProfile : public Profile {
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType access) OVERRIDE;
-  virtual HistoryService* GetHistoryService(ServiceAccessType access) OVERRIDE;
-  virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   // The CookieMonster will only be returned if a Context has been created. Do
   // this by calling CreateRequestContext(). See the note at GetRequestContext
   // for more information.
@@ -258,7 +256,6 @@ class TestingProfile : public Profile {
                                    std::wstring* output_string) {}
   virtual void MergeResourceInteger(int message_id, int* output_value) {}
   virtual void MergeResourceBoolean(int message_id, bool* output_value) {}
-  virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual bool IsSameProfile(Profile *p) OVERRIDE;
   virtual base::Time GetStartTime() const OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;

@@ -420,15 +420,19 @@ void TestingProfile::CreateWebDataService() {
 }
 
 void TestingProfile::BlockUntilBookmarkModelLoaded() {
-  DCHECK(GetBookmarkModel());
-  if (GetBookmarkModel()->IsLoaded())
+  // Only get the bookmark model if it actually exists since the caller of the
+  // test should explicitly call CreateBookmarkModel to build it.
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfileIfExists(this);
+  DCHECK(bookmark_model);
+  if (bookmark_model->IsLoaded())
     return;
   base::RunLoop run_loop;
   BookmarkLoadObserver observer(content::GetQuitTaskForRunLoop(&run_loop));
-  GetBookmarkModel()->AddObserver(&observer);
+  bookmark_model->AddObserver(&observer);
   run_loop.Run();
-  GetBookmarkModel()->RemoveObserver(&observer);
-  DCHECK(GetBookmarkModel()->IsLoaded());
+  bookmark_model->RemoveObserver(&observer);
+  DCHECK(bookmark_model->IsLoaded());
 }
 
 // TODO(phajdan.jr): Doesn't this hang if Top Sites are already loaded?
@@ -436,7 +440,7 @@ void TestingProfile::BlockUntilTopSitesLoaded() {
   content::WindowedNotificationObserver top_sites_loaded_observer(
       chrome::NOTIFICATION_TOP_SITES_LOADED,
       content::NotificationService::AllSources());
-  if (!GetHistoryService(Profile::EXPLICIT_ACCESS))
+  if (!HistoryServiceFactory::GetForProfile(this, Profile::EXPLICIT_ACCESS))
     GetTopSites()->HistoryLoaded();
   top_sites_loaded_observer.Wait();
 }
@@ -518,14 +522,6 @@ TestingProfile::GetExtensionSpecialStoragePolicy() {
 
 FaviconService* TestingProfile::GetFaviconService(ServiceAccessType access) {
   return favicon_service_.get();
-}
-
-HistoryService* TestingProfile::GetHistoryService(ServiceAccessType access) {
-  return HistoryServiceFactory::GetForProfileIfExists(this, access);
-}
-
-HistoryService* TestingProfile::GetHistoryServiceWithoutCreating() {
-  return HistoryServiceFactory::GetForProfileWithoutCreating(this);
 }
 
 net::CookieMonster* TestingProfile::GetCookieMonster() {
@@ -704,10 +700,6 @@ void TestingProfile::SetID(const std::wstring& id) {
 
 bool TestingProfile::DidLastSessionExitCleanly() {
   return last_session_exited_cleanly_;
-}
-
-BookmarkModel* TestingProfile::GetBookmarkModel() {
-  return BookmarkModelFactory::GetForProfileIfExists(this);
 }
 
 bool TestingProfile::IsSameProfile(Profile *p) {
