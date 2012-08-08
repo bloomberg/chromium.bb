@@ -371,6 +371,9 @@ class ExtensionWebRequestEventRouter
   // OTR and vice versa).
   void* GetCrossProfile(void* profile) const;
 
+  // Returns true if |request| was already signaled to some event handlers.
+  bool WasSignaled(const net::URLRequest& request) const;
+
   // A map for each profile that maps an event name to a set of extensions that
   // are listening to that event.
   ListenerMap listeners_;

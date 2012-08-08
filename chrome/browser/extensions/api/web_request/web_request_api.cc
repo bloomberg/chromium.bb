@@ -812,7 +812,11 @@ void ExtensionWebRequestEventRouter::OnCompleted(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  // However, if the request first became sensitive after redirecting we have
+  // already signaled it and thus we have to signal the end of it. This is
+  // risk-free because the handler cannot modify the request now.
+  if (!profile ||
+      (WebRequestPermissions::HideRequest(request) && !WasSignaled(*request)))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
@@ -861,7 +865,11 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     net::URLRequest* request,
     bool started) {
   // We hide events from the system context as well as sensitive requests.
-  if (!profile || WebRequestPermissions::HideRequest(request))
+  // However, if the request first became sensitive after redirecting we have
+  // already signaled it and thus we have to signal the end of it. This is
+  // risk-free because the handler cannot modify the request now.
+  if (!profile ||
+      (WebRequestPermissions::HideRequest(request) && !WasSignaled(*request)))
     return;
 
   request_time_tracker_->LogRequestEndTime(request->identifier(),
@@ -1094,6 +1102,13 @@ void* ExtensionWebRequestEventRouter::GetCrossProfile(void* profile) const {
   if (cross_profile == cross_profile_map_.end())
     return NULL;
   return cross_profile->second;
+}
+
+bool ExtensionWebRequestEventRouter::WasSignaled(
+    const net::URLRequest& request) const {
+  SignaledRequestMap::const_iterator flag =
+      signaled_requests_.find(request.identifier());
+  return (flag != signaled_requests_.end()) && (flag->second != 0);
 }
 
 void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
