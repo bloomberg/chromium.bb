@@ -371,8 +371,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
   load_time_data.SetString("appInstallHintText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
-  load_time_data.SetBoolean("isSuggestionsPageEnabled",
-      NewTabUI::IsSuggestionsPageEnabled());
+  load_time_data.SetBoolean("isDiscoveryInNTPEnabled",
+      NewTabUI::IsDiscoveryInNTPEnabled());
   load_time_data.SetBoolean("showApps", NewTabUI::ShouldShowApps());
   load_time_data.SetString("collapseSessionMenuItemText",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_COLLAPSE_SESSION));

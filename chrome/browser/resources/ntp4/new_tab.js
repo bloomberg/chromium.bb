@@ -108,7 +108,7 @@ cr.define('ntp', function() {
    */
   function onLoad() {
     sectionsToWaitFor = loadTimeData.getBoolean('showApps') ? 2 : 1;
-    if (loadTimeData.getBoolean('isSuggestionsPageEnabled'))
+    if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled'))
       sectionsToWaitFor++;
     measureNavDots();
 
@@ -140,7 +140,7 @@ cr.define('ntp', function() {
                               false);
     chrome.send('getMostVisited');
 
-    if (loadTimeData.getBoolean('isSuggestionsPageEnabled')) {
+    if (loadTimeData.getBoolean('isDiscoveryInNTPEnabled')) {
       var suggestions_script = document.createElement('script');
       suggestions_script.src = 'suggestions_page.js';
       suggestions_script.onload = function() {
