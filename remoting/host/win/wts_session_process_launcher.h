@@ -93,9 +93,6 @@ class WtsSessionProcessLauncher
   // This pointer is used to unsubscribe from session attach and detach events.
   WtsConsoleMonitor* monitor_;
 
-  // Impersonation token that has the SE_TCB_NAME privilege enabled.
-  base::win::ScopedHandle privileged_token_;
-
   // The handle of the process injected into the console session.
   base::Process process_;
 

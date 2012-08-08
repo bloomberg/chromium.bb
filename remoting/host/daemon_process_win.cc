@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/win/scoped_handle.h"
 
 namespace remoting {
 

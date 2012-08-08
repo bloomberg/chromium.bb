@@ -63,92 +63,6 @@ const char* kCopiedSwitchNames[] = {
 const wchar_t kChromotingChannelSecurityDescriptor[] =
     L"O:SYG:SYD:(A;;GA;;;SY)";
 
-// Takes the process token and makes a copy of it. The returned handle will have
-// |desired_access| rights.
-bool CopyProcessToken(DWORD desired_access,
-                      ScopedHandle* token_out) {
-
-  HANDLE handle;
-  if (!OpenProcessToken(GetCurrentProcess(),
-                        TOKEN_DUPLICATE | desired_access,
-                        &handle)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to open process token";
-    return false;
-  }
-
-  ScopedHandle process_token(handle);
-
-  if (!DuplicateTokenEx(process_token,
-                        desired_access,
-                        NULL,
-                        SecurityImpersonation,
-                        TokenPrimary,
-                        &handle)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to duplicate the process token";
-    return false;
-  }
-
-  token_out->Set(handle);
-  return true;
-}
-
-// Creates a copy of the current process with SE_TCB_NAME privilege enabled.
-bool CreatePrivilegedToken(ScopedHandle* token_out) {
-  ScopedHandle privileged_token;
-  DWORD desired_access = TOKEN_ADJUST_PRIVILEGES | TOKEN_IMPERSONATE |
-                         TOKEN_DUPLICATE | TOKEN_QUERY;
-  if (!CopyProcessToken(desired_access, &privileged_token)) {
-    return false;
-  }
-
-  // Get the LUID for the SE_TCB_NAME privilege.
-  TOKEN_PRIVILEGES state;
-  state.PrivilegeCount = 1;
-  state.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-  if (!LookupPrivilegeValue(NULL, SE_TCB_NAME, &state.Privileges[0].Luid)) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to lookup the LUID for the SE_TCB_NAME privilege";
-    return false;
-  }
-
-  // Enable the SE_TCB_NAME privilege.
-  if (!AdjustTokenPrivileges(privileged_token, FALSE, &state, 0, NULL, 0)) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to enable SE_TCB_NAME privilege in a token";
-    return false;
-  }
-
-  token_out->Set(privileged_token.Take());
-  return true;
-}
-
-// Creates a copy of the current process token for the given |session_id| so
-// it can be used to launch a process in that session.
-bool CreateSessionToken(uint32 session_id,
-                        ScopedHandle* token_out) {
-
-  ScopedHandle session_token;
-  DWORD desired_access = TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID |
-                         TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_QUERY;
-  if (!CopyProcessToken(desired_access, &session_token)) {
-    return false;
-  }
-
-  // Change the session ID of the token.
-  DWORD new_session_id = session_id;
-  if (!SetTokenInformation(session_token,
-                           TokenSessionId,
-                           &new_session_id,
-                           sizeof(new_session_id))) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to change session ID of a token";
-    return false;
-  }
-
-  token_out->Set(session_token.Take());
-  return true;
-}
-
 // Generates random channel ID.
 // N.B. Stolen from src/content/common/child_process_host_impl.cc
 std::string GenerateRandomChannelId(void* instance) {
@@ -407,29 +321,8 @@ void WtsSessionProcessLauncher::OnSessionAttached(uint32 session_id) {
   DCHECK(process_watcher_.GetWatchedObject() == NULL);
   DCHECK(chromoting_channel_.get() == NULL);
 
-  // Temporarily enable the SE_TCB_NAME privilege. The privileged token is
-  // created as needed and kept for later reuse.
-  if (privileged_token_.Get() == NULL) {
-    if (!CreatePrivilegedToken(&privileged_token_)) {
-      return;
-    }
-  }
-
-  if (!ImpersonateLoggedOnUser(privileged_token_)) {
-    LOG_GETLASTERROR(ERROR) <<
-        "Failed to impersonate the privileged token";
-    return;
-  }
-
-  // While the SE_TCB_NAME privilege is enabled, create a session token for
-  // the launched process.
-  bool result = CreateSessionToken(session_id, &session_token_);
-
-  // Revert to the default token. The default token is sufficient to call
-  // CreateProcessAsUser() successfully.
-  CHECK(RevertToSelf());
-
-  if (!result)
+  // Create a session token for the launched process.
+  if (!CreateSessionToken(session_id, &session_token_))
     return;
 
   // Now try to launch the host.

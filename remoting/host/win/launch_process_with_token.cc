@@ -40,6 +40,62 @@ const int kMinLaunchDelaySeconds = 1;
 // Name of the default session desktop.
 const char kDefaultDesktopName[] = "winsta0\\default";
 
+// Copies the process token making it a primary impersonation token.
+// The returned handle will have |desired_access| rights.
+bool CopyProcessToken(DWORD desired_access, ScopedHandle* token_out) {
+  ScopedHandle process_token;
+  if (!OpenProcessToken(GetCurrentProcess(),
+                        TOKEN_DUPLICATE | desired_access,
+                        process_token.Receive())) {
+    LOG_GETLASTERROR(ERROR) << "Failed to open process token";
+    return false;
+  }
+
+  ScopedHandle copied_token;
+  if (!DuplicateTokenEx(process_token,
+                        desired_access,
+                        NULL,
+                        SecurityImpersonation,
+                        TokenPrimary,
+                        copied_token.Receive())) {
+    LOG_GETLASTERROR(ERROR) << "Failed to duplicate the process token";
+    return false;
+  }
+
+  *token_out = copied_token.Pass();
+  return true;
+}
+
+// Creates a copy of the current process with SE_TCB_NAME privilege enabled.
+bool CreatePrivilegedToken(ScopedHandle* token_out) {
+  ScopedHandle privileged_token;
+  DWORD desired_access = TOKEN_ADJUST_PRIVILEGES | TOKEN_IMPERSONATE |
+                         TOKEN_DUPLICATE | TOKEN_QUERY;
+  if (!CopyProcessToken(desired_access, &privileged_token)) {
+    return false;
+  }
+
+  // Get the LUID for the SE_TCB_NAME privilege.
+  TOKEN_PRIVILEGES state;
+  state.PrivilegeCount = 1;
+  state.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+  if (!LookupPrivilegeValue(NULL, SE_TCB_NAME, &state.Privileges[0].Luid)) {
+    LOG_GETLASTERROR(ERROR) <<
+        "Failed to lookup the LUID for the SE_TCB_NAME privilege";
+    return false;
+  }
+
+  // Enable the SE_TCB_NAME privilege.
+  if (!AdjustTokenPrivileges(privileged_token, FALSE, &state, 0, NULL, 0)) {
+    LOG_GETLASTERROR(ERROR) <<
+        "Failed to enable SE_TCB_NAME privilege in a token";
+    return false;
+  }
+
+  *token_out = privileged_token.Pass();
+  return true;
+}
+
 // Requests the execution server to create a process in the specified session
 // using the default (i.e. Winlogon) token. This routine relies on undocumented
 // OS functionality and will likely not work on anything but XP or W2K3.
@@ -173,7 +229,7 @@ bool CreateRemoteSessionProcess(
 
   // Pass the request to create a process in the target session.
   DWORD bytes;
-  if (!WriteFile(pipe.Get(), buffer.get(), size, &bytes, NULL)) {
+  if (!WriteFile(pipe, buffer.get(), size, &bytes, NULL)) {
     LOG_GETLASTERROR(ERROR) << "Failed to send CreateProcessAsUser request";
     return false;
   }
@@ -187,7 +243,7 @@ bool CreateRemoteSessionProcess(
   };
 
   CreateProcessResponse response;
-  if (!ReadFile(pipe.Get(), &response, sizeof(response), &bytes, NULL)) {
+  if (!ReadFile(pipe, &response, sizeof(response), &bytes, NULL)) {
     LOG_GETLASTERROR(ERROR) << "Failed to receive CreateProcessAsUser response";
     return false;
   }
@@ -243,6 +299,48 @@ bool CreateRemoteSessionProcess(
 } // namespace
 
 namespace remoting {
+
+// Creates a copy of the current process token for the given |session_id| so
+// it can be used to launch a process in that session.
+bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
+  ScopedHandle session_token;
+  DWORD desired_access = TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID |
+                         TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_QUERY;
+  if (!CopyProcessToken(desired_access, &session_token)) {
+    return false;
+  }
+
+  // Temporarily enable the SE_TCB_NAME privilege as it is required by
+  // SetTokenInformation(TokenSessionId).
+  ScopedHandle privileged_token;
+  if (!CreatePrivilegedToken(&privileged_token)) {
+    return false;
+  }
+  if (!ImpersonateLoggedOnUser(privileged_token)) {
+    LOG_GETLASTERROR(ERROR) <<
+        "Failed to impersonate the privileged token";
+    return false;
+  }
+
+  // Change the session ID of the token.
+  DWORD new_session_id = session_id;
+  if (!SetTokenInformation(session_token,
+                           TokenSessionId,
+                           &new_session_id,
+                           sizeof(new_session_id))) {
+    LOG_GETLASTERROR(ERROR) << "Failed to change session ID of a token";
+
+    // Revert to the default token.
+    CHECK(RevertToSelf());
+    return false;
+  }
+
+  // Revert to the default token.
+  CHECK(RevertToSelf());
+
+  *token_out = session_token.Pass();
+  return true;
+}
 
 bool LaunchProcessWithToken(const FilePath& binary,
                             const CommandLine::StringType& command_line,
