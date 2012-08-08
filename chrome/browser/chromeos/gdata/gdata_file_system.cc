@@ -725,7 +725,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure the destination directory exists.
-  GetEntryInfoByPath(
+  directory_service_->GetEntryInfoByPath(
       remote_dest_file_path.DirName(),
       base::Bind(
           &GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo,
@@ -849,7 +849,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
   }
 
   // Make sure the destination directory exists.
-  GetEntryInfoByPath(
+  directory_service_->GetEntryInfoByPath(
       params.remote_file_path.DirName(),
       base::Bind(
           &GDataFileSystem::StartFileUploadOnUIThreadAfterGetEntryInfo,
@@ -1080,13 +1080,14 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   }
 
   // Get the edit URL of an entry at |file_path|.
-  GetEntryInfoByPath(file_path,
-                     base::Bind(
-                         &GDataFileSystem::RenameAfterGetEntryInfo,
-                         ui_weak_ptr_,
-                         file_path,
-                         new_name,
-                         callback));
+  directory_service_->GetEntryInfoByPath(
+      file_path,
+      base::Bind(
+          &GDataFileSystem::RenameAfterGetEntryInfo,
+          ui_weak_ptr_,
+          file_path,
+          new_name,
+          callback));
 }
 
 void GDataFileSystem::RenameAfterGetEntryInfo(
@@ -1297,13 +1298,14 @@ void GDataFileSystem::RemoveOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Get the edit URL of an entry at |file_path|.
-  GetEntryInfoByPath(file_path,
-                     base::Bind(
-                         &GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo,
-                         ui_weak_ptr_,
-                         file_path,
-                         is_recursive,
-                         callback));
+  directory_service_->GetEntryInfoByPath(
+      file_path,
+      base::Bind(
+          &GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo,
+          ui_weak_ptr_,
+          file_path,
+          is_recursive,
+          callback));
 }
 
 void GDataFileSystem::RemoveOnUIThreadAfterGetEntryInfo(
@@ -1501,7 +1503,7 @@ void GDataFileSystem::GetFileByPathOnUIThread(
     const GetDownloadDataCallback& get_download_data_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetEntryInfoByPath(
+  directory_service_->GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath,
                  ui_weak_ptr_,
@@ -1902,7 +1904,7 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Make sure the destination directory exists.
-  GetEntryInfoByPath(
+  directory_service_->GetEntryInfoByPath(
       file_path,
       base::Bind(
           &GDataFileSystem::RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo,
@@ -3019,7 +3021,7 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
   }
   open_files_.insert(file_path);
 
-  GetEntryInfoByPath(
+  directory_service_->GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForOpenFile,
                  ui_weak_ptr_,
