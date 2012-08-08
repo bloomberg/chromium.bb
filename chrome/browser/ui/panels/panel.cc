@@ -429,9 +429,6 @@ bool Panel::IsActive() const {
   return native_panel_->IsPanelActive();
 }
 
-void Panel::SetDraggableRegion(SkRegion* region) {
-}
-
 void Panel::FlashFrame(bool draw_attention) {
   if (IsDrawingAttention() == draw_attention || !panel_strip_)
     return;

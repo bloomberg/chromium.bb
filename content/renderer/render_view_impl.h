@@ -502,6 +502,7 @@ class RenderViewImpl : public RenderWidget,
                                        const WebKit::WebString& title);
   virtual WebKit::WebPageVisibilityState visibilityState() const;
   virtual WebKit::WebUserMediaClient* userMediaClient();
+  virtual void draggableRegionsChanged();
 
   // WebKit::WebFrameClient implementation -------------------------------------
 

@@ -101,10 +101,6 @@ void PanelBrowserWindow::SetBounds(const gfx::Rect& bounds) {
   panel_->SetBounds(bounds);
 }
 
-void PanelBrowserWindow::SetDraggableRegion(SkRegion* region) {
-  panel_->SetDraggableRegion(region);
-}
-
 void PanelBrowserWindow::FlashFrame(bool flash) {
   panel_->FlashFrame(flash);
 }

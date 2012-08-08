@@ -86,9 +86,6 @@ class BrowserWindow : public BaseWindow {
   // Browser::OnWindowDidShow should be called after showing the window.
   // virtual void Show() = 0;
 
-  // No BrowserWindow supports this BaseWindow function.
-  virtual void SetDraggableRegion(SkRegion* region) OVERRIDE {}
-
   //////////////////////////////////////////////////////////////////////////////
   // Browser specific methods:
 

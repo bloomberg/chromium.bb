@@ -7,6 +7,7 @@
 
 #include "base/shared_memory.h"
 #include "base/values.h"
+#include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -94,6 +95,12 @@ IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
   IPC_STRUCT_TRAITS_MEMBER(permissions)
   IPC_STRUCT_TRAITS_MEMBER(launch_container)
   IPC_STRUCT_TRAITS_MEMBER(is_offline_enabled)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
+  IPC_STRUCT_TRAITS_MEMBER(label)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
+  IPC_STRUCT_TRAITS_MEMBER(clip)
 IPC_STRUCT_TRAITS_END()
 
 // Singly-included section for custom IPC traits.
@@ -505,3 +512,7 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ExtensionHostMsg_GenerateUniqueID,
 
 // Resumes resource requests for a newly created app window.
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ResumeRequests, int /* route_id */)
+
+// Sent by the renderer when the draggable regions are updated.
+IPC_MESSAGE_ROUTED1(ExtensionHostMsg_UpdateDraggableRegions,
+                    std::vector<extensions::DraggableRegion> /* regions */)

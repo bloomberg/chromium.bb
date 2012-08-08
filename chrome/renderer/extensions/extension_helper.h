@@ -74,6 +74,7 @@ class ExtensionHelper
   virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) OVERRIDE;
+  virtual void DraggableRegionsChanged(WebKit::WebFrame* frame) OVERRIDE;
 
   void OnExtensionResponse(int request_id, bool success,
                            const base::ListValue& response,

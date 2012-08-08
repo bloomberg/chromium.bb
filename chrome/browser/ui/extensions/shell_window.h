@@ -27,6 +27,7 @@ class WebContents;
 namespace extensions {
 class Extension;
 class WindowController;
+struct DraggableRegion;
 }
 
 // ShellWindow is the type of window used by platform apps. Shell windows
@@ -77,6 +78,10 @@ class ShellWindow : public content::NotificationObserver,
 
   virtual void SetFullscreen(bool fullscreen) {}
   virtual bool IsFullscreenOrPending() const;
+
+  // Called when the draggable regions are changed.
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) {}
 
   // Call to notify ShellRegistry and delete the window. Subclasses should
   // invoke this method instead of using "delete this".

@@ -255,6 +255,20 @@ void ExtensionHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
     i->second->DidStartProvisionalLoad();
 }
 
+void ExtensionHelper::DraggableRegionsChanged(WebKit::WebFrame* frame) {
+  WebKit::WebVector<WebKit::WebDraggableRegion> webregions =
+      frame->document().draggableRegions();
+  std::vector<extensions::DraggableRegion> regions;
+  for (size_t i = 0; i < webregions.size(); ++i) {
+    extensions::DraggableRegion region;
+    region.label = UTF16ToASCII(webregions[i].label);
+    region.bounds = webregions[i].bounds;
+    region.clip = webregions[i].clip;
+    regions.push_back(region);
+  }
+  Send(new ExtensionHostMsg_UpdateDraggableRegions(routing_id(), regions));
+}
+
 void ExtensionHelper::FrameDetached(WebFrame* frame) {
   // This could be called before DidCreateDataSource, in which case the frame
   // won't be in the map.

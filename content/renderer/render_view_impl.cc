@@ -5699,6 +5699,13 @@ WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
   return media_stream_impl_;
 }
 
+void RenderViewImpl::draggableRegionsChanged() {
+  FOR_EACH_OBSERVER(
+      RenderViewObserver,
+      observers_,
+      DraggableRegionsChanged(webview()->mainFrame()));
+}
+
 void RenderViewImpl::OnAsyncFileOpened(
     base::PlatformFileError error_code,
     IPC::PlatformFileForTransit file_for_transit,

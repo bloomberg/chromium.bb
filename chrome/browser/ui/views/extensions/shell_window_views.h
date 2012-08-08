@@ -14,6 +14,7 @@ class Profile;
 
 namespace extensions {
 class Extension;
+struct DraggableRegion;
 }
 
 namespace views {
@@ -27,6 +28,9 @@ class ShellWindowViews : public ShellWindow,
                    const extensions::Extension* extension,
                    const GURL& url,
                    const CreateParams& params);
+
+  bool frameless() const { return frameless_; }
+  SkRegion* draggable_region() { return draggable_region_.Get(); }
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -45,7 +49,6 @@ class ShellWindowViews : public ShellWindow,
   virtual void Minimize() OVERRIDE;
   virtual void Restore() OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void SetDraggableRegion(SkRegion* region) OVERRIDE;
   virtual void FlashFrame(bool flash) OVERRIDE;
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
@@ -80,15 +83,19 @@ class ShellWindowViews : public ShellWindow,
 
   virtual ~ShellWindowViews();
 
+  // content::WebContentsDelegate implementation.
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
+
   void OnViewWasResized();
 
   views::WebView* web_view_;
   views::Widget* window_;
   bool is_fullscreen_;
 
-  gfx::ScopedSkRegion caption_region_;
+  gfx::ScopedSkRegion draggable_region_;
 
-  bool use_custom_frame_;
+  bool frameless_;
   gfx::Size minimum_size_;
   gfx::Size maximum_size_;
 

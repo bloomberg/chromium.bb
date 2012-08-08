@@ -79,6 +79,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                                      WebKit::WebMediaPlayerClient* client) {}
   virtual void ZoomLevelChanged() {};
   virtual void DidChangeScrollOffset(WebKit::WebFrame* frame) {}
+  virtual void DraggableRegionsChanged(WebKit::WebFrame* frame) {}
 
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
