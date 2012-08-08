@@ -1844,8 +1844,15 @@ PP_Var PluginInstance::ExecuteScript(PP_Instance instance,
   }
 
   NPVariant result;
-  bool ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
-                                  &result);
+  bool ok = false;
+  if (IsProcessingUserGesture()) {
+    WebKit::WebScopedUserGesture user_gesture;
+    ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
+                               &result);
+  } else {
+    ok = WebBindings::evaluate(NULL, frame->windowObject(), &np_script,
+                               &result);
+  }
   if (!ok) {
     // TryCatch doesn't catch the exceptions properly. Since this is only for
     // a trusted API, just set to a general exception message.
