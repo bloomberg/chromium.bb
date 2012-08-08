@@ -59,8 +59,12 @@ class GdbRspConnection(object):
   def _GetReply(self):
     reply = ''
     while True:
-      reply += self._socket.recv(1024)
-      if '#' in reply:
+      data = self._socket.recv(1024)
+      if len(data) == 0:
+        raise AssertionError('EOF on socket reached with '
+                             'incomplete reply message: %r' % reply)
+      reply += data
+      if '#' in data:
         break
     match = re.match('\+\$([^#]*)#([0-9a-fA-F]{2})$', reply)
     if match is None:
