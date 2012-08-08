@@ -13,9 +13,9 @@
      bad so we can't use it, either.
 -->
 <translation id="IDS_LOCALE_GTKRC"> # gtkrc.zh-TW
-gtk-font-name="ChromeDroidSans,Song ASC,sans-serif, 10"
+gtk-font-name="Noto Sans UI,Song ASC,sans-serif, 10"
 style "OverrideTooltipFontStyle" = "TooltipStyle" {
-  font_name = "ChromeDroidSans,Song ASC,sans-serif, 10"
+  font_name = "Noto Sans UI,Song ASC,sans-serif, 10"
 }
 widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
 </translation>

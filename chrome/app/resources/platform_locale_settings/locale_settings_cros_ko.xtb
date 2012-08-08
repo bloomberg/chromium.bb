@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <!-- TODO(jungshik): remove this line once we fix bug 14691 -->
-<translation id="IDS_WEB_FONT_FAMILY">Chrome Droid Sans, NanumGothic, sans-serif</translation>
+<translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI, NanumGothic, sans-serif</translation>
 <translation id="IDS_STANDARD_FONT_FAMILY">NanumGothic</translation>
 <translation id="IDS_FIXED_FONT_FAMILY">Monospace</translation>
 <translation id="IDS_SERIF_FONT_FAMILY">NanumMyeongjo</translation>
@@ -10,9 +10,9 @@
 <translation id="IDS_MINIMUM_FONT_SIZE">10</translation>
 <translation id="IDS_MINIMUM_LOGICAL_FONT_SIZE">10</translation>
 <translation id="IDS_LOCALE_GTKRC"> # gtkrc.ko
-gtk-font-name="ChromeDroidSans,NanumGothic,sans-serif, 10"
+gtk-font-name="Noto Sans UI,NanumGothic,sans-serif, 10"
 style "OverrideTooltipFontStyle" = "TooltipStyle" {
-  font_name = "ChromeDroidSans,NanumGothic,sans-serif, 10"
+  font_name = "Noto Sans UI,NanumGothic,sans-serif, 10"
 }
 widget "gtk-tooltip*" style "OverrideTooltipFontStyle"
 </translation>

@@ -154,7 +154,7 @@
     <messages fallback_to_english="true">
       <!-- The font used in Web UI (e.g. History). -->
       <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
-        'Chrome Droid Sans', 'Droid Sans Fallback', sans-serif
+        'Noto Sans UI', 'Droid Sans Fallback', sans-serif
       </message>
 
       <!-- The relative font size in % used in Web UI (e.g. History).  -->
