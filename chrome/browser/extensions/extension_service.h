@@ -857,8 +857,10 @@ class ExtensionService
 
   scoped_ptr<ExtensionErrorUI> extension_error_ui_;
 
+#if defined(ENABLE_EXTENSIONS)
   scoped_ptr<extensions::ExtensionActionStorageManager>
       extension_action_storage_manager_;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

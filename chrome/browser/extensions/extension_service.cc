@@ -402,8 +402,10 @@ ExtensionService::ExtensionService(Profile* profile,
   // cause syncs if required.
   extension_prefs_->extension_sorting()->SetExtensionService(this);
 
+#if defined(ENABLE_EXTENSIONS)
   extension_action_storage_manager_.reset(
       new extensions::ExtensionActionStorageManager(profile_));
+#endif
 
   // How long is the path to the Extensions directory?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
