@@ -5,11 +5,8 @@
 include common.mk
 
 install-header: CC_LIBRARY(src/libevdev.so.0)
-	install -D -m 0644 include/libevdev/libevdev.h \
-		 $(DESTDIR)/usr/include/libevdev/libevdev.h
-	install -D -m 0664 include/libevdev/libevdev_event.h \
-		 $(DESTDIR)/usr/include/libevdev/libevdev_event.h
-	install -D -m 0664 include/libevdev/libevdev_mt.h \
-		 $(DESTDIR)/usr/include/libevdev/libevdev_mt.h
-	install -D -m 0664 include/libevdev/libevdev_log.h \
-		 $(DESTDIR)/usr/include/libevdev/libevdev_log.h
+	set -e; \
+	for h in libevdev.h libevdev_event.h libevdev_mt.h libevdev_log.h; do \
+		install -D -m 0644 $(SRC)/include/libevdev/$$h \
+			$(DESTDIR)/usr/include/libevdev/$$h; \
+	done
