@@ -35,21 +35,13 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/ash_constants.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ui/aura/window.h"
 #endif
 
 namespace {
-// TODO(jeremya): these are copy/pasted from ash/wm/frame_painter.cc, and I'd
-// like to find a way to avoid duplicating the constants.
-#if defined(USE_ASH)
-const int kResizeOutsideBoundsSizeTouch = 30;
-const int kResizeOutsideBoundsSize = 6;
-const int kResizeInsideBoundsSize = 1;
-const int kResizeAreaCornerSize = 16;
-#else
-const int kResizeOutsideBoundsSizeTouch = 0;
-const int kResizeOutsideBoundsSize = 0;
+#if !defined(USE_ASH)
 const int kResizeInsideBoundsSize = 5;
 const int kResizeAreaCornerSize = 16;
 #endif
@@ -130,16 +122,16 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
   aura::Window* window = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
   int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
-      kResizeOutsideBoundsSizeTouch :
-      kResizeOutsideBoundsSize;
+      ash::kResizeOutsideBoundsSizeTouch :
+      ash::kResizeOutsideBoundsSize;
   window->set_hit_test_bounds_override_outer(
       gfx::Insets(-outside_bounds, -outside_bounds,
                   -outside_bounds, -outside_bounds));
   // Ensure we get resize cursors just inside our bounds as well.
   // TODO(jeremya): do we need to update these when in fullscreen/maximized?
   window->set_hit_test_bounds_override_inner(
-      gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
-                  kResizeInsideBoundsSize, kResizeInsideBoundsSize));
+      gfx::Insets(ash::kResizeInsideBoundsSize, ash::kResizeInsideBoundsSize,
+                  ash::kResizeInsideBoundsSize, ash::kResizeInsideBoundsSize));
 #endif
 }
 
@@ -171,11 +163,14 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 #if defined(USE_ASH)
   gfx::Rect expanded_bounds = bounds();
   int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
-      kResizeOutsideBoundsSizeTouch :
-      kResizeOutsideBoundsSize;
+      ash::kResizeOutsideBoundsSizeTouch :
+      ash::kResizeOutsideBoundsSize;
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
+
+  int kResizeInsideBoundsSize = ash::kResizeInsideBoundsSize;
+  int kResizeAreaCornerSize = ash::kResizeAreaCornerSize;
 #endif
 
   // Check the frame first, as we allow a small area overlapping the contents

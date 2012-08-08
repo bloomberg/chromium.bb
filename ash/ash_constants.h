@@ -16,6 +16,18 @@ namespace ash {
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
     kConstrainedWindowKey;
 
+// In the window corners, the resize areas don't actually expand bigger, but the
+// 16 px at the end of each edge triggers diagonal resizing.
+ASH_EXPORT extern const int kResizeAreaCornerSize;
+
+// Ash windows do not have a traditional visible window frame. Window content
+// extends to the edge of the window. We consider a small region outside the
+// window bounds and an even smaller region overlapping the window to be the
+// "non-client" area and use it for resizing.
+ASH_EXPORT extern const int kResizeOutsideBoundsSizeTouch;
+ASH_EXPORT extern const int kResizeOutsideBoundsSize;
+ASH_EXPORT extern const int kResizeInsideBoundsSize;
+
 } // namespace ash
 
 #endif  // ASH_ASH_CONSTANTS_H_
