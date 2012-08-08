@@ -134,11 +134,6 @@ html[dir=rtl] .progress {
   background-size: 48px;
 }
 
-.progress.foreground {
-  background: url('chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32');
-  background-size: 48px;
-}
-
 .name {
   -webkit-padding-end: 16px;
   display: none;
