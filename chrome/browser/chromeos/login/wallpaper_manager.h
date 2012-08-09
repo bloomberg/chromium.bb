@@ -119,7 +119,7 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                  ash::WallpaperLayout layout);
 
   // User was deselected at login screen, reset wallpaper if needed.
-  void OnUserDeselected();
+  void OnUserDeselected() {}
 
   // User |email| was selected at login screen, load wallpaper.
   void OnUserSelected(const std::string& email);

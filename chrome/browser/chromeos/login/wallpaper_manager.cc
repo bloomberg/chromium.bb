@@ -359,6 +359,11 @@ void WallpaperManager::SetLastSelectedUser(
 
 void WallpaperManager::SetUserWallpaper(const std::string& email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (email == kGuestUser) {
+    ash::Shell::GetInstance()->desktop_background_controller()->
+      SetDefaultWallpaper(ash::GetGuestWallpaperIndex(), false);
+  }
+
   if (!UserManager::Get()->IsKnownUser(email))
     return;
 
@@ -392,14 +397,6 @@ void WallpaperManager::SetWallpaperFromImageSkia(
     ash::WallpaperLayout layout) {
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper, layout);
-}
-
-void WallpaperManager::OnUserDeselected() {
-  if (!UserManager::Get()->IsUserLoggedIn()) {
-    // This will set default login wallpaper (#fefefe).
-    ash::Shell::GetInstance()->desktop_background_controller()->
-        SetDefaultWallpaper(ash::GetSolidColorIndex(), false);
-  }
 }
 
 void WallpaperManager::OnUserSelected(const std::string& email) {
