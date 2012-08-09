@@ -98,7 +98,6 @@ SessionEventExecutorWin::SessionEventExecutorWin(
 }
 
 SessionEventExecutorWin::~SessionEventExecutorWin() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
 void SessionEventExecutorWin::OnSessionStarted(
