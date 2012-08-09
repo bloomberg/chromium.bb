@@ -2221,7 +2221,6 @@ class PageCyclerReplay(object):
       '--disable-background-networking',
       '--enable-experimental-extension-apis',
       '--enable-logging',
-      '--enable-stats-table',
       '--enable-benchmarking',
       '--metrics-recording-only',
       '--activate-on-launch',
