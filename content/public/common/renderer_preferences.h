@@ -101,6 +101,9 @@ struct CONTENT_EXPORT RendererPreferences {
   // The user agent given to WebKit when it requests one and the user agent is
   // being overridden for the current navigation.
   std::string user_agent_override;
+
+  // Specifies whether renderer input event throttle is enabled.
+  bool throttle_input_events;
 };
 
 }  // namespace content

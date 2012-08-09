@@ -27,7 +27,8 @@ RendererPreferences::RendererPreferences()
       browser_handles_all_top_level_requests(false),
       caret_blink_interval(0),
       enable_referrers(true),
-      default_zoom_level(0) {
+      default_zoom_level(0),
+      throttle_input_events(true) {
 }
 
 }  // namespace content

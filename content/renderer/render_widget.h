@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderWidget
   RenderWidget(WebKit::WebPopupType popup_type,
                const WebKit::WebScreenInfo& screen_info,
                bool swapped_out);
+
   virtual ~RenderWidget();
 
   // Initializes this view with the given opener.  CompleteInit must be called
@@ -326,6 +327,10 @@ class CONTENT_EXPORT RenderWidget
   void set_next_paint_is_resize_ack();
   void set_next_paint_is_restore_ack();
   void set_next_paint_is_repaint_ack();
+
+  void set_throttle_input_events(bool throttle_input_events) {
+    throttle_input_events_ = throttle_input_events;
+  }
 
   // Checks if the text input state and compose inline mode have been changed.
   // If they are changed, the new value will be sent to the browser process.
@@ -569,6 +574,9 @@ class CONTENT_EXPORT RenderWidget
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   float device_scale_factor_;
+
+  // Specifies whether input event throttling is enabled for this widget.
+  bool throttle_input_events_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

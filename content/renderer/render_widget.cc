@@ -108,7 +108,8 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       animation_update_pending_(false),
       invalidation_task_posted_(false),
       screen_info_(screen_info),
-      device_scale_factor_(1) {
+      device_scale_factor_(1),
+      throttle_input_events_(true) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
@@ -583,8 +584,9 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
       input_event->type == WebInputEvent::MouseWheel ||
       WebInputEvent::isTouchEventType(input_event->type);
   bool is_input_throttled =
-      (webwidget_ ? webwidget_->isInputThrottled() : false) ||
-      paint_aggregator_.HasPendingUpdate();
+      throttle_input_events_ &&
+      ((webwidget_ ? webwidget_->isInputThrottled() : false) ||
+      paint_aggregator_.HasPendingUpdate());
 
   if (event_type_gets_rate_limited && is_input_throttled && !is_hidden_) {
     // We want to rate limit the input events in this case, so we'll wait for

@@ -554,6 +554,7 @@ RenderViewImpl::RenderViewImpl(
       guest_pp_instance_(0),
       guest_uninitialized_context_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
+  set_throttle_input_events(renderer_prefs.throttle_input_events);
   routing_id_ = routing_id;
   surface_id_ = surface_id;
   if (opener_id != MSG_ROUTING_NONE && is_renderer_created)
