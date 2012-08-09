@@ -3,7 +3,9 @@
 :: found in the LICENSE file.
 
 setlocal
-set "PATH=c:\cygwin\bin;%PATH%"
+:: Load the hermetic cygwin environment (downloading/installing/updating
+:: it if necessary).
+call "%~dp0cygwin_env.bat"
 bash -c "buildbot/buildbot_pnacl.sh %*"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 endlocal
