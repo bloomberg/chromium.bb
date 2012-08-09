@@ -1,0 +1,10 @@
+# Please add joi@ or erikwright@ as reviewers for any changes to DEPS files
+# under android_webview/ as they are keeping track of what needs to become a
+# Browser Component.
+
+# Do not add any includes under chrome/ to this DEPS file. Code that depends on
+# chrome/ should go into android_webview/lib/ or be refactored.
+
+include_rules = [
+  "+content/public",
+]
