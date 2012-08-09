@@ -165,7 +165,7 @@ void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
 }
 
 void FrameMaximizeButton::DestroyMaximizeMenu() {
-  maximizer_.reset();
+  Cancel(false);
 }
 
 void FrameMaximizeButton::OnWindowBoundsChanged(
