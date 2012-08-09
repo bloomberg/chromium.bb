@@ -51,6 +51,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "remoting/host/curtain_mode_mac.h"
 #include "remoting/host/sighup_listener_mac.h"
 #endif
 // N.B. OS_WIN is defined by including src/base headers.
@@ -446,6 +447,12 @@ class HostProcess
                           base::Unretained(this)));
 #endif
 
+#if defined(OS_MACOSX)
+    curtain_.Init(base::Bind(&HostProcess::OnDisconnectRequested,
+                             base::Unretained(this)));
+    host_->AddStatusObserver(&curtain_);
+#endif
+
     host_->Start();
 
     CreateAuthenticatorFactory();
@@ -558,6 +565,10 @@ class HostProcess
   scoped_refptr<ChromotingHost> host_;
 
   int exit_code_;
+
+#if defined(OS_MACOSX)
+    remoting::CurtainMode curtain_;
+#endif
 };
 
 }  // namespace remoting

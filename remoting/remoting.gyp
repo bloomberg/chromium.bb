@@ -1468,6 +1468,8 @@
         'host/remoting_me2me_host.cc',
         'host/usage_stats_consent.h',
         'host/usage_stats_consent_win.cc',
+        'host/curtain_mode_mac.h',
+        'host/curtain_mode_mac.cc',
       ],
       'conditions': [
         ['OS=="mac"', {
