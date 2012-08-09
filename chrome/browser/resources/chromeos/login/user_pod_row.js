@@ -324,7 +324,7 @@ cr.define('login', function() {
      */
     updateUserImage: function() {
       this.imageElement.src = this.isGuest ?
-          'chrome://theme/IDR_LOGIN_GUEST' :
+          'chrome://theme/IDR_LOGIN_GUEST@' + window.devicePixelRatio + 'x' :
           'chrome://userimage/' + this.user.username +
               '?id=' + new Date().getTime();
     },
