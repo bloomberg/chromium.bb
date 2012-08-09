@@ -125,6 +125,9 @@ deps = {
   "src/third_party/skia/src":
     (Var("googlecode_url") % "skia") + "/trunk/src@" + Var("skia_revision"),
 
+  "src/third_party/skia/gyp":
+    (Var("googlecode_url") % "skia") + "/trunk/gyp@" + Var("skia_revision"),
+ 
   "src/third_party/skia/include":
     (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
 
