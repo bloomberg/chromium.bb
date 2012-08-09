@@ -274,7 +274,27 @@ class RepoRepository(object):
       cmd = ['repo', '--time', 'sync']
       if jobs:
         cmd += ['--jobs', str(jobs)]
-      cros_build_lib.RunCommandWithRetries(2, cmd, cwd=self.directory)
+      # Do the network half of the sync; retry as necessary to get the content.
+      cros_build_lib.RunCommandWithRetries(2, cmd + ['-n'], cwd=self.directory)
+
+      # Do the local sync; note that there is a couple of corner cases where
+      # the new manifest cannot transition from the old checkout cleanly-
+      # primarily involving git submodules.  Thus we intercept, and do
+      # a forced wipe, then a retry.
+      try:
+        cros_build_lib.RunCommand(cmd + ['-l'], cwd=self.directory)
+      except cros_build_lib.RunCommandError:
+        manifest = cros_build_lib.ManifestCheckout.Cached(self.directory)
+        targets = set(project['path'].split('/', 1)[0]
+                      for project in manifest.projects)
+        if not targets:
+          # No directories to wipe, thus nothing we can fix.
+          raise
+        cros_build_lib.SudoRunCommand(['rm', '-rf', sorted(targets)],
+                                      cwd=self.directory)
+
+        # Retry the sync now; if it fails, let the exception propagate.
+        cros_build_lib.RunCommand(cmd + ['-l'], cwd=self.directory)
 
       # Setup gerrit remote for any new repositories.
       configure_repo.SetupGerritRemote(self.directory)
