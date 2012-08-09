@@ -65,7 +65,7 @@ SO_CC_RULES = {
 }
 
 WIN_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /Zi /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
   'Release': '<TAB>$(<CC>) /O2 /Fo$@ /MT /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLIST>'
 }
 
@@ -98,7 +98,7 @@ PEXE_LINK_RULES = {
 }
 
 WIN_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Debug $^ <LIBLIST> $(WIN_LDFLAGS)',
+  'Debug': '<TAB>$(<LINK>) /DLL /OUT:$@ /PDG:$@.pdb /Zi $(<PROJ>_LDFLAGS) /DEBUG /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Debug $^ <LIBLIST> $(WIN_LDFLAGS)',
   'Release': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Release $^ <LIBLIST> $(WIN_LDFLAGS)'
 }
 
