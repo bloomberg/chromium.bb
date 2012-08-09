@@ -37,6 +37,7 @@
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
 #include "ash/wm/custom_frame_view_ash.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -121,12 +122,12 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
 #if defined(USE_ASH)
   aura::Window* window = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
-  int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
-      ash::kResizeOutsideBoundsSizeTouch :
-      ash::kResizeOutsideBoundsSize;
-  window->set_hit_test_bounds_override_outer(
-      gfx::Insets(-outside_bounds, -outside_bounds,
-                  -outside_bounds, -outside_bounds));
+  window->SetHitTestBoundsOverrideOuter(
+      gfx::Insets(-ash::kResizeOutsideBoundsSize,
+                  -ash::kResizeOutsideBoundsSize,
+                  -ash::kResizeOutsideBoundsSize,
+                  -ash::kResizeOutsideBoundsSize),
+      ash::kResizeOutsideBoundsScaleForTouch);
   // Ensure we get resize cursors just inside our bounds as well.
   // TODO(jeremya): do we need to update these when in fullscreen/maximized?
   window->set_hit_test_bounds_override_inner(
@@ -162,9 +163,11 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
 #if defined(USE_ASH)
   gfx::Rect expanded_bounds = bounds();
-  int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
-      ash::kResizeOutsideBoundsSizeTouch :
-      ash::kResizeOutsideBoundsSize;
+  int outside_bounds = ash::kResizeOutsideBoundsSize;
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH &&
+      aura::Env::GetInstance()->is_touch_down()) {
+    outside_bounds *= ash::kResizeOutsideBoundsScaleForTouch;
+  }
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;

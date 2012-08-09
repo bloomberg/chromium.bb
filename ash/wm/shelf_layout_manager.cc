@@ -585,10 +585,11 @@ void ShelfLayoutManager::UpdateHitTestBounds() {
         break;
     }
   }
-  if (launcher_widget() && launcher_widget()->GetNativeWindow())
-    launcher_widget()->GetNativeWindow()->set_hit_test_bounds_override_outer(
-        insets);
-  status_->GetNativeWindow()->set_hit_test_bounds_override_outer(insets);
+  if (launcher_widget() && launcher_widget()->GetNativeWindow()) {
+    launcher_widget()->GetNativeWindow()->SetHitTestBoundsOverrideOuter(
+        insets, 1);
+  }
+  status_->GetNativeWindow()->SetHitTestBoundsOverrideOuter( insets, 1);
 }
 
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {

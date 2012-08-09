@@ -496,7 +496,9 @@ bool Window::HitTest(const gfx::Point& local_point) {
   // Expand my bounds for hit testing (override is usually zero but it's
   // probably cheaper to do the math every time than to branch).
   gfx::Rect local_bounds(gfx::Point(), bounds().size());
-  local_bounds.Inset(hit_test_bounds_override_outer_);
+  local_bounds.Inset(aura::Env::GetInstance()->is_touch_down() ?
+      hit_test_bounds_override_outer_touch_ :
+      hit_test_bounds_override_outer_mouse_);
 
   if (!delegate_ || !delegate_->HasHitTestMask())
     return local_bounds.Contains(local_point);

@@ -181,12 +181,10 @@ void FramePainter::Init(views::Widget* frame,
 
   window_ = frame->GetNativeWindow();
   // Ensure we get resize cursors for a few pixels outside our bounds.
-  int outside_bounds = ui::GetDisplayLayout() == ui::LAYOUT_TOUCH ?
-      kResizeOutsideBoundsSizeTouch :
-      kResizeOutsideBoundsSize;
-  window_->set_hit_test_bounds_override_outer(
-      gfx::Insets(-outside_bounds, -outside_bounds,
-                  -outside_bounds, -outside_bounds));
+  window_->SetHitTestBoundsOverrideOuter(
+      gfx::Insets(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
+                  -kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize),
+      kResizeOutsideBoundsScaleForTouch);
   // Ensure we get resize cursors just inside our bounds as well.
   window_->set_hit_test_bounds_override_inner(
       gfx::Insets(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
@@ -224,7 +222,7 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
 
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH &&
       aura::Env::GetInstance()->is_touch_down()) {
-    outside_bounds = kResizeOutsideBoundsSizeTouch;
+    outside_bounds *= kResizeOutsideBoundsScaleForTouch;
   }
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
 

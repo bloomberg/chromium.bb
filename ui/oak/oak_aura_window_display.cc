@@ -145,7 +145,7 @@ string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
       return PropertyWithBool("Can Focus: ", window_->CanFocus());
     case ROW_HITTESTBOUNDSOVERRIDEOUTER:
       return PropertyWithInsets("Hit test bounds override outer: ",
-                                window_->hit_test_bounds_override_outer());
+          window_->hit_test_bounds_override_outer_mouse());
     case ROW_HITTESTBOUNDSOVERRIDEINNER:
       return PropertyWithInsets("Hit test bounds override inner: ",
                                 window_->hit_test_bounds_override_inner());

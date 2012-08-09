@@ -429,8 +429,19 @@ TEST_F(WindowTest, HitTest) {
   EXPECT_FALSE(w1.HitTest(gfx::Point(-1, -1)));
 
   // We can expand the bounds slightly to track events outside our border.
-  w1.set_hit_test_bounds_override_outer(gfx::Insets(-1, -1, -1, -1));
+  w1.SetHitTestBoundsOverrideOuter(gfx::Insets(-1, -1, -1, -1), 5);
   EXPECT_TRUE(w1.HitTest(gfx::Point(-1, -1)));
+  EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
+
+  ui::TouchEventImpl pressed(
+      ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0, getTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&pressed);
+  EXPECT_TRUE(w1.HitTest(gfx::Point(-2, -2)));
+  EXPECT_TRUE(w1.HitTest(gfx::Point(-5, -5)));
+  EXPECT_FALSE(w1.HitTest(gfx::Point(-5, -6)));
+  ui::TouchEventImpl released(
+      ui::ET_TOUCH_RELEASED, gfx::Point(50, 50), 0, getTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&released);
   EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 
   // TODO(beng): clip Window to parent.

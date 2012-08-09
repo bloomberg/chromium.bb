@@ -24,8 +24,8 @@ ASH_EXPORT extern const int kResizeAreaCornerSize;
 // extends to the edge of the window. We consider a small region outside the
 // window bounds and an even smaller region overlapping the window to be the
 // "non-client" area and use it for resizing.
-ASH_EXPORT extern const int kResizeOutsideBoundsSizeTouch;
 ASH_EXPORT extern const int kResizeOutsideBoundsSize;
+ASH_EXPORT extern const int kResizeOutsideBoundsScaleForTouch;
 ASH_EXPORT extern const int kResizeInsideBoundsSize;
 
 } // namespace ash
