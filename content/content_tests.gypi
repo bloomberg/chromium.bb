@@ -756,18 +756,13 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_java',
+            '../net/net.gyp:net_java',
             'content_java',
             'content_unittests',
-            '../net/net.gyp:net_java',
           ],
           'variables': {
             'test_suite_name': 'content_unittests',
             'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)content_unittests<(SHARED_LIB_SUFFIX)',
-            'input_jars_paths': [
-              '<(PRODUCT_DIR)/lib.java/chromium_base.jar',
-              '<(PRODUCT_DIR)/lib.java/chromium_content.jar',
-              '<(PRODUCT_DIR)/lib.java/chromium_net.jar',
-            ],
           },
           'includes': [ '../build/apk_test.gypi' ],
         },

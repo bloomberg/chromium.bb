@@ -246,6 +246,10 @@
            '../net/net.gyp:net_java',
            'content_common',
          ],
+         'export_dependent_settings': [
+           '../base/base.gyp:base_java',
+           '../net/net.gyp:net_java',
+         ],
          'variables': {
            'package_name': 'content',
            'java_in_dir': '../content/public/android/java',

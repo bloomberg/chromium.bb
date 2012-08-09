@@ -1074,6 +1074,11 @@
             '../content/content.gyp:content_java',
             '../net/net.gyp:net_java',
           ],
+          'export_dependent_settings': [
+            '../base/base.gyp:base_java',
+            '../content/content.gyp:content_java',
+            '../net/net.gyp:net_java',
+          ],
           'variables': {
             'package_name': 'chrome',
             'java_in_dir': '../chrome/android/java',
