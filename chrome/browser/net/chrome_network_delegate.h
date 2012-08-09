@@ -49,8 +49,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       chrome_browser_net::CacheStats* cache_stats);
   virtual ~ChromeNetworkDelegate();
 
-  // Causes |OnCanThrottleRequest| to never return true.
-  void NeverThrottleRequests();
+  // Causes |OnCanThrottleRequest| to always return false, for all
+  // instances of this object.
+  static void NeverThrottleRequests();
 
   // Binds |enable_referrers| to |pref_service| and moves it to the IO thread.
   // This method should be called on the UI thread.
@@ -115,14 +116,19 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
 
-  // True if OnCanThrottleRequest should always return false.
-  bool never_throttle_requests_;
-
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;
 
   // When true, allow access to all file:// URLs.
   static bool g_allow_file_access_;
+
+  // True if OnCanThrottleRequest should always return false.
+  //
+  // Note: This needs to be static as the instance of
+  // ChromeNetworkDelegate used may change over time, and we need to
+  // set this variable once at start-up time.  It is effectively
+  // static anyway since it is based on a command-line flag.
+  static bool g_never_throttle_requests_;
 
   // Pointer to IOThread global, should outlive ChromeNetworkDelegate.
   chrome_browser_net::CacheStats* cache_stats_;
