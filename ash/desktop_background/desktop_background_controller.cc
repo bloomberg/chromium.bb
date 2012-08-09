@@ -28,6 +28,7 @@ namespace {
 
 const int kSmallWallpaperMaximalWidth = 1366;
 const int kSmallWallpaperMaximalHeight = 800;
+const SkColor kTransparentColor = SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 
 internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
     aura::RootWindow* root_window) {
@@ -103,7 +104,7 @@ class DesktopBackgroundController::WallpaperOperation
 DesktopBackgroundController::DesktopBackgroundController()
     : locked_(false),
       desktop_background_mode_(BACKGROUND_SOLID_COLOR),
-      background_color_(SK_ColorGRAY),
+      background_color_(kTransparentColor),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   InstallComponentForAllWindows();
 }
