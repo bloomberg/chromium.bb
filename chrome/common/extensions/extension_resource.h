@@ -57,7 +57,7 @@ class ExtensionResource {
   const FilePath& extension_root() const { return extension_root_; }
   const FilePath& relative_path() const { return relative_path_; }
 
-  bool empty() { return extension_root().empty(); }
+  bool empty() const { return extension_root().empty(); }
 
   // Unit test helpers.
   FilePath::StringType NormalizeSeperators(

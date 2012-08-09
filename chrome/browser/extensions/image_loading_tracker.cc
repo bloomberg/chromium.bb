@@ -311,7 +311,7 @@ void ImageLoadingTracker::OnImageLoaded(
 
   // Add to the extension's image cache if requested.
   DCHECK(info->cache != CACHE || info->extension);
-  if (should_cache && info->cache == CACHE  &&
+  if (should_cache && info->cache == CACHE && !resource.empty() &&
       !info->extension->HasCachedImage(resource, original_size)) {
     info->extension->SetCachedImage(resource, image ? *image : SkBitmap(),
                                     original_size);
