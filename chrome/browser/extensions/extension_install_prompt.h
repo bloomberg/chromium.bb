@@ -286,7 +286,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // The extensions installation icon.
   SkBitmap icon_;
 
-  // The extension we are showing the UI for.
+  // The extension we are showing the UI for, if type is not
+  // BUNDLE_INSTALL_PROMPT.
   const extensions::Extension* extension_;
 
   // The bundle we are showing the UI for, if type BUNDLE_INSTALL_PROMPT.

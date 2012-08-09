@@ -470,8 +470,9 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   prompt_.set_type(prompt_type_);
 
   if (permissions_) {
-    prompt_.SetPermissions(
-        permissions_->GetWarningMessages(extension_->GetType()));
+    Extension::Type extension_type = prompt_type_ == BUNDLE_INSTALL_PROMPT ?
+        Extension::TYPE_UNKNOWN : extension_->GetType();
+    prompt_.SetPermissions(permissions_->GetWarningMessages(extension_type));
   }
 
   switch (prompt_type_) {
