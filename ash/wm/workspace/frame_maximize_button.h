@@ -96,14 +96,15 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   SnapType SnapTypeForLocation(const gfx::Point& location) const;
 
   // Returns the bounds of the resulting window for the specified type.
-  gfx::Rect ScreenBoundsForType(SnapType type) const;
+  gfx::Rect ScreenBoundsForType(SnapType type,
+                                const internal::SnapSizer& snap_sizer) const;
 
   // Converts location to screen coordinates and returns it. These are the
   // coordinates used by the SnapSizer.
   gfx::Point LocationForSnapSizer(const gfx::Point& location) const;
 
   // Snaps the window to the current snap position.
-  void Snap();
+  void Snap(const internal::SnapSizer& snap_sizer);
 
   // Frame that the maximize button acts on.
   views::NonClientFrameView* frame_;

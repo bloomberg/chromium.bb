@@ -11,11 +11,14 @@
 #include "base/timer.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
+#include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -41,19 +44,27 @@ const SkColor kBubbleTextColor = SK_ColorWHITE;
 // The line width of the bubble.
 const int kLineWidth = 1;
 
+// The spacing for the top and bottom of the info label.
+const int kLabelSpacing = 4;
+
 // The pixel dimensions of the arrow.
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
 
 // The delay of the bubble appearance.
 const int kBubbleAppearanceDelayMS = 200;
-const int kAnimationDurationForPopupMS = 200;
+
+// The animation offset in y for the bubble when appearing.
+const int kBubbleAnimationOffsetY = 5;
 
 class MaximizeBubbleBorder : public views::BubbleBorder {
  public:
   MaximizeBubbleBorder(views::View* content_view, views::View* anchor);
 
   virtual ~MaximizeBubbleBorder() {}
+
+  // Get the mouse active area of the window.
+  void GetMask(gfx::Path* mask);
 
   // Overridden from views::BubbleBorder to match the design specs.
   virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
@@ -62,8 +73,13 @@ class MaximizeBubbleBorder : public views::BubbleBorder {
   // Overridden from views::Border.
   virtual void Paint(const views::View& view,
                      gfx::Canvas* canvas) const OVERRIDE;
+
  private:
-  views::View* anchor_;
+  // Note: Animations can continue after then main window frame was destroyed.
+  // To avoid this problem, the owning screen metrics get extracted upon
+  // creation.
+  gfx::Size anchor_size_;
+  gfx::Point anchor_screen_origin_;
   views::View* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeBubbleBorder);
@@ -73,9 +89,29 @@ MaximizeBubbleBorder::MaximizeBubbleBorder(views::View* content_view,
                                            views::View* anchor)
     : views::BubbleBorder(views::BubbleBorder::TOP_RIGHT,
                           views::BubbleBorder::NO_SHADOW),
-      anchor_(anchor),
+      anchor_size_(anchor->size()),
+      anchor_screen_origin_(0,0),
       content_view_(content_view) {
+  views::View::ConvertPointToScreen(anchor, &anchor_screen_origin_);
   set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+}
+
+void MaximizeBubbleBorder::GetMask(gfx::Path* mask) {
+  gfx::Insets inset;
+  GetInsets(&inset);
+  // Note: Even though the tip could be added as activatable, it is left out
+  // since it would not change the action behavior in any way plus it makes
+  // more sense to keep the focus on the underlying button for clicks.
+  int left = inset.left() - kLineWidth;
+  int right = inset.left() + content_view_->width() + kLineWidth;
+  int top = inset.top() - kLineWidth;
+  int bottom = inset.top() + content_view_->height() + kLineWidth;
+  mask->moveTo(left, top);
+  mask->lineTo(right, top);
+  mask->lineTo(right, bottom);
+  mask->lineTo(left, bottom);
+  mask->lineTo(left, top);
+  mask->close();
 }
 
 gfx::Rect MaximizeBubbleBorder::GetBounds(
@@ -87,12 +123,12 @@ gfx::Rect MaximizeBubbleBorder::GetBounds(
   border_size.Enlarge(insets.width(), insets.height());
 
   // Position the bubble to center the box on the anchor.
-  int x = (-border_size.width() + anchor_->width()) / 2;
+  int x = (-border_size.width() + anchor_size_.width()) / 2;
   // Position the bubble under the anchor, overlapping the arrow with it.
-  int y = anchor_->height() - insets.top();
+  int y = anchor_size_.height() - insets.top();
 
-  gfx::Point view_origin(x, y);
-  views::View::ConvertPointToScreen(anchor_, &view_origin);
+  gfx::Point view_origin(x + anchor_screen_origin_.x(),
+                         y + anchor_screen_origin_.y());
 
   return gfx::Rect(view_origin, border_size);
 }
@@ -190,6 +226,11 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
 
   // Overridden from views::BubbleDelegateView.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+
+  // Overridden from views::WidgetDelegateView.
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Implementation of MouseWatcherListener.
   virtual void MouseMovedOutOfHost();
@@ -228,6 +269,12 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
 
   // The content accessor of the menu.
   BubbleContentsView* contents_view_;
+
+  // The bubble border.
+  MaximizeBubbleBorder* bubble_border_;
+
+  // The rectangle before the animation starts.
+  gfx::Rect initial_position_;
 
   // The mouse watcher which takes care of out of window hover events.
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
@@ -315,7 +362,8 @@ MaximizeBubbleController::Bubble::Bubble(MaximizeBubbleController* owner)
       shutting_down_(false),
       owner_(owner),
       bubble_widget_(NULL),
-      contents_view_(NULL) {
+      contents_view_(NULL),
+      bubble_border_(NULL) {
   set_margins(gfx::Insets());
 
   // The window needs to be owned by the root so that the SnapSizer does not
@@ -347,35 +395,15 @@ MaximizeBubbleController::Bubble::Bubble(MaximizeBubbleController* owner)
   SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
 
-  MaximizeBubbleBorder* bubble_border = new MaximizeBubbleBorder(
-      this,
-      anchor_view());
-  GetBubbleFrameView()->SetBubbleBorder(bubble_border);
+  bubble_border_ = new MaximizeBubbleBorder(this, anchor_view());
+  GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
   GetBubbleFrameView()->set_background(NULL);
 
   // Recalculate size with new border.
   SizeToContents();
 
-  // Setup animation.
-  ash::SetWindowVisibilityAnimationType(
-      bubble_widget_->GetNativeWindow(),
-      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  ash::SetWindowVisibilityAnimationTransition(
-      bubble_widget_->GetNativeWindow(),
-      ash::ANIMATE_BOTH);
-  ash::SetWindowVisibilityAnimationDuration(
-      bubble_widget_->GetNativeWindow(),
-      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
+  StartFade(true);
 
-  Show();
-  // We don't want to lose the focus on our parent window because the button
-  // would otherwise lose the highlight when the "helper bubble" is shown.
-  views::Widget* widget =
-      owner_->frame_maximize_button()->parent()->GetWidget();
-  if (widget) {
-    aura::Window* parent_window = widget->GetNativeWindow();
-    parent_window->GetFocusManager()->SetFocusedWindow(parent_window, NULL);
-  }
   mouse_watcher_.reset(new views::MouseWatcher(
       new BubbleMouseWatcherHost(this),
       this));
@@ -401,6 +429,31 @@ gfx::Rect MaximizeBubbleController::Bubble::GetAnchorRect() {
   return anchor_rect;
 }
 
+void MaximizeBubbleController::Bubble::AnimationProgressed(
+    const ui::Animation* animation) {
+  // First do everything needed for the fade by calling the base function.
+  BubbleDelegateView::AnimationProgressed(animation);
+  // When fading in we are done.
+  if (!shutting_down_)
+    return;
+  // Upon fade out an additional shift is required.
+  int shift = animation->CurrentValueBetween(kBubbleAnimationOffsetY, 0);
+  gfx::Rect rect = initial_position_;
+
+  rect.set_y(rect.y() + shift);
+  bubble_widget_->GetNativeWindow()->SetBounds(rect);
+}
+
+bool MaximizeBubbleController::Bubble::HasHitTestMask() const {
+  return bubble_border_ != NULL;
+}
+
+void MaximizeBubbleController::Bubble::GetHitTestMask(gfx::Path* mask) const {
+  DCHECK(mask);
+  DCHECK(bubble_border_);
+  bubble_border_->GetMask(mask);
+}
+
 void MaximizeBubbleController::Bubble::MouseMovedOutOfHost() {
   if (!owner_ || shutting_down_)
     return;
@@ -420,12 +473,18 @@ bool MaximizeBubbleController::Bubble::Contains(
     views::MouseWatcherHost::MouseEventType type) {
   if (!owner_ || shutting_down_)
     return false;
+  bool inside_button =
+      owner_->frame_maximize_button()->GetBoundsInScreen().Contains(
+          screen_point);
+  if (!owner_->frame_maximize_button()->is_snap_enabled() && inside_button) {
+    SetSnapType(controller()->is_maximized() ? SNAP_RESTORE : SNAP_MAXIMIZE);
+    return true;
+  }
   // Check if either a gesture is taking place (=> bubble stays no matter what
   // the mouse does) or the mouse is over the maximize button or the bubble
   // content.
   return (owner_->frame_maximize_button()->is_snap_enabled() ||
-          owner_->frame_maximize_button()->GetBoundsInScreen().Contains(
-              screen_point) ||
+          inside_button ||
           contents_view_->GetBoundsInScreen().Contains(screen_point));
 }
 
@@ -458,8 +517,9 @@ void MaximizeBubbleController::Bubble::ControllerRequestsCloseAndDelete() {
   shutting_down_ = true;
   owner_ = NULL;
 
-  // Close the widget asynchronously.
-  bubble_widget_->Close();
+  // Close the widget asynchronously after the hide animation is finished.
+  initial_position_ = bubble_widget_->GetNativeWindow()->bounds();
+  StartFade(false);
 }
 
 void MaximizeBubbleController::Bubble::SetSnapType(SnapType snap_type) {
@@ -544,6 +604,8 @@ BubbleContentsView::BubbleContentsView(
   label_view_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
   label_view_->SetBackgroundColor(kBubbleBackgroundColor);
   label_view_->SetEnabledColor(kBubbleTextColor);
+  label_view_->set_border(views::Border::CreateEmptyBorder(
+      kLabelSpacing, 0, kLabelSpacing, 0));
   AddChildView(label_view_);
 }
 

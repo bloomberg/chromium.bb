@@ -113,6 +113,9 @@ FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
 }
 
 FrameMaximizeButton::~FrameMaximizeButton() {
+  // Before the window gets destroyed, the maximizer dialog needs to be shut
+  // down since it would otherwise call into a deleted object.
+  maximizer_.reset();
   if (window_)
     OnWindowDestroying(window_);
 }
@@ -151,13 +154,14 @@ void FrameMaximizeButton::SnapButtonHovered(SnapType type) {
 
 void FrameMaximizeButton::ExecuteSnapAndCloseMenu(SnapType snap_type) {
   DCHECK_NE(snap_type_, SNAP_NONE);
-  snap_type_ = snap_type;
-  Snap();
-  // Remove any pending snap previews.
-  SnapButtonHovered(SNAP_NONE);
-  // At this point the operation has been performed and the menu should be
-  // closed - if not, it'll get now closed.
+  Cancel(true);
+  // Tell our menu to close.
   maximizer_.reset();
+  snap_type_ = snap_type;
+  // Since Snap might destroy |this|, but the snap_sizer needs to be destroyed,
+  // The ownership of the snap_sizer is taken now.
+  scoped_ptr<SnapSizer> snap_sizer(snap_sizer_.release());
+  Snap(*snap_sizer.get());
 }
 
 void FrameMaximizeButton::DestroyMaximizeMenu() {
@@ -206,13 +210,19 @@ void FrameMaximizeButton::OnMouseExited(const views::MouseEvent& event) {
   ImageButton::OnMouseExited(event);
   // Remove the bubble menu when the button is not pressed and the mouse is not
   // within the bubble.
-  if (!is_snap_enabled_ && maximizer_.get() && maximizer_->GetBubbleWindow()) {
-    gfx::Point screen_location = gfx::Screen::GetCursorScreenPoint();
-    if (!maximizer_->GetBubbleWindow()->GetBoundsInScreen().Contains(
-            screen_location)) {
+  if (!is_snap_enabled_ && maximizer_.get()) {
+    if (maximizer_->GetBubbleWindow()) {
+      gfx::Point screen_location = gfx::Screen::GetCursorScreenPoint();
+      if (!maximizer_->GetBubbleWindow()->GetBoundsInScreen().Contains(
+              screen_location)) {
+        maximizer_.reset();
+        // Make sure that all remaining snap hover states get removed.
+        SnapButtonHovered(SNAP_NONE);
+      }
+    } else {
+      // The maximize dialog does not show up immediately after creating the
+      // |mazimizer_|. Destroy the dialog therefore before it shows up.
       maximizer_.reset();
-      // Make sure that all remaining snap hover states get removed.
-      SnapButtonHovered(SNAP_NONE);
     }
   }
 }
@@ -321,7 +331,10 @@ bool FrameMaximizeButton::ProcessEndEvent(const views::LocatedEvent& event) {
   // BS_NORMAL during a drag.
   SchedulePaint();
   phantom_window_.reset();
-  Snap();
+  // Since Snap might destroy |this|, but the snap_sizer needs to be destroyed,
+  // The ownership of the snap_sizer is taken now.
+  scoped_ptr<SnapSizer> snap_sizer(snap_sizer_.release());
+  Snap(*snap_sizer.get());
   return true;
 }
 
@@ -330,9 +343,9 @@ void FrameMaximizeButton::Cancel(bool keep_menu_open) {
     maximizer_.reset();
     UninstallEventFilter();
     is_snap_enabled_ = false;
+    snap_sizer_.reset();
   }
   phantom_window_.reset();
-  snap_sizer_.reset();
   snap_type_ = SNAP_NONE;
   update_timer_.Stop();
   SchedulePaint();
@@ -394,7 +407,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
     phantom_window_->set_phantom_below_window(maximizer_->GetBubbleWindow());
     maximizer_->SetSnapType(snap_type_);
   }
-  phantom_window_->Show(ScreenBoundsForType(snap_type_));
+  phantom_window_->Show(ScreenBoundsForType(snap_type_, *snap_sizer_.get()));
 }
 
 SnapType FrameMaximizeButton::SnapTypeForLocation(
@@ -412,14 +425,16 @@ SnapType FrameMaximizeButton::SnapTypeForLocation(
   return !frame_->GetWidget()->IsMaximized() ? SNAP_MAXIMIZE : SNAP_RESTORE;
 }
 
-gfx::Rect FrameMaximizeButton::ScreenBoundsForType(SnapType type) const {
+gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
+    SnapType type,
+    const SnapSizer& snap_sizer) const {
   aura::Window* window = frame_->GetWidget()->GetNativeWindow();
   switch (type) {
     case SNAP_LEFT:
     case SNAP_RIGHT:
       return ScreenAsh::ConvertRectToScreen(
           frame_->GetWidget()->GetNativeView()->parent(),
-          snap_sizer_->target_bounds());
+          snap_sizer.target_bounds());
     case SNAP_MAXIMIZE:
       return ScreenAsh::ConvertRectToScreen(
           window->parent(),
@@ -453,16 +468,18 @@ gfx::Point FrameMaximizeButton::LocationForSnapSizer(
   return result;
 }
 
-void FrameMaximizeButton::Snap() {
+void FrameMaximizeButton::Snap(const SnapSizer& snap_sizer) {
   switch (snap_type_) {
     case SNAP_LEFT:
     case SNAP_RIGHT:
       if (frame_->GetWidget()->IsMaximized()) {
         ash::SetRestoreBoundsInScreen(frame_->GetWidget()->GetNativeWindow(),
-                                      ScreenBoundsForType(snap_type_));
+                                      ScreenBoundsForType(snap_type_,
+                                                          snap_sizer));
         frame_->GetWidget()->Restore();
       } else {
-        frame_->GetWidget()->SetBounds(ScreenBoundsForType(snap_type_));
+        frame_->GetWidget()->SetBounds(ScreenBoundsForType(snap_type_,
+                                                           snap_sizer));
       }
       break;
     case SNAP_MAXIMIZE:
