@@ -91,6 +91,14 @@ class StartupBrowserCreator {
     return is_default_browser_dialog_suppressed_;
   }
 
+  void set_show_main_browser_window(bool show_main_browser_window) {
+    show_main_browser_window_ = show_main_browser_window;
+  }
+
+  bool show_main_browser_window() const {
+    return show_main_browser_window_;
+  }
+
  private:
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;
@@ -130,6 +138,10 @@ class StartupBrowserCreator {
   // This information is used to allow the default browser prompt to show on
   // first-run when the dialog has been suppressed.
   bool is_default_browser_dialog_suppressed_;
+
+  // Whether the browser window should be shown immediately after it has been
+  // created. Default is true.
+  bool show_main_browser_window_;
 
   // True if we have already read and reset the preference kWasRestarted. (A
   // member variable instead of a static variable inside WasRestarted because

@@ -69,15 +69,20 @@ void SetMetroBrowserFlowLauncher::Observe(
 
 namespace chrome {
 
-void ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
-  if ((ShellIntegration::IsDefaultBrowser() ==
-           ShellIntegration::NOT_DEFAULT_WEB_CLIENT) &&
+bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
+  // If the only available mode of setting the default browser requires
+  // user interaction, it means this couldn't have been done yet. Therefore,
+  // we launch the dialog and inform the caller of it.
+  bool show_status =
       (ShellIntegration::CanSetAsDefaultBrowser() ==
-           ShellIntegration::SET_DEFAULT_INTERACTIVE)) {
-    // If the only available mode of setting the default browser requires
-    // user interaction, it means this couldn't have been done yet.
+       ShellIntegration::SET_DEFAULT_INTERACTIVE) &&
+      (ShellIntegration::IsDefaultBrowser() ==
+       ShellIntegration::NOT_DEFAULT_WEB_CLIENT);
+
+  if (show_status)
     SetMetroBrowserFlowLauncher::LaunchSoon(profile);
-  }
+
+  return show_status;
 }
 
 }  // namespace chrome

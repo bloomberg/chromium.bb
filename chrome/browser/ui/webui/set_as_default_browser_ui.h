@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SET_AS_DEFAULT_BROWSER_UI_H_
 #define CHROME_BROWSER_UI_WEBUI_SET_AS_DEFAULT_BROWSER_UI_H_
 
-#include "content/public/browser/web_ui_controller.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 class Browser;
 class Profile;
@@ -13,7 +13,7 @@ class Profile;
 // The UI used in first-run flow to prompt the user to set Chrome as the
 // default Windows browser and *the browser* of Metro mode. Intended for
 // Windows 8 only.
-class SetAsDefaultBrowserUI : public content::WebUIController {
+class SetAsDefaultBrowserUI : public ui::WebDialogUI {
  public:
   explicit SetAsDefaultBrowserUI(content::WebUI* web_ui);
 

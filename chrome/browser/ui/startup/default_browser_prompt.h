@@ -13,8 +13,8 @@ namespace chrome {
 void ShowDefaultBrowserPrompt(Profile* profile);
 
 // Shows a prompt UI to set the default browser on first run
-// (if necessary and permitted).
-void ShowFirstRunDefaultBrowserPrompt(Profile* profile);
+// (if necessary and permitted). Returns true if the dialog has been launched.
+bool ShowFirstRunDefaultBrowserPrompt(Profile* profile);
 
 }  // namespace chrome
 

@@ -1138,10 +1138,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     chrome::SetNewHomePagePrefs(profile_->GetPrefs());
     browser_process_->profile_manager()->OnImportFinished(profile_);
 
-    if (!master_prefs_->suppress_first_run_default_browser_prompt)
-      chrome::ShowFirstRunDefaultBrowserPrompt(profile_);
-    else
+    if (!master_prefs_->suppress_first_run_default_browser_prompt) {
+      browser_creator_->set_show_main_browser_window(
+          !chrome::ShowFirstRunDefaultBrowserPrompt(profile_));
+    } else {
       browser_creator_->set_is_default_browser_dialog_suppressed(true);
+    }
   }  // if (is_first_run_)
 
 #if defined(OS_WIN)

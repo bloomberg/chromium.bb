@@ -205,7 +205,8 @@ void ShowDefaultBrowserPrompt(Profile* profile) {
 }
 
 #if !defined(OS_WIN)
-void ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
+bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
+  return false;
 }
 #endif
 
