@@ -220,6 +220,7 @@ class GDataFileSystemInterface {
   // of the file system.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void Move(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback) = 0;

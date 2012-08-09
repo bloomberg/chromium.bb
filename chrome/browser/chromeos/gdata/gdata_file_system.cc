@@ -1081,13 +1081,11 @@ void GDataFileSystem::Rename(const FilePath& file_path,
                              const FilePath::StringType& new_name,
                              const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // It is a no-op if the file is renamed to the same name.
   if (file_path.BaseName().value() == new_name) {
-    if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(callback, GDATA_FILE_OK, file_path));
-    }
+    callback.Run(GDATA_FILE_OK, file_path);
     return;
   }
 
@@ -1145,6 +1143,8 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
                            const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::MoveOnUIThread,
                                ui_weak_ptr_,
                                src_file_path,
@@ -1156,29 +1156,42 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  GDataFileError error = GDATA_FILE_OK;
-  FilePath dest_parent_path = dest_file_path.DirName();
+  directory_service_->GetEntryInfoPairByPaths(
+      src_file_path,
+      dest_file_path.DirName(),
+      base::Bind(&GDataFileSystem::MoveOnUIThreadAfterGetEntryInfoPair,
+                 ui_weak_ptr_,
+                 dest_file_path,
+                 callback));
+}
 
-  GDataEntry* src_entry = directory_service_->FindEntryByPathSync(
-      src_file_path);
-  GDataEntry* dest_parent = directory_service_->FindEntryByPathSync(
-      dest_parent_path);
-  if (!src_entry || !dest_parent) {
-    error = GDATA_FILE_ERROR_NOT_FOUND;
-  } else if (!dest_parent->AsGDataDirectory()) {
-    error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
+void GDataFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
+    const FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(result.get());
+
+  if (result->first.error != GDATA_FILE_OK) {
+    callback.Run(result->first.error);
+    return;
+  } else if (result->second.error != GDATA_FILE_OK) {
+    callback.Run(result->second.error);
+    return;
   }
 
-  if (error != GDATA_FILE_OK) {
-    if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-                                       base::Bind(callback, error));
-    }
+  scoped_ptr<GDataEntryProto> dest_parent_proto = result->second.proto.Pass();
+  if (!dest_parent_proto->file_info().is_directory()) {
+    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
   // If the file/directory is moved to the same directory, just rename it.
+  const FilePath& src_file_path = result->first.path;
+  const FilePath& dest_parent_path = result->second.path;
   if (src_file_path.DirName() == dest_parent_path) {
     FileMoveCallback final_file_path_update_callback =
         base::Bind(&GDataFileSystem::OnFilePathUpdated,

@@ -358,6 +358,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // "foo (2).txt"
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   void Rename(const FilePath& file_path,
               const FilePath::StringType& new_name,
               const FileMoveCallback& callback);
@@ -743,6 +744,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Part of CopyOnUIThread(). Called after GetEntryInfoPairByPaths() is
   // complete.
   void CopyOnUIThreadAfterGetEntryInfoPair(
+    const FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result);
+
+  // Part of MoveOnUIThread(). Called after GetEntryInfoPairByPaths() is
+  // complete. |callback| must not be null.
+  void MoveOnUIThreadAfterGetEntryInfoPair(
     const FilePath& dest_file_path,
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> result);
