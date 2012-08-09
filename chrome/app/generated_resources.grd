@@ -6346,8 +6346,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_COMMAND_LINE" desc="label for the command line on the about:version page">
         Command Line
       </message>
-      <message name="IDS_ABOUT_VERSION_LAST_UPDATED" desc="label for date last updated on the about:version page">
-        Last Updated
+      <message name="IDS_ABOUT_VERSION_BUILD_DATE" desc="label for build date on the about:version page">
+        Build Date
       </message>
       <message name="IDS_ABOUT_VERSION_EXECUTABLE_PATH" desc="label for the executable path on the about:version page">
         Executable Path

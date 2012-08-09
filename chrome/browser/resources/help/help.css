@@ -94,6 +94,6 @@ body {
   overflow: hidden;
 }
 
-#last-updated-container.empty {
+#build-date-container.empty {
   visibility: hidden;
 }
