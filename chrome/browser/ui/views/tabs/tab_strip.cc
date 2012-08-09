@@ -666,7 +666,7 @@ void TabStrip::MoveTab(int from_model_index,
                        int to_model_index,
                        const TabRendererData& data) {
   DCHECK_GT(tabs_.view_size(), 0);
-  BaseTab* last_tab = tab_at(tab_count() - 1);
+  Tab* last_tab = tab_at(tab_count() - 1);
   tab_at(from_model_index)->SetData(data);
   if (touch_layout_.get()) {
     tabs_.MoveViewOnly(from_model_index, to_model_index);
@@ -688,7 +688,7 @@ void TabStrip::MoveTab(int from_model_index,
 
 void TabStrip::RemoveTabAt(int model_index) {
   if (touch_layout_.get()) {
-    BaseTab* tab = tab_at(model_index);
+    Tab* tab = tab_at(model_index);
     tab->set_closing(true);
     int old_x = tabs_.ideal_bounds(model_index).x();
     // We still need to paint the tab until we actually remove it. Put it in
@@ -706,7 +706,7 @@ void TabStrip::RemoveTabAt(int model_index) {
 }
 
 void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
-  BaseTab* tab = tab_at(model_index);
+  Tab* tab = tab_at(model_index);
   bool mini_state_changed = tab->data().mini != data.mini;
   tab->SetData(data);
 
@@ -831,7 +831,7 @@ bool TabStrip::IsDragSessionActive() const {
 
 bool TabStrip::IsActiveDropTarget() const {
   for (int i = 0; i < tab_count(); ++i) {
-    BaseTab* tab = tab_at(i);
+    Tab* tab = tab_at(i);
     if (tab->dragging())
       return true;
   }
@@ -991,7 +991,7 @@ void TabStrip::MaybeStartDrag(
   // Build the set of selected tabs to drag and calculate the offset from the
   // first selected tab.
   for (int i = 0; i < tab_count(); ++i) {
-    BaseTab* other_tab = tab_at(i);
+    Tab* other_tab = tab_at(i);
     if (IsTabSelected(other_tab)) {
       tabs.push_back(other_tab);
       if (other_tab == tab) {
@@ -1482,12 +1482,12 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
 
   GenerateIdealBounds();
 
-  BaseTab* tab = tab_at(model_index);
+  Tab* tab = tab_at(model_index);
   if (model_index == 0) {
     tab->SetBounds(0, ideal_bounds(model_index).y(), 0,
                    ideal_bounds(model_index).height());
   } else {
-    BaseTab* last_tab = tab_at(model_index - 1);
+    Tab* last_tab = tab_at(model_index - 1);
     tab->SetBounds(last_tab->bounds().right() + tab_h_offset(),
                    ideal_bounds(model_index).y(), 0,
                    ideal_bounds(model_index).height());
@@ -1506,7 +1506,7 @@ void TabStrip::StartRemoveTabAnimation(int model_index) {
   PrepareForAnimation();
 
   // Mark the tab as closing.
-  BaseTab* tab = tab_at(model_index);
+  Tab* tab = tab_at(model_index);
   tab->set_closing(true);
 
   RemoveTabFromViewModel(model_index);
@@ -2254,7 +2254,7 @@ void TabStrip::StartMiniTabAnimation() {
 void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // The user initiated the close. We want to persist the bounds of all the
   // existing tabs, so we manually shift ideal_bounds then animate.
-  BaseTab* tab_closing = tab_at(model_index);
+  Tab* tab_closing = tab_at(model_index);
   int delta = tab_closing->width() + tab_h_offset();
   // If the tab being closed is a mini-tab next to a non-mini-tab, be sure to
   // add the extra padding.
