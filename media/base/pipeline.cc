@@ -260,6 +260,10 @@ void Pipeline::SetClockForTesting(Clock* clock) {
   clock_.reset(clock);
 }
 
+void Pipeline::SetErrorForTesting(PipelineStatus status) {
+  SetError(status);
+}
+
 void Pipeline::SetState(State next_state) {
   if (state_ != kStarted && next_state == kStarted &&
       !creation_time_.is_null()) {
