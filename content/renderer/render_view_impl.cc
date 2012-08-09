@@ -55,6 +55,8 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/renderer/browser_plugin/browser_plugin.h"
+#include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/browser_plugin/old/old_browser_plugin.h"
 #include "content/renderer/browser_plugin/old/browser_plugin_channel_manager.h"
 #include "content/renderer/browser_plugin/old/browser_plugin_constants.h"
@@ -2315,6 +2317,13 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
   if (content::GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
     return plugin;
+  }
+
+  // TODO(fsamuel): Remove this once upstreaming of the new browser plugin is
+  // complete.
+  if (UTF16ToASCII(params.mimeType) == content::kBrowserPluginNewMimeType) {
+   return content::BrowserPluginManager::Get()->
+      CreateBrowserPlugin(this, frame, params);
   }
 
   if (UTF16ToASCII(params.mimeType) == content::kBrowserPluginMimeType)
