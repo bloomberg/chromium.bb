@@ -32,27 +32,6 @@ TouchEvent::TouchEvent(const NativeEvent& event)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// KeyEvent, public:
-
-KeyEvent::KeyEvent(const NativeEvent& native_event)
-    : Event(native_event, native_event->type(), native_event->flags()),
-      key_code_(static_cast<ui::KeyEvent*>(native_event)->key_code()),
-      character_(ui::GetCharacterFromKeyCode(key_code_, flags())),
-      unmodified_character_(0) {
-}
-
-uint16 KeyEvent::GetCharacter() const {
-  return character_;
-}
-
-uint16 KeyEvent::GetUnmodifiedCharacter() const {
-  if (unmodified_character_)
-    return unmodified_character_;
-
-  return ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 
 MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)

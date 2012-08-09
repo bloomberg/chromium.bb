@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/event.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_test.h"
@@ -40,11 +41,11 @@ class MessageTrackingView : public View {
   }
 
   // Overridden from View:
-  virtual bool OnKeyPressed(const KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE {
     keys_pressed_.push_back(e.key_code());
     return true;
   }
-  virtual bool OnKeyReleased(const KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE {
     keys_released_.push_back(e.key_code());
     return true;
   }

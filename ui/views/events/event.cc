@@ -65,29 +65,6 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* root)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// KeyEvent, public:
-
-#if !defined(USE_AURA)
-KeyEvent::KeyEvent(const NativeEvent& native_event)
-    : Event(native_event,
-            ui::EventTypeFromNative(native_event),
-            ui::EventFlagsFromNative(native_event)),
-      key_code_(ui::KeyboardCodeFromNative(native_event)),
-      character_(0),
-      unmodified_character_(0) {
-}
-#endif
-
-KeyEvent::KeyEvent(ui::EventType type,
-                   ui::KeyboardCode key_code,
-                   int event_flags)
-    : Event(type, event_flags),
-      key_code_(key_code),
-      character_(ui::GetCharacterFromKeyCode(key_code, event_flags)),
-      unmodified_character_(0) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
 MouseEvent::MouseEvent(const NativeEvent& native_event)

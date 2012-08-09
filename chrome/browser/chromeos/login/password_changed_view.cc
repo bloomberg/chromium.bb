@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -216,7 +217,7 @@ void PasswordChangedView::ContentsChanged(views::Textfield* sender,
 }
 
 bool PasswordChangedView::HandleKeyEvent(views::Textfield* sender,
-                                         const views::KeyEvent& keystroke) {
+                                         const ui::KeyEvent& keystroke) {
   return false;
 }
 

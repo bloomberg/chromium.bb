@@ -25,8 +25,8 @@ class NativeComboboxWin : public NativeControlWin,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual View* GetView() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
-  virtual bool HandleKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool HandleKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual bool HandleKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool HandleKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;

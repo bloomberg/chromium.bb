@@ -19,6 +19,7 @@
 #include "ui/base/dragdrop/drag_source.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/native_theme/native_theme_win.h"
@@ -1547,7 +1548,7 @@ LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
                                     WPARAM w_param,
                                     LPARAM l_param) {
   MSG msg = { hwnd(), message, w_param, l_param };
-  KeyEvent key(msg);
+  ui::KeyEvent key(msg, message == WM_CHAR);
   InputMethod* input_method = GetWidget()->GetInputMethodDirect();
   if (input_method)
     input_method->DispatchKeyEvent(key);
@@ -2602,7 +2603,7 @@ void NativeWidgetWin::NotifyOwnedWindowsParentClosing() {
     data.owned_widgets[i]->OnOwnerClosing();
 }
 
-void NativeWidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {
+void NativeWidgetWin::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   SetMsgHandled(delegate_->OnKeyEvent(key));
 }
 

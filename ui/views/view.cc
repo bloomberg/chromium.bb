@@ -833,11 +833,11 @@ void View::SetMouseHandler(View* new_mouse_handler) {
     parent_->SetMouseHandler(new_mouse_handler);
 }
 
-bool View::OnKeyPressed(const KeyEvent& event) {
+bool View::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool View::OnKeyReleased(const KeyEvent& event) {
+bool View::OnKeyReleased(const ui::KeyEvent& event) {
   return false;
 }
 
@@ -960,7 +960,7 @@ void View::RequestFocus() {
     focus_manager->SetFocusedView(this);
 }
 
-bool View::SkipDefaultKeyEventProcessing(const KeyEvent& event) {
+bool View::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   return false;
 }
 

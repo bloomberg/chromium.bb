@@ -157,7 +157,7 @@ class BrowserActionButton : public views::MenuButton,
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
 
   // Overridden from ui::AcceleratorTarget.
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;

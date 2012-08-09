@@ -5,6 +5,7 @@
 #include "ui/views/examples/textfield_example.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/base/event.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/label.h"
@@ -69,7 +70,7 @@ void TextfieldExample::ContentsChanged(Textfield* sender,
 }
 
 bool TextfieldExample::HandleKeyEvent(Textfield* sender,
-                                      const KeyEvent& key_event) {
+                                      const ui::KeyEvent& key_event) {
   return false;
 }
 

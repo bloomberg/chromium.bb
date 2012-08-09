@@ -56,7 +56,7 @@ class SearchBoxView : public views::View,
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) OVERRIDE;
 
   // Overridden from SearchBoxModelObserver:
   virtual void IconChanged() OVERRIDE;

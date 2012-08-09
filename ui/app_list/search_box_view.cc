@@ -8,6 +8,7 @@
 
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_view_delegate.h"
+#include "ui/base/event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -114,7 +115,7 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
-                                   const views::KeyEvent& key_event) {
+                                   const ui::KeyEvent& key_event) {
   bool has_query = !search_box_->text().empty();
 
   // Escape with non-empty query text clears the search box.

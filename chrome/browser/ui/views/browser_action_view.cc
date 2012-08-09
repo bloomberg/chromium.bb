@@ -17,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -391,7 +392,7 @@ void BrowserActionButton::OnMouseExited(const views::MouseEvent& event) {
     TextButton::OnMouseExited(event);
 }
 
-bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& event) {
+bool BrowserActionButton::OnKeyReleased(const ui::KeyEvent& event) {
   return IsPopup() ? MenuButton::OnKeyReleased(event)
                    : TextButton::OnKeyReleased(event);
 }

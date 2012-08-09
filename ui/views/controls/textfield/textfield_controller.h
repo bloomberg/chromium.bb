@@ -9,13 +9,13 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
+class KeyEvent;
 class OSExchangeData;
 class SimpleMenuModel;
 }  // namespace ui
 
 namespace views {
 
-class KeyEvent;
 class Textfield;
 
 // This defines the callback interface for other code to be notified of changes
@@ -32,7 +32,7 @@ class VIEWS_EXPORT TextfieldController {
   // Returns true if the message was handled and should not be processed
   // further. If it returns false the processing continues.
   virtual bool HandleKeyEvent(Textfield* sender,
-                              const KeyEvent& key_event) = 0;
+                              const ui::KeyEvent& key_event) = 0;
 
   // Called before performing a user action that may change the textfield.
   // It's currently only supported by Views implementation.

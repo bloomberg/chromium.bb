@@ -14,7 +14,7 @@ class AppMenuButtonWin : public views::MenuButton {
   explicit AppMenuButtonWin(views::MenuButtonListener* menu_button_listener);
 
   // MenuButton:
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppMenuButtonWin);

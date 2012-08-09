@@ -83,7 +83,7 @@ class VIEWS_EXPORT WebView : public View,
                                     View* parent,
                                     View* child) OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(
-      const views::KeyEvent& event) OVERRIDE;
+      const ui::KeyEvent& event) OVERRIDE;
   virtual bool IsFocusable() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;

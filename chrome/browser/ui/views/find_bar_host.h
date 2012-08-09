@@ -43,7 +43,7 @@ class FindBarHost : public DropdownBarHost,
   // that arrow keys and PageUp and PageDown result in scrolling, instead of
   // being eaten because the FindBar has focus. Returns true if the keystroke
   // was forwarded, false if not.
-  bool MaybeForwardKeyEventToWebpage(const views::KeyEvent& key_event);
+  bool MaybeForwardKeyEventToWebpage(const ui::KeyEvent& key_event);
 
   // FindBar implementation:
   virtual FindBarController* GetFindBarController() const OVERRIDE;
@@ -120,8 +120,7 @@ class FindBarHost : public DropdownBarHost,
   void GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect);
 
   // Allows native implementation to prevent key events from being forwarded.
-  bool ShouldForwardKeyEventToWebpageNative(
-      const views::KeyEvent& key_event);
+  bool ShouldForwardKeyEventToWebpageNative(const ui::KeyEvent& key_event);
 
   // Returns the FindBarView.
   FindBarView* find_bar_view();

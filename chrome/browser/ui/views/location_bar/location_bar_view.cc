@@ -62,6 +62,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1217,8 +1218,7 @@ std::string LocationBarView::GetClassName() const {
   return kViewClassName;
 }
 
-bool LocationBarView::SkipDefaultKeyEventProcessing(
-    const views::KeyEvent& event) {
+bool LocationBarView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 #if defined(OS_WIN)
   if (views::FocusManager::IsTabTraversalKeyEvent(event)) {
     if (location_entry_->model()->popup_model()->IsOpen()) {

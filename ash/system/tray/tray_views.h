@@ -74,7 +74,7 @@ class ASH_EXPORT ActionableView : public views::View {
   virtual bool PerformAction(const views::Event& event) = 0;
 
   // Overridden from views::View.
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;

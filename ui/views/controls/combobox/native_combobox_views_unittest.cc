@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -24,13 +25,13 @@ class TestCombobox : public views::Combobox {
         key_received_(false) {
   }
 
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
     key_handled_ = views::Combobox::OnKeyPressed(e);
     return key_handled_;
   }
 
-  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
     key_handled_ = views::Combobox::OnKeyReleased(e);
     return key_handled_;
@@ -123,7 +124,7 @@ class NativeComboboxViewsTest : public ViewsTestBase {
 
  protected:
   void SendKeyEvent(ui::KeyboardCode key_code) {
-    KeyEvent event(ui::ET_KEY_PRESSED, key_code, 0);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, 0);
     input_method_->DispatchKeyEvent(event);
   }
 

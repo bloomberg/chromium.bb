@@ -11,6 +11,7 @@
 #include "ui/app_list/page_switcher.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_result_list_view.h"
+#include "ui/base/event.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -220,7 +221,7 @@ ui::GestureStatus ContentsView::OnGestureEvent(
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
-bool ContentsView::OnKeyPressed(const views::KeyEvent& event) {
+bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (show_state_) {
     case SHOW_APPS:
       return GetAppsGridView(view_model_.get())->OnKeyPressed(event);

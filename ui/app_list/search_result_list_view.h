@@ -33,7 +33,7 @@ class SearchResultListView : public views::View,
   bool IsResultViewSelected(const SearchResultView* result_view) const;
 
   // Overridden from views::View:
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
  private:
   // Helper function to get SearchResultView at given |index|.

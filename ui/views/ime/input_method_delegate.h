@@ -7,9 +7,11 @@
 
 #include "ui/views/views_export.h"
 
-namespace views {
-
+namespace ui {
 class KeyEvent;
+}
+
+namespace views {
 
 namespace internal {
 
@@ -20,7 +22,7 @@ class VIEWS_EXPORT InputMethodDelegate {
   virtual ~InputMethodDelegate() {}
 
   // Dispatch a key event already processed by the input method.
-  virtual void DispatchKeyEventPostIME(const KeyEvent& key) = 0;
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) = 0;
 
 };
 

@@ -9,6 +9,7 @@
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -115,10 +116,13 @@ void ActionableView::DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds) {
   canvas->DrawRect(rect, kFocusBorderColor);
 }
 
-bool ActionableView::OnKeyPressed(const views::KeyEvent& event) {
+bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
-    return PerformAction(event);
+    // TODO(beng): remove once views::Event is gone.
+    views::MouseEvent synthetic_event(
+        ui::ET_MOUSE_RELEASED, 0, 0, ui::EF_LEFT_MOUSE_BUTTON);
+    return PerformAction(synthetic_event);
   }
   return false;
 }

@@ -638,7 +638,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       const gfx::Rect& dirty_region) OVERRIDE;
   virtual void OnNativeWidgetPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) OVERRIDE;
-  virtual bool OnKeyEvent(const KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseEvent(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;

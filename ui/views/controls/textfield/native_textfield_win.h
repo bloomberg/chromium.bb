@@ -91,8 +91,8 @@ class NativeTextfieldWin
   virtual void GetSelectionModel(gfx::SelectionModel* sel) const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
-  virtual bool HandleKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool HandleKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual bool HandleKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool HandleKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;

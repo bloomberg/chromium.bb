@@ -49,7 +49,7 @@ class CryptoModulePasswordDialogView : public views::DialogDelegateView,
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& keystroke) OVERRIDE;
+                              const ui::KeyEvent& keystroke) OVERRIDE;
 
   // Initialize views and layout.
   void Init(const std::string& server,

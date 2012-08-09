@@ -65,7 +65,7 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // Process a key event. Send the event to the focused view and up the focus
   // path, and finally to the default keyboard handler, until someone consumes
   // it. Returns whether anyone consumed the event.
-  bool OnKeyEvent(const KeyEvent& event);
+  bool OnKeyEvent(const ui::KeyEvent& event);
 
   // Focus ---------------------------------------------------------------------
 

@@ -28,7 +28,7 @@ class InputMethodWin : public InputMethodBase {
   virtual void Init(Widget* widget) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual void DispatchKeyEvent(const KeyEvent& key) OVERRIDE;
+  virtual void DispatchKeyEvent(const ui::KeyEvent& key) OVERRIDE;
   virtual void OnTextInputTypeChanged(View* view) OVERRIDE;
   virtual void OnCaretBoundsChanged(View* view) OVERRIDE;
   virtual void CancelComposition(View* view) OVERRIDE;

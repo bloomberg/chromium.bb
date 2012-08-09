@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -464,7 +465,7 @@ void ColorChooserView::ContentsChanged(Textfield* sender,
 }
 
 bool ColorChooserView::HandleKeyEvent(Textfield* sender,
-                                      const KeyEvent& key_event) {
+                                      const ui::KeyEvent& key_event) {
   if (key_event.key_code() != ui::VKEY_RETURN &&
       key_event.key_code() != ui::VKEY_ESCAPE)
     return false;

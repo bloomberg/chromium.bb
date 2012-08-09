@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/focus/focus_search.h"
@@ -41,7 +42,7 @@ FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
 FocusManager::~FocusManager() {
 }
 
-bool FocusManager::OnKeyEvent(const KeyEvent& event) {
+bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
   const int key_code = event.key_code();
 
 #if defined(USE_X11)
@@ -443,7 +444,7 @@ bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   return false;
 }
 
-void FocusManager::MaybeResetMenuKeyState(const KeyEvent& key) {
+void FocusManager::MaybeResetMenuKeyState(const ui::KeyEvent& key) {
 #if defined(USE_X11)
   // Always reset |should_handle_menu_key_release_| unless we are handling a
   // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
@@ -469,7 +470,7 @@ bool FocusManager::HasPriorityHandler(
 }
 
 // static
-bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
+bool FocusManager::IsTabTraversalKeyEvent(const ui::KeyEvent& key_event) {
   return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();
 }
 

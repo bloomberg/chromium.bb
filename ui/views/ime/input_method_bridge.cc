@@ -4,6 +4,7 @@
 
 #include "ui/views/ime/input_method_bridge.h"
 
+#include "ui/base/event.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
@@ -50,7 +51,7 @@ void InputMethodBridge::OnBlur() {
     host_->SetFocusedTextInputClient(NULL);
 }
 
-void InputMethodBridge::DispatchKeyEvent(const KeyEvent& key) {
+void InputMethodBridge::DispatchKeyEvent(const ui::KeyEvent& key) {
   DCHECK(key.type() == ui::ET_KEY_PRESSED || key.type() == ui::ET_KEY_RELEASED);
 
   // We can just dispatch the event here since the |key| is already processed by

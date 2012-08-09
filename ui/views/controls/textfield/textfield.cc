@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/range/range.h"
@@ -373,7 +374,7 @@ void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
   SelectAll(false);
 }
 
-bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
+bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   // TODO(hamaji): Figure out which keyboard combinations we need to add here,
   //               similar to LocationBarView::SkipDefaultKeyEventProcessing.
   ui::KeyboardCode key = e.key_code();
@@ -398,11 +399,11 @@ void Textfield::OnPaintFocusBorder(gfx::Canvas* canvas) {
     View::OnPaintFocusBorder(canvas);
 }
 
-bool Textfield::OnKeyPressed(const views::KeyEvent& e) {
+bool Textfield::OnKeyPressed(const ui::KeyEvent& e) {
   return native_wrapper_ && native_wrapper_->HandleKeyPressed(e);
 }
 
-bool Textfield::OnKeyReleased(const views::KeyEvent& e) {
+bool Textfield::OnKeyReleased(const ui::KeyEvent& e) {
   return native_wrapper_ && native_wrapper_->HandleKeyReleased(e);
 }
 

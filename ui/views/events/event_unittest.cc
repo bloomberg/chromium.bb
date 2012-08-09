@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/basictypes.h"
+#include "ui/base/event.h"
 #include "ui/views/events/event.h"
 
 // Bug 99129.
@@ -15,6 +16,8 @@
 #define MAYBE_KeyEvent KeyEvent
 #define MAYBE_KeyEventDirectUnicode KeyEventDirectUnicode
 #endif
+
+// TODO(beng): move to src/ui/base/event_unittest.cc:
 
 namespace views {
 
@@ -104,7 +107,8 @@ TEST_F(EventTest, MAYBE_KeyEvent) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestData); ++i) {
-    KeyEvent key(ui::ET_KEY_PRESSED, kTestData[i].key_code, kTestData[i].flags);
+    ui::KeyEvent key(
+        ui::ET_KEY_PRESSED, kTestData[i].key_code, kTestData[i].flags);
     EXPECT_EQ(kTestData[i].character, key.GetCharacter())
         << " Index:" << i << " key_code:" << kTestData[i].key_code;
     EXPECT_EQ(kTestData[i].unmodified_character, key.GetUnmodifiedCharacter())
@@ -113,12 +117,12 @@ TEST_F(EventTest, MAYBE_KeyEvent) {
 }
 
 TEST_F(EventTest, MAYBE_KeyEventDirectUnicode) {
-  KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::EF_SHIFT_DOWN);
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, ui::EF_SHIFT_DOWN);
   key.set_character(0x1234U);
   key.set_unmodified_character(0x4321U);
   EXPECT_EQ(0x1234U, key.GetCharacter());
   EXPECT_EQ(0x4321U, key.GetUnmodifiedCharacter());
-  KeyEvent key2(ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_CONTROL_DOWN);
+  ui::KeyEvent key2(ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_CONTROL_DOWN);
   key2.set_character(0x4321U);
   key2.set_unmodified_character(0x1234U);
   EXPECT_EQ(0x4321U, key2.GetCharacter());

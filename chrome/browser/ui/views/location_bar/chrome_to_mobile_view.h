@@ -13,7 +13,6 @@ class CommandUpdater;
 class LocationBarView;
 
 namespace views {
-class KeyEvent;
 class MouseEvent;
 }
 
@@ -39,7 +38,7 @@ class ChromeToMobileView : public views::ImageView,
                               string16* tooltip) const OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   // The LocationBarView hosting this view.
   LocationBarView* location_bar_view_;

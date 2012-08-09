@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "ui/base/event.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar_wrapper.h"
 #include "ui/views/widget/widget.h"
 
@@ -69,7 +70,7 @@ std::string NativeScrollBar::GetClassName() const {
 }
 
 // Overridden from View for keyboard UI.
-bool NativeScrollBar::OnKeyPressed(const KeyEvent& event) {
+bool NativeScrollBar::OnKeyPressed(const ui::KeyEvent& event) {
   if (!native_wrapper_)
     return false;
   return native_wrapper_->GetView()->OnKeyPressed(event);

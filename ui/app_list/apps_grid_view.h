@@ -49,8 +49,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:

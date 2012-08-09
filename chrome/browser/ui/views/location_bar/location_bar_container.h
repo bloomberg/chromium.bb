@@ -53,7 +53,7 @@ class LocationBarContainer : public views::View,
   virtual std::string GetClassName() const OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(
-      const views::KeyEvent& event) OVERRIDE;
+      const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // views::BoundsAnimatorObserver overrides:

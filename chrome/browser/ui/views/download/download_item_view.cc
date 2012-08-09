@@ -28,6 +28,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
@@ -482,7 +483,7 @@ void DownloadItemView::OnMouseExited(const views::MouseEvent& event) {
   drop_hover_animation_->Hide();
 }
 
-bool DownloadItemView::OnKeyPressed(const views::KeyEvent& event) {
+bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
   // Key press should not activate us in dangerous mode.
   if (IsShowingWarningDialog())
     return true;

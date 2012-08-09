@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
@@ -109,7 +110,7 @@ void EditSearchEngineDialog::ContentsChanged(Textfield* sender,
 
 bool EditSearchEngineDialog::HandleKeyEvent(
     Textfield* sender,
-    const views::KeyEvent& key_event) {
+    const ui::KeyEvent& key_event) {
   return false;
 }
 

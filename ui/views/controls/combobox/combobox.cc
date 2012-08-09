@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -91,7 +92,7 @@ void Combobox::OnEnabledChanged() {
 
 // VKEY_ESCAPE should be handled by this view when the drop down list is active.
 // In other words, the list should be closed instead of the dialog.
-bool Combobox::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
+bool Combobox::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   if (e.key_code() != ui::VKEY_ESCAPE ||
       e.IsShiftDown() || e.IsControlDown() || e.IsAltDown()) {
     return false;
@@ -104,11 +105,11 @@ void Combobox::OnPaintFocusBorder(gfx::Canvas* canvas) {
     View::OnPaintFocusBorder(canvas);
 }
 
-bool Combobox::OnKeyPressed(const views::KeyEvent& e) {
+bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
   return native_wrapper_ && native_wrapper_->HandleKeyPressed(e);
 }
 
-bool Combobox::OnKeyReleased(const views::KeyEvent& e) {
+bool Combobox::OnKeyReleased(const ui::KeyEvent& e) {
   return native_wrapper_ && native_wrapper_->HandleKeyReleased(e);
 }
 

@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
@@ -239,7 +240,7 @@ void Slider::OnMouseReleased(const views::MouseEvent& event) {
     listener_->SliderDragEnded(this);
 }
 
-bool Slider::OnKeyPressed(const views::KeyEvent& event) {
+bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
   if (orientation_ == HORIZONTAL) {
     if (event.key_code() == ui::VKEY_LEFT) {
       SetValueInternal(value_ - keyboard_increment_, VALUE_CHANGED_BY_USER);

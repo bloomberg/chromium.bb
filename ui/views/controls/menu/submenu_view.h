@@ -109,7 +109,7 @@ class VIEWS_EXPORT SubmenuView : public View,
   void ReleaseCapture();
 
   // Overriden from View to prevent tab from doing anything.
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
 
   // Returns the parent menu item we're showing children for.
   MenuItemView* GetMenuItem() const;

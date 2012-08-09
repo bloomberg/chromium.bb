@@ -15,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
@@ -46,7 +47,7 @@ FindBarHost::~FindBarHost() {
 }
 
 bool FindBarHost::MaybeForwardKeyEventToWebpage(
-    const views::KeyEvent& key_event) {
+    const ui::KeyEvent& key_event) {
   if (!ShouldForwardKeyEventToWebpageNative(key_event)) {
     // Native implementation says not to forward these events.
     return false;

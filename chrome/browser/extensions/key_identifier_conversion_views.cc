@@ -12,6 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/events/event.h"
 
@@ -288,18 +289,17 @@ static const KeyIdentifier kKeyIdentifiers[] = {
 
 static const int kNumKeyIdentifiers = arraysize(kKeyIdentifiers);
 
-typedef base::hash_map<std::string, const views::KeyEvent*> IdentifierMap;
-typedef std::pair<std::string, const views::KeyEvent*> IdentifierPair;
+typedef base::hash_map<std::string, const ui::KeyEvent*> IdentifierMap;
+typedef std::pair<std::string, const ui::KeyEvent*> IdentifierPair;
 static IdentifierMap* identifierMaps[kNumIdentifierTypes] = { NULL };
 
-static views::KeyEvent* kUnknownKeyEvent = NULL;
+static ui::KeyEvent* kUnknownKeyEvent = NULL;
 
 static void InitializeMaps() {
   if (identifierMaps[0])
     return;
 
-  kUnknownKeyEvent = new views::KeyEvent(
-    ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+  kUnknownKeyEvent = new ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
 
   for (int i = 0; i < kNumIdentifierTypes; ++i)
     identifierMaps[i] = new IdentifierMap;
@@ -307,8 +307,8 @@ static void InitializeMaps() {
   for (int i = 0; i < kNumKeyIdentifiers; ++i) {
     const KeyIdentifier& key = kKeyIdentifiers[i];
 
-    views::KeyEvent* event = new views::KeyEvent(
-        ui::ET_KEY_PRESSED, key.key_code, key.event_flags);
+    ui::KeyEvent* event =
+        new ui::KeyEvent(ui::ET_KEY_PRESSED, key.key_code, key.event_flags);
 
     for (int j = 0; j < kNumIdentifierTypes; ++j) {
       if (key.identifiers[j][0] != '\0') {
@@ -324,7 +324,7 @@ static void InitializeMaps() {
 }  // namespace
 
 
-const views::KeyEvent& KeyEventFromKeyIdentifier(
+const ui::KeyEvent& KeyEventFromKeyIdentifier(
     const std::string& key_identifier) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   InitializeMaps();

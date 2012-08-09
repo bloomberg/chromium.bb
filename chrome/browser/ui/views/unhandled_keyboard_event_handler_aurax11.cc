@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/base/event.h"
 #include "ui/views/focus/focus_manager.h"
 
 using content::NativeWebKeyboardEvent;
@@ -20,8 +21,6 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
     NOTREACHED();
     return;
   }
-  if (event.os_event && !event.skip_in_browser) {
-    views::KeyEvent views_event(event.os_event);
-    focus_manager->OnKeyEvent(views_event);
-  }
+  if (event.os_event && !event.skip_in_browser)
+    focus_manager->OnKeyEvent(*static_cast<ui::KeyEvent*>(event.os_event));
 }

@@ -9,6 +9,7 @@
 #include "grit/ui_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -227,7 +228,7 @@ ui::GestureStatus MenuButton::OnGestureEvent(const GestureEvent& event) {
   return TextButton::OnGestureEvent(event);
 }
 
-bool MenuButton::OnKeyPressed(const KeyEvent& event) {
+bool MenuButton::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_SPACE:
       // Alt-space on windows should show the window menu.
@@ -245,7 +246,7 @@ bool MenuButton::OnKeyPressed(const KeyEvent& event) {
   return false;
 }
 
-bool MenuButton::OnKeyReleased(const KeyEvent& event) {
+bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
   // Override CustomButton's implementation, which presses the button when
   // you press space and clicks it when you release space.  For a MenuButton
   // we always activate the menu on key press.

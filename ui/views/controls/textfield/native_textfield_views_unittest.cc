@@ -20,6 +20,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/event.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -50,13 +51,13 @@ class TestTextfield : public views::Textfield {
         key_received_(false) {
   }
 
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
     key_handled_ = views::Textfield::OnKeyPressed(e);
     return key_handled_;
   }
 
-  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE {
+  virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE {
     key_received_ = true;
     key_handled_ = views::Textfield::OnKeyReleased(e);
     return key_handled_;
@@ -135,7 +136,8 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     last_contents_ = new_contents;
   }
 
-  virtual bool HandleKeyEvent(Textfield* sender, const KeyEvent& key_event) {
+  virtual bool HandleKeyEvent(Textfield* sender,
+                              const ui::KeyEvent& key_event) {
     // TODO(oshima): figure out how to test the keystroke.
     return false;
   }
@@ -207,7 +209,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     int flags = (shift ? ui::EF_SHIFT_DOWN : 0) |
         (control ? ui::EF_CONTROL_DOWN : 0) |
         (caps_lock ? ui::EF_CAPS_LOCK_DOWN : 0);
-    KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, flags);
     input_method_->DispatchKeyEvent(event);
   }
 
@@ -226,7 +228,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
           static_cast<ui::KeyboardCode>(ui::VKEY_A + ch - 'a');
       SendKeyEvent(code);
     } else {
-      KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
+      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0);
       event.set_character(ch);
       input_method_->DispatchKeyEvent(event);
     }

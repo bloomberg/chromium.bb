@@ -148,7 +148,7 @@ class DropdownBarHost : public ui::AcceleratorTarget,
   // Returns a keyboard event suitable for forwarding.
   content::NativeWebKeyboardEvent GetKeyboardEvent(
       const content::WebContents* contents,
-      const views::KeyEvent& key_event);
+      const ui::KeyEvent& key_event);
 
   // Returns the animation for the dropdown.
   ui::SlideAnimation* animation() {

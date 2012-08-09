@@ -688,7 +688,7 @@ void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, views::InputMethodDelegate implementation:
 
-void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
+void NativeWidgetAura::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   FocusManager* focus_manager = GetWidget()->GetFocusManager();
   if (focus_manager)
     focus_manager->MaybeResetMenuKeyState(key);
@@ -747,10 +747,7 @@ bool NativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
   // and the window may be invisible by that time.
   if (!window_->IsVisible())
     return false;
-  InputMethod* input_method = GetWidget()->GetInputMethod();
-  DCHECK(input_method);
-  KeyEvent views_event(event);
-  input_method->DispatchKeyEvent(views_event);
+  GetWidget()->GetInputMethod()->DispatchKeyEvent(*event);
   return true;
 }
 

@@ -30,7 +30,6 @@ class Canvas;
 namespace views {
 
 class FocusableBorder;
-class KeyEvent;
 class MenuModelAdapter;
 class MenuRunner;
 
@@ -58,7 +57,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
@@ -66,7 +65,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual int OnDragUpdated(const DropTargetEvent& event) OVERRIDE;
   virtual int OnPerformDrop(const DropTargetEvent& event) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
-  virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
@@ -116,8 +115,8 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual void GetSelectionModel(gfx::SelectionModel* sel) const OVERRIDE;
   virtual void SelectSelectionModel(const gfx::SelectionModel& sel) OVERRIDE;
   virtual size_t GetCursorPosition() const OVERRIDE;
-  virtual bool HandleKeyPressed(const KeyEvent& e) OVERRIDE;
-  virtual bool HandleKeyReleased(const KeyEvent& e) OVERRIDE;
+  virtual bool HandleKeyPressed(const ui::KeyEvent& e) OVERRIDE;
+  virtual bool HandleKeyReleased(const ui::KeyEvent& e) OVERRIDE;
   virtual void HandleFocus() OVERRIDE;
   virtual void HandleBlur() OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
@@ -193,7 +192,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   void PaintTextAndCursor(gfx::Canvas* canvas);
 
   // Handle the keyevent.
-  bool HandleKeyEvent(const KeyEvent& key_event);
+  bool HandleKeyEvent(const ui::KeyEvent& key_event);
 
   // Helper function to call MoveCursorTo on the TextfieldViewsModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);

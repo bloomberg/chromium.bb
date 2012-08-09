@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
@@ -94,7 +95,7 @@ void Link::OnMouseCaptureLost() {
   SetPressed(false);
 }
 
-bool Link::OnKeyPressed(const KeyEvent& event) {
+bool Link::OnKeyPressed(const ui::KeyEvent& event) {
   bool activate = ((event.key_code() == ui::VKEY_SPACE) ||
                    (event.key_code() == ui::VKEY_RETURN));
   if (!activate)
@@ -128,7 +129,7 @@ ui::GestureStatus Link::OnGestureEvent(const GestureEvent& event) {
   return ui::GESTURE_STATUS_CONSUMED;
 }
 
-bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& event) {
+bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   // Make sure we don't process space or enter as accelerators.
   return (event.key_code() == ui::VKEY_SPACE) ||
       (event.key_code() == ui::VKEY_RETURN);

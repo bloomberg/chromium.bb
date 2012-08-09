@@ -9,6 +9,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 
@@ -17,7 +18,7 @@ using content::WebContents;
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const WebContents* contents,
-     const views::KeyEvent& key_event) {
+     const ui::KeyEvent& key_event) {
   HWND hwnd = contents->GetContentNativeView();
   WORD key = WindowsKeyCodeForKeyboardCode(key_event.key_code());
 

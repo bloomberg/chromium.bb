@@ -18,6 +18,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/cert_database.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -267,7 +268,7 @@ void VPNConfigView::ContentsChanged(views::Textfield* sender,
 }
 
 bool VPNConfigView::HandleKeyEvent(views::Textfield* sender,
-                                   const views::KeyEvent& key_event) {
+                                   const ui::KeyEvent& key_event) {
   if ((sender == psk_passphrase_textfield_ ||
        sender == user_passphrase_textfield_) &&
       key_event.key_code() == ui::VKEY_RETURN) {

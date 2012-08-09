@@ -34,7 +34,6 @@ class TextInputClient;
 
 namespace views {
 
-class KeyEvent;
 class TextfieldController;
 
 // This class implements a View that wraps a native text (edit) field.
@@ -240,11 +239,11 @@ class VIEWS_EXPORT Textfield : public View {
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

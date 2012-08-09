@@ -4,6 +4,7 @@
 
 #include "ui/views/focus/accelerator_handler.h"
 
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/events/event.h"
@@ -23,7 +24,7 @@ bool AcceleratorHandler::Dispatch(const base::NativeEvent& msg) {
       switch (msg.message) {
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN: {
-          KeyEvent event(msg);
+          ui::KeyEvent event(msg, false);
           if (!focus_manager->OnKeyEvent(event)) {
             // Record that this key is pressed so we can remember not to
             // translate and dispatch the associated WM_KEYUP.

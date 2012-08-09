@@ -89,7 +89,7 @@ class DownloadItemView : public views::ButtonListener,
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
       const views::GestureEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,

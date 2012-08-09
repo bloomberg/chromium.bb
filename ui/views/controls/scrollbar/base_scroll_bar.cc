@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "grit/ui_strings.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -125,7 +126,7 @@ void BaseScrollBar::OnMouseCaptureLost() {
   ResetState();
 }
 
-bool BaseScrollBar::OnKeyPressed(const KeyEvent& event) {
+bool BaseScrollBar::OnKeyPressed(const ui::KeyEvent& event) {
   ScrollAmount amount = SCROLL_NONE;
   switch (event.key_code()) {
     case ui::VKEY_UP:

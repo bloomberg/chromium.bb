@@ -6,6 +6,7 @@
 
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
@@ -166,7 +167,7 @@ void CustomButton::OnMouseMoved(const MouseEvent& event) {
     SetState(HitTest(event.location()) ? BS_HOT : BS_NORMAL);
 }
 
-bool CustomButton::OnKeyPressed(const KeyEvent& event) {
+bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
   if (state_ == BS_DISABLED)
     return false;
 
@@ -177,19 +178,25 @@ bool CustomButton::OnKeyPressed(const KeyEvent& event) {
     SetState(BS_PUSHED);
   } else if (event.key_code() == ui::VKEY_RETURN) {
     SetState(BS_NORMAL);
-    NotifyClick(event);
+    // TODO(beng): remove once NotifyClick takes ui::Event.
+    views::MouseEvent synthetic_event(
+        ui::ET_MOUSE_RELEASED, 0, 0, ui::EF_LEFT_MOUSE_BUTTON);
+    NotifyClick(synthetic_event);
   } else {
     return false;
   }
   return true;
 }
 
-bool CustomButton::OnKeyReleased(const KeyEvent& event) {
+bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
   if ((state_ == BS_DISABLED) || (event.key_code() != ui::VKEY_SPACE))
     return false;
 
   SetState(BS_NORMAL);
-  NotifyClick(event);
+  // TODO(beng): remove once NotifyClick takes ui::Event.
+  views::MouseEvent synthetic_event(
+      ui::ET_MOUSE_RELEASED, 0, 0, ui::EF_LEFT_MOUSE_BUTTON);
+  NotifyClick(synthetic_event);
   return true;
 }
 
@@ -219,9 +226,14 @@ ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
 
 bool CustomButton::AcceleratorPressed(const ui::Accelerator& accelerator) {
   SetState(BS_NORMAL);
-  KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.key_code(),
-                     accelerator.modifiers());
-  NotifyClick(key_event);
+  /*
+  ui::KeyEvent key_event(ui::ET_KEY_RELEASED, accelerator.key_code(),
+                         accelerator.modifiers());
+                         */
+  // TODO(beng): remove once NotifyClick takes ui::Event.
+  views::MouseEvent synthetic_event(
+      ui::ET_MOUSE_RELEASED, 0, 0, ui::EF_LEFT_MOUSE_BUTTON);
+  NotifyClick(synthetic_event);
   return true;
 }
 

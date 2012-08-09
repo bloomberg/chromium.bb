@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/native_theme/native_theme.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -425,7 +426,7 @@ void TreeView::ContentsChanged(Textfield* sender,
 }
 
 bool TreeView::HandleKeyEvent(Textfield* sender,
-                              const KeyEvent& key_event) {
+                              const ui::KeyEvent& key_event) {
   switch (key_event.key_code()) {
     case ui::VKEY_RETURN:
       CommitEdit();
@@ -467,7 +468,7 @@ gfx::Point TreeView::GetKeyboardContextMenuLocation() {
   return screen_loc;
 }
 
-bool TreeView::OnKeyPressed(const KeyEvent& event) {
+bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
   if (!HasFocus())
     return false;
 

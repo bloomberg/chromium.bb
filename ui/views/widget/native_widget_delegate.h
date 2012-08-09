@@ -18,13 +18,13 @@ class Size;
 }
 
 namespace ui {
+class KeyEvent;
 class Layer;
 }
 
 namespace views {
 class InputMethod;
 class GestureEvent;
-class KeyEvent;
 class MouseEvent;
 class TouchEvent;
 
@@ -105,7 +105,7 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual int GetNonClientComponent(const gfx::Point& point) = 0;
 
   // Mouse and key event handlers.
-  virtual bool OnKeyEvent(const KeyEvent& event) = 0;
+  virtual bool OnKeyEvent(const ui::KeyEvent& event) = 0;
   virtual bool OnMouseEvent(const MouseEvent& event) = 0;
   virtual void OnMouseCaptureLost() = 0;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) = 0;

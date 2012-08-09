@@ -63,10 +63,10 @@ class OmniboxViewViews
   void SetBaseColor();
 
   // Called after key even is handled either by HandleKeyEvent or by Textfield.
-  bool HandleAfterKeyEvent(const views::KeyEvent& event, bool handled);
+  bool HandleAfterKeyEvent(const ui::KeyEvent& event, bool handled);
 
   // Called when KeyRelease event is generated on textfield.
-  bool HandleKeyReleaseEvent(const views::KeyEvent& event);
+  bool HandleKeyReleaseEvent(const ui::KeyEvent& event);
 
   // Called when mouse events are generated on the textfield.
   // The views::Textfield implementations will be executed first.
@@ -133,7 +133,7 @@ class OmniboxViewViews
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event) OVERRIDE;
+                              const ui::KeyEvent& key_event) OVERRIDE;
   virtual void OnBeforeUserAction(views::Textfield* sender) OVERRIDE;
   virtual void OnAfterUserAction(views::Textfield* sender) OVERRIDE;
   virtual void OnAfterCutOrCopy() OVERRIDE;

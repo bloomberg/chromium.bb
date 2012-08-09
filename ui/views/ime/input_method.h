@@ -13,6 +13,7 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
+class KeyEvent;
 class TextInputClient;
 }  // namespace ui
 
@@ -22,7 +23,6 @@ namespace internal {
 class InputMethodDelegate;
 }  // namespace internal
 
-class KeyEvent;
 class View;
 class Widget;
 
@@ -60,7 +60,7 @@ class VIEWS_EXPORT InputMethod {
   // it's processed by the input method. It should only be called by the
   // top-level NativeWidget which owns this InputMethod instance, or other
   // related platform dependent code, such as a message dispatcher.
-  virtual void DispatchKeyEvent(const KeyEvent& key) = 0;
+  virtual void DispatchKeyEvent(const ui::KeyEvent& key) = 0;
 
   // Called by the focused |view| whenever its text input type is changed.
   // Before calling this method, the focused |view| must confirm or clear

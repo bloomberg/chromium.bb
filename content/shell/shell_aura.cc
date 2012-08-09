@@ -14,6 +14,7 @@
 #include "ui/aura/single_display_manager.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/event.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/text_button.h"
@@ -250,7 +251,7 @@ class ShellWindowDelegateView : public WidgetDelegateView,
                                const string16& new_contents) OVERRIDE {
   }
   virtual bool HandleKeyEvent(Textfield* sender,
-                              const KeyEvent& key_event) OVERRIDE {
+                              const ui::KeyEvent& key_event) OVERRIDE {
    if (sender == url_entry_ && key_event.key_code() == ui::VKEY_RETURN) {
      std::string text = UTF16ToUTF8(url_entry_->text());
      GURL url(text);

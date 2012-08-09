@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/event.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/native_theme/native_theme_win.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -140,11 +141,11 @@ void NativeComboboxWin::SetFocus() {
   OnFocus();
 }
 
-bool NativeComboboxWin::HandleKeyPressed(const views::KeyEvent& event) {
+bool NativeComboboxWin::HandleKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool NativeComboboxWin::HandleKeyReleased(const views::KeyEvent& event) {
+bool NativeComboboxWin::HandleKeyReleased(const ui::KeyEvent& event) {
   return false;
 }
 

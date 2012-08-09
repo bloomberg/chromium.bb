@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "ui/base/event.h"
 #include "ui/views/events/event.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/views_delegate.h"
@@ -93,8 +94,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(kKeyIdentifier, &identifier));
   TrimWhitespaceASCII(identifier, TRIM_ALL, &identifier);
 
-  const views::KeyEvent& prototype_event =
-      KeyEventFromKeyIdentifier(identifier);
+  const ui::KeyEvent& prototype_event = KeyEventFromKeyIdentifier(identifier);
   uint16 character = 0;
   if (prototype_event.key_code() == ui::VKEY_UNKNOWN) {
     // Check if |identifier| is "U+NNNN" format.
@@ -124,7 +124,7 @@ bool SendKeyboardEventInputFunction::RunImpl() {
     return false;
   }
 
-  views::KeyEvent event(type, prototype_event.key_code(), flags);
+  ui::KeyEvent event(type, prototype_event.key_code(), flags);
   if (character) {
     event.set_character(character);
     event.set_unmodified_character(character);

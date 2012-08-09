@@ -16,6 +16,7 @@ class Rect;
 }
 
 namespace ui {
+class KeyEvent;
 class TextInputClient;
 }
 
@@ -31,7 +32,7 @@ class VIEWS_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod),
   InputMethodBase();
   virtual ~InputMethodBase();
 
-  // Overriden from InputMethod.
+  // Overridden from InputMethod.
   virtual void set_delegate(internal::InputMethodDelegate* delegate) OVERRIDE;
 
   // If a derived class overrides this method, it should call parent's
@@ -82,7 +83,7 @@ class VIEWS_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod),
   void OnInputMethodChanged() const;
 
   // Convenience method to call delegate_->DispatchKeyEventPostIME().
-  void DispatchKeyEventPostIME(const KeyEvent& key) const;
+  void DispatchKeyEventPostIME(const ui::KeyEvent& key) const;
 
   // Gets the current text input client's caret bounds in Widget's coordinates.
   // Returns false if the current text input client doesn't support text input.

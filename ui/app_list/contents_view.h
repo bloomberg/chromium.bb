@@ -55,7 +55,7 @@ class ContentsView : public views::View {
   virtual void Layout() OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
       const views::GestureEvent& event) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
   virtual bool OnScrollEvent(const views::ScrollEvent & event) OVERRIDE;
 

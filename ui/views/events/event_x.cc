@@ -20,49 +20,6 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
-// KeyEvent, public:
-
-uint16 KeyEvent::GetCharacter() const {
-  if (character_)
-    return character_;
-
-  if (!native_event()) {
-    return ui::GetCharacterFromKeyCode(key_code_, flags());
-  }
-
-  DCHECK(native_event()->type == KeyPress ||
-         native_event()->type == KeyRelease);
-
-  uint16 ch = 0;
-  if (!IsControlDown())
-    ch = ui::GetCharacterFromXEvent(native_event());
-  return ch ? ch : ui::GetCharacterFromKeyCode(key_code_, flags());
-}
-
-uint16 KeyEvent::GetUnmodifiedCharacter() const {
-  if (unmodified_character_)
-    return unmodified_character_;
-
-  if (!native_event()) {
-    return ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
-  }
-
-  DCHECK(native_event()->type == KeyPress ||
-         native_event()->type == KeyRelease);
-
-  static const unsigned int kIgnoredModifiers = ControlMask | LockMask |
-      Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask;
-
-  XKeyEvent copy = native_event()->xkey;  // bit-wise copy is safe.
-  // We can't use things like (native_event()->xkey.state & ShiftMask), as it
-  // may mask out bits used by X11 internally.
-  copy.state &= ~kIgnoredModifiers;
-  uint16 ch = ui::GetCharacterFromXEvent(reinterpret_cast<XEvent*>(&copy));
-  return ch ? ch :
-      ui::GetCharacterFromKeyCode(key_code_, flags() & ui::EF_SHIFT_DOWN);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 
 TouchEvent::TouchEvent(const base::NativeEvent& native_event)

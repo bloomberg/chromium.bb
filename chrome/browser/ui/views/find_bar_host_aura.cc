@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/find_bar_host.h"
 
 #include "base/logging.h"
+#include "ui/base/event.h"
 
 void FindBarHost::AudibleAlert() {
 #if defined(OS_WIN)
@@ -16,6 +17,6 @@ void FindBarHost::AudibleAlert() {
 }
 
 bool FindBarHost::ShouldForwardKeyEventToWebpageNative(
-    const views::KeyEvent& key_event) {
+    const ui::KeyEvent& key_event) {
   return true;
 }

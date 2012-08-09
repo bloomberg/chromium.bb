@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 
 #include "chrome/browser/chromeos/login/helper.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
 namespace {
@@ -35,7 +36,7 @@ void TextfieldWithMargin::Layout() {
   views::Textfield::Layout();
 }
 
-bool TextfieldWithMargin::OnKeyPressed(const views::KeyEvent& e) {
+bool TextfieldWithMargin::OnKeyPressed(const ui::KeyEvent& e) {
   if (e.key_code() == ui::VKEY_ESCAPE && !text().empty()) {
     SetText(string16());
     return true;

@@ -16,13 +16,13 @@ struct StyleRange;
 }  // namespace gfx
 
 namespace ui {
+class KeyEvent;
 class Range;
 class TextInputClient;
 }  // namespace ui
 
 namespace views {
 
-class KeyEvent;
 class Textfield;
 class View;
 
@@ -125,8 +125,8 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // should return true if the event has been processed and false
   // otherwise.
   // See also View::OnKeyPressed/OnKeyReleased.
-  virtual bool HandleKeyPressed(const views::KeyEvent& e) = 0;
-  virtual bool HandleKeyReleased(const views::KeyEvent& e) = 0;
+  virtual bool HandleKeyPressed(const ui::KeyEvent& e) = 0;
+  virtual bool HandleKeyReleased(const ui::KeyEvent& e) = 0;
 
   // Invoked when focus is being moved from or to the Textfield.
   // See also View::OnFocus/OnBlur.

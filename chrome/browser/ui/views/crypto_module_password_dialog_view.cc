@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
@@ -77,7 +78,7 @@ void CryptoModulePasswordDialogView::ContentsChanged(
 
 bool CryptoModulePasswordDialogView::HandleKeyEvent(
     views::Textfield* sender,
-    const views::KeyEvent& keystroke) {
+    const ui::KeyEvent& keystroke) {
   return false;
 }
 

@@ -6,14 +6,17 @@
 #define CHROME_BROWSER_EXTENSIONS_KEY_IDENTIFIER_CONVERSION_VIEWS_H_
 
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/events/event.h"
 
 #include <string>
 
+namespace ui {
+class KeyEvent;
+}
+
 // Convert a KeyIdentifer (see Section 6.3.3 here:
 // http://www.w3.org/TR/DOM-Level-3-Events/#keyset-keyidentifiers)
-// to a views::KeyEvent.
-const views::KeyEvent& KeyEventFromKeyIdentifier(
+// to a ui::KeyEvent.
+const ui::KeyEvent& KeyEventFromKeyIdentifier(
     const std::string& key_identifier);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_KEY_IDENTIFIER_CONVERSION_VIEWS_H_

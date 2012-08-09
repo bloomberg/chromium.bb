@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -72,7 +73,7 @@ void ChromeToMobileView::OnMouseReleased(const views::MouseEvent& event) {
     command_updater_->ExecuteCommand(IDC_CHROME_TO_MOBILE_PAGE);
 }
 
-bool ChromeToMobileView::OnKeyPressed(const views::KeyEvent& event) {
+bool ChromeToMobileView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
     command_updater_->ExecuteCommand(IDC_CHROME_TO_MOBILE_PAGE);

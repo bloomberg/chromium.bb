@@ -75,6 +75,7 @@
 namespace ui {
 class AcceleratorTarget;
 class AcceleratorManager;
+class KeyEvent;
 }
 
 namespace views {
@@ -142,7 +143,7 @@ class VIEWS_EXPORT FocusManager {
   // Processes the passed key event for accelerators and tab traversal.
   // Returns false if the event has been consumed and should not be processed
   // further.
-  bool OnKeyEvent(const KeyEvent& event);
+  bool OnKeyEvent(const ui::KeyEvent& event);
 
   // Returns true is the specified is part of the hierarchy of the window
   // associated with this FocusManager.
@@ -232,7 +233,7 @@ class VIEWS_EXPORT FocusManager {
 
   // Resets menu key state if |event| is not menu key release.
   // This is effective only on x11.
-  void MaybeResetMenuKeyState(const KeyEvent& key);
+  void MaybeResetMenuKeyState(const ui::KeyEvent& key);
 
   // Called by a RootView when a view within its hierarchy is removed
   // from its parent. This will only be called by a RootView in a
@@ -260,7 +261,7 @@ class VIEWS_EXPORT FocusManager {
   // Convenience method that returns true if the passed |key_event| should
   // trigger tab traversal (if it is a TAB key press with or without SHIFT
   // pressed).
-  static bool IsTabTraversalKeyEvent(const KeyEvent& key_event);
+  static bool IsTabTraversalKeyEvent(const ui::KeyEvent& key_event);
 
  private:
   // Returns the next focusable view.

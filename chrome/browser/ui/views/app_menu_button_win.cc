@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/app_menu_button_win.h"
 
+#include "ui/base/event.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -11,7 +12,7 @@ AppMenuButtonWin::AppMenuButtonWin(views::MenuButtonListener* listener)
     : views::MenuButton(NULL, string16(), listener, false) {
 }
 
-bool AppMenuButtonWin::OnKeyPressed(const views::KeyEvent& event) {
+bool AppMenuButtonWin::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE) {
     // Typical windows behavior is to show the system menu on space.
     views::Widget* widget = GetWidget();

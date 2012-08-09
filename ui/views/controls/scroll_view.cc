@@ -5,6 +5,7 @@
 #include "ui/views/controls/scroll_view.h"
 
 #include "base/logging.h"
+#include "ui/base/event.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/root_view.h"
 
@@ -386,7 +387,7 @@ int ScrollView::GetScrollIncrement(ScrollBar* source, bool is_page,
   return is_horizontal ? viewport_->width() / 5 : viewport_->height() / 5;
 }
 
-bool ScrollView::OnKeyPressed(const KeyEvent& event) {
+bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
   bool processed = false;
 
   // Give vertical scrollbar priority

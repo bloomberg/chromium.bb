@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
+#include "ui/base/event.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -66,7 +67,7 @@ gfx::Size LocationBarContainer::GetPreferredSize() {
 }
 
 bool LocationBarContainer::SkipDefaultKeyEventProcessing(
-    const views::KeyEvent& event) {
+    const ui::KeyEvent& event) {
   return location_bar_view_->SkipDefaultKeyEventProcessing(event);
 }
 

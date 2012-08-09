@@ -8,6 +8,7 @@
 
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/pagination_model.h"
+#include "ui/base/event.h"
 #include "ui/views/border.h"
 
 namespace {
@@ -168,7 +169,7 @@ void AppsGridView::Layout() {
   }
 }
 
-bool AppsGridView::OnKeyPressed(const views::KeyEvent& event) {
+bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   bool handled = false;
   if (selected_item_index_ >= 0)
     handled = GetItemViewAtIndex(selected_item_index_)->OnKeyPressed(event);
@@ -217,7 +218,7 @@ bool AppsGridView::OnKeyPressed(const views::KeyEvent& event) {
   return handled;
 }
 
-bool AppsGridView::OnKeyReleased(const views::KeyEvent& event) {
+bool AppsGridView::OnKeyReleased(const ui::KeyEvent& event) {
   bool handled = false;
   if (selected_item_index_ >= 0)
     handled = GetItemViewAtIndex(selected_item_index_)->OnKeyReleased(event);

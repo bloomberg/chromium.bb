@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "ui/base/event.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -49,7 +50,7 @@ void InputMethodWin::OnBlur() {
   InputMethodBase::OnBlur();
 }
 
-void InputMethodWin::DispatchKeyEvent(const KeyEvent& key) {
+void InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& key) {
   // Handles ctrl-shift key to change text direction and layout alignment.
   if (ui::ImeInput::IsRTLKeyboardLayoutInstalled() && !IsTextInputTypeNone()) {
     ui::KeyboardCode code = key.key_code();

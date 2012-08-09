@@ -67,10 +67,10 @@ class VIEWS_EXPORT Combobox : public View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
-  virtual bool OnKeyReleased(const views::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyReleased(const ui::KeyEvent& e) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

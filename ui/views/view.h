@@ -41,6 +41,7 @@ class Path;
 namespace ui {
 struct AccessibleViewState;
 class Compositor;
+class KeyEvent;
 class Layer;
 class TextInputClient;
 class Texture;
@@ -613,8 +614,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Subclasser should return true if the event has been processed and false
   // otherwise. If the event has not been processed, the parent will be given a
   // chance.
-  virtual bool OnKeyPressed(const KeyEvent& event);
-  virtual bool OnKeyReleased(const KeyEvent& event);
+  virtual bool OnKeyPressed(const ui::KeyEvent& event);
+  virtual bool OnKeyReleased(const ui::KeyEvent& event);
 
   // Invoked when the user uses the mousewheel. Implementors should return true
   // if the event has been processed and false otherwise. This message is sent
@@ -733,7 +734,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // have it processed as an accelerator (if any) or as a tab traversal (if the
   // key event is for the TAB key).  In that case, OnKeyPressed will
   // subsequently be invoked for that event.
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& event);
+  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event);
 
   // Subclasses that contain traversable children that are not directly
   // accessible through the children hierarchy should return the associated

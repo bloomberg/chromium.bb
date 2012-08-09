@@ -124,7 +124,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
 
   // Overridden from views::InputMethodDelegate:
-  virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;

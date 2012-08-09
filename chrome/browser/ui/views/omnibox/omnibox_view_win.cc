@@ -51,6 +51,7 @@
 #include "ui/base/dragdrop/drop_target.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1008,8 +1009,7 @@ int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-bool OmniboxViewWin::SkipDefaultKeyEventProcessing(
-    const views::KeyEvent& event) {
+bool OmniboxViewWin::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   ui::KeyboardCode key = event.key_code();
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.

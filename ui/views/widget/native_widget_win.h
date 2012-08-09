@@ -537,7 +537,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   void NotifyOwnedWindowsParentClosing();
 
   // Overridden from internal::InputMethodDelegate
-  virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
+  virtual void DispatchKeyEventPostIME(const ui::KeyEvent& key) OVERRIDE;
 
   // Common implementation of fullscreen-related code. This method handles
   // changing from windowed mode to a display mode (dubbed fullscreen mode)

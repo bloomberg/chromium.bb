@@ -8,14 +8,17 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
-namespace gfx{
+namespace gfx {
 class Size;
+}
+
+namespace ui {
+class KeyEvent;
 }
 
 namespace views {
 
 class Combobox;
-class KeyEvent;
 class View;
 
 class VIEWS_EXPORT NativeComboboxWrapper {
@@ -47,8 +50,8 @@ class VIEWS_EXPORT NativeComboboxWrapper {
   // Invoked when a key is pressed/release on combobox. Subclasser should
   // return true if the event has been processed and false otherwise.
   // See also View::OnKeyPressed/OnKeyReleased.
-  virtual bool HandleKeyPressed(const views::KeyEvent& e) = 0;
-  virtual bool HandleKeyReleased(const views::KeyEvent& e) = 0;
+  virtual bool HandleKeyPressed(const ui::KeyEvent& e) = 0;
+  virtual bool HandleKeyReleased(const ui::KeyEvent& e) = 0;
 
   // Invoked when focus is being moved from or to the combobox.
   // See also View::OnFocus/OnBlur.

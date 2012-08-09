@@ -12,6 +12,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/event.h"
 #include "ui/views/widget/widget.h"
 
 ExtensionView::ExtensionView(extensions::ExtensionHost* host, Browser* browser)
@@ -138,7 +139,7 @@ void ExtensionView::PreferredSizeChanged() {
     container_->OnExtensionSizeChanged(this);
 }
 
-bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+bool ExtensionView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
   // Let the tab key event be processed by the renderer (instead of moving the
   // focus to the next focusable view). Also handle Backspace, since otherwise
   // (on Windows at least), pressing Backspace, when focus is on a text field

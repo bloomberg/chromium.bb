@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/window_impl.h"
@@ -226,7 +227,7 @@ gfx::Size NativeScrollBarWin::GetPreferredSize() {
   return gfx::Size(GetVerticalScrollBarWidth(), 0);
 }
 
-bool NativeScrollBarWin::OnKeyPressed(const KeyEvent& event) {
+bool NativeScrollBarWin::OnKeyPressed(const ui::KeyEvent& event) {
   if (!sb_container_.get())
     return false;
   int code = -1;

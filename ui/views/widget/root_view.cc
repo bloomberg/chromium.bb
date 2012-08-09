@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -110,7 +111,7 @@ void RootView::NotifyNativeViewHierarchyChanged(bool attached,
 
 // Input -----------------------------------------------------------------------
 
-bool RootView::OnKeyEvent(const KeyEvent& event) {
+bool RootView::OnKeyEvent(const ui::KeyEvent& event) {
   bool consumed = false;
 
   View* v = NULL;

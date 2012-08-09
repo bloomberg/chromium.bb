@@ -66,7 +66,7 @@ class ExtensionView : public views::NativeViewHost {
  protected:
   // Overridden from views::View.
   virtual void PreferredSizeChanged() OVERRIDE;
-  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:

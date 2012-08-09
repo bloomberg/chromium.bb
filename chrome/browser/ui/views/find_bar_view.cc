@@ -24,6 +24,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -420,7 +421,7 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
 }
 
 bool FindBarView::HandleKeyEvent(views::Textfield* sender,
-                                 const views::KeyEvent& key_event) {
+                                 const ui::KeyEvent& key_event) {
   // If the dialog is not visible, there is no reason to process keyboard input.
   if (!host()->IsVisible())
     return false;

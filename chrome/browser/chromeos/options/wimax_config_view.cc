@@ -18,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -110,7 +111,7 @@ void WimaxConfigView::ContentsChanged(views::Textfield* sender,
 }
 
 bool WimaxConfigView::HandleKeyEvent(views::Textfield* sender,
-                                     const views::KeyEvent& key_event) {
+                                     const ui::KeyEvent& key_event) {
   if (sender == passphrase_textfield_ &&
       key_event.key_code() == ui::VKEY_RETURN) {
     parent_->GetDialogClientView()->AcceptWindow();

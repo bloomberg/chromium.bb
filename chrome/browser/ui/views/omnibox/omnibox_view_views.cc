@@ -35,6 +35,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/event.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -88,12 +89,12 @@ class AutocompleteTextfield : public views::Textfield {
     omnibox_view_->HandleFocusOut();
   }
 
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE {
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE {
     bool handled = views::Textfield::OnKeyPressed(event);
     return omnibox_view_->HandleAfterKeyEvent(event, handled) || handled;
   }
 
-  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE {
+  virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE {
     return omnibox_view_->HandleKeyReleaseEvent(event);
   }
 
@@ -305,7 +306,7 @@ int OmniboxViewViews::WidthOfTextAfterCursor() {
   return textfield_->font().GetStringWidth(GetText().substr(start));
 }
 
-bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
+bool OmniboxViewViews::HandleAfterKeyEvent(const ui::KeyEvent& event,
                                            bool handled) {
   if (event.key_code() == ui::VKEY_RETURN) {
     bool alt_held = event.IsAltDown();
@@ -368,7 +369,7 @@ bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
   return handled;
 }
 
-bool OmniboxViewViews::HandleKeyReleaseEvent(const views::KeyEvent& event) {
+bool OmniboxViewViews::HandleKeyReleaseEvent(const ui::KeyEvent& event) {
   // Omnibox2 can switch its contents while pressing a control key. To switch
   // the contents of omnibox2, we notify the OmniboxEditModel class when the
   // control-key state is changed.
@@ -723,7 +724,7 @@ void OmniboxViewViews::ContentsChanged(views::Textfield* sender,
 }
 
 bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
-                                      const views::KeyEvent& event) {
+                                      const ui::KeyEvent& event) {
   delete_at_end_pressed_ = false;
 
   if (event.key_code() == ui::VKEY_BACK) {

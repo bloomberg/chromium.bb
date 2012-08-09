@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/event.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_font_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -55,7 +56,14 @@ class ScopedEvent {
  public:
   ScopedEvent(Widget* widget, const Event& event)
       : widget_(widget),
-        event_(&event) {
+        event_(&event),
+        ui_event_(NULL) {
+    widget->event_stack_.push(this);
+  }
+  ScopedEvent(Widget* widget, const ui::Event& ui_event)
+      : widget_(widget),
+        event_(NULL),
+        ui_event_(&ui_event) {
     widget->event_stack_.push(this);
   }
 
@@ -71,10 +79,15 @@ class ScopedEvent {
   const Event* event() {
     return event_;
   }
+  const ui::Event* ui_event() {
+    return ui_event_;
+  }
 
  private:
   Widget* widget_;
   const Event* event_;
+  // TODO(beng): remove once views::Event is gone.
+  const ui::Event* ui_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedEvent);
 };
@@ -1057,7 +1070,7 @@ int Widget::GetNonClientComponent(const gfx::Point& point) {
       HTNOWHERE;
 }
 
-bool Widget::OnKeyEvent(const KeyEvent& event) {
+bool Widget::OnKeyEvent(const ui::KeyEvent& event) {
   ScopedEvent scoped(this, event);
   return static_cast<internal::RootView*>(GetRootView())->OnKeyEvent(event);
 }

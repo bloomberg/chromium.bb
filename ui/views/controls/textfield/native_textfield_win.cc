@@ -17,6 +17,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -374,11 +375,11 @@ size_t NativeTextfieldWin::GetCursorPosition() const {
   return 0U;
 }
 
-bool NativeTextfieldWin::HandleKeyPressed(const views::KeyEvent& event) {
+bool NativeTextfieldWin::HandleKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool NativeTextfieldWin::HandleKeyReleased(const views::KeyEvent& event) {
+bool NativeTextfieldWin::HandleKeyReleased(const ui::KeyEvent& event) {
   return false;
 }
 
@@ -1015,7 +1016,7 @@ void NativeTextfieldWin::HandleKeystroke() {
   TextfieldController* controller = textfield_->GetController();
   bool handled = false;
   if (controller) {
-    KeyEvent event(*msg);
+    ui::KeyEvent event(*msg, msg->message == WM_CHAR);
     handled = controller->HandleKeyEvent(textfield_, event);
   }
 

@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/range/range.h"
 #include "ui/compositor/layer.h"
@@ -180,14 +181,14 @@ ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
   return TouchSelectionClientView::OnGestureEvent(event);
 }
 
-bool NativeTextfieldViews::OnKeyPressed(const KeyEvent& event) {
+bool NativeTextfieldViews::OnKeyPressed(const ui::KeyEvent& event) {
   // OnKeyPressed/OnKeyReleased/OnFocus/OnBlur will never be invoked on
   // NativeTextfieldViews as it will never gain focus.
   NOTREACHED();
   return false;
 }
 
-bool NativeTextfieldViews::OnKeyReleased(const KeyEvent& event) {
+bool NativeTextfieldViews::OnKeyReleased(const ui::KeyEvent& event) {
   NOTREACHED();
   return false;
 }
@@ -522,7 +523,7 @@ size_t NativeTextfieldViews::GetCursorPosition() const {
   return model_->GetCursorPosition();
 }
 
-bool NativeTextfieldViews::HandleKeyPressed(const KeyEvent& e) {
+bool NativeTextfieldViews::HandleKeyPressed(const ui::KeyEvent& e) {
   TextfieldController* controller = textfield_->GetController();
   bool handled = false;
   if (controller)
@@ -530,7 +531,7 @@ bool NativeTextfieldViews::HandleKeyPressed(const KeyEvent& e) {
   return handled || HandleKeyEvent(e);
 }
 
-bool NativeTextfieldViews::HandleKeyReleased(const KeyEvent& e) {
+bool NativeTextfieldViews::HandleKeyReleased(const ui::KeyEvent& e) {
   return false;  // crbug.com/127520
 }
 
@@ -916,7 +917,7 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
   canvas->Restore();
 }
 
-bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
+bool NativeTextfieldViews::HandleKeyEvent(const ui::KeyEvent& key_event) {
   // TODO(oshima): Refactor and consolidate with ExecuteCommand.
   if (key_event.type() == ui::ET_KEY_PRESSED) {
     ui::KeyboardCode key_code = key_event.key_code();

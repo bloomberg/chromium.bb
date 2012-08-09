@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/aura/window.h"
+#include "ui/base/event.h"
 #include "ui/views/widget/widget.h"
 
 using content::NativeWebKeyboardEvent;
@@ -13,8 +14,12 @@ using content::WebContents;
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const WebContents* contents,
-     const views::KeyEvent& key_event) {
-  return NativeWebKeyboardEvent(key_event.native_event());
+     const ui::KeyEvent& key_event) {
+  // NativeWebKeyboardEvent should take a const gfx::NativeEvent, which would
+  // prevent this casting.
+  ui::Event* ui_event =
+      static_cast<ui::Event*>(const_cast<ui::KeyEvent*>(&key_event));
+  return NativeWebKeyboardEvent(ui_event);
 }
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,

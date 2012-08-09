@@ -20,7 +20,7 @@ class TextfieldWithMargin : public views::Textfield {
  protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& e) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextfieldWithMargin);

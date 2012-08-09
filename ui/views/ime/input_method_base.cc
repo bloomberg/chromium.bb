@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/ime/text_input_client.h"
 #include "ui/views/ime/input_method_base.h"
+
+#include "ui/base/event.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -96,7 +98,7 @@ void InputMethodBase::OnInputMethodChanged() const {
     client->OnInputMethodChanged();
 }
 
-void InputMethodBase::DispatchKeyEventPostIME(const KeyEvent& key) const {
+void InputMethodBase::DispatchKeyEventPostIME(const ui::KeyEvent& key) const {
   if (delegate_)
     delegate_->DispatchKeyEventPostIME(key);
 }

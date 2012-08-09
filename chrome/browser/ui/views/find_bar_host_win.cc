@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/base/event.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/widget.h"
 
@@ -17,7 +18,7 @@ void FindBarHost::AudibleAlert() {
 }
 
 bool FindBarHost::ShouldForwardKeyEventToWebpageNative(
-    const views::KeyEvent& key_event) {
+    const ui::KeyEvent& key_event) {
   // We specifically ignore WM_CHAR. See http://crbug.com/10509.
   return key_event.native_event().message == WM_KEYDOWN ||
          key_event.native_event().message == WM_KEYUP;

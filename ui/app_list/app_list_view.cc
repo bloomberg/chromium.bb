@@ -12,6 +12,7 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_view.h"
+#include "ui/base/event.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -129,7 +130,7 @@ void AppListView::GetHitTestMask(gfx::Path* mask) const {
   bubble_border_->GetMask(GetBubbleFrameView()->bounds(), mask);
 }
 
-bool AppListView::OnKeyPressed(const views::KeyEvent& event) {
+bool AppListView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_ESCAPE) {
     Close();
     return true;
