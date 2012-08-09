@@ -115,6 +115,37 @@ class PortAllocatorTest(unittest.TestCase):
     self.assertEquals(set(self._pa._ports.keys()), set([
         cns._DEFAULT_CNS_PORT_RANGE[0], cns._DEFAULT_CNS_PORT_RANGE[0] + 1]))
 
+  def testPortAllocatorCleanMatchingIP(self):
+    # Setup PortAllocator w/o port expiration.
+    self._pa = cns.PortAllocator(cns._DEFAULT_CNS_PORT_RANGE, 0)
+
+    # Ensure Get() succeeds and returns the correct port.
+    self.assertEquals(self._pa.Get('ip1', t=1), cns._DEFAULT_CNS_PORT_RANGE[0])
+    self.assertEquals(self._pa.Get('ip1', t=2),
+                      cns._DEFAULT_CNS_PORT_RANGE[0] + 1)
+    self.assertEquals(self._pa.Get('ip1', t=3),
+                      cns._DEFAULT_CNS_PORT_RANGE[0] + 2)
+    self.assertEquals(self._pa.Get('ip2', t=1),
+                      cns._DEFAULT_CNS_PORT_RANGE[0] + 3)
+
+    self._pa.Cleanup(all_ports=False, request_ip='ip1')
+
+    self.assertEquals(self._pa._ports.keys(),
+                      [cns._DEFAULT_CNS_PORT_RANGE[0] + 3])
+    self.assertEquals(self._pa.Get('ip2'), cns._DEFAULT_CNS_PORT_RANGE[0])
+    self.assertEquals(self._pa.Get('ip1'), cns._DEFAULT_CNS_PORT_RANGE[0] + 1)
+
+    self._pa.Cleanup(all_ports=False, request_ip='ip2')
+    self.assertEquals(self._pa._ports.keys(),
+                      [cns._DEFAULT_CNS_PORT_RANGE[0] + 1])
+
+    self._pa.Cleanup(all_ports=False, request_ip='abc')
+    self.assertEquals(self._pa._ports.keys(),
+                      [cns._DEFAULT_CNS_PORT_RANGE[0] + 1])
+
+    self._pa.Cleanup(all_ports=False, request_ip='ip1')
+    self.assertEquals(self._pa._ports.keys(), [])
+
 
 class ConstrainedNetworkServerTest(unittest.TestCase):
   """End to end tests for ConstrainedNetworkServer system."""

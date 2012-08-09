@@ -129,7 +129,7 @@ class PortAllocator(object):
       cherrypy.log('Error: %s\nOutput: %s' % (e.msg, e.error))
       return False
 
-  def Cleanup(self, all_ports):
+  def Cleanup(self, all_ports, request_ip=None):
     """Cleans up expired ports, or if all_ports=True, all allocated ports.
 
     By default, ports which haven't been used for self._expiry_time_secs are
@@ -137,13 +137,15 @@ class PortAllocator(object):
 
     Args:
       all_ports: Should all ports be torn down regardless of expiration?
+      request_ip: Tear ports matching the IP address regarless of expiration.
     """
     with self._port_lock:
       now = time.time()
       # Use .items() instead of .iteritems() so we can delete keys w/o error.
       for port, status in self._ports.items():
         expired = now - status['last_update'] > self._expiry_time_secs
-        if all_ports or expired:
+        matching_ip = request_ip and status['key'][0].startswith(request_ip)
+        if all_ports or expired or matching_ip:
           cherrypy.log('Cleaning up port %d' % port)
           self._DeletePort(port)
           del self._ports[port]
@@ -172,6 +174,19 @@ class ConstrainedNetworkServer(object):
     """
     self._options = options
     self._port_allocator = port_allocator
+
+  @cherrypy.expose
+  def Cleanup(self):
+    """Cleans up all the ports allocated using the request IP address.
+
+    When requesting a constrained port, the cherrypy.request.remote.ip is used
+    as a key for that port (in addition to other request parameters).  Such
+    ports created for the same IP address are removed.
+    """
+    cherrypy.log('Cleaning up ports allocated by %s.' %
+                 cherrypy.request.remote.ip)
+    self._port_allocator.Cleanup(all_ports=False,
+                                 request_ip=cherrypy.request.remote.ip)
 
   @cherrypy.expose
   def ServeConstrained(self, f=None, bandwidth=None, latency=None, loss=None,
