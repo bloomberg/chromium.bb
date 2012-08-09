@@ -49,7 +49,7 @@ def ArgToList(opt):
   outlist = []
   optlist = RemoveQuotes(opt).split(' ')
   for optitem in optlist:
-    optitem = RemoveQuotes(optitem)
+    optitem = RemoveQuotes(optitem).replace('\\"', '"')
     if optitem:
       outlist.append(optitem)
   return outlist
