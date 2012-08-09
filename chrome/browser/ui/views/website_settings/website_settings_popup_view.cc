@@ -134,6 +134,21 @@ class PopupHeaderView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(PopupHeaderView);
 };
 
+// Website Settings are not supported for internal Chrome pages. Instead of the
+// |WebsiteSettingsPopupView|, the |InternalPageInfoPopupView| is
+// displayed.
+class InternalPageInfoPopupView : public views::BubbleDelegateView {
+ public:
+  explicit InternalPageInfoPopupView(views::View* anchor_view);
+  virtual ~InternalPageInfoPopupView();
+
+ private:
+  // views::BubbleDelegate implementations.
+  virtual gfx::Rect GetAnchorRect() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Popup Header
 ////////////////////////////////////////////////////////////////////////////////
@@ -207,9 +222,46 @@ void PopupHeaderView::SetIdentityStatus(const string16& status,
   status_->SetEnabledColor(text_color);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// InternalPageInfoPopupView
+////////////////////////////////////////////////////////////////////////////////
+
+InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
+  const int kSpacing = 4;
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
+                                        kSpacing, kSpacing));
+  views::ImageView* icon_view = new views::ImageView();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  icon_view->SetImage(rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_26));
+  AddChildView(icon_view);
+
+  string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
+  views::Label* label = new views::Label(text);
+  label->SetMultiLine(true);
+  label->SetAllowCharacterBreak(true);
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  AddChildView(label);
+
+  views::BubbleDelegateView::CreateBubble(this);
+  Show();
+  SizeToContents();
+}
+
+InternalPageInfoPopupView::~InternalPageInfoPopupView() {
+}
+
+gfx::Rect InternalPageInfoPopupView::GetAnchorRect() {
+  // Compensate for some built-in padding in the icon. This will make the arrow
+  // point to the middle of the icon.
+  gfx::Rect anchor(BubbleDelegateView::GetAnchorRect());
+  anchor.Inset(0, anchor_view() ? kLocationIconBottomMargin : 0);
+  return anchor;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // WebsiteSettingsPopupView
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 WebsiteSettingsPopupView::~WebsiteSettingsPopupView() {
 }
@@ -220,7 +272,10 @@ void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
                                          TabContents* tab_contents,
                                          const GURL& url,
                                          const content::SSLStatus& ssl) {
-  new WebsiteSettingsPopupView(anchor_view, profile, tab_contents, url, ssl);
+  if (InternalChromePage(url))
+    new InternalPageInfoPopupView(anchor_view);
+  else
+    new WebsiteSettingsPopupView(anchor_view, profile, tab_contents, url, ssl);
 }
 
 WebsiteSettingsPopupView::WebsiteSettingsPopupView(
@@ -241,47 +296,6 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       cert_id_(0),
       connection_info_content_(NULL),
       page_info_content_(NULL) {
-  if (InternalChromePage(url)) {
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
-    views::ColumnSet* column_set = layout->AddColumnSet(0);
-    column_set->AddColumn(views::GridLayout::FILL,
-                          views::GridLayout::FILL,
-                          0,  // Resize weight.
-                          views::GridLayout::USE_PREF,
-                          0,
-                          0);
-    column_set->AddPaddingColumn(0, kIconMarginLeft);
-    column_set->AddColumn(views::GridLayout::FILL,
-                          views::GridLayout::FILL,
-                          1,
-                          views::GridLayout::USE_PREF,
-                          0,
-                          0);
-
-    layout->StartRow(1, 0);
-
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::Image& icon = rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_26);
-    views::ImageView* icon_view = new views::ImageView();
-    icon_view->SetImage(icon.ToImageSkia());
-    layout->AddView(icon_view, 1, 1, views::GridLayout::LEADING,
-                    views::GridLayout::LEADING);
-
-    string16 text = l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_INTERNAL_PAGE);
-    views::Label* label = new views::Label(text);
-    label->SetMultiLine(true);
-    label->SetAllowCharacterBreak(true);
-    label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    layout->AddView(label, 1, 1, views::GridLayout::LEADING,
-                    views::GridLayout::CENTER);
-
-    views::BubbleDelegateView::CreateBubble(this);
-    Show();
-    SizeToContents();
-  } else {
-    // Non internal chrome page.
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
     const int content_column = 0;
@@ -328,14 +342,11 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
                                          url,
                                          ssl,
                                          content::CertStore::GetInstance()));
-  }
 }
 
 void WebsiteSettingsPopupView::OnPermissionChanged(
     PermissionSelectorView* permission_selector) {
   DCHECK(permission_selector);
-  // It's not necessary to check that the |presenter_| is not NULL since for
-  // internal chrome pages OnPermissionChanged can't be called.
   presenter_->OnSitePermissionChanged(
       permission_selector->GetPermissionType(),
       permission_selector->GetSelectedSetting());
@@ -350,8 +361,7 @@ gfx::Rect WebsiteSettingsPopupView::GetAnchorRect() {
 }
 
 void WebsiteSettingsPopupView::OnWidgetClosing(views::Widget* widget) {
-  if (presenter_.get())
-    presenter_->OnUIClosing();
+  presenter_->OnUIClosing();
 }
 
 void WebsiteSettingsPopupView::ButtonPressed(
