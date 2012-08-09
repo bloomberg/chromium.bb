@@ -190,7 +190,7 @@ void ContentSettingBubbleContents::Init() {
 
       views::Link* link = new views::Link(UTF8ToUTF16(i->title));
       link->set_listener(this);
-      link->SetElideInMiddle(true);
+      link->SetElideBehavior(views::Label::ELIDE_IN_MIDDLE);
       popup_links_[link] = i - bubble_content.popup_items.begin();
       layout->AddView(new Favicon(i->bitmap, this, link));
       layout->AddView(link);

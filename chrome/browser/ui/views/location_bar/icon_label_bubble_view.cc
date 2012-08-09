@@ -86,7 +86,8 @@ void IconLabelBubbleView::Layout() {
 }
 
 void IconLabelBubbleView::SetElideInMiddle(bool elide_in_middle) {
-  label_->SetElideInMiddle(elide_in_middle);
+  label_->SetElideBehavior(
+      elide_in_middle ? views::Label::ELIDE_IN_MIDDLE : views::Label::NO_ELIDE);
 }
 
 gfx::Size IconLabelBubbleView::GetNonLabelSize() const {

@@ -31,7 +31,7 @@ const int kTooltipTopBottomMargin = 3;
 const int kTooltipLeftRightMargin = 10;
 const int kTooltipAppearanceDelay = 200;  // msec
 const int kTooltipMinHeight = 29 - 2 * kTooltipTopBottomMargin;
-const SkColor kTooltipTextColor = SkColorSetRGB(22, 22, 22);
+const SkColor kTooltipTextColor = SkColorSetRGB(0x22, 0x22, 0x22);
 
 // The maximum width of the tooltip bubble.  Borrowed the value from
 // ash/tooltip/tooltip_controller.cc
@@ -109,6 +109,7 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   label_ = new views::Label;
   label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label_->SetEnabledColor(kTooltipTextColor);
+  label_->SetElideBehavior(views::Label::ELIDE_AT_END);
   AddChildView(label_);
   views::BubbleDelegateView::CreateBubble(this);
   bubble_border_ = new views::BubbleBorder2(views::BubbleBorder::BOTTOM_RIGHT);

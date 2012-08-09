@@ -114,7 +114,7 @@ void Label::SetHorizontalAlignment(Alignment alignment) {
 }
 
 void Label::SetMultiLine(bool multi_line) {
-  DCHECK(!multi_line || !elide_in_middle_);
+  DCHECK(!multi_line || elide_behavior_ != ELIDE_IN_MIDDLE);
   if (multi_line != is_multi_line_) {
     is_multi_line_ = multi_line;
     text_size_valid_ = false;
@@ -132,10 +132,10 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
   }
 }
 
-void Label::SetElideInMiddle(bool elide_in_middle) {
-  DCHECK(!elide_in_middle || !is_multi_line_);
-  if (elide_in_middle != elide_in_middle_) {
-    elide_in_middle_ = elide_in_middle;
+void Label::SetElideBehavior(ElideBehavior elide_behavior) {
+  DCHECK(elide_behavior != ELIDE_IN_MIDDLE || !is_multi_line_);
+  if (elide_behavior != elide_behavior_) {
+    elide_behavior_ = elide_behavior;
     text_size_valid_ = false;
     is_email_ = false;
     PreferredSizeChanged();
@@ -359,7 +359,7 @@ void Label::Init(const string16& text, const gfx::Font& font) {
   horiz_alignment_ = ALIGN_CENTER;
   is_multi_line_ = false;
   allow_character_break_ = false;
-  elide_in_middle_ = false;
+  elide_behavior_ = NO_ELIDE;
   is_email_ = false;
   collapse_when_hidden_ = false;
   directionality_mode_ = USE_UI_DIRECTIONALITY;
@@ -485,9 +485,12 @@ void Label::CalculateDrawStringParams(string16* paint_text,
 
   if (is_email_) {
     *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
-  } else if (elide_in_middle_) {
+  } else if (elide_behavior_ == ELIDE_IN_MIDDLE) {
     *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
                                 ui::ELIDE_IN_MIDDLE);
+  } else if (elide_behavior_ == ELIDE_AT_END) {
+    *paint_text = ui::ElideText(text_, font_, GetAvailableRect().width(),
+                                ui::ELIDE_AT_END);
   } else {
     *paint_text = text_;
   }

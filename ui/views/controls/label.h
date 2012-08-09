@@ -44,6 +44,12 @@ class VIEWS_EXPORT Label : public View {
     AUTO_DETECT_DIRECTIONALITY
   };
 
+  enum ElideBehavior {
+    NO_ELIDE,
+    ELIDE_IN_MIDDLE,
+    ELIDE_AT_END,
+  };
+
   // The view class name.
   static const char kViewClassName[];
 
@@ -130,10 +136,10 @@ class VIEWS_EXPORT Label : public View {
   // Default is false. This only works when is_multi_line is true.
   void SetAllowCharacterBreak(bool allow_character_break);
 
-  // Sets whether the label text should be elided in the middle (if necessary).
-  // The default is to elide at the end.
-  // NOTE: This is not supported for multi-line strings.
-  void SetElideInMiddle(bool elide_in_middle);
+  // Sets whether the label text should be elided in the middle or end (if
+  // necessary). The default is to not elide at all.
+  // NOTE: Eliding in the middle is not supported for multi-line strings.
+  void SetElideBehavior(ElideBehavior elide_behavior);
 
   // Sets the tooltip text.  Default behavior for a label (single-line) is to
   // show the full text if it is wider than its bounds.  Calling this overrides
@@ -265,7 +271,7 @@ class VIEWS_EXPORT Label : public View {
   mutable bool text_size_valid_;
   bool is_multi_line_;
   bool allow_character_break_;
-  bool elide_in_middle_;
+  ElideBehavior elide_behavior_;
   bool is_email_;
   Alignment horiz_alignment_;
   string16 tooltip_text_;
