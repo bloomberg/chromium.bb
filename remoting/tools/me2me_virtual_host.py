@@ -74,12 +74,62 @@ os.environ["XAUTHORITY"] = X_AUTH_FILE
 g_desktops = []
 g_pidfile = None
 
+class Config:
+  def __init__(self, path):
+    self.path = path
+    self.data = {}
+    self.changed = False
+
+  def load(self):
+    try:
+      settings_file = open(self.path, 'r')
+      self.data = json.load(settings_file)
+      self.changed = False
+      settings_file.close()
+    except:
+      return False
+    return True
+
+  def save(self):
+    if not self.changed:
+      return True
+    try:
+      old_umask = os.umask(0066)
+      settings_file = open(self.path, 'w')
+      settings_file.write(json.dumps(self.data, indent=2))
+      settings_file.close()
+      os.umask(old_umask)
+    except:
+      return False
+    self.changed = False
+    return True
+
+  def get(self, key):
+    return self.data.get(key)
+
+  def __getitem__(self, key):
+    return self.data[key]
+
+  def __setitem__(self, key, value):
+    self.data[key] = value
+    self.changed = True
+
+  def clear_auth(self):
+    del self.data["xmpp_login"]
+    del self.data["chromoting_auth_token"]
+    del self.data["xmpp_auth_token"]
+
+  def clear_host_info(self):
+    del self.data["host_id"]
+    del self.data["host_name"]
+    del self.data["host_secret_hash"]
+    del self.data["private_key"]
 
 class Authentication:
   """Manage authentication tokens for Chromoting/xmpp"""
 
-  def __init__(self, config_file):
-    self.config_file = config_file
+  def __init__(self):
+    pass
 
   def generate_tokens(self):
     """Prompt for username/password and use them to generate new authentication
@@ -100,31 +150,19 @@ class Authentication:
     self.xmpp_auth_token = xmpp_authenticator.authenticate(self.login,
                                                            password)
 
-  def load_config(self):
+  def load_config(self, config):
     try:
-      settings_file = open(self.config_file, 'r')
-      data = json.load(settings_file)
-      settings_file.close()
-      self.login = data["xmpp_login"]
-      self.chromoting_auth_token = data["chromoting_auth_token"]
-      self.xmpp_auth_token = data["xmpp_auth_token"]
-    except:
+      self.login = config["xmpp_login"]
+      self.chromoting_auth_token = config["chromoting_auth_token"]
+      self.xmpp_auth_token = config["xmpp_auth_token"]
+    except KeyError:
       return False
     return True
 
-  def save_config(self):
-    data = {
-        "xmpp_login": self.login,
-        "chromoting_auth_token": self.chromoting_auth_token,
-        "xmpp_auth_token": self.xmpp_auth_token,
-    }
-    # File will contain private keys, so deny read/write access to others.
-    old_umask = os.umask(0066)
-    settings_file = open(self.config_file, 'w')
-    settings_file.write(json.dumps(data, indent=2))
-    settings_file.close()
-    os.umask(old_umask)
-
+  def save_config(self, config):
+    config["xmpp_login"] = self.login
+    config["chromoting_auth_token"] = self.chromoting_auth_token
+    config["xmpp_auth_token"] = self.xmpp_auth_token
 
 class Host:
   """This manages the configuration for a host.
@@ -145,14 +183,13 @@ class Host:
   server = 'www.googleapis.com'
   url = 'https://' + server + '/chromoting/v1/@me/hosts'
 
-  def __init__(self, config_file, auth):
+  def __init__(self, auth):
     """
     Args:
-      config_file: Host configuration file path
+      config: Host configuration object
       auth: Authentication object with credentials for authenticating with the
         Directory service.
     """
-    self.config_file = config_file
     self.auth = auth
     self.host_id = str(uuid.uuid1())
     self.host_name = socket.gethostname()
@@ -222,36 +259,21 @@ class Host:
   def is_pin_set(self):
     return self.host_secret_hash
 
-  def load_config(self):
+  def load_config(self, config):
     try:
-      settings_file = open(self.config_file, 'r')
-      data = json.load(settings_file)
-      settings_file.close()
-    except:
-      logging.info("Failed to load: " + self.config_file)
+      self.host_id = config["host_id"]
+      self.host_name = config["host_name"]
+      self.host_secret_hash = config.get("host_secret_hash")
+      self.private_key = config["private_key"]
+    except KeyError:
       return False
-    self.host_id = data["host_id"]
-    self.host_name = data["host_name"]
-    self.host_secret_hash = data.get("host_secret_hash")
-    self.private_key = data["private_key"]
     return True
 
-  def save_config(self):
-    data = {
-        "host_id": self.host_id,
-        "host_name": self.host_name,
-        "host_secret_hash": self.host_secret_hash,
-        "private_key": self.private_key,
-    }
-    if self.host_secret_hash:
-      data["host_secret_hash"] = self.host_secret_hash
-
-    old_umask = os.umask(0066)
-    settings_file = open(self.config_file, 'w')
-    settings_file.write(json.dumps(data, indent=2))
-    settings_file.close()
-    os.umask(old_umask)
-
+  def save_config(self, config):
+    config["host_id"] = self.host_id
+    config["host_name"] = self.host_name
+    config["host_secret_hash"] = self.host_secret_hash
+    config["private_key"] = self.private_key
 
 class Desktop:
   """Manage a single virtual desktop"""
@@ -380,12 +402,10 @@ class Desktop:
     if not self.session_proc.pid:
       raise Exception("Could not start X session")
 
-  def launch_host(self, host):
+  def launch_host(self, host_config):
     # Start remoting host
     args = [locate_executable(REMOTING_COMMAND),
-            "--host-config=%s" % (host.config_file)]
-    if host.auth.config_file != host.config_file:
-      args.append("--auth-config=%s" % (host.auth.config_file))
+            "--host-config=%s" % (host_config.path)]
     self.host_proc = subprocess.Popen(args, env=self.child_env)
     logging.info(args)
     if not self.host_proc.pid:
@@ -702,21 +722,25 @@ def main():
   if not os.path.exists(CONFIG_DIR):
     os.makedirs(CONFIG_DIR, mode=0700)
 
-  host_config_file = os.path.join(CONFIG_DIR, "host#%s.json" % host_hash)
+  host_config = Config(os.path.join(CONFIG_DIR, "host#%s.json" % host_hash))
+  host_config.load()
 
-  # --silent option is specified when we are started from WebApp UI. Don't use
-  # separate auth file in that case.
-  # TODO(sergeyu): Always use host config for auth parameters.
-  if options.silent:
-    auth_config_file = host_config_file
-  else:
-    auth_config_file = os.path.join(CONFIG_DIR, "auth.json")
+  auth = Authentication()
+  auth_config_loaded = auth.load_config(host_config)
+  if not auth_config_loaded and not options.silent:
+    # If we failed to load authentication parameters from the host config
+    # then try loading them from the legacy auth.json file.
+    auth_config = Config(os.path.join(CONFIG_DIR, "auth.json"))
+    if auth_config.load():
+      auth_config_loaded = auth.load_config(auth_config)
+      # If we were able to read auth.json then copy its content to the host
+      # config.
+      if auth_config_loaded:
+        auth.save_config(host_config)
+        host_config.save()
 
-  auth = Authentication(auth_config_file)
-  auth_config_loaded = auth.load_config()
-
-  host = Host(host_config_file, auth)
-  host_config_loaded = host.load_config()
+  host = Host(auth)
+  host_config_loaded = host.load_config(host_config)
 
   if options.silent:
     if not host_config_loaded or not auth_config_loaded:
@@ -730,7 +754,7 @@ def main():
       host.ask_pin()
     elif options.new_pin or not host.is_pin_set():
       host.ask_pin()
-      host.save_config()
+      host.save_config(host_config)
       running, pid = PidFile(pid_filename).check()
       if running and pid != 0:
         os.kill(pid, signal.SIGUSR1)
@@ -741,32 +765,40 @@ def main():
     # previously-saved auth tokens (from a previous run of this script), which
     # may require re-prompting for username & password.
     while True:
-      try:
-        if need_auth_tokens:
+      if need_auth_tokens:
+        try:
           auth.generate_tokens()
-          auth.save_config()
           need_auth_tokens = False
-      except Exception:
-        logging.error("Authentication failed")
-        return 1
-
-      try:
-        if need_register_host:
-          host.register()
-          host.save_config()
-      except urllib2.HTTPError, err:
-        if err.getcode() == 401:
-          # Authentication failed - re-prompt for username & password.
-          need_auth_tokens = True
-          continue
-        else:
-          # Not an authentication error.
-          logging.error("Directory returned error: " + str(err))
-          logging.error(err.read())
+        except Exception:
+          logging.error("Authentication failed")
           return 1
+        # Save the new auth tokens.
+        auth.save_config(host_config)
+        if not host_config.save():
+          logging.error("Failed to save host configuration.")
+          return 1
+
+      if need_register_host:
+        try:
+          host.register()
+          host.save_config(host_config)
+        except urllib2.HTTPError, err:
+          if err.getcode() == 401:
+            # Authentication failed - re-prompt for username & password.
+            need_auth_tokens = True
+            continue
+          else:
+            # Not an authentication error.
+            logging.error("Directory returned error: " + str(err))
+            logging.error(err.read())
+            return 1
 
       # |auth| and |host| are both set up, so break out of the loop.
       break
+
+    if not host_config.save():
+      logging.error("Failed to save host configuration.")
+      return 1
 
   global g_pidfile
   g_pidfile = PidFile(pid_filename)
@@ -829,7 +861,7 @@ def main():
 
     if desktop.host_proc is None:
       logging.info("Launching host process")
-      desktop.launch_host(host)
+      desktop.launch_host(host_config)
 
     try:
       pid, status = os.wait()
@@ -866,25 +898,19 @@ def main():
       # will be created and registered.
       if os.WEXITSTATUS(status) == 2:
         logging.info("Host configuration is invalid - exiting.")
-        try:
-          os.remove(host.config_file)
-          os.remove(auth.config_file)
-        except:
-          pass
+        host_config.clear_auth()
+        host_config.clear_host_info()
+        host_config.save()
         return 0
       elif os.WEXITSTATUS(status) == 3:
         logging.info("Host ID has been deleted - exiting.")
-        try:
-          os.remove(host.config_file)
-        except:
-          pass
+        host_config.clear_host_info()
+        host_config.save()
         return 0
       elif os.WEXITSTATUS(status) == 4:
         logging.info("OAuth credentials are invalid - exiting.")
-        try:
-          os.remove(auth.config_file)
-        except:
-          pass
+        host_config.clear_auth()
+        host_config.save()
         return 0
       elif os.WEXITSTATUS(status) == 5:
         logging.info("Host domain is blocked by policy - exiting.")
