@@ -103,7 +103,12 @@ class PipelineTest : public ::testing::Test {
     }
 
     // Shutdown sequence.
-    if (pipeline_->IsInitialized()) {
+    //
+    // TODO(scherkus): This check is required because in certain teardown
+    // cases the pipeline is still "running" but has already stopped due to
+    // errors. In an ideal world we stop running when we teardown, but that
+    // requires cleaning up shutdown path, see http://crbug.com/110228
+    if (pipeline_->IsInitializedForTesting()) {
       EXPECT_CALL(*mocks_->demuxer(), Stop(_))
           .WillOnce(RunClosure());
 
@@ -319,7 +324,6 @@ TEST_F(PipelineTest, NotStarted) {
   const base::TimeDelta kZero;
 
   EXPECT_FALSE(pipeline_->IsRunning());
-  EXPECT_FALSE(pipeline_->IsInitialized());
   EXPECT_FALSE(pipeline_->HasAudio());
   EXPECT_FALSE(pipeline_->HasVideo());
 
@@ -366,7 +370,6 @@ TEST_F(PipelineTest, NeverInitializes) {
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
 
-  EXPECT_FALSE(pipeline_->IsInitialized());
 
   // Because our callback will get executed when the test tears down, we'll
   // verify that nothing has been called, then set our expectation for the call
@@ -387,7 +390,6 @@ TEST_F(PipelineTest, RequiredFilterMissing) {
       base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
       base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
-  EXPECT_FALSE(pipeline_->IsInitialized());
 }
 
 TEST_F(PipelineTest, URLNotFound) {
@@ -397,7 +399,6 @@ TEST_F(PipelineTest, URLNotFound) {
       .WillOnce(RunClosure());
 
   InitializePipeline(PIPELINE_ERROR_URL_NOT_FOUND);
-  EXPECT_FALSE(pipeline_->IsInitialized());
 }
 
 TEST_F(PipelineTest, NoStreams) {
@@ -407,7 +408,6 @@ TEST_F(PipelineTest, NoStreams) {
       .WillOnce(RunClosure());
 
   InitializePipeline(PIPELINE_ERROR_COULD_NOT_RENDER);
-  EXPECT_FALSE(pipeline_->IsInitialized());
 }
 
 TEST_F(PipelineTest, AudioStream) {
@@ -420,7 +420,6 @@ TEST_F(PipelineTest, AudioStream) {
   InitializeAudioRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_TRUE(pipeline_->HasAudio());
   EXPECT_FALSE(pipeline_->HasVideo());
 }
@@ -435,7 +434,6 @@ TEST_F(PipelineTest, VideoStream) {
   InitializeVideoRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_FALSE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 }
@@ -454,7 +452,6 @@ TEST_F(PipelineTest, AudioVideoStream) {
   InitializeVideoRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_TRUE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 }
@@ -510,7 +507,6 @@ TEST_F(PipelineTest, Properties) {
   InitializeVideoRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_EQ(kDuration.ToInternalValue(),
             pipeline_->GetMediaDuration().ToInternalValue());
   EXPECT_EQ(kTotalBytes, pipeline_->GetTotalBytes());
@@ -528,7 +524,6 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   InitializeVideoRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
 
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
 
@@ -584,7 +579,6 @@ TEST_F(PipelineTest, DisableAudioRenderer) {
   InitializeVideoRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_TRUE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 
@@ -613,7 +607,6 @@ TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
               OnAudioRendererDisabled());
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_FALSE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 
@@ -808,7 +801,6 @@ TEST_F(PipelineTest, StartTimeIsZero) {
   InitializeVideoRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_FALSE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 
@@ -831,7 +823,6 @@ TEST_F(PipelineTest, StartTimeIsNonZero) {
   InitializeVideoRenderer();
 
   InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(pipeline_->IsInitialized());
   EXPECT_FALSE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 
@@ -905,7 +896,6 @@ TEST_F(PipelineTest, InitFailure_Demuxer) {
   EXPECT_CALL(*mocks_->demuxer(), Stop(_))
       .WillOnce(RunClosure());
   InitializePipeline(expected_status);
-  EXPECT_FALSE(pipeline_->IsInitialized());
 }
 
 TEST_F(PipelineTest, InitFailure_AudioDecoder) {
@@ -924,7 +914,6 @@ TEST_F(PipelineTest, InitFailure_AudioDecoder) {
       .WillOnce(RunClosure());
 
   InitializePipeline(expected_status);
-  EXPECT_FALSE(pipeline_->IsInitialized());
   EXPECT_FALSE(pipeline_->HasAudio());
 }
 
@@ -948,7 +937,6 @@ TEST_F(PipelineTest, InitFailure_AudioRenderer) {
       .WillOnce(RunClosure());
 
   InitializePipeline(expected_status);
-  EXPECT_FALSE(pipeline_->IsInitialized());
   EXPECT_TRUE(pipeline_->HasAudio());
 }
 
@@ -975,7 +963,6 @@ TEST_F(PipelineTest, InitFailure_VideoDecoder) {
       .WillOnce(RunClosure());
 
   InitializePipeline(expected_status);
-  EXPECT_FALSE(pipeline_->IsInitialized());
   EXPECT_TRUE(pipeline_->HasAudio());
   EXPECT_FALSE(pipeline_->HasVideo());
 }
@@ -1006,7 +993,6 @@ TEST_F(PipelineTest, InitFailure_VideoRenderer) {
       .WillOnce(RunClosure());
 
   InitializePipeline(expected_status);
-  EXPECT_FALSE(pipeline_->IsInitialized());
   EXPECT_TRUE(pipeline_->HasAudio());
   EXPECT_TRUE(pipeline_->HasVideo());
 }
