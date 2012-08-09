@@ -7,7 +7,6 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -57,45 +56,28 @@ SkBitmap NSImageOrNSImageRepToSkBitmap(
   // Something went really wrong. Best guess is that the bitmap data is invalid.
   DCHECK(context);
 
-  // Save the current graphics context so that we can restore it later.
-  NSGraphicsContext* old_context = [NSGraphicsContext currentContext];
   [NSGraphicsContext saveGraphicsState];
 
-  // Dummy context that we will draw into.
   NSGraphicsContext* context_cocoa =
       [NSGraphicsContext graphicsContextWithGraphicsPort:context flipped:NO];
   [NSGraphicsContext setCurrentContext:context_cocoa];
 
-  // This will stretch any images to |size| if it does not fit or is non-square.
   NSRect drawRect = NSMakeRect(0, 0, size.width, size.height);
-
-  // NSImage does caching such that subsequent drawing is much faster (on my
-  // machine, about 4x faster). Unfortunately on 10.5 NSImageRep doesn't do
-  // caching. For this reason we draw using an NSImage if available. Once
-  // 10.5 is no longer supported we can drop this and always use NSImageRep.
   if (image) {
     [image drawInRect:drawRect
              fromRect:NSZeroRect
             operation:NSCompositeCopy
              fraction:1.0];
   } else {
-    // Use NSCompositeCopy if available, it's slightly faster.
-    if ([image_rep respondsToSelector:@selector(
-        drawInRect:fromRect:operation:fraction:respectFlipped:hints:)]) {
-      [image_rep drawInRect:drawRect
-                   fromRect:NSZeroRect
-                  operation:NSCompositeCopy
-                   fraction:1.0
-             respectFlipped:NO
-                      hints:NO];
-    } else {
-      [image_rep drawInRect:drawRect];
-    }
+    [image_rep drawInRect:drawRect
+                 fromRect:NSZeroRect
+                operation:NSCompositeCopy
+                 fraction:1.0
+           respectFlipped:NO
+                    hints:NO];
   }
 
   [NSGraphicsContext restoreGraphicsState];
-  if (!old_context && base::mac::IsOSLeopardOrEarlier())
-    [NSGraphicsContext setCurrentContext:nil];
 
   return bitmap;
 }
@@ -224,8 +206,9 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
   return NSImageOrNSImageRepToSkBitmap(image, nil, size, is_opaque);
 }
 
-SkBitmap NSImageRepToSkBitmap(NSImageRep* image, NSSize size, bool is_opaque) {
-  return NSImageOrNSImageRepToSkBitmap(nil, image, size, is_opaque);
+SkBitmap NSImageRepToSkBitmap(
+    NSImageRep* image_rep, NSSize size, bool is_opaque) {
+  return NSImageOrNSImageRepToSkBitmap(nil, image_rep, size, is_opaque);
 }
 
 NSBitmapImageRep* SkBitmapToNSBitmapImageRep(const SkBitmap& skiaBitmap) {

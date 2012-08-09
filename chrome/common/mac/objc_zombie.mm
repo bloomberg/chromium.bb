@@ -4,12 +4,15 @@
 
 #import "chrome/common/mac/objc_zombie.h"
 
+#include <AvailabilityMacros.h>
+
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <mach-o/dyld.h>
 #include <mach-o/nlist.h>
 
 #import <objc/objc-class.h>
+#import <objc/runtime.h>
 
 #include <algorithm>
 
@@ -21,6 +24,12 @@
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
 #import "chrome/common/mac/objc_method_swizzle.h"
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
+// Apparently objc/runtime.h doesn't define this with the 10.6 SDK yet.
+// The docs say it exists since 10.6 however.
+OBJC_EXPORT void *objc_destructInstance(id obj);
+#endif
 
 // Deallocated objects are re-classed as |CrZombie|.  No superclass
 // because then the class would have to override many/most of the
@@ -51,16 +60,6 @@ namespace {
 // trace is hex-encoded with "0x" prefix and " " separators, meaning
 // the maximum number of 32-bit items which can be encoded is 23.
 const size_t kBacktraceDepth = 20;
-
-// Function which destroys the contents of an object without freeing
-// the object.  On 10.5 this is |object_cxxDestruct()|, which
-// traverses the class hierarchy to run the C++ destructors.  On 10.6
-// this is |objc_destructInstance()| which calls
-// |object_cxxDestruct()| and removes associative references.
-// |objc_destructInstance()| returns |void*| but pretending it has no
-// return value makes the code simpler.
-typedef void DestructFn(id obj);
-DestructFn* g_objectDestruct = NULL;
 
 // The original implementation for |-[NSObject dealloc]|.
 IMP g_originalDeallocIMP = NULL;
@@ -105,60 +104,6 @@ const char* LookupObjcRuntimePath() {
   return NULL;
 }
 
-// Lookup |objc_destructInstance()| dynamically because it isn't
-// available on 10.5, but we link with the 10.5 SDK.
-DestructFn* LookupObjectDestruct_10_6() {
-  const char* objc_runtime_path = LookupObjcRuntimePath();
-  if (!objc_runtime_path)
-    return NULL;
-
-  void* handle = dlopen(objc_runtime_path, RTLD_LAZY | RTLD_LOCAL);
-  if (!handle)
-    return NULL;
-
-  void* fn = dlsym(handle, "objc_destructInstance");
-
-  // |fn| would normally be expected to become invalid after this
-  // |dlclose()|, but since the |dlopen()| was on a library
-  // containing an already-mapped symbol, it will remain valid.
-  dlclose(handle);
-  return reinterpret_cast<DestructFn*>(fn);
-}
-
-// Under 10.5 |object_cxxDestruct()| is used but unfortunately it is
-// |__private_extern__| in the runtime, meaning |dlsym()| cannot reach it.
-DestructFn* LookupObjectDestruct_10_5() {
-  // |nlist()| is only present for 32-bit.
-#if ARCH_CPU_32_BITS
-  const char* objc_runtime_path = LookupObjcRuntimePath();
-  if (!objc_runtime_path)
-    return NULL;
-
-  struct nlist nl[3];
-  bzero(&nl, sizeof(nl));
-
-  nl[0].n_un.n_name = const_cast<char*>("_object_cxxDestruct");
-
-  // My ability to calculate the base for offsets is apparently poor.
-  // Use |class_addIvar| as a known reference point.
-  nl[1].n_un.n_name = const_cast<char*>("_class_addIvar");
-
-  if (nlist(objc_runtime_path, nl) < 0 ||
-      nl[0].n_type == N_UNDF || nl[1].n_type == N_UNDF)
-    return NULL;
-
-  // Back out offset to |class_addIvar()| to get the baseline, then
-  // add back offset to |object_cxxDestruct()|.
-  uintptr_t reference_addr = reinterpret_cast<uintptr_t>(&class_addIvar);
-  reference_addr -= nl[1].n_value;
-  reference_addr += nl[0].n_value;
-
-  return reinterpret_cast<DestructFn*>(reference_addr);
-#endif
-
-  return NULL;
-}
-
 // Replacement |-dealloc| which turns objects into zombies and places
 // them into |g_zombies| to be freed later.
 void ZombieDealloc(id self, SEL _cmd) {
@@ -172,16 +117,6 @@ void ZombieDealloc(id self, SEL _cmd) {
     return;
   }
 
-  // Use the original |-dealloc| if |g_objectDestruct| was never
-  // initialized, because otherwise C++ destructors won't be called.
-  // This case should be impossible, but doing it wrong would cause
-  // terrible problems.
-  DCHECK(g_objectDestruct);
-  if (!g_objectDestruct) {
-    g_originalDeallocIMP(self, _cmd);
-    return;
-  }
-
   Class wasa = object_getClass(self);
   const size_t size = class_getInstanceSize(wasa);
 
@@ -191,7 +126,7 @@ void ZombieDealloc(id self, SEL _cmd) {
   // zombie falls off the treadmill!  But by then |isa| will be a
   // class without C++ destructors or associative references, so it
   // won't hurt anything.
-  (*g_objectDestruct)(self);
+  objc_destructInstance(self);
   memset(self, '!', size);
 
   // If the instance is big enough, make it into a fat zombie and have
@@ -313,53 +248,11 @@ void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
   *zero = 0;
 }
 
-// For monitoring failures in |ZombieInit()|.
-enum ZombieFailure {
-  FAILED_10_5,
-  FAILED_10_6,
-
-  // Add new versions before here.
-  FAILED_MAX,
-};
-
-void RecordZombieFailure(ZombieFailure failure) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.ZombieInitFailure", failure, FAILED_MAX);
-}
-
 // Initialize our globals, returning YES on success.
 BOOL ZombieInit() {
   static BOOL initialized = NO;
   if (initialized)
     return YES;
-
-  // Whitelist releases that are compatible with objc zombies.
-  if (base::mac::IsOSLeopard()) {
-    g_objectDestruct = LookupObjectDestruct_10_5();
-    if (!g_objectDestruct) {
-      RecordZombieFailure(FAILED_10_5);
-      return NO;
-    }
-  } else if (base::mac::IsOSSnowLeopard()) {
-    g_objectDestruct = LookupObjectDestruct_10_6();
-    if (!g_objectDestruct) {
-      RecordZombieFailure(FAILED_10_6);
-      return NO;
-    }
-  } else if (base::mac::IsOSLionOrLater()) {
-    // Assume the future looks like the present.
-    g_objectDestruct = LookupObjectDestruct_10_6();
-
-    // Put all future failures into the MAX bin.  New OS releases come
-    // out infrequently enough that this should always correspond to
-    // "Next release", and once the next release happens that bin will
-    // get an official name.
-    if (!g_objectDestruct) {
-      RecordZombieFailure(FAILED_MAX);
-      return NO;
-    }
-  } else {
-    return NO;
-  }
 
   Class rootClass = [NSObject class];
   g_originalDeallocIMP =
@@ -369,8 +262,7 @@ BOOL ZombieInit() {
   g_fatZombieClass = objc_getClass("CrFatZombie");
   g_fatZombieSize = class_getInstanceSize(g_fatZombieClass);
 
-  if (!g_objectDestruct || !g_originalDeallocIMP ||
-      !g_zombieClass || !g_fatZombieClass)
+  if (!g_originalDeallocIMP || !g_zombieClass || !g_fatZombieClass)
     return NO;
 
   initialized = YES;

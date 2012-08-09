@@ -12,11 +12,6 @@ class PrefService;
 
 namespace chrome {
 
-#if defined(OS_MACOSX)
-// Registers the Mac-specific preference about when to show obsolete OS prompts.
-void RegisterObsoleteOSInfobarPrefs(PrefService* local_state);
-#endif
-
 // Shows a warning notification in |browser| that the app is being run on an
 // unsupported operating system.
 void ShowObsoleteOSPrompt(Browser* browser);

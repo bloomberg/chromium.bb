@@ -25,8 +25,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#elif defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
 #endif
 
 using content::GpuDataManager;
@@ -182,10 +180,6 @@ void InitializeCompositingFieldTrial() {
 #if defined(OS_WIN)
   // Don't run the trial on Windows XP.
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return;
-#elif defined(OS_MACOSX)
-  // Accelerated compositing is only implemented on Mac OSX 10.6 or later.
-  if (base::mac::IsOSLeopardOrEarlier())
     return;
 #endif
 

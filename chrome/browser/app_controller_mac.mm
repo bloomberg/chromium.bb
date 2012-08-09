@@ -1026,12 +1026,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   NSMenu* mainMenu = [NSApp mainMenu];
   NSMenuItem* profileMenu = [mainMenu itemWithTag:IDC_PROFILE_MAIN_MENU];
 
-  // On Leopard, hiding main menubar items does not work. This manifests itself
-  // in Chromium as squished menu items <http://crbug.com/90753>. To prevent
-  // this, remove the Profile menu on Leopard, regardless of the user's
-  // multiprofile state.
-  if (!ProfileManager::IsMultipleProfilesEnabled() ||
-      base::mac::IsOSLeopard()) {
+  if (!ProfileManager::IsMultipleProfilesEnabled()) {
     [mainMenu removeItem:profileMenu];
     return;
   }

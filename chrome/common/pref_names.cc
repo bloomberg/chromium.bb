@@ -2034,10 +2034,4 @@ const char kNetworkProfileWarningsLeft[] = "network_profile.warnings_left";
 const char kNetworkProfileLastWarningTime[] =
     "network_profile.last_warning_time";
 
-#if defined(OS_MACOSX)
-// A timestamp of when the obsolete OS infobar was last shown to a user on 10.5.
-const char kMacLeopardObsoleteInfobarLastShown[] =
-    "mac_105_obsolete_infobar_last_shown";
-#endif  // defined(OS_MACOSX)
-
 }  // namespace prefs

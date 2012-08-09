@@ -74,14 +74,6 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
 
   // Load from the machine-wide area
   GetPluginCommonDirectory(plugin_dirs, false);
-
-  // 10.5 includes the Java2 plugin, but as of Java for Mac OS X 10.5 Update 10
-  // no longer has a symlink to it in the Internet Plug-Ins directory.
-  // Manually include it since there's no other way to support Java.
-  if (base::mac::IsOSLeopard()) {
-    plugin_dirs->push_back(FilePath(
-        "/System/Library/Java/Support/Deploy.bundle/Contents/Resources"));
-  }
 }
 
 void PluginList::GetPluginsInDir(

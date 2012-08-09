@@ -7,7 +7,6 @@
 #import "base/bind.h"
 #include "base/location.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #import "base/sys_info.h"
@@ -36,10 +35,9 @@ const uint8_t kSampleAVCData[] =  {
 // Check to see if the OS we're running on should have
 // VideoDecodeAcceleration.framework installed.
 bool OSShouldHaveFramework() {
-  if (base::mac::IsOSLeopardOrEarlier())
-    return false;
-
   // 10.6.2 and earlier doesn't have the framework.
+  // If we ever drop 10.6 support and clean up IsOSSnowLeopard() calls, this
+  // can be removed too.
   int32 major, minor, bugfix;
   base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
   if (major == 10 && minor == 6 && bugfix <= 2)

@@ -46,10 +46,6 @@
 #include "content/public/browser/browser_thread.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/obsolete_os.h"
-#endif
-
 using base::ListValue;
 using content::BrowserThread;
 
@@ -170,13 +166,6 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
                                  l10n_util::GetStringUTF16(resources[i].ids));
   }
 
-#if defined(OS_MACOSX)
-  localized_strings->SetString("updateObsoleteOS",
-                               chrome::LocalizedObsoleteOSString());
-  localized_strings->SetString("updateObsoleteOSURL",
-                               chrome::kMacLeopardObsoleteURL);
-#endif
-
   localized_strings->SetString(
       "browserVersion",
       l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
@@ -292,13 +281,6 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   version_updater_->GetReleaseChannel(
       base::Bind(&HelpHandler::OnReleaseChannel, base::Unretained(this)));
-#endif
-
-#if defined(OS_MACOSX)
-  scoped_ptr<base::Value> is_os_obsolete(
-      base::Value::CreateBooleanValue(chrome::IsOSObsoleteOrNearlySo()));
-  web_ui()->CallJavascriptFunction("help.HelpPage.setObsoleteOS",
-                                   *is_os_obsolete);
 #endif
 }
 

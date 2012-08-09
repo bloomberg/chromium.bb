@@ -959,11 +959,8 @@ void WebPluginDelegateImpl::PluginVisibilityChanged() {
 }
 
 void WebPluginDelegateImpl::StartIme() {
-  // Currently the plugin IME implementation only works on 10.6.
-  if (instance()->event_model() != NPEventModelCocoa ||
-      base::mac::IsOSLeopardOrEarlier()) {
+  if (instance()->event_model() != NPEventModelCocoa)
     return;
-  }
   if (ime_enabled_)
     return;
   ime_enabled_ = true;

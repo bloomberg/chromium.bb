@@ -372,11 +372,6 @@ extern const char kChromeToMobileLearnMoreURL[];
 extern const char kNaturalScrollHelpURL[];
 #endif
 
-#if defined(OS_MACOSX)
-// The URL for the Mac OS X 10.5 deprecation help center article.
-extern const char kMacLeopardObsoleteURL[];
-#endif
-
 // "Debug" pages which are dangerous and not for general consumption.
 extern const char* const kChromeDebugURLs[];
 extern const int kNumberOfChromeDebugURLs;

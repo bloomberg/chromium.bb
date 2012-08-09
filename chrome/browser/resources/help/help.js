@@ -154,18 +154,6 @@ cr.define('help', function() {
     /**
      * @private
      */
-    setObsoleteOS_: function(obsolete) {
-      if (cr.isMac) {
-        var updateObsoleteOSContainer = $('update-obsolete-os-container');
-        if (updateObsoleteOSContainer) {
-          updateObsoleteOSContainer.hidden = !obsolete;
-        }
-      }
-    },
-
-    /**
-     * @private
-     */
     setOSVersion_: function(version) {
       if (!cr.isChromeOS)
         console.error('OS version unsupported on non-CrOS');

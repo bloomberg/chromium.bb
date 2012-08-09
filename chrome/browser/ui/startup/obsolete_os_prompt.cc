@@ -6,9 +6,9 @@
 
 namespace chrome {
 
-#if !defined(TOOLKIT_GTK) && !defined(OS_MACOSX)
+#if !defined(TOOLKIT_GTK)
 void ShowObsoleteOSPrompt(Browser* browser) {
-  // Only shown on Gtk and OS X.
+  // Only shown on Gtk.
 }
 #endif
 

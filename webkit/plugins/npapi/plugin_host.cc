@@ -58,8 +58,6 @@ static PluginInstance* FindInstance(NPP id) {
 // OS supports shared accelerated surfaces via IOSurface. This is true on Snow
 // Leopard and higher.
 static bool SupportsCoreAnimationPlugins() {
-  if (base::mac::IsOSLeopardOrEarlier())
-    return false;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableCoreAnimationPlugins))
     return false;
