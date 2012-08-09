@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 
 class OldPanelDragBrowserTest : public OldBasePanelBrowserTest {
  public:
@@ -403,10 +402,6 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragThreeDockedPanels) {
 }
 
 IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragMinimizedPanel) {
-  // We'll simulate mouse movements for test.
-  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
-
   Panel* panel = CreatePanel("panel1");
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));
@@ -446,10 +441,6 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragMinimizedPanel) {
 
 IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest,
                        DragMinimizedPanelWhileDrawingAttention) {
-  // We'll simulate mouse movements for test.
-  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
-
   Panel* panel = CreatePanel("panel1");
   scoped_ptr<NativePanelTesting> panel_testing(
       CreateNativePanelTesting(panel));

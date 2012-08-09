@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/show_desktop_notification_params.h"
 #include "ui/gfx/screen.h"
@@ -148,12 +147,6 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, AddAndClosePanel) {
 
 IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
                        MAYBE_ExpandAndCollapsePanel) {
-  // Disable mouse watcher since we don't want mouse movements to affect panel
-  // testing for title-only state.
-  PanelManager* panel_manager = PanelManager::GetInstance();
-  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
-  panel_manager->SetMouseWatcherForTesting(mouse_watcher);
-
   Balloon* balloon = CreateBalloon();
 
   // Create a docked panel. Expect that the notification balloon moves up to be

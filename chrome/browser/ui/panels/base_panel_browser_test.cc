@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/test_panel_active_state_observer.h"
+#include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -236,6 +237,11 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   panel_manager->enable_auto_sizing(false);
 
   PanelManager::shorten_time_intervals_for_testing();
+
+  // Simulate the mouse movement so that tests are not affected by actual mouse
+  // events.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  panel_manager->SetMouseWatcherForTesting(mouse_watcher);
 
   // This is needed so the subsequently created panels can be activated.
   // On a Mac, it transforms background-only test process into foreground one.
