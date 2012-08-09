@@ -682,6 +682,11 @@ void WebMediaPlayerImpl::sourceEndOfStream(
     GetClient()->durationChanged();
 }
 
+bool WebMediaPlayerImpl::sourceSetTimestampOffset(const WebKit::WebString& id,
+                                                  double offset) {
+  return proxy_->DemuxerSetTimestampOffset(id.utf8().data(), offset);
+}
+
 WebKit::WebMediaPlayer::MediaKeyException
 WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
                                        const unsigned char* init_data,
