@@ -33,8 +33,8 @@ class FakeDownloadItem : public MockDownloadItem {
   explicit FakeDownloadItem()
       : state_(IN_PROGRESS) {
   }
-  ~FakeDownloadItem() {
-    SetState(REMOVING);
+  virtual ~FakeDownloadItem() {
+    FOR_EACH_OBSERVER(Observer, observers_, OnDownloadDestroyed(this));
     EXPECT_EQ(0u, observers_.size());
   }
   virtual void AddObserver(Observer* observer) OVERRIDE {

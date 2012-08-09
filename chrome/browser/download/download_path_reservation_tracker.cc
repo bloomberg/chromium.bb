@@ -47,7 +47,7 @@ class DownloadItemObserver : public DownloadItem::Observer {
 
   // DownloadItem::Observer
   virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(DownloadItem* download) OVERRIDE;
 
   DownloadItem& download_item_;
 
@@ -223,10 +223,6 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
     case DownloadItem::CANCELLED:
       // We no longer need the reservation if the download is being removed.
 
-    case DownloadItem::REMOVING:
-      // Ditto, but this case shouldn't happen in practice. We should have
-      // received another notification beforehand.
-
     case DownloadItem::INTERRUPTED:
       // The download filename will need to be re-generated when the download is
       // restarted. Holding on to the reservation now would prevent the name
@@ -244,10 +240,12 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
   }
 }
 
-void DownloadItemObserver::OnDownloadOpened(DownloadItem* download) {
-  // We shouldn't be tracking reservations for a download that has been
-  // externally opened. The tracker should have detached itself when the
-  // download was complete.
+void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
+  // This shouldn't happen. We should catch either COMPLETE, CANCELLED, or
+  // INTERRUPTED first.
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(&RevokeReservation, download->GetGlobalId()));
+  delete this;
 }
 
 }  // namespace

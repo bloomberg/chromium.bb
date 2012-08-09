@@ -75,9 +75,10 @@ class DownloadItemView : public views::ButtonListener,
   // Returns the DownloadItem model object belonging to this item.
   content::DownloadItem* download() const { return download_; }
 
-  // DownloadObserver method
+  // DownloadItem::Observer methods
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;

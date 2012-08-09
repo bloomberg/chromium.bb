@@ -139,7 +139,6 @@ const char* kStateStrings[] = {
   kStateInProgress,
   kStateComplete,
   kStateInterrupted,
-  NULL,
   kStateInterrupted,
 };
 COMPILE_ASSERT(arraysize(kStateStrings) == DownloadItem::MAX_DOWNLOAD_STATE,
@@ -149,6 +148,9 @@ const char* DangerString(content::DownloadDangerType danger) {
   DCHECK(danger >= 0);
   DCHECK(danger < static_cast<content::DownloadDangerType>(
       arraysize(kDangerStrings)));
+  if (danger < 0 || danger >= static_cast<content::DownloadDangerType>(
+      arraysize(kDangerStrings)))
+    return "";
   return kDangerStrings[danger];
 }
 
@@ -164,7 +166,9 @@ const char* StateString(DownloadItem::DownloadState state) {
   DCHECK(state >= 0);
   DCHECK(state < static_cast<DownloadItem::DownloadState>(
       arraysize(kStateStrings)));
-  DCHECK(state != DownloadItem::REMOVING);
+  if (state < 0 || state >= static_cast<DownloadItem::DownloadState>(
+      arraysize(kStateStrings)))
+    return "";
   return kStateStrings[state];
 }
 
@@ -820,24 +824,31 @@ ExtensionDownloadsEventRouter::OnChangedStat::~OnChangedStat() {
     UMA_HISTOGRAM_PERCENTAGE("Download.OnChanged", (fires * 100 / total));
 }
 
-void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
+void ExtensionDownloadsEventRouter::OnDownloadDestroyed(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int download_id = item->GetId();
-  if (item->GetState() == DownloadItem::REMOVING) {
-    // The REMOVING state indicates that this item is being erased.
-    // Let's unregister as an observer so that we don't see any more updates
-    // from it, dispatch the onErased event, and remove its json and is
-    // OnChangedStat from our maps.
-    downloads_.erase(download_id);
-    item->RemoveObserver(this);
-    DispatchEvent(extensions::event_names::kOnDownloadErased,
-                  base::Value::CreateIntegerValue(download_id));
-    delete item_jsons_[download_id];
-    item_jsons_.erase(download_id);
-    delete on_changed_stats_[download_id];
-    on_changed_stats_.erase(download_id);
+  downloads_.erase(download_id);
+  item->RemoveObserver(this);
+  delete item_jsons_[download_id];
+  item_jsons_.erase(download_id);
+  delete on_changed_stats_[download_id];
+  on_changed_stats_.erase(download_id);
+}
+
+void ExtensionDownloadsEventRouter::OnDownloadRemoved(DownloadItem* item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!profile_)
     return;
-  }
+  int download_id = item->GetId();
+  DispatchEvent(extensions::event_names::kOnDownloadErased,
+                base::Value::CreateIntegerValue(download_id));
+}
+
+void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!profile_)
+    return;
+  int download_id = item->GetId();
 
   base::DictionaryValue* old_json = item_jsons_[download_id];
   scoped_ptr<base::DictionaryValue> new_json(DownloadItemToJSON(item));
@@ -886,10 +897,6 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
   item_jsons_[download_id]->Swap(new_json.get());
 }
 
-void ExtensionDownloadsEventRouter::OnDownloadOpened(DownloadItem* item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void ExtensionDownloadsEventRouter::OnDownloadCreated(
     DownloadManager* manager, DownloadItem* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -913,6 +920,7 @@ void ExtensionDownloadsEventRouter::ManagerGoingDown(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   manager_->RemoveObserver(this);
   manager_ = NULL;
+  profile_ = NULL;
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(

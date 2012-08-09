@@ -37,6 +37,7 @@ class DownloadItemMac : content::DownloadItem::Observer {
   // content::DownloadItem::Observer implementation
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   BaseDownloadItemModel* download_model() { return download_model_.get(); }
 

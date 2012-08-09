@@ -39,6 +39,7 @@ class DownloadStatusUpdater
   // Methods inherited from content::DownloadItem::Observer.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
   virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
  protected:
   // Update the app icon. Virtual to be overridable for testing.

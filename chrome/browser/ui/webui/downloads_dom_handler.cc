@@ -179,19 +179,22 @@ void DownloadsDOMHandler::OnDownloadUpdated(content::DownloadItem* download) {
   if (it == download_items_.end())
     return;
 
-  if (download->GetState() == content::DownloadItem::REMOVING) {
-    (*it)->RemoveObserver(this);
-    *it = NULL;
-    // A later ModelChanged() notification will change the WebUI's
-    // view of the downloads list.
-    return;
-  }
-
   const int id = static_cast<int>(it - download_items_.begin());
 
   ListValue results_value;
   results_value.Append(download_util::CreateDownloadItemValue(download, id));
   web_ui()->CallJavascriptFunction("downloadUpdated", results_value);
+}
+
+void DownloadsDOMHandler::OnDownloadDestroyed(
+    content::DownloadItem* download) {
+  download->RemoveObserver(this);
+  OrderedDownloads::iterator it = std::find(download_items_.begin(),
+                                            download_items_.end(),
+                                            download);
+  *it = NULL;
+  // A later ModelChanged() notification will change the WebUI's
+  // view of the downloads list.
 }
 
 // A download has started or been deleted. Query our DownloadManager for the

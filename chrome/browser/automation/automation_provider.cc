@@ -304,7 +304,6 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
   std::map<DownloadItem::DownloadState, std::string> state_to_string;
   state_to_string[DownloadItem::IN_PROGRESS] = std::string("IN_PROGRESS");
   state_to_string[DownloadItem::CANCELLED] = std::string("CANCELLED");
-  state_to_string[DownloadItem::REMOVING] = std::string("REMOVING");
   state_to_string[DownloadItem::INTERRUPTED] = std::string("INTERRUPTED");
   state_to_string[DownloadItem::COMPLETE] = std::string("COMPLETE");
 

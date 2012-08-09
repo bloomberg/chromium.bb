@@ -91,7 +91,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
 
   // DownloadItem overrides.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   // Adds/Removes |download| to pending_downloads_.
   // Also start/stop observing |download|.

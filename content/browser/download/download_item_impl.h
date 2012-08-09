@@ -115,6 +115,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // Called by SavePackage to set the total number of bytes on the item.
   virtual void SetTotalBytes(int64 total_bytes);
 
+  // Notify observers that this item is being removed by the user.
+  virtual void NotifyRemoved();
+
   // Overridden from DownloadItem.
   virtual void AddObserver(DownloadItem::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(DownloadItem::Observer* observer) OVERRIDE;

@@ -83,7 +83,6 @@ void DownloadCompletionObserver::OnDownloadUpdated(DownloadItem* download) {
       break;
     }
 
-    case DownloadItem::REMOVING:
     case DownloadItem::INTERRUPTED:
     case DownloadItem::CANCELLED: {
       DCHECK(ContainsKey(download_items_, download));
@@ -95,6 +94,12 @@ void DownloadCompletionObserver::OnDownloadUpdated(DownloadItem* download) {
     default:
       break;
   }
+}
+
+void DownloadCompletionObserver::OnDownloadDestroyed(DownloadItem* download) {
+  DCHECK(ContainsKey(download_items_, download));
+  download_items_.erase(download);
+  download->RemoveObserver(this);
 }
 
 void DownloadCompletionObserver::ClearDownloadItems() {

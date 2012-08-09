@@ -337,7 +337,6 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   EXPECT_NE(0, in_progress = AddDownload(DownloadItem::IN_PROGRESS, month_ago));
   EXPECT_NE(0, AddDownload(DownloadItem::CANCELLED, month_ago));
   EXPECT_NE(0, AddDownload(DownloadItem::INTERRUPTED, month_ago));
-  EXPECT_EQ(0, AddDownload(DownloadItem::REMOVING, month_ago));
 
   // Test to see if inserts worked.
   db_->QueryDownloads(&downloads);
@@ -373,6 +372,8 @@ TEST_F(HistoryTest, ClearBrowsingData_Downloads) {
   data.end_time = base::Time::Now();
   data.opened = false;
   data.db_handle = in_progress;
+  EXPECT_TRUE(db_->UpdateDownload(data));
+  data.state = DownloadItem::CANCELLED;
   EXPECT_TRUE(db_->UpdateDownload(data));
 
   // Try removing from Time=0. This should delete all.

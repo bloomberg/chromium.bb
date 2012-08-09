@@ -60,7 +60,7 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
 
   // content::DownloadItem::Observer
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   // content::DownloadManager::Observer
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
@@ -202,7 +202,7 @@ class DownloadTestFlushObserver
 
   // DownloadItem observer methods.
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<DownloadTestFlushObserver>;

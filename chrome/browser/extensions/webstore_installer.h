@@ -138,7 +138,7 @@ class WebstoreInstaller :public content::NotificationObserver,
 
   // DownloadItem::Observer implementation:
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
   // Starts downloading the extension to |file_path|.
   void StartDownload(const FilePath& file_path);

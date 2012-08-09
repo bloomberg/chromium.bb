@@ -68,14 +68,21 @@ void DownloadStatusUpdater::ManagerGoingDown(
   DCHECK(ContainsKey(managers_, manager));
   managers_.erase(manager);
   manager->RemoveObserver(this);
-  // Item removal will be handled in response to DownloadItem REMOVING
-  // notification (in the !IN_PROGRESS conditional branch in UpdateItem).
 }
 
 // Methods inherited from content::DownloadItem::Observer.
 void DownloadStatusUpdater::OnDownloadUpdated(
     content::DownloadItem* download) {
   UpdateItem(download);
+  UpdateAppIconDownloadProgress();
+}
+
+void DownloadStatusUpdater::OnDownloadDestroyed(
+    content::DownloadItem* download) {
+  if (ContainsKey(items_, download)) {
+    items_.erase(download);
+    download->RemoveObserver(this);
+  }
   UpdateAppIconDownloadProgress();
 }
 

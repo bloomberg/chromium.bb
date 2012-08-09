@@ -56,7 +56,6 @@ int StateToInt(DownloadItem::DownloadState state) {
     case DownloadItem::IN_PROGRESS: return kStateInProgress;
     case DownloadItem::COMPLETE: return kStateComplete;
     case DownloadItem::CANCELLED: return kStateCancelled;
-    case DownloadItem::REMOVING: return kStateInvalid;
     case DownloadItem::INTERRUPTED: return kStateInterrupted;
     case DownloadItem::MAX_DOWNLOAD_STATE: return kStateInvalid;
     default: return kStateInvalid;
