@@ -182,6 +182,8 @@ class Shell : public WebContentsDelegate,
 
   CHROMEG_CALLBACK_3(Shell, gboolean, OnCloseWindowKeyPressed, GtkAccelGroup*,
                      GObject*, guint, GdkModifierType);
+  CHROMEG_CALLBACK_3(Shell, gboolean, OnNewWindowKeyPressed, GtkAccelGroup*,
+                     GObject*, guint, GdkModifierType);
   CHROMEG_CALLBACK_3(Shell, gboolean, OnHighlightURLView, GtkAccelGroup*,
                      GObject*, guint, GdkModifierType);
 #endif

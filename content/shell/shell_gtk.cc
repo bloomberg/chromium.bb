@@ -16,6 +16,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/shell/shell_browser_context.h"
+#include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -81,6 +83,12 @@ void Shell::PlatformCreateWindow(int width, int height) {
       GTK_ACCEL_VISIBLE,
       g_cclosure_new(G_CALLBACK(OnCloseWindowKeyPressedThunk),
                      this, NULL));
+
+  gtk_accel_group_connect(
+      accel_group, GDK_n, GDK_CONTROL_MASK,
+      GTK_ACCEL_VISIBLE,
+      g_cclosure_new(G_CALLBACK(OnNewWindowKeyPressedThunk),
+                    this, NULL));
 
   GtkWidget* toolbar = gtk_toolbar_new();
   // Turn off the labels on the toolbar buttons.
@@ -221,6 +229,21 @@ gboolean Shell::OnCloseWindowKeyPressed(GtkAccelGroup* accel_group,
                                         guint keyval,
                                         GdkModifierType modifier) {
   gtk_widget_destroy(GTK_WIDGET(window_));
+  return TRUE;
+}
+
+gboolean Shell::OnNewWindowKeyPressed(GtkAccelGroup* accel_group,
+                                      GObject* acceleratable,
+                                      guint keyval,
+                                      GdkModifierType modifier) {
+  ShellBrowserContext* browser_context =
+      static_cast<ShellContentBrowserClient*>(
+        GetContentClient()->browser())->browser_context();
+  Shell::CreateNewWindow(browser_context,
+                         GURL(),
+                         NULL,
+                         MSG_ROUTING_NONE,
+                         NULL);
   return TRUE;
 }
 
