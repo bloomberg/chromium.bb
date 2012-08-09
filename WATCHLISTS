@@ -163,8 +163,11 @@
     'fullscreen_controller': {
       'filepath': 'fullscreen_controller',
     },
-    'gdata' : {
+    'gdata': {
       'filepath': 'gdata'
+    },
+    'gfx_image': {
+      'filepath': 'ui/gfx/image/',
     },
     'gpu': {
       'filepath': 'gpu/',
@@ -471,6 +474,7 @@
     'ftp': ['phajdan.jr@chromium.org'],
     'fullscreen_controller': ['scheib+watch@chromium.org'],
     'gdata': ['achuith+watch@chromium.org'],
+    'gfx_image': ['rsesek+watch@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
     'history': ['brettw-cc@chromium.org'],
     'history_ui': ['dubroy@chromium.org'],
