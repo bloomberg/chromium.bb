@@ -21,7 +21,6 @@
         'nacl_switch_to_app_64.c',
         'nacl_syscall_64.S',
         'nacl_tls_64.c',
-        'sel_addrspace_x86_64.c',
         'sel_ldr_x86_64.c',
         'sel_rt_64.c',
         'tramp_64.S',

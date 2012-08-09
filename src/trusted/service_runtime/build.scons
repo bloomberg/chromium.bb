@@ -116,7 +116,6 @@ elif env.Bit('build_x86_64'):
       'arch/x86_64/nacl_switch_to_app_64.c',
       'arch/x86_64/nacl_syscall_64.S',
       'arch/x86_64/nacl_tls_64.c',
-      'arch/x86_64/sel_addrspace_x86_64.c',
       'arch/x86_64/sel_ldr_x86_64.c',
       'arch/x86_64/sel_rt_64.c',
       'arch/x86_64/tramp_64.S',
@@ -287,6 +286,15 @@ env.ComponentLibrary('sel_debug_dummy', 'nacl_debug_init_dummy.c')
 env.ComponentLibrary('container',
                      ['generic_container/container.c',
                       ])
+
+if env.Bit('windows'):
+  env.ComponentLibrary('sel_test', 'win/mmap_test_check.cc')
+elif env.Bit('mac'):
+  env.ComponentLibrary('sel_test', 'osx/mmap_test_check.cc')
+elif env.Bit('linux'):
+  env.ComponentLibrary('sel_test', 'linux/mmap_test_check.cc')
+else:
+  raise AssertionError('Unsupported host OS')
 
 
 # NOTE(robertm): these extra libs were orignially only added to the
@@ -475,19 +483,6 @@ unittest_inputs = [
     'sel_ldr_test.cc',
     'thread_suspension_test.cc',
 ]
-if env.Bit('windows'):
-  unittest_inputs += [
-    'win/mmap_test_check.cc',
-  ]
-elif env.Bit('mac'):
-  unittest_inputs += [
-    'osx/mmap_test_check.cc',
-  ]
-elif env.Bit('linux'):
-  unittest_inputs += [
-    'linux/mmap_test_check.cc',
-  ]
-
 
 if (not env.CrossToolsBuild() and
     (not env.Bit('coverage_enabled') or not env.Bit('windows'))):
@@ -508,6 +503,7 @@ if (not env.CrossToolsBuild() and
                   'nacl_fault_inject',
                   'nacl_interval',
                   'platform',
+                  'sel_test',
                   ] + DEBUG_LIBS)
   gtest_env.Requires(unit_tests_exe, crt)
 
@@ -565,6 +561,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_fault_inject',
                   'nacl_interval',
                   'platform',
+                  'sel_test',
                   ] + DEBUG_LIBS)
   env.Requires(mmap_test_exe, crt)
 

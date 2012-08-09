@@ -70,33 +70,3 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
 
   return LOAD_OK;
 }
-
-
-NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
-  uintptr_t start_addr;
-  int       err;
-
-  start_addr = nap->mem_start;
-
-  if (0 == start_addr) {
-#if !NACL_LINUX
-    NaClLog(LOG_FATAL, ("NaClMprotectGuards: zero-based sandbox is"
-                        " supported on Linux only.\n"));
-#endif
-  } else {
-    err = NaCl_mprotect((void *) start_addr,
-                        NACL_SYSCALL_START_ADDR,
-                        PROT_NONE);
-    if (err != 0) {
-      NaClLog(LOG_ERROR, ("NaClMemoryProtection:"
-                          " NaCl_mprotect(0x%08"NACL_PRIxPTR","
-                          " 0x%08x, 0x%x) failed,"
-                          " error %d (NULL pointer guard page)\n"),
-              start_addr, NACL_SYSCALL_START_ADDR, PROT_NONE,
-              err);
-      return LOAD_MPROTECT_FAIL;
-    }
-  }
-
-  return LOAD_OK;
-}

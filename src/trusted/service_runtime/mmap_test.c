@@ -8,6 +8,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#if NACL_LINUX
+# include <sys/mman.h>
+#elif NACL_OSX
+# include <mach/mach.h>
+#endif
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -15,6 +20,7 @@
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/trusted/service_runtime/mmap_test_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -49,29 +55,14 @@ void CheckLowerMappings(struct NaClVmmap *mem_map) {
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
 void CheckForGuardRegion(uintptr_t addr, size_t expected_size) {
-  /*
-   * This check is easiest to do on Windows where we can query memory
-   * mappings with VirtualQuery().  On Linux this would involve
-   * parsing /proc/self/maps.
-   */
 #if NACL_WINDOWS
-  MEMORY_BASIC_INFORMATION info;
-  size_t result = VirtualQuery((void *) addr, &info, sizeof(info));
-  ASSERT_EQ(result, sizeof(info));
-  ASSERT_EQ(info.BaseAddress, (void *) addr);
-  ASSERT_EQ(info.AllocationBase, (void *) addr);
-  ASSERT_EQ(info.RegionSize, expected_size);
-  /*
-   * We certainly do not expect MEM_COMMIT here, because usually we
-   * would not be able to allocate 80GB of swap space.
-   */
-  ASSERT_EQ(info.State, MEM_RESERVE);
-  /* Note that Windows returns 0 in place of PAGE_NOACCESS (1) here. */
-  ASSERT_EQ(info.Protect, 0);
-  ASSERT_EQ(info.Type, MEM_PRIVATE);
+  CheckGuardMapping(addr, expected_size, MEM_RESERVE, 0, MEM_PRIVATE);
+#elif NACL_LINUX
+  CheckMapping(addr, expected_size, PROT_NONE, MAP_PRIVATE);
+#elif NACL_OSX
+  CheckMapping(addr, expected_size, VM_PROT_NONE, SM_EMPTY);
 #else
-  UNREFERENCED_PARAMETER(addr);
-  UNREFERENCED_PARAMETER(expected_size);
+# error "Unrecognized OS"
 #endif
 }
 #endif
@@ -330,10 +321,8 @@ int main(int argc, char **argv) {
   ASSERT_EQ(errcode, -NACL_ABI_EINVAL);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  CheckForGuardRegion(nap->mem_start - ((size_t) 40 << 30),
-                      (size_t) 40 << 30);
-  CheckForGuardRegion(nap->mem_start + ((size_t) 4 << 30),
-                      (size_t) 40 << 30);
+  CheckForGuardRegion(nap->mem_start - ((size_t) 40 << 30), (size_t) 40 << 30);
+  CheckForGuardRegion(nap->mem_start + ((size_t) 4 << 30), (size_t) 40 << 30);
 #endif
 
   NaClAddrSpaceFree(nap);

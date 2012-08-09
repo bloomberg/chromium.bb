@@ -110,14 +110,6 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * The first NACL_SYSCALL_START_ADDR bytes are mapped as PROT_NONE.
    * This enables NULL pointer checking, and provides additional protection
    * against addr16/data16 prefixed operations being used for attacks.
-   *
-   * NaClMprotectGuards also sets up guard pages outside of the
-   * virtual address space of the NaClApp -- for the ARM and x86-64
-   * where data sandboxing only sandbox memory writes and not reads,
-   * we need to ensure that certain addressing modes that might
-   * otherwise allow the NaCl app to write outside its address space
-   * (given how we using masking / base registers to implement data
-   * write sandboxing) won't affect the trusted data structures.
    */
 
   NaClLog(3, "Protecting guard pages for 0x%08"NACL_PRIxPTR"\n",
@@ -132,8 +124,6 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                         " (NULL pointer guard page)\n"));
     return LOAD_MPROTECT_FAIL;
   }
-  err = NaClMprotectGuards(nap);
-  if (err != LOAD_OK) return err;
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
   /*

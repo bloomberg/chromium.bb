@@ -20,7 +20,9 @@ EXTERN_C_BEGIN
  */
 #if NACL_WINDOWS
 void CheckMapping(uintptr_t addr, size_t size, int state, int protect,
-    int map_type);
+                  int map_type);
+void CheckGuardMapping(uintptr_t addr, size_t size, int state, int protect,
+                       int map_type);
 #else
 void CheckMapping(uintptr_t addr, size_t size, int protect, int map_type);
 #endif

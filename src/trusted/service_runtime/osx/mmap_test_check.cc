@@ -7,8 +7,10 @@
 #include "native_client/src/trusted/service_runtime/mmap_test_check.h"
 
 #include <mach/mach.h>
+#include <stdio.h>
 
-#include "gtest/gtest.h"
+#include "native_client/src/include/nacl_assert.h"
+
 
 void CheckMapping(uintptr_t addr, size_t size, int protect, int map_type) {
   vm_address_t r_start;

@@ -52,15 +52,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
  * x86-64 and on the ARM, since guard pages are also allocated to be
  * contiguous with the allocated address space.
  *
- * If successful, the guard pages are not yet memory protected.  The
- * function NaClMprotectGuards must be called for the guard pages to
- * be active.
+ * If successful, the guard pages are also mapped as inaccessible (PROT_NONE).
  *
  * Returns LOAD_OK on success.
  */
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) NACL_WUR;
-
-NaClErrorCode NaClMprotectGuards(struct NaClApp *nap);
 
 /*
  * NaClAddrSpaceFree() unmaps all of untrusted address space.  This is
