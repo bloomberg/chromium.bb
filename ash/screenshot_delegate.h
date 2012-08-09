@@ -20,10 +20,9 @@ class ScreenshotDelegate {
  public:
   virtual ~ScreenshotDelegate() {}
 
-  // The actual task of taking a screenshot for the given window.
-  // This method is called when the user wants to take a screenshot
-  // manually.
-  virtual void HandleTakeScreenshot(aura::Window* window) = 0;
+  // The actual task of taking a screenshot for each root window.
+  // This method is called when the user wants to take a screenshot manually.
+  virtual void HandleTakeScreenshotForAllRootWindows() = 0;
 
   // The actual task of taking a partial screenshot for the given
   // window.

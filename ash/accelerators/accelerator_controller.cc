@@ -441,9 +441,7 @@ bool AcceleratorController::PerformAction(int action,
     case TAKE_SCREENSHOT_BY_PRTSCN_KEY:
       if (screenshot_delegate_.get() &&
           screenshot_delegate_->CanTakeScreenshot()) {
-        Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-        for (size_t i = 0; i < root_windows.size(); ++i)
-          screenshot_delegate_->HandleTakeScreenshot(root_windows[i]);
+        screenshot_delegate_->HandleTakeScreenshotForAllRootWindows();
       }
       // Return true to prevent propagation of the key event.
       return true;
