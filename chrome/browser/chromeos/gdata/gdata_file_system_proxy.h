@@ -91,7 +91,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // calling thread.
   void OnStatusCallback(
       const fileapi::FileSystemOperationInterface::StatusCallback& callback,
-      gdata::GDataFileError error);
+      GDataFileError error);
 
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.
@@ -100,7 +100,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperationInterface::GetMetadataCallback&
           callback,
       GDataFileError error,
-      scoped_ptr<gdata::GDataEntryProto> entry_proto);
+      scoped_ptr<GDataEntryProto> entry_proto);
 
   // Helper callback for relaying reply for GetEntryInfoByPath() to the
   // calling thread.
@@ -118,7 +118,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           callback,
       GDataFileError error,
       bool hide_hosted_documents,
-      scoped_ptr<gdata::GDataEntryProtoVector> proto_entries);
+      scoped_ptr<GDataEntryProtoVector> proto_entries);
 
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to
   // the calling thread.
