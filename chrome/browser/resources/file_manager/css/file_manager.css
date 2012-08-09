@@ -463,6 +463,11 @@ div.root-eject:hover {
   width: 150px;
 }
 
+.searching #search-box {
+  background-image: url('../images/common/spinner.svg');
+  background-size: 17px 17px;
+}
+
 #search-box:focus {
   border-color: rgb(77, 144, 254);
   outline: none;

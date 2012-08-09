@@ -3238,11 +3238,15 @@ FileManager.prototype = {
   FileManager.prototype.showSpinner_ = function(on) {
     this.cancelSpinnerTimeout_();
     if (on) {
-      this.spinner_.textContent =
-          this.directoryModel_.isSearching() ? str('SEARCH_SPINNER') : '';
-      this.spinner_.style.display = '';
+      if (this.directoryModel_.isSearching()) {
+        this.dialogContainer_.classList.add('searching');
+      } else {
+        this.spinner_.style.display = '';
+      }
     } else {
       this.spinner_.style.display = 'none';
+      if (this.dialogContainer_)
+        this.dialogContainer_.classList.remove('searching');
     }
   };
 
