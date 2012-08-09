@@ -1514,13 +1514,22 @@ def CMDtree(parser, args):
   return 0
 
 
+@usage('[new upstream branch]')
 def CMDupstream(parser, args):
-  """print the name of the upstream branch, if any"""
+  """prints or sets the name of the upstream branch, if any"""
   _, args = parser.parse_args(args)
-  if args:
+  if len(args) > 1:
     parser.error('Unrecognized args: %s' % ' '.join(args))
+    return 0
+
   cl = Changelist()
-  print cl.GetUpstreamBranch()
+  if args:
+    # One arg means set upstream branch.
+    RunGit(['branch', '--set-upstream', cl.GetBranch(), args[0]])
+    cl = Changelist()
+    print "Upstream branch set to " + cl.GetUpstreamBranch()
+  else:
+    print cl.GetUpstreamBranch()
   return 0
 
 
