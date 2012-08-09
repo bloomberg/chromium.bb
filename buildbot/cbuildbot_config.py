@@ -212,9 +212,6 @@ _settings = dict(
 # hw_tests_critical -- Usually we consider structural failures here as OK.
   hw_tests_critical=False,
 
-# Number of devices to use when scheduling tests in the hw lab.
-  hw_tests_num=constants.HWTEST_DEFAULT_NUM,
-
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
 
@@ -574,8 +571,8 @@ chrome_pfq = internal_chromium_pfq.derive(
   useflags=official['useflags'] + ['pgo_generate'],
   chroot_replace=True,
   hw_tests=['PGO_record'],
+  async_hw_tests=[], # not very useful with pgo_generate turned on.
   upload_hw_test_artifacts=True,
-  hw_tests_num=1,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
 )
 

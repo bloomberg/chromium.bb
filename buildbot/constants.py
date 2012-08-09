@@ -113,7 +113,6 @@ CHROOT_BUILDER_BOARD = 'amd64-host'
 REFRESH_PACKAGES_TYPE = 'refresh_packages'
 
 # Define pool of machines for Hardware tests.
-HWTEST_DEFAULT_NUM = 4
 HWTEST_MACH_POOL = 'bvt'
 HWTEST_PALADIN_POOL = 'cq-bvt'
 HWTEST_CHROME_PFQ_POOL = 'chromepfq'
