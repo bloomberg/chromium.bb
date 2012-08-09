@@ -440,7 +440,8 @@ class BuildSpecsManager(object):
     # processed. We consider a spec unprocessed if we have not started a build
     # with that spec yet, and it is newer than LONG_MAX_TIMEOUT_SECONDS.
     self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
-    self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
+    if self.latest is not None:
+      self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
     self.latest_unprocessed = None
     if self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS:
       self.latest_unprocessed = self.latest
@@ -516,6 +517,8 @@ class BuildSpecsManager(object):
       A BuilderStatus instance containing the builder status and any optional
       message associated with the status passed by the builder.
     """
+    if self.dry_run:
+      return None
     url = self._GetStatusUrl(builder, version)
     cmd = [gs.GSUTIL_BIN, 'cat', url]
     try:
@@ -524,7 +527,7 @@ class BuildSpecsManager(object):
           3, cmd, redirect_stdout=True, redirect_stderr=True)
     except cros_build_lib.RunCommandError as ex:
       # If the file does not exist, InvalidUriError is returned.
-      if ex.result.error.startswith('InvalidUriError:'):
+      if ex.result.error and ex.result.error.startswith('InvalidUriError:'):
         return None
       raise
     return BuilderStatus(**cPickle.loads(result.output))
