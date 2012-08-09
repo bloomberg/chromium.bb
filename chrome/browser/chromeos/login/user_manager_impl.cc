@@ -731,8 +731,6 @@ void UserManagerImpl::EnsureUsersLoaded() {
         User* user = CreateUser(email, /* is_ephemeral= */ false);
         users_.push_back(user);
 
-        WallpaperManager::Get()->CacheIfCustomWallpaper(email);
-
         if (prefs_images) {
           // Get account image path.
           // TODO(avayvod): Reading image path as a string is here for
