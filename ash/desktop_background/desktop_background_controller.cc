@@ -151,6 +151,18 @@ void DesktopBackgroundController::OnRootWindowAdded(
   InstallComponent(root_window);
 }
 
+void DesktopBackgroundController::CacheDefaultWallpaper(int index) {
+  DCHECK(index >= 0);
+
+  WallpaperResolution resolution = GetAppropriateResolution();
+  scoped_refptr<WallpaperOperation> wallpaper_op =
+      new WallpaperOperation(index, resolution);
+  base::WorkerPool::PostTask(
+      FROM_HERE,
+      base::Bind(&WallpaperOperation::Run, wallpaper_op),
+      true);
+}
+
 void DesktopBackgroundController::SetDefaultWallpaper(int index,
                                                       bool force_reload) {
   // We should not change background when index is invalid. For instance, at
@@ -169,15 +181,7 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index,
 
   CancelPendingWallpaperOperation();
 
-  WallpaperResolution resolution = SMALL;
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
-       iter != root_windows.end(); ++iter) {
-    gfx::Size root_window_size = (*iter)->GetHostSize();
-    if (root_window_size.width() > kSmallWallpaperMaximalWidth ||
-        root_window_size.height() > kSmallWallpaperMaximalHeight)
-      resolution = LARGE;
-  }
+  WallpaperResolution resolution = GetAppropriateResolution();
 
   wallpaper_op_ = new WallpaperOperation(index, resolution);
   base::WorkerPool::PostTaskAndReply(
@@ -353,6 +357,19 @@ void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
 int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
   return locked ? internal::kShellWindowId_LockScreenBackgroundContainer :
                   internal::kShellWindowId_DesktopBackgroundContainer;
+}
+
+WallpaperResolution DesktopBackgroundController::GetAppropriateResolution() {
+  WallpaperResolution resolution = SMALL;
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter) {
+    gfx::Size root_window_size = (*iter)->GetHostSize();
+    if (root_window_size.width() > kSmallWallpaperMaximalWidth ||
+        root_window_size.height() > kSmallWallpaperMaximalHeight)
+      resolution = LARGE;
+  }
+  return resolution;
 }
 
 }  // namespace ash

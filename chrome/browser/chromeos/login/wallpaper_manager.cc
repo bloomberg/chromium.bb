@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -46,6 +47,8 @@ const char kWallpaperDateNodeName[] = "date";
 
 const int kThumbnailWidth = 128;
 const int kThumbnailHeight = 80;
+
+const int kCacheWallpaperDelayMs = 500;
 
 // Default wallpaper index used in OOBE (first boot).
 // Defined here because Chromium default index differs.
@@ -83,10 +86,17 @@ WallpaperManager::WallpaperManager()
       current_user_wallpaper_type_(User::UNKNOWN),
       ALLOW_THIS_IN_INITIALIZER_LIST(current_user_wallpaper_index_(
           ash::GetInvalidWallpaperIndex())),
+      should_cache_wallpaper_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   RestartTimer();
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
                  content::NotificationService::AllSources());
 }
 
@@ -100,21 +110,6 @@ void WallpaperManager::AddObservers() {
   if (!DBusThreadManager::Get()->GetPowerManagerClient()->HasObserver(this))
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
-}
-
-void WallpaperManager::CacheIfCustomWallpaper(const std::string& email) {
-  User::WallpaperType type;
-  int index;
-  base::Time date;
-  GetUserWallpaperProperties(email, &type, &index, &date);
-  if (type == User::CUSTOMIZED) {
-    std::string wallpaper_path = GetWallpaperPathForUser(email, false).value();
-
-    // Uses WeakPtr here to make the request cancelable.
-    wallpaper_loader_->Start(wallpaper_path, 0,
-                             base::Bind(&WallpaperManager::CacheWallpaper,
-                                        weak_factory_.GetWeakPtr(), email));
-  }
 }
 
 void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
@@ -245,10 +240,39 @@ void WallpaperManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
-    // Cancel callback for previous cache requests.
-    weak_factory_.InvalidateWeakPtrs();
-    custom_wallpaper_cache_.clear();
+  switch (type) {
+    case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
+      // Cancel callback for previous cache requests.
+      weak_factory_.InvalidateWeakPtrs();
+      custom_wallpaper_cache_.clear();
+      break;
+    }
+    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
+      if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kDisableBootAnimation)) {
+        BrowserThread::PostDelayedTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&WallpaperManager::CacheAllUsersWallpapers,
+                       weak_factory_.GetWeakPtr()),
+            base::TimeDelta::FromMilliseconds(kCacheWallpaperDelayMs));
+      } else {
+        should_cache_wallpaper_ = true;
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED: {
+      if (should_cache_wallpaper_) {
+        BrowserThread::PostDelayedTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&WallpaperManager::CacheAllUsersWallpapers,
+                       weak_factory_.GetWeakPtr()),
+            base::TimeDelta::FromMilliseconds(kCacheWallpaperDelayMs));
+        should_cache_wallpaper_ = false;
+      }
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification " << type;
   }
 }
 
@@ -445,6 +469,39 @@ void WallpaperManager::BatchUpdateWallpaper() {
   RestartTimer();
 }
 
+void WallpaperManager::CacheAllUsersWallpapers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UserList users = UserManager::Get()->GetUsers();
+
+  if (!users.empty()) {
+    UserList::const_iterator it = users.begin();
+    // Skip the wallpaper of first user in the list. It should have been cached.
+    it++;
+    for (; it != users.end(); ++it) {
+      std::string user_email = (*it)->email();
+      CacheUserWallpaper(user_email);
+    }
+  }
+}
+
+void WallpaperManager::CacheUserWallpaper(const std::string& email) {
+  User::WallpaperType type;
+  int index;
+  base::Time date;
+  GetUserWallpaperProperties(email, &type, &index, &date);
+  if (type == User::CUSTOMIZED) {
+    std::string wallpaper_path = GetWallpaperPathForUser(email, false).value();
+
+    // Uses WeakPtr here to make the request cancelable.
+    wallpaper_loader_->Start(wallpaper_path, 0,
+                             base::Bind(&WallpaperManager::CacheWallpaper,
+                                        weak_factory_.GetWeakPtr(), email));
+  } else {
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        CacheDefaultWallpaper(index);
+  }
+}
+
 void WallpaperManager::CacheWallpaper(const std::string& email,
                                       const UserImage& wallpaper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -480,6 +537,7 @@ void WallpaperManager::FetchWallpaper(const std::string& email,
       base::Bind(&WallpaperManager::CacheThumbnail,
                  base::Unretained(this), email, wallpaper.image()));
 
+  custom_wallpaper_cache_.insert(std::make_pair(email, wallpaper.image()));
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper.image(), layout);
 }

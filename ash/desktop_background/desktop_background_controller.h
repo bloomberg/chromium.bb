@@ -76,6 +76,11 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // Initialize root window's background.
   void OnRootWindowAdded(aura::RootWindow* root_window);
 
+  // Loads default wallpaper at |index| asynchronously but does not set the
+  // loaded image to current wallpaper. Resource bundle will cache the loaded
+  // image.
+  void CacheDefaultWallpaper(int index);
+
   // Loads default wallpaper at |index| asynchronously and sets to current
   // wallpaper after loaded. When |force_reload| is true, reload wallpaper
   // for all root windows even if |index| is the same as current wallpaper. It
@@ -144,6 +149,9 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
 
   // Returns id for background container for unlocked and locked states.
   int GetBackgroundContainerId(bool locked);
+
+  // Returns the appropriate wallpaper resolution for all root windows.
+  WallpaperResolution GetAppropriateResolution();
 
   // Can change at runtime.
   bool locked_;

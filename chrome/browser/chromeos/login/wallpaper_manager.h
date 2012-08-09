@@ -45,9 +45,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // added after PowerManagerClient initialized.
   void AddObservers();
 
-  // Caches |email|'s wallpaper to memory if it is custom wallpaper.
-  void CacheIfCustomWallpaper(const std::string& email);
-
   // Loads wallpaper asynchronously if the current wallpaper is not the
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();
@@ -134,6 +131,21 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // at 0am if chromeos device is on.
   void BatchUpdateWallpaper();
 
+  // Cache all logged in users' wallpapers to memory at login screen. It should
+  // not compete with first wallpaper loading when boot up/initialize login
+  // WebUI page.
+  // There are two ways the first wallpaper might be loaded:
+  // 1. Loaded on boot. Login WebUI waits for it.
+  // 2. When flag --disable-boot-animation is passed. Login WebUI is loaded
+  // right away and in 500ms after. Wallpaper started to load.
+  // For case 2, should_cache_wallpaper_ is used to indicate if we need to
+  // cache wallpapers on wallpaper animation finished. The cache operation
+  // should be only executed once.
+  void CacheAllUsersWallpapers();
+
+  // Caches |email|'s wallpaper to memory.
+  void CacheUserWallpaper(const std::string& email);
+
   // Caches the decoded wallpaper to memory.
   void CacheWallpaper(const std::string& email, const UserImage& wallpaper);
 
@@ -199,6 +211,8 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
 
   // The last selected user on user pod row.
   std::string last_selected_user_;
+
+  bool should_cache_wallpaper_;
 
   base::WeakPtrFactory<WallpaperManager> weak_factory_;
 
