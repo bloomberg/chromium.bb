@@ -20,8 +20,8 @@ struct GetDocumentsUiState;
 
 // Set of parameters sent to LoadDocumentFeedCallback callback.
 struct GetDocumentsParams {
-  GetDocumentsParams(int start_changestamp,
-                     int root_feed_changestamp,
+  GetDocumentsParams(int64 start_changestamp,
+                     int64 root_feed_changestamp,
                      std::vector<DocumentFeed*>* feed_list,
                      bool should_fetch_multiple_feeds,
                      const FilePath& search_file_path,
@@ -35,8 +35,8 @@ struct GetDocumentsParams {
   // between two changestamps is proportional equal to number of items in
   // delta feed between them - bigger the difference, more likely bigger
   // number of items in delta feeds.
-  int start_changestamp;
-  int root_feed_changestamp;
+  int64 start_changestamp;
+  int64 root_feed_changestamp;
   scoped_ptr<std::vector<DocumentFeed*> > feed_list;
   // Should we stop after getting first feed chunk, even if there is more
   // data.
@@ -114,8 +114,8 @@ class GDataWapiFeedLoader {
   // If |feed_to_load| is set, this is feed url that will be used to load feed.
   void LoadFromServer(
       ContentOrigin initial_origin,
-      int start_changestamp,
-      int root_feed_changestamp,
+      int64 start_changestamp,
+      int64 root_feed_changestamp,
       bool should_fetch_multiple_feeds,
       const FilePath& search_file_path,
       const std::string& search_query,
@@ -128,7 +128,7 @@ class GDataWapiFeedLoader {
   // if the feed content loading from the server needs to be initiated.
   void ReloadFromServerIfNeeded(
       ContentOrigin initial_origin,
-      int local_changestamp,
+      int64 local_changestamp,
       const FilePath& search_file_path,
       const FindEntryCallback& callback);
 
@@ -140,8 +140,8 @@ class GDataWapiFeedLoader {
   // |start_changestamp| and |root_feed_changestamp|.
   GDataFileError UpdateFromFeed(
     const std::vector<DocumentFeed*>& feed_list,
-    int start_changestamp,
-    int root_feed_changestamp);
+    int64 start_changestamp,
+    int64 root_feed_changestamp);
 
  private:
   // Callback for handling root directory refresh from the cache.
@@ -157,7 +157,19 @@ class GDataWapiFeedLoader {
   // the content of the root feed during the root directory refresh process.
   void OnGetAccountMetadata(
       ContentOrigin initial_origin,
-      int local_changestamp,
+      int64 local_changestamp,
+      const FilePath& search_file_path,
+      const FindEntryCallback& callback,
+      GDataErrorCode status,
+      scoped_ptr<base::Value> feed_data);
+
+  // Helper callback for handling results of account data retrieval initiated
+  // from ReloadFeedFromServerIfNeeded() for Drive V2 API.
+  // This method makes a decision about fetching the content of the root feed
+  // during the root directory refresh process.
+  void OnGetAboutResource(
+      ContentOrigin initial_origin,
+      int64 local_changestamp,
       const FilePath& search_file_path,
       const FindEntryCallback& callback,
       GDataErrorCode status,

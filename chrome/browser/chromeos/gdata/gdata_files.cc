@@ -326,7 +326,6 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
            << ", parent resource = " << entry->parent_resource_id()
            << ", resource = " + entry->resource_id();
 
-
   // Add entry to resource map.
   if (directory_service_)
     directory_service_->AddEntryToResourceMap(entry);
@@ -554,10 +553,8 @@ GDataDirectoryService::GDataDirectoryService()
       origin_(UNINITIALIZED),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   root_.reset(new GDataDirectory(NULL, this));
-  root_->set_title(kGDataRootDirectory);
-  root_->SetBaseNameFromTitle();
-  root_->set_resource_id(kGDataRootDirectoryResourceId);
-  AddEntryToResourceMap(root_.get());
+  if (!util::IsDriveV2ApiEnabled())
+    InitializeRootEntry(kGDataRootDirectoryResourceId);
 }
 
 GDataDirectoryService::~GDataDirectoryService() {
@@ -567,6 +564,14 @@ GDataDirectoryService::~GDataDirectoryService() {
   if (blocking_task_runner_ && directory_service_db_.get())
     blocking_task_runner_->DeleteSoon(FROM_HERE,
                                       directory_service_db_.release());
+}
+
+void GDataDirectoryService::InitializeRootEntry(const std::string& root_id) {
+  root_.reset(new GDataDirectory(NULL, this));
+  root_->set_title(kGDataRootDirectory);
+  root_->SetBaseNameFromTitle();
+  root_->set_resource_id(root_id);
+  AddEntryToResourceMap(root_.get());
 }
 
 void GDataDirectoryService::ClearRoot() {
@@ -813,7 +818,7 @@ void GDataDirectoryService::InitResourceMap(
   // Get the largest changestamp.
   iter = serialized_resources->find(kDBKeyLargestChangestamp);
   if (iter == serialized_resources->end() ||
-      !base::StringToInt(iter->second, &largest_changestamp_)) {
+      !base::StringToInt64(iter->second, &largest_changestamp_)) {
     NOTREACHED() << "Could not find/parse largest_changestamp";
     if (!callback.is_null())
       callback.Run(GDATA_FILE_ERROR_FAILED);

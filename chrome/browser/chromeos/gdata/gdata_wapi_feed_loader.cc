@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
@@ -13,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
@@ -136,8 +138,8 @@ bool UseLevelDB() {
 }  // namespace
 
 GetDocumentsParams::GetDocumentsParams(
-    int start_changestamp,
-    int root_feed_changestamp,
+    int64 start_changestamp,
+    int64 root_feed_changestamp,
     std::vector<DocumentFeed*>* feed_list,
     bool should_fetch_multiple_feeds,
     const FilePath& search_file_path,
@@ -219,7 +221,7 @@ void GDataWapiFeedLoader::RemoveObserver(Observer* observer) {
 
 void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
     ContentOrigin initial_origin,
-    int local_changestamp,
+    int64 local_changestamp,
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -229,6 +231,17 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
 
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
+  if (gdata::util::IsDriveV2ApiEnabled()) {
+    documents_service_->GetAboutResource(
+        base::Bind(&GDataWapiFeedLoader::OnGetAboutResource,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   initial_origin,
+                   local_changestamp,
+                   search_file_path,
+                   callback));
+    return;
+  }
+
   documents_service_->GetAccountMetadata(
       base::Bind(&GDataWapiFeedLoader::OnGetAccountMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -240,7 +253,7 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
 
 void GDataWapiFeedLoader::OnGetAccountMetadata(
     ContentOrigin initial_origin,
-    int local_changestamp,
+    int64 local_changestamp,
     const FilePath& search_file_path,
     const FindEntryCallback& callback,
     GDataErrorCode status,
@@ -333,10 +346,95 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+void GDataWapiFeedLoader::OnGetAboutResource(
+    ContentOrigin initial_origin,
+    int64 local_changestamp,
+    const FilePath& search_file_path,
+    const FindEntryCallback& callback,
+    GDataErrorCode status,
+    scoped_ptr<base::Value> feed_data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GDataFileError error = util::GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
+    // Get changes starting from the next changestamp from what we have locally.
+    LoadFromServer(initial_origin,
+                   local_changestamp + 1, 0,
+                   true,  /* should_fetch_multiple_feeds */
+                   search_file_path,
+                   std::string() /* no search query */,
+                   GURL(), /* feed not explicitly set */
+                   std::string() /* no directory resource ID */,
+                   callback,
+                   base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
+                              weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  scoped_ptr<AboutResource> about_resource;
+  if (feed_data.get())
+    about_resource = AboutResource::CreateFrom(*feed_data);
+
+  if (!about_resource.get()) {
+    LoadFromServer(initial_origin,
+                   local_changestamp + 1, 0,
+                   true,  /* should_fetch_multiple_feeds */
+                   search_file_path,
+                   std::string() /* no search query */,
+                   GURL(), /* feed not explicitly set */
+                   std::string() /* no directory resource ID */,
+                   callback,
+                   base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
+                              weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  bool changes_detected = true;
+  int64 largest_changestamp = about_resource->largest_change_id();
+  directory_service_->InitializeRootEntry(about_resource->root_folder_id());
+
+  if (local_changestamp >= largest_changestamp) {
+    if (local_changestamp > largest_changestamp) {
+      LOG(WARNING) << "Cached client feed is fresher than server, client = "
+                   << local_changestamp
+                   << ", server = "
+                   << largest_changestamp;
+    }
+    // If our cache holds the latest state from the server, change the
+    // state to FROM_SERVER.
+    directory_service_->set_origin(
+        initial_origin == FROM_CACHE ? FROM_SERVER : initial_origin);
+    changes_detected = false;
+  }
+
+  // No changes detected, continue with search as planned.
+  if (!changes_detected) {
+    if (!callback.is_null()) {
+      directory_service_->FindEntryByPathAndRunSync(search_file_path,
+                                                    callback);
+    }
+    return;
+  }
+
+  // Load changes from the server.
+  LoadFromServer(initial_origin,
+                 local_changestamp > 0 ? local_changestamp + 1 : 0,
+                 largest_changestamp,
+                 true,  /* should_fetch_multiple_feeds */
+                 search_file_path,
+                 std::string() /* no search query */,
+                 GURL(), /* feed not explicitly set */
+                 std::string() /* no directory resource ID */,
+                 callback,
+                 base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+// TODO(kochi): Fix too many parameters.  http://crbug.com/141359
 void GDataWapiFeedLoader::LoadFromServer(
     ContentOrigin initial_origin,
-    int start_changestamp,
-    int root_feed_changestamp,
+    int64 start_changestamp,
+    int64 root_feed_changestamp,
     bool should_fetch_multiple_feeds,
     const FilePath& search_file_path,
     const std::string& search_query,
@@ -449,7 +547,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
 #ifndef NDEBUG
   // Save initial root feed for analysis.
   std::string file_name =
-      base::StringPrintf("DEBUG_feed_%d.json",
+      base::StringPrintf("DEBUG_feed_%" PRId64 ".json",
                          params->start_changestamp);
   util::PostBlockingPoolSequencedTask(
       FROM_HERE,
@@ -686,8 +784,8 @@ void GDataWapiFeedLoader::SaveFileSystem() {
 
 GDataFileError GDataWapiFeedLoader::UpdateFromFeed(
     const std::vector<DocumentFeed*>& feed_list,
-    int start_changestamp,
-    int root_feed_changestamp) {
+    int64 start_changestamp,
+    int64 root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "Updating directory with a feed";
 

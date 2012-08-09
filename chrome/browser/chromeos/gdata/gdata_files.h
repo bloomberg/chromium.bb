@@ -68,7 +68,7 @@ const char kGDataRootDirectoryResourceId[] = "folder:root";
 
 // This should be incremented when incompatibility change is made in
 // gdata.proto.
-const int32 kProtoVersion = 1;
+const int32 kProtoVersion = 2;
 
 // Used for file operations like removing files.
 typedef base::Callback<void(GDataFileError error)>
@@ -406,12 +406,15 @@ class GDataDirectoryService {
 
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
-  const int largest_changestamp() const { return largest_changestamp_; }
-  void set_largest_changestamp(int value) { largest_changestamp_ = value; }
+  const int64 largest_changestamp() const { return largest_changestamp_; }
+  void set_largest_changestamp(int64 value) { largest_changestamp_ = value; }
 
   // The root directory content origin.
   const ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
+
+  // Sets root directory resource id and initialize the root entry.
+  void InitializeRootEntry(const std::string& root_id);
 
   // Move |entry| to |directory_path| asynchronously. Removes entry from
   // previous parent. Must be called on UI thread. |callback| is called on the
@@ -527,7 +530,7 @@ class GDataDirectoryService {
 
   base::Time last_serialized_;
   size_t serialized_size_;
-  int largest_changestamp_;  // Stored in the serialized proto.
+  int64 largest_changestamp_;  // Stored in the serialized proto.
   ContentOrigin origin_;
 
   // This should remain the last member so it'll be destroyed first and

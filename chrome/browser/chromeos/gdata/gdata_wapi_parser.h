@@ -101,7 +101,6 @@ class Link {
   // valid value. Otherwise does nothing and returns false.
   static bool GetAppID(const base::StringPiece& rel, std::string* app_id);
 
-
   LinkType type_;
   GURL href_;
   string16 title_;
@@ -432,7 +431,7 @@ class DocumentEntry : public FeedEntry {
   // True if the file or directory is deleted (applicable to change feeds only).
   bool deleted() const { return deleted_ || removed_; }
 
-// Text version of document entry kind. Returns an empty string for
+  // Text version of document entry kind. Returns an empty string for
   // unknown entry kind.
   std::string GetEntryKindText() const;
 
@@ -534,7 +533,7 @@ class DocumentFeed : public FeedEntry {
 
   // The largest changestamp. Next time the documents should be fetched
   // from this changestamp.
-  int largest_changestamp() const { return largest_changestamp_; }
+  int64 largest_changestamp() const { return largest_changestamp_; }
 
   // Document entry list title.
   const std::string& title() { return title_; }
@@ -550,7 +549,7 @@ class DocumentFeed : public FeedEntry {
   int start_index_;
   int items_per_page_;
   std::string title_;
-  int largest_changestamp_;
+  int64 largest_changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentFeed);
 };
@@ -662,7 +661,7 @@ class AccountMetadataFeed {
     return quota_bytes_used_;
   }
 
-  int largest_changestamp() const {
+  int64 largest_changestamp() const {
     return largest_changestamp_;
   }
 
@@ -684,7 +683,7 @@ class AccountMetadataFeed {
 
   int64 quota_bytes_total_;
   int64 quota_bytes_used_;
-  int largest_changestamp_;
+  int64 largest_changestamp_;
   ScopedVector<InstalledApp> installed_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountMetadataFeed);

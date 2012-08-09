@@ -49,14 +49,14 @@ GDataWapiFeedProcessor::~GDataWapiFeedProcessor() {
 
 GDataFileError GDataWapiFeedProcessor::ApplyFeeds(
     const std::vector<DocumentFeed*>& feed_list,
-    int start_changestamp,
-    int root_feed_changestamp,
+    int64 start_changestamp,
+    int64 root_feed_changestamp,
     std::set<FilePath>* changed_dirs) {
   bool is_delta_feed = start_changestamp != 0;
 
   directory_service_->set_origin(FROM_SERVER);
 
-  int delta_feed_changestamp = 0;
+  int64 delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats uma_stats;
   FileResourceIdMap file_map;
   GDataFileError error = FeedToFileResourceMap(feed_list,
@@ -104,7 +104,7 @@ void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
 
 void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
     bool is_delta_feed,
-    int feed_changestamp,
+    int64 feed_changestamp,
     FileResourceIdMap* file_map,
   std::set<FilePath>* changed_dirs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -257,7 +257,7 @@ GDataDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
 GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
     const std::vector<DocumentFeed*>& feed_list,
     FileResourceIdMap* file_map,
-    int* feed_changestamp,
+    int64* feed_changestamp,
     FeedToFileResourceMapUmaStats* uma_stats) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(uma_stats);

@@ -16,6 +16,7 @@
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
@@ -1951,7 +1952,7 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
     return;
   }
 
-  int unused_delta_feed_changestamp = 0;
+  int64 unused_delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats unused_uma_stats;
   FileResourceIdMap file_map;
   GDataWapiFeedProcessor feed_processor(directory_service_.get());
@@ -2170,6 +2171,15 @@ void GDataFileSystem::GetAvailableSpace(
 void GDataFileSystem::GetAvailableSpaceOnUIThread(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (gdata::util::IsDriveV2ApiEnabled()) {
+    documents_service_->GetAboutResource(
+      base::Bind(&GDataFileSystem::OnGetAboutResource,
+                 ui_weak_ptr_,
+                 callback));
+    return;
+  }
 
   documents_service_->GetAccountMetadata(
       base::Bind(&GDataFileSystem::OnGetAvailableSpace,
@@ -2182,6 +2192,7 @@ void GDataFileSystem::OnGetAvailableSpace(
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   GDataFileError error = util::GDataToGDataFileError(status);
   if (error != GDATA_FILE_OK) {
@@ -2200,6 +2211,33 @@ void GDataFileSystem::OnGetAvailableSpace(
   callback.Run(GDATA_FILE_OK,
                feed->quota_bytes_total(),
                feed->quota_bytes_used());
+}
+
+void GDataFileSystem::OnGetAboutResource(
+    const GetAvailableSpaceCallback& callback,
+    GDataErrorCode status,
+    scoped_ptr<base::Value> resource_json) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  GDataFileError error = util::GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
+    callback.Run(error, -1, -1);
+    return;
+  }
+
+  scoped_ptr<AboutResource> about;
+  if (resource_json.get())
+    about = AboutResource::CreateFrom(*resource_json);
+
+  if (!about.get()) {
+    callback.Run(GDATA_FILE_ERROR_FAILED, -1, -1);
+    return;
+  }
+
+  callback.Run(GDATA_FILE_OK,
+               about->quota_bytes_total(),
+               about->quota_bytes_used());
 }
 
 void GDataFileSystem::OnCreateDirectoryCompleted(
@@ -2383,8 +2421,8 @@ void GDataFileSystem::LoadRootFeedFromCacheForTesting() {
 
 GDataFileError GDataFileSystem::UpdateFromFeedForTesting(
     const std::vector<DocumentFeed*>& feed_list,
-    int start_changestamp,
-    int root_feed_changestamp) {
+    int64 start_changestamp,
+    int64 root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return feed_loader_->UpdateFromFeed(feed_list,

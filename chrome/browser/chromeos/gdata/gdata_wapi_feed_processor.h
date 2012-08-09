@@ -50,8 +50,8 @@ class GDataWapiFeedProcessor {
   // as its initial changestamp value. The value comes from
   // AccountMetadataFeed.
   GDataFileError ApplyFeeds(const std::vector<DocumentFeed*>& feed_list,
-                            int start_changestamp,
-                            int root_feed_changestamp,
+                            int64 start_changestamp,
+                            int64 root_feed_changestamp,
                             std::set<FilePath>* changed_dirs);
 
   // Converts list of document feeds from collected feeds into
@@ -59,7 +59,7 @@ class GDataWapiFeedProcessor {
   GDataFileError FeedToFileResourceMap(
     const std::vector<DocumentFeed*>& feed_list,
     FileResourceIdMap* file_map,
-    int* feed_changestamp,
+    int64* feed_changestamp,
     FeedToFileResourceMapUmaStats* uma_stats);
 
  private:
@@ -71,7 +71,7 @@ class GDataWapiFeedProcessor {
   // All entries in |file_map| will be erased (i.e. the map becomes empty),
   // and values are deleted.
   void ApplyFeedFromFileUrlMap(bool is_delta_feed,
-                               int feed_changestamp,
+                               int64 feed_changestamp,
                                FileResourceIdMap* file_map,
                                std::set<FilePath>* changed_dirs);
 

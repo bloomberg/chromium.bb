@@ -834,9 +834,9 @@ void DocumentFeed::RegisterJSONConverter(
       kItemsPerPageField, &DocumentFeed::items_per_page_, &base::StringToInt);
   converter->RegisterStringField(kTitleTField, &DocumentFeed::title_);
   converter->RegisterRepeatedMessage(kEntryField, &DocumentFeed::entries_);
-  converter->RegisterCustomField<int>(
+  converter->RegisterCustomField<int64>(
      kLargestChangestampField, &DocumentFeed::largest_changestamp_,
-     &base::StringToInt);
+     &base::StringToInt64);
 }
 
 bool DocumentFeed::Parse(const base::Value& value) {
@@ -994,10 +994,10 @@ void AccountMetadataFeed::RegisterJSONConverter(
       kQuotaBytesUsedField,
       &AccountMetadataFeed::quota_bytes_used_,
       &base::StringToInt64);
-  converter->RegisterCustomField<int>(
+  converter->RegisterCustomField<int64>(
       kLargestChangestampField,
       &AccountMetadataFeed::largest_changestamp_,
-      &base::StringToInt);
+      &base::StringToInt64);
   converter->RegisterRepeatedMessage(kInstalledAppField,
                                      &AccountMetadataFeed::installed_apps_);
 }

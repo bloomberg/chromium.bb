@@ -141,8 +141,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // See also the comment at GDataWapiFeedLoader::UpdateFromFeed().
   GDataFileError UpdateFromFeedForTesting(
       const std::vector<DocumentFeed*>& feed_list,
-      int start_changestamp,
-      int root_feed_changestamp);
+      int64 start_changestamp,
+      int64 root_feed_changestamp);
 
  private:
   friend class GDataFileSystemTest;
@@ -427,6 +427,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Callback for handling account metadata fetch.
   void OnGetAvailableSpace(
+      const GetAvailableSpaceCallback& callback,
+      GDataErrorCode status,
+      scoped_ptr<base::Value> data);
+
+  // Callback for handling Drive V2 about resource fetch.
+  void OnGetAboutResource(
       const GetAvailableSpaceCallback& callback,
       GDataErrorCode status,
       scoped_ptr<base::Value> data);
