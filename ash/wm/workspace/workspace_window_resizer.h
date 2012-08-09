@@ -181,6 +181,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // the screen.
   int num_mouse_moves_since_bounds_change_;
 
+  // The mouse location passed to Drag().
+  gfx::Point last_mouse_location_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };
 

@@ -60,7 +60,9 @@ class DesktopScreenPositionClient
   }
 
   virtual void SetBounds(aura::Window* window,
-                         const gfx::Rect& bounds) OVERRIDE {
+                         const gfx::Rect& bounds,
+                         const gfx::Display& display) OVERRIDE {
+    // TODO: Use the 3rd parameter, |display|.
     gfx::Point origin = bounds.origin();
     aura::RootWindow* root = window->GetRootWindow();
     aura::Window::ConvertPointToTarget(window->parent(), root, &origin);

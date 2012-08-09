@@ -28,6 +28,10 @@
 
 class SkCanvas;
 
+namespace gfx {
+class Display;
+}
+
 namespace ui {
 class Layer;
 class Texture;
@@ -154,7 +158,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Changes the bounds of the window in the screen coordintates.
   // If present, the window's parent's LayoutManager may adjust the bounds.
-  void SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen_coords);
+  void SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen_coords,
+                         const gfx::Display& dst_display);
 
   // Returns the target bounds of the window. If the window's layer is
   // not animating, it simply returns the current bounds.

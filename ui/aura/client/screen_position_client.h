@@ -9,6 +9,7 @@
 #include "ui/aura/window.h"
 
 namespace gfx {
+class Display;
 class Rect;
 }
 
@@ -32,7 +33,9 @@ class AURA_EXPORT ScreenPositionClient {
                                       gfx::Point* point) = 0;
   // Sets the bounds of the window. The implementation is responsible
   // for finding out and translating the right coordinates for the |window|.
-  virtual void SetBounds(Window* window, const gfx::Rect& bounds) = 0;
+  virtual void SetBounds(Window* window,
+                         const gfx::Rect& bounds,
+                         const gfx::Display& display) = 0;
   virtual ~ScreenPositionClient() {}
 };
 

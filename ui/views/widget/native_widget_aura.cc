@@ -457,7 +457,8 @@ void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
     aura::client::ScreenPositionClient* screen_position_client =
         aura::client::GetScreenPositionClient(root);
     if (screen_position_client) {
-      screen_position_client->SetBounds(window_, bounds);
+      gfx::Display dst_display = gfx::Screen::GetDisplayMatching(bounds);
+      screen_position_client->SetBounds(window_, bounds, dst_display);
       return;
     }
   }

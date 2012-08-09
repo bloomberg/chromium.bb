@@ -17,7 +17,6 @@
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -91,6 +90,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   aura::Window::ConvertPointToTarget(current_root,
                                      window()->parent(),
                                      &location_in_parent);
+  last_mouse_location_ = location_in_parent;
 
   // Do not use |location| below this point, use |location_in_parent| instead.
   // When the pointer is on |window()->GetRootWindow()|, |location| and
@@ -147,11 +147,24 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
 
   int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
                   0 : ash::Shell::GetInstance()->GetGridSize();
-  if (grid_size <= 1)
-    return;
-
   gfx::Rect bounds(GetFinalBounds(details_.window->bounds(), grid_size));
-  if (bounds == details_.window->bounds())
+
+  // Check if the destination is another display.
+  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  wm::ConvertPointToScreen(window()->parent(), &last_mouse_location_in_screen);
+  const gfx::Display dst_display =
+      gfx::Screen::GetDisplayNearestPoint(last_mouse_location_in_screen);
+
+  if (dst_display.id() !=
+      gfx::Screen::GetDisplayNearestWindow(window()->GetRootWindow()).id()) {
+    // Don't animate when moving to another display.
+    const gfx::Rect dst_bounds =
+        ScreenAsh::ConvertRectToScreen(details_.window->parent(), bounds);
+    details_.window->SetBoundsInScreen(dst_bounds, dst_display);
+    return;
+  }
+
+  if (grid_size <= 1 || bounds == details_.window->bounds())
     return;
 
   if (bounds.size() != details_.window->bounds().size()) {
@@ -159,23 +172,13 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     details_.window->SetBounds(bounds);
     return;
   }
-  // TODO(oshima|yusukes): This is temporary solution until better drag & move
-  // is implemented. (crbug.com/136816).
-  gfx::Rect dst_bounds =
-      ScreenAsh::ConvertRectToScreen(details_.window->parent(), bounds);
-  gfx::Display dst_display = gfx::Screen::GetDisplayMatching(dst_bounds);
-  if (dst_display.id() !=
-      gfx::Screen::GetDisplayNearestWindow(details_.window).id()) {
-    // Don't animate when moving to another display.
-    details_.window->SetBoundsInScreen(dst_bounds);
-  } else {
-    ui::ScopedLayerAnimationSettings scoped_setter(
-        details_.window->layer()->GetAnimator());
-    // Use a small duration since the grid is small.
-    scoped_setter.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kSnapDurationMS));
-    details_.window->SetBounds(bounds);
-  }
+
+  ui::ScopedLayerAnimationSettings scoped_setter(
+      details_.window->layer()->GetAnimator());
+  // Use a small duration since the grid is small.
+  scoped_setter.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kSnapDurationMS));
+  details_.window->SetBounds(bounds);
 }
 
 void WorkspaceWindowResizer::RevertDrag() {

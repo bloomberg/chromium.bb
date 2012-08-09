@@ -383,6 +383,35 @@ TEST_F(ExtendedDesktopTest, MoveWindow) {
   EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
 }
 
+TEST_F(ExtendedDesktopTest, MoveWindowToDisplay) {
+  UpdateDisplay("1000x1000,1000x1000");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  gfx::Display display0 =
+      gfx::Screen::GetDisplayMatching(root_windows[0]->GetBoundsInScreen());
+  gfx::Display display1 =
+      gfx::Screen::GetDisplayMatching(root_windows[1]->GetBoundsInScreen());
+  EXPECT_NE(display0.id(), display1.id());
+
+  views::Widget* d1 = CreateTestWidget(gfx::Rect(10, 10, 1000, 100));
+  EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
+
+  // Move the window where the window spans both root windows. Since the second
+  // parameter is |display1|, the window should be shown on the secondary root.
+  d1->GetNativeWindow()->SetBoundsInScreen(gfx::Rect(500, 10, 1000, 100),
+                                           display1);
+  EXPECT_EQ("500,10 1000x100",
+            d1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(root_windows[1], d1->GetNativeView()->GetRootWindow());
+
+  // Move to the primary root.
+  d1->GetNativeWindow()->SetBoundsInScreen(gfx::Rect(500, 10, 1000, 100),
+                                           display0);
+  EXPECT_EQ("500,10 1000x100",
+            d1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
+}
+
 TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
   UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
