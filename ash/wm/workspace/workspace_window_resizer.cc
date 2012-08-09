@@ -286,8 +286,7 @@ gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
 void WorkspaceWindowResizer::LayoutAttachedWindows(
     const gfx::Rect& bounds,
     int grid_size) {
-  gfx::Rect work_area(
-      gfx::Screen::GetDisplayNearestWindow(window()).work_area());
+  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
   std::vector<int> sizes;
   CalculateAttachedSizes(
       PrimaryAxisSize(details_.initial_bounds.size()),
