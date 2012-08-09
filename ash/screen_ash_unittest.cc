@@ -16,24 +16,8 @@
 
 namespace ash {
 namespace test {
-class ScreenAshTest : public test::AshTestBase {
- public:
-  ScreenAshTest() {}
-  virtual ~ScreenAshTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    internal::DisplayController::SetExtendedDesktopEnabled(true);
-    AshTestBase::SetUp();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    AshTestBase::TearDown();
-    internal::DisplayController::SetExtendedDesktopEnabled(false);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenAshTest);
-};
+typedef test::AshTestBase ScreenAshTest;
 
 #if !defined(OS_WIN)
 TEST_F(ScreenAshTest, Bounds) {

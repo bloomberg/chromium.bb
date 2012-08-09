@@ -13,8 +13,8 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
-// Enable extended desktop.
-const char kAshExtendedDesktop[] = "ash-extended-desktop";
+// Disables extended desktop.
+const char kAshExtendedDesktopDisabled[] = "ash-extended-desktop-disabled";
 
 // Disable using Ash notifications.
 const char kAshNotifyDisabled[] = "ash-notify-disabled";

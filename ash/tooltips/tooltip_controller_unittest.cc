@@ -479,7 +479,6 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
 }
 
 TEST_F(TooltipControllerTest, TooltipsOnMultiDisplayShouldNotCrash) {
-  internal::DisplayController::SetExtendedDesktopEnabled(true);
   UpdateDisplay("1000x600,600x400");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   scoped_ptr<views::Widget> widget1(CreateNewWidgetWithBounds(
