@@ -19,12 +19,24 @@ implements all the generation dynamically on the server, thus
 eliminating the need for annoying and error-prone generation step at
 commit time.
 
-How to Use
+
+Viewing the Docs
+
+The preview server allows easy viewing of the docs. To run the preview server:
+
+  1. Run './preview.py'
+
+  2. View docs at http://localhost:8000/(apps|extensions)/<doc_name>
+
+
+Developing the Server
+
+To run the server in the App Engine environment, follow these steps:
 
   1. Download the python Google App Engine SDK from:
      https://developers.google.com/appengine/downloads
 
-  2. Run 'start_dev_server.py <path/to/dev_appserver.py>'
+  2. Run './start_dev_server.py <path/to/dev_appserver.py>'
      (dev_appserver.py is part of the App Engine)
 
-  3. View docs at http://localhost:8080
+  3. View docs at http://localhost:8080/(apps|extensions)/<doc_name>
