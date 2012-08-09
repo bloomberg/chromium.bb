@@ -28,4 +28,11 @@ bool IsWebIntentsEnabledForProfile(Profile* profile) {
   return IsWebIntentsEnabled(profile->GetPrefs());
 }
 
+Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser && profile && browser->profile() != profile)
+    return NULL;
+  return browser;
+}
+
 }  // namespace web_intents

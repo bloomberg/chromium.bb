@@ -40,6 +40,10 @@ namespace content {
 class WebContents;
 }
 
+namespace web_intents {
+Browser* GetBrowserForBackgroundWebIntentDelivery(Profile*);
+}
+
 #if defined(USE_ASH)
 content::WebContents* GetActiveWebContents();
 #endif
@@ -102,6 +106,8 @@ class BrowserList {
   friend class TaskManager;
   friend class WindowSizer;
   friend class browser::BrowserActivityObserver;
+  friend Browser* web_intents::GetBrowserForBackgroundWebIntentDelivery(
+      Profile*);
 #if defined(OS_CHROMEOS)
   friend class chromeos::ScreenLocker;
 #endif

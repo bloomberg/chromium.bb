@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_INTENTS_WEB_INTENTS_UTIL_H_
 #define CHROME_BROWSER_INTENTS_WEB_INTENTS_UTIL_H_
 
+class Browser;
 class Profile;
 class PrefService;
 
@@ -19,6 +20,11 @@ bool IsWebIntentsEnabled(PrefService* prefs);
 // Returns true if WebIntents are enabled due to various factors. |profile| is
 // the Profile to check that WebIntents are enabled for.
 bool IsWebIntentsEnabledForProfile(Profile* profile);
+
+// In a context where we are generating a web intent based on internal events,
+// or from an extension background page, get the browser in which to show the
+// intent picker to the user.
+Browser* GetBrowserForBackgroundWebIntentDelivery(Profile* profile);
 
 }  // namespace web_intents
 
