@@ -380,8 +380,7 @@ class BuildSpecsManager(object):
 
     # Specs.
     self.latest = None
-    self.latest_passed = None
-    self.latest_processed = None
+    self._latest_status = None
     self.latest_unprocessed = None
     self.compare_versions_fn = VersionInfo.VersionCompare
 
@@ -437,19 +436,13 @@ class BuildSpecsManager(object):
     self.fail_dir = os.path.join(specs_for_build,
                                  BuilderStatus.STATUS_FAILED, dir_pfx)
 
-    # Calculate latest build that passed or failed.
-    dirs = (self.pass_dir, self.fail_dir)
-    specs = [self._LatestSpecFromDir(version_info, d) for d in dirs]
-    self.latest_processed = self._LatestSpecFromList(filter(None, specs))
-    self.latest_passed = specs[0]
-
-    # Calculate latest unprocessed spec (that is newer than
-    # LONG_MAX_TIMEOUT_SECONDS). We only consider a spec unprocessed if we
-    # have not finished a build with that spec yet.
+    # Calculate the status of the latest build, and whether the build was
+    # processed. We consider a spec unprocessed if we have not started a build
+    # with that spec yet, and it is newer than LONG_MAX_TIMEOUT_SECONDS.
     self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
+    self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
     self.latest_unprocessed = None
-    if (self.latest != self.latest_processed and
-        self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS):
+    if self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS:
       self.latest_unprocessed = self.latest
 
   def GetCurrentVersionInfo(self):
@@ -460,9 +453,9 @@ class BuildSpecsManager(object):
   def HasCheckoutBeenBuilt(self):
     """Checks to see if we've previously built this checkout.
     """
-    if self.latest_passed and self.latest == self.latest_passed:
+    if self._latest_status and self._latest_status.Passed():
       latest_spec_file = '%s.xml' % os.path.join(
-          self.all_specs_dir, self.latest_processed)
+          self.all_specs_dir, self.latest)
       # We've built this checkout before if the manifest isn't different than
       # the last one we've built.
       return not self.cros_source.IsManifestDifferent(latest_spec_file)
@@ -509,8 +502,8 @@ class BuildSpecsManager(object):
     self.PushSpecChanges(commit_message)
 
   def DidLastBuildSucceed(self):
-    """Returns True if this is our first build or the last build succeeded."""
-    return self.latest_processed == self.latest_passed
+    """Returns True if the last build succeeded."""
+    return self._latest_status and self._latest_status.Passed()
 
   def GetBuildStatus(self, builder, version):
     """Returns a BuilderStatus instance for the given the builder.
@@ -535,6 +528,11 @@ class BuildSpecsManager(object):
         return None
       raise
     return BuilderStatus(**cPickle.loads(result.output))
+
+  def GetLatestPassingSpec(self):
+    """Get the last spec file that passed in the current branch."""
+    version_info = self.GetCurrentVersionInfo()
+    return self._LatestSpecFromDir(version_info, self.pass_dir)
 
   def GetLocalManifest(self, version=None):
     """Return path to local copy of manifest given by version.
@@ -630,7 +628,6 @@ class BuildSpecsManager(object):
       message: Additional message explaining the status.
       fail_if_exists: If set, fail if the status already exists.
     """
-
     cmd = [gs.GSUTIL_BIN]
     if fail_if_exists:
       # This HTTP header tells Google Storage toreturn the PreconditionFailed
@@ -648,6 +645,20 @@ class BuildSpecsManager(object):
       # TODO(davidjames): Use chromite.lib.gs here.
       cros_build_lib.RunCommandWithRetries(
           3, cmd, redirect_stdout=True, redirect_stderr=True, input=data)
+
+  def UploadStatus(self, success, message=None):
+    """Uploads the status of the build for the current build spec.
+    Args:
+      success: True for success, False for failure
+      message: Message accompanied with change in status.
+    """
+    if success:
+      status = BuilderStatus.STATUS_PASSED
+    else:
+      status = BuilderStatus.STATUS_FAILED
+
+    # Upload status to Google Storage as well.
+    self._UploadStatus(self.current_version, status, message=message)
 
   def SetInFlight(self, version):
     """Marks the buildspec as inflight in Google Storage."""
@@ -676,8 +687,7 @@ class BuildSpecsManager(object):
 
   def PushSpecChanges(self, commit_message):
     """Pushes any changes you have in the manifest directory."""
-    _PushGitChanges(self.manifest_dir, commit_message,
-                    dry_run=self.dry_run)
+    _PushGitChanges(self.manifest_dir, commit_message, dry_run=self.dry_run)
 
   def UpdateStatus(self, success, message=None, retries=NUM_RETRIES):
     """Updates the status of the build for the current build spec.
@@ -717,7 +727,7 @@ class BuildSpecsManager(object):
                       retries)
       else:
         # Upload status to Google Storage as well.
-        self._UploadStatus(self.current_version, status, message=message)
+        self.UploadStatus(success, message=message)
         return
     else:
       # Cleanse any failed local changes and throw an exception.

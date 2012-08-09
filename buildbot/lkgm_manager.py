@@ -502,3 +502,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
             cros_build_lib.PrintBuildbotLink(
                 '%s:%s' % (current_author, change_number),
                 review)
+
+  def GetLatestPassingSpec(self):
+    """Get the last spec file that passed in the current branch."""
+    raise NotImplementedError()

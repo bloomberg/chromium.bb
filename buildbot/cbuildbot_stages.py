@@ -460,7 +460,7 @@ class ManifestVersionedSyncStage(SyncStage):
         'Must run GetStageManager before checkout out build.'
 
     to_return = self.manifest_manager.GetNextBuildSpec()
-    previous_version = self.manifest_manager.latest_passed
+    previous_version = self.manifest_manager.GetLatestPassingSpec()
     target_version = self.manifest_manager.current_version
 
     # Print the Blamelist here.
@@ -740,9 +740,10 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         'Please check the logs of these builders for details.']))
 
   def _PerformStage(self):
-    super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
-
     if ManifestVersionedSyncStage.manifest_manager:
+      ManifestVersionedSyncStage.manifest_manager.UploadStatus(
+         success=self.success, message=self.message)
+
       statuses = self._GetSlavesStatus()
       failing_build_dict, inflight_build_dict = {}, {}
       for builder, status in statuses.iteritems():
