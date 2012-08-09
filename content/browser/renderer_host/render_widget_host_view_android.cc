@@ -256,10 +256,6 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 }
 
 void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
-  const bool activated = host_->is_accelerated_compositing_active();
-  if (content_view_core_)
-    content_view_core_->OnAcceleratedCompositingStateChange(
-        this, activated, false);
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(

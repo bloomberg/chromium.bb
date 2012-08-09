@@ -549,11 +549,6 @@ void ContentViewCoreImpl::DidStartLoading() {
   Java_ContentViewCore_didStartLoading(env, j_obj.obj());
 }
 
-void ContentViewCoreImpl::OnAcceleratedCompositingStateChange(
-    RenderWidgetHostViewAndroid* rwhva, bool activated, bool force) {
-  NOTIMPLEMENTED() << "not upstreamed yet";
-}
-
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);

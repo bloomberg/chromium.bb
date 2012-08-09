@@ -148,10 +148,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Called when page loading begins.
   void DidStartLoading();
-
-  void OnAcceleratedCompositingStateChange(RenderWidgetHostViewAndroid* rwhva,
-                                           bool activated,
-                                           bool force);
   void StartContentIntent(const GURL& content_url);
 
   // --------------------------------------------------------------------------
