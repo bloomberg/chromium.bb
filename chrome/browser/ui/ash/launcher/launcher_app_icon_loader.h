@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
 
 #include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 class Profile;
 
@@ -52,4 +52,4 @@ class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
   DISALLOW_COPY_AND_ASSIGN(LauncherAppIconLoader);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_

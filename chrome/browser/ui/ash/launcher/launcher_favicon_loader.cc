@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
+#include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
 #include "base/logging.h"
 #include "chrome/browser/favicon/favicon_util.h"
-#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/icon_messages.h"
 #include "content/public/browser/render_view_host.h"

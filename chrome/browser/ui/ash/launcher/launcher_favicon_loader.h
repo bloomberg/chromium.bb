@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_FAVICON_LOADER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_FAVICON_LOADER_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_FAVICON_LOADER_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_FAVICON_LOADER_H_
 
 #include <vector>
 
@@ -63,4 +63,4 @@ class LauncherFaviconLoader : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(LauncherFaviconLoader);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_FAVICON_LOADER_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_FAVICON_LOADER_H_

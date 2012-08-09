@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
@@ -12,11 +12,11 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
 
 #include "ash/launcher/launcher_alignment_menu.h"
 #include "ash/launcher/launcher_types.h"
@@ -61,4 +61,4 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_

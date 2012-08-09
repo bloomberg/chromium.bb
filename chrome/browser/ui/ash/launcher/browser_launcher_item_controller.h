@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
+#define CHROME_BROWSER_UI_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
 
 #include <string>
 
@@ -13,8 +13,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
 #include "ui/aura/window_observer.h"
 
 class Browser;
@@ -156,4 +156,4 @@ class BrowserLauncherItemController : public TabStripModelObserver,
   DISALLOW_COPY_AND_ASSIGN(BrowserLauncherItemController);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_BROWSER_LAUNCHER_ITEM_CONTROLLER_H_
