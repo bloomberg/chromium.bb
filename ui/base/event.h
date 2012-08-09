@@ -242,6 +242,18 @@ class UI_EXPORT TouchEventImpl : public LocatedEvent,
   virtual float RotationAngle() const OVERRIDE;
   virtual float Force() const OVERRIDE;
 
+ protected:
+  void set_radius(float radius_x, float radius_y) {
+    radius_x_ = radius_x;
+    radius_y_ = radius_y;
+  }
+
+  void set_rotation_angle(float rotation_angle) {
+    rotation_angle_ = rotation_angle;
+  }
+
+  void set_force(float force) { force_ = force; }
+
  private:
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
@@ -254,10 +266,10 @@ class UI_EXPORT TouchEventImpl : public LocatedEvent,
   float radius_y_;
 
   // Angle of the major axis away from the X axis. Default 0.0.
-  const float rotation_angle_;
+  float rotation_angle_;
 
   // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
-  const float force_;
+  float force_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventImpl);
 };
