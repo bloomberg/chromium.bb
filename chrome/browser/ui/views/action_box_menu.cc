@@ -15,7 +15,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
 // Included for MENU_POPUPITEM and a few other Windows specific constants.
 #include <vssym32.h>
 #include "ui/base/native_theme/native_theme_win.h"
@@ -62,7 +62,7 @@ void ActionBoxMenu::ExecuteCommand(int id) {
 views::Border* ActionBoxMenu::CreateMenuBorder() {
   // TODO(yefim): Use correct theme color on non-Windows.
   SkColor border_color = SK_ColorBLACK;
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // TODO(yefim): Move to Windows only files if possible.
   border_color = ui::NativeThemeWin::instance()->GetThemeColorWithDefault(
       ui::NativeThemeWin::MENU, MENU_POPUPITEM, MPI_NORMAL, TMT_TEXTCOLOR,
@@ -74,7 +74,7 @@ views::Border* ActionBoxMenu::CreateMenuBorder() {
 views::Background* ActionBoxMenu::CreateMenuBackground() {
   // TODO(yefim): Use correct theme color on non-Windows.
   SkColor background_color = SK_ColorWHITE;
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   // TODO(yefim): Move to Windows only files if possible.
   background_color = ui::NativeThemeWin::instance()->GetThemeColorWithDefault(
       ui::NativeThemeWin::TEXTFIELD, EP_BACKGROUND, EBS_NORMAL,
