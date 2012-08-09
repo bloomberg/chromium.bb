@@ -2283,7 +2283,7 @@
             '../ui/aura/aura.gyp:test_support_aura',
           ],
         }],
-        ['OS=="linux" and buildtype=="Official" and target_arch=="ia32"', {
+        ['OS=="linux" and branding=="Chrome" and target_arch=="ia32"', {
           'configurations': {
             'Release': {
               'ldflags': [
