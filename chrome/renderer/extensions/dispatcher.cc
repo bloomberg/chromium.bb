@@ -1060,8 +1060,10 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
   if (IsExtensionActive(extension_id))
     return Feature::BLESSED_EXTENSION_CONTEXT;
 
-  if (extensions_.ExtensionBindingsAllowed(url_info))
-    return Feature::UNBLESSED_EXTENSION_CONTEXT;
+  if (extensions_.ExtensionBindingsAllowed(url_info)) {
+    return extensions_.Contains(extension_id) ?
+        Feature::UNBLESSED_EXTENSION_CONTEXT : Feature::UNSPECIFIED_CONTEXT;
+  }
 
   if (url_info.url().is_valid())
     return Feature::WEB_PAGE_CONTEXT;
