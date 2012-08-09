@@ -75,6 +75,7 @@ lib_LIBRARIES += src/client/linux/libbreakpad_client.a
 src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/crash_generation/crash_generation_client.cc \
 	src/client/linux/handler/exception_handler.cc \
+	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
@@ -327,6 +328,7 @@ src_client_linux_linux_client_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_client_linux_linux_client_unittest_LDADD = \
 	src/client/linux/handler/exception_handler.o \
+	src/client/linux/handler/minidump_descriptor.o \
 	src/client/linux/log/log.o \
 	src/client/linux/crash_generation/crash_generation_client.o \
 	src/client/linux/minidump_writer/linux_dumper.o \
@@ -881,6 +883,8 @@ EXTRA_DIST = \
 	src/client/linux/handler/Makefile \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/handler/exception_handler.h \
+	src/client/linux/handler/minidump_descriptor.cc \
+	src/client/linux/handler/minidump_descriptor.h \
 	src/client/linux/handler/exception_handler_test.cc \
 	src/client/linux/handler/linux_thread.cc \
 	src/client/linux/handler/linux_thread.h \

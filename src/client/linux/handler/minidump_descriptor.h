@@ -1,4 +1,4 @@
-// Copyright (c) 2011, Google Inc.
+// Copyright (c) 2012 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,73 +27,58 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Utility class for creating a temporary directory for unit tests
-// that is deleted in the destructor.
-#ifndef GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
-#define GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
+#ifndef CLIENT_LINUX_HANDLER_MINIDUMP_DESCRIPTOR_H_
+#define CLIENT_LINUX_HANDLER_MINIDUMP_DESCRIPTOR_H_
 
-#include <dirent.h>
-#include <sys/types.h>
-
+#include <assert.h>
 #include <string>
 
-#include "breakpad_googletest_includes.h"
-#include "common/using_std_string.h"
-
-#if !defined(__ANDROID__)
-#define TEMPDIR "/tmp"
-#else
-#define TEMPDIR "/data/local/tmp"
-#endif
-
+// The MinidumpDescriptor describes how to access a minidump: it can contain
+// either a file descriptor or a path.
+// Note that when using files, it is created with the path to a directory.
+// The actual path where the minidump is generated is created by this class.
 namespace google_breakpad {
 
-class AutoTempDir {
+class MinidumpDescriptor {
  public:
-  AutoTempDir() {
-    char temp_dir[] = TEMPDIR "/breakpad.XXXXXX";
-    EXPECT_TRUE(mkdtemp(temp_dir) != NULL);
-    path_.assign(temp_dir);
+  MinidumpDescriptor() : fd_(-1) {}
+
+  explicit MinidumpDescriptor(const std::string& directory)
+      : fd_(-1),
+        directory_(directory),
+        c_path_(NULL) {
+    assert(!directory.empty());
   }
 
-  ~AutoTempDir() {
-    DeleteRecursively(path_);
+  explicit MinidumpDescriptor(int fd) : fd_(fd), c_path_(NULL) {
+    assert(fd != -1);
   }
 
-  const string& path() const {
-    return path_;
-  }
+  explicit MinidumpDescriptor(const MinidumpDescriptor& descriptor);
+
+  bool IsFD() const { return fd_ != -1; }
+
+  int fd() const { return fd_; }
+
+  const char* path() const { return c_path_; }
+
+  // Updates the path so it is unique.
+  // Should be called from a normal context: this methods uses the heap.
+  void UpdatePath();
 
  private:
-  void DeleteRecursively(const string& path) {
-    // First remove any files in the dir
-    DIR* dir = opendir(path.c_str());
-    if (!dir)
-      return;
+  // The file descriptor where the minidump is generated.
+  const int fd_;
 
-    dirent* entry;
-    while ((entry = readdir(dir)) != NULL) {
-      if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-        continue;
-      string entry_path = path + "/" + entry->d_name;
-      struct stat stats;
-      EXPECT_TRUE(lstat(entry_path.c_str(), &stats) == 0);
-      if (S_ISDIR(stats.st_mode))
-        DeleteRecursively(entry_path);
-      else
-        EXPECT_TRUE(unlink(entry_path.c_str()) == 0);
-    }
-    EXPECT_TRUE(closedir(dir) == 0);
-    EXPECT_TRUE(rmdir(path.c_str()) == 0);
-  }
-
-  // prevent copy construction and assignment
-  AutoTempDir(const AutoTempDir&);
-  AutoTempDir& operator=(const AutoTempDir&);
-
-  string path_;
+  // The directory where the minidump should be generated.
+  const std::string directory_;
+  // The full path to the generated minidump.
+  std::string path_;
+  // The C string of |path_|. Precomputed so it can be access from a compromised
+  // context.
+  const char* c_path_;
 };
 
 }  // namespace google_breakpad
 
-#endif  // GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
+#endif  // CLIENT_LINUX_HANDLER_MINIDUMP_DESCRIPTOR_H_

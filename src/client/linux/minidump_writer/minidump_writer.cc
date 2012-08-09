@@ -43,6 +43,7 @@
 //     a canonical instance in the LinuxDumper object. We use the placement
 //     new form to allocate objects and we don't delete them.
 
+#include "client/linux/handler/minidump_descriptor.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "client/minidump_file_writer-inl.h"
 
@@ -81,6 +82,22 @@
 #include "google_breakpad/common/minidump_format.h"
 #include "third_party/lss/linux_syscall_support.h"
 
+namespace {
+
+using google_breakpad::ExceptionHandler;
+using google_breakpad::LineReader;
+using google_breakpad::LinuxDumper;
+using google_breakpad::LinuxPtraceDumper;
+using google_breakpad::MappingEntry;
+using google_breakpad::MappingInfo;
+using google_breakpad::MappingList;
+using google_breakpad::MinidumpFileWriter;
+using google_breakpad::PageAllocator;
+using google_breakpad::ThreadInfo;
+using google_breakpad::TypedMDRVA;
+using google_breakpad::UntypedMDRVA;
+using google_breakpad::wasteful_vector;
+
 // Minidump defines register structures which are different from the raw
 // structures which we get from the kernel. These are platform specific
 // functions to juggle the ucontext and user structures into minidump format.
@@ -90,22 +107,22 @@ typedef MDRawContextX86 RawContextCPU;
 // Write a uint16_t to memory
 //   out: memory location to write to
 //   v: value to write.
-static void U16(void* out, uint16_t v) {
+void U16(void* out, uint16_t v) {
   my_memcpy(out, &v, sizeof(v));
 }
 
 // Write a uint32_t to memory
 //   out: memory location to write to
 //   v: value to write.
-static void U32(void* out, uint32_t v) {
+void U32(void* out, uint32_t v) {
   my_memcpy(out, &v, sizeof(v));
 }
 
 // Juggle an x86 user_(fp|fpx|)regs_struct into minidump format
 //   out: the minidump structure
 //   info: the collection of register structures.
-static void CPUFillFromThreadInfo(MDRawContextX86 *out,
-                                  const google_breakpad::ThreadInfo &info) {
+void CPUFillFromThreadInfo(MDRawContextX86 *out,
+                           const google_breakpad::ThreadInfo &info) {
   out->context_flags = MD_CONTEXT_X86_ALL;
 
   out->dr0 = info.dregs[0];
@@ -165,8 +182,8 @@ static void CPUFillFromThreadInfo(MDRawContextX86 *out,
 // Juggle an x86 ucontext into minidump format
 //   out: the minidump structure
 //   info: the collection of register structures.
-static void CPUFillFromUContext(MDRawContextX86 *out, const ucontext *uc,
-                                const struct _libc_fpstate* fp) {
+void CPUFillFromUContext(MDRawContextX86 *out, const ucontext *uc,
+                         const struct _libc_fpstate* fp) {
   const greg_t* regs = uc->uc_mcontext.gregs;
 
   out->context_flags = MD_CONTEXT_X86_FULL |
@@ -206,8 +223,8 @@ static void CPUFillFromUContext(MDRawContextX86 *out, const ucontext *uc,
 #elif defined(__x86_64)
 typedef MDRawContextAMD64 RawContextCPU;
 
-static void CPUFillFromThreadInfo(MDRawContextAMD64 *out,
-                                  const google_breakpad::ThreadInfo &info) {
+void CPUFillFromThreadInfo(MDRawContextAMD64 *out,
+                           const google_breakpad::ThreadInfo &info) {
   out->context_flags = MD_CONTEXT_AMD64_FULL |
                        MD_CONTEXT_AMD64_SEGMENTS;
 
@@ -265,8 +282,8 @@ static void CPUFillFromThreadInfo(MDRawContextAMD64 *out,
   my_memcpy(&out->flt_save.xmm_registers, &info.fpregs.xmm_space, 16 * 16);
 }
 
-static void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
-                                const struct _libc_fpstate* fpregs) {
+void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
+                         const struct _libc_fpstate* fpregs) {
   const greg_t* regs = uc->uc_mcontext.gregs;
 
   out->context_flags = MD_CONTEXT_AMD64_FULL;
@@ -315,8 +332,8 @@ static void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
 #elif defined(__ARMEL__)
 typedef MDRawContextARM RawContextCPU;
 
-static void CPUFillFromThreadInfo(MDRawContextARM *out,
-                                  const google_breakpad::ThreadInfo &info) {
+void CPUFillFromThreadInfo(MDRawContextARM* out,
+                           const google_breakpad::ThreadInfo& info) {
   out->context_flags = MD_CONTEXT_ARM_FULL;
 
   for (int i = 0; i < MD_CONTEXT_ARM_GPR_COUNT; ++i)
@@ -332,8 +349,8 @@ static void CPUFillFromThreadInfo(MDRawContextARM *out,
 #endif
 }
 
-static void CPUFillFromUContext(MDRawContextARM *out, const ucontext *uc,
-                                const struct _libc_fpstate* fpregs) {
+void CPUFillFromUContext(MDRawContextARM* out, const ucontext* uc,
+                         const struct _libc_fpstate* fpregs) {
   out->context_flags = MD_CONTEXT_ARM_FULL;
 
   out->iregs[0] = uc->uc_mcontext.arm_r0;
@@ -366,15 +383,15 @@ static void CPUFillFromUContext(MDRawContextARM *out, const ucontext *uc,
 #error "This code has not been ported to your platform yet."
 #endif
 
-namespace google_breakpad {
-
 class MinidumpWriter {
  public:
-  MinidumpWriter(const char* filename,
+  MinidumpWriter(const char* minidump_path,
+                 int minidump_fd,
                  const ExceptionHandler::CrashContext* context,
                  const MappingList& mappings,
                  LinuxDumper* dumper)
-      : filename_(filename),
+      : fd_(minidump_fd),
+        path_(minidump_path),
         ucontext_(context ? &context->context : NULL),
 #if !defined(__ARM_EABI__)
         float_state_(context ? &context->float_state : NULL),
@@ -385,15 +402,28 @@ class MinidumpWriter {
         dumper_(dumper),
         memory_blocks_(dumper_->allocator()),
         mapping_list_(mappings) {
+    // Assert there should be either a valid fd or a valid path, not both.
+    assert(fd_ != -1 || minidump_path);
+    assert(fd_ == -1 || !minidump_path);
   }
 
   bool Init() {
-    return dumper_->Init() && minidump_writer_.Open(filename_) &&
-           dumper_->ThreadsSuspend();
+    if (!dumper_->Init())
+      return false;
+
+    if (fd_ != -1)
+      minidump_writer_.SetFile(fd_);
+    else if (!minidump_writer_.Open(path_))
+      return false;
+
+    return dumper_->ThreadsSuspend();
   }
 
   ~MinidumpWriter() {
-    minidump_writer_.Close();
+    // Don't close the file descriptor when it's been provided explicitly.
+    // Callers might still need to use it.
+    if (fd_ == -1)
+      minidump_writer_.Close();
     dumper_->ThreadsResume();
   }
 
@@ -1324,7 +1354,10 @@ class MinidumpWriter {
     return WriteFile(result, buf);
   }
 
-  const char* const filename_;  // output filename
+  // Only one of the 2 member variables below should be set to a valid value.
+  const int fd_;  // File descriptor where the minidum should be written.
+  const char* path_;  // Path to the file where the minidum should be written.
+
   const struct ucontext* const ucontext_;  // also from the signal handler
   const struct _libc_fpstate* const float_state_;  // ditto
   LinuxDumper* dumper_;
@@ -1338,15 +1371,12 @@ class MinidumpWriter {
   const MappingList& mapping_list_;
 };
 
-bool WriteMinidump(const char* filename, pid_t crashing_process,
-                   const void* blob, size_t blob_size) {
-  MappingList m;
-  return WriteMinidump(filename, crashing_process, blob, blob_size, m);
-}
 
-bool WriteMinidump(const char* filename, pid_t crashing_process,
-                   const void* blob, size_t blob_size,
-                   const MappingList& mappings) {
+bool WriteMinidumpImpl(const char* minidump_path,
+                       int minidump_fd,
+                       pid_t crashing_process,
+                       const void* blob, size_t blob_size,
+                       const MappingList& mappings) {
   if (blob_size != sizeof(ExceptionHandler::CrashContext))
     return false;
   const ExceptionHandler::CrashContext* context =
@@ -1356,16 +1386,46 @@ bool WriteMinidump(const char* filename, pid_t crashing_process,
       reinterpret_cast<uintptr_t>(context->siginfo.si_addr));
   dumper.set_crash_signal(context->siginfo.si_signo);
   dumper.set_crash_thread(context->tid);
-  MinidumpWriter writer(filename, context, mappings, &dumper);
+  MinidumpWriter writer(minidump_path, minidump_fd, context, mappings, &dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();
 }
 
+}  // namespace
+
+namespace google_breakpad {
+
+bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
+                   const void* blob, size_t blob_size) {
+  return WriteMinidumpImpl(minidump_path, -1, crashing_process, blob, blob_size,
+                           MappingList());
+}
+
+bool WriteMinidump(int minidump_fd, pid_t crashing_process,
+                   const void* blob, size_t blob_size) {
+  return WriteMinidumpImpl(NULL, minidump_fd, crashing_process, blob, blob_size,
+                           MappingList());
+}
+
+bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
+                   const void* blob, size_t blob_size,
+                   const MappingList& mappings) {
+  return WriteMinidumpImpl(minidump_path, -1, crashing_process, blob, blob_size,
+                           mappings);
+}
+
+bool WriteMinidump(int minidump_fd, pid_t crashing_process,
+                   const void* blob, size_t blob_size,
+                   const MappingList& mappings) {
+  return WriteMinidumpImpl(NULL, minidump_fd, crashing_process, blob, blob_size,
+                           mappings);
+}
+
 bool WriteMinidump(const char* filename,
                    const MappingList& mappings,
                    LinuxDumper* dumper) {
-  MinidumpWriter writer(filename, NULL, mappings, dumper);
+  MinidumpWriter writer(filename, -1, NULL, mappings, dumper);
   if (!writer.Init())
     return false;
   return writer.Dump();

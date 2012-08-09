@@ -171,6 +171,7 @@ src_client_linux_libbreakpad_client_a_LIBADD =
 am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/client/linux/crash_generation/crash_generation_client.cc \
 	src/client/linux/handler/exception_handler.cc \
+	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
@@ -185,6 +186,7 @@ am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 am__dirstamp = $(am__leading_dot)dirstamp
 @LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_a_OBJECTS = src/client/linux/crash_generation/crash_generation_client.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.$(OBJEXT) \
@@ -1239,6 +1241,7 @@ lib_LIBRARIES = $(am__append_1) $(am__append_3)
 @LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.cc \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.cc \
+@LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.cc \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
@@ -1418,6 +1421,7 @@ TESTS_ENVIRONMENT =
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.o \
+@LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.o \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.o \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.o \
@@ -2001,6 +2005,8 @@ EXTRA_DIST = \
 	src/client/linux/handler/Makefile \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/handler/exception_handler.h \
+	src/client/linux/handler/minidump_descriptor.cc \
+	src/client/linux/handler/minidump_descriptor.h \
 	src/client/linux/handler/exception_handler_test.cc \
 	src/client/linux/handler/linux_thread.cc \
 	src/client/linux/handler/linux_thread.h \
@@ -2236,6 +2242,9 @@ src/client/linux/handler/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/handler/$(DEPDIR)
 	@: > src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/handler/exception_handler.$(OBJEXT):  \
+	src/client/linux/handler/$(am__dirstamp) \
+	src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/handler/minidump_descriptor.$(OBJEXT):  \
 	src/client/linux/handler/$(am__dirstamp) \
 	src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/log/$(am__dirstamp):
@@ -3142,6 +3151,7 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f src/client/linux/crash_generation/crash_generation_client.$(OBJEXT)
 	-rm -f src/client/linux/handler/exception_handler.$(OBJEXT)
+	-rm -f src/client/linux/handler/minidump_descriptor.$(OBJEXT)
 	-rm -f src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT)
 	-rm -f src/client/linux/log/log.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/linux_core_dumper.$(OBJEXT)
@@ -3369,6 +3379,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/$(DEPDIR)/minidump_file_writer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/crash_generation/$(DEPDIR)/crash_generation_client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/exception_handler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/minidump_descriptor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/log/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_core_dumper.Po@am__quote@

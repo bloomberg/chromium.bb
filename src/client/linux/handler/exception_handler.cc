@@ -93,7 +93,6 @@
 #include "client/linux/log/log.h"
 #include "client/linux/minidump_writer/linux_dumper.h"
 #include "client/linux/minidump_writer/minidump_writer.h"
-#include "common/linux/guid_creator.h"
 #include "common/linux/eintr_wrapper.h"
 #include "third_party/lss/linux_syscall_support.h"
 
@@ -126,57 +125,36 @@ pthread_mutex_t ExceptionHandler::handler_stack_mutex_ =
     PTHREAD_MUTEX_INITIALIZER;
 
 // Runs before crashing: normal context.
-ExceptionHandler::ExceptionHandler(const string &dump_path,
-                                   FilterCallback filter,
-                                   MinidumpCallback callback,
-                                   void *callback_context,
-                                   bool install_handler)
-  : filter_(filter),
-    callback_(callback),
-    callback_context_(callback_context),
-    handler_installed_(install_handler)
-{
-  Init(dump_path, -1);
-}
-
-ExceptionHandler::ExceptionHandler(const string &dump_path,
+ExceptionHandler::ExceptionHandler(const MinidumpDescriptor& descriptor,
                                    FilterCallback filter,
                                    MinidumpCallback callback,
                                    void* callback_context,
                                    bool install_handler,
                                    const int server_fd)
-  : filter_(filter),
-    callback_(callback),
-    callback_context_(callback_context),
-    handler_installed_(install_handler)
-{
-  Init(dump_path, server_fd);
+    : filter_(filter),
+      callback_(callback),
+      callback_context_(callback_context),
+      minidump_descriptor_(descriptor),
+      crash_handler_(NULL) {
+  if (server_fd >= 0)
+    crash_generation_client_.reset(CrashGenerationClient::TryCreate(server_fd));
+
+  if (install_handler)
+    InstallHandlers();
+
+  if (!IsOutOfProcess() && !minidump_descriptor_.IsFD())
+    minidump_descriptor_.UpdatePath();
+
+  pthread_mutex_lock(&handler_stack_mutex_);
+  if (!handler_stack_)
+    handler_stack_ = new std::vector<ExceptionHandler*>;
+  handler_stack_->push_back(this);
+  pthread_mutex_unlock(&handler_stack_mutex_);
 }
 
 // Runs before crashing: normal context.
 ExceptionHandler::~ExceptionHandler() {
   UninstallHandlers();
-}
-
-void ExceptionHandler::Init(const string &dump_path,
-                            const int server_fd)
-{
-  crash_handler_ = NULL;
-  if (0 <= server_fd)
-    crash_generation_client_
-      .reset(CrashGenerationClient::TryCreate(server_fd));
-
-  if (handler_installed_)
-    InstallHandlers();
-
-  if (!IsOutOfProcess())
-    set_dump_path(dump_path);
-
-  pthread_mutex_lock(&handler_stack_mutex_);
-  if (handler_stack_ == NULL)
-    handler_stack_ = new std::vector<ExceptionHandler *>;
-  handler_stack_->push_back(this);
-  pthread_mutex_unlock(&handler_stack_mutex_);
 }
 
 // Runs before crashing: normal context.
@@ -237,24 +215,6 @@ void ExceptionHandler::UninstallHandlers() {
   old_handlers_.clear();
 }
 
-// Runs before crashing: normal context.
-void ExceptionHandler::UpdateNextID() {
-  GUID guid;
-  char guid_str[kGUIDStringLength + 1];
-  if (CreateGUID(&guid) && GUIDToString(&guid, guid_str, sizeof(guid_str))) {
-    next_minidump_id_ = guid_str;
-    next_minidump_id_c_ = next_minidump_id_.c_str();
-
-    char minidump_path[PATH_MAX];
-    snprintf(minidump_path, sizeof(minidump_path), "%s/%s.dmp",
-             dump_path_c_,
-             guid_str);
-
-    next_minidump_path_ = minidump_path;
-    next_minidump_path_c_ = next_minidump_path_.c_str();
-  }
-}
-
 // void ExceptionHandler::set_crash_handler(HandlerCallback callback) {
 //   crash_handler_ = callback;
 // }
@@ -308,6 +268,7 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
 
 struct ThreadArgument {
   pid_t pid;  // the crashing process
+  const MinidumpDescriptor* minidump_descriptor;
   ExceptionHandler* handler;
   const void* context;  // a CrashContext structure
   size_t context_size;
@@ -378,6 +339,7 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
 
   ThreadArgument thread_arg;
   thread_arg.handler = this;
+  thread_arg.minidump_descriptor = &minidump_descriptor_;
   thread_arg.pid = getpid();
   thread_arg.context = context;
   thread_arg.context_size = sizeof(*context);
@@ -420,11 +382,8 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
   }
 
   bool success = r != -1 && WIFEXITED(status) && WEXITSTATUS(status) == 0;
-
   if (callback_)
-    success = callback_(dump_path_c_, next_minidump_id_c_,
-                        callback_context_, success);
-
+    success = callback_(minidump_descriptor_, callback_context_, success);
   return success;
 }
 
@@ -461,7 +420,14 @@ void ExceptionHandler::WaitForContinueSignal() {
 // Runs on the cloned process.
 bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
                               size_t context_size) {
-  return google_breakpad::WriteMinidump(next_minidump_path_c_,
+  if (minidump_descriptor_.IsFD()) {
+    return google_breakpad::WriteMinidump(minidump_descriptor_.fd(),
+                                          crashing_process,
+                                          context,
+                                          context_size,
+                                          mapping_list_);
+  }
+  return google_breakpad::WriteMinidump(minidump_descriptor_.path(),
                                         crashing_process,
                                         context,
                                         context_size,
@@ -469,15 +435,29 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
 }
 
 // static
-bool ExceptionHandler::WriteMinidump(const string &dump_path,
+bool ExceptionHandler::WriteMinidump(const string& dump_path,
                                      MinidumpCallback callback,
                                      void* callback_context) {
-  ExceptionHandler eh(dump_path, NULL, callback, callback_context, false);
+  MinidumpDescriptor descriptor(dump_path);
+  ExceptionHandler eh(descriptor, NULL, callback, callback_context, false, -1);
   return eh.WriteMinidump();
 }
 
 bool ExceptionHandler::WriteMinidump() {
 #if !defined(__ARM_EABI__)
+  if (!IsOutOfProcess() && !minidump_descriptor_.IsFD()) {
+    // Update the path of the minidump so that this can be called multiple times
+    // and new files are created for each minidump.  This is done before the
+    // generation happens, as clients may want to access the MinidumpDescriptor
+    // after this call to find the exact path to the minidump file.
+    minidump_descriptor_.UpdatePath();
+  } else if (minidump_descriptor_.IsFD()) {
+    // Reposition the FD to its beginning and resize it to get rid of the
+    // previous minidump info.
+    lseek(minidump_descriptor_.fd(), 0, SEEK_SET);
+    ftruncate(minidump_descriptor_.fd(), 0);
+  }
+
   // Allow ourselves to be dumped.
   sys_prctl(PR_SET_DUMPABLE, 1);
 
@@ -489,9 +469,7 @@ bool ExceptionHandler::WriteMinidump() {
          sizeof(context.float_state));
   context.tid = sys_gettid();
 
-  bool success = GenerateDump(&context);
-  UpdateNextID();
-  return success;
+  return GenerateDump(&context);
 #else
   return false;
 #endif  // !defined(__ARM_EABI__)

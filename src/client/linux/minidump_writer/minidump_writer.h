@@ -51,21 +51,27 @@ struct MappingEntry {
 // A list of <MappingInfo, GUID>
 typedef std::list<MappingEntry> MappingList;
 
-// Write a minidump to the filesystem. This function does not malloc nor use
+// Writes a minidump to the filesystem. These functions do not malloc nor use
 // libc functions which may. Thus, it can be used in contexts where the state
 // of the heap may be corrupt.
-//   filename: the filename to write to. This is opened O_EXCL and fails if
-//     open fails.
+//   minidump_path: the path to the file to write to. This is opened O_EXCL and
+//     fails open fails.
 //   crashing_process: the pid of the crashing process. This must be trusted.
 //   blob: a blob of data from the crashing process. See exception_handler.h
 //   blob_size: the length of |blob|, in bytes
 //
 // Returns true iff successful.
-bool WriteMinidump(const char* filename, pid_t crashing_process,
+bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
+                   const void* blob, size_t blob_size);
+// Same as above but takes an open file descriptor instead of a path.
+bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size);
 
-// This overload also allows passing a list of known mappings.
-bool WriteMinidump(const char* filename, pid_t crashing_process,
+// These overloads also allow passing a list of known mappings.
+bool WriteMinidump(const char* minidump_path, pid_t crashing_process,
+                   const void* blob, size_t blob_size,
+                   const MappingList& mappings);
+bool WriteMinidump(int minidump_fd, pid_t crashing_process,
                    const void* blob, size_t blob_size,
                    const MappingList& mappings);
 

@@ -60,7 +60,7 @@ namespace {
 typedef testing::Test MinidumpWriterTest;
 }
 
-TEST(MinidumpWriterTest, Setup) {
+TEST(MinidumpWriterTest, SetupWithPath) {
   int fds[2];
   ASSERT_NE(-1, pipe(fds));
 
@@ -82,6 +82,36 @@ TEST(MinidumpWriterTest, Setup) {
   // Set a non-zero tid to avoid tripping asserts.
   context.tid = 1;
   ASSERT_TRUE(WriteMinidump(templ.c_str(), child, &context, sizeof(context)));
+  struct stat st;
+  ASSERT_EQ(stat(templ.c_str(), &st), 0);
+  ASSERT_GT(st.st_size, 0u);
+
+  close(fds[1]);
+}
+
+TEST(MinidumpWriterTest, SetupWithFD) {
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
+
+  const pid_t child = fork();
+  if (child == 0) {
+    close(fds[1]);
+    char b;
+    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
+    close(fds[0]);
+    syscall(__NR_exit);
+  }
+  close(fds[0]);
+
+  ExceptionHandler::CrashContext context;
+  memset(&context, 0, sizeof(context));
+
+  AutoTempDir temp_dir;
+  string templ = temp_dir.path() + "/minidump-writer-unittest";
+  int fd = open(templ.c_str(), O_CREAT | O_WRONLY, S_IRWXU);
+  // Set a non-zero tid to avoid tripping asserts.
+  context.tid = 1;
+  ASSERT_TRUE(WriteMinidump(fd, child, &context, sizeof(context)));
   struct stat st;
   ASSERT_EQ(stat(templ.c_str(), &st), 0);
   ASSERT_GT(st.st_size, 0u);
@@ -261,9 +291,8 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   mapping.first = info;
   memcpy(mapping.second, kModuleGUID, sizeof(MDGUID));
   mappings.push_back(mapping);
-  ASSERT_TRUE(
-      WriteMinidump(dumpfile.c_str(), child, &context, sizeof(context),
-                    mappings));
+  ASSERT_TRUE(WriteMinidump(dumpfile.c_str(), child, &context, sizeof(context),
+                            mappings));
 
   // Read the minidump. Load the module list, and ensure that
   // the mmap'ed |memory| is listed with the given module name
@@ -354,8 +383,6 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   struct stat st;
   ASSERT_EQ(stat(templ.c_str(), &st), 0);
   ASSERT_GT(st.st_size, 0u);
-
-
 
   Minidump minidump(templ.c_str());
   ASSERT_TRUE(minidump.Read());
