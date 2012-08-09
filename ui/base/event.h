@@ -241,18 +241,6 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
 
   void set_force(float force) { force_ = force; }
 
- protected:
-  void set_radius(float radius_x, float radius_y) {
-    radius_x_ = radius_x;
-    radius_y_ = radius_y;
-  }
-
-  void set_rotation_angle(float rotation_angle) {
-    rotation_angle_ = rotation_angle;
-  }
-
-  void set_force(float force) { force_ = force; }
-
  private:
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
