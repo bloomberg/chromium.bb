@@ -251,6 +251,7 @@ begword bűn 12-23456-1345	For example bűnnyomok word
 partword magánnyel 134-1-1245-4-1345-1246-15-123	For example magánnyelvmesterek word
 partword oroszlánnyo 135-1235-135-156-123-4-1345-1246-135	For example oroszlánnyom word
 partword önnyom 12345-1345-1246-135-134	For example önnyomása, önnyomatú words
+partword dizájnny 145-24-126-4-245-1345-1246	For example dizájnnyelv word
 
 #ly related exceptions
 #This exception parts need marking ly letters with two single l and y letter combination
@@ -739,6 +740,7 @@ partword formánsszint 124-135-1235-134-4-1345-234-156-24-1345-2345	For example 
 partword vírussz 1236-34-1235-136-234-156	For example vírusszűrés word
 partword stílussz 234-2345-34-123-136-234-156	For example stílusszerű, stílusszerkesztő words
 partword hármassz 125-4-1235-134-1-234-156	For example hármasszak, hármassziget word
+begword hússzöv 125-346-234-156-12345-1236	For example Hússzövetség company name or normal hússzövet words need this exception
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

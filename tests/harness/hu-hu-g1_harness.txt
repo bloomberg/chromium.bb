@@ -955,6 +955,10 @@
           "output": "hússzínű"
         }, 
         {
+          "input": "⠨⠓⠬⠎⠱⠟⠧⠑⠞⠎⠡⠛", 
+          "output": "Hússzövetség"
+        }, 
+        {
           "input": "⠓⠾⠧⠟⠎⠱⠑⠍⠾", 
           "output": "hűvösszemű"
         }, 
@@ -1081,6 +1085,10 @@
         {
           "input": "⠅⠁⠃⠊⠝⠫⠕⠍⠈⠎", 
           "output": "kabinnyomás"
+        }, 
+        {
+          "input": "⠙⠊⠣⠈⠚⠝⠫⠑⠇⠧", 
+          "output": "dizájnnyelv"
         }, 
         {
           "input": "⠅⠁⠅⠁⠎⠱⠪", 
@@ -3128,7 +3136,7 @@
         }, 
         {
           "input": "⠤ ⠨⠁ ⠎⠊⠧⠁⠞⠁⠛⠊ ⠅⠁⠗⠁⠧⠈⠝⠬⠞⠕⠝⠂ ⠝⠑⠹⠧⠑⠝ ⠧⠁⠹ ⠟⠞⠧⠑⠝ ⠍⠡⠗⠋⠟⠇⠙⠫⠊⠗⠑ ⠊⠝⠝⠑⠝⠄ ⠨⠑⠹ ⠨⠋⠕⠗⠙⠄ ⠨⠙⠑ ⠍⠊ ⠝⠑⠍ ⠍⠑⠹⠷⠝⠅ ⠍⠁⠛⠈⠧⠁⠇⠄ ⠤ ⠨⠑⠇⠻⠧⠑⠞⠞⠑ ⠁⠣ ⠊⠗⠁⠞⠞⠈⠗⠉⠈⠚⠈⠞⠂ ⠡⠎ ⠈⠞⠁⠙⠕⠞⠞ ⠨⠝⠁⠱⠊⠋⠝⠁⠅ ⠑⠹ ⠁⠝⠛⠕⠇ ⠋⠕⠝⠞⠕⠞⠄ ⠤ ⠨⠓⠁ ⠧⠊⠱⠱⠁⠚⠟⠝⠂ ⠅⠑⠗⠑⠎⠎⠑⠝ ⠍⠑⠛ ⠁ ⠧⠁⠎⠬⠞⠈⠇⠇⠕⠍⠈⠎ ⠍⠑⠇⠇⠑⠞⠞ ⠁ ⠨⠛⠗⠁⠝⠙ ⠨⠓⠕⠞⠑⠇⠃⠁⠝⠄", 
-          "output": "– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban."
+          "output": "- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban."
         }, 
         {
           "input": "⠨⠁ ⠧⠡⠞⠑⠇⠈⠗ ⠼⠁ ⠰⠑⠄", 
@@ -4115,6 +4123,10 @@
           "output": "⠓⠬⠎⠱⠌⠝⠾"
         }, 
         {
+          "input": "Hússzövetség", 
+          "output": "⠨⠓⠬⠎⠱⠟⠧⠑⠞⠎⠡⠛"
+        }, 
+        {
           "input": "hűvösszemű", 
           "output": "⠓⠾⠧⠟⠎⠱⠑⠍⠾"
         }, 
@@ -4241,6 +4253,10 @@
         {
           "input": "kabinnyomás", 
           "output": "⠅⠁⠃⠊⠝⠫⠕⠍⠈⠎"
+        }, 
+        {
+          "input": "dizájnnyelv", 
+          "output": "⠙⠊⠣⠈⠚⠝⠫⠑⠇⠧"
         }, 
         {
           "input": "kakasszó", 
@@ -6287,7 +6303,7 @@
           "output": "⠨⠁⠣ ⠼⠁⠼⠧ ⠏⠁⠗⠁⠛⠗⠁⠋⠥⠎ ⠁⠇⠁⠏⠚⠈⠝ ⠁ ⠅⠑⠙⠧⠑⠣⠍⠡⠫ ⠊⠛⠡⠫⠃⠑ ⠧⠑⠓⠑⠞⠻⠄"
         }, 
         {
-          "input": "– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.", 
+          "input": "- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.", 
           "output": "⠤ ⠨⠁ ⠎⠊⠧⠁⠞⠁⠛⠊ ⠅⠁⠗⠁⠧⠈⠝⠬⠞⠕⠝⠂ ⠝⠑⠹⠧⠑⠝ ⠧⠁⠹ ⠟⠞⠧⠑⠝ ⠍⠡⠗⠋⠟⠇⠙⠫⠊⠗⠑ ⠊⠝⠝⠑⠝⠄ ⠨⠑⠹ ⠨⠋⠕⠗⠙⠄ ⠨⠙⠑ ⠍⠊ ⠝⠑⠍ ⠍⠑⠹⠷⠝⠅ ⠍⠁⠛⠈⠧⠁⠇⠄ ⠤ ⠨⠑⠇⠻⠧⠑⠞⠞⠑ ⠁⠣ ⠊⠗⠁⠞⠞⠈⠗⠉⠈⠚⠈⠞⠂ ⠡⠎ ⠈⠞⠁⠙⠕⠞⠞ ⠨⠝⠁⠱⠊⠋⠝⠁⠅ ⠑⠹ ⠁⠝⠛⠕⠇ ⠋⠕⠝⠞⠕⠞⠄ ⠤ ⠨⠓⠁ ⠧⠊⠱⠱⠁⠚⠟⠝⠂ ⠅⠑⠗⠑⠎⠎⠑⠝ ⠍⠑⠛ ⠁ ⠧⠁⠎⠬⠞⠈⠇⠇⠕⠍⠈⠎ ⠍⠑⠇⠇⠑⠞⠞ ⠁ ⠨⠛⠗⠁⠝⠙ ⠨⠓⠕⠞⠑⠇⠃⠁⠝⠄"
         }, 
         {

@@ -980,6 +980,10 @@
           "output": "hús-szí-nű"
         }, 
         {
+          "input": "Hússzövetség", 
+          "output": "Hús-szö-vet-ség"
+        }, 
+        {
           "input": "hűvösszemű", 
           "output": "hű-vös-sze-mű"
         }, 
@@ -1106,6 +1110,10 @@
         {
           "input": "kabinnyomás", 
           "output": "ka-bin-nyo-más"
+        }, 
+        {
+          "input": "dizájnnyelv", 
+          "output": "di-zájnnyelv"
         }, 
         {
           "input": "kakasszó", 

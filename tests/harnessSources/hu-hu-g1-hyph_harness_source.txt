@@ -730,6 +730,9 @@ testmode: hyphenate
 hússzínű
 
 testmode: hyphenate
+Hússzövetség
+
+testmode: hyphenate
 hűvösszemű
 
 testmode: hyphenate
@@ -824,6 +827,9 @@ kabinnyíláson
 
 testmode: hyphenate
 kabinnyomás
+
+testmode: hyphenate
+dizájnnyelv
 
 testmode: hyphenate
 kakasszó

@@ -1185,6 +1185,11 @@ hússzínű
 testmode: backtranslate
 hússzínű
 
+Hússzövetség
+
+testmode: backtranslate
+Hússzövetség
+
 hűvösszemű
 
 testmode: backtranslate
@@ -1344,6 +1349,11 @@ kabinnyomás
 
 testmode: backtranslate
 kabinnyomás
+
+dizájnnyelv
+
+testmode: backtranslate
+dizájnnyelv
 
 kakasszó
 
@@ -3900,10 +3910,10 @@ Az 1§ paragrafus alapján a kedvezmény igénybe vehető.
 testmode: backtranslate
 Az 1§ paragrafus alapján a kedvezmény igénybe vehető.
 
-– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.
+- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.
 
 testmode: backtranslate
-– A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. – Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. – Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.
+- A sivatagi karavánúton, negyven vagy ötven mérföldnyire innen. Egy Ford. De mi nem megyünk magával. - Elővette az irattárcáját, és átadott Naszifnak egy angol fontot. - Ha visszajön, keressen meg a vasútállomás mellett a Grand Hotelban.
 
 A vételár 1 €.
 

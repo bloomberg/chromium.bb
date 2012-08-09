@@ -108,7 +108,7 @@ table_files = \
 	hi.ctb \
 	hi-in-g1.utb \
 	hr.ctb \
-	hu-backtranslate-correction.dis\
+	hu-backtranslate-correction.dis \
 	hu-chardefs.cti \
 	hu-exceptionwords.cti \
 	hu-hu-g1.ctb \
