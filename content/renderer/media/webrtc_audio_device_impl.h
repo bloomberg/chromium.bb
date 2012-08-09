@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -218,14 +217,12 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t Release() OVERRIDE;
 
   // media::AudioRendererSink::RenderCallback implementation.
-  virtual int Render(const std::vector<float*>& audio_data,
-                     int number_of_frames,
+  virtual int Render(media::AudioBus* audio_bus,
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 
   // AudioInputDevice::CaptureCallback implementation.
-  virtual void Capture(const std::vector<float*>& audio_data,
-                       int number_of_frames,
+  virtual void Capture(media::AudioBus* audio_bus,
                        int audio_delay_milliseconds,
                        double volume) OVERRIDE;
   virtual void OnCaptureError() OVERRIDE;

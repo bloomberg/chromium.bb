@@ -174,10 +174,9 @@ int32_t WebRtcAudioDeviceImpl::Release() {
 }
 
 int WebRtcAudioDeviceImpl::Render(
-    const std::vector<float*>& audio_data,
-    int number_of_frames,
+    media::AudioBus* audio_bus,
     int audio_delay_milliseconds) {
-  DCHECK_LE(number_of_frames, output_buffer_size());
+  DCHECK_LE(audio_bus->frames(), output_buffer_size());
 
   {
     base::AutoLock auto_lock(lock_);
@@ -185,7 +184,7 @@ int WebRtcAudioDeviceImpl::Render(
     output_delay_ms_ = audio_delay_milliseconds;
   }
 
-  const int channels = audio_data.size();
+  const int channels = audio_bus->channels();
   DCHECK_LE(channels, output_channels());
 
   int samples_per_sec = output_sample_rate();
@@ -205,7 +204,7 @@ int WebRtcAudioDeviceImpl::Render(
   // Get audio samples in blocks of 10 milliseconds from the registered
   // webrtc::AudioTransport source. Keep reading until our internal buffer
   // is full.
-  while (accumulated_audio_samples < number_of_frames) {
+  while (accumulated_audio_samples < audio_bus->frames()) {
     // Get 10ms and append output to temporary byte buffer.
     audio_transport_callback_->NeedMorePlayData(samples_per_10_msec,
                                                 bytes_per_sample_,
@@ -222,13 +221,13 @@ int WebRtcAudioDeviceImpl::Render(
   for (int channel_index = 0; channel_index < channels; ++channel_index) {
     media::DeinterleaveAudioChannel(
         output_buffer_.get(),
-        audio_data[channel_index],
+        audio_bus->channel(channel_index),
         channels,
         channel_index,
         bytes_per_sample_,
-        number_of_frames);
+        audio_bus->frames());
   }
-  return number_of_frames;
+  return audio_bus->frames();
 }
 
 void WebRtcAudioDeviceImpl::OnRenderError() {
@@ -237,11 +236,10 @@ void WebRtcAudioDeviceImpl::OnRenderError() {
   LOG(ERROR) << "OnRenderError()";
 }
 
-void WebRtcAudioDeviceImpl::Capture(const std::vector<float*>& audio_data,
-                                    int number_of_frames,
+void WebRtcAudioDeviceImpl::Capture(media::AudioBus* audio_bus,
                                     int audio_delay_milliseconds,
                                     double volume) {
-  DCHECK_LE(number_of_frames, input_buffer_size());
+  DCHECK_LE(audio_bus->frames(), input_buffer_size());
 #if defined(OS_WIN) || defined(OS_MACOSX)
   DCHECK_LE(volume, 1.0);
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
@@ -261,15 +259,15 @@ void WebRtcAudioDeviceImpl::Capture(const std::vector<float*>& audio_data,
     output_delay_ms = output_delay_ms_;
   }
 
-  const int channels = audio_data.size();
+  const int channels = audio_bus->channels();
   DCHECK_LE(channels, input_channels());
   uint32_t new_mic_level = 0;
 
   // Interleave, scale, and clip input to int and store result in
   // a local byte buffer.
-  media::InterleaveFloatToInt(audio_data,
+  media::InterleaveFloatToInt(audio_bus,
                               input_buffer_.get(),
-                              number_of_frames,
+                              audio_bus->frames(),
                               input_audio_parameters_.bits_per_sample() / 8);
 
   int samples_per_sec = input_sample_rate();
@@ -291,7 +289,7 @@ void WebRtcAudioDeviceImpl::Capture(const std::vector<float*>& audio_data,
   // Write audio samples in blocks of 10 milliseconds to the registered
   // webrtc::AudioTransport sink. Keep writing until our internal byte
   // buffer is empty.
-  while (accumulated_audio_samples < number_of_frames) {
+  while (accumulated_audio_samples < audio_bus->frames()) {
     // Deliver 10ms of recorded 16-bit linear PCM audio.
     audio_transport_callback_->RecordedDataIsAvailable(
         audio_byte_buffer,

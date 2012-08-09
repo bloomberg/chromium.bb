@@ -5,16 +5,10 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_RENDERER_WEBAUDIODEVICE_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_RENDERER_WEBAUDIODEVICE_IMPL_H_
 
-#include <vector>
-
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-
-namespace media {
-class AudioRendererSink;
-}
 
 class RendererWebAudioDeviceImpl
     : public WebKit::WebAudioDevice,
@@ -30,8 +24,7 @@ class RendererWebAudioDeviceImpl
   virtual double sampleRate();
 
   // AudioRendererSink::RenderCallback implementation.
-  virtual int Render(const std::vector<float*>& audio_data,
-                     int number_of_frames,
+  virtual int Render(media::AudioBus* audio_bus,
                      int audio_delay_milliseconds) OVERRIDE;
   virtual void OnRenderError() OVERRIDE;
 

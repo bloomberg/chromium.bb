@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/render_audiosourceprovider.h"
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -77,9 +79,12 @@ void RenderAudioSourceProvider::provideInput(
     for (size_t i = 0; i < audio_data.size(); ++i)
       v[i] = audio_data[i];
 
+    scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::WrapVector(
+        number_of_frames, v);
+
     // TODO(crogers): figure out if we should volume scale here or in common
     // WebAudio code.  In any case we need to take care of volume.
-    renderer_->Render(v, number_of_frames, 0);
+    renderer_->Render(audio_bus.get(), 0);
   } else {
     // Provide silence if the source is not running.
     for (size_t i = 0; i < audio_data.size(); ++i)

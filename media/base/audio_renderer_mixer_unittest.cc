@@ -191,19 +191,8 @@ class AudioRendererMixerTest
         input_parameters_, output_parameters_, sink_));
     mixer_callback_ = sink_->callback();
 
-    // TODO(dalecurtis): If we switch to AVX/SSE optimization, we'll need to
-    // allocate these on 32-byte boundaries and ensure they're sized % 32 bytes.
-    audio_data_.reserve(output_parameters_.channels());
-    for (int i = 0; i < output_parameters_.channels(); ++i)
-      audio_data_.push_back(new float[output_parameters_.frames_per_buffer()]);
-
-    // TODO(dalecurtis): If we switch to AVX/SSE optimization, we'll need to
-    // allocate these on 32-byte boundaries and ensure they're sized % 32 bytes.
-    expected_audio_data_.reserve(output_parameters_.channels());
-    for (int i = 0; i < output_parameters_.channels(); ++i) {
-      expected_audio_data_.push_back(
-          new float[output_parameters_.frames_per_buffer()]);
-    }
+    audio_bus_ = AudioBus::Create(output_parameters_);
+    expected_audio_bus_ = AudioBus::Create(output_parameters_);
 
     // Allocate one callback for generating expected results.
     double step = kSineCycles / static_cast<double>(
@@ -241,13 +230,13 @@ class AudioRendererMixerTest
   }
 
   bool ValidateAudioData(int index, int frames, float scale) {
-    for (size_t i = 0; i < audio_data_.size(); ++i) {
+    for (int i = 0; i < audio_bus_->channels(); ++i) {
       for (int j = index; j < frames; j++) {
-        double error = fabs(
-            audio_data_[i][j] - expected_audio_data_[i][j] * scale);
+        double error = fabs(audio_bus_->channel(i)[j] -
+            expected_audio_bus_->channel(i)[j] * scale);
         if (error > epsilon_) {
-          EXPECT_NEAR(
-              expected_audio_data_[i][j] * scale, audio_data_[i][j], epsilon_)
+          EXPECT_NEAR(expected_audio_bus_->channel(i)[j] * scale,
+                      audio_bus_->channel(i)[j], epsilon_)
               << " i=" << i << ", j=" << j;
           return false;
         }
@@ -257,8 +246,6 @@ class AudioRendererMixerTest
   }
 
   bool RenderAndValidateAudioData(float scale) {
-    int request_frames = output_parameters_.frames_per_buffer();
-
     // Half fill won't be exactly half when resampling since the resampler
     // will have enough data to fill out more of the buffer based on its
     // internal buffer and kernel size.  So special case some of the checks.
@@ -269,19 +256,16 @@ class AudioRendererMixerTest
       for (size_t i = 0; i < fake_callbacks_.size(); ++i)
         fake_callbacks_[i]->set_half_fill(true);
       expected_callback_->set_half_fill(true);
-      for (size_t i = 0; i < expected_audio_data_.size(); ++i) {
-        memset(expected_audio_data_[i], 0,
-               sizeof(*expected_audio_data_[i]) * request_frames);
-      }
+      expected_audio_bus_->Zero();
     }
 
     // Render actual audio data.
-    int frames = mixer_callback_->Render(audio_data_, request_frames, 0);
-    if (frames != request_frames)
+    int frames = mixer_callback_->Render(audio_bus_.get(), 0);
+    if (frames != audio_bus_->frames())
       return false;
 
     // Render expected audio data (without scaling).
-    expected_callback_->Render(expected_audio_data_, request_frames, 0);
+    expected_callback_->Render(expected_audio_bus_.get(), 0);
 
     if (half_fill_) {
       // Verify first half of audio data for both resampling and non-resampling.
@@ -296,11 +280,12 @@ class AudioRendererMixerTest
     }
   }
 
-  // Fill |audio_data_| fully with |value|.
+  // Fill |audio_bus_| fully with |value|.
   void FillAudioData(float value) {
-    for (size_t i = 0; i < audio_data_.size(); ++i)
-      std::fill(audio_data_[i],
-                audio_data_[i] + output_parameters_.frames_per_buffer(), value);
+    for (int i = 0; i < audio_bus_->channels(); ++i) {
+      std::fill(audio_bus_->channel(i),
+                audio_bus_->channel(i) + audio_bus_->frames(), value);
+    }
   }
 
   // Verify silence when mixer inputs are in pre-Start() and post-Start().
@@ -414,26 +399,21 @@ class AudioRendererMixerTest
       mixer_inputs_[i]->Stop();
     }
 
-    // Verify we get silence back; fill |audio_data_| before hand to be sure.
+    // Verify we get silence back; fill |audio_bus_| before hand to be sure.
     FillAudioData(1.0f);
     EXPECT_TRUE(RenderAndValidateAudioData(0.0f));
   }
 
  protected:
-  virtual ~AudioRendererMixerTest() {
-    for (size_t i = 0; i < audio_data_.size(); ++i)
-      delete [] audio_data_[i];
-    for (size_t i = 0; i < expected_audio_data_.size(); ++i)
-      delete [] expected_audio_data_[i];
-  }
+  virtual ~AudioRendererMixerTest() {}
 
   scoped_refptr<MockAudioRendererSink> sink_;
   scoped_ptr<AudioRendererMixer> mixer_;
   AudioRendererSink::RenderCallback* mixer_callback_;
   AudioParameters input_parameters_;
   AudioParameters output_parameters_;
-  std::vector<float*> audio_data_;
-  std::vector<float*> expected_audio_data_;
+  scoped_ptr<AudioBus> audio_bus_;
+  scoped_ptr<AudioBus> expected_audio_bus_;
   std::vector< scoped_refptr<AudioRendererMixerInput> > mixer_inputs_;
   ScopedVector<FakeAudioRenderCallback> fake_callbacks_;
   scoped_ptr<FakeAudioRenderCallback> expected_callback_;

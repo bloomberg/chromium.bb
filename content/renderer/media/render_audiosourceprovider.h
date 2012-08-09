@@ -22,8 +22,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_RENDER_AUDIOSOURCEPROVIDER_H_
 #define CONTENT_RENDERER_MEDIA_RENDER_AUDIOSOURCEPROVIDER_H_
 
-#include <vector>
-
 #include "base/synchronization/lock.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"

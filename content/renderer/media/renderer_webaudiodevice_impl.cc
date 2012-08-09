@@ -42,20 +42,20 @@ double RendererWebAudioDeviceImpl::sampleRate() {
   return 44100.0;
 }
 
-int RendererWebAudioDeviceImpl::Render(const std::vector<float*>& audio_data,
-                                       int number_of_frames,
+int RendererWebAudioDeviceImpl::Render(media::AudioBus* audio_bus,
                                        int audio_delay_milliseconds) {
   // Make the client callback to get rendered audio.
   DCHECK(client_callback_);
   if (client_callback_) {
     // Wrap the pointers using WebVector.
-    WebVector<float*> web_audio_data(audio_data.size());
-    for (size_t i = 0; i < audio_data.size(); ++i)
-      web_audio_data[i] = audio_data[i];
+    WebVector<float*> web_audio_data(
+        static_cast<size_t>(audio_bus->channels()));
+    for (int i = 0; i < audio_bus->channels(); ++i)
+      web_audio_data[i] = audio_bus->channel(i);
 
-    client_callback_->render(web_audio_data, number_of_frames);
+    client_callback_->render(web_audio_data, audio_bus->frames());
   }
-  return number_of_frames;
+  return audio_bus->frames();
 }
 
 void RendererWebAudioDeviceImpl::OnRenderError() {
