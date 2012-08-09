@@ -54,6 +54,7 @@ function loadLogObj(obj) {
     change: update_range
   });
   update_range(null, { values: [min, max] });
+  finger_view_controller.resetZooms();
 }
 
 function handleFileSelect(evt) {
@@ -72,7 +73,6 @@ function handleFileSelect(evt) {
     generateRadioButtons(obj);
     current_layer = 0;
     loadLogObj(obj);
-    finger_view_controller.resetZooms();
   };
   reader.readAsText(file);
 }
@@ -378,7 +378,6 @@ $(document).ready(function() {
 
   generateRadioButtons(secret_obj);
   loadLogObj(secret_obj);
-  finger_view_controller.resetZooms();
 });
 
 </script>

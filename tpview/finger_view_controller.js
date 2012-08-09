@@ -4,6 +4,7 @@
 
 function FingerViewController(inGraph, outGraph, inText) {
   this.entries = [];
+  this.hardwareProperties = [];
   this.begin = -1;
   this.end = -1;
 
@@ -25,7 +26,8 @@ FingerViewController.prototype = {
       this.begin = this.end = -1;
 
     // Update input default zoom
-    var hwprops = this.log.hardwareProperties;
+    this.hardwareProperties = tmp.hardwareProperties;
+    var hwprops = tmp.hardwareProperties;
     var xRes = hwprops.xResolution;
     var yRes = hwprops.yResolution;
     var left = hwprops.left / xRes;
@@ -292,7 +294,7 @@ FingerViewController.prototype = {
     var lastPoints = [];
     var lastLines = [];
     // draw border
-    var hp = this.log.hardwareProperties;
+    var hp = this.hardwareProperties;
     var xRes = hp.xResolution;
     var yRes = hp.yResolution;
     var upLeft = {'xPos': hp.left / xRes,

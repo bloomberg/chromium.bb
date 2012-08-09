@@ -330,6 +330,7 @@ DictionaryValue* ActivityLog::EncodeCommonInfo() {
     Err("Unknown entry type %d", entry.type);
   }
   root->Set(kKeyRoot, entries);
+  root->Set(kKeyHardwarePropRoot, EncodeHardwareProperties());
 
   return root;
 }
@@ -342,7 +343,6 @@ DictionaryValue* ActivityLog::AddEncodeInfo(DictionaryValue* root) {
   TrimWhitespaceASCII(gestures_version, TRIM_ALL, &gestures_version);
   root->Set("gesturesVersion", new StringValue(gestures_version));
   root->Set(kKeyProperties, EncodePropRegistry());
-  root->Set(kKeyHardwarePropRoot, EncodeHardwareProperties());
 
   return root;
 }
