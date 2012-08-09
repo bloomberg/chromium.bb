@@ -171,7 +171,8 @@ function setBeginTimestamp() {
   var values = $('#slider').slider('option', 'values');
   var minValue = $('#slider').slider('option', 'min');
   var maxValue = $('#slider').slider('option', 'max');
-  var newValue = finger_view_controller.getHardwareStateLETimestamp(timestamp);
+  var newValue = finger_view_controller.getHardwareStateLETimestamp(
+      timestamp, finger_view_controller);
   if (newValue >= minValue && newValue <= maxValue) {
     values[0] = (newValue >= values[1] ? values[1] : newValue);
     $('#slider').slider('option', 'values', values);
@@ -183,7 +184,8 @@ function setEndTimestamp() {
   var values = $('#slider').slider('option', 'values');
   var minValue = $('#slider').slider('option', 'min');
   var maxValue = $('#slider').slider('option', 'max');
-  var newValue = finger_view_controller.getHardwareStateGETimestamp(timestamp);
+  var newValue = finger_view_controller.getHardwareStateGETimestamp(
+      timestamp, finger_view_controller);
   if (newValue >= minValue && newValue <= maxValue) {
     values[1] = (newValue <= values[0] ? values[0] : newValue);
     $('#slider').slider('option', 'values', values);
@@ -222,6 +224,7 @@ function shrink() {
   var values = $("#slider").slider("option", "values");
   var snippet = finger_view_controller.getSnippet(values[0], values[1]);
   $('#text_box').val(JSON.stringify(snippet, null, 2));
+  json_obj = snippet;
   loadLogObj(snippet);
 }
 
