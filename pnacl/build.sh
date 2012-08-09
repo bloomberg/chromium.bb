@@ -1226,6 +1226,9 @@ prune() {
     echo "NOTE: some failures during stripping are expected"
   fi
 
+  echo "removing unused clang shared lib"
+  rm -rf "${LLVM_INSTALL_DIR}/${SO_DIR}/${SO_PREFIX}clang${SO_EXT}"
+
   echo "removing llvm's tblgen binaries which are not needed"
   rm -rf "${LLVM_INSTALL_DIR}"/bin/*-tblgen
 
