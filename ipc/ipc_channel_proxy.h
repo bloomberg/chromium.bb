@@ -226,7 +226,7 @@ class IPC_EXPORT ChannelProxy : public Sender {
     // Called on the consumers thread when the ChannelProxy is closed.  At that
     // point the consumer is telling us that they don't want to receive any
     // more messages, so we honor that wish by forgetting them!
-    virtual void Clear() { listener_ = NULL; }
+    virtual void Clear();
 
    private:
     friend class ChannelProxy;

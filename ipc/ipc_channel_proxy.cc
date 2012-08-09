@@ -173,6 +173,10 @@ void ChannelProxy::Context::OnChannelClosed() {
   Release();
 }
 
+void ChannelProxy::Context::Clear() {
+  listener_ = NULL;
+}
+
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnSendMessage(scoped_ptr<Message> message) {
   if (!channel_.get()) {
