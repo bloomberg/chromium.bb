@@ -160,6 +160,8 @@ def main(args):
   buildbot_revision = os.environ.get('BUILDBOT_REVISION', '')
   buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
 
+  os.chdir(buildbot_common.SCRIPT_DIR)
+
   if buildername == 'linux-sdk-mono32':
     assert buildbot_revision
     sdk_revision = buildbot_revision.split(':')[0]
