@@ -32,6 +32,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -1543,6 +1544,46 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   EXPECT_EQ(smaller_work_area_size.height(), panel->full_size().height());
 
   panel->Close();
+}
+
+#if defined(OS_WIN)
+#define MAYBE_Accelerator Accelerator
+#else
+#define MAYBE_Accelerator DISABLED_Accelerator
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_Accelerator) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+
+  // Create a test panel with web contents loaded.
+  CreatePanelParams params("1", gfx::Rect(), SHOW_AS_ACTIVE);
+  GURL url(ui_test_utils::GetTestUrl(
+      FilePath(kTestDir),
+      FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
+  params.url = url;
+  Panel* panel = CreatePanelWithParams(params);
+  EXPECT_EQ(1, panel_manager->num_panels());
+
+  // Close the panel by acclerator.
+  content::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_CLOSED,
+      content::Source<Panel>(panel));
+#if defined(USE_AURA)
+  content::NativeWebKeyboardEvent key_event(
+      ui::ET_KEY_PRESSED,
+      false,
+      ui::VKEY_W,
+      ui::EF_CONTROL_DOWN,
+      base::Time::Now().ToDoubleT());
+#elif defined(OS_WIN)
+  ::MSG key_msg = { NULL, WM_KEYDOWN, ui::VKEY_W, 0 };
+  content::NativeWebKeyboardEvent key_event(key_msg);
+  key_event.modifiers = content::NativeWebKeyboardEvent::ControlKey;
+#else
+  content::NativeWebKeyboardEvent key_event;
+#endif
+  panel->HandleKeyboardEvent(key_event);
+  signal.Wait();
+  EXPECT_EQ(0, panel_manager->num_panels());
 }
 
 #endif // OS_WIN || OS_MACOSX
