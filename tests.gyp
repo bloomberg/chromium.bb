@@ -79,7 +79,11 @@
                 '-r',
                 '<(arch)',
                 '<(name)',
-                '<(path)',
+                # TODO(bradnelson): Hack here to prevent gyp path ending with \"
+                #               being passed to python which incorrectly
+                #               interprets this as escaped quote.
+                # http://code.google.com/p/chromium/issues/detail?id=141463
+                '<(path)/hack',
                 '<(tools)'
               ],
             },

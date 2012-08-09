@@ -228,6 +228,13 @@ def Main(argv):
   if not options.tools:
     parser.error('Missing toolchains.')
 
+  # TODO(bradnelson): Hack to prevent gyp generated path ending with \" from
+  #               being interpreted as escaped quote. Here we strip the extra
+  #               '/hack' we added in the gyp file.
+  # http://code.google.com/p/chromium/issues/detail?id=141463
+  if options.mode is 'r':
+    options.path = os.path.dirname(options.path)
+
   if options.output:
     try:
       out = open(options.output, 'w')

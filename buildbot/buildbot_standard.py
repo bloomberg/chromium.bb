@@ -19,8 +19,6 @@ from buildbot_lib import (
 
 # Windows-specific environment manipulation
 def SetupWindowsEnvironment(context):
-  context.SetEnv('GYP_MSVS_VERSION', '2008')
-
   # Blow away path for now if on the bots (to be more hermetic).
   if os.environ.get('BUILDBOT_SLAVENAME'):
     paths = [
@@ -47,14 +45,14 @@ def SetupWindowsEnvironment(context):
 
   # The location of MSVC can differ depending on the version.
   msvc_locs = [
-      # TODO(ncbray) use msvc 10.  This will require changing GYP_MSVS_VERSION.
-      #('Microsoft Visual Studio 10.0', 'VS100COMNTOOLS'),
-      ('Microsoft Visual Studio 9.0', 'VS90COMNTOOLS'),
-      ('Microsoft Visual Studio 8.0', 'VS80COMNTOOLS'),
+      ('Microsoft Visual Studio 10.0', 'VS100COMNTOOLS', '2010'),
+      ('Microsoft Visual Studio 9.0', 'VS90COMNTOOLS', '2008'),
+      ('Microsoft Visual Studio 8.0', 'VS80COMNTOOLS', '2005'),
   ]
 
-  for dirname, comntools_var in msvc_locs:
+  for dirname, comntools_var, gyp_msvs_version in msvc_locs:
     msvc = os.path.join(program_files, dirname)
+    context.SetEnv('GYP_MSVS_VERSION', gyp_msvs_version)
     if os.path.exists(msvc):
       break
   else:
