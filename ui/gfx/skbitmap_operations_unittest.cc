@@ -273,7 +273,7 @@ TEST(SkBitmapOperationsTest, CreateHSLShiftedBitmapHueOnly) {
 
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
-      EXPECT_TRUE(ColorsClose(*shifted.getAddr32(x, y),
+      EXPECT_TRUE(ColorsClose(shifted.getColor(x, y),
                               SkColorSetARGB(255, i % 255, 0, 0)));
       i++;
     }
@@ -477,10 +477,11 @@ TEST(SkBitmapOperationsTest, UnPreMultiply) {
   input.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
   input.allocPixels();
 
-  *input.getAddr32(0, 0) = 0x80000000;
-  *input.getAddr32(1, 0) = 0x80808080;
-  *input.getAddr32(0, 1) = 0xFF00CC88;
-  *input.getAddr32(1, 1) = 0x0000CC88;
+  // Set PMColors into the bitmap
+  *input.getAddr32(0, 0) = SkPackARGB32NoCheck(0x80, 0x00, 0x00, 0x00);
+  *input.getAddr32(1, 0) = SkPackARGB32NoCheck(0x80, 0x80, 0x80, 0x80);
+  *input.getAddr32(0, 1) = SkPackARGB32NoCheck(0xFF, 0x00, 0xCC, 0x88);
+  *input.getAddr32(1, 1) = SkPackARGB32NoCheck(0x00, 0x00, 0xCC, 0x88);
 
   SkBitmap result = SkBitmapOperations::UnPreMultiply(input);
   EXPECT_EQ(2, result.width());
