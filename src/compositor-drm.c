@@ -99,6 +99,8 @@ struct drm_compositor {
 	struct wl_list sprite_list;
 	int sprites_are_broken;
 
+	int cursors_are_broken;
+
 	uint32_t prev_state;
 };
 
@@ -736,6 +738,8 @@ drm_output_prepare_cursor_surface(struct weston_output *output_base,
 		return NULL;
 	if (es->output_mask != (1u << output_base->id))
 		return NULL;
+	if (c->cursors_are_broken)
+		return;
 	if (es->buffer == NULL || !wl_buffer_is_shm(es->buffer) ||
 	    es->geometry.width > 64 || es->geometry.height > 64)
 		return NULL;
@@ -780,15 +784,20 @@ drm_output_set_cursor(struct drm_output *output)
 
 		handle = gbm_bo_get_handle(bo).s32;
 		if (drmModeSetCursor(c->drm.fd,
-				     output->crtc_id, handle, 64, 64))
+				     output->crtc_id, handle, 64, 64)) {
 			weston_log("failed to set cursor: %m\n");
+			c->cursors_are_broken = 1;
+		}
 	}
 
 	x = es->geometry.x - output->base.x;
 	y = es->geometry.y - output->base.y;
 	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
-		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y))
+		if (drmModeMoveCursor(c->drm.fd, output->crtc_id, x, y)) {
 			weston_log("failed to move cursor: %m\n");
+			c->cursors_are_broken = 1;
+		}
+
 		output->cursor_plane.x = x;
 		output->cursor_plane.y = y;
 	}
