@@ -116,6 +116,7 @@ struct drm_output {
 
 	char *name;
 	uint32_t crtc_id;
+	int pipe;
 	uint32_t connector_id;
 	drmModeCrtcPtr original_crtc;
 
@@ -406,6 +407,9 @@ drm_output_repaint(struct weston_output *output_base,
 		if (ret)
 			weston_log("setplane failed: %d: %s\n",
 				ret, strerror(errno));
+
+		if (output->pipe > 0)
+			vbl.request.type |= DRM_VBLANK_SECONDARY;
 
 		/*
 		 * Queue a vblank signal so we know when the surface
@@ -1365,6 +1369,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->name = strdup(name);
 
 	output->crtc_id = resources->crtcs[i];
+	output->pipe = i;
 	ec->crtc_allocator |= (1 << output->crtc_id);
 	output->connector_id = connector->connector_id;
 	ec->connector_allocator |= (1 << output->connector_id);
