@@ -70,6 +70,9 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW },
   { true, ui::VKEY_T, ui::EF_CONTROL_DOWN, NEW_TAB },
 
+  { true, ui::VKEY_F3,
+    ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    ROTATE_WINDOWS },
   { true, ui::VKEY_F5, ui::EF_SHIFT_DOWN, CYCLE_BACKWARD_LINEAR },
   { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_SHIFT_DOWN,
     CYCLE_BACKWARD_LINEAR },
@@ -131,9 +134,6 @@ const AcceleratorData kAcceleratorData[] = {
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
 const AcceleratorData kDebugAcceleratorData[] = {
-  { true, ui::VKEY_F3,
-    ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    ROTATE_WINDOWS },
   { true, ui::VKEY_HOME, ui::EF_CONTROL_DOWN, ROTATE_SCREEN },
   { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_DESKTOP_BACKGROUND_MODE },
