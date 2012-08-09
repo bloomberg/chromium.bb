@@ -3920,6 +3920,8 @@
         'browser/ui/website_settings/website_settings_infobar_delegate.h',
         'browser/ui/website_settings/website_settings_ui.cc',
         'browser/ui/website_settings/website_settings_ui.h',
+        'browser/ui/website_settings/website_settings_utils.cc',
+        'browser/ui/website_settings/website_settings_utils.h',
         'browser/ui/webui/about_ui.cc',
         'browser/ui/webui/about_ui.h',
         'browser/ui/webui/bookmarks_ui.cc',

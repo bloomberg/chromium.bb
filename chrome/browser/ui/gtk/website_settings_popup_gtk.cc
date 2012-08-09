@@ -19,9 +19,11 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
+#include "chrome/browser/ui/website_settings/website_settings_utils.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
 #include "googleurl/src/gurl.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -37,6 +39,74 @@ namespace {
 // is selected.
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 
+class InternalPageInfoPopupGtk : public BubbleDelegateGtk {
+ public:
+  explicit InternalPageInfoPopupGtk(gfx::NativeWindow parent,
+                                          Profile* profile);
+  virtual ~InternalPageInfoPopupGtk();
+
+ private:
+  // BubbleDelegateGtk implementation.
+  virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
+
+  // The popup bubble container.
+  BubbleGtk* bubble_;
+
+  DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupGtk);
+};
+
+InternalPageInfoPopupGtk::InternalPageInfoPopupGtk(
+    gfx::NativeWindow parent, Profile* profile) {
+  GtkWidget* contents = gtk_hbox_new(FALSE, ui::kContentAreaSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(contents),
+                                 ui::kContentAreaBorder);
+  // Add the popup icon.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GdkPixbuf* pixbuf = rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_26).ToGdkPixbuf();
+  GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
+  gtk_box_pack_start(GTK_BOX(contents), image, FALSE, FALSE, 0);
+  gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
+
+  // Add the popup text.
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile);
+  GtkWidget* label = theme_service->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_PAGE_INFO_INTERNAL_PAGE), ui::kGdkBlack);
+  gtk_label_set_selectable(GTK_LABEL(label), FALSE);
+  PangoAttrList* attributes = pango_attr_list_new();
+  pango_attr_list_insert(attributes,
+                         pango_attr_weight_new(PANGO_WEIGHT_BOLD));
+  gtk_box_pack_start(GTK_BOX(contents), label, FALSE, FALSE, 0);
+
+  gtk_widget_show_all(contents);
+
+  // Create the bubble.
+  BubbleGtk::ArrowLocationGtk arrow_location = base::i18n::IsRTL() ?
+      BubbleGtk::ARROW_LOCATION_TOP_RIGHT :
+      BubbleGtk::ARROW_LOCATION_TOP_LEFT;
+  BrowserWindowGtk* browser_window =
+      BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
+  GtkWidget* anchor = browser_window->
+      GetToolbar()->GetLocationBarView()->location_icon_widget();
+  bubble_ = BubbleGtk::Show(anchor,
+                            NULL,  // |rect|
+                            contents,
+                            arrow_location,
+                            BubbleGtk::MATCH_SYSTEM_THEME |
+                                BubbleGtk::POPUP_WINDOW |
+                                BubbleGtk::GRAB_INPUT,
+                            theme_service,
+                            this);  // |delegate|
+  DCHECK(bubble_);
+}
+
+InternalPageInfoPopupGtk::~InternalPageInfoPopupGtk() {
+}
+
+void InternalPageInfoPopupGtk::BubbleClosing(BubbleGtk* bubble,
+                                             bool closed_by_escape) {
+  delete this;
+}
+
 }  // namespace
 
 // static
@@ -45,7 +115,10 @@ void WebsiteSettingsPopupGtk::Show(gfx::NativeWindow parent,
                                    TabContents* tab_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) {
-  new WebsiteSettingsPopupGtk(parent, profile, tab_contents, url, ssl);
+  if (InternalChromePage(url))
+    new InternalPageInfoPopupGtk(parent, profile);
+  else
+    new WebsiteSettingsPopupGtk(parent, profile, tab_contents, url, ssl);
 }
 
 WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
