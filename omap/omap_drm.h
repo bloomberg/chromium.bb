@@ -29,7 +29,8 @@
 #ifndef __OMAP_DRM_H__
 #define __OMAP_DRM_H__
 
-#include "drm.h"
+#include <stdint.h>
+#include <drm.h>
 
 /* Please note that modifications to all structs defined here are
  * subject to backwards-compatibility constraints.
