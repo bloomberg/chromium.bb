@@ -172,6 +172,9 @@ message ClientDownloadRequest {
     ZIPPED_EXECUTABLE = 3;
   }
   optional DownloadType download_type = 10 [default = WIN_EXECUTABLE];
+
+  // Locale of the device, eg en, en_US.
+  optional string locale = 11;
 }
 
 message ClientDownloadResponse {
@@ -183,6 +186,18 @@ message ClientDownloadResponse {
     DANGEROUS = 1;
     // Download is unknown.  Chrome should display a less severe warning.
     UNCOMMON = 2;
+    // The download is potentially unwanted.
+    POTENTIALLY_UNWANTED = 3;
   }
   required Verdict verdict = 1;
+
+  message MoreInfo {
+    // A human-readable string describing the nature of the warning.
+    // Only if verdict != SAFE. Localized based on request.locale.
+    optional string description = 1;
+
+    // A URL to get more information about this warning, if available.
+    optional string url = 2;
+  }
+  optional MoreInfo more_info = 2;
 }
