@@ -56,9 +56,4 @@ GestureEvent::GestureEvent(const NativeEvent& event)
       details_(static_cast<ui::GestureEventImpl*>(event)->details()) {
 }
 
-int GestureEvent::GetLowestTouchId() const {
-  return native_event() ?  static_cast<ui::GestureEventImpl*>(
-      native_event())->GetLowestTouchId() : 0;
-}
-
 }  // namespace views

@@ -219,8 +219,7 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
 // TouchEvent and PlatformTouchPoint.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT TouchEvent : public LocatedEvent,
-                                public ui::TouchEvent {
+class VIEWS_EXPORT TouchEvent : public LocatedEvent {
  public:
   explicit TouchEvent(const NativeEvent& native_event);
 
@@ -248,17 +247,6 @@ class VIEWS_EXPORT TouchEvent : public LocatedEvent,
   float radius_y() const { return radius_y_; }
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
-
-  // Overridden from ui::TouchEvent.
-  virtual ui::EventType GetEventType() const OVERRIDE;
-  virtual gfx::Point GetLocation() const OVERRIDE;
-  virtual int GetTouchId() const OVERRIDE;
-  virtual int GetEventFlags() const OVERRIDE;
-  virtual base::TimeDelta GetTimestamp() const OVERRIDE;
-  virtual float RadiusX() const OVERRIDE;
-  virtual float RadiusY() const OVERRIDE;
-  virtual float RotationAngle() const OVERRIDE;
-  virtual float Force() const OVERRIDE;
 
  private:
   friend class internal::RootView;
@@ -377,8 +365,7 @@ class VIEWS_EXPORT ScrollEvent : public MouseEvent {
 // GestureEvent class
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT GestureEvent : public LocatedEvent,
-                                  public ui::GestureEvent {
+class VIEWS_EXPORT GestureEvent : public LocatedEvent {
  public:
   explicit GestureEvent(const NativeEvent& native_event);
 
@@ -398,9 +385,6 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent,
   friend class internal::RootView;
 
   GestureEvent(const GestureEvent& model, View* root);
-
-  // Overridden from ui::GestureEvent.
-  virtual int GetLowestTouchId() const OVERRIDE;
 
   ui::GestureEventDetails details_;
 
