@@ -355,12 +355,17 @@ ChromeContentRendererClient::OverrideCreateWebMediaPlayer(
     media::MessageLoopFactory* message_loop_factory,
     webkit_media::MediaStreamClient* media_stream_client,
     media::MediaLog* media_log) {
+#if defined(OS_ANDROID)
+  // Chromium for Android doesn't support prerender yet.
+  return NULL;
+#else
   if (!prerender::PrerenderHelper::IsPrerendering(render_view))
     return NULL;
 
   return new prerender::PrerenderWebMediaPlayer(render_view, frame, client,
       delegate, collection, audio_source_provider, audio_renderer_sink,
       message_loop_factory, media_stream_client, media_log);
+#endif
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
