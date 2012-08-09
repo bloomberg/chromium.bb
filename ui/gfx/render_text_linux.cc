@@ -283,7 +283,7 @@ void RenderTextLinux::EnsureLayout() {
     SetupPangoLayoutWithFontDescription(layout_,
                                         GetDisplayText(),
                                         font_list().GetFontDescriptionString(),
-                                        display_rect().width(),
+                                        0,
                                         GetTextDirection(),
                                         Canvas::DefaultCanvasTextAlignment());
 
