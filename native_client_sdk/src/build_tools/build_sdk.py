@@ -576,8 +576,7 @@ def GetManifestBundle(pepper_ver, revision, tarfile, archive_url):
   bundle.revision = int(revision)
   bundle.repath = 'pepper_' + pepper_ver
   bundle.version = int(pepper_ver)
-  bundle.description = 'Chrome %s bundle, revision %s' % (
-          pepper_ver, revision),
+  bundle.description = 'Chrome %s bundle, revision %s' % (pepper_ver, revision)
   bundle.stability = 'dev'
   bundle.recommended = 'no'
   bundle.archives = [archive]
