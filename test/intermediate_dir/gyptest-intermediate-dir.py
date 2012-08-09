@@ -10,9 +10,6 @@ Verifies that targets have independent INTERMEDIATE_DIRs.
 
 import TestGyp
 
-import os
-import sys
-
 test = TestGyp.TestGyp()
 
 test.run_gyp('test.gyp', chdir='src')

@@ -33,7 +33,7 @@ if test.format == 'msvs':
       '<OutDir>..\\builddir\\Default\\</OutDir>')
   else:
     test.must_contain('src/prog1.vcproj',
-      'OutputDirectory="..\\builddir\\Default"')
+      'OutputDirectory="..\\builddir\\Default\\"')
 
 test.relocate('src', 'relocate/src')
 

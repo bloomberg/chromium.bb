@@ -39,10 +39,10 @@ generator_default_variables = {
     'STATIC_LIB_SUFFIX': '.lib',
     'SHARED_LIB_SUFFIX': '.dll',
     'INTERMEDIATE_DIR': '$(IntDir)',
-    'SHARED_INTERMEDIATE_DIR': '$(OutDir)/obj/global_intermediate',
+    'SHARED_INTERMEDIATE_DIR': '$(OutDir)obj/global_intermediate',
     'OS': 'win',
     'PRODUCT_DIR': '$(OutDir)',
-    'LIB_DIR': '$(OutDir)\\lib',
+    'LIB_DIR': '$(OutDir)lib',
     'RULE_INPUT_ROOT': '$(InputName)',
     'RULE_INPUT_DIRNAME': '$(InputDir)',
     'RULE_INPUT_EXT': '$(InputExt)',
@@ -301,6 +301,7 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
     # switch
     arguments = [i if (i[:1] in "/-") else _FixPath(i) for i in cmd[1:]]
     arguments = [i.replace('$(InputDir)','%INPUTDIR%') for i in arguments]
+    arguments = [MSVSSettings.FixVCMacroSlashes(i) for i in arguments]
     if quote_cmd:
       # Support a mode for using cmd directly.
       # Convert any paths to native form (first element is used directly).
@@ -1048,7 +1049,7 @@ def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
               defines)
   # Change program database directory to prevent collisions.
   _ToolAppend(tools, 'VCCLCompilerTool', 'ProgramDataBaseFileName',
-              '$(IntDir)\\$(ProjectName)\\vc80.pdb', only_if_unset=True)
+              '$(IntDir)$(ProjectName)\\vc80.pdb', only_if_unset=True)
   # Add disabled warnings.
   _ToolAppend(tools, 'VCCLCompilerTool',
               'DisableSpecificWarnings', disabled_warnings)
@@ -1135,10 +1136,10 @@ def _GetOutputFilePathAndTool(spec):
   vc_tool = ''
   msbuild_tool = ''
   output_file_map = {
-      'executable': ('VCLinkerTool', 'Link', '$(OutDir)\\', '.exe'),
-      'shared_library': ('VCLinkerTool', 'Link', '$(OutDir)\\', '.dll'),
-      'loadable_module': ('VCLinkerTool', 'Link', '$(OutDir)\\', '.dll'),
-      'static_library': ('VCLibrarianTool', 'Lib', '$(OutDir)\\lib\\', '.lib'),
+      'executable': ('VCLinkerTool', 'Link', '$(OutDir)', '.exe'),
+      'shared_library': ('VCLinkerTool', 'Link', '$(OutDir)', '.dll'),
+      'loadable_module': ('VCLinkerTool', 'Link', '$(OutDir)', '.dll'),
+      'static_library': ('VCLibrarianTool', 'Lib', '$(OutDir)lib\\', '.lib'),
   }
   output_file_props = output_file_map.get(spec['type'])
   if output_file_props and int(spec.get('msvs_auto_output_file', 1)):
@@ -1251,10 +1252,10 @@ def _GetMSVSAttributes(spec, config, config_type):
   prepared_attrs['ConfigurationType'] = config_type
   output_dir = prepared_attrs.get('OutputDirectory',
                                   '$(SolutionDir)$(ConfigurationName)')
-  prepared_attrs['OutputDirectory'] = _FixPath(output_dir)
+  prepared_attrs['OutputDirectory'] = _FixPath(output_dir) + '\\'
   if 'IntermediateDirectory' not in prepared_attrs:
     intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
-    prepared_attrs['IntermediateDirectory'] = _FixPath(intermediate)
+    prepared_attrs['IntermediateDirectory'] = _FixPath(intermediate) + '\\'
   return prepared_attrs
 
 
