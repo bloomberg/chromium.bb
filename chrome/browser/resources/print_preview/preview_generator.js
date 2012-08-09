@@ -258,11 +258,7 @@ cr.define('print_preview', function() {
               !ticketStore.getCustomMargins().equals(
                   ticketStore.getDocumentMargins())) ||
           (this.selectedDestination_ !=
-              this.destinationStore_.selectedDestination &&
-              (this.destinationStore_.selectedDestination.id ==
-                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
-              this.selectedDestination_.id ==
-                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF));
+              this.destinationStore_.selectedDestination);
     },
 
     /**
