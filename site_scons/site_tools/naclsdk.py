@@ -203,6 +203,7 @@ def _SetEnvForNativeSdk(env, sdk_path):
               # Grrr... and sometimes we really need ld.
               LD=os.path.join(bin_path, '%s-ld' % tool_prefix) + ld_mode_flag,
               RANLIB=os.path.join(bin_path, '%s-ranlib' % tool_prefix),
+              NM=os.path.join(bin_path, '%s-nm' % tool_prefix),
               OBJDUMP=os.path.join(bin_path, '%s-objdump' % tool_prefix),
               STRIP=os.path.join(bin_path, '%s-strip' % tool_prefix),
               ADDR2LINE=os.path.join(bin_path, '%s-addr2line' % tool_prefix),

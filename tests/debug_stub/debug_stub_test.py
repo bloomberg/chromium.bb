@@ -17,7 +17,13 @@ NACL_SIGSEGV = 11
 
 # These are set up by Main().
 ARCH = None
+NM_TOOL = None
 SEL_LDR_COMMAND = None
+
+
+def AssertEquals(x, y):
+  if x != y:
+    raise AssertionError('%r != %r' % (x, y))
 
 
 def DecodeHex(data):
@@ -127,6 +133,23 @@ def PopenDebugStub(test):
   return subprocess.Popen(SEL_LDR_COMMAND + ['-c', '-c', '-g', test])
 
 
+def GetSymbols():
+  assert '-f' in SEL_LDR_COMMAND
+  nexe_filename = SEL_LDR_COMMAND[SEL_LDR_COMMAND.index('-f') + 1]
+  symbols = {}
+  proc = subprocess.Popen([NM_TOOL, '--format=posix', nexe_filename],
+                          stdout=subprocess.PIPE)
+  for line in proc.stdout:
+    match = re.match('(\S+) [TtWwB] ([0-9a-fA-F]+)', line)
+    if match is not None:
+      name = match.group(1)
+      addr = int(match.group(2), 16)
+      symbols[name] = addr
+  result = proc.wait()
+  assert result == 0, result
+  return symbols
+
+
 def ParseThreadStopReply(reply):
   match = re.match('T([0-9a-f]{2})thread:([0-9a-f]+);$', reply)
   if match is None:
@@ -135,10 +158,21 @@ def ParseThreadStopReply(reply):
           'thread_id': int(match.group(2), 16)}
 
 
-class DebugStubTest(unittest.TestCase):
+def AssertReplySignal(reply, signal):
+  AssertEquals(ParseThreadStopReply(reply)['signal'], signal)
 
-  def AssertReplySignal(self, reply, signal):
-    self.assertEquals(ParseThreadStopReply(reply)['signal'], signal)
+
+def ReadMemory(connection, address, size):
+  reply = connection.RspRequest('m%x,%x' % (address, size))
+  assert not reply.startswith('E'), reply
+  return DecodeHex(reply)
+
+
+def ReadUint32(connection, address):
+  return struct.unpack('I', ReadMemory(connection, address, 4))[0]
+
+
+class DebugStubTest(unittest.TestCase):
 
   def test_initial_breakpoint(self):
     # Any arguments to the nexe would work here because we are only
@@ -152,7 +186,7 @@ class DebugStubTest(unittest.TestCase):
         # NACL_SIGTRAP here.
         self.assertEqual(reply, 'T00')
       else:
-        self.AssertReplySignal(reply, NACL_SIGTRAP)
+        AssertReplySignal(reply, NACL_SIGTRAP)
     finally:
       proc.kill()
       proc.wait()
@@ -259,8 +293,7 @@ class DebugStubTest(unittest.TestCase):
   def CheckReadMemory(self, connection):
     registers = DecodeRegs(connection.RspRequest('g'))
     stack_addr = registers[SP_REG[ARCH]]
-    stack_val = struct.unpack(
-        'I', DecodeHex(connection.RspRequest('m%x,%x' % (stack_addr, 4))))[0]
+    stack_val = ReadUint32(connection, stack_addr)
     self.assertEquals(stack_val, 0x4bb00ccc)
 
   # Test that reading from an unreadable address gives a sensible error.
@@ -279,10 +312,10 @@ class DebugStubTest(unittest.TestCase):
       reply = connection.RspRequest('c')
       if ARCH == 'arm':
         # The process should have stopped on a BKPT instruction.
-        self.AssertReplySignal(reply, NACL_SIGTRAP)
+        AssertReplySignal(reply, NACL_SIGTRAP)
       else:
         # The process should have stopped on a HLT instruction.
-        self.AssertReplySignal(reply, NACL_SIGSEGV)
+        AssertReplySignal(reply, NACL_SIGSEGV)
 
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
@@ -301,7 +334,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Continue until breakpoint.
       reply = connection.RspRequest('c')
-      self.AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGTRAP)
 
       ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
 
@@ -365,7 +398,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Continue, test we stopped on int3.
       reply = connection.RspRequest('c')
-      self.AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGTRAP)
 
       self.CheckSingleStep(connection, 's', reply)
     finally:
@@ -390,7 +423,7 @@ class DebugStubTest(unittest.TestCase):
       # Continue using vCont, test we stopped on int3.
       # Get signalled thread id.
       reply = connection.RspRequest('vCont;c')
-      self.AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGTRAP)
       tid = ParseThreadStopReply(reply)['thread_id']
 
       self.CheckSingleStep(connection, 'vCont;s:%x' % tid, reply)
@@ -433,7 +466,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Single-step.
       reply = connection.RspRequest('s')
-      self.AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGTRAP)
     finally:
       proc.kill()
       proc.wait()
@@ -449,7 +482,7 @@ class DebugStubTest(unittest.TestCase):
 
       # We stopped on initial breakpoint. Ask for stop reply.
       reply = connection.RspRequest('?')
-      self.AssertReplySignal(reply, NACL_SIGTRAP)
+      AssertReplySignal(reply, NACL_SIGTRAP)
       tid = ParseThreadStopReply(reply)['thread_id']
 
       # Continue one thread.
@@ -460,6 +493,96 @@ class DebugStubTest(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+
+class DebugStubThreadSuspensionTest(unittest.TestCase):
+
+  def SkipBreakpoint(self, connection):
+    # On x86, int3 breakpoint instructions are skipped automatically,
+    # so we only need to intervene to skip the breakpoint on ARM.
+    if ARCH == 'arm':
+      bundle_size = 16
+      regs = DecodeRegs(connection.RspRequest('g'))
+      assert regs['r15'] % bundle_size == 0, regs['r15']
+      regs['r15'] += bundle_size
+      AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
+
+  def WaitForTestThreadsToStart(self, connection, symbols):
+    # Wait until:
+    #  * The main thread starts to modify g_main_thread_var.
+    #  * The child thread executes a breakpoint.
+    old_value = ReadUint32(connection, symbols['g_main_thread_var'])
+    while True:
+      reply = connection.RspRequest('c')
+      AssertReplySignal(reply, NACL_SIGTRAP)
+      self.SkipBreakpoint(connection)
+      child_thread_id = ParseThreadStopReply(reply)['thread_id']
+      if ReadUint32(connection, symbols['g_main_thread_var']) != old_value:
+        break
+    return child_thread_id
+
+  def test_continuing_thread_with_others_suspended(self):
+    proc = PopenDebugStub('test_suspending_threads')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+      symbols = GetSymbols()
+      child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
+
+      # Test continuing a single thread while other threads remain
+      # suspended.
+      for _ in range(3):
+        main_thread_val = ReadUint32(connection, symbols['g_main_thread_var'])
+        child_thread_val = ReadUint32(connection, symbols['g_child_thread_var'])
+        reply = connection.RspRequest('vCont;c:%x' % child_thread_id)
+        AssertReplySignal(reply, NACL_SIGTRAP)
+        self.SkipBreakpoint(connection)
+        self.assertEquals(ParseThreadStopReply(reply)['thread_id'],
+                          child_thread_id)
+        # The main thread should not be allowed to run, so should not
+        # modify g_main_thread_var.
+        self.assertEquals(
+            ReadUint32(connection, symbols['g_main_thread_var']),
+            main_thread_val)
+        # The child thread should always modify g_child_thread_var
+        # between each breakpoint.
+        self.assertNotEquals(
+            ReadUint32(connection, symbols['g_child_thread_var']),
+            child_thread_val)
+    finally:
+      proc.kill()
+      proc.wait()
+
+  def test_single_stepping_thread_with_others_suspended(self):
+    proc = PopenDebugStub('test_suspending_threads')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+      symbols = GetSymbols()
+      child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
+
+      # Test single-stepping a single thread while other threads
+      # remain suspended.
+      for _ in range(3):
+        main_thread_val = ReadUint32(connection, symbols['g_main_thread_var'])
+        child_thread_val = ReadUint32(connection, symbols['g_child_thread_var'])
+        while True:
+          reply = connection.RspRequest('vCont;s:%x' % child_thread_id)
+          AssertReplySignal(reply, NACL_SIGTRAP)
+          self.SkipBreakpoint(connection)
+          self.assertEquals(ParseThreadStopReply(reply)['thread_id'],
+                            child_thread_id)
+          # The main thread should not be allowed to run, so should not
+          # modify g_main_thread_var.
+          self.assertEquals(
+              ReadUint32(connection, symbols['g_main_thread_var']),
+              main_thread_val)
+          # Eventually, the child thread should modify g_child_thread_var.
+          if (ReadUint32(connection, symbols['g_child_thread_var'])
+              != child_thread_val):
+            break
+    finally:
+      proc.kill()
+      proc.wait()
+
+
 def Main():
   # TODO(mseaborn): Clean up to remove the global variables.  They are
   # currently here because unittest does not help with making
@@ -469,8 +592,10 @@ def Main():
   # The remaining arguments go to unittest.main().
   sys.argv = sys.argv[:index]
   global ARCH
+  global NM_TOOL
   global SEL_LDR_COMMAND
   ARCH = args.pop(0)
+  NM_TOOL = args.pop(0)
   SEL_LDR_COMMAND = args
   unittest.main()
 

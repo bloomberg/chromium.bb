@@ -4,9 +4,17 @@
  * found in the LICENSE file.
  */
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "native_client/src/include/nacl_assert.h"
+
+
+volatile uint32_t g_main_thread_var = 0;
+volatile uint32_t g_child_thread_var = 0;
+
 
 void set_registers_and_stop() {
   /*
@@ -143,6 +151,40 @@ void test_interrupt() {
   }
 }
 
+void breakpoint(void) {
+#if defined(__i386__) || defined(__x86_64__)
+  __asm__("int3");
+#elif defined(__arm__)
+  /*
+   * Arrange the breakpoint so that the test can skip over it by
+   * jumping to the next bundle.  This means we never have to set the
+   * program counter to within a bundle, which could be unsafe,
+   * because BKPTs guard data literals in the ARM sandbox.
+   */
+  __asm__(".p2align 4\n"
+          "bkpt 0x7777\n"
+          ".p2align 4\n");
+#else
+# error Unsupported architecture
+#endif
+}
+
+void *child_thread_func(void *thread_arg) {
+  for (;;) {
+    g_child_thread_var++;
+    breakpoint();
+  }
+  return NULL;
+}
+
+void test_suspending_threads() {
+  pthread_t tid;
+  ASSERT_EQ(pthread_create(&tid, NULL, child_thread_func, NULL), 0);
+  for (;;) {
+    g_main_thread_var++;
+  }
+}
+
 int main(int argc, char **argv) {
   /*
    * This will crash if the entry-point breakpoint has been mishandled such
@@ -173,6 +215,10 @@ int main(int argc, char **argv) {
   }
   if (strcmp(argv[1], "test_interrupt") == 0) {
     test_interrupt();
+    return 0;
+  }
+  if (strcmp(argv[1], "test_suspending_threads") == 0) {
+    test_suspending_threads();
     return 0;
   }
   return 1;

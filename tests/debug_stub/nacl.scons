@@ -5,19 +5,12 @@
 
 Import('env')
 
-if 'TRUSTED_ENV' not in env:
+if not env.AllowInlineAssembly():
   Return()
-trusted_env = env['TRUSTED_ENV']
 
-if env.Bit('bitcode'):
-  # We use inline assembly, which does not work in pexes.
-  if env.Bit('pnacl_generate_pexe'):
-    Return()
-  env.AddBiasForPNaCl()
-  env.PNaClForceNative()
-
-test_prog = env.ComponentProgram('debugger_test', 'debugger_test.c',
-                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
+test_prog = env.ComponentProgram(
+    'debugger_test', 'debugger_test.c',
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
 
 sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), ['-f', test_prog])
 
@@ -36,11 +29,21 @@ if env.Bit('host_mac'):
   # this workaround is not needed.
   sel_ldr_command.append('-a')
 
+if env.Bit('build_arm'):
+  # Use the system's 'nm' tool.  The NaCl toolchain will not be
+  # available on the ARM hardware bots, but they will be running Linux
+  # with a normal GNU toolchain available.
+  nm_tool = 'nm'
+else:
+  # Use the NaCl toolchain's 'nm' tool since it is not available
+  # natively on Windows and Mac.
+  nm_tool = '${NM}'
+
 node = env.CommandTest(
     'debug_stub_test.out',
     command=(['${PYTHON}', env.File('debug_stub_test.py'), '-v']
              + extra_test_args
-             + ['--', env.get('TARGET_FULLARCH')] + sel_ldr_command))
+             + ['--', env.get('TARGET_FULLARCH'), nm_tool] + sel_ldr_command))
 # This test is in "large_tests" because it binds a fixed TCP port and
 # so will not coexist gracefully with other instances of the same test
 # or other processes that dynamically allocate TCP ports.
