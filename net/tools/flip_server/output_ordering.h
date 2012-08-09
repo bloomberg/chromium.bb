@@ -25,7 +25,7 @@ class OutputOrdering {
   typedef std::map<uint32, PriorityRing> PriorityMap;
 
   struct PriorityMapPointer {
-    PriorityMapPointer(): ring(NULL), alarm_enabled(false) {}
+    PriorityMapPointer();
     PriorityRing* ring;
     PriorityRing::iterator it;
     bool alarm_enabled;
@@ -86,4 +86,3 @@ class OutputOrdering {
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_OUTPUT_ORDERING_H_
-

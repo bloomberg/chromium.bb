@@ -10,6 +10,11 @@
 
 namespace net {
 
+OutputOrdering::PriorityMapPointer::PriorityMapPointer()
+    : ring(NULL),
+      alarm_enabled(false) {
+}
+
 // static
 double OutputOrdering::server_think_time_in_s_ = 0.0;
 
@@ -176,4 +181,3 @@ void OutputOrdering::RemoveStreamId(uint32 stream_id) {
 }
 
 }  // namespace net
-

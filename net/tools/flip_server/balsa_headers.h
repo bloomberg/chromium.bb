@@ -306,12 +306,10 @@ class BalsaHeaders {
     typedef iterator_base self;
 
     // default constructor.
-    iterator_base() : headers_(NULL), idx_(0) { }
+    iterator_base();
 
     // copy constructor.
-    iterator_base(const iterator_base& it)
-      : headers_(it.headers_),
-        idx_(it.idx_) {}
+    iterator_base(const iterator_base& it);
 
     reference operator*() const {
       return Lookup(idx_);
@@ -353,9 +351,7 @@ class BalsaHeaders {
     std::ostream& operator<<(std::ostream& os) const;
 
    protected:
-    iterator_base(const BalsaHeaders* headers, HeaderLines::size_type index) :
-        headers_(headers),
-        idx_(index) {}
+    iterator_base(const BalsaHeaders* headers, HeaderLines::size_type index);
 
     void increment() {
       const HeaderLines& header_lines = headers_->header_lines_;
@@ -536,6 +532,7 @@ class BalsaHeaders {
     friend class BalsaHeaders;
    public:
     typedef const_header_lines_key_iterator self;
+    const_header_lines_key_iterator(const const_header_lines_key_iterator&);
 
     self& operator++() {
       do {
@@ -554,16 +551,11 @@ class BalsaHeaders {
    private:
     const_header_lines_key_iterator(const BalsaHeaders* headers,
                                     HeaderLines::size_type index,
-                                    const base::StringPiece& key)
-        : iterator_base(headers, index),
-          key_(key) {
-    }
+                                    const base::StringPiece& key);
 
     // Should only be used for creating an end iterator.
     const_header_lines_key_iterator(const BalsaHeaders* headers,
-                                    HeaderLines::size_type index)
-        : iterator_base(headers, index) {
-    }
+                                    HeaderLines::size_type index);
 
     bool AtEnd() const {
       return *this >= headers_->header_lines_end();

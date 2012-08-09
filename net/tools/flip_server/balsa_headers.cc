@@ -70,10 +70,23 @@ namespace net {
 
 const size_t BalsaBuffer::kDefaultBlocksize;
 
+BalsaHeaders::iterator_base::iterator_base() : headers_(NULL), idx_(0) { }
+
+BalsaHeaders::iterator_base::iterator_base(const iterator_base& it)
+    : headers_(it.headers_),
+      idx_(it.idx_) {
+}
+
 std::ostream& BalsaHeaders::iterator_base::operator<<(std::ostream& os) const {
-   os << "[" << this->headers_ << ", " << this->idx_ << "]";
-   return os;
- }
+  os << "[" << this->headers_ << ", " << this->idx_ << "]";
+  return os;
+}
+
+BalsaHeaders::iterator_base::iterator_base(const BalsaHeaders* headers,
+                                           HeaderLines::size_type index)
+    : headers_(headers),
+      idx_(index) {
+}
 
 BalsaBuffer::~BalsaBuffer() {
   CleanupBlocksStartingFrom(0);
@@ -223,6 +236,26 @@ void BalsaBuffer::CleanupBlocksStartingFrom(Blocks::size_type start_idx) {
     delete[] blocks_[i].buffer;
   }
   blocks_.resize(start_idx);
+}
+
+BalsaHeaders::const_header_lines_key_iterator::const_header_lines_key_iterator(
+    const const_header_lines_key_iterator& other)
+    : iterator_base(other),
+      key_(other.key_) {
+}
+
+BalsaHeaders::const_header_lines_key_iterator::const_header_lines_key_iterator(
+    const BalsaHeaders* headers,
+    HeaderLines::size_type index,
+    const base::StringPiece& key)
+    : iterator_base(headers, index),
+      key_(key) {
+}
+
+BalsaHeaders::const_header_lines_key_iterator::const_header_lines_key_iterator(
+    const BalsaHeaders* headers,
+    HeaderLines::size_type index)
+    : iterator_base(headers, index) {
 }
 
 BalsaHeaders::BalsaHeaders()
