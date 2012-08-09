@@ -238,22 +238,8 @@ TEST_F(BrowserPluginTest, GuestCrash) {
       BrowserPluginHostMsg_HandleInputEvent::ID));
   browser_plugin_manager()->sink().ClearMessages();
 
-  const char* kAddEventListener =
-    "var msg;"
-    "function crashListener() {"
-    "  msg = 'crashed';"
-    "}"
-    "document.getElementById('browserplugin')."
-    "    addEventListener('crash', crashListener);";
-
-  ExecuteJavaScript(kAddEventListener);
-
   // Pretend that the guest has crashed
   browser_plugin->GuestCrashed();
-
-  // Verify that our event listener has fired.
-  EXPECT_EQ("crashed", ExecuteScriptAndReturnString("msg"));
-
   // Send an event and verify that events are no longer deported.
   browser_plugin->handleInputEvent(WebKit::WebMouseEvent(),
                                    cursor_info);
@@ -263,6 +249,7 @@ TEST_F(BrowserPluginTest, GuestCrash) {
   // Navigate and verify that the guest_crashed_ flag has been reset.
   browser_plugin->SetSrcAttribute("bar");
   EXPECT_FALSE(browser_plugin->guest_crashed_);
+
 }
 
 TEST_F(BrowserPluginTest, RemovePlugin) {

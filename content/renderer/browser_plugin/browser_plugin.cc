@@ -37,7 +37,6 @@ using WebKit::WebVector;
 namespace content {
 
 namespace {
-const char kCrashEventName[] = "crash";
 const char kNavigationEventName[] = "navigation";
 const char* kSrcAttribute = "src";
 }
@@ -185,21 +184,6 @@ void BrowserPlugin::UpdateRect(
 void BrowserPlugin::GuestCrashed() {
   guest_crashed_ = true;
   container_->invalidate();
-
-  if (!HasListeners(kCrashEventName))
-    return;
-
-  EventListeners& listeners = event_listener_map_[kCrashEventName];
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    v8::Context::Scope context_scope(v8::Context::New());
-    v8::HandleScope handle_scope;
-    container()->element().document().frame()->
-        callFunctionEvenIfScriptDisabled(*it,
-                                         v8::Object::New(),
-                                         0,
-                                         NULL);
-  }
 }
 
 void BrowserPlugin::DidNavigate(const GURL& url) {
