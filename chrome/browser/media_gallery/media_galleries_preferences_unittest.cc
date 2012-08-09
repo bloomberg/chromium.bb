@@ -45,7 +45,12 @@ class MediaGalleriesPreferencesTest : public testing::Test {
         default_galleries_count_(0) {
   }
 
-  virtual ~MediaGalleriesPreferencesTest() {}
+  virtual ~MediaGalleriesPreferencesTest() {
+    // TestExtensionSystem uses DeleteSoon, so we need to delete the profile
+    // and then run the message queue to clean up.
+    profile_.reset();
+    MessageLoop::current()->RunAllPending();
+  }
 
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(

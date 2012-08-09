@@ -1577,11 +1577,3 @@
    fun:MessageLoop::MessageLoop
    fun:ExtensionUpdaterTest
 }
-{
-   bug_141322
-   Heapcheck:Leak
-   ...
-   fun:ExtensionService::ExtensionService
-   fun:extensions::TestExtensionSystem::CreateExtensionService
-   fun:chrome::::MediaGalleriesPreferencesTest::SetUp
-}
