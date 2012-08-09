@@ -12,12 +12,11 @@ from chromite.lib import cros_build_lib
 
 
 # Default pathway; stored here rather than usual buildbot.constants since
-# we don't want to import buildbot code from here.  Note this is also
-# designed to fallback- not all systems are builders
-# Note this is left here for compatibility with code that directly
-# invokes GSUTIL_BIN; consuming code should be invoking
-# GSContext.GetDefaultGSUtilBin()- or just using the API.
-GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
+# we don't want to import buildbot code from here.
+# Note that this value is reset after GSContext via the GetDefaultGSUtilBin
+# method; we set it initially here just for the sake of making clear it
+# exists.
+GSUTIL_BIN = None
 
 
 class GSContextException(Exception):
@@ -34,6 +33,7 @@ class GSContext(object):
   DEFAULT_BOTO_FILE = os.path.expanduser('~/.boto')
   # This is set for ease of testing.
   DEFAULT_GSUTIL_BIN = None
+  DEFAULT_GSUTIL_BUILDER_BIN = '/b/build/third_party/gsutil/gsutil'
   # How many times to retry uploads.
   DEFAULT_RETRIES = 10
 
@@ -44,11 +44,11 @@ class GSContext(object):
   @classmethod
   def GetDefaultGSUtilBin(cls):
     if cls.DEFAULT_GSUTIL_BIN is None:
-      gsutil_bin = GSUTIL_BIN
-      if not os.path.exists(GSUTIL_BIN):
+      gsutil_bin = cls.DEFAULT_GSUTIL_BUILDER_BIN
+      if not os.path.exists(gsutil_bin):
         gsutil_bin = cros_build_lib.RunCommandCaptureOutput(
             ['which', 'gsutil']).output.strip()
-        cls.DEFAULT_GSUTIL_BIN = gsutil_bin
+      cls.DEFAULT_GSUTIL_BIN = gsutil_bin
     return cls.DEFAULT_GSUTIL_BIN
 
   def __init__(self, boto_file=None, acl_file=None,
@@ -204,3 +204,10 @@ class GSContext(object):
       acl = self.acl_file
 
     self._DoCommand(['setacl', acl, upload_url])
+
+# Set GSUTIL_BIN now.
+try:
+  GSUTIL_BIN = GSContext.GetDefaultGSUtilBin()
+except cros_build_lib.RunCommandError:
+  # Ignore it; let consuming code go boom in this case.
+  logger.warning("Couldn't find a usable gsutil in default pathways")
