@@ -577,10 +577,10 @@ gfx::Point CalibrateTouchCoordinates(
            switches::kEnableTouchCalibration))
     return gfx::Point(x, y);
   gfx::Rect bounds = gfx::Screen::GetPrimaryDisplay().bounds_in_pixel();
-  const int kLeftBorder = 49;
-  const int kRightBorder = 49;
-  const int kBottomBorder = 53;
-  const int kTopBorder = 0;
+  const int kLeftBorder = 40;
+  const int kRightBorder = 40;
+  const int kBottomBorder = 30;
+  const int kTopBorder = -20;
   const int resolution_x = bounds.width();
   const int resolution_y = bounds.height();
   // The "grace area" (10% in this case) is to make it easier for the user to
@@ -599,12 +599,12 @@ gfx::Point CalibrateTouchCoordinates(
     x = resolution_x - kLeftBorder;
   // Scale the screen area back to the full resolution of the screen.
   x = (x * resolution_x) / (resolution_x - (kRightBorder + kLeftBorder));
-  // Offset the y position to the real
+  // When there is a top bezel we add our border,
   y -= kTopBorder;
-  // Check if we are in the grace area of the left side.
-  // Note: We might not want to do this when the gesture is locked?
-  if (y < 0 && y > -kTopBorder * kGraceAreaFraction)
-    y = 0;
+  // and increase the sensitivity there.
+  if (kTopBorder < 0 && y < -2 * kTopBorder)
+    y /= 2;
+
   // Check if we are in the grace area of the right side.
   // Note: We might not want to do this when the gesture is locked?
   if (y > resolution_y - kTopBorder &&
