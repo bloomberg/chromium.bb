@@ -560,7 +560,6 @@ TEST_F(WebIntentsRegistryTest, TestGetAllDefaultIntentServices) {
 
   DefaultServiceListConsumer consumer;
 
-  // Test we can retrieve default entries by action.
   registry_.GetAllDefaultIntentServices(
       base::Bind(&DefaultServiceListConsumer::Accept,
                  base::Unretained(&consumer)));
@@ -731,4 +730,50 @@ TEST_F(WebIntentsRegistryTest, GetIntentsCollapsesEquivalentIntents) {
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
   EXPECT_EQ(ASCIIToUTF16("image/png,image/jpg"), consumer.services_[0].type);
+}
+
+TEST_F(WebIntentsRegistryTest, UnregisterDefaultIntentServicesForServiceURL) {
+
+  const GURL service_url_0("http://jibfest.com/dozer");
+  const GURL service_url_1("http://kittyfizzer.com/fizz");
+
+  DefaultWebIntentService s0;
+  s0.action = ASCIIToUTF16("share");
+  s0.type = ASCIIToUTF16("text/*");
+  // Values here are just dummies to test for preservation.
+  s0.user_date = 1;
+  s0.suppression = 4;
+  s0.service_url = service_url_0.spec();
+  registry_.RegisterDefaultIntentService(s0);
+
+  DefaultWebIntentService s1;
+  s1.action = ASCIIToUTF16("whack");
+  s1.type = ASCIIToUTF16("text/*");
+  // Values here are just dummies to test for preservation.
+  s1.user_date = 1;
+  s1.suppression = 4;
+  s1.service_url = service_url_1.spec();
+  registry_.RegisterDefaultIntentService(s1);
+
+  DefaultServiceListConsumer consumer;
+
+  registry_.GetAllDefaultIntentServices(
+      base::Bind(&DefaultServiceListConsumer::Accept,
+                 base::Unretained(&consumer)));
+
+  consumer.WaitForData();
+
+  ASSERT_EQ(2U, consumer.services_.size());
+
+  registry_.UnregisterServiceDefaults(service_url_0);
+  MessageLoop::current()->RunAllPending();
+
+  registry_.GetAllDefaultIntentServices(
+      base::Bind(&DefaultServiceListConsumer::Accept,
+                 base::Unretained(&consumer)));
+
+  consumer.WaitForData();
+
+  ASSERT_EQ(1U, consumer.services_.size());
+  EXPECT_EQ(service_url_1.spec(), consumer.services_[0].service_url);
 }

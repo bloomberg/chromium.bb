@@ -401,7 +401,11 @@ class WebDataService : public RefcountedProfileKeyedService {
   // the |action|, |type|, and |url_pattern| of |service|.
   void RemoveDefaultWebIntentService(const DefaultWebIntentService& service);
 
-  // Get a list of all web intent service defaults for the given |action|.
+  // Removes all default web intent service entries associated with
+  // |service_url|
+  void RemoveWebIntentServiceDefaults(const GURL& service_url);
+
+    // Get a list of all web intent service defaults for the given |action|.
   // |consumer| must not be null.
   Handle GetDefaultWebIntentServicesForAction(const string16& action,
                                               WebDataServiceConsumer* consumer);
@@ -409,7 +413,6 @@ class WebDataService : public RefcountedProfileKeyedService {
   // Get a list of all registered web intent service defaults.
   // |consumer| must not be null.
   Handle GetAllDefaultWebIntentServices(WebDataServiceConsumer* consumer);
-
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -629,6 +632,7 @@ class WebDataService : public RefcountedProfileKeyedService {
       GenericRequest<DefaultWebIntentService>* request);
   void RemoveDefaultWebIntentServiceImpl(
       GenericRequest<DefaultWebIntentService>* request);
+  void RemoveWebIntentServiceDefaultsImpl(GenericRequest<GURL>* request);
   void GetDefaultWebIntentServicesForActionImpl(
       GenericRequest<string16>* request);
   void GetAllDefaultWebIntentServicesImpl(GenericRequest<std::string>* request);

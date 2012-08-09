@@ -95,6 +95,9 @@ class WebIntentsRegistry : public ProfileKeyedService {
   virtual void UnregisterDefaultIntentService(
       const DefaultWebIntentService& default_service);
 
+  // Delete all default service entries associated with |service_url|.
+  virtual void UnregisterServiceDefaults(const GURL& service_url);
+
   // Requests the best default intent service for the given invocation
   // parameters.
   // |callback| must not be null.

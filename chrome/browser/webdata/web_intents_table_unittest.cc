@@ -22,16 +22,20 @@ using webkit_glue::WebIntentServiceData;
 
 namespace {
 
-string16 test_action = ASCIIToUTF16("http://webintents.org/intents/share");
-string16 test_action_2 = ASCIIToUTF16("http://webintents.org/intents/view");
-string16 test_scheme = ASCIIToUTF16("mailto");
-string16 test_scheme_2 = ASCIIToUTF16("web+poodles");
-GURL test_url("http://google.com/");
-GURL test_url_fake("http://fakegoogle.com/");
-string16 test_title = ASCIIToUTF16("Test WebIntent");
-string16 test_title_2 = ASCIIToUTF16("Test WebIntent #2");
-string16 mime_image = ASCIIToUTF16("image/*");
-string16 mime_video = ASCIIToUTF16("video/*");
+const string16 test_action =
+    ASCIIToUTF16("http://webintents.org/intents/share");
+const string16 test_action_2 =
+    ASCIIToUTF16("http://webintents.org/intents/view");
+const string16 test_scheme = ASCIIToUTF16("mailto");
+const string16 test_scheme_2 = ASCIIToUTF16("web+poodles");
+const GURL test_url("http://google.com/");
+const GURL test_url_fake("http://fakegoogle.com/");
+const GURL test_service_url("http://jiggle.com/dojiggle");
+const GURL test_service_url_2("http://waddle.com/waddler");
+const string16 test_title = ASCIIToUTF16("Test WebIntent");
+const string16 test_title_2 = ASCIIToUTF16("Test WebIntent #2");
+const string16 mime_image = ASCIIToUTF16("image/*");
+const string16 mime_video = ASCIIToUTF16("video/*");
 
 WebIntentServiceData MakeActionService(const GURL& url,
                                        const string16& action,
@@ -293,6 +297,49 @@ TEST_F(WebIntentsTableTest, DefaultServices) {
   defaults.clear();
   ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
   ASSERT_EQ(1U, defaults.size());
+}
+
+TEST_F(WebIntentsTableTest, RemoveDefaultServicesForServiceURL) {
+  DefaultWebIntentService s0;
+  s0.action = test_action;
+  s0.type = mime_image;
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            s0.url_pattern.Parse(test_url.spec()));
+  s0.user_date = 1;
+  s0.suppression = 4;
+  s0.service_url = test_service_url.spec();
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(s0));
+
+  DefaultWebIntentService s1;
+  s1.action = test_action_2;
+  s1.type = mime_image;
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+      s1.url_pattern.Parse(test_url.spec()));
+  s1.user_date = 1;
+  s1.suppression = 4;
+  s1.service_url = test_service_url.spec();
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(s1));
+
+  DefaultWebIntentService s2;
+  s2.action = test_action_2;
+  s2.type = mime_image;
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+      s2.url_pattern.Parse(test_url.spec()));
+  s2.user_date = 1;
+  s2.suppression = 4;
+  s2.service_url = test_service_url_2.spec();
+  ASSERT_TRUE(IntentsTable()->SetDefaultService(s2));
+
+  std::vector<DefaultWebIntentService> defaults;
+  ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
+  ASSERT_EQ(3U, defaults.size());
+
+  ASSERT_TRUE(IntentsTable()->RemoveServiceDefaults(test_service_url));
+
+  defaults.clear();
+  ASSERT_TRUE(IntentsTable()->GetAllDefaultServices(&defaults));
+  ASSERT_EQ(1U, defaults.size());
+  EXPECT_EQ(test_service_url_2.spec(), defaults[0].service_url);
 }
 
 } // namespace

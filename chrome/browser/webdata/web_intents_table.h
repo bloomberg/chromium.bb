@@ -105,6 +105,9 @@ class WebIntentsTable : public WebDatabaseTable {
   // and url_pattern parameters exactly.
   bool RemoveDefaultService(const DefaultWebIntentService& default_service);
 
+  // Removes all default services associated with |service_url|.
+  bool RemoveServiceDefaults(const GURL& service_url);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIntentsTable);
 };

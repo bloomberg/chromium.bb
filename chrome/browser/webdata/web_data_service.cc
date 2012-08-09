@@ -334,6 +334,17 @@ void WebDataService::RemoveDefaultWebIntentService(
                     request));
 }
 
+void WebDataService::RemoveWebIntentServiceDefaults(
+    const GURL& service_url) {
+  GenericRequest<GURL>* request =
+      new GenericRequest<GURL>(
+          this, GetNextRequestHandle(), NULL, service_url);
+  RegisterRequest(request);
+  ScheduleTask(
+      FROM_HERE,
+      Bind(&WebDataService::RemoveWebIntentServiceDefaultsImpl, this, request));
+}
+
 WebDataService::Handle WebDataService::GetDefaultWebIntentServicesForAction(
     const string16& action,
     WebDataServiceConsumer* consumer) {
@@ -960,6 +971,17 @@ void WebDataService::RemoveDefaultWebIntentServiceImpl(
   if (db_ && !request->IsCancelled(NULL)) {
     const DefaultWebIntentService& service = request->arg();
     db_->GetWebIntentsTable()->RemoveDefaultService(service);
+    ScheduleCommit();
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::RemoveWebIntentServiceDefaultsImpl(
+    GenericRequest<GURL>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled(NULL)) {
+    const GURL& service_url = request->arg();
+    db_->GetWebIntentsTable()->RemoveServiceDefaults(service_url);
     ScheduleCommit();
   }
   request->RequestComplete();

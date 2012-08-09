@@ -792,6 +792,41 @@ TEST_F(WebDataServiceTest, WebIntentsDefaultsTest) {
   EXPECT_EQ("service_url_2", consumer.services_[0].service_url);
 }
 
+TEST_F(WebDataServiceTest, WebIntentsRemoveDefaultByServiceURL) {
+  WebIntentsDefaultsConsumer consumer;
+
+  GURL service_url_0("http://pandawaddle.com/observe");
+  GURL service_url_1("http://kittysnicker.com/mock");
+
+  DefaultWebIntentService s0;
+  s0.action = ASCIIToUTF16("share");
+  s0.type = ASCIIToUTF16("type");
+  s0.user_date = 1;
+  s0.suppression = 4;
+  s0.service_url = service_url_0.spec();
+  wds_->AddDefaultWebIntentService(s0);
+
+  DefaultWebIntentService s1;
+  s1.action = ASCIIToUTF16("share");
+  s1.type = ASCIIToUTF16("type");
+  s1.user_date = 1;
+  s1.suppression = 4;
+  s1.service_url = service_url_1.spec();
+  wds_->AddDefaultWebIntentService(s1);
+
+  wds_->GetAllDefaultWebIntentServices(&consumer);
+  WaitUntilCalled();
+  ASSERT_EQ(2U, consumer.services_.size());
+
+  wds_->RemoveWebIntentServiceDefaults(service_url_0);
+  MessageLoop::current()->RunAllPending();
+
+  wds_->GetAllDefaultWebIntentServices(&consumer);
+  WaitUntilCalled();
+  ASSERT_EQ(1U, consumer.services_.size());
+  EXPECT_EQ(service_url_1.spec(), consumer.services_[0].service_url);
+}
+
 TEST_F(WebDataServiceTest, DidDefaultSearchProviderChangeOnNewProfile) {
   KeywordsConsumer consumer;
   wds_->GetKeywords(&consumer);

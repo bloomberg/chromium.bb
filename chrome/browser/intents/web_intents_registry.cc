@@ -428,6 +428,11 @@ void WebIntentsRegistry::UnregisterDefaultIntentService(
   wds_->RemoveDefaultWebIntentService(default_service);
 }
 
+void WebIntentsRegistry::UnregisterServiceDefaults(const GURL& service_url) {
+  DCHECK(wds_.get());
+  wds_->RemoveWebIntentServiceDefaults(service_url);
+}
+
 void WebIntentsRegistry::GetDefaultIntentService(
     const string16& action,
     const string16& type,

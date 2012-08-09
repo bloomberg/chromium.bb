@@ -323,3 +323,11 @@ bool WebIntentsTable::RemoveDefaultService(
 
   return s.Run();
 }
+
+bool WebIntentsTable::RemoveServiceDefaults(const GURL& service_url) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM web_intents_defaults WHERE service_url = ?"));
+  s.BindString(0, service_url.spec());
+
+  return s.Run();
+}
