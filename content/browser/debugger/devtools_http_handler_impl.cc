@@ -167,6 +167,17 @@ void DevToolsHttpHandlerImpl::SetRenderViewHostBinding(
     binding_ = default_binding_.get();
 }
 
+GURL DevToolsHttpHandlerImpl::GetFrontendURL(RenderViewHost* render_view_host) {
+  net::IPEndPoint ip_address;
+  if (server_->GetLocalAddress(&ip_address))
+    return GURL();
+  std::string host = ip_address.ToString();
+  std::string id = binding_->GetIdentifier(render_view_host);
+  return GURL(std::string("http://") +
+              ip_address.ToString() +
+              GetFrontendURLInternal(id, host));
+}
+
 static std::string PathWithoutParams(const std::string& path) {
   size_t query_position = path.find("?");
   if (query_position != std::string::npos)
@@ -377,6 +388,17 @@ DevToolsHttpHandlerImpl::PageList DevToolsHttpHandlerImpl::GeneratePageList() {
   return page_list;
 }
 
+std::string DevToolsHttpHandlerImpl::GetFrontendURLInternal(
+    const std::string rvh_id,
+    const std::string& host) {
+  return base::StringPrintf(
+      "%s%sws=%s/devtools/page/%s",
+      overridden_frontend_url_.c_str(),
+      overridden_frontend_url_.find("?") == std::string::npos ? "?" : "&",
+      host.c_str(),
+      rvh_id.c_str());
+}
+
 void DevToolsHttpHandlerImpl::OnJsonRequestUI(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
@@ -396,12 +418,8 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
                            base::StringPrintf("ws://%s/devtools/page/%s",
                                               host.c_str(),
                                               i->id.c_str()));
-      std::string devtools_frontend_url = base::StringPrintf(
-          "%s%sws=%s/devtools/page/%s",
-          overridden_frontend_url_.c_str(),
-          overridden_frontend_url_.find("?") == std::string::npos ? "?" : "&",
-          host.c_str(),
-          i->id.c_str());
+      std::string devtools_frontend_url = GetFrontendURLInternal(i->id.c_str(),
+                                                                 host);
       page_info->SetString("devtoolsFrontendUrl", devtools_frontend_url);
     }
   }

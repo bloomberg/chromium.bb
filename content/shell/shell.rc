@@ -30,6 +30,10 @@ BEGIN
         MENUITEM "&Close Window",        IDM_CLOSE_WINDOW
         MENUITEM "E&xit",                IDM_EXIT
     END
+    POPUP "&Debug"
+    BEGIN
+        MENUITEM "&Show Developer Tools...", IDM_SHOW_DEVELOPER_TOOLS
+    END
 END
 
 

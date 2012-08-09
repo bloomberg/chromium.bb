@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
@@ -82,22 +81,10 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 #if defined(OS_ANDROID)
   devtools_delegate_ = new ShellDevToolsDelegate(
-      0,  // On android the port number isn't used.
       browser_context_->GetRequestContext());
 #else
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
-    std::string port_str =
-        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-    int port;
-    if (base::StringToInt(port_str, &port) && port > 0 && port < 65535) {
-      devtools_delegate_ = new ShellDevToolsDelegate(
-          port,
-          browser_context_->GetRequestContext());
-    } else {
-      DLOG(WARNING) << "Invalid http debugger port number " << port;
-    }
-  }
+  devtools_delegate_ = new ShellDevToolsDelegate(
+      browser_context_->GetRequestContext());
 #endif
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {

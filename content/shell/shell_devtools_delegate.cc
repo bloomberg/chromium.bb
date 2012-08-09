@@ -4,8 +4,6 @@
 
 #include "content/shell/shell_devtools_delegate.h"
 
-#include <algorithm>
-
 #include "content/public/browser/devtools_http_handler.h"
 #include "grit/shell_resources.h"
 #include "net/base/tcp_listen_socket.h"
@@ -16,11 +14,10 @@
 namespace content {
 
 ShellDevToolsDelegate::ShellDevToolsDelegate(
-    int port,
     net::URLRequestContextGetter* context_getter)
     : context_getter_(context_getter) {
   devtools_http_handler_ = DevToolsHttpHandler::Start(
-      new net::TCPListenSocketFactory("127.0.0.1", port),
+      new net::TCPListenSocketFactory("127.0.0.1", 0),
       "",
       context_getter_,
       this);

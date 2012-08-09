@@ -8,8 +8,10 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -17,6 +19,9 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/shell/shell_browser_main_parts.h"
+#include "content/shell/shell_content_browser_client.h"
+#include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_javascript_dialog_creator.h"
 #include "content/shell/shell_messages.h"
 #include "content/shell/shell_switches.h"
@@ -149,6 +154,19 @@ void Shell::UpdateNavigationControls() {
   PlatformEnableUIControl(BACK_BUTTON, current_index > 0);
   PlatformEnableUIControl(FORWARD_BUTTON, current_index < max_index);
   PlatformEnableUIControl(STOP_BUTTON, web_contents_->IsLoading());
+}
+
+void Shell::ShowDevTools() {
+  ShellContentBrowserClient* browser_client =
+      static_cast<ShellContentBrowserClient*>(
+          GetContentClient()->browser());
+  ShellDevToolsDelegate* delegate =
+      browser_client->shell_browser_main_parts()->devtools_delegate();
+  GURL url = delegate->devtools_http_handler()->GetFrontendURL(
+      web_contents()->GetRenderViewHost());
+  CreateNewWindow(
+      web_contents()->GetBrowserContext(),
+      url, NULL, MSG_ROUTING_NONE, NULL);
 }
 
 gfx::NativeView Shell::GetContentView() {

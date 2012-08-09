@@ -53,6 +53,7 @@ class DevToolsHttpHandlerImpl
   virtual void Stop() OVERRIDE;
   virtual void SetRenderViewHostBinding(
       RenderViewHostBinding* binding) OVERRIDE;
+  virtual GURL GetFrontendURL(RenderViewHost* render_view_host) OVERRIDE;
 
   // net::HttpServer::Delegate implementation.
   virtual void OnHttpRequest(int connection_id,
@@ -64,15 +65,12 @@ class DevToolsHttpHandlerImpl
                                   const std::string& data) OVERRIDE;
   virtual void OnClose(int connection_id) OVERRIDE;
 
-  PageList GeneratePageList();
-
-  virtual void OnJsonRequestUI(int connection_id,
-                               const net::HttpServerRequestInfo& info);
-  virtual void OnWebSocketRequestUI(int connection_id,
-                                    const net::HttpServerRequestInfo& info);
-  virtual void OnWebSocketMessageUI(int connection_id,
-                                    const std::string& data);
-  virtual void OnCloseUI(int connection_id);
+  void OnJsonRequestUI(int connection_id,
+                       const net::HttpServerRequestInfo& info);
+  void OnWebSocketRequestUI(int connection_id,
+                            const net::HttpServerRequestInfo& info);
+  void OnWebSocketMessageUI(int connection_id, const std::string& data);
+  void OnCloseUI(int connection_id);
 
   // net::URLRequest::Delegate implementation.
   virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
@@ -92,6 +90,12 @@ class DevToolsHttpHandlerImpl
                const std::string& message);
   void AcceptWebSocket(int connection_id,
                        const net::HttpServerRequestInfo& request);
+
+  PageList GeneratePageList();
+
+  // Returns the front end url without the host at the beginning.
+  std::string GetFrontendURLInternal(const std::string rvh_id,
+                                     const std::string& host);
 
   std::string overridden_frontend_url_;
   scoped_ptr<const net::StreamListenSocketFactory> socket_factory_;

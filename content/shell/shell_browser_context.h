@@ -16,7 +16,6 @@ namespace content {
 
 class DownloadManagerDelegate;
 class ResourceContext;
-class ShellBrowserMainParts;
 class ShellDownloadManagerDelegate;
 
 class ShellBrowserContext : public BrowserContext {

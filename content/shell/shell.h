@@ -58,6 +58,7 @@ class Shell : public WebContentsDelegate,
   void Stop();
   void UpdateNavigationControls();
   void Close();
+  void ShowDevTools();
 
   // Do one time initialization at application startup.
   static void PlatformInitialize();

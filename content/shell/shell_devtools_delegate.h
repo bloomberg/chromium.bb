@@ -21,7 +21,7 @@ class DevToolsHttpHandler;
 
 class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
  public:
-  ShellDevToolsDelegate(int port, net::URLRequestContextGetter* context_getter);
+  explicit ShellDevToolsDelegate(net::URLRequestContextGetter* context_getter);
   virtual ~ShellDevToolsDelegate();
 
   // Stops http server.
@@ -31,6 +31,10 @@ class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
   virtual std::string GetDiscoveryPageHTML() OVERRIDE;
   virtual bool BundlesFrontendResources() OVERRIDE;
   virtual std::string GetFrontendResourcesBaseURL() OVERRIDE;
+
+  DevToolsHttpHandler* devtools_http_handler() {
+    return devtools_http_handler_;
+  }
 
  private:
   net::URLRequestContextGetter* context_getter_;

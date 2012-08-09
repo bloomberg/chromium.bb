@@ -236,6 +236,9 @@ LRESULT CALLBACK Shell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
         case IDM_EXIT:
           PlatformExit();
           break;
+        case IDM_SHOW_DEVELOPER_TOOLS:
+          shell->ShowDevTools();
+          break;
         case IDC_NAV_BACK:
           shell->GoBackOrForward(-1);
           break;

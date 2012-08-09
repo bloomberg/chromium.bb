@@ -23,6 +23,40 @@
 
 namespace content {
 
+namespace {
+
+// Callback for Debug > Show web inspector... menu item.
+gboolean ShowWebInspectorActivated(GtkWidget* widget, Shell* shell) {
+  shell->ShowDevTools();
+  return FALSE;  // Don't stop this message.
+}
+
+GtkWidget* AddMenuEntry(GtkWidget* menu_widget, const char* text,
+                        GCallback callback, Shell* shell) {
+  GtkWidget* entry = gtk_menu_item_new_with_label(text);
+  g_signal_connect(entry, "activate", callback, shell);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_widget), entry);
+  return entry;
+}
+
+GtkWidget* CreateMenu(GtkWidget* menu_bar, const char* text) {
+  GtkWidget* menu_widget = gtk_menu_new();
+  GtkWidget* menu_header = gtk_menu_item_new_with_label(text);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_header), menu_widget);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_header);
+  return menu_widget;
+}
+
+GtkWidget* CreateMenuBar(Shell* shell) {
+  GtkWidget* menu_bar = gtk_menu_bar_new();
+  GtkWidget* debug_menu = CreateMenu(menu_bar, "Debug");
+  AddMenuEntry(debug_menu, "Show web inspector...",
+               G_CALLBACK(ShowWebInspectorActivated), shell);
+  return menu_bar;
+}
+
+}  // namespace
+
 void Shell::PlatformInitialize() {
 }
 
@@ -72,6 +106,10 @@ void Shell::PlatformCreateWindow(int width, int height) {
                    G_CALLBACK(OnWindowDestroyedThunk), this);
 
   vbox_ = gtk_vbox_new(FALSE, 0);
+
+  // Create the menu bar.
+  GtkWidget* menu_bar = CreateMenuBar(this);
+  gtk_box_pack_start(GTK_BOX(vbox_), menu_bar, FALSE, FALSE, 0);
 
   // Create the object that mediates accelerators.
   GtkAccelGroup* accel_group = gtk_accel_group_new();

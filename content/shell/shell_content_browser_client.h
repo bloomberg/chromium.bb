@@ -44,6 +44,9 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   ShellResourceDispatcherHostDelegate* resource_dispatcher_host_delegate() {
     return resource_dispatcher_host_delegate_.get();
   }
+  ShellBrowserMainParts* shell_browser_main_parts() {
+    return shell_browser_main_parts_;
+  }
 
  private:
   scoped_ptr<ShellResourceDispatcherHostDelegate>
