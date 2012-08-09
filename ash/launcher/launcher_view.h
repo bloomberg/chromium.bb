@@ -163,9 +163,6 @@ class ASH_EXPORT LauncherView : public views::View,
   // Common setup done for all children.
   void ConfigureChildView(views::View* view);
 
-  // Returns the items whose icons are not shown because they don't fit.
-  void GetOverflowItems(std::vector<LauncherItem>* items);
-
   // Shows the overflow menu.
   void ShowOverflowBubble();
 

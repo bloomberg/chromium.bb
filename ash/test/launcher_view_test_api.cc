@@ -9,7 +9,6 @@
 #include "ash/launcher/overflow_button.h"
 #include "base/message_loop.h"
 #include "ui/views/animation/bounds_animator.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/view_model.h"
 
 namespace {
