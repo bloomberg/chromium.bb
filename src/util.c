@@ -46,12 +46,15 @@ weston_spring_update(struct weston_spring *spring, uint32_t msec)
 {
 	double force, v, current, step;
 
-	/* Avoid entering into an infinite loop */
-	if (msec - spring->timestamp > UINT32_MAX / 2) {
-		weston_log("timestamps going backwards (from %u to %u)\n",
-				spring->timestamp, msec);
-		spring->current = spring->previous = spring->target;
-		return;
+	/* Limit the number of executions of the loop below by ensuring that
+	 * the timestamp for last update of the spring is no more than 1s ago.
+	 * This handles the case where time moves backwards or forwards in
+	 * large jumps.
+	 */
+	if (msec - spring->timestamp > 1000) {
+		weston_log("unexpectedly large timestamp jump (from %u to %u)\n",
+			   spring->timestamp, msec);
+		spring->timestamp = msec - 1000;
 	}
 
 	step = 0.01;
