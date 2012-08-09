@@ -533,6 +533,12 @@ if pre_base_env.Bit('use_environ'):
 # so let's do it in all cases.
 pre_base_env['ENV']['CYGWIN'] = os.environ.get('CYGWIN', 'nodosfilewarning')
 
+# Allow the zero-based sandbox model to run insecurely.
+# TODO(arbenson): remove this once binutils bug is fixed (see
+# src/trusted/service_runtime/arch/x86_64/sel_addrspace_posix_x86_64.c)
+if pre_base_env.Bit('x86_64_zero_based_sandbox'):
+  pre_base_env['ENV']['NACL_ENABLE_INSECURE_ZERO_BASED_SANDBOX'] = 1
+
 if pre_base_env.Bit('werror'):
   werror_flags = ['-Werror']
 else:
@@ -2229,6 +2235,12 @@ def CommandSelLdrTestNacl(env, name, nexe,
   # Skip platform qualification checks on configurations with known issues.
   if GetEmulator(env) or env.IsRunningUnderValgrind() or env.Bit('asan'):
     sel_ldr_flags += ['-Q']
+
+  # Skip validation if we are using the x86-64 zero-based sandbox.
+  # TODO(arbenson): remove this once the validator supports the x86-64
+  # zero-based sandbox model.
+  if env.Bit('x86_64_zero_based_sandbox'):
+    sel_ldr_flags += ['-c']
 
   # The glibc modifications only make sense for nacl_env tests.
   # But this function gets used by some base_env (i.e. src/trusted/...)

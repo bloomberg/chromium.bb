@@ -123,6 +123,13 @@ scons-tests-translator() {
   ${SCONS_COMMON} ${flags} translate_fast=1 -j1 ${targets} || handle-error
 }
 
+scons-tests-x86-64-zero-based-sandbox() {
+  echo "@@@BUILD_STEP hello_world (x86-64 zero-based sandbox)@@@"
+  local flags="--mode=opt-host,nacl bitcode=1 platform=x86-64 \
+               x86_64_zero_based_sandbox=1"
+  ${SCONS_COMMON} ${flags} "run_hello_world_test"
+}
+
 # This test is a bitcode stability test, which builds pexes for all the tests
 # using an old version of the toolchain frontend, and then translates those
 # pexes using the current version of the translator. It's simpler than using
@@ -312,6 +319,11 @@ tc-test-bot() {
     scons-tests-translator ${arch}
 
     archived-pexe-translator-test ${arch}
+
+    if [[ ${arch} = x86-64 ]] ; then
+      scons-tests-x86-64-zero-based-sandbox
+    fi
+
   done
 }
 

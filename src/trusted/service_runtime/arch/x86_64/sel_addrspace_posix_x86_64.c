@@ -128,18 +128,36 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   CHECK(addrsp_size == FOURGIG);
 
   if (NACL_X86_64_ZERO_BASED_SANDBOX) {
-    /*
-     * For the zero-based sandbox model, there is 44GB of prereserved
-     * address space.  If this prereserved memory is found, then try
-     * to allocate for it beginning at NACL_TRAMPOLINE_START.
-     */
-    if (NaClFindPrereservedSandboxMemory(mem, 11 * FOURGIG)) {
+    mem_sz = 11 * FOURGIG;
+    if (getenv("NACL_ENABLE_INSECURE_ZERO_BASED_SANDBOX") != NULL) {
+      /*
+       * For the zero-based 64-bit sandbox, we want to reserve 44GB of address
+       * space: 4GB for the program plus 40GB of guard pages.  Due to a binutils
+       * bug (see http://sourceware.org/bugzilla/show_bug.cgi?id=13400), the
+       * amount of address space that the linker can pre-reserve is capped
+       * at 4GB. For proper reservation, GNU ld version 2.22 or higher
+       * needs to be used.
+       *
+       * Without the bug fix, trying to reserve 44GB will result in
+       * pre-reserving the entire capped space of 4GB.  This tricks the run-time
+       * into thinking that we can mmap up to 44GB.  This is unsafe as it can
+       * overwrite the run-time program itself and/or other programs.
+       *
+       * For now, we allow a 4GB address space as a proof-of-concept insecure
+       * sandboxing model.
+       *
+       * TODO(arbenson): remove this if block once the binutils bug is fixed
+       */
+      mem_sz = FOURGIG;
+    }
+
+    NaClAddrSpaceBeforeAlloc(mem_sz);
+    if (NaClFindPrereservedSandboxMemory(mem, mem_sz)) {
       int result;
       void *tmp_mem = (void *) NACL_TRAMPOLINE_START;
-      NaClAddrSpaceBeforeAlloc(11 * FOURGIG);
       CHECK(*mem == 0);
-      addrsp_size -= NACL_TRAMPOLINE_START;
-      result = NaCl_page_alloc_at_addr(&tmp_mem, addrsp_size);
+      mem_sz -= NACL_TRAMPOLINE_START;
+      result = NaCl_page_alloc_at_addr(&tmp_mem, mem_sz);
       if (0 != result) {
         NaClLog(2,
                 "NaClAllocateSpace: NaCl_page_alloc 0x%08"NACL_PRIxPTR
@@ -149,7 +167,7 @@ NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
       }
       NaClLog(4, "NaClAllocateSpace: %"NACL_PRIxPTR", %"NACL_PRIxS"\n",
               (uintptr_t) *mem,
-              addrsp_size);
+              mem_sz);
       return LOAD_OK;
     }
     NaClLog(LOG_ERROR, "Failed to find prereserved memory\n");

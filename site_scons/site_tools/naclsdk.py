@@ -331,6 +331,9 @@ def _SetEnvForPnacl(env, root):
     pnacl_ld_flags += sb_flags
     pnacl_translate_flags += sb_flags
 
+  if env.Bit('x86_64_zero_based_sandbox'):
+    pnacl_translate_flags += ' -sfi-zero-based-sandbox'
+
   if pnacl_extra_lib:
     env.Prepend(LIBPATH=pnacl_extra_lib)
 

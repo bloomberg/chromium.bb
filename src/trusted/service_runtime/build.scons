@@ -391,28 +391,29 @@ if (env.Bit('linux') and not env.CrossToolsBuild() and
   if env.Bit('target_x86_64'):
     ld_emul = 'elf_x86_64'
     if env.Bit('x86_64_zero_based_sandbox'):
-      # For the zero-based 64-bit sandbox, we reserve 44GB of address space:
-      # 4GB for the program plus 40GB of guard pages.  Due to a binutils
+      # For the zero-based 64-bit sandbox, we want to reserve 44GB of address
+      # space: 4GB for the program plus 40GB of guard pages.  Due to a binutils
       # bug (see http://sourceware.org/bugzilla/show_bug.cgi?id=13400), the
       # amount of address space that the linker can pre-reserve is capped
       # at 4GB. For proper reservation, GNU ld version 2.22 or higher
       # needs to be used.
       #
       # Without the bug fix, trying to reserve 44GB will result in
-      # pre-reserving the entire capped space of 4GB.  Thus, we still
-      # pass 44GB as our reserve_top flag.
+      # pre-reserving the entire capped space of 4GB.  This tricks the run-time
+      # into thinking that we can mmap up to 44GB.  This is unsafe as it can
+      # overwrite the run-time program itself and/or other programs.  Because
+      # of this, we only reserve 4GB.
       #
-      # TODO(arbenson): remove these comments once the necessary ld
-      # version becomes standard.
-      reserve_top = '0xB00000000'
+      # TODO(arbenson): remove these comments and reserve 44GB once the
+      # necessary ld version becomes standard.
+      reserve_top = '0x100000000'
       # The reserve_top value gets interpreted as a pointer in
       # linux/nacl_bootstrap.c.  By default, mcmodel is set to small,
-      # which restricts code and data to the first 2GB.  mcmodel
-      # set to medium has the same restriction.  Thus, with
+      # which restricts code and data to the first 2GB.  With
       # mcmodel set to small or medium, the reserve_top value is
       # truncated, which produces an error.  With mcmodel set to large,
       # there is no restriction on the code and data, so we can
-      # safely set reserve_top to 0xB00000000.
+      # safely set reserve_top to 0x100000000.
       bootstrap_env.Append(CCFLAGS=['-mcmodel=large'])
     else:
       reserve_top = '0x0'
