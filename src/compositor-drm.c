@@ -1120,7 +1120,7 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	return 0;
 }
 
-static int
+static struct drm_mode *
 drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 {
 	struct drm_mode *mode;
@@ -1128,7 +1128,7 @@ drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 
 	mode = malloc(sizeof *mode);
 	if (mode == NULL)
-		return -1;
+		return NULL;
 
 	mode->base.flags = 0;
 	mode->base.width = info->hdisplay;
@@ -1153,7 +1153,7 @@ drm_output_add_mode(struct drm_output *output, drmModeModeInfo *info)
 
 	wl_list_insert(output->base.mode_list.prev, &mode->base.link);
 
-	return 0;
+	return mode;
 }
 
 static int
@@ -1335,13 +1335,13 @@ create_output_for_connector(struct drm_compositor *ec,
 			    int x, int y, struct udev_device *drm_device)
 {
 	struct drm_output *output;
-	struct drm_mode *drm_mode, *next;
-	struct weston_mode *m, *preferred, *current, *configured;
+	struct drm_mode *drm_mode, *next, *preferred, *current, *configured;
+	struct weston_mode *m;
 	struct drm_configured_output *o = NULL, *temp;
 	drmModeEncoder *encoder;
 	drmModeModeInfo crtc_mode;
 	drmModeCrtc *crtc;
-	int i, ret;
+	int i;
 	char name[32];
 	const char *type_name;
 
@@ -1391,8 +1391,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	for (i = 0; i < connector->count_modes; i++) {
-		ret = drm_output_add_mode(output, &connector->modes[i]);
-		if (ret)
+		drm_mode = drm_output_add_mode(output, &connector->modes[i]);
+		if (!drm_mode)
 			goto err_free;
 	}
 
@@ -1421,41 +1421,37 @@ create_output_for_connector(struct drm_compositor *ec,
 		if (o && o->width == drm_mode->base.width &&
 			o->height == drm_mode->base.height &&
 			o->config == OUTPUT_CONFIG_MODE)
-			configured = &drm_mode->base;
+			configured = drm_mode;
 		if (!memcmp(&crtc_mode, &drm_mode->mode_info, sizeof crtc_mode))
-			current = &drm_mode->base;
+			current = drm_mode;
 		if (drm_mode->base.flags & WL_OUTPUT_MODE_PREFERRED)
-			preferred = &drm_mode->base;
+			preferred = drm_mode;
 	}
 
 	if (o && o->config == OUTPUT_CONFIG_MODELINE) {
-		ret = drm_output_add_mode(output, &o->crtc_mode);
-		if (ret)
+		configured = drm_output_add_mode(output, &o->crtc_mode);
+		if (!configured)
 			goto err_free;
-		configured = container_of(output->base.mode_list.prev,
-				       struct weston_mode, link);
 		current = configured;
 	}
 
 	if (current == NULL && crtc_mode.clock != 0) {
-		ret = drm_output_add_mode(output, &crtc_mode);
-		if (ret)
+		current = drm_output_add_mode(output, &crtc_mode);
+		if (!current)
 			goto err_free;
-		current = container_of(output->base.mode_list.prev,
-				       struct weston_mode, link);
 	}
 
 	if (o && o->config == OUTPUT_CONFIG_CURRENT)
 		configured = current;
 
 	if (option_current_mode && current)
-		output->base.current = current;
+		output->base.current = &current->base;
 	else if (configured)
-		output->base.current = configured;
+		output->base.current = &configured->base;
 	else if (preferred)
-		output->base.current = preferred;
+		output->base.current = &preferred->base;
 	else if (current)
-		output->base.current = current;
+		output->base.current = &current->base;
 
 	if (output->base.current == NULL) {
 		weston_log("no available modes for %s\n", output->name);
