@@ -150,7 +150,8 @@ class LocationBarView : public LocationBar,
     APP_LAUNCHER
   };
 
-  LocationBarView(Profile* profile,
+  LocationBarView(Browser* browser,
+                  Profile* profile,
                   CommandUpdater* command_updater,
                   ToolbarModel* model,
                   Delegate* delegate,
@@ -444,6 +445,11 @@ class LocationBarView : public LocationBar,
   // Cleans up layers used for the animation.
   void CleanupFadeAnimation();
 #endif
+
+  // The Browser this LocationBarView is in.  Note that at least
+  // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
+  // window, so this may be NULL.
+  Browser* browser_;
 
   // The Autocomplete Edit field.
   scoped_ptr<OmniboxView> location_entry_;

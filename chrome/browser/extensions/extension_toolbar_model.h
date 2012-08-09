@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -72,24 +73,18 @@ class ExtensionToolbarModel : public content::NotificationObserver {
 
   bool extensions_initialized() const { return extensions_initialized_; }
 
-  size_t size() const {
-    return toolitems_.size();
+  const extensions::ExtensionList& toolbar_items() const {
+    return toolbar_items_;
   }
-
-  extensions::ExtensionList::iterator begin() {
-    return toolitems_.begin();
-  }
-
-  extensions::ExtensionList::iterator end() {
-    return toolitems_.end();
-  }
-
-  const extensions::Extension* GetExtensionByIndex(int index) const;
 
   // Utility functions for converting between an index into the list of
   // incognito-enabled browser actions, and the list of all browser actions.
   int IncognitoIndexToOriginal(int incognito_index);
   int OriginalIndexToIncognito(int original_index);
+
+  const extensions::ExtensionList& action_box_menu_items() const {
+    return action_box_menu_items_;
+  }
 
  private:
   // content::NotificationObserver implementation.
@@ -99,8 +94,15 @@ class ExtensionToolbarModel : public content::NotificationObserver {
 
   // To be called after the extension service is ready; gets loaded extensions
   // from the extension service and their saved order from the pref service
-  // and constructs |toolitems_| from these data.
-  void InitializeExtensionList();
+  // and constructs |toolbar_items_| and |action_box_items_| from these data.
+  void InitializeExtensionLists();
+  void PopulateForActionBoxMode();
+  void PopulateForNonActionBoxMode();
+
+  // Fills |list| with extensions based on provided |order|.
+  void FillExtensionList(
+      const extensions::ExtensionPrefs::ExtensionIdSet& order,
+      extensions::ExtensionList* list);
 
   // Save the model to prefs.
   void UpdatePrefs();
@@ -108,8 +110,16 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   // Our observers.
   ObserverList<Observer> observers_;
 
-  void AddExtension(const extensions::Extension* extension);
-  void RemoveExtension(const extensions::Extension* extension);
+  void AddExtension(const extensions::Extension* extension,
+                    extensions::ExtensionList* list);
+  void RemoveExtension(const extensions::Extension* extension,
+                       extensions::ExtensionList* list);
+
+  // Searches for the given |extension| in |toolbar_items_| and
+  // |action_box_menu_items_| and returns pointer to the list with it
+  // or NULL if not found.
+  extensions::ExtensionList* FindListWithExtension(
+      const extensions::Extension* extension);
 
   // Our ExtensionService, guaranteed to outlive us.
   ExtensionService* service_;
@@ -120,7 +130,10 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   bool extensions_initialized_;
 
   // Ordered list of browser action buttons.
-  extensions::ExtensionList toolitems_;
+  extensions::ExtensionList toolbar_items_;
+
+  // List of browser action buttons visible in an action box menu.
+  extensions::ExtensionList action_box_menu_items_;
 
   // Keeps track of what the last extension to get disabled was.
   std::string last_extension_removed_;

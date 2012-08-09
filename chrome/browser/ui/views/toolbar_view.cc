@@ -245,6 +245,7 @@ void ToolbarView::Init(views::View* location_bar_parent,
       location_bar_parent,
       chrome::search::IsInstantExtendedAPIEnabled(browser_->profile()));
   location_bar_ = new LocationBarView(
+      browser_,
       browser_->profile(),
       browser_->command_controller()->command_updater(),
       model_,

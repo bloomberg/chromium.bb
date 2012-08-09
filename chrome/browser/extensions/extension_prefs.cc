@@ -71,6 +71,15 @@ const char kPrefDisableReason[] = "disable_reason";
 // object stored in the Preferences file. The extensions are stored by ID.
 const char kExtensionToolbar[] = "extensions.toolbar";
 
+// A preference that tracks the order of extensions in an action box
+// (list of extension ids).
+const char kExtensionActionBox[] = "extensions.action_box_order";
+
+// A preference that tracks the order of extensions in a toolbar when
+// action box is enabled (list of extension ids).
+const char kExtensionActionBoxBar[] =
+    "extensions.toolbar_order_with_action_box";
+
 // The key for a serialized Time value indicating the start of the day (from the
 // server's perspective) an extension last included a "ping" parameter during
 // its update check.
@@ -710,7 +719,7 @@ void ExtensionPrefs::RemoveDisableReason(const std::string& extension_id) {
 
 void ExtensionPrefs::UpdateBlacklist(
     const std::set<std::string>& blacklist_set) {
-  std::vector<std::string> remove_pref_ids;
+  ExtensionIdSet remove_pref_ids;
   std::set<std::string> used_id_set;
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
 
@@ -757,7 +766,7 @@ void ExtensionPrefs::UpdateBlacklist(
                           Value::CreateBooleanValue(true));
     }
   }
-  for (unsigned int i = 0; i < remove_pref_ids.size(); ++i) {
+  for (size_t i = 0; i < remove_pref_ids.size(); ++i) {
     DeleteExtensionPrefs(remove_pref_ids[i]);
   }
 }
@@ -1308,28 +1317,23 @@ bool ExtensionPrefs::IsExtensionDisabled(
   return DoesExtensionHaveState(id, Extension::DISABLED);
 }
 
-std::vector<std::string> ExtensionPrefs::GetToolbarOrder() {
-  ExtensionIdSet extension_ids;
-  const ListValue* toolbar_order = prefs_->GetList(kExtensionToolbar);
-  if (toolbar_order) {
-    for (size_t i = 0; i < toolbar_order->GetSize(); ++i) {
-      std::string extension_id;
-      if (toolbar_order->GetString(i, &extension_id))
-        extension_ids.push_back(extension_id);
-    }
-  }
-  return extension_ids;
+ExtensionPrefs::ExtensionIdSet ExtensionPrefs::GetToolbarOrder() {
+  bool action_box_enabled = extensions::switch_utils::IsActionBoxEnabled();
+  return GetExtensionPrefAsVector(
+      action_box_enabled ? kExtensionActionBoxBar : kExtensionToolbar);
 }
 
-void ExtensionPrefs::SetToolbarOrder(
-    const std::vector<std::string>& extension_ids) {
-  ListPrefUpdate update(prefs_, kExtensionToolbar);
-  ListValue* toolbar_order = update.Get();
-  toolbar_order->Clear();
-  for (std::vector<std::string>::const_iterator iter = extension_ids.begin();
-       iter != extension_ids.end(); ++iter) {
-    toolbar_order->Append(new StringValue(*iter));
-  }
+void ExtensionPrefs::SetToolbarOrder(const ExtensionIdSet& extension_ids) {
+  SetExtensionPrefFromVector(extensions::switch_utils::IsActionBoxEnabled() ?
+      kExtensionActionBoxBar : kExtensionToolbar, extension_ids);
+}
+
+ExtensionPrefs::ExtensionIdSet ExtensionPrefs::GetActionBoxOrder() {
+  return GetExtensionPrefAsVector(kExtensionActionBox);
+}
+
+void ExtensionPrefs::SetActionBoxOrder(const ExtensionIdSet& extension_ids) {
+  SetExtensionPrefFromVector(kExtensionActionBox, extension_ids);
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
@@ -2046,6 +2050,8 @@ URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsPref, PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(kExtensionToolbar, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(kExtensionActionBox, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(kExtensionActionBoxBar, PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize,
                              -1,  // default value
                              PrefService::UNSYNCABLE_PREF);
@@ -2071,6 +2077,31 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
                            PrefService::UNSYNCABLE_PREF);
   prefs->RegisterListPref(prefs::kExtensionAllowedInstallSites,
                           PrefService::UNSYNCABLE_PREF);
+}
+
+ExtensionPrefs::ExtensionIdSet ExtensionPrefs::GetExtensionPrefAsVector(
+    const char* pref) {
+  ExtensionIdSet extension_ids;
+  const ListValue* list_of_values = prefs_->GetList(pref);
+  if (!list_of_values)
+    return extension_ids;
+
+  std::string extension_id;
+  for (size_t i = 0; i < list_of_values->GetSize(); ++i) {
+    if (list_of_values->GetString(i, &extension_id))
+      extension_ids.push_back(extension_id);
+  }
+  return extension_ids;
+}
+
+void ExtensionPrefs::SetExtensionPrefFromVector(const char* pref,
+                                                const ExtensionIdSet& strings) {
+  ListPrefUpdate update(prefs_, pref);
+  ListValue* list_of_values = update.Get();
+  list_of_values->Clear();
+  for (ExtensionIdSet::const_iterator iter = strings.begin();
+       iter != strings.end(); ++iter)
+    list_of_values->Append(new StringValue(*iter));
 }
 
 }  // namespace extensions

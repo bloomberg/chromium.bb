@@ -443,8 +443,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     return;
 
   NSUInteger i = 0;
-  for (ExtensionList::iterator iter = toolbarModel_->begin();
-       iter != toolbarModel_->end(); ++iter) {
+  for (ExtensionList::const_iterator iter =
+           toolbarModel_->toolbar_items().begin();
+       iter != toolbarModel_->toolbar_items().end(); ++iter) {
     if (![self shouldDisplayBrowserAction:*iter])
       continue;
 
@@ -533,8 +534,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 
 - (void)positionActionButtonsAndAnimate:(BOOL)animate {
   NSUInteger i = 0;
-  for (ExtensionList::iterator iter = toolbarModel_->begin();
-       iter != toolbarModel_->end(); ++iter) {
+  for (ExtensionList::const_iterator iter =
+           toolbarModel_->toolbar_items().begin();
+       iter != toolbarModel_->toolbar_items().end(); ++iter) {
     if (![self shouldDisplayBrowserAction:*iter])
       continue;
     BrowserActionButton* button = [self buttonForExtension:(*iter)];
@@ -624,8 +626,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (void)containerDragFinished:(NSNotification*)notification {
-  for (ExtensionList::iterator iter = toolbarModel_->begin();
-       iter != toolbarModel_->end(); ++iter) {
+  for (ExtensionList::const_iterator iter =
+           toolbarModel_->toolbar_items().begin();
+       iter != toolbarModel_->toolbar_items().end(); ++iter) {
     BrowserActionButton* button = [self buttonForExtension:(*iter)];
     NSRect buttonFrame = [button frame];
     if (NSContainsRect([containerView_ bounds], buttonFrame))
@@ -663,8 +666,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   NSRect draggedButtonFrame = [draggedButton frame];
 
   NSUInteger index = 0;
-  for (ExtensionList::iterator iter = toolbarModel_->begin();
-       iter != toolbarModel_->end(); ++iter) {
+  for (ExtensionList::const_iterator iter =
+           toolbarModel_->toolbar_items().begin();
+       iter != toolbarModel_->toolbar_items().end(); ++iter) {
     BrowserActionButton* button = [self buttonForExtension:(*iter)];
     CGFloat intersectionWidth =
         NSWidth(NSIntersectionRect(draggedButtonFrame, [button frame]));
@@ -826,8 +830,10 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 - (NSButton*)buttonWithIndex:(NSUInteger)index {
   if (profile_->IsOffTheRecord())
     index = toolbarModel_->IncognitoIndexToOriginal(index);
-  if (index < toolbarModel_->size()) {
-    const Extension* extension = toolbarModel_->GetExtensionByIndex(index);
+  const extensions::ExtensionList& toolbar_items =
+      toolbarModel_->toolbar_items();
+  if (index < toolbar_items.size()) {
+    const Extension* extension = toolbar_items[index];
     return [buttons_ objectForKey:base::SysUTF8ToNSString(extension->id())];
   }
   return nil;

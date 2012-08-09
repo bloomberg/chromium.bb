@@ -8,17 +8,20 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 
-class ExtensionService;
+class Browser;
+class Profile;
 
 // ActionBoxButtonView displays a plus button with associated menu.
 class ActionBoxButtonView : public views::MenuButton,
                             public views::MenuButtonListener {
  public:
-  explicit ActionBoxButtonView(ExtensionService* extension_service);
+  explicit ActionBoxButtonView(Browser* browser, Profile* profile);
   virtual ~ActionBoxButtonView();
 
   SkColor GetBackgroundColor();
   SkColor GetBorderColor();
+
+  void set_starred(bool starred) { starred_ = starred; }
 
  private:
   // CustomButton
@@ -28,7 +31,12 @@ class ActionBoxButtonView : public views::MenuButton,
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
 
-  ExtensionService* extension_service_;
+  Browser* browser_;
+  Profile* profile_;
+
+  // Set to true when the current page is bookmarked.
+  // To be passed to action box menu when this button is pressed.
+  bool starred_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionBoxButtonView);
 };

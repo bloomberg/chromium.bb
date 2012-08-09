@@ -23,10 +23,12 @@
 
 BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     BrowserActionsContainer* owner,
+    Browser* browser,
     views::MenuButton* menu_button,
     const std::vector<BrowserActionView*>& views,
     int start_index)
     : owner_(owner),
+      browser_(browser),
       observer_(NULL),
       menu_button_(menu_button),
       menu_(NULL),
@@ -108,7 +110,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     return false;
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents =
-      new ExtensionContextMenuModel(extension, owner_->browser());
+      new ExtensionContextMenuModel(extension, browser_);
   views::MenuModelAdapter context_menu_model_adapter(
       context_menu_contents.get());
   views::MenuRunner context_menu_runner(

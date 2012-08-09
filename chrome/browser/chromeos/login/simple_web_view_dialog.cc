@@ -183,7 +183,8 @@ void SimpleWebViewDialog::Init() {
   toolbar_model_.reset(new ToolbarModel(this));
 
   // Location bar.
-  location_bar_ = new LocationBarView(profile_,
+  location_bar_ = new LocationBarView(NULL,
+                                      profile_,
                                       command_updater_.get(),
                                       toolbar_model_.get(),
                                       this,

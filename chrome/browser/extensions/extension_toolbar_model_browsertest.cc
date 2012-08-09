@@ -50,8 +50,9 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
   }
 
   const Extension* ExtensionAt(int index) {
-    for (extensions::ExtensionList::iterator i = model_->begin();
-         i < model_->end(); ++i) {
+    const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
+    for (extensions::ExtensionList::const_iterator i = toolbar_items.begin();
+         i < toolbar_items.end(); ++i) {
       if (index-- == 0)
         return *i;
     }
@@ -77,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Basic) {
 
   // This extension should not be in the model (has no browser action).
   EXPECT_EQ(0, inserted_count_);
-  EXPECT_EQ(0u, model_->size());
+  EXPECT_EQ(0u, model_->toolbar_items().size());
   ASSERT_EQ(NULL, ExtensionAt(0));
 
   // Load an extension with a browser action.
@@ -87,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Basic) {
 
   // We should now find our extension in the model.
   EXPECT_EQ(1, inserted_count_);
-  EXPECT_EQ(1u, model_->size());
+  EXPECT_EQ(1u, model_->toolbar_items().size());
   const Extension* extension = ExtensionAt(0);
   ASSERT_TRUE(NULL != extension);
   EXPECT_STREQ("A browser action with no icon that makes the page red",
@@ -96,13 +97,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, Basic) {
   // Should be a no-op, but still fires the events.
   model_->MoveBrowserAction(extension, 0);
   EXPECT_EQ(1, moved_count_);
-  EXPECT_EQ(1u, model_->size());
+  EXPECT_EQ(1u, model_->toolbar_items().size());
   const Extension* extension2 = ExtensionAt(0);
   EXPECT_EQ(extension, extension2);
 
   UnloadExtension(extension->id());
   EXPECT_EQ(1, removed_count_);
-  EXPECT_EQ(0u, model_->size());
+  EXPECT_EQ(0u, model_->toolbar_items().size());
   EXPECT_EQ(NULL, ExtensionAt(0));
 }
 
@@ -118,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
 
   // First extension loaded.
   EXPECT_EQ(1, inserted_count_);
-  EXPECT_EQ(1u, model_->size());
+  EXPECT_EQ(1u, model_->toolbar_items().size());
   const Extension* extensionA = ExtensionAt(0);
   ASSERT_TRUE(NULL != extensionA);
   EXPECT_STREQ("A browser action with no icon that makes the page red",
@@ -132,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
 
   // Second extension loaded.
   EXPECT_EQ(2, inserted_count_);
-  EXPECT_EQ(2u, model_->size());
+  EXPECT_EQ(2u, model_->toolbar_items().size());
   const Extension* extensionB = ExtensionAt(1);
   ASSERT_TRUE(NULL != extensionB);
   EXPECT_STREQ("Popup tester", extensionB->name().c_str());
@@ -145,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
 
   // Third extension loaded.
   EXPECT_EQ(3, inserted_count_);
-  EXPECT_EQ(3u, model_->size());
+  EXPECT_EQ(3u, model_->toolbar_items().size());
   const Extension* extensionC = ExtensionAt(2);
   ASSERT_TRUE(NULL != extensionC);
   EXPECT_STREQ("A page action which removes a popup.",
@@ -154,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
   // Order is now A, B, C. Let's put C first.
   model_->MoveBrowserAction(extensionC, 0);
   EXPECT_EQ(1, moved_count_);
-  EXPECT_EQ(3u, model_->size());
+  EXPECT_EQ(3u, model_->toolbar_items().size());
   EXPECT_EQ(extensionC, ExtensionAt(0));
   EXPECT_EQ(extensionA, ExtensionAt(1));
   EXPECT_EQ(extensionB, ExtensionAt(2));
@@ -163,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
   // Order is now C, A, B. Let's put A last.
   model_->MoveBrowserAction(extensionA, 2);
   EXPECT_EQ(2, moved_count_);
-  EXPECT_EQ(3u, model_->size());
+  EXPECT_EQ(3u, model_->toolbar_items().size());
   EXPECT_EQ(extensionC, ExtensionAt(0));
   EXPECT_EQ(extensionB, ExtensionAt(1));
   EXPECT_EQ(extensionA, ExtensionAt(2));
@@ -173,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
   std::string idB = extensionB->id();
   UnloadExtension(idB);
   EXPECT_EQ(1, removed_count_);
-  EXPECT_EQ(2u, model_->size());
+  EXPECT_EQ(2u, model_->toolbar_items().size());
   EXPECT_EQ(extensionC, ExtensionAt(0));
   EXPECT_EQ(extensionA, ExtensionAt(1));
   EXPECT_EQ(NULL, ExtensionAt(2));
@@ -183,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
 
   // Extension B loaded again.
   EXPECT_EQ(4, inserted_count_);
-  EXPECT_EQ(3u, model_->size());
+  EXPECT_EQ(3u, model_->toolbar_items().size());
   // Make sure it gets its old spot in the list. We should get the same
   // extension again, otherwise the order has changed.
   ASSERT_STREQ(idB.c_str(), ExtensionAt(1)->id().c_str());
@@ -191,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
   // Unload B again.
   UnloadExtension(idB);
   EXPECT_EQ(2, removed_count_);
-  EXPECT_EQ(2u, model_->size());
+  EXPECT_EQ(2u, model_->toolbar_items().size());
   EXPECT_EQ(extensionC, ExtensionAt(0));
   EXPECT_EQ(extensionA, ExtensionAt(1));
   EXPECT_EQ(NULL, ExtensionAt(2));
@@ -199,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
   // Order is now C, A. Flip it.
   model_->MoveBrowserAction(extensionA, 0);
   EXPECT_EQ(3, moved_count_);
-  EXPECT_EQ(2u, model_->size());
+  EXPECT_EQ(2u, model_->toolbar_items().size());
   EXPECT_EQ(extensionA, ExtensionAt(0));
   EXPECT_EQ(extensionC, ExtensionAt(1));
   EXPECT_EQ(NULL, ExtensionAt(2));
@@ -207,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
   // Move A to the location it already occupies.
   model_->MoveBrowserAction(extensionA, 0);
   EXPECT_EQ(4, moved_count_);
-  EXPECT_EQ(2u, model_->size());
+  EXPECT_EQ(2u, model_->toolbar_items().size());
   EXPECT_EQ(extensionA, ExtensionAt(0));
   EXPECT_EQ(extensionC, ExtensionAt(1));
   EXPECT_EQ(NULL, ExtensionAt(2));
@@ -216,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
   std::string idC = extensionC->id();
   UnloadExtension(idC);
   EXPECT_EQ(3, removed_count_);
-  EXPECT_EQ(1u, model_->size());
+  EXPECT_EQ(1u, model_->toolbar_items().size());
   EXPECT_EQ(extensionA, ExtensionAt(0));
   EXPECT_EQ(NULL, ExtensionAt(1));
 
@@ -225,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, ReorderAndReinsert) {
 
   // Extension C loaded again.
   EXPECT_EQ(5, inserted_count_);
-  EXPECT_EQ(2u, model_->size());
+  EXPECT_EQ(2u, model_->toolbar_items().size());
   // Make sure it gets its old spot in the list (at the very end).
   ASSERT_STREQ(idC.c_str(), ExtensionAt(1)->id().c_str());
 }

@@ -8,7 +8,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/ui/toolbar/action_box_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/action_box_menu.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -30,9 +33,11 @@ const SkColor kPushedBorderColor = SkColorSetRGB(191, 191, 191);
 }  // namespace
 
 
-ActionBoxButtonView::ActionBoxButtonView(ExtensionService* extension_service)
+ActionBoxButtonView::ActionBoxButtonView(Browser* browser, Profile* profile)
     : views::MenuButton(NULL, string16(), this, false),
-      extension_service_(extension_service) {
+      browser_(browser),
+      profile_(profile),
+      starred_(false) {
   set_id(VIEW_ID_ACTION_BOX_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
   SetIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -73,5 +78,11 @@ void ActionBoxButtonView::GetAccessibleState(ui::AccessibleViewState* state) {
 
 void ActionBoxButtonView::OnMenuButtonClicked(View* source,
                                               const gfx::Point& point) {
-  // TODO(yefim): Implement menu here.
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+
+  ActionBoxMenuModel model(extension_service);
+  ActionBoxMenu action_box_menu(browser_, &model, starred_);
+  action_box_menu.Init();
+  action_box_menu.RunMenu(this);
 }

@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
+class Browser;
 class BrowserActionsContainer;
 class BrowserActionView;
 
@@ -34,6 +35,7 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
 
   BrowserActionOverflowMenuController(
       BrowserActionsContainer* owner,
+      Browser* browser,
       views::MenuButton* menu_button,
       const std::vector<BrowserActionView*>& views,
       int start_index);
@@ -87,6 +89,8 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
 
   // A pointer to the browser action container that owns the overflow menu.
   BrowserActionsContainer* owner_;
+
+  Browser* browser_;
 
   // The observer, may be null.
   Observer* observer_;

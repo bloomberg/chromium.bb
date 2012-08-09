@@ -626,8 +626,9 @@ void BrowserActionsToolbarGtk::CreateAllButtons() {
   extension_button_map_.clear();
 
   int i = 0;
-  for (extensions::ExtensionList::iterator iter = model_->begin();
-       iter != model_->end(); ++iter) {
+  const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
+  for (extensions::ExtensionList::const_iterator iter = toolbar_items.begin();
+       iter != toolbar_items.end(); ++iter) {
     CreateButtonForExtension(*iter, i++);
   }
 }
@@ -797,7 +798,7 @@ bool BrowserActionsToolbarGtk::IsCommandIdChecked(int command_id) const {
 }
 
 bool BrowserActionsToolbarGtk::IsCommandIdEnabled(int command_id) const {
-  const Extension* extension = model_->GetExtensionByIndex(command_id);
+  const Extension* extension = model_->toolbar_items()[command_id];
   return extension->browser_action()->GetIsVisible(GetCurrentTabId());
 }
 
@@ -808,7 +809,7 @@ bool BrowserActionsToolbarGtk::GetAcceleratorForCommandId(
 }
 
 void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
-  const Extension* extension = model_->GetExtensionByIndex(command_id);
+  const Extension* extension = model_->toolbar_items()[command_id];
   GURL popup_url;
 
   switch (model_->ExecuteBrowserAction(extension, browser(), &popup_url)) {
@@ -1039,7 +1040,7 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
     if (profile_->IsOffTheRecord())
       model_index = model_->IncognitoIndexToOriginal(i);
 
-    const Extension* extension = model_->GetExtensionByIndex(model_index);
+    const Extension* extension = model_->toolbar_items()[model_index];
     BrowserActionButton* button = extension_button_map_[extension->id()].get();
 
     overflow_menu_model_->AddItem(model_index, UTF8ToUTF16(extension->name()));
@@ -1079,7 +1080,7 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
   if (profile_->IsOffTheRecord())
     item_index = model_->IncognitoIndexToOriginal(item_index);
 
-  const Extension* extension = model_->GetExtensionByIndex(item_index);
+  const Extension* extension = model_->toolbar_items()[item_index];
   ExtensionButtonMap::iterator it = extension_button_map_.find(
       extension->id());
   if (it == extension_button_map_.end()) {

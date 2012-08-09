@@ -157,13 +157,15 @@ void LocationBarView::FadeAnimationObserver::OnImplicitAnimationsCompleted() {
 
 // LocationBarView -----------------------------------------------------------
 
-LocationBarView::LocationBarView(Profile* profile,
+LocationBarView::LocationBarView(Browser* browser,
+                                 Profile* profile,
                                  CommandUpdater* command_updater,
                                  ToolbarModel* model,
                                  Delegate* delegate,
                                  chrome::search::SearchModel* search_model,
                                  Mode mode)
-    : profile_(profile),
+    : browser_(browser),
+      profile_(profile),
       command_updater_(command_updater),
       model_(model),
       delegate_(delegate),
@@ -272,9 +274,8 @@ void LocationBarView::Init(views::View* popup_parent_view) {
   zoom_view_ = new ZoomView(model_, delegate_);
   AddChildView(zoom_view_);
 
-  if (extensions::switch_utils::IsActionBoxEnabled()) {
-    action_box_button_view_ = new ActionBoxButtonView(
-        extensions::ExtensionSystem::Get(profile_)->extension_service());
+  if (extensions::switch_utils::IsActionBoxEnabled() && browser_) {
+    action_box_button_view_ = new ActionBoxButtonView(browser_, profile_);
     AddChildView(action_box_button_view_);
   } else if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     // Note: condition above means that the star and ChromeToMobile icons are
@@ -495,6 +496,8 @@ views::View* LocationBarView::GetPageActionView(ExtensionAction *page_action) {
 void LocationBarView::SetStarToggled(bool on) {
   if (star_view_)
     star_view_->SetToggled(on);
+  if (action_box_button_view_)
+    action_box_button_view_->set_starred(on);
 }
 
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {

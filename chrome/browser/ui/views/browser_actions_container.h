@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "content/public/browser/notification_observer.h"
@@ -104,12 +105,12 @@ class ResizeArea;
 class BrowserActionsContainer
     : public views::View,
       public views::MenuButtonListener,
-      public views::DragController,
       public views::ResizeAreaDelegate,
       public ui::AnimationDelegate,
       public ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
-      public views::WidgetObserver {
+      public views::WidgetObserver,
+      public BrowserActionView::Delegate {
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
@@ -129,12 +130,6 @@ class BrowserActionsContainer
   // Returns the profile this container is associated with.
   Profile* profile() const { return profile_; }
 
-  // Returns the browser this container is associated with.
-  Browser* browser() const { return browser_; }
-
-  // Returns the current tab's ID, or -1 if there is no current tab.
-  int GetCurrentTabId() const;
-
   // Get a particular browser action view.
   BrowserActionView* GetBrowserActionViewAt(int index) {
     return browser_action_views_[index];
@@ -152,14 +147,8 @@ class BrowserActionsContainer
   // Delete all browser action views.
   void DeleteBrowserActionViews();
 
-  // Called when a browser action becomes visible/hidden.
-  void OnBrowserActionVisibilityChanged();
-
   // Returns how many browser actions are visible.
   size_t VisibleBrowserActions() const;
-
-  // Called when the user clicks on the browser action icon.
-  void OnBrowserActionExecuted(BrowserActionButton* button);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -201,6 +190,12 @@ class BrowserActionsContainer
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+  // Overridden from BrowserActionView::Delegate:
+  virtual int GetCurrentTabId() const OVERRIDE;
+  virtual void OnBrowserActionExecuted(BrowserActionButton* button) OVERRIDE;
+  virtual void OnBrowserActionVisibilityChanged() OVERRIDE;
+  virtual gfx::Point GetViewContentOffset() const OVERRIDE;
 
   // Moves a browser action with |id| to |new_index|.
   void MoveBrowserAction(const std::string& extension_id, size_t new_index);

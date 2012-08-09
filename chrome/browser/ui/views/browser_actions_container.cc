@@ -128,11 +128,6 @@ void BrowserActionsContainer::Init() {
     SetContainerWidth();
 }
 
-int BrowserActionsContainer::GetCurrentTabId() const {
-  TabContents* tab = chrome::GetActiveTabContents(browser_);
-  return tab ? tab->restore_tab_helper()->session_id().id() : -1;
-}
-
 BrowserActionView* BrowserActionsContainer::GetBrowserActionView(
     ExtensionAction* action) {
   for (BrowserActionViews::iterator i(browser_action_views_.begin());
@@ -153,12 +148,13 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   if (!model_)
     return;
 
-  for (extensions::ExtensionList::iterator i(model_->begin());
-       i != model_->end(); ++i) {
+  const extensions::ExtensionList& toolbar_items = model_->toolbar_items();
+  for (extensions::ExtensionList::const_iterator i(toolbar_items.begin());
+       i != toolbar_items.end(); ++i) {
     if (!ShouldDisplayBrowserAction(*i))
       continue;
 
-    BrowserActionView* view = new BrowserActionView(*i, this);
+    BrowserActionView* view = new BrowserActionView(*i, browser_, this);
     browser_action_views_.push_back(view);
     AddChildView(view);
   }
@@ -169,12 +165,6 @@ void BrowserActionsContainer::DeleteBrowserActionViews() {
   STLDeleteElements(&browser_action_views_);
 }
 
-void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
-  SetVisible(!browser_action_views_.empty());
-  owner_view_->Layout();
-  owner_view_->SchedulePaint();
-}
-
 size_t BrowserActionsContainer::VisibleBrowserActions() const {
   size_t visible_actions = 0;
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
@@ -182,19 +172,6 @@ size_t BrowserActionsContainer::VisibleBrowserActions() const {
       ++visible_actions;
   }
   return visible_actions;
-}
-
-void BrowserActionsContainer::OnBrowserActionExecuted(
-    BrowserActionButton* button) {
-  const Extension* extension = button->extension();
-  GURL popup_url;
-  switch (model_->ExecuteBrowserAction(extension, browser_, &popup_url)) {
-    case ExtensionToolbarModel::ACTION_NONE:
-      break;
-    case ExtensionToolbarModel::ACTION_SHOW_POPUP:
-      ShowPopup(button, popup_url);
-      break;
-  }
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {
@@ -388,7 +365,8 @@ void BrowserActionsContainer::OnMenuButtonClicked(views::View* source,
                                                   const gfx::Point& point) {
   if (source == chevron_) {
     overflow_menu_ = new BrowserActionOverflowMenuController(
-        this, chevron_, browser_action_views_, VisibleBrowserActions());
+        this, browser_, chevron_, browser_action_views_,
+        VisibleBrowserActions());
     overflow_menu_->set_observer(this);
     overflow_menu_->RunMenu(GetWidget(), false);
   }
@@ -476,6 +454,30 @@ void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {
     popup_button_->SetButtonNotPushed();
     popup_button_ = NULL;
   }
+}
+
+int BrowserActionsContainer::GetCurrentTabId() const {
+  TabContents* tab = chrome::GetActiveTabContents(browser_);
+  return tab ? tab->restore_tab_helper()->session_id().id() : -1;
+}
+
+void BrowserActionsContainer::OnBrowserActionExecuted(
+    BrowserActionButton* button) {
+  const Extension* extension = button->extension();
+  GURL popup_url;
+  if (model_->ExecuteBrowserAction(extension, browser_, &popup_url) ==
+      ExtensionToolbarModel::ACTION_SHOW_POPUP)
+    ShowPopup(button, popup_url);
+}
+
+void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
+  SetVisible(!browser_action_views_.empty());
+  owner_view_->Layout();
+  owner_view_->SchedulePaint();
+}
+
+gfx::Point BrowserActionsContainer::GetViewContentOffset() const {
+  return gfx::Point(0, ToolbarView::kVertSpacing);
 }
 
 void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
@@ -594,7 +596,7 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
   // Add the new browser action to the vector and the view hierarchy.
   if (profile_->IsOffTheRecord())
     index = model_->OriginalIndexToIncognito(index);
-  BrowserActionView* view = new BrowserActionView(extension, this);
+  BrowserActionView* view = new BrowserActionView(extension, browser_, this);
   browser_action_views_.insert(browser_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
 
@@ -680,8 +682,9 @@ void BrowserActionsContainer::LoadImages() {
 void BrowserActionsContainer::SetContainerWidth() {
   int visible_actions = model_->GetVisibleIconCount();
   if (visible_actions < 0)  // All icons should be visible.
-    visible_actions = model_->size();
-  chevron_->SetVisible(static_cast<size_t>(visible_actions) < model_->size());
+    visible_actions = model_->toolbar_items().size();
+  chevron_->SetVisible(
+    static_cast<size_t>(visible_actions) < model_->toolbar_items().size());
   container_width_ = IconCountToWidth(visible_actions, chevron_->visible());
 }
 
@@ -706,7 +709,7 @@ void BrowserActionsContainer::ShowDropFolder() {
   DCHECK(!overflow_menu_);
   SetDropIndicator(-1);
   overflow_menu_ = new BrowserActionOverflowMenuController(
-      this, chevron_, browser_action_views_, VisibleBrowserActions());
+      this, browser_, chevron_, browser_action_views_, VisibleBrowserActions());
   overflow_menu_->set_observer(this);
   overflow_menu_->RunMenu(GetWidget(), true);
 }
