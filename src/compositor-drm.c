@@ -89,6 +89,13 @@ struct drm_compositor {
 	struct gbm_surface *dummy_surface;
 	EGLSurface dummy_egl_surface;
 
+	/* we need these parameters in order to not fail drmModeAddFB2()
+	 * due to out of bounds dimensions, and then mistakenly set
+	 * sprites_are_broken:
+	 */
+	uint32_t min_width, max_width;
+	uint32_t min_height, max_height;
+
 	struct wl_list sprite_list;
 	int sprites_are_broken;
 
@@ -542,6 +549,7 @@ drm_disable_unused_sprites(struct weston_output *output_base)
 	struct drm_compositor *c =(struct drm_compositor *) ec;
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_sprite *s;
+	int32_t width, height;
 	int ret;
 
 	wl_list_for_each(s, &c->sprite_list, link) {
@@ -619,6 +627,16 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (!found)
 		return NULL;
 
+	width = es->geometry.width;
+	height = es->geometry.height;
+
+	/* If geometry is out of bounds, don't even bother trying because
+	 * we know the AddFB2() call will fail:
+	 */
+	if (c->min_width > width || width > c->max_width ||
+	    c->min_height > height || height > c->max_height)
+		return -1;
+
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
 			   es->buffer, GBM_BO_USE_SCANOUT);
 	if (!bo)
@@ -640,7 +658,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	pitches[0] = stride;
 	offsets[0] = 0;
 
-	ret = drmModeAddFB2(c->drm.fd, es->geometry.width, es->geometry.height,
+	ret = drmModeAddFB2(c->drm.fd, width, height,
 			    format, handles, pitches, offsets,
 			    &fb_id, 0);
 	if (ret) {
@@ -1640,6 +1658,11 @@ create_outputs(struct drm_compositor *ec, uint32_t option_connector,
 		drmModeFreeResources(resources);
 		return -1;
 	}
+
+	ec->min_width  = resources->min_width;
+	ec->max_width  = resources->max_width;
+	ec->min_height = resources->min_height;
+	ec->max_height = resources->max_height;
 
 	ec->num_crtcs = resources->count_crtcs;
 	memcpy(ec->crtcs, resources->crtcs, sizeof(uint32_t) * ec->num_crtcs);
