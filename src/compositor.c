@@ -1122,7 +1122,8 @@ surface_accumulate_damage(struct weston_surface *surface,
 			      &surface->plane->damage, &surface->damage);
 	empty_region(&surface->damage);
 	pixman_region32_copy(&surface->clip, opaque);
-	pixman_region32_union(opaque, opaque, &surface->transform.opaque);
+	if (surface->plane == &surface->compositor->primary_plane)
+		pixman_region32_union(opaque, opaque, &surface->transform.opaque);
 }
 
 static void
