@@ -651,8 +651,6 @@
         'browser/chromeos/input_method/xkeyboard.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h',
-        'browser/chromeos/kiosk_mode/kiosk_mode_metrics.cc',
-        'browser/chromeos/kiosk_mode/kiosk_mode_metrics.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_settings.cc',
