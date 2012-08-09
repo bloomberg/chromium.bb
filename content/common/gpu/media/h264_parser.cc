@@ -1011,9 +1011,11 @@ H264Parser::Result H264Parser::ParseSliceHeader(const H264NALU& nalu,
         READ_UE_OR_RETURN(&shdr->num_ref_idx_l1_active_minus1);
     } else {
       shdr->num_ref_idx_l0_active_minus1 =
-            pps->num_ref_idx_l0_default_active_minus1;
-      shdr->num_ref_idx_l1_active_minus1 =
+          pps->num_ref_idx_l0_default_active_minus1;
+      if (shdr->IsBSlice()) {
+        shdr->num_ref_idx_l1_active_minus1 =
             pps->num_ref_idx_l1_default_active_minus1;
+      }
     }
   }
   if (shdr->field_pic_flag) {
