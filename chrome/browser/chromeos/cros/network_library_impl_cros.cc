@@ -5,9 +5,11 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
 
 #include <dbus/dbus-glib.h>
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
@@ -454,6 +456,30 @@ bool NetworkLibraryImplCros::GetWifiAccessPoints(
     WifiAccessPointVector* result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return CrosGetWifiAccessPoints(result);
+}
+
+void NetworkLibraryImplCros::RefreshIPConfig(Network* network) {
+  DCHECK(network);
+  CrosRequestNetworkDeviceProperties(
+      network->device_path(),
+      base::Bind(&NetworkLibraryImplCros::RefreshIPConfigCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NetworkLibraryImplCros::RefreshIPConfigCallback(
+    const std::string& device_path,
+    const base::DictionaryValue* properties) {
+  const ListValue* ips = NULL;
+  if (!properties->GetListWithoutPathExpansion(
+      flimflam::kIPConfigsProperty, &ips))
+    return;
+
+  for (size_t i = 0; i < ips->GetSize(); i++) {
+    std::string ipconfig_path;
+    if (!ips->GetString(i, &ipconfig_path))
+      continue;
+    CrosRequestIPConfigRefresh(ipconfig_path);
+  }
 }
 
 void NetworkLibraryImplCros::DisconnectFromNetwork(const Network* network) {

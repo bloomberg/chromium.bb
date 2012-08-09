@@ -641,6 +641,9 @@ bool NetworkLibraryImplStub::GetWifiAccessPoints(
   return true;
 }
 
+void NetworkLibraryImplStub::RefreshIPConfig(Network* network) {
+}
+
 void NetworkLibraryImplStub::DisconnectFromNetwork(const Network* network) {
   // Update the network state here since no network manager in stub impl.
   Network* modify_network = const_cast<Network*>(network);

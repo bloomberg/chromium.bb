@@ -119,6 +119,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD1(HasProfileType, bool(NetworkProfileType));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_CONST_METHOD1(CanConnectToNetwork, bool(const Network*));
+  MOCK_METHOD1(RefreshIPConfig, void(Network*));
   MOCK_METHOD1(ConnectToWifiNetwork, void(WifiNetwork*));
   MOCK_METHOD2(ConnectToWifiNetwork, void(WifiNetwork*, bool));
   MOCK_METHOD1(ConnectToWimaxNetwork, void(WimaxNetwork*));

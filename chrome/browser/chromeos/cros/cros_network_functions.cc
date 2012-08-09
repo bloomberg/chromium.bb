@@ -680,6 +680,12 @@ bool CrosRemoveIPConfig(const std::string& ipconfig_path) {
       CallRemoveAndBlock(dbus::ObjectPath(ipconfig_path));
 }
 
+void CrosRequestIPConfigRefresh(const std::string& ipconfig_path) {
+  DBusThreadManager::Get()->GetFlimflamIPConfigClient()->Refresh(
+      dbus::ObjectPath(ipconfig_path),
+      base::Bind(&DoNothing));
+}
+
 bool CrosGetWifiAccessPoints(WifiAccessPointVector* result) {
   scoped_ptr<base::DictionaryValue> manager_properties(
       DBusThreadManager::Get()->GetFlimflamManagerClient()->

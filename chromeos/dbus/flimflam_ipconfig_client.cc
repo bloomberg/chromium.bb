@@ -30,6 +30,8 @@ class FlimflamIPConfigClientImpl : public FlimflamIPConfigClient {
       const PropertyChangedHandler& handler) OVERRIDE;
   virtual void ResetPropertyChangedHandler(
       const dbus::ObjectPath& ipconfig_path) OVERRIDE;
+  virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
+                       const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
                              const DictionaryValueCallback& callback) OVERRIDE;
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
@@ -101,6 +103,14 @@ base::DictionaryValue* FlimflamIPConfigClientImpl::CallGetPropertiesAndBlock(
                                flimflam::kGetPropertiesFunction);
   return GetHelper(ipconfig_path)->CallDictionaryValueMethodAndBlock(
       &method_call);
+}
+
+void FlimflamIPConfigClientImpl::Refresh(
+    const dbus::ObjectPath& ipconfig_path,
+    const VoidDBusMethodCallback& callback) {
+  dbus::MethodCall method_call(flimflam::kFlimflamIPConfigInterface,
+                               shill::kRefreshFunction);
+  GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
 }
 
 void FlimflamIPConfigClientImpl::SetProperty(
@@ -178,16 +188,18 @@ class FlimflamIPConfigClientStubImpl : public FlimflamIPConfigClient {
 
   virtual ~FlimflamIPConfigClientStubImpl() {}
 
-  // FlimflamIPConfigClient override.
+  ///////////////////////////////////////////////
+  // FlimflamIPConfigClient overrides:
   virtual void SetPropertyChangedHandler(
       const dbus::ObjectPath& ipconfig_path,
       const PropertyChangedHandler& handler) OVERRIDE {}
 
-  // FlimflamIPConfigClient override.
   virtual void ResetPropertyChangedHandler(
       const dbus::ObjectPath& ipconfig_path) OVERRIDE {}
 
-  // FlimflamIPConfigClient override.
+  virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
+                       const VoidDBusMethodCallback& callback) OVERRIDE {}
+
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
@@ -196,13 +208,11 @@ class FlimflamIPConfigClientStubImpl : public FlimflamIPConfigClient {
                               callback));
   }
 
-  // FlimflamIPConfigClient override.
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& ipconfig_path) OVERRIDE {
     return new base::DictionaryValue;
   }
 
-  // FlimflamIPConfigClient override.
   virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
                            const std::string& name,
                            const base::Value& value,
@@ -211,7 +221,6 @@ class FlimflamIPConfigClientStubImpl : public FlimflamIPConfigClient {
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
 
-  // FlimflamIPConfigClient override.
   virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
                              const std::string& name,
                              const VoidDBusMethodCallback& callback) OVERRIDE {
@@ -219,14 +228,12 @@ class FlimflamIPConfigClientStubImpl : public FlimflamIPConfigClient {
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
 
-  // FlimflamIPConfigClient override.
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
   }
 
-  // FlimflamIPConfigClient override.
   virtual bool CallRemoveAndBlock(
       const dbus::ObjectPath& ipconfig_path) OVERRIDE {
     return true;

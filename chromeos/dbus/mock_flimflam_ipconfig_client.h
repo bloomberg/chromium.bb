@@ -22,6 +22,8 @@ class MockFlimflamIPConfigClient : public FlimflamIPConfigClient {
                     const PropertyChangedHandler& handler));
   MOCK_METHOD1(ResetPropertyChangedHandler,
                void(const dbus::ObjectPath& ipconfig_path));
+  MOCK_METHOD2(Refresh, void(const dbus::ObjectPath& ipconfig_path,
+                             const VoidDBusMethodCallback& callback));
   MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& ipconfig_path,
                                    const DictionaryValueCallback& callback));
   MOCK_METHOD1(CallGetPropertiesAndBlock,

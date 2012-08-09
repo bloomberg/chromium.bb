@@ -52,6 +52,11 @@ class CHROMEOS_EXPORT FlimflamIPConfigClient {
   virtual void ResetPropertyChangedHandler(
       const dbus::ObjectPath& ipconfig_path) = 0;
 
+  // Refreshes the active IP configuration after service property changes and
+  // renews the DHCP lease, if any.
+  virtual void Refresh(const dbus::ObjectPath& ipconfig_path,
+                       const VoidDBusMethodCallback& callback) = 0;
+
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,

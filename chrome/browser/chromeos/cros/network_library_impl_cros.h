@@ -60,6 +60,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void RequestNetworkScan() OVERRIDE;
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) OVERRIDE;
 
+  virtual void RefreshIPConfig(Network* network) OVERRIDE;
+
   virtual void DisconnectFromNetwork(const Network* network) OVERRIDE;
   virtual void CallEnableNetworkDeviceType(
       ConnectionType device, bool enable) OVERRIDE;
@@ -74,7 +76,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void SetIPConfig(const NetworkIPConfig& ipconfig) OVERRIDE;
 
   //////////////////////////////////////////////////////////////////////////////
-  // Calbacks.
+  // Callbacks.
   void UpdateNetworkStatus(
       const std::string& path, const std::string& key, const Value& value);
 
@@ -113,6 +115,11 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
                                       const base::DictionaryValue* properties);
   void NetworkDeviceUpdate(const std::string& device_path,
                            const base::DictionaryValue* properties);
+
+  // Second half of refreshing IPConfig for a network.  Refreshes all IP config
+  // paths found in properties.
+  void RefreshIPConfigCallback(const std::string& device_path,
+                               const base::DictionaryValue* properties);
 
  private:
   // This processes all Manager update messages.

@@ -27,20 +27,19 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
         helpers_deleter_(&helpers_) {
   }
 
-  // FlimflamProfileClient override.
+  ///////////////////////////////////////
+  // FlimflamDeviceClient overrides.
   virtual void SetPropertyChangedHandler(
       const dbus::ObjectPath& device_path,
       const PropertyChangedHandler& handler) OVERRIDE {
     GetHelper(device_path)->SetPropertyChangedHandler(handler);
   }
 
-  // FlimflamProfileClient override.
   virtual void ResetPropertyChangedHandler(
       const dbus::ObjectPath& device_path) OVERRIDE {
     GetHelper(device_path)->ResetPropertyChangedHandler();
   }
 
-  // FlimflamProfileClient override.
   virtual void GetProperties(const dbus::ObjectPath& device_path,
                              const DictionaryValueCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
@@ -48,7 +47,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     GetHelper(device_path)->CallDictionaryValueMethod(&method_call, callback);
   }
 
-  // FlimflamProfileClient override.
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& device_path) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
@@ -57,7 +55,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
         &method_call);
   }
 
-  // FlimflamProfileClient override.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
                            const VoidDBusMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
@@ -65,7 +62,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     GetHelper(device_path)->CallVoidMethod(&method_call, callback);
   }
 
-  // FlimflamProfileClient override.
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
@@ -78,7 +74,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     GetHelper(device_path)->CallVoidMethod(&method_call, callback);
   }
 
-  // FlimflamProfileClient override.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
                              const VoidDBusMethodCallback& callback) OVERRIDE {
@@ -89,7 +84,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     GetHelper(device_path)->CallVoidMethod(&method_call, callback);
   }
 
-  // FlimflamProfileClient override.
   virtual void AddIPConfig(
       const dbus::ObjectPath& device_path,
       const std::string& method,
@@ -101,7 +95,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     GetHelper(device_path)->CallObjectPathMethod(&method_call, callback);
   }
 
-  // FlimflamProfileClient override.
   virtual dbus::ObjectPath CallAddIPConfigAndBlock(
       const dbus::ObjectPath& device_path,
       const std::string& method) OVERRIDE {
@@ -112,7 +105,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     return GetHelper(device_path)->CallObjectPathMethodAndBlock(&method_call);
   }
 
-  // FlimflamProfileClient override.
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
@@ -127,7 +119,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  // FlimflamProfileClient override.
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
                         const base::Closure& callback,
@@ -140,7 +131,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  // FlimflamProfileClient override.
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
                           const std::string& pin,
@@ -155,7 +145,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  // FlimflamProfileClient override.
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
@@ -170,7 +159,6 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
         &method_call, callback, error_callback);
   }
 
-  // FlimflamProfileClient override.
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,
                         const base::Closure& callback,

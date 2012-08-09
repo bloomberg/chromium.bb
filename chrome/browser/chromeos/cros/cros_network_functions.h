@@ -278,6 +278,10 @@ bool CrosAddIPConfig(const std::string& device_path, IPConfigType type);
 // Removes an existing IP Config
 bool CrosRemoveIPConfig(const std::string& ipconfig_path);
 
+// Refreshes the IP config |ipconfig_path| to pick up changes in
+// configuration, and renew the DHCP lease, if any.
+void CrosRequestIPConfigRefresh(const std::string& ipconfig_path);
+
 // Reads out the results of the last wifi scan. These results are not
 // pre-cached in the library, so the call may block whilst the results are
 // read over IPC.
