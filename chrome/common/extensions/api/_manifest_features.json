@@ -22,6 +22,10 @@
     // via the manifest.
     "extension_types": ["packaged_app", "hosted_app"]
   },
+  "author": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "background": {
     "channel": "stable",
     "extension_types": [
