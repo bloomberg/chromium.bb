@@ -46,6 +46,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/base/chrome_process_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/test_switches.h"
 #include "content/common/debug_flags.h"
 #include "googleurl/src/gurl.h"
@@ -174,6 +175,9 @@ void UITestBase::SetLaunchSwitches() {
   // All flags added here should also be added in ExtraChromeFlags() in
   // chrome/test/pyautolib/pyauto.py as well to take effect for all tests
   // on chromeos.
+
+  // Propagate commandline settings from test_launcher_utils.
+  test_launcher_utils::PrepareBrowserCommandLineForTests(&launch_arguments_);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kWaitForDebugger))
     launch_arguments_.AppendSwitch(switches::kWaitForDebugger);

@@ -348,9 +348,6 @@ bool ProxyLauncher::WaitForBrowserProcessToQuit(
 
 void ProxyLauncher::PrepareTestCommandline(CommandLine* command_line,
                                            bool include_testing_id) {
-  // Propagate commandline settings from test_launcher_utils.
-  test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
-
   // Add any explicit command line flags passed to the process.
   CommandLine::StringType extra_chrome_flags =
       CommandLine::ForCurrentProcess()->GetSwitchValueNative(
