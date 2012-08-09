@@ -145,6 +145,7 @@ LDPatterns = [
   ( '(-t)',                       PassThrough),
   ( ('-y','(.*)'),                PassThrough),
   ( ('(-defsym)','(.*)'),         PassThrough),
+  ( '-export-dynamic',            PassThrough),
 
   ( '(--print-gc-sections)',      PassThrough),
   ( '(--gc-sections)',            PassThrough),

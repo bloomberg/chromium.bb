@@ -214,6 +214,7 @@ GCCPatterns = [
 
   # Flags to pass to native linker
   ( '(-Wn,.*)',        AddLDFlag),
+  ( '-rdynamic', "env.append('LD_FLAGS', '-export-dynamic')"),
 
   # Flags to pass to pnacl-translate
   ( '(-Wt,.*)',        AddLDFlag),
