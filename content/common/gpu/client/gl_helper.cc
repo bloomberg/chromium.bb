@@ -547,11 +547,11 @@ void GLHelper::CopyTextureToImpl::ReadBackFramebuffer(
     size = request->size;
     {
       ScopedFlush flush(context);
-      ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
+      ScopedFramebufferBinder<GL_READ_FRAMEBUFFER> framebuffer_binder(
           context, dst_framebuffer);
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
           context, request->texture);
-      context->framebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+      context->framebufferTexture2D(GL_READ_FRAMEBUFFER,
                                     GL_COLOR_ATTACHMENT0,
                                     GL_TEXTURE_2D,
                                     request->texture,
