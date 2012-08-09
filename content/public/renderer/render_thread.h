@@ -89,10 +89,6 @@ class CONTENT_EXPORT RenderThread : public IPC::Sender {
   // Registers the given V8 extension with WebKit.
   virtual void RegisterExtension(v8::Extension* extension) = 0;
 
-  // Returns true iff the extension is registered.
-  virtual bool IsRegisteredExtension(
-      const std::string& v8_extension_name) const = 0;
-
   // Schedule a call to IdleHandler with the given initial delay.
   virtual void ScheduleIdleHandler(int64 initial_delay_ms) = 0;
 

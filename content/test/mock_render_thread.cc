@@ -146,11 +146,6 @@ base::SharedMemoryHandle MockRenderThread::HostAllocateSharedMemoryBuffer(
 void MockRenderThread::RegisterExtension(v8::Extension* extension) {
 }
 
-bool MockRenderThread::IsRegisteredExtension(
-    const std::string& v8_extension_name) const {
-  return false;
-}
-
 void MockRenderThread::ScheduleIdleHandler(int64 initial_delay_ms) {
 }
 

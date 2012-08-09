@@ -119,8 +119,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual base::SharedMemoryHandle HostAllocateSharedMemoryBuffer(
       uint32 buffer_size) OVERRIDE;
   virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
-  virtual bool IsRegisteredExtension(
-      const std::string& v8_extension_name) const OVERRIDE;
   virtual void ScheduleIdleHandler(int64 initial_delay_ms) OVERRIDE;
   virtual void IdleHandler() OVERRIDE;
   virtual int64 GetIdleNotificationDelayInMs() const OVERRIDE;
@@ -294,9 +292,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;
-
-  // Map of registered v8 extensions. The key is the extension name.
-  std::set<std::string> v8_extensions_;
 
   bool compositor_initialized_;
   scoped_ptr<CompositorThread> compositor_thread_;

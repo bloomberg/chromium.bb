@@ -650,12 +650,6 @@ base::SharedMemoryHandle RenderThreadImpl::HostAllocateSharedMemoryBuffer(
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
   WebScriptController::registerExtension(extension);
-  v8_extensions_.insert(extension->name());
-}
-
-bool RenderThreadImpl::IsRegisteredExtension(
-    const std::string& v8_extension_name) const {
-  return v8_extensions_.find(v8_extension_name) != v8_extensions_.end();
 }
 
 void RenderThreadImpl::ScheduleIdleHandler(int64 initial_delay_ms) {
