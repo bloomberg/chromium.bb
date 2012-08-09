@@ -61,6 +61,14 @@ button.custom-appearance:focus {
   border-color: rgb(77, 144, 254);
 }
 
+button:not(.custom-appearance) {
+  min-width: 72px !important;
+}
+
+#back-button {
+  -webkit-margin-end: 8px;
+}
+
 #outer-container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
@@ -344,7 +352,7 @@ html[oobe=new] #progress-dots {
 .progdot {
   -webkit-margin-end: 12px;
   background: black;
-  opacity: 0.1;
+  opacity: 0.4;
 }
 
 html[oobe=old] .progdot {
@@ -354,6 +362,7 @@ html[oobe=old] .progdot {
 }
 
 html[oobe=new] .progdot {
+  background: white;
   height: 10px;
   width: 10px;
 }
@@ -719,7 +728,7 @@ html[oobe=old] .step-controls {
 #oobe.oauth-enrollment #signin-dot,
 #oobe.oauth-enrollment #gaia-signin-dot,
 #oobe.user-image #user-image-dot {
-  opacity: 0.4;
+  opacity: 1;
 }
 
 #account-picker-dot,
@@ -873,10 +882,6 @@ html[oobe=new][dir=rtl] #update #update-cancel-hint {
   color: #666;
   font-size: 13px;
   text-align: center;
-}
-
-button:not(.custom-appearance) {
-  min-width: 80px;
 }
 
 .eula-columns {
