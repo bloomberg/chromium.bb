@@ -55,8 +55,9 @@ IPC_MESSAGE_ROUTED2(MediaStreamHostMsg_AudioDeviceFailed,
                     int /* index */)
 
 // The browser has enumerated devices successfully.
-IPC_MESSAGE_ROUTED2(MediaStreamMsg_DevicesEnumerated,
+IPC_MESSAGE_ROUTED3(MediaStreamMsg_DevicesEnumerated,
                     int /* request id */,
+                    std::string /* label */,
                     media_stream::StreamDeviceInfoArray /* device_list */)
 
 // The browser has failed to enumerate devices.

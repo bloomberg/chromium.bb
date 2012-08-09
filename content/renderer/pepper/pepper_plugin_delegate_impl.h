@@ -377,6 +377,7 @@ class PepperPluginDelegateImpl
   virtual int EnumerateDevices(
       PP_DeviceType_Dev type,
       const EnumerateDevicesCallback& callback) OVERRIDE;
+  virtual void StopEnumerateDevices(int request_id) OVERRIDE;
   virtual webkit_glue::ClipboardClient* CreateClipboardClient() const OVERRIDE;
   virtual std::string GetDeviceID() OVERRIDE;
   virtual PP_FlashLSORestrictions GetLocalDataRestrictions(

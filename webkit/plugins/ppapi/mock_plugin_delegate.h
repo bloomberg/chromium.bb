@@ -202,6 +202,7 @@ class MockPluginDelegate : public PluginDelegate {
   virtual bool IsPageVisible() const;
   virtual int EnumerateDevices(PP_DeviceType_Dev type,
                                const EnumerateDevicesCallback& callback);
+  virtual void StopEnumerateDevices(int request_id);
   virtual webkit_glue::ClipboardClient* CreateClipboardClient() const;
   virtual std::string GetDeviceID();
   virtual PP_FlashLSORestrictions GetLocalDataRestrictions(

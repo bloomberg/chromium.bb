@@ -312,6 +312,10 @@ void PPB_VideoCapture_Impl::EnumerateDevicesCallbackFunc(
   if (succeeded)
     devices_data_ = devices;
 
+  PluginInstance* instance = ResourceHelper::GetPluginInstance(this);
+  if (instance)
+    instance->delegate()->StopEnumerateDevices(request_id);
+
   OnEnumerateDevicesComplete(succeeded ? PP_OK : PP_ERROR_FAILED, devices);
 }
 

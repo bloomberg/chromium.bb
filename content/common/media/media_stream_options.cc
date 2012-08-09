@@ -24,4 +24,14 @@ StreamDeviceInfo::StreamDeviceInfo(MediaStreamType service_param,
       in_use(opened),
       session_id(kNoId) {}
 
+// static
+bool StreamDeviceInfo::IsEqual(const StreamDeviceInfo& first,
+                               const StreamDeviceInfo& second) {
+  return first.stream_type == second.stream_type &&
+      first.name == second.name &&
+      first.device_id == second.device_id &&
+      first.in_use == second.in_use &&
+      first.session_id == second.session_id;
+}
+
 }  // namespace media_stream

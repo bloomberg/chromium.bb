@@ -1506,6 +1506,19 @@ int PepperPluginDelegateImpl::EnumerateDevices(
   return request_id;
 }
 
+void PepperPluginDelegateImpl::StopEnumerateDevices(int request_id) {
+#if defined(ENABLE_WEBRTC)
+  // Need to post task since this function might be called inside the callback
+  // of EnumerateDevices.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &MediaStreamDispatcher::StopEnumerateDevices,
+          render_view_->media_stream_dispatcher()->AsWeakPtr(),
+          request_id, device_enumeration_event_handler_.get()->AsWeakPtr()));
+#endif
+}
+
 bool PepperPluginDelegateImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperPluginDelegateImpl, message)
