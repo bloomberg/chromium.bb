@@ -99,7 +99,9 @@ void MakeShellButton(NSRect* rect,
                      NSString* title,
                      NSView* parent,
                      int control,
-                     NSView* target) {
+                     NSView* target,
+                     NSString* key,
+                     NSUInteger modifier) {
   scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:*rect]);
   [button setTitle:title];
   [button setBezelStyle:NSSmallSquareBezelStyle];
@@ -107,6 +109,8 @@ void MakeShellButton(NSRect* rect,
   [button setTarget:target];
   [button setAction:@selector(performAction:)];
   [button setTag:control];
+  [button setKeyEquivalent:key];
+  [button setKeyEquivalentModifierMask:modifier];
   [parent addSubview:button];
   rect->origin.x += kButtonWidth;
 }
@@ -201,13 +205,13 @@ void Shell::PlatformCreateWindow(int width, int height) {
                  kButtonWidth, kURLBarHeight);
 
   MakeShellButton(&button_frame, @"Back", content, IDC_NAV_BACK,
-                  (NSView*)delegate);
+                  (NSView*)delegate, @"[", NSCommandKeyMask);
   MakeShellButton(&button_frame, @"Forward", content, IDC_NAV_FORWARD,
-                  (NSView*)delegate);
+                  (NSView*)delegate, @"]", NSCommandKeyMask);
   MakeShellButton(&button_frame, @"Reload", content, IDC_NAV_RELOAD,
-                  (NSView*)delegate);
+                  (NSView*)delegate, @"r", NSCommandKeyMask);
   MakeShellButton(&button_frame, @"Stop", content, IDC_NAV_STOP,
-                  (NSView*)delegate);
+                  (NSView*)delegate, @".", NSCommandKeyMask);
 
   button_frame.size.width =
       NSWidth(initial_window_bounds) - NSMinX(button_frame);
@@ -283,8 +287,15 @@ void Shell::HandleKeyboardEvent(WebContents* source,
 
   // The event handling to get this strictly right is a tangle; cheat here a bit
   // by just letting the menus have a chance at it.
-  if ([event.os_event type] == NSKeyDown)
+  if ([event.os_event type] == NSKeyDown) {
+    if (([event.os_event modifierFlags] & NSCommandKeyMask) &&
+        [[event.os_event characters] isEqual:@"l"]) {
+      [window_ makeFirstResponder:url_edit_view_];
+      return;
+    }
+
     [[NSApp mainMenu] performKeyEquivalent:event.os_event];
+  }
 }
 
 }  // namespace content
