@@ -165,6 +165,7 @@ bool Var::operator==(const Var& other) const {
       return AsString() == other.AsString();
     case PP_VARTYPE_OBJECT:
     case PP_VARTYPE_ARRAY:
+    case PP_VARTYPE_ARRAY_BUFFER:
     case PP_VARTYPE_DICTIONARY:
     default:  // Objects, arrays, dictionaries.
       return var_.value.as_id == other.var_.value.as_id;
