@@ -342,10 +342,15 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2) {
 // windows.
 // TODO(oshima): Host window doesn't get a resize event after
 // SetHostSize on Windows trybot, which gives wrong work/display area.
-TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
+// crbug.com/141577.
+#if defined(OS_WIN)
+#define MAYBE_AttachedResize_BOTTOM_3 DISABLED_AttachedResize_BOTTOM_3
+#else
+#define MAYBE_AttachedResize_BOTTOM_3 AttachedResize_BOTTOM_3
+#endif
+TEST_F(WorkspaceWindowResizerTest, MAYBE_AttachedResize_BOTTOM_3) {
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
   root->SetHostSize(gfx::Size(600, 800));
-  LOG(ERROR) << "=== Calling OnHostResized, 600x800";
 
   Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
 
