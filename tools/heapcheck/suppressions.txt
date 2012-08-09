@@ -1577,3 +1577,9 @@
    fun:MessageLoop::MessageLoop
    fun:ExtensionUpdaterTest
 }
+{
+   bug_141322
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:MediaGalleriesPreferencesTest
+}
