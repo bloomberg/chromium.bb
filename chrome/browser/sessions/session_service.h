@@ -52,7 +52,6 @@ class NavigationEntry;
 // of the browser.
 class SessionService : public BaseSessionService,
                        public content::NotificationObserver {
-  friend class SessionRestoreTest;
   friend class SessionServiceTestHelper;
  public:
   // Used to distinguish an application window from a normal one.

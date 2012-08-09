@@ -1648,6 +1648,8 @@
         'browser/performance_monitor/performance_monitor.h',
         'browser/performance_monitor/performance_monitor_util.cc',
         'browser/performance_monitor/performance_monitor_util.h',
+        'browser/performance_monitor/startup_timer.cc',
+        'browser/performance_monitor/startup_timer.h',
         'browser/platform_util.h',
         'browser/platform_util_android.cc',
         'browser/platform_util_aura.cc',

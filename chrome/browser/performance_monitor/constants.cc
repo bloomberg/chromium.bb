@@ -53,4 +53,25 @@ const char kMetricSharedMemoryUsageDescription[] =
 const char kMetricSharedMemoryUsageUnits[] = "bytes";
 const double kMetricSharedMemoryUsageTickSize = 10000000.0;
 
+// Startup Time
+const char kMetricStartupTimeName[] = "Startup Time";
+const char kMetricStartupTimeDescription[] =
+    "The startup time measured in microseconds";
+const char kMetricStartupTimeUnits[] = "microseconds";
+const double kMetricStartupTimeTickSize = 5000000;
+
+// Test Startup Time
+const char kMetricTestStartupTimeName[] = "Test Startup Time";
+const char kMetricTestStartupTimeDescription[] =
+    "The startup time of test startups measured in microseconds";
+const char kMetricTestStartupTimeUnits[] = "microseconds";
+const double kMetricTestStartupTimeTickSize = 5000000;
+
+// Session Restore Time
+const char kMetricSessionRestoreTimeName[] = "Session Restore Time";
+const char kMetricSessionRestoreTimeDescription[] =
+    "The session restore time measured in microseconds";
+const char kMetricSessionRestoreTimeUnits[] = "microseconds";
+const double kMetricSessionRestoreTimeTickSize = 5000000;
+
 }  // namespace performance_monitor

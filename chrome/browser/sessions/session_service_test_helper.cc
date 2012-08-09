@@ -50,6 +50,12 @@ void SessionServiceTestHelper::SetTabUserAgentOverride(
   service()->SetTabUserAgentOverride(window_id, tab_id, user_agent_override);
 }
 
+void SessionServiceTestHelper::SetForceBrowserNotAliveWithNoWindows(
+    bool force_browser_not_alive_with_no_windows) {
+  service()->force_browser_not_alive_with_no_windows_ =
+      force_browser_not_alive_with_no_windows;
+}
+
 // Be sure and null out service to force closing the file.
 void SessionServiceTestHelper::ReadWindows(
     std::vector<SessionWindow*>* windows) {

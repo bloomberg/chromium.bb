@@ -29,6 +29,7 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -606,8 +607,8 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
       return false;
     }
 
-  uint32 restore_behavior = SessionRestore::SYNCHRONOUS |
-                            SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
+    uint32 restore_behavior = SessionRestore::SYNCHRONOUS |
+                              SessionRestore::ALWAYS_CREATE_TABBED_BROWSER;
 #if defined(OS_MACOSX)
     // On Mac, when restoring a session with no windows, suppress the creation
     // of a new window in the case where the system is launching Chrome via a
@@ -618,10 +619,18 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
     }
 #endif
 
+    // Pause the StartupTimer. Since the restore here is synchronous, we can
+    // keep these two metrics (browser startup time and session restore time)
+    // separate.
+    performance_monitor::StartupTimer::PauseTimer();
+
     Browser* browser = SessionRestore::RestoreSession(profile_,
                                                       NULL,
                                                       restore_behavior,
                                                       urls_to_open);
+
+    performance_monitor::StartupTimer::UnpauseTimer();
+
     AddInfoBarsIfNecessary(browser, chrome::startup::IS_PROCESS_STARTUP);
     return true;
   }

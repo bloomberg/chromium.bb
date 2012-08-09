@@ -11,16 +11,24 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_monitor/constants.h"
-#include "chrome/browser/performance_monitor/database.h"
-#include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/performance_monitor/constants.h"
+#include "chrome/browser/performance_monitor/database.h"
+#include "chrome/browser/performance_monitor/performance_monitor.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_test_helper.h"
+#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
@@ -35,12 +43,19 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 
 using extensions::Extension;
 using performance_monitor::Event;
 
 namespace {
+
+const base::TimeDelta kMaxStartupTime = base::TimeDelta::FromMinutes(3);
 
 // Helper struct to store the information of an extension; this is needed if the
 // pointer to the extension ever becomes invalid (e.g., if we uninstall the
@@ -303,6 +318,54 @@ class PerformanceMonitorUncleanExitBrowserTest
  protected:
   std::string first_profile_name_;
   std::string second_profile_name_;
+};
+
+class PerformanceMonitorSessionRestoreBrowserTest
+    : public PerformanceMonitorBrowserTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    SessionStartupPref pref(SessionStartupPref::LAST);
+    SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+#if defined(OS_CHROMEOS) || defined (OS_MACOSX)
+    // Undo the effect of kBrowserAliveWithNoWindows in defaults.cc so that we
+    // can get these test to work without quitting.
+    SessionServiceTestHelper helper(
+        SessionServiceFactory::GetForProfile(browser()->profile()));
+    helper.SetForceBrowserNotAliveWithNoWindows(true);
+    helper.ReleaseService();
+#endif
+
+    PerformanceMonitorBrowserTest::SetUpOnMainThread();
+  }
+
+  Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
+    Profile* profile = browser->profile();
+
+    // Close the browser.
+    g_browser_process->AddRefModule();
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::NotificationService::AllSources());
+    browser->window()->Close();
+#if defined(OS_MACOSX)
+    // BrowserWindowController depends on the auto release pool being recycled
+    // in the message loop to delete itself, which frees the Browser object
+    // which fires this event.
+    AutoreleasePool()->Recycle();
+#endif
+    observer.Wait();
+
+    // Create a new window, which should trigger session restore.
+    ui_test_utils::BrowserAddedObserver window_observer;
+    content::TestNavigationObserver navigation_observer(
+        content::NotificationService::AllSources(), NULL, expected_tab_count);
+    chrome::NewEmptyWindow(profile);
+    Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+    navigation_observer.Wait();
+    g_browser_process->ReleaseModule();
+
+    return new_browser;
+  }
 };
 
 // Test that PerformanceMonitor will correctly record an extension installation
@@ -629,6 +692,31 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
 
   ASSERT_TRUE(events[1]->data()->GetString("profileName", &event_profile));
   ASSERT_EQ(second_profile_name_, event_profile);
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, StartupTime) {
+  Database::MetricInfoVector metrics = GetStats(METRIC_TEST_STARTUP_TIME);
+
+  ASSERT_EQ(1u, metrics.size());
+  ASSERT_LT(metrics[0].value, kMaxStartupTime.ToInternalValue());
+}
+
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorSessionRestoreBrowserTest,
+                       StartupWithSessionRestore) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  QuitBrowserAndRestore(browser(), 1);
+
+  Database::MetricInfoVector metrics = GetStats(METRIC_TEST_STARTUP_TIME);
+  ASSERT_EQ(1u, metrics.size());
+  ASSERT_LT(metrics[0].value, kMaxStartupTime.ToInternalValue());
+
+  metrics = GetStats(METRIC_SESSION_RESTORE_TIME);
+  ASSERT_EQ(1u, metrics.size());
+  ASSERT_LT(metrics[0].value, kMaxStartupTime.ToInternalValue());
 }
 
 }  // namespace performance_monitor

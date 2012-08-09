@@ -56,6 +56,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/page_cycler/page_cycler.h"
+#include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -498,6 +499,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
+      startup_timer_(new performance_monitor::StartupTimer()),
       browser_field_trials_(parameters.command_line),
       record_search_engine_(false),
       translate_manager_(NULL),
@@ -1383,6 +1385,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   PostBrowserStart();
 
   if (parameters().ui_task) {
+    // We end the startup timer here if we have parameters to run, because we
+    // never start to run the main loop (where we normally stop the timer).
+    startup_timer_->SignalStartupComplete(
+        performance_monitor::StartupTimer::STARTUP_TEST);
     parameters().ui_task->Run();
     delete parameters().ui_task;
     run_message_loop_ = false;
@@ -1403,10 +1409,13 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   if (!run_message_loop_)
     return true;  // Don't run the default message loop.
 
-  // This should be invoked as close to the start of the browser's
+  // These should be invoked as close to the start of the browser's
   // UI thread message loop as possible to get a stable measurement
   // across versions.
   RecordBrowserStartupTime();
+  startup_timer_->SignalStartupComplete(
+      performance_monitor::StartupTimer::STARTUP_NORMAL);
+
   DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;

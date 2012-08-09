@@ -31,6 +31,24 @@ const MetricDetails kMetricDetailsList[] = {
     kMetricSharedMemoryUsageUnits,
     kMetricSharedMemoryUsageTickSize
   },
+  {
+    kMetricStartupTimeName,
+    kMetricStartupTimeDescription,
+    kMetricStartupTimeUnits,
+    kMetricStartupTimeTickSize
+  },
+  {
+    kMetricTestStartupTimeName,
+    kMetricTestStartupTimeDescription,
+    kMetricTestStartupTimeUnits,
+    kMetricTestStartupTimeTickSize
+  },
+  {
+    kMetricSessionRestoreTimeName,
+    kMetricSessionRestoreTimeDescription,
+    kMetricSessionRestoreTimeUnits,
+    kMetricSessionRestoreTimeTickSize
+  }
 };
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMetricDetailsList) == METRIC_NUMBER_OF_METRICS,
                metric_names_incorrect_size);

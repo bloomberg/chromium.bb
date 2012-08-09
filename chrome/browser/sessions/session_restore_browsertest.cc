@@ -13,6 +13,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -51,8 +52,10 @@ class SessionRestoreTest : public InProcessBrowserTest {
     if (strcmp(test_info->name(), "NoSessionRestoreNewWindowChromeOS")) {
       // Undo the effect of kBrowserAliveWithNoWindows in defaults.cc so that we
       // can get these test to work without quitting.
-      SessionServiceFactory::GetForProfile(browser()->profile())->
-          force_browser_not_alive_with_no_windows_ = true;
+      SessionServiceTestHelper helper(
+          SessionServiceFactory::GetForProfile(browser()->profile()));
+      helper.SetForceBrowserNotAliveWithNoWindows(true);
+      helper.ReleaseService();
     }
 #endif
   }
