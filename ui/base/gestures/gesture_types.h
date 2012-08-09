@@ -12,6 +12,8 @@
 
 namespace ui {
 
+class TouchEvent;
+
 struct UI_EXPORT GestureEventDetails {
  public:
   GestureEventDetails(EventType type, float delta_x, float delta_y);
@@ -113,23 +115,6 @@ struct UI_EXPORT GestureEventDetails {
   gfx::Rect bounding_box_;
 };
 
-// An abstract type to represent touch-events. The gesture-recognizer uses this
-// interface to communicate with the touch-events.
-class UI_EXPORT TouchEvent {
- public:
-  virtual ~TouchEvent() {}
-
-  virtual EventType GetEventType() const = 0;
-  virtual gfx::Point GetLocation() const = 0;
-  virtual int GetTouchId() const = 0;
-  virtual int GetEventFlags() const = 0;
-  virtual base::TimeDelta GetTimestamp() const = 0;
-  virtual float RadiusX() const = 0;
-  virtual float RadiusY() const = 0;
-  virtual float RotationAngle() const = 0;
-  virtual float Force() const = 0;
-};
-
 // An abstract type to represent gesture-events.
 class UI_EXPORT GestureEvent {
  public:
@@ -187,9 +172,9 @@ class UI_EXPORT GestureEventHelper {
                                            unsigned int touch_id_bitfield) = 0;
 
   virtual TouchEvent* CreateTouchEvent(EventType type,
-                                       const gfx::Point& location,
-                                       int touch_id,
-                                       base::TimeDelta time_stamp) = 0;
+                                           const gfx::Point& location,
+                                           int touch_id,
+                                           base::TimeDelta time_stamp) = 0;
 
   virtual bool DispatchLongPressGestureEvent(GestureEvent* event) = 0;
   virtual bool DispatchCancelTouchEvent(TouchEvent* event) = 0;

@@ -232,7 +232,7 @@ bool DragDropController::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus DragDropController::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   // TODO(sad): Also check for the touch-id.
   if (!drag_drop_in_progress_)
     return ui::TOUCH_STATUS_UNKNOWN;

@@ -457,14 +457,14 @@ class LocalGestureEvent :
   DISALLOW_COPY_AND_ASSIGN(LocalGestureEvent);
 };
 
-class TouchEventFromWebTouchPoint : public ui::TouchEventImpl {
+class TouchEventFromWebTouchPoint : public ui::TouchEvent {
  public:
   TouchEventFromWebTouchPoint(const WebKit::WebTouchPoint& touch_point,
                               base::TimeDelta& timestamp)
-      : ui::TouchEventImpl(ConvertToUIEvent(touch_point.state),
-                           touch_point.position,
-                           touch_point.id,
-                           timestamp) {
+      : ui::TouchEvent(ConvertToUIEvent(touch_point.state),
+                       touch_point.position,
+                       touch_point.id,
+                       timestamp) {
     set_radius(touch_point.radiusX, touch_point.radiusY);
     set_rotation_angle(touch_point.rotationAngle);
     set_force(touch_point.force);
@@ -1259,7 +1259,7 @@ ui::TouchEvent* RenderWidgetHostViewWin::CreateTouchEvent(
     const gfx::Point& location,
     int touch_id,
     base::TimeDelta time_stamp) {
-  return new ui::TouchEventImpl(type, location, touch_id, time_stamp);
+  return new ui::TouchEvent(type, location, touch_id, time_stamp);
 }
 
 bool RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
@@ -1271,10 +1271,10 @@ bool RenderWidgetHostViewWin::DispatchCancelTouchEvent(
     ui::TouchEvent* event) {
   if (!render_widget_host_ || !touch_events_enabled_)
     return false;
-  DCHECK(event->GetEventType() == WebKit::WebInputEvent::TouchCancel);
+  DCHECK(event->type() == WebKit::WebInputEvent::TouchCancel);
   WebKit::WebTouchEvent cancel_event;
   cancel_event.type = WebKit::WebInputEvent::TouchCancel;
-  cancel_event.timeStampSeconds = event->GetTimestamp().InSecondsF();
+  cancel_event.timeStampSeconds = event->time_stamp().InSecondsF();
   render_widget_host_->ForwardTouchEvent(cancel_event);
   return true;
 }

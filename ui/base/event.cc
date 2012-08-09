@@ -224,7 +224,7 @@ void MouseEvent::SetClickCount(int click_count) {
 MouseEvent::MouseEvent(const MouseEvent& model) : LocatedEvent(model) {
 }
 
-TouchEventImpl::TouchEventImpl(const base::NativeEvent& native_event)
+TouchEvent::TouchEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
       touch_id_(ui::GetTouchId(native_event)),
       radius_x_(GetTouchRadiusX(native_event)),
@@ -233,7 +233,7 @@ TouchEventImpl::TouchEventImpl(const base::NativeEvent& native_event)
       force_(GetTouchForce(native_event)) {
 }
 
-TouchEventImpl::TouchEventImpl(EventType type,
+TouchEvent::TouchEvent(EventType type,
                                const gfx::Point& location,
                                int touch_id,
                                base::TimeDelta time_stamp)
@@ -246,10 +246,10 @@ TouchEventImpl::TouchEventImpl(EventType type,
   set_time_stamp(time_stamp);
 }
 
-TouchEventImpl::~TouchEventImpl() {
+TouchEvent::~TouchEvent() {
 }
 
-void TouchEventImpl::UpdateForRootTransform(const Transform& root_transform) {
+void TouchEvent::UpdateForRootTransform(const Transform& root_transform) {
   LocatedEvent::UpdateForRootTransform(root_transform);
   gfx::Point3f scale;
   InterpolatedTransform::FactorTRS(root_transform, NULL, NULL, &scale);
@@ -257,42 +257,6 @@ void TouchEventImpl::UpdateForRootTransform(const Transform& root_transform) {
     radius_x_ /= scale.x();
   if (scale.y())
     radius_y_ /= scale.y();
-}
-
-EventType TouchEventImpl::GetEventType() const {
-  return type();
-}
-
-gfx::Point TouchEventImpl::GetLocation() const {
-  return location();
-}
-
-int TouchEventImpl::GetTouchId() const {
-  return touch_id_;
-}
-
-int TouchEventImpl::GetEventFlags() const {
-  return flags();
-}
-
-base::TimeDelta TouchEventImpl::GetTimestamp() const {
-  return time_stamp();
-}
-
-float TouchEventImpl::RadiusX() const {
-  return radius_x_;
-}
-
-float TouchEventImpl::RadiusY() const {
-  return radius_y_;
-}
-
-float TouchEventImpl::RotationAngle() const {
-  return rotation_angle_;
-}
-
-float TouchEventImpl::Force() const {
-  return force_;
 }
 
 KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)

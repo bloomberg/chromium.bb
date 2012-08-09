@@ -33,7 +33,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
     ui::ScrollEvent* event);
 WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
-    ui::TouchEventImpl* event, WebKit::WebTouchEvent* web_event);
+    ui::TouchEvent* event, WebKit::WebTouchEvent* web_event);
 #endif
 
 // General approach:
@@ -184,7 +184,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFlingCancel() {
   return gesture_event;
 }
 
-WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEventImpl* event,
+WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEvent* event,
                                            WebKit::WebTouchEvent* web_event) {
 #if defined(OS_WIN)
   return UpdateWebTouchEventFromNativeEvent(event->native_event(), web_event);

@@ -182,7 +182,7 @@ WebKit::WebUChar GetControlCharacter(int windows_key_code, bool shift) {
 }
 
 WebKit::WebTouchPoint::State TouchPointStateFromEvent(
-    const ui::TouchEventImpl* event) {
+    const ui::TouchEvent* event) {
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
       return WebKit::WebTouchPoint::StatePressed;
@@ -198,7 +198,7 @@ WebKit::WebTouchPoint::State TouchPointStateFromEvent(
 }
 
 WebKit::WebInputEvent::Type TouchEventTypeFromEvent(
-    const ui::TouchEventImpl* event) {
+    const ui::TouchEvent* event) {
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
       return WebKit::WebInputEvent::TouchStart;
@@ -422,7 +422,7 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
 }
 
 WebKit::WebTouchPoint* UpdateWebTouchEventFromAuraEvent(
-    ui::TouchEventImpl* event, WebKit::WebTouchEvent* web_event) {
+    ui::TouchEvent* event, WebKit::WebTouchEvent* web_event) {
   WebKit::WebTouchPoint* point = NULL;
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:

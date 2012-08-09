@@ -131,7 +131,7 @@ bool X11WindowEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus X11WindowEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

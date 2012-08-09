@@ -97,7 +97,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
   observer_->reset_stats();
 
   AdvanceTime(advance_delta);
-  ui::TouchEventImpl touch_event(
+  ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
   EXPECT_FALSE(detector_->PreHandleTouchEvent(window.get(), &touch_event));
   EXPECT_EQ(1, observer_->num_invocations());

@@ -645,7 +645,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         case ui::ET_TOUCH_PRESSED:
         case ui::ET_TOUCH_RELEASED:
         case ui::ET_TOUCH_MOVED: {
-          ui::TouchEventImpl touchev(xev);
+          ui::TouchEvent touchev(xev);
           delegate_->OnHostTouchEvent(&touchev);
           break;
         }

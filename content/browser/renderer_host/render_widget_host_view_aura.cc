@@ -1276,7 +1276,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnTouchEvent");
   // Update the touch event first.
   WebKit::WebTouchPoint* point = UpdateWebTouchEvent(event,

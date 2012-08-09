@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/basictypes.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/gestures/gesture_util.h"
@@ -39,22 +40,22 @@ void GesturePoint::ResetVelocity() {
 
 void GesturePoint::UpdateValues(const TouchEvent& event) {
   const int64 event_timestamp_microseconds =
-      event.GetTimestamp().InMicroseconds();
-  if (event.GetEventType() == ui::ET_TOUCH_MOVED) {
-    velocity_calculator_.PointSeen(event.GetLocation().x(),
-                                   event.GetLocation().y(),
+      event.time_stamp().InMicroseconds();
+  if (event.type() == ui::ET_TOUCH_MOVED) {
+    velocity_calculator_.PointSeen(event.location().x(),
+                                   event.location().y(),
                                    event_timestamp_microseconds);
   }
 
-  last_touch_time_ = event.GetTimestamp().InSecondsF();
-  last_touch_position_ = event.GetLocation();
+  last_touch_time_ = event.time_stamp().InSecondsF();
+  last_touch_position_ = event.location();
 
-  if (event.GetEventType() == ui::ET_TOUCH_PRESSED) {
+  if (event.type() == ui::ET_TOUCH_PRESSED) {
     first_touch_time_ = last_touch_time_;
-    first_touch_position_ = event.GetLocation();
+    first_touch_position_ = event.location();
     velocity_calculator_.ClearHistory();
-    velocity_calculator_.PointSeen(event.GetLocation().x(),
-                                   event.GetLocation().y(),
+    velocity_calculator_.PointSeen(event.location().x(),
+                                   event.location().y(),
                                    event_timestamp_microseconds);
     clear_enclosing_rectangle();
   }
@@ -86,13 +87,13 @@ bool GesturePoint::IsInDoubleClickWindow(const TouchEvent& event) const {
 }
 
 bool GesturePoint::IsInScrollWindow(const TouchEvent& event) const {
-  return event.GetEventType() == ui::ET_TOUCH_MOVED &&
+  return event.type() == ui::ET_TOUCH_MOVED &&
          !IsInsideManhattanSquare(event);
 }
 
 bool GesturePoint::IsInFlickWindow(const TouchEvent& event) {
   return IsOverMinFlickSpeed() &&
-         event.GetEventType() != ui::ET_TOUCH_CANCELLED;
+         event.type() != ui::ET_TOUCH_CANCELLED;
 }
 
 bool GesturePoint::DidScroll(const TouchEvent& event, int dist) const {
@@ -148,13 +149,13 @@ bool GesturePoint::IsInSecondClickTimeWindow() const {
 }
 
 bool GesturePoint::IsInsideManhattanSquare(const TouchEvent& event) const {
-  return ui::gestures::IsInsideManhattanSquare(event.GetLocation(),
+  return ui::gestures::IsInsideManhattanSquare(event.location(),
                                                first_touch_position_);
 }
 
 bool GesturePoint::IsSecondClickInsideManhattanSquare(
     const TouchEvent& event) const {
-  return ui::gestures::IsInsideManhattanSquare(event.GetLocation(),
+  return ui::gestures::IsInsideManhattanSquare(event.location(),
                                                last_tap_position_);
 }
 
@@ -168,8 +169,8 @@ void GesturePoint::UpdateEnclosingRectangle(const TouchEvent& event) {
 
   // Ignore this TouchEvent if it has a radius larger than the maximum
   // allowed radius size.
-  if (event.RadiusX() > GestureConfiguration::max_radius() ||
-      event.RadiusY() > GestureConfiguration::max_radius())
+  if (event.radius_x() > GestureConfiguration::max_radius() ||
+      event.radius_y() > GestureConfiguration::max_radius())
     return;
 
   // If the device provides at least one of the radius values, take the larger
@@ -178,13 +179,13 @@ void GesturePoint::UpdateEnclosingRectangle(const TouchEvent& event) {
   // TODO(tdanderson): Implement a more specific check for the exact
   // information provided by the device (0-2 radii values, force, angle) and
   // use this to compute a more representative rectangular touch region.
-  if (event.RadiusX() || event.RadiusY())
-    radius = std::max(event.RadiusX(), event.RadiusY());
+  if (event.radius_x() || event.radius_y())
+    radius = std::max(event.radius_x(), event.radius_y());
   else
     radius = GestureConfiguration::default_radius();
 
-  gfx::Rect rect(event.GetLocation().x() - radius,
-                 event.GetLocation().y() - radius,
+  gfx::Rect rect(event.location().x() - radius,
+                 event.location().y() - radius,
                  radius * 2,
                  radius * 2);
   if (IsInClickWindow(event))

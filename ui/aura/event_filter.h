@@ -13,7 +13,7 @@ namespace ui {
 class GestureEventImpl;
 class KeyEvent;
 class MouseEvent;
-class TouchEventImpl;
+class TouchEvent;
 }
 
 namespace aura {
@@ -53,7 +53,7 @@ class AURA_EXPORT EventFilter {
   // Returns a value other than ui::TOUCH_STATUS_UNKNOWN if the event is
   // consumed.
   virtual ui::TouchStatus PreHandleTouchEvent(Window* target,
-                                              ui::TouchEventImpl* event) = 0;
+                                              ui::TouchEvent* event) = 0;
 
   // Returns a value other than ui::GESTURE_STATUS_UNKNOWN if the gesture is
   // consumed.

@@ -29,7 +29,7 @@ class TouchUMA {
   void RecordGestureEvent(aura::Window* target,
                           const ui::GestureEventImpl& event);
   void RecordTouchEvent(aura::Window* target,
-                        const ui::TouchEventImpl& event);
+                        const ui::TouchEvent& event);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchUMA);

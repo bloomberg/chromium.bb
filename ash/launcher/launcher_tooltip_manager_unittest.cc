@@ -146,7 +146,7 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for touch events.
-  ui::TouchEventImpl touch_event(
+  ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
   EXPECT_EQ(ui::TOUCH_STATUS_UNKNOWN,
             event_filter->PreHandleTouchEvent(root_window, &touch_event));

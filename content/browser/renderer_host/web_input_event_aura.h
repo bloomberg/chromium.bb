@@ -13,7 +13,7 @@ class GestureEventImpl;
 class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
-class TouchEventImpl;
+class TouchEvent;
 }
 
 namespace content {
@@ -35,7 +35,7 @@ CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEventFlingCancel();
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated
 // WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
 // updated.
-WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEventImpl* event,
+WebKit::WebTouchPoint* UpdateWebTouchEvent(ui::TouchEvent* event,
                                            WebKit::WebTouchEvent* web_event);
 
 }

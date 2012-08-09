@@ -123,7 +123,7 @@ TEST_F(WindowManagerTest, Focus) {
   // Touch on a sub-window (w122) to focus it.
   gfx::Point click_point = w122->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w122->parent(), root_window, &click_point);
-  ui::TouchEventImpl touchev(ui::ET_TOUCH_PRESSED, click_point, 0, getTime());
+  ui::TouchEvent touchev(ui::ET_TOUCH_PRESSED, click_point, 0, getTime());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev);
   focus_manager = w122->GetFocusManager();
   EXPECT_EQ(w122.get(), focus_manager->GetFocusedWindow());
@@ -323,7 +323,7 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   // Touch window2.
   gfx::Point press_point = w2->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w2->parent(), root_window, &press_point);
-  ui::TouchEventImpl touchev1(ui::ET_TOUCH_PRESSED, press_point, 0, getTime());
+  ui::TouchEvent touchev1(ui::ET_TOUCH_PRESSED, press_point, 0, getTime());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev1);
 
   // Window2 should have become active.
@@ -340,7 +340,7 @@ TEST_F(WindowManagerTest, ActivateOnTouch) {
   press_point = w1->bounds().CenterPoint();
   aura::Window::ConvertPointToTarget(w1->parent(), root_window, &press_point);
   d1.set_activate(false);
-  ui::TouchEventImpl touchev2(ui::ET_TOUCH_PRESSED, press_point, 1, getTime());
+  ui::TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, 1, getTime());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev2);
 
   // Window2 should still be active and focused.
@@ -579,9 +579,9 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 
   ui::MouseEvent mouse_moved(
       ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
-  ui::TouchEventImpl touch_pressed1(
+  ui::TouchEvent touch_pressed1(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, getTime());
-  ui::TouchEventImpl touch_pressed2(
+  ui::TouchEvent touch_pressed2(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1, getTime());
 
   env_filter->set_update_cursor_visibility(true);

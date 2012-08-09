@@ -49,7 +49,7 @@ bool UserActivityDetector::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus UserActivityDetector::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   if (!GetRootWindowController(target->GetRootWindow()))
     return ui::TOUCH_STATUS_END;
   MaybeNotify();

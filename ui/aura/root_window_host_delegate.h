@@ -13,7 +13,7 @@ namespace ui {
 class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
-class TouchEventImpl;
+class TouchEvent;
 }
 
 namespace aura {
@@ -27,7 +27,7 @@ class AURA_EXPORT RootWindowHostDelegate {
   virtual bool OnHostKeyEvent(ui::KeyEvent* event) = 0;
   virtual bool OnHostMouseEvent(ui::MouseEvent* event) = 0;
   virtual bool OnHostScrollEvent(ui::ScrollEvent* event) = 0;
-  virtual bool OnHostTouchEvent(ui::TouchEventImpl* event) = 0;
+  virtual bool OnHostTouchEvent(ui::TouchEvent* event) = 0;
 
   virtual void OnHostLostCapture() = 0;
 

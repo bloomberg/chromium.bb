@@ -192,17 +192,15 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   static int GetRepeatCount(const MouseEvent& click_event);
 };
 
-// TODO(beng): rename to TouchEvent after conversion is complete.
-class UI_EXPORT TouchEventImpl : public LocatedEvent,
-                                 public TouchEvent {
+class UI_EXPORT TouchEvent : public LocatedEvent {
  public:
-  explicit TouchEventImpl(const base::NativeEvent& native_event);
+  explicit TouchEvent(const base::NativeEvent& native_event);
 
-  // Create a new TouchEventImpl which is identical to the provided model.
+  // Create a new TouchEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
   // converted from |source| coordinate system to |target| coordinate system.
   template <class T>
-  TouchEventImpl(const TouchEventImpl& model, T* source, T* target)
+  TouchEvent(const TouchEvent& model, T* source, T* target)
       : LocatedEvent(model, source, target),
         touch_id_(model.touch_id_),
         radius_x_(model.radius_x_),
@@ -211,12 +209,12 @@ class UI_EXPORT TouchEventImpl : public LocatedEvent,
         force_(model.force_) {
   }
 
-  TouchEventImpl(EventType type,
+  TouchEvent(EventType type,
                  const gfx::Point& root_location,
                  int touch_id,
                  base::TimeDelta time_stamp);
 
-  virtual ~TouchEventImpl();
+  virtual ~TouchEvent();
 
   int touch_id() const { return touch_id_; }
   float radius_x() const { return radius_x_; }
@@ -231,16 +229,17 @@ class UI_EXPORT TouchEventImpl : public LocatedEvent,
   // Overridden from LocatedEvent.
   virtual void UpdateForRootTransform(const Transform& root_transform) OVERRIDE;
 
-  // Overridden from TouchEvent.
-  virtual EventType GetEventType() const OVERRIDE;
-  virtual gfx::Point GetLocation() const OVERRIDE;
-  virtual int GetTouchId() const OVERRIDE;
-  virtual int GetEventFlags() const OVERRIDE;
-  virtual base::TimeDelta GetTimestamp() const OVERRIDE;
-  virtual float RadiusX() const OVERRIDE;
-  virtual float RadiusY() const OVERRIDE;
-  virtual float RotationAngle() const OVERRIDE;
-  virtual float Force() const OVERRIDE;
+ protected:
+  void set_radius(float radius_x, float radius_y) {
+    radius_x_ = radius_x;
+    radius_y_ = radius_y;
+  }
+
+  void set_rotation_angle(float rotation_angle) {
+    rotation_angle_ = rotation_angle;
+  }
+
+  void set_force(float force) { force_ = force; }
 
  protected:
   void set_radius(float radius_x, float radius_y) {
@@ -271,7 +270,7 @@ class UI_EXPORT TouchEventImpl : public LocatedEvent,
   // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
   float force_;
 
-  DISALLOW_COPY_AND_ASSIGN(TouchEventImpl);
+  DISALLOW_COPY_AND_ASSIGN(TouchEvent);
 };
 
 class UI_EXPORT KeyEvent : public Event {

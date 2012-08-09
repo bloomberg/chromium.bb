@@ -810,7 +810,7 @@ bool NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   return delegate_->OnMouseEvent(mouse_event);
 }
 
-ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEventImpl* event) {
+ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
   DCHECK(window_->IsVisible());
   TouchEvent touch_event(event);
   return delegate_->OnTouchEvent(touch_event);

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/base/gestures/gesture_util.h"
@@ -283,24 +284,24 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::TouchStatus status) {
   StopLongPressTimerIfRequired(event);
-  last_touch_location_ = event.GetLocation();
+  last_touch_location_ = event.location();
   if (status == ui::TOUCH_STATUS_QUEUED ||
       status == ui::TOUCH_STATUS_QUEUED_END)
     return NULL;
 
   // Set a limit on the number of simultaneous touches in a gesture.
-  if (event.GetTouchId() >= kMaxGesturePoints)
+  if (event.touch_id() >= kMaxGesturePoints)
     return NULL;
 
-  if (event.GetEventType() == ui::ET_TOUCH_PRESSED) {
+  if (event.type() == ui::ET_TOUCH_PRESSED) {
     if (point_count_ == kMaxGesturePoints)
       return NULL;
-    GesturePoint* new_point = &points_[event.GetTouchId()];
+    GesturePoint* new_point = &points_[event.touch_id()];
     // We shouldn't be able to get two PRESSED events from the same
     // finger without either a RELEASE or CANCEL in between.
     DCHECK(!new_point->in_use());
     new_point->set_point_id(point_count_++);
-    new_point->set_touch_id(event.GetTouchId());
+    new_point->set_touch_id(event.touch_id());
   }
 
   GestureState last_state = state_;
@@ -310,23 +311,23 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   GesturePoint& point = GesturePointForEvent(event);
   point.UpdateValues(event);
   RecreateBoundingBox();
-  flags_ = event.GetEventFlags();
-  const int point_id = points_[event.GetTouchId()].point_id();
+  flags_ = event.flags();
+  const int point_id = points_[event.touch_id()].point_id();
   if (point_id < 0)
     return NULL;
 
   // Send GESTURE_BEGIN for any touch pressed.
-  if (event.GetEventType() == ui::ET_TOUCH_PRESSED)
+  if (event.type() == ui::ET_TOUCH_PRESSED)
     AppendBeginGestureEvent(point, gestures.get());
 
   TouchStatusInternal status_internal = (status == ui::TOUCH_STATUS_UNKNOWN) ?
       TSI_NOT_PROCESSED : TSI_PROCESSED;
 
   EdgeStateSignatureType signature = Signature(state_, point_id,
-      event.GetEventType(), status_internal);
+      event.type(), status_internal);
 
   if (signature == GST_INVALID)
-    signature = Signature(state_, point_id, event.GetEventType(), TSI_ALWAYS);
+    signature = Signature(state_, point_id, event.type(), TSI_ALWAYS);
 
   switch (signature) {
     case GST_INVALID:
@@ -439,14 +440,14 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
   }
 
-  if (event.GetEventType() == ui::ET_TOUCH_RELEASED ||
-      event.GetEventType() == ui::ET_TOUCH_CANCELLED)
+  if (event.type() == ui::ET_TOUCH_RELEASED ||
+      event.type() == ui::ET_TOUCH_CANCELLED)
     AppendEndGestureEvent(point, gestures.get());
 
   if (state_ != last_state)
     DVLOG(4) << "Gesture Sequence"
              << " State: " << state_
-             << " touch id: " << event.GetTouchId();
+             << " touch id: " << event.touch_id();
 
   if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state)
     long_press_timer_->Stop();
@@ -455,9 +456,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   // When a touch point is released, all points with ids greater than the
   // released point must have their ids decremented, or the set of point_ids
   // could end up with gaps.
-  if (event.GetEventType() == ui::ET_TOUCH_RELEASED ||
-      event.GetEventType() == ui::ET_TOUCH_CANCELLED) {
-    GesturePoint& old_point = points_[event.GetTouchId()];
+  if (event.type() == ui::ET_TOUCH_RELEASED ||
+      event.type() == ui::ET_TOUCH_CANCELLED) {
+    GesturePoint& old_point = points_[event.touch_id()];
     for (int i = 0; i < kMaxGesturePoints; ++i) {
       GesturePoint& point = points_[i];
       if (point.point_id() > old_point.point_id())
@@ -526,7 +527,7 @@ base::OneShotTimer<GestureSequence>* GestureSequence::CreateTimer() {
 
 GesturePoint& GestureSequence::GesturePointForEvent(
     const TouchEvent& event) {
-  return points_[event.GetTouchId()];
+  return points_[event.touch_id()];
 }
 
 GesturePoint* GestureSequence::GetPointByPointId(int point_id) {
@@ -824,7 +825,7 @@ bool GestureSequence::TwoFingerTouchDown(const TouchEvent& event,
     AppendScrollGestureEnd(point, point.last_touch_position(), gestures,
         0.f, 0.f);
   }
-  second_touch_time_ = event.GetTimestamp();
+  second_touch_time_ = event.time_stamp();
   return true;
 }
 
@@ -832,7 +833,7 @@ bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
 
-  base::TimeDelta time_delta = event.GetTimestamp() - second_touch_time_;
+  base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
   base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
       ui::GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
   if (time_delta > max_delta || !point.IsInsideManhattanSquare(event)) {
@@ -845,7 +846,7 @@ bool GestureSequence::TwoFingerTouchMove(const TouchEvent& event,
 bool GestureSequence::TwoFingerTouchReleased(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_TWO_FINGER_TAP);
-  base::TimeDelta time_delta = event.GetTimestamp() - second_touch_time_;
+  base::TimeDelta time_delta = event.time_stamp() - second_touch_time_;
   base::TimeDelta max_delta = base::TimeDelta::FromMilliseconds(1000 *
       ui::GestureConfiguration::max_touch_down_duration_in_seconds_for_click());
   if (time_delta < max_delta && point.IsInsideManhattanSquare(event))
@@ -1022,13 +1023,13 @@ bool GestureSequence::MaybeSwipe(const TouchEvent& event,
 
 void GestureSequence::StopLongPressTimerIfRequired(const TouchEvent& event) {
   if (!long_press_timer_->IsRunning() ||
-      event.GetEventType() != ui::ET_TOUCH_MOVED)
+      event.type() != ui::ET_TOUCH_MOVED)
     return;
 
   // Since long press timer has been started, there should be a non-NULL point.
   const GesturePoint* point = GetPointByPointId(0);
   if (!ui::gestures::IsInsideManhattanSquare(point->first_touch_position(),
-      event.GetLocation()))
+      event.location()))
     long_press_timer_->Stop();
 }
 

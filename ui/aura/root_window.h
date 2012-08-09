@@ -37,7 +37,7 @@ class KeyEvent;
 class LayerAnimationSequence;
 class MouseEvent;
 class ScrollEvent;
-class TouchEventImpl;
+class TouchEvent;
 class Transform;
 }
 
@@ -271,7 +271,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   bool ProcessMouseEvent(Window* target, ui::MouseEvent* event);
   bool ProcessKeyEvent(Window* target, ui::KeyEvent* event);
-  ui::TouchStatus ProcessTouchEvent(Window* target, ui::TouchEventImpl* event);
+  ui::TouchStatus ProcessTouchEvent(Window* target, ui::TouchEvent* event);
   ui::GestureStatus ProcessGestureEvent(Window* target,
                                         ui::GestureEventImpl* event);
   bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
@@ -314,7 +314,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual bool OnHostKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual bool OnHostMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual bool OnHostScrollEvent(ui::ScrollEvent* event) OVERRIDE;
-  virtual bool OnHostTouchEvent(ui::TouchEventImpl* event) OVERRIDE;
+  virtual bool OnHostTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual void OnHostLostCapture() OVERRIDE;
   virtual void OnHostPaint() OVERRIDE;
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE;

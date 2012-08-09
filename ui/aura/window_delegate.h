@@ -21,7 +21,7 @@ namespace ui {
 class GestureEventImpl;
 class KeyEvent;
 class MouseEvent;
-class TouchEventImpl;
+class TouchEvent;
 }
 
 namespace aura {
@@ -58,7 +58,7 @@ class AURA_EXPORT WindowDelegate {
 
   virtual bool OnMouseEvent(ui::MouseEvent* event) = 0;
 
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) = 0;
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) = 0;
 
   virtual ui::GestureStatus OnGestureEvent(ui::GestureEventImpl* event) = 0;
 

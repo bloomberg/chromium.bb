@@ -63,7 +63,7 @@ bool InputMethodEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus InputMethodEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

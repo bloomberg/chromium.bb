@@ -91,7 +91,7 @@ class EventCountFilter : public EventFilter {
     return true;
   }
   virtual ui::TouchStatus PreHandleTouchEvent(
-      Window* target, ui::TouchEventImpl* event) OVERRIDE {
+      Window* target, ui::TouchEvent* event) OVERRIDE {
     return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual ui::GestureStatus PreHandleGestureEvent(
@@ -368,7 +368,7 @@ class EventFilterRecorder : public EventFilter {
   }
   virtual ui::TouchStatus PreHandleTouchEvent(
       Window* target,
-      ui::TouchEventImpl* event) OVERRIDE {
+      ui::TouchEvent* event) OVERRIDE {
     events_.push_back(event->type());
     return ui::TOUCH_STATUS_UNKNOWN;
   }

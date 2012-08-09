@@ -256,7 +256,7 @@ void TouchUMA::RecordGestureEvent(aura::Window* target,
 }
 
 void TouchUMA::RecordTouchEvent(aura::Window* target,
-                                const ui::TouchEventImpl& event) {
+                                const ui::TouchEvent& event) {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchRadius",
       static_cast<int>(std::max(event.radius_x(), event.radius_y())),
       1, 500, 100);

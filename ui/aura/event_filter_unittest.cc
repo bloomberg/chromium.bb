@@ -53,7 +53,7 @@ class TestEventFilterWindowDelegate : public TestWindowDelegate {
     ++mouse_event_count_;
     return true;
   }
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) OVERRIDE {
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     ++touch_event_count_;
     return ui::TOUCH_STATUS_UNKNOWN;
   }

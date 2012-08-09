@@ -97,7 +97,7 @@ bool PanelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus PanelWindowEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

@@ -247,7 +247,7 @@ bool AppListController::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus AppListController::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

@@ -469,7 +469,7 @@ bool TrayBubbleView::Host::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus TrayBubbleView::Host::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED)
     ProcessLocatedEvent(*event);
   return ui::TOUCH_STATUS_UNKNOWN;

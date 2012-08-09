@@ -38,7 +38,7 @@ bool TestEventFilter::PreHandleMouseEvent(Window* target,
 
 ui::TouchStatus TestEventFilter::PreHandleTouchEvent(
     Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   ++touch_event_count_;
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;

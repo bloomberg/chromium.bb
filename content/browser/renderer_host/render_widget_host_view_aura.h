@@ -166,7 +166,7 @@ class RenderWidgetHostViewAura
       aura::Window* child,
       const gfx::Point& location) OVERRIDE;
   virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
       ui::GestureEventImpl* event) OVERRIDE;
   virtual bool CanFocus() OVERRIDE;

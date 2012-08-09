@@ -124,7 +124,7 @@ bool CompoundEventFilter::PreHandleMouseEvent(Window* target,
 
 ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
     Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   ui::TouchStatus status = FilterTouchEvent(target, event);
   if (status == ui::TOUCH_STATUS_UNKNOWN &&
       event->type() == ui::ET_TOUCH_PRESSED) {
@@ -200,7 +200,7 @@ bool CompoundEventFilter::FilterMouseEvent(Window* target,
 
 ui::TouchStatus CompoundEventFilter::FilterTouchEvent(
     Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);

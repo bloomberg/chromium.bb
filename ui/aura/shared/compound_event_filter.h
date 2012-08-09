@@ -15,7 +15,7 @@ class GestureEventImpl;
 class KeyEvent;
 class LocatedEvent;
 class MouseEvent;
-class TouchEventImpl;
+class TouchEvent;
 }
 
 namespace aura {
@@ -56,7 +56,7 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
                                    ui::MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus PreHandleTouchEvent(
       Window* target,
-      ui::TouchEventImpl* event) OVERRIDE;
+      ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       Window* target,
       ui::GestureEventImpl* event) OVERRIDE;
@@ -70,7 +70,7 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
   // ui::TOUCH_STATUS_UNKNOWN if event is consumed.
   bool FilterKeyEvent(Window* target, ui::KeyEvent* event);
   bool FilterMouseEvent(Window* target, ui::MouseEvent* event);
-  ui::TouchStatus FilterTouchEvent(Window* target, ui::TouchEventImpl* event);
+  ui::TouchStatus FilterTouchEvent(Window* target, ui::TouchEvent* event);
 
   // Sets the visibility of the cursor if the event is not synthesized and
   // |update_cursor_visibility_| is true.

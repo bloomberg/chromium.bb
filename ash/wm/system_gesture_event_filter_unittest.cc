@@ -158,7 +158,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   const int kTouchId = 5;
 
   // A touch outside the root window will be associated with the root window
-  ui::TouchEventImpl press(ui::ET_TOUCH_PRESSED, gfx::Point(-10, -10), kTouchId,
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(-10, -10), kTouchId,
       base::Time::NowFromSystemTime() - base::Time());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
 
@@ -214,7 +214,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
       xpos = screen.right() + 40;  // Make sure it is out of the screen.
     }
     // Get a target for kTouchId
-    ui::TouchEventImpl press1(ui::ET_TOUCH_PRESSED,
+    ui::TouchEvent press1(ui::ET_TOUCH_PRESSED,
                               gfx::Point(-10, ypos + ypos_half),
                               kTouchId,
                               base::Time::NowFromSystemTime() - base::Time());
@@ -284,7 +284,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
     EXPECT_TRUE(consumed);
     EXPECT_EQ(3, delegate->handle_percent_count());
 
-    ui::TouchEventImpl release1(
+    ui::TouchEvent release1(
         ui::ET_TOUCH_RELEASED, gfx::Point(2 * xpos, ypos + ypos_half), kTouchId,
         base::Time::NowFromSystemTime() - base::Time());
     root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
@@ -330,7 +330,7 @@ TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
 
     // Get a target for kTouchId
-    ui::TouchEventImpl press(ui::ET_TOUCH_PRESSED,
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
                              gfx::Point(-10, ypos + ypos_half),
                              kTouchId,
                              base::Time::NowFromSystemTime() - base::Time());
@@ -381,7 +381,7 @@ TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
     EXPECT_TRUE(consumed);
     EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
 
-    ui::TouchEventImpl release(
+    ui::TouchEvent release(
         ui::ET_TOUCH_RELEASED, gfx::Point(2 * xpos, ypos + ypos_half), kTouchId,
         base::Time::NowFromSystemTime() - base::Time());
     root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
@@ -413,7 +413,7 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   EXPECT_TRUE(window1->HasCapture());
 
   // Send touch event to first window.
-  ui::TouchEventImpl press(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), kTouchId,
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), kTouchId,
       base::Time::NowFromSystemTime() - base::Time());
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_TRUE(window1->HasCapture());

@@ -23,12 +23,12 @@ LocatedEvent::LocatedEvent(const NativeEvent& native_event)
 
 TouchEvent::TouchEvent(const NativeEvent& event)
     : LocatedEvent(event),
-      touch_id_(static_cast<ui::TouchEventImpl*>(event)->touch_id()),
-      radius_x_(static_cast<ui::TouchEventImpl*>(event)->radius_x()),
-      radius_y_(static_cast<ui::TouchEventImpl*>(event)->radius_y()),
+      touch_id_(static_cast<ui::TouchEvent*>(event)->touch_id()),
+      radius_x_(static_cast<ui::TouchEvent*>(event)->radius_x()),
+      radius_y_(static_cast<ui::TouchEvent*>(event)->radius_y()),
       rotation_angle_(
-          static_cast<ui::TouchEventImpl*>(event)->rotation_angle()),
-      force_(static_cast<ui::TouchEventImpl*>(event)->force()) {
+          static_cast<ui::TouchEvent*>(event)->rotation_angle()),
+      force_(static_cast<ui::TouchEvent*>(event)->force()) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -68,16 +68,16 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
 
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
-  ui::TouchEventImpl press(
+  ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  ui::TouchEventImpl move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1, GetTime());
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_FALSE(cursor_client.IsCursorVisible());
 
-  ui::TouchEventImpl release(
+  ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 1, GetTime());
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_FALSE(cursor_client.IsCursorVisible());

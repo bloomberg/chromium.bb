@@ -86,7 +86,7 @@ bool WindowModalityController::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus WindowModalityController::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   return ProcessLocatedEvent(target, event) ? ui::TOUCH_STATUS_CONTINUE :
                                               ui::TOUCH_STATUS_UNKNOWN;
 }

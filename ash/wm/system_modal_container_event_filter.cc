@@ -32,7 +32,7 @@ bool SystemModalContainerEventFilter::PreHandleMouseEvent(
 
 ui::TouchStatus SystemModalContainerEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   // TODO(sadrul): !
   return ui::TOUCH_STATUS_UNKNOWN;
 }

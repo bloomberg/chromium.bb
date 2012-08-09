@@ -295,7 +295,7 @@ bool TooltipController::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus TooltipController::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   // TODO(varunjain): need to properly implement tooltips for
   // touch events.
   // Hide the tooltip for touch events.

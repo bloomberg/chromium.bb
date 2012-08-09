@@ -59,7 +59,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual bool OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     return true;
   }
-  virtual ui::TouchStatus OnTouchEvent(ui::TouchEventImpl* event) OVERRIDE {
+  virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     return ui::TOUCH_STATUS_END;
   }
   virtual ui::GestureStatus OnGestureEvent(

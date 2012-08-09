@@ -194,7 +194,7 @@ bool TouchObserverHUD::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus TouchObserverHUD::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   if (event->touch_id() >= kMaxTouchPoints)
     return ui::TOUCH_STATUS_UNKNOWN;
 

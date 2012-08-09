@@ -85,7 +85,7 @@ bool AcceleratorFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus AcceleratorFilter::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

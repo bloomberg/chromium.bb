@@ -48,7 +48,7 @@ bool MouseCursorEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus MouseCursorEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

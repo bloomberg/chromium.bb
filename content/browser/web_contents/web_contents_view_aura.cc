@@ -532,7 +532,7 @@ bool WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
   return false;
 }
 
-ui::TouchStatus WebContentsViewAura::OnTouchEvent(ui::TouchEventImpl* event) {
+ui::TouchStatus WebContentsViewAura::OnTouchEvent(ui::TouchEvent* event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 

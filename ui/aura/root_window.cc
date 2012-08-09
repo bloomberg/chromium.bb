@@ -635,7 +635,7 @@ bool RootWindow::ProcessKeyEvent(Window* target, ui::KeyEvent* event) {
 }
 
 ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
-                                              ui::TouchEventImpl* event) {
+                                              ui::TouchEvent* event) {
   if (!target->IsVisible())
     return ui::TOUCH_STATUS_UNKNOWN;
 
@@ -759,7 +759,7 @@ bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
 }
 
 bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
-  return OnHostTouchEvent(static_cast<ui::TouchEventImpl*>(event));
+  return OnHostTouchEvent(event);
 }
 
 ui::GestureEvent* RootWindow::CreateGestureEvent(
@@ -776,7 +776,7 @@ ui::TouchEvent* RootWindow::CreateTouchEvent(ui::EventType type,
                                              const gfx::Point& location,
                                              int touch_id,
                                              base::TimeDelta time_stamp) {
-  return new ui::TouchEventImpl(type, location, touch_id, time_stamp);
+  return new ui::TouchEvent(type, location, touch_id, time_stamp);
 }
 
 void RootWindow::OnLayerAnimationEnded(
@@ -856,7 +856,7 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
   return false;
 }
 
-bool RootWindow::OnHostTouchEvent(ui::TouchEventImpl* event) {
+bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   DispatchHeldMouseMove();
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED:
@@ -886,7 +886,7 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEventImpl* event) {
         gesture_recognizer_->GetTouchLockedTarget(event));
     if (!target) {
       target = ConsumerToWindow(
-          gesture_recognizer_->GetTargetForLocation(event->GetLocation()));
+          gesture_recognizer_->GetTargetForLocation(event->location()));
     }
   }
 
@@ -901,7 +901,7 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEventImpl* event) {
         return false;
     }
 
-    ui::TouchEventImpl translated_event(
+    ui::TouchEvent translated_event(
         *event, static_cast<Window*>(this), target);
     status = ProcessTouchEvent(target, &translated_event);
     handled = status != ui::TOUCH_STATUS_UNKNOWN;

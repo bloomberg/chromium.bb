@@ -544,7 +544,7 @@ bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
 
 ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
     aura::Window* target,
-    ui::TouchEventImpl* event) {
+    ui::TouchEvent* event) {
   touch_uma_.RecordTouchEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event);
   return ui::TOUCH_STATUS_UNKNOWN;

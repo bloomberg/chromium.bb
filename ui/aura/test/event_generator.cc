@@ -23,12 +23,12 @@ class TestKeyEvent : public ui::KeyEvent {
   }
 };
 
-class TestTouchEvent : public ui::TouchEventImpl {
+class TestTouchEvent : public ui::TouchEvent {
  public:
   TestTouchEvent(ui::EventType type,
                  const gfx::Point& root_location,
                  int flags)
-      : TouchEventImpl(type, root_location, 0,
+      : TouchEvent(type, root_location, 0,
                        base::Time::NowFromSystemTime() - base::Time()) {
     set_flags(flags);
   }
@@ -162,11 +162,11 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(Window* window) {
 
 void EventGenerator::GestureTapAt(const gfx::Point& location) {
   const int kTouchId = 2;
-  ui::TouchEventImpl press(ui::ET_TOUCH_PRESSED, location, kTouchId,
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, location, kTouchId,
                            base::Time::NowFromSystemTime() - base::Time());
   Dispatch(press);
 
-  ui::TouchEventImpl release(
+  ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, location, kTouchId,
       press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
   Dispatch(release);
@@ -174,12 +174,12 @@ void EventGenerator::GestureTapAt(const gfx::Point& location) {
 
 void EventGenerator::GestureTapDownAndUp(const gfx::Point& location) {
   const int kTouchId = 3;
-  ui::TouchEventImpl press(
+  ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, location, kTouchId,
       base::Time::NowFromSystemTime() - base::Time());
   Dispatch(press);
 
-  ui::TouchEventImpl release(
+  ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, location, kTouchId,
       press.time_stamp() + base::TimeDelta::FromMilliseconds(1000));
   Dispatch(release);
@@ -191,7 +191,7 @@ void EventGenerator::GestureScrollSequence(const gfx::Point& start,
                                            int steps) {
   const int kTouchId = 5;
   base::TimeDelta timestamp = base::Time::NowFromSystemTime() - base::Time();
-  ui::TouchEventImpl press(ui::ET_TOUCH_PRESSED, start, kTouchId, timestamp);
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, kTouchId, timestamp);
   Dispatch(press);
 
   int dx = (end.x() - start.x()) / steps;
@@ -200,11 +200,11 @@ void EventGenerator::GestureScrollSequence(const gfx::Point& start,
   for (int i = 0; i < steps; ++i) {
     location.Offset(dx, dy);
     timestamp += step_delay;
-    ui::TouchEventImpl move(ui::ET_TOUCH_MOVED, location, kTouchId, timestamp);
+    ui::TouchEvent move(ui::ET_TOUCH_MOVED, location, kTouchId, timestamp);
     Dispatch(move);
   }
 
-  ui::TouchEventImpl release(ui::ET_TOUCH_RELEASED, end, kTouchId, timestamp);
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, end, kTouchId, timestamp);
   Dispatch(release);
 }
 
@@ -225,7 +225,7 @@ void EventGenerator::GestureMultiFingerScroll(int count,
   base::TimeDelta press_time = base::Time::NowFromSystemTime() - base::Time();
   for (int i = 0; i < count; ++i) {
     points[i] = start[i];
-    ui::TouchEventImpl press(ui::ET_TOUCH_PRESSED, points[i], i, press_time);
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, points[i], i, press_time);
     Dispatch(press);
   }
 
@@ -234,7 +234,7 @@ void EventGenerator::GestureMultiFingerScroll(int count,
         base::TimeDelta::FromMilliseconds(event_separation_time_ms * step);
     for (int i = 0; i < count; ++i) {
       points[i].Offset(delta_x, delta_y);
-      ui::TouchEventImpl move(ui::ET_TOUCH_MOVED, points[i], i, move_time);
+      ui::TouchEvent move(ui::ET_TOUCH_MOVED, points[i], i, move_time);
       Dispatch(move);
     }
   }
@@ -242,7 +242,7 @@ void EventGenerator::GestureMultiFingerScroll(int count,
   base::TimeDelta release_time = press_time +
       base::TimeDelta::FromMilliseconds(event_separation_time_ms * steps);
   for (int i = 0; i < count; ++i) {
-    ui::TouchEventImpl release(
+    ui::TouchEvent release(
         ui::ET_TOUCH_RELEASED, points[i], i, release_time);
     Dispatch(release);
   }
@@ -279,7 +279,7 @@ void EventGenerator::Dispatch(ui::Event& event) {
     case ui::ET_TOUCH_STATIONARY:
     case ui::ET_TOUCH_CANCELLED:
       root_window_->AsRootWindowHostDelegate()->OnHostTouchEvent(
-          static_cast<ui::TouchEventImpl*>(&event));
+          static_cast<ui::TouchEvent*>(&event));
       break;
     default:
       NOTIMPLEMENTED();
