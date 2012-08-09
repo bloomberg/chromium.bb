@@ -9,6 +9,50 @@
 
 namespace views {
 
+bool Menu::Delegate::IsItemChecked(int id) const {
+  return false;
+}
+
+bool Menu::Delegate::IsItemDefault(int id) const {
+  return false;
+}
+
+string16 Menu::Delegate::GetLabel(int id) const {
+  return string16();
+}
+
+bool Menu::Delegate::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
+  return false;
+}
+
+const gfx::ImageSkia& Menu::Delegate::GetIcon(int id) const {
+  return GetEmptyIcon();
+}
+
+int Menu::Delegate::GetItemCount() const {
+  return 0;
+}
+
+bool Menu::Delegate::IsItemSeparator(int id) const {
+  return false;
+}
+
+bool Menu::Delegate::HasIcon(int id) const {
+  return false;
+}
+
+bool Menu::Delegate::SupportsCommand(int id) const {
+  return true;
+}
+
+bool Menu::Delegate::IsCommandEnabled(int id) const {
+  return true;
+}
+
+bool Menu::Delegate::GetContextualLabel(int id, string16* out) const {
+  return false;
+}
+
 bool Menu::Delegate::IsRightToLeftUILayout() const {
   return base::i18n::IsRTL();
 }

@@ -38,42 +38,28 @@ class VIEWS_EXPORT Menu {
     virtual ~Delegate() {}
 
     // Whether or not an item should be shown as checked.
-    virtual bool IsItemChecked(int id) const {
-      return false;
-    }
+    virtual bool IsItemChecked(int id) const;
 
     // Whether or not an item should be shown as the default (using bold).
     // There can only be one default menu item.
-    virtual bool IsItemDefault(int id) const {
-      return false;
-    }
+    virtual bool IsItemDefault(int id) const;
 
     // The string shown for the menu item.
-    virtual string16 GetLabel(int id) const {
-      return string16();
-    }
+    virtual string16 GetLabel(int id) const;
 
     // The delegate needs to implement this function if it wants to display
     // the shortcut text next to each menu item. If there is an accelerator
     // for a given item id, the implementor must return it.
-    virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel) {
-      return false;
-    }
+    virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
     // The icon shown for the menu item.
-    virtual const gfx::ImageSkia& GetIcon(int id) const {
-      return GetEmptyIcon();
-    }
+    virtual const gfx::ImageSkia& GetIcon(int id) const;
 
     // The number of items to show in the menu
-    virtual int GetItemCount() const {
-      return 0;
-    }
+    virtual int GetItemCount() const;
 
     // Whether or not an item is a separator.
-    virtual bool IsItemSeparator(int id) const {
-      return false;
-    }
+    virtual bool IsItemSeparator(int id) const;
 
     // Shows the context menu with the specified id. This is invoked when the
     // user does the appropriate gesture to show a context menu. The id
@@ -89,9 +75,7 @@ class VIEWS_EXPORT Menu {
     }
 
     // Whether an item has an icon.
-    virtual bool HasIcon(int id) const {
-      return false;
-    }
+    virtual bool HasIcon(int id) const;
 
     // Notification that the menu is about to be popped up.
     virtual void MenuWillShow() {
@@ -108,15 +92,9 @@ class VIEWS_EXPORT Menu {
     virtual bool IsRightToLeftUILayout() const;
 
     // Controller
-    virtual bool SupportsCommand(int id) const {
-      return true;
-    }
-    virtual bool IsCommandEnabled(int id) const {
-      return true;
-    }
-    virtual bool GetContextualLabel(int id, string16* out) const {
-      return false;
-    }
+    virtual bool SupportsCommand(int id) const;
+    virtual bool IsCommandEnabled(int id) const;
+    virtual bool GetContextualLabel(int id, string16* out) const;
     virtual void ExecuteCommand(int id) {
     }
 
