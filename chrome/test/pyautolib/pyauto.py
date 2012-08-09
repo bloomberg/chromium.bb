@@ -84,6 +84,7 @@ import history_info
 import omnibox_info
 import plugins_info
 import prefs_info
+from pyauto_errors import JavascriptRuntimeError
 from pyauto_errors import JSONInterfaceError
 from pyauto_errors import NTPThumbnailNotShownError
 import pyauto_utils
@@ -3708,7 +3709,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       raise JSONInterfaceError('Failed to inject DOM mutation observer.')
     if jsreturn != 'success':
       self.RemoveEventObserver(observer_id)
-      raise pyauto_errors.JavascriptRuntimeError(jsreturn)
+      raise JavascriptRuntimeError(jsreturn)
     return observer_id
 
   def WaitForDomNode(self, xpath, attribute='textContent',
