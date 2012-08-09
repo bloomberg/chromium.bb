@@ -75,7 +75,7 @@ void StartSandboxOrDie(Sandbox::EvaluateSyscall evaluator) {
 
 void RunInSandbox(Sandbox::EvaluateSyscall evaluator,
                       void (*SandboxedCode)()) {
-  // TODO(jln): Implement IsEqual for ErrorCode
+  // TODO(markus): Implement IsEqual for ErrorCode
   // IsEqual(evaluator(__NR_exit_group), Sandbox::SB_ALLOWED) <<
   //    "You need to always allow exit_group() in your test policy";
   StartSandboxOrDie(evaluator);
@@ -97,6 +97,11 @@ void TryPolicyInProcess(Sandbox::EvaluateSyscall evaluator,
     EXPECT_EXIT(RunInSandbox(evaluator, SandboxedCode),
                 ::testing::ExitedWithCode(kExpectedReturnValue),
                 "");
+  } else {
+    // The sandbox is not available. We should still try to exercise what we
+    // can.
+    // TODO(markus): (crbug.com/141545) let us call the compiler from here.
+    Sandbox::setSandboxPolicy(evaluator, NULL);
   }
 }
 
