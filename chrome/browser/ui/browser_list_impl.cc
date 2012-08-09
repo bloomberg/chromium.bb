@@ -105,11 +105,6 @@ void BrowserListImpl::RemoveObserver(BrowserListObserver* observer) {
 }
 
 void BrowserListImpl::SetLastActive(Browser* browser) {
-  // If the browser is currently trying to quit, we don't want to set the last
-  // active browser because that can alter the last active browser that the user
-  // intended depending on the order in which the windows close.
-  if (browser_shutdown::IsTryingToQuit())
-    return;
   RemoveBrowserFrom(browser, &last_active_browsers_);
   last_active_browsers_.push_back(browser);
 
