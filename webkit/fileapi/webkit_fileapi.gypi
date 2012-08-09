@@ -30,6 +30,7 @@
         'file_system_directory_database.h',
         'file_system_file_stream_reader.cc',
         'file_system_file_stream_reader.h',
+        'file_system_file_util.cc',
         'file_system_file_util.h',
         'file_system_file_util_proxy.cc',
         'file_system_file_util_proxy.h',

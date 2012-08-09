@@ -1341,6 +1341,13 @@ QuotaManager::~QuotaManager() {
     db_thread_->DeleteSoon(FROM_HERE, database_.release());
 }
 
+QuotaManager::EvictionContext::EvictionContext()
+    : evicted_type(kStorageTypeUnknown) {
+}
+
+QuotaManager::EvictionContext::~EvictionContext() {
+}
+
 void QuotaManager::LazyInitialize() {
   DCHECK(io_thread_->BelongsToCurrentThread());
   if (database_.get()) {

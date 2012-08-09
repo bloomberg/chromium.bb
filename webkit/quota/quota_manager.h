@@ -253,8 +253,8 @@ class QuotaManager : public QuotaTaskObserver,
       DumpOriginInfoTableCallback;
 
   struct EvictionContext {
-    EvictionContext() : evicted_type(kStorageTypeUnknown) {}
-    virtual ~EvictionContext() {}
+    EvictionContext();
+    virtual ~EvictionContext();
     GURL evicted_origin;
     StorageType evicted_type;
 

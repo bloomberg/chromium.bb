@@ -118,6 +118,11 @@ std::vector<std::string> TestShell::js_flags_;
 bool TestShell::accelerated_2d_canvas_enabled_ = false;
 bool TestShell::accelerated_compositing_enabled_ = false;
 
+TestShell::TestParams::TestParams()
+    : dump_tree(true),
+      dump_pixels(false) {
+}
+
 TestShell::TestShell()
     : m_mainWnd(NULL),
       m_editWnd(NULL),

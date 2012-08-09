@@ -48,8 +48,7 @@ class TestShell : public base::SupportsWeakPtr<TestShell>  {
 public:
     struct TestParams {
       // Load the test defaults.
-      TestParams() : dump_tree(true), dump_pixels(false) {
-      }
+      TestParams();
 
       // The kind of output we want from this test.
       bool dump_tree;

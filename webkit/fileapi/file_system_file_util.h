@@ -61,10 +61,10 @@ class FILEAPI_EXPORT FileSystemFileUtil {
   };
 
   class EmptyFileEnumerator : public AbstractFileEnumerator {
-    virtual FilePath Next() OVERRIDE { return FilePath(); }
-    virtual int64 Size() OVERRIDE { return 0; }
-    virtual base::Time LastModifiedTime() OVERRIDE { return base::Time(); }
-    virtual bool IsDirectory() OVERRIDE { return false; }
+    virtual FilePath Next() OVERRIDE;
+    virtual int64 Size() OVERRIDE;
+    virtual base::Time LastModifiedTime() OVERRIDE;
+    virtual bool IsDirectory() OVERRIDE;
   };
 
   virtual ~FileSystemFileUtil() {}

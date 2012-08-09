@@ -243,6 +243,22 @@ int AppCacheDiskCache::DoomEntry(int64 key,
   return (new ActiveCall(this))->DoomEntry(key, callback);
 }
 
+AppCacheDiskCache::PendingCall::PendingCall()
+    : call_type(CREATE),
+      key(0),
+      entry(NULL) {
+}
+
+AppCacheDiskCache::PendingCall::PendingCall(PendingCallType call_type,
+    int64 key,
+    Entry** entry,
+    const net::CompletionCallback& callback)
+    : call_type(call_type),
+      key(key),
+      entry(entry),
+      callback(callback) {
+}
+
 AppCacheDiskCache::PendingCall::~PendingCall() {}
 
 int AppCacheDiskCache::Init(net::CacheType cache_type,
@@ -304,4 +320,3 @@ void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
 }
 
 }  // namespace appcache
-

@@ -34,6 +34,16 @@ namespace quota {
 const int QuotaTemporaryStorageEvictor::
     kMinAvailableDiskSpaceToStartEvictionNotSpecified = -1;
 
+QuotaTemporaryStorageEvictor::EvictionRoundStatistics::EvictionRoundStatistics()
+    : in_round(false),
+      is_initialized(false),
+      usage_overage_at_round(-1),
+      diskspace_shortage_at_round(-1),
+      usage_on_beginning_of_round(-1),
+      usage_on_end_of_round(-1),
+      num_evicted_origins_in_round(0) {
+}
+
 QuotaTemporaryStorageEvictor::QuotaTemporaryStorageEvictor(
     QuotaEvictionHandler* quota_eviction_handler,
     int64 interval_ms)
