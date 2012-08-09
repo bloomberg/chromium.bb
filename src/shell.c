@@ -82,6 +82,7 @@ struct desktop_shell {
 	struct weston_layer panel_layer;
 	struct weston_layer background_layer;
 	struct weston_layer lock_layer;
+	struct weston_layer input_panel_layer;
 
 	struct wl_listener pointer_focus_listener;
 	struct weston_surface *grab_surface;
@@ -96,6 +97,7 @@ struct desktop_shell {
 	} child;
 
 	bool locked;
+	bool showing_input_panels;
 	bool prepare_event_sent;
 
 	struct weston_surface *lock_surface;
@@ -2011,7 +2013,14 @@ resume_desktop(struct desktop_shell *shell)
 		       &shell->fullscreen_layer.link);
 	wl_list_insert(&shell->fullscreen_layer.link,
 		       &shell->panel_layer.link);
-	wl_list_insert(&shell->panel_layer.link, &ws->layer.link);
+	if (shell->showing_input_panels) {
+		wl_list_insert(&shell->panel_layer.link,
+			       &shell->input_panel_layer.link);
+		wl_list_insert(&shell->input_panel_layer.link,
+			       &ws->layer.link);
+	} else {
+		wl_list_insert(&shell->panel_layer.link, &ws->layer.link);
+	}
 
 	restore_focus_state(shell, get_current_workspace(shell));
 
@@ -2473,6 +2482,8 @@ lock(struct wl_listener *listener, void *data)
 
 	wl_list_remove(&shell->panel_layer.link);
 	wl_list_remove(&shell->fullscreen_layer.link);
+	if (shell->showing_input_panels)
+		wl_list_remove(&shell->input_panel_layer.link);
 	wl_list_remove(&ws->layer.link);
 	wl_list_insert(&shell->compositor->cursor_layer.link,
 		       &shell->lock_layer.link);
@@ -2512,14 +2523,20 @@ static void
 show_input_panels(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
-		container_of(listener, struct desktop_shell, show_input_panel_listener);
+		container_of(listener, struct desktop_shell,
+			     show_input_panel_listener);
 	struct input_panel_surface *surface, *next;
 	struct weston_surface *ws;
+
+	shell->showing_input_panels = true;
+
+	wl_list_insert(&shell->panel_layer.link,
+		       &shell->input_panel_layer.link);
 
 	wl_list_for_each_safe(surface, next,
 			      &shell->input_panel.surfaces, link) {
 		ws = surface->surface;
-		wl_list_insert(&shell->panel_layer.surface_list,
+		wl_list_insert(&shell->input_panel_layer.surface_list,
 			       &ws->layer_link);
 		weston_surface_assign_output(ws);
 		weston_surface_damage(ws);
@@ -2528,19 +2545,20 @@ show_input_panels(struct wl_listener *listener, void *data)
 }
 
 static void
-input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy);
-
-static void
 hide_input_panels(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
-		container_of(listener, struct desktop_shell, hide_input_panel_listener);
+		container_of(listener, struct desktop_shell,
+			     hide_input_panel_listener);
 	struct weston_surface *surface, *next;
 
+	shell->showing_input_panels = false;
+
+	wl_list_remove(&shell->input_panel_layer.link);
+
 	wl_list_for_each_safe(surface, next,
-			      &shell->panel_layer.surface_list, layer_link)
-		if (surface->configure == input_panel_configure)
-			weston_surface_unmap(surface);
+			      &shell->input_panel_layer.surface_list, layer_link)
+		weston_surface_unmap(surface);
 }
 
 static void
@@ -3375,6 +3393,7 @@ shell_init(struct weston_compositor *ec)
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
 	weston_layer_init(&shell->background_layer, &shell->panel_layer.link);
 	weston_layer_init(&shell->lock_layer, NULL);
+	weston_layer_init(&shell->input_panel_layer, NULL);
 
 	wl_array_init(&shell->workspaces.array);
 
