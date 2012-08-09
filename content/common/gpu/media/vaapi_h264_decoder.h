@@ -333,6 +333,7 @@ class VaapiH264Decoder {
   VAConfigID va_config_id_;
   VAContextID va_context_id_;
   VAProfile profile_;
+  bool va_context_created_;
 
   // Allocated VASurfaces.
   VASurfaceID va_surface_ids_[kNumReqPictures];

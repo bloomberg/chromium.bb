@@ -323,6 +323,7 @@ VaapiH264Decoder::VaapiH264Decoder() {
   max_pic_order_cnt_lsb_ = 0;
   state_ = kUninitialized;
   num_available_decode_surfaces_ = 0;
+  va_context_created_ = false;
 }
 
 VaapiH264Decoder::~VaapiH264Decoder() {
@@ -584,6 +585,8 @@ bool VaapiH264Decoder::CreateVASurfaces() {
     return false;
   }
 
+  va_context_created_ = true;
+
   return true;
 }
 
@@ -591,12 +594,18 @@ void VaapiH264Decoder::DestroyVASurfaces() {
   DCHECK(state_ == kDecoding || state_ == kError || state_ == kAfterReset);
   decode_surfaces_.clear();
 
+  // This can happen if we fail during DecodeInitial.
+  if (!va_context_created_)
+    return;
+
   VAStatus va_res = VAAPI_DestroyContext(va_display_, va_context_id_);
   VA_LOG_ON_ERROR(va_res, "vaDestroyContext failed");
 
   va_res = VAAPI_DestroySurfaces(va_display_, va_surface_ids_,
                                  GetRequiredNumOfPictures());
   VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces failed");
+
+  va_context_created_ = false;
 }
 
 void VaapiH264Decoder::DestroyPendingBuffers() {
