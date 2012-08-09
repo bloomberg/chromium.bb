@@ -117,6 +117,8 @@ void DuplicateContentResourceHandler::RecordContentMetrics() {
   UMA_HISTOGRAM_BOOLEAN("Duplicate.Hits", did_match_contents);
   UMA_HISTOGRAM_BOOLEAN("Duplicate.HitsSameUrl",
                          did_match_contents && did_match_contents_and_url);
+  UMA_HISTOGRAM_ENUMERATION("Duplicate.ResourceType.All", resource_type_,
+                             ResourceType::LAST_TYPE);
   if (did_match_contents && !did_match_contents_and_url) {
     content_and_url_matches->insert(hashed_with_url);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Duplicate.Size.HashHitUrlMiss", bytes_read_,
