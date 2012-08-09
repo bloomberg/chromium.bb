@@ -82,7 +82,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // Sets the url, and if known, the title and favicon.
   void GetDataForURLExport(GURL* url, string16* title, SkBitmap* favicon);
 
-  // Returns true if a verbatim query should be used for instant. A verbatim
+  // Returns true if a verbatim query should be used for Instant. A verbatim
   // query is forced in certain situations, such as pressing delete at the end
   // of the edit.
   bool UseVerbatimInstant();
@@ -137,8 +137,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
                             bool skip_inline_autocomplete);
 
   // Sets the suggestion text.
-  void SetSuggestedText(const string16& text,
-                        InstantCompleteBehavior behavior);
+  void SetSuggestedText(const string16& text, InstantCompleteBehavior behavior);
 
   // Commits the suggested text. If |skip_inline_autocomplete| is true then the
   // suggested text will be committed as final text as if it's inputted by the
@@ -147,11 +146,11 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // TODO: can the return type be void?
   bool CommitSuggestedText(bool skip_inline_autocomplete);
 
-  // Accepts the currently showing instant preview, if any, and returns true.
-  // Returns false if there is no instant preview showing.
+  // Accepts the currently showing Instant preview, if any, and returns true.
+  // Returns false if there is no Instant preview showing.
   bool AcceptCurrentInstantPreview();
 
-  // Invoked any time the text may have changed in the edit. Updates instant and
+  // Invoked any time the text may have changed in the edit. Updates Instant and
   // notifies the controller.
   void OnChanged();
 
@@ -277,12 +276,6 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // Invoked when the popup is going to change its bounds to |bounds|.
   void PopupBoundsChangedTo(const gfx::Rect& bounds);
 
-#if defined(UNIT_TEST)
-  InstantCompleteBehavior instant_complete_behavior() const {
-    return instant_complete_behavior_;
-  }
-#endif
-
  private:
   enum PasteState {
     NONE,           // Most recent edit was not a paste.
@@ -373,9 +366,13 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // Notifies the SearchTabHelper that autocomplete state has changed.
   void NotifySearchTabHelper();
 
-  // Tries to start an instant preview for |match|. Returns true if instant
-  // processed the match.
-  bool DoInstant(const AutocompleteMatch& match, string16* suggested_text);
+  // Tries to start an Instant preview for |match|. Returns true if Instant
+  // processed the match. |suggested_text| should initially contain the current
+  // inline autocomplete text. Instant will replace it with new suggested text
+  // and set |complete_behavior| accordingly.
+  bool DoInstant(const AutocompleteMatch& match,
+                 string16* suggested_text,
+                 InstantCompleteBehavior* complete_behavior);
 
   // Starts a prerender for the given |match|.
   void DoPrerender(const AutocompleteMatch& match);
@@ -497,7 +494,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   Profile* profile_;
 
   // This is needed as prior to accepting the current text the model is
-  // reverted, which triggers resetting instant. We don't want to update instant
+  // reverted, which triggers resetting Instant. We don't want to update Instant
   // in this case, so we use the flag to determine if this is happening.
   bool in_revert_;
 
@@ -507,9 +504,6 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // allow this when CreatedKeywordSearchByInsertingSpaceInMiddle() is true.
   // This has no effect if we're already in keyword mode.
   bool allow_exact_keyword_match_;
-
-  // Last value of InstantCompleteBehavior supplied to |SetSuggestedText|.
-  InstantCompleteBehavior instant_complete_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxEditModel);
 };

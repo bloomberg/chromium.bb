@@ -269,19 +269,15 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_HandleMessageFromExternalHost,
 IPC_MESSAGE_ROUTED4(ChromeViewMsg_SearchBoxChange,
                     string16 /* value */,
                     bool /* verbatim */,
-                    int /* selection_start */,
-                    int /* selection_end */)
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_SearchBoxSubmit,
-                    string16 /* value */,
-                    bool /* verbatim */)
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_SearchBoxCancel)
+                    size_t /* selection_start */,
+                    size_t /* selection_end */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
+                    string16 /* value */)
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxCancel,
+                    string16 /* value */)
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxResize,
                     gfx::Rect /* search_box_bounds */)
-IPC_MESSAGE_ROUTED4(ChromeViewMsg_DetermineIfPageSupportsInstant,
-                    string16 /* value*/,
-                    bool /* verbatim */,
-                    int /* selection_start */,
-                    int /* selection_end */)
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
 
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.
@@ -604,14 +600,17 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_FocusedEditableNodeTouched)
 
 // Suggest results -----------------------------------------------------------
 
+// Sent by the Instant preview to populate the omnibox with query suggestions.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SetSuggestions,
-                    int32 /* page_id */,
-                    std::vector<std::string> /* suggestions */,
-                    InstantCompleteBehavior)
+                    int /* page_id */,
+                    std::vector<string16> /* suggestions */,
+                    InstantCompleteBehavior /* behavior */)
 
+// Sent by the Instant preview indicating whether the page supports the Instant
+// API or not (http://dev.chromium.org/searchbox).
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
-                    int32 /* page_id */,
-                    bool  /* result */)
+                    int /* page_id */,
+                    bool /* result */)
 
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)

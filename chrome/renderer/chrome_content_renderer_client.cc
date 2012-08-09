@@ -59,7 +59,6 @@
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
-#include "chrome/renderer/search_extension.h"
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
@@ -178,10 +177,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
   thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
-  v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
-  // search_extension is null if not enabled.
-  if (search_extension)
-    thread->RegisterExtension(search_extension);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableBenchmarking))

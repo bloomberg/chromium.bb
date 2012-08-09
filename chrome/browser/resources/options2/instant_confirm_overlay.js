@@ -32,7 +32,8 @@ cr.define('options', function() {
     /** @inheritDoc */
     handleConfirm: function() {
       SettingsDialog.prototype.handleConfirm.call(this);
-      chrome.send('enableInstant');
+      Preferences.setBooleanPref('instant.confirm_dialog_shown', true);
+      Preferences.setBooleanPref('instant.enabled', true);
     },
 
     /** @inheritDoc */

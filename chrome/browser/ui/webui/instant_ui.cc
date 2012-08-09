@@ -5,14 +5,11 @@
 #include "chrome/browser/ui/webui/instant_ui.h"
 
 #include "base/bind.h"
-#include "base/values.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
 
@@ -50,7 +47,7 @@ class InstantUIMessageHandler
   void GetPreferenceValue(const base::ListValue* args);
   void SetPreferenceValue(const base::ListValue* args);
 
-  // Slows down instant animations by a time factor.
+  // Slows down Instant animations by a time factor.
   static int slow_animation_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantUIMessageHandler);
@@ -115,8 +112,7 @@ void InstantUIMessageHandler::SetPreferenceValue(const base::ListValue* args) {
 ////////////////////////////////////////////////////////////////////////////////
 // InstantUI
 
-InstantUI::InstantUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
+InstantUI::InstantUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new InstantUIMessageHandler());
 
   // Set up the chrome://instant/ source.

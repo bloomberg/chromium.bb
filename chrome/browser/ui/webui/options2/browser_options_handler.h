@@ -88,10 +88,6 @@ class BrowserOptionsHandler
   // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const base::ListValue* args);
 
-  // Enables/disables Instant.
-  void EnableInstant(const base::ListValue* args);
-  void DisableInstant(const base::ListValue* args);
-
   // Enables/disables auto-launching of Chrome on computer startup.
   void ToggleAutoLaunch(const base::ListValue* args);
 

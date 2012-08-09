@@ -13,7 +13,7 @@ class TabContents;
 
 // InstantUnloadHandler ensures that the beforeunload and unload handlers are
 // run when using Instant. When the user commits the Instant preview the
-// existing TabContents is passed to |RunUnloadListenersOrDestroy|. If the tab
+// existing TabContents is passed to RunUnloadListenersOrDestroy(). If the tab
 // has no beforeunload or unload listeners, the tab is deleted; otherwise the
 // beforeunload and unload listeners are executed. If the beforeunload listener
 // shows a dialog the tab is added back to the tabstrip at its original location

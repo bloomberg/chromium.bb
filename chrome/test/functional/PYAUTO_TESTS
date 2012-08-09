@@ -150,12 +150,6 @@
       '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
       # crbug.com/124280
       '-downloads.DownloadsTest.testPauseAndResume',
-      # crbug.com/137042
-      '-instant.InstantTest.testFindInCanDismissInstant',
-      '-instant.InstantTest.testInstantLoadsFor100CharsLongQuery',
-      '-instant.InstantTest.testInstantNavigation',
-      '-instant.InstantTest.testNTPCanDismissInstant',
-      '-instant.InstantTest.testNewWindowCanDismissInstant',
 
       # Mysteriously broken?
       # crbug.com/138857
@@ -285,8 +279,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/85310
-      '-instant',
       # crbug.com/91033
       '-omnibox.OmniboxTest.testOmniboxSearchHistory',
       # crbug.com/103379
@@ -380,8 +372,6 @@
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/109035
       '-infobars.InfobarTest.testPluginCrashInfobar',
-      # Flaky: crosbug.com/14439
-      '-instant',
       # crosbug.com/14256
       '-ntp.NTPTest.testLaunchAppFullScreen',
       # Content history broken in omnibox.  crosbug.com/14416
@@ -578,7 +568,6 @@
       # Add back the omnibox tests excluded from the CONTINUOUS suite above
       # because they do not produce omnibox results under virtual X on linux.
       # crbug.com/85310
-      'instant',
       'omnibox.OmniboxTest.testAppComboNameWithSpecialCharSearch',
       'omnibox.OmniboxTest.testAppNameWithNumberSearch',
       'omnibox.OmniboxTest.testAppNameWithSpaceSearch',
@@ -609,9 +598,6 @@
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerBytes',
       '-youtube.YoutubeTest.testPlayerResolution',
-      # crbug.com/135211
-      '-instant.InstantTest.testExtnPageCanDismissInstant',
-      '-instant.InstantSettingsTest.testEnableDisableInstant',
     ],
 
     'chromeos': [

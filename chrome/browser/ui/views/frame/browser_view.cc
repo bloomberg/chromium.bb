@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/ntp_background_util.h"

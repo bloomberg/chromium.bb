@@ -7,15 +7,12 @@
 
 // Reason why the Instant preview is committed (merged into a tab).
 enum InstantCommitType {
-  // The commit is due to the user pressing enter or tab from the omnibox.
+  // The commit is due to the user pressing Enter from the omnibox.
   INSTANT_COMMIT_PRESSED_ENTER,
 
   // The commit is due to the omnibox losing focus, usually due to the user
   // clicking on the preview.
   INSTANT_COMMIT_FOCUS_LOST,
-
-  // Used internally by InstantController.
-  INSTANT_COMMIT_DESTROY
 };
 
 #endif  // CHROME_BROWSER_INSTANT_INSTANT_COMMIT_TYPE_H_

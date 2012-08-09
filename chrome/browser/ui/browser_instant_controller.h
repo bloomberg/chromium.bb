@@ -5,17 +5,31 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_INSTANT_CONTROLLER_H_
 #define CHROME_BROWSER_UI_BROWSER_INSTANT_CONTROLLER_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/instant/instant_controller_delegate.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/common/instant_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
 class InstantController;
+class InstantTest;
 class InstantUnloadHandler;
 class TabContents;
+
+namespace content {
+class NotificationDetails;
+class NotificationSource;
+}
+
+namespace gfx {
+class Rect;
+}
 
 namespace chrome {
 
@@ -26,7 +40,7 @@ class BrowserInstantController : public InstantControllerDelegate,
   explicit BrowserInstantController(Browser* browser);
   virtual ~BrowserInstantController();
 
-  // Commits the current instant, returning true on success. This is intended
+  // Commits the current Instant, returning true on success. This is intended
   // for use from OpenCurrentURL.
   bool OpenInstant(WindowOpenDisposition disposition);
 
@@ -36,14 +50,14 @@ class BrowserInstantController : public InstantControllerDelegate,
 
  private:
   // Overridden from InstantControllerDelegate:
-  virtual void ShowInstant(TabContents* preview_contents) OVERRIDE;
+  virtual void ShowInstant() OVERRIDE;
   virtual void HideInstant() OVERRIDE;
-  virtual void CommitInstant(TabContents* preview_contents) OVERRIDE;
+  virtual void CommitInstant(TabContents* preview) OVERRIDE;
   virtual void SetSuggestedText(const string16& text,
                                 InstantCompleteBehavior behavior) OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual void InstantPreviewFocused() OVERRIDE;
-  virtual TabContents* GetInstantHostTabContents() const OVERRIDE;
+  virtual TabContents* GetActiveTabContents() const OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -53,8 +67,9 @@ class BrowserInstantController : public InstantControllerDelegate,
   // Overridden from TabStripModelObserver:
   virtual void TabDeactivated(TabContents* contents) OVERRIDE;
 
-  // If this browser should have instant one is created, otherwise does nothing.
-  void CreateInstantIfNecessary();
+  // If this browser should have Instant, a new InstantController created;
+  // otherwise any existing InstantController is destroyed.
+  void ResetInstant();
 
   Browser* browser_;
 

@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -1228,7 +1227,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
       return true;
     }
 
-    // Tab while showing instant commits instant immediately.
+    // Tab while showing Instant commits instant immediately.
     // Return true so that focus traversal isn't attempted. The edit ends
     // up doing nothing in this case.
     if (location_entry_->model()->AcceptCurrentInstantPreview())

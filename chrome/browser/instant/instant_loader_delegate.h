@@ -5,51 +5,41 @@
 #ifndef CHROME_BROWSER_INSTANT_INSTANT_LOADER_DELEGATE_H_
 #define CHROME_BROWSER_INSTANT_INSTANT_LOADER_DELEGATE_H_
 
+#include <vector>
+
 #include "base/string16.h"
 #include "chrome/common/instant_types.h"
 
-class GURL;
-
-namespace gfx {
-class Rect;
-}
-
 class InstantLoader;
 
-// InstantLoader's delegate. This interface is implemented by InstantController.
+// InstantLoader calls these methods on its delegate (InstantController)
+// to notify it of interesting events happening on the Instant preview.
 class InstantLoaderDelegate {
  public:
-  // Invoked when the status (either http_status_ok or ready) has changed.
-  virtual void InstantStatusChanged(InstantLoader* loader) = 0;
-
   // Invoked when the loader has suggested text.
-  virtual void SetSuggestedTextFor(
+  virtual void SetSuggestions(
       InstantLoader* loader,
-      const string16& text,
+      const std::vector<string16>& suggestions,
       InstantCompleteBehavior behavior) = 0;
 
-  // Returns the bounds of instant.
-  virtual gfx::Rect GetInstantBounds() = 0;
-
-  // Returns true if instant should be committed on mouse up or at the end of a
-  // touch-gesture.
-  virtual bool ShouldCommitInstantOnPointerRelease() = 0;
-
-  // Invoked when the the loader should be committed.
+  // Commit the preview.
   virtual void CommitInstantLoader(InstantLoader* loader) = 0;
 
-  // Invoked if the loader was created with the intention that the site supports
-  // instant, but it turned out the site doesn't support instant.
-  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader) = 0;
+  // Notification that the first page load (of the Instant URL) completed.
+  virtual void InstantLoaderPreviewLoaded(InstantLoader* loader) = 0;
 
-  // Adds the specified url to the set of urls instant won't prefetch for.
-  virtual void AddToBlacklist(InstantLoader* loader, const GURL& url) = 0;
+  // Notification when the loader has determined whether or not the page
+  // supports the Instant API.
+  virtual void InstantSupportDetermined(InstantLoader* loader,
+                                        bool supports_instant) = 0;
 
-  // Invoked if the loader swaps to a different WebContents.
+  // Notification that the loader swapped a different TabContents into the
+  // preview, usually because a prerendered page was navigated to.
   virtual void SwappedTabContents(InstantLoader* loader) = 0;
 
-  // Invoked when the webcontents created by the loader is focused.
-  virtual void InstantLoaderContentsFocused() = 0;
+  // Notification that the preview gained focus, usually due to the user
+  // clicking on it.
+  virtual void InstantLoaderContentsFocused(InstantLoader* loader) = 0;
 
  protected:
   virtual ~InstantLoaderDelegate() {}

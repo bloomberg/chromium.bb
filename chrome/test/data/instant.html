@@ -1,50 +1,45 @@
-<html>
-<body>
-<h1>Instant</h1>
-<script>
-window.chrome.sv = true;
+<html><body><h1>Instant</h1><script>
 
-window.onsubmitcalls = 0;
-window.onchangecalls = 0;
-window.oncancelcalls = 0;
-window.onresizecalls = 0;
+var onchangecalls = 0;
+var onsubmitcalls = 0;
+var oncancelcalls = 0;
+var onresizecalls = 0;
 
-Object.prototype.clone = function() {
-  var copy = {};
-  for (var prop in this) copy[prop] = this[prop];
-  return copy;
+var value = "";
+var verbatim = false;
+var height = 0;
+
+var suggestion = [ { value: "query suggestion" } ];
+var behavior = "now";
+
+chrome.searchBox.onchange = function() {
+  onchangecalls++;
+  value = chrome.searchBox.value;
+  verbatim = chrome.searchBox.verbatim;
+  chrome.searchBox.setSuggestions({
+    suggestions: suggestion,
+    complete_behavior: behavior
+  });
 };
 
-window.beforeLoadSearchBox = window.chrome.searchBox.clone();
-window.lastSearchBox = window.chrome.searchBox.clone();
-
-window.setSuggestionsArgument = {
-  suggestions: [
-    { value: "defghi" }
-  ]
+chrome.searchBox.onsubmit = function() {
+  onsubmitcalls++;
+  value = chrome.searchBox.value;
+  verbatim = chrome.searchBox.verbatim;
 };
 
-window.chrome.searchBox.onsubmit = function() {
-  window.chrome.searchBox.setSuggestions(setSuggestionsArgument);
-  window.lastSearchBox = window.chrome.searchBox.clone();
-  window.onsubmitcalls++;
+chrome.searchBox.oncancel = function() {
+  oncancelcalls++;
+  value = chrome.searchBox.value;
+  verbatim = chrome.searchBox.verbatim;
 };
 
-window.chrome.searchBox.onchange = function() {
-  window.chrome.searchBox.setSuggestions(setSuggestionsArgument);
-  window.lastSearchBox = window.chrome.searchBox.clone();
-  window.onchangecalls++;
+chrome.searchBox.onresize = function() {
+  onresizecalls++;
+  height = chrome.searchBox.height;
 };
 
-window.chrome.searchBox.oncancel = function() {
-  window.chrome.searchBox.setSuggestions(setSuggestionsArgument);
-  window.lastSearchBox = window.chrome.searchBox.clone();
-  window.oncancelcalls++;
-};
+if (chrome.searchBox.value != "")
+  chrome.searchBox.onchange();
 
-window.chrome.searchBox.onresize = function() {
-  window.onresizecalls++;
-};
-</script>
-</body>
-</html>
+</script></body></html>

@@ -23,7 +23,6 @@
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -431,14 +430,6 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setDefaultSearchEngine",
       base::Bind(&BrowserOptionsHandler::SetDefaultSearchEngine,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "enableInstant",
-      base::Bind(&BrowserOptionsHandler::EnableInstant,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "disableInstant",
-      base::Bind(&BrowserOptionsHandler::DisableInstant,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "createProfile",
@@ -877,14 +868,6 @@ void BrowserOptionsHandler::Observe(
   } else {
     NOTREACHED();
   }
-}
-
-void BrowserOptionsHandler::EnableInstant(const ListValue* args) {
-  InstantController::Enable(Profile::FromWebUI(web_ui()));
-}
-
-void BrowserOptionsHandler::DisableInstant(const ListValue* args) {
-  InstantController::Disable(Profile::FromWebUI(web_ui()));
 }
 
 void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {

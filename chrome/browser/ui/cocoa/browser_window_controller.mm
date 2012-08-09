@@ -1920,8 +1920,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (void)commitInstant {
   InstantController* instant = browser_->instant_controller()->instant();
-  if (instant)
-    instant->CommitIfCurrent();
+  if (instant && instant->IsCurrent())
+    instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 

@@ -254,8 +254,6 @@
         'renderer/safe_browsing/phishing_url_feature_extractor.h',
         'renderer/safe_browsing/scorer.cc',
         'renderer/safe_browsing/scorer.h',
-        'renderer/search_extension.cc',
-        'renderer/search_extension.h',
         'renderer/searchbox.cc',
         'renderer/searchbox.h',
         'renderer/searchbox_extension.cc',

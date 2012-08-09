@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/render_view_host.h"
@@ -99,11 +98,7 @@ void InstantUnloadHandler::Activate(WebContentsDelegateImpl* delegate) {
   params.tabstrip_index = delegate->index();
 
   // Remove (and delete) the delegate.
-  ScopedVector<WebContentsDelegateImpl>::iterator i =
-      std::find(delegates_.begin(), delegates_.end(), delegate);
-  DCHECK(i != delegates_.end());
-  delegates_.erase(i);
-  delegate = NULL;
+  Destroy(delegate);
 
   // Add the tab back in.
   chrome::Navigate(&params);

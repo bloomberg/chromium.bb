@@ -170,15 +170,11 @@ cr.define('options', function() {
       $('default-search-engine').addEventListener('change',
           this.setDefaultSearchEngine_);
       $('instant-enabled-control').customChangeHandler = function(event) {
-        if (this.checked) {
-          if (self.instantConfirmDialogShown_)
-            chrome.send('enableInstant');
-          else
-            OptionsPage.showPageByName('instantConfirm', false);
-        } else {
-          chrome.send('disableInstant');
+        if (this.checked && !self.instantConfirmDialogShown_) {
+          OptionsPage.showPageByName('instantConfirm', false);
+          return true;  // Stop default preference processing.
         }
-        return true;
+        return false;  // Allow default preference processing.
       };
       Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
           this.onInstantConfirmDialogShownChanged_.bind(this));
