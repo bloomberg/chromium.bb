@@ -1,0 +1,335 @@
+#!/usr/bin/python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file records third-party licensing information for the purposes of the
+# Android WebView build. See webview_licenses.py for details.
+#
+# New third-party code should be added under a directory named 'third_party',
+# so additions to this file should be rare. See
+# http://www.chromium.org/developers/adding-3rd-party-libraries.
+
+# Chromium OS license file.
+LICENSE.chromium_os
+# String 'copyright' used in app properties.
+ash/shell/cocoa/app-Info.plist
+# String 'copyright' used in code.
+base/file_version_info.h
+# String 'copyright' used in code.
+base/file_version_info_mac.h
+# String 'copyright' used in code.
+base/file_version_info_mac.mm
+# String 'copyright' used in code.
+base/file_version_info_unittest.cc
+# String 'copyright' used in code.
+base/file_version_info_win.cc
+# String 'copyright' used in code.
+base/file_version_info_win.h
+# Copyright IBM; MIT license. This third-party code is taken from ICU, the
+# license for which we already pick up from third_party/icu/.
+base/i18n/icu_string_conversions.cc
+# Copyright Ron Rivest, public domain.
+base/md5.cc
+# Copyright The Chromium Authors and The Free Software Foundation; GPL v3
+# license. Not used on Android. TODO(steveblock): Exclude this from the WebView
+# snapshot (https://chromiumcodereview.appspot.com/10695024).
+build/gdb-add-index
+# String 'copyright' used in resources.
+chrome/app/chrome_version.rc.version
+# String 'copyright' used in resources.
+chrome/app/chromium_strings.grd
+# String 'copyright' used in resources.
+chrome/app/generated_resources.grd
+# String 'copyright' used in resources.
+chrome/app/google_chrome_strings.grd
+# String 'copyright' used in resources.
+chrome/app/theme/chromium/BRANDING
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. This third-party code is taken from Mozilla, the license for which
+# we already pick up from third_party/npapi/.
+chrome/browser/download/download_extensions.cc
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/firefox_profile_lock.cc
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/firefox_profile_lock.h
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/firefox_profile_lock_posix.cc
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/firefox_profile_lock_win.cc
+# Copyright Google Inc; MPL, GPL v2 or LGPL v2 license. Not used on Android.
+chrome/browser/importer/mork_reader.cc
+# Copyright Google Inc; MPL, GPL v2 or LGPL v2 license. Not used on Android.
+chrome/browser/importer/mork_reader.h
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/nss_decryptor.cc
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/nss_decryptor_mac.h
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/nss_decryptor_system_nss.cc
+# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
+# license. Not used on Android.
+chrome/browser/importer/nss_decryptor_win.h
+# Credits notice for Chrome.
+chrome/browser/resources/about_credits.html
+# String 'copyright' used in code.
+chrome/browser/resources/about_version.html
+# Credits notice for ChromeOS.
+chrome/browser/resources/chromeos/about_os_credits.html
+# String 'copyright' used in code.
+chrome/browser/resources/file_manager/js/image_editor/gallery_scripts.js
+# String 'copyright' used in code.
+chrome/browser/resources/file_manager/js/main_scripts.js
+# String 'copyright' used in code.
+chrome/browser/resources/file_manager/js/media/mediaplayer_scripts.js
+# String 'copyright' used in code.
+chrome/browser/resources/file_manager/js/media/video_player_scripts.js
+# String 'copyright' used in code.
+chrome/browser/resources/file_manager/js/mock_chrome.js
+# String 'copyright' used in code.
+chrome/browser/resources/file_manager/js/photo/photo_import_scripts.js
+# String 'copyright' used in code.
+chrome/browser/resources/help/help.html
+# String 'copyright' used in code.
+chrome/browser/resources/shared/css/about_version.css
+# String 'copyright' used in code.
+chrome/browser/ui/webui/about_ui.cc
+# String 'copyright' used in code.
+chrome/browser/ui/webui/help/help_handler.cc
+# Copyright Google Inc; no license. Example code only.
+chrome_frame/cfinstall/examples/jquery.html
+# Copyright Google Inc; no license. Example code only.
+chrome_frame/cfinstall/examples/local_testing.html
+# Copyright Google Inc; no license. Example code only.
+chrome_frame/cfinstall/examples/simple.html
+# Copyright The Chromium Authors and The Dojo Foundation; BSD license. Not used
+# on Android.
+chrome_frame/CFInstance.js
+# String 'copyright' used in resources.
+chrome_frame/chrome_frame_helper_version.rc
+# String 'copyright' used in resources.
+chrome_frame/chrome_launcher_version.rc
+# String 'copyright' used in resources.
+chrome_frame/chrome_tab_version.rc
+# Copyright Mark Mentovai; MPL, GPL v2 or LGPL v2 license. Not used on Android.
+chrome/installer/mac/pkg-dmg
+# String 'copyright' used in resources.
+chrome/installer/mini_installer/mini_installer_exe_version.rc.version
+# String 'copyright' used in resources.
+chrome/installer/setup/setup_exe_version.rc.version
+# String 'copyright' used in code.
+chrome/tools/convert_dict/aff_reader.h
+# String 'copyright' used in code.
+chrome/tools/mac_helpers/infoplist_strings_util.mm
+# Copyright Google Inc; BSD license. Test code only.
+chrome/tools/test/generate_mime_tests.pl
+# String 'copyright' used in code.
+cloud_print/service/win/cloud_print_service.rc
+# String 'copyright' used in code.
+cloud_print/virtual_driver/win/virtual_driver_common_resources.rc
+# Copyright Alf Watt; BSD license. Not used on Android.
+content/browser/geolocation/osx_wifi.h
+# Copyright The Chromium Authors, Apple Inc and Graham Dennis; BSD license. Not
+# used on Android.
+content/browser/renderer_host/render_widget_host_view_mac.mm
+# Copyright The Chromium Authors and Google Inc; BSD license. Not used on
+# Android.
+content/browser/renderer_host/web_input_event_aurax11.cc
+# Copyright Google Inc, no license. Not used on Android.
+google_update/google_update_idl.idl
+# Uses word 'copyright'.
+LICENSE
+# Copyright Loren Merritt, Anton Mitrofanov and Jason Garrett-Glaser; ISC
+# license. Not used on Android.
+media/base/simd/x86inc.asm
+# String 'copyright' used in resources.
+media/tools/player_wtl/player_wtl.rc
+# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
+# and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
+# Mozilla, the license for which we already pick up from third_party/npapi/.
+net/cookies/cookie_monster.cc
+# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
+# and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
+# Mozilla, the license for which we already pick up from third_party/npapi/.
+net/cookies/canonical_cookie.cc
+# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
+# and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
+# Mozilla, the license for which we already pick up from third_party/npapi/.
+net/cookies/parsed_cookie.cc
+# Copyright The Chromium Authors and Google Inc; BSD and (MPL, GPL v2 or LGPL
+# v2) licenses. This third-party code is taken from Mozilla, the license for
+# which we already pick up from third_party/npapi/.
+net/base/registry_controlled_domains/registry_controlled_domain.cc
+# Copyright The Chromium Authors and Google Inc; BSD and (MPL, GPL v2 or LGPL
+# v2) licenses. This third-party code is taken from Mozilla, the license for
+# which we already pick up from third_party/npapi/.
+net/base/registry_controlled_domains/registry_controlled_domain.h
+# String '(c)' used in code.
+net/base/x509_cert_types_unittest.cc
+# Copyright John LoVerso; no license. Test code only.
+net/data/proxy_resolver_perftest/no-ads.pac
+# String '(c)' used in certificate data.
+net/data/ssl/certificates/certse.pem
+# Copyright The Chromium Authors and IBM Corporation; BSD and (MPL, GPL v2 or
+# LGPL v2) licenses. This third-party code is taken from Mozilla, the license
+# for which we already pick up from third_party/npapi/.
+net/http/des.cc
+# Copyright The Chromium Authors and IBM Corporation; BSD and (MPL, GPL v2 or
+# LGPL v2) licenses. This third-party code is taken from Mozilla, the license
+# for which we already pick up from third_party/npapi/.
+net/http/http_auth_handler_ntlm_portable.cc
+# Copyright The Chromium Authors and Netscape Communications; BSD and (MPL, GPL
+# v2 or LGPL v2) licenses. This third-party code is taken from Mozilla, the
+# license for which we already pick up from third_party/npapi/.
+net/http/http_chunked_decoder.cc
+# Copyright The Chromium Authors and Netscape Communications; BSD and (MPL, GPL
+# v2 or LGPL v2) licenses. This third-party code is taken from Mozilla, the
+# license for which we already pick up from third_party/npapi/.
+net/http/http_chunked_decoder.h
+# Copyright IBM Corporation; MPL, GPL v2 or LGPL v2 license. This third-party
+# code is taken from Mozilla, the license for which we already pick up from
+# third_party/npapi/.
+net/http/md4.cc
+# Copyright IBM Corporation; MPL, GPL v2 or LGPL v2 license. This third-party
+# code is taken from Mozilla, the license for which we already pick up from
+# third_party/npapi/.
+net/http/md4.h
+# Netscape Communications Corporation; MPL, GPL v2 or LGPL v2 license. This
+# third-party code is taken from Mozilla, the license for which we already pick
+# up from third_party/npapi/.
+net/proxy/proxy_resolver_script.h
+# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
+# and (MPL, GPL v2 or LGPL v2) licenses. Not used on Android.
+net/socket/ssl_client_socket_nss.cc
+# String 'copyright' used in resources.
+remoting/chromium_branding
+# String 'copyright' used in resources.
+remoting/google_chrome_branding
+# String 'copyright' used in project file.
+remoting/host/installer/mac/ChromotingHost.packproj
+# String 'copyright' used in project file.
+remoting/host/installer/mac/ChromotingHostService.packproj
+# String 'copyright' used in project file.
+remoting/host/installer/mac/ChromotingHostUninstaller.packproj
+# String 'copyright' used in project file.
+remoting/host/installer/mac/uninstaller/remoting_uninstaller-Info.plist
+# String 'copyright' used in project file.
+remoting/host/me2me_preference_pane-Info.plist
+# String 'copyright' used in project file.
+remoting/host/remoting_me2me_host-Info.plist
+# String 'copyright' used in file.
+remoting/remoting.gyp
+# String 'copyright' used in resources.
+remoting/version.rc.version
+# Copyright The Android Open Source Project; ASL v2 license.
+skia/config/SkUserConfig.h
+# Copyright Google Inc; ASL v2 license.
+skia/ext/SkFontHost_fontconfig_control.h
+# Copyright Google Inc; ASL v2 license.
+skia/ext/SkFontHost_fontconfig.cpp
+# Copyright Google Inc; ASL v2 license.
+skia/ext/SkFontHost_fontconfig_direct.cpp
+# Copyright Google Inc; ASL v2 license.
+skia/ext/SkFontHost_fontconfig_direct.h
+# Copyright Google Inc; ASL v2 license.
+skia/ext/SkFontHost_fontconfig_impl.h
+# String 'copyright' used in code.
+tools/checklicenses/checklicenses.py
+# Sample output includes string 'copyright'.
+tools/emacs/trybot-windows.txt
+# String 'copyright' used in code.
+tools/gen_keyboard_overlay_data/gen_keyboard_overlay_data.py
+# String 'copyright' used in code.
+tools/git/update-copyrights.sh
+# String 'copyright' used in code.
+tools/json_schema_compiler/cpp_util.py
+# String 'copyright' used in code.
+tools/json_schema_compiler/idl_schema.py
+# String 'copyright' used in resources.
+tools/measure_page_load_time/ie_bho/MeasurePageLoadTime.rc
+# String 'copyright' used in code.
+tools/stats_viewer/Properties/AssemblyInfo.cs
+# License for pefile.py.
+tools/symsrc/COPYING-pefile
+# Copyright Ero Carrera; BSD license. Tool only.
+tools/symsrc/pefile.py
+# Copyright The Chromium Authors, Sun Microsystems Inc, the V8 project authors;
+# BSD license. Tool only.
+tools/traceline/traceline/assembler.h
+# Copyright Google Inc; BSD license. Tool only.
+tools/traceline/traceline/sidestep/mini_disassembler.cc
+# Copyright The Chromium Authors, Apple Inc; BSD license. Not used on Android.
+ui/base/clipboard/clipboard_util_win.cc
+# Copyright The Chromium Authors, Apple Inc; BSD license. Not used on Android.
+ui/base/dragdrop/os_exchange_data_provider_win.cc
+# Copyright The Chromium Authors, Apple Inc, Michael Emmel, Holger Hans Peter
+# Freyther, Collabora Ltd, Google Inc; BSD license. Not used on Android.
+ui/base/keycodes/keyboard_code_conversion_gtk.cc
+# Copyright The Chromium Authors, Apple Inc, Michael Emmel, Holger Hans Peter
+# Freyther, Collabora Ltd, Google Inc; BSD license. Not used on Android.
+ui/base/keycodes/keyboard_code_conversion_gtk.h
+# Copyright The Chromium Authors, Michael Emmel, Google Inc; BSD license. This
+# third-party code is taken from WebKit, the license for which we already pick
+# up from webkit/.
+ui/base/keycodes/keyboard_codes_posix.h
+# This third-party code is taken from Mozilla, but is copyright Google and has
+# been re-licensed under the Chromium license.
+ui/gfx/codec/jpeg_codec.cc
+# This third-party code is taken from Mozilla, but is copyright Google and has
+# been re-licensed under the Chromium license.
+ui/gfx/codec/png_codec.cc
+# Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
+# code is taken from WebKit, the license for which we already pick up from
+# webkit/.
+webkit/appcache/manifest_parser.cc
+# Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
+# code is taken from WebKit, the license for which we already pick up from
+# webkit/.
+webkit/appcache/manifest_parser.h
+# Copyright W3C, MIT, INRIA and Keio; no license. Test code only.
+webkit/data/test_shell/frames/iframe1.html
+# Copyright Apple Inc; BSD license. Not used on Android, inspector frontend is
+# not bundled.
+webkit/glue/inspector_strings.grd
+# Copyright The Chromium Authors and Netscape Communications Corporation; BSD
+# and (MPL, GPL v2 or LGPL v2) licenses. This third-party code is taken from
+# Mozilla, the license for which we already pick up from third_party/npapi/.
+webkit/glue/multipart_response_delegate.h
+# License for numerous binary files in this directory: Copyright Netscape
+# Communications Corporation; MPL, GPL v2 or LGPL v2 license. This third-party
+# code is taken from WebKit and Mozilla, the licenses for which we already pick
+# up from webkit/ and third_party/npapi/.
+webkit/glue/resources/README.txt
+# Copyright Tim Copperfield and Christian Dywan; LGPL license. Not used on
+# Android.
+webkit/glue/webcursor_gtk_data.h
+# Copyright Apple Inc and Netscape Communications Corporation; BSD and (MPL,
+# GPL v2 or LGPL v2) licenses. This third-party code is taken from WebKit and
+# Mozilla, the licenses for which we already pick up from webkit/ and
+# third_party/npapi/.
+webkit/glue/webkit_strings.grd
+# Summary of licenses.
+webkit/LICENSE
+# String 'copyright' used in resources.
+webkit/plugins/npapi/test/npapi_test.rc
+# This third-party code is taken from Mozilla, but is copyright Google and has
+# been re-licensed under the Chromium license.
+webkit/support/webkit_support_gfx.cc
+# Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only
+webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h
+# Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only
+webkit/tools/test_shell/mac/DumpRenderTreePasteboard.m
+# String 'copyright' used in resources.
+webkit/tools/test_shell/mac/English.lproj/InfoPlist.strings
+# License for missingImage.tiff: Copyright Apple Computer, Inc; BSD license.
+# Tool only
+webkit/tools/test_shell/resources/README.txt
+# String 'copyright' used in resources.
+webkit/tools/test_shell/resources/test_shell.rc

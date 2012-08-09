@@ -310,13 +310,13 @@ def ContainsFiles(path):
     return False
 
 
-def FindThirdPartyDirs():
+def FindThirdPartyDirs(prune_paths):
     """Find all third_party directories underneath the current directory."""
     third_party_dirs = []
     for path, dirs, files in os.walk('.'):
         path = path[len('./'):]  # Pretty up the path.
 
-        if path in PRUNE_PATHS:
+        if path in prune_paths:
             dirs[:] = []
             continue
 
@@ -331,7 +331,7 @@ def FindThirdPartyDirs():
             # Add all subdirectories that are not marked for skipping.
             for dir in dirs:
                 dirpath = os.path.join(path, dir)
-                if dirpath not in PRUNE_PATHS:
+                if dirpath not in prune_paths:
                     third_party_dirs.append(dirpath)
 
             # Don't recurse into any subdirs from here.
@@ -353,7 +353,7 @@ def FindThirdPartyDirs():
 
 def ScanThirdPartyDirs():
     """Scan a list of directories and report on any problems we find."""
-    third_party_dirs = FindThirdPartyDirs()
+    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS)
 
     errors = []
     for path in sorted(third_party_dirs):
@@ -381,7 +381,7 @@ def GenerateCredits():
             template = template.replace('{{%s}}' % key, val)
         return template
 
-    third_party_dirs = FindThirdPartyDirs()
+    third_party_dirs = FindThirdPartyDirs(PRUNE_PATHS)
 
     entry_template = open('chrome/browser/resources/about_credits_entry.tmpl',
                           'rb').read()
