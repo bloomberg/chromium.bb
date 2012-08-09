@@ -22,14 +22,17 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
+
+namespace extensions {
+class Extension;
+}
 
 namespace performance_monitor {
 class Database;
 
 class PerformanceMonitor : public content::NotificationObserver {
  public:
-  typedef base::Callback<void(const std::string&)> StateValueCallback;
-
   typedef std::map<base::ProcessHandle,
                    linked_ptr<base::ProcessMetrics> > MetricsMap;
 
@@ -48,9 +51,6 @@ class PerformanceMonitor : public content::NotificationObserver {
   // start collecting data.
   void Start();
 
-  // Gathers CPU usage and memory usage of all Chrome processes.
-  void GatherStatisticsOnBackgroundThread();
-
   // content::NotificationObserver
   // Wait for various notifications; insert events into the database upon
   // occurance.
@@ -63,7 +63,7 @@ class PerformanceMonitor : public content::NotificationObserver {
 
  private:
   friend struct DefaultSingletonTraits<PerformanceMonitor>;
-  FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorBrowserTest, NewVersionEvent);
+  friend class PerformanceMonitorBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorUncleanExitBrowserTest,
                            OneProfileUncleanExit);
   FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorUncleanExitBrowserTest,
@@ -99,6 +99,21 @@ class PerformanceMonitor : public content::NotificationObserver {
 
   void AddEventOnBackgroundThread(scoped_ptr<Event> event);
 
+  // Notify any listeners that PerformanceMonitor has finished the initializing.
+  void NotifyInitialized();
+
+  // Perform any collections that are done on a timed basis.
+  void DoTimedCollections();
+
+  // Update the database record of the last time the active profiles were
+  // running; this is used in determining when an unclean exit occurred.
+  void UpdateLiveProfiles();
+  void UpdateLiveProfilesHelper(
+      scoped_ptr<std::set<std::string> > active_profiles, std::string time);
+
+  // Gathers CPU usage and memory usage of all Chrome processes in order to.
+  void GatherStatisticsOnBackgroundThread();
+
   // Gathers the CPU usage of every Chrome process that has been running since
   // the last call to GatherStatistics().
   void GatherCPUUsageOnBackgroundThread();
@@ -109,23 +124,15 @@ class PerformanceMonitor : public content::NotificationObserver {
   // Updates the ProcessMetrics map with the current list of processes.
   void UpdateMetricsMapOnBackgroundThread();
 
-  // Gets the corresponding value of |key| from the database, and then runs
-  // |callback| on the UI thread with that value as a parameter.
-  void GetStateValueOnBackgroundThread(
-      const std::string& key,
-      const StateValueCallback& callback);
+  // Generate an appropriate ExtensionEvent for an extension-related occurrance
+  // and insert it in the database.
+  void AddExtensionEvent(EventType type,
+                         const extensions::Extension* extension);
 
-  // Notify any listeners that PerformanceMonitor has finished the initializing.
-  void NotifyInitialized();
-
-  // Update the database record of the last time the active profiles were
-  // running; this is used in determining when an unclean exit occurred.
-  void UpdateLiveProfiles();
-  void UpdateLiveProfilesHelper(
-      scoped_ptr<std::set<std::string> > active_profiles, std::string time);
-
-  // Perform any collections that are done on a timed basis.
-  void DoTimedCollections();
+  // Generate an appropriate CrashEvent for a renderer crash and insert it in
+  // the database.
+  void AddCrashEvent(
+      const content::RenderProcessHost::RendererClosedDetails& details);
 
   // The location at which the database files are stored; if empty, the database
   // will default to '<user_data_dir>/performance_monitor_dbs'.

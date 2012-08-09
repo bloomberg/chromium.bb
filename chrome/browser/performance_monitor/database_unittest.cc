@@ -71,18 +71,22 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
 
  private:
   void InitEvents() {
-    install_event_1_ = util::CreateExtensionInstallEvent(
-        clock_->GetTime(), "a", "extension 1", "http://foo.com",
-        static_cast<int>(Extension::LOAD), "0.1", "Test Test");
-    install_event_2_ = util::CreateExtensionInstallEvent(
-        clock_->GetTime(), "b", "extension 2", "http://bar.com",
-        static_cast<int>(Extension::LOAD), "0.1", "Test Test");
-    uninstall_event_1_ = util::CreateExtensionUninstallEvent(
-        clock_->GetTime(), "a", "extension 1", "http://foo.com",
-        static_cast<int>(Extension::LOAD), "0.1", "Test Test");
-    uninstall_event_2_ = util::CreateExtensionUninstallEvent(
-        clock_->GetTime(), "b", "extension 2", "http://bar.com",
-        static_cast<int>(Extension::LOAD), "0.1", "Test Test");
+    install_event_1_ = util::CreateExtensionEvent(
+        EVENT_EXTENSION_INSTALL, clock_->GetTime(), "a", "extension 1",
+        "http://foo.com", static_cast<int>(Extension::LOAD), "0.1",
+        "Test Test");
+    install_event_2_ = util::CreateExtensionEvent(
+        EVENT_EXTENSION_INSTALL, clock_->GetTime(), "b", "extension 2",
+        "http://bar.com", static_cast<int>(Extension::LOAD), "0.1",
+        "Test Test");
+    uninstall_event_1_ = util::CreateExtensionEvent(
+        EVENT_EXTENSION_UNINSTALL, clock_->GetTime(), "a", "extension 1",
+        "http://foo.com", static_cast<int>(Extension::LOAD), "0.1",
+        "Test Test");
+    uninstall_event_2_ = util::CreateExtensionEvent(
+        EVENT_EXTENSION_UNINSTALL, clock_->GetTime(), "b", "extension 2",
+        "http://bar.com", static_cast<int>(Extension::LOAD), "0.1",
+        "Test Test");
   }
 };
 
@@ -241,9 +245,9 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetInstallEvents) {
 
 TEST_F(PerformanceMonitorDatabaseEventTest, GetUnusedEventType) {
   std::vector<linked_ptr<Event> > events =
-      db_->GetEvents(EVENT_EXTENSION_UNLOAD);
+      db_->GetEvents(EVENT_EXTENSION_DISABLE);
   ASSERT_TRUE(events.empty());
-  events = db_->GetEvents(EVENT_EXTENSION_UNLOAD, clock_->GetTime(),
+  events = db_->GetEvents(EVENT_EXTENSION_DISABLE, clock_->GetTime(),
                           clock_->GetTime());
   ASSERT_TRUE(events.empty());
 }
@@ -251,13 +255,15 @@ TEST_F(PerformanceMonitorDatabaseEventTest, GetUnusedEventType) {
 TEST_F(PerformanceMonitorDatabaseEventTest, GetEventsTimeRange) {
   base::Time start_time = clock_->GetTime();
   scoped_ptr<Event> new_install_event =
-      util::CreateExtensionInstallEvent(
-      clock_->GetTime(), "c", "test extension", "http://foo.com",
-      static_cast<int>(Extension::LOAD), "0.1", "Test Test");
+      util::CreateExtensionEvent(EVENT_EXTENSION_INSTALL, clock_->GetTime(),
+                                 "c", "test extension", "http://foo.com",
+                                 static_cast<int>(Extension::LOAD), "0.1",
+                                 "Test Test");
   scoped_ptr<Event> new_uninstall_event =
-      util::CreateExtensionUninstallEvent(
-      clock_->GetTime(), "c", "test extension", "http://foo.com",
-      static_cast<int>(Extension::LOAD), "0.1", "Test Test");
+      util::CreateExtensionEvent(EVENT_EXTENSION_UNINSTALL, clock_->GetTime(),
+                                 "c", "test extension", "http://foo.com",
+                                 static_cast<int>(Extension::LOAD), "0.1",
+                                 "Test Test");
   base::Time end_time = clock_->GetTime();
   db_->AddEvent(*new_install_event.get());
   db_->AddEvent(*new_uninstall_event.get());

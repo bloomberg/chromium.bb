@@ -7,70 +7,9 @@
     "namespace": "events",
     "types": [
       {
-        "id": "ExtensionInstall",
+        "id": "ExtensionEvent",
         "type": "object",
-        "description": "The event to describe the installation of an extension in Chrome.",
-        "properties": {
-          "eventType": {"type": "integer", "description": "The type of the event."},
-          "time": {"type": "number", "description": "The time at which the event was recorded."},
-          "extensionId": {"type": "string", "description": "The extension's id."},
-          "extensionName": {"type": "string", "description": "The extension's name."},
-          "extensionUrl": {"type": "string", "description": "The extension's url."},
-          "extensionLocation": {"type": "integer", "description": "The extension's install location."},
-          "extensionVersion": {"type": "string", "description": "The string reprepresentation of the extension's version."},
-          "extensionDescription": {"type": "string", "description": "The extension's description."}
-        }
-      },
-      {
-        "id": "ExtensionUnload",
-        "type": "object",
-        "description": "The event to describe the unloading of an extension in Chrome.",
-        "properties": {
-          "eventType": {"type": "integer", "description": "The type of the event."},
-          "time": {"type": "number", "description": "The time at which the event was recorded."},
-          "extensionId": {"type": "string", "description": "The extension's id."},
-          "extensionName": {"type": "string", "description": "The extension's name."},
-          "extensionUrl": {"type": "string", "description": "The extension's url."},
-          "extensionLocation": {"type": "integer", "description": "The extension's install location."},
-          "extensionVersion": {"type": "string", "description": "The string reprepresentation of the extension's version."},
-          "extensionDescription": {"type": "string", "description": "The extension's description."},
-          "unloadReason": {"type": "integer", "description": "The type of unload performed."}
-        }
-      },
-      {
-        "id": "ExtensionUninstall",
-        "type": "object",
-        "description": "The event to describe the uninstallation of an extension in Chrome.",
-        "properties": {
-          "eventType": {"type": "integer", "description": "The type of the event."},
-          "time": {"type": "number", "description": "The time at which the event was recorded."},
-          "extensionId": {"type": "string", "description": "The extension's id."},
-          "extensionName": {"type": "string", "description": "The extension's name."},
-          "extensionUrl": {"type": "string", "description": "The extension's url."},
-          "extensionLocation": {"type": "integer", "description": "The extension's install location."},
-          "extensionVersion": {"type": "string", "description": "The string reprepresentation of the extension's version."},
-          "extensionDescription": {"type": "string", "description": "The extension's description."}
-        }
-      },
-      {
-        "id": "ExtensionEnable",
-        "type": "object",
-        "description": "The event to describe the uninstallation of an extension in Chrome.",
-        "properties": {
-          "eventType": {"type": "integer", "description": "The type of the event."},
-          "time": {"type": "number", "description": "The time at which the event was recorded."},
-          "extensionId": {"type": "string", "description": "The extension's id."},
-          "extensionName": {"type": "string", "description": "The extension's name."},
-          "extensionUrl": {"type": "string", "description": "The extension's url."},
-          "extensionLocation": {"type": "integer", "description": "The extension's install location."},
-          "extensionVersion": {"type": "string", "description": "The string reprepresentation of the extension's version."},
-          "extensionDescription": {"type": "string", "description": "The extension's description."}
-        }
-      },
-      {
-        "id": "ExtensionUpdate",
-        "type": "object",
-        "description": "The event to describe the uninstallation of an extension in Chrome.",
+        "description": "The event to describe a significant occurence with an extension in Chrome, including installation, uninstallation, enablement, disablement, and update.",
         "properties": {
           "eventType": {"type": "integer", "description": "The type of the event."},
           "time": {"type": "number", "description": "The time at which the event was recorded."},

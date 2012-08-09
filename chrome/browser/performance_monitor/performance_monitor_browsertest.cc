@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/in_process_browser_test.h"
-
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -13,24 +11,20 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/performance_monitor/constants.h"
 #include "chrome/browser/performance_monitor/database.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -252,6 +246,18 @@ class PerformanceMonitorBrowserTest : public ExtensionBrowserTest {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
+  // A handle for PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread();
+  // we mock synchronicity with FlushForTesting().
+  void CheckForVersionUpdate() {
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        Database::kDatabaseSequenceToken,
+        FROM_HERE,
+        base::Bind(&PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread,
+                   base::Unretained(performance_monitor())));
+
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  }
+
   PerformanceMonitor* performance_monitor() const {
     return performance_monitor_;
   }
@@ -407,23 +413,18 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
   std::vector<ExtensionBasicInfo> extension_infos;
   // There will be three events in all, each pertaining to the same extension:
   //   Extension Install
-  //   Extension Unload
+  //   Extension Disable
   //   Extension Enable
   for (int i = 0; i < kNumEvents; ++i)
     extension_infos.push_back(ExtensionBasicInfo(extension));
 
   std::vector<int> expected_event_types;
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
-  expected_event_types.push_back(EVENT_EXTENSION_UNLOAD);
+  expected_event_types.push_back(EVENT_EXTENSION_DISABLE);
   expected_event_types.push_back(EVENT_EXTENSION_ENABLE);
 
   std::vector<linked_ptr<Event> > events = GetEvents();
   CheckExtensionEvents(expected_event_types, events, extension_infos);
-
-  // There will be an additional field on the unload event: Unload Reason.
-  int unload_reason = -1;
-  ASSERT_TRUE(events[1]->data()->GetInteger("unloadReason", &unload_reason));
-  ASSERT_EQ(extension_misc::UNLOAD_REASON_DISABLE, unload_reason);
 }
 
 // Test that PerformanceMonitor correctly records an extension update event.
@@ -473,31 +474,23 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UpdateExtensionEvent) {
   // The total series of events for this process will be:
   //   Extension Install - install version 1
   //   Extension Install - install version 2
-  //   Extension Unload  - disable version 1
   //   Extension Update  - signal the udate to version 2
   // We push back the corresponding ExtensionBasicInfos.
   extension_infos.push_back(ExtensionBasicInfo(extension));
-  extension_infos.push_back(extension_infos[0]);
   extension_infos.push_back(extension_infos[1]);
 
   std::vector<int> expected_event_types;
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
-  expected_event_types.push_back(EVENT_EXTENSION_UNLOAD);
   expected_event_types.push_back(EVENT_EXTENSION_UPDATE);
 
   std::vector<linked_ptr<Event> > events = GetEvents();
 
   CheckExtensionEvents(expected_event_types, events, extension_infos);
-
-  // There will be an additional field: The unload reason.
-  int unload_reason = -1;
-  ASSERT_TRUE(events[2]->data()->GetInteger("unloadReason", &unload_reason));
-  ASSERT_EQ(extension_misc::UNLOAD_REASON_UPDATE, unload_reason);
 }
 
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UninstallExtensionEvent) {
-  const int kNumEvents = 3;
+  const int kNumEvents = 2;
   FilePath extension_path;
   PathService::Get(chrome::DIR_TEST_DATA, &extension_path);
   extension_path = extension_path.AppendASCII("performance_monitor")
@@ -506,9 +499,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UninstallExtensionEvent) {
   const Extension* extension = LoadExtension(extension_path);
 
   std::vector<ExtensionBasicInfo> extension_infos;
-  // There will be three events in all, each pertaining to the same extension:
+  // There will be two events, both pertaining to the same extension:
   //   Extension Install
-  //   Extension Disable (Unload)
   //   Extension Uninstall
   for (int i = 0; i < kNumEvents; ++i)
     extension_infos.push_back(ExtensionBasicInfo(extension));
@@ -517,17 +509,11 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, UninstallExtensionEvent) {
 
   std::vector<int> expected_event_types;
   expected_event_types.push_back(EVENT_EXTENSION_INSTALL);
-  expected_event_types.push_back(EVENT_EXTENSION_UNLOAD);
   expected_event_types.push_back(EVENT_EXTENSION_UNINSTALL);
 
   std::vector<linked_ptr<Event> > events = GetEvents();
 
   CheckExtensionEvents(expected_event_types, events, extension_infos);
-
-  // There will be an additional field: The unload reason.
-  int unload_reason = -1;
-  ASSERT_TRUE(events[1]->data()->GetInteger("unloadReason", &unload_reason));
-  ASSERT_EQ(extension_misc::UNLOAD_REASON_UNINSTALL, unload_reason);
 }
 
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
@@ -538,14 +524,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NewVersionEvent) {
   // older version so an event is generated.
   AddStateValue(kStateChromeVersion, kOldVersion);
 
-  content::BrowserThread::PostBlockingPoolSequencedTask(
-      Database::kDatabaseSequenceToken,
-      FROM_HERE,
-      base::Bind(&PerformanceMonitor::CheckForVersionUpdateOnBackgroundThread,
-                 base::Unretained(performance_monitor())));
-
-  // Wait for event insertion.
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  CheckForVersionUpdate();
 
   chrome::VersionInfo version;
   ASSERT_TRUE(version.is_valid());
@@ -584,8 +563,11 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, GatherStatistics) {
   EXPECT_GT(stats[0].value, 0);
 
   // Open new tabs to incur CPU usage.
-  for (int i = 0; i < 3; ++i) {
-    chrome::NavigateParams params(browser(), GURL("http://www.google.com"),
+  for (int i = 0; i < 10; ++i) {
+    chrome::NavigateParams params(
+        browser(),
+        ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                  FilePath(FILE_PATH_LITERAL("title1.html"))),
                                   content::PAGE_TRANSITION_LINK);
     params.disposition = NEW_BACKGROUND_TAB;
     ui_test_utils::NavigateToURL(&params);

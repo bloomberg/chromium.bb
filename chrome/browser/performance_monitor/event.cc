@@ -17,7 +17,7 @@ const char* kEventTypeNames[] = {
   "Extension Uninstalls",
   "Extension Updates",
   "Extension Enables",
-  "Extension Unloads",
+  "Extension Disables",
   "Chrome Updates",
   "Renderer Freezes",
   "Renderer Crashes",

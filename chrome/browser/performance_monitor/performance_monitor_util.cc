@@ -64,15 +64,16 @@ bool PostTaskToDatabaseThreadAndReply(
       from_here, request, reply);
 }
 
-scoped_ptr<Event> CreateExtensionInstallEvent(const base::Time& time,
-                                              const std::string& id,
-                                              const std::string& name,
-                                              const std::string& url,
-                                              const int& location,
-                                              const std::string& version,
-                                              const std::string& description) {
-  events::ExtensionInstall event;
-  event.event_type = EVENT_EXTENSION_INSTALL;
+scoped_ptr<Event> CreateExtensionEvent(const EventType type,
+                                       const base::Time& time,
+                                       const std::string& id,
+                                       const std::string& name,
+                                       const std::string& url,
+                                       const int location,
+                                       const std::string& version,
+                                       const std::string& description) {
+  events::ExtensionEvent event;
+  event.event_type = type;
   event.time = static_cast<double>(time.ToInternalValue());
   event.extension_id = id;
   event.extension_name = name;
@@ -82,96 +83,7 @@ scoped_ptr<Event> CreateExtensionInstallEvent(const base::Time& time,
   event.extension_description = description;
   scoped_ptr<base::DictionaryValue> value = event.ToValue();
   return scoped_ptr<Event>(new Event(
-      EVENT_EXTENSION_INSTALL, time, value.Pass()));
-}
-
-scoped_ptr<Event> CreateExtensionUninstallEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description) {
-  events::ExtensionUninstall event;
-  event.event_type = EVENT_EXTENSION_UNINSTALL;
-  event.time = static_cast<double>(time.ToInternalValue());
-  event.extension_id = id;
-  event.extension_name = name;
-  event.extension_url = url;
-  event.extension_location = location;
-  event.extension_version = version;
-  event.extension_description = description;
-  scoped_ptr<base::DictionaryValue> value = event.ToValue();
-  return scoped_ptr<Event>(new Event(
-      EVENT_EXTENSION_UNINSTALL, time, value.Pass()));
-}
-
-scoped_ptr<Event> CreateExtensionUnloadEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description,
-    const extension_misc::UnloadedExtensionReason& reason) {
-  events::ExtensionUnload event;
-  event.event_type = EVENT_EXTENSION_UNLOAD;
-  event.time = static_cast<double>(time.ToInternalValue());
-  event.extension_id = id;
-  event.extension_name = name;
-  event.extension_url = url;
-  event.extension_location = location;
-  event.extension_version = version;
-  event.extension_description = description;
-  event.unload_reason = reason;
-  scoped_ptr<base::DictionaryValue> value = event.ToValue();
-  return scoped_ptr<Event>(new Event(
-      EVENT_EXTENSION_UNLOAD, time, value.Pass()));
-}
-
-scoped_ptr<Event> CreateExtensionEnableEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description) {
-  events::ExtensionEnable event;
-  event.event_type = EVENT_EXTENSION_ENABLE;
-  event.time = static_cast<double>(time.ToInternalValue());
-  event.extension_id = id;
-  event.extension_name = name;
-  event.extension_url = url;
-  event.extension_location = location;
-  event.extension_version = version;
-  event.extension_description = description;
-  scoped_ptr<base::DictionaryValue> value = event.ToValue();
-  return scoped_ptr<Event>(new Event(
-      EVENT_EXTENSION_ENABLE, time, value.Pass()));
-}
-
-scoped_ptr<Event> CreateExtensionUpdateEvent(const base::Time& time,
-                                             const std::string& id,
-                                             const std::string& name,
-                                             const std::string& url,
-                                             const int& location,
-                                             const std::string& version,
-                                             const std::string& description) {
-  events::ExtensionUpdate event;
-  event.event_type = EVENT_EXTENSION_UPDATE;
-  event.time = static_cast<double>(time.ToInternalValue());
-  event.extension_id = id;
-  event.extension_name = name;
-  event.extension_url = url;
-  event.extension_location = location;
-  event.extension_version = version;
-  event.extension_description = description;
-  scoped_ptr<base::DictionaryValue> value = event.ToValue();
-  return scoped_ptr<Event>(new Event(
-      EVENT_EXTENSION_UPDATE, time, value.Pass()));
+      type, time, value.Pass()));
 }
 
 scoped_ptr<Event> CreateRendererFreezeEvent(const base::Time& time,

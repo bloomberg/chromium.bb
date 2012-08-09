@@ -38,67 +38,27 @@ bool PostTaskToDatabaseThreadAndReply(
 // pertinent information, given all the fields. Please use these methods to
 // create any PerformanceMonitor events, as this will ensure strong-typing
 // guards that performance_monitor::Event() will not.
-scoped_ptr<Event> CreateExtensionInstallEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description);
+scoped_ptr<Event> CreateExtensionEvent(const EventType type,
+                                       const base::Time& time,
+                                       const std::string& id,
+                                       const std::string& name,
+                                       const std::string& url,
+                                       const int location,
+                                       const std::string& version,
+                                       const std::string& description);
 
-scoped_ptr<Event> CreateExtensionUnloadEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description,
-    const extension_misc::UnloadedExtensionReason& reason);
+scoped_ptr<Event> CreateRendererFreezeEvent(const base::Time& time,
+                                            const std::string& url);
 
-scoped_ptr<Event> CreateExtensionUninstallEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description);
-
-scoped_ptr<Event> CreateExtensionEnableEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description);
-
-scoped_ptr<Event> CreateExtensionUpdateEvent(
-    const base::Time& time,
-    const std::string& id,
-    const std::string& name,
-    const std::string& url,
-    const int& location,
-    const std::string& version,
-    const std::string& description);
-
-scoped_ptr<Event> CreateRendererFreezeEvent(
-    const base::Time& time,
-    const std::string& url);
-
-scoped_ptr<Event> CreateCrashEvent(
-    const base::Time& time,
-    const EventType& type);
+scoped_ptr<Event> CreateCrashEvent(const base::Time& time,
+                                   const EventType& type);
 
 scoped_ptr<Event> CreateUncleanExitEvent(const base::Time& time,
                                          const std::string& profile_name);
 
-scoped_ptr<Event> CreateChromeUpdateEvent(
-    const base::Time& time,
-    const std::string& previous_version,
-    const std::string& current_version);
+scoped_ptr<Event> CreateChromeUpdateEvent(const base::Time& time,
+                                          const std::string& previous_version,
+                                          const std::string& current_version);
 
 }  // namespace util
 }  // namespace performance_monitor
