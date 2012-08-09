@@ -922,6 +922,8 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
                            const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CopyOnUIThread,
                                ui_weak_ptr_,
                                src_file_path,
@@ -933,41 +935,50 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
                                      const FilePath& dest_file_path,
                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  GDataFileError error = GDATA_FILE_OK;
-  FilePath dest_parent_path = dest_file_path.DirName();
+  directory_service_->GetEntryInfoPairByPaths(
+      src_file_path,
+      dest_file_path.DirName(),
+      base::Bind(&GDataFileSystem::CopyOnUIThreadAfterGetEntryInfoPair,
+                 ui_weak_ptr_,
+                 dest_file_path,
+                 callback));
+}
 
-  std::string src_file_resource_id;
-  bool src_file_is_hosted_document = false;
+void GDataFileSystem::CopyOnUIThreadAfterGetEntryInfoPair(
+    const FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(result.get());
 
-  GDataEntry* src_entry = directory_service_->FindEntryByPathSync(
-      src_file_path);
-  GDataEntry* dest_parent = directory_service_->FindEntryByPathSync(
-      dest_parent_path);
-  if (!src_entry || !dest_parent) {
-    error = GDATA_FILE_ERROR_NOT_FOUND;
-  } else if (!dest_parent->AsGDataDirectory()) {
-    error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
-  } else if (!src_entry->AsGDataFile()) {
-    // TODO(benchan): Implement copy for directories. In the interim,
-    // we handle recursive directory copy in the file manager.
-    error = GDATA_FILE_ERROR_INVALID_OPERATION;
-  } else {
-    src_file_resource_id = src_entry->resource_id();
-    src_file_is_hosted_document =
-        src_entry->AsGDataFile()->is_hosted_document();
-  }
-
-  if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
-
+  if (result->first.error != GDATA_FILE_OK) {
+    callback.Run(result->first.error);
+    return;
+  } else if (result->second.error != GDATA_FILE_OK) {
+    callback.Run(result->second.error);
     return;
   }
 
-  if (src_file_is_hosted_document) {
-    CopyDocumentToDirectory(dest_parent_path,
-                            src_file_resource_id,
+  scoped_ptr<GDataEntryProto> src_file_proto = result->first.proto.Pass();
+  scoped_ptr<GDataEntryProto> dest_parent_proto = result->second.proto.Pass();
+
+  if (!dest_parent_proto->file_info().is_directory()) {
+    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
+    return;
+  } else if (src_file_proto->file_info().is_directory()) {
+    // TODO(kochi): Implement copy for directories. In the interim,
+    // we handle recursive directory copy in the file manager.
+    // crbug.com/141596
+    callback.Run(GDATA_FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  if (src_file_proto->file_specific_info().is_hosted_document()) {
+    CopyDocumentToDirectory(dest_file_path.DirName(),
+                            src_file_proto->resource_id(),
                             // Drop the document extension, which should not be
                             // in the document title.
                             dest_file_path.BaseName().RemoveExtension().value(),
@@ -975,8 +986,9 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
     return;
   }
 
-  // TODO(benchan): Reimplement this once the server API supports
-  // copying of regular files directly on the server side.
+  // TODO(kochi): Reimplement this once the server API supports
+  // copying of regular files directly on the server side. crbug.com/138273
+  const FilePath& src_file_path = result->first.path;
   GetFileByPath(src_file_path,
                 base::Bind(&GDataFileSystem::OnGetFileCompleteForCopy,
                            ui_weak_ptr_,
@@ -993,11 +1005,10 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
     const std::string& unused_mime_type,
     GDataFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
-
+    callback.Run(error);
     return;
   }
 

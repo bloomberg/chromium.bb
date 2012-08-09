@@ -740,6 +740,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  GDataCache::FileOperationType cache_operation,
                                  const base::Closure& callback);
 
+  // Part of CopyOnUIThread(). Called after GetEntryInfoPairByPaths() is
+  // complete.
+  void CopyOnUIThreadAfterGetEntryInfoPair(
+    const FilePath& dest_file_path,
+    const FileOperationCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result);
+
   // Part of RemoveOnUIThread(). Called after GetEntryInfoByPath() is
   // complete.
   void RemoveOnUIThreadAfterGetEntryInfo(
