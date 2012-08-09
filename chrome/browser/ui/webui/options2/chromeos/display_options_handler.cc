@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/json/json_value_converter.h"
 #include "base/logging.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,6 +48,10 @@ void DisplayOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_MIRRORING));
   localized_strings->SetString("stopMirroring", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STOP_MIRRORING));
+  localized_strings->SetString("applyResult", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_APPLY_RESULT));
+  localized_strings->SetString("resolution", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION));
 }
 
 void DisplayOptionsHandler::InitializePage() {
@@ -114,6 +119,11 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     js_display->SetDouble("y", bounds.y());
     js_display->SetDouble("width", bounds.width());
     js_display->SetDouble("height", bounds.height());
+    // Do not have good data for displays such like vendor/model names.
+    // So here just uses 'Display 1' or 'Display 2' for their names.
+    // TODO(mukai,oshima): support vendor/model names and use it.
+    js_display->SetString("name", base::StringPrintf(
+        "Display %d", static_cast<int>(i) + 1));
     displays.Set(i, js_display);
   }
 

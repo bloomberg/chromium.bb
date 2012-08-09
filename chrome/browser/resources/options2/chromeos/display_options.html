@@ -1,18 +1,33 @@
 <div id="display-options" class="page" hidden>
   <div class="close-button"></div>
   <h1 i18n-content="displayOptionsPage"></h1>
-  <div class="content-area">
+  <div class="content-area" id="display-options-content-area">
     <div id="display-options-displays-view-host">
     </div>
     <div id="display-configurations">
-      <button id="display-options-toggle-mirroring"
-          i18n-content="startMirroring">
-      </button>
+      <div id="selected-display-data-container">
+        <div id="selected-display-name"></div>
+        <div>
+          <span i18n-content="resolution"></span>
+          <span id="selected-display-resolution"></span>
+        </div>
+      </div>
+      <div id="display-options-buttons-container">
+        <div class="display-options-single-button-container">
+          <button id="display-options-toggle-mirroring"
+              class="display-options-button" i18n-content="startMirroring">
+          </button>
+        </div>
+        <div class="display-options-single-button-container">
+          <button id="display-options-apply"
+              class="display-options-button" i18n-content="applyResult">
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="action-area">
-    <div class="button-strip">
-      <button id="display-options-confirm" i18n-content="ok"></button>
+    <!-- The arrow of display-configuration is achieved by a div
+         rotated by 45deg. -->
+    <div id="display-configuration-arrow">
     </div>
   </div>
 </div>

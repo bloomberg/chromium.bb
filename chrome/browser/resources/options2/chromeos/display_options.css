@@ -2,33 +2,102 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#display-options {
+  background-color: rgb(240, 240, 240);
+}
+
+#display-options-content-area {
+  padding: 0;
+}
+
 #display-options-displays-view-host {
-  padding: 20px;
+  padding: 20px 0 20px 0;
 }
 
 #display-options-displays-view {
-  height: 300px;
   position: relative;
+  width: 100%;
+}
+
+#display-options-displays-view-mirroring {
+  margin: 20px 0 20px 0;
 }
 
 #display-configurations {
-  border-top: 1px solid blue;
-  padding-top: 20px;
-  text-align: right;
+  background-color: white;
+  border-top: 1px solid lightgrey;
+  height: 65px;
+  padding: 15px;
+}
+
+/* The arrow at the border #display-configurations to point the focused display.
+ * This is achieved by a square rotated by 45-deg, and it has border at the
+ * upper-half, which were left/top before the rotation. */
+#display-configuration-arrow {
+  -webkit-transform: rotate(45deg);
+  background-color: white;
+  border-left: 1px solid lightgrey;
+  border-top: 1px solid lightgrey;
+  height: 20px;
+  position: absolute;
+  width: 20px;
+  z-index: 1;
+}
+
+#display-options-buttons-container {
+  float: right;
+  z-index: 2;
+}
+
+html[dir=rtl] #display-options-buttons-container {
+  float: left;
+}
+
+
+#selected-display-data-container {
+  float: left;
+  line-height: 200%;
+  z-index: 2;
+}
+
+html[dir=rtl] #selected-display-data-container {
+  float: right;
+}
+
+#selected-display-name {
+  font-weight: bold;
+}
+
+#display-launcher {
+  background-color: lightgrey;
+  bottom: 0;
+  height: 10px;
+  position: absolute;
 }
 
 .displays-display {
-  background-color: white;
-  border: dashed 1px;
+  background: rgb(240, 240, 240);
+  border: solid 1px;
+  font-weight: bold;
   position: absolute;
   text-align: center;
   vertical-align: middle;
+  z-index: 2;
 }
 
-.displays-primary {
-  border: solid 1px blue;
+.display-mirrored {
+  border: dashed 1px;
 }
 
 .displays-focused {
-  border: solid 2px;
+  border: solid 2px rgb(0, 138, 255);
+  color: rgb(0, 138, 255);
+}
+
+.display-options-single-button-container {
+  margin: 5px 0 5px 0;
+}
+
+.display-options-button {
+  width: 120px;
 }
