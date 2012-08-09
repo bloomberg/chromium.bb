@@ -80,6 +80,7 @@ Bool NaClInstValidates(uint8_t* mbase,
                                    &cpu_features);
   do {
     NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
+    NaClBaseRegisterMemoryInitialize(state);
     state->cur_iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
     if (NULL == state->cur_iter) break;
     state->cur_inst_state = NaClInstIterGetState(state->cur_iter);
@@ -87,6 +88,8 @@ Bool NaClInstValidates(uint8_t* mbase,
     state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
     NaClValidateInstructionLegal(state);
     NaClBaseRegisterValidator(state);
+    /* induce call to NaClMaybeReportPreviousBad() */
+    NaClBaseRegisterSummarize(state);
     NaClMemoryReferenceValidator(state);
     NaClJumpValidator(state);
     validates = NaClValidatesOk(state);
