@@ -93,8 +93,8 @@ struct drm_compositor {
 	 * due to out of bounds dimensions, and then mistakenly set
 	 * sprites_are_broken:
 	 */
-	uint32_t min_width, max_width;
-	uint32_t min_height, max_height;
+	int32_t min_width, max_width;
+	int32_t min_height, max_height;
 
 	struct wl_list sprite_list;
 	int sprites_are_broken;
@@ -551,7 +551,6 @@ drm_disable_unused_sprites(struct weston_output *output_base)
 	struct drm_compositor *c =(struct drm_compositor *) ec;
 	struct drm_output *output = (struct drm_output *) output_base;
 	struct drm_sprite *s;
-	int32_t width, height;
 	int ret;
 
 	wl_list_for_each(s, &c->sprite_list, link) {
@@ -599,6 +598,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	pixman_box32_t *box;
 	uint32_t format;
 	wl_fixed_t sx1, sy1, sx2, sy2;
+	int32_t width, height;
 
 	if (c->sprites_are_broken)
 		return NULL;
@@ -637,7 +637,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	 */
 	if (c->min_width > width || width > c->max_width ||
 	    c->min_height > height || height > c->max_height)
-		return -1;
+		return NULL;
 
 	bo = gbm_bo_import(c->gbm, GBM_BO_IMPORT_WL_BUFFER,
 			   es->buffer, GBM_BO_USE_SCANOUT);
@@ -732,6 +732,8 @@ static struct weston_plane *
 drm_output_prepare_cursor_surface(struct weston_output *output_base,
 				  struct weston_surface *es)
 {
+	struct drm_compositor *c =
+		(struct drm_compositor *) output_base->compositor;
 	struct drm_output *output = (struct drm_output *) output_base;
 
 	if (output->cursor_surface)
@@ -739,7 +741,7 @@ drm_output_prepare_cursor_surface(struct weston_output *output_base,
 	if (es->output_mask != (1u << output_base->id))
 		return NULL;
 	if (c->cursors_are_broken)
-		return;
+		return NULL;
 	if (es->buffer == NULL || !wl_buffer_is_shm(es->buffer) ||
 	    es->geometry.width > 64 || es->geometry.height > 64)
 		return NULL;
