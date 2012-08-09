@@ -168,7 +168,7 @@ class ASH_EXPORT ShelfLayoutManager :
   FRIEND_TEST_ALL_PREFIXES(ShelfLayoutManagerTest, SetAutoHideBehavior);
 
   struct TargetBounds {
-    TargetBounds() : opacity(0.0f) {}
+    TargetBounds();
 
     float opacity;
     gfx::Rect launcher_bounds_in_root;

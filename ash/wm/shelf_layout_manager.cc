@@ -328,6 +328,8 @@ void ShelfLayoutManager::OnWindowActivated(aura::Window* active,
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
 
+ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
+
 gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
     aura::Window* window) {
   gfx::Rect bounds(ScreenAsh::GetDisplayBoundsInParent(window));
