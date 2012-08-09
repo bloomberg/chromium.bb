@@ -171,6 +171,13 @@ void SystemInfoUIHTMLSource::RequestComplete() {
       chromeos::system::LogDictionaryType::iterator it;
       for (it = logs_->begin(); it != logs_->end(); ++it) {
         DictionaryValue* val = new DictionaryValue;
+        // Skip the 'debugd' key; this is a duplicate of all the logs that
+        // we're already getting from the debugd daemon. This will be fixed
+        // with http://code.google.com/p/chromium/issues/detail?id=138582
+        // which incidentally will also remove this code.
+        if (it->first == "debugd")
+          continue;
+
         val->SetString("stat_name", it->first);
         val->SetString("stat_value", it->second);
         details->Append(val);
@@ -181,12 +188,7 @@ void SystemInfoUIHTMLSource::RequestComplete() {
       chromeos::system::SysInfoResponse::iterator it;
       for (it = sys_info_->begin(); it != sys_info_->end(); ++it) {
         DictionaryValue* val = new DictionaryValue;
-        // Prefix stats coming from debugd with 'debugd-' for now. The code that
-        // displays stats can only handle one stat with a given name, so this
-        // prevents names from overlapping. Once the duplicates have been
-        // removed from userfeedback's list by
-        // <https://gerrit.chromium.org/gerrit/25106>, the prefix can go away.
-        val->SetString("stat_name", "debugd-" + it->first);
+        val->SetString("stat_name", it->first);
         val->SetString("stat_value", it->second);
         details->Append(val);
       }
