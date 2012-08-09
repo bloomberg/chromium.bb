@@ -531,6 +531,25 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
   }
 }
 
+ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
+    : peer(NULL),
+      resource_type(ResourceType::SUB_RESOURCE),
+      is_deferred(false) {
+}
+
+ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
+    webkit_glue::ResourceLoaderBridge::Peer* peer,
+    ResourceType::Type resource_type,
+    const GURL& request_url)
+    : peer(peer),
+      resource_type(resource_type),
+      is_deferred(false),
+      url(request_url),
+      request_start(base::TimeTicks::Now()) {
+}
+
+ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {}
+
 void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ResourceDispatcher, message)
     IPC_MESSAGE_HANDLER(ResourceMsg_UploadProgress, OnUploadProgress)

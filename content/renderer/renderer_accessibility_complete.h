@@ -57,8 +57,8 @@ class RendererAccessibilityComplete : public RendererAccessibility {
   // representation of the browser tree - just IDs and parent/child
   // relationships.
   struct BrowserTreeNode {
-    BrowserTreeNode() : id(0) {}
-    ~BrowserTreeNode() {}
+    BrowserTreeNode();
+    ~BrowserTreeNode();
     int32 id;
     std::vector<BrowserTreeNode*> children;
   };

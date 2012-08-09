@@ -222,6 +222,10 @@ void RendererAccessibilityComplete::HandleAccessibilityNotification(
   }
 }
 
+RendererAccessibilityComplete::BrowserTreeNode::BrowserTreeNode() : id(0) {}
+
+RendererAccessibilityComplete::BrowserTreeNode::~BrowserTreeNode() {}
+
 void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
