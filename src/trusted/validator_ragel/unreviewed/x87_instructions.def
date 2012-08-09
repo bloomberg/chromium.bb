@@ -114,7 +114,7 @@ fld1, 0xd9 0xe8, CPUFeature_x87
 fldcw Msw, 0xd9 /5, CPUFeature_x87
 ######## FLDENV ################################################################
 fldenv Mse, 0xd9 /4, CPUFeature_x87
-fldenvs Mse, data16 0xd9 /4, CPUFeature_x87
+fldenvs Mse, data16 0xd9 /4, CPUFeature_x87 nacl-forbidden
 ######## FLDL2E ################################################################
 fldl2e, 0xd9 0xea, CPUFeature_x87
 ######## FLDL2T ################################################################
@@ -149,12 +149,12 @@ fptan, 0xd9 0xf2, CPUFeature_x87
 frndint, 0xd9 0xfc, CPUFeature_x87
 ######## FRSTOR ################################################################
 frstor Msr, 0xdd /4, CPUFeature_x87
-frstors Msr, data16 0xdd /4, CPUFeature_x87
+frstors Msr, data16 0xdd /4, CPUFeature_x87 nacl-forbidden
 ######## FSAVE/FNSAVE ##########################################################
 fnsave Msr, 0xdd /6, CPUFeature_x87
-fnsaves Msr, data16 0xdd /6, CPUFeature_x87
+fnsaves Msr, data16 0xdd /6, CPUFeature_x87 nacl-forbidden
 fsave Msr, fwait 0xdd /6, CPUFeature_x87
-fsaves Msr, fwait data16 0xdd /6, CPUFeature_x87
+fsaves Msr, fwait data16 0xdd /6, CPUFeature_x87 nacl-forbidden
 ######## FSCALE ################################################################
 fscale, 0xd9 0xfd, CPUFeature_x87
 ######## FSIN ##################################################################
@@ -172,18 +172,22 @@ fstp Mss, 0xd9 /3, CPUFeature_x87
 fstp Msd, 0xdd /3, CPUFeature_x87
 fstp Mst, 0xdb /7, CPUFeature_x87
 ######## FSTCW/FNSTCW ##########################################################
-fnstcw Msw, 0xd9 /7
-fstcw Msw, fwait 0xd9 /7
+fnstcw Msw, 0xd9 /7, CPUFeature_x87
+fstcw Msw, fwait 0xd9 /7, CPUFeature_x87
 ######## FSTENV/FNSTENV ########################################################
-fnstenv Mse, 0xd9 /6
-fnstenvs Mse, data16 0xd9 /6
-fstenv Mse, fwait 0xd9 /6
-fstenvs Mse, fwait data16 0xd9 /6
+fnstenv Mse, 0xd9 /6, CPUFeature_x87
+fnstenvs Mse, data16 0xd9 /6, CPUFeature_x87 nacl-forbidden
+fstenv Mse, fwait 0xd9 /6, CPUFeature_x87
+fstenvs Mse, fwait data16 0xd9 /6, CPUFeature_x87 nacl-forbidden
 ######## FSTSW/FNSTSW ##########################################################
 fnsts Mw, 0xdd /7, CPUFeature_x87
+fnsts Mw, rexw 0xdd /7, CPUFeature_x87
 fnstsw aw, 0xdf 0xe0, CPUFeature_x87
+fnstsw aw, rexw 0xdf 0xe0, CPUFeature_x87
 fsts Mw, fwait 0xdd /7, CPUFeature_x87
+fsts Mw, fwait rexw 0xdd /7, CPUFeature_x87
 fstsw aw, fwait 0xdf 0xe0, CPUFeature_x87
+fstsw aw, fwait rexw 0xdf 0xe0, CPUFeature_x87
 ######## FSUB/FSUBP/FISUB ######################################################
 # “fsub” and “fsubr” are swapped for some operands in objdump.  This is known
 # issue, but it can not be fixed because of compatibility concerns.  Here we use

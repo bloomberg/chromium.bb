@@ -602,7 +602,15 @@ neg E, 0xf6 /3, lock
 nop, 0x90, norex
 nop, 0x40 0x90, amd64 norex
 nop, 0x48 0x90, amd64 norex
-nop 'Ev, 0x0f 0x1f /0, no_memory_access
+# Bug-to-bug compatibility.  Existing validator severely restricts versions of
+# “nop” with “data16” prefix.  We must do the same.
+# This is description according to AMD/Intel manual.
+#  nop 'Ev, 0x0f 0x1f /0, no_memory_access
+# Instead we describe three sizes separately and disable 16bit one.
+nop 'Ew, data16 0x0f 0x1f /0, no_memory_access nacl-forbidden
+nop 'Ed, 0x0f 0x1f /0, norexw no_memory_access
+nop 'Eq, rexw 0x0f 0x1f /0, no_memory_access
+nop 'Eq, data16 rexw 0x0f 0x1f /0, no_memory_access nacl-forbidden
 ######## NOT ###################################################################
 not E, 0xf6 /2, lock
 ######## OR ####################################################################
