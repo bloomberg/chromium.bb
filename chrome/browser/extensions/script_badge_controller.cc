@@ -111,25 +111,24 @@ void ScriptBadgeController::OnExecuteScriptFinished(
     int32 on_page_id,
     const GURL& on_url,
     const base::ListValue& script_results) {
+  if (!error.empty())
+    return;
+
   int32 current_page_id = GetPageID();
 
-  // Tracking down http://crbug.com/138323.
-  if (current_page_id < 0) {
+  if (on_page_id == current_page_id) {
+    if (MarkExtensionExecuting(extension_id))
+      NotifyChange();
+  } else if (current_page_id < 0) {
+    // Tracking down http://crbug.com/138323.
     std::string message = base::StringPrintf(
-        "Expected a page ID of %d on URL \"%s\", but there was no navigation "
-        "entry. Current URL is \"%s\", extension ID is %s.",
+        "Expected a page ID of %d but there was no navigation entry. "
+        "Extension ID is %s.",
         on_page_id,
-        on_url.spec().c_str(),
-        tab_contents_->web_contents()->GetURL().spec().c_str(),
         extension_id.c_str());
     char buf[1024];
     base::snprintf(buf, arraysize(buf), "%s", message.c_str());
     CHECK(false) << message;
-  }
-
-  if (error.empty() && on_page_id == current_page_id) {
-    if (MarkExtensionExecuting(extension_id))
-      NotifyChange();
   }
 }
 
@@ -193,23 +192,20 @@ void ScriptBadgeController::OnContentScriptsExecuting(
     int32 on_page_id,
     const GURL& on_url) {
   int32 current_page_id = GetPageID();
+  if (on_page_id != current_page_id)
+    return;
 
-  // Tracking down http://crbug.com/138323.
   if (current_page_id < 0) {
+    // Tracking down http://crbug.com/138323.
     std::string message = base::StringPrintf(
-        "Expected a page ID of %d on URL \"%s\", but there was no navigation "
-        "entry. Current URL is \"%s\", extension IDs are %s.",
+        "Expected a page ID of %d but there was no navigation entry. "
+        "Extension IDs are %s.",
         on_page_id,
-        on_url.spec().c_str(),
-        tab_contents_->web_contents()->GetURL().spec().c_str(),
         JoinExtensionIDs(extension_ids).c_str());
     char buf[1024];
     base::snprintf(buf, arraysize(buf), "%s", message.c_str());
     CHECK(false) << message;
   }
-
-  if (on_page_id != current_page_id)
-    return;
 
   bool changed = false;
   for (std::set<std::string>::const_iterator it = extension_ids.begin();
