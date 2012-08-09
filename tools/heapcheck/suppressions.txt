@@ -651,25 +651,6 @@
    fun:IPC::ChannelProxy::Context::OnAddFilter
 }
 {
-   bug_66054_a
-   Heapcheck:Leak
-   ...
-   fun:policy::CreateSequencedTestDictionaryActionP::gmock_Impl::gmock_PerformImpl
-   fun:testing::internal::ActionHelper::Perform
-   fun:policy::CreateSequencedTestDictionaryActionP::gmock_Impl::Perform
-   fun:testing::Action::Perform
-   fun:testing::internal::FunctionMockerBase::InvokeWith
-   fun:testing::internal::FunctionMocker::Invoke
-   fun:policy::ProviderDelegateMock::Load
-   fun:policy::AsynchronousPolicyLoader::Reload
-   fun:policy::AsynchronousPolicyLoaderTest_ProviderNotificationOnPolicyChange_Test::TestBody
-}
-{
-   bug_66054_b
-   Heapcheck:Leak
-   fun:policy::AsynchronousPolicyTestBase_ProviderRefresh_Test::TestBody
-}
-{
    bug_67524
    Heapcheck:Leak
    ...
@@ -1507,75 +1488,6 @@
    fun:ReloadButton::CreateMenuModel
    fun:ReloadButton::ReloadButton
    fun:ReloadButtonTest::ReloadButtonTest
-}
-{
-   bug_141255_a
-   Heapcheck:Leak
-   ...
-   fun:policy::BrowserPolicyConnector::CreatePlatformProvider
-   fun:policy::BrowserPolicyConnector::Init
-   fun:TestingBrowserProcess::browser_policy_connector
-}
-{
-   bug_141255_b
-   Heapcheck:Leak
-   fun:base::internal::WeakReferenceOwner::GetRef
-   fun:base::WeakPtrFactory::GetWeakPtr
-   fun:policy::AsyncPolicyLoader::ScheduleNextReload
-   fun:policy::AsyncPolicyLoader::Init
-}
-{
-   bug_141255_c
-   Heapcheck:Leak
-   ...
-   fun:policy::ConfigDirPolicyLoader::InitOnFile
-   fun:policy::AsyncPolicyLoader::Init
-}
-{
-   bug_141255_d
-   Heapcheck:Leak
-   fun:base::Bind
-   fun:policy::AsyncPolicyProvider::InitWithLoopsReady
-}
-{
-   bug_141255_e
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:ExtensionServiceTestBase::ExtensionServiceTestBase
-}
-{
-   bug_141255_f
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:ExtensionUITest::ExtensionUITest
-   fun:ExtensionUITest_*
-}
-{
-   bug_141255_g
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:MessageLoopForUI::MessageLoopForUI
-   fun:RenderViewHostTestHarness
-   fun:ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness
-   fun:TabContentsTestHarness::TabContentsTestHarness
-}
-{
-   bug_141255_h
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:ExtensionServiceTestSimple_Enabledness_Test::TestBody
-}
-{
-   bug_141255_i
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:ChromeLauncherControllerTest::ChromeLauncherControllerTest
-}
-{
-   bug_141255_j
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:ExtensionUpdaterTest
 }
 {
    bug_141322

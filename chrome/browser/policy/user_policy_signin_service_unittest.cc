@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/run_loop.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/user_policy_signin_service.h"
@@ -24,9 +26,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::Return;
-
 namespace policy {
 
 namespace {
@@ -35,10 +34,12 @@ class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
       : loop_(MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &loop_) {
-  }
+        ui_thread_(content::BrowserThread::UI, &loop_),
+        file_thread_(content::BrowserThread::FILE, &loop_) {}
 
   virtual void SetUp() OVERRIDE {
+    g_browser_process->browser_policy_connector()->Init();
+
     local_state_.reset(new TestingPrefService);
     chrome::RegisterLocalState(local_state_.get());
     static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(
@@ -65,10 +66,14 @@ class UserPolicySigninServiceTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     // Free the profile before we clear out the browser prefs.
     profile_.reset();
-    static_cast<TestingBrowserProcess*>(g_browser_process)->SetLocalState(NULL);
+    TestingBrowserProcess* testing_browser_process =
+        static_cast<TestingBrowserProcess*>(g_browser_process);
+    testing_browser_process->SetLocalState(NULL);
     local_state_.reset();
+    testing_browser_process->SetBrowserPolicyConnector(NULL);
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
   }
-
 
   scoped_ptr<TestingProfile> profile_;
   // Weak pointer to a MockCloudPolicyStore - lifetime is managed by the
@@ -79,6 +84,7 @@ class UserPolicySigninServiceTest : public testing::Test {
   // asynchronously via tasks, so create a fake thread here.
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread file_thread_;
 
   scoped_ptr<TestingPrefService> local_state_;
 };

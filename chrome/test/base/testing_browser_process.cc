@@ -73,10 +73,8 @@ chrome_variations::VariationsService*
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (!browser_policy_connector_.get()) {
+  if (!browser_policy_connector_.get())
     browser_policy_connector_.reset(new policy::BrowserPolicyConnector());
-    browser_policy_connector_->Init();
-  }
 #endif
   return browser_policy_connector_.get();
 }

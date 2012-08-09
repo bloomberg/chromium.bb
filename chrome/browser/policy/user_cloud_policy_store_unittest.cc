@@ -102,6 +102,7 @@ TEST_F(UserCloudPolicyStoreTest, Store) {
 
   // Store a simple policy and make sure it ends up as the currently active
   // policy.
+  EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
   store_->Store(policy_.policy());
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();

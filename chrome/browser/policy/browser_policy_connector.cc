@@ -128,10 +128,7 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
 void BrowserPolicyConnector::Init() {
   DCHECK(!device_management_service_.get()) <<
       "BrowserPolicyConnector::Init() called twice.";
-  // Don't create platform providers if running in a unit test, since
-  // AsyncPlatformLoader requires deletion on the FILE thread.
-  if (MessageLoop::current())
-    platform_provider_.reset(CreatePlatformProvider());
+  platform_provider_.reset(CreatePlatformProvider());
 
   device_management_service_.reset(
       new DeviceManagementService(GetDeviceManagementUrl()));
@@ -148,10 +145,6 @@ void BrowserPolicyConnector::Init() {
   }
 
   InitializeDevicePolicy();
-
-  // Don't bother updating the cache if this is a unit test.
-  if (!MessageLoop::current())
-    return;
 
   // Create the AppPackUpdater to start updating the cache. It requires the
   // system request context, which isn't available yet; therefore it is
@@ -545,10 +538,6 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
           device_data_store_.get(),
           device_policy_cache,
           GetDeviceManagementUrl()));
-
-      // Skip the final initialization if this is a unit test.
-      if (!MessageLoop::current())
-        return;
 
       // Initialize the subsystem once the message loops are spinning.
       MessageLoop::current()->PostTask(

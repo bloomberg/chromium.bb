@@ -5821,14 +5821,6 @@
    fun:_ZN12ReloadButtonC1EP15LocationBarViewP14CommandUpdater
    fun:_ZN16ReloadButtonTestC2Ev
 }
-{
-   bug_141255
-   Memcheck:Leak
-   ...
-   fun:_ZN6policy22BrowserPolicyConnector22CreatePlatformProviderEv
-   fun:_ZN6policy22BrowserPolicyConnector4InitEv
-   fun:_ZN21TestingBrowserProcess24browser_policy_connectorEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
