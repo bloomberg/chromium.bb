@@ -1602,7 +1602,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, CloseLoginTab) {
 
 // Checks that two tabs with SSL timeouts in the same window work.  Both
 // tabs only timeout after logging in.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, TwoBrokenTabs) {
+// Disabled due to frame navigation flakiness:  See http://crbug.com/141497.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoBrokenTabs) {
   SlowLoadBehindCaptivePortal(browser(), true);
 
   // Can't set the TabReloader HTTPS timeout on a new tab without doing some
