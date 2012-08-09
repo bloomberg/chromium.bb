@@ -73,17 +73,15 @@ class ShellWindowViews : public ShellWindow,
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
 
-  // ShellWindow implementation.
-  virtual void UpdateWindowTitle() OVERRIDE;
-  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
-  virtual bool IsFullscreenOrPending() const OVERRIDE;
-
  private:
   friend class ShellWindowFrameView;
 
   virtual ~ShellWindowViews();
 
-  // content::WebContentsDelegate implementation.
+  // ShellWindow implementation.
+  virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreenOrPending() const OVERRIDE;
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
 
