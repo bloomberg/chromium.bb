@@ -22,10 +22,11 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/common/pepper_flash.h"
 #include "chrome/browser/plugin_prefs.h"
+#include "chrome/common/pepper_flash.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pepper_flash.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -145,9 +146,7 @@ bool MakePepperFlashPluginInfo(const FilePath& flash_path,
   plugin_info->is_out_of_process = out_of_process;
   plugin_info->path = flash_path;
   plugin_info->name = kFlashPluginName;
-  plugin_info->permissions = ppapi::PERMISSION_DEV |
-                             ppapi::PERMISSION_PRIVATE |
-                             ppapi::PERMISSION_BYPASS_USER_GESTURE;
+  plugin_info->permissions = kPepperFlashPermissions;
 
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = StringPrintf("%s %d.%d r%d",

@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -107,3 +108,9 @@ bool IsPepperFlashEnabledByDefault() {
   return false;
 #endif
 }
+
+int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
+                                ppapi::PERMISSION_PRIVATE |
+                                ppapi::PERMISSION_BYPASS_USER_GESTURE;
+
+

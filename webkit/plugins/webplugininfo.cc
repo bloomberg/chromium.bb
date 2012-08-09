@@ -22,7 +22,9 @@ WebPluginMimeType::WebPluginMimeType(const std::string& m,
 
 WebPluginMimeType::~WebPluginMimeType() {}
 
-WebPluginInfo::WebPluginInfo() : type(PLUGIN_TYPE_NPAPI) {
+WebPluginInfo::WebPluginInfo()
+    : type(PLUGIN_TYPE_NPAPI),
+      pepper_permissions(0) {
 }
 
 WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
@@ -31,7 +33,8 @@ WebPluginInfo::WebPluginInfo(const WebPluginInfo& rhs)
       version(rhs.version),
       desc(rhs.desc),
       mime_types(rhs.mime_types),
-      type(rhs.type) {
+      type(rhs.type),
+      pepper_permissions(rhs.pepper_permissions) {
 }
 
 WebPluginInfo::~WebPluginInfo() {}
@@ -43,6 +46,7 @@ WebPluginInfo& WebPluginInfo::operator=(const WebPluginInfo& rhs) {
   desc = rhs.desc;
   mime_types = rhs.mime_types;
   type = rhs.type;
+  pepper_permissions = rhs.pepper_permissions;
   return *this;
 }
 
@@ -55,7 +59,8 @@ WebPluginInfo::WebPluginInfo(const string16& fake_name,
       version(fake_version),
       desc(fake_desc),
       mime_types(),
-      type(PLUGIN_TYPE_NPAPI) {
+      type(PLUGIN_TYPE_NPAPI),
+      pepper_permissions(0) {
 }
 
 bool IsPepperPlugin(const WebPluginInfo& plugin) {

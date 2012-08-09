@@ -96,6 +96,7 @@ webkit::WebPluginInfo content::PepperPluginInfo::ToWebPluginInfo() const {
   info.version = ASCIIToUTF16(version);
   info.desc = ASCIIToUTF16(description);
   info.mime_types = mime_types;
+  info.pepper_permissions = permissions;
 
   return info;
 }
@@ -114,6 +115,8 @@ bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
   pepper_info->description = UTF16ToASCII(webplugin_info.desc);
   pepper_info->version = UTF16ToASCII(webplugin_info.version);
   pepper_info->mime_types = webplugin_info.mime_types;
+  pepper_info->permissions = webplugin_info.pepper_permissions;
+
   return true;
 }
 

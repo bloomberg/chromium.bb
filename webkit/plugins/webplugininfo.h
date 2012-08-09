@@ -74,6 +74,9 @@ struct WEBKIT_PLUGINS_EXPORT WebPluginInfo {
 
   // Plugin type. See the PluginType enum.
   int type;
+
+  // When type is PLUGIN_TYPE_PEPPER_* this indicates the permission bits.
+  int32 pepper_permissions;
 };
 
 // Checks whether a plugin is a Pepper plugin, enabled or disabled.
