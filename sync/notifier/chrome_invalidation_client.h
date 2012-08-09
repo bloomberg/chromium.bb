@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -44,6 +45,13 @@ class ChromeInvalidationClient
       public notifier::PushClientObserver,
       public base::NonThreadSafe {
  public:
+  typedef base::Callback<invalidation::InvalidationClient*(
+      invalidation::SystemResources*,
+      int,
+      const invalidation::string&,
+      const invalidation::string&,
+      invalidation::InvalidationListener*)> CreateInvalidationClientCallback;
+
   class Listener {
    public:
     virtual ~Listener();
@@ -65,6 +73,8 @@ class ChromeInvalidationClient
   // Does not take ownership of |listener| or |state_writer|.
   // |invalidation_state_tracker| must be initialized.
   void Start(
+      const CreateInvalidationClientCallback&
+          create_invalidation_client_callback,
       const std::string& client_id, const std::string& client_info,
       const std::string& state,
       const InvalidationVersionMap& initial_max_invalidation_versions,
@@ -73,9 +83,9 @@ class ChromeInvalidationClient
 
   void UpdateCredentials(const std::string& email, const std::string& token);
 
-  // Register the object IDs that we're interested in getting
+  // Update the set of object IDs that we're interested in getting
   // notifications for.  May be called at any time.
-  void RegisterIds(const ObjectIdSet& ids);
+  void UpdateRegisteredIds(const ObjectIdSet& ids);
 
   // invalidation::InvalidationListener implementation.
   virtual void Ready(
@@ -118,9 +128,9 @@ class ChromeInvalidationClient
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
 
- private:
-  friend class ChromeInvalidationClientTest;
+  void StopForTest();
 
+ private:
   void Stop();
 
   NotificationsDisabledReason GetState() const;

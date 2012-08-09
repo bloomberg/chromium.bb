@@ -4,9 +4,11 @@
 
 #include "sync/notifier/invalidation_notifier.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "google/cacheinvalidation/include/invalidation-client-factory.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "net/url_request/url_request_context.h"
 #include "sync/internal_api/public/base/model_type_payload_map.h"
@@ -37,7 +39,9 @@ InvalidationNotifier::~InvalidationNotifier() {
 void InvalidationNotifier::UpdateRegisteredIds(SyncNotifierObserver* handler,
                                                const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
-  invalidation_client_.RegisterIds(helper_.UpdateRegisteredIds(handler, ids));
+  const ObjectIdSet& all_registered_ids =
+      helper_.UpdateRegisteredIds(handler, ids);
+  invalidation_client_.UpdateRegisteredIds(all_registered_ids);
 }
 
 void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
@@ -71,6 +75,7 @@ void InvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   if (state_ == STOPPED) {
     invalidation_client_.Start(
+        base::Bind(&invalidation::CreateInvalidationClient),
         invalidation_client_id_, client_info_, invalidation_state_,
         initial_max_invalidation_versions_,
         invalidation_state_tracker_,

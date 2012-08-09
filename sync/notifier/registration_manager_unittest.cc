@@ -172,7 +172,7 @@ class RegistrationManagerTest : public testing::Test {
   void RunBackoffTest(double jitter) {
     fake_registration_manager_.SetJitter(jitter);
     ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
-    fake_registration_manager_.SetRegisteredIds(ids);
+    fake_registration_manager_.UpdateRegisteredIds(ids);
 
     // Lose some ids.
     ObjectIdSet lost_ids = GetSequenceOfIds(2);
@@ -230,21 +230,21 @@ class RegistrationManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RegistrationManagerTest);
 };
 
-// Basic test of SetRegisteredIds to make sure we properly register new IDs and
-// unregister any IDs no longer in the set.
-TEST_F(RegistrationManagerTest, SetRegisteredIds) {
+// Basic test of UpdateRegisteredIds to make sure we properly register
+// new IDs and unregister any IDs no longer in the set.
+TEST_F(RegistrationManagerTest, UpdateRegisteredIds) {
   ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount - 1);
 
   EXPECT_TRUE(fake_registration_manager_.GetRegisteredIdsForTest().empty());
   EXPECT_TRUE(fake_invalidation_client_.GetRegisteredIdsForTest().empty());
 
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
   EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
   EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 
   ids.insert(GetIdForIndex(kObjectIdsCount - 1));
   ids.erase(GetIdForIndex(kObjectIdsCount - 2));
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
   EXPECT_EQ(ids, fake_registration_manager_.GetRegisteredIdsForTest());
   EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 }
@@ -291,7 +291,7 @@ TEST_F(RegistrationManagerTest, CalculateBackoff) {
 TEST_F(RegistrationManagerTest, MarkRegistrationLost) {
   ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
   EXPECT_TRUE(
       fake_registration_manager_.GetPendingRegistrationsForTest().empty());
 
@@ -324,11 +324,11 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffHigh) {
 }
 
 // Exponential backoff on lost registrations should be reset to zero if
-// SetRegisteredIds is called.
+// UpdateRegisteredIds is called.
 TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffReset) {
   ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
 
   // Lose some ids.
   ObjectIdSet lost_ids = GetSequenceOfIds(2);
@@ -347,7 +347,7 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffReset) {
       fake_registration_manager_.GetPendingRegistrationsForTest());
 
   // Set ids again.
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
   ExpectPendingRegistrations(
       ObjectIdSet(),
       0.0,
@@ -357,7 +357,7 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLostBackoffReset) {
 TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
   ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
 
   fake_invalidation_client_.LoseAllRegistrations();
   fake_registration_manager_.MarkAllRegistrationsLost();
@@ -385,12 +385,12 @@ TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
   EXPECT_EQ(ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 }
 
-// IDs that are disabled should not be re-registered by SetRegisteredIds or
+// IDs that are disabled should not be re-registered by UpdateRegisteredIds or
 // automatic re-registration if that registration is lost.
 TEST_F(RegistrationManagerTest, DisableId) {
   ObjectIdSet ids = GetSequenceOfIds(kObjectIdsCount);
 
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
   EXPECT_TRUE(
       fake_registration_manager_.GetPendingRegistrationsForTest().empty());
 
@@ -405,7 +405,7 @@ TEST_F(RegistrationManagerTest, DisableId) {
   EXPECT_EQ(enabled_ids, fake_registration_manager_.GetRegisteredIdsForTest());
   EXPECT_EQ(enabled_ids, fake_invalidation_client_.GetRegisteredIdsForTest());
 
-  fake_registration_manager_.SetRegisteredIds(ids);
+  fake_registration_manager_.UpdateRegisteredIds(ids);
   EXPECT_EQ(enabled_ids, fake_registration_manager_.GetRegisteredIdsForTest());
 
   fake_registration_manager_.MarkRegistrationLost(

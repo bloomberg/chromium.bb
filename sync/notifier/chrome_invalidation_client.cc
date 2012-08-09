@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/tracked_objects.h"
-#include "google/cacheinvalidation/include/invalidation-client-factory.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
@@ -48,6 +48,8 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
 }
 
 void ChromeInvalidationClient::Start(
+    const CreateInvalidationClientCallback&
+        create_invalidation_client_callback,
     const std::string& client_id, const std::string& client_info,
     const std::string& state,
     const InvalidationVersionMap& initial_max_invalidation_versions,
@@ -85,7 +87,7 @@ void ChromeInvalidationClient::Start(
 
   int client_type = ipc::invalidation::ClientType::CHROME_SYNC;
   invalidation_client_.reset(
-      invalidation::CreateInvalidationClient(
+      create_invalidation_client_callback.Run(
           &chrome_system_resources_, client_type, client_id,
           kApplicationName, this));
   invalidation_client_->Start();
@@ -100,23 +102,25 @@ void ChromeInvalidationClient::UpdateCredentials(
   chrome_system_resources_.network()->UpdateCredentials(email, token);
 }
 
-void ChromeInvalidationClient::RegisterIds(const ObjectIdSet& ids) {
+void ChromeInvalidationClient::UpdateRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
   registered_ids_ = ids;
   // |ticl_state_| can go to NO_NOTIFICATION_ERROR even without a
   // working XMPP connection (as observed by us), so check it instead
   // of GetState() (see http://crbug.com/139424).
   if (ticl_state_ == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
-    registration_manager_->SetRegisteredIds(registered_ids_);
+    registration_manager_->UpdateRegisteredIds(registered_ids_);
   }
   // TODO(akalin): Clear invalidation versions for unregistered types.
 }
 
 void ChromeInvalidationClient::Ready(
     invalidation::InvalidationClient* client) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   ticl_state_ = NO_NOTIFICATION_ERROR;
   EmitStateChange();
-  registration_manager_->SetRegisteredIds(registered_ids_);
+  registration_manager_->UpdateRegisteredIds(registered_ids_);
 }
 
 void ChromeInvalidationClient::Invalidate(
@@ -124,6 +128,7 @@ void ChromeInvalidationClient::Invalidate(
     const invalidation::Invalidation& invalidation,
     const invalidation::AckHandle& ack_handle) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
 
   const invalidation::ObjectId& id = invalidation.object_id();
@@ -170,6 +175,7 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
     const invalidation::ObjectId& object_id,
     const invalidation::AckHandle& ack_handle) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateUnknownVersion";
 
   ObjectIdPayloadMap id_payloads;
@@ -186,6 +192,7 @@ void ChromeInvalidationClient::InvalidateAll(
     invalidation::InvalidationClient* client,
     const invalidation::AckHandle& ack_handle) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InvalidateAll";
 
   ObjectIdPayloadMap id_payloads;
@@ -210,6 +217,7 @@ void ChromeInvalidationClient::InformRegistrationStatus(
       const invalidation::ObjectId& object_id,
       InvalidationListener::RegistrationState new_state) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InformRegistrationStatus: "
            << ObjectIdToString(object_id) << " " << new_state;
 
@@ -225,6 +233,7 @@ void ChromeInvalidationClient::InformRegistrationFailure(
     bool is_transient,
     const std::string& error_message) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "InformRegistrationFailure: "
            << ObjectIdToString(object_id)
            << "is_transient=" << is_transient
@@ -248,6 +257,7 @@ void ChromeInvalidationClient::ReissueRegistrations(
     const std::string& prefix,
     int prefix_length) {
   DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   DVLOG(1) << "AllRegistrationsLost";
   registration_manager_->MarkAllRegistrationsLost();
 }
@@ -255,6 +265,8 @@ void ChromeInvalidationClient::ReissueRegistrations(
 void ChromeInvalidationClient::InformError(
     invalidation::InvalidationClient* client,
     const invalidation::ErrorInfo& error_info) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(client, invalidation_client_.get());
   LOG(ERROR) << "Ticl error " << error_info.error_reason() << ": "
              << error_info.error_message()
              << " (transient = " << error_info.is_transient() << ")";
@@ -271,6 +283,11 @@ void ChromeInvalidationClient::WriteState(const std::string& state) {
   DVLOG(1) << "WriteState";
   invalidation_state_tracker_.Call(
       FROM_HERE, &InvalidationStateTracker::SetInvalidationState, state);
+}
+
+void ChromeInvalidationClient::StopForTest() {
+  DCHECK(CalledOnValidThread());
+  Stop();
 }
 
 void ChromeInvalidationClient::Stop() {

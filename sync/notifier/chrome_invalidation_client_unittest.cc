@@ -2,364 +2,763 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstddef>
+#include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
-#include "google/cacheinvalidation/types.pb.h"
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_invalidation_client.h"
-#include "sync/notifier/mock_invalidation_state_tracker.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "sync/notifier/fake_invalidation_state_tracker.h"
+#include "sync/notifier/invalidation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::StrictMock;
-
 namespace {
+
+using invalidation::AckHandle;
+using invalidation::ObjectId;
 
 const char kClientId[] = "client_id";
 const char kClientInfo[] = "client_info";
+
 const char kState[] = "state";
 const char kNewState[] = "new_state";
 
+const char kPayload1[] = "payload1";
+const char kPayload2[] = "payload2";
+
+const int64 kMinVersion = FakeInvalidationStateTracker::kMinVersion;
+const int64 kVersion1 = 1LL;
+const int64 kVersion2 = 2LL;
+
 const int kChromeSyncSourceId = 1004;
 
-class MockInvalidationClient : public invalidation::InvalidationClient {
- public:
-  MOCK_METHOD0(Start, void());
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD1(Register, void(const invalidation::ObjectId&));
-  MOCK_METHOD1(Register, void(const std::vector<invalidation::ObjectId>&));
-  MOCK_METHOD1(Unregister, void(const invalidation::ObjectId&));
-  MOCK_METHOD1(Unregister, void(const std::vector<invalidation::ObjectId>&));
-  MOCK_METHOD1(Acknowledge, void(const invalidation::AckHandle&));
-};
-
-class MockListener : public ChromeInvalidationClient::Listener {
- public:
-  MOCK_METHOD1(OnInvalidate, void(const ObjectIdPayloadMap&));
-  MOCK_METHOD0(OnNotificationsEnabled, void());
-  MOCK_METHOD1(OnNotificationsDisabled, void(NotificationsDisabledReason));
-};
-
-ObjectIdSet MakeSetFromId(const invalidation::ObjectId& id) {
-  ObjectIdSet ids;
-  ids.insert(id);
-  return ids;
-}
-
-ObjectIdPayloadMap ObjectIdsAndPayloadToMap(const ObjectIdSet& ids,
-                                            const std::string& payload) {
-  ObjectIdPayloadMap id_payloads;
-  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    id_payloads[*it] = payload;
+struct AckHandleLessThan {
+  bool operator()(const AckHandle& lhs, const AckHandle& rhs) const {
+    return lhs.handle_data() < rhs.handle_data();
   }
-  return id_payloads;
-}
+};
 
-}  // namespace
+typedef std::set<AckHandle, AckHandleLessThan> AckHandleSet;
+
+// Fake invalidation::InvalidationClient implementation that keeps
+// track of registered IDs and acked handles.
+class FakeInvalidationClient : public invalidation::InvalidationClient {
+ public:
+  FakeInvalidationClient() : started_(false) {}
+  virtual ~FakeInvalidationClient() {}
+
+  const ObjectIdSet& GetRegisteredIds() const {
+    return registered_ids_;
+  }
+
+  void ClearAckedHandles() {
+    acked_handles_.clear();
+  }
+
+  bool IsAckedHandle(const AckHandle& ack_handle) const {
+    return (acked_handles_.find(ack_handle) != acked_handles_.end());
+  }
+
+  // invalidation::InvalidationClient implementation.
+
+  virtual void Start() OVERRIDE {
+    started_ = true;
+  }
+
+  virtual void Stop() OVERRIDE {
+    started_ = false;
+  }
+
+  virtual void Register(const ObjectId& object_id) OVERRIDE {
+    if (!started_) {
+      ADD_FAILURE();
+      return;
+    }
+    registered_ids_.insert(object_id);
+  }
+
+  virtual void Register(
+      const invalidation::vector<ObjectId>& object_ids) OVERRIDE {
+    if (!started_) {
+      ADD_FAILURE();
+      return;
+    }
+    registered_ids_.insert(object_ids.begin(), object_ids.end());
+  }
+
+  virtual void Unregister(const ObjectId& object_id) OVERRIDE {
+    if (!started_) {
+      ADD_FAILURE();
+      return;
+    }
+    registered_ids_.erase(object_id);
+  }
+
+  virtual void Unregister(
+      const invalidation::vector<ObjectId>& object_ids) OVERRIDE {
+    if (!started_) {
+      ADD_FAILURE();
+      return;
+    }
+    for (invalidation::vector<ObjectId>::const_iterator
+             it = object_ids.begin(); it != object_ids.end(); ++it) {
+      registered_ids_.erase(*it);
+    }
+  }
+
+  virtual void Acknowledge(const AckHandle& ack_handle) OVERRIDE {
+    if (!started_) {
+      ADD_FAILURE();
+      return;
+    }
+    acked_handles_.insert(ack_handle);
+  }
+
+ private:
+  bool started_;
+  ObjectIdSet registered_ids_;
+  AckHandleSet acked_handles_;
+};
+
+// Fake listener tkat keeps track of invalidation counts, payloads,
+// and state.
+class FakeListener : public ChromeInvalidationClient::Listener {
+ public:
+  FakeListener() : reason_(TRANSIENT_NOTIFICATION_ERROR) {}
+  virtual ~FakeListener() {}
+
+  int GetInvalidationCount(const ObjectId& id) const {
+    ObjectIdCountMap::const_iterator it = invalidation_counts_.find(id);
+    return (it == invalidation_counts_.end()) ? 0 : it->second;
+  }
+
+  std::string GetPayload(const ObjectId& id) const {
+    ObjectIdPayloadMap::const_iterator it = payloads_.find(id);
+    return (it == payloads_.end()) ? "" : it->second;
+  }
+
+  // NO_NOTIFICATION_ERROR is the enabled state.
+  NotificationsDisabledReason GetNotificationsDisabledReason() const {
+    return reason_;
+  }
+
+  // ChromeInvalidationClient::Listener implementation.
+
+  virtual void OnInvalidate(const ObjectIdPayloadMap& id_payloads) OVERRIDE {
+    for (ObjectIdPayloadMap::const_iterator it = id_payloads.begin();
+         it != id_payloads.end(); ++it) {
+      ++invalidation_counts_[it->first];
+      payloads_[it->first] = it->second;
+    }
+  }
+
+  virtual void OnNotificationsEnabled() {
+    reason_ = NO_NOTIFICATION_ERROR;
+  }
+
+  virtual void OnNotificationsDisabled(NotificationsDisabledReason reason) {
+    reason_ = reason;
+  }
+
+ private:
+  typedef std::map<ObjectId, int, ObjectIdLessThan> ObjectIdCountMap;
+  ObjectIdCountMap invalidation_counts_;
+  ObjectIdPayloadMap payloads_;
+  NotificationsDisabledReason reason_;
+};
+
+invalidation::InvalidationClient* CreateFakeInvalidationClient(
+    FakeInvalidationClient** fake_invalidation_client,
+    invalidation::SystemResources* resources,
+    int client_type,
+    const invalidation::string& client_name,
+    const invalidation::string& application_name,
+    invalidation::InvalidationListener* listener) {
+  *fake_invalidation_client = new FakeInvalidationClient();
+  return *fake_invalidation_client;
+}
 
 class ChromeInvalidationClientTest : public testing::Test {
  protected:
   ChromeInvalidationClientTest()
-      : fake_push_client_(new notifier::FakePushClient()),
-        client_(scoped_ptr<notifier::PushClient>(fake_push_client_)),
-        kBookmarksId_(kChromeSyncSourceId, "BOOKMARK"),
+      : kBookmarksId_(kChromeSyncSourceId, "BOOKMARK"),
         kPreferencesId_(kChromeSyncSourceId, "PREFERENCE"),
         kExtensionsId_(kChromeSyncSourceId, "EXTENSION"),
-        kAppsId_(kChromeSyncSourceId, "APP") {}
+        kAppsId_(kChromeSyncSourceId, "APP"),
+        fake_push_client_(new notifier::FakePushClient()),
+        fake_invalidation_client_(NULL),
+        client_(scoped_ptr<notifier::PushClient>(fake_push_client_)) {}
 
   virtual void SetUp() {
-    client_.Start(kClientId, kClientInfo, kState,
-                  InvalidationVersionMap(),
-                  MakeWeakHandle(mock_invalidation_state_tracker_.AsWeakPtr()),
-                  &mock_listener_);
+    StartClient();
+
+    registered_ids_.insert(kBookmarksId_);
+    registered_ids_.insert(kPreferencesId_);
+    client_.UpdateRegisteredIds(registered_ids_);
   }
 
   virtual void TearDown() {
-    // client_.Stop() stops the invalidation scheduler, which deletes any
-    // pending tasks without running them.  Some tasks "run and delete" another
-    // task, so they must be run in order to avoid leaking the inner task.
-    // client_.Stop() does not schedule any tasks, so it's both necessary and
-    // sufficient to drain the task queue before calling it.
-    message_loop_.RunAllPending();
-    client_.Stop();
+    StopClient();
   }
 
-  // |payload| can be NULL, but not |type_name|.
-  void FireInvalidate(const char* type_name,
+  // Restart client without re-registering IDs.
+  void RestartClient() {
+    StopClient();
+    StartClient();
+  }
+
+  int GetInvalidationCount(const ObjectId& id) const {
+    return fake_listener_.GetInvalidationCount(id);
+  }
+
+  std::string GetPayload(const ObjectId& id) const {
+    return fake_listener_.GetPayload(id);
+  }
+
+  NotificationsDisabledReason GetNotificationsDisabledReason() const {
+    return fake_listener_.GetNotificationsDisabledReason();
+  }
+
+  int64 GetMaxVersion(const ObjectId& id) const {
+    return fake_tracker_.GetMaxVersion(id);
+  }
+
+  std::string GetInvalidationState() const {
+    return fake_tracker_.GetInvalidationState();
+  }
+
+  ObjectIdSet GetRegisteredIds() const {
+    return fake_invalidation_client_->GetRegisteredIds();
+  }
+
+  // |payload| can be NULL.
+  void FireInvalidate(const ObjectId& object_id,
                       int64 version, const char* payload) {
-    const invalidation::ObjectId object_id(
-        ipc::invalidation::ObjectSource::CHROME_SYNC, type_name);
-    std::string payload_tmp = payload ? payload : "";
     invalidation::Invalidation inv;
     if (payload) {
       inv = invalidation::Invalidation(object_id, version, payload);
     } else {
       inv = invalidation::Invalidation(object_id, version);
     }
-    invalidation::AckHandle ack_handle("fakedata");
-    EXPECT_CALL(mock_invalidation_client_, Acknowledge(ack_handle));
-    client_.Invalidate(&mock_invalidation_client_, inv, ack_handle);
+    const AckHandle ack_handle("fakedata");
+    fake_invalidation_client_->ClearAckedHandles();
+    client_.Invalidate(fake_invalidation_client_, inv, ack_handle);
+    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
     // Pump message loop to trigger
     // InvalidationStateTracker::SetMaxVersion().
     message_loop_.RunAllPending();
   }
 
   // |payload| can be NULL, but not |type_name|.
-  void FireInvalidateUnknownVersion(const char* type_name) {
-    const invalidation::ObjectId object_id(
-        ipc::invalidation::ObjectSource::CHROME_SYNC, type_name);
-
-    invalidation::AckHandle ack_handle("fakedata");
-    EXPECT_CALL(mock_invalidation_client_, Acknowledge(ack_handle));
-    client_.InvalidateUnknownVersion(&mock_invalidation_client_, object_id,
+  void FireInvalidateUnknownVersion(const ObjectId& object_id) {
+    const AckHandle ack_handle("fakedata_unknown");
+    fake_invalidation_client_->ClearAckedHandles();
+    client_.InvalidateUnknownVersion(fake_invalidation_client_, object_id,
                                      ack_handle);
+    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
   }
 
   void FireInvalidateAll() {
-    invalidation::AckHandle ack_handle("fakedata");
-    EXPECT_CALL(mock_invalidation_client_, Acknowledge(ack_handle));
-    client_.InvalidateAll(&mock_invalidation_client_, ack_handle);
+    const AckHandle ack_handle("fakedata_all");
+    fake_invalidation_client_->ClearAckedHandles();
+    client_.InvalidateAll(fake_invalidation_client_, ack_handle);
+    EXPECT_TRUE(fake_invalidation_client_->IsAckedHandle(ack_handle));
+  }
+
+  void WriteState(const std::string& new_state) {
+    client_.WriteState(new_state);
+    // Pump message loop to trigger
+    // InvalidationStateTracker::WriteState().
+    message_loop_.RunAllPending();
+  }
+
+  void EnableNotifications() {
+    fake_push_client_->EnableNotifications();
+  }
+
+  void DisableNotifications(notifier::NotificationsDisabledReason reason) {
+    fake_push_client_->DisableNotifications(reason);
+  }
+
+  const ObjectId kBookmarksId_;
+  const ObjectId kPreferencesId_;
+  const ObjectId kExtensionsId_;
+  const ObjectId kAppsId_;
+
+  ObjectIdSet registered_ids_;
+
+ private:
+  void StartClient() {
+    fake_invalidation_client_ = NULL;
+    client_.Start(base::Bind(&CreateFakeInvalidationClient,
+                             &fake_invalidation_client_),
+                  kClientId, kClientInfo, kState,
+                  InvalidationVersionMap(),
+                  MakeWeakHandle(fake_tracker_.AsWeakPtr()),
+                  &fake_listener_);
+    DCHECK(fake_invalidation_client_);
+  }
+
+  void StopClient() {
+    // client_.StopForTest() stops the invalidation scheduler, which
+    // deletes any pending tasks without running them.  Some tasks
+    // "run and delete" another task, so they must be run in order to
+    // avoid leaking the inner task.  client_.StopForTest() does not
+    // schedule any tasks, so it's both necessary and sufficient to
+    // drain the task queue before calling it.
+    message_loop_.RunAllPending();
+    fake_invalidation_client_ = NULL;
+    client_.StopForTest();
   }
 
   MessageLoop message_loop_;
-  StrictMock<MockListener> mock_listener_;
-  StrictMock<MockInvalidationStateTracker>
-      mock_invalidation_state_tracker_;
-  StrictMock<MockInvalidationClient> mock_invalidation_client_;
-  notifier::FakePushClient* const fake_push_client_;
-  ChromeInvalidationClient client_;
 
-  const invalidation::ObjectId kBookmarksId_;
-  const invalidation::ObjectId kPreferencesId_;
-  const invalidation::ObjectId kExtensionsId_;
-  const invalidation::ObjectId kAppsId_;
+  FakeListener fake_listener_;
+  FakeInvalidationStateTracker fake_tracker_;
+  notifier::FakePushClient* const fake_push_client_;
+
+ protected:
+  // Tests need to access these directly.
+  FakeInvalidationClient* fake_invalidation_client_;
+  ChromeInvalidationClient client_;
 };
 
-// Checks that we still dispatch an invalidation for something that's not
-// currently registered (perhaps it was unregistered while it was still in
-// flight).
-TEST_F(ChromeInvalidationClientTest, InvalidateBadObjectId) {
-  ObjectIdSet ids;
-  ids.insert(kBookmarksId_);
-  ids.insert(kAppsId_);
-  client_.RegisterIds(ids);
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(
-          MakeSetFromId(invalidation::ObjectId(kChromeSyncSourceId, "bad")),
-                        std::string())));
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(invalidation::ObjectId(kChromeSyncSourceId, "bad"),
-                            1));
-  FireInvalidate("bad", 1, NULL);
+// Write a new state to the client.  It should propagate to the
+// tracker.
+TEST_F(ChromeInvalidationClientTest, WriteState) {
+  WriteState(kNewState);
+
+  EXPECT_EQ(kNewState, GetInvalidationState());
 }
 
+// Invalidation tests.
+
+// Fire an invalidation without a payload.  It should be processed,
+// the payload should remain empty, and the version should be updated.
 TEST_F(ChromeInvalidationClientTest, InvalidateNoPayload) {
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kBookmarksId_), std::string())));
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kBookmarksId_, 1));
-  FireInvalidate("BOOKMARK", 1, NULL);
+  const ObjectId& id = kBookmarksId_;
+
+  FireInvalidate(id, kVersion1, NULL);
+
+  EXPECT_EQ(1, GetInvalidationCount(id));
+  EXPECT_EQ("", GetPayload(id));
+  EXPECT_EQ(kVersion1, GetMaxVersion(id));
 }
 
+// Fire an invalidation with an empty payload.  It should be
+// processed, the payload should remain empty, and the version should
+// be updated.
+TEST_F(ChromeInvalidationClientTest, InvalidateEmptyPayload) {
+  const ObjectId& id = kBookmarksId_;
+
+  FireInvalidate(id, kVersion1, "");
+
+  EXPECT_EQ(1, GetInvalidationCount(id));
+  EXPECT_EQ("", GetPayload(id));
+  EXPECT_EQ(kVersion1, GetMaxVersion(id));
+}
+
+// Fire an invalidation with a payload.  It should be processed, and
+// both the payload and the version should be updated.
 TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kPreferencesId_), "payload")));
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kPreferencesId_, 1));
-  FireInvalidate("PREFERENCE", 1, "payload");
+  const ObjectId& id = kPreferencesId_;
+
+  FireInvalidate(id, kVersion1, kPayload1);
+
+  EXPECT_EQ(1, GetInvalidationCount(id));
+  EXPECT_EQ(kPayload1, GetPayload(id));
+  EXPECT_EQ(kVersion1, GetMaxVersion(id));
 }
 
+// Fire an invalidation with a payload.  It should still be processed,
+// and both the payload and the version should be updated.
+TEST_F(ChromeInvalidationClientTest, InvalidateUnregistered) {
+  const ObjectId kUnregisteredId(
+      kChromeSyncSourceId, "unregistered");
+  const ObjectId& id = kUnregisteredId;
+
+  EXPECT_EQ(0, GetInvalidationCount(id));
+  EXPECT_EQ("", GetPayload(id));
+  EXPECT_EQ(kMinVersion, GetMaxVersion(id));
+
+  FireInvalidate(id, kVersion1, NULL);
+
+  EXPECT_EQ(1, GetInvalidationCount(id));
+  EXPECT_EQ("", GetPayload(id));
+  EXPECT_EQ(kVersion1, GetMaxVersion(id));
+}
+
+// Fire an invalidation, then fire another one with a lower version.
+// The first one should be processed and should update the payload and
+// version, but the second one shouldn't.
 TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
-  using ::testing::Mock;
+  const ObjectId& id = kPreferencesId_;
 
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kAppsId_), std::string())));
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kAppsId_, 1));
+  FireInvalidate(id, kVersion2, kPayload2);
 
-  // Should trigger.
-  FireInvalidate("APP", 1, NULL);
+  EXPECT_EQ(1, GetInvalidationCount(id));
+  EXPECT_EQ(kPayload2, GetPayload(id));
+  EXPECT_EQ(kVersion2, GetMaxVersion(id));
 
-  Mock::VerifyAndClearExpectations(&mock_listener_);
+  FireInvalidate(id, kVersion1, kPayload1);
 
-  // Should be dropped.
-  FireInvalidate("APP", 1, NULL);
+  EXPECT_EQ(1, GetInvalidationCount(id));
+  EXPECT_EQ(kPayload2, GetPayload(id));
+  EXPECT_EQ(kVersion2, GetMaxVersion(id));
 }
 
+// Fire an invalidation with an unknown version twice.  It shouldn't
+// update the payload or version either time, but it should still be
+// processed.
 TEST_F(ChromeInvalidationClientTest, InvalidateUnknownVersion) {
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kExtensionsId_),
-                               std::string()))).Times(2);
+  const ObjectId& id = kBookmarksId_;
 
-  // Should trigger twice.
-  FireInvalidateUnknownVersion("EXTENSION");
-  FireInvalidateUnknownVersion("EXTENSION");
+  FireInvalidateUnknownVersion(id);
+
+  EXPECT_EQ(1, GetInvalidationCount(id));
+  EXPECT_EQ("", GetPayload(id));
+  EXPECT_EQ(kMinVersion, GetMaxVersion(id));
+
+  FireInvalidateUnknownVersion(id);
+
+  EXPECT_EQ(2, GetInvalidationCount(id));
+  EXPECT_EQ("", GetPayload(id));
+  EXPECT_EQ(kMinVersion, GetMaxVersion(id));
 }
 
-// Comprehensive test of various invalidations that we might receive from Tango
-// and how they interact.
-TEST_F(ChromeInvalidationClientTest, InvalidateVersionMultipleTypes) {
-  using ::testing::Mock;
+// Fire an invalidation for all enabled IDs.  It shouldn't update the
+// payload or version, but it should still invalidate the IDs.
+TEST_F(ChromeInvalidationClientTest, InvalidateAll) {
+  FireInvalidateAll();
 
-  ObjectIdSet ids;
-  ids.insert(kBookmarksId_);
-  ids.insert(kAppsId_);
-  client_.RegisterIds(ids);
+  for (ObjectIdSet::const_iterator it = registered_ids_.begin();
+       it != registered_ids_.end(); ++it) {
+    EXPECT_EQ(1, GetInvalidationCount(*it));
+    EXPECT_EQ("", GetPayload(*it));
+    EXPECT_EQ(kMinVersion, GetMaxVersion(*it));
+  }
+}
 
-  // Initial invalidations to the client should be recorded and dispatched to
-  // the listener.
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kAppsId_), std::string())));
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kExtensionsId_), std::string())));
+// Comprehensive test of various scenarios for multiple IDs.
+TEST_F(ChromeInvalidationClientTest, InvalidateMultipleIds) {
+  FireInvalidate(kBookmarksId_, 3, NULL);
 
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kAppsId_, 3));
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kExtensionsId_, 2));
+  EXPECT_EQ(1, GetInvalidationCount(kBookmarksId_));
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
 
-  FireInvalidate("APP", 3, NULL);
-  FireInvalidate("EXTENSION", 2, NULL);
+  FireInvalidate(kExtensionsId_, 2, NULL);
 
-  Mock::VerifyAndClearExpectations(&mock_listener_);
-  Mock::VerifyAndClearExpectations(&mock_invalidation_state_tracker_);
+  EXPECT_EQ(1, GetInvalidationCount(kExtensionsId_));
+  EXPECT_EQ("", GetPayload(kExtensionsId_));
+  EXPECT_EQ(2, GetMaxVersion(kExtensionsId_));
 
-  // Out-of-order invalidations with lower version numbers should be ignored.
-  FireInvalidate("APP", 1, NULL);
-  FireInvalidate("EXTENSION", 1, NULL);
+  // Invalidations with lower version numbers should be ignored.
 
-  Mock::VerifyAndClearExpectations(&mock_listener_);
-  Mock::VerifyAndClearExpectations(&mock_invalidation_state_tracker_);
+  FireInvalidate(kBookmarksId_, 1, NULL);
+
+  EXPECT_EQ(1, GetInvalidationCount(kBookmarksId_));
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
+
+  FireInvalidate(kExtensionsId_, 1, NULL);
+
+  EXPECT_EQ(1, GetInvalidationCount(kExtensionsId_));
+  EXPECT_EQ("", GetPayload(kExtensionsId_));
+  EXPECT_EQ(2, GetMaxVersion(kExtensionsId_));
 
   // InvalidateAll shouldn't change any version state.
-  EXPECT_CALL(mock_listener_,
-              OnInvalidate(ObjectIdsAndPayloadToMap(ids, std::string())));
+
   FireInvalidateAll();
 
-  Mock::VerifyAndClearExpectations(&mock_listener_);
-  Mock::VerifyAndClearExpectations(&mock_invalidation_state_tracker_);
+  EXPECT_EQ(2, GetInvalidationCount(kBookmarksId_));
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(3, GetMaxVersion(kBookmarksId_));
 
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kPreferencesId_), std::string())));
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kExtensionsId_), std::string())));
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(MakeSetFromId(kAppsId_), std::string())));
+  EXPECT_EQ(1, GetInvalidationCount(kPreferencesId_));
+  EXPECT_EQ("", GetPayload(kPreferencesId_));
+  EXPECT_EQ(kMinVersion, GetMaxVersion(kPreferencesId_));
 
-  // Normal invalidations with monotonically increasing version numbers.
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kPreferencesId_, 5));
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kExtensionsId_, 3));
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetMaxVersion(kAppsId_, 4));
+  EXPECT_EQ(1, GetInvalidationCount(kExtensionsId_));
+  EXPECT_EQ("", GetPayload(kExtensionsId_));
+  EXPECT_EQ(2, GetMaxVersion(kExtensionsId_));
 
-  // All three should be triggered.
-  FireInvalidate("PREFERENCE", 5, NULL);
-  FireInvalidate("EXTENSION", 3, NULL);
-  FireInvalidate("APP", 4, NULL);
+  // Invalidations with higher version numbers should be processed.
+
+  FireInvalidate(kPreferencesId_, 5, NULL);
+  EXPECT_EQ(2, GetInvalidationCount(kPreferencesId_));
+  EXPECT_EQ("", GetPayload(kPreferencesId_));
+  EXPECT_EQ(5, GetMaxVersion(kPreferencesId_));
+
+  FireInvalidate(kExtensionsId_, 3, NULL);
+  EXPECT_EQ(2, GetInvalidationCount(kExtensionsId_));
+  EXPECT_EQ("", GetPayload(kExtensionsId_));
+  EXPECT_EQ(3, GetMaxVersion(kExtensionsId_));
+
+  FireInvalidate(kBookmarksId_, 4, NULL);
+  EXPECT_EQ(3, GetInvalidationCount(kBookmarksId_));
+  EXPECT_EQ("", GetPayload(kBookmarksId_));
+  EXPECT_EQ(4, GetMaxVersion(kBookmarksId_));
 }
 
-TEST_F(ChromeInvalidationClientTest, InvalidateAll) {
-  ObjectIdSet ids;
-  ids.insert(kPreferencesId_);
-  ids.insert(kExtensionsId_);
-  client_.RegisterIds(ids);
-  EXPECT_CALL(mock_listener_, OnInvalidate(
-      ObjectIdsAndPayloadToMap(ids, std::string())));
-  FireInvalidateAll();
+// Registration tests.
+
+// With IDs already registered, enable notifications then ready the
+// client.  The IDs should be registered only after the client is
+// readied.
+TEST_F(ChromeInvalidationClientTest, RegisterEnableReady) {
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  EnableNotifications();
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
 
-TEST_F(ChromeInvalidationClientTest, RegisterTypes) {
-  ObjectIdSet ids;
-  ids.insert(kPreferencesId_);
-  ids.insert(kExtensionsId_);
-  client_.RegisterIds(ids);
-  // Registered types should be preserved across Stop/Start.
-  TearDown();
-  SetUp();
-  EXPECT_CALL(mock_listener_,OnInvalidate(
-      ObjectIdsAndPayloadToMap(ids, std::string())));
-  FireInvalidateAll();
+// With IDs already registered, ready the client then enable
+// notifications.  The IDs should be registered after the client is
+// readied.
+TEST_F(ChromeInvalidationClientTest, RegisterReadyEnable) {
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
+
+  EnableNotifications();
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
 
-TEST_F(ChromeInvalidationClientTest, WriteState) {
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetInvalidationState(kNewState));
-  client_.WriteState(kNewState);
+// Unregister the IDs, enable notifications, re-register the IDs, then
+// ready the client.  The IDs should be registered only after the
+// client is readied.
+TEST_F(ChromeInvalidationClientTest, EnableRegisterReady) {
+  client_.UpdateRegisteredIds(ObjectIdSet());
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  EnableNotifications();
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.UpdateRegisteredIds(registered_ids_);
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
 }
 
-TEST_F(ChromeInvalidationClientTest, StateChangesNotReady) {
-  InSequence dummy;
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+// Unregister the IDs, enable notifications, ready the client, then
+// re-register the IDs.  The IDs should be registered only after the
+// client is readied.
+TEST_F(ChromeInvalidationClientTest, EnableReadyRegister) {
+  client_.UpdateRegisteredIds(ObjectIdSet());
 
-  fake_push_client_->DisableNotifications(
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  EnableNotifications();
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.UpdateRegisteredIds(registered_ids_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
+}
+
+// Unregister the IDs, ready the client, enable notifications, then
+// re-register the IDs.  The IDs should be registered only after the
+// client is readied.
+TEST_F(ChromeInvalidationClientTest, ReadyEnableRegister) {
+  client_.UpdateRegisteredIds(ObjectIdSet());
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  EnableNotifications();
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.UpdateRegisteredIds(registered_ids_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
+}
+
+// Unregister the IDs, ready the client, re-register the IDs, then
+// enable notifications. The IDs should be registered only after the
+// client is readied.
+//
+// This test is important: see http://crbug.com/139424.
+TEST_F(ChromeInvalidationClientTest, ReadyRegisterEnable) {
+  client_.UpdateRegisteredIds(ObjectIdSet());
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.UpdateRegisteredIds(registered_ids_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
+
+  EnableNotifications();
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
+}
+
+// With IDs already registered, ready the client, restart the client,
+// then re-ready it.  The IDs should still be registered.
+TEST_F(ChromeInvalidationClientTest, RegisterTypesPreserved) {
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
+
+  RestartClient();
+
+  EXPECT_TRUE(GetRegisteredIds().empty());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(registered_ids_, GetRegisteredIds());
+}
+
+// Without readying the client, disable notifications, then enable
+// them.  The listener should still think notifications are disabled.
+TEST_F(ChromeInvalidationClientTest, EnableNotificationsNotReady) {
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            GetNotificationsDisabledReason());
+
+  DisableNotifications(
       notifier::TRANSIENT_NOTIFICATION_ERROR);
-  fake_push_client_->DisableNotifications(
+
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            GetNotificationsDisabledReason());
+
+  DisableNotifications(
       notifier::NOTIFICATION_CREDENTIALS_REJECTED);
-  fake_push_client_->EnableNotifications();
+
+  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
+            GetNotificationsDisabledReason());
+
+  EnableNotifications();
+
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR,
+            GetNotificationsDisabledReason());
 }
 
-TEST_F(ChromeInvalidationClientTest, StateChangesReady) {
-  InSequence dummy;
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
-  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
-  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
+// Enable notifications then Ready the invalidation client.  The
+// listener should then be ready.
+TEST_F(ChromeInvalidationClientTest, EnableNotificationsThenReady) {
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
 
-  fake_push_client_->EnableNotifications();
-  client_.Ready(NULL);
-  fake_push_client_->DisableNotifications(
-      notifier::TRANSIENT_NOTIFICATION_ERROR);
-  fake_push_client_->DisableNotifications(
-      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
-  fake_push_client_->EnableNotifications();
+  EnableNotifications();
+
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
 }
 
-TEST_F(ChromeInvalidationClientTest, StateChangesAuthError) {
-  InSequence dummy;
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
-  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
-  EXPECT_CALL(mock_listener_,
-              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED))
-      .Times(4);
-  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
+// Ready the invalidation client then enable notifications.  The
+// listener should then be ready.
+TEST_F(ChromeInvalidationClientTest, ReadyThenEnableNotifications) {
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
 
-  fake_push_client_->EnableNotifications();
-  client_.Ready(NULL);
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(TRANSIENT_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+
+  EnableNotifications();
+
+  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+}
+
+// Enable notifications and ready the client.  Then disable
+// notifications with an auth error and re-enable notifications.  The
+// listener should go into an auth error mode and then back out.
+TEST_F(ChromeInvalidationClientTest, PushClientAuthError) {
+  EnableNotifications();
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+
+  DisableNotifications(
+      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
+
+  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
+            GetNotificationsDisabledReason());
+
+  EnableNotifications();
+
+  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
+}
+
+// Enable notifications and ready the client.  Then simulate an auth
+// error from the invalidation client.  Simulate some notification
+// events, then re-ready the client.  The listener should go into an
+// auth error mode and come out of it only after the client is ready.
+TEST_F(ChromeInvalidationClientTest, InvalidationClientAuthError) {
+  EnableNotifications();
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
 
   client_.InformError(
-      NULL,
+      fake_invalidation_client_,
       invalidation::ErrorInfo(
           invalidation::ErrorReason::AUTH_FAILURE,
           false /* is_transient */,
           "auth error",
           invalidation::ErrorContext()));
-  fake_push_client_->DisableNotifications(
+
+  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
+            GetNotificationsDisabledReason());
+
+  DisableNotifications(
       notifier::TRANSIENT_NOTIFICATION_ERROR);
-  fake_push_client_->DisableNotifications(
-      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
-  fake_push_client_->EnableNotifications();
-  client_.Ready(NULL);
+
+  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
+            GetNotificationsDisabledReason());
+
+  DisableNotifications(
+      notifier::TRANSIENT_NOTIFICATION_ERROR);
+
+  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
+            GetNotificationsDisabledReason());
+
+  EnableNotifications();
+
+  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
+            GetNotificationsDisabledReason());
+
+  client_.Ready(fake_invalidation_client_);
+
+  EXPECT_EQ(NO_NOTIFICATION_ERROR, GetNotificationsDisabledReason());
 }
+
+}  // namespace
 
 }  // namespace syncer

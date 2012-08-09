@@ -13,8 +13,8 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/model_type_payload_map.h"
 #include "sync/internal_api/public/util/weak_handle.h"
+#include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/notifier/mock_invalidation_state_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,7 +48,7 @@ class InvalidationNotifierTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
             InvalidationVersionMap(),
             initial_invalidation_state,
-            MakeWeakHandle(mock_tracker_.AsWeakPtr()),
+            MakeWeakHandle(fake_tracker_.AsWeakPtr()),
             "fake_client_info"));
   }
 
@@ -63,11 +63,19 @@ class InvalidationNotifierTest : public testing::Test {
     invalidation_notifier_.reset();
   }
 
+  void SetStateDeprecated(const std::string& new_state) {
+    invalidation_notifier_->SetStateDeprecated(new_state);
+    message_loop_.RunAllPending();
+  }
+
+ private:
   MessageLoopForIO message_loop_;
-  scoped_ptr<InvalidationNotifier> invalidation_notifier_;
-  StrictMock<MockInvalidationStateTracker> mock_tracker_;
-  StrictMock<MockSyncNotifierObserver> mock_observer_;
   notifier::FakeBaseTask fake_base_task_;
+
+ protected:
+  scoped_ptr<InvalidationNotifier> invalidation_notifier_;
+  FakeInvalidationStateTracker fake_tracker_;
+  StrictMock<MockSyncNotifierObserver> mock_observer_;
 };
 
 TEST_F(InvalidationNotifierTest, Basic) {
@@ -88,12 +96,13 @@ TEST_F(InvalidationNotifierTest, Basic) {
               OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
   EXPECT_CALL(mock_observer_,
               OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
-  // Note no expectation on mock_tracker_, as we initialized with
-  // non-empty initial_invalidation_state above.
 
   // TODO(tim): This call should be a no-op, Remove once bug 124140 and
   // associated issues are fixed.
   invalidation_notifier_->SetStateDeprecated("fake_state");
+  // We don't expect |fake_tracker_|'s state to change, as we
+  // initialized with non-empty initial_invalidation_state above.
+  EXPECT_TRUE(fake_tracker_.GetInvalidationState().empty());
   invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
@@ -110,20 +119,21 @@ TEST_F(InvalidationNotifierTest, Basic) {
 
 TEST_F(InvalidationNotifierTest, MigrateState) {
   CreateAndObserveNotifier(std::string());
-  InSequence dummy;
 
-  EXPECT_CALL(mock_tracker_, SetInvalidationState("fake_state"));
-  invalidation_notifier_->SetStateDeprecated("fake_state");
+  SetStateDeprecated("fake_state");
+  EXPECT_EQ("fake_state", fake_tracker_.GetInvalidationState());
 
   // Should do nothing.
-  invalidation_notifier_->SetStateDeprecated("spurious_fake_state");
+  SetStateDeprecated("spurious_fake_state");
+  EXPECT_EQ("fake_state", fake_tracker_.GetInvalidationState());
 
   // Pretend Chrome shut down.
   ResetNotifier();
 
   CreateAndObserveNotifier("fake_state");
   // Should do nothing.
-  invalidation_notifier_->SetStateDeprecated("more_spurious_fake_state");
+  SetStateDeprecated("more_spurious_fake_state");
+  EXPECT_EQ("fake_state", fake_tracker_.GetInvalidationState());
 }
 
 }  // namespace

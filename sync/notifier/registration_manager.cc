@@ -66,7 +66,7 @@ RegistrationManager::~RegistrationManager() {
   STLDeleteValues(&registration_statuses_);
 }
 
-void RegistrationManager::SetRegisteredIds(const ObjectIdSet& ids) {
+void RegistrationManager::UpdateRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
 
   const ObjectIdSet& old_ids = GetRegisteredIds();

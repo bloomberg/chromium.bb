@@ -461,8 +461,8 @@
         'sync_notifier',
       ],
       'sources': [
-        'notifier/mock_invalidation_state_tracker.cc',
-        'notifier/mock_invalidation_state_tracker.h',
+        'notifier/fake_invalidation_state_tracker.cc',
+        'notifier/fake_invalidation_state_tracker.h',
         'notifier/mock_sync_notifier_observer.cc',
         'notifier/mock_sync_notifier_observer.h',
       ],
