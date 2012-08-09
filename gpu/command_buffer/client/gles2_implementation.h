@@ -103,22 +103,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   // Stores client side cached GL state.
   struct GLCachedState {
-    struct IntState {
-      IntState()
-          : max_combined_texture_image_units(0),
-            max_cube_map_texture_size(0),
-            max_fragment_uniform_vectors(0),
-            max_renderbuffer_size(0),
-            max_texture_image_units(0),
-            max_texture_size(0),
-            max_varying_vectors(0),
-            max_vertex_attribs(0),
-            max_vertex_texture_image_units(0),
-            max_vertex_uniform_vectors(0),
-            num_compressed_texture_formats(0),
-            num_shader_binary_formats(0) {
-      }
-
+    struct GLES2_IMPL_EXPORT IntState {
+      IntState();
       GLint max_combined_texture_image_units;
       GLint max_cube_map_texture_size;
       GLint max_fragment_uniform_vectors;

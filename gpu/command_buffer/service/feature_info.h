@@ -21,27 +21,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   typedef scoped_refptr<FeatureInfo> Ref;
 
   struct FeatureFlags {
-    FeatureFlags()
-        : chromium_framebuffer_multisample(false),
-          oes_standard_derivatives(false),
-          oes_egl_image_external(false),
-          npot_ok(false),
-          enable_texture_float_linear(false),
-          enable_texture_half_float_linear(false),
-          chromium_webglsl(false),
-          chromium_stream_texture(false),
-          angle_translated_shader_source(false),
-          angle_pack_reverse_row_order(false),
-          arb_texture_rectangle(false),
-          angle_instanced_arrays(false),
-          occlusion_query_boolean(false),
-          use_arb_occlusion_query2_for_occlusion_query_boolean(false),
-          use_arb_occlusion_query_for_occlusion_query_boolean(false),
-          disable_workarounds(false),
-          is_intel(false),
-          is_nvidia(false),
-          is_amd(false) {
-    }
+    FeatureFlags();
 
     bool chromium_framebuffer_multisample;
     bool oes_standard_derivatives;
@@ -119,5 +99,3 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
-
-

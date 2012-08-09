@@ -1336,6 +1336,45 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0(
       num_vertices, buffer_id, GL_NO_ERROR);
 }
 
+GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
+MockCommandBufferEngine() {
+  data_.reset(new int8[kSharedBufferSize]);
+  ClearSharedMemory();
+  valid_buffer_.ptr = data_.get();
+  valid_buffer_.size = kSharedBufferSize;
+}
+
+GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
+~MockCommandBufferEngine() {}
+
+Buffer
+GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::GetSharedMemoryBuffer(
+    int32 shm_id) {
+  return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
+}
+
+void GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::set_token(
+    int32 token) {
+  DCHECK(false);
+}
+
+bool GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::SetGetBuffer(
+    int32 /* transfer_buffer_id */) {
+  DCHECK(false);
+  return false;
+}
+
+bool GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::SetGetOffset(
+   int32 offset) {
+  DCHECK(false);
+  return false;
+}
+
+int32 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::GetGetOffset() {
+  DCHECK(false);
+  return 0;
+}
+
 void GLES2DecoderWithShaderTestBase::SetUp() {
   GLES2DecoderTestBase::SetUp();
   SetupDefaultProgram();

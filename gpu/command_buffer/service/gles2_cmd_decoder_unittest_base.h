@@ -471,44 +471,25 @@ class GLES2DecoderTestBase : public testing::Test {
  private:
   class MockCommandBufferEngine : public CommandBufferEngine {
    public:
-    MockCommandBufferEngine() {
-      data_.reset(new int8[kSharedBufferSize]);
-      ClearSharedMemory();
-      valid_buffer_.ptr = data_.get();
-      valid_buffer_.size = kSharedBufferSize;
-    }
+    MockCommandBufferEngine();
 
-    virtual ~MockCommandBufferEngine() {
-    }
+    virtual ~MockCommandBufferEngine();
 
-    virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE {
-      return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
-    }
+    virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
 
     void ClearSharedMemory() {
       memset(data_.get(), kInitialMemoryValue, kSharedBufferSize);
     }
 
-    virtual void set_token(int32 token) OVERRIDE {
-      DCHECK(false);
-    }
+    virtual void set_token(int32 token) OVERRIDE;
 
-    virtual bool SetGetBuffer(int32 /* transfer_buffer_id */) OVERRIDE {
-      DCHECK(false);
-      return false;
-    }
+    virtual bool SetGetBuffer(int32 /* transfer_buffer_id */) OVERRIDE;
 
     // Overridden from CommandBufferEngine.
-    virtual bool SetGetOffset(int32 offset) OVERRIDE {
-      DCHECK(false);
-      return false;
-    }
+    virtual bool SetGetOffset(int32 offset) OVERRIDE;
 
     // Overridden from CommandBufferEngine.
-    virtual int32 GetGetOffset() OVERRIDE {
-      DCHECK(false);
-      return 0;
-    }
+    virtual int32 GetGetOffset() OVERRIDE;
 
    private:
     scoped_array<int8> data_;

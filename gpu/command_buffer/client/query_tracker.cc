@@ -55,6 +55,19 @@ void QuerySyncManager::Free(const QuerySyncManager::QueryInfo& info) {
   free_queries_.push(info);
 }
 
+QueryTracker::Query::Query(GLuint id, GLenum target,
+                           const QuerySyncManager::QueryInfo& info)
+    : id_(id),
+      target_(target),
+      info_(info),
+      state_(kUninitialized),
+      submit_count_(0),
+      token_(0),
+      flushed_(false),
+      result_(0) {
+    }
+
+
 void QueryTracker::Query::Begin(GLES2Implementation* gl) {
   // init memory, inc count
   MarkAsActive();
@@ -165,4 +178,3 @@ void QueryTracker::RemoveQuery(GLuint client_id, bool context_lost) {
 
 }  // namespace gles2
 }  // namespace gpu
-
