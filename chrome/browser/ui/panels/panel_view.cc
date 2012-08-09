@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/panels/panel_view.h"
 
+#include <map>
 #include "base/logging.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_frame_view.h"
@@ -23,6 +25,46 @@
 #endif
 
 namespace {
+
+// Supported accelerators.
+// Note: We can't use the acclerator table defined in chrome/browser/ui/views
+// due to checkdeps violation.
+struct AcceleratorMapping {
+  ui::KeyboardCode keycode;
+  int modifiers;
+  int command_id;
+};
+const AcceleratorMapping kPanelAcceleratorMap[] = {
+  { ui::VKEY_W, ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
+  { ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_CLOSE_WINDOW },
+  { ui::VKEY_F4, ui::EF_ALT_DOWN, IDC_CLOSE_WINDOW },
+  { ui::VKEY_R, ui::EF_CONTROL_DOWN, IDC_RELOAD },
+  { ui::VKEY_F5, ui::EF_NONE, IDC_RELOAD },
+  { ui::VKEY_R, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+      IDC_RELOAD_IGNORING_CACHE },
+  { ui::VKEY_F5, ui::EF_CONTROL_DOWN, IDC_RELOAD_IGNORING_CACHE },
+  { ui::VKEY_F5, ui::EF_SHIFT_DOWN, IDC_RELOAD_IGNORING_CACHE },
+  { ui::VKEY_ESCAPE, ui::EF_NONE, IDC_STOP },
+  { ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_MINUS },
+  { ui::VKEY_SUBTRACT, ui::EF_CONTROL_DOWN, IDC_ZOOM_MINUS },
+  { ui::VKEY_0, ui::EF_CONTROL_DOWN, IDC_ZOOM_NORMAL },
+  { ui::VKEY_NUMPAD0, ui::EF_CONTROL_DOWN, IDC_ZOOM_NORMAL },
+  { ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
+  { ui::VKEY_ADD, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
+};
+
+const std::map<ui::Accelerator, int>& GetAcceleratorTable() {
+  static std::map<ui::Accelerator, int>* accelerators = NULL;
+  if (!accelerators) {
+    accelerators = new std::map<ui::Accelerator, int>();
+    for (size_t i = 0; i < arraysize(kPanelAcceleratorMap); ++i) {
+      ui::Accelerator accelerator(kPanelAcceleratorMap[i].keycode,
+                                  kPanelAcceleratorMap[i].modifiers);
+      (*accelerators)[accelerator] = kPanelAcceleratorMap[i].command_id;
+    }
+  }
+  return *accelerators;
+}
 
 // NativePanelTesting implementation.
 class NativePanelTestingWin : public NativePanelTesting {
@@ -142,10 +184,16 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
 
   OnViewWasResized();
 
+  // Register accelarators supported by panels.
   views::FocusManager* focus_manager = GetFocusManager();
-  ui::Accelerator accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
-  focus_manager->RegisterAccelerator(
-        accelerator, ui::AcceleratorManager::kNormalPriority, this);
+  const std::map<ui::Accelerator, int>& accelerator_table =
+      GetAcceleratorTable();
+  for (std::map<ui::Accelerator, int>::const_iterator iter =
+           accelerator_table.begin();
+       iter != accelerator_table.end(); ++iter) {
+    focus_manager->RegisterAccelerator(
+        iter->first, ui::AcceleratorManager::kNormalPriority, this);
+  }
 }
 
 PanelView::~PanelView() {
@@ -306,6 +354,16 @@ bool PanelView::PreHandlePanelKeyboardEvent(
 
 void PanelView::HandlePanelKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (focus_manager->shortcut_handling_suspended())
+    return;
+
+  ui::Accelerator accelerator(
+      static_cast<ui::KeyboardCode>(event.windowsKeyCode),
+      content::GetModifiersFromNativeWebKeyboardEvent(event));
+  if (event.type == WebKit::WebInputEvent::KeyUp)
+    accelerator.set_type(ui::ET_KEY_RELEASED);
+  focus_manager->ProcessAccelerator(accelerator);
 }
 
 void PanelView::FullScreenModeChanged(bool is_full_screen) {
@@ -519,7 +577,12 @@ bool PanelView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (mouse_dragging_state_ == DRAGGING_STARTED)
     return true;
 
-  return views::View::AcceleratorPressed(accelerator);
+  const std::map<ui::Accelerator, int>& accelerator_table =
+      GetAcceleratorTable();
+  std::map<ui::Accelerator, int>::const_iterator iter =
+      accelerator_table.find(accelerator);
+  DCHECK(iter != accelerator_table.end());
+  return panel_->ExecuteCommandIfEnabled(iter->second);
 }
 
 void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {

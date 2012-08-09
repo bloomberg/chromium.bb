@@ -549,6 +549,16 @@ void Panel::ExecuteCommandWithDisposition(int id,
       panel_host_->StopLoading();
       break;
 
+    // Window management
+    case IDC_CLOSE_WINDOW:
+      content::RecordAction(UserMetricsAction("CloseWindow"));
+      Close();
+      break;
+    case IDC_EXIT:
+      content::RecordAction(UserMetricsAction("Exit"));
+      browser::AttemptUserExit();
+      break;
+
     // Clipboard
     case IDC_COPY:
       content::RecordAction(UserMetricsAction("Copy"));
