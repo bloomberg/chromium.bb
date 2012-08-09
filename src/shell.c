@@ -3154,6 +3154,7 @@ debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 	struct desktop_shell *shell = data;
 	struct weston_compositor *compositor = shell->compositor;
 	struct weston_surface *surface;
+	struct weston_plane plane;
 
 	if (shell->debug_repaint_surface) {
 		weston_surface_destroy(shell->debug_repaint_surface);
@@ -3168,16 +3169,19 @@ debug_repaint_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 		pixman_region32_init(&surface->input);
 
 		/* Here's the dirty little trick that makes the
-		 * repaint debugging work: we force an
-		 * update_transform first to update dependent state
-		 * and clear the geometry.dirty bit.  Then we clear
-		 * the surface damage so it only gets repainted
-		 * piecewise as we repaint other things.  */
+		 * repaint debugging work: we move the surface to a
+		 * different plane and force an update_transform to
+		 * update dependent state and clear the
+		 * geometry.dirty bit.  This way the call to
+		 * damage_below() in update_transform() does not
+		 * add damage to the primary plane.  */
 
+		weston_plane_init(&plane, 0, 0);
+		surface->plane = &plane;
 		weston_surface_update_transform(surface);
-		pixman_region32_fini(&surface->damage);
-		pixman_region32_init(&surface->damage);
 		shell->debug_repaint_surface = surface;
+		surface->plane = &compositor->primary_plane;
+		weston_plane_release(&plane);
 	}
 }
 
