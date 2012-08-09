@@ -56,9 +56,20 @@ FileTasks.prototype.onTasks_ = function(tasks) {
 FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
   var id = this.fileManager_.getExtensionId();
+  var is_on_drive = false;
+  for (var index = 0; index < this.urls_.length; ++index) {
+    if (FileType.isOnGDrive(this.urls_[index])) {
+      is_on_drive = true;
+      break;
+    }
+  }
 
   for (var i = 0; i < tasks.length; i++) {
     var task = tasks[i];
+
+    // Skip Drive App if the file is on Drive.
+    if (!is_on_drive && task.driveApp)
+      continue;
 
     // Tweak images, titles of internal tasks.
     var task_parts = task.taskId.split('|');

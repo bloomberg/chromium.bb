@@ -340,6 +340,7 @@ void CreateDriveTasks(
     if (!best_icon.is_empty()) {
       task->SetString("iconUrl", best_icon.spec());
     }
+    task->SetBoolean("driveApp", true);
     result_list->Append(task);
   }
 }
@@ -696,6 +697,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
                                         ExtensionIconSet::MATCH_BIGGER,
                                         false, NULL);     // grayscale
     task->SetString("iconUrl", icon.spec());
+    task->SetBoolean("driveApp", false);
     result_list->Append(task);
   }
 

@@ -15,6 +15,7 @@
           "taskId": {"type": "string", "description": "The unique identifier of the task."},
           "title": {"type": "string", "description": "Task title."},
           "iconUrl": {"type": "string", "description": "Task icon url (from chrome://extension-icon/...)"},
+          "driveApp": {"type": "boolean", "description": "True if this is Drive App."},
           "patterns": {
             "type": "array",
             "items": { "type": "string" },
