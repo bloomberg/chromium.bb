@@ -204,13 +204,14 @@ ui::GestureStatus ContentsView::OnGestureEvent(
       pagination_model_->EndScroll();
       return ui::GESTURE_STATUS_CONSUMED;
     case ui::ET_SCROLL_FLING_START: {
+      pagination_model_->EndScroll();
       if (fabs(event.details().velocity_x()) > kMinHorizVelocityToSwitchPage) {
+        pagination_model_->ResetTransitionAnimation();
         pagination_model_->SelectPageRelative(
             event.details().velocity_x() < 0 ? 1 : -1,
             true);
-        return ui::GESTURE_STATUS_CONSUMED;
       }
-      break;
+      return ui::GESTURE_STATUS_CONSUMED;
     }
     default:
       break;

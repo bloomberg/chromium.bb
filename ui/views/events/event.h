@@ -91,6 +91,11 @@ class VIEWS_EXPORT Event {
            type_ == ui::ET_GESTURE_SCROLL_END;
   }
 
+  bool IsFlingScrollEvent() const {
+    return type_ == ui::ET_SCROLL_FLING_CANCEL ||
+           type_ == ui::ET_SCROLL_FLING_START;
+  }
+
  protected:
   Event(ui::EventType type, int flags);
   Event(const NativeEvent& native_event, ui::EventType type, int flags);

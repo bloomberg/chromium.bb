@@ -149,17 +149,22 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       break;
     }
     case ui::ET_GESTURE_SCROLL_END:
-      if (!in_gesture_resize_)
-        return ui::GESTURE_STATUS_UNKNOWN;
-      CompleteDrag(DRAG_COMPLETE, event->flags());
-      if (in_move_loop_) {
-        quit_closure_.Run();
-        in_move_loop_ = false;
-      }
-      in_gesture_resize_ = false;
-      break;
-
     case ui::ET_SCROLL_FLING_START: {
+      ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
+      if (in_gesture_resize_) {
+        // If the window was being resized, then just complete the resize.
+        CompleteDrag(DRAG_COMPLETE, event->flags());
+        if (in_move_loop_) {
+          quit_closure_.Run();
+          in_move_loop_ = false;
+        }
+        in_gesture_resize_ = false;
+        status = ui::GESTURE_STATUS_CONSUMED;
+      }
+
+      if (event->type() == ui::ET_GESTURE_SCROLL_END)
+        return status;
+
       int component =
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component) == 0)

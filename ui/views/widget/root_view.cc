@@ -458,8 +458,9 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
   if (gesture_handler_) {
     // |gesture_handler_| (or |scroll_gesture_handler_|) can be deleted during
     // processing.
-    View* handler = event.IsScrollGestureEvent() && scroll_gesture_handler_ ?
-        scroll_gesture_handler_ : gesture_handler_;
+    View* handler = scroll_gesture_handler_ &&
+        (event.IsScrollGestureEvent() || event.IsFlingScrollEvent())  ?
+            scroll_gesture_handler_ : gesture_handler_;
     GestureEvent handler_event(event, this, handler);
 
     ui::GestureStatus status = handler->ProcessGestureEvent(handler_event);
@@ -468,7 +469,8 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
         event.details().touch_points() <= 1)
       gesture_handler_ = NULL;
 
-    if (event.type() == ui::ET_GESTURE_SCROLL_END && scroll_gesture_handler_)
+    if (scroll_gesture_handler_ && (event.type() == ui::ET_GESTURE_SCROLL_END ||
+                                    event.type() == ui::ET_SCROLL_FLING_START))
       scroll_gesture_handler_ = NULL;
 
     if (status == ui::GESTURE_STATUS_CONSUMED)

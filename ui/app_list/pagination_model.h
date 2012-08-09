@@ -60,6 +60,7 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
 
   void SetTransition(const Transition& transition);
   void SetTransitionDuration(int duration_ms);
+  void ResetTransitionAnimation();
 
   // Starts a scroll transition. If there is a running transition animation,
   // cancels it but keeps the transition info.
@@ -107,7 +108,6 @@ class APP_LIST_EXPORT PaginationModel : public ui::AnimationDelegate {
 
   void StartTranstionAnimation(int target_page);
   void CreateTransitionAnimation();
-  void ResetTranstionAnimation();
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
