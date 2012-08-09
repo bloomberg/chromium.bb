@@ -1409,7 +1409,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		}
 	}
 
-	if (o && strcmp("off", o->mode) == 0) {
+	if (o && o->config == OUTPUT_CONFIG_OFF) {
 		weston_log("Disabling output %s\n", o->name);
 
 		drmModeSetCrtc(ec->drm.fd, output->crtc_id,
