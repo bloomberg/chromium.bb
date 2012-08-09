@@ -56,16 +56,14 @@ void ResourceBundle::LoadCommonResources() {
   AddDataPackFromPath(GetResourcesPakFilePath(@"webkit_resources_100_percent",
                         nil), SCALE_FACTOR_100P);
 
-  // On Windows and ChromeOS we load either the 1x resource or the 2x resource.
-  // On Mac we load both and let the UI framework decide which one to use.
-#if defined(ENABLE_HIDPI)
-  if (base::mac::IsOSLionOrLater()) {
+  // On Mac we load 1x and 2x resources and we let the UI framework decide
+  // which one to use.
+  if (IsScaleFactorSupported(SCALE_FACTOR_200P)) {
     AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_200_percent",
                           nil), SCALE_FACTOR_200P);
     AddDataPackFromPath(GetResourcesPakFilePath(@"webkit_resources_200_percent",
                           nil), SCALE_FACTOR_200P);
   }
-#endif
 }
 
 FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale,

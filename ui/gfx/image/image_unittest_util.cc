@@ -22,16 +22,12 @@
 namespace gfx {
 namespace test {
 
-#if defined(OS_MACOSX)
-
 void SetSupportedScaleFactorsTo1xAnd2x() {
   std::vector<ui::ScaleFactor> supported_scale_factors;
   supported_scale_factors.push_back(ui::SCALE_FACTOR_100P);
   supported_scale_factors.push_back(ui::SCALE_FACTOR_200P);
   ui::test::SetSupportedScaleFactors(supported_scale_factors);
 }
-
-#endif  // OS_MACOSX
 
 const SkBitmap CreateBitmap(int width, int height) {
   SkBitmap bitmap;

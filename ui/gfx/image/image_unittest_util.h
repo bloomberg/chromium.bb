@@ -22,9 +22,7 @@ typedef GdkPixbuf* PlatformImage;
 typedef const SkBitmap PlatformImage;
 #endif
 
-#if defined(OS_MACOSX)
 void SetSupportedScaleFactorsTo1xAnd2x();
-#endif
 
 const SkBitmap CreateBitmap(int width, int height);
 

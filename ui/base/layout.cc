@@ -4,6 +4,7 @@
 
 #include "ui/base/layout.h"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
@@ -21,6 +22,10 @@
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/base/touch/touch_factory.h"
 #endif // defined(USE_AURA) && defined(USE_X11)
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -78,6 +83,21 @@ bool UseTouchOptimizedUI() {
 const float kScaleFactorScales[] = {1.0, 2.0};
 const size_t kScaleFactorScalesLength = arraysize(kScaleFactorScales);
 
+std::vector<ui::ScaleFactor>& GetSupportedScaleFactorsInternal() {
+  static std::vector<ui::ScaleFactor>* supported_scale_factors =
+      new std::vector<ui::ScaleFactor>();
+  if (supported_scale_factors->empty()) {
+      supported_scale_factors->push_back(ui::SCALE_FACTOR_100P);
+#if defined(OS_MACOSX) && defined(ENABLE_HIDPI)
+      if (base::mac::IsOSLionOrLater())
+        supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
+#elif defined(USE_ASH)
+      supported_scale_factors->push_back(ui::SCALE_FACTOR_200P);
+#endif
+  }
+  return *supported_scale_factors;
+}
+
 }  // namespace
 
 namespace ui {
@@ -115,6 +135,28 @@ ScaleFactor GetScaleFactorFromScale(float scale) {
 float GetScaleFactorScale(ScaleFactor scale_factor) {
   return kScaleFactorScales[scale_factor];
 }
+
+std::vector<ScaleFactor> GetSupportedScaleFactors() {
+  return GetSupportedScaleFactorsInternal();
+}
+
+bool IsScaleFactorSupported(ScaleFactor scale_factor) {
+  const std::vector<ScaleFactor>& supported =
+      GetSupportedScaleFactorsInternal();
+  return std::find(supported.begin(), supported.end(), scale_factor) !=
+      supported.end();
+}
+
+namespace test {
+
+void SetSupportedScaleFactors(
+    const std::vector<ui::ScaleFactor>& scale_factors) {
+  std::vector<ui::ScaleFactor>& supported_scale_factors =
+      GetSupportedScaleFactorsInternal();
+  supported_scale_factors = scale_factors;
+}
+
+}  // namespace test
 
 #if !defined(OS_MACOSX)
 ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view) {

@@ -53,12 +53,12 @@ UI_EXPORT ScaleFactor GetScaleFactorFromScale(float scale);
 // Returns the ScaleFactor used by |view|.
 UI_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
 
-#if defined(OS_MACOSX)
-
 // Returns a vector with the scale factors which are supported by this
 // platform.
-// Only required on Mac so far.
 UI_EXPORT std::vector<ScaleFactor> GetSupportedScaleFactors();
+
+// Returns true if |scale_factor| is supported by this platform.
+UI_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
 
 namespace test {
 
@@ -66,8 +66,6 @@ UI_EXPORT void SetSupportedScaleFactors(
     const std::vector<ScaleFactor>& scale_factors);
 
 }  // namespace test
-
-#endif
 
 }  // namespace ui
 
