@@ -171,10 +171,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // execution of GetFileByPath() method.
   struct GetFileFromCacheParams;
 
-  // Callback similar to FileOperationCallback but with a given |file_path|.
-  typedef base::Callback<void(GDataFileError error,
-                              const FilePath& file_path)>
-      FilePathUpdateCallback;
 
   // Struct used for StartFileUploadOnUIThread().
   struct StartFileUploadParams;
@@ -355,17 +351,21 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const FilePath::StringType& new_name,
                                const FileOperationCallback& callback);
 
-  // Renames a file or directory at |file_path| to |new_name|.
+  // Renames a file or directory at |file_path| to |new_name| in the same
+  // directory. |callback| will receive the new file path if the operation is
+  // successful. If the new name already exists in the same directory, the file
+  // name is uniquified by adding a parenthesized serial number like
+  // "foo (2).txt"
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
   void Rename(const FilePath& file_path,
               const FilePath::StringType& new_name,
-              const FilePathUpdateCallback& callback);
+              const FileMoveCallback& callback);
 
   // Part of Rename(). Called after GetEntryInfoByPath() is complete.
   void RenameAfterGetEntryInfo(const FilePath& file_path,
                                const FilePath::StringType& new_name,
-                               const FilePathUpdateCallback& callback,
+                               const FileMoveCallback& callback,
                                GDataFileError error,
                                scoped_ptr<GDataEntryProto> entry_proto);
 
@@ -382,7 +382,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
   void RemoveEntryFromDirectory(const FilePath& dir_path,
-                                const FilePathUpdateCallback& callback,
+                                const FileMoveCallback& callback,
                                 GDataFileError error,
                                 const FilePath& file_path);
 
@@ -394,7 +394,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                                std::string* resource_id);
 
   // A pass-through callback used for bridging from
-  // FilePathUpdateCallback to FileOperationCallback.
+  // FileMoveCallback to FileOperationCallback.
   void OnFilePathUpdated(const FileOperationCallback& cllback,
                          GDataFileError error,
                          const FilePath& file_path);
@@ -411,13 +411,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& md5,
       const FilePath& cache_file_path);
 
-  // Callback for handling resource rename attempt.
-  void OnRenameResourceCompleted(const FilePath& file_path,
-                                 const FilePath::StringType& new_name,
-                                 const FilePathUpdateCallback& callback,
-                                 GDataErrorCode status,
-                                 const GURL& document_url);
-
   // Callback for handling document copy attempt.
   void OnCopyDocumentCompleted(const FilePath& dir_path,
                                const FileOperationCallback& callback,
@@ -431,15 +424,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                       const FilePath& dir_path,
                                       GDataErrorCode status,
                                       const GURL& document_url);
-
-  // Callback for handling an attempt to remove a file or directory from
-  // another directory.
-  void OnRemoveEntryFromDirectoryCompleted(
-      const FilePathUpdateCallback& callback,
-      const FilePath& file_path,
-      const FilePath& dir_path,
-      GDataErrorCode status,
-      const GURL& document_url);
 
   // Callback for handling account metadata fetch.
   void OnGetAvailableSpace(
@@ -488,28 +472,42 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const std::string& resource_id,
                                const std::string& md5);
 
-  // Renames a file or directory at |file_path| on in-memory snapshot
-  // of the file system. Returns PLATFORM_FILE_OK if successful.
-  GDataFileError RenameFileOnFilesystem(
-      const FilePath& file_path, const FilePath::StringType& new_name,
-      FilePath* updated_file_path);
+  // Callback for handling resource rename attempt. Renames a file or
+  // directory at |file_path| on in-memory snapshot of the file system.
+  void RenameFileOnFileSystem(const FilePath& file_path,
+                              const FilePath::StringType& new_name,
+                              const FileMoveCallback& callback,
+                              GDataErrorCode status,
+                              const GURL& document_url);
 
-  // Adds an |entry| to another directory at |dir_path| on in-memory snapshot
-  // of the file system. Returns PLATFORM_FILE_OK if successful.
-  GDataFileError AddEntryToDirectoryOnFilesystem(
-      GDataEntry* entry, const FilePath& dir_path);
-
-  // Removes a file or directory at |file_path| from another directory at
-  // |dir_path| on in-memory snapshot of the file system.
-  // Returns PLATFORM_FILE_OK if successful.
-  GDataFileError RemoveEntryFromDirectoryOnFilesystem(
-      const FilePath& file_path, const FilePath& dir_path,
-      FilePath* updated_file_path);
+  // Callback for handling an attempt to remove a file or directory from
+  // another directory. Removes a file or directory at |file_path| and moves it
+  // to root on in-memory snapshot of the file system.
+  void RemoveEntryFromDirectoryOnFileSystem(
+      const FileMoveCallback& callback,
+      const FilePath& file_path,
+      const FilePath& dir_path,
+      GDataErrorCode status,
+      const GURL& document_url);
 
   // Removes a file or directory under |file_path| from in-memory snapshot of
   // the file system and the corresponding file from cache if it exists.
   // Return PLATFORM_FILE_OK if successful.
   GDataFileError RemoveEntryFromFileSystem(const FilePath& file_path);
+
+  // Callback for GDataDirectoryService::MoveEntryToDirectory with
+  // FileMoveCallback.
+  void OnMoveEntryToDirectoryWithFileMoveCallback(
+      const FileMoveCallback& callback,
+      GDataFileError error,
+      const FilePath& moved_file_path);
+
+  // Callback for GDataDirectoryService::MoveEntryToDirectory with
+  // FileOperationCallback.
+  void OnMoveEntryToDirectoryWithFileOperationCallback(
+      const FileOperationCallback& callback,
+      GDataFileError error,
+      const FilePath& moved_file_path);
 
   // Callback for GetEntryByResourceIdAsync.
   // Removes stale entry upon upload of file.

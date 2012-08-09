@@ -74,6 +74,12 @@ const int32 kProtoVersion = 1;
 typedef base::Callback<void(GDataFileError error)>
     FileOperationCallback;
 
+// Callback similar to FileOperationCallback but with a given |file_path|.
+// Used for operations that change a file path like moving files.
+typedef base::Callback<void(GDataFileError error,
+                            const FilePath& file_path)>
+    FileMoveCallback;
+
 // Used to get entry info from the file system.
 // If |error| is not GDATA_FILE_OK, |entry_info| is set to NULL.
 typedef base::Callback<void(GDataFileError error,
@@ -116,6 +122,7 @@ typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
 // system.
 class GDataEntry {
  public:
+  // TODO(achuith): Remove |parent| from ctor. crbug.com/141494
   GDataEntry(GDataDirectory* parent, GDataDirectoryService* directory_service);
   virtual ~GDataEntry();
 
@@ -258,6 +265,7 @@ typedef std::map<FilePath::StringType, GDataDirectory*>
 // this could be either a regular file or a server side document.
 class GDataFile : public GDataEntry {
  public:
+  // TODO(achuith): Remove |parent| from ctor. crbug.com/141494
   explicit GDataFile(GDataDirectory* parent,
                      GDataDirectoryService* directory_service);
   virtual ~GDataFile();
@@ -304,6 +312,7 @@ class GDataFile : public GDataEntry {
 // collection element.
 class GDataDirectory : public GDataEntry {
  public:
+  // TODO(achuith): Remove |parent| from ctor. crbug.com/141494
   GDataDirectory(GDataDirectory* parent,
                  GDataDirectoryService* directory_service);
   virtual ~GDataDirectory();
@@ -321,11 +330,6 @@ class GDataDirectory : public GDataEntry {
 
   // Converts the children as a vector of GDataEntryProto.
   scoped_ptr<GDataEntryProtoVector> ToProtoVector() const;
-
-  // Removes child elements.
-  void RemoveChildren();
-  void RemoveChildFiles();
-  void RemoveChildDirectories();
 
   // Collection of children files/directories.
   const GDataFileCollection& child_files() const { return child_files_; }
@@ -350,13 +354,6 @@ class GDataDirectory : public GDataEntry {
   // TODO(satorux): Remove this. crbug.com/139649
   void RemoveEntry(GDataEntry* entry);
 
-  // Takes the ownership of |entry| from its current parent. If this directory
-  // is already the current parent of |file|, this method effectively goes
-  // through the name de-duplication for |file| based on the current state of
-  // the file system.
-  // TODO(satorux): Remove this. crbug.com/139649
-  bool TakeEntry(GDataEntry* entry);
-
   // Takes over all entries from |dir|.
   // TODO(satorux): Remove this. crbug.com/139649
   bool TakeOverEntries(GDataDirectory* dir);
@@ -371,6 +368,11 @@ class GDataDirectory : public GDataEntry {
   // Removes the entry from its children without destroying the
   // entry instance.
   void RemoveChild(GDataEntry* entry);
+
+  // Removes child elements.
+  void RemoveChildren();
+  void RemoveChildFiles();
+  void RemoveChildDirectories();
 
   // Collection of children GDataEntry items.
   GDataFileCollection child_files_;
@@ -411,11 +413,12 @@ class GDataDirectoryService {
   const ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
 
-  // Adds |entry| to |directory_path| asynchronously.
-  // Must be called on UI thread. |callback| is called on the UI thread.
-  void AddEntryToDirectory(const FilePath& directory_path,
-                           GDataEntry* entry,
-                           const FileOperationCallback& callback);
+  // Move |entry| to |directory_path| asynchronously. Removes entry from
+  // previous parent. Must be called on UI thread. |callback| is called on the
+  // UI thread.
+  void MoveEntryToDirectory(const FilePath& directory_path,
+                            GDataEntry* entry,
+                            const FileMoveCallback& callback);
 
   // Adds the entry to resource map.
   void AddEntryToResourceMap(GDataEntry* entry);

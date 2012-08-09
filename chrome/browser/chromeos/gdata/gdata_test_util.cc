@@ -69,6 +69,18 @@ void CopyErrorCodeFromFileOperationCallback(GDataFileError* output,
   *output = error;
 }
 
+void CopyResultsFromFileMoveCallback(
+    GDataFileError* out_error,
+    FilePath* out_file_path,
+    GDataFileError error,
+    const FilePath& moved_file_path) {
+  DCHECK(out_error);
+  DCHECK(out_file_path);
+
+  *out_error = error;
+  *out_file_path = moved_file_path;
+}
+
 void CopyResultsFromGetEntryInfoCallback(
     GDataFileError* out_error,
     scoped_ptr<GDataEntryProto>* out_entry_proto,

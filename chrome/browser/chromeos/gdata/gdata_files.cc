@@ -336,16 +336,6 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
   entry->SetParent(this);
 }
 
-bool GDataDirectory::TakeEntry(GDataEntry* entry) {
-  DCHECK(entry);
-  DCHECK(entry->parent());
-
-  entry->parent()->RemoveChild(entry);
-  AddEntry(entry);
-
-  return true;
-}
-
 bool GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
   for (GDataFileCollection::iterator iter = dir->child_files_.begin();
        iter != dir->child_files_.end(); ++iter) {
@@ -589,11 +579,18 @@ void GDataDirectoryService::ClearRoot() {
   root_.reset();
 }
 
-void GDataDirectoryService::AddEntryToDirectory(
+void GDataDirectoryService::MoveEntryToDirectory(
     const FilePath& directory_path,
     GDataEntry* entry,
-    const FileOperationCallback& callback) {
+    const FileMoveCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(entry);
+
+  if (entry->parent())
+    entry->parent()->RemoveChild(entry);
+
   GDataEntry* destination = FindEntryByPathSync(directory_path);
+  FilePath moved_file_path;
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
   if (!destination) {
     error = GDATA_FILE_ERROR_NOT_FOUND;
@@ -601,11 +598,12 @@ void GDataDirectoryService::AddEntryToDirectory(
     error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
   } else {
     destination->AsGDataDirectory()->AddEntry(entry);
+    moved_file_path = entry->GetFilePath();
     error = GDATA_FILE_OK;
   }
   if (!callback.is_null()) {
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, error));
+        FROM_HERE, base::Bind(callback, error, moved_file_path));
   }
 }
 
@@ -1032,7 +1030,7 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   DCHECK(!proto.gdata_entry().has_file_specific_info());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
-    scoped_ptr<GDataFile> file(new GDataFile(this, directory_service_));
+    scoped_ptr<GDataFile> file(new GDataFile(NULL, directory_service_));
     if (!file->FromProto(proto.child_files(i))) {
       RemoveChildren();
       return false;
@@ -1040,7 +1038,7 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
     AddEntry(file.release());
   }
   for (int i = 0; i < proto.child_directories_size(); ++i) {
-    scoped_ptr<GDataDirectory> dir(new GDataDirectory(this,
+    scoped_ptr<GDataDirectory> dir(new GDataDirectory(NULL,
                                                       directory_service_));
     if (!dir->FromProto(proto.child_directories(i))) {
       RemoveChildren();

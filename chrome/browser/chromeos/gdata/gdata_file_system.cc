@@ -1067,7 +1067,7 @@ void GDataFileSystem::CopyDocumentToDirectory(
 
 void GDataFileSystem::Rename(const FilePath& file_path,
                              const FilePath::StringType& new_name,
-                             const FilePathUpdateCallback& callback) {
+                             const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // It is a no-op if the file is renamed to the same name.
@@ -1093,7 +1093,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
 void GDataFileSystem::RenameAfterGetEntryInfo(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
-    const FilePathUpdateCallback& callback,
+    const FileMoveCallback& callback,
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1121,7 +1121,7 @@ void GDataFileSystem::RenameAfterGetEntryInfo(
   documents_service_->RenameResource(
       GURL(entry_proto->edit_url()),
       file_name,
-      base::Bind(&GDataFileSystem::OnRenameResourceCompleted,
+      base::Bind(&GDataFileSystem::RenameFileOnFileSystem,
                  ui_weak_ptr_,
                  file_path,
                  file_name,
@@ -1168,7 +1168,7 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
 
   // If the file/directory is moved to the same directory, just rename it.
   if (src_file_path.DirName() == dest_parent_path) {
-    FilePathUpdateCallback final_file_path_update_callback =
+    FileMoveCallback final_file_path_update_callback =
         base::Bind(&GDataFileSystem::OnFilePathUpdated,
                    ui_weak_ptr_,
                    callback);
@@ -1187,13 +1187,13 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
   // 3. Adds the file to the parent directory of |dest_file_path|, which
   //    effectively moves the file from the root directory to the parent
   //    directory of |dest_file_path|.
-  FilePathUpdateCallback add_file_to_directory_callback =
+  FileMoveCallback add_file_to_directory_callback =
       base::Bind(&GDataFileSystem::AddEntryToDirectory,
                  ui_weak_ptr_,
                  dest_file_path.DirName(),
                  callback);
 
-  FilePathUpdateCallback remove_file_from_directory_callback =
+  FileMoveCallback remove_file_from_directory_callback =
       base::Bind(&GDataFileSystem::RemoveEntryFromDirectory,
                  ui_weak_ptr_,
                  src_file_path.DirName(),
@@ -1242,7 +1242,7 @@ void GDataFileSystem::AddEntryToDirectory(
 
 void GDataFileSystem::RemoveEntryFromDirectory(
     const FilePath& dir_path,
-    const FilePathUpdateCallback& callback,
+    const FileMoveCallback& callback,
     GDataFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1272,7 +1272,7 @@ void GDataFileSystem::RemoveEntryFromDirectory(
       dir->content_url(),
       entry->edit_url(),
       entry->resource_id(),
-      base::Bind(&GDataFileSystem::OnRemoveEntryFromDirectoryCompleted,
+      base::Bind(&GDataFileSystem::RemoveEntryFromDirectoryOnFileSystem,
                  ui_weak_ptr_,
                  callback,
                  file_path,
@@ -2003,8 +2003,7 @@ void GDataFileSystem::RequestDirectoryRefreshByEntry(
   // Note that there may be no change in the directory, but it's expensive to
   // check if the new metadata matches the existing one, so we just always
   // notify that the directory is changed.
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer,
-                    observers_, OnDirectoryChanged(directory_path));
+  OnDirectoryChanged(directory_path);
   DVLOG(1) << "Directory refreshed: " << directory_path.value();
 }
 
@@ -2395,27 +2394,10 @@ GDataFileError GDataFileSystem::UpdateFromFeedForTesting(
 
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
                                         GDataFileError error,
-                                        const FilePath& file_path) {
+                                        const FilePath& /* file_path */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
     callback.Run(error);
-}
-
-void GDataFileSystem::OnRenameResourceCompleted(
-    const FilePath& file_path,
-    const FilePath::StringType& new_name,
-    const FilePathUpdateCallback& callback,
-    GDataErrorCode status,
-    const GURL& document_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  FilePath updated_file_path;
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error == GDATA_FILE_OK)
-    error = RenameFileOnFilesystem(file_path, new_name, &updated_file_path);
-
-  if (!callback.is_null())
-    callback.Run(error, updated_file_path);
 }
 
 void GDataFileSystem::OnCopyDocumentCompleted(
@@ -2442,7 +2424,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   }
 
   GDataEntry* entry = GDataEntry::FromDocumentEntry(
-      directory_service_->root(), doc_entry.get(), directory_service_.get());
+      NULL, doc_entry.get(), directory_service_.get());
   if (!entry) {
     if (!callback.is_null())
       callback.Run(GDATA_FILE_ERROR_FAILED);
@@ -2470,7 +2452,12 @@ void GDataFileSystem::OnAddEntryToDirectoryCompleted(
     GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
     if (entry) {
       DCHECK_EQ(directory_service_->root(), entry->parent());
-      error = AddEntryToDirectoryOnFilesystem(entry, dir_path);
+      directory_service_->MoveEntryToDirectory(dir_path, entry,
+          base::Bind(
+              &GDataFileSystem::OnMoveEntryToDirectoryWithFileOperationCallback,
+              ui_weak_ptr_,
+              callback));
+      return;
     } else {
       error = GDATA_FILE_ERROR_NOT_FOUND;
     }
@@ -2478,24 +2465,6 @@ void GDataFileSystem::OnAddEntryToDirectoryCompleted(
 
   if (!callback.is_null())
     callback.Run(error);
-}
-
-void GDataFileSystem::OnRemoveEntryFromDirectoryCompleted(
-    const FilePathUpdateCallback& callback,
-    const FilePath& file_path,
-    const FilePath& dir_path,
-    GDataErrorCode status,
-    const GURL& document_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  FilePath updated_file_path = file_path;
-  GDataFileError error = util::GDataToGDataFileError(status);
-  if (error == GDATA_FILE_OK)
-    error = RemoveEntryFromDirectoryOnFilesystem(file_path, dir_path,
-                                                 &updated_file_path);
-
-  if (!callback.is_null())
-    callback.Run(error, updated_file_path);
 }
 
 void GDataFileSystem::OnRemovedDocument(
@@ -2621,84 +2590,95 @@ void GDataFileSystem::OnDownloadStoredToCache(GDataFileError error,
   // Nothing much to do here for now.
 }
 
-GDataFileError GDataFileSystem::RenameFileOnFilesystem(
+void GDataFileSystem::RenameFileOnFileSystem(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
-    FilePath* updated_file_path) {
+    const FileMoveCallback& callback,
+    GDataErrorCode status,
+    const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(updated_file_path);
+
+  const GDataFileError error = util::GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, FilePath());
+    return;
+  }
 
   GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
-  if (!entry)
-    return GDATA_FILE_ERROR_NOT_FOUND;
+  if (!entry) {
+    if (!callback.is_null())
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
+    return;
+  }
 
   DCHECK(entry->parent());
   entry->set_title(new_name);
-  // After changing the title of the entry, call TakeFile() to remove the
-  // entry from its parent directory and then add it back in order to go
-  // through the file name de-duplication.
+  // After changing the title of the entry, call MoveEntryToDirectory() to
+  // remove the entry from its parent directory and then add it back in order to
+  // go through the file name de-duplication.
   // TODO(achuith/satorux/zel): This code is fragile. The title has been
-  // changed, but not the file_name. TakeEntry removes the child based on the
-  // old file_name, and then re-adds the child by first assigning the new title
-  // to file_name. http://crbug.com/30157
-  if (!entry->parent()->TakeEntry(entry))
-    return GDATA_FILE_ERROR_FAILED;
-
-  *updated_file_path = entry->GetFilePath();
-
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
-                    OnDirectoryChanged(updated_file_path->DirName()));
-  return GDATA_FILE_OK;
+  // changed, but not the file_name. MoveEntryToDirectory calls RemoveChild to
+  // remove the child based on the old file_name, and then re-adds the child by
+  // first assigning the new title to file_name. http://crbug.com/30157
+  directory_service_->MoveEntryToDirectory(
+      entry->parent()->GetFilePath(),
+      entry,
+      base::Bind(&GDataFileSystem::OnMoveEntryToDirectoryWithFileMoveCallback,
+                 ui_weak_ptr_,
+                 callback));
 }
 
-GDataFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
-    GDataEntry* entry, const FilePath& dir_path) {
+void GDataFileSystem::RemoveEntryFromDirectoryOnFileSystem(
+    const FileMoveCallback& callback,
+    const FilePath& file_path,
+    const FilePath& dir_path,
+    GDataErrorCode status,
+    const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(entry);
 
-  GDataEntry* dir_entry = directory_service_->FindEntryByPathSync(dir_path);
-  if (!dir_entry)
-    return GDATA_FILE_ERROR_NOT_FOUND;
-
-  GDataDirectory* dir = dir_entry->AsGDataDirectory();
-  if (!dir)
-    return GDATA_FILE_ERROR_NOT_A_DIRECTORY;
-
-  if (!dir->TakeEntry(entry))
-    return GDATA_FILE_ERROR_FAILED;
-
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
-                    OnDirectoryChanged(dir_path));
-  return GDATA_FILE_OK;
-}
-
-GDataFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
-    const FilePath& file_path, const FilePath& dir_path,
-    FilePath* updated_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(updated_file_path);
+  const GDataFileError error = util::GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK) {
+    if (!callback.is_null())
+      callback.Run(error, FilePath());
+    return;
+  }
 
   GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
-  if (!entry)
-    return GDATA_FILE_ERROR_NOT_FOUND;
+  if (!entry) {
+    if (!callback.is_null())
+      callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
+    return;
+  }
 
-  GDataEntry* dir = directory_service_->FindEntryByPathSync(dir_path);
-  if (!dir)
-    return GDATA_FILE_ERROR_NOT_FOUND;
+  directory_service_->MoveEntryToDirectory(
+      directory_service_->root()->GetFilePath(),
+      entry,
+      base::Bind(&GDataFileSystem::OnMoveEntryToDirectoryWithFileMoveCallback,
+                 ui_weak_ptr_,
+                 callback));
+}
 
-  if (!dir->AsGDataDirectory())
-    return GDATA_FILE_ERROR_NOT_A_DIRECTORY;
+void GDataFileSystem::OnMoveEntryToDirectoryWithFileMoveCallback(
+    const FileMoveCallback& callback,
+    GDataFileError error,
+    const FilePath& moved_file_path) {
+  if (error == GDATA_FILE_OK)
+    OnDirectoryChanged(moved_file_path.DirName());
 
-  DCHECK_EQ(dir->AsGDataDirectory(), entry->parent());
+  if (!callback.is_null())
+    callback.Run(error, moved_file_path);
+}
 
-  if (!directory_service_->root()->TakeEntry(entry))
-    return GDATA_FILE_ERROR_FAILED;
+void GDataFileSystem::OnMoveEntryToDirectoryWithFileOperationCallback(
+    const FileOperationCallback& callback,
+    GDataFileError error,
+    const FilePath& moved_file_path) {
+  if (error == GDATA_FILE_OK)
+    OnDirectoryChanged(moved_file_path.DirName());
 
-  *updated_file_path = entry->GetFilePath();
-
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
-                    OnDirectoryChanged(updated_file_path->DirName()));
-  return GDATA_FILE_OK;
+  if (!callback.is_null())
+    callback.Run(error);
 }
 
 GDataFileError GDataFileSystem::RemoveEntryFromFileSystem(
@@ -2789,14 +2769,13 @@ GDataFileError GDataFileSystem::AddNewDirectory(
     return GDATA_FILE_ERROR_FAILED;
 
   GDataEntry* new_entry = GDataEntry::FromDocumentEntry(
-      parent_dir, doc_entry.get(), directory_service_.get());
+      NULL, doc_entry.get(), directory_service_.get());
   if (!new_entry)
     return GDATA_FILE_ERROR_FAILED;
 
   parent_dir->AddEntry(new_entry);
 
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
-                    OnDirectoryChanged(directory_path));
+  OnDirectoryChanged(directory_path);
   return GDATA_FILE_OK;
 }
 
@@ -2857,8 +2836,7 @@ GDataFileError GDataFileSystem::RemoveEntryFromGData(
   GDataDirectory* parent_dir = entry->parent();
   parent_dir->RemoveEntry(entry);
 
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
-                    OnDirectoryChanged(parent_dir->GetFilePath()));
+  OnDirectoryChanged(parent_dir->GetFilePath());
   return GDATA_FILE_OK;
 }
 
@@ -2914,7 +2892,7 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
 
   scoped_ptr<GDataEntry> new_entry(
       GDataEntry::FromDocumentEntry(
-          parent_dir, entry.get(), directory_service_.get()));
+          NULL, entry.get(), directory_service_.get()));
   if (!new_entry.get())
     return;
 
@@ -2931,8 +2909,7 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
   const std::string& md5 = file->file_md5();
   parent_dir->AddEntry(new_entry.release());
 
-  FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
-                    OnDirectoryChanged(virtual_dir_path));
+  OnDirectoryChanged(virtual_dir_path);
 
   if (upload_mode == UPLOAD_NEW_FILE) {
     // Add the file to the cache if we have uploaded a new file.

@@ -32,19 +32,23 @@ const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 GDataDirectory* AddDirectory(GDataDirectory* parent,
                              GDataDirectoryService* directory_service,
                              int sequence_id) {
-  GDataDirectory* dir = new GDataDirectory(parent, directory_service);
+  GDataDirectory* dir = new GDataDirectory(NULL, directory_service);
   const std::string dir_name = "dir" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
   dir->set_title(dir_name);
   dir->set_resource_id(resource_id);
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
-  directory_service->AddEntryToDirectory(
+  FilePath moved_file_path;
+  directory_service->MoveEntryToDirectory(
       parent->GetFilePath(),
       dir,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &moved_file_path));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(parent->GetFilePath().AppendASCII(dir_name), moved_file_path);
   return dir;
 }
 
@@ -53,7 +57,7 @@ GDataDirectory* AddDirectory(GDataDirectory* parent,
 GDataFile* AddFile(GDataDirectory* parent,
                    GDataDirectoryService* directory_service,
                    int sequence_id) {
-  GDataFile* file = new GDataFile(parent, directory_service);
+  GDataFile* file = new GDataFile(NULL, directory_service);
   const std::string title = "file" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("file_resource_id:") +
                                   title;
@@ -61,12 +65,16 @@ GDataFile* AddFile(GDataDirectory* parent,
   file->set_resource_id(resource_id);
   file->set_file_md5(std::string("file_md5:") + title);
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
-  directory_service->AddEntryToDirectory(
+  FilePath moved_file_path;
+  directory_service->MoveEntryToDirectory(
       parent->GetFilePath(),
       file,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &moved_file_path));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(parent->GetFilePath().AppendASCII(title), moved_file_path);
   return file;
 }
 
@@ -374,33 +382,47 @@ TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
 
 TEST(GDataDirectoryServiceTest, RefreshFile) {
   MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+
   GDataDirectoryService directory_service;
-  GDataDirectory* root(directory_service.root());
   // Add a directory to the file system.
-  GDataDirectory* directory_entry = new GDataDirectory(root,
+  GDataDirectory* directory_entry = new GDataDirectory(NULL,
                                                        &directory_service);
   directory_entry->set_resource_id("folder:directory_resource_id");
   directory_entry->set_title("directory");
   directory_entry->SetBaseNameFromTitle();
   GDataFileError error = GDATA_FILE_ERROR_FAILED;
-  directory_service.AddEntryToDirectory(
-      FilePath(kGDataRootDirectory),
+  FilePath moved_file_path;
+  FilePath root_path(kGDataRootDirectory);
+  directory_service.MoveEntryToDirectory(
+      root_path,
       directory_entry,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &moved_file_path));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(root_path.AppendASCII(directory_entry->base_name()),
+            moved_file_path);
 
   // Add a new file to the directory.
   GDataFile* initial_file_entry = new GDataFile(NULL, &directory_service);
   initial_file_entry->set_resource_id("file:file_resource_id");
   initial_file_entry->set_title("file");
   initial_file_entry->SetBaseNameFromTitle();
-  directory_service.AddEntryToDirectory(
+  error = GDATA_FILE_ERROR_FAILED;
+  moved_file_path.clear();
+  directory_service.MoveEntryToDirectory(
       directory_entry->GetFilePath(),
       initial_file_entry,
-      base::Bind(&test_util::CopyErrorCodeFromFileOperationCallback, &error));
+      base::Bind(&test_util::CopyResultsFromFileMoveCallback,
+                 &error,
+                 &moved_file_path));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(GDATA_FILE_OK, error);
+  EXPECT_EQ(directory_entry->GetFilePath().AppendASCII(
+                initial_file_entry->base_name()), moved_file_path);
 
   ASSERT_EQ(directory_entry, initial_file_entry->parent());
 

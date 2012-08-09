@@ -9,6 +9,8 @@
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 
+class FilePath;
+
 namespace gdata {
 
 class GDataEntryProto;
@@ -44,8 +46,15 @@ bool CacheStatesEqual(const GDataCacheEntry& a, const GDataCacheEntry& b);
 
 // Copies |error| to |output|. Used to run asynchronous functions that take
 // FileOperationCallback from tests.
-void CopyErrorCodeFromFileOperationCallback(
-    GDataFileError* output, GDataFileError error);
+void CopyErrorCodeFromFileOperationCallback(GDataFileError* output,
+                                            GDataFileError error);
+
+// Copies |error| and |moved_file_path| to |out_error| and |out_file_path|.
+// Used to run asynchronous functions that take FileMoveCallback from tests.
+void CopyResultsFromFileMoveCallback(GDataFileError* out_error,
+                                     FilePath* out_file_path,
+                                     GDataFileError error,
+                                     const FilePath& moved_file_path);
 
 // Copies |error| and |entry_proto| to |out_error| and |out_entry_proto|
 // respectively. Used to run asynchronous functions that take
