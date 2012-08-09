@@ -518,9 +518,10 @@ class Coverage(object):
 
     # Add 'src/test/functional/pyauto_functional.py' to self.tests.
     # This file with '-v --suite=CODE_COVERAGE' arguments runs all pyauto tests.
-    self.tests += [['src/chrome/test/functional/pyauto_functional.py',
-                    '-v',
-                    '--suite=CODE_COVERAGE']]
+    # Pyauto tests are failing randomly on coverage bots. So excluding them.
+    # self.tests += [['src/chrome/test/functional/pyauto_functional.py',
+    #                '-v',
+    #                '--suite=CODE_COVERAGE']]
 
     # Medium tests?
     # Not sure all of these work yet (e.g. page_cycler_tests)
