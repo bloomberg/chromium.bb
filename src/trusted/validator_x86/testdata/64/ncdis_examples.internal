@@ -3738,3 +3738,25 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
+0000000000000000: 66 48 0f 7e c6                               movq %rsi, %xmm0
+  66 0f 7e                    SSE2 OpcodeUsesModRm OpcodeAllowsData16 SizeIgnoresData16 OperandSize_o
+    Movq $Ed/q/q, $Vd/q/q
+      E_Operand               OpSet
+      Xmm_G_Operand           OpUse
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
+  { ExprRegister[0] , %rsi, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
+  { ExprRegister[0] , %xmm0, ExprUsed },
+};
+0000000000000000: 48 0f 7e c6                                  movq %rsi, %mmx0
+  0f 7e                       MMX OpcodeUsesModRm SizeIgnoresData16 OperandSize_o
+    Movq $Ed/q/q, $Pd/q/q
+      E_Operand               OpSet
+      Mmx_G_Operand           OpUse
+NaClExpVector[4] = {
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
+  { ExprRegister[0] , %rsi, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
+  { ExprRegister[0] , %mmx0, ExprUsed },
+};

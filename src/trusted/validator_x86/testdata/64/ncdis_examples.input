@@ -328,3 +328,7 @@
 -i=f00fc708                              #0000000000000000: f0 0f c7 08                                  cmpxchg8b [%rax]
 -i=48f00fc708                            #0000000000000000: 48 f0 0f c7 08                               cmpxchg16b [%rax]
 -i=f0480fc708                            #0000000000000000: f0 48 0f c7 08                               cmpxchg16b [%rax]
+# The following checks that the data 66/Rex.W check doesn't conflict with
+# multiple byte opcodes where data 66 is an extension to the opcode.
+-i=66480f7ec6                           #0000000000000000: 66 48 0f 7e c6                               movq %rsi, %xmm0
+-i=480f7ec6                             #0000000000000000: 48 0f 7e c6                                  movq %rsi, %mmx0

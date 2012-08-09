@@ -358,6 +358,9 @@ static Bool NaClConsumeAndCheckOperandSize(NaClInstState* state) {
   state->operand_size = NaClExtractOpSize(state);
   DEBUG(NaClLog(LOG_INFO,
                 "operand size = %"NACL_PRIu8"\n", state->operand_size));
+  /* Check if instruction has flags specifying legal sizes. If so,
+   * make sure that the size matches.
+   */
   if (state->inst->flags &
       (NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
        NACL_IFLAG(OperandSize_o))) {
@@ -384,6 +387,32 @@ static Bool NaClConsumeAndCheckOperandSize(NaClInstState* state) {
                     "Operand size %"NACL_PRIu8
                     " doesn't match flag requirement!\n",
                     state->operand_size));
+      return FALSE;
+    }
+
+    /* Do special check for case where Rex.w and data 66 specified, and
+     * the data 66 isn't part of the opcode prefix. In such cases, we
+     * disallow both, since they are conflicting operand size specifications.
+     */
+    if (NaClRexW(state->rexprefix) &&
+        NaClHasBit(state->prefix_mask, kPrefixDATA16) &&
+        /* The following checks that both 16 and 64 bit operand
+         * sizes are allowed.
+         */
+        NaClHasBits(state->inst->flags,
+                    NACL_IFLAG(OperandSize_w) |
+                    NACL_IFLAG(OperandSize_o)) &&
+        /* This clause allows cases where the 66 prefix changes
+         * the opcode rather than the operand size. Both flags are
+         * set iff the 66 modifies the opcode. See function
+         * NaClAddRepPrefixFlagsIfApplicable in generator/ncdecode_tablegen.c
+         * for details.
+         */
+        !NaClHasBits(state->inst->flags,
+                     NACL_IFLAG(OpcodeAllowsData16) |
+                     NACL_IFLAG(SizeIgnoresData16))) {
+      DEBUG(NaClLog(LOG_INFO,
+                    "Can't specify both data prefix 66 and Rex.w\n"));
       return FALSE;
     }
   }

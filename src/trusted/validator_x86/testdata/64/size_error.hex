@@ -1,0 +1,13 @@
+# The following checks if we catch the use of data 66/Rex.W specifying
+# undetermined operand size.
+
+# The following checks that we allow Rex.w.
+# 0000000000000000: 48 01 c3                                     add %rbx, %rax
+48 01 c3
+
+# The following checks that we allow data 66.
+# 0000000000000003: 66 01 c3                                     add %bx, %ax
+66 01 c3
+
+# The following checks that we don't allow Rex.w and data 66
+66 48 01 c3

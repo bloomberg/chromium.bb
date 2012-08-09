@@ -14,7 +14,13 @@
 #include "native_client/src/include/portability.h"
 
 /* Readability macros for bitset testing. */
+/* Set contains bit. */
 #define NaClHasBit(set, bit) ((set) & (bit))
+
+/* Set contains (all) bits. */
+#define NaClHasBits(set, bits) ((bits) == ((set) & (bits)))
+
+/* Set contains bits other than given bit. */
 #define NaClExcludesBit(set, bit) (~(set) & bit)
 
 /* Readability macros for changing bitsets. */

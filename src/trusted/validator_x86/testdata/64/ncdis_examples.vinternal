@@ -3197,3 +3197,19 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
+0000000000000000: 66 48 0f 7e c6                               [P] dontcare %rsi (s)
+  66 0f 7e                    SSE2 OpcodeUsesModRm OpcodeAllowsData16 SizeIgnoresData16 OperandSize_o PartialInstruction
+    DontCare $Ed/q/q
+      E_Operand               OpSet
+NaClExpVector[2] = {
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
+  { ExprRegister[0] , %rsi, ExprSet | ExprSize64 },
+};
+0000000000000000: 48 0f 7e c6                                  [P] dontcare %rsi (s)
+  0f 7e                       MMX OpcodeUsesModRm SizeIgnoresData16 OperandSize_o PartialInstruction
+    DontCare $Ed/q/q
+      E_Operand               OpSet
+NaClExpVector[2] = {
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
+  { ExprRegister[0] , %rsi, ExprSet | ExprSize64 },
+};
