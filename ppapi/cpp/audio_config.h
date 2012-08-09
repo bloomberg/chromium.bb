@@ -120,7 +120,7 @@ class AudioConfig : public Resource {
   /// Getter function for returning the internal sample frame count.
   ///
   /// @return A uint32_t containing the sample frame count.
-  uint32_t sample_frame_count() { return sample_frame_count_; }
+  uint32_t sample_frame_count() const { return sample_frame_count_; }
 
  private:
   PP_AudioSampleRate sample_rate_;
