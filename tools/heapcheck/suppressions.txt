@@ -1555,7 +1555,7 @@
    Heapcheck:Leak
    fun:MessageLoop::MessageLoop
    fun:MessageLoopForUI::MessageLoopForUI
-   fun:RenderViewHostTestHarnesss
+   fun:RenderViewHostTestHarness
    fun:ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness
    fun:TabContentsTestHarness::TabContentsTestHarness
 }
