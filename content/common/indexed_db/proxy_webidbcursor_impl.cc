@@ -37,14 +37,17 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   dispatcher->CursorDestroyed(idb_cursor_id_);
 }
 
+// TODO(jsbell): Remove the following method after WK92278 rolls.
 WebIDBKey RendererWebIDBCursorImpl::key() const {
   return key_;
 }
 
+// TODO(jsbell): Remove the following method after WK92278 rolls.
 WebIDBKey RendererWebIDBCursorImpl::primaryKey() const {
   return primary_key_;
 }
 
+// TODO(jsbell): Remove the following method after WK92278 rolls.
 WebSerializedScriptValue RendererWebIDBCursorImpl::value() const {
   return value_;
 }
@@ -120,6 +123,7 @@ void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
     ResetPrefetchCache();
 }
 
+// TODO(jsbell): Remove the following method after WK92278 rolls.
 void RendererWebIDBCursorImpl::SetKeyAndValue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
@@ -147,6 +151,7 @@ void RendererWebIDBCursorImpl::CachedContinue(
   DCHECK(prefetch_primary_keys_.size() == prefetch_keys_.size());
   DCHECK(prefetch_values_.size() == prefetch_keys_.size());
 
+  // TODO(jsbell): Turn these three variables into locals after WK92278 rolls.
   key_ = prefetch_keys_.front();
   primary_key_ = prefetch_primary_keys_.front();
   value_ = prefetch_values_.front();
@@ -157,7 +162,10 @@ void RendererWebIDBCursorImpl::CachedContinue(
   used_prefetches_++;
 
   pending_onsuccess_callbacks_++;
+
+  // TODO(jsbell): Remove the ...WithContinuation call after WK92278 rolls.
   callbacks->onSuccessWithContinuation();
+  callbacks->onSuccess(key_, primary_key_, value_);
 }
 
 void RendererWebIDBCursorImpl::ResetPrefetchCache() {

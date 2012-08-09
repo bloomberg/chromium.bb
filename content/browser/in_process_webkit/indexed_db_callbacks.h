@@ -105,11 +105,22 @@ class IndexedDBCallbacks : public IndexedDBCallbacksBase {
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
+// TODO(jsbell): Remove this preamble comment after WK92278 rolls.
+// Pre WK92278:
 // WebIDBCursor uses onSuccess(WebIDBCursor*) when a cursor has been opened,
 // onSuccessWithContinuation() when a continue() call has succeeded, or
 // onSuccess(SerializedScriptValue::nullValue()) to indicate it does
 // not contain any data, i.e., there is no key within the key range,
 // or it has reached the end.
+// Post WK92278:
+// WebIDBCursor uses:
+// * onSuccess(WebIDBCursor*, WebIDBKey, WebIDBKey, SerializedScriptValue)
+//   when an openCursor()/openKeyCursor() call has succeeded,
+// * onSuccess(WebIDBKey, WebIDBKey, SerializedScriptValue)
+//   when an advance()/continue() call has succeeded, or
+// * onSuccess(SerializedScriptValue::nullValue())
+//   to indicate it does not contain any data, i.e., there is no key within
+//   the key range, or it has reached the end.
 template <>
 class IndexedDBCallbacks<WebKit::WebIDBCursor>
     : public IndexedDBCallbacksBase {
@@ -122,8 +133,17 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
       : IndexedDBCallbacksBase(dispatcher_host, thread_id, response_id),
         cursor_id_(cursor_id) { }
 
+  // TODO(jsbell): Remove this after WK92278 rolls.
   virtual void onSuccess(WebKit::WebIDBCursor* idb_object);
+  virtual void onSuccess(WebKit::WebIDBCursor* idb_object,
+                         const WebKit::WebIDBKey& key,
+                         const WebKit::WebIDBKey& primaryKey,
+                         const WebKit::WebSerializedScriptValue& value);
+  virtual void onSuccess(const WebKit::WebIDBKey& key,
+                         const WebKit::WebIDBKey& primaryKey,
+                         const WebKit::WebSerializedScriptValue& value);
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value);
+  // TODO(jsbell): Remove this after WK92278 rolls.
   virtual void onSuccessWithContinuation();
   virtual void onSuccessWithPrefetch(
       const WebKit::WebVector<WebKit::WebIDBKey>& keys,

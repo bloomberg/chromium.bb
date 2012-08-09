@@ -892,6 +892,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::Send(
   parent_->Send(message);
 }
 
+// TODO(jsbell): Remove this after WK92278 rolls.
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnKey(
     int32 object_id, IndexedDBKey* key) {
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, object_id);
@@ -901,6 +902,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnKey(
   *key = IndexedDBKey(idb_cursor->key());
 }
 
+// TODO(jsbell): Remove this after WK92278 rolls.
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrimaryKey(
     int32 object_id, IndexedDBKey* primary_key) {
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, object_id);
@@ -910,6 +912,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrimaryKey(
   *primary_key = IndexedDBKey(idb_cursor->primaryKey());
 }
 
+// TODO(jsbell): Remove this after WK92278 rolls.
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(
     int32 object_id,
     SerializedScriptValue* script_value) {

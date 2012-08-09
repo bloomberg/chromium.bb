@@ -21,6 +21,7 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   explicit RendererWebIDBCursorImpl(int32 idb_cursor_id);
   virtual ~RendererWebIDBCursorImpl();
 
+  // TODO(jsbell): Remove the following three methods after WK92278 rolls.
   virtual WebKit::WebIDBKey key() const;
   virtual WebKit::WebIDBKey primaryKey() const;
   virtual WebKit::WebSerializedScriptValue value() const;
@@ -34,6 +35,7 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
                               WebKit::WebExceptionCode& ec);
   virtual void postSuccessHandlerCallback();
 
+  // TODO(jsbell): Remove the following method after WK92278 rolls.
   void SetKeyAndValue(const content::IndexedDBKey& key,
                       const content::IndexedDBKey& primary_key,
                       const content::SerializedScriptValue& value);
@@ -47,6 +49,8 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
 
  private:
   int32 idb_cursor_id_;
+
+  // TODO(jsbell): Remove the following three members after WK92278 rolls.
   content::IndexedDBKey key_;
   content::IndexedDBKey primary_key_;
   content::SerializedScriptValue value_;
