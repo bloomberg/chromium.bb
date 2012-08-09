@@ -128,6 +128,11 @@ void ConnectionToHost::OnSignalStrategyStateChange(
   }
 }
 
+bool ConnectionToHost::OnSignalStrategyIncomingStanza(
+   const buzz::XmlElement* stanza) {
+  return false;
+}
+
 void ConnectionToHost::OnSessionManagerReady() {
   DCHECK(CalledOnValidThread());
 

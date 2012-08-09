@@ -98,6 +98,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
       SignalStrategy::State state) OVERRIDE;
+  virtual bool OnSignalStrategyIncomingStanza(
+      const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, DoSendStanza);

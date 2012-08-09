@@ -100,6 +100,8 @@ class ConnectionToHost : public SignalStrategy::Listener,
   // SignalStrategy::StatusObserver interface.
   virtual void OnSignalStrategyStateChange(
       SignalStrategy::State state) OVERRIDE;
+  virtual bool OnSignalStrategyIncomingStanza(
+      const buzz::XmlElement* stanza) OVERRIDE;
 
   // SessionManager::Listener interface.
   virtual void OnSessionManagerReady() OVERRIDE;

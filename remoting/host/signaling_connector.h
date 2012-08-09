@@ -63,6 +63,8 @@ class SignalingConnector
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
       SignalStrategy::State state) OVERRIDE;
+  virtual bool OnSignalStrategyIncomingStanza(
+      const buzz::XmlElement* stanza) OVERRIDE;
 
   // NetworkChangeNotifier::IPAddressObserver interface.
   virtual void OnIPAddressChanged() OVERRIDE;

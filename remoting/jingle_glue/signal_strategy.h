@@ -46,13 +46,13 @@ class SignalStrategy {
     // Called after state of the connection has changed. If the state
     // is DISCONNECTED, then GetError() can be used to get the reason
     // for the disconnection.
-    virtual void OnSignalStrategyStateChange(State state) {}
+    virtual void OnSignalStrategyStateChange(State state) = 0;
 
     // Must return true if the stanza was handled, false
     // otherwise. The signal strategy must not be deleted from a
     // handler of this message.
     virtual bool OnSignalStrategyIncomingStanza(
-        const buzz::XmlElement* stanza) { return false; }
+        const buzz::XmlElement* stanza) = 0;
   };
 
   SignalStrategy() {}

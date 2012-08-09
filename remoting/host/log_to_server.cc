@@ -66,6 +66,11 @@ void LogToServer::OnSignalStrategyStateChange(SignalStrategy::State state) {
   }
 }
 
+bool LogToServer::OnSignalStrategyIncomingStanza(
+    const buzz::XmlElement* stanza) {
+  return false;
+}
+
 void LogToServer::OnClientConnected(const std::string& jid) {
   DCHECK(CalledOnValidThread());
   LogSessionStateChange(jid, true);

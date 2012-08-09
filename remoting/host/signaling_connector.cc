@@ -80,6 +80,11 @@ void SignalingConnector::OnSignalStrategyStateChange(
   }
 }
 
+bool SignalingConnector::OnSignalStrategyIncomingStanza(
+    const buzz::XmlElement* stanza) {
+  return false;
+}
+
 void SignalingConnector::OnIPAddressChanged() {
   DCHECK(CalledOnValidThread());
   LOG(INFO) << "IP address has changed.";

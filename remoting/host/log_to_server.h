@@ -49,6 +49,8 @@ class LogToServer : public base::NonThreadSafe,
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
       SignalStrategy::State state) OVERRIDE;
+  virtual bool OnSignalStrategyIncomingStanza(
+      const buzz::XmlElement* stanza) OVERRIDE;
 
   // HostStatusObserver interface.
   virtual void OnClientConnected(const std::string& jid) OVERRIDE;

@@ -88,6 +88,11 @@ void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   }
 }
 
+bool HeartbeatSender::OnSignalStrategyIncomingStanza(
+    const buzz::XmlElement* stanza) {
+  return false;
+}
+
 void HeartbeatSender::SendStanza() {
   DoSendStanza();
   // Make sure we don't send another heartbeat before the heartbeat interval
