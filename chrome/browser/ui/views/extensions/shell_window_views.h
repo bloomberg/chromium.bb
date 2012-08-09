@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_VIEWS_H_
 
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/scoped_sk_region.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class Profile;
@@ -30,7 +30,7 @@ class ShellWindowViews : public ShellWindow,
                    const CreateParams& params);
 
   bool frameless() const { return frameless_; }
-  SkRegion* draggable_region() { return draggable_region_.Get(); }
+  SkRegion* draggable_region() { return draggable_region_.get(); }
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -93,7 +93,7 @@ class ShellWindowViews : public ShellWindow,
   views::Widget* window_;
   bool is_fullscreen_;
 
-  gfx::ScopedSkRegion draggable_region_;
+  scoped_ptr<SkRegion> draggable_region_;
 
   bool frameless_;
   gfx::Size minimum_size_;
