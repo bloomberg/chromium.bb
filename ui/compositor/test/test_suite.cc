@@ -5,7 +5,6 @@
 #include "ui/compositor/test/test_suite.h"
 
 #include "base/message_loop.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/compositor_test_support.h"
