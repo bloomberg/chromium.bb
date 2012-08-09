@@ -115,7 +115,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       main_loop_(MessageLoop::current()),
       filter_collection_(collection),
-      started_(false),
       message_loop_factory_(message_loop_factory),
       paused_(true),
       seeking_(false),
@@ -960,7 +959,6 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 }
 
 void WebMediaPlayerImpl::StartPipeline() {
-  started_ = true;
   pipeline_->Start(
       filter_collection_.Pass(),
       base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback, proxy_.get()),
@@ -997,13 +995,10 @@ void WebMediaPlayerImpl::Destroy() {
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.
-  if (started_) {
-    base::WaitableEvent waiter(false, false);
-    pipeline_->Stop(base::Bind(
-        &base::WaitableEvent::Signal, base::Unretained(&waiter)));
-    waiter.Wait();
-    started_ = false;
-  }
+  base::WaitableEvent waiter(false, false);
+  pipeline_->Stop(base::Bind(
+      &base::WaitableEvent::Signal, base::Unretained(&waiter)));
+  waiter.Wait();
 
   // Let V8 know we are not using extra resources anymore.
   if (incremented_externally_allocated_memory_) {

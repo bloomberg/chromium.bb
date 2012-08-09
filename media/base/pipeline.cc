@@ -72,7 +72,6 @@ Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
       running_(false),
       seek_pending_(false),
       tearing_down_(false),
-      error_caused_teardown_(false),
       playback_rate_change_pending_(false),
       did_loading_progress_(false),
       total_bytes_(0),
@@ -121,9 +120,6 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
 
 void Pipeline::Stop(const base::Closure& stop_cb) {
   base::AutoLock auto_lock(lock_);
-  CHECK(running_) << "Media pipeline isn't running";
-
-  // Stop the pipeline, which will set |running_| to false on our behalf.
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StopTask, this, stop_cb));
 }
@@ -162,7 +158,7 @@ void Pipeline::SetPlaybackRate(float playback_rate) {
 
   base::AutoLock auto_lock(lock_);
   playback_rate_ = playback_rate;
-  if (running_ && !tearing_down_) {
+  if (running_) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &Pipeline::PlaybackRateChangedTask, this, playback_rate));
   }
@@ -179,7 +175,7 @@ void Pipeline::SetVolume(float volume) {
 
   base::AutoLock auto_lock(lock_);
   volume_ = volume;
-  if (running_ && !tearing_down_) {
+  if (running_) {
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &Pipeline::VolumeChangedTask, this, volume));
   }
@@ -238,21 +234,6 @@ PipelineStatistics Pipeline::GetStatistics() const {
   return statistics_;
 }
 
-bool Pipeline::IsInitializedForTesting() {
-  DCHECK(message_loop_->BelongsToCurrentThread())
-      << "Tests should run on the same thread as Pipeline";
-  switch (state_) {
-    case kPausing:
-    case kFlushing:
-    case kSeeking:
-    case kStarting:
-    case kStarted:
-      return true;
-    default:
-      return false;
-  }
-}
-
 void Pipeline::SetClockForTesting(Clock* clock) {
   clock_.reset(clock);
 }
@@ -275,16 +256,6 @@ void Pipeline::SetState(State next_state) {
 bool Pipeline::IsPipelineOk() {
   base::AutoLock auto_lock(lock_);
   return status_ == PIPELINE_OK;
-}
-
-bool Pipeline::IsPipelineStopped() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  return state_ == kStopped || state_ == kError;
-}
-
-bool Pipeline::IsPipelineTearingDown() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  return tearing_down_;
 }
 
 bool Pipeline::IsPipelineSeeking() {
@@ -335,14 +306,14 @@ Pipeline::State Pipeline::FindNextState(State current) {
     // assumption that we never accept Seek() after Stop().
     DCHECK(IsPipelineSeeking() ||
            !stop_cb_.is_null() ||
-           IsPipelineTearingDown());
+           tearing_down_);
     return IsPipelineSeeking() ? kSeeking : kStopping;
   } else if (current == kSeeking) {
     return kStarting;
   } else if (current == kStarting) {
     return kStarted;
   } else if (current == kStopping) {
-    return error_caused_teardown_ ? kError : kStopped;
+    return kStopped;
   } else {
     return current;
   }
@@ -624,7 +595,7 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
   }
 
   // If we have received the stop or error signal, return immediately.
-  if (!stop_cb_.is_null() || IsPipelineStopped() || !IsPipelineOk())
+  if (!stop_cb_.is_null() || state_ == kStopped || !IsPipelineOk())
     return;
 
   DCHECK(state_ == kInitDemuxer ||
@@ -706,26 +677,29 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
 void Pipeline::StopTask(const base::Closure& stop_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(stop_cb_.is_null());
-  DCHECK_NE(state_, kStopped);
+
+  if (state_ == kStopped) {
+    stop_cb.Run();
+    return;
+  }
 
   if (video_decoder_) {
     video_decoder_->PrepareForShutdownHack();
     video_decoder_ = NULL;
   }
 
-  if (IsPipelineTearingDown() && error_caused_teardown_) {
+  if (tearing_down_ && status_ != PIPELINE_OK) {
     // If we are stopping due to SetError(), stop normally instead of
     // going to error state and calling |error_cb_|. This converts
     // the teardown in progress from an error teardown into one that acts
     // like the error never occurred.
     base::AutoLock auto_lock(lock_);
     status_ = PIPELINE_OK;
-    error_caused_teardown_ = false;
   }
 
   stop_cb_ = stop_cb;
 
-  if (!IsPipelineSeeking() && !IsPipelineTearingDown()) {
+  if (!IsPipelineSeeking() && !tearing_down_) {
     // We will tear down pipeline immediately when there is no seek operation
     // pending and no teardown in progress. This should include the case where
     // we are partially initialized.
@@ -740,19 +714,17 @@ void Pipeline::ErrorChangedTask(PipelineStatus error) {
   // Suppress executing additional error logic. Note that if we are currently
   // performing a normal stop, then we return immediately and continue the
   // normal stop.
-  if (IsPipelineStopped() || IsPipelineTearingDown()) {
+  if (state_ == kStopped || tearing_down_) {
     return;
   }
 
   base::AutoLock auto_lock(lock_);
   status_ = error;
 
-  error_caused_teardown_ = true;
-
   // Posting TearDownPipeline() to message loop so that we can make sure
   // it runs after any pending callbacks that are already queued.
   // |tearing_down_| is set early here to make sure that pending callbacks
-  // don't modify the state before TeadDownPipeline() can run.
+  // don't modify the state before TearDownPipeline() can run.
   tearing_down_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::TearDownPipeline, this));
@@ -761,7 +733,7 @@ void Pipeline::ErrorChangedTask(PipelineStatus error) {
 void Pipeline::PlaybackRateChangedTask(float playback_rate) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  if (!running_ || tearing_down_)
+  if (state_ == kStopped || tearing_down_)
     return;
 
   // Suppress rate change until after seeking.
@@ -788,7 +760,8 @@ void Pipeline::PlaybackRateChangedTask(float playback_rate) {
 
 void Pipeline::VolumeChangedTask(float volume) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!running_ || tearing_down_)
+
+  if (state_ == kStopped || tearing_down_)
     return;
 
   if (audio_renderer_)
@@ -903,14 +876,11 @@ void Pipeline::FilterStateTransitionTask() {
       << "Filter state transitions must be completed via pending_callbacks_";
   pending_callbacks_.reset();
 
-  // No reason transitioning if we've errored or have stopped.
-  if (IsPipelineStopped()) {
-    return;
-  }
-
-  // If we are tearing down, don't allow any state changes. Teardown
-  // state changes will come in via TeardownStateTransitionTask().
-  if (IsPipelineTearingDown()) {
+  // State transitions while tearing down are handled via
+  // TeardownStateTransitionTask().
+  //
+  // TODO(scherkus): Merge all state machinery!
+  if (state_ == kStopped || tearing_down_) {
     return;
   }
 
@@ -977,14 +947,14 @@ void Pipeline::FilterStateTransitionTask() {
 }
 
 void Pipeline::TeardownStateTransitionTask() {
-  DCHECK(IsPipelineTearingDown());
+  DCHECK(tearing_down_);
   DCHECK(pending_callbacks_.get())
       << "Teardown state transitions must be completed via pending_callbacks_";
   pending_callbacks_.reset();
 
   switch (state_) {
     case kStopping:
-      SetState(error_caused_teardown_ ? kError : kStopped);
+      SetState(kStopped);
       FinishDestroyingFiltersTask();
       break;
     case kPausing:
@@ -997,7 +967,6 @@ void Pipeline::TeardownStateTransitionTask() {
       break;
 
     case kCreated:
-    case kError:
     case kInitDemuxer:
     case kInitAudioDecoder:
     case kInitAudioRenderer:
@@ -1016,27 +985,22 @@ void Pipeline::TeardownStateTransitionTask() {
 
 void Pipeline::FinishDestroyingFiltersTask() {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(IsPipelineStopped());
+  DCHECK_EQ(state_, kStopped);
 
   audio_renderer_ = NULL;
   video_renderer_ = NULL;
   demuxer_ = NULL;
-
-  if (error_caused_teardown_ && !IsPipelineOk() && !error_cb_.is_null())
-    error_cb_.Run(status_);
-
-  if (!stop_cb_.is_null()) {
-    {
-      base::AutoLock l(lock_);
-      running_ = false;
-    }
-
-    // Notify the client that stopping has finished.
-    base::ResetAndReturn(&stop_cb_).Run();
+  tearing_down_ = false;
+  {
+    base::AutoLock l(lock_);
+    running_ = false;
   }
 
-  tearing_down_ = false;
-  error_caused_teardown_ = false;
+  if (!IsPipelineOk() && !error_cb_.is_null())
+    error_cb_.Run(status_);
+
+  if (!stop_cb_.is_null())
+    base::ResetAndReturn(&stop_cb_).Run();
 }
 
 void Pipeline::InitializeDemuxer() {
@@ -1189,7 +1153,7 @@ void Pipeline::TearDownPipeline() {
   //   2) ...tearing down due to an error (it does set tearing_down_)
   //   3) ...tearing down due to an error and Stop() was called during that time
   DCHECK(!tearing_down_ ||
-         (tearing_down_ && error_caused_teardown_) ||
+         (tearing_down_ && status_ != PIPELINE_OK) ||
          (tearing_down_ && !stop_cb_.is_null()));
 
   // Mark that we already start tearing down operation.
@@ -1200,7 +1164,6 @@ void Pipeline::TearDownPipeline() {
 
   switch (state_) {
     case kCreated:
-    case kError:
       SetState(kStopped);
       // Need to put this in the message loop to make sure that it comes
       // after any pending callback tasks that are already queued.

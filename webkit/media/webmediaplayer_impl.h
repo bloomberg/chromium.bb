@@ -284,16 +284,8 @@ class WebMediaPlayerImpl
   // for DCHECKs so methods calls won't execute in the wrong thread.
   MessageLoop* main_loop_;
 
-  // A collection of filters.
   scoped_ptr<media::FilterCollection> filter_collection_;
-
-  // The media pipeline and a bool tracking whether we have started it yet.
-  //
-  // TODO(scherkus): replace |started_| with a pointer check for |pipeline_| and
-  // have WebMediaPlayerImpl return the default values to WebKit instead of
-  // relying on Pipeline to take care of default values.
   scoped_refptr<media::Pipeline> pipeline_;
-  bool started_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.

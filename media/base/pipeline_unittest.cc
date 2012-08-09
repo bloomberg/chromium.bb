@@ -98,17 +98,8 @@ class PipelineTest : public ::testing::Test {
   }
 
   virtual ~PipelineTest() {
-    if (!pipeline_->IsRunning()) {
-      return;
-    }
-
     // Shutdown sequence.
-    //
-    // TODO(scherkus): This check is required because in certain teardown
-    // cases the pipeline is still "running" but has already stopped due to
-    // errors. In an ideal world we stop running when we teardown, but that
-    // requires cleaning up shutdown path, see http://crbug.com/110228
-    if (pipeline_->IsInitializedForTesting()) {
+    if (pipeline_->IsRunning()) {
       EXPECT_CALL(*mocks_->demuxer(), Stop(_))
           .WillOnce(RunClosure());
 
@@ -357,8 +348,6 @@ TEST_F(PipelineTest, NotStarted) {
 TEST_F(PipelineTest, NeverInitializes) {
   // Don't execute the callback passed into Initialize().
   EXPECT_CALL(*mocks_->demuxer(), Initialize(_, _));
-  EXPECT_CALL(*mocks_->demuxer(), Stop(_))
-      .WillOnce(RunClosure());
 
   // This test hangs during initialization by never calling
   // InitializationComplete().  StrictMock<> will ensure that the callback is
