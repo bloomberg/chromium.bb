@@ -2942,6 +2942,18 @@ int32_t NaClCommonSysTest_InfoLeak(struct NaClAppThread *natp) {
 # error Unsupported platform
 # endif
 
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /*
+   * Put some interesting bits into the VFP registers.
+   */
+
+  static const char manybytes[64] =
+      "Sensitive information must not be leaked to untrusted code!!!!\n";
+
+  __asm__ volatile("vldm %0, {d0-d7}" :: "r" (manybytes) :
+                   "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7");
+  __asm__ volatile("vmsr fpscr, %0" :: "r" (0xdeadbeef) : "vfpcc");
+
 #endif
 
   UNREFERENCED_PARAMETER(natp);

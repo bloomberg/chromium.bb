@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -46,6 +46,49 @@ __attribute__((noinline)) static int infoleak_check_state(void) {
 }
 
 #define EXPECT_OK 1
+
+#elif defined(__arm__)
+
+union vfp_regs {
+  double d[16];
+  char s[sizeof(double) * 16];
+};
+const union vfp_regs vfp_zero;
+
+/*
+ * These are defined in test_infoleak_asm.S because LLVM
+ * cannot handle them as inline assembly.
+ */
+uint32_t infoleak_store_state(const union vfp_regs *vfp, uint32_t fpscr);
+uint32_t infoleak_fetch_state(union vfp_regs *vfp);
+
+static void infoleak_clear_state(void) {
+  infoleak_store_state(&vfp_zero, 0);
+}
+
+static int infoleak_check_state(void) {
+  int ok = 1;
+  union vfp_regs vfp_now;
+  uint32_t fpscr = infoleak_fetch_state(&vfp_now);
+  if (memcmp(&vfp_now, &vfp_zero, sizeof(vfp_now)) != 0) {
+    printf("VFP registers leaked information!\n\t%.*s",
+           sizeof(vfp_now), vfp_now.s);
+    ok = 0;
+  }
+  if (fpscr != 0) {
+    printf("VFP FPSCR leaked information! %#x\n", fpscr);
+    ok = 0;
+  }
+  return ok;
+}
+
+/*
+ * TODO(mcgrathr): Currently broken pending fix for
+ * http://code.google.com/p/nativeclient/issues/detail?id=2954
+ * So for now we are instead just testing that test_infoleak syscall
+ * itself clobbers state as expected.
+ */
+#define EXPECT_OK 0
 
 #else
 
