@@ -7,7 +7,6 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include <map>
 #include <string>
@@ -17,7 +16,6 @@
 #include "nacl_mounts/mount.h"
 #include "nacl_mounts/path.h"
 
-#define __STDC__ 1
 #include "gtest/gtest.h"
 
 int g_MountCnt = 0;

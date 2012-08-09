@@ -5,7 +5,6 @@
 
 #include <fcntl.h>
 #include <pthread.h>
-#include <unistd.h>
 
 #include <map>
 #include <string>
@@ -14,7 +13,6 @@
 #include "nacl_mounts/kernel_proxy.h"
 #include "nacl_mounts/path.h"
 
-#define __STDC__ 1
 #include "gtest/gtest.h"
 
 class KernelProxyMock : public KernelProxy {
@@ -127,10 +125,12 @@ TEST(KernelIntercept, SanityChecks) {
   ki_chdir("foo");
   EXPECT_EQ("chdir", mock->LastStr());
 
-  ki_getcwd("foo", 1);
+  char getcwd_buffer[] = "foo";
+  ki_getcwd(getcwd_buffer, 1);
   EXPECT_EQ("getcwd", mock->LastStr());
 
-  ki_getwd("foo");
+  char getwd_buffer[] = "foo";
+  ki_getwd(getwd_buffer);
   EXPECT_EQ("getwd", mock->LastStr());
 
   ki_dup(1);

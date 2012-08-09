@@ -21,10 +21,12 @@ class RefObject {
   void Acquire() {
     ref_count_++;
   }
-  void Release() {
+  bool Release() {
     if (--ref_count_ == 0) {
       delete this;
+      return false;
     }
+    return true;
   }
 
  protected:

@@ -536,12 +536,12 @@ def GetWindowsEnvironment():
   return dict(line.split('=') for line in stdout.split('\r\n')[:-1])
 
 
-def BuildStepBuildLibraries(pepperdir, platform, directory):
-  buildbot_common.BuildStep('Build Libraries')
-  src_dir = os.path.join(pepperdir, directory)
-  makefile = os.path.join(src_dir, 'Makefile')
+def BuildStepMakeAll(pepperdir, platform, directory, step_name, clean=False):
+  buildbot_common.BuildStep(step_name)
+  make_dir = os.path.join(pepperdir, directory)
+  makefile = os.path.join(make_dir, 'Makefile')
   if os.path.isfile(makefile):
-    print "\n\nMake: " + src_dir
+    print "\n\nMake: " + make_dir
     if platform == 'win':
       # We need to modify the environment to build host on Windows.
       env = GetWindowsEnvironment()
@@ -549,10 +549,16 @@ def BuildStepBuildLibraries(pepperdir, platform, directory):
       env = os.environ
 
     buildbot_common.Run(['make', '-j8'],
-                        cwd=os.path.abspath(src_dir), shell=True, env=env)
-    # Clean to remove temporary files but keep the built libraries.
-    buildbot_common.Run(['make', '-j8', 'clean'],
-                        cwd=os.path.abspath(src_dir), shell=True)
+                        cwd=os.path.abspath(make_dir), shell=True, env=env)
+    if clean:
+      # Clean to remove temporary files but keep the built libraries.
+      buildbot_common.Run(['make', '-j8', 'clean'],
+                          cwd=os.path.abspath(make_dir), shell=True)
+
+
+def BuildStepBuildLibraries(pepperdir, platform, directory):
+  BuildStepMakeAll(pepperdir, platform, directory, 'Build Libraries',
+      clean=True)
 
 
 def BuildStepTarBundle(pepper_ver, tarfile):
@@ -619,21 +625,11 @@ def BuildStepTestUpdater(platform, pepper_ver, revision, tarfile):
 
 
 def BuildStepBuildExamples(pepperdir, platform):
-  buildbot_common.BuildStep('Build Examples')
-  example_dir = os.path.join(pepperdir, 'examples')
-  makefile = os.path.join(example_dir, 'Makefile')
-  if os.path.isfile(makefile):
-    print "\n\nMake: " + example_dir
-    if platform == 'win':
-      # We need to modify the environment to build host on Windows.
-      env = GetWindowsEnvironment()
-    else:
-      env = os.environ
+  BuildStepMakeAll(pepperdir, platform, 'examples', 'Build Examples')
 
-    buildbot_common.Run(['make', '-j8'],
-                        cwd=os.path.abspath(example_dir), shell=True, env=env)
 
 TEST_EXAMPLE_LIST = [
+  'nacl_mounts_test',
 ]
 
 TEST_LIBRARY_LIST = [
@@ -651,12 +647,12 @@ def BuildStepCopyTests(pepperdir, toolchains, build_experimental):
   for toolchain in toolchains:
     args.append('--' + toolchain)
 
-  for example in TEST_EXAMPLE_LIST:
-    dsc = os.path.join(SDK_EXAMPLE_DIR, example, 'example.dsc')
-    args.append(dsc)
-
   for library in TEST_LIBRARY_LIST:
     dsc = os.path.join(SDK_LIBRARY_DIR, library, 'library.dsc')
+    args.append(dsc)
+
+  for example in TEST_EXAMPLE_LIST:
+    dsc = os.path.join(SDK_LIBRARY_DIR, example, 'example.dsc')
     args.append(dsc)
 
   if build_experimental:
@@ -666,7 +662,11 @@ def BuildStepCopyTests(pepperdir, toolchains, build_experimental):
     buildbot_common.ErrorExit('Failed to build tests.')
 
 
-def BuildStepTestExamples(pepperdir, platform, pepper_ver):
+def BuildStepBuildTests(pepperdir, platform):
+  BuildStepMakeAll(pepperdir, platform, 'testing', 'Build Tests')
+
+
+def BuildStepRunPyautoTests(pepperdir, platform, pepper_ver):
   buildbot_common.BuildStep('Test Examples')
   env = copy.copy(os.environ)
   env['PEPPER_VER'] = pepper_ver
@@ -794,9 +794,9 @@ def main(args):
     BuildStepBuildLibraries(pepperdir, platform, 'src')
     BuildStepBuildExamples(pepperdir, platform)
     BuildStepCopyTests(pepperdir, toolchains, options.build_experimental)
-    BuildStepBuildLibraries(pepperdir, platform, 'testing')
+    BuildStepBuildTests(pepperdir, platform)
     if options.test_examples:
-      BuildStepTestExamples(pepperdir, platform, pepper_ver)
+      BuildStepRunPyautoTests(pepperdir, platform, pepper_ver)
   elif options.only_updater:
     build_updater.BuildUpdater(OUT_DIR)
   else:  # Build everything.
@@ -824,9 +824,9 @@ def main(args):
       pepperdir = BuildStepTestUpdater(platform, pepper_ver, clnumber, tarfile)
       BuildStepBuildExamples(pepperdir, platform)
       BuildStepCopyTests(pepperdir, toolchains, options.build_experimental)
-      BuildStepBuildLibraries(pepperdir, platform, 'testing')
+      BuildStepBuildTests(pepperdir, platform)
       if options.test_examples:
-        BuildStepTestExamples(pepperdir, platform, pepper_ver)
+        BuildStepRunPyautoTests(pepperdir, platform, pepper_ver)
 
       # Archive on non-trybots.
       if options.archive or buildbot_common.IsSDKBuilder():

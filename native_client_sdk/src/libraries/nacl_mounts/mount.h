@@ -71,7 +71,7 @@ class Mount : public RefObject {
   friend class KernelObject;
   friend class KernelProxy;
   void Acquire() { RefObject::Acquire(); }
-  void Release() { RefObject::Release(); }
+  bool Release() { return RefObject::Release(); }
 
   template <class M, class P> friend class MountFactory;
   DISALLOW_COPY_AND_ASSIGN(Mount);
@@ -79,10 +79,7 @@ class Mount : public RefObject {
 
 
 template<class C, class P> class MountFactory : public P {
- protected:
-  MountFactory()
-      : P() {}
-
+ public:
   static Mount* Create(int dev, StringMap_t& args) {
     Mount* mnt = new C();
     if (mnt->Init(dev, args) == false) {
@@ -92,7 +89,8 @@ template<class C, class P> class MountFactory : public P {
     return mnt;
   }
 
-  friend class KernelProxy;
+ protected:
+  MountFactory(): P() {}
 };
 
 #endif  // LIBRARIES_NACL_MOUNTS_MOUNT_H_

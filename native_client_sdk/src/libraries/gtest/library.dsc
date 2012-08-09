@@ -1,6 +1,7 @@
 {
   'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
   'SEARCH': [
+    '.',
     '../../../../testing/gtest/include/gtest',
     '../../../../testing/gtest/include/gtest/internal',
     '../../../../testing/gtest/src',
@@ -18,6 +19,7 @@
         'gtest-printers.cc',
         'gtest-test-part.cc',
         'gtest-typed-test.cc',
+        'nacl_gtest_dummy_sys.cc',
       ],
       # Ignore warning:
       #   gtest.cc:2555: error: enumeration value ‘COLOR_DEFAULT’ not handled in switch

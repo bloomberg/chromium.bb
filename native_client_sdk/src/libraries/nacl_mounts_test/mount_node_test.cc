@@ -5,14 +5,13 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
 
 #include "nacl_mounts/kernel_proxy.h"
 #include "nacl_mounts/mount_node.h"
 #include "nacl_mounts/mount_node_dir.h"
 #include "nacl_mounts/mount_node_mem.h"
+#include "nacl_mounts/osdirent.h"
 
-#define __STDC__ 1
 #include "gtest/gtest.h"
 
 #define NULL_NODE ((MountNode *) NULL)
@@ -79,7 +78,7 @@ TEST(MountNodeTest, File) {
   // Test properties
   EXPECT_EQ(0, file->GetLinks());
   EXPECT_EQ(S_IREAD | S_IWRITE, file->GetMode());
-  EXPECT_EQ(_S_IFREG, file->GetType());
+  EXPECT_EQ(S_IFREG, file->GetType());
   EXPECT_EQ(false, file->IsaDir());
   EXPECT_EQ(true, file->IsaFile());
   EXPECT_EQ(false, file->IsaTTY());
@@ -88,7 +87,7 @@ TEST(MountNodeTest, File) {
   // Test IO
   char buf1[1024];
   char buf2[1024 * 2];
-  for (int a=0; a < sizeof(buf1); a++)
+  for (size_t a = 0; a < sizeof(buf1); a++)
     buf1[a] = a;
   memset(buf2, 0, sizeof(buf2));
 
@@ -125,7 +124,7 @@ TEST(MountNodeTest, Directory) {
   // Test properties
   EXPECT_EQ(0, root->GetLinks());
   EXPECT_EQ(S_IREAD | S_IWRITE, root->GetMode());
-  EXPECT_EQ(_S_IFDIR, root->GetType());
+  EXPECT_EQ(S_IFDIR, root->GetType());
   EXPECT_EQ(true, root->IsaDir());
   EXPECT_EQ(false, root->IsaFile());
   EXPECT_EQ(false, root->IsaTTY());

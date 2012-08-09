@@ -55,13 +55,13 @@ WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -
 #
 CC_RULE = '<tc>/<config>/<name>_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>/<config>'
 NACL_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>',
-  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
 }
 
 SO_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -fPIC $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>',
-  'Release': '<TAB>$(<CC>) -o $@ $< -02 <MACH> -fPIC $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc> $(<TC>_CCFLAGS) <DEFLIST> <INCLIST>'
+  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -fPIC -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) -o $@ $< -02 <MACH> -fPIC -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>'
 }
 
 WIN_CC_RULES = {
@@ -73,13 +73,13 @@ WIN_CC_RULES = {
 # Link rules for various platforms.
 #
 NEXE_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>'
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>'
 }
 
 SO_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) <LIBLIST>',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) <LIBLIST>',
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>',
 }
 
 PEXE_TRANSLATE_RULE = """
@@ -93,8 +93,8 @@ PEXE_TRANSLATE_RULE = """
 <TAB>$(TRANSLATE) -arch arm $< -o $@"""
 
 PEXE_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
-  'Release': '<TAB>$(<LINK>) -o $@ $^ $(<PROJ>_LDFLAGS) $(<TC>_LDFLAGS) <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
+  'Release': '<TAB>$(<LINK>) -o $@ $^ $(<TC>_LDFLAGS) $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>\n' + PEXE_TRANSLATE_RULE,
 }
 
 WIN_LINK_RULES = {

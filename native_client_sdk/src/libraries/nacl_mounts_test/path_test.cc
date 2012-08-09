@@ -4,11 +4,9 @@
  */
 
 #include <fcntl.h>
-#include <unistd.h>
 #include "nacl_mounts/kernel_proxy.h"
 #include "nacl_mounts/path.h"
 
-#define __STDC__ 1
 #include "gtest/gtest.h"
 
 TEST(PathTest, SanityChecks) {

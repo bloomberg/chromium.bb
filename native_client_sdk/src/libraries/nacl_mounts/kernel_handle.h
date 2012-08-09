@@ -31,7 +31,7 @@ class KernelHandle : public RefObject {
   friend class KernelObject;
   friend class KernelProxy;
   void Acquire() { RefObject::Acquire(); }
-  void Release() { RefObject::Release(); }
+  bool Release() { return RefObject::Release(); }
   DISALLOW_COPY_AND_ASSIGN(KernelHandle);
 };
 
