@@ -96,6 +96,11 @@ class BitPattern(object):
             print "Error: %s" % ex
             return None
 
+    @staticmethod
+    def always_matches(column=None):
+      """Returns a bit pattern corresponding to always matches."""
+      return BitPattern(0, 0, '==', column)
+
     def __init__(self, mask, value, op, column=None):
         """Initializes a BitPattern.
 
@@ -113,6 +118,15 @@ class BitPattern(object):
         self.op = op
         self.significant_bits = _popcount(mask)
         self.column = column
+
+    def copy(self):
+      """Returns a copy of the given bit pattern."""
+      return BitPattern(self.mask, self.value, self.op, self.column)
+
+    def is_equal_op(self):
+      """Returns true if the bit pattern is an equals (rather than a
+         not equals)."""
+      return self.op == '=='
 
     def conflicts(self, other):
         """Returns an integer with a 1 in each bit position that conflicts
@@ -142,6 +156,75 @@ class BitPattern(object):
                 and _popcount(self.conflicts(other)) == 1)
         return False
 
+    def categorize_match(self, pattern):
+      """ Compares this pattern againts the given pattern, and returns one
+          of the following values:
+
+          'match' - All specified bits in this match the corresponding bits in
+                  the given pattern.
+          'conflicts' - There are bits in this pattern that conflict with the
+                  given pattern. Hence, there is no way this pattern will
+                  succeed for instructions matching the given pattern.
+          'consistent' - The specified bits in this pattern neither match,
+                  nor conflicts with the unmatched pattern. No conclusions
+                  can be drawn from the overlapping bits of this and the
+                  given pattern.
+          """
+      if self.is_equal_op():
+        # Compute the significant bits that overlap between this pattern and
+        # the given pattern.
+        mask = (self.mask & pattern.mask)
+        if pattern.is_equal_op():
+          # Testing if significant bits of this pattern differ (i.e. conflict)
+          # with the given pattern.
+          if mask & (self.value ^ pattern.value):
+            # Conflicts, no pattern match.
+            return 'conflicts'
+          else:
+            # Matches on signifcant bits in mask
+            return 'match'
+        else:
+          # Test if negated given pattern matches the significant
+          # bits of this pattern.
+          if mask & (self.value ^ ~pattern.value):
+            # Conflicts, so given pattern can't match negation. Hence,
+            # this pattern succeeds.
+            return 'match'
+          else:
+            # Consistent with negation.
+            if mask == pattern.mask:
+              # Matched all bits. pattern matches.
+              return 'match'
+            else:
+              # Only some bits matched. Hence, we can draw no conclusions other
+              # than consistent.
+              return 'consistent'
+      else:
+        # self match on negation.
+        negated_self = self.copy()
+        negated_self.op = '=='
+        result = negated_self.categorize_match(pattern)
+        if result == 'match':
+          return 'match'
+        else:
+          # Not exact match. Can only assume they are consistent (since none
+          # of the bits conflicted).
+          return 'consistent'
+
+    def remove_overlapping_bits(self, pattern):
+      """Returns a copy of this with overlapping significant bits of this
+         and the given pattern.
+      """
+      # Compute significant bits that overlap between this pattern and
+      # the given pattern, and build a mask to remove those bits.
+      mask = ~(self.mask & pattern.mask)
+
+      # Now build a new bit pattern with overlapping bits removed.
+      return BitPattern((mask & self.mask),
+                        (mask & self.value),
+                        self.op,
+                        self.column)
+
     def __add__(self, other):
         """Merges two compatible patterns into a single pattern that matches
         everything either pattern would have matched.
@@ -153,7 +236,7 @@ class BitPattern(object):
             return BitPattern((self.mask | other.mask) ^ c,
                 (self.value | other.value) ^ c, self.op, self.column)
         else:
-            return BitPattern(0, 0, '==')  # matches anything
+            return BitPattern.always_matches(self.column)
 
     def to_c_expr(self, input):
         """Converts this pattern to a C expression.
@@ -179,7 +262,7 @@ class BitPattern(object):
                      self.column[0],
                      self.column[1],
                      self.column[2],
-                     '' if self.op == '==' else '~',
+                     '' if self.is_equal_op() else '~',
                      ''.join(bits)))
         return value
 
@@ -292,7 +375,7 @@ class Table(object):
            Returns True if able to define.
         """
         if self.default_row: return False
-        self.default_row = Row([BitPattern(0, 0, "==")], action, arch)
+        self.default_row = Row([BitPattern.always_matches()], action, arch)
         return True
 
     def add_row(self, patterns, action, arch):
@@ -552,6 +635,13 @@ class Decoder(object):
     self._tables = sorted(self._tables, key=lambda(tbl): tbl.name)
     self._is_sorted = True
     return self._tables
+
+  def get_table(self, name):
+    """Returns the table with the given name"""
+    for tbl in self._tables:
+      if tbl.name == name:
+        return tbl
+    return None
 
   def add_class_def(self, cls, supercls):
     """Adds that cls's superclass is supercls. Returns true if able to add.
