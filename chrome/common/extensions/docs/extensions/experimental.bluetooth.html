@@ -1554,7 +1554,7 @@
                       <var><span>options</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>ResultCallback</span></var></span>)</div>
               <div class="description">
-                <p>Start discovery. Discovered devices will be returned via the |onDeviceDiscovered| callback. Note that discovery can be resource intensive. stopDiscovery should be called as soon as is convenient.</p>
+                <p>Start discovery. Discovered devices will be returned via the |onDeviceDiscovered| callback.  Discovery will fail to start if it is already in progress.  Discovery can be resource intensive: stopDiscovery should be called as soon as possible.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>

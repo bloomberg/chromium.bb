@@ -54,8 +54,7 @@ const char kInvalidDevice[] = "Invalid device";
 const char kInvalidUuid[] = "Invalid UUID";
 const char kServiceDiscoveryFailed[] = "Service discovery failed";
 const char kSocketNotFoundError[] = "Socket not found: invalid socket id";
-const char kStartDiscoveryFailed[] =
-    "Starting discovery failed, or already discovering";
+const char kStartDiscoveryFailed[] = "Starting discovery failed";
 const char kStopDiscoveryFailed[] = "Failed to stop discovery";
 
 }  // namespace
@@ -459,6 +458,7 @@ bool BluetoothGetLocalOutOfBandPairingDataFunction::RunImpl() {
 }
 
 void BluetoothStartDiscoveryFunction::OnSuccessCallback() {
+  GetEventRouter(profile())->SetResponsibleForDiscovery(true);
   SendResponse(true);
 }
 
@@ -470,8 +470,7 @@ void BluetoothStartDiscoveryFunction::OnErrorCallback() {
 bool BluetoothStartDiscoveryFunction::RunImpl() {
   GetEventRouter(profile())->SetSendDiscoveryEvents(true);
 
-  // BluetoothAdapter will throw an error if we SetDiscovering(true) when
-  // discovery is already in progress
+  // If the adapter is already discovering, there is nothing else to do.
   if (GetMutableAdapter(profile())->IsDiscovering()) {
     SendResponse(true);
     return true;
@@ -494,9 +493,11 @@ void BluetoothStopDiscoveryFunction::OnErrorCallback() {
 
 bool BluetoothStopDiscoveryFunction::RunImpl() {
   GetEventRouter(profile())->SetSendDiscoveryEvents(false);
-  GetMutableAdapter(profile())->SetDiscovering(false,
-      base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
-      base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
+  if (GetEventRouter(profile())->IsResponsibleForDiscovery()) {
+    GetMutableAdapter(profile())->SetDiscovering(false,
+        base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
+        base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
+  }
   return true;
 }
 

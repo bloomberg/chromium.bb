@@ -190,8 +190,9 @@ namespace experimental.bluetooth {
                                         optional ResultCallback callback);
 
     // Start discovery. Discovered devices will be returned via the
-    // |onDeviceDiscovered| callback. Note that discovery can be resource
-    // intensive. stopDiscovery should be called as soon as is convenient.
+    // |onDeviceDiscovered| callback.  Discovery will fail to start if it is
+    // already in progress.  Discovery can be resource intensive: stopDiscovery
+    // should be called as soon as possible.
     // |options|  : The options for this function.
     // |callback| : Called to indicate success or failure.
     static void startDiscovery(

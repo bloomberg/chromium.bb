@@ -8,9 +8,11 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/experimental_bluetooth.h"
 
 namespace chromeos {
 
@@ -35,6 +37,11 @@ class ExtensionBluetoothEventRouter
   // Get the BluetoothSocket corresponding to |id|.
   scoped_refptr<BluetoothSocket> GetSocket(int id);
 
+  // Sets whether this Profile is responsible for the discovering state of the
+  // adapter.
+  void SetResponsibleForDiscovery(bool responsible);
+  bool IsResponsibleForDiscovery() const;
+
   // Sets whether or not DeviceAdded events will be dispatched to extensions.
   void SetSendDiscoveryEvents(bool should_send);
 
@@ -54,8 +61,11 @@ class ExtensionBluetoothEventRouter
   }
  private:
   void DispatchBooleanValueEvent(const char* event_name, bool value);
+  void DispatchDeviceEvent(
+      const extensions::api::experimental_bluetooth::Device& device);
 
   bool send_discovery_events_;
+  bool responsible_for_discovery_;
 
   Profile* profile_;
   scoped_refptr<chromeos::BluetoothAdapter> adapter_;
@@ -67,6 +77,10 @@ class ExtensionBluetoothEventRouter
 
   typedef std::map<int, scoped_refptr<BluetoothSocket> > SocketMap;
   SocketMap socket_map_;
+
+  typedef ScopedVector<extensions::api::experimental_bluetooth::Device>
+      DeviceList;
+  DeviceList discovered_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionBluetoothEventRouter);
 };

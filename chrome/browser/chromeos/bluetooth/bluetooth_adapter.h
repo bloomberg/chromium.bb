@@ -118,7 +118,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter>,
   // note that a typical discovery process has phases of this being true
   // followed by phases of being false when the adapter interrogates the
   // devices found.
-  bool IsDiscovering() const;
+  virtual bool IsDiscovering() const;
 
   // Requests that the adapter either begin discovering new devices when
   // |discovering| is true, or cease any discovery when false.  On success,

@@ -6,7 +6,8 @@ function testDiscovery() {
   chrome.test.assertEq(kExpectedDeviceNames.length,
       discoveredDevices.length);
   for (var i = 0; i < kExpectedDeviceNames.length; ++i) {
-    chrome.test.assertEq(kExpectedDeviceNames[i], discoveredDevices[i].name);
+    chrome.test.assertEq(kExpectedDeviceNames[i],
+        discoveredDevices[i].name);
   }
 
   chrome.test.succeed();
@@ -25,7 +26,6 @@ function stopDiscoveryAndContinue() {
   sendReady(startTests);
 }
 
-var kExpectedDeviceNames = ["d1"];
 var discoveredDevices = [];
 function recordDevice(device) {
   discoveredDevices.push(device);

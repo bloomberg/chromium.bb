@@ -21,6 +21,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
   MOCK_CONST_METHOD0(IsPresent, bool());
   MOCK_CONST_METHOD0(IsPowered, bool());
+  MOCK_CONST_METHOD0(IsDiscovering, bool());
   MOCK_METHOD3(SetDiscovering,
                void(bool discovering,
                     const base::Closure& callback,

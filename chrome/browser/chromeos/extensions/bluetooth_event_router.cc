@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/common/extensions/api/experimental_bluetooth.h"
+
+namespace experimental_bluetooth = extensions::api::experimental_bluetooth;
 
 namespace chromeos {
 
@@ -63,7 +66,25 @@ scoped_refptr<BluetoothSocket> ExtensionBluetoothEventRouter::GetSocket(
   return socket_entry->second;
 }
 
+void ExtensionBluetoothEventRouter::SetResponsibleForDiscovery(
+    bool responsible) {
+  responsible_for_discovery_ = responsible;
+}
+
+bool ExtensionBluetoothEventRouter::IsResponsibleForDiscovery() const {
+  return responsible_for_discovery_;
+}
+
 void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
+  // At the transition into sending devices, also send past devices that
+  // were discovered as they will not be discovered again.
+  if (should_send && !send_discovery_events_) {
+    for (DeviceList::const_iterator i = discovered_devices_.begin();
+        i != discovered_devices_.end(); ++i) {
+      DispatchDeviceEvent(**i);
+    }
+  }
+
   send_discovery_events_ = should_send;
 }
 
@@ -98,6 +119,12 @@ void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
     return;
   }
 
+  if (!discovering) {
+    send_discovery_events_ = false;
+    responsible_for_discovery_ = false;
+    discovered_devices_.clear();
+  }
+
   DispatchBooleanValueEvent(
       extensions::event_names::kBluetoothOnDiscoveringChanged,
       discovering);
@@ -105,34 +132,39 @@ void ExtensionBluetoothEventRouter::AdapterDiscoveringChanged(
 
 void ExtensionBluetoothEventRouter::DeviceAdded(
     chromeos::BluetoothAdapter* adapter, chromeos::BluetoothDevice* device) {
+  if (adapter != adapter_.get()) {
+    DVLOG(1) << "Ignoring event for adapter " << adapter->address();
+    return;
+  }
+
+  experimental_bluetooth::Device* extension_device =
+    new experimental_bluetooth::Device();
+  experimental_bluetooth::BluetoothDeviceToApiDevice(*device, extension_device);
+  discovered_devices_.push_back(extension_device);
+
   if (!send_discovery_events_)
     return;
 
-  DCHECK(adapter == adapter_.get());
-
-  extensions::api::experimental_bluetooth::Device extension_device;
-  extensions::api::experimental_bluetooth::BluetoothDeviceToApiDevice(
-      *device, &extension_device);
-
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Append(extension_device.ToValue().release());
-
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      extensions::event_names::kBluetoothOnDeviceDiscovered,
-      args.Pass(),
-      NULL,
-      GURL());
+  DispatchDeviceEvent(*extension_device);
 }
 
 void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
     const char* event_name, bool value) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(Value::CreateBooleanValue(value));
-
-  // TODO(bryeung): only dispatch the event to interested renderers
-  // crbug.com/133179
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       event_name, args.Pass(), NULL, GURL());
+}
+
+void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
+    const experimental_bluetooth::Device& device) {
+  scoped_ptr<ListValue> args(new ListValue());
+  args->Append(device.ToValue().release());
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+      extensions::event_names::kBluetoothOnDeviceDiscovered,
+      args.Pass(),
+      NULL,
+      GURL());
 }
 
 }  // namespace chromeos

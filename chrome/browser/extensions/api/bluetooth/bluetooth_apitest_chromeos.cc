@@ -291,6 +291,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
   // Try with a failure to start
+  EXPECT_CALL(*mock_adapter_, IsDiscovering()).WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_,
               SetDiscovering(true,
                              testing::_,
@@ -303,6 +304,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
 
   // Reset for a successful start
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  EXPECT_CALL(*mock_adapter_, IsDiscovering()).WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_,
               SetDiscovering(true,
                              testing::Truly(CallClosure),
@@ -333,6 +335,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
+  EXPECT_CALL(*mock_adapter_, IsDiscovering()).WillOnce(testing::Return(false));
   EXPECT_CALL(*mock_adapter_,
               SetDiscovering(true, testing::Truly(CallClosure), testing::_));
   EXPECT_CALL(*mock_adapter_,
@@ -349,6 +352,37 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryCallback) {
   EXPECT_TRUE(discovery_started.WaitUntilSatisfied());
 
   event_router()->DeviceAdded(mock_adapter_, device1_.get());
+
+  discovery_started.Reply("go");
+  ExtensionTestMessageListener discovery_stopped("ready", true);
+  EXPECT_TRUE(discovery_stopped.WaitUntilSatisfied());
+
+  event_router()->DeviceAdded(mock_adapter_, device2_.get());
+  discovery_stopped.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
+  // Fake that the adapter is discovering
+  EXPECT_CALL(*mock_adapter_, IsDiscovering()).WillOnce(testing::Return(true));
+  event_router()->AdapterDiscoveringChanged(mock_adapter_, true);
+
+  // Cache a device before the extension starts discovering
+  event_router()->DeviceAdded(mock_adapter_, device1_.get());
+
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  ExtensionTestMessageListener discovery_started("ready", true);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
+  GURL page_url = extension->GetResourceURL("test_discovery_in_progress.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  EXPECT_TRUE(discovery_started.WaitUntilSatisfied());
+
+  // This should be received in addition to the cached device above.
+  event_router()->DeviceAdded(mock_adapter_, device2_.get());
 
   discovery_started.Reply("go");
   ExtensionTestMessageListener discovery_stopped("ready", true);
