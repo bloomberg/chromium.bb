@@ -42,6 +42,12 @@ RulesFunction::RulesFunction() : rules_registry_(NULL) {}
 
 RulesFunction::~RulesFunction() {}
 
+bool RulesFunction::HasPermission() {
+  std::string event_name;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
+  return extension_->HasAPIPermission(event_name);
+}
+
 bool RulesFunction::RunImpl() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));

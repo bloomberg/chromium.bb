@@ -20,6 +20,7 @@ class RulesFunction : public AsyncExtensionFunction {
   virtual ~RulesFunction();
 
   // ExtensionFunction:
+  virtual bool HasPermission() OVERRIDE;
   virtual bool RunImpl() OVERRIDE;
 
   // Concrete implementation of the RulesFunction that is being called
