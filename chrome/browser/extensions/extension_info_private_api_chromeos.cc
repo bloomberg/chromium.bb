@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 
@@ -27,6 +28,15 @@ const char kPropertyHomeProvider[] = "homeProvider";
 // Key which corresponds to the initial_locale property.
 const char kPropertyInitialLocale[] = "initialLocale";
 
+// Name of machine statistic property with board.
+const char kPropertyReleaseBoard[] = "CHROMEOS_RELEASE_BOARD";
+
+// Key which corresponds to the board property in JS.
+const char kPropertyBoard[] = "board";
+
+// Key which corresponds to the board property in JS.
+const char kPropertyOwner[] = "isOwner";
+
 }  // namespace
 
 GetChromeosInfoFunction::GetChromeosInfoFunction() {
@@ -42,9 +52,9 @@ bool GetChromeosInfoFunction::RunImpl() {
   for (size_t i = 0; i < list->GetSize(); ++i) {
     std::string property_name;
     EXTENSION_FUNCTION_VALIDATE(list->GetString(i, &property_name));
-    std::string value;
+    Value* value = NULL;
     if (GetValue(property_name, &value))
-      result->Set(property_name, Value::CreateStringValue(value));
+      result->Set(property_name, value);
   }
   SetResult(result.release());
   SendResponse(true);
@@ -52,17 +62,28 @@ bool GetChromeosInfoFunction::RunImpl() {
 }
 
 bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
-                                       std::string* value) {
-  value->clear();
+                                       Value** value) {
   if (property_name == kPropertyHWID) {
+    std::string hwid;
     chromeos::system::StatisticsProvider* provider =
         chromeos::system::StatisticsProvider::GetInstance();
-    provider->GetMachineStatistic(kHardwareClass, value);
+    provider->GetMachineStatistic(kHardwareClass, &hwid);
+    *value = Value::CreateStringValue(hwid);
   } else if (property_name == kPropertyHomeProvider) {
     NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
-    (*value) = netlib->GetCellularHomeCarrierId();
+    *value = Value::CreateStringValue(netlib->GetCellularHomeCarrierId());
   } else if (property_name == kPropertyInitialLocale) {
-    *value = chromeos::WizardController::GetInitialLocale();
+    *value = Value::CreateStringValue(
+        chromeos::WizardController::GetInitialLocale());
+  } else if (property_name == kPropertyBoard) {
+    std::string board;
+    chromeos::system::StatisticsProvider* provider =
+        chromeos::system::StatisticsProvider::GetInstance();
+    provider->GetMachineStatistic(kPropertyReleaseBoard, &board);
+    *value = Value::CreateStringValue(board);
+  } else if (property_name == kPropertyOwner) {
+    *value = Value::CreateBooleanValue(
+        chromeos::UserManager::Get()->IsCurrentUserOwner());
   } else {
     LOG(ERROR) << "Unknown property request: " << property_name;
     return false;

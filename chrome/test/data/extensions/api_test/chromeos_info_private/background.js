@@ -56,5 +56,9 @@ function generateTestsForKeys(keys) {
   return tests;
 }
 
-var tests = generateTestsForKeys(["hwid", "homeProvider", "initialLocale"])
+var tests = generateTestsForKeys(["hwid",
+                                  "homeProvider",
+                                  "initialLocale",
+                                  "board",
+                                  "isOwner"])
 chrome.test.runTests(tests);

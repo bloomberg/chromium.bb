@@ -20,7 +20,7 @@ class GetChromeosInfoFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  bool GetValue(const std::string& property_name, std::string* value);
+  bool GetValue(const std::string& property_name, Value** value);
 
   DECLARE_EXTENSION_FUNCTION_NAME("chromeosInfoPrivate.get");
 };
