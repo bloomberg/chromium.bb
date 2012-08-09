@@ -502,7 +502,8 @@ MetricsService::MetricsService()
       next_window_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(self_ptr_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(state_saver_factory_(this)),
-      waiting_for_asynchronous_reporting_step_(false) {
+      waiting_for_asynchronous_reporting_step_(false),
+      entropy_source_returned_(LAST_ENTROPY_NONE) {
   DCHECK(IsSingleThreaded());
   InitializeMetricsState();
 
@@ -538,7 +539,7 @@ std::string MetricsService::GetClientId() {
   return client_id_;
 }
 
-std::string MetricsService::GetEntropySource() {
+std::string MetricsService::GetEntropySource(bool reporting_will_be_enabled) {
   // For metrics reporting-enabled users, we combine the client ID and low
   // entropy source to get the final entropy source. Otherwise, only use the low
   // entropy source.
@@ -547,8 +548,11 @@ std::string MetricsService::GetEntropySource() {
   //     know the low entropy source.
   //  2) It makes the final entropy source resettable.
   std::string low_entropy_source = base::IntToString(GetLowEntropySource());
-  if (reporting_active())
+  if (reporting_will_be_enabled) {
+    entropy_source_returned_ = LAST_ENTROPY_HIGH;
     return client_id_ + low_entropy_source;
+  }
+  entropy_source_returned_ = LAST_ENTROPY_LOW;
   return low_entropy_source;
 }
 

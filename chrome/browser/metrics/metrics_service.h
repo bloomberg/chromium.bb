@@ -87,10 +87,15 @@ class MetricsService
   std::string GetClientId();
 
   // Returns the preferred entropy source used to seed persistent activities
-  // based on whether or not metrics reporting is permitted on this client. If
-  // it is permitted, this returns the client ID concatenated with the low
-  // entropy source. Otherwise, this just returns the low entropy source.
-  std::string GetEntropySource();
+  // based on whether or not metrics reporting will permitted on this client.
+  // The caller must determine if metrics reporting will be enabled for this
+  // client and pass that state in as |reporting_will_be_enabled|. If
+  // |reporting_will_be_enabled| is true, this method returns the client ID
+  // concatenated with the low entropy source. Otherwise, this method just
+  // returns the low entropy source. Note that this reporting state can not be
+  // checked by reporting_active() because this method may need to be called
+  // before the MetricsService needs to be started.
+  std::string GetEntropySource(bool reporting_will_be_enabled);
 
   // Force the client ID to be generated. This is useful in case it's needed
   // before recording.
@@ -177,6 +182,15 @@ class MetricsService
     NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
   };
 
+  // Designates which entropy source was returned from this MetricsService.
+  // This is used for testing to validate that we return the correct source
+  // depending on the state of the service.
+  enum EntropySourceReturned {
+    LAST_ENTROPY_NONE,
+    LAST_ENTROPY_LOW,
+    LAST_ENTROPY_HIGH,
+  };
+
   // First part of the init task. Called on the FILE thread to load hardware
   // class information.
   static void InitTaskGetHardwareClass(base::WeakPtr<MetricsService> self,
@@ -212,6 +226,13 @@ class MetricsService
   // that is non-identifying amongst browser clients. This method will
   // generate the entropy source value if it has not been called before.
   int GetLowEntropySource();
+
+  // Returns the last entropy source that was returned by this service since
+  // start up, or NONE if neither was returned yet. This is exposed for testing
+  // only.
+  EntropySourceReturned entropy_source_returned() const {
+    return entropy_source_returned_;
+  }
 
   // When we start a new version of Chromium (different from our last run), we
   // need to discard the old crash stats so that we don't attribute crashes etc.
@@ -462,12 +483,18 @@ class MetricsService
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
 #endif
 
+  // The last entropy source returned by this service, used for testing.
+  EntropySourceReturned entropy_source_returned_;
+
   // Reduntant marker to check that we completed our shutdown, and set the
   // exited-cleanly bit in the prefs.
   static ShutdownCleanliness clean_shutdown_status_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, CheckLowEntropySourceUsed);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceReportingTest,
+                           CheckHighEntropySourceUsed);
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };

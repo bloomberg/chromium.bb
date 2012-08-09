@@ -160,6 +160,7 @@ extern const char kEnableIPPooling[];
 extern const char kEnableManagedStorage[];
 extern const char kEnableMediaGalleryUI[];
 extern const char kEnableMemoryInfo[];
+extern const char kEnableMetricsReportingForTesting[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableNaClExceptionHandling[];

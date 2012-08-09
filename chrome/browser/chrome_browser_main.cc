@@ -542,10 +542,12 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
   MetricsService* metrics = browser_process_->metrics_service();
-  if (IsMetricsReportingEnabled())
+  bool metrics_reporting_enabled = IsMetricsReportingEnabled();
+  if (metrics_reporting_enabled)
     metrics->ForceClientIdCreation();  // Needed below.
   field_trial_list_.reset(
-      new base::FieldTrialList(metrics->GetEntropySource()));
+      new base::FieldTrialList(
+          metrics->GetEntropySource(metrics_reporting_enabled)));
 
   // Ensure any field trials specified on the command line are initialized.
   // Also stop the metrics service so that we don't pollute UMA.
@@ -595,11 +597,14 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
 bool ChromeBrowserMainParts::IsMetricsReportingEnabled() {
   // If the user permits metrics reporting with the checkbox in the
   // prefs, we turn on recording.  We disable metrics completely for
-  // non-official builds.
+  // non-official builds.  This can be forced with a flag.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableMetricsReportingForTesting))
+    return true;
+
   bool enabled = false;
 #ifndef NDEBUG
   // The debug build doesn't send UMA logs when FieldTrials are forced.
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceFieldTrials))
     return false;
 #endif  // #ifndef NDEBUG
