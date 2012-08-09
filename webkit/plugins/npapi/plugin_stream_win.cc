@@ -19,8 +19,7 @@ void PluginStream::ResetTempFileName() {
 }
 
 void PluginStream::WriteAsFile() {
-  if (requested_plugin_mode_ == NP_ASFILE ||
-      requested_plugin_mode_ == NP_ASFILEONLY)
+  if (RequestedPluginModeIsAsFile())
     instance_->NPP_StreamAsFile(&stream_, temp_file_name_);
 }
 

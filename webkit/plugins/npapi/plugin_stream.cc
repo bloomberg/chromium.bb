@@ -109,8 +109,7 @@ bool PluginStream::Open(const std::string& mime_type,
   }
   // If the plugin has requested certain modes, then we need a copy
   // of this file on disk.  Open it and save it as we go.
-  if (requested_plugin_mode_ == NP_ASFILEONLY ||
-      requested_plugin_mode_ == NP_ASFILE) {
+  if (RequestedPluginModeIsAsFile()) {
     if (OpenTempFile() == false) {
       return false;
     }
@@ -141,17 +140,16 @@ int PluginStream::Write(const char* buffer, const int length,
 bool PluginStream::WriteToFile(const char* buf, size_t length) {
   // For ASFILEONLY, ASFILE, and SEEK modes, we need to write
   // to the disk
-  if (TempFileIsValid() &&
-      (requested_plugin_mode_ == NP_ASFILE ||
-       requested_plugin_mode_ == NP_ASFILEONLY) ) {
+  if (TempFileIsValid() && RequestedPluginModeIsAsFile()) {
     size_t totalBytesWritten = 0, bytes;
     do {
       bytes = WriteBytes(buf, length);
       totalBytesWritten += bytes;
     } while (bytes > 0U && totalBytesWritten < length);
 
-    if (totalBytesWritten != length)
+    if (totalBytesWritten != length) {
       return false;
+    }
   }
 
   return true;
@@ -191,8 +189,7 @@ void PluginStream::OnDelayDelivery() {
     return;
 
   int size = static_cast<int>(delivery_data_.size());
-  int written = TryWriteToPlugin(&delivery_data_.front(), size,
-                                 data_offset_);
+  int written = TryWriteToPlugin(&delivery_data_.front(), size, data_offset_);
   if (written > 0) {
     // Remove the data that we already wrote.
     delivery_data_.erase(delivery_data_.begin(),
@@ -285,6 +282,11 @@ void PluginStream::Notify(NPReason reason) {
     instance_->NPP_URLNotify(stream_.url, reason, notify_data_);
     notify_needed_ = false;
   }
+}
+
+bool PluginStream::RequestedPluginModeIsAsFile() const {
+  return (requested_plugin_mode_ == NP_ASFILE ||
+          requested_plugin_mode_ == NP_ASFILEONLY);
 }
 
 }  // namespace npapi

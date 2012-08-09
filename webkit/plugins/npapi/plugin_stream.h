@@ -129,6 +129,9 @@ class PluginStream : public base::RefCounted<PluginStream> {
   // Returns true if the temp file is valid and open for writing.
   bool TempFileIsValid() const;
 
+  // Returns true if |requested_plugin_mode_| is NP_ASFILE or NP_ASFILEONLY.
+  bool RequestedPluginModeIsAsFile() const;
+
  private:
   NPStream                      stream_;
   std::string                   headers_;
