@@ -21,33 +21,15 @@ import sys
 
 # Paths from the root of the tree to directories to skip.
 PRUNE_PATHS = set([
-    # Same module occurs in both the top-level third_party and others.
-    os.path.join('base','third_party','icu'),
-
-    # Assume for now that breakpad has their licensing in order.
-    os.path.join('breakpad'),
-
-    # Assume for now that native client has their licensing in order.
-    os.path.join('native_client'),
-
-    # Same module occurs in chrome/ and in net/, so skip one of them.
-    os.path.join('net','third_party','mozilla_security_manager'),
-
-    # Same module occurs in base/, net/, and src/ so skip all but one of them.
+    # Same module occurs in crypto/third_party/nss and net/third_party/nss, so
+    # skip this one.
     os.path.join('third_party','nss'),
-    os.path.join('net','third_party','nss'),
 
     # Placeholder directory only, not third-party code.
     os.path.join('third_party','adobe'),
 
-    # Same license as Chromium.
-    os.path.join('third_party','lss'),
-
     # Only binaries, used during development.
     os.path.join('third_party','valgrind'),
-
-    # Directories that are the same as those in base/third_party.
-    os.path.join('v8','src','third_party','valgrind'),
 
     # Used for development and test, not in the shipping product.
     os.path.join('third_party','bidichecker'),
@@ -70,9 +52,6 @@ PRUNE_PATHS = set([
     os.path.join('third_party','directxsdk'),
     os.path.join('third_party','platformsdk_win2008_6_1'),
     os.path.join('third_party','platformsdk_win7'),
-
-    # Harfbuzz-ng is not currently shipping in any product:
-    os.path.join('third_party','harfbuzz-ng'),
 ])
 
 # Directories we don't scan through.
@@ -81,12 +60,26 @@ PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
               'layout_tests')             # lots of subdirs
 
 ADDITIONAL_PATHS = (
+    os.path.join('breakpad'),
+    os.path.join('chrome', 'common', 'extensions', 'docs', 'examples'),
+    os.path.join('chrome', 'test', 'chromeos', 'autotest'),
+    os.path.join('chrome', 'test', 'data'),
     os.path.join('googleurl'),
+    os.path.join('native_client'),
     os.path.join('native_client_sdk'),
+    os.path.join('net', 'tools', 'spdyshark'),
     os.path.join('ppapi'),
+    os.path.join('sandbox', 'linux', 'seccomp-legacy'),
+    os.path.join('sdch', 'open-vcdiff'),
+    os.path.join('testing', 'gmock'),
+    os.path.join('testing', 'gtest'),
     # The directory with the word list for Chinese and Japanese segmentation
     # with different license terms than ICU.
     os.path.join('third_party','icu','source','data','brkitr'),
+    os.path.join('tools', 'grit'),
+    os.path.join('tools', 'gyp'),
+    os.path.join('tools', 'page_cycler', 'acid3'),
+    os.path.join('v8'),
     # Fake directory so we can include the strongtalk license.
     os.path.join('v8', 'strongtalk'),
 )
@@ -96,11 +89,36 @@ ADDITIONAL_PATHS = (
 # can't provide a README.chromium.  Please prefer a README.chromium
 # wherever possible.
 SPECIAL_CASES = {
-    'googleurl': {
+    os.path.join('googleurl'): {
         "Name": "google-url",
         "URL": "http://code.google.com/p/google-url/",
         "License": "BSD and MPL 1.1/GPL 2.0/LGPL 2.1",
         "License File": "LICENSE.txt",
+    },
+    os.path.join('native_client'): {
+        "Name": "native client",
+        "URL": "http://code.google.com/p/nativeclient",
+        "License": "BSD",
+    },
+    os.path.join('sandbox', 'linux', 'seccomp-legacy'): {
+        "Name": "seccompsandbox",
+        "URL": "http://code.google.com/p/seccompsandbox",
+        "License": "BSD",
+    },
+    os.path.join('sdch', 'open-vcdiff'): {
+        "Name": "open-vcdiff",
+        "URL": "http://code.google.com/p/open-vcdiff",
+        "License": "Apache 2.0, MIT, GPL v2 and custom licenses",
+    },
+    os.path.join('testing', 'gmock'): {
+        "Name": "gmock",
+        "URL": "http://code.google.com/p/googlemock",
+        "License": "BSD",
+    },
+    os.path.join('testing', 'gtest'): {
+        "Name": "gtest",
+        "URL": "http://code.google.com/p/googletest",
+        "License": "BSD",
     },
     os.path.join('third_party', 'angle'): {
         "Name": "Almost Native Graphics Layer Engine",
@@ -123,6 +141,8 @@ SPECIAL_CASES = {
     os.path.join('third_party', 'lss'): {
         "Name": "linux-syscall-support",
         "URL": "http://code.google.com/p/lss/",
+        "License": "BSD",
+        "License File": "/LICENSE",
     },
     os.path.join('third_party', 'ots'): {
         "Name": "OTS (OpenType Sanitizer)",
@@ -166,6 +186,21 @@ SPECIAL_CASES = {
         "URL": "http://code.google.com/p/web-page-replay",
         "License": "Apache 2.0",
     },
+    os.path.join('tools', 'grit'): {
+        "Name": "grit",
+        "URL": "http://code.google.com/p/grit-i18n",
+        "License": "BSD",
+    },
+    os.path.join('tools', 'gyp'): {
+        "Name": "gyp",
+        "URL": "http://code.google.com/p/gyp",
+        "License": "BSD",
+    },
+    os.path.join('v8'): {
+        "Name": "gyp",
+        "URL": "http://code.google.com/p/v8",
+        "License": "BSD",
+    },
     os.path.join('v8', 'strongtalk'): {
         "Name": "Strongtalk",
         "URL": "http://www.strongtalk.org/",
@@ -174,6 +209,11 @@ SPECIAL_CASES = {
         "License File": "/v8/LICENSE.strongtalk",
     },
 }
+
+# Special value for 'License File' field used to indicate that the license file
+# should not be used in about:credits.
+NOT_SHIPPED = "NOT_SHIPPED"
+
 
 class LicenseError(Exception):
     """We raise this exception when a directory's licensing info isn't
@@ -234,19 +274,22 @@ def ParseDir(path):
                                "in README.chromium or licences.py "
                                "SPECIAL_CASES")
 
-    # Check that the license file exists.
-    for filename in (metadata["License File"], "COPYING"):
-        license_path = AbsolutePath(path, filename)
-        if license_path is not None:
-            metadata["License File"] = license_path
-            break
+    # Special-case modules that aren't in the shipping product, so don't need
+    # their license in about:credits.
+    if metadata["License File"] != NOT_SHIPPED:
+        # Check that the license file exists.
+        for filename in (metadata["License File"], "COPYING"):
+            license_path = AbsolutePath(path, filename)
+            if license_path is not None:
+                metadata["License File"] = license_path
+                break
 
-    if not license_path:
-        raise LicenseError("License file not found. "
-                           "Either add a file named LICENSE, "
-                           "import upstream's COPYING if available, "
-                           "or add a 'License File:' line to README.chromium "
-                           "with the appropriate path.")
+        if not license_path:
+            raise LicenseError("License file not found. "
+                               "Either add a file named LICENSE, "
+                               "import upstream's COPYING if available, "
+                               "or add a 'License File:' line to "
+                               "README.chromium with the appropriate path.")
 
     if "Required Text" in metadata:
         required_path = AbsolutePath(path, metadata["Required Text"])
@@ -349,6 +392,10 @@ def GenerateCredits():
         except LicenseError:
             print >>sys.stderr, ("WARNING: licensing info for " + path +
                                  " is incomplete, skipping.")
+            continue
+        if metadata['License File'] == NOT_SHIPPED:
+            print >>sys.stderr, ("Path " + path + " marked as " + NOT_SHIPPED +
+                                 ", skipping.")
             continue
         env = {
             'name': metadata['Name'],

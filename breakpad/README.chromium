@@ -1,7 +1,7 @@
 Name: Breakpad, An open-source multi-platform crash reporting system
 Short Name: breakpad
 URL: http://code.google.com/p/google-breakpad/
-License: New BSD, plus MIT/X derivate for libcurl
+License: New BSD, MIT/X derivate, Apple PSL 2.0 and Apache 2.0 licenses
 Security Critical: no
 
 This directory contains Chrome's version of Breakpad's Visual Studio build
