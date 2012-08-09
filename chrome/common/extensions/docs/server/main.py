@@ -17,7 +17,7 @@ import app_known_issues
 
 DEFAULT_CACHE_TIME = 300
 VIEW_VC_ROOT = 'http://src.chromium.org'
-
+CHROME_DOMAIN_URL = 'http://developer.chrome.com'
 
 class Channel():
   def __init__(self, name, tag):
@@ -154,14 +154,6 @@ class MainPage(webapp.RequestHandler):
     return self.redirectToIndexIfNecessary()
 
 
-  def stripPathPrefix(self):
-    # Remove chrome prefix if present. This happens in the case of
-    # http://code.google.com/chrome/extensions/...
-    if self.path[0:2] == ['chrome', 'extensions']:
-      self.path = self.path[2:]
-    return self.redirectToIndexIfNecessary()
-
-
   def initChannel(self):
     self.channel = GetChannelByName(self.path[0])
     if self.channel is not None:
@@ -173,11 +165,24 @@ class MainPage(webapp.RequestHandler):
 
   def initDocFamily(self):
     if self.path[0] in ('extensions', 'apps'):
-      self.docFamily = self.path[0]
-      self.path.pop(0)
+      self.docFamily = self.path.pop(0)
     else:
       self.docFamily = 'extensions'
     return self.redirectToIndexIfNecessary()
+
+
+  def redirectDomain(self):
+    if (self.request.url.startswith('http://code.google.com')):
+      self.path.pop(0)  # 'chrome'
+      for channel in ['dev', 'beta', 'stable', 'trunk']:
+        if channel in self.path:
+          position = self.path.index(channel)
+          self.path.pop(position)
+          self.path.insert(0, channel)
+      self.redirect(CHROME_DOMAIN_URL + '/' + '/'.join(self.path), True)
+      return False
+    else:
+      return True
 
 
   def fetchContent(self):
@@ -210,7 +215,7 @@ class MainPage(webapp.RequestHandler):
 
   def get(self):
     if (not self.initPath() or
-        not self.stripPathPrefix() or
+        not self.redirectDomain() or
         not self.initChannel() or
         not self.initDocFamily()):
       return
