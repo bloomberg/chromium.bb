@@ -710,6 +710,7 @@ void GDataFileSystem::TransferFileFromRemoteToLocal(
     const FilePath& local_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   GetFileByPath(remote_src_file_path,
       base::Bind(&GDataFileSystem::OnGetFileCompleteForTransferFile,
@@ -724,6 +725,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
     const FilePath& remote_dest_file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // Make sure the destination directory exists.
   directory_service_->GetEntryInfoByPath(
@@ -743,22 +745,17 @@ void GDataFileSystem::TransferFileFromLocalToRemoteAfterGetEntryInfo(
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null()) {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE, base::Bind(callback, error));
-    }
+    callback.Run(error);
     return;
   }
 
   DCHECK(entry_proto.get());
   if (!entry_proto->file_info().is_directory()) {
     // The parent of |remote_dest_file_path| is not a directory.
-    if (!callback.is_null()) {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE, base::Bind(callback, GDATA_FILE_ERROR_NOT_A_DIRECTORY));
-    }
+    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
@@ -784,6 +781,7 @@ void GDataFileSystem::TransferFileForResourceId(
     std::string* resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(resource_id);
+  DCHECK(!callback.is_null());
 
   if (resource_id->empty()) {
     // If |resource_id| is empty, upload the local file as a regular file.
@@ -1038,11 +1036,10 @@ void GDataFileSystem::OnGetFileCompleteForTransferFile(
     const std::string& unused_mime_type,
     GDataFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
-
+    callback.Run(error);
     return;
   }
 
@@ -1069,6 +1066,7 @@ void GDataFileSystem::CopyDocumentToDirectory(
     const FilePath::StringType& new_name,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   documents_service_->CopyDocument(resource_id, new_name,
       base::Bind(&GDataFileSystem::OnCopyDocumentCompleted,
@@ -2468,29 +2466,24 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   GDataFileError error = util::GDataToGDataFileError(status);
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
-
+    callback.Run(error);
     return;
   }
 
   scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
   if (!doc_entry.get()) {
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_FAILED);
-
+    callback.Run(GDATA_FILE_ERROR_FAILED);
     return;
   }
 
   GDataEntry* entry = GDataEntry::FromDocumentEntry(
       NULL, doc_entry.get(), directory_service_.get());
   if (!entry) {
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_FAILED);
-
+    callback.Run(GDATA_FILE_ERROR_FAILED);
     return;
   }
 

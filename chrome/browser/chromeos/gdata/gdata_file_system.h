@@ -201,6 +201,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // TransferRegularFile.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   void TransferFileForResourceId(const FilePath& local_file_path,
                                  const FilePath& remote_dest_file_path,
                                  const FileOperationCallback& callback,
@@ -321,6 +322,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // |local_dest_file_path|.
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   void OnGetFileCompleteForTransferFile(const FilePath& local_dest_file_path,
                                         const FileOperationCallback& callback,
                                         GDataFileError error,
@@ -346,6 +348,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // and names the copied document as |new_name|.
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   void CopyDocumentToDirectory(const FilePath& dir_path,
                                const std::string& resource_id,
                                const FilePath::StringType& new_name,
@@ -413,6 +416,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& cache_file_path);
 
   // Callback for handling document copy attempt.
+  // |callback| must not be null.
   void OnCopyDocumentCompleted(const FilePath& dir_path,
                                const FileOperationCallback& callback,
                                GDataErrorCode status,
@@ -742,7 +746,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  const base::Closure& callback);
 
   // Part of CopyOnUIThread(). Called after GetEntryInfoPairByPaths() is
-  // complete.
+  // complete. |callback| must not be null.
   void CopyOnUIThreadAfterGetEntryInfoPair(
     const FilePath& dest_file_path,
     const FileOperationCallback& callback,

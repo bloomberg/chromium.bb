@@ -146,6 +146,7 @@ class GDataFileSystemInterface {
   // |local_dest_file_path| is the destination path on the local file system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void TransferFileFromRemoteToLocal(
       const FilePath& remote_src_file_path,
       const FilePath& local_dest_file_path,
@@ -157,6 +158,7 @@ class GDataFileSystemInterface {
   // system.
   //
   // Must be called from *UI* thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void TransferFileFromLocalToRemote(
       const FilePath& local_src_file_path,
       const FilePath& remote_dest_file_path,
