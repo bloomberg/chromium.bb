@@ -337,7 +337,7 @@ const CGFloat kWindowGradientHeight = 24.0;
     NSView* avatarButton = [avatarButtonVC view];
     origin.x = -(NSWidth([avatarButton frame]) + 3);
   } else {
-    origin.x -= 5;
+    origin.x -= 6;
   }
 
   return origin;
