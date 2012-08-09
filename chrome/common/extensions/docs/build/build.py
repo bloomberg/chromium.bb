@@ -188,6 +188,18 @@ def main():
                     default=True)
   options, args = parser.parse_args()
 
+  # This is a script that converts the documentation from the old style (using
+  # build.py, etc.) to the new style. The new docs and docs server can be found
+  # in the ../server2 directory.
+  Popen([os.path.join(_base_dir, 'server2', 'converter.py'),
+         os.path.join(_base_dir, 'static'),
+         os.path.join(_base_dir, os.pardir, 'api'),
+         os.path.join(_base_dir, 'server2', 'templates', 'articles'),
+         os.path.join(_base_dir, 'server2', 'templates', 'intros'),
+         os.path.join(_base_dir, 'server2', 'templates', 'public'),
+         os.path.join(_base_dir, 'server2', 'static', 'images'),
+         '-r'])
+
   if (options.dump_render_tree_path and
       os.path.isfile(options.dump_render_tree_path)):
     dump_render_tree = options.dump_render_tree_path
