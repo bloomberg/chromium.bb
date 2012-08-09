@@ -156,13 +156,16 @@ bool HandleRotatePaneFocus(Shell::Direction direction) {
 
 // Rotates the default window container.
 bool HandleRotateWindows() {
-  aura::Window* target =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
-  scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
-      new ui::LayerAnimationSequence(new ash::ScreenRotation(360)));
-  target->layer()->GetAnimator()->StartAnimation(
-      screen_rotation.release());
+  Shell::RootWindowControllerList controllers =
+      Shell::GetAllRootWindowControllers();
+  for (size_t i = 0; i < controllers.size(); ++i) {
+    aura::Window* target = controllers[i]->GetContainer(
+        internal::kShellWindowId_DefaultContainer);
+    scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
+        new ui::LayerAnimationSequence(new ash::ScreenRotation(360)));
+    target->layer()->GetAnimator()->StartAnimation(
+        screen_rotation.release());
+  }
   return true;
 }
 
@@ -187,14 +190,17 @@ bool HandleRotateScreen() {
     case 13: delta = 180; break;
   }
   i = (i + 1) % 14;
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  root_window->layer()->GetAnimator()->
-      set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
-      new ui::LayerAnimationSequence(new ash::ScreenRotation(delta)));
-  screen_rotation->AddObserver(root_window);
-  root_window->layer()->GetAnimator()->
-      StartAnimation(screen_rotation.release());
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (size_t i = 0; i < root_windows.size(); ++i) {
+    aura::RootWindow* root_window = root_windows[i];
+    root_window->layer()->GetAnimator()->
+        set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+    scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
+        new ui::LayerAnimationSequence(new ash::ScreenRotation(delta)));
+    screen_rotation->AddObserver(root_window);
+    root_window->layer()->GetAnimator()->
+        StartAnimation(screen_rotation.release());
+  }
   return true;
 }
 
@@ -237,9 +243,11 @@ bool HandleMagnifyScreen(int delta_index) {
 
 #if !defined(NDEBUG)
 bool HandlePrintLayerHierarchy() {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-  ui::PrintLayerHierarchy(root_window->layer(),
-                          root_window->GetLastMouseLocationInRoot());
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (size_t i = 0; i < root_windows.size(); ++i) {
+    ui::PrintLayerHierarchy(root_windows[i]->layer(),
+                            root_windows[i]->GetLastMouseLocationInRoot());
+  }
   return true;
 }
 
@@ -266,10 +274,14 @@ void PrintWindowHierarchy(aura::Window* window, int indent) {
 
 bool HandlePrintWindowHierarchy() {
   DLOG(INFO) << "Window hierarchy:";
-  aura::Window* container =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
-  PrintWindowHierarchy(container, 0);
+  Shell::RootWindowControllerList controllers =
+      Shell::GetAllRootWindowControllers();
+  for (size_t i = 0; i < controllers.size(); ++i) {
+    DLOG(INFO) << "RootWindow " << i << ":";
+    aura::Window* container = controllers[i]->GetContainer(
+        internal::kShellWindowId_DefaultContainer);
+    PrintWindowHierarchy(container, 0);
+  }
   return true;
 }
 
