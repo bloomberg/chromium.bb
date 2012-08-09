@@ -111,9 +111,10 @@ int GetCurrentUserImageSize() {
   float scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
   if (scale_factor > 1.0f)
     return static_cast<int>(scale_factor * kBaseUserImageSize);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoad2xResources))
-    return 2 * kBaseUserImageSize;
-  return kBaseUserImageSize;
+  // TODO(flackr): ChromeOS currently supports up to 2x, however this should use
+  // the largest supported scale factor once
+  // http://codereview.chromium.org/10828052/ lands.
+  return 2 * kBaseUserImageSize;
 }
 
 }  // namespace chromeos

@@ -25,11 +25,6 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
   return FilePath(pak_name.c_str());
 }
 
-bool ShouldLoad2xResources() {
-  return gfx::Display::GetForcedDeviceScaleFactor() > 1.0f ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoad2xResources);
-}
-
 }  // namespace
 
 namespace ui {
@@ -47,23 +42,25 @@ void ResourceBundle::LoadCommonResources() {
     AddDataPackFromPath(GetResourcesPakFilePath(
                         "chrome_touch_100_percent.pak"),
                         SCALE_FACTOR_100P);
-    if (ShouldLoad2xResources()) {
-      // 2x touch
-      AddDataPackFromPath(GetResourcesPakFilePath(
-                          "chrome_touch_200_percent.pak"),
-                          SCALE_FACTOR_200P);
-    }
+
+    // 2x touch
+    // TODO(flackr): Don't log an error message if these are not found as this
+    // is an expected case in ChromeOS.
+    AddDataPackFromPath(GetResourcesPakFilePath(
+                        "chrome_touch_200_percent.pak"),
+                        SCALE_FACTOR_200P);
   } else {
     // 1x non touch
     AddDataPackFromPath(GetResourcesPakFilePath(
                         "chrome_100_percent.pak"),
                         SCALE_FACTOR_100P);
-    if (ShouldLoad2xResources()) {
-      // 2x non touch
-      AddDataPackFromPath(GetResourcesPakFilePath(
-                          "chrome_200_percent.pak"),
-                          SCALE_FACTOR_200P);
-    }
+
+    // 2x non touch
+    // TODO(flackr): Don't log an error message if these are not found as this
+    // is an expected case in ChromeOS.
+    AddDataPackFromPath(GetResourcesPakFilePath(
+                        "chrome_200_percent.pak"),
+                        SCALE_FACTOR_200P);
   }
 }
 

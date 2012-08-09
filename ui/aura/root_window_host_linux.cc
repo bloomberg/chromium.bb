@@ -302,11 +302,6 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
   }
 }
 
-bool HasLoaded2xResources() {
-  return gfx::Display::GetForcedDeviceScaleFactor() > 1.0f ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoad2xResources);
-}
-
 }  // namespace
 
 // A utility class that provides X Cursor for NativeCursors for which we have
@@ -409,7 +404,6 @@ class RootWindowHostLinux::ImageCursors {
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
     const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
         ui::GetScaleFactorFromScale(scale_factor_));
-    DCHECK(!HasLoaded2xResources() || scale_factor_ == image_rep.GetScale());
     gfx::Point hot(hot_x * scale_factor_, hot_y * scale_factor_);
     XcursorImage* x_image =
         ui::SkBitmapToXcursorImage(&image_rep.sk_bitmap(), hot);
@@ -425,7 +419,6 @@ class RootWindowHostLinux::ImageCursors {
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
     const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(
         ui::GetScaleFactorFromScale(scale_factor_));
-    DCHECK(!HasLoaded2xResources() || scale_factor_ == image_rep.GetScale());
     const SkBitmap bitmap = image_rep.sk_bitmap();
     DCHECK_EQ(bitmap.config(), SkBitmap::kARGB_8888_Config);
     int frame_width = bitmap.height();

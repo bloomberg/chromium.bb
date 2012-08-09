@@ -67,7 +67,6 @@ void Create2xResourceIfMissing(gfx::ImageSkia image, int idr) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(
           switches::kHighlightMissing2xResources) &&
-      command_line->HasSwitch(switches::kLoad2xResources) &&
       !image.HasRepresentation(ui::SCALE_FACTOR_200P)) {
     gfx::ImageSkiaRep image_rep = image.GetRepresentation(SCALE_FACTOR_200P);
 
