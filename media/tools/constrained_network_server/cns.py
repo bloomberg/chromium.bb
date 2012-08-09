@@ -21,6 +21,9 @@ import signal
 import sys
 import threading
 import time
+import urllib
+import urllib2
+
 import traffic_control
 
 try:
@@ -216,19 +219,86 @@ class ConstrainedNetworkServer(object):
     if not f:
       raise cherrypy.HTTPError(400, 'Invalid request. File must be specified.')
 
+    # Check existence early to prevent wasted constraint setup.
+    self._CheckRequestedFileExist(f)
+
+    # If there are no constraints, just serve the file.
+    if bandwidth is None and latency is None and loss is None:
+      return self._ServeFile(f)
+
+    constrained_port = self._GetConstrainedPort(
+        f, bandwidth=bandwidth, latency=latency, loss=loss, new_port=new_port,
+        **kwargs)
+
+    # Build constrained URL using the constrained port and original URL
+    # parameters except the network constraints (bandwidth, latency, and loss).
+    constrained_url = self._GetServerURL(f, constrained_port,
+                                         no_cache=no_cache, **kwargs)
+
+    # Redirect request to the constrained port.
+    cherrypy.log('Redirect to %s' % constrained_url)
+    cherrypy.lib.cptools.redirect(constrained_url, internal=False)
+
+  def _CheckRequestedFileExist(self, f):
+    """Checks if the requested file exists, raises HTTPError otherwise."""
+    if self._options.local_server_port:
+      self._CheckFileExistOnLocalServer(f)
+    else:
+      self._CheckFileExistOnServer(f)
+
+  def _CheckFileExistOnServer(self, f):
+    """Checks if requested file f exists to be served by this server."""
     # Sanitize and check the path to prevent www-root escapes.
     sanitized_path = os.path.abspath(os.path.join(self._options.www_root, f))
     if not sanitized_path.startswith(self._options.www_root):
       raise cherrypy.HTTPError(403, 'Invalid file requested.')
-
-    # Check existence early to prevent wasted constraint setup.
     if not os.path.exists(sanitized_path):
       raise cherrypy.HTTPError(404, 'File not found.')
 
-    # If there are no constraints, just serve the file.
-    if bandwidth is None and latency is None and loss is None:
+  def _CheckFileExistOnLocalServer(self, f):
+    """Checks if requested file exists on local server hosting files."""
+    test_url = self._GetServerURL(f, self._options.local_server_port)
+    try:
+      cherrypy.log('Check file exist using URL: %s' % test_url)
+      return urllib2.urlopen(test_url) is not None
+    except Exception:
+      raise cherrypy.HTTPError(404, 'File not found on local server.')
+
+  def _ServeFile(self, f):
+    """Serves the file as an http response."""
+    if self._options.local_server_port:
+      redirect_url = self._GetServerURL(f, self._options.local_server_port)
+      cherrypy.log('Redirect to %s' % redirect_url)
+      cherrypy.lib.cptools.redirect(redirect_url, internal=False)
+    else:
+      sanitized_path = os.path.abspath(os.path.join(self._options.www_root, f))
       return cherrypy.lib.static.serve_file(sanitized_path)
 
+  def _GetServerURL(self, f, port, **kwargs):
+    """Returns a URL for local server to serve the file on given port.
+
+    Args:
+      f: file name to serve on local server. Relative to www_root.
+      port: Local server port (it can be a configured constrained port).
+      kwargs: extra parameteres passed in the URL.
+    """
+    url = '%s?f=%s&' % (cherrypy.url(), f)
+    if self._options.local_server_port:
+      url = '%s/%s?' % (
+          cherrypy.url().replace('ServeConstrained', self._options.www_root), f)
+
+    url = url.replace(':%d' % self._options.port, ':%d' % port)
+    extra_args = urllib.urlencode(kwargs)
+    if extra_args:
+      url += extra_args
+    return url
+
+  def _GetConstrainedPort(self, f=None, bandwidth=None, latency=None, loss=None,
+                          new_port=False, **kwargs):
+    """Creates or gets a port with specified network constraints.
+
+    See ServeConstrained() for more details.
+    """
     # Validate inputs. isdigit() guarantees a natural number.
     bandwidth = self._ParseIntParameter(
         bandwidth, 'Invalid bandwidth constraint.', lambda x: x > 0)
@@ -237,35 +307,24 @@ class ConstrainedNetworkServer(object):
     loss = self._ParseIntParameter(
         loss, 'Invalid loss constraint.', lambda x: x <= 100 and x >= 0)
 
-    # Allocate a port using the given constraints. If a port with the requested
-    # key is already allocated, it will be reused.
-    #
-    # TODO(dalecurtis): The key cherrypy.request.remote.ip might not be unique
-    # if build slaves are sharing the same VM.
+    redirect_port = self._options.port
+    if self._options.local_server_port:
+      redirect_port = self._options.local_server_port
+
     start_time = time.time()
+    # Allocate a port using the given constraints. If a port with the requested
+    # key and kwargs already exist then reuse that port.
     constrained_port = self._port_allocator.Get(
-        cherrypy.request.remote.ip, server_port=self._options.port,
+        cherrypy.request.remote.ip, server_port=redirect_port,
         interface=self._options.interface, bandwidth=bandwidth, latency=latency,
         loss=loss, new_port=new_port, file=f, **kwargs)
-    end_time = time.time()
+
+    cherrypy.log('Time to set up port %d = %.3fsec.' %
+                 (constrained_port, time.time() - start_time))
 
     if not constrained_port:
       raise cherrypy.HTTPError(503, 'Service unavailable. Out of ports.')
-
-    cherrypy.log('Time to set up port %d = %ssec.' %
-                 (constrained_port, end_time - start_time))
-
-    # Build constrained URL using the constrained port and original URL
-    # parameters except the network constraints (bandwidth, latency, and loss).
-    constrained_url = '%s?f=%s&no_cache=%s&%s' % (
-        cherrypy.url().replace(
-            ':%d' % self._options.port, ':%d' % constrained_port),
-        f,
-        no_cache,
-        '&'.join(['%s=%s' % (key, kwargs[key]) for key in kwargs]))
-
-    # Redirect request to the constrained port.
-    cherrypy.lib.cptools.redirect(constrained_url, internal=False)
+    return constrained_port
 
   def _ParseIntParameter(self, param, msg, check):
     """Returns integer value of param and verifies it satisfies the check.
@@ -316,9 +375,14 @@ def ParseArgs():
                     default=cherrypy._cpserver.Server.thread_pool,
                     help=('Number of threads in the thread pool. Default: '
                           '%default'))
-  parser.add_option('--www-root', default=os.getcwd(),
-                    help=('Directory root to serve files from. Defaults to the '
-                          'current directory: %default'))
+  parser.add_option('--www-root', default='',
+                    help=('Directory root to serve files from. If --local-'
+                          'server-port is used, the path is appended to the '
+                          'redirected URL of local server. Defaults to the '
+                          'current directory (if --local-server-port is not '
+                          'used): %s' % os.getcwd()))
+  parser.add_option('--local-server-port', type='int',
+                    help=('Optional local server port to host files.'))
   parser.add_option('-v', '--verbose', action='store_true', default=False,
                     help='Turn on verbose output.')
 
@@ -335,7 +399,10 @@ def ParseArgs():
     parser.error('Invalid expiry time specified.')
 
   # Convert the path to an absolute to remove any . or ..
-  options.www_root = os.path.abspath(options.www_root)
+  if not options.local_server_port:
+    if not options.www_root:
+      options.www_root = os.getcwd()
+    options.www_root = os.path.abspath(options.www_root)
 
   _SetLogger(options.verbose)
 
