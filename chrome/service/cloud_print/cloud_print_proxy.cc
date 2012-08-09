@@ -38,7 +38,13 @@ void LaunchBrowserProcessWithSwitch(const std::string& switch_string) {
     cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   cmd_line.AppendSwitch(switch_string);
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  base::ProcessHandle pid = 0;
+  base::LaunchProcess(cmd_line, base::LaunchOptions(), &pid);
+  base::EnsureProcessGetsReaped(pid);
+#else
   base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
+#endif
 }
 
 // This method is invoked on the IO thread to launch the browser process to
