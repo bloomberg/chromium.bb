@@ -12,14 +12,22 @@
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 
 #if defined(OS_WIN)
 #include "base/sys_string_conversions.h"
 #endif
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
+#endif
+
+using content::WebContents;
 
 namespace extensions {
 
@@ -47,14 +55,20 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     interactive = *params->details->interactive;
 
   if (interactive == "yes") {
-    // TODO(estade): implement.
+    ShowDialog();
+    return true;
   } else if (interactive == "if_needed") {
     // TODO(estade): implement.
-  } else if (interactive != "no") {
-    error_ = kInvalidInteractive;
-    return false;
+  } else if (interactive == "no") {
+    ReturnGalleries();
+    return true;
   }
 
+  error_ = kInvalidInteractive;
+  return false;
+}
+
+void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries() {
   const content::RenderProcessHost* rph = render_view_host()->GetProcess();
   chrome::MediaFileSystemRegistry* media_fs_registry =
       MediaFileSystemRegistry::GetInstance();
@@ -84,8 +98,33 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
   }
 
   SetResult(list);
-  return true;
+  SendResponse(true);
 }
+
+void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
+  WebContents* contents = WebContents::FromRenderViewHost(render_view_host());
+  TabContents* tab_contents =
+      contents ? TabContents::FromWebContents(contents) : NULL;
+  if (!tab_contents) {
+    // TODO(estade): for now it just gives up, but it might be nice to first
+    // attempt to find the active window for this extension.
+    ReturnGalleries();
+    return;
+  }
+
+#if defined(TOOLKIT_GTK)
+  // Controller will delete itself.
+  new chrome::MediaGalleriesDialogController(
+      tab_contents, *GetExtension(),
+      base::Bind(&MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries,
+                 this));
+#else
+  // TODO(estade): implement dialog on Views and Cocoa.
+  ReturnGalleries();
+#endif
+}
+
+// MediaGalleriesAssembleMediaFileFunction -------------------------------------
 
 MediaGalleriesAssembleMediaFileFunction::
     ~MediaGalleriesAssembleMediaFileFunction() {}
