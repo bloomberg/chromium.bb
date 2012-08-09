@@ -10,6 +10,8 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/cros/onc_constants.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
@@ -19,12 +21,14 @@
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
+namespace onc = chromeos::onc;
+
 namespace policy {
 
 NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
     const char* policy_name,
     chromeos::NetworkUIData::ONCSource onc_source)
-    : TypeCheckingPolicyHandler(policy_name, Value::TYPE_STRING),
+    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_STRING),
       onc_source_(onc_source) {}
 
 NetworkConfigurationPolicyHandler::~NetworkConfigurationPolicyHandler() {}
@@ -32,7 +36,7 @@ NetworkConfigurationPolicyHandler::~NetworkConfigurationPolicyHandler() {}
 bool NetworkConfigurationPolicyHandler::CheckPolicySettings(
     const PolicyMap& policies,
     PolicyErrorMap* errors) {
-  const Value* value;
+  const base::Value* value;
   if (!CheckAndGetValue(policies, errors, &value))
     return false;
 
@@ -64,27 +68,27 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
   const PolicyMap::Entry* entry = policies->Get(policy_name());
   if (!entry)
     return;
-  Value* sanitized_config = SanitizeNetworkConfig(entry->value);
+  base::Value* sanitized_config = SanitizeNetworkConfig(entry->value);
   if (!sanitized_config)
-    sanitized_config = Value::CreateNullValue();
+    sanitized_config = base::Value::CreateNullValue();
 
   policies->Set(policy_name(), entry->level, entry->scope, sanitized_config);
 }
 
 // static
-Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
-    const Value* config) {
+base::Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
+    const base::Value* config) {
   std::string json_string;
   if (!config->GetAsString(&json_string))
     return NULL;
 
-  scoped_ptr<Value> json_value(
+  scoped_ptr<base::Value> json_value(
       base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS));
   if (!json_value.get() || !json_value->IsType(base::Value::TYPE_DICTIONARY))
     return NULL;
 
-  DictionaryValue* config_dict =
-      static_cast<DictionaryValue*>(json_value.get());
+  base::DictionaryValue* config_dict =
+      static_cast<base::DictionaryValue*>(json_value.get());
 
   // Strip any sensitive information from the JSON dictionary.
   base::ListValue* config_list = NULL;
@@ -94,7 +98,8 @@ Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
          ++network_entry) {
       if ((*network_entry) &&
           (*network_entry)->IsType(base::Value::TYPE_DICTIONARY)) {
-        StripSensitiveValues(static_cast<DictionaryValue*>(*network_entry));
+        MaskSensitiveValues(
+            static_cast<base::DictionaryValue*>(*network_entry));
       }
     }
   }
@@ -104,27 +109,40 @@ Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
                                      base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
                                          base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json_string);
-  return Value::CreateStringValue(json_string);
+  return base::Value::CreateStringValue(json_string);
 }
 
 // static
-void NetworkConfigurationPolicyHandler::StripSensitiveValues(
-    DictionaryValue* network_dict) {
-  // List of settings we filter from the network dictionary.
-  static const char* kFilteredSettings[] = {
-    "WiFi.Passphrase",
-    "IPsec.EAP.Password",
-    "IPsec.EAP.Password",
-    "IPsec.XAUTH.Password",
-    "L2TP.Password",
+void NetworkConfigurationPolicyHandler::MaskSensitiveValues(
+    base::DictionaryValue* network_dict) {
+  // Paths of the properties to be replaced by the placeholder. Each entry
+  // specifies dictionary key paths.
+  static const int kMaxComponents = 3;
+  static const char* kFilteredSettings[][kMaxComponents] = {
+    { onc::kEthernet, onc::ethernet::kEAP, onc::eap::kPassword },
+    { onc::kVPN, onc::vpn::kIPsec, onc::vpn::kPSK },
+    { onc::kVPN, onc::vpn::kL2TP, onc::vpn::kPassword },
+    { onc::kVPN, onc::vpn::kOpenVPN, onc::vpn::kPassword },
+    { onc::kWiFi, onc::wifi::kEAP, onc::eap::kPassword },
+    { onc::kWiFi, onc::wifi::kPassphrase },
   };
+
   // Placeholder to insert in place of the filtered setting.
   static const char kPlaceholder[] = "********";
 
   for (size_t i = 0; i < arraysize(kFilteredSettings); ++i) {
-    if (network_dict->Remove(kFilteredSettings[i], NULL)) {
-      network_dict->Set(kFilteredSettings[i],
-                        Value::CreateStringValue(kPlaceholder));
+    const char** path = kFilteredSettings[i];
+    base::DictionaryValue* dict = network_dict;
+    int j = 0;
+    for (j = 0; path[j + 1] != NULL && j + 1 < kMaxComponents; ++j) {
+      if (!dict->GetDictionaryWithoutPathExpansion(path[j], &dict)) {
+        dict = NULL;
+        break;
+      }
+    }
+    if (dict && dict->RemoveWithoutPathExpansion(path[j], NULL)) {
+      dict->SetWithoutPathExpansion(
+          path[j], base::Value::CreateStringValue(kPlaceholder));
     }
   }
 }
