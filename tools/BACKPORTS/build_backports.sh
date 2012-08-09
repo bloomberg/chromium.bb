@@ -47,8 +47,11 @@ for dirname in binutils gcc gdb glibc linux-headers-for-nacl newlib ; do
   fi
   if [[ -d "$dirname" ]]; then (
     cd "$dirname"
-    git pull --all
-  ) else (
+    git pull --all ||
+    (cd .. &&
+     rm -rf "$dirname")
+  ) fi
+  if [[ ! -d "$dirname" ]]; then (
     git clone "${GIT_BASE_URL}/${repo}.git" "$dirname"
   ) fi || touch $$.error &
 done
@@ -72,23 +75,23 @@ while read name id comment ; do
     *)
     ( # First step is to use glient to sync sources.
       if [[ -d "$name" ]]; then
-	cd "$name"
-	if [[ "$2" == "win" ]]; then
-	  # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
-	  # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
-	  # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
-	  # Additional fun: error codes are lost somewhere in gclient.bat…
-	  ( gclient.bat revert || true
-	    gclient runhooks --force || true
-	    gclient.bat runhooks --force || true
-	  ) < /dev/null
-	else
-	  gclient revert < /dev/null
-	fi
+        cd "$name"
+        if [[ "$2" == "win" ]]; then
+          # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
+          # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
+          # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
+          # Additional fun: error codes are lost somewhere in gclient.bat…
+          ( gclient.bat revert || true
+            gclient runhooks --force || true
+            gclient.bat runhooks --force || true
+          ) < /dev/null
+        else
+          gclient revert < /dev/null
+        fi
       else
-	mkdir "$name"
-	cd "$name"
-	cat >.gclient <<-END
+        mkdir "$name"
+        cd "$name"
+        cat >.gclient <<-END
 	solutions = [
 	  { "name"        : "native_client",
 	    "url"         : "http://src.chromium.org/native_client/trunk/src/native_client@$id",
@@ -100,18 +103,18 @@ while read name id comment ; do
 	  },
 	]
 	END
-	if [[ "$2" == "win" ]]; then
-	  # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
-	  # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
-	  # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
-	  # Additional fun: error codes are lost somewhere in gclient.bat…
-	  ( gclient.bat sync || true
-	    gclient runhooks --force || true
-	    gclient.bat runhooks --force || true
-	  ) < /dev/null
-	else
-	  gclient sync < /dev/null
-	fi
+        if [[ "$2" == "win" ]]; then
+          # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
+          # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
+          # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
+          # Additional fun: error codes are lost somewhere in gclient.bat…
+          ( gclient.bat sync || true
+            gclient runhooks --force || true
+            gclient.bat runhooks --force || true
+          ) < /dev/null
+        else
+          gclient sync < /dev/null
+        fi
       fi
       # Now we need to change versions to officialy mark binaries.  We don't
       # show git revision because we combine different branches here.
