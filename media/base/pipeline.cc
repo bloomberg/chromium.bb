@@ -88,6 +88,8 @@ Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
       has_video_(false),
       state_(kCreated),
       seek_timestamp_(kNoTimestamp()),
+      audio_ended_(false),
+      video_ended_(false),
       audio_disabled_(false),
       creation_time_(base::Time::Now()) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
@@ -151,7 +153,6 @@ bool Pipeline::IsInitialized() const {
     case kSeeking:
     case kStarting:
     case kStarted:
-    case kEnded:
       return true;
     default:
       return false;
@@ -527,11 +528,18 @@ void Pipeline::OnNaturalVideoSizeChanged(const gfx::Size& size) {
   natural_size_ = size;
 }
 
-void Pipeline::OnRendererEnded() {
-  DCHECK(IsRunning());
+void Pipeline::OnAudioRendererEnded() {
+  // Force post to process ended messages after current execution frame.
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::OnRendererEndedTask, this));
-  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::ENDED));
+      &Pipeline::DoAudioRendererEnded, this));
+  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::AUDIO_ENDED));
+}
+
+void Pipeline::OnVideoRendererEnded() {
+  // Force post to process ended messages after current execution frame.
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &Pipeline::DoVideoRendererEnded, this));
+  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::VIDEO_ENDED));
 }
 
 // Called from any thread.
@@ -797,7 +805,7 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   DCHECK(!IsPipelineStopPending());
 
   // Suppress seeking if we're not fully started.
-  if (state_ != kStarted && state_ != kEnded) {
+  if (state_ != kStarted) {
     // TODO(scherkus): should we run the callback?  I'm tempted to say the API
     // will only execute the first Seek() request.
     DVLOG(1) << "Media pipeline has not started, ignoring seek to "
@@ -810,12 +818,14 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   // We'll need to pause every filter before seeking.  The state transition
   // is as follows:
-  //   kStarted/kEnded
+  //   kStarted
   //   kPausing (for each filter)
   //   kSeeking (for each filter)
   //   kStarting (for each filter)
   //   kStarted
   SetState(kPausing);
+  audio_ended_ = false;
+  video_ended_ = false;
   seek_timestamp_ = std::max(time, demuxer_->GetStartTime());
   seek_cb_ = seek_cb;
 
@@ -828,35 +838,46 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
   DoPause(base::Bind(&Pipeline::OnFilterStateTransition, this));
 }
 
-void Pipeline::OnRendererEndedTask() {
+void Pipeline::DoAudioRendererEnded() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  // We can only end if we were actually playing.
-  if (state_ != kStarted) {
+  if (state_ != kStarted)
     return;
-  }
 
-  DCHECK(audio_renderer_ || video_renderer_);
+  DCHECK(!audio_ended_);
+  audio_ended_ = true;
 
-  // Make sure every extant renderer has ended.
-  if (audio_renderer_ && !audio_disabled_) {
-    if (!audio_renderer_->HasEnded()) {
-      return;
-    }
-
-    // Start clock since there is no more audio to
-    // trigger clock updates.
+  // Start clock since there is no more audio to trigger clock updates.
+  if (!audio_disabled_) {
     base::AutoLock auto_lock(lock_);
     clock_->SetMaxTime(clock_->Duration());
     StartClockIfWaitingForTimeUpdate_Locked();
   }
 
-  if (video_renderer_ && !video_renderer_->HasEnded()) {
-    return;
-  }
+  RunEndedCallbackIfNeeded();
+}
 
-  // Transition to ended, executing the callback if present.
-  SetState(kEnded);
+void Pipeline::DoVideoRendererEnded() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  if (state_ != kStarted)
+    return;
+
+  DCHECK(!video_ended_);
+  video_ended_ = true;
+
+  RunEndedCallbackIfNeeded();
+}
+
+void Pipeline::RunEndedCallbackIfNeeded() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  if (audio_renderer_ && !audio_ended_ && !audio_disabled_)
+    return;
+
+  if (video_renderer_ && !video_ended_)
+    return;
+
   {
     base::AutoLock auto_lock(lock_);
     clock_->EndOfStream();
@@ -991,7 +1012,6 @@ void Pipeline::TeardownStateTransitionTask() {
     case kStarting:
     case kStopped:
     case kStarted:
-    case kEnded:
       NOTREACHED() << "Unexpected state for teardown: " << state_;
       break;
     // default: intentionally left out to force new states to cause compiler
@@ -1133,7 +1153,7 @@ bool Pipeline::InitializeAudioRenderer(
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnAudioUnderflow, this),
       base::Bind(&Pipeline::OnAudioTimeUpdate, this),
-      base::Bind(&Pipeline::OnRendererEnded, this),
+      base::Bind(&Pipeline::OnAudioRendererEnded, this),
       base::Bind(&Pipeline::OnAudioDisabled, this),
       base::Bind(&Pipeline::SetError, this));
   return true;
@@ -1159,7 +1179,7 @@ bool Pipeline::InitializeVideoRenderer(
       base::Bind(&Pipeline::OnUpdateStatistics, this),
       base::Bind(&Pipeline::OnVideoTimeUpdate, this),
       base::Bind(&Pipeline::OnNaturalVideoSizeChanged, this),
-      base::Bind(&Pipeline::OnRendererEnded, this),
+      base::Bind(&Pipeline::OnVideoRendererEnded, this),
       base::Bind(&Pipeline::SetError, this),
       base::Bind(&Pipeline::GetMediaTime, this),
       base::Bind(&Pipeline::GetMediaDuration, this));
@@ -1220,7 +1240,6 @@ void Pipeline::TearDownPipeline() {
       break;
 
     case kStarted:
-    case kEnded:
       SetState(kPausing);
       DoPause(base::Bind(&Pipeline::OnTeardownStateTransition, this));
       break;

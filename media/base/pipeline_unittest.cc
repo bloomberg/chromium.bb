@@ -581,10 +581,8 @@ TEST_F(PipelineTest, DisableAudioRenderer) {
   pipeline_->OnAudioDisabled();
 
   // Verify that ended event is fired when video ends.
-  EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
-      .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  pipeline_->OnRendererEnded();
+  pipeline_->OnVideoRendererEnded();
 }
 
 TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
@@ -609,10 +607,8 @@ TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
   EXPECT_TRUE(pipeline_->HasVideo());
 
   // Verify that ended event is fired when video ends.
-  EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
-      .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  pipeline_->OnRendererEnded();
+  pipeline_->OnVideoRendererEnded();
 }
 
 TEST_F(PipelineTest, EndedCallback) {
@@ -629,24 +625,13 @@ TEST_F(PipelineTest, EndedCallback) {
   InitializeVideoRenderer();
   InitializePipeline(PIPELINE_OK);
 
-  // Due to short circuit evaluation we only need to test a subset of cases.
-  InSequence s;
-  EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
-      .WillOnce(Return(false));
-  pipeline_->OnRendererEnded();
+  // The ended callback shouldn't run until both renderers have ended.
+  pipeline_->OnAudioRendererEnded();
+  message_loop_.RunAllPending();
 
-  EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
-      .WillOnce(Return(true));
-  EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
-      .WillOnce(Return(false));
-  pipeline_->OnRendererEnded();
-
-  EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
-      .WillOnce(Return(true));
-  EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
-      .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  pipeline_->OnRendererEnded();
+  pipeline_->OnVideoRendererEnded();
+  message_loop_.RunAllPending();
 }
 
 // Static function & time variable used to simulate changes in wallclock time.
@@ -694,11 +679,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_EQ(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of audio stream.
-  EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
-      .WillOnce(Return(true));
-  EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
-      .WillOnce(Return(false));
-  pipeline_->OnRendererEnded();
+  pipeline_->OnAudioRendererEnded();
   message_loop_.RunAllPending();
 
   // Verify that the clock advances.
@@ -708,12 +689,8 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   EXPECT_GT(pipeline_->GetMediaTime().ToInternalValue(), start_time);
 
   // Signal end of video stream and make sure OnEnded() callback occurs.
-  EXPECT_CALL(*mocks_->audio_renderer(), HasEnded())
-      .WillOnce(Return(true));
-  EXPECT_CALL(*mocks_->video_renderer(), HasEnded())
-      .WillOnce(Return(true));
   EXPECT_CALL(callbacks_, OnEnded(PIPELINE_OK));
-  pipeline_->OnRendererEnded();
+  pipeline_->OnVideoRendererEnded();
 }
 
 TEST_F(PipelineTest, ErrorDuringSeek) {
