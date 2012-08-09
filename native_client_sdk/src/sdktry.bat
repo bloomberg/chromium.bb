@@ -7,6 +7,6 @@
 setlocal
 
 :: TODO(noelallen) Share list with POSIX
-gcl try %* -b naclsdkm-mac -b naclsdkm-linux -b naclsdkm-linux ^
--b naclsdkm-pnacl-linux -b naclsdkm-pnacl-mac -b naclsdkm-windows32 ^
--b naclsdkm-windows64 -S svn://svn.chromium.org/chrome-try/try-nacl
+gcl try %* -b naclsdkm-mac -b naclsdkm-linux -b naclsdkm-pnacl-linux ^
+-b naclsdkm-windows32 -b naclsdkm-windows64 ^
+-S svn://svn.chromium.org/chrome-try/try-nacl
