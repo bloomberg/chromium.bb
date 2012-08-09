@@ -195,7 +195,7 @@
   "sandbox": {
     "channel": "stable",
     "extension_types": [
-      "extension", "platform_app"
+      "extension", "platform_app", "packaged_app"
     ],
     "min_manifest_version": 2
   },
