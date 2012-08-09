@@ -362,10 +362,10 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
     values->SetString("username",
-        chromeos::UserManager::Get()->GetLoggedInUser().email());
-  }
+        chromeos::UserManager::Get()->IsUserLoggedIn() ?
+            chromeos::UserManager::Get()->GetLoggedInUser().email() :
+            std::string());
 #endif
 
   // Pass along sync status early so it will be available during page init.

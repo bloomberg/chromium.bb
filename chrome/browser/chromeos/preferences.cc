@@ -71,8 +71,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   if (base::chromeos::IsRunningOnChromeOS()) {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
-    hardware_keyboard_id =
-        manager->GetInputMethodUtil()->GetHardwareInputMethodId();
+    if (manager) {
+      hardware_keyboard_id =
+          manager->GetInputMethodUtil()->GetHardwareInputMethodId();
+    }
   } else {
     hardware_keyboard_id = "xkb:us::eng";  // only for testing.
   }

@@ -413,7 +413,8 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
 
   // Launch a new WebSocket server process.
   if (!base::LaunchProcess(*cmd_line.get(), options, &process_handle)) {
-    LOG(ERROR) << "Unable to launch websocket server.";
+    LOG(ERROR) << "Unable to launch websocket server:\n"
+               << cmd_line.get()->GetCommandLineString();
     return false;
   }
 #if defined(OS_POSIX)
@@ -429,7 +430,8 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   if (!wait_success || exit_code != 0) {
     LOG(ERROR) << "Failed to run new-run-webkit-websocketserver: "
                << "wait_success = " << wait_success << ", "
-               << "exit_code = " << exit_code;
+               << "exit_code = " << exit_code << ", "
+               << "command_line = " << cmd_line.get()->GetCommandLineString();
     return false;
   }
 
