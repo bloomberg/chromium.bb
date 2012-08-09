@@ -405,38 +405,15 @@ void WebIntentsRegistry::GetIntentServicesForExtensionFilter(
         const string16& action,
         const string16& type,
         const std::string& extension_id,
-        const QueryCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  const QueryParams params(action, type);
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &WebIntentsRegistry::DoGetIntentServicesForExtensionFilter,
-          base::Unretained(this),
-          params,
-          extension_id,
-          callback));
-}
-
-void WebIntentsRegistry::DoGetIntentServicesForExtensionFilter(
-    const QueryParams& params,
-    const std::string& extension_id,
-    const QueryCallback& callback) {
-  IntentServiceList matching_services;
-
+        IntentServiceList* services) {
   if (extension_service_) {
     const Extension* extension =
         extension_service_->GetExtensionById(extension_id, false);
     AddMatchingServicesForExtension(*extension,
-                                    params.action_,
-                                    &matching_services);
-    FilterServicesByType(params.type_, &matching_services);
+                                    action,
+                                    services);
+    FilterServicesByType(type, services);
   }
-
-  callback.Run(matching_services);
 }
 
 void WebIntentsRegistry::RegisterDefaultIntentService(

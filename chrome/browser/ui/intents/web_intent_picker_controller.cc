@@ -417,16 +417,40 @@ void WebIntentPickerController::OnClosing() {
 }
 
 void WebIntentPickerController::OnExtensionInstallSuccess(
-    const std::string& id) {
-  picker_->OnExtensionInstallSuccess(id);
-  pending_async_count_++;
-  GetWebIntentsRegistry(tab_contents_)->GetIntentServicesForExtensionFilter(
-      picker_model_->action(),
-      picker_model_->mimetype(),
-      id,
+    const std::string& extension_id) {
+  // OnExtensionInstallSuccess is called via NotificationService::Notify before
+  // the extension is added to the ExtensionService. Dispatch via PostTask to
+  // allow ExtensionService to update.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
       base::Bind(
-          &WebIntentPickerController::OnExtensionInstallServiceAvailable,
-          weak_ptr_factory_.GetWeakPtr()));
+          &WebIntentPickerController::DispatchToInstalledExtension,
+          base::Unretained(this),
+          extension_id));
+}
+
+void WebIntentPickerController::DispatchToInstalledExtension(
+    const std::string& extension_id) {
+  picker_->OnExtensionInstallSuccess(extension_id);
+  WebIntentsRegistry::IntentServiceList services;
+  GetWebIntentsRegistry(tab_contents_)->GetIntentServicesForExtensionFilter(
+      picker_model_->action(), picker_model_->mimetype(),
+      extension_id,
+      &services);
+
+  // Extension must be registered with registry by now.
+  DCHECK(services.size() > 0);
+
+  // TODO(binji): We're going to need to disambiguate if there are multiple
+  // services. For now, just choose the first.
+  const webkit_glue::WebIntentServiceData& service_data = services[0];
+
+  picker_model_->AddInstalledService(
+      service_data.title, service_data.service_url,
+      ConvertDisposition(service_data.disposition));
+  OnServiceChosen(
+      service_data.service_url,
+      ConvertDisposition(service_data.disposition));
   AsyncOperationFinished();
 }
 
@@ -728,22 +752,6 @@ void WebIntentPickerController::SourceDispatcherReplied(
 
 bool WebIntentPickerController::ShowLocationBarPickerTool() {
   return window_disposition_source_ || source_intents_dispatcher_;
-}
-
-void WebIntentPickerController::OnExtensionInstallServiceAvailable(
-    const std::vector<webkit_glue::WebIntentServiceData>& services) {
-  DCHECK(services.size() > 0);
-
-  // TODO(binji): We're going to need to disambiguate if there are multiple
-  // services. For now, just choose the first.
-  const webkit_glue::WebIntentServiceData& service_data = services[0];
-  picker_model_->AddInstalledService(
-      service_data.title, service_data.service_url,
-      ConvertDisposition(service_data.disposition));
-  OnServiceChosen(
-      service_data.service_url,
-      ConvertDisposition(service_data.disposition));
-  AsyncOperationFinished();
 }
 
 void WebIntentPickerController::AsyncOperationFinished() {

@@ -258,18 +258,16 @@ TEST_F(WebIntentsRegistryTest, GetIntentServicesForExtensionFilter) {
   extensions_.Insert(edit_extension);
   ASSERT_EQ(2U, extensions_.size());
 
-  ServiceListConsumer consumer;
+  WebIntentsRegistry::IntentServiceList services;
   registry_.GetIntentServicesForExtensionFilter(
       ASCIIToUTF16("http://webintents.org/edit"),
       ASCIIToUTF16("image/*"),
       edit_extension->id(),
-      base::Bind(&ServiceListConsumer::Accept,
-          base::Unretained(&consumer)));
-  consumer.WaitForData();
-  ASSERT_EQ(1U, consumer.services_.size());
+      &services);
+  ASSERT_EQ(1U, services.size());
 
   EXPECT_EQ(edit_extension->url().spec() + "services/edit",
-            consumer.services_[0].service_url.spec());
+            services[0].service_url.spec());
 }
 
 TEST_F(WebIntentsRegistryTest, GetAllIntents) {

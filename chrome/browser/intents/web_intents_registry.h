@@ -84,7 +84,7 @@ class WebIntentsRegistry : public ProfileKeyedService {
   void GetIntentServicesForExtensionFilter(const string16& action,
                                            const string16& type,
                                            const std::string& extension_id,
-                                           const QueryCallback& callback);
+                                           IntentServiceList* services);
 
   // Record the given default service entry.
   virtual void RegisterDefaultIntentService(
@@ -142,12 +142,6 @@ class WebIntentsRegistry : public ProfileKeyedService {
       const QueryParams& params,
       const DefaultQueryCallback& callback,
       const WDTypedResult* result);
-
-  // Implementation of GetIntentServicesForExtensionFilter.
-  void DoGetIntentServicesForExtensionFilter(
-      const QueryParams& params,
-      const std::string& extension_id,
-      const QueryCallback& callback);
 
   const extensions::Extension* ExtensionForURL(const std::string& url);
 
