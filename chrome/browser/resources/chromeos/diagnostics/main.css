@@ -6,17 +6,51 @@
 body {
   font-family: 'Chrome Droid Sans', 'Droid Sans Fallback', sans-serif;
   font-size: 75%;
-  padding: 1em;
+  padding: 0;
 }
 
-body header > h1 {
+.navigation h1 {
+  margin: 0;
+  padding: 21px 23px 13px;
+}
+
+.navigation ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.navigation ul > li {
+  -webkit-border-start: 6px solid transparent;
+  -webkit-padding-start: 18px;
+  -webkit-user-select: none;
+  line-height: 29px;
+}
+
+.navigation ul > li.selected {
+  -webkit-border-start-color: rgb(78, 87, 100);
+  cursor: default;
+  pointer-events: none;
+}
+
+.page {
+  color: rgb(48, 57, 66);
+  left: 155px;
+  max-width: 738px;
+  min-width: 600px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 3;
+}
+
+.page header > h1 {
   margin: 0;
   padding: 21px 0 13px;
 }
 
 /* Create a border under the h1 (but before anything that gets appended
  * to the end of the header, such as the managed prefs banner). */
-body header > h1::after {
+.page header > h1::after {
   -webkit-margin-end: 20px;
   background-color: #eee;
   content: '';
