@@ -433,7 +433,7 @@
                  'dyu@chromium.org'],
     'automation': ['kkania@chromium.org',
                    'robertshield@chromium.org'],
-    'base': ['brettw-cc@chromium.org', 'erikwright@chromium.org'],
+    'base': ['brettw-cc@chromium.org', 'erikwright+watch@chromium.org'],
     'base_memory': ['gavinp+memory@chromium.org'],
     'browser_chromeos': ['davemoore+watch@chromium.org',
                          'stevenjb+watch@chromium.org',
