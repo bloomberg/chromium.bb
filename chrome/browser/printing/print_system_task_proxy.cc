@@ -503,11 +503,6 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
   VLOG(1) << "Get printer capabilities start for " << printer_name;
   child_process_logging::ScopedPrinterInfoSetter prn_info(
       print_backend_->GetPrinterDriverInfo(printer_name));
-  printing::PrinterCapsAndDefaults printer_info;
-  if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
-                                                 &printer_info)) {
-    return;
-  }
 
   bool set_color_as_default = false;
   bool set_duplex_as_default = false;
@@ -515,26 +510,30 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
   int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
   int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
 
+  printing::PrinterCapsAndDefaults printer_info;
+  if (print_backend_->GetPrinterCapsAndDefaults(printer_name,
+                                                &printer_info)) {
 #if defined(USE_CUPS)
-  if (!GetPrinterCapabilitiesCUPS(printer_info,
-                                  printer_name,
-                                  &set_color_as_default,
-                                  &printer_color_space_for_color,
-                                  &printer_color_space_for_black,
-                                  &set_duplex_as_default,
-                                  &default_duplex_setting_value)) {
-    return;
-  }
+    if (!GetPrinterCapabilitiesCUPS(printer_info,
+                                    printer_name,
+                                    &set_color_as_default,
+                                    &printer_color_space_for_color,
+                                    &printer_color_space_for_black,
+                                    &set_duplex_as_default,
+                                    &default_duplex_setting_value)) {
+      return;
+    }
 #elif defined(OS_WIN)
-  GetPrinterCapabilitiesWin(printer_info,
-                            &set_color_as_default,
-                            &printer_color_space_for_color,
-                            &printer_color_space_for_black,
-                            &set_duplex_as_default,
-                            &default_duplex_setting_value);
+    GetPrinterCapabilitiesWin(printer_info,
+                              &set_color_as_default,
+                              &printer_color_space_for_color,
+                              &printer_color_space_for_black,
+                              &set_duplex_as_default,
+                              &default_duplex_setting_value);
 #else
-  NOTIMPLEMENTED();
+    NOTIMPLEMENTED();
 #endif
+  }
   bool disable_color_options = (!printer_color_space_for_color ||
                                 !printer_color_space_for_black ||
                                 (printer_color_space_for_color ==
