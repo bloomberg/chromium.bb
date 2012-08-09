@@ -373,13 +373,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                GDataFileError error,
                                scoped_ptr<GDataEntryProto> entry_proto);
 
-  // Adds a file or directory at |file_path| to the directory at |dir_path|.
+  // Moves a file or directory at |file_path| in the root directory to
+  // another directory at |dir_path|. This function does nothing if
+  // |dir_path| points to the root directory.
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
-  void AddEntryToDirectory(const FilePath& dir_path,
-                           const FileOperationCallback& callback,
-                           GDataFileError error,
-                           const FilePath& file_path);
+  // |callback| must not be null.
+  void MoveEntryFromRootDirectory(const FilePath& dir_path,
+                                  const FileOperationCallback& callback,
+                                  GDataFileError error,
+                                  const FilePath& file_path);
 
   // Removes a file or directory at |file_path| from the directory at
   // |dir_path| and moves it to the root directory.
@@ -422,13 +425,18 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                GDataErrorCode status,
                                scoped_ptr<base::Value> data);
 
-  // Callback for handling an attempt to add a file or directory to another
-  // directory.
-  void OnAddEntryToDirectoryCompleted(const FileOperationCallback& callback,
-                                      const FilePath& file_path,
-                                      const FilePath& dir_path,
-                                      GDataErrorCode status,
-                                      const GURL& document_url);
+  // Callback for handling an attempt to move a file or directory from the
+  // root directory to another directory on the server side. This function
+  // moves |entry| to the root directory on the client side with
+  // GDataDirectoryService::MoveEntryToDirectory().
+  //
+  // |callback| must not be null.
+  void OnMoveEntryFromRootDirectoryCompleted(
+      const FileOperationCallback& callback,
+      const FilePath& file_path,
+      const FilePath& dir_path,
+      GDataErrorCode status,
+      const GURL& document_url);
 
   // Callback for handling account metadata fetch.
   void OnGetAvailableSpace(
@@ -515,6 +523,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Callback for GDataDirectoryService::MoveEntryToDirectory with
   // FileOperationCallback.
+  // |callback| must not be null.
   void OnMoveEntryToDirectoryWithFileOperationCallback(
       const FileOperationCallback& callback,
       GDataFileError error,

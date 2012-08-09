@@ -1211,7 +1211,7 @@ void GDataFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
   //    effectively moves the file from the root directory to the parent
   //    directory of |dest_file_path|.
   FileMoveCallback add_file_to_directory_callback =
-      base::Bind(&GDataFileSystem::AddEntryToDirectory,
+      base::Bind(&GDataFileSystem::MoveEntryFromRootDirectory,
                  ui_weak_ptr_,
                  dest_file_path.DirName(),
                  callback);
@@ -1226,12 +1226,14 @@ void GDataFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
          remove_file_from_directory_callback);
 }
 
-void GDataFileSystem::AddEntryToDirectory(
+void GDataFileSystem::MoveEntryFromRootDirectory(
     const FilePath& dir_path,
     const FileOperationCallback& callback,
     GDataFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK_EQ(kGDataRootDirectory, file_path.DirName().value());
 
   GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
   GDataEntry* dir_entry = directory_service_->FindEntryByPathSync(dir_path);
@@ -1247,16 +1249,14 @@ void GDataFileSystem::AddEntryToDirectory(
   // Returns if there is an error or |dir_path| is the root directory.
   if (error != GDATA_FILE_OK ||
       dir_entry->resource_id() == kGDataRootDirectoryResourceId) {
-    if (!callback.is_null())
-      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
-
+    callback.Run(error);
     return;
   }
 
   documents_service_->AddResourceToDirectory(
       dir_entry->content_url(),
       entry->edit_url(),
-      base::Bind(&GDataFileSystem::OnAddEntryToDirectoryCompleted,
+      base::Bind(&GDataFileSystem::OnMoveEntryFromRootDirectoryCompleted,
                  ui_weak_ptr_,
                  callback,
                  file_path,
@@ -2489,18 +2489,22 @@ void GDataFileSystem::OnCopyDocumentCompleted(
 
   // |entry| was added in the root directory on the server, so we should
   // first add it to |root_| to mirror the state and then move it to the
-  // destination directory by AddEntryToDirectory().
+  // destination directory by MoveEntryFromRootDirectory().
   directory_service_->root()->AddEntry(entry);
-  AddEntryToDirectory(dir_path, callback, GDATA_FILE_OK, entry->GetFilePath());
+  MoveEntryFromRootDirectory(dir_path,
+                             callback,
+                             GDATA_FILE_OK,
+                             entry->GetFilePath());
 }
 
-void GDataFileSystem::OnAddEntryToDirectoryCompleted(
+void GDataFileSystem::OnMoveEntryFromRootDirectoryCompleted(
     const FileOperationCallback& callback,
     const FilePath& file_path,
     const FilePath& dir_path,
     GDataErrorCode status,
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   GDataFileError error = util::GDataToGDataFileError(status);
   if (error == GDATA_FILE_OK) {
@@ -2518,8 +2522,7 @@ void GDataFileSystem::OnAddEntryToDirectoryCompleted(
     }
   }
 
-  if (!callback.is_null())
-    callback.Run(error);
+  callback.Run(error);
 }
 
 void GDataFileSystem::OnRemovedDocument(
@@ -2729,11 +2732,12 @@ void GDataFileSystem::OnMoveEntryToDirectoryWithFileOperationCallback(
     const FileOperationCallback& callback,
     GDataFileError error,
     const FilePath& moved_file_path) {
+  DCHECK(!callback.is_null());
+
   if (error == GDATA_FILE_OK)
     OnDirectoryChanged(moved_file_path.DirName());
 
-  if (!callback.is_null())
-    callback.Run(error);
+  callback.Run(error);
 }
 
 GDataFileError GDataFileSystem::RemoveEntryFromFileSystem(
