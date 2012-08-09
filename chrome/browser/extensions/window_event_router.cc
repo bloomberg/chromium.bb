@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/window_event_router.h"
 
-#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -128,6 +127,7 @@ void WindowEventRouter::OnActiveWindowChanged(
 
   // window_profile is either the default profile for the active window, its
   // incognito profile, or NULL iff the previous profile is losing focus.
+  // Note that |previous_focused_profile| may already be destroyed!
   Profile* previous_focused_profile = focused_profile_;
   focused_profile_ = window_profile;
   focused_window_id_ = window_id;
@@ -135,7 +135,7 @@ void WindowEventRouter::OnActiveWindowChanged(
   scoped_ptr<base::ListValue> real_args(new ListValue());
   real_args->Append(Value::CreateIntegerValue(window_id));
 
-  // When switching between windows in the default and incognitoi profiles,
+  // When switching between windows in the default and incognito profiles,
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
@@ -146,14 +146,9 @@ void WindowEventRouter::OnActiveWindowChanged(
         Value::CreateIntegerValue(extension_misc::kUnknownWindowId));
   }
 
-  if (!window_profile)
-    window_profile = previous_focused_profile;
-  if (!profile_->IsSameProfile(window_profile) ||
-      !ExtensionSystem::Get(window_profile)->event_router()) {
-    return;
-  }
-
-  ExtensionSystem::Get(window_profile)->event_router()->
+  // Note that we may pass a NULL |window_profile| for the |restrict_to_profile|
+  // argument.
+  ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventsToRenderersAcrossIncognito(
           event_names::kOnWindowFocusedChanged,
           real_args.Pass(),
