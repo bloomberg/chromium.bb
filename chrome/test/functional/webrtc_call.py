@@ -56,7 +56,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     pyauto.PyUITest.tearDown(self)
     self.assertEquals('', self.CheckErrorsAndCrashes())
 
-  def _SimpleWebRtcCall(self, test_page):
+  def _SimpleWebrtcCall(self, test_page):
     """Tests we can call and hang up with WebRTC.
 
     This test exercises pretty much the whole happy-case for the WebRTC
@@ -95,7 +95,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
 
     # The hang-up will automatically propagate to the second tab.
     self._HangUp(from_tab_with_index=0)
-    self._VerifyHungUp(tab_index=1)
+    self._WaitUntilHangUpVerified(tab_index=1)
 
     self._Disconnect(tab_index=0)
     self._Disconnect(tab_index=1)
@@ -104,8 +104,8 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.AssertNoFailures(tab_index=0)
     self.AssertNoFailures(tab_index=1)
 
-  def testSimpleWebRtcJsepCall(self):
-    self._SimpleWebRtcCall('webrtc_jsep_test.html')
+  def testSimpleWebrtcJsepCall(self):
+    self._SimpleWebrtcCall('webrtc_jsep_test.html')
 
   def testLocalPreview(self):
     """Brings up a local preview and ensures video is playing.
@@ -159,12 +159,16 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
   def _HangUp(self, from_tab_with_index):
     self.assertEquals('ok-call-hung-up', self.ExecuteJavascript(
         'hangUp()', tab_index=from_tab_with_index))
-    self._VerifyHungUp(from_tab_with_index)
-    self.AssertNoFailures(from_tab_with_index)
+    self._WaitUntilHangUpVerified(tab_index=from_tab_with_index)
+    self.AssertNoFailures(tab_index=from_tab_with_index)
 
-  def _VerifyHungUp(self, tab_index):
-    self.assertEquals('no', self.ExecuteJavascript(
-        'is_call_active()', tab_index=tab_index))
+  def _WaitUntilHangUpVerified(self, tab_index):
+    hung_up = self.WaitUntil(
+        function=lambda: self.ExecuteJavascript('is_call_active()',
+                                                tab_index=tab_index),
+        expect_retval='no')
+    self.assertTrue(hung_up,
+                    msg='Timed out while waiting for hang-up to be confirmed.')
 
   def _Disconnect(self, tab_index):
     self.assertEquals('ok-disconnected', self.ExecuteJavascript(

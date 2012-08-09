@@ -125,12 +125,15 @@ function disconnect() {
   request = new XMLHttpRequest();
   request.open("GET", gServerUrl + "/sign_out?peer_id=" + gOurPeerId, false);
   request.send();
-  request = null;
   gOurPeerId = null;
   returnToPyAuto('ok-disconnected');
 }
 
 // Internals.
+
+function isDisconnected() {
+  return gOurPeerId == null;
+}
 
 function connectCallback(request) {
   debug("Connect callback: " + request.status + ", " + request.readyState);
@@ -179,6 +182,8 @@ function parseRemotePeerIdIfConnected(responseText) {
 }
 
 function startHangingGet(server, ourId) {
+  if (isDisconnected())
+    return;
   hangingGetRequest = new XMLHttpRequest();
   hangingGetRequest.onreadystatechange = function() {
     hangingGetCallback(hangingGetRequest, server, ourId);
