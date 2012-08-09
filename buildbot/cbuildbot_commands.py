@@ -160,7 +160,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
       except cros_build_lib.RunCommandError, e:
         result = e.result
         logging.warn('\n%s', result.output)
-        logging.warn('Deleting %s because %s failed', cwd,  e.result.cmd)
+        logging.warn('Deleting %s because %s failed', cwd, e.result.cmd)
         lock.write_lock()
         if os.path.isdir(cwd):
           shutil.rmtree(cwd)
@@ -471,7 +471,7 @@ def ArchiveTestResults(buildroot, test_results_dir, prefix):
         '========================================================')
 
 
-def RunHWTestSuite(build, suite, board, pool, debug):
+def RunHWTestSuite(build, suite, board, pool, num, debug):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -480,6 +480,7 @@ def RunHWTestSuite(build, suite, board, pool, debug):
     suite: Name of the Autotest suite.
     board: The board the test suite should be scheduled against.
     pool: The pool of machines we should use to run the hw tests on.
+    num: Number of devices to use when scheduling tests in the hw lab.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
@@ -489,7 +490,8 @@ def RunHWTestSuite(build, suite, board, pool, debug):
          '-i', build,
          '-s', suite,
          '-b', board,
-         '-p', pool]
+         '-p', pool,
+         '-u', str(num)]
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s' % ' '.join(cmd))
   else:
