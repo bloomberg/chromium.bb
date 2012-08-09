@@ -64,6 +64,12 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // crashes).
   void BlacklistCard();
 
+#if defined(OS_WIN)
+  // Is the GPU process using the accelerated surface to present, instead of
+  // presenting by itself.
+  bool IsUsingAcceleratedSurface();
+#endif
+
  private:
   typedef ObserverListThreadSafe<content::GpuDataManagerObserver>
       GpuDataManagerObserverList;

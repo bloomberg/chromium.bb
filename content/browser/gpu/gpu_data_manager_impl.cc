@@ -24,6 +24,10 @@
 #include "ui/gl/gl_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using content::BrowserThread;
 using content::GpuDataManagerObserver;
 using content::GpuFeatureType;
@@ -241,6 +245,24 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
         gpu_info_.driver_version);
   }
 }
+
+#if defined(OS_WIN)
+bool GpuDataManagerImpl::IsUsingAcceleratedSurface() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return false;
+
+  base::AutoLock auto_lock(gpu_info_lock_);
+  if (gpu_info_.amd_switchable)
+    return false;
+  if (software_rendering_)
+    return false;
+  uint32 flags = GetGpuFeatureType();
+  if (flags & content::GPU_FEATURE_TYPE_TEXTURE_SHARING)
+    return false;
+
+  return true;
+}
+#endif
 
 void GpuDataManagerImpl::AppendPluginCommandLine(
     CommandLine* command_line) {

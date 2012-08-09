@@ -25,6 +25,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/plugin_process_host.h"
@@ -2555,7 +2556,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
 
   // On Vista and later we present directly to the view window rather than a
   // child window.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+  if (GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface()) {
     if (!accelerated_surface_.get())
       accelerated_surface_.reset(new AcceleratedSurface(m_hWnd));
     return gfx::GLSurfaceHandle(m_hWnd, true);
