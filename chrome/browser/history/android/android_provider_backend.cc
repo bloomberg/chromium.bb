@@ -176,7 +176,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
 
   ScopedTransaction transaction(history_db_, thumbnail_db_);
 
-  AndroidURLID id = InsertHistoryAndBookmark(values, &notifications);
+  AndroidURLID id = InsertHistoryAndBookmark(values, &notifications, true);
   if (id) {
     transaction.Commit();
     BroadcastNotifications(notifications);
@@ -357,11 +357,12 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
 
 AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
     const HistoryAndBookmarkRow& values,
-    HistoryNotifications* notifications) {
+    HistoryNotifications* notifications,
+    bool ensure_initialized_and_updated) {
   if (!IsHistoryAndBookmarkRowValid(values))
     return false;
 
-  if (!EnsureInitializedAndUpdated())
+  if (ensure_initialized_and_updated && !EnsureInitializedAndUpdated())
     return 0;
 
   DCHECK(values.is_value_set_explicitly(HistoryAndBookmarkRow::URL));
@@ -456,7 +457,7 @@ bool AndroidProviderBackend::DeleteHistory(
       row.set_raw_url(android_url_row.raw_url);
       row.set_url(i->url);
       // Set the visit time to the UnixEpoch since that's when the Android
-      // system time starts.
+      // system time starts. The Android have a CTS testcase for this.
       row.set_last_visit_time(Time::UnixEpoch());
       row.set_visit_count(0);
       // We don't want to change the bookmark model, so set_is_bookmark() is
@@ -471,10 +472,13 @@ bool AndroidProviderBackend::DeleteHistory(
 
   for (std::vector<HistoryAndBookmarkRow>::const_iterator i = bookmarks.begin();
        i != bookmarks.end(); ++i) {
-    if (!InsertHistoryAndBookmark(*i, notifications))
+    // Don't update the tables, otherwise, the bookmarks will be added to
+    // database during UpdateBookmark(), then the insertion will fail.
+    // We can't rely on UpdateBookmark() to insert the bookmarks into history
+    // database as the raw_url will be lost.
+    if (!InsertHistoryAndBookmark(*i, notifications, false))
       return false;
   }
-
   return true;
 }
 
@@ -759,11 +763,24 @@ bool AndroidProviderBackend::UpdateBookmarks() {
   for (std::vector<BookmarkService::URLAndTitle>::const_iterator i =
            bookmarks.begin(); i != bookmarks.end(); ++i) {
     URLID url_id = history_db_->GetRowForURL(i->url, NULL);
-    if (url_id == 0)
-      // TODO(michaelbai): Add a row to url and android_url table as the
-      // bookmark could be added manually by user or insertted by sync.
-      continue;
-
+    if (url_id == 0) {
+      URLRow url_row(i->url);
+      url_row.set_title(i->title);
+      // Set the visit time to the UnixEpoch since that's when the Android
+      // system time starts. The Android have a CTS testcase for this.
+      url_row.set_last_visit(Time::UnixEpoch());
+      url_row.set_hidden(true);
+      url_id = history_db_->AddURL(url_row);
+      if (url_id == 0) {
+        LOG(ERROR) << "Can not add url for the new bookmark";
+        return false;
+      }
+      if (!history_db_->AddAndroidURLRow(i->url.spec(), url_id))
+        return false;
+      if (!history_db_->AddBookmarkCacheRow(Time::UnixEpoch(),
+                            Time::UnixEpoch(), url_id))
+        return false;
+    }
     url_ids.push_back(url_id);
   }
 

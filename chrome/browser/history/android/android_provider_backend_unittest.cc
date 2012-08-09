@@ -227,6 +227,11 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
                               content::PAGE_TRANSITION_LINK));
   visits2.push_back(VisitInfo(last_visited2, content::PAGE_TRANSITION_LINK));
 
+  // Add a bookmark which is not in the history.
+  GURL url3("http://www.bookmark.com");
+  string16 title3(UTF8ToUTF16("bookmark"));
+  ASSERT_TRUE(bookmark_model_->AddURL(bookmark_model_->bookmark_bar_node(), 0,
+                                      title3, url3));
   // Only use the HistoryBackend to generate the test data.
   // HistoryBackend will shutdown after that.
   {
@@ -269,19 +274,30 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
 
   ASSERT_TRUE(backend->EnsureInitializedAndUpdated());
 
+  // First verify that the bookmark which was not in the history has been added
+  // to history database.
+  URLRow url_row;
+  ASSERT_TRUE(history_db_.GetRowForURL(url3, &url_row));
+  URLID url_id3 = url_row.id();
+  ASSERT_EQ(url3, url_row.url());
+  ASSERT_EQ(title3, url_row.title());
+
   std::vector<AndroidURLRow> android_url_rows;
   ASSERT_TRUE(GetAndroidURLsRows(&android_url_rows, backend.get()));
-  ASSERT_EQ(2u, android_url_rows.size());
+  ASSERT_EQ(3u, android_url_rows.size());
   std::vector<AndroidURLRow>::iterator i = android_url_rows.begin();
   EXPECT_EQ(url_id1, i->url_id);
   EXPECT_EQ(url1.spec(), i->raw_url);
   i++;
   EXPECT_EQ(url_id2, i->url_id);
   EXPECT_EQ(url2.spec(), i->raw_url);
+  i++;
+  EXPECT_EQ(url_id3, i->url_id);
+  EXPECT_EQ(url3.spec(), i->raw_url);
 
   std::vector<BookmarkCacheRow> bookmark_cache_rows;
   ASSERT_TRUE(GetBookmarkCacheRows(&bookmark_cache_rows, backend.get()));
-  ASSERT_EQ(2u, bookmark_cache_rows.size());
+  ASSERT_EQ(3u, bookmark_cache_rows.size());
   std::vector<BookmarkCacheRow>::const_iterator j = bookmark_cache_rows.begin();
   EXPECT_EQ(url_id1, j->url_id_);
   EXPECT_EQ(ToDatabaseTime(last_visited1), ToDatabaseTime(j->last_visit_time_));
@@ -309,18 +325,27 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
 
   android_url_rows.clear();
   ASSERT_TRUE(GetAndroidURLsRows(&android_url_rows, backend.get()));
-  ASSERT_EQ(1u, android_url_rows.size());
+  ASSERT_EQ(2u, android_url_rows.size());
   i = android_url_rows.begin();
   EXPECT_EQ(url_id1, i->url_id);
   EXPECT_EQ(url1.spec(), i->raw_url);
+  ++i;
+  EXPECT_EQ(url_id3, i->url_id);
+  EXPECT_EQ(url3.spec(), i->raw_url);
 
   bookmark_cache_rows.clear();
   ASSERT_TRUE(GetBookmarkCacheRows(&bookmark_cache_rows, backend.get()));
-  ASSERT_EQ(1u, bookmark_cache_rows.size());
+  ASSERT_EQ(2u, bookmark_cache_rows.size());
   j = bookmark_cache_rows.begin();
   EXPECT_EQ(url_id1, j->url_id_);
   EXPECT_EQ(ToDatabaseTime(last_visited1), ToDatabaseTime(j->last_visit_time_));
   EXPECT_EQ(ToDatabaseTime(created1), ToDatabaseTime(j->create_time_));
+  EXPECT_EQ(0, j->favicon_id_);
+  EXPECT_TRUE(j->bookmark_);
+  ++j;
+  EXPECT_EQ(url_id3, j->url_id_);
+  EXPECT_EQ(base::Time::UnixEpoch(), j->last_visit_time_);
+  EXPECT_EQ(base::Time::UnixEpoch(), j->create_time_);
   EXPECT_EQ(0, j->favicon_id_);
   EXPECT_TRUE(j->bookmark_);
 }

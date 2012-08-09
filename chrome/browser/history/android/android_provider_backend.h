@@ -207,8 +207,11 @@ class AndroidProviderBackend {
   // Inserts the given values and returns the URLID of the inserted row.
   // The notifications are returned in |notifications| and the ownership of them
   // is transfered to caller.
+  // The EnsureInitializedAndUpdated() will not be invoked if the
+  // |ensure_initialized_and_updated| is false.
   AndroidURLID InsertHistoryAndBookmark(const HistoryAndBookmarkRow& values,
-                                        HistoryNotifications* notifications);
+                                        HistoryNotifications* notifications,
+                                        bool ensure_initialized_and_updated);
 
   // Deletes the specified rows and returns the number of the deleted rows in
   // |deleted_count|.
