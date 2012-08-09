@@ -362,7 +362,7 @@ void SyncManagerImpl::ConfigureSyncer(
 
 }
 
-bool SyncManagerImpl::Init(
+void SyncManagerImpl::Init(
     const FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
     const std::string& sync_server_and_path,
@@ -428,7 +428,8 @@ bool SyncManagerImpl::Init(
                       OnInitializationComplete(
                           MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
                           false, syncer::ModelTypeSet()));
-    return false;
+    LOG(ERROR) << "Sync manager initialization failed!";
+    return;
   }
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
@@ -495,7 +496,6 @@ bool SyncManagerImpl::Init(
                     OnInitializationComplete(
                         MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
                         true, InitialSyncEndedTypes()));
-  return true;
 }
 
 void SyncManagerImpl::RefreshNigori(const std::string& chrome_version,

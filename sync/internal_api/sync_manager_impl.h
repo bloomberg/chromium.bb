@@ -58,7 +58,7 @@ class SyncManagerImpl : public SyncManager,
   virtual ~SyncManagerImpl();
 
   // SyncManager implementation.
-  virtual bool Init(
+  virtual void Init(
       const FilePath& database_location,
       const WeakHandle<JsEventHandler>& event_handler,
       const std::string& sync_server_and_path,

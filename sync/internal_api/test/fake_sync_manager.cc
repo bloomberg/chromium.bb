@@ -84,7 +84,7 @@ void FakeSyncManager::DisableNotifications(
   }
 }
 
-bool FakeSyncManager::Init(
+void FakeSyncManager::Init(
     const FilePath& database_location,
     const WeakHandle<JsEventHandler>& event_handler,
     const std::string& sync_server_and_path,
@@ -111,7 +111,6 @@ bool FakeSyncManager::Init(
                     OnInitializationComplete(
                         syncer::WeakHandle<syncer::JsBackend>(),
                         true, initial_sync_ended_types_));
-  return true;
 }
 
 void FakeSyncManager::ThrowUnrecoverableError() {

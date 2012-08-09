@@ -363,7 +363,7 @@ class SyncManager {
   //
   // TODO(akalin): Replace the |post_factory| parameter with a
   // URLFetcher parameter.
-  virtual bool Init(
+  virtual void Init(
       const FilePath& database_location,
       const WeakHandle<JsEventHandler>& event_handler,
       const std::string& sync_server_and_path,

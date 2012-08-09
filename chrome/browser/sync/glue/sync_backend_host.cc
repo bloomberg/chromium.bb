@@ -1046,8 +1046,9 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
-  bool success = file_util::CreateDirectory(sync_data_folder_path_);
-  DCHECK(success);
+  if (!file_util::CreateDirectory(sync_data_folder_path_)) {
+    DLOG(FATAL) << "Sync Data directory creation failed.";
+  }
 
   DCHECK(!registrar_);
   registrar_ = options.registrar;
@@ -1059,7 +1060,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
 
   sync_manager_ = options.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
-  success = sync_manager_->Init(
+  sync_manager_->Init(
       sync_data_folder_path_,
       options.event_handler,
       options.service_url.host() + options.service_url.path(),
@@ -1083,7 +1084,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       &encryptor_,
       options.unrecoverable_error_handler,
       options.report_unrecoverable_error_function);
-  LOG_IF(ERROR, !success) << "Sync manager initialization failed!";
 
   // Now check the command line to see if we need to simulate an
   // unrecoverable error for testing purpose. Note the error is thrown
