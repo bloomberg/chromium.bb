@@ -120,6 +120,9 @@ void CookiesViewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("setViewContext",
       base::Bind(&CookiesViewHandler::SetViewContext,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("reloadCookies",
+      base::Bind(&CookiesViewHandler::ReloadCookies,
+                 base::Unretained(this)));
 }
 
 void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
@@ -293,6 +296,13 @@ void CookiesViewHandler::SetViewContext(const base::ListValue* args) {
   bool app_context = false;
   if (args->GetBoolean(0, &app_context))
     app_context_ = app_context;
+}
+
+void CookiesViewHandler::ReloadCookies(const base::ListValue* args) {
+  cookies_tree_model_.reset();
+  app_cookies_tree_model_.reset();
+
+  EnsureCookiesTreeModelCreated();
 }
 
 CookiesTreeModel* CookiesViewHandler::GetTreeModel() {

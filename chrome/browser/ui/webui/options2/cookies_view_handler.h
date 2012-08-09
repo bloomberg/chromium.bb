@@ -64,6 +64,10 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   // the apps cookies window.
   void SetViewContext(const base::ListValue* args);
 
+  // Reloads the CookiesTreeModel and passes the nodes to
+  // 'CookiesView.loadChildren' to update the WebUI.
+  void ReloadCookies(const base::ListValue* args);
+
   // Return the proper callback string, depending on whether the model is
   // in regular cookies mode or apps cookies mode.
   std::string GetCallback(std::string method, CookiesTreeModel* model);

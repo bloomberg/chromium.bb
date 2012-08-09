@@ -32,11 +32,11 @@ cr.define('options', function() {
     queryDelayTimerId_: 0,
 
     /**
-     * The most recent search query, or null if the query is empty.
-     * @type {?string}
+     * The most recent search query, empty string if the query is empty.
+     * @type {string}
      * @private
      */
-    lastQuery_: null,
+    lastQuery_: '',
 
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
@@ -105,6 +105,8 @@ cr.define('options', function() {
       // Inform the CookiesViewHandler whether we are operating in regular
       // cookies dialog or the apps one.
       chrome.send('setViewContext', [this.isAppContext()]);
+
+      chrome.send('reloadCookies');
 
       if (!this.initialized_) {
         this.initialized_ = true;
