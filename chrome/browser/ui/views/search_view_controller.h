@@ -38,8 +38,7 @@ class SearchViewController
     : public chrome::search::SearchModelObserver,
       public ui::ImplicitAnimationObserver {
  public:
-  SearchViewController(content::BrowserContext* browser_context,
-                       ContentsContainer* contents_container);
+  explicit SearchViewController(ContentsContainer* contents_container);
   virtual ~SearchViewController();
 
   views::View* omnibox_popup_view_parent();
@@ -102,18 +101,11 @@ class SearchViewController
   // Invoked when the visibility of the omnibox popup changes.
   void PopupVisibilityChanged();
 
-  // Load the NTP from the associated |SearchTabHelper| if in NTP mode
-  // and the current |tab_contents_| has changed.
-  void MaybeLoadNTP();
-
   // Access active search model.
   chrome::search::SearchModel* search_model();
 
   // Access active web contents.
   content::WebContents* web_contents();
-
-  // The profile.  Weak.
-  content::BrowserContext* browser_context_;
 
   // Where the overlay is placed.  Weak.
   ContentsContainer* contents_container_;
@@ -158,7 +150,11 @@ class SearchViewController
   views::View* search_container_;
   views::View* ntp_view_;
   views::View* logo_view_;
+
+  // An alias to |contents_container_->active()|, but reparented within
+  // |ntp_view_| when in the NTP state.
   views::WebView* content_view_;
+
   OmniboxPopupViewParent* omnibox_popup_view_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchViewController);

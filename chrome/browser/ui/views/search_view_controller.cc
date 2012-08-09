@@ -236,10 +236,8 @@ void SearchViewController::OmniboxPopupViewParent::ChildPreferredSizeChanged(
 // SearchViewController --------------------------------------------------------
 
 SearchViewController::SearchViewController(
-    content::BrowserContext* browser_context,
     ContentsContainer* contents_container)
-    : browser_context_(browser_context),
-      contents_container_(contents_container),
+    : contents_container_(contents_container),
       location_bar_container_(NULL),
       state_(STATE_NOT_VISIBLE),
       tab_contents_(NULL),
@@ -340,7 +338,6 @@ void SearchViewController::UpdateState() {
       break;
   }
   SetState(new_state);
-  MaybeLoadNTP();
 }
 
 void SearchViewController::SetState(State state) {
@@ -357,9 +354,6 @@ void SearchViewController::SetState(State state) {
     case STATE_NTP:
       DestroyViews();
       CreateViews();
-      // TODO(dhollowa): This is temporary. The |content_view_| should pull its
-      // web contents from the current tab's |search_tab_helper|.
-      content_view_->LoadInitialURL(GURL(chrome::kChromeUINewTabURL));
       break;
 
     case STATE_ANIMATING:
@@ -432,8 +426,11 @@ void SearchViewController::CreateViews() {
   logo_view_->SetPaintToLayer(true);
   logo_view_->SetFillsBoundsOpaquely(false);
 
-  content_view_ = new views::WebView(browser_context_);
-  content_view_->SetFillsBoundsOpaquely(false);
+  // Reparent the main web contents view out of |contents_container_| and
+  // in to |ntp_view_| below.  Reparent back in destructor.
+  content_view_ = contents_container_->active();
+  DCHECK(content_view_);
+  contents_container_->SetActive(NULL);
 
   ntp_view_->SetLayoutManager(
       new NTPViewLayoutManager(logo_view_, content_view_));
@@ -458,10 +455,15 @@ void SearchViewController::DestroyViews() {
   omnibox_popup_view_parent_->parent()->RemoveChildView(
       omnibox_popup_view_parent_);
 
-  if (content_view_)
-    content_view_->SetWebContents(NULL);
-
+  // Restore control/parenting of the web_contents back to the
+  // |main_contents_view_|.
+  ntp_view_->SetLayoutManager(NULL);
+  ntp_view_->RemoveChildView(content_view_);
+  if (content_view_->web_contents())
+    content_view_->web_contents()->GetNativeView()->layer()->SetOpacity(1.0f);
+  contents_container_->SetActive(content_view_);
   contents_container_->SetOverlay(NULL);
+
   delete search_container_;
   search_container_ = NULL;
   ntp_view_ = NULL;
@@ -478,14 +480,6 @@ void SearchViewController::PopupVisibilityChanged() {
       !omnibox_popup_view_parent_->is_child_visible()) {
     UpdateState();
   }
-}
-
-void SearchViewController::MaybeLoadNTP() {
-  if (state_ != STATE_NTP || !content_view_)
-    return;
-
-  content_view_->SetWebContents(
-      tab_contents_->search_tab_helper()->GetNTPWebContents());
 }
 
 chrome::search::SearchModel* SearchViewController::search_model() {

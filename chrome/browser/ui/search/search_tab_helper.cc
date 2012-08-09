@@ -48,23 +48,6 @@ SearchTabHelper::SearchTabHelper(
 SearchTabHelper::~SearchTabHelper() {
 }
 
-content::WebContents* SearchTabHelper::GetNTPWebContents() {
-  if (!ntp_web_contents_.get()) {
-    ntp_web_contents_.reset(content::WebContents::Create(
-        model_.tab_contents()->profile(),
-        model_.tab_contents()->web_contents()->GetSiteInstance(),
-        MSG_ROUTING_NONE,
-        NULL,
-        NULL));
-    ntp_web_contents_->GetController().LoadURL(
-        GURL(chrome::kChromeUINewTabURL),
-        content::Referrer(),
-        content::PAGE_TRANSITION_START_PAGE,
-        std::string());
-  }
-  return ntp_web_contents_.get();
-}
-
 void SearchTabHelper::OmniboxEditModelChanged(OmniboxEditModel* edit_model) {
   if (!is_search_enabled_)
     return;
@@ -92,7 +75,6 @@ void SearchTabHelper::NavigateToPendingEntry(
     return;
 
   UpdateModel(url);
-  FlushNTP(url);
 }
 
 void SearchTabHelper::Observe(
@@ -103,7 +85,6 @@ void SearchTabHelper::Observe(
   content::LoadCommittedDetails* committed_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
   UpdateModel(committed_details->entry->GetURL());
-  FlushNTP(committed_details->entry->GetURL());
 }
 
 void SearchTabHelper::UpdateModel(const GURL& url) {
@@ -113,13 +94,6 @@ void SearchTabHelper::UpdateModel(const GURL& url) {
   else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
     type = Mode::MODE_SEARCH;
   model_.SetMode(Mode(type, true));
-}
-
-void SearchTabHelper::FlushNTP(const GURL& url) {
-  if (!IsNTP(url) &&
-      !google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec())) {
-    ntp_web_contents_.reset();
-  }
 }
 
 }  // namespace search

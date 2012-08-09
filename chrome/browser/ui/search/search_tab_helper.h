@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_TAB_HELPER_H_
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -14,10 +13,6 @@
 
 class OmniboxEditModel;
 class TabContents;
-
-namespace content {
-class WebContents;
-};
 
 namespace chrome {
 namespace search {
@@ -33,9 +28,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   SearchModel* model() {
     return &model_;
   }
-
-  // Lazily create web contents for NTP.  Owned by SearchTabHelper.
-  content::WebContents* GetNTPWebContents();
 
   // Invoked when the OmniboxEditModel changes state in some way that might
   // affect the search mode.
@@ -55,16 +47,10 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Sets the mode of the model based on |url|.
   void UpdateModel(const GURL& url);
 
-  // On navigation away from NTP and Search pages, delete |ntp_web_contents_|.
-  void FlushNTP(const GURL& url);
-
   const bool is_search_enabled_;
 
   // Model object for UI that cares about search state.
   SearchModel model_;
-
-  // Lazily created web contents for NTP.
-  scoped_ptr<content::WebContents> ntp_web_contents_;
 
   content::NotificationRegistrar registrar_;
 

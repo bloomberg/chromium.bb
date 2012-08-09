@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/contents_container.h"
 
 #include "base/logging.h"
+#include "ui/views/controls/webview/webview.h"
 
 using content::WebContents;
 
@@ -12,7 +13,7 @@ using content::WebContents;
 const char ContentsContainer::kViewClassName[] =
     "browser/ui/views/frame/ContentsContainer";
 
-ContentsContainer::ContentsContainer(views::View* active)
+ContentsContainer::ContentsContainer(views::WebView* active)
     : active_(active),
       overlay_(NULL),
       preview_(NULL),
@@ -22,6 +23,16 @@ ContentsContainer::ContentsContainer(views::View* active)
 }
 
 ContentsContainer::~ContentsContainer() {
+}
+
+void ContentsContainer::SetActive(views::WebView* active) {
+  if (active_)
+    RemoveChildView(active_);
+  active_ = active;
+  // Note the active view is always the first child.
+  if (active_)
+    AddChildViewAt(active_, 0);
+  Layout();
 }
 
 void ContentsContainer::SetOverlay(views::View* overlay) {
@@ -42,7 +53,7 @@ void ContentsContainer::MakePreviewContentsActiveContents() {
   Layout();
 }
 
-void ContentsContainer::SetPreview(views::View* preview,
+void ContentsContainer::SetPreview(views::WebView* preview,
                                    WebContents* preview_web_contents) {
   if (preview == preview_)
     return;
@@ -77,7 +88,8 @@ void ContentsContainer::Layout() {
   int content_y = active_top_margin_;
   int content_height = std::max(0, height() - content_y);
 
-  active_->SetBounds(0, content_y, width(), content_height);
+  if (active_)
+    active_->SetBounds(0, content_y, width(), content_height);
 
   if (overlay_)
     overlay_->SetBounds(0, 0, width(), height());

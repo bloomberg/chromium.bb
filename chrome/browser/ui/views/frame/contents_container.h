@@ -11,6 +11,10 @@ namespace content {
 class WebContents;
 }
 
+namespace views {
+class WebView;
+}
+
 // ContentsContainer is responsible for managing the WebContents views.
 // ContentsContainer has up to two children: one for the currently active
 // WebContents and one for instant's WebContents.
@@ -19,8 +23,14 @@ class ContentsContainer : public views::View {
   // Internal class name
   static const char kViewClassName[];
 
-  explicit ContentsContainer(views::View* active);
+  explicit ContentsContainer(views::WebView* active);
   virtual ~ContentsContainer();
+
+  // Sets the active web view first in stacking order.  This view is deactivated
+  // when the |SearchViewController| is displaying the NTP, and activated
+  // otherwise.  Deactivation removes the active view from the view hierarchy.
+  void SetActive(views::WebView* active);
+  views::WebView* active() { return active_; }
 
   // Sets the overlay. The overlay is sized to the bounds of this view.
   void SetOverlay(views::View* overlay);
@@ -32,7 +42,7 @@ class ContentsContainer : public views::View {
   void MakePreviewContentsActiveContents();
 
   // Sets the preview view. This does not delete the old.
-  void SetPreview(views::View* preview,
+  void SetPreview(views::WebView* preview,
                   content::WebContents* preview_web_contents);
 
   content::WebContents* preview_web_contents() const {
@@ -51,9 +61,9 @@ class ContentsContainer : public views::View {
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
-  views::View* active_;
+  views::WebView* active_;
   views::View* overlay_;
-  views::View* preview_;
+  views::WebView* preview_;
   content::WebContents* preview_web_contents_;
 
   // The margin between the top and the active view. This is used to make the

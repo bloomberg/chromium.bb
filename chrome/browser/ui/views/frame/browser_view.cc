@@ -1933,8 +1933,7 @@ void BrowserView::Init() {
   // SearchViewController doesn't work on windows yet.
 #if defined(USE_AURA)
   if (chrome::search::IsInstantExtendedAPIEnabled(browser_->profile())) {
-    search_view_controller_.reset(
-        new SearchViewController(browser_->profile(), contents_));
+    search_view_controller_.reset(new SearchViewController(contents_));
     omnibox_popup_view_parent =
         search_view_controller_->omnibox_popup_view_parent();
   }
@@ -2458,6 +2457,8 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   // When we toggle the NTP floating bookmarks bar and/or the info bar,
   // we don't want any WebContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a WebContents.
+  // This also applies to the |search_view_controller_| logic, as it can
+  // reparent the |contents_container_|.
   if (change_tab_contents)
     contents_container_->SetWebContents(NULL);
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
@@ -2467,8 +2468,6 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   }
   UpdateUIForContents(new_contents);
-  if (change_tab_contents)
-    contents_container_->SetWebContents(new_contents->web_contents());
 
 #if defined(USE_AURA)
   // |change_tab_contents| can mean same WebContents but different TabContents,
@@ -2476,6 +2475,9 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   if (search_view_controller_.get())
     search_view_controller_->SetTabContents(new_contents);
 #endif
+
+  if (change_tab_contents)
+    contents_container_->SetWebContents(new_contents->web_contents());
 
   UpdateDevToolsForContents(new_contents);
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&

@@ -23,7 +23,10 @@ const int kNTPOmniboxFontSize = 18;
 const int kNTPOmniboxHeight = 40;
 // See the comments in browser_defaults on kAutocompleteEditFontPixelSize.
 const int kOmniboxFontSize = 16;
+// Relative to top of ContentsContainer.
 const int kOmniboxYPosition = 310;
+// Relative to top of WebView in search overlay.
+const int kOmniboxYOffset = -50;
 const int kSearchResultsHeight = 122;
 
 gfx::Rect GetNTPOmniboxBounds(const gfx::Size& web_contents_size) {
@@ -33,7 +36,7 @@ gfx::Rect GetNTPOmniboxBounds(const gfx::Size& web_contents_size) {
   int width = static_cast<int>(kNTPPageWidthRatio *
                                static_cast<double>(web_contents_size.width()));
   int x = (web_contents_size.width() - width) / 2;
-  return gfx::Rect(x, kOmniboxYPosition, width, 0);
+  return gfx::Rect(x, kOmniboxYOffset, width, 0);
 }
 
 gfx::Font GetNTPOmniboxFont(const gfx::Font& font) {
