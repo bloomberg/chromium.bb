@@ -74,19 +74,32 @@ void GoogleContactStore::TestAPI::DoUpdate() {
   store_->UpdateContacts();
 }
 
+void GoogleContactStore::TestAPI::NotifyAboutNetworkStateChange(bool online) {
+  net::NetworkChangeNotifier::ConnectionType type =
+      online ?
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN :
+      net::NetworkChangeNotifier::CONNECTION_NONE;
+  store_->OnConnectionTypeChanged(type);
+}
+
 GoogleContactStore::GoogleContactStore(Profile* profile)
     : profile_(profile),
       contacts_deleter_(&contacts_),
       db_(new ContactDatabase),
       update_delay_on_next_failure_(
           base::TimeDelta::FromSeconds(kUpdateFailureInitialRetrySec)),
+      is_online_(true),
+      should_update_when_online_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  is_online_ = !net::NetworkChangeNotifier::IsOffline();
 }
 
 GoogleContactStore::~GoogleContactStore() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   weak_ptr_factory_.InvalidateWeakPtrs();
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   DestroyDatabase();
 }
 
@@ -129,6 +142,17 @@ void GoogleContactStore::RemoveObserver(ContactStoreObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void GoogleContactStore::OnConnectionTypeChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  bool was_online = is_online_;
+  is_online_ = (type != net::NetworkChangeNotifier::CONNECTION_NONE);
+  if (!was_online && is_online_ && should_update_when_online_) {
+    should_update_when_online_ = false;
+    UpdateContacts();
+  }
+}
+
 base::Time GoogleContactStore::GetCurrentTime() const {
   return !current_time_for_testing_.is_null() ?
          current_time_for_testing_ :
@@ -145,6 +169,14 @@ void GoogleContactStore::DestroyDatabase() {
 
 void GoogleContactStore::UpdateContacts() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If we're offline, defer the update.
+  if (!is_online_) {
+    VLOG(1) << "Deferring contact update due to offline state";
+    should_update_when_online_ = true;
+    return;
+  }
+
   base::Time min_update_time;
   base::TimeDelta time_since_last_update =
       last_successful_update_start_time_.is_null() ?

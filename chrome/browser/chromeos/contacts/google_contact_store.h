@@ -20,6 +20,7 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "net/base/network_change_notifier.h"
 
 class Profile;
 
@@ -34,7 +35,9 @@ class ContactDatabaseInterface;
 class UpdateMetadata;
 
 // A collection of contacts from a Google account.
-class GoogleContactStore : public ContactStore {
+class GoogleContactStore
+    : public ContactStore,
+      public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   class TestAPI {
    public:
@@ -56,6 +59,9 @@ class GoogleContactStore : public ContactStore {
     // Triggers an update, similar to what happens when the update timer fires.
     void DoUpdate();
 
+    // Notifies the store that the system has gone online or offline.
+    void NotifyAboutNetworkStateChange(bool online);
+
    private:
     GoogleContactStore* store_;  // not owned
 
@@ -72,6 +78,10 @@ class GoogleContactStore : public ContactStore {
       const std::string& provider_id) OVERRIDE;
   virtual void AddObserver(ContactStoreObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ContactStoreObserver* observer) OVERRIDE;
+
+  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation:
+  virtual void OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
   // Map from a contact's Google-assigned ID to the contact itself.
@@ -149,6 +159,14 @@ class GoogleContactStore : public ContactStore {
   // Amount of time that we'll wait before retrying the next time that an update
   // fails.
   base::TimeDelta update_delay_on_next_failure_;
+
+  // Do we believe that it's likely that we'll be able to make network
+  // connections?
+  bool is_online_;
+
+  // Should we call UpdateContacts() when |is_online_| becomes true?  Set when
+  // UpdateContacts() is called while we're offline.
+  bool should_update_when_online_;
 
   // If non-null, used in place of base::Time::Now() when the current time is
   // needed.

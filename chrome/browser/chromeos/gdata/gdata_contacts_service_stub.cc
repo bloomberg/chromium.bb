@@ -14,7 +14,8 @@ using content::BrowserThread;
 namespace gdata {
 
 GDataContactsServiceStub::GDataContactsServiceStub()
-    : download_should_succeed_(true) {
+    : num_download_requests_(0),
+      download_should_succeed_(true) {
 }
 
 GDataContactsServiceStub::~GDataContactsServiceStub() {
@@ -35,6 +36,7 @@ void GDataContactsServiceStub::DownloadContacts(
     FailureCallback failure_callback,
     const base::Time& min_update_time) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  num_download_requests_++;
 
   if (!download_should_succeed_) {
     failure_callback.Run();

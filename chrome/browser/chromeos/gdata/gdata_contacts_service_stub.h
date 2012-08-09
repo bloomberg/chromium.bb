@@ -24,6 +24,8 @@ class GDataContactsServiceStub : public GDataContactsServiceInterface {
   GDataContactsServiceStub();
   virtual ~GDataContactsServiceStub();
 
+  int num_download_requests() const { return num_download_requests_; }
+  void reset_stats() { num_download_requests_ = 0; }
   void set_download_should_succeed(bool succeed) {
     download_should_succeed_ = succeed;
   }
@@ -40,6 +42,9 @@ class GDataContactsServiceStub : public GDataContactsServiceInterface {
                                 const base::Time& min_update_time) OVERRIDE;
 
  private:
+  // How many times has DownloadContacts() been called?
+  int num_download_requests_;
+
   // Should calls to DownloadContacts() succeed?
   bool download_should_succeed_;
 

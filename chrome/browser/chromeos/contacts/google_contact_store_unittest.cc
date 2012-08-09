@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -55,7 +56,9 @@ class GoogleContactStoreTest : public testing::Test {
  protected:
   // testing::Test implementation.
   virtual void SetUp() OVERRIDE {
-    testing::Test::SetUp();
+    // Create a mock NetworkChangeNotifier so the store won't be notified about
+    // changes to the system's actual network state.
+    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     profile_.reset(new TestingProfile);
 
     store_.reset(new GoogleContactStore(profile_.get()));
@@ -74,6 +77,7 @@ class GoogleContactStoreTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 
   TestContactStoreObserver observer_;
+  scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<GoogleContactStore> store_;
   scoped_ptr<GoogleContactStore::TestAPI> test_api_;
@@ -375,6 +379,36 @@ TEST_F(GoogleContactStoreTest, HandleDatabaseInitFailure) {
   EXPECT_EQ(ContactsToString(gdata_contacts),
             ContactsToString(loaded_contacts));
   EXPECT_TRUE(test_api_->update_scheduled());
+}
+
+TEST_F(GoogleContactStoreTest, AvoidUpdatesWhenOffline) {
+  EXPECT_EQ(0, gdata_service_->num_download_requests());
+
+  // Notify the store that we're offline.  Init() shouldn't attempt an update
+  // and the update timer shouldn't be running.
+  test_api_->NotifyAboutNetworkStateChange(false);
+  store_->Init();
+  EXPECT_EQ(0, gdata_service_->num_download_requests());
+  EXPECT_FALSE(test_api_->update_scheduled());
+
+  // We should do an update and schedule further updates as soon as we go
+  // online.
+  gdata_service_->reset_stats();
+  test_api_->NotifyAboutNetworkStateChange(true);
+  EXPECT_EQ(1, gdata_service_->num_download_requests());
+  EXPECT_TRUE(test_api_->update_scheduled());
+
+  // If we call DoUpdate() to mimic the code path that's used for a timer-driven
+  // update while we're offline, we should again defer the update.
+  gdata_service_->reset_stats();
+  test_api_->NotifyAboutNetworkStateChange(false);
+  test_api_->DoUpdate();
+  EXPECT_EQ(0, gdata_service_->num_download_requests());
+
+  // When we're back online, the update should happen.
+  gdata_service_->reset_stats();
+  test_api_->NotifyAboutNetworkStateChange(true);
+  EXPECT_EQ(1, gdata_service_->num_download_requests());
 }
 
 }  // namespace test
