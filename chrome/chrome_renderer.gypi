@@ -13,7 +13,6 @@
         'common_net',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-        'safe_browsing_proto',
         '../content/content.gyp:content_renderer',
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_host',
@@ -26,7 +25,6 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../third_party/smhasher/smhasher.gyp:murmurhash3',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:glue',
@@ -284,6 +282,10 @@
         ['safe_browsing==1', {
           'defines': [
             'ENABLE_SAFE_BROWSING',
+          ],
+          'dependencies': [
+            'safe_browsing_proto',
+            '../third_party/smhasher/smhasher.gyp:murmurhash3',
           ],
         }, {  # safe_browsing==0
           'sources/': [
