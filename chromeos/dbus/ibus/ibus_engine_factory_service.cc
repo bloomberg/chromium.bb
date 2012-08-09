@@ -41,7 +41,7 @@ class IBusEngineFactoryServiceImpl : public IBusEngineFactoryService {
   virtual void SetCreateEngineHandler(
       const std::string& engine_id,
       const CreateEngineHandler& create_engine_handler) OVERRIDE {
-    DCHECK(!create_engine_callback_map_[engine_id].is_null());
+    DCHECK(create_engine_callback_map_[engine_id].is_null());
     create_engine_callback_map_[engine_id] = create_engine_handler;
   }
 
