@@ -272,7 +272,6 @@
         '../third_party/skia/src/core/SkPathHeap.cpp',
         '../third_party/skia/src/core/SkPathHeap.h',
         '../third_party/skia/src/core/SkPathMeasure.cpp',
-        '../third_party/skia/src/core/SkPerspIter.h',
         '../third_party/skia/src/core/SkPicture.cpp',
         '../third_party/skia/src/core/SkPictureFlat.cpp',
         '../third_party/skia/src/core/SkPictureFlat.h',
@@ -642,6 +641,7 @@
         '../third_party/skia/include/core/SkPath.h',
         '../third_party/skia/include/core/SkPathEffect.h',
         '../third_party/skia/include/core/SkPathMeasure.h',
+        '../third_party/skia/include/core/SkPerspIter.h',
         '../third_party/skia/include/core/SkPicture.h',
         '../third_party/skia/include/core/SkPixelRef.h',
         '../third_party/skia/include/core/SkPoint.h',
@@ -1252,7 +1252,6 @@
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
-            '../third_party/skia/src/opts/SkBlitRow_opts_arm.h',
             '../third_party/skia/src/opts/opts_check_arm.cpp',
           ],
         }],
@@ -1265,11 +1264,9 @@
           'sources': [
             '../third_party/skia/src/opts/memset16_neon.S',
             '../third_party/skia/src/opts/memset32_neon.S',
-            '../third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp',
             '../third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp',
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h',
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
-            '../third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp',
         ],
         }],
         [ 'target_arch == "arm" and armv7 != 1', {
