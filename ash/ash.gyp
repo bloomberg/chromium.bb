@@ -32,6 +32,7 @@
         '../ui/oak/oak.gyp:oak',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_wallpapers',
         '../ui/views/views.gyp:views',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
       ],

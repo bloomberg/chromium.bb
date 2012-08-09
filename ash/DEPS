@@ -3,6 +3,7 @@ include_rules = [
   "+content/public",
   "+grit/ash_strings.h",
   "+grit/ui_resources.h",
+  "+grit/ui_resources_wallpapers.h",
   "+grit/ui_strings.h",
   "+skia/ext",
   "+third_party/cros_system_api",
