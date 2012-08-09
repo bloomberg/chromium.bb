@@ -14,7 +14,6 @@
       requireNative('apiDefinitions').GetExtensionAPIDefinition;
   var sendRequest = require('sendRequest').sendRequest;
   var utils = require('utils');
-  var isDevChannel = requireNative('channel').IsDevChannel;
   var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
   var schemaUtils = require('schemaUtils');
 

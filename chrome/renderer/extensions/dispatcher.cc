@@ -219,22 +219,6 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
   int manifest_version_;
 };
 
-class ChannelNativeHandler : public NativeHandler {
- public:
-  explicit ChannelNativeHandler(chrome::VersionInfo::Channel channel)
-      : channel_(channel) {
-    RouteFunction("IsDevChannel",
-        base::Bind(&ChannelNativeHandler::IsDevChannel,
-                   base::Unretained(this)));
-  }
-
-  v8::Handle<v8::Value> IsDevChannel(const v8::Arguments& args) {
-    return v8::Boolean::New(channel_ <= chrome::VersionInfo::CHANNEL_DEV);
-  }
-
-  chrome::VersionInfo::Channel channel_;
-};
-
 class LoggingNativeHandler : public NativeHandler {
  public:
   LoggingNativeHandler() {
@@ -303,8 +287,7 @@ Dispatcher::Dispatcher()
       webrequest_adblock_(false),
       webrequest_adblock_plus_(false),
       webrequest_other_(false),
-      source_map_(&ResourceBundle::GetSharedInstance()),
-      chrome_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
+      source_map_(&ResourceBundle::GetSharedInstance()) {
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   is_extension_process_ =
       command_line.HasSwitch(switches::kExtensionProcess) ||
@@ -398,7 +381,8 @@ void Dispatcher::OnSetFunctionNames(
 }
 
 void Dispatcher::OnSetChannel(int channel) {
-  chrome_channel_ = channel;
+  extensions::Feature::SetCurrentChannel(
+      static_cast<chrome::VersionInfo::Channel>(channel));
 }
 
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
@@ -755,12 +739,8 @@ void Dispatcher::DidCreateScriptContext(
       scoped_ptr<NativeHandler>(new PrintNativeHandler()));
   module_system->RegisterNativeHandler("lazy_background_page",
       scoped_ptr<NativeHandler>(new LazyBackgroundPageNativeHandler(this)));
-  module_system->RegisterNativeHandler("channel",
-      scoped_ptr<NativeHandler>(new ChannelNativeHandler(
-          static_cast<chrome::VersionInfo::Channel>(chrome_channel_))));
   module_system->RegisterNativeHandler("logging",
       scoped_ptr<NativeHandler>(new LoggingNativeHandler()));
-
 
   int manifest_version = extension ? extension->manifest_version() : 1;
   module_system->RegisterNativeHandler("process",

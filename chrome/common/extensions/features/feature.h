@@ -68,22 +68,31 @@ class Feature {
   Feature(const Feature& other);
   virtual ~Feature();
 
-  // (Re)Sets whether checking against "channel" should be done. This must only
-  // be called on the browser process, since the check involves accessing the
-  // filesystem.
-  // See http://crbug.com/126535.
-  static void SetChannelCheckingEnabled(bool enabled);
-  static void ResetChannelCheckingEnabled();
-
-  // (Re)Sets the Channel to for all Features to compare against. This is
-  // usually chrome::VersionInfo::GetChannel(), but for tests allow this to be
-  // overridden.
-  static void SetChannelForTesting(chrome::VersionInfo::Channel channel);
-  static void ResetChannelForTesting();
-
-  // Returns the current channel as seen by the Feature system (i.e. the
-  // ChannelForTesting if one is set, otherwise the actual channel).
+  // Gets the current channel as seen by the Feature system.
+  // Defaults to CHANNEL_STABLE.
   static chrome::VersionInfo::Channel GetCurrentChannel();
+
+  // Sets the current channel as seen by the Feature system. In the browser
+  // process this should be chrome::VersionInfo::GetChannel(), and in the
+  // renderer this will need to come from an IPC.
+  static void SetCurrentChannel(chrome::VersionInfo::Channel channel);
+
+  // Scoped channel setter. Use for tests.
+  class ScopedCurrentChannel {
+   public:
+    explicit ScopedCurrentChannel(chrome::VersionInfo::Channel channel)
+        : original_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
+      original_channel_ = GetCurrentChannel();
+      SetCurrentChannel(channel);
+    }
+
+    ~ScopedCurrentChannel() {
+      SetCurrentChannel(original_channel_);
+    }
+
+   private:
+    chrome::VersionInfo::Channel original_channel_;
+  };
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }

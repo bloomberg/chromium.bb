@@ -89,7 +89,8 @@ TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {
 TEST_F(ExtensionManifestTest, BackgroundPageWebRequest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  Feature::SetChannelForTesting(chrome::VersionInfo::CHANNEL_UNKNOWN);
+  Feature::ScopedCurrentChannel current_channel(
+      chrome::VersionInfo::CHANNEL_DEV);
 
   std::string error;
   scoped_ptr<DictionaryValue> manifest(

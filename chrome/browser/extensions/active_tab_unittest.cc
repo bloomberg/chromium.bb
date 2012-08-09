@@ -58,13 +58,8 @@ class ActiveTabTest : public TabContentsTestHarness {
       : extension(CreateTestExtension("deadbeef", true)),
         another_extension(CreateTestExtension("feedbeef", true)),
         extension_without_active_tab(CreateTestExtension("badbeef", false)),
-        ui_thread_(BrowserThread::UI, MessageLoop::current()) {
-  }
-
-  virtual void SetUp() {
-    TabContentsTestHarness::SetUp();
-    Feature::SetChannelForTesting(chrome::VersionInfo::CHANNEL_UNKNOWN);
-  }
+        ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
  protected:
   int tab_id() {
@@ -122,6 +117,7 @@ class ActiveTabTest : public TabContentsTestHarness {
 
  private:
   content::TestBrowserThread ui_thread_;
+  Feature::ScopedCurrentChannel current_channel_;
 };
 
 TEST_F(ActiveTabTest, GrantToSinglePage) {

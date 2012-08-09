@@ -256,10 +256,6 @@ class Dispatcher : public content::RenderProcessObserver {
   // Sends API requests to the extension host.
   scoped_ptr<RequestSender> request_sender_;
 
-  // The current channel. From VersionInfo::GetChannel().
-  // TODO(aa): Remove when we can restrict non-permission APIs to dev-only.
-  int chrome_channel_;
-
   DISALLOW_COPY_AND_ASSIGN(Dispatcher);
 };
 

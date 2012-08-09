@@ -49,7 +49,7 @@ struct Mappings {
   std::map<std::string, VersionInfo::Channel> channels;
 };
 
-static base::LazyInstance<Mappings> g_mappings = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<Mappings> g_mappings = LAZY_INSTANCE_INITIALIZER;
 
 std::string GetChannelName(VersionInfo::Channel channel) {
   typedef std::map<std::string, VersionInfo::Channel> ChannelsMap;
@@ -62,30 +62,7 @@ std::string GetChannelName(VersionInfo::Channel channel) {
   return "unknown";
 }
 
-static bool g_channel_checking_enabled = false;
-
-class Channel {
- public:
-  VersionInfo::Channel GetChannel() {
-    CHECK(g_channel_checking_enabled);
-    if (channel_for_testing_.get())
-      return *channel_for_testing_;
-    return VersionInfo::GetChannel();
-  }
-
-  void SetChannelForTesting(VersionInfo::Channel channel_for_testing) {
-    channel_for_testing_.reset(new VersionInfo::Channel(channel_for_testing));
-  }
-
-  void ResetChannelForTesting() {
-    channel_for_testing_.reset();
-  }
-
- private:
-  scoped_ptr<VersionInfo::Channel> channel_for_testing_;
-};
-
-static base::LazyInstance<Channel> g_channel = LAZY_INSTANCE_INITIALIZER;
+VersionInfo::Channel g_current_channel = VersionInfo::CHANNEL_STABLE;
 
 // TODO(aa): Can we replace all this manual parsing with JSON schema stuff?
 
@@ -320,10 +297,8 @@ Feature::Availability Feature::IsAvailableToManifest(
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return INVALID_MAX_MANIFEST_VERSION;
 
-  if (g_channel_checking_enabled) {
-    if (channel_ < g_channel.Get().GetChannel())
-      return UNSUPPORTED_CHANNEL;
-  }
+  if (channel_ < g_current_channel)
+    return UNSUPPORTED_CHANNEL;
 
   return IS_AVAILABLE;
 }
@@ -350,30 +325,13 @@ Feature::Availability Feature::IsAvailableToContext(
 }
 
 // static
-void Feature::SetChannelCheckingEnabled(bool enabled) {
-  g_channel_checking_enabled = enabled;
-}
-
-// static
-void Feature::ResetChannelCheckingEnabled() {
-  g_channel_checking_enabled = false;
-}
-
-// static
-void Feature::SetChannelForTesting(VersionInfo::Channel channel) {
-  g_channel.Get().SetChannelForTesting(channel);
-}
-
-// static
-void Feature::ResetChannelForTesting() {
-  g_channel.Get().ResetChannelForTesting();
-}
-
-// static
 chrome::VersionInfo::Channel Feature::GetCurrentChannel() {
-  if (g_channel_checking_enabled)
-    return g_channel.Get().GetChannel();
-  return chrome::VersionInfo::GetChannel();
+  return g_current_channel;
+}
+
+// static
+void Feature::SetCurrentChannel(VersionInfo::Channel channel) {
+  g_current_channel = channel;
 }
 
 }  // namespace

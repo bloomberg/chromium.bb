@@ -454,8 +454,7 @@ TEST(ExtensionFeatureTest, Equals) {
 
 Feature::Availability IsAvailableInChannel(
     const std::string& channel, VersionInfo::Channel channel_for_testing) {
-  Feature::SetChannelCheckingEnabled(true);
-  Feature::SetChannelForTesting(channel_for_testing);
+  Feature::ScopedCurrentChannel current_channel(channel_for_testing);
 
   Feature feature;
   if (!channel.empty()) {
@@ -464,15 +463,11 @@ Feature::Availability IsAvailableInChannel(
     feature.Parse(&feature_value);
   }
 
-  Feature::Availability availability = feature.IsAvailableToManifest(
+  return feature.IsAvailableToManifest(
       "random-extension",
       Extension::TYPE_UNKNOWN,
       Feature::UNSPECIFIED_LOCATION,
       -1);
-
-  Feature::ResetChannelForTesting();
-  Feature::ResetChannelCheckingEnabled();
-  return availability;
 }
 
 TEST(ExtensionFeatureTest, SupportedChannel) {

@@ -29,7 +29,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -57,9 +57,6 @@ ExtensionBrowserTest::~ExtensionBrowserTest() {
 }
 
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
-  extensions::Feature::SetChannelForTesting(
-      chrome::VersionInfo::CHANNEL_UNKNOWN);
-
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
 
