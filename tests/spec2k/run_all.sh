@@ -254,6 +254,18 @@ SetupPnaclX8664Opt() {
 }
 
 #@
+#@ SetupPnaclX8664ZBSOpt
+#@    use pnacl x86-64 compiler (with lto)
+#@    use x86-64 zero-based sandbox
+SetupPnaclX8664ZBSOpt() {
+  SetupSelLdr x86-64 "" "-c"
+  # TODO(arbenson): Give this a different suffix to differentitate
+  # from the existing x86-64 build, and make the corresponding
+  # changes to the build process.
+  SUFFIX=pnacl.opt.x8664
+}
+
+#@
 #@ SetupPnaclTranslatorX8664
 #@    use pnacl x8664 translator (no lto)
 SetupPnaclTranslatorX8664() {
@@ -518,13 +530,18 @@ ${SEL_LDR} --r_debug=0x${TEMPLATE_DIGITS} \
 
 SCONS_COMMON="./scons --mode=opt-host,nacl -j8 --verbose"
 
+EnableX8664ZeroBasedSandbox() {
+  export NACL_ENABLE_INSECURE_ZERO_BASED_SANDBOX=1
+}
+
 build-runtime() {
   local platforms=$1
   local runtime_pieces=$2
+  local extra_flags="${3-}"
   for platform in ${platforms} ; do
     echo "build-runtime: scons ${runtime_pieces} [${platform}]"
     (cd ${NACL_ROOT};
-      ${SCONS_COMMON} platform=${platform} ${runtime_pieces})
+      ${SCONS_COMMON} ${extra_flags} platform=${platform} ${runtime_pieces})
   done
 }
 
@@ -796,10 +813,12 @@ BuildPrerequisites() {
   local platforms=$1
   local bitcode=$2
   local extrabuild="${3-}"
+  local extra_flags="${4-}"
   # Sel universal is only used for the pnacl sandboxed translator,
   # but prepare it just in case.
   # IRT is used both to run the tests and to run the pnacl sandboxed translator.
-  build-runtime "${platforms}" "sel_ldr sel_universal irt_core ${extrabuild}"
+  build-runtime "${platforms}" "sel_ldr sel_universal irt_core ${extrabuild}" \
+${extra_flags}
   if [ ${bitcode} == "bitcode" ] ; then
      build-libs-pnacl
   else

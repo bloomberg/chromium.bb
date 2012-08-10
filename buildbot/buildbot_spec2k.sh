@@ -18,6 +18,7 @@ SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
 
 TRYBOT_TESTS="176.gcc 179.art 181.mcf 197.parser 252.eon 254.gap"
 TRYBOT_TRANSLATOR_TESTS="176.gcc"
+TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS="176.gcc"
 
 readonly BUILDBOT_PNACL="buildbot/buildbot_pnacl.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
@@ -189,6 +190,16 @@ pnacl-trybot-x8632() {
   run-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
 }
 
+pnacl-x86-64-zero-based-sandbox() {
+  clobber
+  export NACL_ENABLE_INSECURE_ZERO_BASED_SANDBOX=1
+  build-prerequisites "x86-64" "bitcode" "x86_64_zero_based_sandbox=1"
+  build-tests SetupPnaclX8664ZBSOpt \
+    "${TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS}" 0 1
+  run-tests SetupPnaclX8664ZBSOpt \
+    "${TRYBOT_X86_64_ZERO_BASED_SANDBOX_TESTS}" 0 1
+}
+
 pnacl-trybot-x8664() {
   clobber
   build-prerequisites "x86-64" "bitcode"
@@ -196,6 +207,7 @@ pnacl-trybot-x8664() {
   run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 0 1
   build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
   run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
+  pnacl-x86-64-zero-based-sandbox
 }
 
 # We probably will not keep a qemu bot on the waterfall, but will keep this
@@ -233,6 +245,7 @@ pnacl-x8664() {
                SetupPnaclTranslatorX8664Opt"
   build-tests "${setups}" all 1 3
   run-tests "${setups}" all 1 3
+  pnacl-x86-64-zero-based-sandbox
 }
 
 pnacl-x8632() {

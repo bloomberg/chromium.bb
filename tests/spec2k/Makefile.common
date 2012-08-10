@@ -221,14 +221,22 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 ######################################################################
 # BITCODE - FRONTEND
 
+ifdef NACL_ENABLE_INSECURE_ZERO_BASED_SANDBOX
+EXTRA_TRANSLATOR_FLAGS=-sfi-zero-based-sandbox
+else
+EXTRA_TRANSLATOR_FLAGS=
+endif
+
 PNACL_BIN=$(PNACL_ROOT)/bin
 # Sandboxed translation uses the standalone translator install (which only
 # supports sandboxed translation). This allows it to run on the arm hardware
 # bots, which have no native toolchain build.
-PNACL_TRANSLATOR=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate --noirtshim
+PNACL_TRANSLATOR=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate --noirtshim \
+  $(EXTRA_TRANSLATOR_FLAGS)
 PNACL_TRANSLATOR_SB=$(TIME_TRANSLATE) \
   $(PNACL_TRANSLATOR_ROOT)/bin/pnacl-translate --pnacl-sb --noirtshim
-PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator
+PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator \
+  $(EXTRA_TRANSLATOR_FLAGS)
 PNACL_CC=$(PNACL_BIN)/pnacl-clang
 PNACL_CXX=$(PNACL_BIN)/pnacl-clang++
 PNACL_STRIP=$(PNACL_BIN)/pnacl-strip
