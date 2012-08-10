@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 from HTMLParser import HTMLParser
+import logging
 import re
 
 from docs_server_utils import FormatKey
+from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
 
 class _IntroParser(HTMLParser):
@@ -74,9 +76,11 @@ class IntroDataSource(object):
 
   def get(self, key):
     real_path = FormatKey(key)
+    error = None
     for base_path in self._base_paths:
       try:
         return self._cache.GetFromFile(base_path + '/' + real_path)
-      except Exception:
+      except FileNotFoundError as error:
         pass
+    logging.error(error)
     return None

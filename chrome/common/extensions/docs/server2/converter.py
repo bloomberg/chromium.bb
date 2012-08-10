@@ -37,7 +37,8 @@ IGNORED_FILES = [
 # names of the JSON files do not give enough information on the actual API name.
 CUSTOM_MAPPINGS = {
   'experimental_input_virtual_keyboard': 'experimental_input_virtualKeyboard',
-  'input_ime': 'input_ime'
+  'input_ime': 'input_ime',
+  'app_window': 'app_window'
 }
 
 # These are the extension-only APIs that don't have explicit entries in

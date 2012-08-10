@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
 
+from file_system import FileNotFoundError
 import third_party.json_schema_compiler.model as model
 from docs_server_utils import SanitizeAPIName
 
@@ -52,5 +54,6 @@ class APIListDataSource(object):
   def get(self, key):
     try:
       return self._cache.GetFromFileListing(self._api_path)[key]
-    except Exception as e:
+    except FileNotFoundError as e:
+      logging.error(e)
       return None

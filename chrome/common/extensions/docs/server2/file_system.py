@@ -4,6 +4,10 @@
 
 import os
 
+class FileNotFoundError(Exception):
+  def __init__(self, filename):
+    Exception.__init__(self, filename)
+
 def _ProcessFileData(data, path):
   if os.path.splitext(path)[-1] not in ['.js', '.html', '.json']:
     return data

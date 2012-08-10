@@ -6,6 +6,7 @@ import json
 import logging
 import os
 
+from file_system import FileNotFoundError
 from handlebar_dict_generator import HandlebarDictGenerator
 import third_party.json_schema_compiler.json_comment_eater as json_comment_eater
 import third_party.json_schema_compiler.model as model
@@ -60,12 +61,14 @@ class APIDataSource(object):
     try:
       perms = self._permissions_cache.GetFromFile(
           self._base_path + '/_permission_features.json')
-      api_perms = perms.get(path, None)
-      if api_perms['channel'] == 'dev':
-        api_perms['dev'] = True
-      return api_perms
-    except Exception:
+    except FileNotFoundError:
       return None
+    api_perms = perms.get(path, None)
+    if api_perms is None:
+      return None
+    if api_perms['channel'] == 'dev':
+      api_perms['dev'] = True
+    return api_perms
 
   def _GenerateHandlebarContext(self, api_name, handlebar, path):
     return_dict = { 'permissions': self._GetFeature(path) }
@@ -90,10 +93,11 @@ class APIDataSource(object):
       return self._GenerateHandlebarContext(key,
           self._json_cache.GetFromFile(self._base_path + '/' + json_path),
           path)
-    except OSError:
+    except FileNotFoundError:
       try:
         return self._GenerateHandlebarContext(key,
             self._idl_cache.GetFromFile(self._base_path + '/' + idl_path),
             path)
-      except OSError:
+      except FileNotFoundError as e:
+        logging.error(e)
         raise

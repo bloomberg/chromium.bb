@@ -5,6 +5,7 @@
 import logging
 
 from docs_server_utils import FormatKey
+from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
 
 EXTENSIONS_URL = '/chrome/extensions'
@@ -125,6 +126,6 @@ class TemplateDataSource(object):
     real_path = FormatKey(template_name)
     try:
       return self._cache.GetFromFile(base_path + '/' + real_path)
-    except Exception as e:
+    except FileNotFoundError as e:
       logging.error(e)
       return None

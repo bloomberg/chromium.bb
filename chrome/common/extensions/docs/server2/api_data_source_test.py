@@ -7,6 +7,7 @@ import json
 import os
 import unittest
 
+from file_system import FileNotFoundError
 from file_system_cache import FileSystemCache
 from local_file_system import LocalFileSystem
 from api_data_source import APIDataSource
@@ -26,7 +27,7 @@ class APIDataSourceTest(unittest.TestCase):
   def testSimple(self):
     cache_builder = FileSystemCache.Builder(LocalFileSystem(self._base_path))
     data_source_factory = APIDataSource.Factory(cache_builder,
-                                                './',
+                                                '.',
                                                 FakeSamplesDataSource())
     data_source = data_source_factory.Create({})
 
@@ -36,7 +37,7 @@ class APIDataSourceTest(unittest.TestCase):
     self.assertEqual(expected, data_source['test_file'])
     self.assertEqual(expected, data_source['testFile'])
     self.assertEqual(expected, data_source['testFile.html'])
-    self.assertRaises(OSError, data_source.get, 'junk')
+    self.assertRaises(FileNotFoundError, data_source.get, 'junk')
 
 if __name__ == '__main__':
   unittest.main()

@@ -6,6 +6,8 @@ from fnmatch import fnmatch
 import mimetypes
 import os
 
+from file_system import FileNotFoundError
+
 STATIC_DIR_PREFIX = 'docs/server2'
 DOCS_PATH = 'docs'
 
@@ -27,11 +29,11 @@ class ServerInstance(object):
     """
     try:
       result = self._cache.GetFromFile(STATIC_DIR_PREFIX + '/' + path)
-      base, ext = os.path.splitext(path)
-      response.headers['content-type'] = mimetypes.types_map[ext]
-      return result
-    except Exception:
-      return ''
+    except FileNotFoundError:
+      return None
+    base, ext = os.path.splitext(path)
+    response.headers['content-type'] = mimetypes.types_map[ext]
+    return result
 
   def Get(self, path, request, response):
     templates = self._template_data_source_factory.Create(request)

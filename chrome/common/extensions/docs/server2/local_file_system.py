@@ -18,16 +18,23 @@ class LocalFileSystem(file_system.FileSystem):
     return path.replace('/', os.sep)
 
   def _ReadFile(self, filename, binary):
-    with open(os.path.join(self._base_path, filename), 'r') as f:
-      contents = f.read()
-      if binary:
-        return contents
-      return file_system._ProcessFileData(contents, filename)
+    try:
+      with open(os.path.join(self._base_path, filename), 'r') as f:
+        contents = f.read()
+        if binary:
+          return contents
+        return file_system._ProcessFileData(contents, filename)
+    except IOError:
+      raise file_system.FileNotFoundError(filename)
 
   def _ListDir(self, dir_name):
     all_files = []
     full_path = os.path.join(self._base_path, dir_name)
-    for path in os.listdir(full_path):
+    try:
+      files = os.listdir(full_path)
+    except OSError:
+      raise file_system.FileNotFoundError(dir_name)
+    for path in files:
       if path.startswith('.'):
         continue
       if os.path.isdir(os.path.join(full_path, path)):
@@ -46,4 +53,9 @@ class LocalFileSystem(file_system.FileSystem):
     return Future(value=result)
 
   def Stat(self, path):
-    return self.StatInfo(os.stat(os.path.join(self._base_path, path)).st_mtime)
+    try:
+      return self.StatInfo(
+          os.stat(os.path.join(self._base_path, path)).st_mtime)
+    except OSError:
+      raise file_system.FileNotFoundError(path)
+

@@ -19,8 +19,10 @@ class SubversionFileSystem(file_system.FileSystem):
 
   def Stat(self, path):
     directory = path.rsplit('/', 1)[0]
-    dir_html = self._fetcher.Fetch(directory + '/').content
-    return self.StatInfo(int(re.search('([0-9]+)', dir_html).group(0)))
+    result = self._fetcher.Fetch(directory + '/')
+    if result.status_code == 404:
+      raise file_system.FileNotFoundError(path)
+    return self.StatInfo(int(re.search('([0-9]+)', result.content).group(0)))
 
 class _AsyncFetchFuture(object):
   def __init__(self, paths, fetcher, binary):
@@ -42,7 +44,7 @@ class _AsyncFetchFuture(object):
     for path, future in self._fetches:
       result = future.Get()
       if result.status_code == 404:
-        self._value[path] = None
+        raise file_system.FileNotFoundError(path)
       elif path.endswith('/'):
         self._value[path] = self._ListDir(result.content)
       elif not self._binary:

@@ -52,8 +52,8 @@ class TemplateDataSourceTest(unittest.TestCase):
                                        self._fake_intro_data_source,
                                        self._fake_samples_data_source,
                                        cache_builder,
-                                       './',
-                                       './')
+                                       '.',
+                                       '.')
             .Create(_FakeRequest()))
 
   def testSimple(self):
