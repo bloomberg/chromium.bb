@@ -340,7 +340,6 @@ android_seat_create(struct android_compositor *compositor)
 	weston_seat_init(&seat->base, &compositor->base);
 	seat->base.led_update = android_led_update;
 	wl_list_init(&seat->devices_list);
-	compositor->base.seat = &seat->base;
 
 	android_seat_scan_devices(seat, "/dev/input");
 

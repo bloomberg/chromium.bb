@@ -290,9 +290,6 @@ struct weston_compositor {
 	struct wl_event_loop *input_loop;
 	struct wl_event_source *input_loop_source;
 
-	/* There can be more than one, but not right now... */
-	struct weston_seat *seat;
-
 	struct weston_layer fade_layer;
 	struct weston_layer cursor_layer;
 

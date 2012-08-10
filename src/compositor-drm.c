@@ -2037,8 +2037,6 @@ evdev_input_create(struct weston_compositor *c, struct udev *udev,
 	}
 
 	evdev_add_devices(udev, &seat->base);
-
-	c->seat = &seat->base;
 }
 
 static void
