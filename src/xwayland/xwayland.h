@@ -152,3 +152,5 @@ weston_wm_create(struct weston_xserver *wxs);
 void
 weston_wm_destroy(struct weston_wm *wm);
 
+struct weston_seat *
+weston_wm_pick_seat(struct weston_wm *wm);

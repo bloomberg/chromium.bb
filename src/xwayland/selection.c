@@ -149,6 +149,7 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 {
 	struct x11_data_source *source;
 	struct weston_compositor *compositor;
+	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
 	xcb_atom_t *value;
@@ -194,7 +195,7 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	}
 
 	compositor = wm->server->compositor;
-	wl_seat_set_selection(&compositor->seat->seat, &source->base,
+	wl_seat_set_selection(&seat->seat, &source->base,
 			      wl_display_next_serial(compositor->wl_display));
 
 	free(reply);
@@ -422,7 +423,7 @@ static void
 weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_type)
 {
 	struct wl_data_source *source;
-	struct wl_seat *seat = &wm->server->compositor->seat->seat;
+	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	int p[2];
 
 	if (pipe2(p, O_CLOEXEC | O_NONBLOCK) == -1) {
@@ -440,7 +441,7 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 						   weston_wm_read_data_source,
 						   wm);
 
-	source = seat->selection_data_source;
+	source = seat->seat.selection_data_source;
 	source->send(source, mime_type, p[1]);
 }
 
@@ -550,6 +551,7 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 	xcb_xfixes_selection_notify_event_t *xfixes_selection_notify =
 		(xcb_xfixes_selection_notify_event_t *) event;
 	struct weston_compositor *compositor;
+	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	uint32_t serial;
 
 	weston_log("xfixes selection notify event: owner %d\n",
@@ -561,7 +563,7 @@ weston_wm_handle_xfixes_selection_notify(struct weston_wm *wm,
 			 * proxy selection.  Clear the wayland selection. */
 			compositor = wm->server->compositor;
 			serial = wl_display_next_serial(compositor->wl_display);
-			wl_seat_set_selection(&compositor->seat->seat, NULL, serial);
+			wl_seat_set_selection(&seat->seat, NULL, serial);
 		}
 
 		wm->selection_owner = XCB_WINDOW_NONE;
@@ -663,7 +665,7 @@ weston_wm_set_selection(struct wl_listener *listener, void *data)
 void
 weston_wm_selection_init(struct weston_wm *wm)
 {
-	struct wl_seat *seat;
+	struct weston_seat *seat;
 	uint32_t values[1], mask;
 
 	wm->selection_request.requestor = XCB_NONE;
@@ -693,9 +695,9 @@ weston_wm_selection_init(struct weston_wm *wm)
 	xcb_xfixes_select_selection_input(wm->conn, wm->selection_window,
 					  wm->atom.clipboard, mask);
 
-	seat = &wm->server->compositor->seat->seat;
+	seat = weston_wm_pick_seat(wm);
 	wm->selection_listener.notify = weston_wm_set_selection;
-	wl_signal_add(&seat->selection_signal, &wm->selection_listener);
+	wl_signal_add(&seat->seat.selection_signal, &wm->selection_listener);
 
 	weston_wm_set_selection(&wm->selection_listener, seat);
 }

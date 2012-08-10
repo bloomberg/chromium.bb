@@ -879,6 +879,13 @@ weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *even
 	}
 }
 
+struct weston_seat *
+weston_wm_pick_seat(struct weston_wm *wm)
+{
+	return container_of(wm->server->compositor->seat_list.next,
+			    struct weston_seat, link);
+}
+
 static void
 weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 				   xcb_client_message_event_t *client_message)
@@ -895,7 +902,7 @@ weston_wm_window_handle_moveresize(struct weston_wm_window *window,
 	};
 
 	struct weston_wm *wm = window->wm;
-	struct weston_seat *seat = wm->server->compositor->seat;
+	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	int detail;
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
@@ -1047,6 +1054,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_button_press_event_t *button = (xcb_button_press_event_t *) event;
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
+	struct weston_seat *seat = weston_wm_pick_seat(wm);
 	struct weston_wm_window *window;
 	enum theme_location location;
 	struct theme *t = wm->theme;
@@ -1068,8 +1076,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 
 		switch (location) {
 		case THEME_LOCATION_TITLEBAR:
-			shell_interface->move(window->shsurf,
-					      wm->server->compositor->seat);
+			shell_interface->move(window->shsurf, seat);
 			break;
 		case THEME_LOCATION_RESIZING_TOP:
 		case THEME_LOCATION_RESIZING_BOTTOM:
@@ -1080,8 +1087,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		case THEME_LOCATION_RESIZING_BOTTOM_LEFT:
 		case THEME_LOCATION_RESIZING_BOTTOM_RIGHT:
 			shell_interface->resize(window->shsurf,
-						wm->server->compositor->seat,
-						location);
+						seat, location);
 			break;
 		default:
 			break;
