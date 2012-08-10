@@ -1745,9 +1745,7 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
   if (error == GDATA_FILE_OK) {
     scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::ExtractAndParse(*data));
     if (doc_entry.get()) {
-      fresh_entry.reset(
-          GDataEntry::FromDocumentEntry(NULL, doc_entry.get(),
-                                        directory_service_.get()));
+      fresh_entry.reset(directory_service_->FromDocumentEntry(doc_entry.get()));
     }
     if (!fresh_entry.get() || !fresh_entry->AsGDataFile()) {
       LOG(ERROR) << "Got invalid entry from server for " << params.resource_id;
@@ -2340,8 +2338,7 @@ void GDataFileSystem::OnSearch(const SearchCallback& callback,
   // result directory.
   for (size_t i = 0; i < feed->entries().size(); ++i) {
     DocumentEntry* doc = const_cast<DocumentEntry*>(feed->entries()[i]);
-    scoped_ptr<GDataEntry> entry(
-        GDataEntry::FromDocumentEntry(NULL, doc, directory_service_.get()));
+    scoped_ptr<GDataEntry> entry(directory_service_->FromDocumentEntry(doc));
 
     if (!entry.get())
       continue;
@@ -2480,8 +2477,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     return;
   }
 
-  GDataEntry* entry = GDataEntry::FromDocumentEntry(
-      NULL, doc_entry.get(), directory_service_.get());
+  GDataEntry* entry = directory_service_->FromDocumentEntry(doc_entry.get());
   if (!entry) {
     callback.Run(GDATA_FILE_ERROR_FAILED);
     return;
@@ -2827,8 +2823,8 @@ GDataFileError GDataFileSystem::AddNewDirectory(
   if (!parent_dir)
     return GDATA_FILE_ERROR_FAILED;
 
-  GDataEntry* new_entry = GDataEntry::FromDocumentEntry(
-      NULL, doc_entry.get(), directory_service_.get());
+  GDataEntry* new_entry =
+      directory_service_->FromDocumentEntry(doc_entry.get());
   if (!new_entry)
     return GDATA_FILE_ERROR_FAILED;
 
@@ -2950,8 +2946,7 @@ void GDataFileSystem::AddUploadedFileOnUIThread(
     return;
 
   scoped_ptr<GDataEntry> new_entry(
-      GDataEntry::FromDocumentEntry(
-          NULL, entry.get(), directory_service_.get()));
+      directory_service_->FromDocumentEntry(entry.get()));
   if (!new_entry.get())
     return;
 

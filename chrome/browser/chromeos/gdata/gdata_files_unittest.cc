@@ -32,7 +32,7 @@ const char kResumableCreateMediaUrl[] = "http://resumable-create-media/";
 GDataDirectory* AddDirectory(GDataDirectory* parent,
                              GDataDirectoryService* directory_service,
                              int sequence_id) {
-  GDataDirectory* dir = new GDataDirectory(NULL, directory_service);
+  GDataDirectory* dir = directory_service->CreateGDataDirectory();
   const std::string dir_name = "dir" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
@@ -57,7 +57,7 @@ GDataDirectory* AddDirectory(GDataDirectory* parent,
 GDataFile* AddFile(GDataDirectory* parent,
                    GDataDirectoryService* directory_service,
                    int sequence_id) {
-  GDataFile* file = new GDataFile(NULL, directory_service);
+  GDataFile* file = directory_service->CreateGDataFile();
   const std::string title = "file" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("file_resource_id:") +
                                   title;
@@ -195,16 +195,18 @@ TEST(GDataEntryTest, FromProto_DetectBadUploadUrl) {
   GDataEntryProto proto;
   proto.set_title("test.txt");
 
-  GDataEntry entry(NULL, NULL);
+  GDataDirectoryService directory_service;
+
+  scoped_ptr<GDataEntry> entry(directory_service.CreateGDataFile());
   // This should fail as the upload URL is empty.
-  ASSERT_FALSE(entry.FromProto(proto));
+  ASSERT_FALSE(entry->FromProto(proto));
 
   // Set a upload URL.
   proto.set_upload_url(kResumableEditMediaUrl);
 
   // This should succeed as the upload URL is set.
-  ASSERT_TRUE(entry.FromProto(proto));
-  EXPECT_EQ(kResumableEditMediaUrl, entry.upload_url().spec());
+  ASSERT_TRUE(entry->FromProto(proto));
+  EXPECT_EQ(kResumableEditMediaUrl, entry->upload_url().spec());
 }
 
 TEST(GDataDirectoryServiceTest, VersionCheck) {
@@ -387,8 +389,7 @@ TEST(GDataDirectoryServiceTest, RefreshFile) {
 
   GDataDirectoryService directory_service;
   // Add a directory to the file system.
-  GDataDirectory* directory_entry = new GDataDirectory(NULL,
-                                                       &directory_service);
+  GDataDirectory* directory_entry = directory_service.CreateGDataDirectory();
   directory_entry->set_resource_id("folder:directory_resource_id");
   directory_entry->set_title("directory");
   directory_entry->SetBaseNameFromTitle();
@@ -407,7 +408,7 @@ TEST(GDataDirectoryServiceTest, RefreshFile) {
             moved_file_path);
 
   // Add a new file to the directory.
-  GDataFile* initial_file_entry = new GDataFile(NULL, &directory_service);
+  GDataFile* initial_file_entry = directory_service.CreateGDataFile();
   initial_file_entry->set_resource_id("file:file_resource_id");
   initial_file_entry->set_title("file");
   initial_file_entry->SetBaseNameFromTitle();
@@ -429,7 +430,7 @@ TEST(GDataDirectoryServiceTest, RefreshFile) {
   // Initial file system state set, let's try refreshing entries.
 
   // New value for the entry with resource id "file:file_resource_id".
-  GDataFile* new_file_entry = new GDataFile(NULL, &directory_service);
+  GDataFile* new_file_entry = directory_service.CreateGDataFile();
   new_file_entry->set_resource_id("file:file_resource_id");
   directory_service.RefreshFile(scoped_ptr<GDataFile>(new_file_entry).Pass());
   // Root should have |new_file_entry|, not |initial_file_entry|.
@@ -442,7 +443,7 @@ TEST(GDataDirectoryServiceTest, RefreshFile) {
   EXPECT_EQ(directory_entry, new_file_entry->parent());
 
   // Let's try refreshing file that didn't prviously exist.
-  GDataFile* non_existent_entry = new GDataFile(NULL, &directory_service);
+  GDataFile* non_existent_entry = directory_service.CreateGDataFile();
   non_existent_entry->set_resource_id("file:does_not_exist");
   directory_service.RefreshFile(
       scoped_ptr<GDataFile>(non_existent_entry).Pass());

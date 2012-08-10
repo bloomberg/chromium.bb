@@ -80,11 +80,10 @@ EntryInfoPairResult::~EntryInfoPairResult() {
 
 // GDataEntry class.
 
-GDataEntry::GDataEntry(GDataDirectory* parent,
-                       GDataDirectoryService* directory_service)
-    : directory_service_(directory_service),
+GDataEntry::GDataEntry(GDataDirectoryService* directory_service)
+    : parent_(NULL),
+      directory_service_(directory_service),
       deleted_(false) {
-  SetParent(parent);
 }
 
 GDataEntry::~GDataEntry() {
@@ -96,6 +95,32 @@ GDataFile* GDataEntry::AsGDataFile() {
 
 GDataDirectory* GDataEntry::AsGDataDirectory() {
   return NULL;
+}
+
+void GDataEntry::InitFromDocumentEntry(DocumentEntry* doc) {
+  // For regular files, the 'filename' and 'title' attribute in the metadata
+  // may be different (e.g. due to rename). To be consistent with the web
+  // interface and other client to use the 'title' attribute, instead of
+  // 'filename', as the file name in the local snapshot.
+  title_ = UTF16ToUTF8(doc->title());
+  // SetBaseNameFromTitle() must be called after |title_| is set.
+  SetBaseNameFromTitle();
+
+  file_info_.last_modified = doc->updated_time();
+  file_info_.last_accessed = doc->updated_time();
+  file_info_.creation_time = doc->published_time();
+
+  resource_id_ = doc->resource_id();
+  content_url_ = doc->content_url();
+  deleted_ = doc->deleted();
+
+  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
+  if (edit_link)
+    edit_url_ = edit_link->href();
+
+  const Link* parent_link = doc->GetLinkByType(Link::PARENT);
+  if (parent_link)
+    parent_resource_id_ = ExtractResourceId(parent_link->href());
 }
 
 const GDataFile* GDataEntry::AsGDataFileConst() const {
@@ -126,20 +151,6 @@ void GDataEntry::SetBaseNameFromTitle() {
 }
 
 // static
-GDataEntry* GDataEntry::FromDocumentEntry(
-    GDataDirectory* parent,
-    DocumentEntry* doc,
-    GDataDirectoryService* directory_service) {
-  DCHECK(doc);
-  if (doc->is_folder())
-    return GDataDirectory::FromDocumentEntry(parent, doc, directory_service);
-  else if (doc->is_hosted_document() || doc->is_file())
-    return GDataFile::FromDocumentEntry(parent, doc, directory_service);
-
-  return NULL;
-}
-
-// static
 std::string GDataEntry::EscapeUtf8FileName(const std::string& input) {
   std::string output;
   if (ReplaceChars(input, kSlash, std::string(kEscapedSlash), &output))
@@ -157,9 +168,8 @@ std::string GDataEntry::UnescapeUtf8FileName(const std::string& input) {
 
 // GDataFile class implementation.
 
-GDataFile::GDataFile(GDataDirectory* parent,
-                     GDataDirectoryService* directory_service)
-    : GDataEntry(parent, directory_service),
+GDataFile::GDataFile(GDataDirectoryService* directory_service)
+    : GDataEntry(directory_service),
       kind_(DocumentEntry::UNKNOWN),
       is_hosted_document_(false) {
   file_info_.is_directory = false;
@@ -180,77 +190,50 @@ void GDataFile::SetBaseNameFromTitle() {
   }
 }
 
-// static
-GDataEntry* GDataFile::FromDocumentEntry(
-    GDataDirectory* parent,
-    DocumentEntry* doc,
-    GDataDirectoryService* directory_service) {
-  DCHECK(doc->is_hosted_document() || doc->is_file());
-  GDataFile* file = new GDataFile(parent, directory_service);
-
-  // For regular files, the 'filename' and 'title' attribute in the metadata
-  // may be different (e.g. due to rename). To be consistent with the web
-  // interface and other client to use the 'title' attribute, instead of
-  // 'filename', as the file name in the local snapshot.
-  file->title_ = UTF16ToUTF8(doc->title());
+void GDataFile::InitFromDocumentEntry(DocumentEntry* doc) {
+  GDataEntry::InitFromDocumentEntry(doc);
 
   // Check if this entry is a true file, or...
   if (doc->is_file()) {
-    file->file_info_.size = doc->file_size();
-    file->file_md5_ = doc->file_md5();
+    file_info_.size = doc->file_size();
+    file_md5_ = doc->file_md5();
 
     // The resumable-edit-media link should only be present for regular
     // files as hosted documents are not uploadable.
     const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_EDIT_MEDIA);
     if (upload_link)
-      file->upload_url_ = upload_link->href();
+      upload_url_ = upload_link->href();
   } else {
     // ... a hosted document.
     // Attach .g<something> extension to hosted documents so we can special
     // case their handling in UI.
     // TODO(zelidrag): Figure out better way how to pass entry info like kind
     // to UI through the File API stack.
-    file->document_extension_ = doc->GetHostedDocumentExtension();
+    document_extension_ = doc->GetHostedDocumentExtension();
     // We don't know the size of hosted docs and it does not matter since
     // is has no effect on the quota.
-    file->file_info_.size = 0;
+    file_info_.size = 0;
   }
-  file->kind_ = doc->kind();
-  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
-  if (edit_link)
-    file->edit_url_ = edit_link->href();
-  file->content_url_ = doc->content_url();
-  file->content_mime_type_ = doc->content_mime_type();
-  file->resource_id_ = doc->resource_id();
-  file->is_hosted_document_ = doc->is_hosted_document();
-  file->file_info_.last_modified = doc->updated_time();
-  file->file_info_.last_accessed = doc->updated_time();
-  file->file_info_.creation_time = doc->published_time();
-  file->deleted_ = doc->deleted();
-  const Link* parent_link = doc->GetLinkByType(Link::PARENT);
-  if (parent_link)
-    file->parent_resource_id_ = ExtractResourceId(parent_link->href());
-
+  kind_ = doc->kind();
+  content_mime_type_ = doc->content_mime_type();
+  is_hosted_document_ = doc->is_hosted_document();
   // SetBaseNameFromTitle() must be called after |title_|,
   // |is_hosted_document_| and |document_extension_| are set.
-  file->SetBaseNameFromTitle();
+  SetBaseNameFromTitle();
 
   const Link* thumbnail_link = doc->GetLinkByType(Link::THUMBNAIL);
   if (thumbnail_link)
-    file->thumbnail_url_ = thumbnail_link->href();
+    thumbnail_url_ = thumbnail_link->href();
 
   const Link* alternate_link = doc->GetLinkByType(Link::ALTERNATE);
   if (alternate_link)
-    file->alternate_url_ = alternate_link->href();
-
-  return file;
+    alternate_url_ = alternate_link->href();
 }
 
 // GDataDirectory class implementation.
 
-GDataDirectory::GDataDirectory(GDataDirectory* parent,
-                               GDataDirectoryService* directory_service)
-    : GDataEntry(parent, directory_service) {
+GDataDirectory::GDataDirectory(GDataDirectoryService* directory_service)
+    : GDataEntry(directory_service) {
   file_info_.is_directory = true;
 }
 
@@ -262,37 +245,12 @@ GDataDirectory* GDataDirectory::AsGDataDirectory() {
   return this;
 }
 
-// static
-GDataEntry* GDataDirectory::FromDocumentEntry(
-    GDataDirectory* parent,
-    DocumentEntry* doc,
-    GDataDirectoryService* directory_service) {
-  DCHECK(doc->is_folder());
-  GDataDirectory* dir = new GDataDirectory(parent, directory_service);
-  dir->title_ = UTF16ToUTF8(doc->title());
-  // SetBaseNameFromTitle() must be called after |title_| is set.
-  dir->SetBaseNameFromTitle();
-  dir->file_info_.last_modified = doc->updated_time();
-  dir->file_info_.last_accessed = doc->updated_time();
-  dir->file_info_.creation_time = doc->published_time();
-  dir->resource_id_ = doc->resource_id();
-  dir->content_url_ = doc->content_url();
-  dir->deleted_ = doc->deleted();
-
-  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
-  DCHECK(edit_link) << "No edit link for dir " << dir->title_;
-  if (edit_link)
-    dir->edit_url_ = edit_link->href();
-
-  const Link* parent_link = doc->GetLinkByType(Link::PARENT);
-  if (parent_link)
-    dir->parent_resource_id_ = ExtractResourceId(parent_link->href());
+void GDataDirectory::InitFromDocumentEntry(DocumentEntry* doc) {
+  GDataEntry::InitFromDocumentEntry(doc);
 
   const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
   if (upload_link)
-    dir->upload_url_ = upload_link->href();
-
-  return dir;
+    upload_url_ = upload_link->href();
 }
 
 void GDataDirectory::AddEntry(GDataEntry* entry) {
@@ -552,7 +510,7 @@ GDataDirectoryService::GDataDirectoryService()
       largest_changestamp_(0),
       origin_(UNINITIALIZED),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  root_.reset(new GDataDirectory(NULL, this));
+  root_.reset(CreateGDataDirectory());
   if (!util::IsDriveV2ApiEnabled())
     InitializeRootEntry(kGDataRootDirectoryResourceId);
 }
@@ -566,8 +524,29 @@ GDataDirectoryService::~GDataDirectoryService() {
                                       directory_service_db_.release());
 }
 
+GDataEntry* GDataDirectoryService::FromDocumentEntry(DocumentEntry* doc) {
+  DCHECK(doc);
+  GDataEntry* entry = NULL;
+  if (doc->is_folder())
+    entry = CreateGDataDirectory();
+  else if (doc->is_hosted_document() || doc->is_file())
+    entry = CreateGDataFile();
+
+  if (entry)
+    entry->InitFromDocumentEntry(doc);
+  return entry;
+}
+
+GDataFile* GDataDirectoryService::CreateGDataFile() {
+  return new GDataFile(this);
+}
+
+GDataDirectory* GDataDirectoryService::CreateGDataDirectory() {
+  return new GDataDirectory(this);
+}
+
 void GDataDirectoryService::InitializeRootEntry(const std::string& root_id) {
-  root_.reset(new GDataDirectory(NULL, this));
+  root_.reset(CreateGDataDirectory());
   root_->set_title(kGDataRootDirectory);
   root_->SetBaseNameFromTitle();
   root_->set_resource_id(root_id);
@@ -1035,7 +1014,7 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   DCHECK(!proto.gdata_entry().has_file_specific_info());
 
   for (int i = 0; i < proto.child_files_size(); ++i) {
-    scoped_ptr<GDataFile> file(new GDataFile(NULL, directory_service_));
+    scoped_ptr<GDataFile> file(directory_service_->CreateGDataFile());
     if (!file->FromProto(proto.child_files(i))) {
       RemoveChildren();
       return false;
@@ -1043,8 +1022,7 @@ bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
     AddEntry(file.release());
   }
   for (int i = 0; i < proto.child_directories_size(); ++i) {
-    scoped_ptr<GDataDirectory> dir(new GDataDirectory(NULL,
-                                                      directory_service_));
+    scoped_ptr<GDataDirectory> dir(directory_service_->CreateGDataDirectory());
     if (!dir->FromProto(proto.child_directories(i))) {
       RemoveChildren();
       return false;
@@ -1157,7 +1135,7 @@ scoped_ptr<GDataEntry> GDataDirectoryService::FromProtoString(
 
   scoped_ptr<GDataEntry> entry;
   if (entry_proto.file_info().is_directory()) {
-    entry.reset(new GDataDirectory(NULL, this));
+    entry.reset(CreateGDataDirectory());
     // Call GDataEntry::FromProto instead of GDataDirectory::FromProto because
     // the proto does not include children.
     if (!entry->FromProto(entry_proto)) {
@@ -1165,7 +1143,7 @@ scoped_ptr<GDataEntry> GDataDirectoryService::FromProtoString(
       entry.reset();
     }
   } else {
-    scoped_ptr<GDataFile> file(new GDataFile(NULL, this));
+    scoped_ptr<GDataFile> file(CreateGDataFile());
     // Call GDataFile::FromProto.
     if (file->FromProto(entry_proto)) {
       entry.reset(file.release());

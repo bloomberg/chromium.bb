@@ -122,22 +122,17 @@ typedef base::Callback<void(scoped_ptr<EntryInfoPairResult> pair_result)>
 // system.
 class GDataEntry {
  public:
-  // TODO(achuith): Remove |parent| from ctor. crbug.com/141494
-  GDataEntry(GDataDirectory* parent, GDataDirectoryService* directory_service);
   virtual ~GDataEntry();
 
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
 
+  // Initializes from DocumentEntry.
+  virtual void InitFromDocumentEntry(DocumentEntry* doc);
+
   // const versions of AsGDataFile and AsGDataDirectory.
   const GDataFile* AsGDataFileConst() const;
   const GDataDirectory* AsGDataDirectoryConst() const;
-
-  // Converts DocumentEntry into GDataEntry.
-  static GDataEntry* FromDocumentEntry(
-      GDataDirectory* parent,
-      DocumentEntry* doc,
-      GDataDirectoryService* directory_service);
 
   // Serialize/Parse to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
@@ -221,6 +216,8 @@ class GDataEntry {
   // For access to SetParent from AddEntry.
   friend class GDataDirectory;
 
+  explicit GDataEntry(GDataDirectoryService* directory_service);
+
   // Sets the parent directory of this file system entry.
   // It is intended to be used by GDataDirectory::AddEntry() only.
   void SetParent(GDataDirectory* parent);
@@ -265,17 +262,7 @@ typedef std::map<FilePath::StringType, GDataDirectory*>
 // this could be either a regular file or a server side document.
 class GDataFile : public GDataEntry {
  public:
-  // TODO(achuith): Remove |parent| from ctor. crbug.com/141494
-  explicit GDataFile(GDataDirectory* parent,
-                     GDataDirectoryService* directory_service);
   virtual ~GDataFile();
-  virtual GDataFile* AsGDataFile() OVERRIDE;
-
-  // Converts DocumentEntry into GDataEntry.
-  static GDataEntry* FromDocumentEntry(
-      GDataDirectory* parent,
-      DocumentEntry* doc,
-      GDataDirectoryService* directory_service);
 
   // Converts to/from proto.
   bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
@@ -297,6 +284,14 @@ class GDataFile : public GDataEntry {
   virtual void SetBaseNameFromTitle() OVERRIDE;
 
  private:
+  friend class GDataDirectoryService;  // For access to ctor.
+
+  explicit GDataFile(GDataDirectoryService* directory_service);
+  // Initializes from DocumentEntry.
+  virtual void InitFromDocumentEntry(DocumentEntry* doc) OVERRIDE;
+
+  virtual GDataFile* AsGDataFile() OVERRIDE;
+
   DocumentEntry::EntryKind kind_;  // Not saved in proto.
   GURL thumbnail_url_;
   GURL alternate_url_;
@@ -312,17 +307,7 @@ class GDataFile : public GDataEntry {
 // collection element.
 class GDataDirectory : public GDataEntry {
  public:
-  // TODO(achuith): Remove |parent| from ctor. crbug.com/141494
-  GDataDirectory(GDataDirectory* parent,
-                 GDataDirectoryService* directory_service);
   virtual ~GDataDirectory();
-  virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
-
-  // Converts DocumentEntry into GDataEntry.
-  static GDataEntry* FromDocumentEntry(
-      GDataDirectory* parent,
-      DocumentEntry* doc,
-      GDataDirectoryService* directory_service);
 
   // Converts to/from proto.
   bool FromProto(const GDataDirectoryProto& proto) WARN_UNUSED_RESULT;
@@ -342,6 +327,13 @@ class GDataDirectory : public GDataEntry {
   friend class GDataDirectoryService;
   friend class GDataFileSystem;
   friend class GDataWapiFeedProcessor;
+
+  explicit GDataDirectory(GDataDirectoryService* directory_service);
+
+  // Initializes from DocumentEntry.
+  virtual void InitFromDocumentEntry(DocumentEntry* doc) OVERRIDE;
+
+  virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
 
   // Adds child file to the directory and takes over the ownership of |file|
   // object. The method will also do name de-duplication to ensure that the
@@ -412,6 +404,15 @@ class GDataDirectoryService {
   // The root directory content origin.
   const ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
+
+  // Creates a GDataEntry from a DocumentEntry.
+  GDataEntry* FromDocumentEntry(DocumentEntry* doc);
+
+  // Creates a GDataFile instance.
+  GDataFile* CreateGDataFile();
+
+  // Creates a GDataDirectory instance.
+  GDataDirectory* CreateGDataDirectory();
 
   // Sets root directory resource id and initialize the root entry.
   void InitializeRootEntry(const std::string& root_id);
