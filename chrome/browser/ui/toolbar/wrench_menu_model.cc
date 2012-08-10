@@ -504,7 +504,11 @@ void WrenchMenuModel::Build() {
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
 
-  if (!is_touch_menu) {
+// On ChromeOS-Touch, we don't want the about/background pages menu options.
+#if defined(OS_CHROMEOS)
+  if (!is_touch_menu)
+#endif
+  {
     AddItem(IDC_ABOUT, l10n_util::GetStringUTF16(IDS_ABOUT));
     string16 num_background_pages = base::FormatNumber(
         TaskManager::GetBackgroundPageCount());
