@@ -704,6 +704,7 @@ extern const char kIgnoredProtocolHandlers[];
 extern const char kCustomHandlersEnabled[];
 
 extern const char kUserCreatedLoginItem[];
+extern const char kUserRemovedLoginItem[];
 extern const char kBackgroundModeEnabled[];
 
 extern const char kDevicePolicyRefreshRate[];

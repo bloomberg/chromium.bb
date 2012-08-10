@@ -1934,6 +1934,10 @@ const char kManagedAutoSelectCertificateForUrls[] =
 // uninstalling background apps.
 const char kUserCreatedLoginItem[] = "background_mode.user_created_login_item";
 
+// Set to true if the user removed our login item so we should not create a new
+// one when uninstalling background apps.
+const char kUserRemovedLoginItem[] = "background_mode.user_removed_login_item";
+
 // Set to true if background mode is enabled on this browser.
 const char kBackgroundModeEnabled[] = "background_mode.enabled";
 
