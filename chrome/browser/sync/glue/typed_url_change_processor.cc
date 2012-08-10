@@ -125,6 +125,10 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     return true;
   DCHECK(!visit_vector.empty());
 
+  // Ignore URLs of local files.
+  if (url.url().SchemeIsFile())
+    return true;
+
   syncer::WriteNode update_node(trans);
   syncer::BaseNode::InitByLookupResult result =
       update_node.InitByClientTagLookup(syncer::TYPED_URLS, tag);
@@ -286,9 +290,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
     const sync_pb::TypedUrlSpecifics& typed_url(
         sync_node.GetTypedUrlSpecifics());
     DCHECK(typed_url.visits_size());
-    // Ignore blank URLs - these should never happen in practice, but they
-    // can sneak into the data via browser import.
-    if (typed_url.url().empty())
+    // Ignore blank URLs or local file URLs- these should never happen
+    // in practice, but they can sneak into the data via browser import.
+    if (typed_url.url().empty() || GURL(typed_url.url()).SchemeIsFile())
       continue;
     sync_pb::TypedUrlSpecifics filtered_url =
         model_associator_->FilterExpiredVisits(typed_url);

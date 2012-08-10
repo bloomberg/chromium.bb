@@ -119,6 +119,10 @@ bool TypedUrlModelAssociator::ShouldIgnoreUrl(
   if (url.url().spec().empty())
     return true;
 
+  // Ignore local file URLs.
+  if (GURL(url.url()).SchemeIsFile())
+    return true;
+
   // We ignore URLs that were imported, but have never been visited by
   // chromium.
   static const int kLastImportedSource = history::SOURCE_EXTENSION;
