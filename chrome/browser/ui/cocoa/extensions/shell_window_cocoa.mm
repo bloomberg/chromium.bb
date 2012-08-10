@@ -139,18 +139,6 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
   NSView* view = web_contents()->GetView()->GetNativeView();
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
-  if (!has_frame_) {
-    // TODO(jeremya): this is a temporary hack to allow moving the window while
-    // we still don't have proper draggable region support.
-    NSView* controlRegion = [[ControlRegionView alloc] init];
-    [controlRegion setFrame:NSMakeRect(0, 0, NSWidth([view bounds]),
-                                       NSHeight([view bounds]) - 20)];
-    [controlRegion setAutoresizingMask:
-        NSViewWidthSizable | NSViewHeightSizable];
-    [view addSubview:controlRegion];
-    [controlRegion release];
-  }
-
   InstallView();
 
   [[window_controller_ window] setDelegate:window_controller_];
@@ -176,6 +164,8 @@ void ShellWindowCocoa::InstallView() {
     [[window() standardWindowButton:NSWindowZoomButton] setHidden:YES];
     [[window() standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
     [[window() standardWindowButton:NSWindowCloseButton] setHidden:YES];
+
+    InstallDraggableRegionViews();
   }
 }
 
@@ -337,6 +327,50 @@ void ShellWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   cocoa_bounds.origin.y = NSHeight([screen frame]) - checked_bounds.bottom();
 
   [window() setFrame:cocoa_bounds display:YES];
+}
+
+void ShellWindowCocoa::UpdateDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions) {
+  // Draggable region is not supported for non-frameless window.
+  if (has_frame_)
+    return;
+
+  draggable_regions_ = regions;
+  InstallDraggableRegionViews();
+}
+
+void ShellWindowCocoa::InstallDraggableRegionViews() {
+  DCHECK(!has_frame_);
+
+  // All ControlRegionViews should be added as children of the WebContentsView,
+  // because WebContentsView will be removed and re-added when entering and
+  // leaving fullscreen mode.
+  NSView* webView = web_contents()->GetView()->GetNativeView();
+  NSInteger webViewHeight = NSHeight([webView bounds]);
+
+  // Remove all ControlRegionViews that are added last time.
+  // Note that [webView subviews] returns the view's mutable internal array and
+  // it should be copied to avoid mutating the original array while enumerating
+  // it.
+  scoped_nsobject<NSArray> subviews([[webView subviews] copy]);
+  for (NSView* subview in subviews.get())
+    if ([subview isKindOfClass:[ControlRegionView class]])
+      [subview removeFromSuperview];
+
+  // Create and add ControlRegionView for each region that needs to be excluded
+  // from the dragging.
+  for (std::vector<extensions::DraggableRegion>::const_iterator iter =
+           draggable_regions_.begin();
+       iter != draggable_regions_.end();
+       ++iter) {
+    const extensions::DraggableRegion& region = *iter;
+    scoped_nsobject<NSView> controlRegion([[ControlRegionView alloc] init]);
+    [controlRegion setFrame:NSMakeRect(region.bounds.x(),
+                                       webViewHeight - region.bounds.bottom(),
+                                       region.bounds.width(),
+                                       region.bounds.height())];
+    [webView addSubview:controlRegion];
+  }
 }
 
 void ShellWindowCocoa::FlashFrame(bool flash) {

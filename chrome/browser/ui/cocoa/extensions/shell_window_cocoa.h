@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_UI_COCOA_EXTENSIONS_SHELL_WINDOW_COCOA_H_
 
 #import <Cocoa/Cocoa.h>
+#include <vector>
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/common/extensions/draggable_region.h"
 #include "ui/gfx/rect.h"
 
 class Profile;
@@ -70,10 +72,15 @@ class ShellWindowCocoa : public ShellWindow {
  private:
   virtual ~ShellWindowCocoa();
 
+  // ShellWindow implementation.
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
+
   NSWindow* window() const;
 
   void InstallView();
   void UninstallView();
+  void InstallDraggableRegionViews();
 
   bool has_frame_;
 
@@ -82,6 +89,8 @@ class ShellWindowCocoa : public ShellWindow {
 
   scoped_nsobject<ShellWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention
+
+  std::vector<extensions::DraggableRegion> draggable_regions_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowCocoa);
 };
