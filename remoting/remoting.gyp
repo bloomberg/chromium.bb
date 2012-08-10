@@ -1634,7 +1634,6 @@
         'protocol/host_control_dispatcher.h',
         'protocol/host_event_dispatcher.cc',
         'protocol/host_event_dispatcher.h',
-        'protocol/host_event_stub.h',
         'protocol/host_stub.h',
         'protocol/input_event_tracker.cc',
         'protocol/input_event_tracker.h',

@@ -13,7 +13,6 @@
 #include "ipc/ipc_channel.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/win/scoped_thread_desktop.h"
-#include "remoting/protocol/host_event_stub.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -39,9 +38,11 @@ class SessionEventExecutorWin : public EventExecutor,
       scoped_ptr<protocol::ClipboardStub> client_clipboard) OVERRIDE;
   virtual void OnSessionFinished() OVERRIDE;
 
-  // protocol::HostStub implementation.
+  // protocol::ClipboardStub implementation.
   virtual void InjectClipboardEvent(
       const protocol::ClipboardEvent& event) OVERRIDE;
+
+  // protocol::InputStub implementation.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 

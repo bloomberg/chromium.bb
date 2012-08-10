@@ -18,15 +18,17 @@ namespace remoting {
 ClientSession::ClientSession(
     EventHandler* event_handler,
     scoped_ptr<protocol::ConnectionToClient> connection,
-    protocol::HostEventStub* host_event_stub,
+    protocol::ClipboardStub* host_clipboard_stub,
+    protocol::InputStub* host_input_stub,
     VideoFrameCapturer* capturer,
     const base::TimeDelta& max_duration)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
       client_jid_(connection_->session()->jid()),
       is_authenticated_(false),
-      host_event_stub_(host_event_stub),
-      input_tracker_(host_event_stub_),
+      host_clipboard_stub_(host_clipboard_stub),
+      host_input_stub_(host_input_stub),
+      input_tracker_(host_input_stub_),
       remote_input_filter_(&input_tracker_),
       mouse_input_filter_(&remote_input_filter_),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
@@ -40,7 +42,7 @@ ClientSession::ClientSession(
   connection_->set_clipboard_stub(this);
   connection_->set_host_stub(this);
   connection_->set_input_stub(this);
-  clipboard_echo_filter_.set_host_stub(host_event_stub_);
+  clipboard_echo_filter_.set_host_stub(host_clipboard_stub_);
 }
 
 ClientSession::~ClientSession() {

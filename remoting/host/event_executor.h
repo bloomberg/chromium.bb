@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/clipboard_stub.h"
-#include "remoting/protocol/host_event_stub.h"
+#include "remoting/protocol/input_stub.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -16,9 +16,8 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class VideoFrameCapturer;
-
-class EventExecutor : public protocol::HostEventStub {
+class EventExecutor : public protocol::ClipboardStub,
+                      public protocol::InputStub {
  public:
   // Creates a default event executor for the current platform. This
   // object should do as much work as possible on |main_task_runner|,

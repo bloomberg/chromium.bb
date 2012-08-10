@@ -34,10 +34,6 @@ MockInputStub::MockInputStub() {}
 
 MockInputStub::~MockInputStub() {}
 
-MockHostEventStub::MockHostEventStub() {}
-
-MockHostEventStub::~MockHostEventStub() {}
-
 MockHostStub::MockHostStub() {}
 
 MockHostStub::~MockHostStub() {}

@@ -345,8 +345,12 @@ void ChromotingHost::OnIncomingSession(
   scoped_ptr<protocol::ConnectionToClient> connection(
       new protocol::ConnectionToClient(session));
   ClientSession* client = new ClientSession(
-      this, connection.Pass(), desktop_environment_->event_executor(),
-      desktop_environment_->capturer(), max_session_duration_);
+      this,
+      connection.Pass(),
+      desktop_environment_->event_executor(),
+      desktop_environment_->event_executor(),
+      desktop_environment_->capturer(),
+      max_session_duration_);
   clients_.push_back(client);
 }
 

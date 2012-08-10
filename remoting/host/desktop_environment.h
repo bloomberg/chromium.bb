@@ -9,17 +9,16 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/host/event_executor.h"
 
 namespace remoting {
 
 class AudioCapturer;
 class ChromotingHostContext;
+class EventExecutor;
 class VideoFrameCapturer;
 
 namespace protocol {
 class ClipboardStub;
-class HostEventStub;
 }
 
 class DesktopEnvironment {

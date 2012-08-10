@@ -10,10 +10,11 @@
 
 namespace remoting {
 
+using protocol::MockClipboardStub;
 using protocol::MockConnectionToClient;
 using protocol::MockConnectionToClientEventHandler;
 using protocol::MockHostStub;
-using protocol::MockHostEventStub;
+using protocol::MockInputStub;
 using protocol::MockSession;
 
 using testing::_;
@@ -42,7 +43,8 @@ class ClientSessionTest : public testing::Test {
         new protocol::ConnectionToClient(session));
     client_session_.reset(new ClientSession(
         &session_event_handler_, connection.Pass(),
-        &host_event_stub_, &capturer_, base::TimeDelta()));
+        &host_clipboard_stub_, &host_input_stub_, &capturer_,
+        base::TimeDelta()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -64,7 +66,8 @@ class ClientSessionTest : public testing::Test {
   MessageLoop message_loop_;
   std::string client_jid_;
   MockHostStub host_stub_;
-  MockHostEventStub host_event_stub_;
+  MockClipboardStub host_clipboard_stub_;
+  MockInputStub host_input_stub_;
   MockVideoFrameCapturer capturer_;
   MockClientSessionEventHandler session_event_handler_;
   scoped_ptr<ClientSession> client_session_;
@@ -91,7 +94,7 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(host_event_stub_, InjectClipboardEvent(EqualsClipboardEvent(
+  EXPECT_CALL(host_clipboard_stub_, InjectClipboardEvent(EqualsClipboardEvent(
       kMimeTypeTextUtf8, "b")));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
@@ -152,9 +155,9 @@ TEST_F(ClientSessionTest, InputStubFilter) {
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
-  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
-  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   // These events should not get through to the input stub,
@@ -188,8 +191,8 @@ TEST_F(ClientSessionTest, LocalInputTest) {
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
-  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(200, 201)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   client_session_->OnConnectionAuthenticated(client_session_->connection());
@@ -225,13 +228,13 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   InSequence s;
   EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_));
-  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(1, true)));
-  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
-  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(1, true)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, true)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, true)));
-  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
-  EXPECT_CALL(host_event_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
-  EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(1, false)));
+  EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(2, false)));
+  EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, false)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
@@ -267,7 +270,7 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
     for (int i = 0; i < 3; i++) {
       event.set_x(input_x[i]);
       event.set_y(input_y[j]);
-      EXPECT_CALL(host_event_stub_, InjectMouseEvent(EqualsMouseEvent(
+      EXPECT_CALL(host_input_stub_, InjectMouseEvent(EqualsMouseEvent(
           expected_x[i], expected_y[j])));
       client_session_->InjectMouseEvent(event);
     }

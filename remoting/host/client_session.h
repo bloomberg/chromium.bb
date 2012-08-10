@@ -14,7 +14,6 @@
 #include "remoting/protocol/clipboard_echo_filter.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
-#include "remoting/protocol/host_event_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
@@ -28,8 +27,9 @@ class VideoFrameCapturer;
 
 // A ClientSession keeps a reference to a connection to a client, and maintains
 // per-client state.
-class ClientSession : public protocol::HostEventStub,
+class ClientSession : public protocol::ClipboardStub,
                       public protocol::HostStub,
+                      public protocol::InputStub,
                       public protocol::ConnectionToClient::EventHandler,
                       public base::NonThreadSafe {
  public:
@@ -68,7 +68,8 @@ class ClientSession : public protocol::HostEventStub,
 
   ClientSession(EventHandler* event_handler,
                 scoped_ptr<protocol::ConnectionToClient> connection,
-                protocol::HostEventStub* host_event_stub,
+                protocol::ClipboardStub* host_clipboard_stub,
+                protocol::InputStub* host_input_stub,
                 VideoFrameCapturer* capturer,
                 const base::TimeDelta& max_duration);
   virtual ~ClientSession();
@@ -136,9 +137,11 @@ class ClientSession : public protocol::HostEventStub,
   std::string client_jid_;
   bool is_authenticated_;
 
-  // The host event stub to which this object delegates. This is the final
-  // element in the input pipeline, whose components appear in order below.
-  protocol::HostEventStub* host_event_stub_;
+  // The host clipboard and input stubs to which this object delegates.
+  // These are the final elements in the clipboard & input pipelines, which
+  // appear in order below.
+  protocol::ClipboardStub* host_clipboard_stub_;
+  protocol::InputStub* host_input_stub_;
 
   // Tracker used to release pressed keys and buttons when disconnecting.
   protocol::InputEventTracker input_tracker_;
