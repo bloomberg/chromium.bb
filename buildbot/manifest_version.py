@@ -442,9 +442,9 @@ class BuildSpecsManager(object):
     self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
     if self.latest is not None:
       self._latest_status = self.GetBuildStatus(self.build_name, self.latest)
-    self.latest_unprocessed = None
-    if self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS:
-      self.latest_unprocessed = self.latest
+      if (self._latest_status is None and
+          self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS):
+        self.latest_unprocessed = self.latest
 
   def GetCurrentVersionInfo(self):
     """Returns the current version info from the version file."""
