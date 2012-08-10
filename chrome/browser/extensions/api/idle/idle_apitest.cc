@@ -6,11 +6,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/base/mock_host_resolver.h"
 
-// Sometimes this test fails on Linux: crbug.com/130138
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// This test is flaky: crbug.com/130138
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Idle) {
-#else
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Idle) {
-#endif
   ASSERT_TRUE(RunExtensionTest("idle")) << message_;
 }
