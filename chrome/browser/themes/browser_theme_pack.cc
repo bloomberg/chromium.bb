@@ -188,32 +188,30 @@ int GetPersistentIDByIDR(int idr) {
 
 // Returns true if the scales in |input| match those in |expected|.
 // The order must match as the index is used in determining the raw id.
-bool InputScalesValid(const char* input,
+bool InputScalesValid(const base::StringPiece& input,
                       const std::vector<ui::ScaleFactor>& expected) {
-  const float* scales = reinterpret_cast<const float*>(input);
-  size_t index = 0;
-  for (const float* end = scales; *end != -1.0f; ++end) {
-    if (index >= expected.size())
+  size_t scales_size = static_cast<size_t>(input.size() / sizeof(float));
+  if (scales_size != expected.size())
+    return false;
+  scoped_array<float> scales(new float[scales_size]);
+  // Do a memcpy to avoid misaligned memory access.
+  memcpy(scales.get(), input.data(), input.size());
+  for (size_t index = 0; index < scales_size; ++index) {
+    if (scales[index] != ui::GetScaleFactorScale(expected[index]))
       return false;
-    if (*end != ui::GetScaleFactorScale(expected[index]))
-      return false;
-    index++;
   }
-  return (index == expected.size());
+  return true;
 }
 
 // Returns |scale_factors| as a string to be written to disk.
 std::string GetScaleFactorsAsString(
     const std::vector<ui::ScaleFactor>& scale_factors) {
-  size_t scales_size = scale_factors.size() + 1;
-  float* scales = new float[scales_size];
+  scoped_array<float> scales(new float[scale_factors.size()]);
   for (size_t i = 0; i < scale_factors.size(); ++i)
     scales[i] = ui::GetScaleFactorScale(scale_factors[i]);
-  scales[scales_size - 1] = -1.0f;
   std::string out_string = std::string(
-      reinterpret_cast<const char*>(scales),
-      scales_size * sizeof(float));
-  delete[] scales;
+      reinterpret_cast<const char*>(scales.get()),
+      scale_factors.size() * sizeof(float));
   return out_string;
 }
 
@@ -508,12 +506,10 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   if (!pack->data_pack_->GetStringPiece(kScaleFactorsID, &pointer))
     return NULL;
 
-  if (!InputScalesValid(const_cast<char*>(pointer.data()),
-                        pack->scale_factors_)) {
+  if (!InputScalesValid(pointer, pack->scale_factors_)) {
     DLOG(ERROR) << "BuildFromDataPack failure! The pack scale factors differ "
                 << "from those supported by platform.";
   }
-
   return pack;
 }
 
