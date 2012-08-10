@@ -43,7 +43,7 @@ const int kTrayContainerHorizontalPaddingVerticalAlignment = 0;
 const int kPaddingFromLeftEdgeOfSystemTrayBottomAlignment = 8;
 const int kPaddingFromTopEdgeOfSystemTrayVerticalAlignment = 10;
 const int kTrayWidth = 40;
-const int kTrayHeight = 32;
+const int kTrayHeight = 31;
 const int kTraySideWidth = 32;
 const int kTraySideHeight = 24;
 
