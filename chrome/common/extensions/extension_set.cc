@@ -21,6 +21,16 @@ ExtensionURLInfo::ExtensionURLInfo(const GURL& url)
   : url_(url) {
 }
 
+ExtensionSet::const_iterator::const_iterator() {}
+
+ExtensionSet::const_iterator::const_iterator(const const_iterator& other)
+    : it_(other.it_) {
+}
+
+ExtensionSet::const_iterator::const_iterator(ExtensionMap::const_iterator it)
+    : it_(it) {
+}
+
 ExtensionSet::ExtensionSet() {
 }
 

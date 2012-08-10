@@ -97,12 +97,8 @@ class Socket : public ApiResource {
   struct WriteRequest {
     WriteRequest(scoped_refptr<net::IOBuffer> io_buffer,
                  int byte_count,
-                 const CompletionCallback& callback)
-      : io_buffer(io_buffer),
-        byte_count(byte_count),
-        callback(callback),
-        bytes_written(0) { }
-    ~WriteRequest() { }
+                 const CompletionCallback& callback);
+    ~WriteRequest();
     scoped_refptr<net::IOBuffer> io_buffer;
     int byte_count;
     CompletionCallback callback;

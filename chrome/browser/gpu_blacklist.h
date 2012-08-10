@@ -280,7 +280,7 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
     };
 
     GpuBlacklistEntry();
-    ~GpuBlacklistEntry() { }
+    ~GpuBlacklistEntry();
 
     bool SetId(uint32 id);
 

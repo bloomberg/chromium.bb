@@ -242,6 +242,10 @@ void ProtocolHandlerRegistry::DefaultClientObserver::SetWorker(
   worker_ = worker;
 }
 
+bool ProtocolHandlerRegistry::DefaultClientObserver::IsOwnedByWorker() {
+  return true;
+}
+
 // Delegate --------------------------------------------------------------------
 
 ProtocolHandlerRegistry::Delegate::~Delegate() {}

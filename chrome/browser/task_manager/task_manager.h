@@ -79,29 +79,27 @@ class TaskManager {
     virtual base::ProcessHandle GetProcess() const = 0;
     virtual int GetUniqueChildProcessId() const = 0;
     virtual Type GetType() const = 0;
-    virtual int GetRoutingID() const { return 0; }
+    virtual int GetRoutingID() const;
 
-    virtual bool ReportsCacheStats() const { return false; }
-    virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const {
-      return WebKit::WebCache::ResourceTypeStats();
-    }
+    virtual bool ReportsCacheStats() const;
+    virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
-    virtual bool ReportsFPS() const { return false; }
-    virtual float GetFPS() const { return 0.0f; }
+    virtual bool ReportsFPS() const;
+    virtual float GetFPS() const;
 
-    virtual bool ReportsSqliteMemoryUsed() const { return false; }
-    virtual size_t SqliteMemoryUsedBytes() const { return 0; }
+    virtual bool ReportsSqliteMemoryUsed() const;
+    virtual size_t SqliteMemoryUsedBytes() const;
 
     // Return extension associated with the resource, or NULL
     // if not applicable.
-    virtual const extensions::Extension* GetExtension() const { return NULL; }
+    virtual const extensions::Extension* GetExtension() const;
 
-    virtual bool ReportsV8MemoryStats() const { return false; }
-    virtual size_t GetV8MemoryAllocated() const { return 0; }
-    virtual size_t GetV8MemoryUsed() const { return 0; }
+    virtual bool ReportsV8MemoryStats() const;
+    virtual size_t GetV8MemoryAllocated() const;
+    virtual size_t GetV8MemoryUsed() const;
 
     // Returns true if this resource can be inspected using developer tools.
-    virtual bool CanInspect() const { return false; }
+    virtual bool CanInspect() const;
 
     // Invokes or reveals developer tools window for this resource.
     virtual void Inspect() const {}
@@ -109,7 +107,7 @@ class TaskManager {
     // A helper function for ActivateProcess when selected resource refers
     // to a Tab or other window containing web contents.  Returns NULL by
     // default because not all resources have an associated web contents.
-    virtual content::WebContents* GetWebContents() const { return NULL; }
+    virtual content::WebContents* GetWebContents() const;
 
     // Whether this resource does report the network usage accurately.
     // This controls whether 0 or N/A is displayed when no bytes have been
@@ -134,7 +132,7 @@ class TaskManager {
 
     // Returns true if this resource is not visible to the user because it lives
     // in the background (e.g. extension background page, background contents).
-    virtual bool IsBackground() const { return false; }
+    virtual bool IsBackground() const;
 
     static const char* GetResourceTypeAsString(const Type type) {
       switch (type) {

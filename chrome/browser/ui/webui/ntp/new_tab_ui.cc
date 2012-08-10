@@ -400,3 +400,5 @@ void NewTabUI::NewTabHTMLSource::AddResource(const char* resource,
   resource_map_[std::string(resource)] =
       std::make_pair(std::string(mime_type), resource_id);
 }
+
+NewTabUI::NewTabHTMLSource::~NewTabHTMLSource() {}

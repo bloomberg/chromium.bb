@@ -43,10 +43,10 @@ class MenuGtk {
 
     // Return true if we should override the "gtk-menu-images" system setting
     // when showing image menu items for this menu.
-    virtual bool AlwaysShowIconForCmd(int command_id) const { return false; }
+    virtual bool AlwaysShowIconForCmd(int command_id) const;
 
     // Returns a tinted image used in button in a menu.
-    virtual GtkIconSet* GetIconSetForId(int idr) { return NULL; }
+    virtual GtkIconSet* GetIconSetForId(int idr);
 
     // Returns an icon for the menu item, if available.
     virtual GtkWidget* GetImageForCommandId(int command_id) const;

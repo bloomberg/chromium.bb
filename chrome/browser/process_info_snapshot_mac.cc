@@ -325,6 +325,17 @@ void ProcessInfoSnapshot::Reset() {
   proc_info_entries_.clear();
 }
 
+ProcessInfoSnapshot::ProcInfoEntry::ProcInfoEntry()
+    : pid(0),
+      ppid(0),
+      uid(0),
+      euid(0),
+      rss(0),
+      rshrd(0),
+      rprvt(0),
+      vsize(0) {
+}
+
 bool ProcessInfoSnapshot::GetProcInfo(int pid,
                                       ProcInfoEntry* proc_info) const {
   std::map<int,ProcInfoEntry>::const_iterator it = proc_info_entries_.find(pid);

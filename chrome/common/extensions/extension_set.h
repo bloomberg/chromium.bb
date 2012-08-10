@@ -51,9 +51,9 @@ class ExtensionSet {
       public std::iterator<std::input_iterator_tag,
                            scoped_refptr<const extensions::Extension> > {
    public:
-    const_iterator() {}
-    explicit const_iterator(ExtensionMap::const_iterator it) :
-        it_(it) {}
+    const_iterator();
+    const_iterator(const const_iterator& other);
+    explicit const_iterator(ExtensionMap::const_iterator it);
     const_iterator& operator++() {
       ++it_;
       return *this;

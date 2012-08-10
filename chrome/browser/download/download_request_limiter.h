@@ -125,12 +125,7 @@ class DownloadRequestLimiter
 
    protected:
     // Used for testing.
-    TabDownloadState()
-        : host_(NULL),
-          status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
-          download_count_(0),
-          infobar_(NULL) {
-    }
+    TabDownloadState();
 
    private:
     // content::NotificationObserver method.

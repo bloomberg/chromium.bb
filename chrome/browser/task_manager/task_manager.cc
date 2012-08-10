@@ -1068,6 +1068,41 @@ bool TaskManagerModel::GetProcessMetricsForRow(
 // TaskManager class
 ////////////////////////////////////////////////////////////////////////////////
 
+int TaskManager::Resource::GetRoutingID() const { return 0; }
+
+bool TaskManager::Resource::ReportsCacheStats() const { return false; }
+
+WebKit::WebCache::ResourceTypeStats
+TaskManager::Resource::GetWebCoreCacheStats() const {
+  return WebKit::WebCache::ResourceTypeStats();
+}
+
+bool TaskManager::Resource::ReportsFPS() const { return false; }
+
+float TaskManager::Resource::GetFPS() const { return 0.0f; }
+
+bool TaskManager::Resource::ReportsSqliteMemoryUsed() const { return false; }
+
+size_t TaskManager::Resource::SqliteMemoryUsedBytes() const { return 0; }
+
+const extensions::Extension* TaskManager::Resource::GetExtension() const {
+  return NULL;
+}
+
+bool TaskManager::Resource::ReportsV8MemoryStats() const { return false; }
+
+size_t TaskManager::Resource::GetV8MemoryAllocated() const { return 0; }
+
+size_t TaskManager::Resource::GetV8MemoryUsed() const { return 0; }
+
+bool TaskManager::Resource::CanInspect() const { return false; }
+
+content::WebContents* TaskManager::Resource::GetWebContents() const {
+  return NULL;
+}
+
+bool TaskManager::Resource::IsBackground() const { return false; }
+
 // static
 void TaskManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);

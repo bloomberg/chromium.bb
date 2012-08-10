@@ -120,6 +120,12 @@ int CalculateMenuYPosition(const GdkRectangle* screen_rect,
 
 }  // namespace
 
+bool MenuGtk::Delegate::AlwaysShowIconForCmd(int command_id) const {
+  return false;
+}
+
+GtkIconSet* MenuGtk::Delegate::GetIconSetForId(int idr) { return NULL; }
+
 GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
   const char* stock;
   switch (command_id) {

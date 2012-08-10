@@ -91,7 +91,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
     FRIEND_TEST_ALL_PREFIXES(UserScriptMasterTest, LeaveBOMNotAtTheBeginning);
     friend class base::RefCountedThreadSafe<UserScriptMaster::ScriptReloader>;
 
-    ~ScriptReloader() {}
+    ~ScriptReloader();
 
     // Where functions are run:
     //    master          file

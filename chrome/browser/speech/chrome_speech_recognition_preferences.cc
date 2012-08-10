@@ -68,6 +68,20 @@ void ChromeSpeechRecognitionPreferences::Factory::RegisterUserPrefs(
       PrefService::UNSYNCABLE_PREF);
 }
 
+bool
+ChromeSpeechRecognitionPreferences::Factory::ServiceRedirectedInIncognito() {
+  return false;
+}
+
+bool ChromeSpeechRecognitionPreferences::Factory::ServiceIsNULLWhileTesting() {
+  return true;
+}
+
+bool
+ChromeSpeechRecognitionPreferences::Factory::ServiceIsCreatedWithProfile() {
+  return false;
+}
+
 ChromeSpeechRecognitionPreferences::Service::Service(
     Profile* profile)
     : preferences_(new ChromeSpeechRecognitionPreferences(profile)) {

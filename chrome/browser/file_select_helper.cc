@@ -115,6 +115,15 @@ FileSelectHelper::~FileSelectHelper() {
   }
 }
 
+void FileSelectHelper::DirectoryListerDispatchDelegate::OnListFile(
+    const net::DirectoryLister::DirectoryListerData& data) {
+  parent_->OnListFile(id_, data);
+}
+
+void FileSelectHelper::DirectoryListerDispatchDelegate::OnListDone(int error) {
+  parent_->OnListDone(id_, error);
+}
+
 void FileSelectHelper::FileSelected(const FilePath& path,
                                     int index, void* params) {
   FileSelectedWithExtraInfo(ui::SelectedFileInfo(path, path), index, params);

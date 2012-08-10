@@ -163,6 +163,8 @@ void UserScriptMaster::ScriptReloader::StartLoad(
           &UserScriptMaster::ScriptReloader::RunLoad, this, user_scripts));
 }
 
+UserScriptMaster::ScriptReloader::~ScriptReloader() {}
+
 void UserScriptMaster::ScriptReloader::NotifyMaster(
     base::SharedMemory* memory) {
   // The master went away, so these new scripts aren't useful anymore.

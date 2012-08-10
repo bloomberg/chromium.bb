@@ -18,6 +18,35 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
+
+CloudPrintURLFetcher::ResponseAction
+CloudPrintURLFetcher::Delegate::HandleRawResponse(
+    const net::URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const net::ResponseCookies& cookies,
+    const std::string& data) {
+  return CONTINUE_PROCESSING;
+}
+
+CloudPrintURLFetcher::ResponseAction
+CloudPrintURLFetcher::Delegate::HandleRawData(
+    const net::URLFetcher* source,
+    const GURL& url,
+    const std::string& data) {
+  return CONTINUE_PROCESSING;
+}
+
+CloudPrintURLFetcher::ResponseAction
+CloudPrintURLFetcher::Delegate::HandleJSONData(
+    const net::URLFetcher* source,
+    const GURL& url,
+    base::DictionaryValue* json_data,
+    bool succeeded) {
+  return CONTINUE_PROCESSING;
+}
+
 CloudPrintURLFetcher::CloudPrintURLFetcher()
     : delegate_(NULL),
       num_retries_(0) {

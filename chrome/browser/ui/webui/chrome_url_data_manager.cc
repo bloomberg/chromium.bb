@@ -164,6 +164,8 @@ bool ChromeURLDataManager::DataSource::ShouldReplaceExistingSource() const {
   return true;
 }
 
+bool ChromeURLDataManager::DataSource::AllowCaching() const { return true; }
+
 // static
 void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
     DictionaryValue* localized_strings) {

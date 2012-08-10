@@ -5,6 +5,26 @@
 #include "chrome/test/base/menu_model_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+
+bool MenuModelTest::Delegate::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool MenuModelTest::Delegate::IsCommandIdEnabled(int command_id) const {
+  ++enable_count_;
+  return true;
+}
+
+bool MenuModelTest::Delegate::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) {
+  return false;
+}
+
+void MenuModelTest::Delegate::ExecuteCommand(int command_id) {
+  ++execute_count_;
+}
+
 // Recursively checks the enabled state and executes a command on every item
 // that's not a separator or a submenu parent item. The returned count should
 // match the number of times the delegate is called to ensure every item works.

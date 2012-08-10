@@ -65,9 +65,7 @@ class BaseSessionService : public CancelableRequestProvider,
   class InternalGetCommandsRequest :
       public CancelableRequest<InternalGetCommandsCallback> {
    public:
-    explicit InternalGetCommandsRequest(const CallbackType& callback)
-        : CancelableRequest<InternalGetCommandsCallback>(callback) {
-    }
+    explicit InternalGetCommandsRequest(const CallbackType& callback);
 
     // The commands. The backend fills this in for us.
     std::vector<SessionCommand*> commands;

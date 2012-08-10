@@ -26,6 +26,11 @@ using content::NavigationEntry;
 
 // InternalGetCommandsRequest -------------------------------------------------
 
+BaseSessionService::InternalGetCommandsRequest::InternalGetCommandsRequest(
+    const CallbackType& callback)
+    : CancelableRequest<InternalGetCommandsCallback>(callback) {
+}
+
 BaseSessionService::InternalGetCommandsRequest::~InternalGetCommandsRequest() {
   STLDeleteElements(&commands);
 }

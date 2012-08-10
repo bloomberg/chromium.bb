@@ -51,7 +51,8 @@ class ProtocolHandlerRegistry : public ProfileKeyedService {
     ShellIntegration::DefaultProtocolClientWorker* worker_;
 
    private:
-    virtual bool IsOwnedByWorker() OVERRIDE { return true; }
+    virtual bool IsOwnedByWorker() OVERRIDE;
+
     // This is a raw pointer, not reference counted, intentionally. In general
     // subclasses of DefaultWebClientObserver are not able to be refcounted
     // e.g. the browser options page

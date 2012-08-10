@@ -626,6 +626,8 @@ GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
       contains_unknown_features_(false) {
 }
 
+GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() { }
+
 bool GpuBlacklist::GpuBlacklistEntry::SetId(uint32 id) {
   if (id != 0) {
     id_ = id;

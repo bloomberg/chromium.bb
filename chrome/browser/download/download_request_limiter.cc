@@ -117,6 +117,13 @@ void DownloadRequestLimiter::TabDownloadState::Accept() {
   NotifyCallbacks(true);
 }
 
+DownloadRequestLimiter::TabDownloadState::TabDownloadState()
+    : host_(NULL),
+      status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
+      download_count_(0),
+      infobar_(NULL) {
+}
+
 void DownloadRequestLimiter::TabDownloadState::Observe(
     int type,
     const content::NotificationSource& source,

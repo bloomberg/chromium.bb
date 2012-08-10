@@ -27,6 +27,20 @@ static const char kGetUserInfoPath[] = "/accounts/GetUserInfo";
 
 GaiaAuthenticator::AuthResults::AuthResults() : auth_error(None) {}
 
+GaiaAuthenticator::AuthResults::AuthResults(const AuthResults& other)
+    : email(other.email),
+      password(other.password),
+      sid(other.sid),
+      lsid(other.lsid),
+      auth_token(other.auth_token),
+      primary_email(other.primary_email),
+      error_msg(other.error_msg),
+      auth_error(other.auth_error),
+      auth_error_url(other.auth_error_url),
+      captcha_token(other.captcha_token),
+      captcha_url(other.captcha_url) {
+}
+
 GaiaAuthenticator::AuthResults::~AuthResults() {}
 
 GaiaAuthenticator::AuthParams::AuthParams() : authenticator(NULL),

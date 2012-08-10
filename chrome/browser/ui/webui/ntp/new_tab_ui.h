@@ -85,7 +85,7 @@ class NewTabUI : public content::WebUIController,
                      int resource_id);
 
    private:
-    virtual ~NewTabHTMLSource() {}
+    virtual ~NewTabHTMLSource();
 
     // Pointer back to the original profile.
     Profile* profile_;

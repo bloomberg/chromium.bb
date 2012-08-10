@@ -50,9 +50,8 @@ class CloudPrintURLFetcher
         const net::URLRequestStatus& status,
         int response_code,
         const net::ResponseCookies& cookies,
-        const std::string& data) {
-      return CONTINUE_PROCESSING;
-    }
+        const std::string& data);
+
     // This will be invoked only if HandleRawResponse returns
     // CONTINUE_PROCESSING AND if there are no network errors and the HTTP
     // response code is 200. The delegate implementation returns
@@ -62,21 +61,20 @@ class CloudPrintURLFetcher
     // response).
     virtual ResponseAction HandleRawData(const net::URLFetcher* source,
                                          const GURL& url,
-                                         const std::string& data) {
-      return CONTINUE_PROCESSING;
-    }
+                                         const std::string& data);
+
     // This will be invoked only if HandleRawResponse and HandleRawData return
     // CONTINUE_PROCESSING AND if the response contains a valid JSON dictionary.
     // |succeeded| is the value of the "success" field in the response JSON.
     virtual ResponseAction HandleJSONData(const net::URLFetcher* source,
                                           const GURL& url,
                                           base::DictionaryValue* json_data,
-                                          bool succeeded) {
-      return CONTINUE_PROCESSING;
-    }
+                                          bool succeeded);
+
     // Invoked when the retry limit for this request has been reached (if there
     // was a retry limit - a limit of -1 implies no limit).
     virtual void OnRequestGiveUp() { }
+
     // Invoked when the request returns a 403 error (applicable only when
     // HandleRawResponse returns CONTINUE_PROCESSING).
     // Returning RETRY_REQUEST will retry current request. (auth information

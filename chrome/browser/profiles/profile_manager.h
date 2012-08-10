@@ -222,9 +222,7 @@ class ProfileManager : public base::NonThreadSafe,
   // This struct contains information about profiles which are being loaded or
   // were loaded.
   struct ProfileInfo {
-    ProfileInfo(Profile* profile, bool created)
-        : profile(profile), created(created) {
-    }
+    ProfileInfo(Profile* profile, bool created);
 
     ~ProfileInfo();
 

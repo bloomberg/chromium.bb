@@ -1041,6 +1041,11 @@ void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,
     callbacks[i].Run(profile, status);
 }
 
+ProfileManager::ProfileInfo::ProfileInfo(Profile* profile, bool created)
+    : profile(profile),
+      created(created) {
+}
+
 ProfileManager::ProfileInfo::~ProfileInfo() {
   ProfileDestroyer::DestroyProfileWhenAppropriate(profile.release());
 }

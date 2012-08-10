@@ -66,13 +66,7 @@ class OldBasePanelBrowserTest : public InProcessBrowserTest {
 
     CreatePanelParams(const std::string& name,
                       const gfx::Rect& bounds,
-                      ActiveState show_flag)
-        : name(name),
-          bounds(bounds),
-          show_flag(show_flag),
-          wait_for_fully_created(true),
-          expected_active_state(show_flag) {
-    }
+                      ActiveState show_flag);
   };
 
   Panel* CreatePanelWithParams(const CreatePanelParams& params);

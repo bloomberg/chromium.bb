@@ -110,6 +110,7 @@ class GaiaAuthenticator {
 
   struct AuthResults {
     AuthResults();
+    AuthResults(const AuthResults& other);
     ~AuthResults();
 
     std::string email;
