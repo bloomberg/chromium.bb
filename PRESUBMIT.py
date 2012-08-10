@@ -592,8 +592,11 @@ def GetPreferredTrySlaves(project, change):
              'android']
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
-  # Same for chromeos.
-  if any(re.search('[/_](aura|chromeos)', f) for f in files):
-    trybots += ['linux_chromeos', 'linux_chromeos_clang:compile']
+  # Same for ash and chromeos.
+  if any(re.search('[/_](ash|aura)', f) for f in files):
+    trybots += ['linux_chromeos', 'linux_chromeos_clang:compile', 'win_aura']
+  else:
+    if any(re.search('[/_]chromeos', f) for f in files):
+      trybots += ['linux_chromeos', 'linux_chromeos_clang:compile']
 
   return trybots
