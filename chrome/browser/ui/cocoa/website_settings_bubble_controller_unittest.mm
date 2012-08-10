@@ -92,8 +92,9 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     EXPECT_EQ(1U, [window_subviews count]);
     NSArray* subviews = [[window_subviews lastObject] subviews];
 
-    // Expect 3 views: the identity, identity status, and the tab view.
-    EXPECT_EQ(3U, [subviews count]);
+    // Expect 4 views: the identity, identity status, the segmented control
+    // (which implements the tab strip), and the tab view.
+    EXPECT_EQ(4U, [subviews count]);
 
     bool desired_result = match_type == TEXT_EQUAL;
 

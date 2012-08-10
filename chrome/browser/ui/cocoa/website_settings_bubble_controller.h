@@ -17,6 +17,7 @@ class WebsiteSettingsUIBridge;
 @interface WebsiteSettingsBubbleController : BaseBubbleController {
  @private
   scoped_nsobject<NSView> contentView_;
+  scoped_nsobject<NSSegmentedControl> segmentedControl_;
   scoped_nsobject<NSTabView> tabView_;
 
   // Displays the web site identity.

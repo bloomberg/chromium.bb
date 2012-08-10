@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/cert_store.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -53,6 +54,27 @@ const CGFloat kTabViewContentsPadding = kFramePadding;
 // The spacing between individual items in the Permissions tab.
 const CGFloat kPermissionsTabSpacing = 8;
 
+// The extra space to the left of the first tab in the tab strip.
+const CGFloat kTabStripXPadding = 19;
+
+// The amount of space between the visual borders of adjacent tabs.
+const CGFloat kTabSpacing = 4;
+
+// The extra width outside the hit rect used by the visual borders of the tab.
+const CGFloat kTabBorderExtraWidth = 16;
+
+// The height of the clickable area of the tab strip.
+const CGFloat kTabHeight = 27;
+
+// The height of the background image for the tab strip.
+const CGFloat kTabStripHeight = 44;
+
+// The amount of space above tab labels.
+const CGFloat kTabLabelTopPadding = 20;
+
+// The amount of padding to leave on either side of the tab label.
+const CGFloat kTabLabelXPadding = 12;
+
 // In the permission changing menu, the order of the menu items (which
 // correspond to different content settings).
 const ContentSetting kPermissionsMenuSettings[] = {
@@ -70,6 +92,125 @@ const ContentSetting kPermissionsMenuSettings[] = {
 @implementation WebsiteSettingsContentView
 - (BOOL)isFlipped {
   return YES;
+}
+@end
+
+@interface WebsiteSettingsTabSegmentedCell : NSSegmentedCell {
+ @private
+  scoped_nsobject<NSImage> tabBackgroundImage_;
+  scoped_nsobject<NSImage> tabCenterImage_;
+  scoped_nsobject<NSImage> tabLeftImage_;
+  scoped_nsobject<NSImage> tabRightImage_;
+}
+@end
+
+@implementation WebsiteSettingsTabSegmentedCell
+- (id)init {
+  if ((self = [super init])) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    tabBackgroundImage_.reset(
+        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_BACKGROUND) retain]);
+    tabCenterImage_.reset(
+        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_CENTER) retain]);
+    tabLeftImage_.reset(
+        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_LEFT) retain]);
+    tabRightImage_.reset(
+        [rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_RIGHT) retain]);
+  }
+  return self;
+}
+
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  // Draw the tab for the selected segment. The drawing area is slightly
+  // larger than the hit rect for the tab.
+  NSRect tabRect = [self hitRectForSegment:[self selectedSegment]];
+  tabRect.origin.x -= kTabBorderExtraWidth;
+  tabRect.size.width += 2 * kTabBorderExtraWidth;
+
+  tabRect.origin.y = 0;
+  tabRect.size.height = kTabStripHeight;
+
+  NSDrawThreePartImage(tabRect,
+                       tabLeftImage_,
+                       tabCenterImage_,
+                       tabRightImage_,
+                       /*vertical=*/ NO,
+                       NSCompositeSourceOver,
+                       1,
+                       /*flipped=*/ YES);
+
+  // Draw the background to the left of the selected tab.
+  NSRect backgroundRect = NSMakeRect(0, 0, NSMinX(tabRect), kTabStripHeight);
+  NSDrawThreePartImage(backgroundRect,
+                       nil,
+                       tabBackgroundImage_,
+                       nil,
+                       /*vertical=*/ NO,
+                       NSCompositeSourceOver,
+                       1,
+                       /*flipped=*/ YES);
+
+  // Draw the background to the right of the selected tab.
+  backgroundRect.origin.x = NSMaxX(tabRect);
+  backgroundRect.size.width = kWindowWidth - NSMaxX(tabRect);
+  NSDrawThreePartImage(backgroundRect,
+                       nil,
+                       tabBackgroundImage_,
+                       nil,
+                       /*vertical=*/ NO,
+                       NSCompositeSourceOver,
+                       1,
+                       /*flipped=*/ YES);
+
+  // Call the superclass method to trigger drawing of the tab labels.
+  [self drawInteriorWithFrame:cellFrame inView:controlView];
+}
+
+// Return the hit rect (i.e., the visual bounds of the tab) for
+// the given segment.
+- (NSRect)hitRectForSegment:(NSInteger)segment {
+  NSRect rect = NSMakeRect(0, kTabStripHeight - kTabHeight,
+                           [self widthForSegment:segment], kTabHeight);
+  for (NSInteger i = 0; i < segment; ++i) {
+    rect.origin.x += [self widthForSegment:i];
+  }
+  int xAdjust = segment == 0 ? kTabStripXPadding : 0;
+  rect.size.width = [self widthForSegment:segment] - kTabSpacing - xAdjust;
+  rect.origin.x += kTabSpacing / 2 + xAdjust;
+
+  return rect;
+}
+
+- (void)drawSegment:(NSInteger)segment
+            inFrame:(NSRect)frame
+           withView:(NSView*)controlView {
+  // Call the superclass to draw the label, adjusting the rectangle so that
+  // the label appears centered in the tab.
+  if (segment == 0) {
+    frame.origin.x += kTabStripXPadding / 2;
+    frame.size.width -= kTabStripXPadding;
+  }
+  frame.origin.y += kTabLabelTopPadding;
+  frame.size.height -= kTabLabelTopPadding;
+  [super drawSegment:segment inFrame:frame withView:controlView];
+}
+
+// Overrides the default tracking behavior to only respond to clicks inside the
+// visual borders of the tab.
+- (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView {
+  NSInteger segmentCount = [self segmentCount];
+  for (NSInteger i = 0; i < segmentCount; ++i) {
+    if (NSPointInRect(startPoint, [self hitRectForSegment:i]))
+      return YES;
+  }
+  return NO;
+}
+
+// Overrides the default cell height to take up the full height of the
+// segmented control. Otherwise, cliks on the lower part of a tab will be
+// ignored.
+- (NSSize)cellSizeForBounds:(NSRect)aRect {
+  return NSMakeSize([super cellSizeForBounds:aRect].width, NSHeight(aRect));
 }
 @end
 
@@ -133,11 +274,51 @@ const ContentSetting kPermissionsMenuSettings[] = {
 
   // Create the tab view and its two tabs.
 
+  NSRect initialFrame = NSMakeRect(0, 0, kWindowWidth, kTabStripHeight);
+  segmentedControl_.reset(
+      [[NSSegmentedControl alloc] initWithFrame:initialFrame]);
+  [segmentedControl_ setCell:
+      [[[WebsiteSettingsTabSegmentedCell alloc] init] autorelease]];
+  [segmentedControl_ setSegmentCount:2];
+  [segmentedControl_ setTarget:self];
+  [segmentedControl_ setAction:@selector(tabSelected:)];
+
+  NSFont* smallSystemFont =
+      [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+  NSDictionary* textAttributes =
+      [NSDictionary dictionaryWithObject:smallSystemFont
+                                  forKey:NSFontAttributeName];
+
+  // Create the "Permissions" tab.
+  NSString* label = l10n_util::GetNSString(
+      IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS);
+  NSSize textSize = [label sizeWithAttributes:textAttributes];
+  CGFloat tabWidth = textSize.width + 2 * kTabLabelXPadding;
+  [segmentedControl_ setLabel:label forSegment:0];
+  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding forSegment:0];
+
+  // Create the "Connection" tab.
+  label = l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION);
+  textSize = [label sizeWithAttributes:textAttributes];
+  [segmentedControl_ setLabel:label forSegment:1];
+
+  // Make both tabs the width of the widest. The first segment has some
+  // additional padding that is not part of the tab, which is used for drawing
+  // the background of the tab strip.
+  tabWidth = std::max(tabWidth,
+                      textSize.width + 2 * kTabLabelXPadding);
+  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding forSegment:0];
+  [segmentedControl_ setWidth:tabWidth forSegment:1];
+
+  [segmentedControl_ setFont:smallSystemFont];
+  [segmentedControl_ setSelectedSegment:0];
+  [contentView_ addSubview:segmentedControl_];
+
   NSRect tabFrame = NSMakeRect(0, 0, kWindowWidth, 300);
   tabView_.reset([[NSTabView alloc] initWithFrame:tabFrame]);
-  [tabView_ setTabViewType:NSTopTabsBezelBorder];
+  [tabView_ setTabViewType:NSNoTabsNoBorder];
+  [tabView_ setDrawsBackground:NO];
   [tabView_ setControlSize:NSSmallControlSize];
-  [tabView_ setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
   [contentView_ addSubview:tabView_.get()];
 
   permissionsContentView_ = [self addPermissionsTabToTabView:tabView_];
@@ -154,8 +335,6 @@ const ContentSetting kPermissionsMenuSettings[] = {
 // Returns a weak reference to the tab view item's view.
 - (NSView*)addPermissionsTabToTabView:(NSTabView*)tabView {
   scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  [item setLabel:
-      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS)];
   [tabView_ addTabViewItem:item.get()];
   scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
       initWithFrame:[tabView_ contentRect]]);
@@ -167,9 +346,6 @@ const ContentSetting kPermissionsMenuSettings[] = {
 // Returns a weak reference to the tab view item's view.
 - (NSView*)addConnectionTabToTabView:(NSTabView*)tabView {
   scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  [item setLabel:
-      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION)];
-
   scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
       initWithFrame:[tabView_ contentRect]]);
 
@@ -267,9 +443,14 @@ const ContentSetting kPermissionsMenuSettings[] = {
   [self setYPositionOfView:firstVisitDescriptionField_ to:yPos];
 
   // Adjust the tab view size and place it below the identity status.
+
+  NSRect segmentedControlFrame = [segmentedControl_ frame];
+  segmentedControlFrame.origin.y =
+      NSMaxY([identityStatusField_ frame]);
+  [segmentedControl_ setFrame:segmentedControlFrame];
+
   NSRect tabViewFrame = [tabView_ frame];
-  tabViewFrame.origin.y =
-      NSMaxY([identityStatusField_ frame]) + kVerticalSpacing;
+  tabViewFrame.origin.y = NSMaxY(segmentedControlFrame);
 
   CGFloat connectionTabHeight = std::max(
       NSMaxY([firstVisitDescriptionField_ frame]),
@@ -467,6 +648,10 @@ const ContentSetting kPermissionsMenuSettings[] = {
 
   [view addSubview:button.get()];
   return button.get();
+}
+
+- (void)tabSelected:(id)sender {
+  [tabView_ selectTabViewItemAtIndex:[segmentedControl_ selectedSegment]];
 }
 
 // Handler for the permission-changing menus.
