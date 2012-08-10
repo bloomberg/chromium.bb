@@ -234,9 +234,10 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
     connect_rv[i] = client_sockets[i]->ConnectWithNetAddress(
         &address,
         *connect_callbacks[i]);
-    if (force_async_ && connect_rv[i] != PP_OK_COMPLETIONPENDING)
+    if (force_async_ && connect_rv[i] != PP_OK_COMPLETIONPENDING) {
       return ReportError("PPB_TCPSocket_Private::Connect force_async",
                          connect_rv[i]);
+    }
   }
 
   std::vector<PP_Resource> resources(kBacklog);
