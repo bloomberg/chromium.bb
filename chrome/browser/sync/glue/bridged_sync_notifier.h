@@ -28,13 +28,9 @@ class BridgedSyncNotifier : public syncer::SyncNotifier {
   virtual ~BridgedSyncNotifier();
 
   // SyncNotifier implementation. Passes through all calls to the delegate.
-  // RegisterHandler, UnregisterHandler, and UpdateRegisteredIds calls will
-  // also be forwarded to the bridge.
-  virtual void RegisterHandler(syncer::SyncNotifierObserver* handler) OVERRIDE;
+  // UpdateRegisteredIds calls will also be forwarded to the bridge.
   virtual void UpdateRegisteredIds(syncer::SyncNotifierObserver* handler,
                                    const syncer::ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(
-      syncer::SyncNotifierObserver* handler) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(

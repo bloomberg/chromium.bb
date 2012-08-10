@@ -20,7 +20,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_registrar.h"
+#include "sync/notifier/sync_notifier_helper.h"
 
 namespace notifier {
 class PushClient;
@@ -96,10 +96,8 @@ class P2PNotifier : public SyncNotifier,
   virtual ~P2PNotifier();
 
   // SyncNotifier implementation
-  virtual void RegisterHandler(SyncNotifierObserver* handler) OVERRIDE;
   virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
-  virtual void UnregisterHandler(SyncNotifierObserver* handler) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
@@ -121,7 +119,7 @@ class P2PNotifier : public SyncNotifier,
 
   base::ThreadChecker thread_checker_;
 
-  SyncNotifierRegistrar registrar_;
+  SyncNotifierHelper helper_;
 
   // The push client.
   scoped_ptr<notifier::PushClient> push_client_;

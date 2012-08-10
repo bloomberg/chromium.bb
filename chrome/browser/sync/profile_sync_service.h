@@ -38,7 +38,7 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/js/sync_js_controller.h"
-#include "sync/notifier/sync_notifier_registrar.h"
+#include "sync/notifier/sync_notifier_helper.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;
@@ -552,55 +552,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
-  // Invalidation clients should follow the pattern below:
+  // Updates the set of ObjectIds associated with a given |handler|.
+  // Passing an empty ObjectIdSet will unregister |handler|.
+  // There should be at most one handler registered per object id.
   //
-  // When starting the client:
-  //
-  //   pss->RegisterInvalidationHandler(client_handler);
-  //
-  // When the set of IDs to register changes for the client during its lifetime
-  // (i.e., between calls to RegisterInvalidationHandler(client_handler) and
-  // UnregisterInvalidationHandler(client_handler):
-  //
-  //   pss->UpdateRegisteredInvalidationIds(client_handler, client_ids);
-  //
-  // When shutting down the client for browser shutdown:
-  //
-  //   pss->UnregisterInvalidationHandler(client_handler);
-  //
-  // Note that there's no call to UpdateRegisteredIds() -- this is because the
-  // invalidation API persists registrations across browser restarts.
-  //
-  // When permanently shutting down the client, e.g. when disabling the related
-  // feature:
-  //
-  //   pss->UpdateRegisteredInvalidationIds(client_handler, ObjectIdSet());
-  //   pss->UnregisterInvalidationHandler(client_handler);
-
-  // NOTE(akalin): Invalidations that come in during browser shutdown may get
-  // dropped.  This won't matter once we have an Acknowledge API, though: see
-  // http://crbug.com/78462 and http://crbug.com/124149.
-
-  // Starts sending notifications to |handler|.  |handler| must not be NULL,
-  // and it must already be registered.
-  //
-  // Handler registrations are persisted across restarts of sync.
-  void RegisterInvalidationHandler(syncer::SyncNotifierObserver* handler);
-
-  // Updates the set of ObjectIds associated with |handler|.  |handler| must
-  // not be NULL, and must already be registered.  An ID must be registered for
-  // at most one handler.
-  //
-  // Registered IDs are persisted across restarts of sync.
+  // The handler -> registered ids map is persisted across restarts of
+  // sync.
   void UpdateRegisteredInvalidationIds(syncer::SyncNotifierObserver* handler,
                                        const syncer::ObjectIdSet& ids);
-
-  // Stops sending notifications to |handler|.  |handler| must not be NULL, and
-  // it must already be registered.  Note that this doesn't unregister the IDs
-  // associated with |handler|.
-  //
-  // Handler registrations are persisted across restarts of sync.
-  void UnregisterInvalidationHandler(syncer::SyncNotifierObserver* handler);
 
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -876,8 +835,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Factory the backend will use to build the SyncManager.
   syncer::SyncManagerFactory sync_manager_factory_;
 
+  // The set of all registered IDs.
+  syncer::ObjectIdSet all_registered_ids_;
+
   // Dispatches invalidations to handlers.
-  syncer::SyncNotifierRegistrar notifier_registrar_;
+  syncer::SyncNotifierHelper notifier_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

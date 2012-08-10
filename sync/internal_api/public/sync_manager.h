@@ -407,18 +407,11 @@ class SyncManager {
   virtual void UpdateEnabledTypes(
       const ModelTypeSet& enabled_types) = 0;
 
-  // Forwards to the underlying notifier (see comments in sync_notifier.h).
-  virtual void RegisterInvalidationHandler(
-      SyncNotifierObserver* handler) = 0;
-
-  // Forwards to the underlying notifier (see comments in sync_notifier.h).
+  // Forwards to the underlying notifier (see
+  // SyncNotifier::UpdateRegisteredIds()).
   virtual void UpdateRegisteredInvalidationIds(
       SyncNotifierObserver* handler,
       const ObjectIdSet& ids) = 0;
-
-  // Forwards to the underlying notifier (see comments in sync_notifier.h).
-  virtual void UnregisterInvalidationHandler(
-      SyncNotifierObserver* handler) = 0;
 
   // Put the syncer in normal mode ready to perform nudges and polls.
   virtual void StartSyncingNormally(

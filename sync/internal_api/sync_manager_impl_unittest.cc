@@ -696,10 +696,8 @@ class SyncManagerObserverMock : public SyncManager::Observer {
 
 class SyncNotifierMock : public SyncNotifier {
  public:
-  MOCK_METHOD1(RegisterHandler, void(SyncNotifierObserver*));
   MOCK_METHOD2(UpdateRegisteredIds,
                void(SyncNotifierObserver*, const ObjectIdSet&));
-  MOCK_METHOD1(UnregisterHandler, void(SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials,
@@ -744,10 +742,6 @@ class SyncManagerTest : public testing::Test,
     EXPECT_CALL(*sync_notifier_mock_, SetStateDeprecated(""));
     EXPECT_CALL(*sync_notifier_mock_,
                 UpdateCredentials(credentials.email, credentials.sync_token));
-    EXPECT_CALL(*sync_notifier_mock_, RegisterHandler(_));
-
-    // Called by ShutdownOnSyncThread().
-    EXPECT_CALL(*sync_notifier_mock_, UnregisterHandler(_));
 
     sync_manager_.AddObserver(&observer_);
     EXPECT_CALL(observer_, OnInitializationComplete(_, _, _)).
@@ -788,8 +782,7 @@ class SyncManagerTest : public testing::Test,
 
   void TearDown() {
     sync_manager_.RemoveObserver(&observer_);
-    // |sync_notifier_mock_| is strict, which ensures we don't do anything but
-    // unregister |sync_manager_| as a handler on shutdown.
+    EXPECT_CALL(*sync_notifier_mock_, UpdateRegisteredIds(_, ObjectIdSet()));
     sync_manager_.ShutdownOnSyncThread();
     sync_notifier_mock_ = NULL;
     PumpLoop();
@@ -963,26 +956,16 @@ TEST_F(SyncManagerTest, UpdateEnabledTypes) {
   ModelSafeRoutingInfo routes;
   GetModelSafeRoutingInfo(&routes);
   const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
+
   EXPECT_CALL(*sync_notifier_mock_,
               UpdateRegisteredIds(
                   _, ModelTypeSetToObjectIdSet(enabled_types)));
-
   sync_manager_.UpdateEnabledTypes(enabled_types);
-}
-
-TEST_F(SyncManagerTest, RegisterInvalidationHandler) {
-  EXPECT_CALL(*sync_notifier_mock_, RegisterHandler(NULL));
-  sync_manager_.RegisterInvalidationHandler(NULL);
 }
 
 TEST_F(SyncManagerTest, UpdateRegisteredInvalidationIds) {
   EXPECT_CALL(*sync_notifier_mock_, UpdateRegisteredIds(NULL, ObjectIdSet()));
   sync_manager_.UpdateRegisteredInvalidationIds(NULL, ObjectIdSet());
-}
-
-TEST_F(SyncManagerTest, UnregisterInvalidationHandler) {
-  EXPECT_CALL(*sync_notifier_mock_, UnregisterHandler(NULL));
-  sync_manager_.UnregisterInvalidationHandler(NULL);
 }
 
 TEST_F(SyncManagerTest, ProcessJsMessage) {

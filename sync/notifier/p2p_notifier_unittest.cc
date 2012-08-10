@@ -28,11 +28,10 @@ class P2PNotifierTest : public testing::Test {
             scoped_ptr<notifier::PushClient>(fake_push_client_),
             NOTIFY_OTHERS),
         next_sent_notification_to_reflect_(0) {
-    p2p_notifier_.RegisterHandler(&mock_observer_);
   }
 
   virtual ~P2PNotifierTest() {
-    p2p_notifier_.UnregisterHandler(&mock_observer_);
+    p2p_notifier_.UpdateRegisteredIds(&mock_observer_, ObjectIdSet());
   }
 
   ModelTypePayloadMap MakePayloadMap(ModelTypeSet types) {
@@ -141,15 +140,15 @@ TEST_F(P2PNotifierTest, P2PNotificationDataNonDefault) {
 // observer should receive only a notification from the call to
 // UpdateEnabledTypes().
 TEST_F(P2PNotifierTest, NotificationsBasic) {
-  const ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES);
+  ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES);
+
+  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
+                                    ModelTypeSetToObjectIdSet(enabled_types));
 
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_, OnIncomingNotification(
       ModelTypePayloadMapToObjectIdPayloadMap(MakePayloadMap(enabled_types)),
       REMOTE_NOTIFICATION));
-
-  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
-                                    ModelTypeSetToObjectIdSet(enabled_types));
 
   p2p_notifier_.SetUniqueId("sender");
 
@@ -184,9 +183,15 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
 // target settings.  The notifications received by the observer should
 // be consistent with the target settings.
 TEST_F(P2PNotifierTest, SendNotificationData) {
-  const ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES, THEMES);
-  const ModelTypeSet changed_types(THEMES, APPS);
-  const ModelTypeSet expected_types(THEMES);
+  ModelTypeSet enabled_types(BOOKMARKS, PREFERENCES, THEMES);
+  ModelTypeSet changed_types(THEMES, APPS);
+  ModelTypeSet expected_types(THEMES);
+
+  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
+                                    ModelTypeSetToObjectIdSet(enabled_types));
+
+  const ModelTypePayloadMap& expected_payload_map =
+      MakePayloadMap(expected_types);
 
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
@@ -194,12 +199,6 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
                   ModelTypePayloadMapToObjectIdPayloadMap(
                       MakePayloadMap(enabled_types)),
                   REMOTE_NOTIFICATION));
-
-  p2p_notifier_.UpdateRegisteredIds(&mock_observer_,
-                                    ModelTypeSetToObjectIdSet(enabled_types));
-
-  const ModelTypePayloadMap& expected_payload_map =
-      MakePayloadMap(expected_types);
 
   p2p_notifier_.SetUniqueId("sender");
   p2p_notifier_.UpdateCredentials("foo@bar.com", "fake_token");

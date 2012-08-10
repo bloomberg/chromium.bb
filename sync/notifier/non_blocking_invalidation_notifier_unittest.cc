@@ -46,11 +46,10 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
             std::string(),  // initial_invalidation_state
             MakeWeakHandle(base::WeakPtr<InvalidationStateTracker>()),
             "fake_client_info"));
-    invalidation_notifier_->RegisterHandler(&mock_observer_);
   }
 
   virtual void TearDown() {
-    invalidation_notifier_->UnregisterHandler(&mock_observer_);
+    invalidation_notifier_->UpdateRegisteredIds(&mock_observer_, ObjectIdSet());
     invalidation_notifier_.reset();
     request_context_getter_ = NULL;
     io_thread_.Stop();
@@ -65,12 +64,13 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
   notifier::FakeBaseTask fake_base_task_;
 };
 
-// TODO(akalin): Add real unit tests (http://crbug.com/140410).
-
 TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
   InSequence dummy;
 
-  const ModelTypeSet models(PREFERENCES, BOOKMARKS, AUTOFILL);
+  ModelTypeSet models(PREFERENCES, BOOKMARKS, AUTOFILL);
+  invalidation_notifier_->UpdateRegisteredIds(
+      &mock_observer_, ModelTypeSetToObjectIdSet(models));
+
   const ModelTypePayloadMap& type_payloads =
       ModelTypePayloadMapFromEnumSet(models, "payload");
   EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
@@ -81,9 +81,6 @@ TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
               OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
   EXPECT_CALL(mock_observer_,
               OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
-
-  invalidation_notifier_->UpdateRegisteredIds(
-      &mock_observer_, ModelTypeSetToObjectIdSet(models));
 
   invalidation_notifier_->SetStateDeprecated("fake_state");
   invalidation_notifier_->SetUniqueId("fake_id");

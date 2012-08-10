@@ -428,8 +428,7 @@ void ProfileSyncService::StartUp() {
   // TODO(akalin): Fix this horribly non-intuitive behavior (see
   // http://crbug.com/140354).
   if (backend_.get()) {
-    backend_->UpdateRegisteredInvalidationIds(
-        notifier_registrar_.GetAllRegisteredIds());
+    backend_->UpdateRegisteredInvalidationIds(all_registered_ids_);
   }
 
   if (!sync_global_error_.get()) {
@@ -442,27 +441,15 @@ void ProfileSyncService::StartUp() {
   }
 }
 
-void ProfileSyncService::RegisterInvalidationHandler(
-    syncer::SyncNotifierObserver* handler) {
-  notifier_registrar_.RegisterHandler(handler);
-}
-
 void ProfileSyncService::UpdateRegisteredInvalidationIds(
     syncer::SyncNotifierObserver* handler,
     const syncer::ObjectIdSet& ids) {
-  notifier_registrar_.UpdateRegisteredIds(handler, ids);
-
+  all_registered_ids_ = notifier_helper_.UpdateRegisteredIds(handler, ids);
   // If |backend_| is NULL, its registered IDs will be updated when
   // it's created and initialized.
   if (backend_.get()) {
-    backend_->UpdateRegisteredInvalidationIds(
-        notifier_registrar_.GetAllRegisteredIds());
+    backend_->UpdateRegisteredInvalidationIds(all_registered_ids_);
   }
-}
-
-void ProfileSyncService::UnregisterInvalidationHandler(
-    syncer::SyncNotifierObserver* handler) {
-  notifier_registrar_.UnregisterHandler(handler);
 }
 
 void ProfileSyncService::Shutdown() {
@@ -477,6 +464,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   base::Time shutdown_start_time = base::Time::Now();
   if (backend_.get()) {
     backend_->StopSyncingForShutdown();
+    backend_->UpdateRegisteredInvalidationIds(syncer::ObjectIdSet());
   }
 
   // Stop all data type controllers, if needed.  Note that until Stop
@@ -671,18 +659,18 @@ void ProfileSyncService::DisableBrokenDatatype(
 }
 
 void ProfileSyncService::OnNotificationsEnabled() {
-  notifier_registrar_.EmitOnNotificationsEnabled();
+  notifier_helper_.EmitOnNotificationsEnabled();
 }
 
 void ProfileSyncService::OnNotificationsDisabled(
     syncer::NotificationsDisabledReason reason) {
-  notifier_registrar_.EmitOnNotificationsDisabled(reason);
+  notifier_helper_.EmitOnNotificationsDisabled(reason);
 }
 
 void ProfileSyncService::OnIncomingNotification(
     const syncer::ObjectIdPayloadMap& id_payloads,
     syncer::IncomingNotificationSource source) {
-  notifier_registrar_.DispatchInvalidationsToHandlers(id_payloads, source);
+  notifier_helper_.DispatchInvalidationsToHandlers(id_payloads, source);
 }
 
 void ProfileSyncService::OnBackendInitialized(

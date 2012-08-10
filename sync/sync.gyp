@@ -257,9 +257,9 @@
         'notifier/sync_notifier.h',
         'notifier/sync_notifier_factory.cc',
         'notifier/sync_notifier_factory.h',
+        'notifier/sync_notifier_helper.cc',
+        'notifier/sync_notifier_helper.h',
         'notifier/sync_notifier_observer.h',
-        'notifier/sync_notifier_registrar.cc',
-        'notifier/sync_notifier_registrar.h',
       ],
       'conditions': [
         ['OS != "android"', {
@@ -654,7 +654,7 @@
               'notifier/p2p_notifier_unittest.cc',
               'notifier/push_client_channel_unittest.cc',
               'notifier/registration_manager_unittest.cc',
-              'notifier/sync_notifier_registrar_unittest.cc',
+              'notifier/sync_notifier_helper_unittest.cc',
             ],
           }],
         ],

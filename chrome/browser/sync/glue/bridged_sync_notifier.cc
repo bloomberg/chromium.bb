@@ -18,26 +18,12 @@ BridgedSyncNotifier::BridgedSyncNotifier(
 BridgedSyncNotifier::~BridgedSyncNotifier() {
 }
 
-void BridgedSyncNotifier::RegisterHandler(
-    syncer::SyncNotifierObserver* handler) {
-  if (delegate_.get())
-    delegate_->RegisterHandler(handler);
-  bridge_->RegisterHandler(handler);
-}
-
 void BridgedSyncNotifier::UpdateRegisteredIds(
     syncer::SyncNotifierObserver* handler,
     const syncer::ObjectIdSet& ids) {
   if (delegate_.get())
-    delegate_->UpdateRegisteredIds(handler, ids);
+   delegate_->UpdateRegisteredIds(handler, ids);
   bridge_->UpdateRegisteredIds(handler, ids);
-}
-
-void BridgedSyncNotifier::UnregisterHandler(
-    syncer::SyncNotifierObserver* handler) {
-  if (delegate_.get())
-    delegate_->UnregisterHandler(handler);
-  bridge_->UnregisterHandler(handler);
 }
 
 void BridgedSyncNotifier::SetUniqueId(const std::string& unique_id) {
