@@ -690,32 +690,48 @@ void NaClAddImcHandle(struct NaClApp  *nap,
 }
 
 
+static struct {
+  int         d;
+  char const  *env_name;
+  int         nacl_flags;
+  int         mode;
+} const g_nacl_redir_control[] = {
+  { 0, "NACL_EXE_STDIN",
+    NACL_ABI_O_RDONLY, 0, },
+  { 1, "NACL_EXE_STDOUT",
+    NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND | NACL_ABI_O_CREAT, 0777, },
+  { 2, "NACL_EXE_STDERR",
+    NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND | NACL_ABI_O_CREAT, 0777, },
+};
+
+/*
+ * File redirection is impossible if an outer sandbox is in place.
+ * For the command-line embedding, we sometimes have an outer sandbox:
+ * on OSX, it is enabled after loading the file is loaded.  On the
+ * other hand, device redirection (DEBUG_ONLY:dev://postmessage) is
+ * impossible until the reverse channel setup has occurred.
+ *
+ * Because of this, we run NaClProcessRedirControl twice: once to
+ * process default inheritance, file redirection early on, and once
+ * after the reverse channel is in place to handle the device
+ * redirection.  We try to hide knowledge about which redirection
+ * control values can be handled in which phases by allowing the
+ * NaClResourceOpen to fail, and only in the last phase do we check
+ * that the redirection succeeded in *some* phase.
+ */
 static void NaClProcessRedirControl(struct NaClApp *nap) {
-  static struct {
-    int         d;
-    char const  *env_name;
-    int         nacl_flags;
-    int         mode;
-  } redir_control[] = {
-    { 0, "NACL_EXE_STDIN",
-      NACL_ABI_O_RDONLY, 0, },
-    { 1, "NACL_EXE_STDOUT",
-      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND | NACL_ABI_O_CREAT, 0777, },
-    { 2, "NACL_EXE_STDERR",
-      NACL_ABI_O_WRONLY | NACL_ABI_O_APPEND | NACL_ABI_O_CREAT, 0777, },
-  };
 
   size_t          ix;
   char const      *env;
   struct NaClDesc *ndp;
 
-  for (ix = 0; ix < NACL_ARRAY_SIZE(redir_control); ++ix) {
-    if (NULL != (env = getenv(redir_control[ix].env_name))) {
-      NaClLog(4, "getenv(%s) -> %s\n", redir_control[ix].env_name, env);
+  for (ix = 0; ix < NACL_ARRAY_SIZE(g_nacl_redir_control); ++ix) {
+    if (NULL != (env = getenv(g_nacl_redir_control[ix].env_name))) {
+      NaClLog(4, "getenv(%s) -> %s\n", g_nacl_redir_control[ix].env_name, env);
       ndp = NaClResourceOpen((struct NaClResource *) &nap->resources,
                              env,
-                             redir_control[ix].nacl_flags,
-                             redir_control[ix].mode);
+                             g_nacl_redir_control[ix].nacl_flags,
+                             g_nacl_redir_control[ix].mode);
       NaClLog(4, " NaClResourceOpen returned %"NACL_PRIxPTR"\n",
               (uintptr_t) ndp);
       if (NULL != ndp) {
@@ -727,8 +743,8 @@ static void NaClProcessRedirControl(struct NaClApp *nap) {
       /*
        * Environment not set -- handle default inheritance.
        */
-      NaClAddHostDescriptor(nap, DUP(redir_control[ix].d),
-                            redir_control[ix].nacl_flags, (int) ix);
+      NaClAddHostDescriptor(nap, DUP(g_nacl_redir_control[ix].d),
+                            g_nacl_redir_control[ix].nacl_flags, (int) ix);
     }
   }
 }
@@ -752,6 +768,25 @@ void NaClAppInitialDescriptorHookup(struct NaClApp  *nap) {
   nap->resource_phase = NACL_RESOURCE_PHASE_START;
   NaClProcessRedirControl(nap);
   NaClLog(4, "... done.\n");
+}
+
+void NaClAppDescriptorHookupCheck(struct NaClApp *nap) {
+  size_t ix;
+  char const *env;
+  struct NaClDesc *ndp;
+
+  for (ix = 0; ix < NACL_ARRAY_SIZE(g_nacl_redir_control); ++ix) {
+    if (NULL != (env = getenv(g_nacl_redir_control[ix].env_name))) {
+      ndp = NaClGetDesc(nap, g_nacl_redir_control[ix].d);
+      if (NULL == ndp) {
+        NaClLog(LOG_FATAL,
+                ("NaClAppDescriptorHookupCheck: I/O redirection for %s => %s"
+                 " failed\n"),
+                g_nacl_redir_control[ix].env_name, env);
+      }
+      NaClDescUnref(ndp);
+    }
+  }
 }
 
 void NaClCreateServiceSocket(struct NaClApp *nap) {
@@ -948,6 +983,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     case NACL_DESC_DEVICE_RNG:
     case NACL_DESC_DEVICE_POSTMESSAGE:
     case NACL_DESC_CUSTOM:
+    case NACL_DESC_NULL:
       NaClLog(LOG_ERROR,
               "NaClLoadModuleRpc: cannot load from desc of type=%d\n",
               NACL_VTBL(NaClDesc, nexe_binary)->typeTag);

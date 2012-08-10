@@ -14,6 +14,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/desc/nacl_desc_null.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_desc_postmessage.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -89,33 +90,34 @@ int NaClResourceNaClAppCtor(struct NaClResourceNaClApp        *self,
   return 1;
 }
 
-static struct NaClDesc *NaClResourceNaClAppFileOpen(
-    struct NaClResource *vself,
-    char const          *resource_locator,
-    int                 nacl_flags,
-    int                 mode,
-    int                 allow_debug) {
-  struct NaClResourceNaClApp  *self = (struct NaClResourceNaClApp *) vself;
+static struct NaClDesc *NaClResourceNullFactory(void) {
+  struct NaClDescNull *null_desc = NULL;
+
+  null_desc = malloc(sizeof *null_desc);
+  if (NULL == null_desc) {
+    return NULL;
+  }
+  if (!NaClDescNullCtor(null_desc)) {
+    free(null_desc);
+    null_desc = NULL;
+  }
+  return (struct NaClDesc *) null_desc;
+}
+
+static struct NaClDesc *NaClResourceFileFactory(char const *resource_locator,
+                                                int nacl_flags,
+                                                int mode) {
   struct NaClHostDesc         *hd = NULL;
   struct NaClDescIoDesc       *did = NULL;
   struct NaClDesc             *rv = NULL;
 
-  /*
-   * Functionality-wise, we're startup phase-independent; we can
-   * always try to open a file; however, initialization requires that
-   * file opens occur only early, in NACl_RESOURCE_PHASE_START.
-   */
-  UNREFERENCED_PARAMETER(allow_debug);
-  if (self->nap->resource_phase != NACL_RESOURCE_PHASE_START) {
-    return NULL;
-  }
   hd = malloc(sizeof *hd);
   did = malloc(sizeof *did);
   if (NULL == hd || NULL == did) {
     goto done;
   }
   NaClLog(4,
-          ("NaClResourceNaClAppFileOpen: invoking NaClHostDescOpen on"
+          ("NaClResourceFileFactory: invoking NaClHostDescOpen on"
            " %s, flags 0x%x, mode 0%o\n"),
           resource_locator, nacl_flags, mode);
   if (0 != NaClHostDescOpen(hd, resource_locator, nacl_flags, mode)) {
@@ -135,6 +137,39 @@ static struct NaClDesc *NaClResourceNaClAppFileOpen(
  done:
   free(hd);
   free(did);
+  return rv;
+}
+
+static struct NaClDesc *NaClResourceNaClAppFileOpen(
+    struct NaClResource *vself,
+    char const *resource_locator,
+    int nacl_flags,
+    int mode,
+    int allow_debug) {
+  struct NaClResourceNaClApp *self = (struct NaClResourceNaClApp *) vself;
+  struct NaClDesc *rv = NULL;
+
+  /*
+   * Initialization order requires that file opens occur only early,
+   * in NACl_RESOURCE_PHASE_START, because otherwise (in the OSX case)
+   * the sandbox gets enabled after the reverse channel is set up, and
+   * the ability to open files go away.
+   */
+  UNREFERENCED_PARAMETER(allow_debug);
+  if (self->nap->resource_phase != NACL_RESOURCE_PHASE_START) {
+    return NULL;
+  }
+  if (0 == strcmp(resource_locator, NACL_RESOURCE_FILE_DEV_NULL)) {
+    rv = NaClResourceNullFactory();
+    if (NULL == rv) {
+      NaClLog(LOG_FATAL, "Could not create Null device");
+    }
+  } else {
+    rv = NaClResourceFileFactory(resource_locator, nacl_flags, mode);
+    if (NULL == rv) {
+      NaClLog(LOG_FATAL, "Could not open file \"%s\".", resource_locator);
+    }
+  }
   NaClLog(4, "NaClResourceNaClAppFileOpen returning 0x%"NACL_PRIxPTR"\n",
           (uintptr_t) rv);
   return rv;

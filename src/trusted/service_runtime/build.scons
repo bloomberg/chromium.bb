@@ -635,6 +635,17 @@ node = env.CommandTest(
 env.Requires(env_cleanser_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_env_cleanser_test')
 
+# Test nacl_resource
+
+nacl_resource_test_exe = env.ComponentProgram('nacl_resource_test',
+                                              ['nacl_resource_test.c'],
+                                              EXTRA_LIBS=['sel'])
+node = env.CommandTest(
+    'nacl_resource_test.out',
+    command=[nacl_resource_test_exe])
+env.Requires(nacl_resource_test_exe, crt)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_resource_test')
+
 # Test nacl_signal
 if env.Bit('posix'):
   if (not env.Bit('coverage_enabled') and

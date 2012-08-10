@@ -288,6 +288,9 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
       errcode = start_result;
     }
   }
+
+  NaClAppDescriptorHookupCheck(nap);
+
   NACL_FI_FATAL("BeforeLoadIrt");
 
   /*

@@ -828,6 +828,8 @@ int main(int  argc,
     }
   }
 
+  NaClAppDescriptorHookupCheck(nap);
+
   /*
    * error reporting done; can quit now if there was an error earlier.
    */
