@@ -300,9 +300,9 @@ class VersionInfo(object):
     """Returns the build prefix to match the buildspecs in  manifest-versions"""
     if self.incr_type == 'branch':
       if self.patch_number == '0':
-        return self.build_number
+        return '%s.' % self.build_number
       else:
-        return '%s.%s' % (self.build_number, self.branch_build_number)
+        return '%s.%s.' % (self.build_number, self.branch_build_number)
     # Default to build incr_type.
     return ''
 
