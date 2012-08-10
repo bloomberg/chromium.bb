@@ -1235,27 +1235,49 @@ void GDataFileSystem::MoveEntryFromRootDirectory(
   DCHECK(!callback.is_null());
   DCHECK_EQ(kGDataRootDirectory, file_path.DirName().value());
 
-  GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
-  GDataEntry* dir_entry = directory_service_->FindEntryByPathSync(dir_path);
-  if (error == GDATA_FILE_OK) {
-    if (!entry || !dir_entry) {
-      error = GDATA_FILE_ERROR_NOT_FOUND;
-    } else {
-      if (!dir_entry->AsGDataDirectory())
-        error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
-    }
-  }
-
-  // Returns if there is an error or |dir_path| is the root directory.
-  if (error != GDATA_FILE_OK ||
-      dir_entry->resource_id() == kGDataRootDirectoryResourceId) {
+  // Return if there is an error or |dir_path| is the root directory.
+  if (error != GDATA_FILE_OK || dir_path == FilePath(kGDataRootDirectory)) {
     callback.Run(error);
     return;
   }
 
+  directory_service_->GetEntryInfoPairByPaths(
+      file_path,
+      dir_path,
+      base::Bind(
+          &GDataFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair,
+          ui_weak_ptr_,
+          callback));
+}
+
+void GDataFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
+    const FileOperationCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(result.get());
+
+  if (result->first.error != GDATA_FILE_OK) {
+    callback.Run(result->first.error);
+    return;
+  } else if (result->second.error != GDATA_FILE_OK) {
+    callback.Run(result->second.error);
+    return;
+  }
+
+  scoped_ptr<GDataEntryProto> src_proto = result->first.proto.Pass();
+  scoped_ptr<GDataEntryProto> dir_proto = result->second.proto.Pass();
+
+  if (!dir_proto->file_info().is_directory()) {
+    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY);
+    return;
+  }
+
+  const FilePath& file_path = result->first.path;
+  const FilePath& dir_path = result->second.path;
   documents_service_->AddResourceToDirectory(
-      dir_entry->content_url(),
-      entry->edit_url(),
+      GURL(dir_proto->content_url()),
+      GURL(src_proto->edit_url()),
       base::Bind(&GDataFileSystem::OnMoveEntryFromRootDirectoryCompleted,
                  ui_weak_ptr_,
                  callback,

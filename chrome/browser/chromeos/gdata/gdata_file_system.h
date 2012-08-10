@@ -384,6 +384,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                   GDataFileError error,
                                   const FilePath& file_path);
 
+  // Part of MoveEntryFromRootDirectory(). Called after
+  // GetEntryInfoPairByPaths() is complete. |callback| must not be null.
+  void MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
+    const FileOperationCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result);
+
   // Removes a file or directory at |file_path| from the directory at
   // |dir_path| and moves it to the root directory.
   //
