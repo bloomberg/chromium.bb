@@ -118,7 +118,7 @@ class FileBrowserEventRouter
         const std::string& extension_id,
         bool is_remote_file_system);
 
-    ~FileWatcherExtensions() {}
+    ~FileWatcherExtensions();
 
     void AddExtension(const std::string& extension_id);
 

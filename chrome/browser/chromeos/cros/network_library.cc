@@ -238,6 +238,8 @@ Network::~Network() {
   }
 }
 
+Network::ProxyOncConfig::ProxyOncConfig() : type(PROXY_ONC_DIRECT) {}
+
 void Network::SetNetworkParser(NetworkParser* parser) {
   network_parser_.reset(parser);
 }
@@ -1318,6 +1320,18 @@ void WimaxNetwork::SetEAPIdentity(const std::string& identity) {
 void WimaxNetwork::CalculateUniqueId() {
   set_unique_id(name() + "|" + eap_identity());
 }
+
+NetworkLibrary::EAPConfigData::EAPConfigData()
+    : method(EAP_METHOD_UNKNOWN),
+      auth(EAP_PHASE_2_AUTH_AUTO),
+      use_system_cas(true) {
+}
+
+NetworkLibrary::EAPConfigData::~EAPConfigData() {}
+
+NetworkLibrary::VPNConfigData::VPNConfigData() {}
+
+NetworkLibrary::VPNConfigData::~VPNConfigData() {}
 
 // static
 NetworkLibrary* NetworkLibrary::GetImpl(bool stub) {

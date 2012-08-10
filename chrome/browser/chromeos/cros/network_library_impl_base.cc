@@ -746,6 +746,25 @@ void NetworkLibraryImplBase::SetNetworkProfile(
   NotifyNetworkManagerChanged(false);
 }
 
+NetworkLibraryImplBase::NetworkProfile::NetworkProfile(const std::string& p,
+                                                       NetworkProfileType t)
+    : path(p),
+      type(t) {
+}
+
+NetworkLibraryImplBase::NetworkProfile::~NetworkProfile() {}
+
+NetworkLibraryImplBase::ConnectData::ConnectData()
+    : security(SECURITY_NONE),
+      eap_method(EAP_METHOD_UNKNOWN),
+      eap_auth(EAP_PHASE_2_AUTH_AUTO),
+      eap_use_system_cas(false),
+      save_credentials(false),
+      profile_type(PROFILE_NONE) {
+}
+
+NetworkLibraryImplBase::ConnectData::~ConnectData() {}
+
 const NetworkDevice* NetworkLibraryImplBase::FindDeviceByType(
     ConnectionType type) const {
   for (NetworkDeviceMap::const_iterator iter = device_map_.begin();

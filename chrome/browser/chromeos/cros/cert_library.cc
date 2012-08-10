@@ -535,6 +535,12 @@ CertLibrary* CertLibrary::GetImpl(bool stub) {
 
 //////////////////////////////////////////////////////////////////////////////
 
+CertLibrary::CertList::CertList(CertLibrary* library)
+    : cert_library_(library) {
+}
+
+CertLibrary::CertList::~CertList() {}
+
 net::X509Certificate* CertLibrary::CertList::GetCertificateAt(int index) const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_GE(index, 0);

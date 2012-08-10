@@ -768,6 +768,8 @@ FileBrowserEventRouter::FileWatcherExtensions::FileWatcherExtensions(
   AddExtension(extension_id);
 }
 
+FileBrowserEventRouter::FileWatcherExtensions::~FileWatcherExtensions() {}
+
 void FileBrowserEventRouter::FileWatcherExtensions::AddExtension(
     const std::string& extension_id) {
   ExtensionUsageRegistry::iterator it = extensions_.find(extension_id);

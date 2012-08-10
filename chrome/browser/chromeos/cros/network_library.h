@@ -314,7 +314,7 @@ class Network {
 
   // Structure used only for parsing ONC's ProxySettings value.
   struct ProxyOncConfig {
-    ProxyOncConfig() : type(PROXY_ONC_DIRECT) {}
+    ProxyOncConfig();
 
     ProxyOncType type;
     std::string pac_url;  // Only for PROXY_TYPE_PAC.
@@ -1586,11 +1586,8 @@ class NetworkLibrary {
   // and optional EAP configuration. If |security| is SECURITY_8021X,
   // |eap_config| must be provided.
   struct EAPConfigData {
-    EAPConfigData()
-        : method(EAP_METHOD_UNKNOWN),
-          auth(EAP_PHASE_2_AUTH_AUTO),
-          use_system_cas(true) {}
-    ~EAPConfigData() {}
+    EAPConfigData();
+    ~EAPConfigData();
     EAPMethod method;
     EAPPhase2Auth auth;
     std::string server_ca_cert_nss_nickname;
@@ -1610,8 +1607,8 @@ class NetworkLibrary {
   // Connect to the specified virtual network with service name.
   // VPNConfigData must be provided.
   struct VPNConfigData {
-    VPNConfigData() {}
-    ~VPNConfigData() {}
+    VPNConfigData();
+    ~VPNConfigData();
     std::string psk;
     std::string server_ca_cert_nss_nickname;
     std::string client_cert_pkcs11_id;

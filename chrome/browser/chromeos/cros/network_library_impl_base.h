@@ -262,9 +262,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
                    std::set<std::string> > NetworkSourceMap;
 
   struct NetworkProfile {
-    NetworkProfile(const std::string& p, NetworkProfileType t)
-        : path(p), type(t) {}
-    ~NetworkProfile() {}
+    NetworkProfile(const std::string& p, NetworkProfileType t);
+    ~NetworkProfile();
     std::string path;
     NetworkProfileType type;
     typedef std::set<std::string> ServiceList;
@@ -273,14 +272,8 @@ class NetworkLibraryImplBase : public NetworkLibrary {
   typedef std::list<NetworkProfile> NetworkProfileList;
 
   struct ConnectData {
-    ConnectData() :
-        security(SECURITY_NONE),
-        eap_method(EAP_METHOD_UNKNOWN),
-        eap_auth(EAP_PHASE_2_AUTH_AUTO),
-        eap_use_system_cas(false),
-        save_credentials(false),
-        profile_type(PROFILE_NONE) {}
-    ~ConnectData() {}
+    ConnectData();
+    ~ConnectData();
     ConnectionSecurity security;
     std::string service_name;  // For example, SSID.
     std::string username;
