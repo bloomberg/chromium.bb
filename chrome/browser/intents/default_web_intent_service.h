@@ -22,6 +22,7 @@
 struct DefaultWebIntentService {
   string16 action;
   string16 type;
+
   URLPattern url_pattern;
 
   // |user_date| holds the offset time when a user set the default.
@@ -35,6 +36,10 @@ struct DefaultWebIntentService {
   std::string service_url;
 
   DefaultWebIntentService();
+  DefaultWebIntentService(
+      const string16& srv_action,
+      const string16& srv_type,
+      const std::string& srv_service_url);
   ~DefaultWebIntentService();
 
   bool operator==(const DefaultWebIntentService& other) const;

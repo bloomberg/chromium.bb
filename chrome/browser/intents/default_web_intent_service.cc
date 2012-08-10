@@ -9,6 +9,14 @@ DefaultWebIntentService::DefaultWebIntentService()
     user_date(-1),
     suppression(0) {}
 
+DefaultWebIntentService::DefaultWebIntentService(
+    const string16& srv_action,
+    const string16& srv_type,
+    const std::string& srv_service_url)
+    : action(srv_action), type(srv_type),
+      url_pattern(URLPattern::SCHEME_ALL, URLPattern::kAllUrlsPattern),
+      user_date(-1), suppression(0), service_url(srv_service_url) {}
+
 DefaultWebIntentService::~DefaultWebIntentService() {}
 
 bool DefaultWebIntentService::operator==(
