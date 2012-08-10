@@ -154,7 +154,7 @@ class InternalPageInfoPopupView : public views::BubbleDelegateView {
 ////////////////////////////////////////////////////////////////////////////////
 
 PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
-  : name_(NULL), status_(NULL) {
+    : name_(NULL), status_(NULL) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
@@ -217,7 +217,7 @@ void PopupHeaderView::SetIdentityName(const string16& name) {
 }
 
 void PopupHeaderView::SetIdentityStatus(const string16& status,
-                                    SkColor text_color) {
+                                        SkColor text_color) {
   status_->SetText(status);
   status_->SetEnabledColor(text_color);
 }
@@ -236,8 +236,8 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
   icon_view->SetImage(rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_26));
   AddChildView(icon_view);
 
-  string16 text = l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE);
-  views::Label* label = new views::Label(text);
+  views::Label* label =
+      new views::Label(l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE));
   label->SetMultiLine(true);
   label->SetAllowCharacterBreak(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
