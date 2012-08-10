@@ -488,7 +488,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetResponseAsString(&data);
       SetSupportedLanguages(data);
     } else {
-      VLOG(1) << "Failed to Fetch languages from: " << kLanguageListFetchURL;
+      VLOG(9) << "Failed to Fetch languages from: " << kLanguageListFetchURL;
     }
   }
 }

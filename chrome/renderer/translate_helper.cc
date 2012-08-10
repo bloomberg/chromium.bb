@@ -69,7 +69,7 @@ void TranslateHelper::PageCaptured(const string16& contents) {
     UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
                                base::TimeTicks::Now() - begin_time);
   } else {
-    VLOG(1) << "PageLanguageFromMetaTag: " << language;
+    VLOG(9) << "PageLanguageFromMetaTag: " << language;
   }
 
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
@@ -160,7 +160,7 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
     // for Simplified Chinese.
     language = LanguageCodeWithDialects(cld_language);
   }
-  VLOG(1) << "Detected lang_id: " << language << ", from Text:\n" << text
+  VLOG(9) << "Detected lang_id: " << language << ", from Text:\n" << text
           << "\n*************************************\n";
   return language;
 }
