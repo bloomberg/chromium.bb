@@ -178,11 +178,9 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
     if (i->second != new_consumer &&
         (i->second != current_consumer || new_consumer == NULL) &&
         i->second != gesture_consumer_ignorer_.get()) {
-      scoped_ptr<TouchEvent> touch_event(helper_->CreateTouchEvent(
-            ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
-            i->first,
-            base::Time::NowFromSystemTime() - base::Time()));
-      helper_->DispatchCancelTouchEvent(touch_event.get());
+      TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
+            i->first, base::Time::NowFromSystemTime() - base::Time());
+      helper_->DispatchCancelTouchEvent(&touch_event);
       i->second = gesture_consumer_ignorer_.get();
     }
   }

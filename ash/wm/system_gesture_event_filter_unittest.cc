@@ -144,7 +144,8 @@ ui::GestureEvent* CreateGesture(ui::EventType type,
                                     float delta_x,
                                     float delta_y,
                                     int touch_id) {
-  return new ui::GestureEvent(type, x, y, 0, base::Time::Now(),
+  return new ui::GestureEvent(type, x, y, 0,
+      base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(type, delta_x, delta_y), 1 << touch_id);
 }
 

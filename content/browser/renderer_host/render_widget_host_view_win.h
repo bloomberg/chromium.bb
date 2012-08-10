@@ -234,17 +234,6 @@ class RenderWidgetHostViewWin
       int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.
-  virtual ui::GestureEvent* CreateGestureEvent(
-      const ui::GestureEventDetails& details,
-      const gfx::Point& location,
-      int flags,
-      base::Time time,
-      unsigned int touch_id_bitfield) OVERRIDE;
-  virtual ui::TouchEvent* CreateTouchEvent(
-      ui::EventType type,
-      const gfx::Point& location,
-      int touch_id,
-      base::TimeDelta time_stamp) OVERRIDE;
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 

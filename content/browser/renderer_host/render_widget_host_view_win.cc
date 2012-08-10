@@ -372,60 +372,41 @@ WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
   }
 }
 
-class LocalGestureEvent : public ui::GestureEvent {
- public:
-  LocalGestureEvent(HWND hwnd,
-                    const ui::GestureEventDetails& details,
-                    const gfx::Point& location,
-                    int flags,
-                    base::Time time,
-                    unsigned int touch_id_bitfield)
-      : ui::GestureEvent(details.type(), location.x(), location.y(), flags,
-            time, details, touch_id_bitfield),
-        client_point_(location.ToPOINT()),
-        screen_point_(location.ToPOINT()) {
-    MapWindowPoints(::GetParent(hwnd), hwnd, &client_point_, 1);
-    MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point_, 1);
+WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
+                                              const ui::GestureEvent& gesture) {
+  POINT client_point = gesture.location().ToPOINT();
+  POINT screen_point = gesture.location().ToPOINT();
+  MapWindowPoints(::GetParent(hwnd), hwnd, &client_point, 1);
+  MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point, 1);
+
+  WebKit::WebGestureEvent gesture_event;
+  gesture_event.type = ConvertToWebInputEvent(gesture.type());
+  gesture_event.x = client_point.x;
+  gesture_event.y = client_point.y;
+  gesture_event.globalX = screen_point.x;
+  gesture_event.globalY = screen_point.y;
+  gesture_event.boundingBox = gesture.details().bounding_box();
+
+  // Copy any event-type specific data.
+  switch (gesture.type()) {
+    case ui::ET_GESTURE_TAP:
+      gesture_event.deltaX = gesture.details().tap_count();
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      gesture_event.deltaX = gesture.details().scroll_x();
+      gesture_event.deltaY = gesture.details().scroll_y();
+      break;
+    case ui::ET_GESTURE_PINCH_UPDATE:
+      gesture_event.deltaX = gesture.details().scale();
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      gesture_event.deltaX = gesture.details().velocity_x();
+      gesture_event.deltaY = gesture.details().velocity_y();
+    default:
+      break;
   }
-
-  virtual ~LocalGestureEvent() {}
-
-  WebKit::WebGestureEvent ToWebGestureEvent() {
-    WebKit::WebGestureEvent gesture_event;
-    gesture_event.type = ConvertToWebInputEvent(type());
-    gesture_event.x = client_point_.x;
-    gesture_event.y = client_point_.y;
-    gesture_event.globalX = screen_point_.x;
-    gesture_event.globalY = screen_point_.y;
-    gesture_event.boundingBox = details().bounding_box();
-
-    // Copy any event-type specific data.
-    switch (type()) {
-      case ui::ET_GESTURE_TAP:
-        gesture_event.deltaX = details().tap_count();
-        break;
-      case ui::ET_GESTURE_SCROLL_UPDATE:
-        gesture_event.deltaX = details().scroll_x();
-        gesture_event.deltaY = details().scroll_y();
-        break;
-      case ui::ET_GESTURE_PINCH_UPDATE:
-        gesture_event.deltaX = details().scale();
-        break;
-      case ui::ET_SCROLL_FLING_START:
-        gesture_event.deltaX = details().velocity_x();
-        gesture_event.deltaY = details().velocity_y();
-      default:
-        break;
-    }
-    return gesture_event;
-  }
-
- private:
-  POINT client_point_;
-  POINT screen_point_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalGestureEvent);
-};
+  return gesture_event;
+}
 
 class TouchEventFromWebTouchPoint : public ui::TouchEvent {
  public:
@@ -1212,24 +1193,6 @@ void RenderWidgetHostViewWin::UpdateDesiredTouchMode(bool touch_mode) {
   if (!touch_mode) {
     SetToGestureMode();
   }
-}
-
-ui::GestureEvent* RenderWidgetHostViewWin::CreateGestureEvent(
-    const ui::GestureEventDetails& details,
-    const gfx::Point& location,
-    int flags,
-    base::Time time,
-    unsigned int touch_id_bitfield) {
-  return new LocalGestureEvent(m_hWnd, details, location, flags, time,
-      touch_id_bitfield);
-}
-
-ui::TouchEvent* RenderWidgetHostViewWin::CreateTouchEvent(
-    ui::EventType type,
-    const gfx::Point& location,
-    int touch_id,
-    base::TimeDelta time_stamp) {
-  return new ui::TouchEvent(type, location, touch_id, time_stamp);
 }
 
 bool RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
@@ -2797,11 +2760,10 @@ bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
   if (!render_widget_host_)
     return false;
 
-  LocalGestureEvent* local = static_cast<LocalGestureEvent*>(gesture);
-  WebKit::WebGestureEvent gesture_event = local->ToWebGestureEvent();
-  if (gesture_event.type == WebKit::WebGestureEvent::Undefined)
+  WebKit::WebGestureEvent web_gesture = CreateWebGestureEvent(m_hWnd, *gesture);
+  if (web_gesture.type == WebKit::WebGestureEvent::Undefined)
     return false;
-  render_widget_host_->ForwardGestureEvent(gesture_event);
+  render_widget_host_->ForwardGestureEvent(web_gesture);
   return true;
 }
 

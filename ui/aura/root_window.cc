@@ -688,8 +688,7 @@ bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
     return false;
   bool handled = false;
   for (unsigned int i = 0; i < gestures->size(); i++) {
-    ui::GestureEvent* gesture =
-        static_cast<ui::GestureEvent*>(gestures->get().at(i));
+    ui::GestureEvent* gesture = gestures->get().at(i);
     if (DispatchGestureEvent(gesture) != ui::GESTURE_STATUS_UNKNOWN)
       handled = true;
   }
@@ -755,28 +754,11 @@ void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
 }
 
 bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
-  return DispatchGestureEvent(static_cast<ui::GestureEvent*>(event));
+  return DispatchGestureEvent(event);
 }
 
 bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
   return OnHostTouchEvent(event);
-}
-
-ui::GestureEvent* RootWindow::CreateGestureEvent(
-    const ui::GestureEventDetails& details,
-    const gfx::Point& location,
-    int flags,
-    base::Time time,
-    unsigned int touch_id_bitfield) {
-  return new ui::GestureEvent(details.type(), location.x(), location.y(),
-                                  flags, time, details, touch_id_bitfield);
-}
-
-ui::TouchEvent* RootWindow::CreateTouchEvent(ui::EventType type,
-                                             const gfx::Point& location,
-                                             int touch_id,
-                                             base::TimeDelta time_stamp) {
-  return new ui::TouchEvent(type, location, touch_id, time_stamp);
 }
 
 void RootWindow::OnLayerAnimationEnded(

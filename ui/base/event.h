@@ -378,7 +378,7 @@ class UI_EXPORT GestureEvent : public LocatedEvent {
                int x,
                int y,
                int flags,
-               base::Time time_stamp,
+               base::TimeDelta time_stamp,
                const GestureEventDetails& details,
                unsigned int touch_ids_bitfield);
 

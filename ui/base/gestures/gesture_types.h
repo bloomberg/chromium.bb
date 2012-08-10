@@ -145,19 +145,6 @@ class UI_EXPORT GestureEventHelper {
   virtual ~GestureEventHelper() {
   }
 
-  // |flags| is ui::EventFlags. The meaning of |param_first| and |param_second|
-  // depends on the specific gesture type (|type|).
-  virtual GestureEvent* CreateGestureEvent(const GestureEventDetails& details,
-                                           const gfx::Point& location,
-                                           int flags,
-                                           base::Time time,
-                                           unsigned int touch_id_bitfield) = 0;
-
-  virtual TouchEvent* CreateTouchEvent(EventType type,
-                                           const gfx::Point& location,
-                                           int touch_id,
-                                           base::TimeDelta time_stamp) = 0;
-
   virtual bool DispatchLongPressGestureEvent(GestureEvent* event) = 0;
   virtual bool DispatchCancelTouchEvent(TouchEvent* event) = 0;
 };

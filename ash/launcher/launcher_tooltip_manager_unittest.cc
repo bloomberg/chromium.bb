@@ -162,7 +162,8 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
 
   // Should hide for gesture events.
   ui::GestureEvent gesture_event(
-      ui::ET_GESTURE_BEGIN, 0, 0, ui::EF_NONE, base::Time(),
+      ui::ET_GESTURE_BEGIN, 0, 0, ui::EF_NONE,
+      base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f), 0);
   EXPECT_EQ(ui::GESTURE_STATUS_UNKNOWN,
             event_filter->PreHandleGestureEvent(root_window, &gesture_event));
