@@ -168,6 +168,7 @@ struct weston_output {
 
 	char *make, *model;
 	uint32_t subpixel;
+	uint32_t transform;
 	
 	struct weston_mode *current;
 	struct weston_mode *origin;

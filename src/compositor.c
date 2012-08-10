@@ -2789,7 +2789,7 @@ bind_output(struct wl_client *client,
 				output->mm_height,
 				output->subpixel,
 				output->make, output->model,
-				WL_OUTPUT_TRANSFORM_NORMAL);
+				output->transform);
 
 	wl_list_for_each (mode, &output->mode_list, link) {
 		wl_output_send_mode(resource,
@@ -3029,6 +3029,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->mm_width = width;
 	output->mm_height = height;
 	output->dirty = 1;
+	output->transform = WL_OUTPUT_TRANSFORM_NORMAL;
 
 	weston_output_init_zoom(output);
 
