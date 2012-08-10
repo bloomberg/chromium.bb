@@ -1,15 +1,6 @@
 <!-- Page with a slowly loading iframe that updates its history state before
      the iframe commits. -->
-<script>
-function updateHistory() {
-  history.pushState({}, "", "empty.html");
-}
-
-function loadframe() {
-  var frame = document.getElementById("frame");
-  frame.src = "http://127.0.0.1:" + location.search.substr(1) + "/test5";
-}
-</script>
-<body onload="loadframe()">
+<script src="h.js"></script>
+<body>
 <iframe id="frame"></frame>
 </body>

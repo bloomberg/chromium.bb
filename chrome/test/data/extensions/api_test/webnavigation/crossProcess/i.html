@@ -1,13 +1,3 @@
 <!-- Redirects to a slowly loading page but then replaces its history state
      before the page commits. -->
-<script>
-function updateHistory() {
-  history.replaceState({}, "", "empty.html");
-}
-
-function navigate() {
-  location.href =
-      "http://127.0.0.1:" + location.search.substr(1) + "/test6";
-}
-</script>
-<body onload="setTimeout(navigate, 0)"></body>
+<script src="i.js"></script>

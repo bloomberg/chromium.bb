@@ -1,6 +1,7 @@
 {
   "name": "webNavigation",
   "version": "1.0",
+  "manifest_version": 2,
   "description": "Tests the webNavigation API events.",
   "permissions": ["webNavigation", "tabs"]
 }

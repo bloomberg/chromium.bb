@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function runTests() {
+onload = function() {
   var getURL = chrome.extension.getURL;
   var URL_LOAD =
       "http://127.0.0.1:PORT/files/prerender/prerender_loader.html";
@@ -96,4 +96,4 @@ function runTests() {
       ]);
     });
   });
-}
+};

@@ -52,7 +52,11 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     kFlagLoadAsComponent = 1 << 3,
 
     // Launch the extension as a platform app.
-    kFlagLaunchPlatformApp = 1 << 4
+    kFlagLaunchPlatformApp = 1 << 4,
+
+    // Don't fail when the loaded manifest has warnings (should only be used
+    // when testing deprecated features).
+    kFlagIgnoreManifestWarnings = 1 << 5
   };
 
   ExtensionApiTest();
@@ -108,6 +112,9 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // Same as RunExtensionTest, but enables the extension for incognito mode.
   bool RunExtensionTestIncognito(const char* extension_name);
+
+  // Same as RunExtensionTest, but ignores any warnings in the manifest.
+  bool RunExtensionTestIgnoreManifestWarnings(const char* extension_name);
 
   // Same as RunExtensionTest, but loads extension as component.
   bool RunComponentExtensionTest(const char* extension_name);

@@ -24,6 +24,21 @@
 class ExtensionBrowserTest : virtual public InProcessBrowserTest,
                              public content::NotificationObserver {
  protected:
+  // Flags used to configure how the tests are run.
+  enum Flags {
+    kFlagNone = 0,
+
+    // Allow the extension to run in incognito mode.
+    kFlagEnableIncognito = 1 << 0,
+
+    // Allow file access for the extension.
+    kFlagEnableFileAccess = 1 << 1,
+
+    // Don't fail when the loaded manifest has warnings (should only be used
+    // when testing deprecated features).
+    kFlagIgnoreManifestWarnings = 1 << 2
+  };
+
   ExtensionBrowserTest();
   virtual ~ExtensionBrowserTest();
 
@@ -35,10 +50,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // Same as above, but enables the extension in incognito mode first.
   const extensions::Extension* LoadExtensionIncognito(const FilePath& path);
 
-  const extensions::Extension* LoadExtensionWithOptions(
-      const FilePath& path,
-      bool incognito_enabled,
-      bool fileaccess_enabled);
+  const extensions::Extension* LoadExtensionWithFlags(
+      const FilePath& path, int flags);
 
   // Loads extension and imitates that it is a component extension.
   const extensions::Extension* LoadExtensionAsComponent(const FilePath& path);

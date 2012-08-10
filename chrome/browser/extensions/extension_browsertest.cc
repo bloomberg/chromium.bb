@@ -71,8 +71,8 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 #endif
 }
 
-const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
-    const FilePath& path, bool incognito_enabled, bool fileaccess_enabled) {
+const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
+    const FilePath& path, int flags) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   {
     content::NotificationRegistrar registrar;
@@ -100,6 +100,25 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
   if (!extension)
     return NULL;
 
+  if (!(flags & kFlagIgnoreManifestWarnings)) {
+    const Extension::InstallWarningVector& install_warnings =
+        extension->install_warnings();
+    if (!install_warnings.empty()) {
+      std::string install_warnings_message = StringPrintf(
+          "Unexpected warnings when loading test extension %s:\n",
+          path.AsUTF8Unsafe().c_str());
+
+      for (Extension::InstallWarningVector::const_iterator it =
+          install_warnings.begin(); it != install_warnings.end(); ++it) {
+        install_warnings_message += "  " + it->message + "\n";
+      }
+
+      EXPECT_TRUE(extension->install_warnings().empty()) <<
+          install_warnings_message;
+      return NULL;
+    }
+  }
+
   const std::string extension_id = extension->id();
 
   // The call to OnExtensionInstalled ensures the other extension prefs
@@ -118,8 +137,8 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
         content::Source<Profile>(browser()->profile()));
     CHECK(!service->IsIncognitoEnabled(extension_id));
 
-    if (incognito_enabled) {
-      service->SetIsIncognitoEnabled(extension_id, incognito_enabled);
+    if (flags & kFlagEnableIncognito) {
+      service->SetIsIncognitoEnabled(extension_id, true);
       load_signal.Wait();
       extension = service->GetExtensionById(extension_id, false);
       CHECK(extension) << extension_id << " not found after reloading.";
@@ -131,8 +150,8 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(browser()->profile()));
     CHECK(service->AllowFileAccess(extension));
-    if (!fileaccess_enabled) {
-      service->SetAllowFileAccess(extension, fileaccess_enabled);
+    if (!(flags & kFlagEnableFileAccess)) {
+      service->SetAllowFileAccess(extension, false);
       load_signal.Wait();
       extension = service->GetExtensionById(extension_id, false);
       CHECK(extension) << extension_id << " not found after reloading.";
@@ -146,12 +165,13 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
 }
 
 const Extension* ExtensionBrowserTest::LoadExtension(const FilePath& path) {
-  return LoadExtensionWithOptions(path, false, true);
+  return LoadExtensionWithFlags(path, kFlagEnableFileAccess);
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionIncognito(
     const FilePath& path) {
-  return LoadExtensionWithOptions(path, true, true);
+  return LoadExtensionWithFlags(path,
+                                kFlagEnableFileAccess | kFlagEnableIncognito);
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionAsComponent(

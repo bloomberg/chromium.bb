@@ -145,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageActionRemovePopup) {
 // Tests old-style pageActions API that is deprecated but we don't want to
 // break.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OldPageActions) {
-  ASSERT_TRUE(RunExtensionTest("page_action/old_api")) << message_;
+  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings("page_action/old_api")) <<
+      message_;
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 

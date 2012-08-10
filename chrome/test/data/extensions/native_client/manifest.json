@@ -4,9 +4,8 @@
   "version": "0.1",
   "manifest_version": 2,
   "description": "Tests Chrome Webstore restriction for Native Client.",
-  "permissions": ["nativeclient"],
   "nacl_modules": [{
     "path": "dummy.nmf",
-    "mime_type": "application/pdf" 
+    "mime_type": "application/pdf"
   }]
 }

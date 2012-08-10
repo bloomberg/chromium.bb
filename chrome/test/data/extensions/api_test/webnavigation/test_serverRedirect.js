@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function runTests() {
-  var getURL = chrome.extension.getURL;
+onload = function() {
   var URL_LOAD =
       "http://www.a.com:PORT/files/extensions/api_test/webnavigation/serverRedirect/a.html";
   var URL_LOAD_REDIRECT = "http://www.a.com:PORT/server-redirect";
@@ -56,4 +55,4 @@ function runTests() {
       ]);
     });
   });
-}
+};

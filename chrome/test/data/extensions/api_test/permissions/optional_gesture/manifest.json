@@ -6,6 +6,5 @@
    "background": {
      "scripts": ["background.js"]
    },
-   "permissions": ["permissions"],
    "optional_permissions": ["tabs"]
 }

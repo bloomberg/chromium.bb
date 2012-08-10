@@ -158,11 +158,13 @@ void ExtensionWebRequestApiTest::RunPermissionTest(
   ExtensionTestMessageListener listener("done", true);
   ExtensionTestMessageListener listener_incognito("done_incognito", true);
 
-  ASSERT_TRUE(LoadExtensionWithOptions(
+  int load_extension_flags = kFlagNone;
+  if (load_extension_with_incognito_permission)
+    load_extension_flags |= kFlagEnableIncognito;
+  ASSERT_TRUE(LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("webrequest_permissions")
                     .AppendASCII(extension_directory),
-      load_extension_with_incognito_permission,
-      false));
+      load_extension_flags));
 
   // Test that navigation in regular window is properly redirected.
   EXPECT_TRUE(listener.WaitUntilSatisfied());

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function runTests() {
-  var getURL = chrome.extension.getURL;
+onload = function() {
   var URL_LOAD =
       "http://127.0.0.1:PORT/files/extensions/api_test/webnavigation/targetBlank/a.html";
   var URL_TARGET =
@@ -102,4 +101,4 @@ function runTests() {
       ]);
     });
   });
-}
+};

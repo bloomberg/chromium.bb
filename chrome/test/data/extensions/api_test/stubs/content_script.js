@@ -24,6 +24,12 @@ chrome.extension.sendRequest("getApi", function(apis) {
       if (typeof(module[section]) == "undefined")
         return;
       module[section].forEach(function(entry) {
+        // Ignore entries that are not applicable to the manifest that we're
+        // running under.
+        if (entry.maximumManifestVersion && entry.maximumManifestVersion < 2) {
+          return;
+        }
+
         var path = namespace + "." + entry.name;
         if (module.unprivileged || entry.unprivileged) {
           unprivilegedPaths.push(path);

@@ -1,16 +1,3 @@
 <!-- Redirects to a slowly loading page and starts a new navigation before it
      commits. -->
-<script>
-var target =
-    location.origin + location.pathname.replace("d.html", "empty.html");
-
-function navigate() {
-  location.href =
-      "http://127.0.0.1:" + location.search.substr(1) + "/test1";
-}
-
-function navigate2() {
-  location.href = target;
-}
-</script>
-<body onload="setTimeout(navigate, 0)"></body>
+<script src="d.js"></script>

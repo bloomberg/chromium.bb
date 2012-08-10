@@ -121,6 +121,12 @@ bool ExtensionApiTest::RunExtensionTestIncognito(const char* extension_name) {
       extension_name, "", kFlagEnableIncognito | kFlagEnableFileAccess);
 }
 
+bool ExtensionApiTest::RunExtensionTestIgnoreManifestWarnings(
+    const char* extension_name) {
+  return RunExtensionTestImpl(
+      extension_name, "", kFlagEnableFileAccess | kFlagIgnoreManifestWarnings);
+}
+
 bool ExtensionApiTest::RunComponentExtensionTest(const char* extension_name) {
   return RunExtensionTestImpl(
       extension_name, "", kFlagEnableFileAccess | kFlagLoadAsComponent);
@@ -167,8 +173,6 @@ bool ExtensionApiTest::RunPlatformAppTest(const char* extension_name) {
 bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
                                             const std::string& page_url,
                                             int flags) {
-  bool enable_incognito = (flags & kFlagEnableIncognito) != 0;
-  bool enable_fileaccess = (flags & kFlagEnableFileAccess) != 0;
   bool load_as_component = (flags & kFlagLoadAsComponent) != 0;
   bool launch_platform_app = (flags & kFlagLaunchPlatformApp) != 0;
   bool use_incognito = (flags & kFlagUseIncognito) != 0;
@@ -183,8 +187,14 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
     if (load_as_component) {
       extension = LoadExtensionAsComponent(extension_path);
     } else {
-      extension = LoadExtensionWithOptions(extension_path,
-                                           enable_incognito, enable_fileaccess);
+      int browser_test_flags = ExtensionBrowserTest::kFlagNone;
+      if (flags & kFlagEnableIncognito)
+        browser_test_flags |= ExtensionBrowserTest::kFlagEnableIncognito;
+      if (flags & kFlagEnableFileAccess)
+        browser_test_flags |= ExtensionBrowserTest::kFlagEnableFileAccess;
+      if (flags & kFlagIgnoreManifestWarnings)
+        browser_test_flags |= ExtensionBrowserTest::kFlagIgnoreManifestWarnings;
+      extension = LoadExtensionWithFlags(extension_path, browser_test_flags);
     }
     if (!extension) {
       message_ = "Failed to load extension.";
