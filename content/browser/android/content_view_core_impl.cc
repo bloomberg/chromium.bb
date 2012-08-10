@@ -18,7 +18,9 @@
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -28,6 +30,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
+#include "ui/gfx/android/java_bitmap.h"
 #include "webkit/glue/webmenuitem.h"
 
 using base::android::AttachCurrentThread;
@@ -394,6 +397,39 @@ void ContentViewCoreImpl::RemoveJavascriptInterface(JNIEnv* env,
                                                     jstring name) {
   web_contents_->java_bridge_dispatcher_host_manager()->RemoveNamedObject(
       ConvertJavaStringToUTF16(env, name));
+}
+
+int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
+                                              jobject obj,
+                                              jobject context) {
+  // Iterate through navigation entries to populate the list
+  const NavigationController& controller = web_contents_->GetController();
+  int count = controller.GetEntryCount();
+  for (int i = 0; i < count; ++i) {
+    NavigationEntry* entry = controller.GetEntryAtIndex(i);
+
+    // Get the details of the current entry
+    ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env,
+        entry->GetURL().spec());
+    ScopedJavaLocalRef<jstring> j_virtual_url = ConvertUTF8ToJavaString(env,
+        entry->GetVirtualURL().spec());
+    ScopedJavaLocalRef<jstring> j_original_url = ConvertUTF8ToJavaString(env,
+        entry->GetOriginalRequestURL().spec());
+    ScopedJavaLocalRef<jstring> j_title = ConvertUTF16ToJavaString(env,
+        entry->GetTitle());
+    ScopedJavaLocalRef<jobject> j_bitmap;
+    const FaviconStatus& status = entry->GetFavicon();
+    if (status.valid && status.image.ToSkBitmap()->getSize() > 0) {
+      j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
+    }
+
+    // Add the item to the list
+    Java_ContentViewCore_addToNavigationHistory(env, obj, context, j_url.obj(),
+        j_virtual_url.obj(), j_original_url.obj(), j_title.obj(),
+        j_bitmap.obj());
+  }
+
+  return controller.GetCurrentEntryIndex();
 }
 
 // --------------------------------------------------------------------------

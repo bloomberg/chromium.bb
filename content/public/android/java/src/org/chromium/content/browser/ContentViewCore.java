@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Bundle;
@@ -1108,6 +1109,26 @@ public class ContentViewCore implements MotionEventDelegate {
         mAccessibilityInjector.setScriptEnabled(state);
     }
 
+    /**
+     * Callback factory method for nativeGetNavigationHistory().
+     */
+    @CalledByNative
+    private void addToNavigationHistory(Object history, String url, String virtualUrl,
+            String originalUrl, String title, Bitmap favicon) {
+        NavigationEntry entry = new NavigationEntry(url, virtualUrl, originalUrl, title, favicon);
+        ((NavigationHistory) history).addEntry(entry);
+    }
+
+    /**
+     * Get a copy of the navigation history of the view.
+     */
+    public NavigationHistory getNavigationHistory() {
+        NavigationHistory history = new NavigationHistory();
+        int currentIndex = nativeGetNavigationHistory(mNativeContentViewCore, history);
+        history.setCurrentEntryIndex(currentIndex);
+        return history;
+    }
+
     // The following methods are implemented at native side.
 
     /**
@@ -1204,4 +1225,6 @@ public class ContentViewCore implements MotionEventDelegate {
                                                      String name, boolean requireAnnotation);
 
     private native void nativeRemoveJavascriptInterface(int nativeContentViewCoreImpl, String name);
+
+    private native int nativeGetNavigationHistory(int nativeContentViewCoreImpl, Object context);
 }
