@@ -168,8 +168,9 @@ LDPatterns = [
   ( ('(--section-start)','(.*)'), AddToNativeFlags),
 
   # NOTE: -export-dynamic doesn't actually do anything to the bitcode link
-  # right now.  This is just in case we do want to record that in metadata.
-  ( '(-export-dynamic)', AddToBothFlags),
+  # right now.  This is just in case we do want to record that in metadata
+  # eventually, and have that influence the native linker flags.
+  ( '(-export-dynamic)', AddToBCLinkFlags),
 
   ( '-?-soname=(.*)',             "env.set('SONAME', $0)"),
   ( ('-?-soname', '(.*)'),        "env.set('SONAME', $0)"),
