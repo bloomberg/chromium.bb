@@ -90,6 +90,29 @@ void MapperPlaystationSixAxis(
   mapped->axesLength = kNumAxes;
 }
 
+void MapperXGEAR(
+    const WebKit::WebGamepad& input,
+    WebKit::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[kButtonPrimary] = input.buttons[2];
+  mapped->buttons[kButtonSecondary] = input.buttons[1];
+  mapped->buttons[kButtonTertiary] = input.buttons[3];
+  mapped->buttons[kButtonQuaternary] = input.buttons[0];
+  mapped->buttons[kButtonLeftShoulder] = input.buttons[6];
+  mapped->buttons[kButtonRightShoulder] = input.buttons[7];
+  mapped->buttons[kButtonLeftTrigger] = input.buttons[4];
+  mapped->buttons[kButtonRightTrigger] = input.buttons[5];
+  mapped->buttons[kButtonDpadUp] = AxisNegativeAsButton(input.axes[5]);
+  mapped->buttons[kButtonDpadDown] = AxisPositiveAsButton(input.axes[5]);
+  mapped->buttons[kButtonDpadLeft] = AxisNegativeAsButton(input.axes[4]);
+  mapped->buttons[kButtonDpadRight] = AxisPositiveAsButton(input.axes[4]);
+  mapped->axes[kAxisRightStickX] = input.axes[3];
+  mapped->axes[kAxisRightStickY] = input.axes[2];
+  mapped->buttonsLength = kNumButtons - 1; // no Meta on this device
+  mapped->axesLength = kNumAxes;
+}
+
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -103,6 +126,7 @@ struct MappingData {
   { "046d", "c21f", MapperXInputStyleGamepad }, // Logitech F710
   { "054c", "0268", MapperPlaystationSixAxis }, // Playstation SIXAXIS
   { "0925", "8866", MapperMP8866 }, // WiseGroup MP-8866
+  { "0e8f", "0003", MapperXGEAR }, // XFXforce XGEAR PS2 Controller
 };
 
 }  // namespace
