@@ -101,8 +101,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   EXPECT_EQ(theme, GetTheme());
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/141854
+#define MAYBE_AppInstallConfirmation FLAKY_AppInstallConfirmation
+#else
+#define MAYBE_AppInstallConfirmation AppInstallConfirmation
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       AppInstallConfirmation) {
+                       MAYBE_AppInstallConfirmation) {
   int num_tabs = browser()->tab_count();
 
   FilePath app_dir = test_data_dir_.AppendASCII("app");
@@ -119,8 +125,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   }
 }
 
+#if defined(OS_WIN)
+// http://crbug.com/141854
+#define MAYBE_AppInstallConfirmation_Incognito \
+        FLAKY_AppInstallConfirmation_Incognito
+#else
+#define MAYBE_AppInstallConfirmation_Incognito AppInstallConfirmation_Incognito
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       AppInstallConfirmation_Incognito) {
+                       MAYBE_AppInstallConfirmation_Incognito) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser =
       new Browser(Browser::CreateParams(incognito_profile));
