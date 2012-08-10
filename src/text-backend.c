@@ -33,6 +33,8 @@ struct text_model {
 	struct weston_compositor *ec;
 
 	struct wl_list input_methods;
+
+	struct wl_surface *surface;
 };
 
 struct input_method {
@@ -45,7 +47,13 @@ struct input_method {
 	struct text_model *model;
 
 	struct wl_list link;
+
+	struct wl_listener keyboard_focus_listener;
+
+	int focus_listener_initialized;
 };
+
+static void input_method_init_seat(struct weston_seat *seat);
 
 static void
 deactivate_text_model(struct text_model *text_model,
@@ -109,6 +117,9 @@ text_model_activate(struct wl_client *client,
 
 	weston_seat->input_method->model = text_model;
 	wl_list_insert(&text_model->input_methods, &weston_seat->input_method->link);
+	input_method_init_seat(weston_seat);
+
+	text_model->surface = surface->data;
 
 	wl_signal_emit(&ec->show_input_panel_signal, ec);
 
@@ -275,6 +286,36 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 	free(input_method);
 }
 
+static void
+handle_keyboard_focus(struct wl_listener *listener, void *data)
+{
+	struct wl_keyboard *keyboard = data;
+	struct input_method *input_method =
+		container_of(listener, struct input_method, keyboard_focus_listener);
+	struct wl_surface *surface = keyboard->focus;
+
+	if (!input_method->model)
+		return;
+
+	if (!surface || input_method->model->surface != surface)
+		deactivate_text_model(input_method->model,
+				      input_method);
+}
+
+static void
+input_method_init_seat(struct weston_seat *seat)
+{
+	if (seat->input_method->focus_listener_initialized)
+		return;
+
+	if (seat->has_keyboard) {
+		seat->input_method->keyboard_focus_listener.notify = handle_keyboard_focus;
+		wl_signal_add(&seat->seat.keyboard->focus_signal, &seat->input_method->keyboard_focus_listener);
+	}
+
+	seat->input_method->focus_listener_initialized = 1;
+}
+
 void
 input_method_create(struct weston_compositor *ec,
 		    struct weston_seat *seat)
@@ -285,6 +326,7 @@ input_method_create(struct weston_compositor *ec,
 
 	input_method->ec = ec;
 	input_method->model = NULL;
+	input_method->focus_listener_initialized = 0;
 
 	input_method->input_method_global =
 		wl_display_add_global(ec->wl_display,
@@ -301,3 +343,4 @@ input_method_create(struct weston_compositor *ec,
 
 	seat->input_method = input_method;
 }
+
