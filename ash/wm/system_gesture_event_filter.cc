@@ -374,7 +374,7 @@ class SystemPinchHandler {
   ~SystemPinchHandler() {
   }
 
-  SystemGestureStatus ProcessGestureEvent(const ui::GestureEventImpl& event) {
+  SystemGestureStatus ProcessGestureEvent(const ui::GestureEvent& event) {
     // The target has changed, somehow. Let's bale.
     if (!widget_ || !widget_->widget_delegate()->CanResize())
       return SYSTEM_GESTURE_END;
@@ -551,7 +551,7 @@ ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
 }
 
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
-    aura::Window* target, ui::GestureEventImpl* event) {
+    aura::Window* target, ui::GestureEvent* event) {
   touch_uma_.RecordGestureEvent(target, *event);
   long_press_affordance_->ProcessEvent(target, event);
   if (!target || target == target->GetRootWindow()) {
@@ -677,7 +677,7 @@ void SystemGestureEventFilter::ClearGestureHandlerForWindow(
 
 bool SystemGestureEventFilter::HandleDeviceControl(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   gfx::Rect screen = gfx::Screen::GetDisplayNearestWindow(target).bounds();
   double percent = 100.0 * (event->y() - screen.y()) / screen.height();
   if (percent > 100.0)
@@ -704,7 +704,7 @@ bool SystemGestureEventFilter::HandleDeviceControl(
 }
 
 bool SystemGestureEventFilter::HandleLauncherControl(
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   if (start_location_ == BEZEL_START_BOTTOM &&
       event->details().scroll_y() < 0) {
     ash::AcceleratorController* accelerator =
@@ -717,7 +717,7 @@ bool SystemGestureEventFilter::HandleLauncherControl(
 }
 
 bool SystemGestureEventFilter::HandleApplicationControl(
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   ash::AcceleratorController* accelerator =
       ash::Shell::GetInstance()->accelerator_controller();
   if (start_location_ == BEZEL_START_LEFT && event->details().scroll_x() > 0)

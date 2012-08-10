@@ -39,7 +39,7 @@ ui::TouchStatus SystemModalContainerEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus SystemModalContainerEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   // TODO(sad):
   return ui::GESTURE_STATUS_UNKNOWN;
 }

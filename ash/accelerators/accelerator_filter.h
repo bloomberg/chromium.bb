@@ -30,7 +30,7 @@ class ASH_EXPORT AcceleratorFilter : public aura::EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);

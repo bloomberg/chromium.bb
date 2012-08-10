@@ -215,7 +215,7 @@ ui::TouchStatus TouchObserverHUD::PreHandleTouchEvent(
 
 ui::GestureStatus TouchObserverHUD::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

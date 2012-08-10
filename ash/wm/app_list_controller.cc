@@ -253,7 +253,7 @@ ui::TouchStatus AppListController::PreHandleTouchEvent(
 
 ui::GestureStatus AppListController::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP)
     ProcessLocatedEvent(target, *event);
   return ui::GESTURE_STATUS_UNKNOWN;

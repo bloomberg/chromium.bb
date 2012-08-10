@@ -67,7 +67,7 @@ class ShelfLayoutManager::AutoHideEventFilter : public aura::EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
  private:
   ShelfLayoutManager* shelf_;
@@ -116,7 +116,7 @@ ui::TouchStatus ShelfLayoutManager::AutoHideEventFilter::PreHandleTouchEvent(
 ui::GestureStatus
 ShelfLayoutManager::AutoHideEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 

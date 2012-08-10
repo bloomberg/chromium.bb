@@ -44,7 +44,7 @@ class TouchObserverHUD : public aura::EventFilter,
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

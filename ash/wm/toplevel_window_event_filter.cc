@@ -126,7 +126,7 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       int component =

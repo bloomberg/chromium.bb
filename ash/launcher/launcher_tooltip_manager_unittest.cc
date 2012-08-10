@@ -161,7 +161,7 @@ TEST_F(LauncherTooltipManagerTest, ShouldHideForEvents) {
   EXPECT_TRUE(TooltipIsVisible());
 
   // Should hide for gesture events.
-  ui::GestureEventImpl gesture_event(
+  ui::GestureEvent gesture_event(
       ui::ET_GESTURE_BEGIN, 0, 0, ui::EF_NONE, base::Time(),
       ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0.0f, 0.0f), 0);
   EXPECT_EQ(ui::GESTURE_STATUS_UNKNOWN,

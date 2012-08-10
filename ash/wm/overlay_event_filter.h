@@ -57,7 +57,7 @@ class OverlayEventFilter : public aura::EventFilter,
   virtual ui::TouchStatus PreHandleTouchEvent(
       aura::Window* target, ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
-      aura::Window* target, ui::GestureEventImpl* event) OVERRIDE;
+      aura::Window* target, ui::GestureEvent* event) OVERRIDE;
 
   // ShellObserver overrides:
   virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;

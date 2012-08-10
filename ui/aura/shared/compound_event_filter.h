@@ -11,7 +11,7 @@
 #include "ui/aura/event_filter.h"
 
 namespace ui {
-class GestureEventImpl;
+class GestureEvent;
 class KeyEvent;
 class LocatedEvent;
 class MouseEvent;
@@ -59,7 +59,7 @@ class AURA_EXPORT CompoundEventFilter : public EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
  private:
   // Updates the cursor if the target provides a custom one, and provides

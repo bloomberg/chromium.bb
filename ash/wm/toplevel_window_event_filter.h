@@ -51,7 +51,7 @@ class ASH_EXPORT ToplevelWindowEventFilter :
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   // Overridden form aura::client::WindowMoveClient:
   virtual void RunMoveLoop(aura::Window* source) OVERRIDE;

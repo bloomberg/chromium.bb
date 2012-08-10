@@ -42,7 +42,7 @@ class AURA_EXPORT InputMethodEventFilter
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from ui::internal::InputMethodDelegate.
   virtual void DispatchKeyEventPostIME(const base::NativeEvent& event) OVERRIDE;

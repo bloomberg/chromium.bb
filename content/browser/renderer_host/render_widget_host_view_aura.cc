@@ -1294,7 +1294,7 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
 }
 
 ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnGestureEvent");
   // Pinch gestures are currently disabled by default. See crbug.com/128477.
   if ((event->type() == ui::ET_GESTURE_PINCH_BEGIN ||
@@ -1405,7 +1405,7 @@ bool RenderWidgetHostViewAura::ShouldActivate(const ui::Event* event) {
     if (event->type() == ui::ET_MOUSE_PRESSED) {
       activate = true;
     } else if (event->type() == ui::ET_GESTURE_BEGIN) {
-      activate = static_cast<const ui::GestureEventImpl*>(event)->
+      activate = static_cast<const ui::GestureEvent*>(event)->
           details().touch_points() == 1;
     }
   }

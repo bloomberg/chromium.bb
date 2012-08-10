@@ -65,7 +65,7 @@ ui::TouchStatus TestWindowDelegate::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 ui::GestureStatus TestWindowDelegate::OnGestureEvent(
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

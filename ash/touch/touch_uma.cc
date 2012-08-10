@@ -89,7 +89,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(WindowTouchDetails,
                                  NULL);
 
 GestureActionType FindGestureActionType(aura::Window* window,
-                                        const ui::GestureEventImpl& event) {
+                                        const ui::GestureEvent& event) {
   if (!window || window->GetRootWindow() == window) {
     if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
       return GESTURE_BEZEL_SCROLL;
@@ -166,8 +166,8 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
     case ui::ET_GESTURE_SCROLL_END:
       return UMA_ET_GESTURE_SCROLL_END;
     case ui::ET_GESTURE_SCROLL_UPDATE: {
-      const ui::GestureEventImpl& gesture =
-          static_cast<const ui::GestureEventImpl&>(event);
+      const ui::GestureEvent& gesture =
+          static_cast<const ui::GestureEvent&>(event);
       if (gesture.details().touch_points() >= 4)
         return UMA_ET_GESTURE_SCROLL_UPDATE_4P;
       else if (gesture.details().touch_points() == 3)
@@ -193,8 +193,8 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
     case ui::ET_GESTURE_PINCH_END:
       return UMA_ET_GESTURE_PINCH_END;
     case ui::ET_GESTURE_PINCH_UPDATE: {
-      const ui::GestureEventImpl& gesture =
-          static_cast<const ui::GestureEventImpl&>(event);
+      const ui::GestureEvent& gesture =
+          static_cast<const ui::GestureEvent&>(event);
       if (gesture.details().touch_points() >= 4)
         return UMA_ET_GESTURE_PINCH_UPDATE_4P;
       else if (gesture.details().touch_points() == 3)
@@ -204,8 +204,8 @@ UMAEventType UMAEventTypeFromEvent(const ui::Event& event) {
     case ui::ET_GESTURE_LONG_PRESS:
       return UMA_ET_GESTURE_LONG_PRESS;
     case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
-      const ui::GestureEventImpl& gesture =
-          static_cast<const ui::GestureEventImpl&>(event);
+      const ui::GestureEvent& gesture =
+          static_cast<const ui::GestureEvent&>(event);
       if (gesture.details().touch_points() >= 4)
         return UMA_ET_GESTURE_MULTIFINGER_SWIPE_4P;
       else if (gesture.details().touch_points() == 3)
@@ -235,7 +235,7 @@ TouchUMA::~TouchUMA() {
 }
 
 void TouchUMA::RecordGestureEvent(aura::Window* target,
-                                  const ui::GestureEventImpl& event) {
+                                  const ui::GestureEvent& event) {
   UMA_HISTOGRAM_ENUMERATION("Ash.GestureCreated",
                             UMAEventTypeFromEvent(event),
                             UMA_ET_COUNT);

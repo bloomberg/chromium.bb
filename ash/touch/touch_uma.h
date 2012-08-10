@@ -27,7 +27,7 @@ class TouchUMA {
   ~TouchUMA();
 
   void RecordGestureEvent(aura::Window* target,
-                          const ui::GestureEventImpl& event);
+                          const ui::GestureEvent& event);
   void RecordTouchEvent(aura::Window* target,
                         const ui::TouchEvent& event);
 

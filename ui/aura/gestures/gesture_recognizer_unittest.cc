@@ -115,7 +115,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   int tap_count() const { return tap_count_; }
 
   virtual ui::GestureStatus OnGestureEvent(
-      ui::GestureEventImpl* gesture) OVERRIDE {
+      ui::GestureEvent* gesture) OVERRIDE {
     bounding_box_ = gesture->details().bounding_box();
     switch (gesture->type()) {
       case ui::ET_GESTURE_TAP:

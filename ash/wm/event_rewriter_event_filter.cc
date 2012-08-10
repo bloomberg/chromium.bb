@@ -64,7 +64,7 @@ ui::TouchStatus EventRewriterEventFilter::PreHandleTouchEvent(
 }
 
 ui::GestureStatus EventRewriterEventFilter::PreHandleGestureEvent(
-    aura::Window* target, ui::GestureEventImpl* event) {
+    aura::Window* target, ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 

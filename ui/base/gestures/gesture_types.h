@@ -12,6 +12,7 @@
 
 namespace ui {
 
+class GestureEvent;
 class TouchEvent;
 
 struct UI_EXPORT GestureEventDetails {
@@ -113,25 +114,6 @@ struct UI_EXPORT GestureEventDetails {
   // Bounding box is an axis-aligned rectangle that contains all the
   // enclosing rectangles of the touch-points in the gesture.
   gfx::Rect bounding_box_;
-};
-
-// An abstract type to represent gesture-events.
-class UI_EXPORT GestureEvent {
- public:
-  virtual ~GestureEvent() {}
-
-  // A gesture event can have multiple touches. This function should return the
-  // lowest ID of the touches in this gesture.
-  virtual int GetLowestTouchId() const = 0;
-
-  // A helper function used in several (all) derived classes.
-  // Returns lowest set bit, or -1 if no bits are set.
-  static int LowestBit(unsigned int bitfield) {
-    int i = -1;
-    // Find the index of the least significant 1 bit
-    while (bitfield && (!((1 << ++i) & bitfield)));
-    return i;
-  }
 };
 
 // An abstract type for consumers of gesture-events created by the

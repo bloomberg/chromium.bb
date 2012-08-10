@@ -18,7 +18,7 @@ class Size;
 }
 
 namespace ui {
-class GestureEventImpl;
+class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
@@ -60,7 +60,7 @@ class AURA_EXPORT WindowDelegate {
 
   virtual ui::TouchStatus OnTouchEvent(ui::TouchEvent* event) = 0;
 
-  virtual ui::GestureStatus OnGestureEvent(ui::GestureEventImpl* event) = 0;
+  virtual ui::GestureStatus OnGestureEvent(ui::GestureEvent* event) = 0;
 
   // Returns true of the window can be focused.
   virtual bool CanFocus() = 0;

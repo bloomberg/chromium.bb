@@ -36,7 +36,7 @@ class ASH_EXPORT EventRewriterEventFilter : public aura::EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   scoped_ptr<EventRewriterDelegate> delegate_;
 

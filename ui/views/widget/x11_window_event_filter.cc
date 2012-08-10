@@ -137,7 +137,7 @@ ui::TouchStatus X11WindowEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus X11WindowEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

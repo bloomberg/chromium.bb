@@ -47,7 +47,7 @@ class TestEventFilter : public EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
  private:
   int key_event_count_;

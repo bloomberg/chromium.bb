@@ -104,7 +104,7 @@ TEST_F(UserActivityDetectorTest, Basic) {
   observer_->reset_stats();
 
   AdvanceTime(advance_delta);
-  ui::GestureEventImpl gesture_event(
+  ui::GestureEvent gesture_event(
       ui::ET_GESTURE_TAP, 0, 0, ui::EF_NONE, base::Time(),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0), 0U);
   EXPECT_FALSE(detector_->PreHandleGestureEvent(window.get(), &gesture_event));

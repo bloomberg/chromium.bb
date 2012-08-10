@@ -83,7 +83,7 @@ class AppListController : public aura::EventFilter,
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   // aura::FocusChangeObserver overrides:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;

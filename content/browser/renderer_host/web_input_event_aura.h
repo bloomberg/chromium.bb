@@ -9,7 +9,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace ui {
-class GestureEventImpl;
+class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
@@ -27,7 +27,7 @@ CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(
 CONTENT_EXPORT WebKit::WebKeyboardEvent MakeWebKeyboardEvent(
     ui::KeyEvent* event);
 CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
-    ui::GestureEventImpl* event);
+    ui::GestureEvent* event);
 CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
     ui::ScrollEvent* event);
 CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEventFlingCancel();

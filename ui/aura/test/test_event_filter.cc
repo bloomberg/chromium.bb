@@ -46,7 +46,7 @@ ui::TouchStatus TestEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus TestEventFilter::PreHandleGestureEvent(
     Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   // TODO(sad):
   return ui::GESTURE_STATUS_UNKNOWN;
 }

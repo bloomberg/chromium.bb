@@ -537,7 +537,7 @@ ui::TouchStatus WebContentsViewAura::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 ui::GestureStatus WebContentsViewAura::OnGestureEvent(
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

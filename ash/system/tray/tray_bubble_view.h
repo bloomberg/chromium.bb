@@ -56,7 +56,7 @@ class TrayBubbleView : public views::BubbleDelegateView {
         ui::TouchEvent* event) OVERRIDE;
     virtual ui::GestureStatus PreHandleGestureEvent(
         aura::Window* target,
-        ui::GestureEventImpl* event) OVERRIDE;
+        ui::GestureEvent* event) OVERRIDE;
 
    private:
     void ProcessLocatedEvent(const ui::LocatedEvent& event);

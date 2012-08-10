@@ -10,7 +10,7 @@
 #include "ui/base/events.h"
 
 namespace ui {
-class GestureEventImpl;
+class GestureEvent;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
@@ -59,7 +59,7 @@ class AURA_EXPORT EventFilter {
   // consumed.
   virtual ui::GestureStatus PreHandleGestureEvent(
       Window* target,
-      ui::GestureEventImpl* event) = 0;
+      ui::GestureEvent* event) = 0;
 };
 
 }  // namespace aura

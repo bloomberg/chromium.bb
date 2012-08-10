@@ -31,7 +31,7 @@ class Size;
 }
 
 namespace ui {
-class GestureEventImpl;
+class GestureEvent;
 class GestureRecognizer;
 class KeyEvent;
 class LayerAnimationSequence;
@@ -145,7 +145,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Handles a gesture event. Returns true if handled. Unlike the other
   // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
   // events are dispatched from GestureRecognizer instead of RootWindowHost.
-  bool DispatchGestureEvent(ui::GestureEventImpl* event);
+  bool DispatchGestureEvent(ui::GestureEvent* event);
 
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);
@@ -273,7 +273,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool ProcessKeyEvent(Window* target, ui::KeyEvent* event);
   ui::TouchStatus ProcessTouchEvent(Window* target, ui::TouchEvent* event);
   ui::GestureStatus ProcessGestureEvent(Window* target,
-                                        ui::GestureEventImpl* event);
+                                        ui::GestureEvent* event);
   bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
 
   // Called when a Window is attached or detached from the RootWindow.

@@ -270,25 +270,25 @@ bool DecodeScrollGesture(const GESTUREINFO& gi,
 WebKit::WebMouseWheelEvent MakeFakeScrollWheelEvent(HWND hwnd,
                                                     POINT start,
                                                     POINT delta) {
-    WebKit::WebMouseWheelEvent result;
-    result.type = WebInputEvent::MouseWheel;
-    result.timeStampSeconds = ::GetMessageTime() / 1000.0;
-    result.button = WebMouseEvent::ButtonNone;
-    result.globalX = start.x;
-    result.globalY = start.y;
-    // Map to window coordinates.
-    POINT client_point = { result.globalX, result.globalY };
-    MapWindowPoints(0, hwnd, &client_point, 1);
-    result.x = client_point.x;
-    result.y = client_point.y;
-    result.windowX = result.x;
-    result.windowY = result.y;
-    // Note that we support diagonal scrolling.
-    result.deltaX = static_cast<float>(delta.x);
-    result.wheelTicksX = WHEEL_DELTA;
-    result.deltaY = static_cast<float>(delta.y);
-    result.wheelTicksY = WHEEL_DELTA;
-    return result;
+  WebKit::WebMouseWheelEvent result;
+  result.type = WebInputEvent::MouseWheel;
+  result.timeStampSeconds = ::GetMessageTime() / 1000.0;
+  result.button = WebMouseEvent::ButtonNone;
+  result.globalX = start.x;
+  result.globalY = start.y;
+  // Map to window coordinates.
+  POINT client_point = { result.globalX, result.globalY };
+  MapWindowPoints(0, hwnd, &client_point, 1);
+  result.x = client_point.x;
+  result.y = client_point.y;
+  result.windowX = result.x;
+  result.windowY = result.y;
+  // Note that we support diagonal scrolling.
+  result.deltaX = static_cast<float>(delta.x);
+  result.wheelTicksX = WHEEL_DELTA;
+  result.deltaY = static_cast<float>(delta.y);
+  result.wheelTicksY = WHEEL_DELTA;
+  return result;
 }
 
 static const int kTouchMask = 0x7;
@@ -300,25 +300,6 @@ inline int GetTouchType(const TOUCHINPUT& point) {
 inline void SetTouchType(TOUCHINPUT* point, int type) {
   point->dwFlags = (point->dwFlags & kTouchMask) | type;
 }
-
-template <class IINTERFACE, class PAYLOAD>
-class WrappedObject : public IINTERFACE {
- public:
-  WrappedObject() {
-  }
-  const PAYLOAD& data() const {
-    return data_;
-  }
-  PAYLOAD& data() {
-    return data_;
-  }
-
- private:
-  PAYLOAD data_;
-
-  typedef WrappedObject<IINTERFACE,PAYLOAD> Type;
-  DISALLOW_COPY_AND_ASSIGN(Type);
-};
 
 ui::EventType ConvertToUIEvent(WebKit::WebTouchPoint::State t) {
   switch (t) {
@@ -391,68 +372,57 @@ WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
   }
 }
 
-class LocalGestureEvent :
-    public WrappedObject<ui::GestureEvent, WebKit::WebGestureEvent> {
+class LocalGestureEvent : public ui::GestureEvent {
  public:
-  LocalGestureEvent(
-      HWND hwnd,
-      const ui::GestureEventDetails& details,
-      const gfx::Point& location,
-      int flags,
-      base::Time time,
-      unsigned int touch_id_bitfield)
-      : touch_ids_bitfield_(touch_id_bitfield),
-        type_(details.type()) {
-    // location is given in window coordinates, based on the parent window.
-    // Map to the appropriate window's coordinates. For a root window the
-    // coordinates won't change, because the parent shares our rect.
-    POINT client_point = { location.x(), location.y()};
-    MapWindowPoints(::GetParent(hwnd), hwnd, &client_point, 1);
-    POINT screen_point = { location.x(), location.y()};
-    MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point, 1);
-    data().x = client_point.x;
-    data().y = client_point.y;
-    data().globalX = screen_point.x;
-    data().globalY = screen_point.y;
-    data().type = ConvertToWebInputEvent(type_);
-    data().boundingBox = details.bounding_box();
+  LocalGestureEvent(HWND hwnd,
+                    const ui::GestureEventDetails& details,
+                    const gfx::Point& location,
+                    int flags,
+                    base::Time time,
+                    unsigned int touch_id_bitfield)
+      : ui::GestureEvent(details.type(), location.x(), location.y(), flags,
+            time, details, touch_id_bitfield),
+        client_point_(location.ToPOINT()),
+        screen_point_(location.ToPOINT()) {
+    MapWindowPoints(::GetParent(hwnd), hwnd, &client_point_, 1);
+    MapWindowPoints(hwnd, HWND_DESKTOP, &screen_point_, 1);
+  }
+
+  virtual ~LocalGestureEvent() {}
+
+  WebKit::WebGestureEvent ToWebGestureEvent() {
+    WebKit::WebGestureEvent gesture_event;
+    gesture_event.type = ConvertToWebInputEvent(type());
+    gesture_event.x = client_point_.x;
+    gesture_event.y = client_point_.y;
+    gesture_event.globalX = screen_point_.x;
+    gesture_event.globalY = screen_point_.y;
+    gesture_event.boundingBox = details().bounding_box();
 
     // Copy any event-type specific data.
-    switch (type_) {
+    switch (type()) {
       case ui::ET_GESTURE_TAP:
-        data().deltaX = details.tap_count();
+        gesture_event.deltaX = details().tap_count();
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
-        data().deltaX = details.scroll_x();
-        data().deltaY = details.scroll_y();
+        gesture_event.deltaX = details().scroll_x();
+        gesture_event.deltaY = details().scroll_y();
         break;
       case ui::ET_GESTURE_PINCH_UPDATE:
-        data().deltaX = details.scale();
+        gesture_event.deltaX = details().scale();
         break;
       case ui::ET_SCROLL_FLING_START:
-        data().deltaX = details.velocity_x();
-        data().deltaY = details.velocity_y();
+        gesture_event.deltaX = details().velocity_x();
+        gesture_event.deltaY = details().velocity_y();
       default:
         break;
     }
-  }
-
-  virtual int GetLowestTouchId() const OVERRIDE {
-    return LowestBit(touch_ids_bitfield_);
-  }
-
-  ui::EventType type() {
-    return type_;
+    return gesture_event;
   }
 
  private:
-  // The set of indices of ones in the binary representation of
-  // |touch_ids_bitfield_| is the set of touch_ids associate with this gesture.
-  // This value is stored as a bitfield because the number of touch ids varies,
-  // but we currently don't need more than 32 touches at a time.
-  const unsigned int touch_ids_bitfield_;
-
-  ui::EventType type_;
+  POINT client_point_;
+  POINT screen_point_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalGestureEvent);
 };
@@ -2828,10 +2798,10 @@ bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
     return false;
 
   LocalGestureEvent* local = static_cast<LocalGestureEvent*>(gesture);
-  if (local->data().type == WebKit::WebGestureEvent::Undefined)
+  WebKit::WebGestureEvent gesture_event = local->ToWebGestureEvent();
+  if (gesture_event.type == WebKit::WebGestureEvent::Undefined)
     return false;
-  const WebKit::WebGestureEvent& generatedEvent = local->data();
-  render_widget_host_->ForwardGestureEvent(generatedEvent);
+  render_widget_host_->ForwardGestureEvent(gesture_event);
   return true;
 }
 

@@ -339,7 +339,7 @@ ui::TouchStatus LauncherTooltipManager::PreHandleTouchEvent(
 }
 
 ui::GestureStatus LauncherTooltipManager::PreHandleGestureEvent(
-    aura::Window* target, ui::GestureEventImpl* event) {
+    aura::Window* target, ui::GestureEvent* event) {
   if (widget_ && widget_->IsVisible()) {
     // Because this mouse event may arrive to |view_|, here we just schedule
     // the closing event rather than directly calling Close().

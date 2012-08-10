@@ -43,7 +43,7 @@ class ASH_EXPORT UserActivityDetector : public aura::EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
  private:
   // Notifies observers if enough time has passed since the last notification.

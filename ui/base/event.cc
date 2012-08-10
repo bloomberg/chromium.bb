@@ -373,23 +373,23 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
   }
 }
 
-GestureEventImpl::GestureEventImpl(EventType type,
-                                   int x,
-                                   int y,
-                                   int flags,
-                                   base::Time time_stamp,
-                                   const GestureEventDetails& details,
-                                   unsigned int touch_ids_bitfield)
+GestureEvent::GestureEvent(EventType type,
+                           int x,
+                           int y,
+                           int flags,
+                           base::Time time_stamp,
+                           const GestureEventDetails& details,
+                           unsigned int touch_ids_bitfield)
     : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
       details_(details),
       touch_ids_bitfield_(touch_ids_bitfield) {
   set_time_stamp(base::TimeDelta::FromSeconds(time_stamp.ToDoubleT()));
 }
 
-GestureEventImpl::~GestureEventImpl() {
+GestureEvent::~GestureEvent() {
 }
 
-int GestureEventImpl::GetLowestTouchId() const {
+int GestureEvent::GetLowestTouchId() const {
   if (touch_ids_bitfield_ == 0)
     return -1;
   int i = -1;

@@ -309,7 +309,7 @@ ui::TouchStatus TooltipController::PreHandleTouchEvent(
 
 ui::GestureStatus TooltipController::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

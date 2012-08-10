@@ -817,7 +817,7 @@ ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 ui::GestureStatus NativeWidgetAura::OnGestureEvent(
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   DCHECK(window_->IsVisible());
   GestureEvent gesture_event(event);
   return delegate_->OnGestureEvent(gesture_event);

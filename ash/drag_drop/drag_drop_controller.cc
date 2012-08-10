@@ -254,7 +254,7 @@ ui::TouchStatus DragDropController::PreHandleTouchEvent(
 
 ui::GestureStatus DragDropController::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

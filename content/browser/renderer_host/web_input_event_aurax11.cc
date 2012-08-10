@@ -358,7 +358,7 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
 }
 
 WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   WebKit::WebGestureEvent gesture_event;
 
   switch (event->type()) {

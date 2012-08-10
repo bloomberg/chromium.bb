@@ -175,7 +175,7 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
     return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual ui::GestureStatus OnGestureEvent(
-      ui::GestureEventImpl* event) OVERRIDE {
+      ui::GestureEvent* event) OVERRIDE {
     gesture_event_count_++;
     return ui::GESTURE_STATUS_UNKNOWN;
   }
@@ -218,7 +218,7 @@ class GestureTrackPositionDelegate : public TestWindowDelegate {
   GestureTrackPositionDelegate() {}
 
   virtual ui::GestureStatus OnGestureEvent(
-      ui::GestureEventImpl* event) OVERRIDE {
+      ui::GestureEvent* event) OVERRIDE {
     position_ = event->location();
     return ui::GESTURE_STATUS_CONSUMED;
   }

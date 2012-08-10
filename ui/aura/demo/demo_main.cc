@@ -63,7 +63,7 @@ class DemoWindowDelegate : public aura::WindowDelegate {
     return ui::TOUCH_STATUS_END;
   }
   virtual ui::GestureStatus OnGestureEvent(
-      ui::GestureEventImpl* event) OVERRIDE {
+      ui::GestureEvent* event) OVERRIDE {
     return ui::GESTURE_STATUS_UNKNOWN;
   }
   virtual bool CanFocus() OVERRIDE { return true; }

@@ -135,7 +135,7 @@ ui::TouchStatus CompoundEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus CompoundEventFilter::PreHandleGestureEvent(
     Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
   if (filters_.might_have_observers()) {
     ObserverListBase<EventFilter>::Iterator it(filters_);

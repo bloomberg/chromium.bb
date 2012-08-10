@@ -42,7 +42,7 @@ class WindowCycleEventFilter : public aura::EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCycleEventFilter);
 };
@@ -80,7 +80,7 @@ ui::TouchStatus WindowCycleEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus WindowCycleEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 

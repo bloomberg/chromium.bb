@@ -52,7 +52,7 @@ class FrameMaximizeButton::EscapeEventFilter : public aura::EventFilter {
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
  private:
   FrameMaximizeButton* button_;
@@ -94,7 +94,7 @@ ui::TouchStatus FrameMaximizeButton::EscapeEventFilter::PreHandleTouchEvent(
 
 ui::GestureStatus FrameMaximizeButton::EscapeEventFilter::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

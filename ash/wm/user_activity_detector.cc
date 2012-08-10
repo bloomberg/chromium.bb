@@ -58,7 +58,7 @@ ui::TouchStatus UserActivityDetector::PreHandleTouchEvent(
 
 ui::GestureStatus UserActivityDetector::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   if (!GetRootWindowController(target->GetRootWindow()))
     return ui::GESTURE_STATUS_CONSUMED;
   MaybeNotify();

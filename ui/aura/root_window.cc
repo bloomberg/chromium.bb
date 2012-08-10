@@ -272,7 +272,7 @@ void RootWindow::ScheduleFullDraw() {
   compositor_->ScheduleFullDraw();
 }
 
-bool RootWindow::DispatchGestureEvent(ui::GestureEventImpl* event) {
+bool RootWindow::DispatchGestureEvent(ui::GestureEvent* event) {
   DispatchHeldMouseMove();
 
   Window* target = client::GetCaptureWindow(this);
@@ -284,7 +284,7 @@ bool RootWindow::DispatchGestureEvent(ui::GestureEventImpl* event) {
   }
 
   if (target) {
-    ui::GestureEventImpl translated_event(
+    ui::GestureEvent translated_event(
         *event, static_cast<Window*>(this), target);
     ui::GestureStatus status = ProcessGestureEvent(target, &translated_event);
     return status != ui::GESTURE_STATUS_UNKNOWN;
@@ -659,7 +659,7 @@ ui::TouchStatus RootWindow::ProcessTouchEvent(Window* target,
 }
 
 ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
-                                                  ui::GestureEventImpl* event) {
+                                                  ui::GestureEvent* event) {
   if (!target->IsVisible())
     return ui::GESTURE_STATUS_UNKNOWN;
 
@@ -688,8 +688,8 @@ bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
     return false;
   bool handled = false;
   for (unsigned int i = 0; i < gestures->size(); i++) {
-    ui::GestureEventImpl* gesture =
-        static_cast<ui::GestureEventImpl*>(gestures->get().at(i));
+    ui::GestureEvent* gesture =
+        static_cast<ui::GestureEvent*>(gestures->get().at(i));
     if (DispatchGestureEvent(gesture) != ui::GESTURE_STATUS_UNKNOWN)
       handled = true;
   }
@@ -755,7 +755,7 @@ void RootWindow::OnWindowAddedToRootWindow(Window* attached) {
 }
 
 bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
-  return DispatchGestureEvent(static_cast<ui::GestureEventImpl*>(event));
+  return DispatchGestureEvent(static_cast<ui::GestureEvent*>(event));
 }
 
 bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
@@ -768,7 +768,7 @@ ui::GestureEvent* RootWindow::CreateGestureEvent(
     int flags,
     base::Time time,
     unsigned int touch_id_bitfield) {
-  return new ui::GestureEventImpl(details.type(), location.x(), location.y(),
+  return new ui::GestureEvent(details.type(), location.x(), location.y(),
                                   flags, time, details, touch_id_bitfield);
 }
 

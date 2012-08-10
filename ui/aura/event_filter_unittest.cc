@@ -58,7 +58,7 @@ class TestEventFilterWindowDelegate : public TestWindowDelegate {
     return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual ui::GestureStatus OnGestureEvent(
-      ui::GestureEventImpl* event) OVERRIDE {
+      ui::GestureEvent* event) OVERRIDE {
     return ui::GESTURE_STATUS_UNKNOWN;
   }
 

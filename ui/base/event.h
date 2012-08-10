@@ -210,9 +210,9 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
   }
 
   TouchEvent(EventType type,
-                 const gfx::Point& root_location,
-                 int touch_id,
-                 base::TimeDelta time_stamp);
+             const gfx::Point& root_location,
+             int touch_id,
+             base::TimeDelta time_stamp);
 
   virtual ~TouchEvent();
 
@@ -372,36 +372,33 @@ class UI_EXPORT ScrollEvent : public MouseEvent {
   DISALLOW_COPY_AND_ASSIGN(ScrollEvent);
 };
 
-// TODO(beng): rename to GestureEvent after conversion is complete.
-class UI_EXPORT GestureEventImpl : public LocatedEvent,
-                                   public GestureEvent {
+class UI_EXPORT GestureEvent : public LocatedEvent {
  public:
-  GestureEventImpl(EventType type,
-                   int x,
-                   int y,
-                   int flags,
-                   base::Time time_stamp,
-                   const GestureEventDetails& details,
-                   unsigned int touch_ids_bitfield);
+  GestureEvent(EventType type,
+               int x,
+               int y,
+               int flags,
+               base::Time time_stamp,
+               const GestureEventDetails& details,
+               unsigned int touch_ids_bitfield);
 
-  // Create a new GestureEventImpl which is identical to the provided model.
+  // Create a new GestureEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
   // converted from |source| coordinate system to |target| coordinate system.
   template <typename T>
-  GestureEventImpl(const GestureEventImpl& model, T* source, T* target)
+  GestureEvent(const GestureEvent& model, T* source, T* target)
       : LocatedEvent(model, source, target),
         details_(model.details_),
         touch_ids_bitfield_(model.touch_ids_bitfield_) {
   }
 
-  virtual ~GestureEventImpl();
+  virtual ~GestureEvent();
 
   const GestureEventDetails& details() const { return details_; }
 
   // Returns the lowest touch-id of any of the touches which make up this
-  // gesture.
-  // If there are no touches associated with this gesture, returns -1.
-  virtual int GetLowestTouchId() const OVERRIDE;
+  // gesture. If there are no touches associated with this gesture, returns -1.
+  int GetLowestTouchId() const;
 
  private:
   GestureEventDetails details_;
@@ -412,7 +409,7 @@ class UI_EXPORT GestureEventImpl : public LocatedEvent,
   // but we currently don't need more than 32 touches at a time.
   const unsigned int touch_ids_bitfield_;
 
-  DISALLOW_COPY_AND_ASSIGN(GestureEventImpl);
+  DISALLOW_COPY_AND_ASSIGN(GestureEvent);
 };
 
 }  // namespace ui

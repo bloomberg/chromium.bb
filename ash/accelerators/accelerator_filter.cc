@@ -91,7 +91,7 @@ ui::TouchStatus AcceleratorFilter::PreHandleTouchEvent(
 
 ui::GestureStatus AcceleratorFilter::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

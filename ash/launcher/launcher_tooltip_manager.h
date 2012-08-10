@@ -80,7 +80,7 @@ protected:
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   // ShelfLayoutManager::Observer overrides:
   virtual void WillDeleteShelf() OVERRIDE;

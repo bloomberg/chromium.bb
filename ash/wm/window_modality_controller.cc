@@ -93,7 +93,7 @@ ui::TouchStatus WindowModalityController::PreHandleTouchEvent(
 
 ui::GestureStatus WindowModalityController::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   // TODO: make gestures work with modals.
   return ui::GESTURE_STATUS_UNKNOWN;
 }

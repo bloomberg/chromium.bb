@@ -53,7 +53,7 @@ ScrollEvent::ScrollEvent(const NativeEvent& native_event)
 
 GestureEvent::GestureEvent(const NativeEvent& event)
     : LocatedEvent(event),
-      details_(static_cast<ui::GestureEventImpl*>(event)->details()) {
+      details_(static_cast<ui::GestureEvent*>(event)->details()) {
 }
 
 }  // namespace views

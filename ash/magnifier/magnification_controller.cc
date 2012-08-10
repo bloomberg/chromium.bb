@@ -107,7 +107,7 @@ class MagnificationControllerImpl : virtual public MagnificationController,
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   aura::RootWindow* root_window_;
 
@@ -454,7 +454,7 @@ ui::TouchStatus MagnificationControllerImpl::PreHandleTouchEvent(
 
 ui::GestureStatus MagnificationControllerImpl::PreHandleGestureEvent(
     aura::Window* target,
-    ui::GestureEventImpl* event) {
+    ui::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

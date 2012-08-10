@@ -101,7 +101,7 @@ class SystemGestureEventFilter : public aura::EventFilter,
       ui::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
-      ui::GestureEventImpl* event) OVERRIDE;
+      ui::GestureEvent* event) OVERRIDE;
 
   // Overridden from aura::WindowObserver.
   virtual void OnWindowVisibilityChanged(aura::Window* window,
@@ -116,15 +116,15 @@ class SystemGestureEventFilter : public aura::EventFilter,
 
   // Handle events meant for volume / brightness. Returns true when no further
   // events from this gesture should be sent.
-  bool HandleDeviceControl(aura::Window* target, ui::GestureEventImpl* event);
+  bool HandleDeviceControl(aura::Window* target, ui::GestureEvent* event);
 
   // Handle events meant for showing the launcher. Returns true when no further
   // events from this gesture should be sent.
-  bool HandleLauncherControl(ui::GestureEventImpl* event);
+  bool HandleLauncherControl(ui::GestureEvent* event);
 
   // Handle events meant to switch through applications. Returns true when no
   // further events from this gesture should be sent.
-  bool HandleApplicationControl(ui::GestureEventImpl* event);
+  bool HandleApplicationControl(ui::GestureEvent* event);
 
   typedef std::map<aura::Window*, SystemPinchHandler*> WindowPinchHandlerMap;
   // Created on demand when a system-level pinch gesture is initiated. Destroyed
