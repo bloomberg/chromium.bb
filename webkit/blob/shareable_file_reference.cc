@@ -5,16 +5,61 @@
 #include "webkit/blob/shareable_file_reference.h"
 
 #include <map>
+
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/lazy_instance.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_checker.h"
 
 namespace webkit_blob {
 
 namespace {
 
-typedef std::map<FilePath, ShareableFileReference*> ShareableFileMap;
+// A shareable file map with enforcement of thread checker.
+// This map may get deleted on a different thread in AtExitManager at the
+// very end on the main thread (at the point all other threads must be
+// terminated), so we use ThreadChecker rather than NonThreadSafe and do not
+// check thread in the dtor.
+class ShareableFileMap {
+ public:
+  typedef std::map<FilePath, ShareableFileReference*> FileMap;
+  typedef FileMap::iterator iterator;
+  typedef FileMap::key_type key_type;
+  typedef FileMap::value_type value_type;
+
+  ShareableFileMap() {}
+
+  iterator Find(key_type key) {
+    DCHECK(CalledOnValidThread());
+    return file_map_.find(key);
+  }
+
+  iterator End() {
+    DCHECK(CalledOnValidThread());
+    return file_map_.end();
+  }
+
+  std::pair<iterator, bool> Insert(value_type value) {
+    DCHECK(CalledOnValidThread());
+    return file_map_.insert(value);
+  }
+
+  void Erase(key_type key) {
+    DCHECK(CalledOnValidThread());
+    file_map_.erase(key);
+  }
+
+  bool CalledOnValidThread() const {
+    return thread_checker_.CalledOnValidThread();
+  }
+
+ private:
+  FileMap file_map_;
+  base::ThreadChecker thread_checker_;
+  DISALLOW_COPY_AND_ASSIGN(ShareableFileMap);
+};
+
 base::LazyInstance<ShareableFileMap> g_file_map = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -22,9 +67,9 @@ base::LazyInstance<ShareableFileMap> g_file_map = LAZY_INSTANCE_INITIALIZER;
 // static
 scoped_refptr<ShareableFileReference> ShareableFileReference::Get(
     const FilePath& path) {
-  ShareableFileMap::iterator found = g_file_map.Get().find(path);
+  ShareableFileMap::iterator found = g_file_map.Get().Find(path);
   ShareableFileReference* reference =
-      (found == g_file_map.Get().end()) ? NULL : found->second;
+      (found == g_file_map.Get().End()) ? NULL : found->second;
   return scoped_refptr<ShareableFileReference>(reference);
 }
 
@@ -37,7 +82,7 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
 
   // Required for VS2010: http://connect.microsoft.com/VisualStudio/feedback/details/520043/error-converting-from-null-to-a-pointer-type-in-std-pair
   webkit_blob::ShareableFileReference* null_reference = NULL;
-  InsertResult result = g_file_map.Get().insert(
+  InsertResult result = g_file_map.Get().Insert(
       ShareableFileMap::value_type(path, null_reference));
   if (result.second == false)
     return scoped_refptr<ShareableFileReference>(result.first->second);
@@ -51,6 +96,7 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
 
 void ShareableFileReference::AddFinalReleaseCallback(
     const FinalReleaseCallback& callback) {
+  DCHECK(g_file_map.Get().CalledOnValidThread());
   final_release_callbacks_.push_back(callback);
 }
 
@@ -60,12 +106,12 @@ ShareableFileReference::ShareableFileReference(
     : path_(path),
       final_release_policy_(policy),
       file_task_runner_(file_task_runner) {
-  DCHECK(g_file_map.Get().find(path_)->second == NULL);
+  DCHECK(g_file_map.Get().Find(path_)->second == NULL);
 }
 
 ShareableFileReference::~ShareableFileReference() {
-  DCHECK(g_file_map.Get().find(path_)->second == this);
-  g_file_map.Get().erase(path_);
+  DCHECK(g_file_map.Get().Find(path_)->second == this);
+  g_file_map.Get().Erase(path_);
 
   for (size_t i = 0; i < final_release_callbacks_.size(); i++)
     final_release_callbacks_[i].Run(path_);
