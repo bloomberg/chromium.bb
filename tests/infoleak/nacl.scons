@@ -21,10 +21,14 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_infoleak_test')
 
-if not env.Bit('bitcode') and (env.Bit('target_x86_32') or
-                               env.Bit('target_x86_64')):
-  nexe = env.ComponentProgram('test_fpu_control_word',
-                              'test_fpu_control_word.c',
+if (not env.Bit('pnacl_generate_pexe') and
+    # TODO(mcgrathr): disabled for x86-32 pnacl due to codegen bug
+    # http://code.google.com/p/nativeclient/issues/detail?id=2960
+    not (env.Bit('bitcode') and env.Bit('target_x86_32'))):
+  fpu_cw_sources = ['test_fpu_control_word.c']
+  if env.Bit('target_arm'):
+    fpu_cw_sources.append('test_fpu_control_word_arm.S')
+  nexe = env.ComponentProgram('test_fpu_control_word', fpu_cw_sources,
                               EXTRA_LIBS=['${NONIRT_LIBS}'])
   node = env.CommandSelLdrTestNacl('test_fpu_control_word.out', nexe)
   env.AddNodeToTestSuite(node,
@@ -32,4 +36,7 @@ if not env.Bit('bitcode') and (env.Bit('target_x86_32') or
                          'run_fpu_control_word_test',
                          # Valgrind apparenty doesn't implement
                          # fnstcw;fldcw correctly.
-                         is_broken=env.IsRunningUnderValgrind())
+                         is_broken=(env.IsRunningUnderValgrind() or
+# TODO(mcgrathr): Fails on ARM waiting for fix to
+# http://code.google.com/p/nativeclient/issues/detail?id=2955
+                                    env.Bit('target_arm')))
