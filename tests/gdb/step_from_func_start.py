@@ -12,7 +12,6 @@ def test(gdb):
   assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
   gdb.ResumeCommand('step')
   gdb.ResumeCommand('step')
-  #assert gdb.Eval('global_var') == '0'
   gdb.ResumeCommand('step')
   assert gdb.Eval('global_var') == '1'
   gdb.Quit()
