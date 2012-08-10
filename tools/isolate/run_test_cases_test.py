@@ -99,12 +99,12 @@ class RunTestCases(unittest.TestCase):
   def test_gtest_filter(self):
     old = run_test_cases.run_test_cases
     exe = os.path.join(ROOT_DIR, 'data', 'gtest_fake', 'gtest_fake_pass.py')
-    def expect(executable, test_cases, jobs, timeout, no_dump):
+    def expect(executable, test_cases, jobs, timeout, result_file):
       self.assertEquals(exe, executable)
       self.assertEquals(['Foo.Bar1', 'Foo.Bar3'], test_cases)
       self.assertEquals(run_test_cases.num_processors(), jobs)
       self.assertEquals(120, timeout)
-      self.assertEquals(None, no_dump)
+      self.assertEquals(exe + '.run_test_cases', result_file)
       return 89
     try:
       run_test_cases.run_test_cases = expect

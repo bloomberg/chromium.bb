@@ -5,9 +5,11 @@
 
 """Scripts to run a test, grab the failures and trace them."""
 
+import json
 import os
 import subprocess
 import sys
+import tempfile
 
 import run_test_cases
 
@@ -48,6 +50,29 @@ def trace_and_merge(result, test):
       [sys.executable, 'isolate.py', 'merge', '-r', result])
 
 
+def run_all(result):
+  """Runs all the tests. Returns the tests that failed or None on failure.
+
+  Assumes run_test_cases.py is implicitly called.
+  """
+  handle, result_file = tempfile.mkstemp(prefix='run_test_cases')
+  os.close(handle)
+  env = os.environ.copy()
+  env['RUN_TEST_CASES_RESULT_FILE'] = result_file
+  subprocess.call(
+      [sys.executable, 'isolate.py', 'run', '-r', result], env=env)
+  if not os.path.isfile(result_file):
+    print >> sys.stderr, 'Failed to find %s' % result_file
+    return None
+  with open(result_file) as f:
+    data = json.load(f)
+  os.remove(result_file)
+  return [
+    test for test, runs in data.iteritems()
+    if not any(not run['returncode'] for run in runs)
+  ]
+
+
 def run(result, test):
   """Runs a single test case in an isolated environment.
 
@@ -55,7 +80,7 @@ def run(result, test):
   """
   return not subprocess.call([
     sys.executable, 'isolate.py', 'run', '-r', result,
-    '--', '--gtest_filter=' + test
+    '--', '--gtest_filter=' + test,
   ])
 
 
@@ -75,14 +100,28 @@ def trace_and_verify(result, test):
   return run(result, test)
 
 
-def run_all(result, executable):
+def fix_all(result):
   """Runs all the test cases in a gtest executable and trace the failing tests.
 
-  Then make sure the test passes afterward.
+  Returns True on success.
+
+  Makes sure the test passes afterward.
   """
-  test_cases = run_test_cases.list_test_cases(
-      executable, 0, 0, False, False, False)
-  print 'Found %d test cases.' % len(test_cases)
+  # These could have adverse side-effects.
+  # TODO(maruel): Be more intelligent about it, for now be safe.
+  for i in run_test_cases.KNOWN_GTEST_ENV_VARS:
+    if i in os.environ:
+      print >> 'Please unset %s' % i
+      return False
+
+  test_cases = run_all(result)
+  if test_cases is None:
+    return False
+
+  print '\nFound %d broken test cases.' % len(test_cases)
+  if not test_cases:
+    return True
+
   failures = []
   fixed_tests = []
   try:
@@ -135,7 +174,7 @@ def main():
         '%s doesn\'t exist, please build %s_run' % (result, basename))
     return 1
 
-  return not run_all(result, executable)
+  return not fix_all(result)
 
 
 if __name__ == '__main__':

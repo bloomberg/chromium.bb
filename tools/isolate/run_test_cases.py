@@ -21,6 +21,42 @@ import threading
 import time
 
 
+# These are known to influence the way the output is generated.
+KNOWN_GTEST_ENV_VARS = [
+  'GTEST_ALSO_RUN_DISABLED_TESTS',
+  'GTEST_BREAK_ON_FAILURE',
+  'GTEST_CATCH_EXCEPTIONS',
+  'GTEST_COLOR',
+  'GTEST_FILTER',
+  'GTEST_OUTPUT',
+  'GTEST_PRINT_TIME',
+  'GTEST_RANDOM_SEED',
+  'GTEST_REPEAT',
+  'GTEST_SHARD_INDEX',
+  'GTEST_SHARD_STATUS_FILE',
+  'GTEST_SHUFFLE',
+  'GTEST_THROW_ON_FAILURE',
+  'GTEST_TOTAL_SHARDS',
+]
+
+# These needs to be poped out before running a test.
+GTEST_ENV_VARS_TO_REMOVE = [
+  # TODO(maruel): Handle.
+  'GTEST_ALSO_RUN_DISABLED_TESTS',
+  'GTEST_FILTER',
+  # TODO(maruel): Handle.
+  'GTEST_OUTPUT',
+  # TODO(maruel): Handle.
+  'GTEST_RANDOM_SEED',
+  # TODO(maruel): Handle.
+  'GTEST_REPEAT',
+  'GTEST_SHARD_INDEX',
+  # TODO(maruel): Handle.
+  'GTEST_SHUFFLE',
+  'GTEST_TOTAL_SHARDS',
+]
+
+
 def num_processors():
   """Returns the number of processors.
 
@@ -428,8 +464,10 @@ class Runner(object):
     # It is important to remove the shard environment variables since it could
     # conflict with --gtest_filter.
     self.env = os.environ.copy()
-    self.env.pop('GTEST_SHARD_INDEX', None)
-    self.env.pop('GTEST_TOTAL_SHARDS', None)
+    for name in GTEST_ENV_VARS_TO_REMOVE:
+      self.env.pop(name, None)
+    # Forcibly enable color by default, if not already disabled.
+    self.env.setdefault('GTEST_COLOR', 'on')
 
   def map(self, test_case):
     """Traces a single test case and returns its output."""
@@ -449,7 +487,8 @@ class Runner(object):
         'test_case': test_case,
         'returncode': returncode,
         'duration': duration,
-        'output': output,
+        # It needs to be valid utf-8 otherwise it can't be store.
+        'output': output.decode('ascii', 'ignore').encode('utf-8'),
       }
       if '[ RUN      ]' not in output:
         # Can't find gtest marker, mark it as invalid.
@@ -507,7 +546,7 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
   return tests
 
 
-def run_test_cases(executable, test_cases, jobs, timeout, no_dump):
+def run_test_cases(executable, test_cases, jobs, timeout, result_file):
   """Traces test cases one by one."""
   progress = Progress(len(test_cases))
   with ThreadPool(jobs) as pool:
@@ -517,8 +556,8 @@ def run_test_cases(executable, test_cases, jobs, timeout, no_dump):
     results = pool.join(progress, 0.1)
     duration = time.time() - progress.start
   results = dict((item[0]['test_case'], item) for item in results)
-  if not no_dump:
-    with open('%s.run_test_cases' % executable, 'wb') as f:
+  if result_file:
+    with open(result_file, 'wb') as f:
       json.dump(results, f, sort_keys=True, indent=2)
   sys.stdout.write('\n')
   total = len(results)
@@ -583,7 +622,11 @@ def main(argv):
   parser.add_option(
       '--no-dump',
       action='store_true',
-      help='do not generate a .test_cases file')
+      help='do not generate a .run_test_cases file')
+  parser.add_option(
+      '--result',
+      default=os.environ.get('RUN_TEST_CASES_RESULT_FILE', ''),
+      help='Override the default name of the generated .run_test_cases file')
 
   group = optparse.OptionGroup(parser, 'Which test cases to run')
   group.add_option(
@@ -613,6 +656,7 @@ def main(argv):
       help='File containing the exact list of test cases to run')
   group.add_option(
       '--gtest_filter',
+      default=os.environ.get('GTEST_FILTER', ''),
       help='Runs a single test, provideded to keep compatibility with '
            'other tools')
   parser.add_option_group(group)
@@ -665,12 +709,20 @@ def main(argv):
   if not test_cases:
     return 0
 
+  if options.no_dump:
+    result_file = None
+  else:
+    if options.result:
+      result_file = options.result
+    else:
+      result_file = '%s.run_test_cases' % executable
+
   return run_test_cases(
       executable,
       test_cases,
       options.jobs,
       options.timeout,
-      options.no_dump)
+      result_file)
 
 
 if __name__ == '__main__':
