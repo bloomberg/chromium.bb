@@ -63,7 +63,6 @@ media::PipelineStatus PipelineStatusNotification::status() {
 
 struct Pipeline::PipelineInitState {
   scoped_refptr<AudioDecoder> audio_decoder;
-  scoped_refptr<VideoDecoder> video_decoder;
 };
 
 Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
@@ -584,14 +583,8 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (last_stage_status != PIPELINE_OK) {
-    // Currently only VideoDecoders have a recoverable error code.
-    if (state_ == kInitVideoDecoder &&
-        last_stage_status == DECODER_ERROR_NOT_SUPPORTED) {
-      state_ = kInitAudioRenderer;
-    } else {
-      SetError(last_stage_status);
-      return;
-    }
+    SetError(last_stage_status);
+    return;
   }
 
   // If we have received the stop or error signal, return immediately.
@@ -601,7 +594,6 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
   DCHECK(state_ == kInitDemuxer ||
          state_ == kInitAudioDecoder ||
          state_ == kInitAudioRenderer ||
-         state_ == kInitVideoDecoder ||
          state_ == kInitVideoRenderer);
 
   // Demuxer created, create audio decoder.
@@ -624,18 +616,10 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     }
   }
 
-  // Assuming audio renderer was created, create video decoder.
+  // Assuming audio renderer was created, create video renderer.
   if (state_ == kInitAudioRenderer) {
-    // Then perform the stage of initialization, i.e. initialize video decoder.
-    SetState(kInitVideoDecoder);
-    if (InitializeVideoDecoder(demuxer_))
-      return;
-  }
-
-  // Assuming video decoder was created, create video renderer.
-  if (state_ == kInitVideoDecoder) {
     SetState(kInitVideoRenderer);
-    if (InitializeVideoRenderer(pipeline_init_state_->video_decoder)) {
+    if (InitializeVideoRenderer(demuxer_->GetStream(DemuxerStream::VIDEO))) {
       base::AutoLock auto_lock(lock_);
       has_video_ = true;
       return;
@@ -683,10 +667,8 @@ void Pipeline::StopTask(const base::Closure& stop_cb) {
     return;
   }
 
-  if (video_decoder_) {
-    video_decoder_->PrepareForShutdownHack();
-    video_decoder_ = NULL;
-  }
+  if (video_renderer_)
+    video_renderer_->PrepareForShutdownHack();
 
   if (tearing_down_ && status_ != PIPELINE_OK) {
     // If we are stopping due to SetError(), stop normally instead of
@@ -970,7 +952,6 @@ void Pipeline::TeardownStateTransitionTask() {
     case kInitDemuxer:
     case kInitAudioDecoder:
     case kInitAudioRenderer:
-    case kInitVideoDecoder:
     case kInitVideoRenderer:
     case kSeeking:
     case kStarting:
@@ -1064,34 +1045,6 @@ bool Pipeline::InitializeAudioDecoder(
   return true;
 }
 
-bool Pipeline::InitializeVideoDecoder(
-    const scoped_refptr<Demuxer>& demuxer) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(IsPipelineOk());
-  DCHECK(demuxer);
-
-  scoped_refptr<DemuxerStream> stream =
-      demuxer->GetStream(DemuxerStream::VIDEO);
-
-  if (!stream)
-    return false;
-
-  filter_collection_->SelectVideoDecoder(&pipeline_init_state_->video_decoder);
-
-  if (!pipeline_init_state_->video_decoder) {
-    SetError(PIPELINE_ERROR_REQUIRED_FILTER_MISSING);
-    return false;
-  }
-
-  pipeline_init_state_->video_decoder->Initialize(
-      stream,
-      base::Bind(&Pipeline::OnFilterInitialize, this),
-      base::Bind(&Pipeline::OnUpdateStatistics, this));
-
-  video_decoder_ = pipeline_init_state_->video_decoder;
-  return true;
-}
-
 bool Pipeline::InitializeAudioRenderer(
     const scoped_refptr<AudioDecoder>& decoder) {
   DCHECK(message_loop_->BelongsToCurrentThread());
@@ -1118,11 +1071,11 @@ bool Pipeline::InitializeAudioRenderer(
 }
 
 bool Pipeline::InitializeVideoRenderer(
-    const scoped_refptr<VideoDecoder>& decoder) {
+    const scoped_refptr<DemuxerStream>& stream) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(IsPipelineOk());
 
-  if (!decoder)
+  if (!stream)
     return false;
 
   filter_collection_->SelectVideoRenderer(&video_renderer_);
@@ -1132,7 +1085,8 @@ bool Pipeline::InitializeVideoRenderer(
   }
 
   video_renderer_->Initialize(
-      decoder,
+      stream,
+      *filter_collection_->GetVideoDecoders(),
       base::Bind(&Pipeline::OnFilterInitialize, this),
       base::Bind(&Pipeline::OnUpdateStatistics, this),
       base::Bind(&Pipeline::OnVideoTimeUpdate, this),
@@ -1141,6 +1095,7 @@ bool Pipeline::InitializeVideoRenderer(
       base::Bind(&Pipeline::SetError, this),
       base::Bind(&Pipeline::GetMediaTime, this),
       base::Bind(&Pipeline::GetMediaDuration, this));
+  filter_collection_->GetVideoDecoders()->clear();
   return true;
 }
 
@@ -1174,7 +1129,6 @@ void Pipeline::TearDownPipeline() {
     case kInitDemuxer:
     case kInitAudioDecoder:
     case kInitAudioRenderer:
-    case kInitVideoDecoder:
     case kInitVideoRenderer:
       // Make it look like initialization was successful.
       filter_collection_.reset();

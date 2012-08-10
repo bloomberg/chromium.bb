@@ -33,7 +33,7 @@ static void AddDefaultDecodersToCollection(
                      base::Unretained(message_loop_factory),
                      "VideoDecoderThread"),
           decryptor);
-  filter_collection->AddVideoDecoder(ffmpeg_video_decoder);
+  filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
 }
 
 bool BuildMediaStreamCollection(const WebKit::WebURL& url,
@@ -48,16 +48,13 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
   if (!video_decoder)
     return false;
 
+  // Remove all other decoders and just use the MediaStream one.
   // Remove any "traditional" decoders (e.g. GpuVideoDecoder) from the
   // collection.
   // NOTE: http://crbug.com/110800 is about replacing this ad-hockery with
   // something more designed.
-  scoped_refptr<media::VideoDecoder> old_videodecoder;
-  do {
-    filter_collection->SelectVideoDecoder(&old_videodecoder);
-  } while (old_videodecoder);
-
-  filter_collection->AddVideoDecoder(video_decoder);
+  filter_collection->GetVideoDecoders()->clear();
+  filter_collection->GetVideoDecoders()->push_back(video_decoder);
 
   filter_collection->SetDemuxer(new media::DummyDemuxer(true, false));
 

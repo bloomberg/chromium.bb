@@ -2434,7 +2434,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
             content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
-    collection->AddVideoDecoder(new media::GpuVideoDecoder(
+    collection->GetVideoDecoders()->push_back(new media::GpuVideoDecoder(
         message_loop_factory->GetMessageLoop("GpuVideoDecoder"),
         factories_loop,
         new RendererGpuVideoDecoderFactories(

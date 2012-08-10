@@ -119,7 +119,7 @@ bool InitPipeline(MessageLoop* message_loop,
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
                  "AudioDecoderThread")));
-  collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
+  collection->GetVideoDecoders()->push_back(new media::FFmpegVideoDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
                  "VideoDecoderThread"),

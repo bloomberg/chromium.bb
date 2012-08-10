@@ -77,7 +77,7 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
                  "AudioDecoderThread")));
-  collection->AddVideoDecoder(new FFmpegVideoDecoder(
+  collection->GetVideoDecoders()->push_back(new FFmpegVideoDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
                  "VideoDecoderThread"),
