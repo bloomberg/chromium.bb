@@ -193,6 +193,8 @@ class ExceptionHandler {
                       size_t mapping_size,
                       size_t file_offset);
 
+  // Force signal handling for the specified signal.
+  bool SimulateSignalDelivery(int sig);
  private:
   bool InstallHandlers();
   void UninstallHandlers();
