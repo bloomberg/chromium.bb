@@ -74,8 +74,9 @@
 #include "media/base/media.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorName.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -86,7 +87,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
@@ -255,14 +255,12 @@ void RenderThreadImpl::Init() {
   if (command_line.HasSwitch(switches::kEnableGpuBenchmarking))
       RegisterExtension(content::GpuBenchmarkingExtension::Get());
 
-#if defined(WEBCOMPOSITOR_OWNS_SETTINGS)
   WebKit::WebCompositor::setAcceleratedAnimationEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedAnimation));
   WebKit::WebCompositor::setPerTilePaintingEnabled(
       command_line.HasSwitch(switches::kEnablePerTilePainting));
   WebKit::WebCompositor::setPartialSwapEnabled(
       command_line.HasSwitch(switches::kEnablePartialSwap));
-#endif
 
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.

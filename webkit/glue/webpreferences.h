@@ -18,7 +18,6 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webkit_glue_export.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 
 namespace WebKit {
 class WebView;
@@ -124,11 +123,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool css_variables_enabled;
   bool device_supports_touch;
   bool device_supports_mouse;
-#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
-  bool threaded_animation_enabled;
-  bool per_tile_painting_enabled;
-  bool partial_swap_enabled;
-#endif
   int default_tile_width;
   int default_tile_height;
   int max_untiled_layer_width;

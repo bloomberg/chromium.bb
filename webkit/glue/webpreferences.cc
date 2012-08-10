@@ -106,11 +106,6 @@ WebPreferences::WebPreferences()
       css_variables_enabled(false),
       device_supports_touch(false),
       device_supports_mouse(true),
-#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
-      threaded_animation_enabled(false),
-      per_tile_painting_enabled(false),
-      partial_swap_enabled(false),
-#endif
       default_tile_width(256),
       default_tile_height(256),
       max_untiled_layer_width(512),
@@ -396,16 +391,6 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   settings->setDeviceSupportsTouch(device_supports_touch);
   settings->setDeviceSupportsMouse(device_supports_mouse);
-
-#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
-  settings->setThreadedAnimationEnabled(threaded_animation_enabled);
-
-  // Enable per-tile painting if requested on the command line.
-  settings->setPerTilePaintingEnabled(per_tile_painting_enabled);
-
-  // Enable partial swaps if specified form the command line.
-  settings->setPartialSwapEnabled(partial_swap_enabled);
-#endif
 
   settings->setDefaultTileSize(
       WebSize(default_tile_width, default_tile_height));
