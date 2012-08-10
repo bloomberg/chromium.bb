@@ -34,12 +34,18 @@ UpdateScreenHandler::~UpdateScreenHandler() {
 
 void UpdateScreenHandler::GetLocalizedStrings(
     DictionaryValue *localized_strings) {
+  const string16 short_product_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
+  localized_strings->SetString("checkingForUpdatesMsg",
+      l10n_util::GetStringFUTF16(IDS_CHECKING_FOR_UPDATE_MSG,
+                                 short_product_name));
   localized_strings->SetString("updateScreenTitle",
       l10n_util::GetStringUTF16(IDS_UPDATE_SCREEN_TITLE));
   localized_strings->SetString("checkingForUpdates",
       l10n_util::GetStringUTF16(IDS_CHECKING_FOR_UPDATES));
   localized_strings->SetString("installingUpdateDesc",
-      l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC));
+      l10n_util::GetStringFUTF16(IDS_UPDATE_MSG,
+                                 short_product_name, short_product_name));
   localized_strings->SetString("downloadingTimeLeftLong",
       l10n_util::GetStringUTF16(IDS_DOWNLOADING_TIME_LEFT_LONG));
   localized_strings->SetString("downloadingTimeLeftStatusOneHour",

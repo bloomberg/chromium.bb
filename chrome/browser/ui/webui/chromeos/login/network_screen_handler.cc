@@ -112,6 +112,8 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
 
 void NetworkScreenHandler::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
+  localized_strings->SetString("networkScreenGreeting",
+      l10n_util::GetStringUTF16(IDS_WELCOME_SCREEN_GREETING));
   localized_strings->SetString("networkScreenTitle",
       l10n_util::GetStringUTF16(IDS_WELCOME_SCREEN_TITLE));
   localized_strings->SetString("selectLanguage",

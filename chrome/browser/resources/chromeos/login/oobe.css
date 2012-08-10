@@ -240,9 +240,8 @@ html[oobe=old] #step-logo {
 }
 
 html[oobe=new] #connect .step-contents {
-  /* TODO(nkostylev): Update after content layout changes. */
   -webkit-margin-after: 82px;
-  -webkit-margin-before: 82px;
+  -webkit-margin-before: 33px;
   -webkit-margin-start: 145px;
 }
 
@@ -372,11 +371,11 @@ html[oobe=new] #progress-dots {
 
 .progdot {
   -webkit-margin-end: 12px;
-  background: black;
   opacity: 0.4;
 }
 
 html[oobe=old] .progdot {
+  background: black;
   border-radius: 2px;
   height: 8px;
   width: 8px;
@@ -403,6 +402,7 @@ html[oobe=new] .progdot {
 }
 
 .menu-control {
+  color: #444;
   font-family: inherit;
   line-height: 20px;
   position: relative;
@@ -748,6 +748,7 @@ html[oobe=old] .step-controls {
 
 #oobe.connect #connect-dot,
 #oobe.eula #eula-dot,
+#oobe.update #update-dot,
 #oobe.signin #signin-dot,
 #oobe.gaia-signin #gaia-signin-dot,
 #oobe.enrollment #signin-dot,
@@ -760,9 +761,15 @@ html[oobe=old] .step-controls {
 
 #account-picker-dot,
 #enrollment-dot,
-#oauth-enrollment-dot,
-#update-dot {
+#oauth-enrollment-dot {
   display: none;
+}
+
+#welcome-message {
+  color: #444;
+  font-size: 16px;
+  margin-bottom: 30px;
+  width: 435px;
 }
 
 #connect table {
@@ -817,8 +824,7 @@ html[dir=rtl] #security-tpm {
   right: 49px;
 }
 
-html[oobe=old] #update div,
-#update #update-screen-curtain {
+html[oobe=old] #update div {
   width: 32em;
 }
 
@@ -833,22 +839,28 @@ html[oobe=old] #update div {
 #update #update-screen-curtain {
   -webkit-box-align: start;
   -webkit-box-pack: center;
+}
+
+#update #update-checking-progress {
+  -webkit-box-align: start;
+  -webkit-box-pack: center;
+  color: #9c9c9c;
   display: -webkit-box;
 }
+
 
 html[oobe=old] #update #update-screen-curtain {
   margin: 9em auto;
 }
 
 html[oobe=new] #update #update-screen-curtain {
-  margin: 120px auto;
+  margin: 87px 45px;
 }
 
 html[oobe=new] #update-screen-main {
-  /* TODO(nkostylev): Update after strings are updated. */
-  margin: 85px auto;
+  margin: 85px 45px;
   min-height: 114px;
-  width: 448px;
+  text-align: center;
 }
 
 #update #update-checking-ellipsis {
@@ -888,15 +900,23 @@ html[oobe=new][dir=rtl] #update #update-cancel-hint {
   -webkit-margin-after: 4px;
 }
 
+#update #checking-updates-label {
+  -webkit-margin-after: 34px;
+}
+
 #update #update-bottom-label {
   -webkit-margin-after: 4px;
   -webkit-margin-before: 4px;
+  text-align: left;
+}
+
+html[oobe=old] #update progress {
+  -webkit-margin-start: 74px;
 }
 
 #update progress {
   -webkit-margin-after: 4px;
   -webkit-margin-before: 34px;
-  -webkit-margin-start: 74px;
   height: 15px;
   width: 300px;
 }
@@ -906,7 +926,7 @@ html[oobe=new][dir=rtl] #update #update-cancel-hint {
 }
 
 #update #update-estimated-time-left {
-  color: #666;
+  color: #a3a3a3;
   font-size: 13px;
   text-align: center;
 }
