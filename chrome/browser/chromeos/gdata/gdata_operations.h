@@ -9,8 +9,12 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/gdata/operations_base.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 
 namespace gdata {
+
+class GDataEntry;
+class DocumentEntry;
 
 //============================ GetDocumentsOperation ===========================
 
@@ -83,13 +87,19 @@ class GetAccountMetadataOperation : public GetDataOperation {
 
 //============================ DownloadFileOperation ===========================
 
+// Callback type for DownloadDocument/DownloadFile DocumentServiceInterface
+// calls.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& content_url,
+                            const FilePath& temp_file)> DownloadActionCallback;
+
 // This class performs the operation for downloading of a given document/file.
 class DownloadFileOperation : public UrlFetchOperationBase {
  public:
   DownloadFileOperation(
       GDataOperationRegistry* registry,
       const DownloadActionCallback& download_action_callback,
-      const GetDownloadDataCallback& get_download_data_callback,
+      const GetContentCallback& get_content_callback,
       const GURL& document_url,
       const FilePath& virtual_path,
       const FilePath& output_file_path);
@@ -111,7 +121,7 @@ class DownloadFileOperation : public UrlFetchOperationBase {
 
  private:
   DownloadActionCallback download_action_callback_;
-  GetDownloadDataCallback get_download_data_callback_;
+  GetContentCallback get_content_callback_;
   GURL document_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileOperation);
@@ -308,6 +318,37 @@ class RemoveResourceFromDirectoryOperation : public EntryActionOperation {
 
 //=========================== InitiateUploadOperation ==========================
 
+// Struct for passing params needed for DocumentsService::InitiateUpload()
+// calls.
+//
+// When uploading a new file (UPLOAD_NEW_FILE):
+// - |title| should be set.
+// - |upload_location| should be the upload_url() of the parent directory.
+//
+// When updating an existing file (UPLOAD_EXISTING_FILE):
+// - |title| should be empty
+// - |upload_location| should be the upload_url() of the existing file.
+struct InitiateUploadParams {
+  InitiateUploadParams(UploadMode upload_mode,
+                       const std::string& title,
+                       const std::string& content_type,
+                       int64 content_length,
+                       const GURL& upload_location,
+                       const FilePath& virtual_path);
+  ~InitiateUploadParams();
+
+  UploadMode upload_mode;
+  std::string title;
+  std::string content_type;
+  int64 content_length;
+  GURL upload_location;
+  const FilePath& virtual_path;
+};
+
+// Callback type for DocumentServiceInterface::InitiateUpload.
+typedef base::Callback<void(GDataErrorCode error,
+                            const GURL& upload_url)> InitiateUploadCallback;
+
 // This class performs the operation for initiating the upload of a file.
 class InitiateUploadOperation : public UrlFetchOperationBase {
  public:
@@ -338,6 +379,49 @@ class InitiateUploadOperation : public UrlFetchOperationBase {
 };
 
 //============================ ResumeUploadOperation ===========================
+
+// Struct for response to ResumeUpload.
+struct ResumeUploadResponse {
+  ResumeUploadResponse(GDataErrorCode code,
+                       int64 start_range_received,
+                       int64 end_range_received);
+  ~ResumeUploadResponse();
+
+  GDataErrorCode code;
+  int64 start_range_received;
+  int64 end_range_received;
+  FilePath virtual_path;
+};
+
+// Struct for passing params needed for DocumentsService::ResumeUpload() calls.
+struct ResumeUploadParams {
+  ResumeUploadParams(UploadMode upload_mode,
+                     int64 start_range,
+                     int64 end_range,
+                     int64 content_length,
+                     const std::string& content_type,
+                     scoped_refptr<net::IOBuffer> buf,
+                     const GURL& upload_location,
+                     const FilePath& virtual_path);
+  ~ResumeUploadParams();
+
+  UploadMode upload_mode;  // Mode of the upload.
+  int64 start_range;  // Start of range of contents currently stored in |buf|.
+  int64 end_range;  // End of range of contents currently stored in |buf|.
+  int64 content_length;  // File content-Length.
+  std::string content_type;   // Content-Type of file.
+  scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
+  GURL upload_location;   // Url of where to upload the file to.
+  // Virtual GData path of the file seen in the UI. Not necessary for
+  // resuming an upload, but used for adding an entry to
+  // GDataOperationRegistry.
+  FilePath virtual_path;
+};
+
+// Callback type for DocumentServiceInterface::ResumeUpload.
+typedef base::Callback<void(
+    const ResumeUploadResponse& response,
+    scoped_ptr<gdata::DocumentEntry> new_entry)> ResumeUploadCallback;
 
 // This class performs the operation for resuming the upload of a file.
 class ResumeUploadOperation : public UrlFetchOperationBase {
@@ -439,7 +523,7 @@ class GetContactPhotoOperation : public UrlFetchOperationBase {
  public:
   GetContactPhotoOperation(GDataOperationRegistry* registry,
                            const GURL& photo_url,
-                           const GetDownloadDataCallback& callback);
+                           const GetContentCallback& callback);
   virtual ~GetContactPhotoOperation();
 
  protected:
@@ -453,7 +537,7 @@ class GetContactPhotoOperation : public UrlFetchOperationBase {
   GURL photo_url_;
 
   // Callback to which the photo data is passed.
-  GetDownloadDataCallback callback_;
+  GetContentCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetContactPhotoOperation);
 };

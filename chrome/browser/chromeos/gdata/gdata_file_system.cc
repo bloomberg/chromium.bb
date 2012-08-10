@@ -453,7 +453,7 @@ struct GDataFileSystem::GetFileFromCacheParams {
       const std::string& md5,
       const std::string& mime_type,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback);
+      const GetContentCallback& get_content_callback);
   ~GetFileFromCacheParams();
 
   FilePath virtual_file_path;
@@ -463,7 +463,7 @@ struct GDataFileSystem::GetFileFromCacheParams {
   std::string md5;
   std::string mime_type;
   const GetFileCallback get_file_callback;
-  const GetDownloadDataCallback get_download_data_callback;
+  const GetContentCallback get_content_callback;
 };
 
 GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
@@ -474,7 +474,7 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
     const std::string& md5,
     const std::string& mime_type,
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback)
+    const GetContentCallback& get_content_callback)
     : virtual_file_path(virtual_file_path),
       local_tmp_path(local_tmp_path),
       content_url(content_url),
@@ -482,7 +482,7 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
       md5(md5),
       mime_type(mime_type),
       get_file_callback(get_file_callback),
-      get_download_data_callback(get_download_data_callback) {
+      get_content_callback(get_content_callback) {
 }
 
 GDataFileSystem::GetFileFromCacheParams::~GetFileFromCacheParams() {
@@ -717,7 +717,7 @@ void GDataFileSystem::TransferFileFromRemoteToLocal(
                  ui_weak_ptr_,
                  local_dest_file_path,
                  callback),
-      GetDownloadDataCallback());
+      GetContentCallback());
 }
 
 void GDataFileSystem::TransferFileFromLocalToRemote(
@@ -992,7 +992,7 @@ void GDataFileSystem::CopyOnUIThreadAfterGetEntryInfoPair(
                            ui_weak_ptr_,
                            dest_file_path,
                            callback),
-                GetDownloadDataCallback());
+                GetContentCallback());
 }
 
 void GDataFileSystem::OnGetFileCompleteForCopy(
@@ -1528,7 +1528,7 @@ void GDataFileSystem::OnGetEntryInfoForCreateFile(
 void GDataFileSystem::GetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback) {
+    const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
@@ -1536,13 +1536,13 @@ void GDataFileSystem::GetFileByPath(
                  ui_weak_ptr_,
                  file_path,
                  CreateRelayCallback(get_file_callback),
-                 CreateRelayCallback(get_download_data_callback)));
+                 CreateRelayCallback(get_content_callback)));
 }
 
 void GDataFileSystem::GetFileByPathOnUIThread(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback) {
+    const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   directory_service_->GetEntryInfoByPath(
@@ -1551,13 +1551,13 @@ void GDataFileSystem::GetFileByPathOnUIThread(
                  ui_weak_ptr_,
                  file_path,
                  CreateRelayCallback(get_file_callback),
-                 CreateRelayCallback(get_download_data_callback)));
+                 CreateRelayCallback(get_content_callback)));
 }
 
 void GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback,
+    const GetContentCallback& get_content_callback,
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1567,7 +1567,7 @@ void GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
          (entry_proto.get() && !entry_proto->resource_id().empty()));
   GetResolvedFileByPath(file_path,
                         get_file_callback,
-                        get_download_data_callback,
+                        get_content_callback,
                         error,
                         entry_proto.get());
 }
@@ -1575,7 +1575,7 @@ void GDataFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
 void GDataFileSystem::GetResolvedFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback,
+    const GetContentCallback& get_content_callback,
     GDataFileError error,
     const GDataEntryProto* entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1647,13 +1647,13 @@ void GDataFileSystem::GetResolvedFileByPath(
               entry_proto->file_specific_info().file_md5(),
               entry_proto->file_specific_info().content_mime_type(),
               get_file_callback,
-              get_download_data_callback)));
+              get_content_callback)));
 }
 
 void GDataFileSystem::GetFileByResourceId(
     const std::string& resource_id,
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback) {
+    const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
@@ -1661,25 +1661,25 @@ void GDataFileSystem::GetFileByResourceId(
                  ui_weak_ptr_,
                  resource_id,
                  CreateRelayCallback(get_file_callback),
-                 CreateRelayCallback(get_download_data_callback)));
+                 CreateRelayCallback(get_content_callback)));
 }
 
 void GDataFileSystem::GetFileByResourceIdOnUIThread(
     const std::string& resource_id,
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback) {
+    const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   directory_service_->GetEntryByResourceIdAsync(resource_id,
       base::Bind(&GDataFileSystem::GetFileByEntryOnUIThread,
                  ui_weak_ptr_,
                  get_file_callback,
-                 get_download_data_callback));
+                 get_content_callback));
 }
 
 void GDataFileSystem::GetFileByEntryOnUIThread(
     const GetFileCallback& get_file_callback,
-    const GetDownloadDataCallback& get_download_data_callback,
+    const GetContentCallback& get_content_callback,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1705,7 +1705,7 @@ void GDataFileSystem::GetFileByEntryOnUIThread(
     return;
   }
 
-  GetFileByPath(file_path, get_file_callback, get_download_data_callback);
+  GetFileByPath(file_path, get_file_callback, get_content_callback);
 }
 
 void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
@@ -1749,7 +1749,7 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
                                         params.md5,
                                         params.mime_type,
                                         params.get_file_callback,
-                                        params.get_download_data_callback)));
+                                        params.get_content_callback)));
 }
 
 void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
@@ -1832,7 +1832,7 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
       base::Bind(&GDataFileSystem::OnFileDownloaded,
                  ui_weak_ptr_,
                  params),
-      params.get_download_data_callback);
+      params.get_content_callback);
 }
 
 void GDataFileSystem::GetEntryInfoByPath(const FilePath& file_path,
@@ -3117,7 +3117,7 @@ void GDataFileSystem::OnGetEntryInfoCompleteForOpenFile(
                  GetFileCompleteForOpenParams(
                      entry_proto->resource_id(),
                      entry_proto->file_specific_info().file_md5())),
-      GetDownloadDataCallback(),
+      GetContentCallback(),
       error,
       entry_proto.get());
 }

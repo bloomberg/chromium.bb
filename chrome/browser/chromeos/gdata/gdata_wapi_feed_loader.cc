@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
@@ -136,6 +137,20 @@ bool UseLevelDB() {
 }
 
 }  // namespace
+
+LoadRootFeedParams::LoadRootFeedParams(
+    FilePath search_file_path,
+    bool should_load_from_server,
+    const FindEntryCallback& callback)
+    : search_file_path(search_file_path),
+      should_load_from_server(should_load_from_server),
+      load_error(GDATA_FILE_OK),
+      load_start_time(base::Time::Now()),
+      callback(callback) {
+}
+
+LoadRootFeedParams::~LoadRootFeedParams() {
+}
 
 GetDocumentsParams::GetDocumentsParams(
     int64 start_changestamp,

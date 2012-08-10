@@ -2059,7 +2059,7 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
   system_service->file_system()->GetFileByPath(
       gdata_path,
       base::Bind(&GetGDataFilesFunction::OnFileReady, this),
-      gdata::GetDownloadDataCallback());
+      gdata::GetContentCallback());
 }
 
 

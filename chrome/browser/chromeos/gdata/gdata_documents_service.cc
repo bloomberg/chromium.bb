@@ -174,7 +174,7 @@ void DocumentsService::DownloadDocument(
                                                "exportFormat",
                                                GetExportFormatParam(format)),
       callback,
-      GetDownloadDataCallback());
+      GetContentCallback());
 }
 
 void DocumentsService::DownloadFile(
@@ -182,13 +182,13 @@ void DocumentsService::DownloadFile(
       const FilePath& local_cache_path,
       const GURL& document_url,
       const DownloadActionCallback& download_action_callback,
-      const GetDownloadDataCallback& get_download_data_callback) {
+      const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
       new DownloadFileOperation(operation_registry(),
                                 download_action_callback,
-                                get_download_data_callback, document_url,
+                                get_content_callback, document_url,
                                 virtual_path, local_cache_path));
 }
 

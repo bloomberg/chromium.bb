@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -37,6 +36,11 @@ class GDataEntryProto;
 class GDataDirectoryProto;
 class GDataRootDirectoryProto;
 class PlatformFileInfoProto;
+
+// Callback type used to get result of file search.
+// If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
+typedef base::Callback<void(GDataFileError error, GDataEntry* entry)>
+    FindEntryCallback;
 
 // The root directory content origin.
 enum ContentOrigin {

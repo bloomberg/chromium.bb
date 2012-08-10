@@ -183,7 +183,7 @@ void GDataSyncClient::DoSyncLoop() {
         base::Bind(&GDataSyncClient::OnFetchFileComplete,
                    weak_ptr_factory_.GetWeakPtr(),
                    sync_task),
-        GetDownloadDataCallback());
+        GetContentCallback());
   } else if (sync_task.sync_type == UPLOAD) {
     DVLOG(1) << "Uploading " << sync_task.resource_id;
     file_system_->UpdateFileByResourceId(

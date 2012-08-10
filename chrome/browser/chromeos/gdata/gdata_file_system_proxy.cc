@@ -519,7 +519,7 @@ void GDataFileSystemProxy::OpenFile(
                                              callback,
                                              file_flags,
                                              peer_handle),
-                                  GetDownloadDataCallback());
+                                  GetContentCallback());
     }
   } else if ((file_flags & base::PLATFORM_FILE_CREATE) ||
              (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS)) {
@@ -601,7 +601,7 @@ void GDataFileSystemProxy::OnGetEntryInfoByPath(
                               base::Bind(&CallSnapshotFileCallback,
                                          callback,
                                          file_info),
-                              GetDownloadDataCallback());
+                              GetContentCallback());
 }
 
 void GDataFileSystemProxy::CreateWritableSnapshotFile(

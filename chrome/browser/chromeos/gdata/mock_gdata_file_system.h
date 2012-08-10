@@ -66,11 +66,11 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(GetFileByPath,
                void(const FilePath& file_path,
                     const GetFileCallback& get_file_callback,
-                    const GetDownloadDataCallback& get_download_data_callback));
+                    const GetContentCallback& get_content_callback));
   MOCK_METHOD3(GetFileByResourceId,
                void(const std::string& resource_id,
                     const GetFileCallback& get_file_callback,
-                    const GetDownloadDataCallback& get_download_data_callback));
+                    const GetContentCallback& get_content_callback));
   MOCK_METHOD2(UpdateFileByResourceId,
                void(const std::string& resource_id,
                     const FileOperationCallback& callback));

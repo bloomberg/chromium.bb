@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_runner.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
-#include "chrome/browser/chromeos/gdata/gdata_params.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 

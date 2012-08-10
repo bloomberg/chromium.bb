@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_params.h"
+#include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "googleurl/src/gurl.h"
 

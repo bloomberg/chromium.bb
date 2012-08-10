@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_params.h"
 
 class Profile;
 

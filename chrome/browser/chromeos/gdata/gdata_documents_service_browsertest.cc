@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
       GetTestCachedFilePath(FilePath("cached_testfile.txt")),
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents),
-      gdata::GetDownloadDataCallback());
+      gdata::GetContentCallback());
   content::RunMessageLoop();
 
   EXPECT_EQ(gdata::HTTP_SUCCESS, result);
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
       GetTestCachedFilePath(FilePath("cache_no-such-file.txt")),
       gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents),
-      gdata::GetDownloadDataCallback());
+      gdata::GetContentCallback());
   content::RunMessageLoop();
 
   EXPECT_EQ(gdata::HTTP_NOT_FOUND, result);

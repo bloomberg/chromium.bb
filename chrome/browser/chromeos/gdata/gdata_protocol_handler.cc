@@ -260,7 +260,7 @@ void GDataURLRequestJob::Start() {
   // 5) Find file from file system to get its mime type, gdata file path and
   //    size of physical file.
   // 6) Get file from file system asynchronously with both GetFileCallback and
-  //    GetDownloadDataCallback - this would either get it from cache or
+  //    GetContentCallback - this would either get it from cache or
   //    download it from gdata.
   // 7) If file is downloaded from gdata:
   //    7.1) Whenever net::URLFetcherCore::OnReadCompleted() receives a part
@@ -270,9 +270,9 @@ void GDataURLRequestJob::Start() {
   //    7.2) gdata::DownloadFileOperation overrides the default implementations
   //         of the following methods of net::URLFetcherDelegate:
   //         - ShouldSendDownloadData(): returns true for non-null
-  //                                     GetDownloadDataCallback.
+  //                                     GetContentCallback.
   //         - OnURLFetchDownloadData(): invokes non-null
-  //                                     GetDownloadDataCallback
+  //                                     GetContentCallback
   //    7.3) GDataProtolHandler::OnURLFetchDownloadData (i.e. this class)
   //         is at the end of the invocation chain and actually implements the
   //         method.

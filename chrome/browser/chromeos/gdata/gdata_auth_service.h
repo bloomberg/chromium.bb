@@ -12,7 +12,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_params.h"
+#include "chrome/browser/chromeos/gdata/operations_base.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

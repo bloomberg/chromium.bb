@@ -585,8 +585,6 @@
         'browser/chromeos/gdata/gdata_operation_runner.h',
         'browser/chromeos/gdata/gdata_operations.cc',
         'browser/chromeos/gdata/gdata_operations.h',
-        'browser/chromeos/gdata/gdata_params.cc',
-        'browser/chromeos/gdata/gdata_params.h',
         'browser/chromeos/gdata/gdata_protocol_handler.cc',
         'browser/chromeos/gdata/gdata_protocol_handler.h',
         'browser/chromeos/gdata/gdata_sync_client.cc',

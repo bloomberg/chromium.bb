@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_params.h"
+#include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 
 namespace gdata {
@@ -267,21 +267,21 @@ class GDataFileSystemInterface {
   // will be downloaded through gdata api.
   //
   // Can be called from UI/IO thread. |get_file_callback| and
-  // |get_download_data| are run on the calling thread.
+  // |get_content_callback| are run on the calling thread.
   virtual void GetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback) = 0;
+      const GetContentCallback& get_content_callback) = 0;
 
   // Gets a file by the given |resource_id| from the gdata server. Used for
   // fetching pinned-but-not-fetched files.
   //
   // Can be called from UI/IO thread. |get_file_callback| and
-  // |get_download_data_callback| are run on the calling thread.
+  // |get_content_callback| are run on the calling thread.
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback) = 0;
+      const GetContentCallback& get_content_callback) = 0;
 
   // Updates a file by the given |resource_id| on the gdata server by
   // uploading an updated version. Used for uploading dirty files. The file

@@ -1982,7 +1982,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
       .Times(1);
 
   file_system_->GetFileByPath(file_in_root, callback,
-                              GetDownloadDataCallback());
+                              GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
@@ -2023,7 +2023,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
       .Times(0);
 
   file_system_->GetFileByPath(file_in_root, callback,
-                              GetDownloadDataCallback());
+                              GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(GDATA_FILE_ERROR_NO_SPACE,
@@ -2077,7 +2077,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
       .Times(1);
 
   file_system_->GetFileByPath(file_in_root, callback,
-                              GetDownloadDataCallback());
+                              GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(GDATA_FILE_OK, callback_helper_->last_error_);
@@ -2128,7 +2128,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
       .Times(1);
 
   file_system_->GetFileByPath(file_in_root, callback,
-                              GetDownloadDataCallback());
+                              GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(GDATA_FILE_ERROR_NO_SPACE,
@@ -2168,7 +2168,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
       .Times(0);
 
   file_system_->GetFileByPath(file_in_root, callback,
-                              GetDownloadDataCallback());
+                              GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
@@ -2189,7 +2189,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
   ASSERT_TRUE(src_entry_proto.get());
 
   file_system_->GetFileByPath(file_in_root, callback,
-                              GetDownloadDataCallback());
+                              GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(HOSTED_DOCUMENT, callback_helper_->file_type_);
@@ -2232,7 +2232,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
 
   file_system_->GetFileByResourceId(entry_proto->resource_id(),
                                     callback,
-                                    GetDownloadDataCallback());
+                                    GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
@@ -2268,7 +2268,7 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
 
   file_system_->GetFileByResourceId(entry_proto->resource_id(),
                                     callback,
-                                    GetDownloadDataCallback());
+                                    GetContentCallback());
   test_util::RunBlockingPoolTask();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);

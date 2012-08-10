@@ -98,11 +98,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback) OVERRIDE;
+      const GetContentCallback& get_content_callback) OVERRIDE;
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback) OVERRIDE;
+      const GetContentCallback& get_content_callback) OVERRIDE;
   virtual void UpdateFileByResourceId(
       const std::string& resource_id,
       const FileOperationCallback& callback) OVERRIDE;
@@ -243,7 +243,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnGetEntryInfoCompleteForGetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback,
+      const GetContentCallback& get_content_callback,
       GDataFileError error,
       scoped_ptr<GDataEntryProto> file_info);
 
@@ -656,7 +656,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetResolvedFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback,
+      const GetContentCallback& get_content_callback,
       GDataFileError error,
       const GDataEntryProto* entry_proto);
 
@@ -721,14 +721,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetFileByPathOnUIThread(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback);
+      const GetContentCallback& get_content_callback);
   void GetFileByResourceIdOnUIThread(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback);
+      const GetContentCallback& get_content_callback);
   void GetFileByEntryOnUIThread(
       const GetFileCallback& get_file_callback,
-      const GetDownloadDataCallback& get_download_data_callback,
+      const GetContentCallback& get_content_callback,
       GDataEntry* entry);
   void GetEntryInfoByEntryOnUIThread(
       const GetEntryInfoWithFilePathCallback& callback,

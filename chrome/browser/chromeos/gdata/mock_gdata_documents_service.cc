@@ -182,7 +182,7 @@ void MockDocumentsService::DownloadFileStub(
     const FilePath& local_tmp_path,
     const GURL& content_url,
     const DownloadActionCallback& download_action_callback,
-    const GetDownloadDataCallback& get_download_data_callback) {
+    const GetContentCallback& get_content_callback) {
   GDataErrorCode error = HTTP_SUCCESS;
   if (file_data_.get()) {
     int file_data_size = static_cast<int>(file_data_->size());

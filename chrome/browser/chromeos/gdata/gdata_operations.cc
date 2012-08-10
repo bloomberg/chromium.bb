@@ -159,6 +159,58 @@ GURL FormatDocumentListURL(const std::string& directory_resource_id) {
 
 namespace gdata {
 
+//============================ Structs ===========================
+
+ResumeUploadResponse::ResumeUploadResponse(GDataErrorCode code,
+                                           int64 start_range_received,
+                                           int64 end_range_received)
+    : code(code),
+      start_range_received(start_range_received),
+      end_range_received(end_range_received) {
+}
+
+ResumeUploadResponse::~ResumeUploadResponse() {
+}
+
+InitiateUploadParams::InitiateUploadParams(
+    UploadMode upload_mode,
+    const std::string& title,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& upload_location,
+    const FilePath& virtual_path)
+    : upload_mode(upload_mode),
+      title(title),
+      content_type(content_type),
+      content_length(content_length),
+      upload_location(upload_location),
+      virtual_path(virtual_path) {
+}
+
+InitiateUploadParams::~InitiateUploadParams() {
+}
+
+ResumeUploadParams::ResumeUploadParams(
+    UploadMode upload_mode,
+    int64 start_range,
+    int64 end_range,
+    int64 content_length,
+    const std::string& content_type,
+    scoped_refptr<net::IOBuffer> buf,
+    const GURL& upload_location,
+    const FilePath& virtual_path) : upload_mode(upload_mode),
+                                    start_range(start_range),
+                                    end_range(end_range),
+                                    content_length(content_length),
+                                    content_type(content_type),
+                                    buf(buf),
+                                    upload_location(upload_location),
+                                    virtual_path(virtual_path) {
+}
+
+ResumeUploadParams::~ResumeUploadParams() {
+}
+
 //============================ GetDocumentsOperation ===========================
 
 GetDocumentsOperation::GetDocumentsOperation(
@@ -237,7 +289,7 @@ GURL GetAccountMetadataOperation::GetURL() const {
 DownloadFileOperation::DownloadFileOperation(
     GDataOperationRegistry* registry,
     const DownloadActionCallback& download_action_callback,
-    const GetDownloadDataCallback& get_download_data_callback,
+    const GetContentCallback& get_content_callback,
     const GURL& document_url,
     const FilePath& virtual_path,
     const FilePath& output_file_path)
@@ -245,7 +297,7 @@ DownloadFileOperation::DownloadFileOperation(
                             GDataOperationRegistry::OPERATION_DOWNLOAD,
                             virtual_path),
       download_action_callback_(download_action_callback),
-      get_download_data_callback_(get_download_data_callback),
+      get_content_callback_(get_content_callback),
       document_url_(document_url) {
   // Make sure we download the content into a temp file.
   if (output_file_path.empty())
@@ -268,14 +320,14 @@ void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
 }
 
 bool DownloadFileOperation::ShouldSendDownloadData() {
-  return !get_download_data_callback_.is_null();
+  return !get_content_callback_.is_null();
 }
 
 void DownloadFileOperation::OnURLFetchDownloadData(
     const URLFetcher* source,
     scoped_ptr<std::string> download_data) {
-  if (!get_download_data_callback_.is_null())
-    get_download_data_callback_.Run(HTTP_SUCCESS, download_data.Pass());
+  if (!get_content_callback_.is_null())
+    get_content_callback_.Run(HTTP_SUCCESS, download_data.Pass());
 }
 
 void DownloadFileOperation::ProcessURLFetchResults(const URLFetcher* source) {
@@ -935,7 +987,7 @@ GURL GetContactsOperation::GetURL() const {
 GetContactPhotoOperation::GetContactPhotoOperation(
     GDataOperationRegistry* registry,
     const GURL& photo_url,
-    const GetDownloadDataCallback& callback)
+    const GetContentCallback& callback)
     : UrlFetchOperationBase(registry),
       photo_url_(photo_url),
       callback_(callback) {

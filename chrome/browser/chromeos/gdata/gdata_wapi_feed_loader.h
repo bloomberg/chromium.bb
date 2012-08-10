@@ -48,6 +48,24 @@ struct GetDocumentsParams {
   scoped_ptr<GetDocumentsUiState> ui_state;
 };
 
+// Defines set of parameters sent to callback OnProtoLoaded().
+struct LoadRootFeedParams {
+  LoadRootFeedParams(
+        FilePath search_file_path,
+        bool should_load_from_server,
+        const FindEntryCallback& callback);
+  ~LoadRootFeedParams();
+
+  FilePath search_file_path;
+  bool should_load_from_server;
+  std::string proto;
+  GDataFileError load_error;
+  base::Time last_modified;
+  // Time when filesystem began to be loaded from disk.
+  base::Time load_start_time;
+  const FindEntryCallback callback;
+};
+
 // Callback run as a response to LoadFromServer.
 typedef base::Callback<void(GetDocumentsParams* params,
                             GDataFileError error)>
