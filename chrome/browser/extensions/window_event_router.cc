@@ -139,11 +139,12 @@ void WindowEventRouter::OnActiveWindowChanged(
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
-  scoped_ptr<base::ListValue> none_args(new ListValue());
+  scoped_ptr<base::ListValue> none_args(NULL);
   if (focused_profile_ != NULL && previous_focused_profile != NULL &&
       focused_profile_ != previous_focused_profile) {
-    none_args->Append(
-        Value::CreateIntegerValue(extension_misc::kUnknownWindowId));
+    none_args.reset(new ListValue());
+    none_args->Append(Value::CreateIntegerValue(
+        extension_misc::kUnknownWindowId));
   }
 
   // Note that we may pass a NULL |window_profile| for the |restrict_to_profile|
