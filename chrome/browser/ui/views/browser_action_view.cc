@@ -59,15 +59,9 @@ BrowserActionView::BrowserActionView(const Extension* extension,
       delegate_(delegate),
       button_(NULL),
       extension_(extension) {
-  button_ = new BrowserActionButton(extension_, browser_, delegate_);
-  button_->set_drag_controller(delegate_);
-  AddChildView(button_);
-  button_->UpdateState();
 }
 
 BrowserActionView::~BrowserActionView() {
-  RemoveChildView(button_);
-  button_->Destroy();
 }
 
 gfx::Canvas* BrowserActionView::GetIconWithBadge() {
@@ -100,6 +94,18 @@ void BrowserActionView::Layout() {
   gfx::Point offset = delegate_->GetViewContentOffset();
   button_->SetBounds(offset.x(), offset.y(), width() - offset.x(),
                      BrowserActionsContainer::IconHeight());
+}
+
+void BrowserActionView::ViewHierarchyChanged(bool is_add,
+                                             View* parent,
+                                             View* child) {
+  if (is_add && (child == this)) {
+    button_ = new BrowserActionButton(extension_, browser_, delegate_);
+    button_->set_drag_controller(delegate_);
+
+    AddChildView(button_);
+    button_->UpdateState();
+  }
 }
 
 void BrowserActionView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -225,6 +231,7 @@ void BrowserActionButton::ShowContextMenuForView(View* source,
     return;
   }
 
+  menu_runner_.reset();
   SetButtonNotPushed();
   context_menu_ = NULL;
 }
