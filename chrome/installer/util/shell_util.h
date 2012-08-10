@@ -35,6 +35,14 @@ class ShellUtil {
     SYSTEM_LEVEL = 0x2   // Make any shell changes only at the system level
   };
 
+  enum VerifyShortcutStatus {
+    VERIFY_SHORTCUT_SUCCESS = 0,
+    VERIFY_SHORTCUT_FAILURE_UNEXPECTED,
+    VERIFY_SHORTCUT_FAILURE_PATH,
+    VERIFY_SHORTCUT_FAILURE_DESCRIPTION,
+    VERIFY_SHORTCUT_FAILURE_ICON_INDEX,
+  };
+
   // Relative path of the URL Protocol registry entry (prefixed with '\').
   static const wchar_t* kRegURLProtocol;
 
@@ -411,6 +419,16 @@ class ShellUtil {
                                    const string16& icon_path,
                                    int icon_index,
                                    uint32 options);
+
+  // Verify that a shortcut exists with the expected information.
+  // |exe_path| The shortcut's exe.
+  // |shortcut| The path to the shortcut.
+  // |description| The shortcut's description.
+  // |icon_index| The icon's index in the exe.
+  static VerifyShortcutStatus VerifyChromeShortcut(const string16& exe_path,
+                                                   const string16& shortcut,
+                                                   const string16& description,
+                                                   int icon_index);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.

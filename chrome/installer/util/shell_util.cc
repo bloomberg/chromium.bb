@@ -1657,6 +1657,45 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
       ConvertShellUtilShortcutOptionsToFileUtil(options));
 }
 
+ShellUtil::VerifyShortcutStatus ShellUtil::VerifyChromeShortcut(
+    const string16& exe_path, const string16& shortcut,
+    const string16& description, int icon_index) {
+  base::win::ScopedComPtr<IShellLink> i_shell_link;
+  base::win::ScopedComPtr<IPersistFile> i_persist_file;
+  wchar_t long_path[MAX_PATH] = {0};
+  wchar_t short_path[MAX_PATH] = {0};
+  wchar_t file_path[MAX_PATH] = {0};
+  wchar_t icon_path[MAX_PATH] = {0};
+  wchar_t desc[MAX_PATH] = {0};
+  int index = 0;
+
+  // Get the shortcut's properties.
+  if (FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
+                                         CLSCTX_INPROC_SERVER)) ||
+      FAILED(i_persist_file.QueryFrom(i_shell_link)) ||
+      FAILED(i_persist_file->Load(shortcut.c_str(), 0)) ||
+      ::GetLongPathName(exe_path.c_str(), long_path, MAX_PATH) == 0 ||
+      ::GetShortPathName(exe_path.c_str(), short_path, MAX_PATH) == 0 ||
+      FAILED(i_shell_link->GetPath(file_path, MAX_PATH, NULL,
+                                   SLGP_UNCPRIORITY)) ||
+      FAILED(i_shell_link->GetIconLocation(icon_path, MAX_PATH, &index)) ||
+      FAILED(i_shell_link->GetDescription(desc, MAX_PATH)) ||
+      FAILED(i_shell_link->GetDescription(desc, MAX_PATH)))
+    return VERIFY_SHORTCUT_FAILURE_UNEXPECTED;
+
+  FilePath path(file_path);
+  if (path != FilePath(long_path) && path != FilePath(short_path))
+    return VERIFY_SHORTCUT_FAILURE_PATH;
+
+  if (string16(desc) != string16(description))
+    return VERIFY_SHORTCUT_FAILURE_DESCRIPTION;
+
+  if (index != icon_index)
+    return VERIFY_SHORTCUT_FAILURE_ICON_INDEX;
+
+  return VERIFY_SHORTCUT_SUCCESS;
+}
+
 bool ShellUtil::GetUserSpecificRegistrySuffix(string16* suffix) {
   // Use a thread-safe cache for the user's suffix.
   static base::LazyInstance<UserSpecificRegistrySuffix>::Leaky suffix_instance =
