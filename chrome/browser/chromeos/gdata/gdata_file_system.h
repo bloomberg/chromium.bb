@@ -390,21 +390,22 @@ class GDataFileSystem : public GDataFileSystemInterface,
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> result);
 
-  // Removes a file or directory at |file_path| from the directory at
-  // |dir_path| and moves it to the root directory.
+  // Removes a file or directory at |file_path| from the current directory if
+  // it's not in the root directory. This essentially moves an entry to the
+  // root directory on the server side.
   //
   // Can be called from UI thread. |callback| is run on the calling thread.
-  void RemoveEntryFromDirectory(const FilePath& dir_path,
-                                const FileMoveCallback& callback,
-                                GDataFileError error,
-                                const FilePath& file_path);
+  // |callback| must not be null.
+  void RemoveEntryFromNonRootDirectory(const FileMoveCallback& callback,
+                                       GDataFileError error,
+                                       const FilePath& file_path);
 
-  // Removes file under |file_path| from in-memory snapshot of the file system.
+  // Removes file under |file_path| on the client side.
   // |resource_id| contains the resource id of the removed file if it was a
   // file.
   // Return PLATFORM_FILE_OK if successful.
-  GDataFileError RemoveEntryFromGData(const FilePath& file_path,
-                                               std::string* resource_id);
+  GDataFileError RemoveEntryLocally(const FilePath& file_path,
+                                    std::string* resource_id);
 
   // A pass-through callback used for bridging from
   // FileMoveCallback to FileOperationCallback.
@@ -498,39 +499,42 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const std::string& md5);
 
   // Callback for handling resource rename attempt. Renames a file or
-  // directory at |file_path| on in-memory snapshot of the file system.
-  void RenameFileOnFileSystem(const FilePath& file_path,
-                              const FilePath::StringType& new_name,
-                              const FileMoveCallback& callback,
-                              GDataErrorCode status,
-                              const GURL& document_url);
+  // directory at |file_path| on the client side.
+  // |callback| must not be null.
+  void RenameEntryLocally(const FilePath& file_path,
+                          const FilePath::StringType& new_name,
+                          const FileMoveCallback& callback,
+                          GDataErrorCode status,
+                          const GURL& document_url);
 
   // Callback for handling an attempt to remove a file or directory from
-  // another directory. Removes a file or directory at |file_path| and moves it
-  // to root on in-memory snapshot of the file system.
-  void RemoveEntryFromDirectoryOnFileSystem(
+  // another directory. Moves a file or directory at |file_path| to root on
+  // the client side.
+  // |callback| must not be null.
+  void MoveEntryToRootDirectoryLocally(
       const FileMoveCallback& callback,
       const FilePath& file_path,
       const FilePath& dir_path,
       GDataErrorCode status,
       const GURL& document_url);
 
-  // Removes a file or directory under |file_path| from in-memory snapshot of
-  // the file system and the corresponding file from cache if it exists.
-  // Return PLATFORM_FILE_OK if successful.
-  GDataFileError RemoveEntryFromFileSystem(const FilePath& file_path);
+  // Removes a file or directory under |file_path| on the client side and the
+  // corresponding file from cache if it exists.  Returns PLATFORM_FILE_OK if
+  // successful.
+  GDataFileError RemoveEntryAndCacheLocally(const FilePath& file_path);
 
-  // Callback for GDataDirectoryService::MoveEntryToDirectory with
-  // FileMoveCallback.
-  void OnMoveEntryToDirectoryWithFileMoveCallback(
+  // Callback when an entry is moved to another directory on the client side.
+  // Notifies the directory change and runs |callback|.
+  // |callback| must not be null.
+  void NotifyAndRunFileMoveCallback(
       const FileMoveCallback& callback,
       GDataFileError error,
       const FilePath& moved_file_path);
 
-  // Callback for GDataDirectoryService::MoveEntryToDirectory with
-  // FileOperationCallback.
+  // Callback when an entry is moved to another directory on the client side.
+  // Notifies the directory change and runs |callback|.
   // |callback| must not be null.
-  void OnMoveEntryToDirectoryWithFileOperationCallback(
+  void NotifyAndRunFileOperationCallback(
       const FileOperationCallback& callback,
       GDataFileError error,
       const FilePath& moved_file_path);

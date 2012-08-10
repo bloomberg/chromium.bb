@@ -1129,7 +1129,7 @@ void GDataFileSystem::RenameAfterGetEntryInfo(
   documents_service_->RenameResource(
       GURL(entry_proto->edit_url()),
       file_name,
-      base::Bind(&GDataFileSystem::RenameFileOnFileSystem,
+      base::Bind(&GDataFileSystem::RenameEntryLocally,
                  ui_weak_ptr_,
                  file_path,
                  file_name,
@@ -1217,9 +1217,8 @@ void GDataFileSystem::MoveOnUIThreadAfterGetEntryInfoPair(
                  callback);
 
   FileMoveCallback remove_file_from_directory_callback =
-      base::Bind(&GDataFileSystem::RemoveEntryFromDirectory,
+      base::Bind(&GDataFileSystem::RemoveEntryFromNonRootDirectory,
                  ui_weak_ptr_,
-                 src_file_path.DirName(),
                  add_file_to_directory_callback);
 
   Rename(src_file_path, dest_file_path.BaseName().value(),
@@ -1285,13 +1284,14 @@ void GDataFileSystem::MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
                  dir_path));
 }
 
-void GDataFileSystem::RemoveEntryFromDirectory(
-    const FilePath& dir_path,
+void GDataFileSystem::RemoveEntryFromNonRootDirectory(
     const FileMoveCallback& callback,
     GDataFileError error,
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
+  const FilePath dir_path = file_path.DirName();
   GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
   GDataEntry* dir = directory_service_->FindEntryByPathSync(dir_path);
   if (error == GDATA_FILE_OK) {
@@ -1306,10 +1306,7 @@ void GDataFileSystem::RemoveEntryFromDirectory(
   // Returns if there is an error or |dir_path| is the root directory.
   if (error != GDATA_FILE_OK ||
       dir->resource_id() == kGDataRootDirectoryResourceId) {
-    if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(callback, error, file_path));
-    }
+    callback.Run(error, file_path);
     return;
   }
 
@@ -1317,7 +1314,7 @@ void GDataFileSystem::RemoveEntryFromDirectory(
       dir->content_url(),
       entry->edit_url(),
       entry->resource_id(),
-      base::Bind(&GDataFileSystem::RemoveEntryFromDirectoryOnFileSystem,
+      base::Bind(&GDataFileSystem::MoveEntryToRootDirectoryLocally,
                  ui_weak_ptr_,
                  callback,
                  file_path,
@@ -2531,7 +2528,7 @@ void GDataFileSystem::OnMoveEntryFromRootDirectoryCompleted(
       DCHECK_EQ(directory_service_->root(), entry->parent());
       directory_service_->MoveEntryToDirectory(dir_path, entry,
           base::Bind(
-              &GDataFileSystem::OnMoveEntryToDirectoryWithFileOperationCallback,
+              &GDataFileSystem::NotifyAndRunFileOperationCallback,
               ui_weak_ptr_,
               callback));
       return;
@@ -2553,7 +2550,7 @@ void GDataFileSystem::OnRemovedDocument(
   GDataFileError error = util::GDataToGDataFileError(status);
 
   if (error == GDATA_FILE_OK)
-    error = RemoveEntryFromFileSystem(file_path);
+    error = RemoveEntryAndCacheLocally(file_path);
 
   if (!callback.is_null()) {
     callback.Run(error);
@@ -2666,7 +2663,7 @@ void GDataFileSystem::OnDownloadStoredToCache(GDataFileError error,
   // Nothing much to do here for now.
 }
 
-void GDataFileSystem::RenameFileOnFileSystem(
+void GDataFileSystem::RenameEntryLocally(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
     const FileMoveCallback& callback,
@@ -2700,56 +2697,58 @@ void GDataFileSystem::RenameFileOnFileSystem(
   directory_service_->MoveEntryToDirectory(
       entry->parent()->GetFilePath(),
       entry,
-      base::Bind(&GDataFileSystem::OnMoveEntryToDirectoryWithFileMoveCallback,
+      base::Bind(&GDataFileSystem::NotifyAndRunFileMoveCallback,
                  ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::RemoveEntryFromDirectoryOnFileSystem(
+void GDataFileSystem::MoveEntryToRootDirectoryLocally(
     const FileMoveCallback& callback,
     const FilePath& file_path,
     const FilePath& dir_path,
     GDataErrorCode status,
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   const GDataFileError error = util::GDataToGDataFileError(status);
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, FilePath());
+    callback.Run(error, FilePath());
     return;
   }
 
   GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
   if (!entry) {
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
+    callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
     return;
   }
 
   directory_service_->MoveEntryToDirectory(
       directory_service_->root()->GetFilePath(),
       entry,
-      base::Bind(&GDataFileSystem::OnMoveEntryToDirectoryWithFileMoveCallback,
+      base::Bind(&GDataFileSystem::NotifyAndRunFileMoveCallback,
                  ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::OnMoveEntryToDirectoryWithFileMoveCallback(
+void GDataFileSystem::NotifyAndRunFileMoveCallback(
     const FileMoveCallback& callback,
     GDataFileError error,
     const FilePath& moved_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
   if (error == GDATA_FILE_OK)
     OnDirectoryChanged(moved_file_path.DirName());
 
-  if (!callback.is_null())
-    callback.Run(error, moved_file_path);
+  callback.Run(error, moved_file_path);
 }
 
-void GDataFileSystem::OnMoveEntryToDirectoryWithFileOperationCallback(
+void GDataFileSystem::NotifyAndRunFileOperationCallback(
     const FileOperationCallback& callback,
     GDataFileError error,
     const FilePath& moved_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   if (error == GDATA_FILE_OK)
@@ -2758,12 +2757,12 @@ void GDataFileSystem::OnMoveEntryToDirectoryWithFileOperationCallback(
   callback.Run(error);
 }
 
-GDataFileError GDataFileSystem::RemoveEntryFromFileSystem(
+GDataFileError GDataFileSystem::RemoveEntryAndCacheLocally(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string resource_id;
-  GDataFileError error = RemoveEntryFromGData(file_path, &resource_id);
+  GDataFileError error = RemoveEntryLocally(file_path, &resource_id);
   if (error != GDATA_FILE_OK)
     return error;
 
@@ -2889,7 +2888,7 @@ GDataFileSystem::FindFirstMissingParentDirectory(
   return DIRECTORY_ALREADY_PRESENT;
 }
 
-GDataFileError GDataFileSystem::RemoveEntryFromGData(
+GDataFileError GDataFileSystem::RemoveEntryLocally(
     const FilePath& file_path, std::string* resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

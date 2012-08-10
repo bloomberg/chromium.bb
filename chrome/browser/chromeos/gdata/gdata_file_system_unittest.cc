@@ -336,7 +336,7 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   bool RemoveEntry(const FilePath& file_path) {
-    return file_system_->RemoveEntryFromFileSystem(file_path) ==
+    return file_system_->RemoveEntryAndCacheLocally(file_path) ==
         GDATA_FILE_OK;
   }
 
