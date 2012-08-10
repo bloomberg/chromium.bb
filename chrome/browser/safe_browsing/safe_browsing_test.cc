@@ -33,6 +33,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -227,6 +228,17 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void ForceUpdate() {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
+        content::Source<SafeBrowsingService>(safe_browsing_service_));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+        base::Bind(&SafeBrowsingServiceTest::ForceUpdateOnIOThread,
+                   this));
+    observer.Wait();
+  }
+
+  void ForceUpdateOnIOThread() {
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(safe_browsing_service_);
     safe_browsing_service_->protocol_manager_->ForceScheduleNextUpdate(0);
   }
@@ -378,25 +390,6 @@ class SafeBrowsingServiceTestHelper
     NOTREACHED() << "Not implemented.";
   }
 
-  // Functions and callbacks to start the safebrowsing database update.
-  void ForceUpdate() {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingServiceTestHelper::ForceUpdateInIOThread,
-                   this));
-    // Will continue after OnForceUpdateDone().
-    content::RunMessageLoop();
-  }
-  void ForceUpdateInIOThread() {
-    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    safe_browsing_test_->ForceUpdate();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&SafeBrowsingServiceTestHelper::OnForceUpdateDone,
-                   this));
-  }
-  void OnForceUpdateDone() {
-    StopUILoop();
-  }
-
   // Functions and callbacks related to CheckUrl. These are used to verify
   // phishing URLs.
   void CheckUrl(const GURL& url) {
@@ -444,14 +437,13 @@ class SafeBrowsingServiceTestHelper
     StopUILoop();
   }
 
-  // Wait for a given period to get safebrowsing status updated.
-  void WaitForStatusUpdate(base::TimeDelta wait_time) {
-    BrowserThread::PostDelayedTask(
+  // Update safebrowsing status.
+  void UpdateStatus() {
+    BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(&SafeBrowsingServiceTestHelper::CheckStatusOnIOThread,
-                   this),
-        wait_time);
+                   this));
     // Will continue after OnWaitForStatusUpdateDone().
     content::RunMessageLoop();
   }
@@ -570,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   // The wait will stop once OnWaitForStatusUpdateDone in
   // safe_browsing_helper is called and status from safe_browsing_service_
   // is checked.
-  safe_browsing_helper->WaitForStatusUpdate(base::TimeDelta());
+  safe_browsing_helper->UpdateStatus();
   EXPECT_TRUE(is_database_ready());
   EXPECT_FALSE(is_update_scheduled());
   EXPECT_TRUE(last_update().is_null());
@@ -585,20 +577,15 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
     EXPECT_FALSE(is_update_scheduled());
 
     // Starts safebrowsing update on IO thread. Waits till scheduled
-    // update finishes. Stops waiting after kMaxWaitSecPerStep if the update
-    // could not finish.
+    // update finishes.
     base::Time now = base::Time::Now();
     SetTestStep(step);
-    safe_browsing_helper->ForceUpdate();
+    ForceUpdate();
 
-    // TODO(mattm): use NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE instead.
-    do {
-      // Periodically pull the status.
-      safe_browsing_helper->WaitForStatusUpdate(
-          TestTimeouts::tiny_timeout());
-    } while (is_update_scheduled() || !is_database_ready());
-
-
+    safe_browsing_helper->UpdateStatus();
+    EXPECT_TRUE(is_database_ready());
+    EXPECT_FALSE(is_update_scheduled());
+    EXPECT_FALSE(last_update().is_null());
     if (last_update() < now) {
       // This means no data available anymore.
       break;
