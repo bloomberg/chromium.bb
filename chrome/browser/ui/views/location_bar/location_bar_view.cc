@@ -695,10 +695,9 @@ void LocationBarView::Layout() {
     entry_width -= (total_padding + ev_bubble_width);
   }
 
-  int max_edit_width = location_entry_->GetMaxEditWidth(entry_width);
+  const int max_edit_width = location_entry_->GetMaxEditWidth(entry_width);
   if (max_edit_width < 0)
     return;
-  const int available_width = AvailableWidth(max_edit_width);
 
   const bool show_keyword_hint = !keyword.empty() && is_keyword_hint;
   selected_keyword_view_->SetVisible(show_selected_keyword);
@@ -814,8 +813,8 @@ void LocationBarView::Layout() {
   if (show_selected_keyword) {
     selected_keyword_view_->SetBounds(0, location_y + kBubbleVerticalPadding,
         0, selected_keyword_view_->GetPreferredSize().height());
-    LayoutView(selected_keyword_view_, kItemEditPadding, available_width,
-               true, &location_bounds);
+    LayoutView(selected_keyword_view_, kItemEditPadding,
+               AvailableWidth(max_edit_width), true, &location_bounds);
     location_bounds.set_x(selected_keyword_view_->visible() ?
         (offset + selected_keyword_view_->width() + kItemEditPadding) :
         (kEdgeThickness + kEdgeEditPadding));
@@ -826,8 +825,8 @@ void LocationBarView::Layout() {
     // its left.  So we undo the enlargement, then include it in the padding for
     // the added view.
     location_bounds.Inset(0, 0, kEditInternalSpace, 0);
-    LayoutView(keyword_hint_view_, kItemEditPadding, available_width, false,
-               &location_bounds);
+    LayoutView(keyword_hint_view_, kItemEditPadding,
+               AvailableWidth(max_edit_width), false, &location_bounds);
     if (!keyword_hint_view_->visible()) {
       // Put back the enlargement that we undid above.
       location_bounds.Inset(0, 0, -kEditInternalSpace, 0);
