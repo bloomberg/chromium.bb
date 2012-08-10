@@ -34,7 +34,7 @@ NSString* const kChannelKey = @"KSChannelID";
 NSString* const kVersionKey = @"KSVersion";
 
 // Condensed from chromium's base/mac/mac_util.mm.
-bool IsOSXLeopardOrLater() {
+bool IsOSXVersionSupported() {
   // On 10.6, Gestalt() was observed to be able to spawn threads (see
   // http://crbug.com/53200). Don't call Gestalt().
   struct utsname uname_info;
@@ -56,7 +56,8 @@ bool IsOSXLeopardOrLater() {
   // 10.2.
   int mac_os_x_minor_version = darwin_major_version - 4;
 
-  return mac_os_x_minor_version >= 5;
+  // Chrome is known to work on 10.6 - 10.8.
+  return mac_os_x_minor_version >= 6 && mac_os_x_minor_version <= 8;
 }
 
 enum TicketKind {
@@ -204,44 +205,6 @@ NSString* PathToInstallScript(NSString* app_path, NSDictionary* info_plist) {
       @"Resources/install.sh"];
 }
 
-NSString* PathToKeystoneResources(
-    NSString* app_path, NSDictionary* info_plist) {
-  return [PathToFramework(app_path, info_plist) stringByAppendingPathComponent:
-      @"Frameworks/KeystoneRegistration.framework/Resources"];
-}
-
-NSString* FindOrInstallKeystone(NSString* app_path, NSDictionary* info_plist) {
-  NSString* ks_path = kSystemKsadminPath;
-
-  // Use user Keystone only if system Keystone doesn't exist /
-  // isn't accessible.
-  if (geteuid() != 0 &&
-      ![[NSFileManager defaultManager] isExecutableFileAtPath:ks_path]) {
-    ks_path = [kUserKsadminPath stringByExpandingTildeInPath];
-  }
-
-  // Always run install.py. It won't overwrite an existing keystone, but
-  // it might update it or repair a broken existing installation.
-  NSString* ks_resources = PathToKeystoneResources(app_path, info_plist);
-  NSString* ks_install =
-      [ks_resources stringByAppendingPathComponent:@"install.py"];
-  NSString* ks_tbz =
-      [ks_resources stringByAppendingPathComponent:@"Keystone.tbz"];
-  @try {
-    NSTask* task = [[[NSTask alloc] init] autorelease];
-    [task setLaunchPath:ks_install];
-    [task setArguments:@[@"--install", ks_tbz]];
-    [task launch];
-    [task waitUntilExit];
-    if ([task terminationStatus] == 0)
-      return ks_path;
-  }
-  @catch (id exception) {
-    // Ignore.
-  }
-  return nil;
-}
-
 bool isbrandchar(int c) {
   // Always four upper-case alpha chars.
   return c >= 'A' && c <= 'Z';
@@ -254,7 +217,7 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
 
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-  if (!IsOSXLeopardOrLater())
+  if (!IsOSXVersionSupported())
     local_reasons |= GCCC_ERROR_OSNOTSUPPORTED;
 
   if (HasChromeTicket(kSystemTicket))
@@ -327,38 +290,6 @@ int InstallGoogleChrome(const char* source_path,
     // Write master prefs.
     if (master_prefs_contents)
       WriteMasterPrefs(master_prefs_contents, master_prefs_contents_size);
-
-    // Install Keystone if necessary.
-    if (NSString* keystone = FindOrInstallKeystone(app_path, info_plist)) {
-      // Register Chrome with Keystone.
-      @try {
-        NSTask* task = [[[NSTask alloc] init] autorelease];
-        [task setLaunchPath:keystone];
-        NSString* tag = [info_plist objectForKey:kChannelKey];
-        [task setArguments:@[
-            @"--register",
-            @"--productid", [info_plist objectForKey:@"KSProductID"],
-            @"--version", [info_plist objectForKey:kVersionKey],
-            @"--xcpath", kChromeInstallPath,
-            @"--url", [info_plist objectForKey:@"KSUpdateURL"],
-
-            @"--tag", tag ? tag : @"",  // Stable channel
-            @"--tag-path", info_plist_path,
-            @"--tag-key", kChannelKey,
-
-            @"--brand-path", brand_path ? brand_path : @"",
-            @"--brand-key", brand_path ? kBrandKey: @"",
-
-            @"--version-path", info_plist_path,
-            @"--version-key", kVersionKey,
-        ]];
-        [task launch];
-        [task waitUntilExit];
-      }
-      @catch (id exception) {
-        // Chrome will try to register keystone on launch.
-      }
-    }
 
     // TODO Set default browser if requested. Will be tricky when running as
     // root.
