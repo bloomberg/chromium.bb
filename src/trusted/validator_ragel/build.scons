@@ -200,3 +200,11 @@ if env.Bit('validator_ragel'):
                                        env.File('unreviewed/validator_test.py'),
                                        validator_test_exe])
   env.AddNodeToTestSuite(test_node, ['small_tests'], 'run_validator_test_py')
+
+benchmark = env.Command(
+    target='validator_ragel_benchmark_py.out',
+    source=['validator_benchmark.py', validator_test_exe, env.GetIrtNexe()],
+    action='${SOURCES[0]} ${SOURCES[1]} ${SOURCES[2]}'
+)
+
+env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', benchmark))
