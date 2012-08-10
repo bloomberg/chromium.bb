@@ -31,11 +31,7 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
           tab_contents_->profile())) {
   LookUpPermissions();
 
-#if defined(TOOLKIT_GTK)
   dialog_.reset(MediaGalleriesDialog::Create(this));
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 MediaGalleriesDialogController::~MediaGalleriesDialogController() {

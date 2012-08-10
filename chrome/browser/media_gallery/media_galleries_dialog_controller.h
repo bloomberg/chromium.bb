@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
@@ -111,7 +112,7 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   NewGalleryPermissions new_galleries_;
 
   // We run this callback when done.
-  const base::Callback<void(void)>& on_finish_;
+  base::Callback<void(void)> on_finish_;
 
   // The model that tracks galleries and extensions' permissions.
   MediaGalleriesPreferences* preferences_;
