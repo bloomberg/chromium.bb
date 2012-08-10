@@ -77,11 +77,11 @@ TEST_F(ExtensionActionTest, Icon) {
   action.CacheIcon("the_default.png", icon2);
   ASSERT_TRUE(ImagesAreEqual(icon2, action.GetIcon(1)));
 
-  action.SetIcon(ExtensionAction::kDefaultTabId, *icon1.ToSkBitmap());
+  action.SetIcon(ExtensionAction::kDefaultTabId, icon1);
   ASSERT_TRUE(ImagesAreEqual(icon1, action.GetIcon(100)))
       << "SetIcon(kDefaultTabId) overrides the default_icon_path.";
 
-  action.SetIcon(100, *icon2.ToSkBitmap());
+  action.SetIcon(100, icon2);
   ASSERT_TRUE(ImagesAreEqual(icon1, action.GetIcon(1)));
   ASSERT_TRUE(ImagesAreEqual(icon2, action.GetIcon(100)));
 }

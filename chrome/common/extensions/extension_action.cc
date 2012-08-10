@@ -223,8 +223,8 @@ void ExtensionAction::CacheIcon(const std::string& path,
     path_to_icon_cache_.insert(std::make_pair(path, icon));
 }
 
-void ExtensionAction::SetIcon(int tab_id, const SkBitmap& bitmap) {
-  SetValue(&icon_, tab_id, gfx::Image(bitmap));
+void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
+  SetValue(&icon_, tab_id, image);
 }
 
 gfx::Image ExtensionAction::GetIcon(int tab_id) const {

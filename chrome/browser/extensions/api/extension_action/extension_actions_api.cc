@@ -104,8 +104,10 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
     action->SetAppearance(kTabId,
                           static_cast<ExtensionAction::Appearance>(int_value));
   if (dict->GetString(kIconStorageKey, &str_value) &&
-      StringToSkBitmap(str_value, &bitmap))
-    action->SetIcon(kTabId, bitmap);
+      StringToSkBitmap(str_value, &bitmap)) {
+    CHECK(!bitmap.isNull());
+    action->SetIcon(kTabId, gfx::Image(bitmap));
+  }
 }
 
 // Store |action|'s default values in a DictionaryValue for use in storing to
@@ -409,7 +411,8 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
     PickleIterator iter(bitmap_pickle);
     SkBitmap bitmap;
     EXTENSION_FUNCTION_VALIDATE(IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));
-    extension_action_->SetIcon(tab_id_, bitmap);
+    CHECK(!bitmap.isNull());
+    extension_action_->SetIcon(tab_id_, gfx::Image(bitmap));
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
     // If --enable-script-badges is on there might legitimately be an iconIndex
     // set. Until we decide what to do with that, ignore.
@@ -421,7 +424,7 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
       error_ = kIconIndexOutOfBounds;
       return false;
     }
-    extension_action_->SetIcon(tab_id_, SkBitmap());
+    extension_action_->SetIcon(tab_id_, gfx::Image());
     extension_action_->SetIconIndex(tab_id_, icon_index);
   } else {
     EXTENSION_FUNCTION_VALIDATE(false);

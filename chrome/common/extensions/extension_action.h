@@ -168,7 +168,7 @@ class ExtensionAction {
   void CacheIcon(const std::string& path, const gfx::Image& icon);
 
   // Set this action's icon bitmap on a specific tab.
-  void SetIcon(int tab_id, const SkBitmap& bitmap);
+  void SetIcon(int tab_id, const gfx::Image& image);
 
   // Get the icon for a tab, or the default if no icon was set for this tab,
   // retrieving icons that have been specified by path from the previous

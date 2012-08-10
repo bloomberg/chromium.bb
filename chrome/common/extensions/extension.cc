@@ -2378,8 +2378,8 @@ bool Extension::LoadScriptBadge(string16* error) {
   } else {
     script_badge_->SetIcon(
         ExtensionAction::kDefaultTabId,
-        *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_EXTENSIONS_FAVICON).ToSkBitmap());
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_EXTENSIONS_FAVICON));
   }
 
   return true;
