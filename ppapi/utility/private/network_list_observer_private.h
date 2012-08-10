@@ -31,6 +31,13 @@ class NetworkListObserverPrivate {
   virtual void OnNetworkListChanged(const NetworkListPrivate& list) = 0;
 
  private:
+  // Private copy constructor and assign operator to disallow copying of this
+  // object. This is necessary to guarantee that |monitor_| is not shared with
+  // another list observer and is always destroyed when this object is
+  // destroyed.
+  NetworkListObserverPrivate(const NetworkListObserverPrivate&);
+  void operator=(const NetworkListObserverPrivate&);
+
   static void NetworkListCallbackHandler(void* user_data,
                                          PP_Resource list_resource);
 
