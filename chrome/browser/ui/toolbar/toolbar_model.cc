@@ -90,6 +90,11 @@ bool ToolbarModel::ShouldDisplayURL() const {
   if (entry && entry->GetURL().SchemeIs(chrome::kExtensionScheme))
     return false;
 
+#if defined(OS_CHROMEOS)
+  if (entry && entry->GetURL().SchemeIs(chrome::kDriveScheme))
+    return false;
+#endif
+
   return true;
 }
 
