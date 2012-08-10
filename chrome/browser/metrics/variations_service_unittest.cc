@@ -6,14 +6,37 @@
 #include "base/string_split.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/variations_service.h"
+#include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {
 
 namespace {
+
+// A test class used to validate expected functionality in VariationsService.
+class TestVariationsService : public VariationsService {
+ public:
+  TestVariationsService() : fetch_attempted_(false) {}
+  virtual ~TestVariationsService() {}
+
+  bool fetch_attempted() { return fetch_attempted_; }
+
+ protected:
+  virtual void FetchVariationsSeed() OVERRIDE {
+    fetch_attempted_ = true;
+  }
+
+ private:
+  bool fetch_attempted_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestVariationsService);
+};
 
 // Converts |time| to Study proto format.
 int64 TimeToProtoTime(const base::Time& time) {
@@ -36,6 +59,21 @@ chrome_variations::TrialsSeed CreateTestSeed() {
 }
 
 }  // namespace
+
+TEST(VariationsServiceTest, AttemptFetchOnAutoUpdate) {
+  // Simulate an auto-update and ensure that the VariationsService attempts
+  // to fetch the Variations seed.
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+  TestVariationsService test_service;
+  EXPECT_FALSE(test_service.fetch_attempted());
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+      content::Source<UpgradeDetector>(UpgradeDetector::GetInstance()),
+      content::NotificationService::NoDetails());
+  EXPECT_TRUE(test_service.fetch_attempted());
+}
 
 TEST(VariationsServiceTest, CheckStudyChannel) {
   const chrome::VersionInfo::Channel channels[] = {

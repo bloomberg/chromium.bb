@@ -16,10 +16,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/upgrade_detector.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
@@ -32,7 +35,7 @@ namespace chrome_variations {
 
 namespace {
 
-// Default server of Variations seed info.
+// Default server of variations seed info.
 const char kDefaultVariationsServerURL[] =
     "https://clients4.google.com/chrome-variations/seed";
 const int kMaxRetrySeedFetch = 5;
@@ -84,7 +87,7 @@ base::Time ConvertStudyDateToBaseTime(int64 date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
 }
 
-// Determine and return the variations server URL.
+// Determine and return the Variations server URL.
 GURL GetVariationsServerURL() {
   std::string server_url(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kVariationsServerURL));
@@ -100,6 +103,8 @@ GURL GetVariationsServerURL() {
 VariationsService::VariationsService()
     : variations_server_url_(GetVariationsServerURL()),
       create_trials_from_seed_called_(false) {
+  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+      content::Source<UpgradeDetector>(UpgradeDetector::GetInstance()));
 }
 
 VariationsService::~VariationsService() {}
@@ -133,7 +138,7 @@ bool VariationsService::CreateTrialsFromSeed(PrefService* local_prefs) {
 }
 
 void VariationsService::StartRepeatedVariationsSeedFetch() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   // Check that |CreateTrialsFromSeed| was called, which is necessary to
   // retrieve the serial number that will be sent to the server.
@@ -147,8 +152,15 @@ void VariationsService::StartRepeatedVariationsSeedFetch() {
                this, &VariationsService::FetchVariationsSeed);
 }
 
+// static
+void VariationsService::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
+  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
+                           base::Time().ToInternalValue());
+}
+
 void VariationsService::FetchVariationsSeed() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(CalledOnValidThread());
 
   const bool is_offline = net::NetworkChangeNotifier::IsOffline();
   UMA_HISTOGRAM_BOOLEAN("Variations.NetworkAvailability", !is_offline);
@@ -169,6 +181,22 @@ void VariationsService::FetchVariationsSeed() {
                                                  variations_serial_number_);
   }
   pending_seed_request_->Start();
+}
+
+void VariationsService::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED, type);
+
+  // An upgrade is ready, so attempt to fetch the Variations seed in case there
+  // were updates.
+  FetchVariationsSeed();
+
+  // Since we explicitly call FetchVariationsSeed here, we can reset the timer
+  // so that we don't retry for another full period.
+  if (timer_.IsRunning())
+    timer_.Reset();
 }
 
 void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -196,13 +224,6 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(success || response_date.is_null());
 
   StoreSeedData(seed_data, response_date, g_browser_process->local_state());
-}
-
-// static
-void VariationsService::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kVariationsSeed, std::string());
-  prefs->RegisterInt64Pref(prefs::kVariationsSeedDate,
-                           base::Time().ToInternalValue());
 }
 
 bool VariationsService::StoreSeedData(const std::string& seed_data,

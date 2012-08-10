@@ -11,11 +11,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/common/chrome_version_info.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -29,7 +32,9 @@ namespace chrome_variations {
 
 // Used to setup field trials based on stored variations seed data, and fetch
 // new seed data from the variations server.
-class VariationsService : public net::URLFetcherDelegate {
+class VariationsService : public net::URLFetcherDelegate,
+                          public content::NotificationObserver,
+                          public base::NonThreadSafe {
  public:
   VariationsService();
   virtual ~VariationsService();
@@ -44,15 +49,14 @@ class VariationsService : public net::URLFetcherDelegate {
   // |CreateTrialsFromSeed|.
   void StartRepeatedVariationsSeedFetch();
 
-  // Starts the fetching process once, where |OnURLFetchComplete| is called with
-  // the response.
-  void FetchVariationsSeed();
-
-  // net::URLFetcherDelegate implementation:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
   // Register Variations related prefs in Local State.
   static void RegisterPrefs(PrefService* prefs);
+
+ protected:
+  // Starts the fetching process once, where |OnURLFetchComplete| is called with
+  // the response. This is protected so we can override this for testing
+  // purposes.
+  virtual void FetchVariationsSeed();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyChannel);
@@ -65,6 +69,14 @@ class VariationsService : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, LoadSeed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, StoreSeed);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, ValidateStudy);
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
   // Store the given seed data to the given local prefs. Note that |seed_data|
   // is assumed to be the raw serialized protobuf data stored in a string. It
@@ -125,10 +137,10 @@ class VariationsService : public net::URLFetcherDelegate {
   // is pending, and will be reset by |OnURLFetchComplete|.
   scoped_ptr<net::URLFetcher> pending_seed_request_;
 
-  // The URL to use for querying the variations server.
+  // The URL to use for querying the Variations server.
   GURL variations_server_url_;
 
-  // Cached serial number from the most recently fetched variations seed.
+  // Cached serial number from the most recently fetched Variations seed.
   std::string variations_serial_number_;
 
   // Tracks whether |CreateTrialsFromSeed| has been called, to ensure that
@@ -139,6 +151,9 @@ class VariationsService : public net::URLFetcherDelegate {
   // member so if VariationsService goes out of scope, the timer is
   // automatically canceled.
   base::RepeatingTimer<VariationsService> timer_;
+
+  // The registrar used to manage our Notification registrations.
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace chrome_variations
