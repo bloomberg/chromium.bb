@@ -70,11 +70,13 @@ void HistogramController::GetHistogramDataFromChildProcesses(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   int pending_processes = 0;
+  /* TODO(rtenneti): Enable collecting histogram from child processes.
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
     ++pending_processes;
     if (!iter.Send(new ChildProcessMsg_GetChildHistogramData(sequence_number)))
       --pending_processes;
   }
+  */
 
   BrowserThread::PostTask(
       BrowserThread::UI,
