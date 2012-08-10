@@ -56,7 +56,7 @@ void WebIntentPickerModel::RemoveInstalledServiceAt(size_t index) {
 void WebIntentPickerModel::Clear() {
   DestroyAll();
   action_.clear();
-  mimetype_.clear();
+  type_.clear();
   inline_disposition_url_ = GURL::EmptyGURL();
   if (observer_)
     observer_->OnModelChanged(this);

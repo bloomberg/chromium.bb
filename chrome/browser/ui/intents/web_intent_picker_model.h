@@ -7,15 +7,12 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ui/gfx/image/image.h"
 
 class WebIntentPickerModelObserver;
-
-namespace gfx {
-class Image;
-}
 
 // Model for the WebIntentPicker.
 class WebIntentPickerModel {
@@ -74,19 +71,16 @@ class WebIntentPickerModel {
     observer_ = observer;
   }
 
+  const string16& action() const { return action_; }
   void set_action(const string16& action) { action_ = action; }
 
-  const string16& action() { return action_; }
+  const string16& type() const { return type_; }
+  void set_type(const string16& type) { type_ = type; }
 
-  void set_mimetype(const string16& mimetype) { mimetype_ = mimetype; }
-
-  const string16& mimetype() { return mimetype_; }
-
+  const GURL& default_service_url() const { return default_service_url_; }
   void set_default_service_url(const GURL& default_url) {
     default_service_url_ = default_url;
   }
-
-  const GURL& default_service_url() { return default_service_url_; }
 
   // Add a new installed service with |title|, |url| and |disposition| to the
   // picker.
@@ -145,7 +139,7 @@ class WebIntentPickerModel {
 
   // Returns the url of the intent service that is being displayed inline, or
   // GURL::EmptyGURL() if none.
-  GURL inline_disposition_url() const { return inline_disposition_url_; }
+  const GURL& inline_disposition_url() const { return inline_disposition_url_; }
 
  private:
   // Delete all elements in |installed_services_| and |suggested_extensions_|.
@@ -160,7 +154,7 @@ class WebIntentPickerModel {
   // by this model.
   std::vector<SuggestedExtension*> suggested_extensions_;
 
-  // The observer to send notifications to, or NULL if none.
+  // The observer to send notifications to, or NULL if none. Not owned.
   WebIntentPickerModelObserver* observer_;
 
   // The url of the intent service that is being displayed inline, or
@@ -170,8 +164,8 @@ class WebIntentPickerModel {
   // A cached copy of the action that instantiated the picker.
   string16 action_;
 
-  // A cached copy of the mimetype that instantiated the picker.
-  string16 mimetype_;
+  // A cached copy of the type that instantiated the picker.
+  string16 type_;
 
   // The non-empty url of the default service if the WebIntentsRegistry
   // finds a default service matching the intent being dispatched.

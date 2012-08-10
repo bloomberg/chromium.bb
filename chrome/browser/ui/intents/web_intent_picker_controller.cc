@@ -219,7 +219,7 @@ void WebIntentPickerController::ShowDialog(const string16& action,
 
   picker_model_->Clear();
   picker_model_->set_action(action);
-  picker_model_->set_mimetype(type);
+  picker_model_->set_type(type);
 
   // If the intent is explicit, skip showing the picker.
   if (intents_dispatcher_) {
@@ -382,7 +382,7 @@ void WebIntentPickerController::OnSuggestionsLinkClicked() {
       browser::FindBrowserWithWebContents(tab_contents_->web_contents());
   GURL query_url = extension_urls::GetWebstoreIntentQueryURL(
       UTF16ToUTF8(picker_model_->action()),
-      UTF16ToUTF8(picker_model_->mimetype()));
+      UTF16ToUTF8(picker_model_->type()));
   chrome::NavigateParams params(browser, query_url,
                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.disposition = NEW_FOREGROUND_TAB;
@@ -434,7 +434,7 @@ void WebIntentPickerController::DispatchToInstalledExtension(
   picker_->OnExtensionInstallSuccess(extension_id);
   WebIntentsRegistry::IntentServiceList services;
   GetWebIntentsRegistry(tab_contents_)->GetIntentServicesForExtensionFilter(
-      picker_model_->action(), picker_model_->mimetype(),
+      picker_model_->action(), picker_model_->type(),
       extension_id,
       &services);
 
