@@ -46,10 +46,10 @@ struct WebScreenInfo;
 
 namespace content {
 class BackingStore;
+class GestureEventFilter;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SmoothScrollGesture;
-class TapSuppressionController;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
@@ -602,11 +602,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // initiated by OnMsgBeginSmoothScroll.
   void TickActiveSmoothScrollGesture();
 
-  // Returns |true| if the given GestureFlingCancel should be discarded
-  // as unnecessary.
-  bool ShouldDiscardFlingCancelEvent(
-      const WebKit::WebGestureEvent& gesture_event);
-
   // Our delegate, which wants to know mainly about keyboard events.
   RenderWidgetHostDelegate* delegate_;
 
@@ -685,16 +680,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // mechanism as for mouse moves (just dropping old events when multiple ones
   // would be queued) results in very slow scrolling.
   WheelEventQueue coalesced_mouse_wheel_events_;
-
-  // (Similar to |mouse_wheel_pending_|.). True if gesture event was sent and
-  // we are waiting for a corresponding ack.
-  bool gesture_event_pending_;
-
-  typedef std::deque<WebKit::WebGestureEvent> GestureEventQueue;
-
-  // (Similar to |coalesced_mouse_wheel_events_|.) GestureScrollUpdate events
-  // are coalesced by merging deltas in a similar fashion as wheel events.
-  GestureEventQueue coalesced_gesture_events_;
 
   // The time when an input event was sent to the RenderWidget.
   base::TimeTicks input_event_start_time_;
@@ -785,11 +770,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
-  scoped_ptr<TapSuppressionController> tap_suppression_controller_;
-
-  bool fling_in_progress_;
-
   scoped_ptr<SmoothScrollGesture> active_smooth_scroll_gesture_;
+
+  scoped_ptr<GestureEventFilter> gesture_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

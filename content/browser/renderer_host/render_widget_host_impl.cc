@@ -22,6 +22,7 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
+#include "content/browser/renderer_host/gesture_event_filter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -94,14 +95,6 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
          last_event.momentumPhase == new_event.momentumPhase;
 }
 
-// Returns |true| if two gesture events should be coalesced.
-bool ShouldCoalesceGestureEvents(const WebKit::WebGestureEvent& last_event,
-                                 const WebKit::WebGestureEvent& new_event) {
-  return new_event.type == WebInputEvent::GestureScrollUpdate &&
-      last_event.type == new_event.type &&
-      last_event.modifiers == new_event.modifiers;
-}
-
 }  // namespace
 
 
@@ -137,7 +130,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       should_auto_resize_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
-      gesture_event_pending_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -153,8 +145,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
-      tap_suppression_controller_(new TapSuppressionController(this)),
-      fling_in_progress_(false) {
+      gesture_event_filter_(new GestureEventFilter(this)) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
     routing_id_ = process_->GetNextRoutingID();
@@ -496,7 +487,7 @@ void RenderWidgetHostImpl::ViewDestroyed() {
 
 void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
   is_loading_ = is_loading;
-  fling_in_progress_ = false;
+  gesture_event_filter_->FlingHasBeenHalted();
   if (!view_)
     return;
   view_->SetIsLoading(is_loading);
@@ -872,11 +863,13 @@ void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
     }
     mouse_move_pending_ = true;
   } else if (mouse_event.type == WebInputEvent::MouseDown) {
-    if (tap_suppression_controller_->ShouldDeferMouseDown(mouse_event))
+    if (gesture_event_filter_->GetTapSuppressionController()->
+        ShouldDeferMouseDown(mouse_event))
       return;
     OnUserGesture();
   } else if (mouse_event.type == WebInputEvent::MouseUp) {
-    if (tap_suppression_controller_->ShouldSuppressMouseUp())
+    if (gesture_event_filter_->GetTapSuppressionController()->
+        ShouldSuppressMouseUp())
       return;
   }
 
@@ -926,39 +919,9 @@ void RenderWidgetHostImpl::ForwardWheelEvent(
 void RenderWidgetHostImpl::ForwardGestureEvent(
     const WebKit::WebGestureEvent& gesture_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardGestureEvent");
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
+  if (ignore_input_events_ || process_->IgnoreInputEvents() ||
+      !gesture_event_filter_->ShouldForward(gesture_event))
     return;
-
-  if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
-    if (ShouldDiscardFlingCancelEvent(gesture_event))
-      return;
-    fling_in_progress_ = false;
-  }
-
-  if (gesture_event_pending_) {
-    if (coalesced_gesture_events_.empty() ||
-       !ShouldCoalesceGestureEvents(coalesced_gesture_events_.back(),
-                                    gesture_event)) {
-     coalesced_gesture_events_.push_back(gesture_event);
-    } else {
-      WebGestureEvent* last_gesture_event =
-          &coalesced_gesture_events_.back();
-      last_gesture_event->deltaX += gesture_event.deltaX;
-      last_gesture_event->deltaY += gesture_event.deltaY;
-      DCHECK_GE(gesture_event.timeStampSeconds,
-                last_gesture_event->timeStampSeconds);
-      last_gesture_event->timeStampSeconds = gesture_event.timeStampSeconds;
-    }
-    return;
-  }
-  gesture_event_pending_ = true;
-
-  if (gesture_event.type == WebInputEvent::GestureFlingCancel) {
-    tap_suppression_controller_->GestureFlingCancel(
-        gesture_event.timeStampSeconds);
-  } else if (gesture_event.type == WebInputEvent::GestureFlingStart) {
-    fling_in_progress_ = true;
-  }
 
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
 }
@@ -1022,7 +985,7 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
     key_queue_.push_back(key_event);
     HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
 
-    fling_in_progress_ = false; // Key events always stop flings.
+    gesture_event_filter_->FlingHasBeenHalted();
 
     // Only forward the non-native portions of our event.
     ForwardInputEvent(key_event, sizeof(WebKeyboardEvent),
@@ -1121,8 +1084,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   coalesced_mouse_wheel_events_.clear();
 
   // Must reset these to ensure that gesture events work with a new renderer.
-  coalesced_gesture_events_.clear();
-  gesture_event_pending_ = false;
+  gesture_event_filter_->Reset();
 
   // Must reset these to ensure that keyboard events work with a new renderer.
   key_queue_.clear();
@@ -1624,23 +1586,6 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
   }
 }
 
-bool RenderWidgetHostImpl::ShouldDiscardFlingCancelEvent(
-    const WebKit::WebGestureEvent& gesture_event) {
-  DCHECK(gesture_event.type == WebInputEvent::GestureFlingCancel);
-  if (coalesced_gesture_events_.empty() && fling_in_progress_)
-    return false;
-  GestureEventQueue::reverse_iterator it =
-      coalesced_gesture_events_.rbegin();
-  while (it != coalesced_gesture_events_.rend()) {
-    if (it->type == WebInputEvent::GestureFlingStart)
-      return false;
-    if (it->type == WebInputEvent::GestureFlingCancel)
-      return true;
-    it++;
-  }
-  return true;
-}
-
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
   mouse_wheel_pending_ = false;
 
@@ -1657,18 +1602,7 @@ void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
 }
 
 void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
-  if (type == WebInputEvent::GestureFlingCancel)
-    tap_suppression_controller_->GestureFlingCancelAck(processed);
-
-  gesture_event_pending_ = false;
-
-  // Now send the next (coalesced) gesture event.
-  if (!coalesced_gesture_events_.empty()) {
-    WebGestureEvent next_gesture_event =
-        coalesced_gesture_events_.front();
-    coalesced_gesture_events_.pop_front();
-    ForwardGestureEvent(next_gesture_event);
-  }
+  gesture_event_filter_->ProcessGestureAck(processed, type);
 }
 
 void RenderWidgetHostImpl::ProcessTouchAck(
