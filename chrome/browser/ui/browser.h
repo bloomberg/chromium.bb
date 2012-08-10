@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -158,6 +159,9 @@ class Browser : public TabStripModelObserver,
     CreateParams();
     explicit CreateParams(Profile* profile);
     CreateParams(Type type, Profile* profile);
+    CreateParams(Type type,
+                 Profile* profile,
+                 chrome::HostDesktopType host_desktop_type);
 
     static CreateParams CreateForApp(Type type,
                                      const std::string& app_name,
@@ -171,6 +175,9 @@ class Browser : public TabStripModelObserver,
 
     // The associated profile.
     Profile* profile;
+
+    // The host desktop the browser is created on.
+    chrome::HostDesktopType host_desktop_type;
 
     // The application name that is also the name of the window to the shell.
     // This name should be set when:
@@ -219,6 +226,9 @@ class Browser : public TabStripModelObserver,
   bool is_session_restore() const {
     return is_session_restore_;
   }
+  chrome::HostDesktopType host_desktop_type() {
+    return host_desktop_type_;
+  };
 
   // Accessors ////////////////////////////////////////////////////////////////
 
@@ -862,6 +872,8 @@ class Browser : public TabStripModelObserver,
 
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
+
+  chrome::HostDesktopType host_desktop_type_;
 
   scoped_ptr<chrome::UnloadController> unload_controller_;
 
