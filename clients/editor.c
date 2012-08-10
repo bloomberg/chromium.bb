@@ -69,8 +69,52 @@ text_model_commit_string(void *data,
 	widget_schedule_redraw(entry->widget);
 }
 
+static void
+text_model_preedit_string(void *data,
+			  struct text_model *text_model,
+			  const char *text,
+			  uint32_t index)
+{
+}
+
+static void
+text_model_preedit_styling(void *data,
+			   struct text_model *text_model)
+{
+}
+
+static void
+text_model_key(void *data,
+	       struct text_model *text_model)
+{
+}
+
+static void
+text_model_selection_replacement(void *data,
+				 struct text_model *text_model)
+{
+}
+
+static void
+text_model_direction(void *data,
+		     struct text_model *text_model)
+{
+}
+
+static void
+text_model_locale(void *data,
+		  struct text_model *text_model)
+{
+}
+
 static const struct text_model_listener text_model_listener = {
-	text_model_commit_string
+	text_model_commit_string,
+	text_model_preedit_string,
+	text_model_preedit_styling,
+	text_model_key,
+	text_model_selection_replacement,
+	text_model_direction,
+	text_model_locale
 };
 
 static struct text_entry*
