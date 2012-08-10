@@ -691,12 +691,17 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
   def _GetSlavesStatus(self):
-    # If debugging or a slave, just check its local status.
-    if not self._build_config['master'] or self._options.debug:
+    if self._options.debug:
+      # In debug mode, nothing is uploaded to Google Storage, so we bypass
+      # the extra hop and just look at what we have locally.
+      status = manifest_version.BuilderStatus.GetCompletedStatus(self.success)
+      status_obj = manifest_version.BuilderStatus(status, self.message)
+      return {self._bot_id: status_obj}
+    elif not self._build_config['master']:
+      # Slaves only need to look at their own status.
       return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-        [self._bot_id])
-
-    if not LKGMCandidateSyncStage.sub_manager:
+          [self._bot_id])
+    elif not LKGMCandidateSyncStage.sub_manager:
       return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
           self._GetSlavesForMaster())
     else:

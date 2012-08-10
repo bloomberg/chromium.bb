@@ -337,6 +337,18 @@ class BuilderStatus(object):
     """Returns True if the Builder has completed."""
     return self.status in BuilderStatus.STATUS_COMPLETED
 
+  @classmethod
+  def GetCompletedStatus(cls, success):
+    """Return the appropriate status constant for a completed build.
+
+    Args:
+      success: Whether the build was successful or not.
+    """
+    if success:
+      return cls.STATUS_PASSED
+    else:
+      return cls.STATUS_FAILED
+
 
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
@@ -655,12 +667,7 @@ class BuildSpecsManager(object):
       success: True for success, False for failure
       message: Message accompanied with change in status.
     """
-    if success:
-      status = BuilderStatus.STATUS_PASSED
-    else:
-      status = BuilderStatus.STATUS_FAILED
-
-    # Upload status to Google Storage as well.
+    status = BuilderStatus.GetCompletedStatus(success)
     self._UploadStatus(self.current_version, status, message=message)
 
   def SetInFlight(self, version):
@@ -706,13 +713,8 @@ class BuildSpecsManager(object):
         self.RefreshManifestCheckout()
         cros_build_lib.CreatePushBranch(PUSH_BRANCH, self.manifest_dir,
                                         sync=False)
-        if success:
-          status = BuilderStatus.STATUS_PASSED
-        else:
-          status = BuilderStatus.STATUS_FAILED
-
         commit_message = ('Automatic checkin: status=%s build_version %s for '
-                          '%s' % (status,
+                          '%s' % (BuilderStatus.GetCompletedStatus(success),
                                   self.current_version,
                                   self.build_name))
         if success:
