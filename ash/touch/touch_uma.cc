@@ -12,6 +12,11 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/event.h"
 
+#if defined(USE_XI2_MT)
+#include <X11/extensions/XInput2.h>
+#include <X11/Xlib.h>
+#endif
+
 namespace {
 
 enum GestureActionType {
@@ -267,6 +272,47 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
     target->SetProperty(kWindowTouchDetails, details);
   }
 
+  // Record the location of the touch points.
+  const int kBucketCount = 100;
+  const gfx::Rect bounds = target->GetRootWindow()->bounds();
+  const int bucket_size_x = bounds.width() / kBucketCount;
+  const int bucket_size_y = bounds.height() / kBucketCount;
+
+  gfx::Point position = event.root_location();
+
+  // Prefer raw event location (when available) over calibrated location.
+  if (event.HasNativeEvent()) {
+#if defined(USE_XI2_MT)
+    XEvent* xevent = event.native_event();
+    CHECK_EQ(GenericEvent, xevent->type);
+    XIEvent* xievent = static_cast<XIEvent*>(xevent->xcookie.data);
+    if (xievent->evtype == XI_TouchBegin ||
+        xievent->evtype == XI_TouchUpdate ||
+        xievent->evtype == XI_TouchEnd) {
+      XIDeviceEvent* device_event =
+          static_cast<XIDeviceEvent*>(xevent->xcookie.data);
+      position.SetPoint(static_cast<int>(device_event->event_x),
+                        static_cast<int>(device_event->event_y));
+    } else {
+      position = ui::EventLocationFromNative(event.native_event());
+    }
+#else
+    position = ui::EventLocationFromNative(event.native_event());
+#endif
+  }
+
+  position.set_x(std::min(bounds.width() - 1, std::max(0, position.x())));
+  position.set_y(std::min(bounds.height() - 1, std::max(0, position.y())));
+
+  STATIC_HISTOGRAM_POINTER_BLOCK("Ash.TouchPositionX",
+      Add(position.x() / bucket_size_x),
+      base::LinearHistogram::FactoryGet("Ash.TouchPositionX", 1, kBucketCount,
+          kBucketCount + 1, base::Histogram::kUmaTargetedHistogramFlag));
+  STATIC_HISTOGRAM_POINTER_BLOCK("Ash.TouchPositionY",
+      Add(position.y() / bucket_size_y),
+      base::LinearHistogram::FactoryGet("Ash.TouchPositionY", 1, kBucketCount,
+          kBucketCount + 1, base::Histogram::kUmaTargetedHistogramFlag));
+
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     Shell::GetInstance()->delegate()->RecordUserMetricsAction(
         UMA_TOUCHSCREEN_TAP_DOWN);
@@ -286,6 +332,13 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
             gap.InMilliseconds());
       }
     }
+
+    // Record the number of touch-points currently active for the window.
+    const int kMaxTouchPoints = 10;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.ActiveTouchPoints",
+        std::min(static_cast<int>(details->last_start_time_.size()),
+                 kMaxTouchPoints),
+        1, kMaxTouchPoints, kMaxTouchPoints);
   } else if (event.type() == ui::ET_TOUCH_RELEASED) {
     if (details->last_start_time_.count(event.touch_id())) {
       base::TimeDelta duration = event.time_stamp() -
