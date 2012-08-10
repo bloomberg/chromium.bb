@@ -7,9 +7,9 @@
 #include "content/public/browser/navigation_controller.h"
 
 // static
-TabRestoreServiceDelegate*
-    TabRestoreServiceDelegate::FindDelegateForWebContents(
-        const content::WebContents* contents) {
+TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateForController(
+    const content::NavigationController* controller,
+    int* index) {
   // We don't restore tabs using TabRestoreService yet.
   return NULL;
 }

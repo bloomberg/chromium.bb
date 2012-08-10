@@ -305,8 +305,9 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
       break;
 
     case WebIntentPickerModel::DISPOSITION_WINDOW: {
-      Browser* browser = browser::FindBrowserWithWebContents(
-          tab_contents_->web_contents());
+      int index = TabStripModel::kNoTab;
+      Browser* browser = browser::FindBrowserForController(
+          &tab_contents_->web_contents()->GetController(), &index);
       TabContents* contents = chrome::TabContentsFactory(
           tab_contents_->profile(),
           tab_util::GetSiteInstanceForNewTab(
@@ -467,10 +468,10 @@ void WebIntentPickerController::OnSendReturnMessage(
 
   if (service_tab_ &&
       reply_type != webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED) {
-    Browser* browser = browser::FindBrowserWithWebContents(service_tab_);
+    int index = TabStripModel::kNoTab;
+    Browser* browser = browser::FindBrowserForController(
+        &service_tab_->GetController(), &index);
     if (browser) {
-      int index = browser->tab_strip_model()->GetIndexOfWebContents(
-          service_tab_);
       browser->tab_strip_model()->CloseTabContentsAt(
           index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
 

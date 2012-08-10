@@ -541,8 +541,8 @@ void TestingAutomationProvider::CloseTab(int tab_handle,
                                          IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
     NavigationController* controller = tab_tracker_->GetResource(tab_handle);
-    Browser* browser = browser::FindBrowserWithWebContents(
-        controller->GetWebContents());
+    int index;
+    Browser* browser = browser::FindBrowserForController(controller, &index);
     DCHECK(browser);
     new TabClosedNotificationObserver(this, wait_until_closed, reply_message,
                                       false);
@@ -1060,8 +1060,7 @@ void TestingAutomationProvider::GetTabIndex(int handle, int* tabstrip_index) {
 
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    Browser* browser = browser::FindBrowserWithWebContents(
-        tab->GetWebContents());
+    Browser* browser = browser::FindBrowserForController(tab, NULL);
     *tabstrip_index = chrome::GetIndexOfTab(browser, tab->GetWebContents());
   }
 }
