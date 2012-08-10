@@ -17,18 +17,20 @@
 namespace {
 
 float GetScaleFactorScaleForNativeView(gfx::NativeView view) {
-  float scale_factor = 1.0f;
   if (NSWindow* window = [view window]) {
     if ([window respondsToSelector:@selector(backingScaleFactor)])
       return [window backingScaleFactor];
-    scale_factor = [window userSpaceScaleFactor];
+    return [window userSpaceScaleFactor];
   }
-  if (NSScreen* screen = [NSScreen mainScreen]) {
-    if ([screen respondsToSelector:@selector(backingScaleFactor)])
-      return [screen backingScaleFactor];
-    return [screen userSpaceScaleFactor];
-  }
-  return 1.0f;
+
+  NSArray* screens = [NSScreen screens];
+  if (![screens count])
+    return 1.0f;
+
+  NSScreen* screen = [screens objectAtIndex:0];
+  if ([screen respondsToSelector:@selector(backingScaleFactor)])
+    return [screen backingScaleFactor];
+  return [screen userSpaceScaleFactor];
 }
 
 }  // namespace

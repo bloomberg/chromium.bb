@@ -139,6 +139,9 @@ class RenderWidgetHostViewMacEditCommandHelper;
 
   // recursive globalFrameDidChange protection:
   BOOL handlingGlobalFrameDidChange_;
+
+  // The scale factor of the display this view is in.
+  float deviceScaleFactor_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;

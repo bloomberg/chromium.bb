@@ -374,10 +374,6 @@ void RenderWidgetHostViewMac::WasShown() {
   if (!is_hidden_)
     return;
 
-  // Check if the backing scale factor changed while the tab was in the
-  // background.
-  [cocoa_view_ updateTabBackingStoreScaleFactor];
-
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
   is_hidden_ = false;
@@ -1469,6 +1465,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
     focusedPluginIdentifier_ = -1;
+    deviceScaleFactor_ = ScaleFactor(self);
 
     // OpenGL support:
     if ([self respondsToSelector:
@@ -2062,6 +2059,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     return;
 
   float scaleFactor = ScaleFactor(self);
+  if (scaleFactor == deviceScaleFactor_)
+    return;
+  deviceScaleFactor_ = scaleFactor;
+
   BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
       renderWidgetHostView_->render_widget_host_->GetBackingStore(false));
   if (backingStore)  // NULL in hardware path.
@@ -2080,8 +2081,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       [[notification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey])
       doubleValue];
   if (newBackingScaleFactor != oldBackingScaleFactor) {
-    // Background tabs check if their scale factor changed when they become
-    // active, in WasShown().
+    // Background tabs check if their scale factor changed when they are added
+    // to a window.
 
     // Allocating a CGLayerRef with the current scale factor immediately from
     // this handler doesn't work. Schedule the backing store update on the
@@ -3020,6 +3021,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)viewDidMoveToWindow {
+  if ([self window])
+    [self updateTabBackingStoreScaleFactor];
+
   if (canBeKeyView_) {
     NSWindow* newWindow = [self window];
     // Pointer comparison only, since we don't know if lastWindow_ is still
