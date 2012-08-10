@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_view.h"
 
+#include "base/string_util.h"
 #include "ui/app_list/app_list_bubble_border.h"
 #include "ui/app_list/app_list_item_view.h"
 #include "ui/app_list/app_list_model.h"
@@ -175,7 +176,9 @@ gfx::Rect AppListView::GetBubbleBounds() {
 }
 
 void AppListView::QueryChanged(SearchBoxView* sender) {
-  bool should_show_search = !model_->search_box()->text().empty();
+  string16 query;
+  TrimWhitespace(model_->search_box()->text(), TRIM_ALL, &query);
+  bool should_show_search = !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
 
   if (delegate_.get()) {
