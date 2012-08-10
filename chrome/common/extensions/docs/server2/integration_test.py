@@ -12,8 +12,6 @@ import handler
 from handler import Handler
 
 KNOWN_FAILURES = [
-  # Exception in schema compiler (model.py). See http://crbug.com/141279.
-  'app.html',
 ]
 
 class _MockResponse(object):

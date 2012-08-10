@@ -30,9 +30,7 @@ IGNORED_FILES = [
   'experimental',
   'samples',
   'index',
-  # These are APIs that should not have docs.
-  'test',
-  'experimental_idltest',
+  'devtools', # Has an intro, but marked as nodoc.
 ]
 
 # These are mappings for APIs that have no intros. They are needed because the
@@ -186,6 +184,22 @@ def _FormatFile(contents, path, name, image_dest, replace, is_api):
     contents = ('<h1 class="page_title">%s</h1>' % title) + contents
   return contents
 
+def _GetNoDocs(api_dir, api_files):
+  exclude = []
+  for api in api_files:
+    try:
+      with open(os.path.join(api_dir, api), 'r') as f:
+        if os.path.splitext(api)[-1] == '.idl':
+          if '[nodoc] namespace' in f.read():
+            exclude.append(_UnixName(api))
+        else:
+          api_json = json.loads(json_comment_eater.Nom(f.read()))
+          if api_json[0].get('nodoc', False):
+            exclude.append(_UnixName(api))
+    except Exception:
+      pass
+  return exclude
+
 def _ProcessName(name):
   processed_name = []
   if name.startswith('experimental_'):
@@ -216,6 +230,7 @@ def _MoveAllFiles(source_dir,
     original_files.extend(files)
   if replace:
     _CleanAPIs(source_dir, api_dir, intros_dest, template_dest, exclude_files)
+  exclude_files.extend(_GetNoDocs(api_dir, api_files))
   files = set(os.listdir(source_dir))
   unix_files = [_UnixName(f) for f in files]
   for name in  [SanitizeAPIName(f)  for f in _ListAllAPIs(api_dir)]:

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import copy
-import logging
 import os
 
 from docs_server_utils import GetLinkToRefType
@@ -34,12 +33,10 @@ class HandlebarDictGenerator(object):
   """
   def __init__(self, json):
     clean_json = copy.deepcopy(json)
-    _RemoveNoDocs(clean_json)
-    try:
+    if _RemoveNoDocs(clean_json):
+      self._namespace = None
+    else:
       self._namespace = model.Namespace(clean_json, clean_json['namespace'])
-    except Exception as e:
-      logging.error(e)
-      raise
 
   def _StripPrefix(self, name):
     if name.startswith(self._namespace.name + '.'):
@@ -68,18 +65,16 @@ class HandlebarDictGenerator(object):
     return ''.join(formatted_description)
 
   def Generate(self, samples):
-    try:
-      return {
-        'name': self._namespace.name,
-        'types': map(self._GenerateType, self._namespace.types.values()),
-        'functions': self._GenerateFunctions(self._namespace.functions),
-        'events': map(self._GenerateEvent, self._namespace.events.values()),
-        'properties': self._GenerateProperties(self._namespace.properties),
-        'samples': samples,
-      }
-    except Exception as e:
-      logging.error(e)
-      raise
+    if self._namespace is None:
+      return { 'samples': samples }
+    return {
+      'name': self._namespace.name,
+      'types': map(self._GenerateType, self._namespace.types.values()),
+      'functions': self._GenerateFunctions(self._namespace.functions),
+      'events': map(self._GenerateEvent, self._namespace.events.values()),
+      'properties': self._GenerateProperties(self._namespace.properties),
+      'samples': samples,
+    }
 
   def _GenerateType(self, type_):
     type_dict = {
