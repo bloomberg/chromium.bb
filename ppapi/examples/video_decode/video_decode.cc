@@ -135,6 +135,8 @@ class VideoDecodeDemoInstance : public pp::Instance,
   void InitGL();
   GLuint CreateTexture(int32_t width, int32_t height, GLenum texture_target);
   void CreateGLObjects();
+  void Create2DProgramOnce();
+  void CreateRectangleARBProgramOnce();
   Shader CreateProgram(const char* vertex_shader,
                        const char* fragment_shader);
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
@@ -424,11 +426,13 @@ void VideoDecodeDemoInstance::PictureReady(PP_Resource decoder,
   }
 
   if (info.texture_target == GL_TEXTURE_2D) {
+    Create2DProgramOnce();
     gles2_if_->UseProgram(context_->pp_resource(), shader_2d_.program);
     gles2_if_->Uniform2f(
         context_->pp_resource(), shader_2d_.texcoord_scale_location, 1.0, 1.0);
   } else {
     assert(info.texture_target == GL_TEXTURE_RECTANGLE_ARB);
+    CreateRectangleARBProgramOnce();
     gles2_if_->UseProgram(
         context_->pp_resource(), shader_rectangle_arb_.program);
     gles2_if_->Uniform2f(context_->pp_resource(),
@@ -564,37 +568,6 @@ void VideoDecodeDemoInstance::DeleteTexture(GLuint id) {
 }
 
 void VideoDecodeDemoInstance::CreateGLObjects() {
-  // Code and constants for shader.
-  static const char kVertexShader[] =
-      "varying vec2 v_texCoord;            \n"
-      "attribute vec4 a_position;          \n"
-      "attribute vec2 a_texCoord;          \n"
-      "uniform vec2 v_scale;               \n"
-      "void main()                         \n"
-      "{                                   \n"
-      "    v_texCoord = v_scale * a_texCoord; \n"
-      "    gl_Position = a_position;       \n"
-      "}";
-
-  static const char kFragmentShader2D[] =
-      "precision mediump float;            \n"
-      "varying vec2 v_texCoord;            \n"
-      "uniform sampler2D s_texture;        \n"
-      "void main()                         \n"
-      "{"
-      "    gl_FragColor = texture2D(s_texture, v_texCoord); \n"
-      "}";
-
-  static const char kFragmentShaderRectangle[] =
-      "#extension GL_ARB_texture_rectangle : require\n"
-      "precision mediump float;            \n"
-      "varying vec2 v_texCoord;            \n"
-      "uniform sampler2DRect s_texture;    \n"
-      "void main()                         \n"
-      "{"
-      "    gl_FragColor = texture2DRect(s_texture, v_texCoord).rgba; \n"
-      "}";
-
   // Assign vertex positions and texture coordinates to buffers for use in
   // shader program.
   static const float kVertices[] = {
@@ -609,8 +582,46 @@ void VideoDecodeDemoInstance::CreateGLObjects() {
   gles2_if_->BufferData(context_->pp_resource(), GL_ARRAY_BUFFER,
                         sizeof(kVertices), kVertices, GL_STATIC_DRAW);
   assertNoGLError();
+}
 
+static const char kVertexShader[] =
+    "varying vec2 v_texCoord;            \n"
+    "attribute vec4 a_position;          \n"
+    "attribute vec2 a_texCoord;          \n"
+    "uniform vec2 v_scale;               \n"
+    "void main()                         \n"
+    "{                                   \n"
+    "    v_texCoord = v_scale * a_texCoord; \n"
+    "    gl_Position = a_position;       \n"
+    "}";
+
+void VideoDecodeDemoInstance::Create2DProgramOnce() {
+  if (shader_2d_.program)
+    return;
+  static const char kFragmentShader2D[] =
+      "precision mediump float;            \n"
+      "varying vec2 v_texCoord;            \n"
+      "uniform sampler2D s_texture;        \n"
+      "void main()                         \n"
+      "{"
+      "    gl_FragColor = texture2D(s_texture, v_texCoord); \n"
+      "}";
   shader_2d_ = CreateProgram(kVertexShader, kFragmentShader2D);
+  assertNoGLError();
+}
+
+void VideoDecodeDemoInstance::CreateRectangleARBProgramOnce() {
+  if (shader_rectangle_arb_.program)
+    return;
+  static const char kFragmentShaderRectangle[] =
+      "#extension GL_ARB_texture_rectangle : require\n"
+      "precision mediump float;            \n"
+      "varying vec2 v_texCoord;            \n"
+      "uniform sampler2DRect s_texture;    \n"
+      "void main()                         \n"
+      "{"
+      "    gl_FragColor = texture2DRect(s_texture, v_texCoord).rgba; \n"
+      "}";
   shader_rectangle_arb_ =
       CreateProgram(kVertexShader, kFragmentShaderRectangle);
 }
