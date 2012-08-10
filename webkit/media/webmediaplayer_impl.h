@@ -336,6 +336,7 @@ class WebMediaPlayerImpl
   scoped_refptr<media::AudioRendererSink> audio_renderer_sink_;
 
   bool is_local_source_;
+  bool supports_save_;
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
   ProxyDecryptor decryptor_;

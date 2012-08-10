@@ -131,6 +131,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       audio_source_provider_(audio_source_provider),
       audio_renderer_sink_(audio_renderer_sink),
       is_local_source_(false),
+      supports_save_(true),
       decryptor_(proxy_.get(), client, frame) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
@@ -235,6 +236,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   if (BuildMediaStreamCollection(url, media_stream_client_,
                                  message_loop_factory_.get(),
                                  filter_collection_.get())) {
+    supports_save_ = false;
     StartPipeline();
     return;
   }
@@ -244,6 +246,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
                                  message_loop_factory_.get(),
                                  filter_collection_.get(),
                                  &decryptor_)) {
+    supports_save_ = false;
     StartPipeline();
     return;
   }
@@ -303,7 +306,7 @@ bool WebMediaPlayerImpl::supportsFullscreen() const {
 
 bool WebMediaPlayerImpl::supportsSave() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  return true;
+  return supports_save_;
 }
 
 void WebMediaPlayerImpl::seek(float seconds) {
