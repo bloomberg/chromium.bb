@@ -318,13 +318,6 @@
             }],
           ],
         }],
-        ['OS=="android"', {
-          'sources!': [
-            'renderer/extensions/experimental.usb_custom_bindings.cc',
-            'renderer/extensions/experimental.usb_custom_bindings.h',
-            'renderer/resources/extensions/experimental.usb_custom_bindings.js',
-          ],
-        }],
       ],
     },
   ],
