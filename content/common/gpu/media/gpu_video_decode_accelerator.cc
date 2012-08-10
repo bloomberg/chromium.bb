@@ -174,7 +174,8 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_.reset(new OmxVideoDecodeAccelerator(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle(),
-      this));
+      this,
+      make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   gfx::GLContextGLX* glx_context =
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());

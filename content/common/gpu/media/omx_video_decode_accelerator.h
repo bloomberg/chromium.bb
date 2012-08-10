@@ -38,8 +38,10 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
     public media::VideoDecodeAccelerator {
  public:
   // Does not take ownership of |client| which must outlive |*this|.
-  OmxVideoDecodeAccelerator(EGLDisplay egl_display, EGLContext egl_context,
-                            media::VideoDecodeAccelerator::Client* client);
+  OmxVideoDecodeAccelerator(
+      EGLDisplay egl_display, EGLContext egl_context,
+      media::VideoDecodeAccelerator::Client* client,
+      const base::Callback<bool(void)>& make_context_current);
   virtual ~OmxVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
@@ -181,6 +183,7 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   // TODO(fischman,vrk): handle lost contexts?
   EGLDisplay egl_display_;
   EGLContext egl_context_;
+  base::Callback<bool(void)> make_context_current_;
 
   // Free input OpenMAX buffers that can be used to take bitstream from demuxer.
   std::queue<OMX_BUFFERHEADERTYPE*> free_input_buffers_;

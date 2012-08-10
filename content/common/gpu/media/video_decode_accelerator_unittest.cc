@@ -310,7 +310,7 @@ GLRenderingVDAClient::~GLRenderingVDAClient() {
   SetState(CS_DESTROYED);
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 static bool DoNothingReturnTrue() { return true; }
 #endif
 
@@ -327,7 +327,8 @@ void GLRenderingVDAClient::CreateDecoder() {
       new OmxVideoDecodeAccelerator(
           static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
           static_cast<EGLContext>(rendering_helper_->GetGLContext()),
-          this));
+          this,
+          base::Bind(&DoNothingReturnTrue)));
 #elif defined(ARCH_CPU_X86_FAMILY)
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),

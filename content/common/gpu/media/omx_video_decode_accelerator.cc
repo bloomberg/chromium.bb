@@ -91,7 +91,8 @@ bool OmxVideoDecodeAccelerator::pre_sandbox_init_done_ = false;
 
 OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
     EGLDisplay egl_display, EGLContext egl_context,
-    media::VideoDecodeAccelerator::Client* client)
+    media::VideoDecodeAccelerator::Client* client,
+    const base::Callback<bool(void)>& make_context_current)
     : message_loop_(MessageLoop::current()),
       component_handle_(NULL),
       weak_this_(base::AsWeakPtr(this)),
@@ -106,6 +107,7 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       output_buffers_at_component_(0),
       egl_display_(egl_display),
       egl_context_(egl_context),
+      make_context_current_(make_context_current),
       client_(client),
       codec_(UNKNOWN),
       h264_profile_(OMX_VIDEO_AVCProfileMax),
@@ -333,6 +335,9 @@ void OmxVideoDecodeAccelerator::AssignPictureBuffers(
   DCHECK_EQ(output_buffers_at_component_, 0);
   DCHECK_EQ(fake_output_buffers_.size(), 0U);
   DCHECK_EQ(pictures_.size(), 0U);
+
+  if (!make_context_current_.Run())
+    return;
 
   for (size_t i = 0; i < buffers.size(); ++i) {
     EGLImageKHR egl_image =
@@ -707,6 +712,10 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // Calls to OMX to free buffers.
   OMX_ERRORTYPE result;
+
+  if (!make_context_current_.Run())
+      return;
+
   for (OutputPictureById::iterator it = pictures_.begin();
        it != pictures_.end(); ++it) {
     OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
