@@ -17,6 +17,8 @@ body {
   margin: 0;
   overflow: hidden;
   padding: 0;
+  position: fixed;
+  top: 0;
 }
 
 html[oobe=old] body {
@@ -72,6 +74,7 @@ button:not(.custom-appearance) {
 #outer-container {
   -webkit-box-align: center;
   -webkit-box-pack: center;
+  -webkit-perspective: 600px;
   bottom: 41px;  /* Leave space for the header bar */
   display: -webkit-box;
   left: 0;
@@ -89,19 +92,39 @@ html[oobe=new] #oobe {
 }
 
 #inner-container {
-  /* Height/width of each step is set manually,
-     see DisplayManager.toggleStep_() */
-  height: 294px;
   position: relative;
-  width: 640px;
 }
 
 html[oobe=old] #inner-container {
+  height: 294px;
   padding: 20px;
+  width: 640px;
 }
 
 html[oobe=new] #inner-container {
+  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
+                                      rgba(255,255,255,0.95));
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
   padding: 0;
+}
+
+/* Account picker has no border and background. */
+html[oobe=new] .account-picker #inner-container {
+  background: none;
+  box-shadow: none;
+}
+
+/* Only play this animation when 'down' class is removed. */
+html[oobe=new] #inner-container:not(.down) {
+  -webkit-transition: -webkit-transform 400ms ease;
+}
+
+html[oobe=new] #inner-container.down {
+  -webkit-transform: translateY(50px) rotateX(-2.5deg);
 }
 
 #security-info a,
@@ -138,11 +161,7 @@ hr.bottom {
 
 #header {
   -webkit-padding-start: 45px;
-  /* TODO(thakis): Move oobe.html to a structure element, then the
-   * image set should be inserted automatically. */
-  background-image: -webkit-image-set(
-      url('chrome://theme/IDR_PRODUCT_LOGO_32') 1x,
-      url('chrome://theme/IDR_PRODUCT_LOGO_32@2x') 2x);
+  background-image: url('chrome://theme/IDR_PRODUCT_LOGO_32');
   background-position: left center;
   background-repeat: no-repeat;
   background-size: 32px;
@@ -210,21 +229,14 @@ html[dir=rtl]  .header-section.left {
   right: -20px;
 }
 
-html[oobe=old] .step-logo {
+html[oobe=old] #step-logo {
   display: none;
 }
 
-.step-logo {
+#step-logo {
+  -webkit-margin-start: 17px;
   position: absolute;
   top: 15px;
-}
-
-html[dir=ltr] .step-logo {
-  left: 17px;
-}
-
-html[dir=rtl] .step-logo {
-  right: 17px;
 }
 
 html[oobe=new] #connect .step-contents {
@@ -261,48 +273,49 @@ html[oobe=new] #user-image-screen-description {
   -webkit-margin-before: 0;
 }
 
+.step {
+  position: absolute;
+}
+
 html[oobe=old] .step {
   min-height: 294px;
   opacity: 1;
-  position: absolute;
   width: 640px;
 }
 
 html[oobe=new] .step {
-  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
-                                      rgba(255,255,255,0.95));
-  border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
-              0 4px 23px 5px rgba(0, 0, 0, 0.2),
-              0 2px 6px rgba(0, 0, 0, 0.15);
-  position: absolute;
+  box-sizing: border-box;
+}
+
+html[oobe=new] .step.animated {
+  -webkit-transition: -webkit-transform 400ms ease,
+                      opacity 400ms ease,
+                      visibility 400ms ease;
 }
 
 html[oobe=old][dir=ltr] .step {
-  /* TODO(nkostylev): Change to new transitions. */
   -webkit-transition: left 200ms, opacity 200ms, visibility 200ms ease-in-out;
   left: 0;
 }
 
 html[oobe=old][dir=rtl] .step {
-  /* TODO(nkostylev): Change to new transitions. */
   -webkit-transition: right 200ms, opacity 200ms, visibility 200ms ease-in-out;
   right: 0;
 }
 
-.step.right {
+html[oobe=old] .step.right {
   left: 100px;
 }
 
-.step.left {
+html[oobe=old] .step.left {
   left: -50px;
 }
 
-html[dir=rtl] .step.right {
+html[oobe=old][dir=rtl] .step.right {
   right: 100px;
 }
 
-html[dir=rtl] .step.left {
+html[oobe=old][dir=rtl] .step.left {
   right: -50px;
 }
 
@@ -318,10 +331,18 @@ html[oobe=old] .right {
   opacity: 0;
 }
 
-html[oobe=new] .faded,
-html[oobe=new] .left,
-html[oobe=new] .right {
+html[oobe=new] .step.faded,
+html[oobe=new] .step.left,
+html[oobe=new] .step.right {
   opacity: 0;
+}
+
+html[oobe=new] .step.right {
+  -webkit-transform: translateX(50px);
+}
+
+html[oobe=new] .step.left {
+  -webkit-transform: translateX(-50px)
 }
 
 #footer {
@@ -409,41 +430,37 @@ html[oobe=old] #connect {
 }
 
 /* Padding for header and buttons. */
-/* TODO(nkostylev): Extract common style for OOBE steps. */
 html[oobe=new] #connect {
-  min-height: 304px;
+  min-height: 395px;
   padding: 70px 17px 21px;
-  width: 688px;
 }
 
 html[oobe=new] #eula {
-  min-height: 304px;
+  min-height: 395px;
   padding: 70px 17px 21px;
-  width: 688px;
 }
 
 html[oobe=new] #update {
-  min-height: 284px;
+  min-height: 423px;
   padding: 70px 17px 69px;    /* Screen has no controls. */
-  width: 688px;
 }
 
 html[oobe=new] #gaia-signin {
-  height: 470px;
+  height: 609px;
   padding: 70px 17px 69px;    /* Screen has no controls. */
-  width: 688px;
+  width: 722px;
 }
 
 html[oobe=new] #user-image {
-  min-height: 352px;
+  min-height: 443px;
   padding: 70px 17px 21px;
-  width: 688px;
+  width: 702px;
 }
 
 html[oobe=new] #oauth-enrollment {
-  min-height: 518px;
+  min-height: 609px;
   padding: 70px 17px 21px;
-  width: 688px;
+  width: 722px;
 }
 
 #logging {
@@ -699,8 +716,18 @@ html[camera=webrtc] .camera.live.online #take-photo {
 
 .step-controls {
   -webkit-box-pack: end;
+  -webkit-padding-end: 34px;  /* Double the padding of .step */
+  bottom: 21px;
+  box-sizing: border-box;
   display: -webkit-box;
-  height: 28px
+  height: 28px;
+  position: absolute;
+  width: 100%;
+}
+
+.animation .step-controls button {
+  /* Don't grey out disabled buttons during animation. */
+  color: buttontext !important;
 }
 
 html[oobe=old] .step-controls {

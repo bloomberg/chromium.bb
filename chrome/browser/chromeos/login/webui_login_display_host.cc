@@ -69,8 +69,6 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
       crash_count_(0),
       restore_path_(RESTORE_UNKNOWN) {
   bool is_registered = WizardController::IsDeviceRegistered();
-  // TODO(nkostylev): Add switch to disable wallpaper transition on OOBE.
-  // Should be used on test images so that they are not slowed down.
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe) &&
       !zero_delay_enabled) {
@@ -96,6 +94,11 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
       else if (override_type == kWebUIInitPostpone)
         initialize_webui_in_parallel_ = false;
     }
+
+    // Don't postpone WebUI initialization on first boot, otherwise we miss
+    // initial animation.
+    if (!WizardController::IsOobeCompleted())
+      initialize_webui_in_parallel_ = false;
   }
   // In case if we're not waiting for wallpaper load,
   // |initialize_webui_in_parallel_| value is ignored through the code flow.

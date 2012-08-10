@@ -9,6 +9,7 @@
 // TODO(xiyuan): Find a better to share those constants.
 /** @const */ var SCREEN_OOBE_NETWORK = 'connect';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
+/** @const */ var SCREEN_OOBE_UPDATE = 'update';
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
@@ -23,6 +24,16 @@
 
 cr.define('cr.ui.login', function() {
   var Bubble = cr.ui.Bubble;
+
+  /**
+   * Groups of screens (screen IDs) that should have the same dimensions.
+   * @type Array.<Array.<string>>
+   * @const
+   */
+  var SCREEN_GROUPS = [[SCREEN_OOBE_NETWORK,
+                        SCREEN_OOBE_EULA,
+                        SCREEN_OOBE_UPDATE]
+                      ];
 
   /**
    * Constructor a display manager that manages initialization of screens,
@@ -109,7 +120,7 @@ cr.define('cr.ui.login', function() {
 
     /**
      * Appends buttons to the button strip.
-     * @param {Array} buttons Array with the buttons to append.
+     * @param {Array.<HTMLElement>} buttons Array with the buttons to append.
      * @param {string} screenId Id of the screen that buttons belong to.
      */
     appendButtons_: function(buttons, screenId) {
@@ -123,6 +134,19 @@ cr.define('cr.ui.login', function() {
           for (var i = 0; i < buttons.length; ++i)
             buttonStrip.appendChild(buttons[i]);
         }
+      }
+    },
+
+    /**
+     * Disables or enables control buttons on the specified screen.
+     * @param {HTMLElement} screen Screen which controls should be affected.
+     * @param {boolean} disabled Whether to disable controls.
+     */
+    disableButtons_: function(screen, disabled) {
+      var buttons = document.querySelectorAll(
+          '#' + screen.id + '-controls button');
+      for (var i = 0; i < buttons.length; ++i) {
+        buttons[i].disabled = disabled;
       }
     },
 
@@ -157,6 +181,9 @@ cr.define('cr.ui.login', function() {
       var newStep = $(nextStepId);
       var newHeader = $('header-' + nextStepId);
 
+      // Disable controls before starting animation.
+      this.disableButtons_(oldStep, true);
+
       if (oldStep.onBeforeHide)
         oldStep.onBeforeHide();
 
@@ -167,6 +194,8 @@ cr.define('cr.ui.login', function() {
 
       if (newStep.onAfterShow)
         newStep.onAfterShow(screenData);
+
+      this.disableButtons_(newStep, false);
 
       if (this.isOobeUI()) {
         // Start gliding animation for OOBE steps.
@@ -190,25 +219,23 @@ cr.define('cr.ui.login', function() {
 
       if (this.currentStep_ != nextStepIndex &&
           !oldStep.classList.contains('hidden')) {
-        // TODO(nkostylev): Remove when new transitions are added back.
-        if (this.isNewOobe()) {
-          if (oldStep.classList.contains('faded') ||
-              oldStep.classList.contains('left') ||
-              oldStep.classList.contains('right')) {
-            oldStep.classList.add('hidden');
-          }
-        } else {
+        if (oldStep.classList.contains('animated') || !this.isNewOobe()) {
+          oldStep.classList.add('animation');
           oldStep.addEventListener('webkitTransitionEnd', function f(e) {
             oldStep.removeEventListener('webkitTransitionEnd', f);
             if (oldStep.classList.contains('faded') ||
                 oldStep.classList.contains('left') ||
                 oldStep.classList.contains('right')) {
+              oldStep.classList.remove('animation');
               oldStep.classList.add('hidden');
             }
           });
+        } else {
+          oldStep.classList.add('hidden');
         }
       } else {
         // First screen on OOBE launch.
+        $('inner-container').classList.remove('down');
         newHeader.classList.remove('right');
         // Report back first OOBE screen being painted.
         window.webkitRequestAnimationFrame(function() {
@@ -217,6 +244,8 @@ cr.define('cr.ui.login', function() {
       }
       this.currentStep_ = nextStepIndex;
       $('oobe').className = nextStepId;
+
+      $('step-logo').hidden = newStep.classList.contains('no-logo');
     },
 
     /**
@@ -283,14 +312,31 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
-     * Updates inner container size based on the size of the current screen.
+     * Updates inner container size based on the size of the current screen and
+     * other screens in the same group.
      * Should be executed on screen change / screen size change.
      * @param {!HTMLElement} screen Screen that is being shown.
      */
     updateInnerContainerSize_: function(screen) {
-      $('inner-container').style.height = screen.offsetHeight + 'px';
-      if (this.isNewOobe())
-        $('inner-container').style.width = screen.offsetWidth + 'px';
+      var height = screen.offsetHeight;
+      var width = screen.offsetWidth;
+      for (var i = 0, screenGroup; screenGroup = SCREEN_GROUPS[i]; i++) {
+        if (screenGroup.indexOf(screen.id) != -1) {
+          // Set screen dimensions to maximum dimensions within this group.
+          for (var j = 0, screen2; screen2 = $(screenGroup[j]); j++) {
+            height = Math.max(height, screen2.offsetHeight);
+            width = Math.max(width, screen2.offsetWidth);
+          }
+          break;
+        }
+      }
+      $('inner-container').style.height = height + 'px';
+      if (this.isNewOobe()) {
+        $('inner-container').style.width = width + 'px';
+        // This requires |screen| to have |box-sizing: border-box|.
+        screen.style.width = width + 'px';
+        screen.style.height = height + 'px';
+      }
     },
 
     /**
@@ -303,7 +349,7 @@ cr.define('cr.ui.login', function() {
       for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
         var screen = $(screenId);
         if (this.isNewOobe()) {
-          buttonStrip = $(screenId + '-controls');
+          var buttonStrip = $(screenId + '-controls');
           if (buttonStrip)
             buttonStrip.innerHTML = '';
           // TODO(nkostylev): Update screen headers for new OOBE design.
