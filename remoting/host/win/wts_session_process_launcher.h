@@ -15,9 +15,9 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/object_watcher.h"
 #include "ipc/ipc_channel.h"
 #include "remoting/base/stoppable.h"
+#include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_observer.h"
 
 namespace base {
@@ -36,13 +36,13 @@ class WtsConsoleMonitor;
 
 class WtsSessionProcessLauncher
     : public Stoppable,
-      public base::win::ObjectWatcher::Delegate,
-      public IPC::Listener,
+      public WorkerProcessLauncher::Delegate,
       public WtsConsoleObserver {
  public:
-  // Constructs a WtsSessionProcessLauncher object. All interaction with
-  // |monitor| should happen on |main_message_loop|. |ipc_message_loop| has
-  // to be an I/O message loop.
+  // Constructs a WtsSessionProcessLauncher object. |stopped_callback| and
+  // |main_message_loop| are passed to the undelying |Stoppable| implementation.
+  // All interaction with |monitor| should happen on |main_message_loop|.
+  // |ipc_message_loop| must be an I/O message loop.
   WtsSessionProcessLauncher(
       const base::Closure& stopped_callback,
       WtsConsoleMonitor* monitor,
@@ -51,10 +51,12 @@ class WtsSessionProcessLauncher
 
   virtual ~WtsSessionProcessLauncher();
 
-  // base::win::ObjectWatcher::Delegate implementation.
-  virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
-
-  // IPC::Listener implementation.
+  // WorkerProcessLauncher::Delegate implementation.
+  virtual bool DoLaunchProcess(
+      const std::string& channel_name,
+      base::win::ScopedHandle* process_exit_event_out) OVERRIDE;
+  virtual void DoKillProcess(DWORD exit_code) OVERRIDE;
+  virtual void OnChannelConnected(DWORD peer_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WtsConsoleObserver implementation.
@@ -71,9 +73,15 @@ class WtsSessionProcessLauncher
   // reason.
   void LaunchProcess();
 
+  // Called when the launcher reports the process to be stopped.
+  void OnLauncherStopped();
+
   // Sends the Secure Attention Sequence to the session represented by
   // |session_token_|.
   void OnSendSasToConsole();
+
+  // |true| if this object is currently attached to the console session.
+  bool attached_;
 
   // Time of the last launch attempt.
   base::Time launch_time_;
@@ -93,28 +101,12 @@ class WtsSessionProcessLauncher
   // This pointer is used to unsubscribe from session attach and detach events.
   WtsConsoleMonitor* monitor_;
 
-  // The handle of the process injected into the console session.
-  base::Process process_;
+  scoped_ptr<WorkerProcessLauncher> launcher_;
 
-  // Used to determine when the launched process terminates.
-  base::win::ObjectWatcher process_watcher_;
+  base::win::ScopedHandle worker_process_;
 
   // The token to be used to launch a process in a different session.
   base::win::ScopedHandle session_token_;
-
-  // Defines the states the process launcher can be in.
-  enum State {
-    StateDetached,
-    StateStarting,
-    StateAttached,
-  };
-
-  // Current state of the process launcher.
-  State state_;
-
-  // The Chromoting IPC channel connecting the service to the per-session
-  // process.
-  scoped_ptr<IPC::ChannelProxy> chromoting_channel_;
 
   scoped_ptr<SasInjector> sas_injector_;
 

@@ -620,6 +620,8 @@
             'host/win/host_service_resource.h',
             'host/win/launch_process_with_token.cc',
             'host/win/launch_process_with_token.h',
+            'host/win/worker_process_launcher.cc',
+            'host/win/worker_process_launcher.h',
             'host/win/wts_console_monitor.h',
             'host/win/wts_console_observer.h',
             'host/win/wts_session_process_launcher.cc',

@@ -345,7 +345,7 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
 bool LaunchProcessWithToken(const FilePath& binary,
                             const CommandLine::StringType& command_line,
                             HANDLE user_token,
-                            base::Process* process_out) {
+                            ScopedHandle* process_out) {
   FilePath::StringType application_name = binary.value();
 
   base::win::ScopedProcessInformation process_info;
@@ -404,7 +404,7 @@ bool LaunchProcessWithToken(const FilePath& binary,
   }
 
   CHECK(process_info.IsValid());
-  process_out->set_handle(process_info.TakeProcessHandle());
+  process_out->Set(process_info.TakeProcessHandle());
   return true;
 }
 

@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/process_util.h"
 #include "base/win/scoped_handle.h"
 
 namespace remoting {
@@ -24,7 +23,7 @@ bool CreateSessionToken(uint32 session_id, base::win::ScopedHandle* token_out);
 bool LaunchProcessWithToken(const FilePath& binary,
                             const CommandLine::StringType& command_line,
                             HANDLE user_token,
-                            base::Process* process_out);
+                            base::win::ScopedHandle* process_out);
 
 } // namespace remoting
 

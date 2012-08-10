@@ -26,8 +26,10 @@ void Stoppable::Stop() {
 
   if (state_ == kRunning) {
     state_ = kStopping;
-    DoStop();
   }
+
+  // DoStop() can be called multiple times.
+  DoStop();
 }
 
 void Stoppable::CompleteStopping() {
