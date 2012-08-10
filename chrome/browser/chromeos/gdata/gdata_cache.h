@@ -272,6 +272,9 @@ class GDataCache {
   // Utility method to call Initialize on UI thread.
   void RequestInitializeOnUIThread();
 
+  // Utility method to call InitializeForTesting on UI thread.
+  void RequestInitializeOnUIThreadForTesting();
+
   // Force a rescan of cache files, for testing.
   void ForceRescanOnUIThreadForTesting();
 
@@ -328,6 +331,10 @@ class GDataCache {
 
   // Initializes the cache.
   void Initialize();
+
+  // Initializes the cache with in-memory cache for testing.
+  // The in-memory cache is used since it's faster than the db.
+  void InitializeForTesting();
 
   // Deletes the cache.
   void Destroy();

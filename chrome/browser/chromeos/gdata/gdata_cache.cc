@@ -697,6 +697,14 @@ void GDataCache::RequestInitializeOnUIThread() {
       base::Bind(&GDataCache::Initialize, base::Unretained(this)));
 }
 
+void GDataCache::RequestInitializeOnUIThreadForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GDataCache::InitializeForTesting, base::Unretained(this)));
+}
+
 void GDataCache::ForceRescanOnUIThreadForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -739,6 +747,15 @@ void GDataCache::Initialize() {
 
   InitCachePaths(cache_paths_);
   metadata_ = GDataCacheMetadata::CreateGDataCacheMetadata(
+      blocking_task_runner_).Pass();
+  metadata_->Initialize(cache_paths_);
+}
+
+void GDataCache::InitializeForTesting() {
+  AssertOnSequencedWorkerPool();
+
+  InitCachePaths(cache_paths_);
+  metadata_ = GDataCacheMetadata::CreateGDataCacheMetadataForTesting(
       blocking_task_runner_).Pass();
   metadata_->Initialize(cache_paths_);
 }

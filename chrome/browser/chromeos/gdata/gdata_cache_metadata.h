@@ -31,12 +31,13 @@ class GDataCacheMetadata {
 
   virtual ~GDataCacheMetadata();
 
-  // |pool| and |sequence_token| are used to assert that the functions are
-  // called on the right sequenced worker pool with the right sequence token.
-  //
-  // For testing, the thread assertion can be disabled by passing NULL and
-  // the default value of SequenceToken.
+  // Creates GDataCacheMetadata instance.
   static scoped_ptr<GDataCacheMetadata> CreateGDataCacheMetadata(
+      base::SequencedTaskRunner* blocking_task_runner);
+
+  // Creates GDataCacheMetadata instance. This uses FakeGDataCacheMetadata,
+  // which is an in-memory implmentation and faster than GDataCacheMetadataDB.
+  static scoped_ptr<GDataCacheMetadata> CreateGDataCacheMetadataForTesting(
       base::SequencedTaskRunner* blocking_task_runner);
 
   // Initialize the cache metadata store.

@@ -287,14 +287,15 @@ bool CheckIfMd5Matches(
 
 ////////////////////////////////////////////////////////////////////////////////
 // GDataCacheMetadata implementation with std::map.
+// Used for testing.
 
-class GDataCacheMetadataMap : public GDataCacheMetadata {
+class FakeGDataCacheMetadata : public GDataCacheMetadata {
  public:
-  explicit GDataCacheMetadataMap(
+  explicit FakeGDataCacheMetadata(
       base::SequencedTaskRunner* blocking_task_runner);
 
  private:
-  virtual ~GDataCacheMetadataMap();
+  virtual ~FakeGDataCacheMetadata();
 
   // GDataCacheMetadata overrides:
   virtual void Initialize(const std::vector<FilePath>& cache_paths) OVERRIDE;
@@ -312,27 +313,27 @@ class GDataCacheMetadataMap : public GDataCacheMetadata {
 
   CacheMap cache_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataCacheMetadataMap);
+  DISALLOW_COPY_AND_ASSIGN(FakeGDataCacheMetadata);
 };
 
-GDataCacheMetadataMap::GDataCacheMetadataMap(
+FakeGDataCacheMetadata::FakeGDataCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner)
     : GDataCacheMetadata(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
-GDataCacheMetadataMap::~GDataCacheMetadataMap() {
+FakeGDataCacheMetadata::~FakeGDataCacheMetadata() {
   AssertOnSequencedWorkerPool();
 }
 
-void GDataCacheMetadataMap::Initialize(
+void FakeGDataCacheMetadata::Initialize(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
   ScanCachePaths(cache_paths, &cache_map_);
 }
 
-void GDataCacheMetadataMap::AddOrUpdateCacheEntry(
+void FakeGDataCacheMetadata::AddOrUpdateCacheEntry(
     const std::string& resource_id,
     const GDataCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
@@ -345,7 +346,7 @@ void GDataCacheMetadataMap::AddOrUpdateCacheEntry(
   }
 }
 
-void GDataCacheMetadataMap::RemoveCacheEntry(const std::string& resource_id) {
+void FakeGDataCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
@@ -355,7 +356,7 @@ void GDataCacheMetadataMap::RemoveCacheEntry(const std::string& resource_id) {
   }
 }
 
-bool GDataCacheMetadataMap::GetCacheEntry(const std::string& resource_id,
+bool FakeGDataCacheMetadata::GetCacheEntry(const std::string& resource_id,
                                           const std::string& md5,
                                           GDataCacheEntry* entry) {
   DCHECK(entry);
@@ -377,7 +378,7 @@ bool GDataCacheMetadataMap::GetCacheEntry(const std::string& resource_id,
   return true;
 }
 
-void GDataCacheMetadataMap::RemoveTemporaryFiles() {
+void FakeGDataCacheMetadata::RemoveTemporaryFiles() {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.begin();
@@ -391,7 +392,7 @@ void GDataCacheMetadataMap::RemoveTemporaryFiles() {
   }
 }
 
-void GDataCacheMetadataMap::Iterate(const IterateCallback& callback) {
+void FakeGDataCacheMetadata::Iterate(const IterateCallback& callback) {
   AssertOnSequencedWorkerPool();
 
   for (CacheMap::const_iterator iter = cache_map_.begin();
@@ -400,7 +401,7 @@ void GDataCacheMetadataMap::Iterate(const IterateCallback& callback) {
   }
 }
 
-void GDataCacheMetadataMap::ForceRescanForTesting(
+void FakeGDataCacheMetadata::ForceRescanForTesting(
     const std::vector<FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
@@ -594,6 +595,14 @@ scoped_ptr<GDataCacheMetadata> GDataCacheMetadata::CreateGDataCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner) {
   return scoped_ptr<GDataCacheMetadata>(
       new GDataCacheMetadataDB(blocking_task_runner));
+}
+
+// static
+scoped_ptr<GDataCacheMetadata>
+GDataCacheMetadata::CreateGDataCacheMetadataForTesting(
+    base::SequencedTaskRunner* blocking_task_runner) {
+  return scoped_ptr<GDataCacheMetadata>(
+      new FakeGDataCacheMetadata(blocking_task_runner));
 }
 
 void GDataCacheMetadata::AssertOnSequencedWorkerPool() {

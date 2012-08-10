@@ -257,7 +257,7 @@ class GDataFileSystemTest : public testing::Test {
     file_system_->AddObserver(mock_directory_observer_.get());
 
     file_system_->Initialize();
-    cache_->RequestInitializeOnUIThread();
+    cache_->RequestInitializeOnUIThreadForTesting();
     test_util::RunBlockingPoolTask();
   }
 
