@@ -36,6 +36,12 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
       const WebKit::WebVector<WebKit::WebString>&,
       const WebKit::WebVector<WebKit::WebIDBObjectStore::WebIndexKeys>&,
       WebKit::WebExceptionCode&);
+  virtual void setIndexKeys(const WebKit::WebIDBKey&,
+                            const WebKit::WebVector<WebKit::WebString>&,
+                            const WebKit::WebVector<WebIndexKeys>&,
+                            const WebKit::WebIDBTransaction&);
+  virtual void setIndexesReady(const WebKit::WebVector<WebKit::WebString>&,
+                               const WebKit::WebIDBTransaction&);
   virtual void deleteFunction(const WebKit::WebIDBKeyRange& key_range,
                               WebKit::WebIDBCallbacks* callbacks,
                               const WebKit::WebIDBTransaction& transaction,
@@ -58,11 +64,18 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
                            const WebKit::WebIDBTransaction& transaction,
                            WebKit::WebExceptionCode& ec);
 
-  virtual void openCursor(const WebKit::WebIDBKeyRange& idb_key_range,
-                  unsigned short direction,
-                  WebKit::WebIDBCallbacks* callbacks,
-                  const WebKit::WebIDBTransaction& transaction,
-                  WebKit::WebExceptionCode& ec);
+  virtual void openCursor(const WebKit::WebIDBKeyRange& range,
+                          unsigned short direction,
+                          WebKit::WebIDBCallbacks* callbacks,
+                          const WebKit::WebIDBTransaction& transaction,
+                          WebKit::WebExceptionCode& ec);
+
+  virtual void openCursor(const WebKit::WebIDBKeyRange&,
+                          WebKit::WebIDBCursor::Direction direction,
+                          WebKit::WebIDBCallbacks*,
+                          WebKit::WebIDBTransaction::TaskType,
+                          const WebKit::WebIDBTransaction&,
+                          WebKit::WebExceptionCode&);
 
   virtual void count(const WebKit::WebIDBKeyRange& idb_key_range,
                      WebKit::WebIDBCallbacks* callbacks,

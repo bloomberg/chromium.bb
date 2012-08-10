@@ -191,6 +191,16 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
                WebKit::WebExceptionCode* ec);
     void OnPut(const IndexedDBHostMsg_ObjectStorePut_Params& params,
                WebKit::WebExceptionCode* ec);
+    void OnSetIndexKeys(
+        int32 idb_object_store_id,
+        const content::IndexedDBKey& primary_key,
+        const std::vector<string16>& index_names,
+        const std::vector<std::vector<content::IndexedDBKey> >& index_keys,
+        int32 transaction_id);
+    void OnSetIndexesReady(int32 idb_object_store_id,
+                           const std::vector<string16>& names,
+                           int32 transaction_id);
+
     void OnDelete(int idb_object_store_id,
                   int32 thread_id,
                   int32 response_id,

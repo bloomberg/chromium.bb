@@ -483,9 +483,10 @@ void IndexedDBDispatcher::RequestIDBObjectStoreClear(
 
 void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
     const WebIDBKeyRange& idb_key_range,
-    unsigned short direction,
+    WebKit::WebIDBCursor::Direction direction,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
+    WebKit::WebIDBTransaction::TaskType task_type,
     const WebIDBTransaction& transaction,
     WebExceptionCode* ec) {
   ResetCursorPrefetchCaches();
@@ -496,6 +497,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
   params.key_range = IndexedDBKeyRange(idb_key_range);
   params.direction = direction;
   params.idb_object_store_id = idb_object_store_id;
+  params.task_type = task_type;
   params.transaction_id = TransactionId(transaction);
   Send(new IndexedDBHostMsg_ObjectStoreOpenCursor(params, ec));
   if (*ec)

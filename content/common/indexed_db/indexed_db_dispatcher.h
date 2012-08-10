@@ -14,9 +14,11 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBObjectStore.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 #include "webkit/glue/worker_task_runner.h"
 
@@ -33,7 +35,6 @@ class Message;
 namespace WebKit {
 class WebFrame;
 class WebIDBKeyRange;
-class WebIDBTransaction;
 }
 
 namespace content {
@@ -191,9 +192,10 @@ class CONTENT_EXPORT IndexedDBDispatcher
 
   void RequestIDBObjectStoreOpenCursor(
       const WebKit::WebIDBKeyRange& idb_key_range,
-      unsigned short direction,
+      WebKit::WebIDBCursor::Direction direction,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
+      WebKit::WebIDBTransaction::TaskType task_type,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 

@@ -4,6 +4,8 @@
 
 #include "content/common/indexed_db/proxy_webidbobjectstore_impl.h"
 
+#include <vector>
+
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/public/common/serialized_script_value.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
@@ -67,16 +69,57 @@ void RendererWebIDBObjectStoreImpl::putWithIndexKeys(
     PutMode put_mode,
     WebIDBCallbacks* callbacks,
     const WebIDBTransaction& transaction,
-    const WebVector<WebString>& indexNames,
-    const WebVector<WebVector<WebIDBKey> >& indexKeys,
+    const WebVector<WebString>& index_names,
+    const WebVector<WebVector<WebIDBKey> >& index_keys,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStorePut(
       SerializedScriptValue(value), IndexedDBKey(key),
       put_mode, callbacks, idb_object_store_id_, transaction,
-      indexNames, indexKeys, &ec);
+      index_names, index_keys, &ec);
 }
+
+void RendererWebIDBObjectStoreImpl::setIndexKeys(
+    const WebKit::WebIDBKey& primaryKey,
+    const WebKit::WebVector<WebKit::WebString>& index_names,
+    const WebKit::WebVector<WebIndexKeys>& index_keys,
+    const WebKit::WebIDBTransaction& transaction) {
+  std::vector<string16> index_names_list(index_names.size());
+  for (size_t i = 0; i < index_names.size(); ++i) {
+    index_names_list[i] = index_names[i];
+  }
+
+  std::vector<std::vector<content::IndexedDBKey> >
+          index_keys_list(index_keys.size());
+  for (size_t i = 0; i < index_keys.size(); ++i) {
+    index_keys_list[i].resize(index_keys[i].size());
+    for (size_t j = 0; j < index_keys[i].size(); ++j) {
+      index_keys_list[i][j] = content::IndexedDBKey(index_keys[i][j]);
+    }
+  }
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_ObjectStoreSetIndexKeys(
+      idb_object_store_id_,
+      IndexedDBKey(primaryKey),
+      index_names_list,
+      index_keys_list,
+      IndexedDBDispatcher::TransactionId(transaction)));
+}
+
+void RendererWebIDBObjectStoreImpl::setIndexesReady(
+    const WebKit::WebVector<WebKit::WebString>& index_names,
+    const WebKit::WebIDBTransaction& transaction) {
+
+  std::vector<string16> index_name_list(index_names.size());
+  for (size_t i = 0; i < index_names.size(); ++i) {
+      index_name_list[i] = index_names[i];
+  }
+
+  IndexedDBDispatcher::Send(new IndexedDBHostMsg_ObjectStoreSetIndexesReady(
+      idb_object_store_id_,
+      index_name_list, IndexedDBDispatcher::TransactionId(transaction)));
+}
+
 
 void RendererWebIDBObjectStoreImpl::deleteFunction(
     const WebIDBKeyRange& key_range,
@@ -147,14 +190,28 @@ void RendererWebIDBObjectStoreImpl::deleteIndex(
 
 void RendererWebIDBObjectStoreImpl::openCursor(
     const WebIDBKeyRange& idb_key_range,
-    unsigned short direction, WebIDBCallbacks* callbacks,
+    WebKit::WebIDBCursor::Direction direction, WebIDBCallbacks* callbacks,
+    WebKit::WebIDBTransaction::TaskType task_type,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBObjectStoreOpenCursor(
       idb_key_range, direction, callbacks,  idb_object_store_id_,
-      transaction, &ec);
+      task_type, transaction, &ec);
+}
+
+void RendererWebIDBObjectStoreImpl::openCursor(
+    const WebIDBKeyRange& idb_key_range,
+    unsigned short direction, WebIDBCallbacks* callbacks,
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->RequestIDBObjectStoreOpenCursor(
+      idb_key_range, static_cast<WebKit::WebIDBCursor::Direction>(direction),
+      callbacks,  idb_object_store_id_,
+      WebKit::WebIDBTransaction::NormalTask, transaction, &ec);
 }
 
 void RendererWebIDBObjectStoreImpl::count(
