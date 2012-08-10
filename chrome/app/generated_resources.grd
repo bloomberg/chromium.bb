@@ -6527,6 +6527,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set to default
       </message>
 
+      <!--Action Box menu-->
+      <message name="IDS_BOOKMARK_STAR" desc="The text for bookmark menu item">
+        Bookmark this page
+      </message>
+      <message name="IDS_BOOKMARK_STAR_LIT" desc="The text for bookmark menu item if page is already bookmarked">
+        Edit bookmark
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE" desc="The text for chrome to mobile menu item">
+        Send tab to device
+      </message>
+
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
         <ph name="WINDOW_TITLE">$1</ph> (Incognito)

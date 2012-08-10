@@ -98,7 +98,7 @@ LocationBarViewMac::LocationBarViewMac(
                                  OmniboxViewMac::GetFieldFont())),
       plus_decoration_(NULL),
       star_decoration_(new StarDecoration(command_updater)),
-      chrome_to_mobile_decoration_(nil),
+      chrome_to_mobile_decoration_(NULL),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
       profile_(profile),
@@ -120,7 +120,7 @@ LocationBarViewMac::LocationBarViewMac(
   }
 
   if (extensions::switch_utils::IsActionBoxEnabled()) {
-    plus_decoration_.reset(new PlusDecoration(command_updater));
+    plus_decoration_.reset(new PlusDecoration(this, command_updater, browser_));
   }
 
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
@@ -500,7 +500,7 @@ NSPoint LocationBarViewMac::GetChromeToMobileBubblePoint() const {
       [cell frameForDecoration:chrome_to_mobile_decoration_.get()
                        inFrame:[field_ bounds]];
   const NSPoint point =
-    chrome_to_mobile_decoration_->GetBubblePointInFrame(frame);
+      chrome_to_mobile_decoration_->GetBubblePointInFrame(frame);
   return [field_ convertPoint:point toView:nil];
 }
 

@@ -238,10 +238,10 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
       [BrowserActionsController registerUserPrefs:profile_->GetPrefs()];
 
     observer_.reset(new ExtensionServiceObserverBridge(self, profile_));
-    ExtensionService* extensionsService = profile_->GetExtensionService();
-    // |extensionsService| can be NULL in Incognito.
-    if (extensionsService) {
-      toolbarModel_ = extensionsService->toolbar_model();
+    ExtensionService* extensionService = profile_->GetExtensionService();
+    // |extensionService| can be NULL in Incognito.
+    if (extensionService) {
+      toolbarModel_ = extensionService->toolbar_model();
       toolbarModel_->AddObserver(observer_.get());
     }
 
