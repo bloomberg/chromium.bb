@@ -30,9 +30,9 @@ struct input_method;
 struct text_model {
 	struct wl_resource resource;
 
-	struct wl_list link;
+	struct weston_compositor *ec;
 
-	struct input_method *input_method;
+	struct wl_list input_methods;
 };
 
 struct input_method {
@@ -42,17 +42,20 @@ struct input_method {
 	struct wl_listener destroy_listener;
 
 	struct weston_compositor *ec;
-	struct wl_list models;
-	struct text_model *active_model;
+	struct text_model *model;
+
+	struct wl_list link;
 };
 
 static void
-deactivate_text_model(struct text_model *text_model)
+deactivate_text_model(struct text_model *text_model,
+		      struct input_method *input_method)
 {
-	struct weston_compositor *ec = text_model->input_method->ec;
+	struct weston_compositor *ec = text_model->ec;
 
-	if (text_model->input_method->active_model == text_model) {
-		text_model->input_method->active_model = NULL;
+	if (input_method->model == text_model) {
+		wl_list_remove(&input_method->link);
+		input_method->model = NULL;
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
 		text_model_send_deactivated(&text_model->resource);
 	}
@@ -63,10 +66,11 @@ destroy_text_model(struct wl_resource *resource)
 {
 	struct text_model *text_model =
 		container_of(resource, struct text_model, resource);
+	struct input_method *input_method, *next;
 
-	deactivate_text_model(text_model);
+	wl_list_for_each_safe(input_method, next, &text_model->input_methods, link)
+		deactivate_text_model(text_model, input_method);
 
-	wl_list_remove(&text_model->link);
 	free(text_model);
 }
 
@@ -86,19 +90,25 @@ text_model_set_cursor_index(struct wl_client *client,
 
 static void
 text_model_activate(struct wl_client *client,
-	            struct wl_resource *resource)
+	            struct wl_resource *resource,
+		    struct wl_resource *seat,
+		    struct wl_resource *surface)
 {
 	struct text_model *text_model = resource->data;
-	struct weston_compositor *ec = text_model->input_method->ec;
+	struct weston_seat *weston_seat = seat->data;
+	struct text_model *old = weston_seat->input_method->model;
+	struct weston_compositor *ec = text_model->ec;
 
-	if (text_model->input_method->active_model) {
-		if (text_model->input_method->active_model == text_model)
-			return;
+	if (old == text_model)
+		return;
 
-		deactivate_text_model(text_model->input_method->active_model);
+	if (old) {
+		deactivate_text_model(old,
+				      weston_seat->input_method);
 	}
 
-	text_model->input_method->active_model = text_model;
+	weston_seat->input_method->model = text_model;
+	wl_list_insert(&text_model->input_methods, &weston_seat->input_method->link);
 
 	wl_signal_emit(&ec->show_input_panel_signal, ec);
 
@@ -107,11 +117,14 @@ text_model_activate(struct wl_client *client,
 
 static void
 text_model_deactivate(struct wl_client *client,
-		      struct wl_resource *resource)
+		      struct wl_resource *resource,
+		      struct wl_resource *seat)
 {
 	struct text_model *text_model = resource->data;
+	struct weston_seat *weston_seat = seat->data;
 
-	deactivate_text_model(text_model);
+	deactivate_text_model(text_model,
+			      weston_seat->input_method);
 }
 
 static void
@@ -144,7 +157,7 @@ text_model_set_content_type(struct wl_client *client,
 {
 }
 
-struct text_model_interface text_model_implementation = {
+static const struct text_model_interface text_model_implementation = {
 	text_model_set_surrounding_text,
 	text_model_set_cursor_index,
 	text_model_activate,
@@ -173,11 +186,11 @@ static void text_model_factory_create_text_model(struct wl_client *client,
 		(void (**)(void)) &text_model_implementation;
 	text_model->resource.data = text_model;
 
-	text_model->input_method = input_method;
+	text_model->ec = input_method->ec;
 
 	wl_client_add_resource(client, &text_model->resource);
 
-	wl_list_insert(&input_method->models, &text_model->link);
+	wl_list_init(&text_model->input_methods);
 };
 
 static const struct text_model_factory_interface text_model_factory_implementation = {
@@ -207,8 +220,8 @@ input_method_commit_string(struct wl_client *client,
 {
 	struct input_method *input_method = resource->data;
 
-	if (input_method->active_model) {
-		text_model_send_commit_string(&input_method->active_model->resource, text, index);
+	if (input_method->model) {
+		text_model_send_commit_string(&input_method->model->resource, text, index);
 	}
 }
 
@@ -263,16 +276,15 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 }
 
 void
-input_method_create(struct weston_compositor *ec)
+input_method_create(struct weston_compositor *ec,
+		    struct weston_seat *seat)
 {
 	struct input_method *input_method;
 
 	input_method = calloc(1, sizeof *input_method);
 
 	input_method->ec = ec;
-	input_method->active_model = NULL;
-
-	wl_list_init(&input_method->models);
+	input_method->model = NULL;
 
 	input_method->input_method_global =
 		wl_display_add_global(ec->wl_display,
@@ -286,4 +298,6 @@ input_method_create(struct weston_compositor *ec)
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
 	wl_signal_add(&ec->destroy_signal, &input_method->destroy_listener);
+
+	seat->input_method = input_method;
 }

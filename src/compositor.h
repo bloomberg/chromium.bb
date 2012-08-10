@@ -47,6 +47,7 @@ struct weston_surface;
 struct shell_surface;
 struct weston_seat;
 struct weston_output;
+struct input_method;
 
 enum weston_keyboard_modifier {
 	MODIFIER_CTRL = (1 << 0),
@@ -235,6 +236,8 @@ struct weston_seat {
 		struct xkb_state *state;
 		enum weston_led leds;
 	} xkb_state;
+
+	struct input_method *input_method;
 };
 
 struct weston_shader {
@@ -739,7 +742,8 @@ void
 text_cursor_position_notifier_create(struct weston_compositor *ec);
 
 void
-input_method_create(struct weston_compositor *ec);
+input_method_create(struct weston_compositor *ec,
+		    struct weston_seat *seat);
 
 struct weston_process;
 typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,

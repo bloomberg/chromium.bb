@@ -33,6 +33,7 @@
 
 struct text_entry {
 	struct widget *widget;
+	struct window *window;
 	char *text;
 	int active;
 	struct rectangle allocation;
@@ -152,6 +153,7 @@ text_entry_create(struct editor *editor, const char *text)
 	surface = window_get_wl_surface(editor->window);
 
 	entry->widget = editor->widget;
+	entry->window = editor->window;
 	entry->text = strdup(text);
 	entry->active = 0;
 	entry->model = text_model_factory_create_text_model(editor->text_model_factory, surface);
@@ -271,15 +273,22 @@ rectangle_contains(struct rectangle *rectangle, int32_t x, int32_t y)
 }
 
 static void
-text_entry_activate(struct text_entry *entry)
+text_entry_activate(struct text_entry *entry,
+                    struct wl_seat *seat)
 {
-	text_model_activate(entry->model);
+	struct wl_surface *surface = window_get_wl_surface(entry->window);
+
+	text_model_activate(entry->model,
+			    seat,
+			    surface);
 }
 
 static void
-text_entry_deactivate(struct text_entry *entry)
+text_entry_deactivate(struct text_entry *entry,
+		      struct wl_seat *seat)
 {
-	text_model_deactivate(entry->model);
+	text_model_deactivate(entry->model,
+			      seat);
 }
 
 static void
@@ -291,6 +300,7 @@ button_handler(struct widget *widget,
 	struct editor *editor = data;
 	struct rectangle allocation;
 	int32_t x, y;
+	struct wl_seat *seat;
 
 	if (state != WL_POINTER_BUTTON_STATE_PRESSED || button != BTN_LEFT) {
 		return;
@@ -306,13 +316,15 @@ button_handler(struct widget *widget,
 	int32_t activate_editor = rectangle_contains(&editor->editor->allocation, x, y);
 	assert(!(activate_entry && activate_editor));
 
+	seat = input_get_seat(input);
+
 	if (activate_entry) {
-		text_entry_activate(editor->entry);
+		text_entry_activate(editor->entry, seat);
 	} else if (activate_editor) {
-		text_entry_activate(editor->editor);
+		text_entry_activate(editor->editor, seat);
 	} else {
-		text_entry_deactivate(editor->entry);
-		text_entry_deactivate(editor->editor);
+		text_entry_deactivate(editor->entry, seat);
+		text_entry_deactivate(editor->editor, seat);
 	}
 
 	widget_schedule_redraw(widget);

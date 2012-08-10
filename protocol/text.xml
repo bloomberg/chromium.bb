@@ -6,8 +6,13 @@
     <request name="set_cursor_index">
       <arg name="index" type="uint"/>
     </request>
-    <request name="activate"/>
-    <request name="deactivate"/>
+    <request name="activate">
+      <arg name="seat" type="object" interface="wl_seat"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+    <request name="deactivate">
+      <arg name="seat" type="object" interface="wl_seat"/>
+    </request>
     <request name="set_selected_text">
       <arg name="text" type="string"/>
       <arg name="index" type="int"/>

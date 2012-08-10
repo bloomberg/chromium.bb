@@ -2625,6 +2625,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 		      &seat->new_drag_icon_listener);
 
 	clipboard_create(seat);
+	input_method_create(ec, seat);
 }
 
 WL_EXPORT void
@@ -3173,7 +3174,6 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	screenshooter_create(ec);
 	text_cursor_position_notifier_create(ec);
-	input_method_create(ec);
 
 	wl_data_device_manager_init(ec->wl_display);
 
