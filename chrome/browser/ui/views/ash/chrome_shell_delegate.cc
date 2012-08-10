@@ -353,6 +353,13 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_TOUCHSCREEN_TAP_DOWN:
       content::RecordAction(content::UserMetricsAction("Touchscreen_Down"));
       break;
+    case ash::UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON:
+      content::RecordAction(
+          content::UserMetricsAction("Launcher_ClickOnApplistButton"));
+      break;
+    case ash::UMA_LAUNCHER_CLICK_ON_APP:
+      content::RecordAction(content::UserMetricsAction("Launcher_ClickOnApp"));
+      break;
   }
 }
 

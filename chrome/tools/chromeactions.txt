@@ -69,6 +69,9 @@
 0x649461e26c8e5796	AcceptedGeneratedKeyword
 0x2b6ed5e3f78e1295	AcceptedKeyword
 0xaa16d48a61361aa6	AcceptedKeywordHint
+0xfc0c75574fa0f498	AppList_ClickOnApp
+0x73d7010c18cf1912	AppList_ClickOnAppFromSearch
+0xdd57b39909cb275a	AppList_Search
 0x9ff9ef57d8d1d87c	AutoDetectChange
 0x0557fa923dcee4d0	Back
 0xc66d44d8107c5f5d	BackColor
@@ -899,6 +902,8 @@
 0xbee911865b93d504	LanguageOptions_UiLanguageChange_zh-CN
 0x03a61bc8bd6c791b	LanguageOptions_UiLanguageChange_zh-TW
 0xd93d87f83683d666	LanguageOptions_UiLanguageChange_zu
+0x7f28f030259fc65e	Launcher_ClickOnApp
+0x2df1e564b9b0952f	Launcher_ClickOnApplistButton
 0x384a6609143bbcae	LoadURL
 0xe009e92f3909009c	LoadURLFromKeyword
 0x795fc04747be6afa	LockScreen

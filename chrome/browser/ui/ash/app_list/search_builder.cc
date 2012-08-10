@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/app_list_switches.h"
@@ -232,11 +233,17 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
       static_cast<const SearchBuilderResult*>(&result);
   const AutocompleteMatch& match = builder_result->match();
 
+  // Count AppList.Search here because it is composed of search + action.
+  content::RecordAction(content::UserMetricsAction("AppList_Search"));
+
   if (match.type == AutocompleteMatch::EXTENSION_APP) {
     const extensions::Extension* extension =
         GetExtensionByURL(profile_, match.destination_url);
-    if (extension)
+    if (extension) {
+      content::RecordAction(
+          content::UserMetricsAction("AppList_ClickOnAppFromSearch"));
       extension_utils::OpenExtension(profile_, extension, event_flags);
+    }
   } else {
     WindowOpenDisposition disposition =
         chrome::DispositionFromEventFlags(event_flags);

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/ash/app_list/apps_model_builder.h"
 #include "chrome/browser/ui/ash/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/ash/app_list/search_builder.h"
+#include "content/public/browser/user_metrics.h"
 
 AppListViewDelegate::AppListViewDelegate() {
 }
@@ -34,6 +35,7 @@ void AppListViewDelegate::SetModel(app_list::AppListModel* model) {
 void AppListViewDelegate::ActivateAppListItem(
     app_list::AppListItemModel* item,
     int event_flags) {
+  content::RecordAction(content::UserMetricsAction("AppList_ClickOnApp"));
   static_cast<ChromeAppListItem*>(item)->Activate(event_flags);
 }
 

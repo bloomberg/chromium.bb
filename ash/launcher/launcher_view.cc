@@ -1009,16 +1009,27 @@ void LauncherView::ButtonPressed(views::Button* sender,
   switch (model_->items()[view_index].type) {
     case TYPE_TABBED:
     case TYPE_APP_PANEL:
+      delegate_->ItemClicked(model_->items()[view_index], event.flags());
+      break;
+
     case TYPE_APP_SHORTCUT:
     case TYPE_PLATFORM_APP:
+      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APP);
       delegate_->ItemClicked(model_->items()[view_index], event.flags());
       break;
 
     case TYPE_APP_LIST:
+      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
       Shell::GetInstance()->ToggleAppList();
       break;
 
     case TYPE_BROWSER_SHORTCUT:
+      // Click on browser icon is counted in app clicks.
+      Shell::GetInstance()->delegate()->RecordUserMetricsAction(
+          UMA_LAUNCHER_CLICK_ON_APP);
+
       if (event.flags() & ui::EF_CONTROL_DOWN)
         delegate_->CreateNewWindow();
       else
