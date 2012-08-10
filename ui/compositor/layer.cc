@@ -371,14 +371,10 @@ void Layer::SetExternalTexture(Texture* texture) {
     WebKit::WebLayer new_layer;
     if (layer_updated_externally_) {
       WebKit::WebExternalTextureLayer texture_layer =
-          WebKit::WebExternalTextureLayer::create(this);
+          WebKit::WebExternalTextureLayer::create();
       texture_layer.setFlipped(texture_->flipped());
       new_layer = texture_layer;
     } else {
-      // Tell the compositor to clear references to the old texture.
-      WebKit::WebExternalTextureLayer texture_layer =
-          web_layer_.to<WebKit::WebExternalTextureLayer>();
-      texture_layer.willModifyTexture();
       new_layer = WebKit::WebContentLayer::create(this);
     }
     if (parent_) {
@@ -505,16 +501,6 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
     delegate_->OnPaintLayer(canvas.get());
   if (scale_content_)
     canvas->Restore();
-}
-
-unsigned Layer::prepareTexture(WebKit::WebTextureUpdater& /* updater */) {
-  DCHECK(layer_updated_externally_);
-  return texture_->texture_id();
-}
-
-WebKit::WebGraphicsContext3D* Layer::context() {
-  DCHECK(layer_updated_externally_);
-  return texture_->HostContext3D();
 }
 
 void Layer::SetForceRenderSurface(bool force) {
@@ -741,8 +727,10 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     web_layer_.setBounds(ConvertSizeToPixel(this, bounds_.size()));
   } else {
     DCHECK(texture_);
+    unsigned int texture_id = texture_->texture_id();
     WebKit::WebExternalTextureLayer texture_layer =
         web_layer_.to<WebKit::WebExternalTextureLayer>();
+    texture_layer.setTextureId(should_draw ? texture_id : 0);
 
     gfx::Size texture_size;
     if (scale_content_)
