@@ -103,11 +103,7 @@ TabRestoreServiceDelegate* TabRestoreServiceDelegate::Create(
 TabRestoreServiceDelegate* TabRestoreServiceDelegate::FindDelegateForController(
     const NavigationController* controller,
     int* index) {
-  // TODO(beng): Remove. Used just to see if this function is 2% slower than
-  // FindBrowserForController on Mac 10.6 intl1
-  Browser* browser = browser::FindBrowserWithWebContents(
-      controller->GetWebContents());
-  // Browser* browser = browser::FindBrowserForController(controller, index);
+  Browser* browser = browser::FindBrowserForController(controller, index);
   if (browser)
     return browser->tab_restore_service_delegate();
   else
