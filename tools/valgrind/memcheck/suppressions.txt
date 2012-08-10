@@ -5791,14 +5791,6 @@
    fun:_ZN15ExtensionAction16RunIconAnimationEi
    fun:_ZN15ExtensionAction13SetAppearanceEiNS_10AppearanceE
 }
-{
-   bug_141037
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12ReloadButton15CreateMenuModelEv
-   fun:_ZN12ReloadButtonC1EP15LocationBarViewP14CommandUpdater
-   fun:_ZN16ReloadButtonTestC2Ev
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

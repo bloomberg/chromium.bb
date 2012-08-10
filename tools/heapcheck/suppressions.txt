@@ -1482,14 +1482,6 @@
    fun:ExtensionAction::GetIconAnimation
 }
 {
-   bug_141037
-   Heapcheck:Leak
-   ...
-   fun:ReloadButton::CreateMenuModel
-   fun:ReloadButton::ReloadButton
-   fun:ReloadButtonTest::ReloadButtonTest
-}
-{
    bug_141322
    Heapcheck:Leak
    fun:MessageLoop::MessageLoop
