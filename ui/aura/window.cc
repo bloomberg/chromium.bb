@@ -66,7 +66,11 @@ Window::Window(WindowDelegate* delegate)
       id_(-1),
       transparent_(false),
       user_data_(NULL),
-      ignore_events_(false) {
+      ignore_events_(false),
+      // Don't notify newly added observers during notification. This causes
+      // problems for code that adds an observer as part of an observer
+      // notification (such as the workspace code).
+      observers_(ObserverList<WindowObserver>::NOTIFY_EXISTING_ONLY) {
 }
 
 Window::~Window() {
