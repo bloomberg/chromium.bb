@@ -107,8 +107,7 @@ void FrameNavigationState::StopTrackingFramesInRVH(
     FrameID id_to_skip) {
   for (std::set<FrameID>::iterator frame = frame_ids_.begin();
        frame != frame_ids_.end();) {
-    if (frame->render_view_host != render_view_host ||
-        *frame == id_to_skip) {
+    if (frame->render_view_host != render_view_host || *frame == id_to_skip) {
       ++frame;
       continue;
     }

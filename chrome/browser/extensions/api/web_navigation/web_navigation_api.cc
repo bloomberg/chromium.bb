@@ -323,12 +323,19 @@ void WebNavigationTabObserver::Observe(
     case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
       content::RenderViewHost* render_view_host =
           content::Source<content::RenderViewHost>(source).ptr();
-      if (render_view_host == render_view_host_)
+      if (render_view_host == render_view_host_) {
         render_view_host_ = NULL;
-      else if (render_view_host == pending_render_view_host_)
+        if (pending_render_view_host_) {
+          SendErrorEvents(web_contents(),
+                          pending_render_view_host_,
+                          FrameNavigationState::FrameID());
+          pending_render_view_host_ = NULL;
+        }
+      } else if (render_view_host == pending_render_view_host_) {
         pending_render_view_host_ = NULL;
-      else
+      } else {
         return;
+      }
       SendErrorEvents(
           web_contents(), render_view_host, FrameNavigationState::FrameID());
       break;
@@ -506,6 +513,10 @@ void WebNavigationTabObserver::DidFinishLoad(
   if (render_view_host != render_view_host_)
     return;
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
+  // When showing replacement content, we might get load signals for frames
+  // that weren't reguarly loaded.
+  if (!navigation_state_.IsValidFrame(frame_id))
+    return;
   navigation_state_.SetNavigationCompleted(frame_id);
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
@@ -527,7 +538,8 @@ void WebNavigationTabObserver::DidFailLoad(
   if (render_view_host != render_view_host_)
     return;
   FrameNavigationState::FrameID frame_id(frame_num, render_view_host);
-  // A navigation might fail before we even started a provisional load.
+  // When showing replacement content, we might get load signals for frames
+  // that weren't reguarly loaded.
   if (!navigation_state_.IsValidFrame(frame_id))
     return;
   if (navigation_state_.CanSendEvents(frame_id)) {
