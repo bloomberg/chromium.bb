@@ -74,7 +74,7 @@ SkBitmap NSImageOrNSImageRepToSkBitmap(
                 operation:NSCompositeCopy
                  fraction:1.0
            respectFlipped:NO
-                    hints:NO];
+                    hints:nil];
   }
 
   [NSGraphicsContext restoreGraphicsState];

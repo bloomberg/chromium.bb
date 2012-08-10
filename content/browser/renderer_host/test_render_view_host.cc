@@ -235,7 +235,7 @@ TestRenderViewHost::TestRenderViewHost(
                          widget_delegate,
                          routing_id,
                          swapped_out,
-                         dom_storage::kInvalidSessionStorageNamespaceId),
+                         NULL),
       render_view_created_(false),
       delete_counter_(NULL),
       simulate_fetch_via_proxy_(false),
