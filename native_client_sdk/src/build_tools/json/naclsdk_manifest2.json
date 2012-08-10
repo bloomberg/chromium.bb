@@ -193,8 +193,8 @@
     {
       "name": "pepper_20",
       "description": "Chrome 20 bundle, revision xxxxx",
-      "stability": "stable",
-      "recommended": "yes",
+      "stability": "post_stable",
+      "recommended": "no",
       "version": 20,
       "repath": "pepper_20",
       "archives": [],
@@ -203,10 +203,20 @@
     {
       "name": "pepper_21",
       "description": "Chrome 21 bundle, revision xxxxx",
-      "stability": "beta",
-      "recommended": "no",
+      "stability": "stable",
+      "recommended": "yes",
       "version": 21,
       "repath": "pepper_21",
+      "archives": [],
+      "revision": 0
+    },
+    {
+      "name": "pepper_22",
+      "description": "Chrome 22 bundle, revision xxxxx",
+      "stability": "beta",
+      "recommended": "no",
+      "version": 22,
+      "repath": "pepper_22",
       "archives": [],
       "revision": 0
     },
