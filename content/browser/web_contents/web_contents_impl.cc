@@ -515,8 +515,14 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
           !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
   prefs.accelerated_plugins_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
+  // Temporarily disabling H/W accelerated video on windows to see if it is the
+  // cause of the spike in the gpu process crashes.
+#if defined(OS_WIN)
+  prefs.accelerated_video_enabled = false;
+#else  // OS_WIN
   prefs.accelerated_video_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
+#endif  // OS_WIN
   prefs.fullscreen_enabled =
       !command_line.HasSwitch(switches::kDisableFullScreen);
   prefs.css_regions_enabled =
