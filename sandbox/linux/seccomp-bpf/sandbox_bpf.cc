@@ -602,8 +602,8 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
   memcpy(&sigsys, &info->_sifields, sizeof(sigsys));
 
   // Some more sanity checks.
-  if (sigsys.ip != reinterpret_cast<void *>(ctx->uc_mcontext.gregs[REG_IP]) ||
-      sigsys.nr != static_cast<int>(ctx->uc_mcontext.gregs[REG_SYSCALL]) ||
+  if (sigsys.ip != reinterpret_cast<void *>(SECCOMP_IP(ctx)) ||
+      sigsys.nr != static_cast<int>(SECCOMP_SYSCALL(ctx)) ||
       sigsys.arch != SECCOMP_ARCH) {
     goto sigsys_err;
   }
@@ -616,12 +616,12 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
     SECCOMP_ARCH,
     reinterpret_cast<uint64_t>(sigsys.ip),
     {
-      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM1]),
-      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM2]),
-      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM3]),
-      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM4]),
-      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM5]),
-      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM6])
+      static_cast<uint64_t>(SECCOMP_PARM1(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM2(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM3(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM4(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM5(ctx)),
+      static_cast<uint64_t>(SECCOMP_PARM6(ctx))
     }
   };
 
@@ -633,8 +633,8 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
   // Update the CPU register that stores the return code of the system call
   // that we just handled, and restore "errno" to the value that it had
   // before entering the signal handler.
-  ctx->uc_mcontext.gregs[REG_RESULT] = static_cast<greg_t>(rc);
-  errno                              = old_errno;
+  SECCOMP_RESULT(ctx) = static_cast<greg_t>(rc);
+  errno               = old_errno;
 
   return;
 }

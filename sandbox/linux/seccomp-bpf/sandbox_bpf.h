@@ -83,30 +83,65 @@
 #define MIN_SYSCALL  0u
 #define MAX_SYSCALL  1024u
 #define SECCOMP_ARCH AUDIT_ARCH_I386
-#define REG_RESULT   REG_EAX
-#define REG_SYSCALL  REG_EAX
-#define REG_IP       REG_EIP
-#define REG_PARM1    REG_EBX
-#define REG_PARM2    REG_ECX
-#define REG_PARM3    REG_EDX
-#define REG_PARM4    REG_ESI
-#define REG_PARM5    REG_EDI
-#define REG_PARM6    REG_EBP
+
+#define SECCOMP_REG(_ctx, _reg) ((_ctx)->uc_mcontext.gregs[(_reg)])
+#define SECCOMP_RESULT(_ctx)    SECCOMP_REG(_ctx, REG_EAX)
+#define SECCOMP_SYSCALL(_ctx)   SECCOMP_REG(_ctx, REG_EAX)
+#define SECCOMP_IP(_ctx)        SECCOMP_REG(_ctx, REG_EIP)
+#define SECCOMP_PARM1(_ctx)     SECCOMP_REG(_ctx, REG_EBX)
+#define SECCOMP_PARM2(_ctx)     SECCOMP_REG(_ctx, REG_ECX)
+#define SECCOMP_PARM3(_ctx)     SECCOMP_REG(_ctx, REG_EDX)
+#define SECCOMP_PARM4(_ctx)     SECCOMP_REG(_ctx, REG_ESI)
+#define SECCOMP_PARM5(_ctx)     SECCOMP_REG(_ctx, REG_EDI)
+#define SECCOMP_PARM6(_ctx)     SECCOMP_REG(_ctx, REG_EBP)
+
 #elif defined(__x86_64__)
 #define MIN_SYSCALL  0u
 #define MAX_SYSCALL  1024u
 #define SECCOMP_ARCH AUDIT_ARCH_X86_64
-#define REG_RESULT   REG_RAX
-#define REG_SYSCALL  REG_RAX
-#define REG_IP       REG_RIP
-#define REG_PARM1    REG_RDI
-#define REG_PARM2    REG_RSI
-#define REG_PARM3    REG_RDX
-#define REG_PARM4    REG_R10
-#define REG_PARM5    REG_R8
-#define REG_PARM6    REG_R9
+
+#define SECCOMP_REG(_ctx, _reg) ((_ctx)->uc_mcontext.gregs[(_reg)])
+#define SECCOMP_RESULT(_ctx)    SECCOMP_REG(_ctx, REG_RAX)
+#define SECCOMP_SYSCALL(_ctx)   SECCOMP_REG(_ctx, REG_RAX)
+#define SECCOMP_IP(_ctx)        SECCOMP_REG(_ctx, REG_RIP)
+#define SECCOMP_PARM1(_ctx)     SECCOMP_REG(_ctx, REG_RDI)
+#define SECCOMP_PARM2(_ctx)     SECCOMP_REG(_ctx, REG_RSI)
+#define SECCOMP_PARM3(_ctx)     SECCOMP_REG(_ctx, REG_RDX)
+#define SECCOMP_PARM4(_ctx)     SECCOMP_REG(_ctx, REG_R10)
+#define SECCOMP_PARM5(_ctx)     SECCOMP_REG(_ctx, REG_R8)
+#define SECCOMP_PARM6(_ctx)     SECCOMP_REG(_ctx, REG_R9)
+
+#elif defined(__arm__) && (defined(__thumb__) || defined(__ARM_EABI__))
+// ARM EABI includes "ARM private" system calls starting at |__ARM_NR_BASE|,
+// and a "ghost syscall private to the kernel", cmpxchg,
+// at |__ARM_NR_BASE+0x00fff0|.
+// See </arch/arm/include/asm/unistd.h> in the Linux kernel.
+#define MIN_SYSCALL  ((unsigned int)__NR_SYSCALL_BASE)
+#define MAX_SYSCALL  ((unsigned int)__ARM_NR_BASE + 0x00ffffu)
+// <linux/audit.h> includes <linux/elf-em.h>, which does not define EM_ARM.
+// <linux/elf.h> only includes <asm/elf.h> if we're in the kernel.
+# if !defined(EM_ARM)
+# define EM_ARM 40
+# endif
+#define SECCOMP_ARCH AUDIT_ARCH_ARM
+
+// ARM sigcontext_t is different from i386/x86_64.
+// See </arch/arm/include/asm/sigcontext.h> in the Linux kernel.
+#define SECCOMP_REG(_ctx, _reg) ((_ctx)->uc_mcontext.arm_##_reg)
+// ARM EABI syscall convention.
+#define SECCOMP_RESULT(_ctx)     SECCOMP_REG(_ctx, r0)
+#define SECCOMP_SYSCALL(_ctx)    SECCOMP_REG(_ctx, r7)
+#define SECCOMP_IP(_ctx)         SECCOMP_REG(_ctx, pc)
+#define SECCOMP_PARM1(_ctx)      SECCOMP_REG(_ctx, r0)
+#define SECCOMP_PARM2(_ctx)      SECCOMP_REG(_ctx, r1)
+#define SECCOMP_PARM3(_ctx)      SECCOMP_REG(_ctx, r2)
+#define SECCOMP_PARM4(_ctx)      SECCOMP_REG(_ctx, r3)
+#define SECCOMP_PARM5(_ctx)      SECCOMP_REG(_ctx, r4)
+#define SECCOMP_PARM6(_ctx)      SECCOMP_REG(_ctx, r5)
+
 #else
 #error Unsupported target platform
+
 #endif
 
 struct arch_seccomp_data {

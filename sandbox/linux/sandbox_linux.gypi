@@ -24,7 +24,8 @@
           ],
         }],
         # Similarly, compile seccomp BPF when we support it
-        [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
+        [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64" '
+                           'or target_arch=="arm")', {
           'type': 'static_library',
           'dependencies': [
             'seccomp_bpf',
@@ -47,7 +48,8 @@
         '../..',
       ],
       'conditions': [
-        [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
+        [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64" '
+                           'or target_arch=="arm")', {
           'sources': [
             'seccomp-bpf/sandbox_bpf_unittest.cc',
           ],
