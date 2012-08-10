@@ -58,6 +58,8 @@
     'public/common/gpu_info.cc',
     'public/common/gpu_info.h',
     'public/common/gpu_performance_stats.h',
+    'public/common/injection_test_mac.h',
+    'public/common/injection_test_win.h',
     'public/common/javascript_message_type.h',
     'public/common/main_function_params.h',
     'public/common/media_stream_request.cc',

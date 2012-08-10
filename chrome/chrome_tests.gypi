@@ -4096,7 +4096,6 @@
             'INFOPLIST_FILE': 'test/security_tests/sandbox_tests_mac-Info.plist',
           },
           'sources': [
-            'test/security_tests/renderer_sandbox_tests_mac.h',
             'test/security_tests/renderer_sandbox_tests_mac.mm',
           ],
           'include_dirs': [
@@ -4258,7 +4257,6 @@
             'test/security_tests/ipc_security_tests.cc',
             'test/security_tests/ipc_security_tests.h',
             'test/security_tests/security_tests.cc',
-            '../content/common/injection_test_dll.h',
             '../sandbox/win/tests/validation_tests/commands.cc',
             '../sandbox/win/tests/validation_tests/commands.h',
           ],

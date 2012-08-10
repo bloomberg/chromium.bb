@@ -10,9 +10,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/test/security_tests/renderer_sandbox_tests_mac.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
+#import "content/public/common/injection_test_mac.h"
 #include "content/common/sandbox_init_mac.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(

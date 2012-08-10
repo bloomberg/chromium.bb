@@ -13,7 +13,6 @@ include_rules = [
   # http://crbug.com/98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "!content/common/debug_flags.h",
-  "!content/common/injection_test_dll.h",
   "!content/renderer/mock_content_renderer_client.h",
   # DO NOT ADD ANY MORE ITEMS TO THE ABOVE LIST!
 

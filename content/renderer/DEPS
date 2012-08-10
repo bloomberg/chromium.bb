@@ -1,6 +1,4 @@
 include_rules = [
-  # TODO(avi): remove this chrome include http://crbug.com/139631
-  "+chrome/test/security_tests/renderer_sandbox_tests_mac.h",
   "+content/public/renderer",
   "+content/public/browser/native_web_keyboard_event.h", # For tests.
   "+content/public/browser/web_ui_controller_factory.h", # For tests.

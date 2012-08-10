@@ -7,7 +7,7 @@
 
 #define TEST_INJECTION_DLL
 #include "chrome/test/security_tests/ipc_security_tests.h"
-#include "content/common/injection_test_dll.h"
+#include "content/public/common/injection_test_win.h"
 #include "sandbox/win/tests/common/controller.h"
 #include "sandbox/win/tests/validation_tests/commands.h"
 

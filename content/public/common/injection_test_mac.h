@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_SECURITY_TESTS_RENDERER_SANDBOX_TESTS_MAC_H_
-#define CHROME_TEST_SECURITY_TESTS_RENDERER_SANDBOX_TESTS_MAC_H_
+#ifndef CONTENT_PUBLIC_COMMON_INJECTION_TEST_MAC_H_
+#define CONTENT_PUBLIC_COMMON_INJECTION_TEST_MAC_H_
 
 #import <Foundation/Foundation.h>
 
@@ -31,4 +31,4 @@ typedef void (*LogRendererSandboxTestMessage)(std::string message,
 
 @end
 
-#endif  // CHROME_TEST_SECURITY_TESTS_RENDERER_SANDBOX_TESTS_MAC_H_
+#endif  // CONTENT_PUBLIC_COMMON_INJECTION_TEST_MAC_H_

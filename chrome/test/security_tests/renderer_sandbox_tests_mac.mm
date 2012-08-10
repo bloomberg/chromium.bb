@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/test/security_tests/renderer_sandbox_tests_mac.h"
+#import "content/public/common/injection_test_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
