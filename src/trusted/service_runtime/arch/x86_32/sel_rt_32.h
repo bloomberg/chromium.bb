@@ -19,6 +19,7 @@
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 
 uint16_t NaClGetGlobalCs(void);
 
@@ -77,7 +78,6 @@ typedef uint32_t  nacl_reg_t;  /* general purpose register type */
  */
 /* 8-bytes */
 union PtrAbstraction {
-  uint64_t ptr_64;
   struct {
     uint32_t ptr_padding;
     uint32_t ptr;
@@ -158,21 +158,25 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR   0x38
 #define NACL_THREAD_CONTEXT_OFFSET_CS            0x3c
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x40
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_SS    0x44
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES    0x46
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS    0x48
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS    0x4a
 
 #if !defined(__ASSEMBLER__)
 
-/*
- * This function exists as a function only because compile-time
- * assertions need to be inside a function.  This function does not
- * need to be called for the assertions to be checked.
- */
 static INLINE void NaClThreadContextOffsetCheck(void) {
+  /*
+   * We use 'offset' to check that every field of NaClThreadContext is
+   * verified below.  The fields must be listed below in order.
+   */
+  int offset = 0;
+
 #define NACL_CHECK_FIELD(offset_name, field) \
     NACL_COMPILE_TIME_ASSERT(offset_name == \
-                             offsetof(struct NaClThreadContext, field))
+                             offsetof(struct NaClThreadContext, field)); \
+    CHECK(offset == offset_name); \
+    offset += sizeof(((struct NaClThreadContext *) NULL)->field);
 
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_EBX, ebx);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ESI, esi);
@@ -183,9 +187,11 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
    * NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR, frame_ptr);
    * NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_STACK_PTR, stack_ptr);
    */
+  offset += 16;
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SS, ss);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
+  offset += 2;  /* Padding */
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_DS, ds);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ES, es);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FS, fs);
@@ -194,11 +200,14 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR, spring_addr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_CS, cs);
+  offset += 2;  /* Padding */
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
                    trusted_stack_ptr);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_DS, ds);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ES, es);
-  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FS, fs);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_SS, trusted_ss);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES, trusted_es);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS, trusted_fs);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS, trusted_gs);
+  CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD
 }

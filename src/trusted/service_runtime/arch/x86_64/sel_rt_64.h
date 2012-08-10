@@ -19,6 +19,7 @@
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 
 typedef uint64_t  nacl_reg_t;  /* general purpose register type */
 
@@ -34,6 +35,11 @@ typedef uint64_t  nacl_reg_t;  /* general purpose register type */
  * #defines below.
  */
 struct NaClThreadContext {
+  /*
+   * nacl64-gdb hard-codes the offsets of rbx, rbp, r12, r13 and r14,
+   * so these fields should not be removed until nacl64-gdb is fully
+   * replaced by debugging via the GDB debug stub.
+   */
   nacl_reg_t  rax,  rbx,  rcx,  rdx,  rbp,  rsi,  rdi,  rsp;
   /*          0x0,  0x8, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 */
   nacl_reg_t  r8,     r9,  r10,  r11,  r12,  r13,  r14,  r15;
@@ -45,16 +51,14 @@ struct NaClThreadContext {
   /*          0x88 */
   nacl_reg_t  sysret;
   /*          0x90 */
-  void        *unused_padding;
-  /*          0x98 */
   uint32_t    tls_idx;
-  /*          0xa0 */
+  /*          0x98 */
   uint16_t    fcw;
-  /*          0xa4 */
+  /*          0x9c */
   uint16_t    sys_fcw;
-  /*          0xa6 */
+  /*          0x9e */
   uint64_t    trusted_stack_ptr;
-  /*          0xa8 */
+  /*          0xa0 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -75,23 +79,28 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_R13           0x68
 #define NACL_THREAD_CONTEXT_OFFSET_R14           0x70
 #define NACL_THREAD_CONTEXT_OFFSET_R15           0x78
+#define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR      0x80
 #define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR  0x88
 #define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x90
-#define NACL_THREAD_CONTEXT_OFFSET_FCW           0xa4
-#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0xa6
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0xa8
+#define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX       0x98
+#define NACL_THREAD_CONTEXT_OFFSET_FCW           0x9c
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0x9e
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0xa0
 
 #if !defined(__ASSEMBLER__)
 
-/*
- * This function exists as a function only because compile-time
- * assertions need to be inside a function.  This function does not
- * need to be called for the assertions to be checked.
- */
 static INLINE void NaClThreadContextOffsetCheck(void) {
+  /*
+   * We use 'offset' to check that every field of NaClThreadContext is
+   * verified below.  The fields must be listed below in order.
+   */
+  int offset = 0;
+
 #define NACL_CHECK_FIELD(offset_name, field) \
     NACL_COMPILE_TIME_ASSERT(offset_name == \
-                             offsetof(struct NaClThreadContext, field))
+                             offsetof(struct NaClThreadContext, field)); \
+    CHECK(offset == offset_name); \
+    offset += sizeof(((struct NaClThreadContext *) NULL)->field);
 
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RAX, rax);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_RBX, rbx);
@@ -109,12 +118,15 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R13, r13);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R14, r14);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_R15, r15);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_PROG_CTR, prog_ctr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR, new_prog_ctr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_IDX, tls_idx);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
                    trusted_stack_ptr);
+  CHECK(offset == sizeof(struct NaClThreadContext));
 
 #undef NACL_CHECK_FIELD
 }

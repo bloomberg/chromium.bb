@@ -46,10 +46,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           nacl_reg_t                tls_idx) {
-  /*
-   * We call this function so that it does not appear to be dead code,
-   * although it only contains compile-time assertions.
-   */
   NaClThreadContextOffsetCheck();
 
   NaClLog(4, "&nap->code_seg_sel = 0x%08"NACL_PRIxPTR"\n",
@@ -67,13 +63,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->ebx = 0;
   ntcp->esi = 0;
   ntcp->edi = 0;
-#if NACL_BUILD_SUBARCH == 64
-  ntcp->frame_ptr.ptr_64 = 0;
-  ntcp->stack_ptr.ptr_64 = stack_ptr;
-#else
   ntcp->frame_ptr.ptr_32.ptr = 0;
   ntcp->stack_ptr.ptr_32.ptr = stack_ptr;
-#endif
   ntcp->prog_ctr = prog_ctr;
   ntcp->new_prog_ctr = 0;
   ntcp->sysret = -NACL_ABI_EINVAL;
