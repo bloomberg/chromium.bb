@@ -128,20 +128,32 @@ PermissionMenuModel::PermissionMenuModel(
       default_setting_(default_setting),
       current_setting_(current_setting),
       permission_selector_(parent) {
-  string16 label = l10n_util::GetStringFUTF16(
-      IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL,
-      WebsiteSettingsUI::PermissionValueToUIString(default_setting_));
+  string16 label;
+  switch (default_setting_) {
+    case CONTENT_SETTING_ALLOW:
+      label = l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW);
+      break;
+    case CONTENT_SETTING_BLOCK:
+      label = l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_BLOCK);
+      break;
+    case CONTENT_SETTING_ASK:
+      label = l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK);
+      break;
+    default:
+      break;
+  }
   AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
 
-  label = l10n_util::GetStringFUTF16(
-      IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-      WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_ALLOW));
+  label = l10n_util::GetStringUTF16(
+      IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
   AddCheckItem(COMMAND_SET_TO_ALLOW, label);
 
   if (site_permission != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
-    label = l10n_util::GetStringFUTF16(
-        IDS_WEBSITE_SETTINGS_PERMISSION_LABEL,
-        WebsiteSettingsUI::PermissionValueToUIString(CONTENT_SETTING_BLOCK));
+    label = l10n_util::GetStringUTF16(
+        IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
     AddCheckItem(COMMAND_SET_TO_BLOCK, label);
   }
 }
