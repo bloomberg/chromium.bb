@@ -107,6 +107,28 @@ text_model_locale(void *data,
 {
 }
 
+static void
+text_model_activated(void *data,
+		     struct text_model *text_model)
+{
+	struct text_entry *entry = data;
+
+	entry->active = 1;
+
+	widget_schedule_redraw(entry->widget);
+}
+
+static void
+text_model_deactivated(void *data,
+		       struct text_model *text_model)
+{
+	struct text_entry *entry = data;
+
+	entry->active = 0;
+
+	widget_schedule_redraw(entry->widget);
+}
+
 static const struct text_model_listener text_model_listener = {
 	text_model_commit_string,
 	text_model_preedit_string,
@@ -114,7 +136,9 @@ static const struct text_model_listener text_model_listener = {
 	text_model_key,
 	text_model_selection_replacement,
 	text_model_direction,
-	text_model_locale
+	text_model_locale,
+	text_model_activated,
+	text_model_deactivated
 };
 
 static struct text_entry*
@@ -283,24 +307,13 @@ button_handler(struct widget *widget,
 	assert(!(activate_entry && activate_editor));
 
 	if (activate_entry) {
-		if (editor->editor->active)
-			text_entry_deactivate(editor->editor);
-		if (!editor->entry->active)
-			text_entry_activate(editor->entry);
+		text_entry_activate(editor->entry);
 	} else if (activate_editor) {
-		if (editor->entry->active)
-			text_entry_deactivate(editor->entry);
-		if (!editor->editor->active)
-			text_entry_activate(editor->editor);
+		text_entry_activate(editor->editor);
 	} else {
-		if (editor->entry->active)
-			text_entry_deactivate(editor->entry);
-		if (editor->editor->active)
-			text_entry_deactivate(editor->editor);
+		text_entry_deactivate(editor->entry);
+		text_entry_deactivate(editor->editor);
 	}
-	editor->entry->active = activate_entry;
-	editor->editor->active = activate_editor;
-	assert(!(editor->entry->active && editor->editor->active));
 
 	widget_schedule_redraw(widget);
 }

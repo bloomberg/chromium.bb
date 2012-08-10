@@ -54,6 +54,7 @@ deactivate_text_model(struct text_model *text_model)
 	if (text_model->input_method->active_model == text_model) {
 		text_model->input_method->active_model = NULL;
 		wl_signal_emit(&ec->hide_input_panel_signal, ec);
+		text_model_send_deactivated(&text_model->resource);
 	}
 }
 
@@ -90,9 +91,18 @@ text_model_activate(struct wl_client *client,
 	struct text_model *text_model = resource->data;
 	struct weston_compositor *ec = text_model->input_method->ec;
 
+	if (text_model->input_method->active_model) {
+		if (text_model->input_method->active_model == text_model)
+			return;
+
+		deactivate_text_model(text_model->input_method->active_model);
+	}
+
 	text_model->input_method->active_model = text_model;
 
 	wl_signal_emit(&ec->show_input_panel_signal, ec);
+
+	text_model_send_activated(&text_model->resource);
 }
 
 static void

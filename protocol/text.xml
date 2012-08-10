@@ -33,7 +33,9 @@
     <event name="key"/>
     <event name="selection_replacement"/>
     <event name="direction"/>
-    <event name="locale"/>      
+    <event name="locale"/>
+    <event name="activated"/>
+    <event name="deactivated"/>
   </interface>
 
   <interface name="text_model_factory" version="1">
