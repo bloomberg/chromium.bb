@@ -1132,6 +1132,19 @@ handle_pointer_focus(struct wl_listener *listener, void *data)
 }
 
 static void
+create_pointer_focus_listener(struct weston_seat *seat)
+{
+	struct wl_listener *listener;
+
+	if (!seat->seat.pointer)
+		return;
+
+	listener = malloc(sizeof *listener);
+	listener->notify = handle_pointer_focus;
+	wl_signal_add(&seat->seat.pointer->focus_signal, listener);
+}
+
+static void
 shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 							uint32_t serial)
 {
@@ -3357,6 +3370,7 @@ shell_init(struct weston_compositor *ec);
 WL_EXPORT int
 shell_init(struct weston_compositor *ec)
 {
+	struct weston_seat *seat;
 	struct desktop_shell *shell;
 	struct workspace **pws;
 	unsigned int i;
@@ -3434,10 +3448,8 @@ shell_init(struct weston_compositor *ec)
 	if (launch_desktop_shell_process(shell) != 0)
 		return -1;
 
-	shell->pointer_focus_listener.notify = handle_pointer_focus;
-	if (ec->seat->seat.pointer)
-		wl_signal_add(&ec->seat->seat.pointer->focus_signal,
-			      &shell->pointer_focus_listener);
+	wl_list_for_each(seat, &ec->seat_list, link)
+		create_pointer_focus_listener(seat);
 
 	shell_add_bindings(ec, shell);
 
