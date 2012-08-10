@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "content/common/android/command_line.h"
+#include "content/common/android/device_info.h"
 #include "content/common/android/surface_callback.h"
 #include "content/common/android/surface_texture_listener.h"
 #include "content/common/android/trace_event_binding.h"
@@ -14,6 +15,7 @@
 namespace {
 base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "CommandLine", RegisterCommandLine },
+  { "DeviceInfo", content::RegisterDeviceInfo },
   { "SurfaceCallback", content::RegisterSurfaceCallback },
   { "SurfaceTextureListener",
         content::SurfaceTextureListener::RegisterSurfaceTextureListener },
