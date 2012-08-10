@@ -514,9 +514,9 @@ class BuildSpecsManager(object):
     # Actually push the manifest.
     self.PushSpecChanges(commit_message)
 
-  def DidLastBuildSucceed(self):
-    """Returns True if the last build succeeded."""
-    return self._latest_status and self._latest_status.Passed()
+  def DidLastBuildFail(self):
+    """Returns True if the last build failed."""
+    return self._latest_status and self._latest_status.Failed()
 
   def GetBuildStatus(self, builder, version):
     """Returns a BuilderStatus instance for the given the builder.

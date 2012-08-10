@@ -479,10 +479,10 @@ class ManifestVersionedSyncStage(SyncStage):
 
     if not next_manifest:
       cros_build_lib.Info('Found no work to do.')
-      if ManifestVersionedSyncStage.manifest_manager.DidLastBuildSucceed():
-        sys.exit(0)
+      if ManifestVersionedSyncStage.manifest_manager.DidLastBuildFail():
+        raise results_lib.StepFailure('The previous build failed.')
       else:
-        cros_build_lib.Die('Last build status was non-passing.')
+        sys.exit(0)
 
     # Log this early on for the release team to grep out before we finish.
     if ManifestVersionedSyncStage.manifest_manager:
