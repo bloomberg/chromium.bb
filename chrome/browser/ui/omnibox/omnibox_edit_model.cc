@@ -649,10 +649,11 @@ bool OmniboxEditModel::AcceptKeyword() {
   // Ensure the current selection is saved before showing keyword mode
   // so that moving to another line and then reverting the text will restore
   // the current state properly.
+  bool save_original_selection = !has_temporary_text_;
+  has_temporary_text_ = true;
   view_->OnTemporaryTextMaybeChanged(
       DisplayTextFromUserText(CurrentMatch().fill_into_edit),
-      !has_temporary_text_);
-  has_temporary_text_ = true;
+      save_original_selection);
 
   content::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
   return true;
@@ -1120,19 +1121,25 @@ bool OmniboxEditModel::DoInstant(
     return false;
 
   if (user_input_in_progress_ && popup_->IsOpen()) {
-    string16 text = view_->GetText();
-    AutocompleteInput::RemoveForcedQueryStringIfNecessary(
-        autocomplete_controller_->input().type(), &text);
+    // The two pieces of text we want to send Instant, viz., what the user has
+    // typed, and any inline autocomplete suggestion.
+    string16 user_text = user_text_;
+    *suggested_text = inline_autocomplete_text_;
 
-    // If there's any inline autocompletion, split it out from |text|.
-    if (!inline_autocomplete_text_.empty()) {
-      DCHECK_GE(text.size(), inline_autocomplete_text_.size());
-      text.resize(text.size() - inline_autocomplete_text_.size());
-      *suggested_text = inline_autocomplete_text_;
+    // If there's temporary text, that overrides the user_text. In this case, we
+    // should ignore any inline_autocomplete_text_, because it won't be visible.
+    if (has_temporary_text_) {
+      user_text = CurrentMatch().fill_into_edit;
+      suggested_text->clear();
     }
 
-    return instant->Update(match, text, UseVerbatimInstant(), suggested_text,
-                           complete_behavior);
+    // Remove any keywords and "?" prefix.
+    user_text = DisplayTextFromUserText(user_text);
+    AutocompleteInput::RemoveForcedQueryStringIfNecessary(
+        autocomplete_controller_->input().type(), &user_text);
+
+    return instant->Update(match, user_text, UseVerbatimInstant(),
+                           suggested_text, complete_behavior);
   }
 
   // It's possible DoInstant() was called due to an OnChanged() event from the
