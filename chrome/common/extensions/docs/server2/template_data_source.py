@@ -112,6 +112,8 @@ class TemplateDataSource(object):
       'partials': self,
       'samples': self._samples_data_source,
       'static': self._static_resources,
+      'apps_title': 'Apps',
+      'extensions_title': 'Extensions',
       'true': True,
       'false': False
     }).text
