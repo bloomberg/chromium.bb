@@ -109,7 +109,8 @@ void RagelValidateError (const uint8_t *ptr, uint32_t error, void *userdata) {
                UNRESTRICTED_INDEX_REGISTER |
                R15_MODIFIED | BPL_MODIFIED | SPL_MODIFIED |
                RSI_UNSANDBOXDED | RDI_UNSANDBOXDED |
-               UNRESTRICTED_RBP_PROCESSED | UNRESTRICTED_RSP_PROCESSED)) {
+               UNRESTRICTED_RBP_PROCESSED | UNRESTRICTED_RSP_PROCESSED |
+               RESTRICTED_RSP_UNPROCESSED | RESTRICTED_RBP_UNPROCESSED)) {
     ((struct RagelDecodeState*)userdata)->inst_is_legal = 0;
   }
   return;
