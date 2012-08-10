@@ -83,6 +83,26 @@ enum {
 
 @end
 
+@interface CrShellWindow : UnderlayOpenGLHostingWindow {
+ @private
+  content::Shell* shell_;
+}
+- (void)setShell:(content::Shell*)shell;
+- (void)showDevTools:(id)sender;
+@end
+
+@implementation CrShellWindow
+
+- (void)setShell:(content::Shell*)shell {
+  shell_ = shell;
+}
+
+- (void)showDevTools:(id)sender {
+  shell_->ShowDevTools();
+}
+
+@end
+
 namespace {
 
 NSString* kWindowTitle = @"Content Shell";
@@ -168,11 +188,13 @@ void Shell::PlatformCreateWindow(int width, int height) {
     content_rect = NSOffsetRect(initial_window_bounds, -10000, -10000);
     style_mask = NSBorderlessWindowMask;
   }
-  window_ = [[UnderlayOpenGLHostingWindow alloc]
-      initWithContentRect:content_rect
-                styleMask:style_mask
-                  backing:NSBackingStoreBuffered
-                    defer:NO];
+  CrShellWindow* window =
+      [[CrShellWindow alloc] initWithContentRect:content_rect
+                                       styleMask:style_mask
+                                         backing:NSBackingStoreBuffered
+                                           defer:NO];
+  window_ = window;
+  [window setShell:this];
   [window_ setTitle:kWindowTitle];
   NSView* content = [window_ contentView];
 

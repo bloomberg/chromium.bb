@@ -79,13 +79,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
 
-#if defined(OS_ANDROID)
   devtools_delegate_ = new ShellDevToolsDelegate(
       browser_context_->GetRequestContext());
-#else
-  devtools_delegate_ = new ShellDevToolsDelegate(
-      browser_context_->GetRequestContext());
-#endif
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     Shell::CreateNewWindow(browser_context_.get(),
