@@ -55,8 +55,19 @@ class TestDelegate : public WebNotificationTray::Delegate {
                           "" /* extension id */);
   }
 
+  void UpdateNotification(WebNotificationTray* tray,
+                          const std::string& old_id,
+                          const std::string& new_id) {
+    notification_ids_.erase(old_id);
+    notification_ids_.insert(new_id);
+    tray->UpdateNotification(old_id, new_id,
+                             ASCIIToUTF16("Updated Web Notification"),
+                             ASCIIToUTF16("Updated message body."));
+  }
+
   void RemoveNotification(WebNotificationTray* tray, const std::string& id) {
     tray->RemoveNotification(id);
+    notification_ids_.erase(id);
   }
 
   bool HasNotificationId(const std::string& id) {
@@ -80,23 +91,57 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
 
   ASSERT_TRUE(tray->GetWidget());
 
-  // Adding a notification should show the bubble.
+  // Add a notification.
   delegate->AddNotification(tray, "test_id1");
-  EXPECT_TRUE(tray->notification_bubble() != NULL);
   EXPECT_EQ(1, tray->GetNotificationCount());
+  EXPECT_TRUE(tray->HasNotificationForTest("test_id1"));
   delegate->AddNotification(tray, "test_id2");
   delegate->AddNotification(tray, "test_id2");
   EXPECT_EQ(2, tray->GetNotificationCount());
-  // Ensure that removing a notification removes it from the tray, and signals
-  // the delegate.
-  EXPECT_TRUE(delegate->HasNotificationId("test_id2"));
-  delegate->RemoveNotification(tray, "test_id2");
+  EXPECT_TRUE(tray->HasNotificationForTest("test_id2"));
+
+  // Ensure that updating a notification does not affect the count.
+  delegate->UpdateNotification(tray, "test_id2", "test_id3");
+  delegate->UpdateNotification(tray, "test_id3", "test_id3");
+  EXPECT_EQ(2, tray->GetNotificationCount());
   EXPECT_FALSE(delegate->HasNotificationId("test_id2"));
+  EXPECT_FALSE(tray->HasNotificationForTest("test_id2"));
+  EXPECT_TRUE(delegate->HasNotificationId("test_id3"));
+
+  // Ensure that Removing the first notification removes it from the tray.
+  delegate->RemoveNotification(tray, "test_id1");
+  EXPECT_FALSE(delegate->HasNotificationId("test_id1"));
+  EXPECT_FALSE(tray->HasNotificationForTest("test_id1"));
   EXPECT_EQ(1, tray->GetNotificationCount());
 
-  // Removing the last notification should hide the bubble.
-  delegate->RemoveNotification(tray, "test_id1");
+  // Remove the remianing notification.
+  delegate->RemoveNotification(tray, "test_id3");
   EXPECT_EQ(0, tray->GetNotificationCount());
+  EXPECT_FALSE(tray->HasNotificationForTest("test_id3"));
+}
+
+TEST_F(WebNotificationTrayTest, WebNotificationBubble) {
+  WebNotificationTray* tray = GetWebNotificationTray();
+  scoped_ptr<TestDelegate> delegate(new TestDelegate);
+  tray->SetDelegate(delegate.get());
+
+  ASSERT_TRUE(tray->GetWidget());
+
+  // Adding a notification should show the bubble.
+  delegate->AddNotification(tray, "test_id1");
+  EXPECT_TRUE(tray->notification_bubble() != NULL);
+
+  // Updating a notification should not hide the bubble.
+  delegate->AddNotification(tray, "test_id2");
+  delegate->UpdateNotification(tray, "test_id2", "test_id3");
+  EXPECT_TRUE(tray->notification_bubble() != NULL);
+
+  // Removing the first notification should not hide the bubble.
+  delegate->RemoveNotification(tray, "test_id1");
+  EXPECT_TRUE(tray->notification_bubble() != NULL);
+
+  // Removing the visible notification should hide the bubble.
+  delegate->RemoveNotification(tray, "test_id3");
   EXPECT_TRUE(tray->notification_bubble() == NULL);
 }
 

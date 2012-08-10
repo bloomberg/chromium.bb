@@ -124,11 +124,6 @@ class WebNotificationList {
                        const string16& display_source,
                        const std::string& extension_id) {
     WebNotification notification;
-    Notifications::iterator iter = GetNotification(id);
-    if (iter != notifications_.end()) {
-      notification = *iter;
-      EraseNotification(iter);
-    }
     notification.id = id;
     notification.title = title;
     notification.message = message;
@@ -138,14 +133,16 @@ class WebNotificationList {
     PushNotification(notification);
   }
 
-  void UpdateNotificationMessage(const std::string& id,
+  void UpdateNotificationMessage(const std::string& old_id,
+                                 const std::string& new_id,
                                  const string16& title,
                                  const string16& message) {
-    Notifications::iterator iter = GetNotification(id);
+    Notifications::iterator iter = GetNotification(old_id);
     if (iter == notifications_.end())
       return;
     // Copy and update notification, then move it to the front of the list.
     WebNotification notification(*iter);
+    notification.id = new_id;
     notification.title = title;
     notification.message = message;
     notification.is_read = false;
@@ -206,6 +203,10 @@ class WebNotificationList {
     return notifications_.front().id;
   }
 
+  bool HasNotification(const std::string& id) {
+    return GetNotification(id) != notifications_.end();
+  }
+
   const Notifications& notifications() const { return notifications_; }
   int unread_count() const { return unread_count_; }
 
@@ -226,6 +227,12 @@ class WebNotificationList {
   }
 
   void PushNotification(const WebNotification& notification) {
+    // Ensure that notification.id is unique by erasing any existing
+    // notification with the same id (shouldn't normally happen).
+    Notifications::iterator iter = GetNotification(notification.id);
+    if (iter != notifications_.end())
+      EraseNotification(iter);
+    // Add the notification to the front (top) of the list.
     if (!is_visible_)
       ++unread_count_;
     notifications_.push_front(notification);
@@ -439,10 +446,8 @@ class WebNotificationView : public views::View,
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
-    if (sender == close_button_) {
-      tray_->RemoveNotification(notification_.id);
-      tray_->HideMessageCenterBubbleIfEmpty();
-    }
+    if (sender == close_button_)
+      tray_->SendRemoveNotification(notification_.id);
   }
 
   // Overridden from MenuButtonListener.
@@ -515,10 +520,8 @@ class WebNotificationButtonView : public views::View,
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
-    if (sender == close_all_button_) {
-      tray_->RemoveAllNotifications();
-      tray_->HideMessageCenterBubbleIfEmpty();
-    }
+    if (sender == close_all_button_)
+      tray_->SendRemoveAllNotifications();
   }
 
  private:
@@ -592,10 +595,14 @@ class MessageCenterContentsView : public WebContentsView {
 
     button_view_ = new internal::WebNotificationButtonView(tray);
     AddChildView(button_view_);
+
+    // Build initial view with no notifications.
+    Update(WebNotificationList::Notifications());
   }
 
   void Update(const WebNotificationList::Notifications& notifications) {
     scroll_content_->RemoveAllChildViews(true);
+    scroll_content_->set_preferred_size(gfx::Size());
     int num_children = 0;
     for (WebNotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
@@ -616,7 +623,8 @@ class MessageCenterContentsView : public WebContentsView {
     }
     SizeScrollContent();
     Layout();
-    GetWidget()->GetRootView()->SchedulePaint();
+    if (GetWidget())
+      GetWidget()->GetRootView()->SchedulePaint();
   }
 
  private:
@@ -655,16 +663,21 @@ class WebNotificationContentsView : public WebContentsView {
     content_->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
     AddChildView(content_);
+
+    // Build initial view with no notification.
+    Update(WebNotificationList::Notifications());
   }
 
   void Update(const WebNotificationList::Notifications& notifications) {
     content_->RemoveAllChildViews(true);
-    WebNotificationList::Notifications::const_iterator iter =
-        notifications.begin();
-    WebNotificationView* view = new WebNotificationView(tray_, *iter);
+    const WebNotification& notification = (notifications.size() > 0) ?
+        notifications.front() : WebNotification();
+    WebNotificationView* view = new WebNotificationView(tray_, notification);
     content_->AddChildView(view);
+    content_->SizeToPreferredSize();
     Layout();
-    GetWidget()->GetRootView()->SchedulePaint();
+    if (GetWidget())
+      GetWidget()->GetRootView()->SchedulePaint();
   }
 
  private:
@@ -837,6 +850,9 @@ void WebNotificationTray::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
+// Add/Update/RemoveNotification are called by the client code, i.e the
+// Delegate implementation or its proxy.
+
 void WebNotificationTray::AddNotification(const std::string& id,
                                           const string16& title,
                                           const string16& message,
@@ -848,10 +864,11 @@ void WebNotificationTray::AddNotification(const std::string& id,
   ShowNotificationBubble();
 }
 
-void WebNotificationTray::UpdateNotification(const std::string& id,
+void WebNotificationTray::UpdateNotification(const std::string& old_id,
+                                             const std::string& new_id,
                                              const string16& title,
                                              const string16& message) {
-  notification_list_->UpdateNotificationMessage(id, title, message);
+  notification_list_->UpdateNotificationMessage(old_id, new_id, title, message);
   UpdateTrayAndBubble();
   ShowNotificationBubble();
 }
@@ -861,26 +878,6 @@ void WebNotificationTray::RemoveNotification(const std::string& id) {
     HideNotificationBubble();
   if (!notification_list_->RemoveNotification(id))
     return;
-  if (delegate_)
-    delegate_->NotificationRemoved(id);
-  UpdateTrayAndBubble();
-}
-
-void WebNotificationTray::RemoveAllNotifications() {
-  const WebNotificationList::Notifications& notifications =
-      notification_list_->notifications();
-  if (delegate_) {
-    for (WebNotificationList::Notifications::const_iterator loopiter =
-             notifications.begin();
-         loopiter != notifications.end(); ) {
-      WebNotificationList::Notifications::const_iterator curiter = loopiter++;
-      std::string notification_id = curiter->id;
-      // May call RemoveNotification and erase curiter.
-      delegate_->NotificationRemoved(notification_id);
-    }
-  }
-  notification_list_->RemoveAllNotifications();
-  HideMessageCenterBubble();
   UpdateTrayAndBubble();
 }
 
@@ -891,27 +888,6 @@ void WebNotificationTray::SetNotificationImage(const std::string& id,
   UpdateTrayAndBubble();
   if (notification_bubble() && id == notification_list_->GetFirstId())
     ShowNotificationBubble();
-}
-
-void WebNotificationTray::DisableByExtension(const std::string& id) {
-  // When we disable notifications, we remove any existing matching
-  // notifications to avoid adding complicated UI to re-enable the source.
-  if (id == notification_list_->GetFirstId())
-    HideNotificationBubble();
-  notification_list_->RemoveNotificationsByExtension(id);
-  UpdateTrayAndBubble();
-  if (delegate_)
-    delegate_->DisableExtension(id);
-}
-
-void WebNotificationTray::DisableByUrl(const std::string& id) {
-  // See comment for DisableByExtension.
-  if (id == notification_list_->GetFirstId())
-    HideNotificationBubble();
-  notification_list_->RemoveNotificationsBySource(id);
-  UpdateTrayAndBubble();
-  if (delegate_)
-    delegate_->DisableNotificationsFromSource(id);
 }
 
 void WebNotificationTray::ShowMessageCenterBubble() {
@@ -936,11 +912,6 @@ void WebNotificationTray::HideMessageCenterBubble() {
   show_message_center_on_unlock_ = false;
   notification_list_->SetIsVisible(false);
   status_area_widget()->SetHideSystemNotifications(false);
-}
-
-void WebNotificationTray::HideMessageCenterBubbleIfEmpty() {
-  if (GetNotificationCount() == 0)
-    HideMessageCenterBubble();
 }
 
 void WebNotificationTray::ShowNotificationBubble() {
@@ -979,16 +950,6 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
   UpdateTray();
 }
 
-void WebNotificationTray::ShowSettings(const std::string& id) {
-  if (delegate_)
-    delegate_->ShowSettings(id);
-}
-
-void WebNotificationTray::OnClicked(const std::string& id) {
-  if (delegate_)
-    delegate_->OnClicked(id);
-}
-
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
@@ -1002,6 +963,50 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   HideNotificationBubble();
 }
 
+// Protected methods (invoked only from Bubble and its child classes)
+
+void WebNotificationTray::SendRemoveNotification(const std::string& id) {
+  // If this is the only notification in the list, close the bubble.
+  if (notification_list_->notifications().size() == 1 &&
+      id == notification_list_->GetFirstId()) {
+    HideMessageCenterBubble();
+  }
+  if (delegate_)
+    delegate_->NotificationRemoved(id);
+}
+
+void WebNotificationTray::SendRemoveAllNotifications() {
+  HideMessageCenterBubble();
+  if (delegate_) {
+    const WebNotificationList::Notifications& notifications =
+        notification_list_->notifications();
+    for (WebNotificationList::Notifications::const_iterator loopiter =
+             notifications.begin();
+         loopiter != notifications.end(); ) {
+      WebNotificationList::Notifications::const_iterator curiter = loopiter++;
+      std::string notification_id = curiter->id;
+      // May call RemoveNotification and erase curiter.
+      delegate_->NotificationRemoved(notification_id);
+    }
+  }
+}
+
+// When we disable notifications, we remove any existing matching
+// notifications to avoid adding complicated UI to re-enable the source.
+void WebNotificationTray::DisableByExtension(const std::string& id) {
+  // Will call SendRemoveNotification for each matching notification.
+  notification_list_->RemoveNotificationsByExtension(id);
+  if (delegate_)
+    delegate_->DisableExtension(id);
+}
+
+void WebNotificationTray::DisableByUrl(const std::string& id) {
+  // Will call SendRemoveNotification for each matching notification.
+  notification_list_->RemoveNotificationsBySource(id);
+  if (delegate_)
+    delegate_->DisableNotificationsFromSource(id);
+}
+
 bool WebNotificationTray::PerformAction(const views::Event& event) {
   if (message_center_bubble())
     HideMessageCenterBubble();
@@ -1013,6 +1018,18 @@ bool WebNotificationTray::PerformAction(const views::Event& event) {
 int WebNotificationTray::GetNotificationCount() const {
   return notification_list()->notifications().size();
 }
+
+void WebNotificationTray::ShowSettings(const std::string& id) {
+  if (delegate_)
+    delegate_->ShowSettings(id);
+}
+
+void WebNotificationTray::OnClicked(const std::string& id) {
+  if (delegate_)
+    delegate_->OnClicked(id);
+}
+
+// Private methods
 
 void WebNotificationTray::UpdateTray() {
   count_label_->SetText(UTF8ToUTF16(
@@ -1046,6 +1063,10 @@ void WebNotificationTray::HideBubble(Bubble* bubble) {
   } else if (bubble == notification_bubble()) {
     HideNotificationBubble();
   }
+}
+
+bool WebNotificationTray::HasNotificationForTest(const std::string& id) const {
+  return notification_list_->HasNotification(id);
 }
 
 }  // namespace ash

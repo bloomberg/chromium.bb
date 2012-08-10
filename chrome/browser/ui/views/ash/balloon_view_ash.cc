@@ -93,8 +93,9 @@ BalloonViewAsh::~BalloonViewAsh() {
 void BalloonViewAsh::Show(Balloon* balloon) {
   balloon_ = balloon;
   const Notification& notification = balloon_->notification();
+  current_notification_id_ = notification.notification_id();
   std::string extension_id = GetExtensionId(balloon);
-  GetWebNotificationTray()->AddNotification(notification.notification_id(),
+  GetWebNotificationTray()->AddNotification(current_notification_id_,
                                             notification.title(),
                                             notification.body(),
                                             notification.display_source(),
@@ -104,9 +105,12 @@ void BalloonViewAsh::Show(Balloon* balloon) {
 
 void BalloonViewAsh::Update() {
   const Notification& notification = balloon_->notification();
-  GetWebNotificationTray()->UpdateNotification(notification.notification_id(),
+  std::string new_notification_id = notification.notification_id();
+  GetWebNotificationTray()->UpdateNotification(current_notification_id_,
+                                               new_notification_id,
                                                notification.title(),
                                                notification.body());
+  current_notification_id_ = new_notification_id;
   FetchIcon(notification);
 }
 

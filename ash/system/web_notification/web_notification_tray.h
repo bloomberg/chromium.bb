@@ -27,7 +27,10 @@ namespace ash {
 
 namespace internal {
 class StatusAreaWidget;
+class WebNotificationButtonView;
 class WebNotificationList;
+class WebNotificationMenuModel;
+class WebNotificationView;
 }
 
 // Status area tray for showing browser and app notifications. The client
@@ -85,33 +88,24 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
                        const string16& display_source,
                        const std::string& extension_id);
 
-  // Update an existing notification.
-  void UpdateNotification(const std::string& id,
+  // Update an existing notification with id = old_id and set its id to new_id.
+  void UpdateNotification(const std::string& old_id,
+                          const std::string& new_id,
                           const string16& title,
                           const string16& message);
 
-  // Remove an existing notification and notify the delegate.
+  // Remove an existing notification.
   void RemoveNotification(const std::string& id);
-
-  // Remove all notifications and notify the delegate.
-  void RemoveAllNotifications();
 
   // Set the notification image.
   void SetNotificationImage(const std::string& id,
                             const gfx::ImageSkia& image);
-
-  // Disable all notifications matching notification |id|.
-  void DisableByExtension(const std::string& id);
-  void DisableByUrl(const std::string& id);
 
   // Show the message center bubble. Should only be called by StatusAreaWidget.
   void ShowMessageCenterBubble();
 
   // Hide the message center bubble. Should only be called by StatusAreaWidget.
   void HideMessageCenterBubble();
-
-  // Hide the message center bubble if there are no notifications.
-  void HideMessageCenterBubbleIfEmpty();
 
   // Show a single notification bubble for the most recent notification.
   void ShowNotificationBubble();
@@ -122,26 +116,42 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   // Updates tray visibility login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
-  // Request the Delegate to the settings dialog.
-  void ShowSettings(const std::string& id);
-
-  // Called when a notification is clicked on. Event is passed to the Delegate.
-  void OnClicked(const std::string& id);
-
   // Overridden from TrayBackgroundView.
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
 
+ protected:
+  // Send a remove request to the delegate.
+  void SendRemoveNotification(const std::string& id);
+
+  // Send a remove request for all notifications to the delegate.
+  void SendRemoveAllNotifications();
+
+  // Disable all notifications matching notification |id|.
+  void DisableByExtension(const std::string& id);
+  void DisableByUrl(const std::string& id);
+
+  // Request the Delegate to the settings dialog.
+  void ShowSettings(const std::string& id);
+
+  // Called when a notification is clicked on. Event is passed to the Delegate.
+  void OnClicked(const std::string& id);
+
  private:
   class Bubble;
+  friend class internal::WebNotificationButtonView;
+  friend class internal::WebNotificationMenuModel;
+  friend class internal::WebNotificationView;
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationBubble);
 
   int GetNotificationCount() const;
   void UpdateTray();
   void UpdateTrayAndBubble();
   void HideBubble(Bubble* bubble);
+  bool HasNotificationForTest(const std::string& id) const;
 
   const internal::WebNotificationList* notification_list() const {
     return notification_list_.get();

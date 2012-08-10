@@ -30,6 +30,8 @@ class BalloonViewAsh : public BalloonView {
   BalloonCollection* collection_;
   Balloon* balloon_;
   scoped_ptr<IconFetcher> icon_fetcher_;
+  // Track the current notification id so that it can be updated properly.
+  std::string current_notification_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewAsh);
 };
