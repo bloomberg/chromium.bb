@@ -1681,6 +1681,175 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTest);
 };
 
+// Vector unary operator base class.
+// Op<c> Rd, Rm, ...
+// +--------+----------+--+----+--------+--------+------------+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8 7 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+------------+--+--+--------+
+// |  cond  |          | D|    |        |   Vd   |            | M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+-------+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorUnary2RegisterOpBase : public UncondNop {
+ public:
+  static const RegMBits0To3Interface vm;
+  static const Imm1Bit5Interface m;
+  static const RegDBits12To15Interface vd;
+  static const Imm1Bit22Interface d;
+
+  VectorUnary2RegisterOpBase() {}
+
+  static uint32_t m_reg_index(const Instruction& i) {
+    return (m.value(i) << 4) + vm.number(i);
+  }
+
+  static uint32_t d_reg_index(const Instruction& i) {
+    return (d.value(i) << 4) + vd.number(i);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorUnary2RegisterOpBase);
+};
+
+// Vector duplication (scalar)
+// Op<c> Rd, Rm[x]
+// +--------+----------+--+----+--------+--------+----------+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+----------+--+--+--+--------+
+// |  cond  |          | D|    |  imm4  |   Vd   |          | Q| M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+-----+--+--+--+--------+
+// Rd - The destination register.
+// Rm - The scalar operand.
+// Q=1 implies quadword operation. Otherwise doubleword.
+//
+// d = D:Vd, m = M:Vm
+//
+// If Q=1 && Vd<0>=1 then UNDEFINED.
+// if imm4='0000' then UNDEFINED.
+// If imm4 not in {'xxx1', 'xx10', 'x100' } then UNDEFINED.
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorUnary2RegisterDup : public VectorUnary2RegisterOpBase {
+ public:
+  static const Bit6FlagInterface q;
+  static const Imm4Bits16To19Interface imm4;
+
+  VectorUnary2RegisterDup() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorUnary2RegisterDup);
+};
+
+// Vector binary operator base class.
+// Op<c> Rd, Rn, Rm,...
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |  cond  |          | D|    |   Vn   |   Vd   |        | N|  | M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+---+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorBinary3RegisterOpBase : public UncondNop {
+ public:
+  static const RegMBits0To3Interface vm;
+  static const Imm1Bit5Interface m;
+  static const Imm1Bit7Interface n;
+  static const RegDBits12To15Interface vd;
+  static const RegNBits16To19Interface vn;
+  static const Imm1Bit22Interface d;
+
+  VectorBinary3RegisterOpBase() {}
+
+  static uint32_t m_reg_index(const Instruction& i) {
+    return (m.value(i) << 4) + vm.number(i);
+  }
+
+  static uint32_t n_reg_index(const Instruction& i) {
+    return (n.value(i) << 4) + vn.number(i);
+  }
+
+  static uint32_t d_reg_index(const Instruction& i) {
+    return (d.value(i) << 4) + vd.number(i);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterOpBase);
+};
+
+// Vector binary operator with imm4 value.
+// Op<c> Rd, Rn, Rm, #<imm>
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |  cond  |          | D|    |   Vn   |   Vd   |  imm4  | N| Q| M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+---+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+//
+// Q=1 implies quadword operation. Otherwise doubleword.
+//
+// if Q=1 && (Vd<0>=1 || Vn<0>==1 || Vm<0>==1) then UNDEFINED;
+// if Q=0 && imm4<3>==1 then UNDEFINED:
+class VectorBinary3RegisterImmOp : public VectorBinary3RegisterOpBase {
+ public:
+  static const Bit6FlagInterface q;
+  static const Imm4Bits8To11Interface imm;
+
+  VectorBinary3RegisterImmOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+};
+
+// Vector table lookup
+// Op<c> <Dd>, <list>, <Dm>
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110| 9 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// |  cond  |          | D|    |   Vn   |   Vd   |    | len| N|op| M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// <Dd> - The destination register.
+// <list> - The list of up to 4 consecutive registers starting at <Dn>
+// len - The number of registers (minus 1).
+// op - defines additional info about which operation (lookup vs zero) to apply.
+// <Dm> - The index register.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+// length = len+1
+//
+// if n+length > 32 then UNPREDICTABLE
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled.
+class VectorBinary3RegisterLookupOp : public VectorBinary3RegisterOpBase {
+ public:
+  static const Bit6FlagInterface op_flag;
+  static const Imm2Bits8To9Interface len;
+
+  VectorBinary3RegisterLookupOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+  static uint32_t length(const Instruction& i) {
+    return len.value(i) + 1;
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterLookupOp);
+};
+
 // Models of use of a general purpose register by a vfp instruction.
 // Op<c> ..., <Rt>, ...
 // +--------+------------------------+--------+--------+---------------+

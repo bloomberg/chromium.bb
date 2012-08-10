@@ -203,8 +203,11 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
+  const VectorBinary3RegisterImmOp VectorBinary3RegisterImmOp_instance_;
+  const VectorBinary3RegisterLookupOp VectorBinary3RegisterLookupOp_instance_;
   const VectorLoad VectorLoad_instance_;
   const VectorStore VectorStore_instance_;
+  const VectorUnary2RegisterDup VectorUnary2RegisterDup_instance_;
   const VfpMrsOp VfpMrsOp_instance_;
   const VfpOp VfpOp_instance_;
   const NotImplemented not_implemented_;

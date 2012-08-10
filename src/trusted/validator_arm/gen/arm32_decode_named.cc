@@ -1642,19 +1642,19 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp(
   if ((insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */ &&
       (insn.Bits() & 0x00B00000) == 0x00B00000 /* A(23:19) == 1x11x */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* C(7:4) == xxx0 */)
-    return EffectiveNoOp_None_instance_;
+    return VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598_instance_;
 
   if ((insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */ &&
       (insn.Bits() & 0x00B00000) == 0x00B00000 /* A(23:19) == 1x11x */ &&
       (insn.Bits() & 0x00000F00) == 0x00000C00 /* B(11:8) == 1100 */ &&
       (insn.Bits() & 0x00000090) == 0x00000000 /* C(7:4) == 0xx0 */)
-    return EffectiveNoOp_None_instance_;
+    return VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592_instance_;
 
   if ((insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */ &&
       (insn.Bits() & 0x00B00000) == 0x00B00000 /* A(23:19) == 1x11x */ &&
       (insn.Bits() & 0x00000C00) == 0x00000800 /* B(11:8) == 10xx */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* C(7:4) == xxx0 */)
-    return EffectiveNoOp_None_instance_;
+    return VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798_instance_;
 
   if ((insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */ &&
       (insn.Bits() & 0x00B00000) == 0x00B00000 /* A(23:19) == 1x11x */ &&

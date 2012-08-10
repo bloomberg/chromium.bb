@@ -1701,6 +1701,178 @@ class Binary3RegisterShiftedTestTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTestTesterRegsNotPc);
 };
 
+// Implements a decoder tester for VectorUnary2RegisterOpBase
+// Op<c> Rd, Rm, ...
+// +--------+----------+--+----+--------+--------+------------+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8 7 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+------------+--+--+--------+
+// |  cond  |          | D|    |        |   Vd   |            | M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+-------+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+// cond=1111
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than thier index.
+class VectorUnary2RegisterOpBaseTester : public UncondDecoderTester {
+ public:
+  explicit VectorUnary2RegisterOpBaseTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorUnary2RegisterOpBase expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorUnary2RegisterOpBaseTester);
+};
+
+// Implements a decoder tester for VectorUnary2RegisterDup
+// Vector duplication (scalar)
+// Op<c> Rd, Rm[x]
+// +--------+----------+--+----+--------+--------+----------+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+----------+--+--+--+--------+
+// |  cond  |          | D|    |  imm4  |   Vd   |          | Q| M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+-----+--+--+--+--------+
+// Rd - The destination register.
+// Rm - The scalar operand.
+// Q=1 implies quadword operation. Otherwise doubleword.
+//
+// d = D:Vd, m = M:Vm
+// cond=1111
+//
+// If Q=1 && Vd<0>=1 then UNDEFINED.
+// if imm4='0000' then UNDEFINED.
+// If imm4 not in {'xxx1', 'xx10', 'x100' } then UNDEFINED.
+//
+// Note: Until proven otherwise, we are going to assume that only
+// { '0001', '0010', '0100'} is allowed for imm4. Since the three bit
+// positions correspond to which size we should use in the operation.
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than thier index.
+class VectorUnary2RegisterDupTester : public VectorUnary2RegisterOpBaseTester {
+ public:
+  explicit VectorUnary2RegisterDupTester(const NamedClassDecoder& decoder)
+      : VectorUnary2RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorUnary2RegisterDup expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorUnary2RegisterDupTester);
+};
+
+
+// Implements a decoder tester for VectorBinary3RegisterOpBase
+// Op<c> Rd, Rn, Rm,...
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |  cond  |          | D|    |   Vn   |   Vd   |        | N|  | M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+---+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+// cond=1111
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than thier index.
+class VectorBinary3RegisterOpBaseTester : public UncondDecoderTester {
+ public:
+  explicit VectorBinary3RegisterOpBaseTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorBinary3RegisterOpBase expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterOpBaseTester);
+};
+
+// Implements a decoder tester for VectorBinary3RegisterImmOp
+// Op<c> Rd, Rn, Rm, #<imm>
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+
+// |  cond  |          | D|    |   Vn   |   Vd   |  imm4  | N| Q| M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+---+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+// cond=1111
+//
+// Q=1 implies quadword operation. Otherwise doubleword.
+//
+// if Q=1 && (Vd<0>=1 || Vn<0>==1 || Vm<0>==1) then UNDEFINED;
+// if Q=0 && imm4<3>==1 then UNDEFINED:
+class VectorBinary3RegisterImmOpTester
+    : public VectorBinary3RegisterOpBaseTester {
+ public:
+  explicit VectorBinary3RegisterImmOpTester(const NamedClassDecoder& decoder)
+      : VectorBinary3RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorBinary3RegisterImmOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterImmOpTester);
+};
+
+// Implements a decoder tester for VectorBinary3RegisterLookupOp
+// Op<c> <Dd>, <list>, <Dm>
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// |31302928|2726252423|22|2120|19181716|15141312|1110| 9 8| 7| 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// |  cond  |          | D|    |   Vn   |   Vd   |    | len| N|op| M|  |   Vm   |
+// +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------+
+// <Dd> - The destination register.
+// <list> - The list of up to 4 consecutive registers starting at <Dn>
+// len - The number of registers (minus 1).
+// op - defines additional info about which operation (lookup vs zero) to apply.
+// <Dm> - The index register.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+// length = len+1
+// cond=1111
+//
+// if n+length > 32 then UNPREDICTABLE
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled.
+class VectorBinary3RegisterLookupOpTester
+    : public VectorBinary3RegisterOpBaseTester {
+ public:
+  explicit VectorBinary3RegisterLookupOpTester(const NamedClassDecoder& decoder)
+      : VectorBinary3RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorBinary3RegisterLookupOp expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterLookupOpTester);
+};
+
 // Implements a decoder tester for VfpUsesRegOp
 // Op<c> ..., <Rt>, ...
 // +--------+------------------------+--------+--------+---------------+

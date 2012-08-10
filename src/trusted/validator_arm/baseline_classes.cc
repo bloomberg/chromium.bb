@@ -939,6 +939,42 @@ RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
 }
 
+// VectorUnary2RegisterDup
+SafetyLevel VectorUnary2RegisterDup::safety(Instruction i) const {
+  if (q.IsDefined(i) && !vd.IsEven(i))
+    return UNDEFINED;
+
+  // Check that imm4 != 0000 (undefined), or that
+  // it is in { xxx1, xx10, x100 }.
+  uint32_t imm = imm4.value(i);
+  if (imm == 0)
+    return UNDEFINED;
+  if (!(((imm & 0x1) == 0x1) ||
+        ((imm & 0x3) == 0x2) ||
+        ((imm & 0x7) == 0x4)))
+    return FORBIDDEN_OPERANDS;
+
+  return VectorUnary2RegisterOpBase::safety(i);
+}
+
+// VectorBinary3RegisterImmOp
+SafetyLevel VectorBinary3RegisterImmOp::safety(Instruction i) const {
+  if (q.IsDefined(i)) {
+    if (!vd.IsEven(i) || !vn.IsEven(i) || !vm.IsEven(i))
+      return UNDEFINED;
+  } else if (imm.value(i) > 0x7) {
+    return UNDEFINED;
+  }
+  return VectorBinary3RegisterOpBase::safety(i);
+}
+
+// VectorBinary3RegisterLookupOp
+SafetyLevel VectorBinary3RegisterLookupOp::safety(Instruction i) const {
+  if (n_reg_index(i) + length(i) > 32)
+    return UNPREDICTABLE;
+  return VectorBinary3RegisterOpBase::safety(i);
+}
+
 // VfpUsesRegOp
 SafetyLevel VfpUsesRegOp::safety(Instruction i) const {
   if (t.reg(i).Equals(kRegisterPc))

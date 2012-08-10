@@ -2229,6 +2229,33 @@ class Unary3RegisterShiftedOpTester_Mvn_Rule_108_A1_P218_RegsNotPc
   {}
 };
 
+class VectorBinary3RegisterImmOpTester_Vext_Rule_305_A1_P598_
+    : public VectorBinary3RegisterImmOpTester {
+ public:
+  VectorBinary3RegisterImmOpTester_Vext_Rule_305_A1_P598_()
+    : VectorBinary3RegisterImmOpTester(
+      state_.VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598_instance_)
+  {}
+};
+
+class VectorBinary3RegisterLookupOpTester_Vtbl_Vtbx_Rule_406_A1_P798_
+    : public VectorBinary3RegisterLookupOpTester {
+ public:
+  VectorBinary3RegisterLookupOpTester_Vtbl_Vtbx_Rule_406_A1_P798_()
+    : VectorBinary3RegisterLookupOpTester(
+      state_.VectorBinary3RegisterLookupOp_Vtbl_Vtbx_Rule_406_A1_P798_instance_)
+  {}
+};
+
+class VectorUnary2RegisterDupTester_Vdup_Rule_302_A1_P592_
+    : public VectorUnary2RegisterDupTester {
+ public:
+  VectorUnary2RegisterDupTester_Vdup_Rule_302_A1_P592_()
+    : VectorUnary2RegisterDupTester(
+      state_.VectorUnary2RegisterDup_Vdup_Rule_302_A1_P592_instance_)
+  {}
+};
+
 class VfpMrsOpTester_Vmrs_Rule_335_A1_P658_
     : public VfpMrsOpTester {
  public:
@@ -4225,6 +4252,24 @@ TEST_F(Arm32DecoderStateTests,
   NamedDefs12To15RdRmRnNotPc_Mvn_Rule_108_A1_P218 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0001111u0000ddddssss0tt1mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       VectorBinary3RegisterImmOpTester_Vext_Rule_305_A1_P598__111100101d11nnnnddddiiiinqm0mmmm_Test) {
+  VectorBinary3RegisterImmOpTester_Vext_Rule_305_A1_P598_ tester;
+  tester.Test("111100101d11nnnnddddiiiinqm0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       VectorBinary3RegisterLookupOpTester_Vtbl_Vtbx_Rule_406_A1_P798__111100111d11nnnndddd10ccnpm0mmmm_Test) {
+  VectorBinary3RegisterLookupOpTester_Vtbl_Vtbx_Rule_406_A1_P798_ tester;
+  tester.Test("111100111d11nnnndddd10ccnpm0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       VectorUnary2RegisterDupTester_Vdup_Rule_302_A1_P592__111100111d11iiiidddd11000qm0mmmm_Test) {
+  VectorUnary2RegisterDupTester_Vdup_Rule_302_A1_P592_ tester;
+  tester.Test("111100111d11iiiidddd11000qm0mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,

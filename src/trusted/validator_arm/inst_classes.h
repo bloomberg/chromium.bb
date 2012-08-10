@@ -122,6 +122,9 @@ class RegDBits12To15Interface {
   static Register reg(const Instruction& i) {
     return Register(number(i));
   }
+  static bool IsEven(const Instruction& i) {
+    return (number(i) & 0x1) == 0;
+  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(RegDBits12To15Interface);
@@ -152,6 +155,9 @@ class RegMBits0To3Interface {
   }
   static Register reg(const Instruction& i) {
     return Register(number(i));
+  }
+  static bool IsEven(const Instruction& i) {
+    return (number(i) & 0x1) == 0;
   }
 
  private:
@@ -194,6 +200,9 @@ class RegNBits16To19Interface {
   }
   static Register reg(const Instruction& i) {
     return Register(number(i));
+  }
+  static bool IsEven(const Instruction& i) {
+    return (number(i) & 0x1) == 0;
   }
 
  private:
@@ -347,6 +356,17 @@ class Imm24AddressBits0To23Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm24AddressBits0To23Interface);
 };
 
+// Interface class to pull out value in bits 8 and 9.
+class Imm2Bits8To9Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(9, 8);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits8To9Interface);
+};
+
 // Interface class to pull out a Register List in bits 0 through 15
 class RegisterListBits0To15Interface {
  public:
@@ -370,6 +390,17 @@ class Imm1Bit5Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit5Interface);
+};
+
+// Interface class to pull out value in bit 7
+class Imm1Bit7Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(7, 7);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit7Interface);
 };
 
 // Interface class to pull out an immediate value in bits 7 through 11.
@@ -470,6 +501,17 @@ class UpdatesLinkRegisterBit5Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesLinkRegisterBit5Interface);
+};
+
+// Interface class to pull out bit 6 as a flag.
+class Bit6FlagInterface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(6);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Bit6FlagInterface);
 };
 
 // Interface class to pull out S (update) bit 20, which

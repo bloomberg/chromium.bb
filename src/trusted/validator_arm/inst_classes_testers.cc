@@ -2052,6 +2052,82 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// VectorUnary2RegisterOpBaseTester
+bool VectorUnary2RegisterOpBaseTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_EQ(expected_decoder_.vm.number(inst), inst.Bits(3, 0));
+  EXPECT_EQ(expected_decoder_.m.value(inst), inst.Bits(5, 5));
+  EXPECT_EQ(expected_decoder_.vd.number(inst), inst.Bits(15, 12));
+  EXPECT_EQ(expected_decoder_.d.value(inst), inst.Bits(22, 22));
+
+  return true;
+}
+
+// VectorUnary2RegisterDupTester
+bool VectorUnary2RegisterDupTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorUnary2RegisterOpBaseTester
+             ::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_EQ(expected_decoder_.q.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.imm4.value(inst), inst.Bits(19, 16));
+
+  return true;
+}
+
+// VectorBinary3RegisterOpBaseTester
+bool VectorBinary3RegisterOpBaseTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_EQ(expected_decoder_.vm.number(inst), inst.Bits(3, 0));
+  EXPECT_EQ(expected_decoder_.m.value(inst), inst.Bits(5, 5));
+  EXPECT_EQ(expected_decoder_.n.value(inst), inst.Bits(7, 7));
+  EXPECT_EQ(expected_decoder_.vd.number(inst), inst.Bits(15, 12));
+  EXPECT_EQ(expected_decoder_.vn.number(inst), inst.Bits(19, 16));
+  EXPECT_EQ(expected_decoder_.d.value(inst), inst.Bits(22, 22));
+
+  return true;
+}
+
+// VectorBinary3RegisterImmOpTester
+bool VectorBinary3RegisterImmOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorBinary3RegisterOpBaseTester
+             ::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_EQ(expected_decoder_.q.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.imm.value(inst), inst.Bits(11, 8));
+
+  return true;
+}
+
+// VectorBinary3RegisterLookupOpTester
+bool VectorBinary3RegisterLookupOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorBinary3RegisterOpBaseTester
+             ::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_EQ(expected_decoder_.op_flag.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.len.value(inst), inst.Bits(9, 8));
+
+  return true;
+}
+
 // VfpUsesRegOpTester
 bool VfpUsesRegOpTester::
 ApplySanityChecks(Instruction inst,

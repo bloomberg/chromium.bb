@@ -1573,21 +1573,27 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 
 +-- simd_dp (See Section A7.4)
 | U(24) A(23:19) B(11:8) C(7:4)
-| -     0xxxx    -       -      ->simd_dp_3same
-| "     1x000    -       0xx1   ->simd_dp_1imm
-| "     1x001    -       0xx1   ->simd_dp_2shift
+| -     0xxxx    -       -      -> simd_dp_3same
+| "     1x000    -       0xx1   -> simd_dp_1imm
+| "     1x001    -       0xx1   -> simd_dp_2shift
 | "     1x01x    -       0xx1   "
 | "     1x1xx    -       0xx1   "
 | "     1xxxx    -       1xx1   "
-| "     1x0xx    -       x0x0   ->simd_dp_3diff
+| "     1x0xx    -       x0x0   -> simd_dp_3diff
 | "     1x10x    -       x0x0   "
-| "     1x0xx    -       x1x0   ->simd_dp_2scalar
+| "     1x0xx    -       x1x0   -> simd_dp_2scalar
 | "     1x10x    -       x1x0   "
-| 0     1x11x    -       xxx0   =EffectiveNoOp  # VEXT
-| 1     1x11x    0xxx    xxx0   ->simd_dp_2misc
-| "     "        10xx    xxx0   =EffectiveNoOp  # VTBL, VTBX
-| "     "        1100    0xx0   =EffectiveNoOp  # VDUP(scalar)
-| else:                         =Undefined  # Note on page A7-10
+| 0     1x11x    -       xxx0   = VectorBinary3RegisterImmOp
+                                  Vext_Rule_305_A1_P598
+                                  111100101d11nnnnddddiiiinqm0mmmm
+| 1     1x11x    0xxx    xxx0   -> simd_dp_2misc
+| "     "        10xx    xxx0   = VectorBinary3RegisterLookupOp
+                                  Vtbl_Vtbx_Rule_406_A1_P798
+                                  111100111d11nnnndddd10ccnpm0mmmm
+| "     "        1100    0xx0   = VectorUnary2RegisterDup
+                                  Vdup_Rule_302_A1_P592
+                                  111100111d11iiiidddd11000qm0mmmm
+| else:                         = Undefined  # Note on page A7-10
 +--
 
 +-- simd_dp_3same (See Section A7.4.1)
