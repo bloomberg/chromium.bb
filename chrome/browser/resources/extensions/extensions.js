@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../shared/js/cr/ui/drag_wrapper.js"></include>
 <include src="../uber/uber_utils.js"></include>
 <include src="extension_commands_overlay.js"></include>
 <include src="extension_focus_manager.js"></include>
@@ -116,6 +115,8 @@ cr.define('extensions', function() {
       cr.ui.overlay.setupOverlay($('dropTargetOverlay'));
 
       extensions.ExtensionFocusManager.getInstance().initialize();
+
+      preventDefaultOnPoundLinkClicks();  // From shared/js/util.js.
     },
 
     /**
@@ -151,7 +152,6 @@ cr.define('extensions', function() {
       ExtensionSettings.showOverlay($('extensionCommandsOverlay'));
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_ExtensionCommands']);
-      e.preventDefault();
     },
 
     /**

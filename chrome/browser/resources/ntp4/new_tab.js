@@ -212,6 +212,8 @@ cr.define('ntp', function() {
       cr.dispatchSimpleEvent(document, 'ntpLoaded', true, true);
       document.documentElement.classList.remove('starting-up');
     });
+
+    preventDefaultOnPoundLinkClicks();  // From shared/js/util.js.
   }
 
   /**
