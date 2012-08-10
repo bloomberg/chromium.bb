@@ -77,6 +77,15 @@ node = env.CommandTest(
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_gdb_stack_trace_test',
                        is_broken=env.Bit('build_x86_64'))
 
+node = env.CommandTest(
+    'gdb_step_from_func_start.out',
+    command=['${PYTHON}', env.File('step_from_func_start.py')],
+    osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
+    extra_deps=[sel_ldr, irt, gdb_test_guest])
+
+env.AddNodeToTestSuite(node, ['large_tests'],
+                       'run_gdb_step_from_func_start_test')
+
 # GDB treats multithreaded programs specially. Provide distinct nexe for
 # multithreaded tests to isolate multiple threads-specific issues.
 gdb_test_guest_thread = env.ComponentProgram(

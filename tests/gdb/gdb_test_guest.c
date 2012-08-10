@@ -6,8 +6,10 @@
 
 #include <assert.h>
 #include <string.h>
+#include <alloca.h>
 
 int global_var;
+volatile void *global_ptr;
 
 void test_two_line_function(int arg) {
   global_var = arg - 1;
@@ -40,6 +42,18 @@ int test_print_symbol() {
   return global_var;
 }
 
+/* A function with non-trivial prolog. */
+void test_step_from_function_start(int arg) {
+  int local_var = arg - 1;
+  global_var = local_var;
+  /*
+   * Force using frame pointer for this function by calling alloca.
+   * This allows to test skipping %esp modifying instructions when they
+   * are located in the middle of the function.
+   */
+  global_ptr = alloca(arg);
+}
+
 int main(int argc, char **argv) {
   assert(argc >= 2);
 
@@ -56,6 +70,11 @@ int main(int argc, char **argv) {
   }
   if (strcmp(argv[1], "stack_trace") == 0) {
     nested_calls(1);
+    return 0;
+  }
+  if (strcmp(argv[1], "step_from_func_start") == 0) {
+    global_var = 0;
+    test_step_from_function_start(2);
     return 0;
   }
   return 1;
