@@ -40,7 +40,8 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Does not take ownership of |client| which must outlive |*this|.
   explicit DXVAVideoDecodeAccelerator(
-      media::VideoDecodeAccelerator::Client* client);
+      media::VideoDecodeAccelerator::Client* client,
+      const base::Callback<bool(void)>& make_context_current);
   virtual ~DXVAVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
@@ -200,6 +201,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // 1. All required decoder dlls were successfully loaded.
   // 2. The device manager initialization completed.
   static bool pre_sandbox_init_done_;
+
+  // Callback to set the correct gl context.
+  base::Callback<bool(void)> make_context_current_;
 };
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_DXVA_VIDEO_DECODE_ACCELERATOR_H_

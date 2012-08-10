@@ -169,7 +169,8 @@ void GpuVideoDecodeAccelerator::Initialize(
     return;
   }
   DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
-  video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(this));
+  video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(
+      this, make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   video_decode_accelerator_.reset(new OmxVideoDecodeAccelerator(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),

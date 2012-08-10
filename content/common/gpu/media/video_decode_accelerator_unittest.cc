@@ -310,7 +310,7 @@ GLRenderingVDAClient::~GLRenderingVDAClient() {
   SetState(CS_DESTROYED);
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
 static bool DoNothingReturnTrue() { return true; }
 #endif
 
@@ -318,7 +318,8 @@ void GLRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
   CHECK(!decoder_.get());
 #if defined(OS_WIN)
-  decoder_.reset(new DXVAVideoDecodeAccelerator(this));
+  decoder_.reset(new DXVAVideoDecodeAccelerator(
+      this, base::Bind(&DoNothingReturnTrue)));
 #elif defined(OS_MACOSX)
   decoder_.reset(new MacVideoDecodeAccelerator(
       static_cast<CGLContextObj>(rendering_helper_->GetGLContext()), this));

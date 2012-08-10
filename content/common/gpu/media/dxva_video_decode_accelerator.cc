@@ -499,12 +499,14 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
 }
 
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
-    media::VideoDecodeAccelerator::Client* client)
+    media::VideoDecodeAccelerator::Client* client,
+    const base::Callback<bool(void)>& make_context_current)
     : client_(client),
       egl_config_(NULL),
       state_(kUninitialized),
       pictures_requested_(false),
-      inputs_before_decode_(0) {
+      inputs_before_decode_(0),
+      make_context_current_(make_context_current) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
 }
@@ -964,6 +966,11 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
 void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
   if (pending_output_samples_.empty())
     return;
+
+  if (!make_context_current_.Run()) {
+    StopOnError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
 
   OutputBuffers::iterator index;
 
