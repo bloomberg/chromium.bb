@@ -6725,6 +6725,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
         Mozilla Firefox
       </message>
+      <message name="IDS_IMPORT_FROM_ICEWEASEL" desc="browser combo box: Iceweasel">
+        Iceweasel
+      </message>
       <message name="IDS_IMPORT_FROM_GOOGLE_TOOLBAR" desc="browser combo box: Google Toolbar">
         Google Toolbar
       </message>

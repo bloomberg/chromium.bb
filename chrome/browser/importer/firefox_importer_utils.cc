@@ -21,6 +21,8 @@
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "googleurl/src/gurl.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -416,4 +418,48 @@ std::string GetPrefsJsValue(const std::string& content,
   }
 
   return content.substr(start, stop - start);
+}
+
+// The branding name is obtained from the application.ini file from the Firefox
+// application directory. A sample application.ini file is the following:
+//   [App]
+//   Vendor=Mozilla
+//   Name=Iceweasel
+//   Profile=mozilla/firefox
+//   Version=3.5.16
+//   BuildID=20120421070307
+//   Copyright=Copyright (c) 1998 - 2010 mozilla.org
+//   ID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
+//   .........................................
+// In this example the function returns "Iceweasel" (or a localized equivalent).
+string16 GetFirefoxImporterName(const FilePath& app_path) {
+  const FilePath app_ini_file = app_path.AppendASCII("application.ini");
+  std::string branding_name;
+  if (file_util::PathExists(app_ini_file)) {
+    std::string content;
+    file_util::ReadFileToString(app_ini_file, &content);
+    std::vector<std::string> lines;
+    base::SplitString(content, '\n', &lines);
+    const std::string name_attr("Name=");
+    bool in_app_section = false;
+    for (size_t i = 0; i < lines.size(); ++i) {
+      TrimWhitespace(lines[i], TRIM_ALL, &lines[i]);
+      if (lines[i] == "[App]") {
+        in_app_section = true;
+      } else if (in_app_section) {
+        if (lines[i].find(name_attr) == 0) {
+          branding_name = lines[i].substr(name_attr.size());
+          break;
+        } else if (lines[i].length() > 0 && lines[i][0] == '[') {
+          // No longer in the [App] section.
+          break;
+        }
+      }
+    }
+  }
+
+  StringToLowerASCII(&branding_name);
+  if (branding_name.find("iceweasel") != std::string::npos)
+    return l10n_util::GetStringUTF16(IDS_IMPORT_FROM_ICEWEASEL);
+  return l10n_util::GetStringUTF16(IDS_IMPORT_FROM_FIREFOX);
 }

@@ -80,7 +80,7 @@ void DetectFirefoxProfiles(std::vector<importer::SourceProfile*>* profiles) {
   }
 
   importer::SourceProfile* firefox = new importer::SourceProfile;
-  firefox->importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_FIREFOX);
+  firefox->importer_name = GetFirefoxImporterName(app_path);
   firefox->importer_type = firefox_type;
   firefox->source_path = profile_path;
 #if defined(OS_WIN)

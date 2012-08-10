@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "build/build_config.h"
 
 class FilePath;
@@ -95,5 +96,11 @@ bool ParsePrefFile(const FilePath& pref_file, base::DictionaryValue* prefs);
 // contents of the prefs file.
 std::string GetPrefsJsValue(const std::string& prefs,
                             const std::string& pref_key);
+
+// Returns the localized Firefox branding name.
+// This is useful to differentiate between Firefox and Iceweasel.
+// If anything goes wrong while trying to obtain the branding name,
+// the function assumes it's Firefox.
+string16 GetFirefoxImporterName(const FilePath& app_path);
 
 #endif  // CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_
