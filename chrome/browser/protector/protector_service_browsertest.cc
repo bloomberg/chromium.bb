@@ -143,7 +143,13 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscard) {
   EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
-IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscardManually) {
+#if defined(OS_WIN)
+// http://crbug.com/141916
+#define MAYBE_ShowAndDiscardManually FLAKY_ShowAndDiscardManually
+#else
+#define MAYBE_ShowAndDiscardManually ShowAndDiscardManually
+#endif
+IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, MAYBE_ShowAndDiscardManually) {
   // Show the change and discard it, mimicking a button click.
   EXPECT_CALL(*mock_change_, MockInit(browser()->profile())).
       WillOnce(Return(true));
