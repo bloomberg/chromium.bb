@@ -139,7 +139,7 @@ int32_t GetIpAddresses(PP_Resource resource,
   DebugPrintf("PPB_NetworkList_Private::GetIpAddresses: %s\n",
               NaClSrpcErrorString(srpc_result));
 
-  DCHECK(addr_count > count ||
+  DCHECK(static_cast<uint32_t>(addr_count) > count ||
          addr_count * sizeof(PP_NetAddress_Private) == addr_size);
 
   return addr_count;
