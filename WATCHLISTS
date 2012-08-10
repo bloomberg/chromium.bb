@@ -555,7 +555,8 @@
     'views_core': ['ben+watch@chromium.org'],
     'webintents': [
                    'gbillock+watch@chromium.org',
-                   'smckay+watch@chromium.org'],
+                   'smckay+watch@chromium.org',
+                   'groby+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'worker': ['jam@chromium.org'],
