@@ -208,14 +208,14 @@ void WebUILoginDisplayHost::Observe(
     ash::Shell::GetInstance()->user_wallpaper_delegate()->
         OnWallpaperBootAnimationFinished();
     if (waiting_for_wallpaper_load_) {
-      if (initialize_webui_in_parallel_)
-        ShowWebUI();
-      else
-        StartPostponedWebUI();
       // StartWizard / StartSignInScreen could be called multiple times through
       // the lifetime of host.
       // Make sure that subsequent calls are not postponed.
       waiting_for_wallpaper_load_ = false;
+      if (initialize_webui_in_parallel_)
+        ShowWebUI();
+      else
+        StartPostponedWebUI();
     }
     registrar_.Remove(this,
                       chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
@@ -321,7 +321,7 @@ void WebUILoginDisplayHost::ShowWebUI() {
 }
 
 void WebUILoginDisplayHost::StartPostponedWebUI() {
-  if (!waiting_for_wallpaper_load_ || !is_wallpaper_loaded_) {
+  if (!is_wallpaper_loaded_) {
     NOTREACHED();
     return;
   }
