@@ -66,6 +66,10 @@ struct ContentSettings::FieldIds {
         GetFieldID(env, clazz, "mLoadsImagesAutomatically", "Z");
     java_script_enabled =
         GetFieldID(env, clazz, "mJavaScriptEnabled", "Z");
+    allow_universal_access_from_file_urls =
+        GetFieldID(env, clazz, "mAllowUniversalAccessFromFileURLs", "Z");
+    allow_file_access_from_file_urls =
+        GetFieldID(env, clazz, "mAllowFileAccessFromFileURLs", "Z");
     java_script_can_open_windows_automatically =
         GetFieldID(env, clazz, "mJavaScriptCanOpenWindowsAutomatically", "Z");
     dom_storage_enabled =
@@ -87,6 +91,8 @@ struct ContentSettings::FieldIds {
   jfieldID default_fixed_font_size;
   jfieldID load_images_automatically;
   jfieldID java_script_enabled;
+  jfieldID allow_universal_access_from_file_urls;
+  jfieldID allow_file_access_from_file_urls;
   jfieldID java_script_can_open_windows_automatically;
   jfieldID dom_storage_enabled;
 };
@@ -189,6 +195,18 @@ void ContentSettings::SyncFromNativeImpl() {
 
   env->SetBooleanField(
       obj,
+      field_ids_->allow_universal_access_from_file_urls,
+      prefs.allow_universal_access_from_file_urls);
+  CheckException(env);
+
+  env->SetBooleanField(
+      obj,
+      field_ids_->allow_file_access_from_file_urls,
+      prefs.allow_file_access_from_file_urls);
+  CheckException(env);
+
+  env->SetBooleanField(
+      obj,
       field_ids_->java_script_can_open_windows_automatically,
       prefs.javascript_can_open_windows_automatically);
   CheckException(env);
@@ -271,6 +289,12 @@ void ContentSettings::SyncToNativeImpl() {
 
   prefs.javascript_enabled =
       env->GetBooleanField(obj, field_ids_->java_script_enabled);
+
+  prefs.allow_universal_access_from_file_urls = env->GetBooleanField(
+      obj, field_ids_->allow_universal_access_from_file_urls);
+
+  prefs.allow_file_access_from_file_urls = env->GetBooleanField(
+      obj, field_ids_->allow_file_access_from_file_urls);
 
   prefs.javascript_can_open_windows_automatically = env->GetBooleanField(
       obj, field_ids_->java_script_can_open_windows_automatically);

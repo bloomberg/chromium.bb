@@ -245,7 +245,7 @@ public class ContentViewCore implements MotionEventDelegate {
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
 
-        initialize(context, nativeWebContents, personality);
+        initialize(context, nativeWebContents, personality, false);
     }
 
     /**
@@ -263,12 +263,14 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     // TODO(jrg): incomplete; upstream the rest of this method.
-    private void initialize(Context context, int nativeWebContents, int personality) {
+    private void initialize(Context context, int nativeWebContents, int personality,
+            boolean isAccessFromFileURLsGrantedByDefault) {
         mNativeContentViewCore = nativeInit(nativeWebContents);
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeContentViewCore));
 
         mPersonality = personality;
-        mContentSettings = new ContentSettings(this, mNativeContentViewCore);
+        mContentSettings = new ContentSettings(
+            this, mNativeContentViewCore, isAccessFromFileURLsGrantedByDefault);
         mContainerView.setFocusable(true);
         mContainerView.setFocusableInTouchMode(true);
         if (mContainerView.getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
