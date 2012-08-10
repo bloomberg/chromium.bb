@@ -546,6 +546,7 @@ void MediaStreamManager::DevicesEnumerated(
        &audio_enumeration_cache_ : &video_enumeration_cache_);
   if (HasEnumerationRequest(stream_type) &&
       (!cache->valid ||
+       devices.size() != cache->devices.size() ||
        !std::equal(devices.begin(), devices.end(), cache->devices.begin(),
                    media_stream::StreamDeviceInfo::IsEqual))) {
     cache->valid = true;
