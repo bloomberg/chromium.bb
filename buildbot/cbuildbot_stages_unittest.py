@@ -156,10 +156,13 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
                              'Initialize')
     self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
                              'GetNextBuildSpec')
+    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
+                             'GetLatestPassingSpec')
     self.mox.StubOutWithMock(stages.SyncStage, 'ManifestCheckout')
 
     stages.ManifestVersionedSyncStage.Initialize()
     self.manager.GetNextBuildSpec().AndReturn(self.next_version)
+    self.manager.GetLatestPassingSpec().AndReturn(None)
 
     stages.SyncStage.ManifestCheckout(self.next_version)
 
