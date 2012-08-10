@@ -18,16 +18,6 @@ namespace remoting {
 
 namespace {
 
-bool IsOsSupported() {
-#if defined(OS_MACOSX)
-  // Verify that the OS is at least Snow Leopard (10.6).
-  // Chromoting doesn't support 10.5 or earlier.
-  return base::mac::IsOSSnowLeopardOrLater();
-#else
-  return true;
-#endif
-}
-
 void IgnoreCursorShapeChanged(scoped_ptr<protocol::CursorShapeInfo> info) {
 }
 
@@ -53,19 +43,11 @@ class VideoFrameCapturerTest : public testing::Test {
 };
 
 TEST_F(VideoFrameCapturerTest, StartCapturer) {
-  if (!IsOsSupported()) {
-    return;
-  }
-
   capturer_->Start(base::Bind(&IgnoreCursorShapeChanged));
   capturer_->Stop();
 }
 
 TEST_F(VideoFrameCapturerTest, Capture) {
-  if (!IsOsSupported()) {
-    return;
-  }
-
   // Assume that Start() treats the screen as invalid initially.
   EXPECT_CALL(capture_completed_callback_,
               CaptureCompletedPtr(DirtyRegionIsNonEmptyRect()));

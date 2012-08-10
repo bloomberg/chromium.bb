@@ -41,7 +41,7 @@ void CreateProfileCallback(const base::Closure& quit_closure,
 // correctly.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        ProfileAvatarFullscreenButton) {
-  if (base::mac::IsOSSnowLeopardOrEarlier())
+  if (base::mac::IsOSSnowLeopard())
     return;
 
   // Initialize the locals.

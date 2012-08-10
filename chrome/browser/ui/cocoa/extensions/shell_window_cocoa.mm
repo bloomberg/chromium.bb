@@ -129,7 +129,7 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
     [window setContentMaxSize:NSMakeSize(max_width, max_height)];
   }
 
-  if (base::mac::IsOSSnowLeopardOrEarlier() &&
+  if (base::mac::IsOSSnowLeopard() &&
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
     [window setBottomCornerRounded:NO];
 
@@ -200,7 +200,7 @@ void ShellWindowCocoa::SetFullscreen(bool fullscreen) {
     return;
   }
 
-  DCHECK(base::mac::IsOSSnowLeopardOrEarlier());
+  DCHECK(base::mac::IsOSSnowLeopard());
 
   // Fade to black.
   const CGDisplayReservationInterval kFadeDurationSeconds = 0.6;

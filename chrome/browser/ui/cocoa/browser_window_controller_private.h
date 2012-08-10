@@ -110,13 +110,13 @@
 - (BOOL)shouldShowPresentationModeToggle;
 
 // Moves views between windows in preparation for fullscreen mode on Snow
-// Leopard or earlier.  (Lion and later reuses the original window for
+// Leopard.  (Lion and later reuses the original window for
 // fullscreen mode, so there is no need to move views around.)  This method does
 // not position views; callers must also call |-layoutSubviews|.  This method
 // must not be called on Lion or later.
-- (void)moveViewsForFullscreenForSnowLeopardOrEarlier:(BOOL)fullscreen
-    regularWindow:(NSWindow*)regularWindow
-    fullscreenWindow:(NSWindow*)fullscreenWindow;
+- (void)moveViewsForFullscreenForSnowLeopard:(BOOL)fullscreen
+                               regularWindow:(NSWindow*)regularWindow
+                            fullscreenWindow:(NSWindow*)fullscreenWindow;
 
 // Sets presentation mode, creating the PresentationModeController if needed and
 // forcing a relayout.  If |forceDropdown| is YES, this method will always
@@ -129,8 +129,8 @@
 // Called on Snow Leopard or earlier to enter or exit fullscreen.  These methods
 // are internal implementations of |-setFullscreen:|.  These methods must not be
 // called on Lion or later.
-- (void)enterFullscreenForSnowLeopardOrEarlier;
-- (void)exitFullscreenForSnowLeopardOrEarlier;
+- (void)enterFullscreenForSnowLeopard;
+- (void)exitFullscreenForSnowLeopard;
 
 // Register or deregister for content view resize notifications.  These
 // notifications are used while transitioning to fullscreen mode in Lion or

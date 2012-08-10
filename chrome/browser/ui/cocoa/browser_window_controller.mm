@@ -244,9 +244,9 @@ enum {
 
     // Set the window to not have rounded corners, which prevents the resize
     // control from being inset slightly and looking ugly. Only bother to do
-    // this on Snow Leopard and earlier; on Lion and later all windows have
-    // rounded bottom corners, and this won't work anyway.
-    if (base::mac::IsOSSnowLeopardOrEarlier() &&
+    // this on Snow Leopard; on Lion and later all windows have rounded bottom
+    // corners, and this won't work anyway.
+    if (base::mac::IsOSSnowLeopard() &&
         [window respondsToSelector:@selector(setBottomCornerRounded:)])
       [window setBottomCornerRounded:NO];
 
@@ -1045,7 +1045,7 @@ enum {
                     IDS_ENTER_FULLSCREEN_MAC);
             [static_cast<NSMenuItem*>(item) setTitle:menuTitle];
 
-            if (base::mac::IsOSSnowLeopardOrEarlier())
+            if (base::mac::IsOSSnowLeopard())
               [static_cast<NSMenuItem*>(item) setHidden:YES];
           }
           break;
@@ -1981,9 +1981,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       [static_cast<FramedBrowserWindow*>([self window]) toggleSystemFullScreen];
   } else {
     if (fullscreen)
-      [self enterFullscreenForSnowLeopardOrEarlier];
+      [self enterFullscreenForSnowLeopard];
     else
-      [self exitFullscreenForSnowLeopardOrEarlier];
+      [self exitFullscreenForSnowLeopard];
   }
 }
 
@@ -2022,9 +2022,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   fullscreenUrl_ = url;
   fullscreenBubbleType_ = bubbleType;
 
-  // Presentation mode on Leopard and Snow Leopard maps directly to fullscreen
-  // mode.
-  if (base::mac::IsOSSnowLeopardOrEarlier()) {
+  // Presentation mode on Snow Leopard maps directly to fullscreen mode.
+  if (base::mac::IsOSSnowLeopard()) {
     [self setFullscreen:presentationMode url:url bubbleType:bubbleType];
     return;
   }

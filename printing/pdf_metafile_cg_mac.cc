@@ -48,7 +48,7 @@ PdfMetafileCg::PdfMetafileCg()
     : page_is_open_(false),
       thread_pdf_docs_owned_(false) {
   if (!thread_pdf_docs.Pointer()->Get() &&
-      base::mac::IsOSSnowLeopardOrEarlier()) {
+      base::mac::IsOSSnowLeopard()) {
     thread_pdf_docs_owned_ = true;
     thread_pdf_docs.Pointer()->Set(
         CFSetCreateMutable(kCFAllocatorDefault, 0, &kCFTypeSetCallBacks));

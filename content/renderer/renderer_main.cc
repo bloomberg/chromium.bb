@@ -56,16 +56,23 @@ void InstallFrameworkHacks() {
   // See http://crbug.com/31225
   // TODO: Don't do this on newer OS X revisions that have a fix for
   // http://openradar.appspot.com/radar?id=1156410
-  if (base::mac::IsOSSnowLeopardOrLater()) {
-    // Chinese Handwriting was introduced in 10.6. Since doing this override
-    // regresses page cycler memory usage on 10.5, don't do the unnecessary
-    // override there.
-    mach_error_t err = mach_override_ptr(
-        (void*)&TISCreateInputSourceList,
-        (void*)&ChromeTISCreateInputSourceList,
-        NULL);
-    CHECK_EQ(err_none, err);
-  }
+  // To check if this is broken:
+  // 1. Enable Multi language input (simplified chinese)
+  // 2. Ensure "Show/Hide Trackpad Handwriting" shortcut works.
+  //    (ctrl+shift+space).
+  // 3. Now open a new tab in Google Chrome or start Google Chrome
+  // 4. Try ctrl+shift+space shortcut again. Shortcut will not work, IME will
+  //    either not appear or (worse) not disappear on ctrl-shift-space.
+  //    (Run `ps aux | grep Chinese` (10.6/10.7) or `ps aux | grep Trackpad`
+  //    and then kill that pid to make it go away.)
+
+  // Chinese Handwriting was introduced in 10.6 and is confirmed broken on
+  // 10.6, 10.7, and 10.8.
+  mach_error_t err = mach_override_ptr(
+      (void*)&TISCreateInputSourceList,
+      (void*)&ChromeTISCreateInputSourceList,
+      NULL);
+  CHECK_EQ(err_none, err);
 }
 
 #endif  // OS_MACOSX

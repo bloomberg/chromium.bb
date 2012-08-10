@@ -200,7 +200,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   // Disable these notifications on Lion as they cause crashes.
   // TODO(rohitrao): Figure out what happens if a fullscreen window changes
   // monitors on Lion.
-  if (base::mac::IsOSSnowLeopardOrEarlier()) {
+  if (base::mac::IsOSSnowLeopard()) {
     [nc addObserver:self
            selector:@selector(windowDidChangeScreen:)
                name:NSWindowDidChangeScreenNotification
@@ -421,7 +421,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (BOOL)shouldToggleMenuBar {
-  return base::mac::IsOSSnowLeopardOrEarlier() &&
+  return base::mac::IsOSSnowLeopard() &&
          [self isWindowOnPrimaryScreen] &&
          [[browserController_ window] isMainWindow];
 }

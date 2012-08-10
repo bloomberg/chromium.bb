@@ -104,43 +104,39 @@ void RootDidAddSubview(id self, SEL _cmd, NSView* subview) {
                                styleMask:windowStyle
                                  backing:bufferingType
                                    defer:deferCreation])) {
-    if (base::mac::IsOSSnowLeopardOrLater()) {
-      // Hole punching is used when IOSurfaces are used to transport, which is
-      // only on > 10.5. Therefore, on > 10.5, the window must always be
-      // non-opaque whether or not it's titled if we want hole punching to work.
-      [self setOpaque:NO];
+    // OpenGL-accelerated content works by punching holes in windows. Therefore
+    // all windows hosting OpenGL content must not be opaque.
+    [self setOpaque:NO];
 
-      if (windowStyle & NSTitledWindowMask) {
-        // Only fiddle with shadows if the window is a proper window with a
-        // title bar and all. (The invisible opaque area technique only works on
-        // > 10.5, but that is guaranteed by this point.)
-        [self _setContentHasShadow:NO];
+    if (windowStyle & NSTitledWindowMask) {
+      // Only fiddle with shadows if the window is a proper window with a
+      // title bar and all.
+      [self _setContentHasShadow:NO];
 
-        NSView* rootView = [[self contentView] superview];
-        const NSRect rootBounds = [rootView bounds];
+      NSView* rootView = [[self contentView] superview];
+      const NSRect rootBounds = [rootView bounds];
 
-        // On 10.7/8, the bottom corners of the window are rounded by magic at a
-        // deeper level than the NSThemeFrame, so it is OK to have the opaques
-        // go all the way to the bottom.
-        const CGFloat kTopEdgeInset = 16;
-        const CGFloat kAlphaValueJustOpaqueEnough = 0.002;
+      // On 10.7/8, the bottom corners of the window are rounded by magic at a
+      // deeper level than the NSThemeFrame, so it is OK to have the opaques
+      // go all the way to the bottom.
+      const CGFloat kTopEdgeInset = 16;
+      const CGFloat kAlphaValueJustOpaqueEnough = 0.002;
 
-        scoped_nsobject<NSView> leftOpaque([[OpaqueView alloc] initWithFrame:
-            NSMakeRect(NSMinX(rootBounds), NSMinY(rootBounds),
-                       1, NSHeight(rootBounds) - kTopEdgeInset)]);
-        [leftOpaque setAutoresizingMask:NSViewMaxXMargin |
-                                        NSViewHeightSizable];
-        [leftOpaque setAlphaValue:kAlphaValueJustOpaqueEnough];
-        [rootView addSubview:leftOpaque];
+      scoped_nsobject<NSView> leftOpaque([[OpaqueView alloc] initWithFrame:
+          NSMakeRect(NSMinX(rootBounds), NSMinY(rootBounds),
+                     1, NSHeight(rootBounds) - kTopEdgeInset)]);
+      [leftOpaque setAutoresizingMask:NSViewMaxXMargin |
+                                      NSViewHeightSizable];
+      [leftOpaque setAlphaValue:kAlphaValueJustOpaqueEnough];
+      [rootView addSubview:leftOpaque];
 
-        scoped_nsobject<NSView> rightOpaque([[OpaqueView alloc] initWithFrame:
-            NSMakeRect(NSMaxX(rootBounds) - 1, NSMinY(rootBounds),
-                       1, NSHeight(rootBounds) - kTopEdgeInset)]);
-        [rightOpaque setAutoresizingMask:NSViewMinXMargin |
-                                         NSViewHeightSizable];
-        [rightOpaque setAlphaValue:kAlphaValueJustOpaqueEnough];
-        [rootView addSubview:rightOpaque];
-      }
+      scoped_nsobject<NSView> rightOpaque([[OpaqueView alloc] initWithFrame:
+          NSMakeRect(NSMaxX(rootBounds) - 1, NSMinY(rootBounds),
+                     1, NSHeight(rootBounds) - kTopEdgeInset)]);
+      [rightOpaque setAutoresizingMask:NSViewMinXMargin |
+                                       NSViewHeightSizable];
+      [rightOpaque setAlphaValue:kAlphaValueJustOpaqueEnough];
+      [rootView addSubview:rightOpaque];
     }
   }
 

@@ -546,7 +546,7 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   // dlopen() fails without file-read-metadata access if the executable image
   // contains LC_RPATH load commands. The components build uses those.
   // See http://crbug.com/127465
-  if (base::mac::IsOSSnowLeopardOrEarlier()) {
+  if (base::mac::IsOSSnowLeopard()) {
     FilePath bundle_executable = base::mac::NSStringToFilePath(
         [base::mac::MainBundle() executablePath]);
     NSString* sandbox_command = AllowMetadataForPath(
