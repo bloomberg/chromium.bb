@@ -2182,6 +2182,190 @@ NaClSrpcError PpbNetAddressPrivateRpcClient::PPB_NetAddress_Private_CreateFromIP
   return retval;
 }
 
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_IsNetworkList(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* out_bool)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_IsNetworkList:i:i",
+      resource,
+      out_bool
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_GetCount(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* count)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_GetCount:i:i",
+      resource,
+      count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_GetName(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t index,
+    nacl_abi_size_t* name_bytes, char* name)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_GetName:ii:C",
+      resource,
+      index,
+      name_bytes, name
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_GetType(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t index,
+    int32_t* type)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_GetType:ii:i",
+      resource,
+      index,
+      type
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_GetState(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t index,
+    int32_t* state)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_GetState:ii:i",
+      resource,
+      index,
+      state
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_GetIpAddresses(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t index,
+    nacl_abi_size_t* addr_bytes, char* addr,
+    int32_t* addresses_count)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_GetIpAddresses:ii:Ci",
+      resource,
+      index,
+      addr_bytes, addr,
+      addresses_count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_GetDisplayName(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t index,
+    nacl_abi_size_t* display_name_bytes, char* display_name)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_GetDisplayName:ii:C",
+      resource,
+      index,
+      display_name_bytes, display_name
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkListPrivateClient::PPB_NetworkList_Private_GetMTU(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t index,
+    int32_t* mtu)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkList_Private_GetMTU:ii:i",
+      resource,
+      index,
+      mtu
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkMonitorPrivateClient::PPB_NetworkMonitor_Private_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource* out_resource)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkMonitor_Private_Create:i:i",
+      instance,
+      out_resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbNetworkMonitorPrivateClient::PPB_NetworkMonitor_Private_IsNetworkMonitor(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* out_bool)  {
+  VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
+         ("%s: PPAPI calls are not supported off the main thread\n",
+          __FUNCTION__));
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_NetworkMonitor_Private_IsNetworkMonitor:i:i",
+      resource,
+      out_bool
+  );
+  return retval;
+}
+
 NaClSrpcError PpbPdfRpcClient::PPB_PDF_GetLocalizedString(
     NaClSrpcChannel* channel,
     PP_Instance instance,

@@ -50,6 +50,8 @@
         'browser_ppb_mouse_cursor_rpc_server.cc',
         'browser_ppb_mouse_lock_rpc_server.cc',
         'browser_ppb_net_address_private_rpc_server.cc',
+        'browser_ppb_network_list_private_rpc_server.cc',
+        'browser_ppb_network_monitor_private_rpc_server.cc',
         'browser_ppb_pdf_rpc_server.cc',
         'browser_ppb_rpc_server.cc',
         'browser_ppb_scrollbar_rpc_server.cc',

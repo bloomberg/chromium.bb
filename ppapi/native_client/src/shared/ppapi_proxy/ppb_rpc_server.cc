@@ -1740,6 +1740,153 @@ static void PPB_NetAddress_Private_CreateFromIPv6AddressDispatcher(
   );
 }
 
+static void PPB_NetworkList_Private_IsNetworkListDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_IsNetworkList(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetworkList_Private_GetCountDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_GetCount(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetworkList_Private_GetNameDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_GetName(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_NetworkList_Private_GetTypeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_GetType(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetworkList_Private_GetStateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_GetState(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetworkList_Private_GetIpAddressesDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_GetIpAddresses(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_NetworkList_Private_GetDisplayNameDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_GetDisplayName(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_NetworkList_Private_GetMTUDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkListPrivateServer::PPB_NetworkList_Private_GetMTU(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetworkMonitor_Private_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkMonitorPrivateServer::PPB_NetworkMonitor_Private_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_NetworkMonitor_Private_IsNetworkMonitorDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbNetworkMonitorPrivateServer::PPB_NetworkMonitor_Private_IsNetworkMonitor(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_PDF_GetLocalizedStringDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -3193,6 +3340,16 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_NetAddress_Private_GetScopeID:C:i", PPB_NetAddress_Private_GetScopeIDDispatcher },
   { "PPB_NetAddress_Private_CreateFromIPv4Address:Ci:C", PPB_NetAddress_Private_CreateFromIPv4AddressDispatcher },
   { "PPB_NetAddress_Private_CreateFromIPv6Address:Cii:C", PPB_NetAddress_Private_CreateFromIPv6AddressDispatcher },
+  { "PPB_NetworkList_Private_IsNetworkList:i:i", PPB_NetworkList_Private_IsNetworkListDispatcher },
+  { "PPB_NetworkList_Private_GetCount:i:i", PPB_NetworkList_Private_GetCountDispatcher },
+  { "PPB_NetworkList_Private_GetName:ii:C", PPB_NetworkList_Private_GetNameDispatcher },
+  { "PPB_NetworkList_Private_GetType:ii:i", PPB_NetworkList_Private_GetTypeDispatcher },
+  { "PPB_NetworkList_Private_GetState:ii:i", PPB_NetworkList_Private_GetStateDispatcher },
+  { "PPB_NetworkList_Private_GetIpAddresses:ii:Ci", PPB_NetworkList_Private_GetIpAddressesDispatcher },
+  { "PPB_NetworkList_Private_GetDisplayName:ii:C", PPB_NetworkList_Private_GetDisplayNameDispatcher },
+  { "PPB_NetworkList_Private_GetMTU:ii:i", PPB_NetworkList_Private_GetMTUDispatcher },
+  { "PPB_NetworkMonitor_Private_Create:i:i", PPB_NetworkMonitor_Private_CreateDispatcher },
+  { "PPB_NetworkMonitor_Private_IsNetworkMonitor:i:i", PPB_NetworkMonitor_Private_IsNetworkMonitorDispatcher },
   { "PPB_PDF_GetLocalizedString:ii:C", PPB_PDF_GetLocalizedStringDispatcher },
   { "PPB_PDF_GetResourceImage:ii:i", PPB_PDF_GetResourceImageDispatcher },
   { "PPB_PDF_GetFontFileWithFallback:iCCi:i", PPB_PDF_GetFontFileWithFallbackDispatcher },

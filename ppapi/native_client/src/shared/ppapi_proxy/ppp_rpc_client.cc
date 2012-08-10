@@ -290,6 +290,20 @@ NaClSrpcError PppMouseLockRpcClient::PPP_MouseLock_MouseLockLost(
   return retval;
 }
 
+NaClSrpcError PppNetworkMonitorPrivateRpcClient::PPP_NetworkMonitor_Private_NetworkListChanged(
+    NaClSrpcChannel* channel,
+    PP_Resource network_monitor,
+    PP_Resource network_list)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_NetworkMonitor_Private_NetworkListChanged:ii:",
+      network_monitor,
+      network_list
+  );
+  return retval;
+}
+
 NaClSrpcError PppPrintingRpcClient::PPP_Printing_QuerySupportedFormats(
     NaClSrpcChannel* channel,
     PP_Instance instance,

@@ -181,6 +181,20 @@ class PppMouseLockRpcServer {
   void operator=(const PppMouseLockRpcServer);
 };  // class PppMouseLockRpcServer
 
+class PppNetworkMonitorPrivateRpcServer {
+ public:
+  static void PPP_NetworkMonitor_Private_NetworkListChanged(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource network_monitor,
+      PP_Resource network_list);
+
+ private:
+  PppNetworkMonitorPrivateRpcServer();
+  PppNetworkMonitorPrivateRpcServer(const PppNetworkMonitorPrivateRpcServer&);
+  void operator=(const PppNetworkMonitorPrivateRpcServer);
+};  // class PppNetworkMonitorPrivateRpcServer
+
 class PppPrintingRpcServer {
  public:
   static void PPP_Printing_QuerySupportedFormats(

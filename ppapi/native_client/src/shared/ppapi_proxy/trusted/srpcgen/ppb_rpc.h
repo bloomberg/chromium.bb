@@ -898,6 +898,81 @@ class PpbNetAddressPrivateRpcServer {
   void operator=(const PpbNetAddressPrivateRpcServer);
 };  // class PpbNetAddressPrivateRpcServer
 
+class PpbNetworkListPrivateServer {
+ public:
+  static void PPB_NetworkList_Private_IsNetworkList(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* out_bool);
+  static void PPB_NetworkList_Private_GetCount(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* count);
+  static void PPB_NetworkList_Private_GetName(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t index,
+      nacl_abi_size_t* name_bytes, char* name);
+  static void PPB_NetworkList_Private_GetType(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t index,
+      int32_t* type);
+  static void PPB_NetworkList_Private_GetState(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t index,
+      int32_t* state);
+  static void PPB_NetworkList_Private_GetIpAddresses(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t index,
+      nacl_abi_size_t* addr_bytes, char* addr,
+      int32_t* addresses_count);
+  static void PPB_NetworkList_Private_GetDisplayName(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t index,
+      nacl_abi_size_t* display_name_bytes, char* display_name);
+  static void PPB_NetworkList_Private_GetMTU(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t index,
+      int32_t* mtu);
+
+ private:
+  PpbNetworkListPrivateServer();
+  PpbNetworkListPrivateServer(const PpbNetworkListPrivateServer&);
+  void operator=(const PpbNetworkListPrivateServer);
+};  // class PpbNetworkListPrivateServer
+
+class PpbNetworkMonitorPrivateServer {
+ public:
+  static void PPB_NetworkMonitor_Private_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      PP_Resource* out_resource);
+  static void PPB_NetworkMonitor_Private_IsNetworkMonitor(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* out_bool);
+
+ private:
+  PpbNetworkMonitorPrivateServer();
+  PpbNetworkMonitorPrivateServer(const PpbNetworkMonitorPrivateServer&);
+  void operator=(const PpbNetworkMonitorPrivateServer);
+};  // class PpbNetworkMonitorPrivateServer
+
 class PpbPdfRpcServer {
  public:
   static void PPB_PDF_GetLocalizedString(

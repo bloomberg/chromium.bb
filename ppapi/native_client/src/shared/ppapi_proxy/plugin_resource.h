@@ -22,6 +22,7 @@ namespace ppapi_proxy {
   F(PluginGraphics3D) \
   F(PluginImageData) \
   F(PluginInputEvent) \
+  F(PluginNetworkMonitorPrivate) \
   F(PluginView)
 
 // Forward declaration of PluginResource classes.

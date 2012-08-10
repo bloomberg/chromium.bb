@@ -48,7 +48,6 @@ void TestCallback(void* user_data, PP_Resource pp_network_list) {
     data->event.Signal();
 }
 
-
 class TestNetworkListObserver : public pp::NetworkListObserverPrivate {
  public:
   explicit TestNetworkListObserver(const pp::InstanceHandle& instance)

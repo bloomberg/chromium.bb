@@ -77,6 +77,8 @@ libppruntime = env.NaClSdkLibrary(
     'plugin_ppb_mouse_cursor.cc',
     'plugin_ppb_mouse_lock.cc',
     'plugin_ppb_net_address_private.cc',
+    'plugin_ppb_network_list_private.cc',
+    'plugin_ppb_network_monitor_private.cc',
     'plugin_ppb_pdf.cc',
     'plugin_ppb_scrollbar.cc',
     'plugin_ppb_tcp_server_socket_private.cc',

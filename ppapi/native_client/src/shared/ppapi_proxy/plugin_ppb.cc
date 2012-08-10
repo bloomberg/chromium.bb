@@ -29,6 +29,8 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_mouse_cursor.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_mouse_lock.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_net_address_private.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_network_list_private.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_network_monitor_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_tcp_server_socket_private.h"
@@ -96,6 +98,10 @@ InterfaceMapElement interface_map[] = {
     PluginNetAddressPrivate::GetInterface1_0(), true },
   { PPB_NETADDRESS_PRIVATE_INTERFACE_1_1,
     PluginNetAddressPrivate::GetInterface1_1(), true },
+  { PPB_NETWORKLIST_PRIVATE_INTERFACE, PluginNetworkListPrivate::GetInterface(),
+    true },
+  { PPB_NETWORKMONITOR_PRIVATE_INTERFACE,
+    PluginNetworkMonitorPrivate::GetInterface(), true },
   { PPB_OPENGLES2_INTERFACE_1_0, PluginGraphics3D::GetOpenGLESInterface(),
     true },
   { PPB_OPENGLES2_INSTANCEDARRAYS_INTERFACE_1_0,

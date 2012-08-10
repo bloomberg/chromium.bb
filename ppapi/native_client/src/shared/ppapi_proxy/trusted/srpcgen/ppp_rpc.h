@@ -165,6 +165,19 @@ class PppMouseLockRpcClient {
   void operator=(const PppMouseLockRpcClient);
 };  // class PppMouseLockRpcClient
 
+class PppNetworkMonitorPrivateRpcClient {
+ public:
+  static NaClSrpcError PPP_NetworkMonitor_Private_NetworkListChanged(
+      NaClSrpcChannel* channel,
+      PP_Resource network_monitor,
+      PP_Resource network_list);
+
+ private:
+  PppNetworkMonitorPrivateRpcClient();
+  PppNetworkMonitorPrivateRpcClient(const PppNetworkMonitorPrivateRpcClient&);
+  void operator=(const PppNetworkMonitorPrivateRpcClient);
+};  // class PppNetworkMonitorPrivateRpcClient
+
 class PppPrintingRpcClient {
  public:
   static NaClSrpcError PPP_Printing_QuerySupportedFormats(

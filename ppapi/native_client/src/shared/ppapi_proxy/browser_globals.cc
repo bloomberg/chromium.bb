@@ -321,6 +321,20 @@ const PPB_NetAddress_Private* PPBNetAddressPrivateInterface() {
   return ppb;
 }
 
+const PPB_NetworkList_Private* PPBNetworkListPrivateInterface() {
+  static const PPB_NetworkList_Private* ppb =
+      static_cast<const PPB_NetworkList_Private*>(
+          GetBrowserInterfaceSafe(PPB_NETWORKLIST_PRIVATE_INTERFACE));
+  return ppb;
+}
+
+const PPB_NetworkMonitor_Private* PPBNetworkMonitorPrivateInterface() {
+  static const PPB_NetworkMonitor_Private* ppb =
+      static_cast<const PPB_NetworkMonitor_Private*>(
+          GetBrowserInterfaceSafe(PPB_NETWORKMONITOR_PRIVATE_INTERFACE));
+  return ppb;
+}
+
 const PPB_URLLoader* PPBURLLoaderInterface() {
   static const PPB_URLLoader* ppb =
       static_cast<const PPB_URLLoader*>(

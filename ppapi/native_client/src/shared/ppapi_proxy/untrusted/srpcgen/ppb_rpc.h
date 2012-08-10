@@ -786,6 +786,71 @@ class PpbNetAddressPrivateRpcClient {
   void operator=(const PpbNetAddressPrivateRpcClient);
 };  // class PpbNetAddressPrivateRpcClient
 
+class PpbNetworkListPrivateClient {
+ public:
+  static NaClSrpcError PPB_NetworkList_Private_IsNetworkList(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t* out_bool);
+  static NaClSrpcError PPB_NetworkList_Private_GetCount(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t* count);
+  static NaClSrpcError PPB_NetworkList_Private_GetName(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t index,
+      nacl_abi_size_t* name_bytes, char* name);
+  static NaClSrpcError PPB_NetworkList_Private_GetType(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t index,
+      int32_t* type);
+  static NaClSrpcError PPB_NetworkList_Private_GetState(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t index,
+      int32_t* state);
+  static NaClSrpcError PPB_NetworkList_Private_GetIpAddresses(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t index,
+      nacl_abi_size_t* addr_bytes, char* addr,
+      int32_t* addresses_count);
+  static NaClSrpcError PPB_NetworkList_Private_GetDisplayName(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t index,
+      nacl_abi_size_t* display_name_bytes, char* display_name);
+  static NaClSrpcError PPB_NetworkList_Private_GetMTU(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t index,
+      int32_t* mtu);
+
+ private:
+  PpbNetworkListPrivateClient();
+  PpbNetworkListPrivateClient(const PpbNetworkListPrivateClient&);
+  void operator=(const PpbNetworkListPrivateClient);
+};  // class PpbNetworkListPrivateClient
+
+class PpbNetworkMonitorPrivateClient {
+ public:
+  static NaClSrpcError PPB_NetworkMonitor_Private_Create(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource* out_resource);
+  static NaClSrpcError PPB_NetworkMonitor_Private_IsNetworkMonitor(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t* out_bool);
+
+ private:
+  PpbNetworkMonitorPrivateClient();
+  PpbNetworkMonitorPrivateClient(const PpbNetworkMonitorPrivateClient&);
+  void operator=(const PpbNetworkMonitorPrivateClient);
+};  // class PpbNetworkMonitorPrivateClient
+
 class PpbPdfRpcClient {
  public:
   static NaClSrpcError PPB_PDF_GetLocalizedString(

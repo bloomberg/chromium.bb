@@ -38,6 +38,8 @@
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
+#include "ppapi/c/private/ppb_network_list_private.h"
+#include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_tcp_server_socket_private.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
@@ -124,6 +126,8 @@ const PPB_MouseInputEvent* PPBMouseInputEventInterface();
 const PPB_Messaging* PPBMessagingInterface();
 const PPB_MouseLock* PPBMouseLockInterface();
 const PPB_NetAddress_Private* PPBNetAddressPrivateInterface();
+const PPB_NetworkList_Private* PPBNetworkListPrivateInterface();
+const PPB_NetworkMonitor_Private* PPBNetworkMonitorPrivateInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
 const PPB_TCPServerSocket_Private* PPBTCPServerSocketPrivateInterface();
