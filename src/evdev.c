@@ -73,14 +73,14 @@ evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 	case BTN_FORWARD:
 	case BTN_BACK:
 	case BTN_TASK:
-		notify_button(&device->seat->seat,
+		notify_button(device->seat,
 			      time, e->code,
 			      e->value ? WL_POINTER_BUTTON_STATE_PRESSED :
 					 WL_POINTER_BUTTON_STATE_RELEASED);
 		break;
 
 	default:
-		notify_key(&device->seat->seat,
+		notify_key(device->seat,
 			   time, e->code,
 			   e->value ? WL_KEYBOARD_KEY_STATE_PRESSED :
 				      WL_KEYBOARD_KEY_STATE_RELEASED,
@@ -161,13 +161,13 @@ evdev_process_relative(struct evdev_device *device,
 		device->pending_events |= EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_WHEEL:
-		notify_axis(&device->seat->seat,
+		notify_axis(device->seat,
 			      time,
 			      WL_POINTER_AXIS_VERTICAL_SCROLL,
 			      wl_fixed_from_int(e->value));
 		break;
 	case REL_HWHEEL:
-		notify_axis(&device->seat->seat,
+		notify_axis(device->seat,
 			      time,
 			      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
 			      wl_fixed_from_int(e->value));
@@ -217,7 +217,7 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 		return;
 
 	if (device->pending_events & EVDEV_RELATIVE_MOTION) {
-		notify_motion(&master->seat, time,
+		notify_motion(master, time,
 			      master->seat.pointer->x + device->rel.dx,
 			      master->seat.pointer->y + device->rel.dy);
 		device->pending_events &= ~EVDEV_RELATIVE_MOTION;
@@ -225,7 +225,7 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 		device->rel.dy = 0;
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MT_DOWN) {
-		notify_touch(&master->seat, time,
+		notify_touch(master, time,
 			     device->mt.slot,
 			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
 			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
@@ -234,7 +234,7 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_MOTION;
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MT_MOTION) {
-		notify_touch(&master->seat, time,
+		notify_touch(master, time,
 			     device->mt.slot,
 			     wl_fixed_from_int(device->mt.x[device->mt.slot]),
 			     wl_fixed_from_int(device->mt.y[device->mt.slot]),
@@ -243,12 +243,12 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_MOTION;
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MT_UP) {
-		notify_touch(&master->seat, time, device->mt.slot, 0, 0,
+		notify_touch(master, time, device->mt.slot, 0, 0,
 			     WL_TOUCH_UP);
 		device->pending_events &= ~EVDEV_ABSOLUTE_MT_UP;
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
-		notify_motion(&master->seat, time,
+		notify_motion(master, time,
 			      wl_fixed_from_int(device->abs.x),
 			      wl_fixed_from_int(device->abs.y));
 		device->pending_events &= ~EVDEV_ABSOLUTE_MOTION;
@@ -588,7 +588,7 @@ evdev_notify_keyboard_focus(struct weston_seat *seat,
 		}
 	}
 
-	notify_keyboard_focus_in(&seat->seat, &keys, STATE_UPDATE_AUTOMATIC);
+	notify_keyboard_focus_in(seat, &keys, STATE_UPDATE_AUTOMATIC);
 
 	wl_array_release(&keys);
 }

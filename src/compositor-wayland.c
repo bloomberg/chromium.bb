@@ -536,7 +536,7 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 	/* XXX: If we get a modifier event immediately before the focus,
 	 *      we should try to keep the same serial. */
 	output = wl_surface_get_user_data(surface);
-	notify_pointer_focus(&input->base.seat, &output->base, x, y);
+	notify_pointer_focus(&input->base, &output->base, x, y);
 	wl_pointer_set_cursor(input->pointer, serial, NULL, 0, 0);
 }
 
@@ -546,7 +546,7 @@ input_handle_pointer_leave(void *data, struct wl_pointer *pointer,
 {
 	struct wayland_input *input = data;
 
-	notify_pointer_focus(&input->base.seat, NULL, 0, 0);
+	notify_pointer_focus(&input->base, NULL, 0, 0);
 }
 
 static void
@@ -556,7 +556,7 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_motion(&input->base.seat, time,
+	notify_motion(&input->base, time,
 		      x - wl_fixed_from_int(c->border.left),
 		      y - wl_fixed_from_int(c->border.top));
 }
@@ -569,7 +569,7 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 	enum wl_pointer_button_state state = state_w;
 
-	notify_button(&input->base.seat, time, button, state);
+	notify_button(&input->base, time, button, state);
 }
 
 static void
@@ -578,7 +578,7 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 {
 	struct wayland_input *input = data;
 
-	notify_axis(&input->base.seat, time, axis, value);
+	notify_axis(&input->base, time, axis, value);
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -640,7 +640,7 @@ input_handle_keyboard_enter(void *data,
 
 	/* XXX: If we get a modifier event immediately before the focus,
 	 *      we should try to keep the same serial. */
-	notify_keyboard_focus_in(&input->base.seat, keys,
+	notify_keyboard_focus_in(&input->base, keys,
 				 STATE_UPDATE_AUTOMATIC);
 }
 
@@ -652,7 +652,7 @@ input_handle_keyboard_leave(void *data,
 {
 	struct wayland_input *input = data;
 
-	notify_keyboard_focus_out(&input->base.seat);
+	notify_keyboard_focus_out(&input->base);
 }
 
 static void
@@ -662,7 +662,7 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 	struct wayland_input *input = data;
 
 	input->key_serial = serial;
-	notify_key(&input->base.seat, time, key,
+	notify_key(&input->base, time, key,
 		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
 		   STATE_UPDATE_NONE);
@@ -689,7 +689,7 @@ input_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	xkb_state_update_mask(input->base.xkb_state.state,
 			      mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
-	notify_modifiers(&input->base.seat, serial_out);
+	notify_modifiers(&input->base, serial_out);
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {

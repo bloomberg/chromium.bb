@@ -609,36 +609,36 @@ weston_compositor_pick_surface(struct weston_compositor *compositor,
 }
 
 static void
-weston_device_repick(struct wl_seat *seat)
+weston_device_repick(struct weston_seat *seat)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
 	const struct wl_pointer_grab_interface *interface;
 	struct weston_surface *surface, *focus;
+	struct wl_pointer *pointer = seat->seat.pointer;
 
-	if (!seat->pointer)
+	if (!pointer)
 		return;
 
-	surface = weston_compositor_pick_surface(ws->compositor,
-						 seat->pointer->x,
-						 seat->pointer->y,
-						 &seat->pointer->current_x,
-						 &seat->pointer->current_y);
+	surface = weston_compositor_pick_surface(seat->compositor,
+						 pointer->x,
+						 pointer->y,
+						 &pointer->current_x,
+						 &pointer->current_y);
 
-	if (&surface->surface != seat->pointer->current) {
-		interface = seat->pointer->grab->interface;
-		seat->pointer->current = &surface->surface;
-		interface->focus(seat->pointer->grab, &surface->surface,
-				 seat->pointer->current_x,
-				 seat->pointer->current_y);
+	if (&surface->surface != pointer->current) {
+		interface = pointer->grab->interface;
+		pointer->current = &surface->surface;
+		interface->focus(pointer->grab, &surface->surface,
+				 pointer->current_x,
+				 pointer->current_y);
 	}
 
-	focus = (struct weston_surface *) seat->pointer->grab->focus;
+	focus = (struct weston_surface *) pointer->grab->focus;
 	if (focus)
 		weston_surface_from_global_fixed(focus,
-						 seat->pointer->x,
-						 seat->pointer->y,
-					         &seat->pointer->grab->x,
-					         &seat->pointer->grab->y);
+						 pointer->x,
+						 pointer->y,
+					         &pointer->grab->x,
+					         &pointer->grab->y);
 }
 
 static void
@@ -650,7 +650,7 @@ weston_compositor_repick(struct weston_compositor *compositor)
 		return;
 
 	wl_list_for_each(seat, &compositor->seat_list, link)
-		weston_device_repick(&seat->seat);
+		weston_device_repick(seat);
 }
 
 WL_EXPORT void
@@ -1695,7 +1695,7 @@ weston_plane_release(struct weston_plane *plane)
 }
 
 static  void
-weston_seat_update_drag_surface(struct wl_seat *seat, int dx, int dy);
+weston_seat_update_drag_surface(struct weston_seat *seat, int dx, int dy);
 
 static void
 clip_pointer_motion(struct weston_seat *seat, wl_fixed_t *fx, wl_fixed_t *fy)
@@ -1733,24 +1733,22 @@ clip_pointer_motion(struct weston_seat *seat, wl_fixed_t *fx, wl_fixed_t *fy)
 }
 
 WL_EXPORT void
-notify_motion(struct wl_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t y)
+notify_motion(struct weston_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 	const struct wl_pointer_grab_interface *interface;
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *ec = ws->compositor;
+	struct weston_compositor *ec = seat->compositor;
 	struct weston_output *output;
+	struct wl_pointer *pointer = seat->seat.pointer;
 	int32_t ix, iy;
 
 	weston_compositor_activity(ec);
 
-	clip_pointer_motion(ws, &x, &y);
+	clip_pointer_motion(seat, &x, &y);
 
-	weston_seat_update_drag_surface(seat,
-					x - seat->pointer->x,
-					y - seat->pointer->y);
+	weston_seat_update_drag_surface(seat, x - pointer->x, y - pointer->y);
 
-	seat->pointer->x = x;
-	seat->pointer->y = y;
+	pointer->x = x;
+	pointer->y = y;
 
 	ix = wl_fixed_to_int(x);
 	iy = wl_fixed_to_int(y);
@@ -1762,15 +1760,15 @@ notify_motion(struct wl_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t y)
 			weston_output_update_zoom(output, ZOOM_FOCUS_POINTER);
 
 	weston_device_repick(seat);
-	interface = seat->pointer->grab->interface;
-	interface->motion(seat->pointer->grab, time,
-			  seat->pointer->grab->x, seat->pointer->grab->y);
+	interface = pointer->grab->interface;
+	interface->motion(pointer->grab, time,
+			  pointer->grab->x, pointer->grab->y);
 
-	if (ws->sprite) {
-		weston_surface_set_position(ws->sprite,
-					    ix - ws->hotspot_x,
-					    iy - ws->hotspot_y);
-		weston_surface_schedule_repaint(ws->sprite);
+	if (seat->sprite) {
+		weston_surface_set_position(seat->sprite,
+					    ix - seat->hotspot_x,
+					    iy - seat->hotspot_y);
+		weston_surface_schedule_repaint(seat->sprite);
 	}
 }
 
@@ -1789,50 +1787,49 @@ weston_surface_activate(struct weston_surface *surface,
 }
 
 WL_EXPORT void
-notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
+notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 	      enum wl_pointer_button_state state)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *compositor = ws->compositor;
+	struct weston_compositor *compositor = seat->compositor;
+	struct wl_pointer *pointer = seat->seat.pointer;
 	struct weston_surface *focus =
-		(struct weston_surface *) seat->pointer->focus;
+		(struct weston_surface *) pointer->focus;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		if (compositor->ping_handler && focus)
 			compositor->ping_handler(focus, serial);
 		weston_compositor_idle_inhibit(compositor);
-		if (seat->pointer->button_count == 0) {
-			seat->pointer->grab_button = button;
-			seat->pointer->grab_time = time;
-			seat->pointer->grab_x = seat->pointer->x;
-			seat->pointer->grab_y = seat->pointer->y;
+		if (pointer->button_count == 0) {
+			pointer->grab_button = button;
+			pointer->grab_time = time;
+			pointer->grab_x = pointer->x;
+			pointer->grab_y = pointer->y;
 		}
-		seat->pointer->button_count++;
+		pointer->button_count++;
 	} else {
 		weston_compositor_idle_release(compositor);
-		seat->pointer->button_count--;
+		pointer->button_count--;
 	}
 
-	weston_compositor_run_button_binding(compositor, ws, time, button,
+	weston_compositor_run_button_binding(compositor, seat, time, button,
 					     state);
 
-	seat->pointer->grab->interface->button(seat->pointer->grab, time,
-					       button, state);
+	pointer->grab->interface->button(pointer->grab, time, button, state);
 
-	if (seat->pointer->button_count == 1)
-		seat->pointer->grab_serial =
+	if (pointer->button_count == 1)
+		pointer->grab_serial =
 			wl_display_get_serial(compositor->wl_display);
 }
 
 WL_EXPORT void
-notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
+notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 	    wl_fixed_t value)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *compositor = ws->compositor;
+	struct weston_compositor *compositor = seat->compositor;
+	struct wl_pointer *pointer = seat->seat.pointer;
 	struct weston_surface *focus =
-		(struct weston_surface *) seat->pointer->focus;
+		(struct weston_surface *) pointer->focus;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 
 	if (compositor->ping_handler && focus)
@@ -1841,20 +1838,19 @@ notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
 	weston_compositor_activity(compositor);
 
 	if (value)
-		weston_compositor_run_axis_binding(compositor, ws, time, axis,
-						   value);
+		weston_compositor_run_axis_binding(compositor, seat,
+						   time, axis, value);
 	else
 		return;
 
-	if (seat->pointer->focus_resource)
-		wl_pointer_send_axis(seat->pointer->focus_resource, time, axis,
+	if (pointer->focus_resource)
+		wl_pointer_send_axis(pointer->focus_resource, time, axis,
 				     value);
 }
 
 WL_EXPORT void
-notify_modifiers(struct wl_seat *wl_seat, uint32_t serial)
+notify_modifiers(struct weston_seat *seat, uint32_t serial)
 {
-	struct weston_seat *seat = (struct weston_seat *) wl_seat;
 	struct wl_keyboard *keyboard = &seat->keyboard;
 	struct wl_keyboard_grab *grab = keyboard->grab;
 	uint32_t mods_depressed, mods_latched, mods_locked, group;
@@ -1935,19 +1931,19 @@ update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
 	 * broken keycode system, which starts at 8. */
 	xkb_state_update_key(seat->xkb_state.state, key + 8, direction);
 
-	notify_modifiers(&seat->seat, serial);
+	notify_modifiers(seat, serial);
 }
 
 WL_EXPORT void
-notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
+notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	   enum wl_keyboard_key_state state,
 	   enum weston_key_state_update update_state)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *compositor = ws->compositor;
+	struct weston_compositor *compositor = seat->compositor;
+	struct wl_keyboard *keyboard = seat->seat.keyboard;
 	struct weston_surface *focus =
-		(struct weston_surface *) seat->keyboard->focus;
-	struct wl_keyboard_grab *grab = seat->keyboard->grab;
+		(struct weston_surface *) keyboard->focus;
+	struct wl_keyboard_grab *grab = keyboard->grab;
 	uint32_t serial = wl_display_next_serial(compositor->wl_display);
 	uint32_t *k, *end;
 
@@ -1956,14 +1952,14 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 			compositor->ping_handler(focus, serial);
 
 		weston_compositor_idle_inhibit(compositor);
-		seat->keyboard->grab_key = key;
-		seat->keyboard->grab_time = time;
+		keyboard->grab_key = key;
+		keyboard->grab_time = time;
 	} else {
 		weston_compositor_idle_release(compositor);
 	}
 
-	end = seat->keyboard->keys.data + seat->keyboard->keys.size;
-	for (k = seat->keyboard->keys.data; k < end; k++) {
+	end = keyboard->keys.data + keyboard->keys.size;
+	for (k = keyboard->keys.data; k < end; k++) {
 		if (*k == key) {
 			/* Ignore server-generated repeats. */
 			if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
@@ -1971,22 +1967,22 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 			*k = *--end;
 		}
 	}
-	seat->keyboard->keys.size = (void *) end - seat->keyboard->keys.data;
+	keyboard->keys.size = (void *) end - keyboard->keys.data;
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-		k = wl_array_add(&seat->keyboard->keys, sizeof *k);
+		k = wl_array_add(&keyboard->keys, sizeof *k);
 		*k = key;
 	}
 
-	if (grab == &seat->keyboard->default_grab) {
-		weston_compositor_run_key_binding(compositor, ws, time, key,
+	if (grab == &keyboard->default_grab) {
+		weston_compositor_run_key_binding(compositor, seat, time, key,
 						  state);
-		grab = seat->keyboard->grab;
+		grab = keyboard->grab;
 	}
 
 	grab->interface->key(grab, time, key, state);
 
 	if (update_state == STATE_UPDATE_AUTOMATIC) {
-		update_modifier_state(ws,
+		update_modifier_state(seat,
 				      wl_display_get_serial(compositor->wl_display),
 				      key,
 				      state);
@@ -1994,19 +1990,19 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 }
 
 WL_EXPORT void
-notify_pointer_focus(struct wl_seat *seat, struct weston_output *output,
+notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 		     wl_fixed_t x, wl_fixed_t y)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *compositor = ws->compositor;
+	struct weston_compositor *compositor = seat->compositor;
+	struct wl_pointer *pointer = seat->seat.pointer;
 
 	if (output) {
 		weston_seat_update_drag_surface(seat,
-						x - seat->pointer->x,
-						y - seat->pointer->y);
+						x - pointer->x,
+						y - pointer->y);
 
-		seat->pointer->x = x;
-		seat->pointer->y = y;
+		pointer->x = x;
+		pointer->y = y;
 		compositor->focus = 1;
 		weston_compositor_repick(compositor);
 	} else {
@@ -2028,70 +2024,67 @@ destroy_device_saved_kbd_focus(struct wl_listener *listener, void *data)
 }
 
 WL_EXPORT void
-notify_keyboard_focus_in(struct wl_seat *seat, struct wl_array *keys,
+notify_keyboard_focus_in(struct weston_seat *seat, struct wl_array *keys,
 			 enum weston_key_state_update update_state)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *compositor = ws->compositor;
+	struct weston_compositor *compositor = seat->compositor;
+	struct wl_keyboard *keyboard = seat->seat.keyboard;
 	struct wl_surface *surface;
 	uint32_t *k, serial;
 
 	serial = wl_display_next_serial(compositor->wl_display);
-	wl_array_copy(&seat->keyboard->keys, keys);
-	wl_array_for_each(k, &seat->keyboard->keys) {
+	wl_array_copy(&keyboard->keys, keys);
+	wl_array_for_each(k, &keyboard->keys) {
 		weston_compositor_idle_inhibit(compositor);
 		if (update_state == STATE_UPDATE_AUTOMATIC)
-			update_modifier_state(ws, serial, *k,
+			update_modifier_state(seat, serial, *k,
 					      WL_KEYBOARD_KEY_STATE_PRESSED);
 	}
 
 	/* Run key bindings after we've updated the state. */
-	wl_array_for_each(k, &seat->keyboard->keys) {
-		weston_compositor_run_key_binding(compositor, ws, 0, *k,
+	wl_array_for_each(k, &keyboard->keys) {
+		weston_compositor_run_key_binding(compositor, seat, 0, *k,
 						  WL_KEYBOARD_KEY_STATE_PRESSED);
 	}
 
-	surface = ws->saved_kbd_focus;
+	surface = seat->saved_kbd_focus;
 
 	if (surface) {
-		wl_list_remove(&ws->saved_kbd_focus_listener.link);
-		wl_keyboard_set_focus(ws->seat.keyboard, surface);
-		ws->saved_kbd_focus = NULL;
+		wl_list_remove(&seat->saved_kbd_focus_listener.link);
+		wl_keyboard_set_focus(keyboard, surface);
+		seat->saved_kbd_focus = NULL;
 	}
 }
 
 WL_EXPORT void
-notify_keyboard_focus_out(struct wl_seat *seat)
+notify_keyboard_focus_out(struct weston_seat *seat)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *compositor = ws->compositor;
-	struct wl_surface *surface;
+	struct weston_compositor *compositor = seat->compositor;
+	struct wl_keyboard *keyboard = seat->seat.keyboard;
 	uint32_t *k, serial;
 
 	serial = wl_display_next_serial(compositor->wl_display);
-	wl_array_for_each(k, &seat->keyboard->keys) {
+	wl_array_for_each(k, &keyboard->keys) {
 		weston_compositor_idle_release(compositor);
-		update_modifier_state(ws, serial, *k,
+		update_modifier_state(seat, serial, *k,
 				      WL_KEYBOARD_KEY_STATE_RELEASED);
 	}
 
-	ws->modifier_state = 0;
+	seat->modifier_state = 0;
 
-	surface = ws->seat.keyboard->focus;
-
-	if (surface) {
-		ws->saved_kbd_focus = surface;
-		ws->saved_kbd_focus_listener.notify =
+	if (keyboard->focus) {
+		seat->saved_kbd_focus = keyboard->focus;
+		seat->saved_kbd_focus_listener.notify =
 			destroy_device_saved_kbd_focus;
-		wl_signal_add(&surface->resource.destroy_signal,
-			      &ws->saved_kbd_focus_listener);
+		wl_signal_add(&keyboard->focus->resource.destroy_signal,
+			      &seat->saved_kbd_focus_listener);
 	}
 
-	wl_keyboard_set_focus(ws->seat.keyboard, NULL);
+	wl_keyboard_set_focus(keyboard, NULL);
 	/* FIXME: We really need keyboard grab cancel here to
 	 * let the grab shut down properly.  As it is we leak
 	 * the grab data. */
-	wl_keyboard_end_grab(ws->seat.keyboard);
+	wl_keyboard_end_grab(keyboard);
 }
 
 static void
@@ -2133,11 +2126,11 @@ touch_set_focus(struct weston_seat *ws, struct wl_surface *surface)
  *
  */
 WL_EXPORT void
-notify_touch(struct wl_seat *seat, uint32_t time, int touch_id,
+notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
              wl_fixed_t x, wl_fixed_t y, int touch_type)
 {
-	struct weston_seat *ws = (struct weston_seat *) seat;
-	struct weston_compositor *ec = ws->compositor;
+	struct weston_compositor *ec = seat->compositor;
+	struct wl_touch *touch = seat->seat.touch;
 	struct weston_surface *es;
 	wl_fixed_t sx, sy;
 	uint32_t serial = 0;
@@ -2146,44 +2139,44 @@ notify_touch(struct wl_seat *seat, uint32_t time, int touch_id,
 	case WL_TOUCH_DOWN:
 		weston_compositor_idle_inhibit(ec);
 
-		ws->num_tp++;
+		seat->num_tp++;
 
 		/* the first finger down picks the surface, and all further go
 		 * to that surface for the remainder of the touch session i.e.
 		 * until all touch points are up again. */
-		if (ws->num_tp == 1) {
+		if (seat->num_tp == 1) {
 			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
-			touch_set_focus(ws, &es->surface);
-		} else if (seat->touch->focus) {
-			es = (struct weston_surface *)seat->touch->focus;
+			touch_set_focus(seat, &es->surface);
+		} else if (touch->focus) {
+			es = (struct weston_surface *) touch->focus;
 			weston_surface_from_global_fixed(es, x, y, &sx, &sy);
 		}
 
-		if (seat->touch->focus_resource && seat->touch->focus)
-			wl_touch_send_down(seat->touch->focus_resource,
+		if (touch->focus_resource && touch->focus)
+			wl_touch_send_down(touch->focus_resource,
 					   serial, time,
-					   &seat->touch->focus->resource,
+					   &touch->focus->resource,
 					   touch_id, sx, sy);
 		break;
 	case WL_TOUCH_MOTION:
-		es = (struct weston_surface *)seat->touch->focus;
+		es = (struct weston_surface *) touch->focus;
 		if (!es)
 			break;
 
 		weston_surface_from_global_fixed(es, x, y, &sx, &sy);
-		if (seat->touch->focus_resource)
-			wl_touch_send_motion(seat->touch->focus_resource,
+		if (touch->focus_resource)
+			wl_touch_send_motion(touch->focus_resource,
 					     time, touch_id, sx, sy);
 		break;
 	case WL_TOUCH_UP:
 		weston_compositor_idle_release(ec);
-		ws->num_tp--;
+		seat->num_tp--;
 
-		if (seat->touch->focus_resource)
-			wl_touch_send_up(seat->touch->focus_resource,
+		if (touch->focus_resource)
+			wl_touch_send_up(touch->focus_resource,
 					 serial, time, touch_id);
-		if (ws->num_tp == 0)
-			touch_set_focus(ws, NULL);
+		if (seat->num_tp == 0)
+			touch_set_focus(seat, NULL);
 		break;
 	}
 }
@@ -2418,7 +2411,7 @@ device_handle_new_drag_icon(struct wl_listener *listener, void *data)
 	seat = container_of(listener, struct weston_seat,
 			    new_drag_icon_listener);
 
-	weston_seat_update_drag_surface(&seat->seat, 0, 0);
+	weston_seat_update_drag_surface(seat, 0, 0);
 }
 
 static void weston_compositor_xkb_init(struct weston_compositor *ec,
@@ -2714,49 +2707,48 @@ device_map_drag_surface(struct weston_seat *seat)
 }
 
 static  void
-weston_seat_update_drag_surface(struct wl_seat *seat,
+weston_seat_update_drag_surface(struct weston_seat *seat,
 				int dx, int dy)
 {
 	int surface_changed = 0;
-	struct weston_seat *ws = (struct weston_seat *) seat;
 
-	if (!ws->drag_surface && !seat->drag_surface)
+	if (!seat->drag_surface && !seat->seat.drag_surface)
 		return;
 
-	if (ws->drag_surface && seat->drag_surface &&
-	    (&ws->drag_surface->surface.resource !=
-	     &seat->drag_surface->resource))
+	if (seat->drag_surface && seat->seat.drag_surface &&
+	    (&seat->drag_surface->surface.resource !=
+	     &seat->seat.drag_surface->resource))
 		/* between calls to this funcion we got a new drag_surface */
 		surface_changed = 1;
 
-	if (!seat->drag_surface || surface_changed) {
-		device_release_drag_surface(ws);
+	if (!seat->seat.drag_surface || surface_changed) {
+		device_release_drag_surface(seat);
 		if (!surface_changed)
 			return;
 	}
 
-	if (!ws->drag_surface || surface_changed) {
+	if (!seat->drag_surface || surface_changed) {
 		struct weston_surface *surface = (struct weston_surface *)
-			seat->drag_surface;
-		if (!device_setup_new_drag_surface(ws, surface))
+			seat->seat.drag_surface;
+		if (!device_setup_new_drag_surface(seat, surface))
 			return;
 	}
 
 	/* the client may not have attached a buffer to the drag surface
 	 * when we setup it up, so check if map is needed on every update */
-	device_map_drag_surface(ws);
+	device_map_drag_surface(seat);
 
 	/* the client may have attached a buffer with a different size to
 	 * the drag surface, causing the input region to be reset */
-	if (region_is_undefined(&ws->drag_surface->input))
-		empty_region(&ws->drag_surface->input);
+	if (region_is_undefined(&seat->drag_surface->input))
+		empty_region(&seat->drag_surface->input);
 
 	if (!dx && !dy)
 		return;
 
-	weston_surface_set_position(ws->drag_surface,
-				    ws->drag_surface->geometry.x + wl_fixed_to_double(dx),
-				    ws->drag_surface->geometry.y + wl_fixed_to_double(dy));
+	weston_surface_set_position(seat->drag_surface,
+				    seat->drag_surface->geometry.x + wl_fixed_to_double(dx),
+				    seat->drag_surface->geometry.y + wl_fixed_to_double(dy));
 }
 
 WL_EXPORT void
@@ -2765,7 +2757,7 @@ weston_compositor_update_drag_surfaces(struct weston_compositor *compositor)
 	struct weston_seat *seat;
 
 	wl_list_for_each(seat, &compositor->seat_list, link)
-		weston_seat_update_drag_surface(&seat->seat, 0, 0);
+		weston_seat_update_drag_surface(seat, 0, 0);
 }
 
 static void

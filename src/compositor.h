@@ -502,33 +502,33 @@ weston_surface_draw(struct weston_surface *es,
 		    struct weston_output *output, pixman_region32_t *damage);
 
 void
-notify_motion(struct wl_seat *seat, uint32_t time,
+notify_motion(struct weston_seat *seat, uint32_t time,
 	      wl_fixed_t x, wl_fixed_t y);
 void
-notify_button(struct wl_seat *seat, uint32_t time, int32_t button,
+notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 	      enum wl_pointer_button_state state);
 void
-notify_axis(struct wl_seat *seat, uint32_t time, uint32_t axis,
+notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
 	    wl_fixed_t value);
 void
-notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
+notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	   enum wl_keyboard_key_state state,
 	   enum weston_key_state_update update_state);
 void
-notify_modifiers(struct wl_seat *seat, uint32_t serial);
+notify_modifiers(struct weston_seat *seat, uint32_t serial);
 
 void
-notify_pointer_focus(struct wl_seat *seat, struct weston_output *output,
+notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 		     wl_fixed_t x, wl_fixed_t y);
 
 void
-notify_keyboard_focus_in(struct wl_seat *seat, struct wl_array *keys,
+notify_keyboard_focus_in(struct weston_seat *seat, struct wl_array *keys,
 			 enum weston_key_state_update update_state);
 void
-notify_keyboard_focus_out(struct wl_seat *seat);
+notify_keyboard_focus_out(struct weston_seat *seat);
 
 void
-notify_touch(struct wl_seat *seat, uint32_t time, int touch_id,
+notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 	     wl_fixed_t x, wl_fixed_t y, int touch_type);
 
 void

@@ -2049,7 +2049,7 @@ evdev_remove_devices(struct weston_seat *seat_base)
 		evdev_device_destroy(device);
 
 	if (seat->base.seat.keyboard)
-		notify_keyboard_focus_out(&seat->base.seat);
+		notify_keyboard_focus_out(&seat->base);
 }
 
 static void
