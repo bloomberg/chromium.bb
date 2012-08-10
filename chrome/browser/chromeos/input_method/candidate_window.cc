@@ -1185,7 +1185,7 @@ void CandidateWindowView::OnCandidatePressed(
     gfx::Point converted_location = location;
     views::View::ConvertPointToView(this, candidate_views_[i],
                                     &converted_location);
-    if (candidate_views_[i]->HitTest(converted_location)) {
+    if (candidate_views_[i]->HitTestPoint(converted_location)) {
       SelectCandidateAt(i);
       break;
     }

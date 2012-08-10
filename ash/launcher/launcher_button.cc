@@ -64,7 +64,7 @@ class LauncherButton::BarView : public views::ImageView,
   }
 
   // View overrides.
-  bool HitTest(const gfx::Point& l) const OVERRIDE {
+  bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
     // Allow Mouse...() messages to go to the parent view.
     return false;
   }
@@ -206,7 +206,7 @@ LauncherButton::IconView::IconView() : icon_size_(kIconSize) {
 LauncherButton::IconView::~IconView() {
 }
 
-bool LauncherButton::IconView::HitTest(const gfx::Point& l) const {
+bool LauncherButton::IconView::HitTestRect(const gfx::Rect& rect) const {
   // Return false so that LauncherButton gets all the mouse events.
   return false;
 }

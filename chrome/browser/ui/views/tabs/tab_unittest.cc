@@ -76,18 +76,18 @@ TEST_F(TabTest, HitTestTopPixel) {
 
   // Tabs have some shadow in the top, so by default we don't hit the tab there.
   int middle_x = tab.width() / 2;
-  EXPECT_FALSE(tab.HitTest(gfx::Point(middle_x, 0)));
+  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(middle_x, 0)));
 
   // Tabs are slanted, so a click halfway down the left edge won't hit it.
   int middle_y = tab.height() / 2;
-  EXPECT_FALSE(tab.HitTest(gfx::Point(0, middle_y)));
+  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(0, middle_y)));
 
   // If the window is maximized, however, we want clicks in the top edge to
   // select the tab.
   widget.Maximize();
-  EXPECT_TRUE(tab.HitTest(gfx::Point(middle_x, 0)));
+  EXPECT_TRUE(tab.HitTestPoint(gfx::Point(middle_x, 0)));
 
   // But clicks in the area above the slanted sides should still miss.
-  EXPECT_FALSE(tab.HitTest(gfx::Point(0, 0)));
-  EXPECT_FALSE(tab.HitTest(gfx::Point(tab.width() - 1, 0)));
+  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(0, 0)));
+  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(tab.width() - 1, 0)));
 }

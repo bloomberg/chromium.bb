@@ -39,7 +39,7 @@ class AvatarMenuButton : public views::MenuButton,
 
   // views::MenuButton:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
   virtual void SetAvatarIcon(const gfx::Image& icon,
                              bool is_gaia_picture);

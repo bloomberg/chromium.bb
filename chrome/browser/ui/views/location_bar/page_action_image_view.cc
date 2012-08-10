@@ -170,7 +170,7 @@ bool PageActionImageView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void PageActionImageView::OnMouseReleased(const views::MouseEvent& event) {
-  if (!HitTest(event.location()))
+  if (!HitTestPoint(event.location()))
     return;
 
   int button = -1;

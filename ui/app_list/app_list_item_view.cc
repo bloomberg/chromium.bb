@@ -68,7 +68,7 @@ class StaticImageView : public views::ImageView {
 
  private:
   // views::View overrides:
-  virtual bool HitTest(const gfx::Point& l) const OVERRIDE {
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE {
     return false;
   }
 

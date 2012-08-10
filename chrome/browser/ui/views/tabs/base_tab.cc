@@ -361,7 +361,7 @@ void BaseTab::OnMouseReleased(const views::MouseEvent& event) {
   // (normal windows behavior is to discard presses of a UI element where the
   // releases happen off the element).
   if (event.IsMiddleMouseButton()) {
-    if (HitTest(event.location())) {
+    if (HitTestPoint(event.location())) {
       controller()->CloseTab(this);
     } else if (closing_) {
       // We're animating closed and a middle mouse button was pushed on us but

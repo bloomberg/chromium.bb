@@ -59,7 +59,7 @@ bool ButtonDropDown::IsMenuShowing() const {
 
 bool ButtonDropDown::OnMousePressed(const MouseEvent& event) {
   if (enabled() && ShouldShowMenu() &&
-      IsTriggerableEvent(event) && HitTest(event.location())) {
+      IsTriggerableEvent(event) && HitTestPoint(event.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
     // determine if the user dragged the mouse down (which should pop up the
     // drag down menu immediately, instead of waiting for the timer)
@@ -93,14 +93,15 @@ bool ButtonDropDown::OnMouseDragged(const MouseEvent& event) {
 
 void ButtonDropDown::OnMouseReleased(const MouseEvent& event) {
   if (IsTriggerableEvent(event) ||
-      (event.IsRightMouseButton() && !HitTest(event.location()))) {
+      (event.IsRightMouseButton() && !HitTestPoint(event.location()))) {
     ImageButton::OnMouseReleased(event);
   }
 
   if (IsTriggerableEvent(event))
     show_menu_factory_.InvalidateWeakPtrs();
 
-  if (enabled() && event.IsRightMouseButton() && HitTest(event.location())) {
+  if (enabled() && event.IsRightMouseButton() &&
+      HitTestPoint(event.location())) {
     show_menu_factory_.InvalidateWeakPtrs();
     ShowDropDownMenu();
   }

@@ -71,7 +71,7 @@ class LauncherButton : public views::CustomButton {
     int icon_size() const { return icon_size_; }
 
     // views::View overrides.
-    virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
+    virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
    private:
     // Set to non-zero to force icons to be resized to fit within a square,

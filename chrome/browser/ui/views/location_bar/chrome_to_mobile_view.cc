@@ -69,7 +69,7 @@ bool ChromeToMobileView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void ChromeToMobileView::OnMouseReleased(const views::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && HitTest(event.location()))
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
     command_updater_->ExecuteCommand(IDC_CHROME_TO_MOBILE_PAGE);
 }
 

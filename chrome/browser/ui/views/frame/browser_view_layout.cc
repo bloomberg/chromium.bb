@@ -42,7 +42,7 @@ bool ConvertedHitTest(views::View* src, views::View* dst, gfx::Point* point) {
   DCHECK(dst);
   DCHECK(point);
   views::View::ConvertPointToView(src, dst, point);
-  return dst->HitTest(*point);
+  return dst->HitTestPoint(*point);
 }
 
 }  // namespace

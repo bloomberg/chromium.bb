@@ -945,6 +945,12 @@ gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
   return tmp;
 }
 
+gfx::Rect ConvertRectToView(View* view, const gfx::Rect& r) {
+  gfx::Rect tmp(r);
+  tmp.set_origin(ConvertPointToView(view, r.origin()));
+  return tmp;
+}
+
 void RotateCounterclockwise(ui::Transform* transform) {
   transform->matrix().set3x3(0, -1, 0,
                              1,  0, 0,
@@ -980,16 +986,35 @@ TEST_F(ViewTest, HitTestMasks) {
   gfx::Point v1_origin = v1_bounds.origin();
   gfx::Point v2_origin = v2_bounds.origin();
 
-  // Test HitTest
-  EXPECT_TRUE(v1->HitTest(ConvertPointToView(v1, v1_centerpoint)));
-  EXPECT_TRUE(v2->HitTest(ConvertPointToView(v2, v2_centerpoint)));
+  gfx::Rect r1(10, 10, 110, 15);
+  gfx::Rect r2(106, 1, 98, 98);
+  gfx::Rect r3(0, 0, 300, 300);
+  gfx::Rect r4(115, 342, 200, 10);
 
-  EXPECT_TRUE(v1->HitTest(ConvertPointToView(v1, v1_origin)));
-  EXPECT_FALSE(v2->HitTest(ConvertPointToView(v2, v2_origin)));
+  // Test HitTestPoint
+  EXPECT_TRUE(v1->HitTestPoint(ConvertPointToView(v1, v1_centerpoint)));
+  EXPECT_TRUE(v2->HitTestPoint(ConvertPointToView(v2, v2_centerpoint)));
+
+  EXPECT_TRUE(v1->HitTestPoint(ConvertPointToView(v1, v1_origin)));
+  EXPECT_FALSE(v2->HitTestPoint(ConvertPointToView(v2, v2_origin)));
+
+  // Test HitTestRect
+  EXPECT_TRUE(v1->HitTestRect(ConvertRectToView(v1, r1)));
+  EXPECT_FALSE(v2->HitTestRect(ConvertRectToView(v2, r1)));
+
+  EXPECT_FALSE(v1->HitTestRect(ConvertRectToView(v1, r2)));
+  EXPECT_TRUE(v2->HitTestRect(ConvertRectToView(v2, r2)));
+
+  EXPECT_TRUE(v1->HitTestRect(ConvertRectToView(v1, r3)));
+  EXPECT_TRUE(v2->HitTestRect(ConvertRectToView(v2, r3)));
+
+  EXPECT_FALSE(v1->HitTestRect(ConvertRectToView(v1, r4)));
+  EXPECT_FALSE(v2->HitTestRect(ConvertRectToView(v2, r4)));
 
   // Test GetEventHandlerForPoint
   EXPECT_EQ(v1, root_view->GetEventHandlerForPoint(v1_centerpoint));
   EXPECT_EQ(v2, root_view->GetEventHandlerForPoint(v2_centerpoint));
+
   EXPECT_EQ(v1, root_view->GetEventHandlerForPoint(v1_origin));
   EXPECT_EQ(root_view, root_view->GetEventHandlerForPoint(v2_origin));
 

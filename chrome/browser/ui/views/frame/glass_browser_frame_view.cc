@@ -242,10 +242,10 @@ void GlassBrowserFrameView::Layout() {
   LayoutClientView();
 }
 
-bool GlassBrowserFrameView::HitTest(const gfx::Point& l) const {
+bool GlassBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
   return (avatar_button() &&
-          avatar_button()->GetMirroredBounds().Contains(l)) ||
-      !frame()->client_view()->bounds().Contains(l);
+          avatar_button()->GetMirroredBounds().Intersects(rect)) ||
+          !frame()->client_view()->bounds().Intersects(rect);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

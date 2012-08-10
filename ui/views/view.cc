@@ -22,6 +22,7 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point3.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
@@ -757,7 +758,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
 
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToView(this, child, &point_in_child_coords);
-    if (child->HitTest(point_in_child_coords))
+    if (child->HitTestPoint(point_in_child_coords))
       return child->GetEventHandlerForPoint(point_in_child_coords);
   }
   return this;
@@ -772,8 +773,12 @@ gfx::NativeCursor View::GetCursor(const MouseEvent& event) {
 #endif
 }
 
-bool View::HitTest(const gfx::Point& l) const {
-  if (GetLocalBounds().Contains(l)) {
+bool View::HitTestPoint(const gfx::Point& point) const {
+  return HitTestRect(gfx::Rect(point, gfx::Size(1, 1)));
+}
+
+bool View::HitTestRect(const gfx::Rect& rect) const {
+  if (GetLocalBounds().Intersects(rect)) {
     if (HasHitTestMask()) {
       gfx::Path mask;
       GetHitTestMask(&mask);
@@ -783,10 +788,11 @@ bool View::HitTest(const gfx::Point& l) const {
       clip_region.setRect(0, 0, width(), height());
       SkRegion mask_region;
       return mask_region.setPath(mask, clip_region) &&
-          mask_region.contains(l.x(), l.y());
+             mask_region.intersects(RectToSkIRect(rect));
 #elif defined(OS_WIN)
       base::win::ScopedRegion rgn(mask.CreateNativeRegion());
-      return !!PtInRegion(rgn, l.x(), l.y());
+      const RECT r(rect.ToRECT());
+      return RectInRegion(rgn, &r) != 0;
 #endif
     }
     // No mask, but inside our bounds.
@@ -1896,8 +1902,9 @@ void View::DestroyLayer() {
 
 bool View::ProcessMousePressed(const MouseEvent& event, DragInfo* drag_info) {
   int drag_operations =
-      (enabled_ && event.IsOnlyLeftMouseButton() && HitTest(event.location())) ?
-      GetDragOperations(event.location()) : 0;
+      (enabled_ && event.IsOnlyLeftMouseButton() &&
+       HitTestPoint(event.location())) ?
+       GetDragOperations(event.location()) : 0;
   ContextMenuController* context_menu_controller = event.IsRightMouseButton() ?
       context_menu_controller_ : 0;
 
@@ -1942,7 +1949,7 @@ void View::ProcessMouseReleased(const MouseEvent& event) {
     // from mouse released.
     gfx::Point location(event.location());
     OnMouseReleased(event);
-    if (HitTest(location)) {
+    if (HitTestPoint(location)) {
       ConvertPointToScreen(this, &location);
       ShowContextMenu(location, true);
     }

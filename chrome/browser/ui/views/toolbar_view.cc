@@ -763,13 +763,13 @@ void ToolbarView::Layout() {
                        app_menu_width, child_height);
 }
 
-bool ToolbarView::HitTest(const gfx::Point& point) const {
+bool ToolbarView::HitTestRect(const gfx::Rect& rect) const {
   // Don't take hits in our top shadow edge.  Let them fall through to the
   // tab strip above us.
-  if (point.y() < kContentShadowHeight)
+  if (rect.y() < kContentShadowHeight)
     return false;
   // Otherwise let our superclass take care of it.
-  return AccessiblePaneView::HitTest(point);
+  return AccessiblePaneView::HitTestRect(rect);
 }
 
 void ToolbarView::OnPaint(gfx::Canvas* canvas) {

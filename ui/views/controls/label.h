@@ -184,7 +184,7 @@ class VIEWS_EXPORT Label : public View {
   // GetPreferredSize().height() if the receiver is not multi-line.
   virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
-  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   // Mouse enter/exit are overridden to render mouse over background color.
   // These invoke SetContainsMouse as necessary.
   virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;

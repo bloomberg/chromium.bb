@@ -181,7 +181,7 @@ bool ContentSettingImageView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
-  if (!HitTest(event.location()))
+  if (!HitTestPoint(event.location()))
     return;
 
   OnClick();

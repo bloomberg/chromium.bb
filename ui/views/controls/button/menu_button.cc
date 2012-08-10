@@ -182,7 +182,8 @@ bool MenuButton::OnMousePressed(const MouseEvent& event) {
   if (state() != BS_DISABLED) {
     // If we're draggable (GetDragOperations returns a non-zero value), then
     // don't pop on press, instead wait for release.
-    if (event.IsOnlyLeftMouseButton() && HitTest(event.location()) &&
+    if (event.IsOnlyLeftMouseButton() &&
+        HitTestPoint(event.location()) &&
         GetDragOperations(event.location()) == ui::DragDropTypes::DRAG_NONE) {
       TimeDelta delta = Time::Now() - menu_closed_time_;
       int64 delta_in_milliseconds = delta.InMilliseconds();
@@ -201,7 +202,7 @@ void MenuButton::OnMouseReleased(const MouseEvent& event) {
   // triggerable and there's a context menu).
   if (GetDragOperations(event.location()) != ui::DragDropTypes::DRAG_NONE &&
       state() != BS_DISABLED && !InDrag() && event.IsOnlyLeftMouseButton() &&
-      HitTest(event.location())) {
+      HitTestPoint(event.location())) {
     Activate();
   } else {
     TextButton::OnMouseReleased(event);

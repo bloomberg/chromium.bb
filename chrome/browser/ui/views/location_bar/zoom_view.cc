@@ -74,7 +74,7 @@ bool ZoomView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void ZoomView::OnMouseReleased(const views::MouseEvent& event) {
-  if (event.IsOnlyLeftMouseButton() && HitTest(event.location())) {
+  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
     ZoomBubbleView::ShowBubble(
         this, location_bar_delegate_->GetTabContents(), false);
   }

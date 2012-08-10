@@ -266,7 +266,7 @@ views::View* ConvertPointToViewAndGetEventHandler(
     const gfx::Point& point_in_source) {
   gfx::Point dest_point(point_in_source);
   views::View::ConvertPointToView(source, dest, &dest_point);
-  return dest->HitTest(dest_point) ?
+  return dest->HitTestPoint(dest_point) ?
       dest->GetEventHandlerForPoint(dest_point) : NULL;
 }
 
@@ -864,7 +864,7 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   gfx::Point point_in_newtab_coords(point);
   View::ConvertPointToView(this, newtab_button_, &point_in_newtab_coords);
   if (newtab_button_->GetLocalBounds().Contains(point_in_newtab_coords) &&
-      !newtab_button_->HitTest(point_in_newtab_coords)) {
+      !newtab_button_->HitTestPoint(point_in_newtab_coords)) {
     return true;
   }
 
@@ -2298,7 +2298,7 @@ bool TabStrip::IsPointInTab(Tab* tab,
                             const gfx::Point& point_in_tabstrip_coords) {
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
   View::ConvertPointToView(this, tab, &point_in_tab_coords);
-  return tab->HitTest(point_in_tab_coords);
+  return tab->HitTestPoint(point_in_tab_coords);
 }
 
 int TabStrip::GetStartXForNormalTabs() const {

@@ -55,10 +55,10 @@ gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
 #endif
 }
 
-bool Link::HitTest(const gfx::Point& l) const {
+bool Link::HitTestRect(const gfx::Rect& rect) const {
   // We need to allow clicks on the link. So we override the implementation in
   // Label and use the default implementation of View.
-  return View::HitTest(l);
+  return View::HitTestRect(rect);
 }
 
 bool Link::OnMousePressed(const MouseEvent& event) {
@@ -72,7 +72,7 @@ bool Link::OnMousePressed(const MouseEvent& event) {
 bool Link::OnMouseDragged(const MouseEvent& event) {
   SetPressed(enabled() &&
              (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
-             HitTest(event.location()));
+             HitTestPoint(event.location()));
   return true;
 }
 
@@ -82,7 +82,7 @@ void Link::OnMouseReleased(const MouseEvent& event) {
   OnMouseCaptureLost();
   if (enabled() &&
       (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
-      HitTest(event.location())) {
+      HitTestPoint(event.location())) {
     // Focus the link on click.
     RequestFocus();
 

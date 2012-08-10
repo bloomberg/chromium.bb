@@ -226,7 +226,7 @@ std::string Label::GetClassName() const {
   return kViewClassName;
 }
 
-bool Label::HitTest(const gfx::Point& l) const {
+bool Label::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 

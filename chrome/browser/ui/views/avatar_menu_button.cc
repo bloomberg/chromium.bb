@@ -133,10 +133,10 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
       button_icon_.height(), dst_x, dst_y, dst_width, dst_height, false);
 }
 
-bool AvatarMenuButton::HitTest(const gfx::Point& point) const {
+bool AvatarMenuButton::HitTestRect(const gfx::Rect& rect) const {
   if (incognito_)
     return false;
-  return views::MenuButton::HitTest(point);
+  return views::MenuButton::HitTestRect(rect);
 }
 
 void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,

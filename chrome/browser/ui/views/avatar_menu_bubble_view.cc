@@ -184,10 +184,10 @@ void EditProfileLink::OnBlur() {
 // them instead.
 class ProfileImageView : public views::ImageView {
  public:
-  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 };
 
-bool ProfileImageView::HitTest(const gfx::Point& l) const {
+bool ProfileImageView::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 

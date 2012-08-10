@@ -80,7 +80,7 @@ bool ContentSettingBubbleContents::Favicon::OnMousePressed(
 void ContentSettingBubbleContents::Favicon::OnMouseReleased(
     const views::MouseEvent& event) {
   if ((event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
-     HitTest(event.location())) {
+     HitTestPoint(event.location())) {
     parent_->LinkClicked(link_, event.flags());
   }
 }

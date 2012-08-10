@@ -23,7 +23,7 @@ PageInfoHelper::PageInfoHelper(const views::View* owner,
 }
 
 void PageInfoHelper::ProcessEvent(const views::LocatedEvent& event) {
-  if (!owner_->HitTest(event.location()))
+  if (!owner_->HitTestPoint(event.location()))
     return;
 
   // Do not show page info if the user has been editing the location

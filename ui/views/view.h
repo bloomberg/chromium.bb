@@ -510,8 +510,12 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the cursor is a shared resource.
   virtual gfx::NativeCursor GetCursor(const MouseEvent& event);
 
-  // Convenience to test whether a point is within this view's bounds
-  virtual bool HitTest(const gfx::Point& l) const;
+  // A convenience function which calls HitTestRect() with a rect of size
+  // 1x1 and an origin of |point|.
+  bool HitTestPoint(const gfx::Point& point) const;
+
+  // Tests whether |rect| intersects this view's bounds.
+  virtual bool HitTestRect(const gfx::Rect& rect) const;
 
   // This method is invoked when the user clicks on this view.
   // The provided event is in the receiver's coordinate system.
@@ -1029,14 +1033,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Input ---------------------------------------------------------------------
 
-  // Called by HitTest to see if this View has a custom hit test mask. If the
-  // return value is true, GetHitTestMask will be called to obtain the mask.
-  // Default value is false, in which case the View will hit-test against its
-  // bounds.
+  // Called by HitTestRect() to see if this View has a custom hit test mask. If
+  // the return value is true, GetHitTestMask() will be called to obtain the
+  // mask. Default value is false, in which case the View will hit-test against
+  // its bounds.
   virtual bool HasHitTestMask() const;
 
-  // Called by HitTest to retrieve a mask for hit-testing against. Subclasses
-  // override to provide custom shaped hit test regions.
+  // Called by HitTestRect() to retrieve a mask for hit-testing against.
+  // Subclasses override to provide custom shaped hit test regions.
   virtual void GetHitTestMask(gfx::Path* mask) const;
 
   // Focus ---------------------------------------------------------------------

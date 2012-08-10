@@ -332,9 +332,9 @@ std::string BrowserNonClientFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 
-bool BrowserNonClientFrameViewAsh::HitTest(const gfx::Point& l) const {
-  // If the point is outside the bounds of the client area, claim it.
-  if (NonClientFrameView::HitTest(l))
+bool BrowserNonClientFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
+  // If the rect is outside the bounds of the client area, claim it.
+  if (NonClientFrameView::HitTestRect(rect))
     return true;
 
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
@@ -344,13 +344,15 @@ bool BrowserNonClientFrameViewAsh::HitTest(const gfx::Point& l) const {
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
   View::ConvertPointToView(frame()->client_view(), this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
-  if (l.y() > tabstrip_bounds.bottom())
+  if (rect.bottom() > tabstrip_bounds.bottom())
     return false;
 
   // We convert from our parent's coordinates since we assume we fill its bounds
   // completely. We need to do this since we're not a parent of the tabstrip,
   // meaning ConvertPointToView would otherwise return something bogus.
-  gfx::Point browser_view_point(l);
+  // TODO(tdanderson): Initialize |browser_view_point| using |rect| instead of
+  // its center point once GetEventHandlerForRect() is implemented.
+  gfx::Point browser_view_point(rect.CenterPoint());
   View::ConvertPointToView(parent(), browser_view(), &browser_view_point);
   return browser_view()->IsPositionInWindowCaption(browser_view_point);
 }

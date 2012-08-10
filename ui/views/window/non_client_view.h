@@ -67,7 +67,7 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   virtual void UpdateWindowIcon() = 0;
 
   // Overridden from View:
-  virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
+  virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 

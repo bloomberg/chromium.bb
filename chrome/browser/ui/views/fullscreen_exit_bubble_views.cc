@@ -363,7 +363,7 @@ gfx::Point FullscreenExitBubbleViews::GetCursorScreenPoint() {
 }
 
 bool FullscreenExitBubbleViews::WindowContainsPoint(gfx::Point pos) {
-  return root_view_->HitTest(pos);
+  return root_view_->HitTestPoint(pos);
 }
 
 bool FullscreenExitBubbleViews::IsWindowActive() {

@@ -74,7 +74,7 @@ bool CustomButton::IsMouseHovered() const {
 
   gfx::Point cursor_pos(gfx::Screen::GetCursorScreenPoint());
   ConvertPointToView(NULL, this, &cursor_pos);
-  return HitTest(cursor_pos);
+  return HitTestPoint(cursor_pos);
 }
 
 void CustomButton::SetHotTracked(bool is_hot_tracked) {
@@ -110,7 +110,7 @@ std::string CustomButton::GetClassName() const {
 
 bool CustomButton::OnMousePressed(const MouseEvent& event) {
   if (state_ != BS_DISABLED) {
-    if (ShouldEnterPushedState(event) && HitTest(event.location()))
+    if (ShouldEnterPushedState(event) && HitTestPoint(event.location()))
       SetState(BS_PUSHED);
     if (request_focus_on_press_)
       RequestFocus();
@@ -120,7 +120,7 @@ bool CustomButton::OnMousePressed(const MouseEvent& event) {
 
 bool CustomButton::OnMouseDragged(const MouseEvent& event) {
   if (state_ != BS_DISABLED) {
-    if (HitTest(event.location()))
+    if (HitTestPoint(event.location()))
       SetState(ShouldEnterPushedState(event) ? BS_PUSHED : BS_HOT);
     else
       SetState(BS_NORMAL);
@@ -132,7 +132,7 @@ void CustomButton::OnMouseReleased(const MouseEvent& event) {
   if (state_ == BS_DISABLED)
     return;
 
-  if (!HitTest(event.location())) {
+  if (!HitTestPoint(event.location())) {
     SetState(BS_NORMAL);
     return;
   }
@@ -164,7 +164,7 @@ void CustomButton::OnMouseExited(const MouseEvent& event) {
 
 void CustomButton::OnMouseMoved(const MouseEvent& event) {
   if (state_ != BS_DISABLED)
-    SetState(HitTest(event.location()) ? BS_HOT : BS_NORMAL);
+    SetState(HitTestPoint(event.location()) ? BS_HOT : BS_NORMAL);
 }
 
 bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
