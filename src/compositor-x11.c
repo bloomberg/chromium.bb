@@ -528,8 +528,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.current = &output->mode;
 	output->base.make = "xwayland";
 	output->base.model = "none";
-	weston_output_init(&output->base, &c->base, x, y, width, height,
-			 WL_OUTPUT_FLIPPED);
+	weston_output_init(&output->base, &c->base, x, y, width, height);
 
 	values[1] = c->null_cursor;
 	output->window = xcb_generate_id(c->conn);

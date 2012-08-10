@@ -158,7 +158,6 @@ struct weston_output {
 	struct weston_border border;
 	pixman_region32_t region;
 	pixman_region32_t previous_damage;
-	uint32_t flags;
 	int repaint_needed;
 	int repaint_scheduled;
 	struct weston_output_zoom zoom;
@@ -682,7 +681,7 @@ void
 weston_output_move(struct weston_output *output, int x, int y);
 void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height, uint32_t flags);
+		   int x, int y, int width, int height);
 void
 weston_output_destroy(struct weston_output *output);
 

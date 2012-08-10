@@ -391,8 +391,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current = &output->mode;
-	weston_output_init(&output->base, &c->base, 0, 0, width, height,
-			 WL_OUTPUT_FLIPPED);
+	weston_output_init(&output->base, &c->base, 0, 0, width, height);
 
 	output->base.border.top = c->border.top;
 	output->base.border.bottom = c->border.bottom;

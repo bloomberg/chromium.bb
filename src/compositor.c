@@ -2975,7 +2975,6 @@ weston_output_destroy(struct weston_output *output)
 WL_EXPORT void
 weston_output_update_matrix(struct weston_output *output)
 {
-	int flip;
 	float magnification;
 	struct weston_matrix camera;
 	struct weston_matrix modelview;
@@ -2985,10 +2984,9 @@ weston_output_update_matrix(struct weston_output *output)
 				-(output->x + (output->border.right + output->current->width - output->border.left) / 2.0),
 				-(output->y + (output->border.bottom + output->current->height - output->border.top) / 2.0), 0);
 
-	flip = (output->flags & WL_OUTPUT_FLIPPED) ? -1 : 1;
 	weston_matrix_scale(&output->matrix,
 			    2.0 / (output->current->width + output->border.left + output->border.right),
-			    flip * 2.0 / (output->current->height + output->border.top + output->border.bottom), 1);
+			    -2.0 / (output->current->height + output->border.top + output->border.bottom), 1);
 
 	if (output->zoom.active) {
 		magnification = 1 / (1 - output->zoom.spring_z.current);
@@ -2996,7 +2994,7 @@ weston_output_update_matrix(struct weston_output *output)
 		weston_matrix_init(&modelview);
 		weston_output_update_zoom(output, output->zoom.type);
 		weston_matrix_translate(&camera, output->zoom.trans_x,
-					  flip * output->zoom.trans_y, 0);
+					-output->zoom.trans_y, 0);
 		weston_matrix_invert(&modelview, &camera);
 		weston_matrix_scale(&modelview, magnification, magnification, 1.0);
 		weston_matrix_multiply(&output->matrix, &modelview);
@@ -3019,7 +3017,7 @@ weston_output_move(struct weston_output *output, int x, int y)
 
 WL_EXPORT void
 weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height, uint32_t flags)
+		   int x, int y, int width, int height)
 {
 	output->compositor = c;
 	output->x = x;
@@ -3034,7 +3032,6 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 	weston_output_init_zoom(output);
 
-	output->flags = flags;
 	weston_output_move(output, x, y);
 	weston_output_damage(output);
 

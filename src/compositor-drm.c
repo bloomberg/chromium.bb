@@ -1528,8 +1528,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	weston_output_init(&output->base, &ec->base, x, y,
-			   connector->mmWidth, connector->mmHeight,
-			   WL_OUTPUT_FLIPPED);
+			   connector->mmWidth, connector->mmHeight);
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 

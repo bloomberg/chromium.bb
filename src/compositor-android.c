@@ -238,8 +238,7 @@ android_compositor_add_output(struct android_compositor *compositor,
 	mm_width  = output->fb->width / output->fb->xdpi * 25.4f;
 	mm_height = output->fb->height / output->fb->ydpi * 25.4f;
 	weston_output_init(&output->base, &compositor->base,
-			   0, 0, round(mm_width), round(mm_height),
-			   WL_OUTPUT_FLIPPED);
+			   0, 0, round(mm_width), round(mm_height));
 	wl_list_insert(compositor->base.output_list.prev, &output->base.link);
 }
 
