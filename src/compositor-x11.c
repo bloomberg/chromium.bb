@@ -77,6 +77,11 @@ struct x11_compositor {
 	struct xkb_keymap	*xkb_keymap;
 	unsigned int		 has_xkb;
 	uint8_t			 xkb_event_base;
+
+	/* We could map multi-pointer X to multiple wayland seats, but
+	 * for now we only support core X input. */
+	struct weston_seat	 core_seat;
+
 	struct {
 		xcb_atom_t		 wm_protocols;
 		xcb_atom_t		 wm_normal_hints;
@@ -101,10 +106,6 @@ struct x11_output {
 	EGLSurface		egl_surface;
 	struct weston_mode	mode;
 	struct wl_event_source *finish_frame_timer;
-};
-
-struct x11_input {
-	struct weston_seat base;
 };
 
 static struct xkb_keymap *
@@ -211,26 +212,19 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 static int
 x11_input_create(struct x11_compositor *c, int no_input)
 {
-	struct x11_input *input;
 	struct xkb_keymap *keymap;
 
-	input = malloc(sizeof *input);
-	if (input == NULL)
-		return -1;
-
-	memset(input, 0, sizeof *input);
-	weston_seat_init(&input->base, &c->base);
-	c->base.seat = &input->base;
+	weston_seat_init(&c->core_seat, &c->base);
 
 	if (no_input)
 		return 0;
 
-	weston_seat_init_pointer(&input->base);
+	weston_seat_init_pointer(&c->core_seat);
 
 	x11_compositor_setup_xkb(c);
 
 	keymap = x11_compositor_get_keymap(c);
-	weston_seat_init_keyboard(&input->base, keymap);
+	weston_seat_init_keyboard(&c->core_seat, keymap);
 	if (keymap)
 		xkb_map_unref(keymap);
 
@@ -240,12 +234,7 @@ x11_input_create(struct x11_compositor *c, int no_input)
 static void
 x11_input_destroy(struct x11_compositor *compositor)
 {
-	struct x11_input *input = container_of(compositor->base.seat,
-					       struct x11_input,
-					       base);
-
-	weston_seat_release(&input->base);
-	free(input);
+	weston_seat_release(&compositor->core_seat);
 }
 
 static int
@@ -625,7 +614,7 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 static uint32_t
 get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
 {
-	struct weston_xkb_info *info = &c->base.seat->xkb_info;
+	struct weston_xkb_info *info = &c->core_seat.xkb_info;
 	uint32_t ret = 0;
 
 	if ((in & ShiftMask) && info->shift_mod != XKB_MOD_INVALID)
@@ -652,10 +641,9 @@ get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
 static void
 update_xkb_state(struct x11_compositor *c, xcb_xkb_state_notify_event_t *state)
 {
-	struct weston_compositor *ec = &c->base;
-	struct wl_seat *seat = &ec->seat->seat;
+	struct wl_seat *seat = &c->core_seat.seat;
 
-	xkb_state_update_mask(c->base.seat->xkb_state.state,
+	xkb_state_update_mask(c->core_seat.xkb_state.state,
 			      get_xkb_mod_mask(c, state->baseMods),
 			      get_xkb_mod_mask(c, state->latchedMods),
 			      get_xkb_mod_mask(c, state->lockedMods),
@@ -682,16 +670,16 @@ static void
 update_xkb_state_from_core(struct x11_compositor *c, uint16_t x11_mask)
 {
 	uint32_t mask = get_xkb_mod_mask(c, x11_mask);
-	struct wl_keyboard *keyboard = &c->base.seat->keyboard;
+	struct wl_keyboard *keyboard = &c->core_seat.keyboard;
 
-	xkb_state_update_mask(c->base.seat->xkb_state.state,
+	xkb_state_update_mask(c->core_seat.xkb_state.state,
 			      keyboard->modifiers.mods_depressed & mask,
 			      keyboard->modifiers.mods_latched & mask,
 			      keyboard->modifiers.mods_locked & mask,
 			      0,
 			      0,
 			      (x11_mask >> 13) & 3);
-	notify_modifiers(&c->base.seat->seat,
+	notify_modifiers(&c->core_seat.seat,
 			 wl_display_next_serial(c->base.wl_display));
 }
 
@@ -718,35 +706,35 @@ x11_compositor_deliver_button_event(struct x11_compositor *c,
 		break;
 	case 4:
 		if (state)
-			notify_axis(&c->base.seat->seat,
+			notify_axis(&c->core_seat.seat,
 				      weston_compositor_get_time(),
 				      WL_POINTER_AXIS_VERTICAL_SCROLL,
 				      wl_fixed_from_int(1));
 		return;
 	case 5:
 		if (state)
-			notify_axis(&c->base.seat->seat,
+			notify_axis(&c->core_seat.seat,
 				      weston_compositor_get_time(),
 				      WL_POINTER_AXIS_VERTICAL_SCROLL,
 				      wl_fixed_from_int(-1));
 		return;
 	case 6:
 		if (state)
-			notify_axis(&c->base.seat->seat,
+			notify_axis(&c->core_seat.seat,
 				      weston_compositor_get_time(),
 				      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
 				      wl_fixed_from_int(1));
 		return;
 	case 7:
 		if (state)
-			notify_axis(&c->base.seat->seat,
+			notify_axis(&c->core_seat.seat,
 				      weston_compositor_get_time(),
 				      WL_POINTER_AXIS_HORIZONTAL_SCROLL,
 				      wl_fixed_from_int(-1));
 		return;
 	}
 
-	notify_button(&c->base.seat->seat,
+	notify_button(&c->core_seat.seat,
 		      weston_compositor_get_time(), button,
 		      state ? WL_POINTER_BUTTON_STATE_PRESSED :
 			      WL_POINTER_BUTTON_STATE_RELEASED);
@@ -811,7 +799,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				 * and fall through and handle the new
 				 * event below. */
 				update_xkb_state_from_core(c, key_release->state);
-				notify_key(&c->base.seat->seat,
+				notify_key(&c->core_seat.seat,
 					   weston_compositor_get_time(),
 					   key_release->detail - 8,
 					   WL_KEYBOARD_KEY_STATE_RELEASED,
@@ -840,7 +828,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			 * event, rather than with the focus event.  I'm not
 			 * sure of the exact semantics around it and whether
 			 * we can ensure that we get both? */
-			notify_keyboard_focus_in(&c->base.seat->seat, &c->keys,
+			notify_keyboard_focus_in(&c->core_seat.seat, &c->keys,
 						 STATE_UPDATE_AUTOMATIC);
 
 			free(prev);
@@ -857,7 +845,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			key_press = (xcb_key_press_event_t *) event;
 			if (!c->has_xkb)
 				update_xkb_state_from_core(c, key_press->state);
-			notify_key(&c->base.seat->seat,
+			notify_key(&c->core_seat.seat,
 				   weston_compositor_get_time(),
 				   key_press->detail - 8,
 				   WL_KEYBOARD_KEY_STATE_PRESSED,
@@ -872,7 +860,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			}
 			key_release = (xcb_key_press_event_t *) event;
-			notify_key(&c->base.seat->seat,
+			notify_key(&c->core_seat.seat,
 				   weston_compositor_get_time(),
 				   key_release->detail - 8,
 				   WL_KEYBOARD_KEY_STATE_RELEASED,
@@ -891,7 +879,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			output = x11_compositor_find_output(c, motion_notify->event);
 			x = wl_fixed_from_int(output->base.x + motion_notify->event_x);
 			y = wl_fixed_from_int(output->base.y + motion_notify->event_y);
-			notify_motion(&c->base.seat->seat,
+			notify_motion(&c->core_seat.seat,
 				      weston_compositor_get_time(), x, y);
 			break;
 
@@ -911,7 +899,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			x = wl_fixed_from_int(output->base.x + enter_notify->event_x);
 			y = wl_fixed_from_int(output->base.y + enter_notify->event_y);
 
-			notify_pointer_focus(&c->base.seat->seat,
+			notify_pointer_focus(&c->core_seat.seat,
 					     &output->base, x, y);
 			break;
 
@@ -922,7 +910,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (!c->has_xkb)
 				update_xkb_state_from_core(c, enter_notify->state);
 			output = x11_compositor_find_output(c, enter_notify->event);
-			notify_pointer_focus(&c->base.seat->seat, NULL, 0, 0);
+			notify_pointer_focus(&c->core_seat.seat, NULL, 0, 0);
 			break;
 
 		case XCB_CLIENT_MESSAGE:
@@ -945,7 +933,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED ||
 			    focus_in->mode == XCB_NOTIFY_MODE_UNGRAB)
 				break;
-			notify_keyboard_focus_out(&c->base.seat->seat);
+			notify_keyboard_focus_out(&c->core_seat.seat);
 			break;
 
 		default:
@@ -971,7 +959,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 	case XCB_KEY_RELEASE:
 		key_release = (xcb_key_press_event_t *) prev;
 		update_xkb_state_from_core(c, key_release->state);
-		notify_key(&c->base.seat->seat,
+		notify_key(&c->core_seat.seat,
 			   weston_compositor_get_time(),
 			   key_release->detail - 8,
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
