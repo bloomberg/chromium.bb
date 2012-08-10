@@ -23,7 +23,7 @@
 #include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_helper.h"
+#include "sync/notifier/sync_notifier_registrar.h"
 
 namespace notifier {
 class PushClient;
@@ -49,8 +49,10 @@ class InvalidationNotifier
   virtual ~InvalidationNotifier();
 
   // SyncNotifier implementation.
+  virtual void RegisterHandler(SyncNotifierObserver* handler) OVERRIDE;
   virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
+  virtual void UnregisterHandler(SyncNotifierObserver* handler) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
@@ -75,7 +77,7 @@ class InvalidationNotifier
   };
   State state_;
 
-  SyncNotifierHelper helper_;
+  SyncNotifierRegistrar registrar_;
 
   // Passed to |invalidation_client_|.
   const InvalidationVersionMap initial_max_invalidation_versions_;

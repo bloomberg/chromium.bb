@@ -18,8 +18,8 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
-#include "sync/notifier/sync_notifier_helper.h"
 #include "sync/notifier/sync_notifier_observer.h"
+#include "sync/notifier/sync_notifier_registrar.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -27,6 +27,8 @@ class SingleThreadTaskRunner;
 
 namespace syncer {
 
+// TODO(akalin): Generalize to NonBlockingSyncNotifier
+// (http://crbug.com/140409).
 class NonBlockingInvalidationNotifier
     : public SyncNotifier,
       // SyncNotifierObserver to "observe" our Core via WeakHandle.
@@ -44,8 +46,10 @@ class NonBlockingInvalidationNotifier
   virtual ~NonBlockingInvalidationNotifier();
 
   // SyncNotifier implementation.
+  virtual void RegisterHandler(SyncNotifierObserver* handler) OVERRIDE;
   virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
+  virtual void UnregisterHandler(SyncNotifierObserver* handler) OVERRIDE;
   virtual void SetUniqueId(const std::string& unique_id) OVERRIDE;
   virtual void SetStateDeprecated(const std::string& state) OVERRIDE;
   virtual void UpdateCredentials(
@@ -65,7 +69,7 @@ class NonBlockingInvalidationNotifier
 
   base::WeakPtrFactory<NonBlockingInvalidationNotifier> weak_ptr_factory_;
 
-  SyncNotifierHelper helper_;
+  SyncNotifierRegistrar registrar_;
 
   // The real guts of NonBlockingInvalidationNotifier, which allows
   // this class to live completely on the parent thread.

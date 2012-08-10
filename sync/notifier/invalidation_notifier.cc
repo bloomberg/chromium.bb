@@ -36,12 +36,21 @@ InvalidationNotifier::~InvalidationNotifier() {
   DCHECK(CalledOnValidThread());
 }
 
+void InvalidationNotifier::RegisterHandler(SyncNotifierObserver* handler) {
+  DCHECK(CalledOnValidThread());
+  registrar_.RegisterHandler(handler);
+}
+
 void InvalidationNotifier::UpdateRegisteredIds(SyncNotifierObserver* handler,
                                                const ObjectIdSet& ids) {
   DCHECK(CalledOnValidThread());
-  const ObjectIdSet& all_registered_ids =
-      helper_.UpdateRegisteredIds(handler, ids);
-  invalidation_client_.UpdateRegisteredIds(all_registered_ids);
+  registrar_.UpdateRegisteredIds(handler, ids);
+  invalidation_client_.UpdateRegisteredIds(registrar_.GetAllRegisteredIds());
+}
+
+void InvalidationNotifier::UnregisterHandler(SyncNotifierObserver* handler) {
+  DCHECK(CalledOnValidThread());
+  registrar_.UnregisterHandler(handler);
 }
 
 void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
@@ -93,18 +102,18 @@ void InvalidationNotifier::SendNotification(ModelTypeSet changed_types) {
 
 void InvalidationNotifier::OnInvalidate(const ObjectIdPayloadMap& id_payloads) {
   DCHECK(CalledOnValidThread());
-  helper_.DispatchInvalidationsToHandlers(id_payloads, REMOTE_NOTIFICATION);
+  registrar_.DispatchInvalidationsToHandlers(id_payloads, REMOTE_NOTIFICATION);
 }
 
 void InvalidationNotifier::OnNotificationsEnabled() {
   DCHECK(CalledOnValidThread());
-  helper_.EmitOnNotificationsEnabled();
+  registrar_.EmitOnNotificationsEnabled();
 }
 
 void InvalidationNotifier::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(CalledOnValidThread());
-  helper_.EmitOnNotificationsDisabled(reason);
+  registrar_.EmitOnNotificationsDisabled(reason);
 }
 
 }  // namespace syncer

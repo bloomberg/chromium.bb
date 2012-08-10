@@ -396,6 +396,7 @@ void SyncManagerImpl::Init(
   change_delegate_ = change_delegate;
 
   sync_notifier_ = sync_notifier.Pass();
+  sync_notifier_->RegisterHandler(this);
 
   AddObserver(&js_sync_manager_observer_);
   SetJsEventHandler(event_handler);
@@ -733,16 +734,32 @@ void SyncManagerImpl::UpdateCredentials(
 void SyncManagerImpl::UpdateEnabledTypes(
     const ModelTypeSet& enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialized_);
   sync_notifier_->UpdateRegisteredIds(
       this,
       ModelTypeSetToObjectIdSet(enabled_types));
+}
+
+void SyncManagerImpl::RegisterInvalidationHandler(
+    SyncNotifierObserver* handler) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialized_);
+  sync_notifier_->RegisterHandler(handler);
 }
 
 void SyncManagerImpl::UpdateRegisteredInvalidationIds(
     SyncNotifierObserver* handler,
     const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialized_);
   sync_notifier_->UpdateRegisteredIds(handler, ids);
+}
+
+void SyncManagerImpl::UnregisterInvalidationHandler(
+    SyncNotifierObserver* handler) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(initialized_);
+  sync_notifier_->UnregisterHandler(handler);
 }
 
 void SyncManagerImpl::SetEncryptionPassphrase(
@@ -1216,14 +1233,17 @@ void SyncManagerImpl::ShutdownOnSyncThread() {
 
   RemoveObserver(&debug_info_event_listener_);
 
-  if (sync_notifier_.get()) {
-    sync_notifier_->UpdateRegisteredIds(this, ObjectIdSet());
-  }
+  // |sync_notifier_| and |connection_manager_| may end up being NULL here in
+  // tests (in synchronous initialization mode).
+  //
+  // TODO(akalin): Fix this behavior.
+
+  if (sync_notifier_.get())
+    sync_notifier_->UnregisterHandler(this);
   sync_notifier_.reset();
 
-  if (connection_manager_.get()) {
+  if (connection_manager_.get())
     connection_manager_->RemoveListener(this);
-  }
   connection_manager_.reset();
 
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);

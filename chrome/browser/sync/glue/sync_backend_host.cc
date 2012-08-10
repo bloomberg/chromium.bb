@@ -170,6 +170,7 @@ class SyncBackendHost::Core
   //    (in step 2).
   void DoStopSyncManagerForShutdown(const base::Closure& closure);
   void DoShutdown(bool stopping_sync);
+  void DoDestroySyncManager();
 
   // Configuration methods that must execute on sync loop.
   void DoConfigureSyncer(
@@ -244,6 +245,13 @@ class SyncBackendHost::Core
 
   // The top-level syncapi entry point.  Lives on the sync thread.
   scoped_ptr<syncer::SyncManager> sync_manager_;
+
+  // Whether or not we registered with |sync_manager_| as an invalidation
+  // handler.  Necessary since we may end up trying to unregister before we
+  // register in tests (in synchronous initialization mode).
+  //
+  // TODO(akalin): Fix this behavior (see http://crbug.com/140354).
+  bool registered_as_invalidation_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -541,11 +549,15 @@ void SyncBackendHost::StopSyncManagerForShutdown(
 
 void SyncBackendHost::StopSyncingForShutdown() {
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+
+  // Immediately stop sending messages to the frontend.
+  frontend_ = NULL;
+
   // Thread shutdown should occur in the following order:
   // - Sync Thread
   // - UI Thread (stops some time after we return from this call).
   //
-  // In order to acheive this, we first shutdown components from the UI thread
+  // In order to achieve this, we first shutdown components from the UI thread
   // and send signals to abort components that may be busy on the sync thread.
   // The callback (OnSyncerShutdownComplete) will happen on the sync thread,
   // after which we'll shutdown components on the sync thread, and then be
@@ -570,17 +582,23 @@ void SyncBackendHost::StopSyncingForShutdown() {
     // If the sync thread isn't running, then the syncer is effectively
     // stopped.  Moreover, it implies that we never attempted initialization,
     // so the registrar won't need stopping either.
-    DCHECK_EQ(NOT_ATTEMPTED, initialization_state_);
+    DCHECK_EQ(initialization_state_, NOT_ATTEMPTED);
     DCHECK(!registrar_.get());
   }
 }
 
 void SyncBackendHost::Shutdown(bool sync_disabled) {
+  // StopSyncingForShutdown() (which nulls out |frontend_|) should be
+  // called first.
+  DCHECK(!frontend_);
   // TODO(tim): DCHECK(registrar_->StoppedOnUIThread()) would be nice.
   if (sync_thread_.IsRunning()) {
     sync_thread_.message_loop()->PostTask(FROM_HERE,
         base::Bind(&SyncBackendHost::Core::DoShutdown, core_.get(),
                    sync_disabled));
+
+    if (chrome_sync_notification_bridge_.get())
+      chrome_sync_notification_bridge_->StopForShutdown();
   }
 
   // Stop will return once the thread exits, which will be after DoShutdown
@@ -605,7 +623,6 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
                       stop_sync_thread_time);
 
   registrar_.reset();
-  frontend_ = NULL;
   chrome_sync_notification_bridge_.reset();
   core_ = NULL;  // Releases reference to core_.
 }
@@ -846,7 +863,8 @@ SyncBackendHost::Core::Core(const std::string& name,
       host_(backend),
       sync_loop_(NULL),
       registrar_(NULL),
-      chrome_sync_notification_bridge_(NULL) {
+      chrome_sync_notification_bridge_(NULL),
+      registered_as_invalidation_handler_(false) {
   DCHECK(backend.get());
 }
 
@@ -892,11 +910,7 @@ void SyncBackendHost::Core::OnInitializationComplete(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
   if (!success) {
-    sync_manager_->RemoveObserver(this);
-    sync_manager_->UpdateRegisteredInvalidationIds(
-        this, syncer::ObjectIdSet());
-    sync_manager_->ShutdownOnSyncThread();
-    sync_manager_.reset();
+    DoDestroySyncManager();
   }
 
   host_.Call(
@@ -1085,15 +1099,24 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.unrecoverable_error_handler,
       options.report_unrecoverable_error_function);
 
-  // Now check the command line to see if we need to simulate an
-  // unrecoverable error for testing purpose. Note the error is thrown
-  // only if the initialization succeeded. Also it makes sense to use this
-  // flag only when restarting the browser with an account already setup. If
-  // you use this before setting up the setup would not succeed as an error
-  // would be encountered.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncThrowUnrecoverableError)) {
-    sync_manager_->ThrowUnrecoverableError();
+  // |sync_manager_| may end up being NULL here in tests (in
+  // synchronous initialization mode).
+  //
+  // TODO(akalin): Fix this behavior (see http://crbug.com/140354).
+  if (sync_manager_.get()) {
+    sync_manager_->RegisterInvalidationHandler(this);
+    registered_as_invalidation_handler_ = true;
+
+    // Now check the command line to see if we need to simulate an
+    // unrecoverable error for testing purpose. Note the error is thrown
+    // only if the initialization succeeded. Also it makes sense to use this
+    // flag only when restarting the browser with an account already setup. If
+    // you use this before setting up the setup would not succeed as an error
+    // would be encountered.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSyncThrowUnrecoverableError)) {
+      sync_manager_->ThrowUnrecoverableError();
+    }
   }
 }
 
@@ -1110,7 +1133,7 @@ void SyncBackendHost::Core::DoUpdateRegisteredInvalidationIds(
   // synchronous initialization mode) since this is called during
   // shutdown.
   //
-  // TODO(akalin): Fix this behavior.
+  // TODO(akalin): Fix this behavior (see http://crbug.com/140354).
   if (sync_manager_.get()) {
     sync_manager_->UpdateRegisteredInvalidationIds(this, ids);
   }
@@ -1159,14 +1182,7 @@ void SyncBackendHost::Core::DoStopSyncManagerForShutdown(
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (sync_manager_.get()) {
-    save_changes_timer_.reset();
-    sync_manager_->UpdateRegisteredInvalidationIds(
-        this, syncer::ObjectIdSet());
-    sync_manager_->ShutdownOnSyncThread();
-    sync_manager_->RemoveObserver(this);
-    sync_manager_.reset();
-  }
+  DoDestroySyncManager();
 
   chrome_sync_notification_bridge_ = NULL;
   registrar_ = NULL;
@@ -1177,6 +1193,20 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   sync_loop_ = NULL;
 
   host_.Reset();
+}
+
+void SyncBackendHost::Core::DoDestroySyncManager() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  if (sync_manager_.get()) {
+    save_changes_timer_.reset();
+    if (registered_as_invalidation_handler_) {
+      sync_manager_->UnregisterInvalidationHandler(this);
+      registered_as_invalidation_handler_ = false;
+    }
+    sync_manager_->RemoveObserver(this);
+    sync_manager_->ShutdownOnSyncThread();
+    sync_manager_.reset();
+  }
 }
 
 void SyncBackendHost::Core::DoConfigureSyncer(
@@ -1269,7 +1299,7 @@ void SyncBackendHost::OnNigoriDownloadRetry() {
 
 void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success) {
-  DCHECK_NE(NOT_ATTEMPTED, initialization_state_);
+  DCHECK_NE(initialization_state_, NOT_ATTEMPTED);
   if (!frontend_)
     return;
 

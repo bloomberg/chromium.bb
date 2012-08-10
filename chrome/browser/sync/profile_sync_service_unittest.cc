@@ -389,6 +389,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
   EXPECT_CALL(observer, OnNotificationsDisabled(
       syncer::TRANSIENT_NOTIFICATION_ERROR));
 
+  service_->RegisterInvalidationHandler(&observer);
   service_->UpdateRegisteredInvalidationIds(&observer, ids);
 
   SyncBackendHostForProfileSyncTest* const backend =
@@ -400,7 +401,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIds) {
 
   Mock::VerifyAndClearExpectations(&observer);
 
-  service_->UpdateRegisteredInvalidationIds(&observer, syncer::ObjectIdSet());
+  service_->UnregisterInvalidationHandler(&observer);
 
   backend->EmitOnNotificationsEnabled();
   backend->EmitOnIncomingNotification(payloads, syncer::REMOTE_NOTIFICATION);
@@ -425,6 +426,7 @@ TEST_F(ProfileSyncServiceTest, UpdateRegisteredInvalidationIdsPersistence) {
   EXPECT_CALL(observer, OnNotificationsDisabled(
       syncer::TRANSIENT_NOTIFICATION_ERROR));
 
+  service_->RegisterInvalidationHandler(&observer);
   service_->UpdateRegisteredInvalidationIds(&observer, ids);
 
   service_->StopAndSuppress();

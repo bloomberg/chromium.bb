@@ -157,16 +157,29 @@ P2PNotifier::~P2PNotifier() {
   push_client_->RemoveObserver(this);
 }
 
+void P2PNotifier::RegisterHandler(SyncNotifierObserver* handler) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  registrar_.RegisterHandler(handler);
+}
+
 void P2PNotifier::UpdateRegisteredIds(SyncNotifierObserver* handler,
                                       const ObjectIdSet& ids) {
-  const ModelTypeSet enabled_types = ObjectIdSetToModelTypeSet(
-      helper_.UpdateRegisteredIds(handler, ids));
+  // TODO(akalin): Handle arbitrary object IDs (http://crbug.com/140411).
+  DCHECK(thread_checker_.CalledOnValidThread());
+  registrar_.UpdateRegisteredIds(handler, ids);
+  const ModelTypeSet enabled_types =
+      ObjectIdSetToModelTypeSet(registrar_.GetAllRegisteredIds());
   const ModelTypeSet new_enabled_types =
       Difference(enabled_types, enabled_types_);
   const P2PNotificationData notification_data(
       unique_id_, NOTIFY_SELF, new_enabled_types);
   SendNotificationData(notification_data);
   enabled_types_ = enabled_types;
+}
+
+void P2PNotifier::UnregisterHandler(SyncNotifierObserver* handler) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  registrar_.UnregisterHandler(handler);
 }
 
 void P2PNotifier::SetUniqueId(const std::string& unique_id) {
@@ -207,7 +220,7 @@ void P2PNotifier::OnNotificationsEnabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool just_turned_on = (notifications_enabled_ == false);
   notifications_enabled_ = true;
-  helper_.EmitOnNotificationsEnabled();
+  registrar_.EmitOnNotificationsEnabled();
   if (just_turned_on) {
     const P2PNotificationData notification_data(
         unique_id_, NOTIFY_SELF, enabled_types_);
@@ -218,7 +231,7 @@ void P2PNotifier::OnNotificationsEnabled() {
 void P2PNotifier::OnNotificationsDisabled(
     notifier::NotificationsDisabledReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  helper_.EmitOnNotificationsDisabled(FromNotifierReason(reason));
+  registrar_.EmitOnNotificationsDisabled(FromNotifierReason(reason));
 }
 
 void P2PNotifier::OnIncomingNotification(
@@ -257,7 +270,7 @@ void P2PNotifier::OnIncomingNotification(
   }
   const ModelTypePayloadMap& type_payloads = ModelTypePayloadMapFromEnumSet(
       notification_data.GetChangedTypes(), std::string());
-  helper_.DispatchInvalidationsToHandlers(
+  registrar_.DispatchInvalidationsToHandlers(
       ModelTypePayloadMapToObjectIdPayloadMap(type_payloads),
       REMOTE_NOTIFICATION);
 }
