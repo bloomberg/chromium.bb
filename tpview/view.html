@@ -16,7 +16,6 @@
 <script type="text/javascript" charset="utf-8">
 
 var finger_view_controller;
-
 var current_layer = 0;
 var json_obj;
 
@@ -259,7 +258,6 @@ function radioChange(e) {
 }
 
 $(document).ready(function() {
-  
   setup();
   $("#playpause").button({
     text: false,
@@ -268,16 +266,12 @@ $(document).ready(function() {
     }
   });
   var canvas = document.getElementById('fview');
-  // var ctx = canvas.getContext('2d');
   var gc = new GraphController($('#gview'));
   gc.setLineSegments([{'start': {'xPos': 0.1, 'yPos': 0.1},
                        'end': {'xPos': 0.9, 'yPos': 0.5}}]);
-  gc.draw();
-  
   var inGc = new GraphController($('#fview'));
   
   finger_view_controller = new FingerViewController(inGc, gc, $('#intext'));
-  finger_view_controller.setEntriesLog(secret_obj, 0);
   $("#out-resetzoom").button({
     icons: {
       primary: "ui-icon-arrow-4-diag"

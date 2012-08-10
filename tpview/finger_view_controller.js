@@ -20,10 +20,6 @@ FingerViewController.prototype = {
       tmp = tmp.nextLayer;
     this.entries = tmp.entries;
     this.log = log;
-    if (this.entries.length > 0)
-      this.begin = this.end = 0;
-    else
-      this.begin = this.end = -1;
 
     // Update input default zoom
     this.hardwareProperties = tmp.hardwareProperties;
