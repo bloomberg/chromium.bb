@@ -23,7 +23,7 @@ index 72c5cf2..49e47b0 100644
        } else {
          *iter = prev_iter;
 diff --git a/src/harfbuzz-arabic.c b/src/harfbuzz-arabic.c
-index 3837087..ce2ca6c 100644
+index 51f839a..af40bf8 100644
 --- a/src/harfbuzz-arabic.c
 +++ b/src/harfbuzz-arabic.c
 @@ -1107,6 +1107,7 @@ HB_Bool HB_ArabicShape(HB_ShaperItem *item)
@@ -35,7 +35,7 @@ index 3837087..ce2ca6c 100644
  
      if (HB_SelectScript(item, item->item.script == HB_Script_Arabic ? arabic_features : syriac_features)) {
 diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
-index 7d433ea..dd86a40 100644
+index 7fd04a9..66f0ea6 100644
 --- a/src/harfbuzz-shaper.cpp
 +++ b/src/harfbuzz-shaper.cpp
 @@ -430,8 +430,6 @@ void HB_HeuristicSetGlyphAttributes(HB_ShaperItem *item)
@@ -120,39 +120,3 @@ index ab5c07a..72c9aa3 100644
  } HB_ShaperFlag;
  
  /* 
-diff --git a/src/harfbuzz-tibetan.c b/src/harfbuzz-tibetan.c
-index 847ac52..6f9a55b 100644
---- a/src/harfbuzz-tibetan.c
-+++ b/src/harfbuzz-tibetan.c
-@@ -90,7 +90,7 @@ static const unsigned char tibetanForm[0x80] = {
- 
- 
- #define tibetan_form(c) \
--    ((c) >= 0x0f40 && (c) <= 0x0fc0 ? (TibetanForm)tibetanForm[(c) - 0x0f40] : TibetanOther)
-+    ((c) >= 0x0f40 && (c) < 0x0fc0 ? (TibetanForm)tibetanForm[(c) - 0x0f40] : TibetanOther)
- 
- static const HB_OpenTypeFeature tibetan_features[] = {
-     { HB_MAKE_TAG('c', 'c', 'm', 'p'), CcmpProperty },
-diff --git a/src/harfbuzz-shaper.cpp b/src/harfbuzz-shaper.cpp
-index ce4d4ac..6b4d6d2 100644
---- a/src/harfbuzz-shaper.cpp
-+++ b/src/harfbuzz-shaper.cpp
-@@ -1263,16 +1263,13 @@ HB_Bool HB_OpenTypePosition(HB_ShaperItem *item, int availableGlyphs, HB_Bool do
- //                    (int)(positions[i].x_pos >> 6), (int)(positions[i].y_pos >> 6),
- //                    positions[i].back, positions[i].new_advance);
- 
--            HB_Fixed adjustment = (item->item.bidiLevel % 2) ? -positions[i].x_advance : positions[i].x_advance;
-+            HB_Fixed adjustment = positions[i].x_advance;
- 
-             if (!(face->current_flags & HB_ShaperFlag_UseDesignMetrics))
-                 adjustment = HB_FIXED_ROUND(adjustment);
- 
--            if (positions[i].new_advance) {
--                advances[i] = adjustment;
--            } else {
-+            if (positions[i].new_advance == 0)
-                 advances[i] += adjustment;
--            }
- 
-             int back = 0;
-             HB_FixedPoint *offsets = item->offsets;
