@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "sync/notifier/sync_notifier_helper.h"
 #include "sync/notifier/sync_notifier_observer.h"
+#include "sync/notifier/sync_notifier_registrar.h"
 
 using content::BrowserThread;
 
@@ -25,9 +27,14 @@ class ChromeSyncNotificationBridge::Core
 
   // All member functions below must be called on the sync task runner.
 
+  void InitializeOnSyncThread();
+  void CleanupOnSyncThread();
+
   void UpdateEnabledTypes(syncer::ModelTypeSet enabled_types);
+  void RegisterHandler(syncer::SyncNotifierObserver* handler);
   void UpdateRegisteredIds(syncer::SyncNotifierObserver* handler,
                            const syncer::ObjectIdSet& ids);
+  void UnregisterHandler(syncer::SyncNotifierObserver* handler);
 
   void EmitNotification(
       const syncer::ModelTypePayloadMap& payload_map,
@@ -43,7 +50,7 @@ class ChromeSyncNotificationBridge::Core
 
   // Used only on |sync_task_runner_|.
   syncer::ModelTypeSet enabled_types_;
-  syncer::SyncNotifierHelper helper_;
+  scoped_ptr<syncer::SyncNotifierRegistrar> notifier_registrar_;
 };
 
 ChromeSyncNotificationBridge::Core::Core(
@@ -56,6 +63,15 @@ ChromeSyncNotificationBridge::Core::Core(
 ChromeSyncNotificationBridge::Core::~Core() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          sync_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(!notifier_registrar_.get());
+}
+
+void ChromeSyncNotificationBridge::Core::InitializeOnSyncThread() {
+  notifier_registrar_.reset(new syncer::SyncNotifierRegistrar());
+}
+
+void ChromeSyncNotificationBridge::Core::CleanupOnSyncThread() {
+  notifier_registrar_.reset();
 }
 
 void ChromeSyncNotificationBridge::Core::UpdateEnabledTypes(
@@ -64,11 +80,23 @@ void ChromeSyncNotificationBridge::Core::UpdateEnabledTypes(
   enabled_types_ = types;
 }
 
+void ChromeSyncNotificationBridge::Core::RegisterHandler(
+    syncer::SyncNotifierObserver* handler) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  notifier_registrar_->RegisterHandler(handler);
+}
+
 void ChromeSyncNotificationBridge::Core::UpdateRegisteredIds(
     syncer::SyncNotifierObserver* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-  helper_.UpdateRegisteredIds(handler, ids);
+  notifier_registrar_->UpdateRegisteredIds(handler, ids);
+}
+
+void ChromeSyncNotificationBridge::Core::UnregisterHandler(
+    syncer::SyncNotifierObserver* handler) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  notifier_registrar_->UnregisterHandler(handler);
 }
 
 void ChromeSyncNotificationBridge::Core::EmitNotification(
@@ -80,7 +108,7 @@ void ChromeSyncNotificationBridge::Core::EmitNotification(
       syncer::ModelTypePayloadMapFromEnumSet(enabled_types_, std::string()) :
       payload_map;
 
-  helper_.DispatchInvalidationsToHandlers(
+  notifier_registrar_->DispatchInvalidationsToHandlers(
       ModelTypePayloadMapToObjectIdPayloadMap(effective_payload_map),
       notification_source);
 }
@@ -96,9 +124,21 @@ ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                  content::Source<Profile>(profile));
+
+  if (!sync_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&Core::InitializeOnSyncThread, core_))) {
+    NOTREACHED();
+  }
 }
 
 ChromeSyncNotificationBridge::~ChromeSyncNotificationBridge() {}
+
+void ChromeSyncNotificationBridge::StopForShutdown() {
+  if (!sync_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&Core::CleanupOnSyncThread, core_))) {
+    NOTREACHED();
+  }
+}
 
 void ChromeSyncNotificationBridge::UpdateEnabledTypes(
     syncer::ModelTypeSet types) {
@@ -106,11 +146,23 @@ void ChromeSyncNotificationBridge::UpdateEnabledTypes(
   core_->UpdateEnabledTypes(types);
 }
 
+void ChromeSyncNotificationBridge::RegisterHandler(
+    syncer::SyncNotifierObserver* handler) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  core_->RegisterHandler(handler);
+}
+
 void ChromeSyncNotificationBridge::UpdateRegisteredIds(
     syncer::SyncNotifierObserver* handler,
     const syncer::ObjectIdSet& ids) {
   DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
   core_->UpdateRegisteredIds(handler, ids);
+}
+
+void ChromeSyncNotificationBridge::UnregisterHandler(
+    syncer::SyncNotifierObserver* handler) {
+  DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+  core_->UnregisterHandler(handler);
 }
 
 void ChromeSyncNotificationBridge::Observe(
@@ -132,10 +184,12 @@ void ChromeSyncNotificationBridge::Observe(
   content::Details<const syncer::ModelTypePayloadMap>
       payload_details(details);
   const syncer::ModelTypePayloadMap& payload_map = *(payload_details.ptr());
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::EmitNotification,
-                 core_, payload_map, notification_source));
+  if (!sync_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&Core::EmitNotification,
+                     core_, payload_map, notification_source))) {
+    NOTREACHED();
+  }
 }
 
 }  // namespace browser_sync

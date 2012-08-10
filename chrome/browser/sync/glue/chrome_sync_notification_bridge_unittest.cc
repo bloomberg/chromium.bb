@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 
+#include <cstddef>
+
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -53,6 +55,7 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
         expected_payloads_(expected_payloads),
         expected_source_(expected_source) {
     DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
+    bridge_->RegisterHandler(this);
     const syncer::ObjectIdSet& ids =
         syncer::ObjectIdPayloadMapToSet(expected_payloads);
     bridge_->UpdateRegisteredIds(this, ids);
@@ -60,7 +63,7 @@ class FakeSyncNotifierObserver : public syncer::SyncNotifierObserver {
 
   virtual ~FakeSyncNotifierObserver() {
     DCHECK(sync_task_runner_->RunsTasksOnCurrentThread());
-    bridge_->UpdateRegisteredIds(this, syncer::ObjectIdSet());
+    bridge_->UnregisterHandler(this);
   }
 
   // SyncNotifierObserver implementation.
@@ -120,6 +123,7 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    bridge_->StopForShutdown();
     sync_thread_.Stop();
     // Must be reset only after the sync thread is stopped.
     bridge_.reset();

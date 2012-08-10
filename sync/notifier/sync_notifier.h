@@ -22,11 +22,45 @@ class SyncNotifier {
   SyncNotifier() {}
   virtual ~SyncNotifier() {}
 
-  // Updates the set of ObjectIds associated with a given |handler|.
-  // Passing an empty ObjectIdSet will unregister |handler|.
-  // There should be at most one handler registered per object id.
+  // Clients should follow the pattern below:
+  //
+  // When starting the client:
+  //
+  //   notifier->RegisterHandler(client_handler);
+  //
+  // When the set of IDs to register changes for the client during its lifetime
+  // (i.e., between calls to RegisterHandler(client_handler) and
+  // UnregisterHandler(client_handler):
+  //
+  //   notifier->UpdateRegisteredIds(client_handler, client_ids);
+  //
+  // When shutting down the client for browser shutdown:
+  //
+  //   notifier->UnregisterHandler(client_handler);
+  //
+  // Note that there's no call to UpdateRegisteredIds() -- this is because the
+  // invalidation API persists registrations across browser restarts.
+  //
+  // When permanently shutting down the client, e.g. when disabling the related
+  // feature:
+  //
+  //   notifier->UpdateRegisteredIds(client_handler, ObjectIdSet());
+  //   notifier->UnregisterHandler(client_handler);
+
+  // Starts sending notifications to |handler|.  |handler| must not be NULL,
+  // and it must already be registered.
+  virtual void RegisterHandler(SyncNotifierObserver* handler) = 0;
+
+  // Updates the set of ObjectIds associated with |handler|.  |handler| must
+  // not be NULL, and must already be registered.  An ID must be registered for
+  // at most one handler.
   virtual void UpdateRegisteredIds(SyncNotifierObserver* handler,
                                    const ObjectIdSet& ids) = 0;
+
+  // Stops sending notifications to |handler|.  |handler| must not be NULL, and
+  // it must already be registered.  Note that this doesn't unregister the IDs
+  // associated with |handler|.
+  virtual void UnregisterHandler(SyncNotifierObserver* handler) = 0;
 
   // SetUniqueId must be called once, before any call to
   // UpdateCredentials.  |unique_id| should be a non-empty globally

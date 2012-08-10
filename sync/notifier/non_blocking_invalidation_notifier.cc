@@ -4,6 +4,8 @@
 
 #include "sync/notifier/non_blocking_invalidation_notifier.h"
 
+#include <cstddef>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -89,12 +91,12 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
           initial_invalidation_state,
           invalidation_state_tracker,
           client_info));
+  invalidation_notifier_->RegisterHandler(this);
 }
-
 
 void NonBlockingInvalidationNotifier::Core::Teardown() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->UpdateRegisteredIds(this, ObjectIdSet());
+  invalidation_notifier_->UnregisterHandler(this);
   invalidation_notifier_.reset();
   network_task_runner_ = NULL;
 }
@@ -183,19 +185,31 @@ NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
   }
 }
 
-void NonBlockingInvalidationNotifier::UpdateRegisteredIds(
-    SyncNotifierObserver* handler, const ObjectIdSet& ids) {
+void NonBlockingInvalidationNotifier::RegisterHandler(
+    SyncNotifierObserver* handler) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  const ObjectIdSet& all_registered_ids =
-      helper_.UpdateRegisteredIds(handler, ids);
+  registrar_.RegisterHandler(handler);
+}
+
+void NonBlockingInvalidationNotifier::UpdateRegisteredIds(
+    SyncNotifierObserver* handler,
+    const ObjectIdSet& ids) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  registrar_.UpdateRegisteredIds(handler, ids);
   if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
               &NonBlockingInvalidationNotifier::Core::UpdateRegisteredIds,
               core_.get(),
-              all_registered_ids))) {
+              registrar_.GetAllRegisteredIds()))) {
     NOTREACHED();
   }
+}
+
+void NonBlockingInvalidationNotifier::UnregisterHandler(
+    SyncNotifierObserver* handler) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  registrar_.UnregisterHandler(handler);
 }
 
 void NonBlockingInvalidationNotifier::SetUniqueId(
@@ -241,20 +255,20 @@ void NonBlockingInvalidationNotifier::SendNotification(
 
 void NonBlockingInvalidationNotifier::OnNotificationsEnabled() {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  helper_.EmitOnNotificationsEnabled();
+  registrar_.EmitOnNotificationsEnabled();
 }
 
 void NonBlockingInvalidationNotifier::OnNotificationsDisabled(
     NotificationsDisabledReason reason) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  helper_.EmitOnNotificationsDisabled(reason);
+  registrar_.EmitOnNotificationsDisabled(reason);
 }
 
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
         const ObjectIdPayloadMap& id_payloads,
         IncomingNotificationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  helper_.DispatchInvalidationsToHandlers(id_payloads, source);
+  registrar_.DispatchInvalidationsToHandlers(id_payloads, source);
 }
 
 }  // namespace syncer

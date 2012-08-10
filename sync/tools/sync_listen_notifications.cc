@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cstddef>
 #include <cstdio>
 #include <string>
 
@@ -242,13 +243,15 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
   const char kUniqueId[] = "fake_unique_id";
   sync_notifier->SetUniqueId(kUniqueId);
   sync_notifier->UpdateCredentials(email, token);
+
   // Listen for notifications for all known types.
+  sync_notifier->RegisterHandler(&notification_printer);
   sync_notifier->UpdateRegisteredIds(
       &notification_printer, ModelTypeSetToObjectIdSet(ModelTypeSet::All()));
 
   ui_loop.Run();
 
-  sync_notifier->UpdateRegisteredIds(&notification_printer, ObjectIdSet());
+  sync_notifier->UnregisterHandler(&notification_printer);
   io_thread.Stop();
   return 0;
 }

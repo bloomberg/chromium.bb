@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "sync/internal_api/public/sync_manager.h"
-#include "sync/notifier/sync_notifier_helper.h"
+#include "sync/notifier/sync_notifier_registrar.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -20,24 +20,22 @@ namespace syncer {
 
 class FakeSyncManager : public SyncManager {
  public:
-  explicit FakeSyncManager();
+  // |initial_sync_ended_types|: The set of types that have initial_sync_ended
+  // set to true. This value will be used by InitialSyncEndedTypes() until the
+  // next configuration is performed.
+  //
+  // |progress_marker_types|: The set of types that have valid progress
+  // markers. This will be used by GetTypesWithEmptyProgressMarkerToken() until
+  // the next configuration is performed.
+  //
+  // |configure_fail_types|: The set of types that will fail
+  // configuration. Once ConfigureSyncer is called, the
+  // |initial_sync_ended_types_| and |progress_marker_types_| will be updated
+  // to include those types that didn't fail.
+  FakeSyncManager(ModelTypeSet initial_sync_ended_types,
+                  ModelTypeSet progress_marker_types,
+                  ModelTypeSet configure_fail_types);
   virtual ~FakeSyncManager();
-
-  // The set of types that have initial_sync_ended set to true. This value will
-  // be used by InitialSyncEndedTypes() until the next configuration is
-  // performed.
-  void set_initial_sync_ended_types(ModelTypeSet types);
-
-  // The set of types that have valid progress markers. This will be used by
-  // GetTypesWithEmptyProgressMarkerToken() until the next configuration is
-  // performed.
-  void set_progress_marker_types(ModelTypeSet types);
-
-  // The set of types that will fail configuration. Once ConfigureSyncer is
-  // called, the |initial_sync_ended_types_| and
-  // |progress_marker_types_| will be updated to include those types
-  // that didn't fail.
-  void set_configure_fail_types(ModelTypeSet types);
 
   // Returns those types that have been cleaned (purged from the directory)
   // since the last call to GetAndResetCleanedTypes(), or since startup if never
@@ -62,6 +60,9 @@ class FakeSyncManager : public SyncManager {
 
   // Posts a method to disable notifications on the sync thread.
   void DisableNotifications(NotificationsDisabledReason reason);
+
+  // Block until the sync thread has finished processing any pending messages.
+  void WaitForSyncThread();
 
   // SyncManager implementation.
   // Note: we treat whatever message loop this is called from as the sync
@@ -94,9 +95,13 @@ class FakeSyncManager : public SyncManager {
   virtual bool PurgePartiallySyncedTypes() OVERRIDE;
   virtual void UpdateCredentials(const SyncCredentials& credentials) OVERRIDE;
   virtual void UpdateEnabledTypes(const ModelTypeSet& types) OVERRIDE;
+  virtual void RegisterInvalidationHandler(
+      SyncNotifierObserver* handler) OVERRIDE;
   virtual void UpdateRegisteredInvalidationIds(
       SyncNotifierObserver* handler,
       const ObjectIdSet& ids) OVERRIDE;
+  virtual void UnregisterInvalidationHandler(
+      SyncNotifierObserver* handler) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
   virtual void SetEncryptionPassphrase(const std::string& passphrase,
@@ -150,7 +155,7 @@ class FakeSyncManager : public SyncManager {
   ModelTypeSet enabled_types_;
 
   // Faked notifier state.
-  SyncNotifierHelper notifier_helper_;
+  SyncNotifierRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };

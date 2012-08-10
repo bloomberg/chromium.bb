@@ -35,8 +35,11 @@ class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
       : ChromeSyncNotificationBridge(profile, sync_task_runner) {}
   virtual ~MockChromeSyncNotificationBridge() {}
 
-  MOCK_METHOD2(UpdateRegisteredIds, void(syncer::SyncNotifierObserver*,
-                                         const syncer::ObjectIdSet&));
+  MOCK_METHOD1(RegisterHandler, void(syncer::SyncNotifierObserver*));
+  MOCK_METHOD2(UpdateRegisteredIds,
+               void(syncer::SyncNotifierObserver*,
+                    const syncer::ObjectIdSet&));
+  MOCK_METHOD1(UnregisterHandler, void(syncer::SyncNotifierObserver*));
 };
 
 class MockSyncNotifier : public syncer::SyncNotifier {
@@ -44,8 +47,11 @@ class MockSyncNotifier : public syncer::SyncNotifier {
   MockSyncNotifier() {}
   virtual ~MockSyncNotifier() {}
 
+  MOCK_METHOD1(RegisterHandler, void(syncer::SyncNotifierObserver*));
   MOCK_METHOD2(UpdateRegisteredIds,
-               void(syncer::SyncNotifierObserver*, const syncer::ObjectIdSet&));
+               void(syncer::SyncNotifierObserver*,
+                    const syncer::ObjectIdSet&));
+  MOCK_METHOD1(UnregisterHandler, void(syncer::SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetStateDeprecated, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials, void(const std::string&, const std::string&));
@@ -53,8 +59,9 @@ class MockSyncNotifier : public syncer::SyncNotifier {
 };
 
 // All tests just verify that each call is passed through to the delegate, with
-// the exception of UpdateRegisteredIds, which also verifies the call is
-// forwarded to the bridge.
+// the exception of RegisterHandler, UnregisterHandler, and
+// UpdateRegisteredIds, which also verifies the call is forwarded to the
+// bridge.
 class BridgedSyncNotifierTest : public testing::Test {
  public:
   BridgedSyncNotifierTest()
@@ -73,13 +80,26 @@ class BridgedSyncNotifierTest : public testing::Test {
   BridgedSyncNotifier bridged_notifier_;
 };
 
-TEST_F(BridgedSyncNotifierTest, UpdateRegisteredIds) {
+TEST_F(BridgedSyncNotifierTest, RegisterHandler) {
   syncer::MockSyncNotifierObserver observer;
+  EXPECT_CALL(mock_bridge_, RegisterHandler(&observer));
+  EXPECT_CALL(*mock_delegate_, RegisterHandler(&observer));
+  bridged_notifier_.RegisterHandler(&observer);
+}
+
+TEST_F(BridgedSyncNotifierTest, UpdateRegisteredIds) {
   EXPECT_CALL(mock_bridge_, UpdateRegisteredIds(
-      &observer, syncer::ObjectIdSet()));
+      NULL, syncer::ObjectIdSet()));
   EXPECT_CALL(*mock_delegate_, UpdateRegisteredIds(
-      &observer, syncer::ObjectIdSet()));
-  bridged_notifier_.UpdateRegisteredIds(&observer, syncer::ObjectIdSet());
+      NULL, syncer::ObjectIdSet()));
+  bridged_notifier_.UpdateRegisteredIds(NULL, syncer::ObjectIdSet());
+}
+
+TEST_F(BridgedSyncNotifierTest, UnregisterHandler) {
+  syncer::MockSyncNotifierObserver observer;
+  EXPECT_CALL(mock_bridge_, UnregisterHandler(&observer));
+  EXPECT_CALL(*mock_delegate_, UnregisterHandler(&observer));
+  bridged_notifier_.UnregisterHandler(&observer);
 }
 
 TEST_F(BridgedSyncNotifierTest, SetUniqueId) {
