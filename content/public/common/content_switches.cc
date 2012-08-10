@@ -77,6 +77,9 @@ const char kDisableDatabases[]              = "disable-databases";
 // Disables data transfer items.
 const char kDisableDataTransferItems[]      = "disable-data-transfer-items";
 
+// Disable deferred 2d canvas rendering.
+const char kDisableDeferred2dCanvas[]        = "disable-deferred-2d-canvas";
+
 // Disables desktop notifications (default enabled on windows).
 const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
 
@@ -260,9 +263,6 @@ const char kEnableCssShaders[]              = "enable-css-shaders";
 
 // Enables CSS variables
 const char kEnableCssVariables[]            = "enable-css-variables";
-
-// Enable deferred 2d canvas rendering.
-const char kEnableDeferred2dCanvas[]        = "enable-deferred-2d-canvas";
 
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
