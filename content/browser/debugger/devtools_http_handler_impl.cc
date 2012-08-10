@@ -428,7 +428,16 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   base::JSONWriter::WriteWithOptions(&json_pages_list,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &response);
-  Send200(connection_id, response, "application/json; charset=UTF-8");
+
+  size_t jsonp_pos = info.path.find("?jsonp=");
+  if (jsonp_pos == std::string::npos) {
+    Send200(connection_id, response, "application/json; charset=UTF-8");
+    return;
+  }
+
+  std::string jsonp = info.path.substr(jsonp_pos + 7);
+  response = StringPrintf("%s(%s);", jsonp.c_str(), response.c_str());
+  Send200(connection_id, response, "text/javascript; charset=UTF-8");
 }
 
 void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
