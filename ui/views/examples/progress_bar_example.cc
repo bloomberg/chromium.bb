@@ -59,7 +59,7 @@ void ProgressBarExample::CreateExampleView(View* container) {
   layout->AddView(plus_button_);
 }
 
-void ProgressBarExample::ButtonPressed(Button* sender, const Event& event) {
+void ProgressBarExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == minus_button_)
     current_percent_ = ClampToMin(current_percent_ - kStepSize);
   else if (sender == plus_button_)

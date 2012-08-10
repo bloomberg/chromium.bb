@@ -26,7 +26,7 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::WidgetDelegate overrides:
   virtual void WindowClosing() OVERRIDE;

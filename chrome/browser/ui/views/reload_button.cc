@@ -112,7 +112,7 @@ void ReloadButton::LoadImages(ui::ThemeProvider* tp) {
 // ReloadButton, views::ButtonListener implementation:
 
 void ReloadButton::ButtonPressed(views::Button* /* button */,
-                                 const views::Event& event) {
+                                 const ui::Event& event) {
   ClearPendingMenu();
 
   if (visible_mode_ == MODE_STOP) {

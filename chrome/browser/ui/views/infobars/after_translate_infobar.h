@@ -30,7 +30,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
   virtual void OriginalLanguageChanged() OVERRIDE;
   virtual void TargetLanguageChanged() OVERRIDE;

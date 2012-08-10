@@ -142,7 +142,7 @@ void WidgetExample::CreatePopup(View* parent, bool transparent) {
   InitWidget(widget, transparent);
 }
 
-void WidgetExample::ButtonPressed(Button* sender, const Event& event) {
+void WidgetExample::ButtonPressed(Button* sender, const ui::Event& event) {
   switch (sender->tag()) {
     case POPUP:
       CreatePopup(sender, false);

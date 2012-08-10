@@ -266,8 +266,7 @@ class ShellWindowDelegateView : public WidgetDelegateView,
   }
 
   // Overriden from ButtonListener
-  virtual void ButtonPressed(Button* sender,
-      const Event& event) OVERRIDE {
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
     if (sender == back_button_)
       shell_->GoBackOrForward(-1);
     else if (sender == forward_button_)

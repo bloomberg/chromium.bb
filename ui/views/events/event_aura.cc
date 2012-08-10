@@ -13,15 +13,17 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // LocatedEvent, protected:
 
-LocatedEvent::LocatedEvent(const NativeEvent& native_event)
-    : Event(native_event, native_event->type(), native_event->flags()),
+LocatedEvent::LocatedEvent(const ui::NativeEvent& native_event)
+    : Event(native_event->native_event(),
+            native_event->type(),
+            native_event->flags()),
       location_(static_cast<ui::LocatedEvent*>(native_event)->location()) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 
-TouchEvent::TouchEvent(const NativeEvent& event)
+TouchEvent::TouchEvent(const ui::NativeEvent& event)
     : LocatedEvent(event),
       touch_id_(static_cast<ui::TouchEvent*>(event)->touch_id()),
       radius_x_(static_cast<ui::TouchEvent*>(event)->radius_x()),
@@ -34,7 +36,7 @@ TouchEvent::TouchEvent(const NativeEvent& event)
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 
-MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
+MouseWheelEvent::MouseWheelEvent(const ui::NativeEvent& native_event)
     : MouseEvent(native_event),
       offset_(ui::GetMouseWheelOffset(native_event->native_event())) {
 }
@@ -42,7 +44,7 @@ MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
 ////////////////////////////////////////////////////////////////////////////////
 // ScrollEvent, public:
 
-ScrollEvent::ScrollEvent(const NativeEvent& native_event)
+ScrollEvent::ScrollEvent(const ui::NativeEvent& native_event)
     : MouseEvent(native_event) {
   CHECK(ui::GetScrollOffsets(
       native_event->native_event(), &x_offset_, &y_offset_));
@@ -51,7 +53,7 @@ ScrollEvent::ScrollEvent(const NativeEvent& native_event)
 ////////////////////////////////////////////////////////////////////////////////
 // GestureEvent, public:
 
-GestureEvent::GestureEvent(const NativeEvent& event)
+GestureEvent::GestureEvent(const ui::NativeEvent& event)
     : LocatedEvent(event),
       details_(static_cast<ui::GestureEvent*>(event)->details()) {
 }

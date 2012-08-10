@@ -109,12 +109,12 @@ class VIEWS_EXPORT CustomButton : public Button,
 
   // Returns true if the event is one that can trigger notifying the listener.
   // This implementation returns true if the left mouse button is down.
-  virtual bool IsTriggerableEvent(const Event& event);
+  virtual bool IsTriggerableEvent(const ui::Event& event);
 
   // Returns true if the button should become pressed when the user
   // holds the mouse down over the button. For this implementation,
   // we simply return IsTriggerableEvent(event).
-  virtual bool ShouldEnterPushedState(const Event& event);
+  virtual bool ShouldEnterPushedState(const ui::Event& event);
 
   // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add,

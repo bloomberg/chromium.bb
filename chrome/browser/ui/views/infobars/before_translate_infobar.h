@@ -27,7 +27,7 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
   // TranslateInfoBarBase:
   virtual void Layout() OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;

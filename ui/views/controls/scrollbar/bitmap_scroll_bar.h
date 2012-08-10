@@ -69,7 +69,7 @@ class VIEWS_EXPORT BitmapScrollBar : public BaseScrollBar,
 
   // BaseButton::ButtonListener overrides:
   virtual void ButtonPressed(Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
  private:
   // Up/Down/Left/Right buttons.

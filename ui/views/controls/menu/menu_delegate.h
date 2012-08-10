@@ -115,7 +115,7 @@ class VIEWS_EXPORT MenuDelegate {
 
   // Returns true if the specified event is one the user can use to trigger, or
   // accept, the item. Defaults to left or right mouse buttons or tap.
-  virtual bool IsTriggerableEvent(MenuItemView* view, const Event& e);
+  virtual bool IsTriggerableEvent(MenuItemView* view, const ui::Event& e);
 
   // Invoked to determine if drops can be accepted for a submenu. This is
   // ONLY invoked for menus that have submenus and indicates whether or not

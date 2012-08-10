@@ -55,7 +55,7 @@ Button::Button(ButtonListener* listener)
   set_accessibility_focusable(true);
 }
 
-void Button::NotifyClick(const views::Event& event) {
+void Button::NotifyClick(const ui::Event& event) {
   mouse_event_flags_ = event.IsMouseEvent() ? event.flags() : 0;
   // We can be called when there is no listener, in cases like double clicks on
   // menu buttons etc.

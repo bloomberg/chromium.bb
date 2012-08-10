@@ -120,7 +120,7 @@ bool WimaxConfigView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void WimaxConfigView::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
+                                   const ui::Event& event) {
   if (sender == passphrase_visible_button_) {
     if (passphrase_textfield_) {
       passphrase_textfield_->SetObscured(!passphrase_textfield_->IsObscured());

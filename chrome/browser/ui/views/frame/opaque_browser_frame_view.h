@@ -71,7 +71,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
+  virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
       OVERRIDE;
 
   // Overridden from chrome::TabIconViewModel:

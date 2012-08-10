@@ -175,7 +175,7 @@ void PageSwitcher::CalculateButtonWidth(int contents_width) {
 }
 
 void PageSwitcher::ButtonPressed(views::Button* sender,
-                                 const views::Event& event) {
+                                 const ui::Event& event) {
   for (int i = 0; i < buttons_->child_count(); ++i) {
     if (sender == static_cast<views::Button*>(buttons_->child_at(i))) {
       model_->SelectPage(i, true /* animate */);

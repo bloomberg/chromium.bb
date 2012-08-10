@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/event_utils.h"
 
-#include "ui/views/events/event.h"
+#include "ui/base/event.h"
 
 namespace event_utils {
 
-bool IsPossibleDispositionEvent(const views::Event& event) {
+bool IsPossibleDispositionEvent(const ui::Event& event) {
   return event.IsMouseEvent() && (event.flags() &
              (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON));
 }

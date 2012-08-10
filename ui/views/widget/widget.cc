@@ -54,16 +54,9 @@ void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
 // restore any previously active event afterwards.
 class ScopedEvent {
  public:
-  ScopedEvent(Widget* widget, const Event& event)
+  ScopedEvent(Widget* widget, const ui::Event& event)
       : widget_(widget),
-        event_(&event),
-        ui_event_(NULL) {
-    widget->event_stack_.push(this);
-  }
-  ScopedEvent(Widget* widget, const ui::Event& ui_event)
-      : widget_(widget),
-        event_(NULL),
-        ui_event_(&ui_event) {
+        event_(&event) {
     widget->event_stack_.push(this);
   }
 
@@ -76,18 +69,13 @@ class ScopedEvent {
     widget_ = NULL;
   }
 
-  const Event* event() {
+  const ui::Event* event() {
     return event_;
-  }
-  const ui::Event* ui_event() {
-    return ui_event_;
   }
 
  private:
   Widget* widget_;
-  const Event* event_;
-  // TODO(beng): remove once views::Event is gone.
-  const ui::Event* ui_event_;
+  const ui::Event* event_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedEvent);
 };
@@ -882,7 +870,7 @@ bool Widget::HasCapture() {
   return native_widget_->HasCapture();
 }
 
-const Event* Widget::GetCurrentEvent() {
+const ui::Event* Widget::GetCurrentEvent() {
   return event_stack_.empty() ? NULL : event_stack_.top()->event();
 }
 

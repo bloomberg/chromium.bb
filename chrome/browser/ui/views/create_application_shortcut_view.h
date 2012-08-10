@@ -56,7 +56,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
  protected:
   // Adds a new check-box as a child to the view.

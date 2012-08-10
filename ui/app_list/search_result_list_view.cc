@@ -133,7 +133,7 @@ void SearchResultListView::ScheduleUpdate() {
 }
 
 void SearchResultListView::ButtonPressed(views::Button* sender,
-                                         const views::Event& event) {
+                                         const ui::Event& event) {
   if (sender->GetClassName() != SearchResultView::kViewClassName)
     return;
 

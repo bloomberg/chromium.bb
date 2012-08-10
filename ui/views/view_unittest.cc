@@ -1622,7 +1622,7 @@ class TestDialog : public DialogDelegate, public ButtonListener {
   }
 
   // ButtonListener implementation.
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE {
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
     last_pressed_button_ = sender;
   }
 

@@ -93,7 +93,7 @@ string16 BookmarkMenuController::GetTooltipText(int id,
 }
 
 bool BookmarkMenuController::IsTriggerableEvent(views::MenuItemView* menu,
-                                                const views::Event& e) {
+                                                const ui::Event& e) {
   return menu_delegate_->IsTriggerableEvent(menu, e);
 }
 

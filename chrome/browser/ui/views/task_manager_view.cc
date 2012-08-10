@@ -289,7 +289,7 @@ class TaskManagerView : public views::ButtonListener,
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::DialogDelegateView:
   virtual bool CanResize() const OVERRIDE;
@@ -605,7 +605,7 @@ void TaskManagerView::Show(bool highlight_background_resources) {
 
 // ButtonListener implementation.
 void TaskManagerView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   if (purge_memory_button_ && (sender == purge_memory_button_)) {
     MemoryPurger::PurgeAll();
   } else {

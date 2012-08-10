@@ -48,7 +48,7 @@ class SadTabView : public views::View,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* source,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
  protected:
   // Overridden from views::View:

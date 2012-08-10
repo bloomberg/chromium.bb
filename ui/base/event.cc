@@ -72,6 +72,7 @@ Event::Event(const base::NativeEvent& native_event,
 
 Event::Event(const Event& copy)
     : native_event_(copy.native_event_),
+      ui_native_event_(copy.ui_native_event_),
       type_(copy.type_),
       time_stamp_(copy.time_stamp_),
       flags_(copy.flags_),
@@ -80,10 +81,12 @@ Event::Event(const Event& copy)
 
 void Event::Init() {
   std::memset(&native_event_, 0, sizeof(native_event_));
+  std::memset(&ui_native_event_, 0, sizeof(ui_native_event_));
 }
 
 void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {
   native_event_ = native_event;
+  std::memset(&ui_native_event_, 0, sizeof(ui_native_event_));
 }
 
 LocatedEvent::~LocatedEvent() {

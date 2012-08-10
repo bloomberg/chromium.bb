@@ -74,7 +74,7 @@ class BalloonViewImpl : public BalloonView,
 
   // views::ButtonListener interface.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event&) OVERRIDE;
+                             const ui::Event&) OVERRIDE;
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,

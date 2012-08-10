@@ -195,7 +195,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   void UpdateNotificationAnchor();
 
   // Overridden from internal::ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;

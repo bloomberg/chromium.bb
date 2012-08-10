@@ -125,7 +125,7 @@ void AfterTranslateInfoBar::ViewHierarchyChanged(bool is_add,
 }
 
 void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
-                                          const views::Event& event) {
+                                          const ui::Event& event) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   if (sender == revert_button_)

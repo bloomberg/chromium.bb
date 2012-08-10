@@ -124,7 +124,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // HungPagesTableModel::Delegate overrides:
   virtual void TabDestroyed() OVERRIDE;

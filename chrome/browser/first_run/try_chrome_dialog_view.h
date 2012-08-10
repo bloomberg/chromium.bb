@@ -89,7 +89,7 @@ class TryChromeDialogView : public views::ButtonListener,
   // We have two buttons and according to what the user clicked we set |result_|
   // and we should always close and end the modal loop.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::LinkListener:
   // If the user selects the link we need to fire off the default browser that

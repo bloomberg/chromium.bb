@@ -74,7 +74,7 @@ class PanelFrameView : public views::NonClientFrameView,
   virtual void OnMouseCaptureLost() OVERRIDE;
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
+  virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
       OVERRIDE;
 
   // Overridden from chrome::TabIconViewModel:

@@ -299,7 +299,7 @@ void BitmapScrollBar::OnPaint(gfx::Canvas* canvas) {
 ///////////////////////////////////////////////////////////////////////////////
 // BitmapScrollBar, ButtonListener implementation:
 
-void BitmapScrollBar::ButtonPressed(Button* sender, const views::Event& event) {
+void BitmapScrollBar::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == prev_button_) {
     ScrollByAmount(SCROLL_PREV_LINE);
   } else if (sender == next_button_) {

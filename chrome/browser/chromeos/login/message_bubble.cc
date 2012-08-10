@@ -99,7 +99,7 @@ void MessageBubble::Init() {
 }
 
 void MessageBubble::ButtonPressed(views::Button* sender,
-                                  const views::Event& event) {
+                                  const ui::Event& event) {
   if (sender == close_button_) {
     GetWidget()->Close();
   } else {

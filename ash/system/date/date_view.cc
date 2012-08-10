@@ -134,7 +134,7 @@ void DateView::UpdateTextInternal(const base::Time& now) {
   day_of_week_label_->SetText(FormatDayOfWeek(now));
 }
 
-bool DateView::PerformAction(const views::Event& event) {
+bool DateView::PerformAction(const ui::Event& event) {
   if (!actionable_)
     return false;
 
@@ -194,7 +194,7 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
   Layout();
 }
 
-bool TimeView::PerformAction(const views::Event& event) {
+bool TimeView::PerformAction(const ui::Event& event) {
   return false;
 }
 

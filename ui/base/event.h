@@ -20,6 +20,12 @@
 namespace ui {
 class Transform;
 
+#if defined(USE_AURA)
+typedef Event* NativeEvent;
+#else
+typedef base::NativeEvent NativeEvent;
+#endif
+
 class UI_EXPORT Event {
  public:
   virtual ~Event();
@@ -39,6 +45,7 @@ class UI_EXPORT Event {
   };
 
   const base::NativeEvent& native_event() const { return native_event_; }
+  const ui::NativeEvent& ui_native_event() const { return ui_native_event_; }
   EventType type() const { return type_; }
   // time_stamp represents time since machine was booted.
   const base::TimeDelta& time_stamp() const { return time_stamp_; }
@@ -54,6 +61,35 @@ class UI_EXPORT Event {
   bool IsControlDown() const { return (flags_ & EF_CONTROL_DOWN) != 0; }
   bool IsCapsLockDown() const { return (flags_ & EF_CAPS_LOCK_DOWN) != 0; }
   bool IsAltDown() const { return (flags_ & EF_ALT_DOWN) != 0; }
+
+  bool IsMouseEvent() const {
+    return type_ == ui::ET_MOUSE_PRESSED ||
+           type_ == ui::ET_MOUSE_DRAGGED ||
+           type_ == ui::ET_MOUSE_RELEASED ||
+           type_ == ui::ET_MOUSE_MOVED ||
+           type_ == ui::ET_MOUSE_ENTERED ||
+           type_ == ui::ET_MOUSE_EXITED ||
+           type_ == ui::ET_MOUSEWHEEL;
+  }
+
+  bool IsTouchEvent() const {
+    return type_ == ui::ET_TOUCH_RELEASED ||
+           type_ == ui::ET_TOUCH_PRESSED ||
+           type_ == ui::ET_TOUCH_MOVED ||
+           type_ == ui::ET_TOUCH_STATIONARY ||
+           type_ == ui::ET_TOUCH_CANCELLED;
+  }
+
+  bool IsScrollGestureEvent() const {
+    return type_ == ui::ET_GESTURE_SCROLL_BEGIN ||
+           type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
+           type_ == ui::ET_GESTURE_SCROLL_END;
+  }
+
+  bool IsFlingScrollEvent() const {
+    return type_ == ui::ET_SCROLL_FLING_CANCEL ||
+           type_ == ui::ET_SCROLL_FLING_START;
+  }
 
   // Returns true if the event has a valid |native_event_|.
   bool HasNativeEvent() const;
@@ -76,6 +112,8 @@ class UI_EXPORT Event {
   void InitWithNativeEvent(const base::NativeEvent& native_event);
 
   base::NativeEvent native_event_;
+  // TODO(beng): check to see if this is necessary.
+  ui::NativeEvent ui_native_event_;
   EventType type_;
   base::TimeDelta time_stamp_;
   int flags_;

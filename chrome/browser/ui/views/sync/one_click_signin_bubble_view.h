@@ -71,7 +71,7 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // The bubble, if we're showing one.
   static OneClickSigninBubbleView* bubble_view_;

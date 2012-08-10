@@ -38,7 +38,7 @@ ConfirmBubbleViews::~ConfirmBubbleViews() {
 }
 
 void ConfirmBubbleViews::ButtonPressed(views::Button* sender,
-                                       const views::Event& event) {
+                                       const ui::Event& event) {
   if (sender->tag() == ConfirmBubbleModel::BUTTON_OK)
     model_->Accept();
   else if (sender->tag() == ConfirmBubbleModel::BUTTON_CANCEL)

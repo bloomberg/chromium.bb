@@ -352,7 +352,7 @@ gfx::Size FindBarView::GetPreferredSize() {
 // FindBarView, views::ButtonListener implementation:
 
 void FindBarView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   switch (sender->tag()) {
     case FIND_PREVIOUS_TAG:
     case FIND_NEXT_TAG:

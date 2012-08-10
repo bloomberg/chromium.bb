@@ -160,7 +160,7 @@ int BeforeTranslateInfoBar::ContentMinimumWidth() const {
 }
 
 void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
-                                           const views::Event& event) {
+                                           const ui::Event& event) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   TranslateInfoBarDelegate* delegate = GetDelegate();

@@ -324,7 +324,7 @@ views::View* HungRendererDialogView::GetContentsView() {
 // HungRendererDialogView, views::ButtonListener implementation:
 
 void HungRendererDialogView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   if (sender == kill_button_ &&
       hung_pages_table_model_->GetRenderProcessHost()) {
 

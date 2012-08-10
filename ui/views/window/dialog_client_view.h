@@ -87,7 +87,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
   // ButtonListener implementation:
   virtual void ButtonPressed(Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
  private:
   // Paint the size box in the bottom right corner of the window if it is

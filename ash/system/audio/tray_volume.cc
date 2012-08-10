@@ -177,7 +177,7 @@ class VolumeView : public views::View,
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     CHECK(sender == icon_ || sender == mute_);
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();

@@ -184,7 +184,7 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
 }
 
 void OneClickSigninBubbleView::ButtonPressed(views::Button* sender,
-                                             const views::Event& event) {
+                                             const ui::Event& event) {
   StartFade(false);
   if (ok_button_ == sender) {
     base::ResetAndReturn(&start_sync_callback_).Run(

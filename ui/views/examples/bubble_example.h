@@ -21,7 +21,7 @@ class BubbleExample : public ExampleBase, public ButtonListener {
   virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   Button* round_;
   Button* arrow_;

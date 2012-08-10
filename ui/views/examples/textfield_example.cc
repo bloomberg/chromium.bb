@@ -74,8 +74,7 @@ bool TextfieldExample::HandleKeyEvent(Textfield* sender,
   return false;
 }
 
-void TextfieldExample::ButtonPressed(Button* sender,
-                                     const Event& event) {
+void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == show_password_) {
     PrintStatus("Password [%s]", UTF16ToUTF8(password_->text()).c_str());
   } else if (sender == clear_all_) {

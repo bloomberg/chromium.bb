@@ -527,7 +527,7 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 // ToolbarView, views::Button::ButtonListener implementation:
 
 void ToolbarView::ButtonPressed(views::Button* sender,
-                                const views::Event& event) {
+                                const ui::Event& event) {
   int command = sender->tag();
   WindowOpenDisposition disposition =
       chrome::DispositionFromEventFlags(sender->mouse_event_flags());

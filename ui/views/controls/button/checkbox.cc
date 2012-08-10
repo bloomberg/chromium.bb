@@ -69,7 +69,7 @@ void Checkbox::OnPaintFocusBorder(gfx::Canvas* canvas) {
   }
 }
 
-void Checkbox::NotifyClick(const views::Event& event) {
+void Checkbox::NotifyClick(const ui::Event& event) {
   SetChecked(!checked());
   RequestFocus();
   TextButtonBase::NotifyClick(event);

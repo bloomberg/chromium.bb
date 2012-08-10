@@ -75,8 +75,6 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       initiating_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)),
       aggregated_clicks_(0),
-      last_click_time_(),
-      last_click_location_(),
       ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
           TouchSelectionController::create(this))) {
   set_border(text_border_);

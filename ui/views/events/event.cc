@@ -12,28 +12,10 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
-// Event, protected:
-
-Event::Event(ui::EventType type, int flags)
-    : type_(type),
-      time_stamp_(base::Time::NowFromSystemTime()),
-      flags_(flags) {
-  // Safely initialize the pointer/struct to null/empty.
-  memset(&native_event_, 0, sizeof(native_event_));
-}
-
-Event::Event(const NativeEvent& native_event, ui::EventType type, int flags)
-    : native_event_(native_event),
-      type_(type),
-      time_stamp_(base::Time::NowFromSystemTime()),
-      flags_(flags) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // LocatedEvent, protected:
 
 #if !defined(USE_AURA)
-LocatedEvent::LocatedEvent(const NativeEvent& native_event)
+LocatedEvent::LocatedEvent(const ui::NativeEvent& native_event)
     : Event(native_event,
             ui::EventTypeFromNative(native_event),
             ui::EventFlagsFromNative(native_event)),
@@ -67,7 +49,7 @@ LocatedEvent::LocatedEvent(const LocatedEvent& model, View* root)
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
-MouseEvent::MouseEvent(const NativeEvent& native_event)
+MouseEvent::MouseEvent(const ui::NativeEvent& native_event)
     : LocatedEvent(native_event) {
 }
 
@@ -79,14 +61,14 @@ MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
 // MouseWheelEvent, public:
 
 #if !defined(USE_AURA)
-MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
+MouseWheelEvent::MouseWheelEvent(const ui::NativeEvent& native_event)
     : MouseEvent(native_event),
       offset_(ui::GetMouseWheelOffset(native_event)) {
 }
 #endif
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
-    : MouseEvent(scroll_event.native_event()),
+    : MouseEvent(scroll_event),
       offset_(scroll_event.y_offset()) {
   set_type(ui::ET_MOUSEWHEEL);
 }

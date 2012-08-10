@@ -28,7 +28,7 @@ class MessageBoxExample : public ExampleBase, public ButtonListener {
 
  private:
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   // The MessageBoxView to be tested.
   MessageBoxView* message_box_view_;

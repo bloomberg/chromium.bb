@@ -180,7 +180,7 @@ void ChromeToMobileBubbleView::AnimationProgressed(
 }
 
 void ChromeToMobileBubbleView::ButtonPressed(views::Button* sender,
-                                             const views::Event& event) {
+                                             const ui::Event& event) {
   HandleButtonPressed(sender);
 }
 

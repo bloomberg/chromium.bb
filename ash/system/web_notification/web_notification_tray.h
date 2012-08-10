@@ -120,7 +120,7 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
 
   // Overridden from internal::ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
  protected:
   // Send a remove request to the delegate.

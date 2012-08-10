@@ -48,7 +48,7 @@ class VIEWS_EXPORT NativeScrollBarViews : public BaseScrollBar,
 
   // BaseButton::ButtonListener overrides:
   virtual void ButtonPressed(Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // NativeScrollBarWrapper overrides:
   virtual int GetPosition() const OVERRIDE;

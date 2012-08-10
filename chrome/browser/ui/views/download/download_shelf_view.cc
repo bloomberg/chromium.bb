@@ -384,7 +384,7 @@ void DownloadShelfView::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void DownloadShelfView::ButtonPressed(
-    views::Button* button, const views::Event& event) {
+    views::Button* button, const ui::Event& event) {
   auto_closed_ = false;
   Close();
 }

@@ -48,7 +48,7 @@ class TreeViewExample : public ExampleBase,
   bool IsCommandIdEnabled(int command_id);
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   // TreeViewController:
   virtual void OnTreeViewSelectionChanged(TreeView* tree_view) OVERRIDE;

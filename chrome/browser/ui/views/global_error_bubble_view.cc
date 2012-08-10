@@ -152,7 +152,7 @@ gfx::Rect GlobalErrorBubbleView::GetAnchorRect() {
 }
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
-                                          const views::Event& event) {
+                                          const ui::Event& event) {
   if (error_) {
     if (sender->tag() == TAG_ACCEPT_BUTTON)
       error_->BubbleViewAcceptButtonPressed(browser_);

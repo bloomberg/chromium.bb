@@ -97,7 +97,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(bool is_add,
 }
 
 void ConfirmInfoBar::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
+                                   const ui::Event& event) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   ConfirmInfoBarDelegate* delegate = GetDelegate();

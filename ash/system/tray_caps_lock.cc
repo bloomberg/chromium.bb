@@ -84,7 +84,7 @@ class CapsLockDefaultView : public ActionableView {
   }
 
   // Overridden from ActionableView:
-  virtual bool PerformAction(const views::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
     Shell::GetInstance()->tray_delegate()->SetCapsLockEnabled(
         !Shell::GetInstance()->tray_delegate()->IsCapsLockOn());
     return true;

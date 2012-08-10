@@ -136,7 +136,7 @@ string16 UninstallView::GetDialogButtonLabel(ui::DialogButton button) const {
 }
 
 void UninstallView::ButtonPressed(views::Button* sender,
-                                  const views::Event& event) {
+                                  const ui::Event& event) {
   if (change_default_browser_ == sender) {
     // Disable the browsers combobox if the user unchecks the checkbox.
     DCHECK(browsers_combo_);

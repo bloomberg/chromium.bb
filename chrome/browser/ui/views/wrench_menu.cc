@@ -486,7 +486,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     menu_->CancelAndEvaluate(menu_model_, sender->tag());
   }
 
@@ -646,7 +646,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     if (sender->tag() == fullscreen_index_) {
       menu_->CancelAndEvaluate(menu_model_, sender->tag());
     } else {
@@ -803,7 +803,7 @@ string16 WrenchMenu::GetTooltipText(int id,
 }
 
 bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,
-                                    const views::Event& e) {
+                                    const ui::Event& e) {
   return is_bookmark_command(menu->GetCommand()) ?
       bookmark_menu_delegate_->IsTriggerableEvent(menu, e) :
       MenuDelegate::IsTriggerableEvent(menu, e);

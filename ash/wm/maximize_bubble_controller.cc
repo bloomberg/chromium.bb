@@ -292,7 +292,7 @@ class BubbleContentsButtonRow : public views::View,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
   // Called from BubbleDialogButton.
   void ButtonHovered(BubbleDialogButton* sender);
 
@@ -557,7 +557,7 @@ BubbleContentsButtonRow::BubbleContentsButtonRow(
 
 // Overridden from ButtonListener.
 void BubbleContentsButtonRow::ButtonPressed(views::Button* sender,
-                                            const views::Event& event) {
+                                            const ui::Event& event) {
   // While shutting down, the connection to the owner might already be broken.
   if (!bubble_->controller())
     return;

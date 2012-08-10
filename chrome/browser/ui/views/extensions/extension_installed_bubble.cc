@@ -240,7 +240,7 @@ class InstalledBubbleContent : public views::View,
     AddChildView(close_button_);
   }
 
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
+  virtual void ButtonPressed(views::Button* sender, const ui::Event& event) {
     if (sender == close_button_)
       bubble_->StartFade(false);
     else

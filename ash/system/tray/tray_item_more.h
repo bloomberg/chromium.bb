@@ -39,7 +39,7 @@ class TrayItemMore : public ActionableView {
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
   virtual void Layout() OVERRIDE;

@@ -31,7 +31,7 @@ class TabbedPaneExample : public ExampleBase,
 
  private:
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   // TabbedPaneListener:
   virtual void TabSelectedAt(int index) OVERRIDE;

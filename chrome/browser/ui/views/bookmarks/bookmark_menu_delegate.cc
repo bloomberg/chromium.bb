@@ -115,7 +115,7 @@ string16 BookmarkMenuDelegate::GetTooltipText(
 }
 
 bool BookmarkMenuDelegate::IsTriggerableEvent(views::MenuItemView* menu,
-                                              const views::Event& e) {
+                                              const ui::Event& e) {
   return e.type() == ui::ET_GESTURE_TAP ||
          e.type() == ui::ET_GESTURE_TAP_DOWN ||
          event_utils::IsPossibleDispositionEvent(e);

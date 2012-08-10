@@ -81,7 +81,7 @@ class ShellWindowFrameView : public views::NonClientFrameView,
 
  private:
   // views::ButtonListener implementation.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event)
+  virtual void ButtonPressed(views::Button* sender, const ui::Event& event)
       OVERRIDE;
 
   ShellWindowViews* window_;
@@ -296,7 +296,7 @@ gfx::Size ShellWindowFrameView::GetMaximumSize() {
 }
 
 void ShellWindowFrameView::ButtonPressed(views::Button* sender,
-                                         const views::Event& event) {
+                                         const ui::Event& event) {
   DCHECK(!window_->frameless());
   if (sender == close_button_)
     frame_->Close();

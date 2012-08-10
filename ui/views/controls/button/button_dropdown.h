@@ -58,7 +58,7 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton {
   // pressed when a user holds the mouse down over the button. For this
   // implementation, both left and right mouse buttons can trigger a change
   // to the PUSHED state.
-  virtual bool ShouldEnterPushedState(const Event& event) OVERRIDE;
+  virtual bool ShouldEnterPushedState(const ui::Event& event) OVERRIDE;
 
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();

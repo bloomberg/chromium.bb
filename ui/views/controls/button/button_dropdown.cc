@@ -133,7 +133,7 @@ void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
   state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
 }
 
-bool ButtonDropDown::ShouldEnterPushedState(const Event& event) {
+bool ButtonDropDown::ShouldEnterPushedState(const ui::Event& event) {
   // Enter PUSHED state on press with Left or Right mouse button or on taps.
   // Remain in this state while the context menu is open.
   return event.type() == ui::ET_GESTURE_TAP ||

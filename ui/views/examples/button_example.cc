@@ -55,7 +55,7 @@ void ButtonExample::CreateExampleView(View* container) {
   container->AddChildView(image_button_);
 }
 
-void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
+void ButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
   PrintStatus("Pressed! count: %d", ++count_);
 
   if (event.IsControlDown()) {

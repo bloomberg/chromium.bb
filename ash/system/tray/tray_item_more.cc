@@ -60,7 +60,7 @@ void TrayItemMore::ReplaceIcon(views::View* view) {
   AddChildViewAt(view, 0);
 }
 
-bool TrayItemMore::PerformAction(const views::Event& event) {
+bool TrayItemMore::PerformAction(const ui::Event& event) {
   owner_->TransitionDetailedView();
   return true;
 }

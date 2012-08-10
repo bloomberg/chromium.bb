@@ -93,7 +93,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // MenuDelegate like methods (see class description for details).
   string16 GetTooltipText(int id, const gfx::Point& p) const;
   bool IsTriggerableEvent(views::MenuItemView* menu,
-                          const views::Event& e);
+                          const ui::Event& e);
   void ExecuteCommand(int id, int mouse_event_flags);
   bool GetDropFormats(
       views::MenuItemView* menu,

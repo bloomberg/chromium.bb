@@ -45,7 +45,7 @@ class DefaultAccessibilityView : public ActionableView {
 
  protected:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
     if (Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
       Shell::GetInstance()->delegate()->ToggleSpokenFeedback();
     GetWidget()->Close();

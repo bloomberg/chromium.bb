@@ -579,7 +579,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // being processed at the same time (e.g. one event triggers another event),
   // then the most recent event is returned. Returns NULL if no event is being
   // processed.
-  const Event* GetCurrentEvent();
+  const ui::Event* GetCurrentEvent();
 
   // Invoked when the tooltip text changes for the specified views.
   void TooltipTextChanged(View* view);

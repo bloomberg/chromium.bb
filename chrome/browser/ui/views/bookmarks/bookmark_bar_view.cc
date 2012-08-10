@@ -168,7 +168,7 @@ class BookmarkButton : public views::TextButton {
     return !tooltip->empty();
   }
 
-  virtual bool IsTriggerableEvent(const views::Event& e) OVERRIDE {
+  virtual bool IsTriggerableEvent(const ui::Event& e) OVERRIDE {
     return e.type() == ui::ET_GESTURE_TAP ||
            e.type() == ui::ET_GESTURE_TAP_DOWN ||
            event_utils::IsPossibleDispositionEvent(e);
@@ -218,7 +218,7 @@ class BookmarkFolderButton : public views::MenuButton {
     return !tooltip->empty();
   }
 
-  virtual bool IsTriggerableEvent(const views::Event& e) OVERRIDE {
+  virtual bool IsTriggerableEvent(const ui::Event& e) OVERRIDE {
     // Left clicks and taps should show the menu contents and right clicks
     // should show the context menu. They should not trigger the opening of
     // underlying urls.
@@ -1029,7 +1029,7 @@ void BookmarkBarView::OnMenuButtonClicked(views::View* view,
 }
 
 void BookmarkBarView::ButtonPressed(views::Button* sender,
-                                    const views::Event& event) {
+                                    const ui::Event& event) {
   const BookmarkNode* node;
   if (sender->tag() == kOtherFolderButtonTag) {
     node = model_->other_node();

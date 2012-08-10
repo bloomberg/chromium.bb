@@ -144,7 +144,7 @@ gfx::Size CustomFrameViewAsh::GetMinimumSize() {
 ////////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener overrides:
 void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
-                                       const views::Event& event) {
+                                       const ui::Event& event) {
   if (sender == maximize_button_) {
     // The maximize button may move out from under the cursor.
     ResetWindowControls();

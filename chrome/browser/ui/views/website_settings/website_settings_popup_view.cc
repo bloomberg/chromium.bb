@@ -366,7 +366,7 @@ void WebsiteSettingsPopupView::OnWidgetClosing(views::Widget* widget) {
 
 void WebsiteSettingsPopupView::ButtonPressed(
     views::Button* button,
-    const views::Event& event) {
+    const ui::Event& event) {
   GetWidget()->Close();
 }
 

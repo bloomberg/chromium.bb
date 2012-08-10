@@ -152,7 +152,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     StartFade(false);
   }
 

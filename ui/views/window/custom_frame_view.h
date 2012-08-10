@@ -53,7 +53,7 @@ class CustomFrameView : public NonClientFrameView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
  private:
   // Returns the thickness of the border that makes up the window frame edges.

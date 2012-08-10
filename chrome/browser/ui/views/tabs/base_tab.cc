@@ -570,7 +570,7 @@ void BaseTab::AnimationEnded(const ui::Animation* animation) {
   SchedulePaint();
 }
 
-void BaseTab::ButtonPressed(views::Button* sender, const views::Event& event) {
+void BaseTab::ButtonPressed(views::Button* sender, const ui::Event& event) {
   DCHECK(sender == close_button_);
   controller()->CloseTab(this);
 }

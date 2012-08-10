@@ -235,7 +235,7 @@ void AppPanelBrowserFrameView::Layout() {
 // AppPanelBrowserFrameView, views::ButtonListener implementation:
 
 void AppPanelBrowserFrameView::ButtonPressed(views::Button* sender,
-                                             const views::Event& event) {
+                                             const ui::Event& event) {
   if (sender == close_button_)
     frame()->Close();
 }

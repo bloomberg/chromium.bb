@@ -239,7 +239,7 @@ views::View* CollectedCookiesViews::GetContentsView() {
 // CollectedCookiesViews, views::ButtonListener implementation:
 
 void CollectedCookiesViews::ButtonPressed(views::Button* sender,
-                                          const views::Event& event) {
+                                          const ui::Event& event) {
   if (sender == block_allowed_button_)
     AddContentException(allowed_cookies_tree_, CONTENT_SETTING_BLOCK);
   else if (sender == allow_blocked_button_)

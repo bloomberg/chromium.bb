@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EVENT_UTILS_H_
 #define CHROME_BROWSER_UI_VIEWS_EVENT_UTILS_H_
 
-namespace views {
+namespace ui {
 class Event;
 }
 
@@ -13,7 +13,7 @@ namespace event_utils {
 
 // Returns true if the specified event may have a
 // WindowOptionDisposition.
-bool IsPossibleDispositionEvent(const views::Event& event);
+bool IsPossibleDispositionEvent(const ui::Event& event);
 
 }  // namespace event_utils
 

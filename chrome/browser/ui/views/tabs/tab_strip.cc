@@ -737,7 +737,7 @@ void TabStrip::PrepareForCloseAt(int model_index) {
   // If the user closes the tab from a touch device don't wait for the mouse to
   // move out of the tab strip (it may never happen).
   // TODO: maybe we should use a delay on touch devices.
-  const views::Event* event = GetWidget()->GetCurrentEvent();
+  const ui::Event* event = GetWidget()->GetCurrentEvent();
   if (event && event->type() == ui::ET_MOUSE_RELEASED &&
       event->flags() & ui::EF_FROM_TOUCH)
     return;
@@ -1353,7 +1353,7 @@ int TabStrip::GetMiniTabCount() const {
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::ButtonListener implementation:
 
-void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
+void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == newtab_button_) {
     content::RecordAction(UserMetricsAction("NewTab_Button"));
     UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,

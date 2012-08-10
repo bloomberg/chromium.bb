@@ -121,7 +121,7 @@ void ZoomBubbleView::OnMouseExited(const views::MouseEvent& event) {
 }
 
 void ZoomBubbleView::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
+                                   const ui::Event& event) {
   chrome_page_zoom::Zoom(tab_contents_->web_contents(),
                          content::PAGE_ZOOM_RESET);
 }

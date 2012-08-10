@@ -25,7 +25,7 @@ class ProgressBarExample : public ExampleBase, public ButtonListener {
 
  private:
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* button, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* button, const ui::Event& event) OVERRIDE;
 
   Button* minus_button_;
   Button* plus_button_;

@@ -97,7 +97,7 @@ gfx::Rect PasswordGenerationBubbleView::GetAnchorRect() {
 }
 
 void PasswordGenerationBubbleView::ButtonPressed(views::Button* sender,
-                                                 const views::Event& event) {
+                                                 const ui::Event& event) {
   if (sender == accept_button_) {
     render_view_host_->Send(new AutofillMsg_GeneratedPasswordAccepted(
         render_view_host_->GetRoutingID(), text_field_->text()));

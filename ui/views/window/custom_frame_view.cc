@@ -238,7 +238,7 @@ gfx::Size CustomFrameView::GetPreferredSize() {
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, ButtonListener implementation:
 
-void CustomFrameView::ButtonPressed(Button* sender, const Event& event) {
+void CustomFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == close_button_)
     frame_->Close();
   else if (sender == minimize_button_)

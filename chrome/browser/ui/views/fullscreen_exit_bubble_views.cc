@@ -88,7 +88,7 @@ class FullscreenExitBubbleViews::FullscreenExitView
 
   // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::LinkListener
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -189,7 +189,7 @@ FullscreenExitBubbleViews::FullscreenExitView::~FullscreenExitView() {
 
 void FullscreenExitBubbleViews::FullscreenExitView::ButtonPressed(
     views::Button* sender,
-    const views::Event& event) {
+    const ui::Event& event) {
   if (sender == button_view_->accept_button())
     bubble_->Accept();
   else

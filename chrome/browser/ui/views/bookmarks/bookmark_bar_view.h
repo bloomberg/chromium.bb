@@ -231,7 +231,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,

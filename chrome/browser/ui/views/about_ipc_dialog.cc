@@ -347,7 +347,7 @@ bool AboutIPCDialog::CanResize() const {
 }
 
 void AboutIPCDialog::ButtonPressed(
-    views::Button* button, const views::Event& event) {
+    views::Button* button, const ui::Event& event) {
   if (button == track_toggle_) {
     if (tracking_) {
       track_toggle_->SetText(kStartTrackingLabel);

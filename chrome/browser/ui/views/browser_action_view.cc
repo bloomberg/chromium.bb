@@ -205,7 +205,7 @@ void BrowserActionButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void BrowserActionButton::ButtonPressed(views::Button* sender,
-                                        const views::Event& event) {
+                                        const ui::Event& event) {
   delegate_->OnBrowserActionExecuted(this);
 }
 

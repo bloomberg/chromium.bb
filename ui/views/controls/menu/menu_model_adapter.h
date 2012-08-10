@@ -43,7 +43,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   virtual void ExecuteCommand(int id) OVERRIDE;
   virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
   virtual bool IsTriggerableEvent(MenuItemView* source,
-                                  const Event& e) OVERRIDE;
+                                  const ui::Event& e) OVERRIDE;
   virtual bool GetAccelerator(int id,
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual string16 GetLabel(int id) const OVERRIDE;

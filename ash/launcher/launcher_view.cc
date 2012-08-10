@@ -988,7 +988,7 @@ string16 LauncherView::GetAccessibleName(const views::View* view) {
 }
 
 void LauncherView::ButtonPressed(views::Button* sender,
-                                 const views::Event& event) {
+                                 const ui::Event& event) {
   // Do not handle mouse release during drag.
   if (dragging())
     return;

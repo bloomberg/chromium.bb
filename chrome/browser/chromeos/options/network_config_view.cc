@@ -194,7 +194,7 @@ void NetworkConfigView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 void NetworkConfigView::ButtonPressed(views::Button* sender,
-                                      const views::Event& event) {
+                                      const ui::Event& event) {
   if (advanced_button_ && sender == advanced_button_) {
     advanced_button_->SetVisible(false);
     ShowAdvancedView();

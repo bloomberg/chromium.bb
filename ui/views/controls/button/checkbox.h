@@ -39,7 +39,7 @@ class VIEWS_EXPORT Checkbox : public TextButtonBase {
 
  private:
   // Overridden from Button:
-  virtual void NotifyClick(const views::Event& event) OVERRIDE;
+  virtual void NotifyClick(const ui::Event& event) OVERRIDE;
 
   // Overridden from TextButtonBase:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;

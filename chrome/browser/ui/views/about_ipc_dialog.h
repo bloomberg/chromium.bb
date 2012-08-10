@@ -58,7 +58,7 @@ class AboutIPCDialog : public views::DialogDelegateView,
 
   // views::ButtonListener.
   virtual void ButtonPressed(views::Button* button,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   WTL::CListViewCtrl message_list_;
 

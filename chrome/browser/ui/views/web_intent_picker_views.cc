@@ -267,7 +267,7 @@ class ServiceButtonsView : public views::View,
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
@@ -343,7 +343,7 @@ void ServiceButtonsView::StartThrobber(const GURL& url) {
 }
 
 void ServiceButtonsView::ButtonPressed(views::Button* sender,
-                                       const views::Event& event) {
+                                       const ui::Event& event) {
   size_t index = static_cast<size_t>(sender->tag());
   delegate_->OnServiceButtonClicked(model_->GetInstalledServiceAt(index));
 }
@@ -453,7 +453,7 @@ class SuggestedExtensionsRowView : public views::View,
 
   // ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // LinkListener implementation.
   void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -523,7 +523,7 @@ SuggestedExtensionsRowView::~SuggestedExtensionsRowView() {
 }
 
 void SuggestedExtensionsRowView::ButtonPressed(views::Button* sender,
-                                               const views::Event& event) {
+                                               const ui::Event& event) {
   delegate_->OnExtensionInstallClicked(extension_->id);
 }
 
@@ -666,7 +666,7 @@ class WebIntentPickerViews : public views::ButtonListener,
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::DialogDelegate implementation.
   virtual void WindowClosing() OVERRIDE;
@@ -817,7 +817,7 @@ WebIntentPickerViews::~WebIntentPickerViews() {
 }
 
 void WebIntentPickerViews::ButtonPressed(views::Button* sender,
-                                         const views::Event& event) {
+                                         const ui::Event& event) {
   delegate_->OnPickerClosed();
 }
 

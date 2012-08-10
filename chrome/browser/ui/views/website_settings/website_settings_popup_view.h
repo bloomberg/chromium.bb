@@ -66,7 +66,7 @@ class WebsiteSettingsPopupView
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* button,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::LinkListener implementation.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

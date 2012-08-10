@@ -160,7 +160,7 @@ void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-bool TrayBackgroundView::PerformAction(const views::Event& event) {
+bool TrayBackgroundView::PerformAction(const ui::Event& event) {
   return false;
 }
 

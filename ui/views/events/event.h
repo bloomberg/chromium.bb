@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/time.h"
+#include "ui/base/event.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -24,98 +25,11 @@ class OSExchangeData;
 
 namespace views {
 
-#if defined(USE_AURA)
-typedef ui::Event* NativeEvent;
-#else
-typedef base::NativeEvent NativeEvent;
-#endif
-
 class View;
 
 namespace internal {
 class RootView;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Event class
-//
-// An event encapsulates an input event that can be propagated into view
-// hierarchies. An event has a type, some flags and a time stamp.
-//
-// Each major event type has a corresponding Event subclass.
-//
-// Events are immutable but support copy
-//
-////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT Event {
- public:
-  const NativeEvent& native_event() const { return native_event_; }
-  ui::EventType type() const { return type_; }
-  const base::Time& time_stamp() const { return time_stamp_; }
-
-  // Required for Gesture testing purposes.
-  void set_time_stamp(base::Time time_stamp) { time_stamp_ = time_stamp; }
-
-  int flags() const { return flags_; }
-  void set_flags(int flags) { flags_ = flags; }
-
-  // The following methods return true if the respective keys were pressed at
-  // the time the event was created.
-  bool IsShiftDown() const { return (flags_ & ui::EF_SHIFT_DOWN) != 0; }
-  bool IsControlDown() const { return (flags_ & ui::EF_CONTROL_DOWN) != 0; }
-  bool IsCapsLockDown() const { return (flags_ & ui::EF_CAPS_LOCK_DOWN) != 0; }
-  bool IsAltDown() const { return (flags_ & ui::EF_ALT_DOWN) != 0; }
-
-  bool IsMouseEvent() const {
-    return type_ == ui::ET_MOUSE_PRESSED ||
-           type_ == ui::ET_MOUSE_DRAGGED ||
-           type_ == ui::ET_MOUSE_RELEASED ||
-           type_ == ui::ET_MOUSE_MOVED ||
-           type_ == ui::ET_MOUSE_ENTERED ||
-           type_ == ui::ET_MOUSE_EXITED ||
-           type_ == ui::ET_MOUSEWHEEL;
-  }
-
-  bool IsTouchEvent() const {
-    return type_ == ui::ET_TOUCH_RELEASED ||
-           type_ == ui::ET_TOUCH_PRESSED ||
-           type_ == ui::ET_TOUCH_MOVED ||
-           type_ == ui::ET_TOUCH_STATIONARY ||
-           type_ == ui::ET_TOUCH_CANCELLED;
-  }
-
-  bool IsScrollGestureEvent() const {
-    return type_ == ui::ET_GESTURE_SCROLL_BEGIN ||
-           type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
-           type_ == ui::ET_GESTURE_SCROLL_END;
-  }
-
-  bool IsFlingScrollEvent() const {
-    return type_ == ui::ET_SCROLL_FLING_CANCEL ||
-           type_ == ui::ET_SCROLL_FLING_START;
-  }
-
- protected:
-  Event(ui::EventType type, int flags);
-  Event(const NativeEvent& native_event, ui::EventType type, int flags);
-  Event(const Event& model)
-      : native_event_(model.native_event()),
-        type_(model.type()),
-        time_stamp_(model.time_stamp()),
-        flags_(model.flags()) {
-  }
-
-  void set_type(ui::EventType type) { type_ = type; }
-
- private:
-  void operator=(const Event&);
-
-  NativeEvent native_event_;
-  ui::EventType type_;
-  base::Time time_stamp_;
-  int flags_;
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -125,14 +39,14 @@ class VIEWS_EXPORT Event {
 // position in the screen.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT LocatedEvent : public Event {
+class VIEWS_EXPORT LocatedEvent : public ui::Event {
  public:
   int x() const { return location_.x(); }
   int y() const { return location_.y(); }
   const gfx::Point& location() const { return location_; }
 
  protected:
-  explicit LocatedEvent(const NativeEvent& native_event);
+  explicit LocatedEvent(const ui::NativeEvent& native_event);
 
   // TODO(msw): Kill this legacy constructor when we update uses.
   // Simple initialization from cracked metadata.
@@ -159,7 +73,7 @@ class VIEWS_EXPORT LocatedEvent : public Event {
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT MouseEvent : public LocatedEvent {
  public:
-  explicit MouseEvent(const NativeEvent& native_event);
+  explicit MouseEvent(const ui::NativeEvent& native_event);
   // Create a new MouseEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted
   // from |source| coordinate system to |target| coordinate system.
@@ -206,8 +120,6 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
 
  private:
   friend class internal::RootView;
-
-  DISALLOW_COPY_AND_ASSIGN(MouseEvent);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -221,7 +133,7 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT TouchEvent : public LocatedEvent {
  public:
-  explicit TouchEvent(const NativeEvent& native_event);
+  explicit TouchEvent(const ui::NativeEvent& native_event);
 
   // Create a new touch event.
   TouchEvent(ui::EventType type,
@@ -287,7 +199,7 @@ class VIEWS_EXPORT MouseWheelEvent : public MouseEvent {
   // See |offset| for details.
   static const int kWheelDelta;
 
-  explicit MouseWheelEvent(const NativeEvent& native_event);
+  explicit MouseWheelEvent(const ui::NativeEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
 
   // The amount to scroll. This is in multiples of kWheelDelta.
@@ -341,7 +253,7 @@ class VIEWS_EXPORT DropTargetEvent : public LocatedEvent {
 
 class VIEWS_EXPORT ScrollEvent : public MouseEvent {
  public:
-  explicit ScrollEvent(const NativeEvent& native_event);
+  explicit ScrollEvent(const ui::NativeEvent& native_event);
 
   float x_offset() const { return x_offset_; }
   float y_offset() const { return y_offset_; }
@@ -367,7 +279,7 @@ class VIEWS_EXPORT ScrollEvent : public MouseEvent {
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT GestureEvent : public LocatedEvent {
  public:
-  explicit GestureEvent(const NativeEvent& native_event);
+  explicit GestureEvent(const ui::NativeEvent& native_event);
 
   // Create a new GestureEvent which is identical to the provided model.
   // If source / target views are provided, the model location will be converted

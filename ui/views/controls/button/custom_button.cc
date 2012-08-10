@@ -295,14 +295,14 @@ CustomButton::CustomButton(ButtonListener* listener)
 void CustomButton::StateChanged() {
 }
 
-bool CustomButton::IsTriggerableEvent(const Event& event) {
+bool CustomButton::IsTriggerableEvent(const ui::Event& event) {
   return event.type() == ui::ET_GESTURE_TAP_DOWN ||
          event.type() == ui::ET_GESTURE_TAP ||
          (event.IsMouseEvent() &&
              (triggerable_event_flags_ & event.flags()) != 0);
 }
 
-bool CustomButton::ShouldEnterPushedState(const Event& event) {
+bool CustomButton::ShouldEnterPushedState(const ui::Event& event) {
   return IsTriggerableEvent(event);
 }
 

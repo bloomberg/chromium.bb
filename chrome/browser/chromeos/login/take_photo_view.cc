@@ -280,7 +280,7 @@ gfx::Size TakePhotoView::GetPreferredSize() {
 }
 
 void TakePhotoView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   DCHECK(delegate_);
   DCHECK(sender == snapshot_button_);
   FlipCapturingState();

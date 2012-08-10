@@ -445,7 +445,7 @@ class WebNotificationView : public views::View,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     if (sender == close_button_)
       tray_->SendRemoveNotification(notification_.id);
   }
@@ -519,7 +519,7 @@ class WebNotificationButtonView : public views::View,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     if (sender == close_all_button_)
       tray_->SendRemoveAllNotifications();
   }
@@ -1007,7 +1007,7 @@ void WebNotificationTray::DisableByUrl(const std::string& id) {
     delegate_->DisableNotificationsFromSource(id);
 }
 
-bool WebNotificationTray::PerformAction(const views::Event& event) {
+bool WebNotificationTray::PerformAction(const ui::Event& event) {
   if (message_center_bubble())
     HideMessageCenterBubble();
   else

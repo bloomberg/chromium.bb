@@ -304,7 +304,7 @@ void TryChromeDialogView::SetToastRegion(HWND window, int w, int h) {
 }
 
 void TryChromeDialogView::ButtonPressed(views::Button* sender,
-                                        const views::Event& event) {
+                                        const ui::Event& event) {
   if (sender->tag() == BT_DONT_BUG_RADIO) {
     if (make_default_) {
       make_default_->SetChecked(false);

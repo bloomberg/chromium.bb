@@ -152,7 +152,7 @@ void DialogFrameView::OnPaint(gfx::Canvas* canvas) {
 // DialogFrameView, views::ButtonListener overrides:
 
 void DialogFrameView::ButtonPressed(views::Button* sender,
-                                    const views::Event& event) {
+                                    const ui::Event& event) {
   if (sender == close_button_)
     GetWidget()->Close();
 }

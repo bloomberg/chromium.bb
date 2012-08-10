@@ -179,7 +179,7 @@ void BalloonViewImpl::OnWorkAreaChanged() {
 }
 
 void BalloonViewImpl::ButtonPressed(views::Button* sender,
-                                    const views::Event&) {
+                                    const ui::Event&) {
   // The only button currently is the close button.
   DCHECK(sender == close_button_);
   Close(true);

@@ -113,7 +113,7 @@ class TraySms::SmsMessageView : public views::View,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     tray_->RemoveMessage(index_);
     tray_->Update(false);
   }

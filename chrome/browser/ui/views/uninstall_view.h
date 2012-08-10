@@ -31,7 +31,7 @@ class UninstallView : public views::ButtonListener,
 
   // Overridden form views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Overridden from views::DialogDelegateView:
   virtual bool Accept() OVERRIDE;

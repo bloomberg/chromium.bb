@@ -278,7 +278,7 @@ string16 BookmarkBubbleView::GetTitle() {
 }
 
 void BookmarkBubbleView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   HandleButtonPressed(sender);
 }
 

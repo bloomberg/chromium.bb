@@ -58,7 +58,7 @@ void MenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
 }
 
 bool MenuDelegate::IsTriggerableEvent(MenuItemView* source,
-                                      const Event& e) {
+                                      const ui::Event& e) {
   return e.type() == ui::ET_GESTURE_TAP ||
          e.type() == ui::ET_GESTURE_TAP_DOWN ||
          (e.IsMouseEvent() && (e.flags() &

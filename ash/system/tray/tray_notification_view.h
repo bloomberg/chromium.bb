@@ -50,7 +50,7 @@ class TrayNotificationView : public views::View,
 
   // Overridden from ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;

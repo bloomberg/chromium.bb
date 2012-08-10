@@ -53,7 +53,7 @@ class ChromeToMobileBubbleView : public views::BubbleDelegateView,
 
   // views::ButtonListener method.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::LinkListener method.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

@@ -71,7 +71,7 @@ void BubbleExample::CreateExampleView(View* container) {
   container->AddChildView(fade_out_);
 }
 
-void BubbleExample::ButtonPressed(Button* sender, const Event& event) {
+void BubbleExample::ButtonPressed(Button* sender, const ui::Event& event) {
   BubbleConfig config;
   if (sender == round_)
     config = kRoundConfig;

@@ -90,7 +90,7 @@ bool TreeViewExample::IsCommandIdEnabled(int command_id) {
       tree_view_->GetSelectedNode() != model_.GetRoot();
 }
 
-void TreeViewExample::ButtonPressed(Button* sender, const Event& event) {
+void TreeViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
   NodeType* selected_node =
       static_cast<NodeType*>(tree_view_->GetSelectedNode());
   if (sender == add_) {

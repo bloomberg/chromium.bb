@@ -88,7 +88,7 @@ void RadioButton::OnFocus() {
   TextButtonBase::NotifyClick(event);
 }
 
-void RadioButton::NotifyClick(const views::Event& event) {
+void RadioButton::NotifyClick(const ui::Event& event) {
   // Set the checked state to true only if we are unchecked, since we can't
   // be toggled on and off like a checkbox.
   if (!checked())

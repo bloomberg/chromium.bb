@@ -64,7 +64,7 @@ class DateView : public BaseDateTimeView {
   virtual void UpdateTextInternal(const base::Time& now) OVERRIDE;
 
   // Overridden from ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
@@ -101,7 +101,7 @@ class TimeView : public BaseDateTimeView {
   virtual void UpdateTextInternal(const base::Time& now) OVERRIDE;
 
   // Overridden from ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;

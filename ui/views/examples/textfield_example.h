@@ -36,7 +36,7 @@ class TextfieldExample : public ExampleBase,
                               const ui::KeyEvent& key_event) OVERRIDE;
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   // Textfields for name and password.
   Textfield* name_;

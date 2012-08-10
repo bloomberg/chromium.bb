@@ -70,7 +70,7 @@ class NetworkConfigView : public views::DialogDelegateView,
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(
-      views::Button* sender, const views::Event& event) OVERRIDE;
+      views::Button* sender, const ui::Event& event) OVERRIDE;
 
   void set_delegate(Delegate* delegate) {
     delegate_ = delegate;

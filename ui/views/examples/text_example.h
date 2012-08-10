@@ -41,7 +41,7 @@ class TextExample : public ExampleBase,
                         int count);
 
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* button, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* button, const ui::Event& event) OVERRIDE;
 
   // Overridden from ComboboxListener:
   virtual void OnSelectedIndexChanged(Combobox* combobox) OVERRIDE;

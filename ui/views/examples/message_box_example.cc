@@ -49,7 +49,7 @@ void MessageBoxExample::CreateExampleView(View* container) {
   layout->AddView(toggle_);
 }
 
-void MessageBoxExample::ButtonPressed(Button* sender, const Event& event) {
+void MessageBoxExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == status_) {
     message_box_view_->SetCheckBoxLabel(
         ASCIIToUTF16(BoolToOnOff(message_box_view_->IsCheckBoxSelected())));

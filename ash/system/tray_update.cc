@@ -57,7 +57,7 @@ class UpdateView : public ash::internal::ActionableView {
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->RequestRestart();
     return true;
   }

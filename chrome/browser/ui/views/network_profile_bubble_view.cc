@@ -115,7 +115,7 @@ gfx::Rect NetworkProfileBubbleView::GetAnchorRect() {
 }
 
 void NetworkProfileBubbleView::ButtonPressed(views::Button* sender,
-                                             const views::Event& event) {
+                                             const ui::Event& event) {
   NetworkProfileBubble::RecordUmaEvent(
       NetworkProfileBubble::METRIC_ACKNOWLEDGED);
 

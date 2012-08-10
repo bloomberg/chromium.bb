@@ -53,7 +53,7 @@ class TableExample : public ExampleBase,
   virtual void OnTableView2Delete(TableView2* table_view) OVERRIDE;
 
   // ButtonListener:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
  private:
   // The table to be tested.

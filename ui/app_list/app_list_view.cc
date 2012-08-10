@@ -140,8 +140,7 @@ bool AppListView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-void AppListView::ButtonPressed(views::Button* sender,
-                                const views::Event& event) {
+void AppListView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender->GetClassName() != AppListItemView::kViewClassName)
     return;
 

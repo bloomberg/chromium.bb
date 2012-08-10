@@ -436,7 +436,7 @@ void OpaqueBrowserFrameView::GetAccessibleState(
 // OpaqueBrowserFrameView, views::ButtonListener implementation:
 
 void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
-                                           const views::Event& event) {
+                                           const ui::Event& event) {
   if (sender == minimize_button_)
     frame()->Minimize();
   else if (sender == maximize_button_)

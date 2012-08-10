@@ -484,7 +484,7 @@ bool AvatarMenuBubbleView::AcceleratorPressed(
 }
 
 void AvatarMenuBubbleView::ButtonPressed(views::Button* sender,
-                                         const views::Event& event) {
+                                         const ui::Event& event) {
   for (size_t i = 0; i < item_views_.size(); ++i) {
     ProfileItemView* item_view = static_cast<ProfileItemView*>(item_views_[i]);
     if (sender == item_view) {

@@ -16,7 +16,7 @@ class Event;
 // pressed.
 class VIEWS_EXPORT ButtonListener {
  public:
-  virtual void ButtonPressed(Button* sender, const views::Event& event) = 0;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) = 0;
 
  protected:
   virtual ~ButtonListener() {}
@@ -50,7 +50,7 @@ class VIEWS_EXPORT Button : public View {
   explicit Button(ButtonListener* listener);
 
   // Cause the button to notify the listener that a click occurred.
-  virtual void NotifyClick(const views::Event& event);
+  virtual void NotifyClick(const ui::Event& event);
 
   // The button's listener. Notified when clicked.
   ButtonListener* listener_;

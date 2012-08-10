@@ -101,7 +101,7 @@ class DateDefaultView : public views::View,
  private:
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
     if (sender == help_)
       tray->ShowHelp();

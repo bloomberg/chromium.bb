@@ -71,7 +71,7 @@ class ASH_EXPORT ActionableView : public views::View {
   // Performs an action when user clicks on the view (on mouse-press event), or
   // presses a key when this view is in focus. Returns true if the event has
   // been handled and an action was performed. Returns false otherwise.
-  virtual bool PerformAction(const views::Event& event) = 0;
+  virtual bool PerformAction(const ui::Event& event) = 0;
 
   // Overridden from views::View.
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
@@ -122,7 +122,7 @@ class HoverHighlightView : public ActionableView {
 
  private:
   // Overridden from ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;

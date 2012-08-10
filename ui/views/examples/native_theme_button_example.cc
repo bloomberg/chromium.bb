@@ -251,7 +251,7 @@ void NativeThemeButtonExample::CreateExampleView(View* container) {
 }
 
 void NativeThemeButtonExample::ButtonPressed(Button* sender,
-                                             const Event& event) {
+                                             const ui::Event& event) {
   PrintStatus(button_->MessWithState().c_str());
 }
 

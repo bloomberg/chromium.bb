@@ -29,7 +29,7 @@ void NativeThemeCheckboxExample::CreateExampleView(View* container) {
 }
 
 void NativeThemeCheckboxExample::ButtonPressed(Button* sender,
-                                               const Event& event) {
+                                               const ui::Event& event) {
   PrintStatus(base::StringPrintf("Pressed! count: %d", ++count_).c_str());
 }
 

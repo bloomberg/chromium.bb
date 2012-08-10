@@ -54,7 +54,7 @@ void TabbedPaneExample::CreateExampleView(View* container) {
   layout->AddView(select_at_);
 }
 
-void TabbedPaneExample::ButtonPressed(Button* sender, const Event& event) {
+void TabbedPaneExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == add_) {
     AddButton("Added");
   } else if (sender == add_at_) {

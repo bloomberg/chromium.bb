@@ -328,7 +328,7 @@ int NativeScrollBarViews::GetScrollIncrement(bool is_page, bool is_positive) {
 // BaseButton::ButtonListener overrides:
 
 void NativeScrollBarViews::ButtonPressed(Button* sender,
-                                         const views::Event& event) {
+                                         const ui::Event& event) {
   if (sender == prev_button_) {
     ScrollByAmount(SCROLL_PREV_LINE);
   } else if (sender == next_button_) {

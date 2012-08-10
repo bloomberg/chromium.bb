@@ -201,7 +201,7 @@ bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void BookmarkEditorView::ButtonPressed(views::Button* sender,
-                                       const views::Event& event) {
+                                       const ui::Event& event) {
   DCHECK_EQ(new_folder_button_.get(), sender);
   NewFolder();
 }

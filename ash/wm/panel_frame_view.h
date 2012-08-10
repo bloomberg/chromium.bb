@@ -42,7 +42,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Child View class describing the panel's title bar behavior
   // and buttons, owned by the view hierarchy

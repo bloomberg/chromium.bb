@@ -137,7 +137,7 @@ void TableExample::OnTableViewDelete(TableView* table_view) {}
 
 void TableExample::OnTableView2Delete(TableView2* table_view) {}
 
-void TableExample::ButtonPressed(Button* sender, const Event& event) {
+void TableExample::ButtonPressed(Button* sender, const ui::Event& event) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   int index = 0;
   bool show = true;

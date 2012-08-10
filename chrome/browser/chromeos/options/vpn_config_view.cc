@@ -278,7 +278,7 @@ bool VPNConfigView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void VPNConfigView::ButtonPressed(views::Button* sender,
-                                  const views::Event& event) {
+                                  const ui::Event& event) {
 }
 
 void VPNConfigView::OnSelectedIndexChanged(views::Combobox* combobox) {

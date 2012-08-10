@@ -245,7 +245,7 @@ views::View* SimpleWebViewDialog::GetInitiallyFocusedView() {
 }
 
 void SimpleWebViewDialog::ButtonPressed(views::Button* sender,
-                                        const views::Event& event) {
+                                        const ui::Event& event) {
   command_updater_->ExecuteCommand(sender->tag());
 }
 

@@ -272,7 +272,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
 
   // State variables used to track double and triple clicks.
   size_t aggregated_clicks_;
-  base::Time last_click_time_;
+  base::TimeDelta last_click_time_;
   gfx::Point last_click_location_;
 
   // Context menu and its content list for the textfield.

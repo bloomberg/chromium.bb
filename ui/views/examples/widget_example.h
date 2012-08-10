@@ -45,7 +45,7 @@ class WidgetExample : public ExampleBase, public ButtonListener {
   void CreatePopup(View* parent, bool transparent);
 
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetExample);
 };

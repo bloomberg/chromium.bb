@@ -74,7 +74,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // Overridden from views::ButtonListener:
   // Closes the bubble or opens the edit dialog.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Overridden from views::ComboboxListener:
   virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;

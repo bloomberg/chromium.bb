@@ -200,7 +200,7 @@ bool PasswordChangedView::ExitDialog() {
 }
 
 void PasswordChangedView::ButtonPressed(Button* sender,
-                                        const views::Event& event) {
+                                        const ui::Event& event) {
   if (sender == full_sync_radio_) {
     old_password_field_->SetEnabled(false);
     old_password_field_->SetText(string16());

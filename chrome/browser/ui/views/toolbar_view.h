@@ -132,7 +132,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

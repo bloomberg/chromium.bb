@@ -87,7 +87,7 @@ gfx::Rect PanelFrameView::GetWindowBoundsForClientBounds(
 }
 
 void PanelFrameView::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
+                                   const ui::Event& event) {
   if (sender == close_button_)
     GetWidget()->Close();
 }

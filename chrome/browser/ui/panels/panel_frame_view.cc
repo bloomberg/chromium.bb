@@ -466,7 +466,7 @@ void PanelFrameView::OnMouseCaptureLost() {
 }
 
 void PanelFrameView::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
+                                   const ui::Event& event) {
   if (sender == close_button_) {
     panel_view_->ClosePanel();
   } else {

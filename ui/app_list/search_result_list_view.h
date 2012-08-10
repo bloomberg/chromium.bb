@@ -48,7 +48,7 @@ class SearchResultListView : public views::View,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Overridden from ListModelObserver:
   virtual void ListItemsAdded(size_t start, size_t count) OVERRIDE;

@@ -50,7 +50,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::TabbedPaneListener:
   virtual void TabSelectedAt(int index) OVERRIDE;

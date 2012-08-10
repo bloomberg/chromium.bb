@@ -72,7 +72,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
  private:
   // Height from top of window to top of client area.

@@ -49,7 +49,7 @@ class ReloadButton : public views::ButtonDropDown,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* /* button */,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View:
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;

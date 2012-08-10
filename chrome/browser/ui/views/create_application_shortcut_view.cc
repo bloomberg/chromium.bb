@@ -399,7 +399,7 @@ views::Checkbox* CreateApplicationShortcutView::AddCheckbox(
 }
 
 void CreateApplicationShortcutView::ButtonPressed(views::Button* sender,
-                                                  const views::Event& event) {
+                                                  const ui::Event& event) {
   if (sender == desktop_check_box_)
     profile_->GetPrefs()->SetBoolean(prefs::kWebAppCreateOnDesktop,
         desktop_check_box_->checked() ? true : false);

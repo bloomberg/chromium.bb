@@ -89,7 +89,7 @@ void ScrollViewExample::CreateExampleView(View* container) {
   layout->AddView(scroll_to_);
 }
 
-void ScrollViewExample::ButtonPressed(Button* sender, const Event& event) {
+void ScrollViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == wide_) {
     scrollable_->SetBounds(0, 0, 1000, 100);
     scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);

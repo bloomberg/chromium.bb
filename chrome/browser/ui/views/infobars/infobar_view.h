@@ -76,7 +76,7 @@ class InfoBarView : public InfoBar,
   // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
   // calls to ButtonPressed() in this case.)
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Returns the minimum width the content (that is, everything between the icon
   // and the close button) can be shrunk to.  This is used to prevent the close

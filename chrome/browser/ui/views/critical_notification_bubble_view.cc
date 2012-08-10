@@ -109,7 +109,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
 }
 
 void CriticalNotificationBubbleView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   // Let other bubbles know we have an answer from the user.
   UpgradeDetector::GetInstance()->acknowledge_critical_update();
 

@@ -70,7 +70,7 @@ class SettingsDefaultView : public ash::internal::ActionableView {
   }
 
   // Overridden from ash::internal::ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE {
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE {
     if (login_status_ == user::LOGGED_IN_NONE ||
         login_status_ == user::LOGGED_IN_LOCKED)
       return false;

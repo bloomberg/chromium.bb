@@ -219,7 +219,7 @@ class TabStrip : public views::View,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // View overrides.
   virtual const views::View* GetViewByID(int id) const OVERRIDE;

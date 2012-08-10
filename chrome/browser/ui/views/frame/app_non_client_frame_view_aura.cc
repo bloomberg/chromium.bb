@@ -118,7 +118,7 @@ class AppNonClientFrameViewAura::ControlView
   }
 
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     if (sender == close_button_) {
       owner_->Close();
     } else if (sender == restore_button_) {

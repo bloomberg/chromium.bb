@@ -62,7 +62,7 @@ class SpeechRecognitionBubbleView
 
   // views::ButtonListener methods.
   virtual void ButtonPressed(views::Button* source,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // views::LinkListener methods.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -215,7 +215,7 @@ void SpeechRecognitionBubbleView::SetImage(const gfx::ImageSkia& image) {
 }
 
 void SpeechRecognitionBubbleView::ButtonPressed(views::Button* source,
-                                                const views::Event& event) {
+                                                const ui::Event& event) {
   if (source == cancel_) {
     delegate_->InfoBubbleButtonClicked(SpeechRecognitionBubble::BUTTON_CANCEL);
   } else if (source == try_again_) {

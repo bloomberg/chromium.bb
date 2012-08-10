@@ -64,7 +64,7 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
 
   // Overridden from internal::ActionableView.
-  virtual bool PerformAction(const views::Event& event) OVERRIDE;
+  virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from internal::BackgroundAnimatorDelegate.
   virtual void UpdateBackground(int alpha) OVERRIDE;

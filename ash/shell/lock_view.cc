@@ -68,7 +68,7 @@ class LockView : public views::WidgetDelegateView,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     DCHECK(sender == unlock_button_);
     GetWidget()->Close();
   }

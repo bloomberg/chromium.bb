@@ -50,7 +50,7 @@ void RadioButtonExample::CreateExampleView(View* container) {
   layout->AddView(status_);
 }
 
-void RadioButtonExample::ButtonPressed(Button* sender, const Event& event) {
+void RadioButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == select_) {
     radio_buttons_[2]->SetChecked(true);
   } else if (sender == status_) {

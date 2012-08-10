@@ -273,8 +273,7 @@ class TouchSelectionControllerImpl::TouchContextMenuView
   }
 
   // Overridden from ButtonListener:
-  virtual void ButtonPressed(Button* sender,
-                             const views::Event& event) OVERRIDE {
+  virtual void ButtonPressed(Button* sender, const ui::Event& event) OVERRIDE {
     controller_->ExecuteCommand(sender->tag());
   }
 

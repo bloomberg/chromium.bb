@@ -187,7 +187,7 @@ class UserView : public views::View,
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     CHECK(sender == signout_);
     ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
     tray->SignOut();

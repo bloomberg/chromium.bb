@@ -72,7 +72,7 @@ class TakePhotoView : public views::View,
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   bool is_capturing() const { return is_capturing_; }
 

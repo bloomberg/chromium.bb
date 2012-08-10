@@ -39,7 +39,7 @@ using views::Button;
 class DummyButtonListener : public views::ButtonListener {
  public:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) {}
+                             const ui::Event& event) {}
 };
 
 class NetworkScreenTest : public WizardInProcessBrowserTest {

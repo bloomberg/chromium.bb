@@ -28,7 +28,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   virtual void OnFocus() OVERRIDE;
 
   // Overridden from Button:
-  virtual void NotifyClick(const views::Event& event) OVERRIDE;
+  virtual void NotifyClick(const ui::Event& event) OVERRIDE;
 
   // Overridden from TextButtonBase:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;

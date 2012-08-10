@@ -111,7 +111,7 @@ void TrayNotificationView::UpdateViewAndImage(views::View* new_contents,
 }
 
 void TrayNotificationView::ButtonPressed(views::Button* sender,
-                                         const views::Event& event) {
+                                         const ui::Event& event) {
   HandleClose();
 }
 

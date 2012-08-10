@@ -92,7 +92,7 @@ void MediaStreamInfoBar::ViewHierarchyChanged(bool is_add,
 }
 
 void MediaStreamInfoBar::ButtonPressed(views::Button* sender,
-                                       const views::Event& event) {
+                                       const ui::Event& event) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   if (sender == allow_button_) {

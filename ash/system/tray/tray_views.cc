@@ -218,7 +218,7 @@ void HoverHighlightView::AddLabel(const string16& text,
   SetAccessibleName(text);
 }
 
-bool HoverHighlightView::PerformAction(const views::Event& event) {
+bool HoverHighlightView::PerformAction(const ui::Event& event) {
   if (!listener_)
     return false;
   listener_->ClickedOn(this);

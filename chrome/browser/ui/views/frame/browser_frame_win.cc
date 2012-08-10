@@ -341,7 +341,7 @@ void BrowserFrameWin::TabStripDisplayModeChanged() {
 }
 
 void BrowserFrameWin::ButtonPressed(views::Button* sender,
-                                    const views::Event& event) {
+                                    const ui::Event& event) {
   HMODULE metro = base::win::GetMetroModule();
   if (!metro)
     return;

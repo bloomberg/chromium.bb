@@ -259,7 +259,7 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
 }
 
 void InfoBarView::ButtonPressed(views::Button* sender,
-                                const views::Event& event) {
+                                const ui::Event& event) {
   if (!owned())
     return;  // We're closing; don't call anything, it might access the owner.
   if (sender == close_button_) {

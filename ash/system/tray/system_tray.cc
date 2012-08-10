@@ -455,7 +455,7 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   }
 }
 
-bool SystemTray::PerformAction(const views::Event& event) {
+bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).
   if (bubble_.get() &&

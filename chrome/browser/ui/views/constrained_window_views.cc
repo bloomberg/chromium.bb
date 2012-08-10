@@ -187,7 +187,7 @@ class ConstrainedWindowFrameView : public views::NonClientFrameView,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
  private:
   // Returns the thickness of the entire nonclient left, right, and bottom
@@ -390,7 +390,7 @@ void ConstrainedWindowFrameView::OnThemeChanged() {
 // ConstrainedWindowFrameView, views::ButtonListener implementation:
 
 void ConstrainedWindowFrameView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   if (sender == close_button_)
     container_->CloseConstrainedWindow();
 }
@@ -559,7 +559,7 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE {
+                             const ui::Event& event) OVERRIDE {
     if (sender == close_button())
       container_->CloseConstrainedWindow();
   }

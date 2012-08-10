@@ -224,7 +224,7 @@ views::View* SSLClientCertificateSelector::GetExtraView() {
 // views::ButtonListener implementation:
 
 void SSLClientCertificateSelector::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+    views::Button* sender, const ui::Event& event) {
   if (sender == view_cert_button_) {
     net::X509Certificate* cert = GetSelectedCert();
     if (cert)

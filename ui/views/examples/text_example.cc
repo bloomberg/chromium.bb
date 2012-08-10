@@ -260,8 +260,7 @@ void TextExample::CreateExampleView(View* container) {
   layout->AddPaddingRow(0, 8);
 }
 
-void TextExample::ButtonPressed(Button* button,
-                                const Event& event) {
+void TextExample::ButtonPressed(Button* button, const ui::Event& event) {
   int flags = text_view_->text_flags();
   int style = text_view_->GetFontStyle();
   SetFlagFromCheckbox(multiline_checkbox_, &flags, gfx::Canvas::MULTI_LINE);

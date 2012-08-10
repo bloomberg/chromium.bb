@@ -76,7 +76,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Invoked when the user clicks the close button. Asks the browser to
   // hide the download shelf.
   virtual void ButtonPressed(views::Button* button,
-                             const views::Event& event) OVERRIDE;
+                             const ui::Event& event) OVERRIDE;
 
   // Implementation of DownloadShelf.
   virtual bool IsShowing() const OVERRIDE;

@@ -75,7 +75,7 @@ void MenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
 }
 
 bool MenuModelAdapter::IsTriggerableEvent(MenuItemView* source,
-                                          const Event& e) {
+                                          const ui::Event& e) {
   return e.type() == ui::ET_GESTURE_TAP ||
          e.type() == ui::ET_GESTURE_TAP_DOWN ||
          (e.IsMouseEvent() && (triggerable_event_flags_ & e.flags()) != 0);
