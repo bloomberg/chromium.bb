@@ -82,6 +82,7 @@ class TestGypBase(TestCommon.TestCommon):
 
   def __init__(self, gyp=None, *args, **kw):
     self.origin_cwd = os.path.abspath(os.path.dirname(sys.argv[0]))
+    self.extra_args = sys.argv[1:]
 
     if not gyp:
       gyp = os.environ.get('TESTGYP_GYP')
@@ -244,8 +245,10 @@ class TestGypBase(TestCommon.TestCommon):
 
     # TODO:  --depth=. works around Chromium-specific tree climbing.
     depth = kw.pop('depth', '.')
-    args = ('--depth='+depth, '--format='+self.format, gyp_file) + args
-    return self.run(program=self.gyp, arguments=args, **kw)
+    run_args = ['--depth='+depth, '--format='+self.format, gyp_file]
+    run_args.extend(self.extra_args)
+    run_args.extend(args)
+    return self.run(program=self.gyp, arguments=run_args, **kw)
 
   def run(self, *args, **kw):
     """
@@ -615,7 +618,12 @@ def FindVisualStudioInstallation():
       '2010': r'Microsoft Visual Studio 10.0\Common7\IDE\devenv.com',
       '2008': r'Microsoft Visual Studio 9.0\Common7\IDE\devenv.com',
       '2005': r'Microsoft Visual Studio 8\Common7\IDE\devenv.com'}
-  msvs_version = os.environ.get('GYP_MSVS_VERSION', 'auto')
+
+  msvs_version = 'auto'
+  for flag in (f for f in sys.argv if f.startswith('msvs_version=')):
+    msvs_version = flag.split('=')[-1]
+  msvs_version = os.environ.get('GYP_MSVS_VERSION', msvs_version)
+
   build_tool = None
   if msvs_version in possible_paths:
     # Check that the path to the specified GYP_MSVS_VERSION exists.
