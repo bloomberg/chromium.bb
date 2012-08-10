@@ -1856,9 +1856,11 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
                     ui::Range /* selection range in the document */)
 
 // Notification that the selection bounds have changed.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_SelectionBoundsChanged,
+IPC_MESSAGE_ROUTED4(ViewHostMsg_SelectionBoundsChanged,
                     gfx::Rect /* start rect */,
-                    gfx::Rect /* end rect */)
+                    WebKit::WebTextDirection /* start text dir */,
+                    gfx::Rect /* end rect */,
+                    WebKit::WebTextDirection /* end text dir */)
 
 // Asks the browser to open the color chooser.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_OpenColorChooser,

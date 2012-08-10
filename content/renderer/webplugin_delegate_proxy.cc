@@ -1125,7 +1125,9 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
       true));
 
   render_view_->Send(new ViewHostMsg_SelectionBoundsChanged(
-      render_view_->routing_id(), caret_rect, caret_rect));
+      render_view_->routing_id(),
+      caret_rect, WebKit::WebTextDirectionLeftToRight,
+      caret_rect, WebKit::WebTextDirectionLeftToRight));
 }
 #endif
 

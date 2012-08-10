@@ -965,7 +965,9 @@ void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
 
 void RenderWidgetHostViewGtk::SelectionBoundsChanged(
     const gfx::Rect& start_rect,
-    const gfx::Rect& end_rect) {
+    WebKit::WebTextDirection start_direction,
+    const gfx::Rect& end_rect,
+    WebKit::WebTextDirection end_direction) {
   im_context_->UpdateCaretBounds(start_rect.Union(end_rect));
 }
 

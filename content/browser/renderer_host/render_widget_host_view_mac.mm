@@ -603,7 +603,9 @@ void RenderWidgetHostViewMac::TextInputStateChanged(
 
 void RenderWidgetHostViewMac::SelectionBoundsChanged(
     const gfx::Rect& start_rect,
-    const gfx::Rect& end_rect) {
+    WebKit::WebTextDirection start_direction,
+    const gfx::Rect& end_rect,
+    WebKit::WebTextDirection end_direction) {
   if (start_rect == end_rect)
     caret_rect_ = start_rect;
 }

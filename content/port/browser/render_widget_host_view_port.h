@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/surface/transport_dib.h"
@@ -135,9 +136,12 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 
   // Notifies the View that the renderer selection bounds has changed.
   // |start_rect| and |end_rect| are the bounds end of the selection in the
-  // coordinate system of the render view.
+  // coordinate system of the render view. |start_direction| and |end_direction|
+  // indicates the direction at which the selection was made on touch devices.
   virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
-                                      const gfx::Rect& end_rect) {}
+                                      WebKit::WebTextDirection start_direction,
+                                      const gfx::Rect& end_rect,
+                                      WebKit::WebTextDirection end_direction) {}
 
   // Allocate a backing store for this view.
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;

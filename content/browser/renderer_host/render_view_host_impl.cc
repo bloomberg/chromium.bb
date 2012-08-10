@@ -1299,9 +1299,13 @@ void RenderViewHostImpl::OnMsgSelectionChanged(const string16& text,
 
 void RenderViewHostImpl::OnMsgSelectionBoundsChanged(
     const gfx::Rect& start_rect,
-    const gfx::Rect& end_rect) {
-  if (view_)
-    view_->SelectionBoundsChanged(start_rect, end_rect);
+    WebKit::WebTextDirection start_direction,
+    const gfx::Rect& end_rect,
+    WebKit::WebTextDirection end_direction) {
+  if (view_) {
+    view_->SelectionBoundsChanged(start_rect, start_direction,
+                                  end_rect, end_direction);
+  }
 }
 
 void RenderViewHostImpl::OnMsgRouteCloseEvent() {

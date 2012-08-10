@@ -497,7 +497,9 @@ class CONTENT_EXPORT RenderViewHostImpl
                              size_t offset,
                              const ui::Range& range);
   void OnMsgSelectionBoundsChanged(const gfx::Rect& start_rect,
-                                   const gfx::Rect& end_rect);
+                                   WebKit::WebTextDirection start_direction,
+                                   const gfx::Rect& end_rect,
+                                   WebKit::WebTextDirection end_direction);
   void OnMsgPasteFromSelectionClipboard();
   void OnMsgRouteCloseEvent();
   void OnMsgRouteMessageEvent(const ViewMsg_PostMessage_Params& params);

@@ -1652,8 +1652,11 @@ void RenderWidget::UpdateSelectionBounds() {
   if (selection_start_rect_ != start_rect || selection_end_rect_ != end_rect) {
     selection_start_rect_ = start_rect;
     selection_end_rect_ = end_rect;
-    Send(new ViewHostMsg_SelectionBoundsChanged(
-        routing_id_, selection_start_rect_, selection_end_rect_));
+    WebTextDirection start_dir = WebKit::WebTextDirectionLeftToRight;
+    WebTextDirection end_dir = WebKit::WebTextDirectionLeftToRight;
+    webwidget_->selectionTextDirection(start_dir, end_dir);
+    Send(new ViewHostMsg_SelectionBoundsChanged(routing_id_,
+        selection_start_rect_, start_dir, selection_end_rect_, end_dir));
   }
 
   std::vector<gfx::Rect> character_bounds;
