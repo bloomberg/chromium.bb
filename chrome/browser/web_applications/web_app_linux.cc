@@ -12,9 +12,8 @@
 namespace web_app {
 namespace internals {
 
-bool CreatePlatformShortcut(
+bool CreatePlatformShortcuts(
     const FilePath& web_app_path,
-    const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -29,9 +28,11 @@ bool CreatePlatformShortcut(
       shortcut_info, shortcut_template);
 }
 
-void DeletePlatformShortcuts(const FilePath& profile_path,
-                             const std::string& extension_id) {
-  ShellIntegrationLinux::DeleteDesktopShortcuts(profile_path, extension_id);
+void DeletePlatformShortcuts(
+    const FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  ShellIntegrationLinux::DeleteDesktopShortcuts(shortcut_info.profile_path,
+      shortcut_info.extension_id);
 }
 
 }  // namespace internals

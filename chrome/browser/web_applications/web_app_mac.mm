@@ -251,9 +251,8 @@ void WebAppShortcutCreator::RevealGeneratedBundleInFinder(
 namespace web_app {
 namespace internals {
 
-bool CreatePlatformShortcut(
+bool CreatePlatformShortcuts(
     const FilePath& web_app_path,
-    const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   string16 bundle_id = UTF8ToUTF16(base::mac::BaseBundleID());
@@ -262,8 +261,9 @@ bool CreatePlatformShortcut(
   return shortcut_creator.CreateShortcut();
 }
 
-void DeletePlatformShortcuts(const FilePath& profile_path,
-                             const std::string& extension_id) {
+void DeletePlatformShortcuts(
+    const FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
   // TODO(benwells): Implement this when shortcuts / weblings are enabled on
   // mac.
 }

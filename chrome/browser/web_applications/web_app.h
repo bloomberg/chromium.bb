@@ -46,24 +46,18 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 // Extracts the extension id from the app name.
 std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 
-// Creates a shortcut for web application based on given shortcut data.
-// |profile_path| is the path of the creating profile. |shortcut_info)
-// contains information about the shortcut to create.
-void CreateShortcut(
-    const FilePath& profile_path,
-    const ShellIntegration::ShortcutInfo& shortcut_info);
+// Creates shortcuts for web application based on given shortcut data.
+// |shortcut_info| contains information about the shortcut to create.
+void CreateShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
-// Delete all the shortcuts that have been created for the extension with
-// |extension_id| in the profile with |profile_path|.
-void DeleteAllShortcuts(const FilePath& profile_path,
-                        const std::string& extension_id);
+// Delete all the shortcuts that have been created for the given
+// |shortcut_data| in the profile with |profile_path|.
+void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Creates a shortcut. Must be called on the file thread. This is used to
-// implement CreateShortcut() above, and can also be used directly from the
-// file thread. |profile_path| is the path of the creating profile.
-// |shortcut_info| constains info about the shortcut to create.
-bool CreateShortcutOnFileThread(
-    const FilePath& profile_path,
+// implement CreateShortcuts() above, and can also be used directly from the
+// file thread. |shortcut_info| contains info about the shortcut to create.
+bool CreateShortcutsOnFileThread(
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Returns true if given url is a valid web app url.
@@ -91,21 +85,20 @@ bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image);
 #endif
 
 // Implemented for each platform, does the platform specific parts of creating
-// shortcuts. Used internally by CreateShortcutOnFileThread.
+// shortcuts. Used internally by CreateShortcutsOnFileThread.
 // |shortcut_data_path| is where to store any resources created for the
 // shortcut, and is also used as the UserDataDir for platform app shortcuts.
-// |profile_path| is the path of the creating profile. |shortcut_info|
-// contains info about the shortcut to create.
-bool CreatePlatformShortcut(
+// |shortcut_info| contains info about the shortcut to create.
+bool CreatePlatformShortcuts(
     const FilePath& shortcut_data_path,
-    const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and
 // is executed on the FILE thread..
-void DeletePlatformShortcuts(const FilePath& profile_path,
-                             const std::string& extension_id);
+void DeletePlatformShortcuts(
+    const FilePath& shortcut_data_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Sanitizes |name| and returns a version of it that is safe to use as an
 // on-disk file name .

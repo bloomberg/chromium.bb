@@ -315,6 +315,8 @@ void GetShortcutInfoForTab(TabContents* tab_contents,
   info->description = app_info.description;
   info->favicon =
       gfx::Image(tab_contents->favicon_tab_helper()->GetFavicon());
+
+  info->profile_path = tab_contents->profile()->GetPath();
 }
 
 void UpdateShortcutForTabContents(TabContents* tab_contents) {

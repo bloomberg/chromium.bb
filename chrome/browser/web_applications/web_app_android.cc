@@ -7,15 +7,15 @@
 namespace web_app {
 namespace internals {
 
-bool CreatePlatformShortcut(
+bool CreatePlatformShortcuts(
     const FilePath& web_app_path,
-    const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   return true;
 }
 
-void DeletePlatformShortcuts(const FilePath& profile_path,
-                             const std::string& extension_id) {}
+void DeletePlatformShortcuts(
+    const FilePath& web_app_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {}
 
 }  // namespace internals
 }  // namespace web_app

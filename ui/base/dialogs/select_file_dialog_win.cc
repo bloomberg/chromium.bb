@@ -686,7 +686,7 @@ bool SelectFileDialogImpl::RunSelectFolderDialog(const std::wstring& title,
 
       // According to MSDN, win2000 will not resolve shortcuts, so we do it
       // ourself.
-      file_util::ResolveShortcut(path);
+      file_util::ResolveShortcut(*path, path, NULL);
     }
     CoTaskMemFree(list);
   }

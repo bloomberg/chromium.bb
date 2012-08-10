@@ -36,6 +36,7 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
  private:
   // Install the shortcuts for an application.
   void InstallApplicationShortcuts(const extensions::Extension* extension);
+  void DeleteApplicationShortcuts(const extensions::Extension* extension);
 
   content::NotificationRegistrar registrar_;
   Profile* profile_;
