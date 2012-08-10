@@ -8,6 +8,8 @@
 # Usage:
 #   decoder_test_one_file.sh GAS=... OBJDUMP=... DECODER=... ASMFILE=...
 
+# TODO(shcherbina): fix leaking temp files on failed tests
+
 set -e
 set -u
 
