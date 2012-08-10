@@ -85,6 +85,7 @@ struct wayland_output {
 };
 
 struct wayland_input {
+	struct weston_seat base;
 	struct wayland_compositor *compositor;
 	struct wl_seat *seat;
 	struct wl_pointer *pointer;
@@ -531,12 +532,11 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 {
 	struct wayland_input *input = data;
 	struct wayland_output *output;
-	struct wayland_compositor *c = input->compositor;
 
 	/* XXX: If we get a modifier event immediately before the focus,
 	 *      we should try to keep the same serial. */
 	output = wl_surface_get_user_data(surface);
-	notify_pointer_focus(&c->base.seat->seat, &output->base, x, y);
+	notify_pointer_focus(&input->base.seat, &output->base, x, y);
 	wl_pointer_set_cursor(input->pointer, serial, NULL, 0, 0);
 }
 
@@ -545,9 +545,8 @@ input_handle_pointer_leave(void *data, struct wl_pointer *pointer,
 			   uint32_t serial, struct wl_surface *surface)
 {
 	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
 
-	notify_pointer_focus(&c->base.seat->seat, NULL, 0, 0);
+	notify_pointer_focus(&input->base.seat, NULL, 0, 0);
 }
 
 static void
@@ -557,7 +556,7 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_motion(&c->base.seat->seat, time,
+	notify_motion(&input->base.seat, time,
 		      x - wl_fixed_from_int(c->border.left),
 		      y - wl_fixed_from_int(c->border.top));
 }
@@ -568,10 +567,9 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 		    uint32_t state_w)
 {
 	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
 	enum wl_pointer_button_state state = state_w;
 
-	notify_button(&c->base.seat->seat, time, button, state);
+	notify_button(&input->base.seat, time, button, state);
 }
 
 static void
@@ -579,9 +577,8 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 		  uint32_t time, uint32_t axis, wl_fixed_t value)
 {
 	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
 
-	notify_axis(&c->base.seat->seat, time, axis, value);
+	notify_axis(&input->base.seat, time, axis, value);
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -628,7 +625,7 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 		return;
 	}
 
-	weston_seat_init_keyboard(input->compositor->base.seat, keymap);
+	weston_seat_init_keyboard(&input->base, keymap);
 	xkb_map_unref(keymap);
 }
 
@@ -640,11 +637,10 @@ input_handle_keyboard_enter(void *data,
 			    struct wl_array *keys)
 {
 	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
 
 	/* XXX: If we get a modifier event immediately before the focus,
 	 *      we should try to keep the same serial. */
-	notify_keyboard_focus_in(&c->base.seat->seat, keys,
+	notify_keyboard_focus_in(&input->base.seat, keys,
 				 STATE_UPDATE_AUTOMATIC);
 }
 
@@ -655,9 +651,8 @@ input_handle_keyboard_leave(void *data,
 			    struct wl_surface *surface)
 {
 	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
 
-	notify_keyboard_focus_out(&c->base.seat->seat);
+	notify_keyboard_focus_out(&input->base.seat);
 }
 
 static void
@@ -665,10 +660,9 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
 {
 	struct wayland_input *input = data;
-	struct wayland_compositor *c = input->compositor;
 
 	input->key_serial = serial;
-	notify_key(&c->base.seat->seat, time, key,
+	notify_key(&input->base.seat, time, key,
 		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
 		   STATE_UPDATE_NONE);
@@ -692,10 +686,10 @@ input_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	else
 		serial_out = wl_display_next_serial(c->base.wl_display);
 
-	xkb_state_update_mask(c->base.seat->xkb_state.state,
+	xkb_state_update_mask(input->base.xkb_state.state,
 			      mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
-	notify_modifiers(&c->base.seat->seat, serial_out);
+	notify_modifiers(&input->base.seat, serial_out);
 }
 
 static const struct wl_keyboard_listener keyboard_listener = {
@@ -717,7 +711,7 @@ input_handle_capabilities(void *data, struct wl_seat *seat,
 		wl_pointer_set_user_data(input->pointer, input);
 		wl_pointer_add_listener(input->pointer, &pointer_listener,
 					input);
-		weston_seat_init_pointer(input->compositor->base.seat);
+		weston_seat_init_pointer(&input->base);
 	} else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
 		wl_pointer_destroy(input->pointer);
 		input->pointer = NULL;
@@ -749,6 +743,7 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 
 	memset(input, 0, sizeof *input);
 
+	weston_seat_init(&input->base, &c->base);
 	input->compositor = c;
 	input->seat = wl_display_bind(c->parent.wl_display, id,
 				      &wl_seat_interface);
@@ -804,23 +799,6 @@ wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
-static int
-wayland_input_create(struct wayland_compositor *c)
-{
-	struct weston_seat *seat;
-
-	seat = malloc(sizeof *seat);
-	if (seat == NULL)
-		return -1;
-
-	memset(seat, 0, sizeof *seat);
-	weston_seat_init(seat, &c->base);
-
-	c->base.seat = seat;
-
-	return 0;
-}
-
 static void
 wayland_restore(struct weston_compositor *ec)
 {
@@ -852,9 +830,6 @@ wayland_compositor_create(struct wl_display *display,
 	if (weston_compositor_init(&c->base, display, argc, argv,
 				   config_file) < 0)
 		goto err_free;
-
-	if (wayland_input_create(c) < 0)
-		goto err_compositor;
 
 	c->parent.wl_display = wl_display_connect(display_name);
 
