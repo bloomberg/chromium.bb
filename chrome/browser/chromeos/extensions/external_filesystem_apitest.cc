@@ -324,14 +324,7 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
       kComponentFlags)) << message_;
 }
 
-// This test fails under AddressSanitizer, see http://crbug.com/136169.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ContentSearch DISABLED_ContentSearch
-#else
-#define MAYBE_ContentSearch ContentSearch
-#endif
-IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
-                       MAYBE_ContentSearch) {
+IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, ContentSearch) {
   EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
 
   // First, test will get drive root directory, to init file system.
