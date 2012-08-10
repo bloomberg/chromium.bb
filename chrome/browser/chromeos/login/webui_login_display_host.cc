@@ -209,6 +209,10 @@ void WebUILoginDisplayHost::Observe(
         ShowWebUI();
       else
         StartPostponedWebUI();
+      // StartWizard / StartSignInScreen could be called multiple times through
+      // the lifetime of host.
+      // Make sure that subsequent calls are not postponed.
+      waiting_for_wallpaper_load_ = false;
     }
     registrar_.Remove(this,
                       chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
@@ -318,10 +322,6 @@ void WebUILoginDisplayHost::StartPostponedWebUI() {
     NOTREACHED();
     return;
   }
-
-  // StartWizard / StartSignInScreen could be called multiple times through
-  // the lifetime of host. Make sure that subsequent calls are not postponed.
-  waiting_for_wallpaper_load_ = false;
 
   // Wallpaper has finished loading before StartWizard/StartSignInScreen has
   // been called. In general this should not happen.
