@@ -55,7 +55,7 @@ def main(args):
       assert buildbot_revision
       sdk_revision = buildbot_revision.split(':')[0]
     sdk_url = 'gs://nativeclient-mirror/nacl/nacl_sdk/'\
-              'trunk.%s/naclsdk_linux.bz2' % sdk_revision
+              'trunk.%s/naclsdk_linux.tar.bz2' % sdk_revision
 
   sdk_url = sdk_url.replace('https://commondatastorage.googleapis.com/',
                             'gs://')
