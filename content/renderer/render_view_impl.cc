@@ -5364,7 +5364,7 @@ void RenderViewImpl::PpapiPluginSelectionChanged() {
   SyncSelectionIfRequired();
 }
 
-void RenderViewImpl::PpapiPluginCreated(ppapi::host::PpapiHost* host) {
+void RenderViewImpl::PpapiPluginCreated(content::RendererPpapiHost* host) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidCreatePepperPlugin(host));
 }

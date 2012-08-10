@@ -5,13 +5,15 @@
 #include "chrome/renderer/pepper/pepper_flash_renderer_message_filter.h"
 
 #include "chrome/renderer/pepper/ppb_pdf_impl.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
 namespace chrome {
 
 PepperFlashRendererMessageFilter::PepperFlashRendererMessageFilter(
-    ppapi::host::PpapiHost* host)
-    : InstanceMessageFilter(host) {
+    content::RendererPpapiHost* host)
+    : InstanceMessageFilter(host->GetPpapiHost()),
+      host_(host) {
 }
 
 PepperFlashRendererMessageFilter::~PepperFlashRendererMessageFilter() {

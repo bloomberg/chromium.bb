@@ -56,8 +56,7 @@ void Resource::InstanceWasDeleted() {
   host_resource_ = HostResource();
 }
 
-void Resource::OnReplyReceived(int sequence,
-                               int32_t result,
+void Resource::OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
                                const IPC::Message& msg) {
   NOTREACHED();
 }

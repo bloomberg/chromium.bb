@@ -21,6 +21,7 @@
 
           'proxy/broker_dispatcher.cc',
           'proxy/broker_dispatcher.h',
+          'proxy/connection.h',
           'proxy/dispatcher.cc',
           'proxy/dispatcher.h',
           'proxy/enter_proxy.h',

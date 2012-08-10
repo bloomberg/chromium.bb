@@ -71,6 +71,12 @@ class Message;
 
 namespace ppapi {
 
+// Normally we shouldn't reply on proxy here, but this is to support
+// OnReplyReceived. See that comment.
+namespace proxy {
+class ResourceMessageReplyParams;
+}
+
 // Forward declare all the resource APIs.
 namespace thunk {
 #define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;
@@ -166,10 +172,8 @@ class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
   template <typename T> T* GetAs() { return NULL; }
 
   // Called when a PpapiPluginMsg_ResourceReply reply is received for a
-  // previous CallRenderer. The sequence number is the value returned the
-  // send function for the given request. The message is the nested reply
-  // message, which may be an empty message (depending on what the host
-  // sends).
+  // previous CallRenderer. The message is the nested reply message, which may
+  // be an empty message (depending on what the host sends).
   //
   // The default implementation will assert (if you send a request, you should
   // override this function).
@@ -177,8 +181,7 @@ class PPAPI_SHARED_EXPORT Resource : public base::RefCounted<Resource> {
   // (This function would make more conceptual sense on PluginResource but we
   // need to call this function from general code that doesn't know how to
   // distinguish the classes.)
-  virtual void OnReplyReceived(int sequence,
-                               int32_t result,
+  virtual void OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
                                const IPC::Message& msg);
 
  protected:

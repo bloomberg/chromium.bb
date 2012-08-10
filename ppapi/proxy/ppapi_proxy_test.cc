@@ -229,6 +229,11 @@ bool PluginProxyTestHarness::PluginDelegateMock::SendToBrowser(
   return false;
 }
 
+IPC::Sender* PluginProxyTestHarness::PluginDelegateMock::GetBrowserSender() {
+  NOTREACHED();
+  return NULL;
+}
+
 std::string PluginProxyTestHarness::PluginDelegateMock::GetUILanguage() {
   return std::string("en-US");
 }

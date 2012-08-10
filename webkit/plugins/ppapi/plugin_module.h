@@ -61,6 +61,14 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
     PPP_ShutdownModuleFunc shutdown_module;  // Optional, may be NULL.
   };
 
+  // Allows the embedder to associate a class with this module. This is opaque
+  // from the PluginModule's perspective (see Set/GetEmbedderState below) but
+  // the module is in charge of deleting the class.
+  class EmbedderState {
+   public:
+    virtual ~EmbedderState() {}
+  };
+
   typedef std::set<PluginInstance*> PluginInstanceSet;
 
   // You must call one of the Init functions after the constructor to create a
@@ -75,6 +83,14 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
                const ::ppapi::PpapiPermissions& perms);
 
   ~PluginModule();
+
+  // Sets the given class as being associated with this module. It will be
+  // deleted when the module is destroyed. You can only set it once, subsequent
+  // sets will assert.
+  //
+  // See EmbedderState above for more.
+  void SetEmbedderState(scoped_ptr<EmbedderState> state);
+  EmbedderState* GetEmbedderState();
 
   // Initializes this module as an internal plugin with the given entrypoints.
   // This is used for "plugins" compiled into Chrome. Returns true on success.
@@ -162,6 +178,9 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
 
   // Note: This may be null.
   PluginDelegate::ModuleLifetime* lifetime_delegate_;
+
+  // See EmbedderState above.
+  scoped_ptr<EmbedderState> embedder_state_;
 
   // Tracker for completion callbacks, used mainly to ensure that all callbacks
   // are properly aborted on module shutdown.

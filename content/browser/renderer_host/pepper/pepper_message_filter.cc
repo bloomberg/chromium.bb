@@ -76,10 +76,6 @@ PepperMessageFilter::PepperMessageFilter(
     : process_type_(type),
       process_id_(process_id),
       resource_context_(browser_context->GetResourceContext()),
-      permissions_(),  // Renderer has no PPAPI permissions,
-      host_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      ppapi_host_(ALLOW_THIS_IN_INITIALIZER_LIST(this), &host_factory_,
-                  permissions_),
       host_resolver_(NULL),
       next_socket_id_(1) {
   DCHECK(type == RENDERER);
@@ -91,15 +87,10 @@ PepperMessageFilter::PepperMessageFilter(
 }
 
 PepperMessageFilter::PepperMessageFilter(ProcessType type,
-                                         net::HostResolver* host_resolver,
-                                         const ppapi::PpapiPermissions& perms)
+                                         net::HostResolver* host_resolver)
     : process_type_(type),
       process_id_(0),
       resource_context_(NULL),
-      permissions_(perms),
-      host_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      ppapi_host_(ALLOW_THIS_IN_INITIALIZER_LIST(this), &host_factory_,
-                  permissions_),
       host_resolver_(host_resolver),
       next_socket_id_(1),
       incognito_(false) {
@@ -124,14 +115,6 @@ void PepperMessageFilter::OverrideThreadForMessage(
 
 bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
-if (process_type_ == PLUGIN) {
-    // Handle new-style host messages directly from the plugin. Don't allow
-    // renderers to send these messages since they have fewer capabilities for
-    // some classes of things than plugins.
-    if (ppapi_host_.OnMessageReceived(msg))
-      return true;
-  }
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
     IPC_MESSAGE_HANDLER(PepperMsg_GetLocalTimeZoneOffset,

@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
-#include "content/renderer/pepper/pepper_instance_state_accessor.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -77,14 +77,11 @@ PepperFileChooserHost::ChosenFileInfo::ChosenFileInfo(
 
 
 PepperFileChooserHost::PepperFileChooserHost(
-    ppapi::host::PpapiHost* host,
+    RendererPpapiHost* host,
     PP_Instance instance,
-    PP_Resource resource,
-    RenderViewImpl* render_view,
-    PepperInstanceStateAccessor* state)
-    : ResourceHost(host, instance, resource),
-      render_view_(render_view),
-      instance_state_(state),
+    PP_Resource resource)
+    : ResourceHost(host->GetPpapiHost(), instance, resource),
+      renderer_ppapi_host_(host),
       handler_(NULL) {
 }
 
@@ -140,7 +137,7 @@ int32_t PepperFileChooserHost::OnMsgShow(
 
   if (!host()->permissions().HasPermission(
           ppapi::PERMISSION_BYPASS_USER_GESTURE) &&
-       !instance_state_->HasUserGesture(pp_instance())) {
+       !renderer_ppapi_host_->HasUserGesture(pp_instance())) {
     return PP_ERROR_NO_USER_GESTURE;
   }
 
@@ -161,7 +158,9 @@ int32_t PepperFileChooserHost::OnMsgShow(
   params.directory = false;
 
   handler_ = new CompletionHandler(AsWeakPtr());
-  if (!render_view_->runFileChooser(params, handler_)) {
+  RenderViewImpl* render_view = static_cast<RenderViewImpl*>(
+      renderer_ppapi_host_->GetRenderViewForInstance(pp_instance()));
+  if (!render_view || !render_view->runFileChooser(params, handler_)) {
     delete handler_;
     handler_ = NULL;
     return PP_ERROR_NOACCESS;
@@ -174,3 +173,4 @@ int32_t PepperFileChooserHost::OnMsgShow(
 }
 
 }  // namespace content
+

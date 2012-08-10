@@ -12,8 +12,8 @@ using ppapi::host::ResourceHost;
 namespace content {
 
 ContentBrowserPepperHostFactory::ContentBrowserPepperHostFactory(
-    PepperMessageFilter* filter)
-    : filter_(filter) {
+    BrowserPpapiHostImpl* host)
+    : host_(host) {
 }
 
 ContentBrowserPepperHostFactory::~ContentBrowserPepperHostFactory() {

@@ -34,6 +34,7 @@ struct WebURLError;
 
 namespace content {
 
+class RendererPpapiHost;
 class RenderView;
 
 // Base class for objects that want to filter incoming IPCs, and also get
@@ -84,7 +85,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   // These match the RenderView methods.
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
-  virtual void DidCreatePepperPlugin(ppapi::host::PpapiHost* host) {}
+  virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
 
   // These match incoming IPCs.
   virtual void ContextMenuAction(unsigned id) {}

@@ -7,6 +7,7 @@
 #include "base/string_split.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/proxy/dispatch_reply_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/shared_impl/var.h"
@@ -14,11 +15,11 @@
 namespace ppapi {
 namespace proxy {
 
-FileChooserResource::FileChooserResource(IPC::Sender* sender,
+FileChooserResource::FileChooserResource(Connection connection,
                                          PP_Instance instance,
                                          PP_FileChooserMode_Dev mode,
                                          const std::string& accept_types)
-    : PluginResource(sender, instance),
+    : PluginResource(connection, instance),
       mode_(mode) {
   PopulateAcceptTypes(accept_types, &accept_types_);
 }
@@ -96,13 +97,18 @@ void FileChooserResource::PopulateAcceptTypes(
   }
 }
 
-void FileChooserResource::OnReplyReceived(int /* sequence */,
-                                          int32_t result,
-                                          const IPC::Message& msg) {
-  PpapiPluginMsg_FileChooser_ShowReply::Schema::Param param;
-  PpapiPluginMsg_FileChooser_ShowReply::Read(&msg, &param);
-  const std::vector<ppapi::PPB_FileRef_CreateInfo>& chosen_files = param.a;
+void FileChooserResource::OnReplyReceived(
+    const ResourceMessageReplyParams& params,
+    const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(FileChooserResource, msg)
+    PPAPI_DISPATCH_RESOURCE_REPLY(PpapiPluginMsg_FileChooser_ShowReply,
+                                  OnPluginMsgShowReply)
+  IPC_END_MESSAGE_MAP()
+}
 
+void FileChooserResource::OnPluginMsgShowReply(
+    const ResourceMessageReplyParams& params,
+    const std::vector<PPB_FileRef_CreateInfo>& chosen_files) {
   if (output_.is_valid()) {
     // Using v0.6 of the API with the output array.
     std::vector<PP_Resource> files;
@@ -120,7 +126,7 @@ void FileChooserResource::OnReplyReceived(int /* sequence */,
   }
 
   // Notify the plugin of the new data.
-  TrackedCallback::ClearAndRun(&callback_, result);
+  TrackedCallback::ClearAndRun(&callback_, params.result());
   // DANGER: May delete |this|!
 }
 

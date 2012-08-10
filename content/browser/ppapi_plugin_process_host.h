@@ -12,6 +12,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_file_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -122,6 +123,8 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Handles most requests from the plugin. May be NULL.
   scoped_refptr<PepperMessageFilter> filter_;
+
+  scoped_ptr<content::BrowserPpapiHostImpl> host_impl_;
 
   // Handles filesystem requests from flash plugins. May be NULL.
   scoped_refptr<PepperFileMessageFilter> file_filter_;

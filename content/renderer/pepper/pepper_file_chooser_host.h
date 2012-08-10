@@ -18,7 +18,7 @@ class RenderViewImpl;
 
 namespace content {
 
-class PepperInstanceStateAccessor;
+class RendererPpapiHost;
 
 class CONTENT_EXPORT PepperFileChooserHost
     : public ppapi::host::ResourceHost,
@@ -31,11 +31,9 @@ class CONTENT_EXPORT PepperFileChooserHost
     std::string display_name;  // May be empty.
   };
 
-  PepperFileChooserHost(ppapi::host::PpapiHost* host,
+  PepperFileChooserHost(RendererPpapiHost* host,
                         PP_Instance instance,
-                        PP_Resource resource,
-                        RenderViewImpl* render_view,
-                        PepperInstanceStateAccessor* state);
+                        PP_Resource resource);
   virtual ~PepperFileChooserHost();
 
   virtual int32_t OnResourceMessageReceived(
@@ -53,9 +51,8 @@ class CONTENT_EXPORT PepperFileChooserHost
                     const std::string& suggested_file_name,
                     const std::vector<std::string>& accept_mime_types);
 
-  // Non-owning pointers.
-  RenderViewImpl* render_view_;
-  PepperInstanceStateAccessor* instance_state_;
+  // Non-owning pointer.
+  RendererPpapiHost* renderer_ppapi_host_;
 
   ppapi::proxy::ResourceMessageReplyParams reply_params_;
   CompletionHandler* handler_;

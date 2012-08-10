@@ -10,6 +10,10 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/instance_message_filter.h"
 
+namespace content {
+class RendererPpapiHost;
+}
+
 namespace chrome {
 
 // Implements the backend for Flash-specific messages from a plugin process.
@@ -18,7 +22,7 @@ class PepperFlashRendererMessageFilter
  public:
   // This class is designed to be heap-allocated. It will attach itself to the
   // given host and delete itself when the host is destroyed.
-  explicit PepperFlashRendererMessageFilter(ppapi::host::PpapiHost* host);
+  explicit PepperFlashRendererMessageFilter(content::RendererPpapiHost* host);
   virtual ~PepperFlashRendererMessageFilter();
 
   // InstanceMessageFilter:
@@ -27,6 +31,8 @@ class PepperFlashRendererMessageFilter
  private:
   // Message handlers.
   void OnHostMsgInvokePrinting(PP_Instance instance);
+
+  content::RendererPpapiHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashRendererMessageFilter);
 };

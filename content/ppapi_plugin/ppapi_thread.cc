@@ -168,6 +168,10 @@ bool PpapiThread::SendToBrowser(IPC::Message* msg) {
   return sync_message_filter()->Send(msg);
 }
 
+IPC::Sender* PpapiThread::GetBrowserSender() {
+  return this;
+}
+
 std::string PpapiThread::GetUILanguage() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return command_line->GetSwitchValueASCII(switches::kLang);

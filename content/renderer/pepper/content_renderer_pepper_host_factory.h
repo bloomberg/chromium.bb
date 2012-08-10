@@ -11,16 +11,20 @@
 
 class RenderViewImpl;
 
+namespace ppapi {
+class PpapiPermissions;
+}
+
 namespace content {
+
+class RendererPpapiHostImpl;
 
 class PepperInstanceStateAccessor;
 
 class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
  public:
   explicit ContentRendererPepperHostFactory(
-      RenderViewImpl* render_view,
-      const ppapi::PpapiPermissions& permissions,
-      PepperInstanceStateAccessor* state);
+      RendererPpapiHostImpl* host);
   virtual ~ContentRendererPepperHostFactory();
 
   virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
@@ -30,9 +34,10 @@ class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
       const IPC::Message& message) OVERRIDE;
 
  private:
-  RenderViewImpl* render_view_;  // Non-owning.
-  ppapi::PpapiPermissions permissions_;
-  PepperInstanceStateAccessor* instance_state_;  // Non-owning.
+  const ppapi::PpapiPermissions& GetPermissions() const;
+
+  // Non-owning pointer.
+  RendererPpapiHostImpl* host_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentRendererPepperHostFactory);
 };

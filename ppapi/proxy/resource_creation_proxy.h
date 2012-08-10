@@ -23,6 +23,7 @@ class HostResource;
 
 namespace proxy {
 
+struct Connection;
 class Dispatcher;
 
 class ResourceCreationProxy : public InterfaceProxy,
@@ -162,6 +163,7 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
+  Connection GetConnection();
   DISALLOW_COPY_AND_ASSIGN(ResourceCreationProxy);
 };
 

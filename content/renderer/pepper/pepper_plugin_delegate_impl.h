@@ -80,6 +80,8 @@ class PepperPluginDelegateImpl
   explicit PepperPluginDelegateImpl(RenderViewImpl* render_view);
   virtual ~PepperPluginDelegateImpl();
 
+  RenderViewImpl* render_view() { return render_view_; }
+
   // Attempts to create a PPAPI plugin for the given filepath. On success, it
   // will return the newly-created module.
   //

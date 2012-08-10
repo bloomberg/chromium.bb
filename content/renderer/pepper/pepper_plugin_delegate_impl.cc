@@ -47,13 +47,13 @@
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
-#include "content/renderer/pepper/pepper_instance_state_accessor.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
 #include "content/renderer/pepper/pepper_platform_image_2d_impl.h"
 #include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
+#include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
@@ -110,9 +110,7 @@ class HostDispatcherWrapper
                         webkit::ppapi::PluginModule* module,
                         const ppapi::PpapiPermissions& perms)
       : module_(module),
-        instance_state_(module),
-        host_factory_(rv, perms, &instance_state_),
-        render_view_(rv) {
+        permissions_(perms) {
   }
   virtual ~HostDispatcherWrapper() {}
 
@@ -134,10 +132,6 @@ class HostDispatcherWrapper
     dispatcher_.reset(new ppapi::proxy::HostDispatcher(
         module_->pp_module(), local_get_interface, filter));
 
-    host_.reset(new ppapi::host::PpapiHost(dispatcher_.get(), &host_factory_,
-                                           permissions));
-    dispatcher_->AddFilter(host_.get());
-
     if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,
                                           true,  // Client.
@@ -148,7 +142,6 @@ class HostDispatcherWrapper
     }
     dispatcher_->channel()->SetRestrictDispatchChannelGroup(
         content::kRendererRestrictDispatchGroup_Pepper);
-    render_view_->PpapiPluginCreated(host_.get());
     return true;
   }
 
@@ -163,13 +156,12 @@ class HostDispatcherWrapper
     ppapi::proxy::HostDispatcher::RemoveForInstance(instance);
   }
 
+  ppapi::proxy::HostDispatcher* dispatcher() { return dispatcher_.get(); }
+
  private:
   webkit::ppapi::PluginModule* module_;
-  PepperInstanceStateAccessorImpl instance_state_;
-  ContentRendererPepperHostFactory host_factory_;
 
-  RenderViewImpl* render_view_;
-  scoped_ptr<ppapi::host::PpapiHost> host_;
+  ppapi::PpapiPermissions permissions_;
 
   scoped_ptr<ppapi::proxy::HostDispatcher> dispatcher_;
   scoped_ptr<ppapi::proxy::ProxyChannel::Delegate> dispatcher_delegate_;
@@ -279,6 +271,23 @@ void DoNotifyCloseFile(const GURL& path, base::PlatformFileError /* unused */) {
   ChildThread::current()->file_system_dispatcher()->NotifyCloseFile(path);
 }
 
+void CreateHostForInProcessModule(RenderViewImpl* render_view,
+                                  webkit::ppapi::PluginModule* module,
+                                  const webkit::WebPluginInfo& webplugin_info) {
+  // First time an in-process plugin was used, make a host for it.
+  const PepperPluginInfo* info =
+      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(webplugin_info);
+  DCHECK(!info->is_out_of_process);
+
+  ppapi::PpapiPermissions perms(
+      PepperPluginRegistry::GetInstance()->GetInfoForPlugin(
+          webplugin_info)->permissions);
+  RendererPpapiHostImpl* host_impl =
+      content::RendererPpapiHostImpl::CreateOnModuleForInProcess(
+          module, perms);
+  render_view->PpapiPluginCreated(host_impl);
+}
+
 }  // namespace
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
@@ -306,8 +315,15 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   FilePath path(webplugin_info.path);
   scoped_refptr<webkit::ppapi::PluginModule> module =
       PepperPluginRegistry::GetInstance()->GetLiveModule(path);
-  if (module)
+  if (module) {
+    if (!module->GetEmbedderState()) {
+      // If the module exists and no embedder state was associated with it,
+      // then the module was one of the ones preloaded and is an in-process
+      // plugin. We need to associate our host state with it.
+      CreateHostForInProcessModule(render_view_, module, webplugin_info);
+    }
     return module;
+  }
 
   // In-process plugins will have always been created up-front to avoid the
   // sandbox restrictions. So getting here implies it doesn't exist or should
@@ -354,6 +370,12 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
           permissions,
           hung_filter.get()))
     return scoped_refptr<webkit::ppapi::PluginModule>();
+
+  RendererPpapiHostImpl* host_impl =
+      content::RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
+          module, dispatcher->dispatcher(), permissions);
+  render_view_->PpapiPluginCreated(host_impl);
+
   module->InitAsProxied(dispatcher.release());
   return module;
 }
@@ -694,9 +716,9 @@ void PepperPluginDelegateImpl::InstanceDeleted(
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
 PepperPluginDelegateImpl::CreateResourceCreationAPI(
     webkit::ppapi::PluginInstance* instance) {
-  return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>(
-      new PepperInProcessResourceCreation(render_view_, instance,
-                                          instance->module()->permissions()));
+  RendererPpapiHostImpl* host_impl = static_cast<RendererPpapiHostImpl*>(
+      instance->module()->GetEmbedderState());
+  return host_impl->CreateInProcessResourceCreationAPI(instance);
 }
 
 SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {

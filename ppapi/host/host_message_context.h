@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_COMMON_HOST_MESSAGE_CONTEXT_H_
-#define PPAPI_COMMON_HOST_MESSAGE_CONTEXT_H_
+#ifndef PPAPI_HOST_HOST_MESSAGE_CONTEXT_H_
+#define PPAPI_HOST_HOST_MESSAGE_CONTEXT_H_
 
 #include "ipc/ipc_message.h"
 #include "ppapi/host/ppapi_host_export.h"
@@ -32,4 +32,4 @@ struct PPAPI_HOST_EXPORT HostMessageContext {
 }  // namespace host
 }  // namespace ppapi
 
-#endif  // PPAPI_COMMON_HOST_MESSAGE_CONTEXT_H_
+#endif  // PPAPI_HOST_HOST_MESSAGE_CONTEXT_H_

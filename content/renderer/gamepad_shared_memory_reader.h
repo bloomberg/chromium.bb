@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GAMEPAD_UTIL_H_
-#define GAMEPAD_UTIL_H_
+#ifndef CONTENT_RENDERER_GAMEPAD_UTIL_H_
+#define CONTENT_RENDERER_GAMEPAD_UTIL_H_
 
 #include "base/shared_memory.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,6 +27,6 @@ class GamepadSharedMemoryReader {
   bool ever_interacted_with_[WebKit::WebGamepads::itemsLengthCap];
 };
 
-} // namespace content
+}  // namespace content
 
-#endif  // GAMEPAD_UTIL_H_
+#endif  // CONTENT_RENDERER_GAMEPAD_UTIL_H_

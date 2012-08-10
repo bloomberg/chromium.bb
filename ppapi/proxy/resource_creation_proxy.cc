@@ -7,8 +7,11 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
+#include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
+#include "ppapi/proxy/plugin_globals.h"
+#include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_audio_input_proxy.h"
@@ -271,7 +274,7 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
     PP_Instance instance,
     PP_FileChooserMode_Dev mode,
     const char* accept_types) {
-  return (new FileChooserResource(dispatcher(), instance, mode,
+  return (new FileChooserResource(GetConnection(), instance, mode,
                                   accept_types))->GetReference();
 }
 
@@ -365,6 +368,12 @@ bool ResourceCreationProxy::Send(IPC::Message* msg) {
 
 bool ResourceCreationProxy::OnMessageReceived(const IPC::Message& msg) {
   return false;
+}
+
+Connection ResourceCreationProxy::GetConnection() {
+  return Connection(
+      PluginGlobals::Get()->plugin_proxy_delegate()->GetBrowserSender(),
+      dispatcher());
 }
 
 }  // namespace proxy

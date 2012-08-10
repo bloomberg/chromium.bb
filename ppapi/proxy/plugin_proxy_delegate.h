@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace IPC {
+class Sender;
+}
+
 namespace ppapi {
 namespace proxy {
 
@@ -15,8 +19,12 @@ class PPAPI_PROXY_EXPORT PluginProxyDelegate {
   virtual ~PluginProxyDelegate() {}
 
   // Sends the given message to the browser. Identical semantics to IPC::Sender
-  // interface.
+  // interface. New code should use GetBrowserSender instead.
+  // TODO(brettw) remove this.
   virtual bool SendToBrowser(IPC::Message* msg) = 0;
+
+  // Returns the channel for sending to the browser.
+  virtual IPC::Sender* GetBrowserSender() = 0;
 
   // Returns the language code of the current UI language.
   virtual std::string GetUILanguage() = 0;

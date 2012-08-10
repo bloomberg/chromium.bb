@@ -284,8 +284,7 @@ void PluginDispatcher::OnMsgResourceReply(
     NOTREACHED();
     return;
   }
-  resource->OnReplyReceived(reply_params.sequence(), reply_params.result(),
-                            nested_msg);
+  resource->OnReplyReceived(reply_params, nested_msg);
 }
 
 void PluginDispatcher::OnMsgSupportsInterface(

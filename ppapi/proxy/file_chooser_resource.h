@@ -25,7 +25,7 @@ class PPAPI_PROXY_EXPORT FileChooserResource
     : public PluginResource,
       public NON_EXPORTED_BASE(thunk::PPB_FileChooser_API) {
  public:
-  FileChooserResource(IPC::Sender* sender,
+  FileChooserResource(Connection connection,
                       PP_Instance instance,
                       PP_FileChooserMode_Dev mode,
                       const std::string& accept_types);
@@ -55,12 +55,12 @@ class PPAPI_PROXY_EXPORT FileChooserResource
 
  private:
   // PluginResource override.
-  virtual void OnReplyReceived(int sequence,
-                               int32_t result,
+  virtual void OnReplyReceived(const ResourceMessageReplyParams& params,
                                const IPC::Message& msg) OVERRIDE;
 
   void OnPluginMsgShowReply(
-      const std::vector<ppapi::PPB_FileRef_CreateInfo>& chosen_files);
+      const ResourceMessageReplyParams& params,
+      const std::vector<PPB_FileRef_CreateInfo>& chosen_files);
 
   int32_t ShowInternal(PP_Bool save_as,
                        const PP_Var& suggested_file_name,

@@ -10,20 +10,32 @@
 namespace ppapi {
 namespace proxy {
 
-PluginResource::PluginResource(IPC::Sender* sender, PP_Instance instance)
+PluginResource::PluginResource(Connection connection, PP_Instance instance)
     : Resource(OBJECT_IS_PROXY, instance),
-      sender_(sender),
+      connection_(connection),
       next_sequence_number_(0),
+      sent_create_to_browser_(false),
       sent_create_to_renderer_(false) {
 }
 
 PluginResource::~PluginResource() {
-  if (sent_create_to_renderer_)
-    Send(new PpapiHostMsg_ResourceDestroyed(pp_resource()));
+  if (sent_create_to_browser_) {
+    connection_.browser_sender->Send(
+        new PpapiHostMsg_ResourceDestroyed(pp_resource()));
+  }
+  if (sent_create_to_renderer_) {
+    connection_.renderer_sender->Send(
+        new PpapiHostMsg_ResourceDestroyed(pp_resource()));
+  }
 }
 
-bool PluginResource::Send(IPC::Message* message) {
-  return sender_->Send(message);
+void PluginResource::SendCreateToBrowser(const IPC::Message& msg) {
+  DCHECK(!sent_create_to_browser_);
+  sent_create_to_browser_ = true;
+  ResourceMessageCallParams params(pp_resource(),
+                                   next_sequence_number_++);
+  connection_.browser_sender->Send(
+      new PpapiHostMsg_ResourceCreated(params, pp_instance(), msg));
 }
 
 void PluginResource::SendCreateToRenderer(const IPC::Message& msg) {
@@ -31,20 +43,35 @@ void PluginResource::SendCreateToRenderer(const IPC::Message& msg) {
   sent_create_to_renderer_ = true;
   ResourceMessageCallParams params(pp_resource(),
                                    next_sequence_number_++);
-  Send(new PpapiHostMsg_ResourceCreated(params, pp_instance(), msg));
+  connection_.renderer_sender->Send(
+      new PpapiHostMsg_ResourceCreated(params, pp_instance(), msg));
+}
+
+void PluginResource::PostToBrowser(const IPC::Message& msg) {
+  ResourceMessageCallParams params(pp_resource(),
+                                   next_sequence_number_++);
+  connection_.browser_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
 }
 
 void PluginResource::PostToRenderer(const IPC::Message& msg) {
   ResourceMessageCallParams params(pp_resource(),
                                    next_sequence_number_++);
-  Send(new PpapiHostMsg_ResourceCall(params, msg));
+  connection_.renderer_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
+}
+
+int32_t PluginResource::CallBrowser(const IPC::Message& msg) {
+  ResourceMessageCallParams params(pp_resource(),
+                                   next_sequence_number_++);
+  params.set_has_callback();
+  connection_.browser_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
+  return params.sequence();
 }
 
 int32_t PluginResource::CallRenderer(const IPC::Message& msg) {
   ResourceMessageCallParams params(pp_resource(),
                                    next_sequence_number_++);
   params.set_has_callback();
-  Send(new PpapiHostMsg_ResourceCall(params, msg));
+  connection_.renderer_sender->Send(new PpapiHostMsg_ResourceCall(params, msg));
   return params.sequence();
 }
 

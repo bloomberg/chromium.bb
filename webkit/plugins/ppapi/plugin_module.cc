@@ -460,6 +460,14 @@ PluginModule::~PluginModule() {
   // previous parts of the destructor.
 }
 
+void PluginModule::SetEmbedderState(scoped_ptr<EmbedderState> state) {
+  embedder_state_ = state.Pass();
+}
+
+PluginModule::EmbedderState* PluginModule::GetEmbedderState() {
+  return embedder_state_.get();
+}
+
 bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {
   if (InitializeModule(entry_points)) {
     entry_points_ = entry_points;

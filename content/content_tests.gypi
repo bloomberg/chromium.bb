@@ -591,6 +591,7 @@
         'renderer/browser_plugin/browser_plugin_browsertest.h',
         'renderer/browser_plugin/browser_plugin_browsertest.cc',
         'renderer/mouse_lock_dispatcher_browsertest.cc',
+        'renderer/pepper/mock_renderer_ppapi_host.cc',
         'renderer/pepper/pepper_file_chooser_host_unittest.cc',
         'renderer/render_view_browsertest.cc',
         'renderer/render_view_browsertest_mac.mm',

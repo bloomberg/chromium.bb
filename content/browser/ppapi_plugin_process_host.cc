@@ -123,9 +123,11 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_PLUGIN, this));
 
-  filter_ = new PepperMessageFilter(
-      PepperMessageFilter::PLUGIN, host_resolver,
-      ppapi::PpapiPermissions(info.permissions));
+  filter_ = new PepperMessageFilter(PepperMessageFilter::PLUGIN,
+                                    host_resolver);
+
+  ppapi::PpapiPermissions permissions(info.permissions);
+  host_impl_.reset(new content::BrowserPpapiHostImpl(this, permissions));
 
   file_filter_ = new PepperTrustedFileMessageFilter(
       process_->GetData().id, info.name, profile_data_directory);

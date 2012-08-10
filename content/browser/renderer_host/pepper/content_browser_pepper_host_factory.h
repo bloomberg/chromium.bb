@@ -8,14 +8,14 @@
 #include "base/compiler_specific.h"
 #include "ppapi/host/host_factory.h"
 
-class PepperMessageFilter;
-
 namespace content {
+
+class BrowserPpapiHostImpl;
 
 class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
  public:
   // Non-owning pointer to the filter must outlive this class.
-  explicit ContentBrowserPepperHostFactory(PepperMessageFilter* filter);
+  explicit ContentBrowserPepperHostFactory(BrowserPpapiHostImpl* host);
   virtual ~ContentBrowserPepperHostFactory();
 
   virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
@@ -26,7 +26,7 @@ class ContentBrowserPepperHostFactory : public ppapi::host::HostFactory {
 
  private:
   // Non-owning pointer.
-  PepperMessageFilter* filter_;
+  BrowserPpapiHostImpl* host_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserPepperHostFactory);
 };
