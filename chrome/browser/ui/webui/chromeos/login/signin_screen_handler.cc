@@ -89,6 +89,8 @@ void ClearDnsCache(IOThread* io_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (browser_shutdown::IsTryingToQuit())
     return;
+
+  io_thread->ClearHostCache();
 }
 
 }  // namespace
