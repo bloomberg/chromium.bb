@@ -34,15 +34,6 @@ function bb_parse_args {
   done
 }
 
-
-# Setup environment for Android build.  Do not set ANDROID_SDK_ROOT so that
-# default version from $ROOT/src/third_party/android_tools/
-# Called from bb_baseline_setup.
-# Moved to top of file so it is easier to find.
-function bb_setup_environment {
-  export ANDROID_NDK_ROOT=/usr/local/google/android-ndk-r7
-}
-
 # Function to force-green a bot.
 function bb_force_bot_green_and_exit {
   echo "@@@BUILD_STEP Bot forced green.@@@"
@@ -78,8 +69,6 @@ function bb_baseline_setup {
     echo "@@@STEP_FAILURE@@@"
     return 1
   fi
-
-  bb_setup_environment
 
   for mandatory_directory in $(dirname "${ANDROID_SDK_ROOT}") \
     $(dirname "${ANDROID_NDK_ROOT}") ; do
