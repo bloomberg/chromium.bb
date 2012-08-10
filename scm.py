@@ -391,14 +391,19 @@ class GIT(object):
       return None
 
   @staticmethod
+  def ParseGitSvnSha1(output):
+    """Parses git-svn output for the first sha1."""
+    match = re.search(r'[0-9a-fA-F]{40}', output)
+    return match.group(0) if match else None
+
+  @staticmethod
   def GetSha1ForSvnRev(cwd, rev):
     """Returns a corresponding git sha1 for a SVN revision."""
     if not GIT.IsGitSvn(cwd=cwd):
       return None
     try:
-      lines = GIT.Capture(
-          ['svn', 'find-rev', 'r' + str(rev)], cwd=cwd).splitlines()
-      return lines[-1].strip() if lines else None
+      output = GIT.Capture(['svn', 'find-rev', 'r' + str(rev)], cwd=cwd)
+      return GIT.ParseGitSvnSha1(output)
     except subprocess2.CalledProcessError:
       return None
 

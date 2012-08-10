@@ -92,6 +92,7 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'IsGitSvn',
         'IsValidRevision',
         'MatchSvnGlob',
+        'ParseGitSvnSha1',
         'ShortBranchName',
     ]
     # If this test fails, you should add the relevant test.
@@ -166,6 +167,16 @@ class RealGitSvnTest(fake_repos.FakeReposTestBase):
     self.assertEquals(scm.GIT.GetGitSvnHeadRev(cwd=self.clone_dir), 2)
     self._capture(['reset', '--hard', 'HEAD^'])
     self.assertEquals(scm.GIT.GetGitSvnHeadRev(cwd=self.clone_dir), 1)
+
+  def testParseGitSvnSha1(self):
+    test_sha1 = 'a5c63ce8671922e5c59c0dea49ef4f9d4a3020c9'
+    expected_output = test_sha1 + '\n'
+    # Cygwin git-svn 1.7.9 prints extra escape sequences when run under
+    # TERM=xterm
+    cygwin_output = test_sha1 + '\n\033[?1034h'
+
+    self.assertEquals(scm.GIT.ParseGitSvnSha1(expected_output), test_sha1)
+    self.assertEquals(scm.GIT.ParseGitSvnSha1(cygwin_output), test_sha1)
 
   def testGetGetSha1ForSvnRev(self):
     if not self.enabled:
