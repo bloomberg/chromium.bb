@@ -34,6 +34,9 @@ namespace {
 // Duration of the animation when snapping the window into place.
 const int kSnapDurationMS = 100;
 
+// The maximum opacity of the drag phantom window.
+const float kMaxOpacity = 0.8f;
+
 // Returns true if should snap to the edge.
 bool ShouldSnapToEdge(int distance_from_edge, int grid_size) {
   return distance_from_edge <= grid_size / 2 &&
@@ -121,7 +124,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 
   // Show a phantom window for dragging in another root window.
   if (HasSecondaryRootWindow())
-    UpdateDragPhantomWindow(bounds);
+    UpdateDragPhantomWindow(bounds, in_original_root);
   else
     drag_phantom_window_controller_.reset();
 
@@ -133,6 +136,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 }
 
 void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
+  window()->layer()->SetOpacity(details_.initial_opacity);
   drag_phantom_window_controller_.reset();
   snap_phantom_window_controller_.reset();
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
@@ -182,6 +186,7 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
+  window()->layer()->SetOpacity(details_.initial_opacity);
   drag_phantom_window_controller_.reset();
   snap_phantom_window_controller_.reset();
 
@@ -439,7 +444,8 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
   return 0;
 }
 
-void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds) {
+void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds,
+                                                     bool in_original_root) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION ||
       !ShouldAllowMouseWarp()) {
     return;
@@ -451,18 +457,36 @@ void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds) {
   const gfx::Rect root_bounds_in_screen(another_root->GetBoundsInScreen());
   const gfx::Rect bounds_in_screen =
       ScreenAsh::ConvertRectToScreen(window()->parent(), bounds);
-  const gfx::Rect phantom(root_bounds_in_screen.Intersect(bounds_in_screen));
+  const gfx::Rect bounds_in_another_root =
+      root_bounds_in_screen.Intersect(bounds_in_screen);
 
-  if (!phantom.IsEmpty()) {
+  const float fraction_in_another_window =
+      (bounds_in_another_root.width() * bounds_in_another_root.height()) /
+      static_cast<float>(bounds.width() * bounds.height());
+  const float phantom_opacity =
+      !in_original_root ? 1 : (kMaxOpacity * fraction_in_another_window);
+  const float window_opacity =
+      in_original_root ? 1 : (kMaxOpacity * (1 - fraction_in_another_window));
+
+  if (fraction_in_another_window > 0) {
     if (!drag_phantom_window_controller_.get()) {
       drag_phantom_window_controller_.reset(
           new PhantomWindowController(window()));
-      drag_phantom_window_controller_->Show(phantom);
+      drag_phantom_window_controller_->set_style(
+          PhantomWindowController::STYLE_WINDOW);
+      // Always show the drag phantom on the |another_root| window.
+      drag_phantom_window_controller_->SetDestinationDisplay(
+          gfx::Screen::GetDisplayMatching(another_root->GetBoundsInScreen()));
+      drag_phantom_window_controller_->Show(bounds_in_screen);
     } else {
-      drag_phantom_window_controller_->SetBounds(phantom);  // no animation
+      // No animation.
+      drag_phantom_window_controller_->SetBounds(bounds_in_screen);
     }
+    drag_phantom_window_controller_->SetOpacity(phantom_opacity);
+    window()->layer()->SetOpacity(window_opacity);
   } else {
     drag_phantom_window_controller_.reset();
+    window()->layer()->SetOpacity(1.0f);
   }
 }
 

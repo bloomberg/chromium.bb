@@ -74,6 +74,9 @@ class ASH_EXPORT WindowResizer {
     // Location passed to the constructor, in |window->parent()|'s coordinates.
     gfx::Point initial_location_in_parent;
 
+    // Initial opacity of the window.
+    float initial_opacity;
+
     // The component the user pressed on.
     int window_component;
 

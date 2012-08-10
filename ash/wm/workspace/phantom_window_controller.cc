@@ -8,12 +8,16 @@
 #include "ash/shell_window_ids.h"
 #include "ash/wm/coordinate_conversion.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
@@ -30,7 +34,7 @@ const int kInsetSize = 4;
 // Size of the round rect used by EdgePainter.
 const int kRoundRectSize = 4;
 
-// Paints the background of the phantom window.
+// Paints the background of the phantom window for window snapping.
 class EdgePainter : public views::Painter {
  public:
   EdgePainter() {}
@@ -70,16 +74,56 @@ class EdgePainter : public views::Painter {
   DISALLOW_COPY_AND_ASSIGN(EdgePainter);
 };
 
+// Paints the background of the phantom window for window dragging.
+class WindowPainter : public views::Painter,
+                      public aura::WindowObserver {
+ public:
+  explicit WindowPainter(aura::Window* window)
+      : window_(window) {
+    window_->AddObserver(this);
+  }
+
+  virtual ~WindowPainter() {
+    if (window_)
+      window_->RemoveObserver(this);
+  }
+
+  // views::Painter overrides:
+  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
+    // TODO(yusukes): Paint child windows of the |window_| correctly. Current
+    // code does not paint e.g. web content area in the window. crbug.com/141766
+    if (window_ && window_->delegate())
+      window_->delegate()->OnPaint(canvas);
+  }
+
+ private:
+  // aura::WindowObserver overrides:
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
+    DCHECK_EQ(window_, window);
+    window_ = NULL;
+  }
+
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowPainter);
+};
+
 }  // namespace
 
 PhantomWindowController::PhantomWindowController(aura::Window* window)
     : window_(window),
       phantom_below_window_(NULL),
-      phantom_widget_(NULL) {
+      phantom_widget_(NULL),
+      style_(STYLE_SHADOW) {
 }
 
 PhantomWindowController::~PhantomWindowController() {
   Hide();
+}
+
+void PhantomWindowController::SetDestinationDisplay(
+    const gfx::Display& dst_display) {
+  dst_display_ = dst_display;
 }
 
 void PhantomWindowController::Show(const gfx::Rect& bounds) {
@@ -102,7 +146,7 @@ void PhantomWindowController::SetBounds(const gfx::Rect& bounds) {
   DCHECK(IsShowing());
   animation_.reset();
   bounds_ = bounds;
-  phantom_widget_->SetBounds(bounds_);
+  SetBoundsInternal(bounds);
 }
 
 void PhantomWindowController::Hide() {
@@ -115,10 +159,27 @@ bool PhantomWindowController::IsShowing() const {
   return phantom_widget_ != NULL;
 }
 
+void PhantomWindowController::set_style(Style style) {
+  // Cannot change |style_| after the widget is initialized.
+  DCHECK(!phantom_widget_);
+  style_ = style;
+}
+
+void PhantomWindowController::SetOpacity(float opacity) {
+  DCHECK(phantom_widget_);
+  ui::Layer* layer = phantom_widget_->GetNativeWindow()->layer();
+  ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
+  layer->SetOpacity(opacity);
+}
+
+float PhantomWindowController::GetOpacity() const {
+  DCHECK(phantom_widget_);
+  return phantom_widget_->GetNativeWindow()->layer()->opacity();
+}
+
 void PhantomWindowController::AnimationProgressed(
     const ui::Animation* animation) {
-  phantom_widget_->SetBounds(
-      animation->CurrentValueBetween(start_bounds_, bounds_));
+  SetBoundsInternal(animation->CurrentValueBetween(start_bounds_, bounds_));
 }
 
 void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
@@ -138,10 +199,18 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
   phantom_widget_->SetVisibilityChangedAnimationsEnabled(false);
   phantom_widget_->GetNativeWindow()->SetName("PhantomWindow");
   views::View* content_view = new views::View;
-  content_view->set_background(
-      views::Background::CreateBackgroundPainter(true, new EdgePainter));
+  switch (style_) {
+    case STYLE_SHADOW:
+      content_view->set_background(
+          views::Background::CreateBackgroundPainter(true, new EdgePainter));
+      break;
+    case STYLE_WINDOW:
+      content_view->set_background(views::Background::CreateBackgroundPainter(
+          true, new WindowPainter(window_)));
+      break;
+  }
   phantom_widget_->SetContentsView(content_view);
-  phantom_widget_->SetBounds(bounds);
+  SetBoundsInternal(bounds);
   if (phantom_below_window_)
     phantom_widget_->StackBelow(phantom_below_window_);
   else
@@ -152,6 +221,16 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
   layer->SetOpacity(0);
   ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
   layer->SetOpacity(1);
+}
+
+void PhantomWindowController::SetBoundsInternal(const gfx::Rect& bounds) {
+  aura::Window* window = phantom_widget_->GetNativeWindow();
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window->GetRootWindow());
+  if (screen_position_client && dst_display_.id() != -1)
+    screen_position_client->SetBounds(window, bounds, dst_display_);
+  else
+    phantom_widget_->SetBounds(bounds);
 }
 
 }  // namespace internal

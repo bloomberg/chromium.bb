@@ -10,6 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/string_number_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -62,16 +63,19 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     EXPECT_EQ(kRootHeight, root_bounds.height());
     Shell::GetInstance()->SetDisplayWorkAreaInsets(root, gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
+    window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window_->Init(ui::LAYER_NOT_DRAWN);
     window_->SetParent(default_container);
     window_->set_id(1);
 
     window2_.reset(new aura::Window(&delegate2_));
+    window2_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window2_->Init(ui::LAYER_NOT_DRAWN);
     window2_->SetParent(default_container);
     window2_->set_id(2);
 
     window3_.reset(new aura::Window(&delegate3_));
+    window3_->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window3_->Init(ui::LAYER_NOT_DRAWN);
     window3_->SetParent(default_container);
     window3_->set_id(3);
@@ -133,6 +137,8 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizerTest);
 };
 
+}  // namespace
+
 // Fails on win_aura since wm::GetRootWindowRelativeToWindow is not implemented
 // yet for the platform.
 #if defined(OS_WIN)
@@ -140,10 +146,12 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   DISABLED_WindowDragWithMultiMonitors
 #define MAYBE_WindowDragWithMultiMonitorsRightToLeft \
   DISABLED_WindowDragWithMultiMonitorsRightToLeft
+#define MAYBE_PhantomStyle DISABLED_PhantomStyle
 #else
 #define MAYBE_WindowDragWithMultiMonitors WindowDragWithMultiMonitors
 #define MAYBE_WindowDragWithMultiMonitorsRightToLeft \
   WindowDragWithMultiMonitorsRightToLeft
+#define MAYBE_PhantomStyle PhantomStyle
 #endif
 
 // Assertions around attached window resize dragging from the right with 2
@@ -569,6 +577,75 @@ TEST_F(WorkspaceWindowResizerTest,
   }
 }
 
+// Verifies the style of the drag phantom window is correct.
+TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
+  UpdateDisplay("800x600,800x600");
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+
+  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                             gfx::Screen::GetPrimaryDisplay());
+  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  {
+    SetGridSize(0);
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+
+    // The pointer is inside the primary root. Both phantoms should be NULL.
+    resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
+    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+
+    // The window spans both root windows.
+    resizer->Drag(CalculateDragPoint(*resizer, 798, 10), 0);
+    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+    PhantomWindowController* controller =
+        resizer->drag_phantom_window_controller_.get();
+    ASSERT_TRUE(controller);
+    EXPECT_EQ(PhantomWindowController::STYLE_WINDOW, controller->style());
+    // |window_| should be opaque since the pointer is still on the primary
+    // root window. The phantom should be semi-transparent.
+    EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+    EXPECT_GT(1.0f, controller->GetOpacity());
+
+    // Enter the pointer to the secondary display.
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 610), 0);
+    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+    controller = resizer->drag_phantom_window_controller_.get();
+    ASSERT_TRUE(controller);
+    EXPECT_EQ(PhantomWindowController::STYLE_WINDOW, controller->style());
+    // |window_| should be transparent, and the phantom should be opaque.
+    EXPECT_GT(1.0f, window_->layer()->opacity());
+    EXPECT_FLOAT_EQ(1.0f, controller->GetOpacity());
+
+    resizer->CompleteDrag(0);
+    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
+    EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  }
+
+  // Do the same test with RevertDrag().
+  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                             gfx::Screen::GetPrimaryDisplay());
+  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+  EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+    EXPECT_FALSE(resizer->drag_phantom_window_controller_.get());
+
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 610), 0);
+    resizer->RevertDrag();
+    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+    EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+  }
+}
+
 // Verifies windows are correctly restacked when reordering multiple windows.
 TEST_F(WorkspaceWindowResizerTest, RestackAttached) {
   window_->SetBounds(gfx::Rect(   0, 0, 200, 300));
@@ -765,6 +842,5 @@ TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
   EXPECT_EQ("106,124 320x160", window_->bounds().ToString());
 }
 
-}  // namespace
 }  // namespace test
 }  // namespace ash

@@ -9,6 +9,7 @@
 
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace aura {
@@ -62,6 +63,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                          const std::vector<aura::Window*>& attached_windows);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomStyle);
+
   // Type of snapping.
   enum SnapType {
     // Snap to the left/right edge of the screen.
@@ -114,8 +117,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                                const gfx::Rect& bounds,
                                int grid_size);
 
-  // Updates the bounds of the phantom window for window dragging.
-  void UpdateDragPhantomWindow(const gfx::Rect& bounds);
+  // Updates the bounds of the phantom window for window dragging. Set true on
+  // |in_original_root| if the pointer is still in |window()->GetRootWindow()|.
+  void UpdateDragPhantomWindow(const gfx::Rect& bounds, bool in_original_root);
 
   // Restacks the windows z-order position so that one of the windows is at the
   // top of the z-order, and the rest directly underneath it.
@@ -165,9 +169,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // is a grid and the caption is being dragged.
   scoped_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
-  // For now, we show a phantom window on the other root window during dragging.
-  // TODO(yusukes): Show a semi-transparent image (screen shot) of the window
-  // instead.
+  // Shows a semi-transparent image of the window being dragged.
   scoped_ptr<PhantomWindowController> drag_phantom_window_controller_;
 
   // Used to determine the target position of a snap.

@@ -113,6 +113,7 @@ WindowResizer::Details::Details(aura::Window* window,
   : window(window),
     initial_bounds(window->bounds()),
     initial_location_in_parent(location),
+    initial_opacity(window->layer()->opacity()),
     window_component(window_component),
     bounds_change(GetBoundsChangeForWindowComponent(window_component)),
     position_change_direction(
