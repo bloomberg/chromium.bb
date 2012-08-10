@@ -28,6 +28,7 @@
           'i18n.json',
           'font_settings.json',
           'history.json',
+          'management.json',
           'page_capture.json',
           'permissions.json',
           'storage.json',

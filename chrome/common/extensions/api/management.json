@@ -100,8 +100,9 @@
             }
           },
           "installType": {
-            "description": "How the extension was installed (\"admin\", \"development\", \"normal\", \"sideload\", \"other\"). \"admin\" means the extension was installed because of an administrative policy. \"development\" means the extension was loaded unpacked in developer mode. \"normal\" means the extension was installed normally via a .crx file. \"sideload\" means the extension was installed by other software on the machine. \"other\" means the extension was installed by other means.",
-            "type": "string"
+            "description": "How the extension was installed. One of<br><var>admin</var>: The extension was installed because of an administrative policy,<br><var>development</var>: The extension was loaded unpacked in developer mode,<br><var>normal</var>: The extension was installed normally via a .crx file,<br><var>sideload</var>: The extension was installed by other software on the machine,<br><var>other</var>: The extension was installed by other means.",
+            "type": "string",
+            "enum": ["admin", "development", "normal", "sideload", "other"]
           }
         }
       }
