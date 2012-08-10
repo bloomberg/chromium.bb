@@ -420,9 +420,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // Tests that scripts tab is populated with inspected scripts even if it
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
+#if defined(OS_WIN)
+// http://crbug.com/141849
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+        FLAKY_TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#else
+#define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
+        TestScriptsTabIsPopulatedOnInspectedPageRefresh
+#endif
 IN_PROC_BROWSER_TEST_F(
     DevToolsSanityTest,
-    TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+    MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   content::GetContentClient()->browser()->ClearInspectorSettings(
