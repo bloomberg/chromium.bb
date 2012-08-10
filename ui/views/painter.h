@@ -35,6 +35,14 @@ class VIEWS_EXPORT Painter {
   static Painter* CreateHorizontalGradient(SkColor c1, SkColor c2);
   static Painter* CreateVerticalGradient(SkColor c1, SkColor c2);
 
+  // Creates a painter that draws a multi-color gradient. |colors| contains the
+  // gradient colors and |pos| the relative positions of the colors. The first
+  // element in |pos| must be 0.0 and the last element 1.0. |count| contains
+  // the number of elements in |colors| and |pos|.
+  static Painter* CreateVerticalMultiColorGradient(SkColor* colors,
+                                                   SkScalar* pos,
+                                                   size_t count);
+
   // Creates a painter that divides |image| into nine regions. The four corners
   // are rendered at the size specified in insets (for example, the upper
   // left corners is rendered at 0x0 with a size of

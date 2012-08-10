@@ -20,13 +20,24 @@ namespace {
 
 class GradientPainter : public Painter {
  public:
-  GradientPainter(bool horizontal, SkColor top, SkColor bottom)
-      : horizontal_(horizontal) {
-    colors_[0] = top;
-    colors_[1] = bottom;
+  GradientPainter(bool horizontal,
+                  SkColor* colors,
+                  SkScalar* pos,
+                  size_t count)
+      : horizontal_(horizontal),
+        count_(count) {
+    pos_ = new SkScalar[count_];
+    colors_ = new SkColor[count_];
+
+    for (size_t i = 0; i < count_; ++i) {
+      pos_[i] = pos[i];
+      colors_[i] = colors[i];
+    }
   }
 
   virtual ~GradientPainter() {
+    delete[] pos_;
+    delete[] colors_;
   }
 
   // Overridden from Painter:
@@ -39,7 +50,7 @@ class GradientPainter : public Painter {
     else
       p[1].iset(0, size.height());
 
-    SkShader* s = SkGradientShader::CreateLinear(p, colors_, NULL, 2,
+    SkShader* s = SkGradientShader::CreateLinear(p, colors_, pos_, count_,
         SkShader::kClamp_TileMode, NULL);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setShader(s);
@@ -52,8 +63,14 @@ class GradientPainter : public Painter {
   }
 
  private:
+  // If |horizontal_| is true then the gradiant is painted horizontally.
   bool horizontal_;
-  SkColor colors_[2];
+  // The gradient colors.
+  SkColor* colors_;
+  // The relative positions of the corresponding gradient colors.
+  SkScalar* pos_;
+  // The number of elements in |colors_| and |pos_|.
+  size_t count_;
 
   DISALLOW_COPY_AND_ASSIGN(GradientPainter);
 };
@@ -163,12 +180,27 @@ void Painter::PaintPainterAt(gfx::Canvas* canvas,
 
 // static
 Painter* Painter::CreateHorizontalGradient(SkColor c1, SkColor c2) {
-  return new GradientPainter(true, c1, c2);
+  SkColor colors[2];
+  colors[0] = c1;
+  colors[1] = c2;
+  SkScalar pos[] = {0, 1};
+  return new GradientPainter(true, colors, pos, 2);
 }
 
 // static
 Painter* Painter::CreateVerticalGradient(SkColor c1, SkColor c2) {
-  return new GradientPainter(false, c1, c2);
+  SkColor colors[2];
+  colors[0] = c1;
+  colors[1] = c2;
+  SkScalar pos[] = {0, 1};
+  return new GradientPainter(false, colors, pos, 2);
+}
+
+// static
+Painter* Painter::CreateVerticalMultiColorGradient(SkColor* colors,
+                                                   SkScalar* pos,
+                                                   size_t count) {
+  return new GradientPainter(false, colors, pos, count);
 }
 
 // static

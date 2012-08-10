@@ -124,6 +124,20 @@ class TabStrip : public View {
   explicit TabStrip(NativeTabbedPaneViews* owner)
       : owner_(owner),
         selected_tab_(NULL) {
+    const int kCount = 4;
+    // The gradient colors are derived from the tabbed panes used for the
+    // WebUI.
+    SkColor colors[] = {
+        SkColorSetRGB(0xff, 0xff, 0xff),
+        SkColorSetRGB(0xff, 0xff, 0xff),
+        SkColorSetRGB(0xfa, 0xfa, 0xfa),
+        SkColorSetRGB(0xf2, 0xf2, 0xf2)
+    };
+    // The relative positions of the gradient colors are derived from the
+    // tabbed panes used for the WebUI.
+    SkScalar pos[4] = {0.0f, 0.6f, 0.8f, 1.0f};
+    set_background(Background::CreateVerticalMultiColorGradientBackground(
+        colors, pos, kCount));
   }
   virtual ~TabStrip() {}
 
@@ -167,6 +181,9 @@ class TabStrip : public View {
     }
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    OnPaintBackground(canvas);
+
+    // Draw the TabStrip border.
     SkPaint paint;
     paint.setColor(kTabBorderColor);
     paint.setStrokeWidth(kTabBorderThickness);

@@ -114,6 +114,19 @@ Background* Background::CreateVerticalGradientBackground(SkColor color1,
 }
 
 //static
+Background* Background::CreateVerticalMultiColorGradientBackground(
+    SkColor* colors,
+    SkScalar* pos,
+    size_t count) {
+  Background* background = CreateBackgroundPainter(
+      true, Painter::CreateVerticalMultiColorGradient(colors, pos, count));
+  background->SetNativeControlColor(
+      color_utils::AlphaBlend(colors[0], colors[count-1], 128));
+
+  return background;
+}
+
+//static
 Background* Background::CreateBackgroundPainter(bool owns_painter,
                                                 Painter* painter) {
   return new BackgroundPainter(owns_painter, painter);

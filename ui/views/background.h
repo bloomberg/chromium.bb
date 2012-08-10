@@ -59,6 +59,15 @@ class VIEWS_EXPORT Background {
   static Background* CreateVerticalGradientBackground(SkColor color1,
                                                       SkColor color2);
 
+  // Creates a background that contains a vertical gradient. The gradient can
+  // have multiple |colors|. The |pos| array contains the relative positions of
+  // each corresponding color. |colors| and |pos| must be the same size. The
+  // first element in |pos| must be 0.0 and the last element must be 1.0.
+  // |count| contains the number of elements in |colors| and |pos|.
+  static Background* CreateVerticalMultiColorGradientBackground(SkColor* colors,
+                                                                SkScalar* pos,
+                                                                size_t count);
+
   // Creates Chrome's standard panel background
   static Background* CreateStandardPanelBackground();
 
