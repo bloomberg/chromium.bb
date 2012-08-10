@@ -40,7 +40,7 @@ struct text_entry {
 };
 
 struct editor {
-	struct text_model_manager *text_model_manager;
+	struct text_model_factory *text_model_factory;
 	struct display *display;
 	struct window *window;
 	struct widget *widget;
@@ -130,7 +130,7 @@ text_entry_create(struct editor *editor, const char *text)
 	entry->widget = editor->widget;
 	entry->text = strdup(text);
 	entry->active = 0;
-	entry->model = text_model_manager_create_text_model(editor->text_model_manager, surface);
+	entry->model = text_model_factory_create_text_model(editor->text_model_factory, surface);
 	text_model_add_listener(entry->model, &text_model_listener, entry);
 
 	return entry;
@@ -311,9 +311,11 @@ global_handler(struct wl_display *display, uint32_t id,
 {
 	struct editor *editor = data;
 
-	if (!strcmp(interface, "text_model_manager")) {
-		editor->text_model_manager = wl_display_bind(display, id,
-							     &text_model_manager_interface);
+	if (!strcmp(interface, "text_model_factory")) {
+		editor->text_model_factory = wl_display_bind(display, id,
+							     &text_model_factory_interface);
+	} else if (!strcmp(interface, "wl_seat")) {
+		fprintf(stderr, "wl_seat added\n");
 	}
 }
 

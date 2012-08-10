@@ -38,7 +38,7 @@ struct text_model {
 struct input_method {
 	struct wl_resource *input_method_binding;
 	struct wl_global *input_method_global;
-	struct wl_global *text_model_manager_global;
+	struct wl_global *text_model_factory_global;
 	struct wl_listener destroy_listener;
 
 	struct weston_compositor *ec;
@@ -145,7 +145,7 @@ struct text_model_interface text_model_implementation = {
 	text_model_set_content_type
 };
 
-static void text_model_manager_create_text_model(struct wl_client *client,
+static void text_model_factory_create_text_model(struct wl_client *client,
 						 struct wl_resource *resource,
 						 uint32_t id,
 						 struct wl_resource *surface)
@@ -170,12 +170,12 @@ static void text_model_manager_create_text_model(struct wl_client *client,
 	wl_list_insert(&input_method->models, &text_model->link);
 };
 
-static const struct text_model_manager_interface text_model_manager_implementation = {
-	text_model_manager_create_text_model
+static const struct text_model_factory_interface text_model_factory_implementation = {
+	text_model_factory_create_text_model
 };
 
 static void
-bind_text_model_manager(struct wl_client *client,
+bind_text_model_factory(struct wl_client *client,
 			void *data,
 			uint32_t version,
 			uint32_t id)
@@ -184,8 +184,8 @@ bind_text_model_manager(struct wl_client *client,
 
 	/* No checking for duplicate binding necessary.
 	 * No events have to be sent, so we don't need the return value. */
-	wl_client_add_object(client, &text_model_manager_interface,
-			     &text_model_manager_implementation,
+	wl_client_add_object(client, &text_model_factory_interface,
+			     &text_model_factory_implementation,
 			     id, input_method);
 }
 
@@ -248,7 +248,7 @@ input_method_notifier_destroy(struct wl_listener *listener, void *data)
 	wl_display_remove_global(input_method->ec->wl_display,
 				 input_method->input_method_global);
 	wl_display_remove_global(input_method->ec->wl_display,
-				 input_method->text_model_manager_global);
+				 input_method->text_model_factory_global);
 	free(input_method);
 }
 
@@ -269,10 +269,10 @@ input_method_create(struct weston_compositor *ec)
 				      &input_method_interface,
 				      input_method, bind_input_method);
 
-	input_method->text_model_manager_global =
+	input_method->text_model_factory_global =
 		wl_display_add_global(ec->wl_display,
-				      &text_model_manager_interface,
-				      input_method, bind_text_model_manager);
+				      &text_model_factory_interface,
+				      input_method, bind_text_model_factory);
 
 	input_method->destroy_listener.notify = input_method_notifier_destroy;
 	wl_signal_add(&ec->destroy_signal, &input_method->destroy_listener);
