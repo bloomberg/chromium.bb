@@ -6,10 +6,10 @@
 
 #include "base/file_path.h"
 #include "base/time.h"
+#include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
-#include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/favicon_url.h"
 #include "chrome/common/icon_messages.h"
