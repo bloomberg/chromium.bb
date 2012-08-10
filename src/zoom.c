@@ -136,11 +136,21 @@ weston_zoom_frame_z(struct weston_animation *animation,
 	weston_output_damage(output);
 }
 
+static struct weston_seat *
+weston_zoom_pick_seat(struct weston_compositor *compositor)
+{
+	return container_of(compositor->seat_list.next,
+			    struct weston_seat, link);
+}
+
+
 static void
 weston_zoom_frame_xy(struct weston_animation *animation,
 		struct weston_output *output, uint32_t msecs)
 {
+	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
 	wl_fixed_t x, y;
+
 	if (animation->frame_counter <= 1)
 		output->zoom.spring_xy.timestamp = msecs;
 
@@ -157,13 +167,11 @@ weston_zoom_frame_xy(struct weston_animation *animation,
 	if (weston_spring_done(&output->zoom.spring_xy)) {
 		output->zoom.spring_xy.current = output->zoom.spring_xy.target;
 		output->zoom.current.x =
-				(output->zoom.type == ZOOM_FOCUS_POINTER) ?
-					output->compositor->seat->pointer.x :
-					output->zoom.text_cursor.x;
+			output->zoom.type == ZOOM_FOCUS_POINTER ?
+				seat->pointer.x : output->zoom.text_cursor.x;
 		output->zoom.current.y =
-				(output->zoom.type == ZOOM_FOCUS_POINTER) ?
-					output->compositor->seat->pointer.y :
-					output->zoom.text_cursor.y;
+			output->zoom.type == ZOOM_FOCUS_POINTER ?
+				seat->pointer.y : output->zoom.text_cursor.y;
 		wl_list_remove(&animation->link);
 		wl_list_init(&animation->link);
 	}
@@ -280,17 +288,16 @@ weston_zoom_transition(struct weston_output *output, uint32_t type,
 WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output, uint32_t type)
 {
-	wl_fixed_t x = output->compositor->seat->pointer.x;
-	wl_fixed_t y = output->compositor->seat->pointer.y;
+	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
+	wl_fixed_t x = seat->pointer.x;
+	wl_fixed_t y = seat->pointer.y;
 
 	zoom_area_center_from_pointer(output, &x, &y);
 
 	if (type == ZOOM_FOCUS_POINTER) {
 		if (wl_list_empty(&output->zoom.animation_xy.link)) {
-			output->zoom.current.x =
-					output->compositor->seat->pointer.x;
-			output->zoom.current.y =
-					output->compositor->seat->pointer.y;
+			output->zoom.current.x = seat->pointer.x;
+			output->zoom.current.y = seat->pointer.y;
 		} else {
 			output->zoom.to.x = x;
 			output->zoom.to.y = y;
