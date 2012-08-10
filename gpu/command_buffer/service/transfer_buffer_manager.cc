@@ -25,11 +25,12 @@ TransferBufferManager::TransferBufferManager()
 TransferBufferManager::~TransferBufferManager() {
   for (size_t i = 0; i < registered_objects_.size(); ++i) {
     if (registered_objects_[i].shared_memory) {
+      DCHECK(shared_memory_bytes_allocated_ >= registered_objects_[i].size);
       shared_memory_bytes_allocated_ -= registered_objects_[i].size;
       delete registered_objects_[i].shared_memory;
     }
   }
-  // TODO(gman): Should we report 0 bytes to TRACE here?
+  DCHECK(!shared_memory_bytes_allocated_);
 }
 
 bool TransferBufferManager::Initialize() {
@@ -41,10 +42,6 @@ int32 TransferBufferManager::CreateTransferBuffer(
   SharedMemory buffer;
   if (!buffer.CreateAnonymous(size))
     return -1;
-
-  shared_memory_bytes_allocated_ += size;
-  TRACE_COUNTER_ID1(
-      "CommandBuffer", "SharedMemory", this, shared_memory_bytes_allocated_);
 
   return RegisterTransferBuffer(&buffer, size, id_request);
 }
@@ -80,6 +77,10 @@ int32 TransferBufferManager::RegisterTransferBuffer(
   buffer.ptr = duped_shared_memory->memory();
   buffer.size = size;
   buffer.shared_memory = duped_shared_memory.release();
+
+  shared_memory_bytes_allocated_ += size;
+  TRACE_COUNTER_ID1(
+      "CommandBuffer", "SharedMemory", this, shared_memory_bytes_allocated_);
 
   // If caller requested specific id, first try to use id_request.
   if (id_request != -1) {
@@ -120,6 +121,7 @@ void TransferBufferManager::DestroyTransferBuffer(int32 handle) {
   if (static_cast<size_t>(handle) >= registered_objects_.size())
     return;
 
+  DCHECK(shared_memory_bytes_allocated_ >= registered_objects_[handle].size);
   shared_memory_bytes_allocated_ -= registered_objects_[handle].size;
   TRACE_COUNTER_ID1(
       "CommandBuffer", "SharedMemory", this, shared_memory_bytes_allocated_);
