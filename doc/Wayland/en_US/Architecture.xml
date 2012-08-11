@@ -255,7 +255,7 @@
     <para>
       In either case, the application must tell the compositor
       which area of the surface holds new contents. When the
-      application renders directly the to shared buffer, the
+      application renders directly to the shared buffer, the
       compositor needs to be noticed that there is new content.
       But also when exchanging buffers, the compositor doesn't
       assume anything changed, and needs a request from the
