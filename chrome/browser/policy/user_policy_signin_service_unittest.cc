@@ -14,7 +14,10 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -55,6 +58,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.SetUserCloudPolicyManager(manager.Pass());
     profile_ = builder.Build().Pass();
+    profile_->CreateRequestContext();
     profile_->GetPrefs()->SetBoolean(prefs::kLoadCloudPolicyOnSignin, true);
     SigninManagerFactory::GetInstance()->SetTestingFactory(
         profile_.get(), FakeSigninManager::Build);
@@ -119,9 +123,7 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
   ASSERT_TRUE(profile_->GetUserCloudPolicyManager()->cloud_policy_service());
 }
 
-// TODO(atwilson): Enable test for signing in once it is possible to use a
-// mock TokenService (http://crbug.com/138618).
-TEST_F(UserPolicySigninServiceTest, DISABLED_SignInAfterInit) {
+TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
   // Let the SigninService know that the profile has been created.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_ADDED,
@@ -135,7 +137,9 @@ TEST_F(UserPolicySigninServiceTest, DISABLED_SignInAfterInit) {
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
       "testuser@test.com");
 
-  // Make oauth token available (needs MockTokenService - see TODO above).
+  // Make oauth token available.
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth_login_refresh_token");
 
   // UserCloudPolicyManager should be initialized.
   ASSERT_TRUE(profile_->GetUserCloudPolicyManager()->cloud_policy_service());

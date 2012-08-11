@@ -31,6 +31,15 @@
 //     SetMyToken(notification.token())
 //   }
 // }
+//
+// There is currently no easy way to create a fake TokenService. Tests that want
+// to use TokenService to issue tokens without the use of fake GaiaAuthFetchers
+// or persisting the tokens to disk via WebDataService can do this by
+// creating a TokenService (skipping the Initialize() step to avoid interacting
+// with WebDataService) and calling IssueAuthTokenForTest() to issue new tokens.
+// This will result in the TokenService sending out the appropriate
+// TOKEN_AVAILABLE notification and returning the correct response to future
+// calls to Has/GetTokenForService().
 
 #ifndef CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_H_
 #define CHROME_BROWSER_SIGNIN_TOKEN_SERVICE_H_
