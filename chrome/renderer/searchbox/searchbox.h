@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SEARCHBOX_H_
-#define CHROME_RENDERER_SEARCHBOX_H_
+#ifndef CHROME_RENDERER_SEARCHBOX_SEARCHBOX_H_
+#define CHROME_RENDERER_SEARCHBOX_SEARCHBOX_H_
 
 #include <vector>
 
@@ -63,4 +63,4 @@ class SearchBox : public content::RenderViewObserver,
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };
 
-#endif  // CHROME_RENDERER_SEARCHBOX_H_
+#endif  // CHROME_RENDERER_SEARCHBOX_SEARCHBOX_H_

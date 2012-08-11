@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/searchbox.h"
+#include "chrome/renderer/searchbox/searchbox.h"
 
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/searchbox_extension.h"
+#include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 

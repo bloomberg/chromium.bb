@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SEARCHBOX_EXTENSION_H_
-#define CHROME_RENDERER_SEARCHBOX_EXTENSION_H_
+#ifndef CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_
+#define CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_
 
 #include "base/basictypes.h"
 
@@ -38,4 +38,4 @@ class SearchBoxExtension {
 
 }  // namespace extensions_v8
 
-#endif  // CHROME_RENDERER_SEARCHBOX_EXTENSION_H_
+#endif  // CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_
