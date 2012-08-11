@@ -877,7 +877,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
-    IPC_MESSAGE_HANDLER(ViewMsg_FindReplyACK, OnFindReplyAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(ViewMsg_ZoomFactor, OnZoomFactor)
@@ -3659,23 +3658,12 @@ void RenderViewImpl::reportFindInPageMatchCount(int request_id, int count,
   if (!count)
     active_match_ordinal = 0;
 
-  IPC::Message* msg = new ViewHostMsg_Find_Reply(
-      routing_id_,
-      request_id,
-      count,
-      gfx::Rect(),
-      active_match_ordinal,
-      final_update);
-
-  // If we have a message that has been queued up, then we should just replace
-  // it. The ACK from the browser will make sure it gets sent when the browser
-  // wants it.
-  if (queued_find_reply_message_.get()) {
-    queued_find_reply_message_.reset(msg);
-  } else {
-    // Send the search result over to the browser process.
-    Send(msg);
-  }
+  Send(new ViewHostMsg_Find_Reply(routing_id_,
+                                  request_id,
+                                  count,
+                                  gfx::Rect(),
+                                  active_match_ordinal,
+                                  final_update));
 }
 
 void RenderViewImpl::reportFindInPageSelection(int request_id,
@@ -4437,14 +4425,6 @@ void RenderViewImpl::OnStopFinding(content::StopFindAction action) {
           node.simulateClick();
       }
     }
-  }
-}
-
-void RenderViewImpl::OnFindReplyAck() {
-  // Check if there is any queued up request waiting to be sent.
-  if (queued_find_reply_message_.get()) {
-    // Send the search result over to the browser process.
-    Send(queued_find_reply_message_.release());
   }
 }
 

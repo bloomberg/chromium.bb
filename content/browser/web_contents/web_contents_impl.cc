@@ -2129,15 +2129,6 @@ void WebContentsImpl::OnFindReply(int request_id,
     delegate_->FindReply(this, request_id, number_of_matches, selection_rect,
                          active_match_ordinal, final_update);
   }
-
-  // Send a notification to the renderer that we are ready to receive more
-  // results from the scoping effort of the Find operation. The FindInPage
-  // scoping is asynchronous and periodically sends results back up to the
-  // browser using IPC. In an effort to not spam the browser we have the
-  // browser send an ACK for each FindReply message and have the renderer
-  // queue up the latest status message while waiting for this ACK.
-  GetRenderViewHostImpl()->Send(
-      new ViewMsg_FindReplyACK(GetRenderViewHost()->GetRoutingID()));
 }
 
 void WebContentsImpl::OnCrashedPlugin(const FilePath& plugin_path) {

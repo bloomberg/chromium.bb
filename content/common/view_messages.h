@@ -956,12 +956,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_Find,
 IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
                     content::StopFindAction /* action */)
 
-// Used to notify the render-view that the browser has received a reply for
-// the Find operation and is interested in receiving the next one. This is
-// used to prevent the renderer from spamming the browser process with
-// results.
-IPC_MESSAGE_ROUTED0(ViewMsg_FindReplyACK)
-
 // These messages are typically generated from context menus and request the
 // renderer to apply the specified operation to the current selection.
 IPC_MESSAGE_ROUTED0(ViewMsg_Undo)

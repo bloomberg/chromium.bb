@@ -937,7 +937,6 @@ class RenderViewImpl : public RenderWidget,
   void OnFileChooserResponse(
       const std::vector<ui::SelectedFileInfo>& files);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
-  void OnFindReplyAck();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
@@ -1363,11 +1362,6 @@ class RenderViewImpl : public RenderWidget,
   // Whether this is a top level window (instead of a popup). Top level windows
   // shouldn't count against their own |shared_popup_counter_|.
   bool decrement_shared_popup_at_destruction_;
-
-  // If the browser hasn't sent us an ACK for the last FindReply we sent
-  // to it, then we need to queue up the message (keeping only the most
-  // recent message if new ones come in).
-  scoped_ptr<IPC::Message> queued_find_reply_message_;
 
   // Stores edit commands associated to the next key event.
   // Shall be cleared as soon as the next key event is processed.
