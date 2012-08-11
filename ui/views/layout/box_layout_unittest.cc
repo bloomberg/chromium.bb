@@ -2,16 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/layout/box_layout.h"
+
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/view.h"
 
-class StaticSizedView : public views::View {
+namespace views {
+
+namespace {
+
+class StaticSizedView : public View {
  public:
   explicit StaticSizedView(const gfx::Size& size)
-    : size_(size) { }
+    : size_(size) {
+  }
 
-  virtual gfx::Size GetPreferredSize() {
+  virtual gfx::Size GetPreferredSize() OVERRIDE{
     return size_;
   }
 
@@ -21,25 +27,26 @@ class StaticSizedView : public views::View {
 
 class BoxLayoutTest : public testing::Test {
  public:
-  virtual void SetUp() {
-    host_.reset(new views::View);
+  virtual void SetUp() OVERRIDE {
+    host_.reset(new View);
   }
 
-  scoped_ptr<views::View> host_;
-  scoped_ptr<views::BoxLayout> layout_;
+  scoped_ptr<View> host_;
+  scoped_ptr<BoxLayout> layout_;
 };
 
+}  // namespace
+
 TEST_F(BoxLayoutTest, Empty) {
-  layout_.reset(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 10, 10, 20));
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 10, 10, 20));
   EXPECT_EQ(gfx::Size(20, 20), layout_->GetPreferredSize(host_.get()));
 }
 
 TEST_F(BoxLayoutTest, AlignmentHorizontal) {
-  layout_.reset(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  views::View* v1 = new StaticSizedView(gfx::Size(10, 20));
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0));
+  View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
-  views::View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  View* v2 = new StaticSizedView(gfx::Size(10, 10));
   host_->AddChildView(v2);
   EXPECT_EQ(gfx::Size(20, 20), layout_->GetPreferredSize(host_.get()));
   host_->SetBounds(0, 0, 20, 20);
@@ -49,10 +56,10 @@ TEST_F(BoxLayoutTest, AlignmentHorizontal) {
 }
 
 TEST_F(BoxLayoutTest, AlignmentVertical) {
-  layout_.reset(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-  views::View* v1 = new StaticSizedView(gfx::Size(20, 10));
+  layout_.reset(new BoxLayout(BoxLayout::kVertical, 0, 0, 0));
+  View* v1 = new StaticSizedView(gfx::Size(20, 10));
   host_->AddChildView(v1);
-  views::View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  View* v2 = new StaticSizedView(gfx::Size(10, 10));
   host_->AddChildView(v2);
   EXPECT_EQ(gfx::Size(20, 20), layout_->GetPreferredSize(host_.get()));
   host_->SetBounds(0, 0, 20, 20);
@@ -62,10 +69,10 @@ TEST_F(BoxLayoutTest, AlignmentVertical) {
 }
 
 TEST_F(BoxLayoutTest, Spacing) {
-  layout_.reset(new views::BoxLayout(views::BoxLayout::kHorizontal, 7, 7, 8));
-  views::View* v1 = new StaticSizedView(gfx::Size(10, 20));
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 7, 7, 8));
+  View* v1 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v1);
-  views::View* v2 = new StaticSizedView(gfx::Size(10, 20));
+  View* v2 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v2);
   EXPECT_EQ(gfx::Size(42, 34), layout_->GetPreferredSize(host_.get()));
   host_->SetBounds(0, 0, 100, 100);
@@ -75,10 +82,10 @@ TEST_F(BoxLayoutTest, Spacing) {
 }
 
 TEST_F(BoxLayoutTest, Overflow) {
-  layout_.reset(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  views::View* v1 = new StaticSizedView(gfx::Size(20, 20));
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 0, 0, 0));
+  View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
-  views::View* v2 = new StaticSizedView(gfx::Size(10, 20));
+  View* v2 = new StaticSizedView(gfx::Size(10, 20));
   host_->AddChildView(v2);
   host_->SetBounds(0, 0, 10, 10);
   layout_->Layout(host_.get());
@@ -87,9 +94,8 @@ TEST_F(BoxLayoutTest, Overflow) {
 }
 
 TEST_F(BoxLayoutTest, NoSpace) {
-  layout_.reset(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 10, 10, 10));
-  views::View* childView = new StaticSizedView(gfx::Size(20, 20));
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10));
+  View* childView = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(childView);
   host_->SetBounds(0, 0, 10, 10);
   layout_->Layout(host_.get());
@@ -97,12 +103,11 @@ TEST_F(BoxLayoutTest, NoSpace) {
 }
 
 TEST_F(BoxLayoutTest, InvisibleChild) {
-  layout_.reset(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 10, 10, 10));
-  views::View* v1 = new StaticSizedView(gfx::Size(20, 20));
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10));
+  View* v1 = new StaticSizedView(gfx::Size(20, 20));
   v1->SetVisible(false);
   host_->AddChildView(v1);
-  views::View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  View* v2 = new StaticSizedView(gfx::Size(10, 10));
   host_->AddChildView(v2);
   EXPECT_EQ(gfx::Size(30, 30), layout_->GetPreferredSize(host_.get()));
   host_->SetBounds(0, 0, 30, 30);
@@ -111,13 +116,12 @@ TEST_F(BoxLayoutTest, InvisibleChild) {
 }
 
 TEST_F(BoxLayoutTest, DistributeEmptySpace) {
-  layout_.reset(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 10, 10, 10));
+  layout_.reset(new BoxLayout(BoxLayout::kHorizontal, 10, 10, 10));
   layout_->set_spread_blank_space(true);
 
-  views::View* v1 = new StaticSizedView(gfx::Size(20, 20));
+  View* v1 = new StaticSizedView(gfx::Size(20, 20));
   host_->AddChildView(v1);
-  views::View* v2 = new StaticSizedView(gfx::Size(10, 10));
+  View* v2 = new StaticSizedView(gfx::Size(10, 10));
   host_->AddChildView(v2);
   EXPECT_EQ(gfx::Size(60, 40), layout_->GetPreferredSize(host_.get()));
 
@@ -126,3 +130,5 @@ TEST_F(BoxLayoutTest, DistributeEmptySpace) {
   EXPECT_EQ(gfx::Rect(10, 10, 40, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(60, 10, 30, 20).ToString(), v2->bounds().ToString());
 }
+
+}  // namespace views
