@@ -29,7 +29,6 @@
     ['OS=="win"', {
       'defines': [
         'WIN32',
-        '_WINDOWS'
       ],
       'sources': [
         'win/sel_ldr_launcher_win.cc',

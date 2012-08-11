@@ -691,7 +691,6 @@
           '_WIN32_WINNT=0x0600',
           'WINVER=0x0600',
           'WIN32',
-          '_WINDOWS',
           'NOMINMAX',
           '_CRT_RAND_S',
           'CERT_CHAIN_PARA_HAS_EXTRA_FIELDS',

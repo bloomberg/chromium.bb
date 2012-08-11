@@ -166,11 +166,9 @@ def ComponentPlatformSetup(env, builder_name):
   if (not env.get('COMPONENT_TEST_SUBSYSTEM_WINDOWS') and
       builder_name == 'ComponentTestProgram'):
     env.FilterOut(
-        CPPDEFINES=['_WINDOWS'],
         LINKFLAGS=['/SUBSYSTEM:WINDOWS'],
     )
     env.Append(
-        CPPDEFINES=['_CONSOLE'],
         LINKFLAGS=['/SUBSYSTEM:CONSOLE'],
     )
 

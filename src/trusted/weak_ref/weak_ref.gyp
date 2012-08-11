@@ -47,7 +47,6 @@
     ['OS=="win"', {
       'defines': [
         'WIN32',
-        '_WINDOWS'
       ],
       'targets': [
         {

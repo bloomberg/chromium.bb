@@ -15,7 +15,7 @@ if env.Bit('mac'):
 
 if env.Bit('windows'):
     env.Append(
-        CPPDEFINES = ['WIN32', '_WINDOWS'],
+        CPPDEFINES = ['WIN32'],
     )
 
 nonnacl_util_inputs = [
