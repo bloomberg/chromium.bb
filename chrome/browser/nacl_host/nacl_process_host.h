@@ -153,6 +153,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   scoped_ptr<content::BrowserChildProcessHost> process_;
 
   bool enable_exception_handling_;
+  bool enable_debug_stub_;
 
   bool off_the_record_;
 
