@@ -191,7 +191,7 @@ static int HandleException(mach_port_t thread_port,
 
   /* Set up thread context to resume at handler. */
   natp->user.new_prog_ctr = nap->exception_handler;
-  natp->user.stack_ptr.ptr_32.ptr = frame_addr_user;
+  natp->user.stack_ptr = frame_addr_user;
   /* TODO(bradnelson): put all registers in some default state. */
 
   /*

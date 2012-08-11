@@ -15,12 +15,12 @@
 
 
 uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
-  return (uintptr_t) th_ctx->stack_ptr.ptr_32.ptr;
+  return (uintptr_t) th_ctx->stack_ptr;
 }
 
 
 void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
-  th_ctx->stack_ptr.ptr_32.ptr = (uint32_t) sp;
+  th_ctx->stack_ptr = (uint32_t) sp;
 }
 
 
@@ -63,8 +63,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->ebx = 0;
   ntcp->esi = 0;
   ntcp->edi = 0;
-  ntcp->frame_ptr.ptr_32.ptr = 0;
-  ntcp->stack_ptr.ptr_32.ptr = stack_ptr;
+  ntcp->frame_ptr = 0;
+  ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
   ntcp->new_prog_ctr = 0;
   ntcp->sysret = -NACL_ABI_EINVAL;
@@ -104,8 +104,8 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->ecx       = 0;
   sig_ctx->edx       = 0;
   sig_ctx->ebx       = th_ctx->ebx;
-  sig_ctx->stack_ptr = th_ctx->stack_ptr.ptr_32.ptr;
-  sig_ctx->ebp       = th_ctx->frame_ptr.ptr_32.ptr;
+  sig_ctx->stack_ptr = th_ctx->stack_ptr;
+  sig_ctx->ebp       = th_ctx->frame_ptr;
   sig_ctx->esi       = th_ctx->esi;
   sig_ctx->edi       = th_ctx->edi;
   sig_ctx->prog_ctr  = th_ctx->new_prog_ctr;
