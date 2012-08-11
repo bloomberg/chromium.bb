@@ -373,38 +373,38 @@
         <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux-radio-disabled-on.png" />
         <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux-radio-off.png" />
         <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux-radio-on.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER" file="scrollbar_base_normal_edge.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER_H" file="scrollbar_base_hover_edge.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER" file="scrollbar_base_horizontal_normal_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="scrollbar_base_horizontal_hover_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT" file="scrollbar_base_horizontal_normal_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="scrollbar_base_horizontal_hover_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT" file="scrollbar_base_horizontal_normal_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="scrollbar_base_horizontal_hover_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM" file="scrollbar_base_vertical_normal_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM_H" file="scrollbar_base_vertical_hover_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER" file="scrollbar_base_vertical_normal_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER_H" file="scrollbar_base_vertical_hover_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP" file="scrollbar_base_vertical_normal_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP_H" file="scrollbar_base_vertical_hover_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER" file="scrollbar_thumb_horizontal_normal_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H" file="scrollbar_thumb_horizontal_hover_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P" file="scrollbar_thumb_horizontal_pressed_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT" file="scrollbar_thumb_horizontal_normal_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H" file="scrollbar_thumb_horizontal_hover_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P" file="scrollbar_thumb_horizontal_pressed_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT" file="scrollbar_thumb_horizontal_normal_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H" file="scrollbar_thumb_horizontal_hover_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P" file="scrollbar_thumb_horizontal_pressed_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM" file="scrollbar_thumb_vertical_normal_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H" file="scrollbar_thumb_vertical_hover_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P" file="scrollbar_thumb_vertical_pressed_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER" file="scrollbar_thumb_vertical_normal_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER_H" file="scrollbar_thumb_vertical_hover_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER_P" file="scrollbar_thumb_vertical_pressed_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP" file="scrollbar_thumb_vertical_normal_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="scrollbar_thumb_vertical_hover_top.png" />
-        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="scrollbar_thumb_vertical_pressed_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER" file="cros/aura_scrollbar_base_normal_edge.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER_H" file="cros/aura_scrollbar_base_hover_edge.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER" file="cros/aura_scrollbar_base_horizontal_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="cros/aura_scrollbar_base_horizontal_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT" file="cros/aura_scrollbar_base_horizontal_normal_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="cros/aura_scrollbar_base_horizontal_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT" file="cros/aura_scrollbar_base_horizontal_normal_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="cros/aura_scrollbar_base_horizontal_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM" file="cros/aura_scrollbar_base_vertical_normal_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM_H" file="cros/aura_scrollbar_base_vertical_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER" file="cros/aura_scrollbar_base_vertical_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER_H" file="cros/aura_scrollbar_base_vertical_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP" file="cros/aura_scrollbar_base_vertical_normal_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP_H" file="cros/aura_scrollbar_base_vertical_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER" file="cros/aura_scrollbar_thumb_horizontal_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H" file="cros/aura_scrollbar_thumb_horizontal_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P" file="cros/aura_scrollbar_thumb_horizontal_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT" file="cros/aura_scrollbar_thumb_horizontal_normal_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H" file="cros/aura_scrollbar_thumb_horizontal_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P" file="cros/aura_scrollbar_thumb_horizontal_pressed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT" file="cros/aura_scrollbar_thumb_horizontal_normal_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H" file="cros/aura_scrollbar_thumb_horizontal_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P" file="cros/aura_scrollbar_thumb_horizontal_pressed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM" file="cros/aura_scrollbar_thumb_vertical_normal_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H" file="cros/aura_scrollbar_thumb_vertical_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P" file="cros/aura_scrollbar_thumb_vertical_pressed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER" file="cros/aura_scrollbar_thumb_vertical_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER_H" file="cros/aura_scrollbar_thumb_vertical_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER_P" file="cros/aura_scrollbar_thumb_vertical_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP" file="cros/aura_scrollbar_thumb_vertical_normal_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="cros/aura_scrollbar_thumb_vertical_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="cros/aura_scrollbar_thumb_vertical_pressed_top.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_RESTORE" file="linux_restore.png" />
