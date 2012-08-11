@@ -4,6 +4,8 @@ include_rules = [
  # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
  "!chrome/browser/ui/views/ash/chrome_shell_delegate.h",
  "!chrome/browser/ui/views/ash/panel_view_aura.h",
+ "!chrome/browser/ui/views/ash/user_action_handler.h",
+ "!chrome/browser/ui/views/ash/window_positioner.h",
  "!chrome/browser/ui/views/find_bar_host.h",
  "!chrome/browser/ui/views/frame/browser_frame.h",
  "!chrome/browser/ui/views/frame/browser_view.h",
