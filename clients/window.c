@@ -646,9 +646,21 @@ static const char *cursors[] = {
 static void
 create_cursors(struct display *display)
 {
+	char *config_file;
+	char *theme = NULL;
 	unsigned int i;
+	struct config_key shell_keys[] = {
+		{ "cursor-theme", CONFIG_KEY_STRING, &theme },
+	};
+	struct config_section cs[] = {
+		{ "shell", shell_keys, ARRAY_LENGTH(shell_keys), NULL },
+	};
 
-	display->cursor_theme = wl_cursor_theme_load(NULL, 32, display->shm);
+	config_file = config_file_path("weston.ini");
+	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), NULL);
+	free(config_file);
+
+	display->cursor_theme = wl_cursor_theme_load(theme, 32, display->shm);
 	display->cursors =
 		malloc(ARRAY_LENGTH(cursors) * sizeof display->cursors[0]);
 
