@@ -376,8 +376,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, column_set_id);
-      views::Label* permission_label = new views::Label(
-          prompt.GetPermission(i));
+      views::Label* permission_label = new views::Label(PrepareForDisplay(
+          prompt.GetPermission(i), true));
       permission_label->SetMultiLine(true);
       permission_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
       permission_label->SizeToFit(left_column_width);

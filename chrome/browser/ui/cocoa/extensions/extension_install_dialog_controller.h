@@ -9,6 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -20,7 +21,9 @@ class PageNavigator;
 
 // Displays the extension or bundle install prompt, and notifies the
 // ExtensionInstallPrompt::Delegate of success or failure.
-@interface ExtensionInstallDialogController : NSWindowController {
+@interface ExtensionInstallDialogController : NSWindowController
+                                             <NSOutlineViewDataSource,
+                                              NSOutlineViewDelegate> {
  @private
   IBOutlet NSImageView* iconView_;
   IBOutlet NSTextField* titleField_;
@@ -28,9 +31,9 @@ class PageNavigator;
   IBOutlet NSButton* cancelButton_;
   IBOutlet NSButton* okButton_;
 
-  // Present only when the dialog has permission warnings to display.
-  IBOutlet NSTextField* subtitleField_;
-  IBOutlet NSTextField* warningsField_;
+  // Present only when the dialog has permission warnings or OAuth issues to
+  // display.
+  IBOutlet NSOutlineView* outlineView_;
 
   // Present only in the inline install dialog.
   IBOutlet NSBox* warningsSeparator_; // Only when there are permissions.
@@ -42,16 +45,18 @@ class PageNavigator;
   content::PageNavigator* navigator_;  // weak
   ExtensionInstallPrompt::Delegate* delegate_;  // weak
   scoped_ptr<ExtensionInstallPrompt::Prompt> prompt_;
+
+  scoped_nsobject<NSArray> warnings_;
+  BOOL isComputingRowHeight_;
 }
 
 // For unit test use only
 @property(nonatomic, readonly) NSImageView* iconView;
 @property(nonatomic, readonly) NSTextField* titleField;
 @property(nonatomic, readonly) NSTextField* itemsField;
-@property(nonatomic, readonly) NSTextField* subtitleField;
-@property(nonatomic, readonly) NSTextField* warningsField;
 @property(nonatomic, readonly) NSButton* cancelButton;
 @property(nonatomic, readonly) NSButton* okButton;
+@property(nonatomic, readonly) NSOutlineView* outlineView;
 @property(nonatomic, readonly) NSBox* warningsSeparator;
 @property(nonatomic, readonly) NSView* ratingStars;
 @property(nonatomic, readonly) NSTextField* ratingCountField;

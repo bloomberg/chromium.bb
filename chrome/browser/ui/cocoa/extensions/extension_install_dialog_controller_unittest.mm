@@ -138,12 +138,12 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
   EXPECT_TRUE([controller titleField] != nil);
   EXPECT_NE(0u, [[[controller titleField] stringValue] length]);
 
-  EXPECT_TRUE([controller subtitleField] != nil);
-  EXPECT_NE(0u, [[[controller subtitleField] stringValue] length]);
-  EXPECT_NE('^', [[[controller subtitleField] stringValue] characterAtIndex:0]);
-
-  EXPECT_TRUE([controller warningsField] != nil);
-  EXPECT_NSEQ([[controller warningsField] stringValue],
+  NSOutlineView* outlineView = [controller outlineView];
+  EXPECT_TRUE(outlineView != nil);
+  EXPECT_EQ(2, [outlineView numberOfRows]);
+  EXPECT_NSEQ([[outlineView dataSource] outlineView:outlineView
+                          objectValueForTableColumn:nil
+                                             byItem:[outlineView itemAtRow:1]],
               base::SysUTF16ToNSString(prompt.GetPermission(0)));
 
   EXPECT_TRUE([controller cancelButton] != nil);
@@ -231,11 +231,8 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   ASSERT_LT([[controller1 window] frame].size.height,
             [[controller2 window] frame].size.height);
 
-  ASSERT_LT([[controller1 warningsField] frame].size.height,
-            [[controller2 warningsField] frame].size.height);
-
-  ASSERT_LT([[controller1 subtitleField] frame].origin.y,
-            [[controller2 subtitleField] frame].origin.y);
+  ASSERT_LT([[controller1 outlineView] frame].size.height,
+            [[controller2 outlineView] frame].size.height);
 
   ASSERT_LT([[controller1 titleField] frame].origin.y,
             [[controller2 titleField] frame].origin.y);
@@ -281,8 +278,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
   EXPECT_NE(0u, [[[controller okButton] stringValue] length]);
   EXPECT_NE('^', [[[controller okButton] stringValue] characterAtIndex:0]);
 
-  EXPECT_TRUE([controller subtitleField] == nil);
-  EXPECT_TRUE([controller warningsField] == nil);
+  EXPECT_TRUE([controller outlineView] == nil);
 }
 
 
@@ -336,10 +332,42 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsInline) {
 
   // Though we have no permissions warnings, these should still be hooked up,
   // just invisible.
-  EXPECT_TRUE([controller subtitleField] != nil);
-  EXPECT_TRUE([[controller subtitleField] isHidden]);
-  EXPECT_TRUE([controller warningsField] != nil);
-  EXPECT_TRUE([[controller warningsField] isHidden]);
+  EXPECT_TRUE([controller outlineView] != nil);
+  EXPECT_TRUE([[[controller outlineView] enclosingScrollView] isHidden]);
   EXPECT_TRUE([controller warningsSeparator] != nil);
   EXPECT_TRUE([[controller warningsSeparator] isHidden]);
+}
+
+TEST_F(ExtensionInstallDialogControllerTest, OAuthIssues) {
+  MockExtensionInstallPromptDelegate delegate;
+
+  ExtensionInstallPrompt::Prompt prompt(
+      ExtensionInstallPrompt::INSTALL_PROMPT);
+  std::vector<string16> permissions;
+  permissions.push_back(UTF8ToUTF16("warning 1"));
+  prompt.SetPermissions(permissions);
+  IssueAdviceInfoEntry issue;
+  issue.description = UTF8ToUTF16("issue description 1");
+  issue.details.push_back(UTF8ToUTF16("issue detail 1"));
+  IssueAdviceInfo issues;
+  issues.push_back(issue);
+  prompt.SetOAuthIssueAdvice(issues);
+  prompt.set_extension(extension_.get());
+  prompt.set_icon(icon_);
+
+  scoped_nsobject<ExtensionInstallDialogController>
+  controller([[ExtensionInstallDialogController alloc]
+               initWithParentWindow:test_window()
+                          navigator:browser()
+                           delegate:&delegate
+                             prompt:prompt]);
+
+  [controller window];  // force nib load
+  NSOutlineView* outlineView = [controller outlineView];
+  EXPECT_TRUE(outlineView != nil);
+  EXPECT_EQ(4, [outlineView numberOfRows]);
+  EXPECT_NSEQ([[outlineView dataSource] outlineView:outlineView
+                          objectValueForTableColumn:nil
+                                             byItem:[outlineView itemAtRow:3]],
+              base::SysUTF16ToNSString(prompt.GetOAuthIssue(0).description));
 }

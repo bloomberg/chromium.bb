@@ -257,8 +257,9 @@ ExtensionInstallDialog::ExtensionInstallDialog(
                        FALSE, FALSE, 0);
 
     for (size_t i = 0; i < prompt.GetPermissionCount(); ++i) {
-      GtkWidget* permission_label = gtk_label_new(UTF16ToUTF8(
-          prompt.GetPermission(i)).c_str());
+      std::string permission = l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_PERMISSION_LINE, prompt.GetPermission(i));
+      GtkWidget* permission_label = gtk_label_new(permission.c_str());
       gtk_util::SetLabelWidth(permission_label, kLeftColumnMinWidth);
       gtk_box_pack_start(GTK_BOX(permissions_container), permission_label,
                          FALSE, FALSE, kPermissionsPadding);
