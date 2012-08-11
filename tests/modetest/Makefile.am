@@ -8,7 +8,8 @@ noinst_PROGRAMS = \
 	modetest
 
 modetest_SOURCES = \
-	buffers.c modetest.c
+	buffers.c modetest.c buffers.h
+
 modetest_LDADD = \
 	$(top_builddir)/libdrm.la \
 	$(top_builddir)/libkms/libkms.la \
