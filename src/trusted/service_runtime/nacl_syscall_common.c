@@ -1019,8 +1019,7 @@ void NaClCommonUtilUpdateAddrMap(struct NaClApp       *nap,
                                  int                  sysprot,
                                  struct NaClDesc      *backing_desc,
                                  nacl_off64_t         backing_bytes,
-                                 nacl_off64_t         offset_bytes,
-                                 int                  delete_mem) {
+                                 nacl_off64_t         offset_bytes) {
   uintptr_t                   usraddr;
   struct NaClMemObj           *nmop;
 
@@ -1028,29 +1027,21 @@ void NaClCommonUtilUpdateAddrMap(struct NaClApp       *nap,
           ("NaClCommonUtilUpdateAddrMap(0x%08"NACL_PRIxPTR", "
            "0x%08"NACL_PRIxPTR", "
            "0x%"NACL_PRIxS", 0x%x, 0x%08"NACL_PRIxPTR", 0x%"NACL_PRIx64", "
-           "0x%"NACL_PRIx64", %d)\n"),
+           "0x%"NACL_PRIx64")\n"),
           (uintptr_t) nap, sysaddr, nbytes,
           sysprot, (uintptr_t) backing_desc, backing_bytes,
-          offset_bytes,
-          delete_mem);
+          offset_bytes);
   usraddr = NaClSysToUser(nap, sysaddr);
   nmop = NULL;
-  /* delete_mem -> NULL == backing_desc */
   if (NULL != backing_desc) {
-    if (delete_mem) {
-      NaClLog(LOG_FATAL,
-              ("invariant of delete_mem implies backing_desc NULL"
-               " violated.\n"));
-    }
     nmop = NaClMemObjMake(backing_desc, backing_bytes, offset_bytes);
   }
 
-  NaClVmmapUpdate(&nap->mem_map,
-                  usraddr >> NACL_PAGESHIFT,
-                  nbytes >> NACL_PAGESHIFT,
-                  sysprot,
-                  nmop,
-                  delete_mem);
+  NaClVmmapAddWithOverwrite(&nap->mem_map,
+                            usraddr >> NACL_PAGESHIFT,
+                            nbytes >> NACL_PAGESHIFT,
+                            sysprot,
+                            nmop);
 }
 
 
@@ -1437,11 +1428,11 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
        * UnmapViewOfFile.  TODO(bsy): remove this ugliness.
        */
       NaClCommonUtilUpdateAddrMap(nap, sysaddr, length, PROT_NONE,
-                                  NULL, file_size, offset, 0);
+                                  NULL, file_size, offset);
     } else {
       /* record change for file-backed memory */
       NaClCommonUtilUpdateAddrMap(nap, sysaddr, length, NaClProtMap(prot),
-                                  ndp, file_size, offset, 0);
+                                  ndp, file_size, offset);
     }
   } else {
     map_result = sysaddr;
@@ -1606,12 +1597,10 @@ static int32_t MunmapInternal(struct NaClApp *nap,
                 GetLastError());
       }
     }
-    NaClVmmapUpdate(&nap->mem_map,
+    NaClVmmapRemove(&nap->mem_map,
                     NaClSysToUser(nap, (uintptr_t) addr) >> NACL_PAGESHIFT,
                     NACL_PAGES_PER_MAP,
-                    0,  /* prot */
-                    (struct NaClMemObj *) NULL,
-                    1);  /* delete */
+                    (struct NaClMemObj *) NULL);
   }
   return 0;
 }
@@ -1633,12 +1622,10 @@ static int32_t MunmapInternal(struct NaClApp *nap,
     NaClLog(4, "mmap to put in anonymous memory failed, errno = %d\n", errno);
     return -NaClXlateErrno(errno);
   }
-  NaClVmmapUpdate(&nap->mem_map,
+  NaClVmmapRemove(&nap->mem_map,
                   NaClSysToUser(nap, (uintptr_t) sysaddr) >> NACL_PAGESHIFT,
                   length >> NACL_PAGESHIFT,
-                  0,  /* prot */
-                  (struct NaClMemObj *) NULL,
-                  1);  /* Delete mapping */
+                  (struct NaClMemObj *) NULL);
   return 0;
 }
 #endif

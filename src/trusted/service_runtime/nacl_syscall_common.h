@@ -110,8 +110,7 @@ void NaClCommonUtilUpdateAddrMap(struct NaClApp   *nap,
                                  int              sysprot,
                                  struct NaClDesc  *backing_desc,
                                  nacl_off64_t     backing_bytes,
-                                 nacl_off64_t     offset_bytes,
-                                 int              delete_mem);
+                                 nacl_off64_t     offset_bytes);
 
 /* bool */
 int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,

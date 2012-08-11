@@ -67,18 +67,35 @@ int   NaClVmmapCtor(struct NaClVmmap  *self) NACL_WUR;
 
 void  NaClVmmapDtor(struct NaClVmmap  *self);
 
-int   NaClVmmapAdd(struct NaClVmmap   *self,
+/*
+ * NaClVmmapAdd does not check whether the newly mapped region overlaps
+ * with any existing ones. This function is intended for sandbox startup
+ * only when non-overlapping mappings are being added.
+ */
+void  NaClVmmapAdd(struct NaClVmmap   *self,
                    uintptr_t          page_num,
                    size_t             npages,
                    int                prot,
-                   struct NaClMemObj  *nmop) NACL_WUR;
+                   struct NaClMemObj  *nmop);
 
-void NaClVmmapUpdate(struct NaClVmmap   *self,
-                     uintptr_t          page_num,
-                     size_t             npages,
-                     int                prot,
-                     struct NaClMemObj  *nmop,
-                     int                remove);
+/*
+ * NaClVmmapAddWithOverwrite checks the existing mappings and resizes
+ * them if necessary to fit in the newly mapped region.
+ */
+void  NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
+                                uintptr_t          page_num,
+                                size_t             npages,
+                                int                prot,
+                                struct NaClMemObj  *nmop);
+
+/*
+ * NaClVmmapRemove modifies the specified region and updates the existing
+ * mappings if necessary.
+ */
+void  NaClVmmapRemove(struct NaClVmmap   *self,
+                      uintptr_t          page_num,
+                      size_t             npages,
+                      struct NaClMemObj  *nmop);
 
 /*
  * NaClVmmapFindPage and NaClVmmapFindPageIter only works if pnum is

@@ -247,15 +247,11 @@ void NaClVmmapMakeSorted(struct NaClVmmap  *self) {
 #endif
 }
 
-
-/*
- * Adds an entry.  Does not sort.
- */
-int NaClVmmapAdd(struct NaClVmmap   *self,
-                 uintptr_t          page_num,
-                 size_t             npages,
-                 int                prot,
-                 struct NaClMemObj  *nmop) {
+void NaClVmmapAdd(struct NaClVmmap   *self,
+                  uintptr_t          page_num,
+                  size_t             npages,
+                  int                prot,
+                  struct NaClMemObj  *nmop) {
   struct NaClVmmapEntry *entry;
 
   NaClLog(2,
@@ -269,7 +265,7 @@ int NaClVmmapAdd(struct NaClVmmap   *self,
 
     new_map = realloc(self->vmentry, new_size * sizeof *new_map);
     if (NULL == new_map) {
-      return 0;
+      NaClLog(LOG_FATAL, "NaClVmmapAdd: could not allocate memory\n");
     }
     self->vmentry = new_map;
     self->size = new_size;
@@ -280,8 +276,6 @@ int NaClVmmapAdd(struct NaClVmmap   *self,
   self->vmentry[self->nvalid] = entry;
   self->is_sorted = 0;
   ++self->nvalid;
-
-  return 1;
 }
 
 
@@ -290,12 +284,12 @@ int NaClVmmapAdd(struct NaClVmmap   *self,
  * flag, since a NULL nmop just means that the memory is backed by the
  * system paging file.
  */
-void NaClVmmapUpdate(struct NaClVmmap   *self,
-                     uintptr_t          page_num,
-                     size_t             npages,
-                     int                prot,
-                     struct NaClMemObj  *nmop,
-                     int                remove) {
+static void NaClVmmapUpdate(struct NaClVmmap   *self,
+                            uintptr_t          page_num,
+                            size_t             npages,
+                            int                prot,
+                            struct NaClMemObj  *nmop,
+                            int                remove) {
   /* update existing entries or create new entry as needed */
   size_t                i;
   uintptr_t             new_region_end_page = page_num + npages;
@@ -321,13 +315,11 @@ void NaClVmmapUpdate(struct NaClVmmap   *self,
        * Split existing mapping into two parts, with new mapping in
        * the middle.
        */
-      if (!NaClVmmapAdd(self,
-                        new_region_end_page,
-                        ent_end_page - new_region_end_page,
-                        ent->prot,
-                        NaClMemObjSplit(ent->nmop, additional_offset))) {
-        NaClLog(LOG_FATAL, "NaClVmmapUpdate: could not split entry\n");
-      }
+      NaClVmmapAdd(self,
+                   new_region_end_page,
+                   ent_end_page - new_region_end_page,
+                   ent->prot,
+                   NaClMemObjSplit(ent->nmop, additional_offset));
       ent->npages = page_num - ent->page_num;
       break;
     } else if (ent->page_num < page_num && page_num < ent_end_page) {
@@ -353,12 +345,35 @@ void NaClVmmapUpdate(struct NaClVmmap   *self,
   }
 
   if (!remove) {
-    if (!NaClVmmapAdd(self, page_num, npages, prot, nmop)) {
-      NaClLog(LOG_FATAL, "NaClVmmapUpdate: could not add entry\n");
-    }
+    NaClVmmapAdd(self, page_num, npages, prot, nmop);
   }
 
   NaClVmmapRemoveMarked(self);
+}
+
+void NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
+                               uintptr_t          page_num,
+                               size_t             npages,
+                               int                prot,
+                               struct NaClMemObj  *nmop) {
+  NaClVmmapUpdate(self,
+                  page_num,
+                  npages,
+                  prot,
+                  nmop,
+                  /* remove= */ 0);
+}
+
+void NaClVmmapRemove(struct NaClVmmap   *self,
+                     uintptr_t          page_num,
+                     size_t             npages,
+                     struct NaClMemObj  *nmop) {
+  NaClVmmapUpdate(self,
+                  page_num,
+                  npages,
+                  /* prot= */ 0,
+                  nmop,
+                  /* remove=*/ 1);
 }
 
 

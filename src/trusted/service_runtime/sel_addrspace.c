@@ -115,15 +115,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   NaClLog(3, "Protecting guard pages for 0x%08"NACL_PRIxPTR"\n",
           nap->mem_start);
   /* Add the zero page to the mmap */
-  if (!NaClVmmapAdd(&nap->mem_map,
-                    0,
-                    NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
-                    PROT_NONE,
-                    (struct NaClMemObj *) NULL)) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                        " (NULL pointer guard page)\n"));
-    return LOAD_MPROTECT_FAIL;
-  }
+  NaClVmmapAdd(&nap->mem_map,
+               0,
+               NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
+               PROT_NONE,
+               (struct NaClMemObj *) NULL);
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
   /*
@@ -149,15 +145,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
             err);
     return LOAD_MPROTECT_FAIL;
   }
-  if (!NaClVmmapAdd(&nap->mem_map,
-                    NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
-                    region_size >> NACL_PAGESHIFT,
-                    PROT_READ | PROT_EXEC,
-                    NULL)) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                        " (trampoline)\n"));
-    return LOAD_MPROTECT_FAIL;
-  }
+  NaClVmmapAdd(&nap->mem_map,
+               NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+               region_size >> NACL_PAGESHIFT,
+               PROT_READ | PROT_EXEC,
+               NULL);
 
   start_addr = NaClUserToSys(nap, nap->dynamic_text_start);
   region_size = nap->dynamic_text_end - nap->dynamic_text_start;
@@ -176,17 +168,13 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
      * prevented by a separate range check, which is done by
      * NaClSysCommonAddrRangeContainsExecutablePages_mu().
      */
-    if (!NaClVmmapAdd(&nap->mem_map,
-                      NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
-                      region_size >> NACL_PAGESHIFT,
-                      PROT_READ | PROT_EXEC,
-                      NaClMemObjMake(nap->text_shm,
-                                     region_size,
-                                     0))) {
-      NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                          " (data)\n"));
-      return LOAD_MPROTECT_FAIL;
-    }
+    NaClVmmapAdd(&nap->mem_map,
+                 NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+                 region_size >> NACL_PAGESHIFT,
+                 PROT_READ | PROT_EXEC,
+                 NaClMemObjMake(nap->text_shm,
+                                region_size,
+                                0));
   }
 
   if (0 != nap->rodata_start) {
@@ -223,15 +211,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
               err);
       return LOAD_MPROTECT_FAIL;
     }
-    if (!NaClVmmapAdd(&nap->mem_map,
-                      NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
-                      region_size >> NACL_PAGESHIFT,
-                      PROT_READ,
-                      (struct NaClMemObj *) NULL)) {
-      NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                          " (data)\n"));
-      return LOAD_MPROTECT_FAIL;
-    }
+    NaClVmmapAdd(&nap->mem_map,
+                 NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+                 region_size >> NACL_PAGESHIFT,
+                 PROT_READ,
+                 (struct NaClMemObj *) NULL);
   }
 
   /*
@@ -260,15 +244,11 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
               err);
       return LOAD_MPROTECT_FAIL;
     }
-    if (!NaClVmmapAdd(&nap->mem_map,
-                      NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
-                      region_size >> NACL_PAGESHIFT,
-                      PROT_READ | PROT_WRITE,
-                      (struct NaClMemObj *) NULL)) {
-      NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                          " (data)\n"));
-      return LOAD_MPROTECT_FAIL;
-    }
+    NaClVmmapAdd(&nap->mem_map,
+                 NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+                 region_size >> NACL_PAGESHIFT,
+                 PROT_READ | PROT_WRITE,
+                 (struct NaClMemObj *) NULL);
   }
 
   /* stack is read/write but not execute */
@@ -295,14 +275,10 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
     return LOAD_MPROTECT_FAIL;
   }
 
-  if (!NaClVmmapAdd(&nap->mem_map,
-                    NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
-                    nap->stack_size >> NACL_PAGESHIFT,
-                    PROT_READ | PROT_WRITE,
-                    (struct NaClMemObj *) NULL)) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                        " (stack)\n"));
-    return LOAD_MPROTECT_FAIL;
-  }
+  NaClVmmapAdd(&nap->mem_map,
+               NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
+               nap->stack_size >> NACL_PAGESHIFT,
+               PROT_READ | PROT_WRITE,
+               (struct NaClMemObj *) NULL);
   return LOAD_OK;
 }

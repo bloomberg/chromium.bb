@@ -32,22 +32,21 @@ TEST_F(SelMemTest, AddTest) {
   EXPECT_EQ(1, ret_code);
 
   for (int i = 1; i <= 5; ++i) {
-    ret_code = NaClVmmapAdd(&mem_map,
-                            start_page_num*i,
-                            i,
-                            PROT_READ | PROT_EXEC,
-                            (struct NaClMemObj *) NULL);
-    EXPECT_EQ(1, ret_code);
+    NaClVmmapAdd(&mem_map,
+                 start_page_num*i,
+                 i,
+                 PROT_READ | PROT_EXEC,
+                 (struct NaClMemObj *) NULL);
     EXPECT_EQ(i, static_cast<int>(mem_map.nvalid));
     EXPECT_EQ(5, static_cast<int>(mem_map.size));
   }
 
   // no checks for start_page_num ..
-  ret_code = NaClVmmapAdd(&mem_map,
-                          start_page_num,
-                          2,
-                          PROT_READ,
-                          (struct NaClMemObj *) NULL);
+  NaClVmmapAdd(&mem_map,
+               start_page_num,
+               2,
+               PROT_READ,
+               (struct NaClMemObj *) NULL);
   EXPECT_EQ(6, static_cast<int>(mem_map.nvalid));
   EXPECT_EQ(10, static_cast<int>(mem_map.size));
 
@@ -60,61 +59,54 @@ TEST_F(SelMemTest, UpdateTest) {
   EXPECT_EQ(1, NaClVmmapCtor(&mem_map));
 
   // 1st region
-  NaClVmmapUpdate(&mem_map,
-                  32,
-                  12,
-                  PROT_READ | PROT_EXEC,
-                  (struct NaClMemObj *) NULL,
-                  0);
+  NaClVmmapAddWithOverwrite(&mem_map,
+                            32,
+                            12,
+                            PROT_READ | PROT_EXEC,
+                            (struct NaClMemObj *) NULL);
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
 
   // no overlap
-  NaClVmmapUpdate(&mem_map,
-                  64,
-                  10,
-                  PROT_READ,
-                  (struct NaClMemObj *) NULL,
-                  0);
+  NaClVmmapAddWithOverwrite(&mem_map,
+                            64,
+                            10,
+                            PROT_READ,
+                            (struct NaClMemObj *) NULL);
   // vmmap is [32, 44], [64, 74]
   EXPECT_EQ(2, static_cast<int>(mem_map.nvalid));
 
   // new mapping overlaps end and start of existing mappings
-  NaClVmmapUpdate(&mem_map,
-                  42,
-                  24,
-                  PROT_READ,
-                  (struct NaClMemObj *) NULL,
-                  0);
+  NaClVmmapAddWithOverwrite(&mem_map,
+                            42,
+                            24,
+                            PROT_READ,
+                            (struct NaClMemObj *) NULL);
   // vmmap is [32, 41], [42, 66], [67, 74]
   EXPECT_EQ(3, static_cast<int>(mem_map.nvalid));
 
   // new mapping is in the middle of existing mapping
-  NaClVmmapUpdate(&mem_map,
-                  36,
-                  2,
-                  PROT_READ | PROT_EXEC,
-                  (struct NaClMemObj *) NULL,
-                  0);
+  NaClVmmapAddWithOverwrite(&mem_map,
+                            36,
+                            2,
+                            PROT_READ | PROT_EXEC,
+                            (struct NaClMemObj *) NULL);
   // vmmap is [32, 35], [34, 36], [37, 41], [42, 66], [67, 74]
   EXPECT_EQ(5, static_cast<int>(mem_map.nvalid));
 
   // new mapping covers all of the existing mapping
-  NaClVmmapUpdate(&mem_map,
-                  32,
-                  6,
-                  PROT_READ | PROT_EXEC,
-                  (struct NaClMemObj *) NULL,
-                  0);
+  NaClVmmapAddWithOverwrite(&mem_map,
+                            32,
+                            6,
+                            PROT_READ | PROT_EXEC,
+                            (struct NaClMemObj *) NULL);
   // vmmap is [32, 36], [37, 41], [42, 66], [67, 74]
   EXPECT_EQ(4, static_cast<int>(mem_map.nvalid));
 
   // remove existing mappings
-  NaClVmmapUpdate(&mem_map,
+  NaClVmmapRemove(&mem_map,
                   40,
                   30,
-                  PROT_READ | PROT_EXEC,
-                  (struct NaClMemObj *) NULL,
-                  1);
+                  (struct NaClMemObj *) NULL);
   // vmmap is [32, 36], [37, 39], [71, 74]
   EXPECT_EQ(3, static_cast<int>(mem_map.nvalid));
 
@@ -134,12 +126,11 @@ TEST_F(SelMemTest, FindPageTest) {
 
   int start_page_num = 32;
   for (int i = 1; i <= 6; ++i) {
-    ret_code = NaClVmmapAdd(&mem_map,
-                            start_page_num*i,
-                            2*i,
-                            PROT_READ | PROT_EXEC,
-                            (struct NaClMemObj *) NULL);
-    EXPECT_EQ(1, ret_code);
+    NaClVmmapAdd(&mem_map,
+                 start_page_num*i,
+                 2*i,
+                 PROT_READ | PROT_EXEC,
+                 (struct NaClMemObj *) NULL);
     EXPECT_EQ(i, static_cast<int>(mem_map.nvalid));
   }
   // vmmap is [32, 34], [64, 68], [96, 102], [128, 136],
@@ -171,21 +162,21 @@ TEST_F(SelMemTest, FindSpaceTest) {
   ret_code = NaClVmmapFindSpace(&mem_map, 32);
   EXPECT_EQ(0U, ret_code);
 
-  EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
-                            32,
-                            10,
-                            PROT_READ | PROT_EXEC,
-                            (struct NaClMemObj *) NULL));
+  NaClVmmapAdd(&mem_map,
+               32,
+               10,
+               PROT_READ | PROT_EXEC,
+               (struct NaClMemObj *) NULL);
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
   // one entry only
   ret_code = NaClVmmapFindSpace(&mem_map, 2);
   EXPECT_EQ(0U, ret_code);
 
-  EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
-                            64,
-                            10,
-                            PROT_READ | PROT_EXEC,
-                            (struct NaClMemObj *) NULL));
+  NaClVmmapAdd(&mem_map,
+               64,
+               10,
+               PROT_READ | PROT_EXEC,
+               (struct NaClMemObj *) NULL);
   EXPECT_EQ(2U, mem_map.nvalid);
 
   // the space is [32, 42], [64, 74]
@@ -195,11 +186,11 @@ TEST_F(SelMemTest, FindSpaceTest) {
   ret_code = NaClVmmapFindSpace(&mem_map, 2);
   EXPECT_EQ(62U, ret_code);
 
-  EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
-                            96,
-                            10,
-                            PROT_READ | PROT_EXEC,
-                            (struct NaClMemObj *) NULL));
+  NaClVmmapAdd(&mem_map,
+               96,
+               10,
+               PROT_READ | PROT_EXEC,
+               (struct NaClMemObj *) NULL);
   EXPECT_EQ(3U, mem_map.nvalid);
 
   // vmmap is [32, 42], [64, 74], [96, 106]

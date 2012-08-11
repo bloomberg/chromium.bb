@@ -750,12 +750,11 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
           return LOAD_MPROTECT_FAIL;
         }
 
-        NaClVmmapUpdate(&nap->mem_map,
-                        php->p_vaddr >> NACL_PAGESHIFT,
-                        mapping_size >> NACL_PAGESHIFT,
-                        PROT_READ,
-                        NULL,
-                        0  /* remove: false */);
+        NaClVmmapAddWithOverwrite(&nap->mem_map,
+                                  php->p_vaddr >> NACL_PAGESHIFT,
+                                  mapping_size >> NACL_PAGESHIFT,
+                                  PROT_READ,
+                                  NULL);
       }
     }
   }
