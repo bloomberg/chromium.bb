@@ -120,6 +120,12 @@ const wchar_t* const kTroublesomePluginDlls[] = {
   L"CLRGL.ax"                            // Cyberlink Camera helper.
 };
 
+// The DLLs listed here are known (or under strong suspicion) of causing crashes
+// when they are loaded in the GPU process.
+const wchar_t* const kTroublesomeGpuDlls[] = {
+  L"cmsetac.dll",                 // Unknown (suspected malware).
+};
+
 // Adds the policy rules for the path and path\ with the semantic |access|.
 // If |children| is set to true, we need to add the wildcard rules to also
 // apply the rule to the subfiles and subfolders.
@@ -240,6 +246,14 @@ void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
 void AddPluginDllEvictionPolicy(sandbox::TargetPolicy* policy) {
   for (int ix = 0; ix != arraysize(kTroublesomePluginDlls); ++ix)
     BlacklistAddOneDll(kTroublesomePluginDlls[ix], false, policy);
+}
+
+// Same as AddGenericDllEvictionPolicy but specifically for the GPU process.
+// In this we add the blacklisted dlls even if they are not loaded in this
+// process.
+void AddGpuDllEvictionPolicy(sandbox::TargetPolicy* policy) {
+  for (int ix = 0; ix != arraysize(kTroublesomeGpuDlls); ++ix)
+    BlacklistAddOneDll(kTroublesomeGpuDlls[ix], false, policy);
 }
 
 // Returns the object path prepended with the current logon session.
@@ -405,6 +419,7 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
 #endif
 
   AddGenericDllEvictionPolicy(policy);
+  AddGpuDllEvictionPolicy(policy);
 #endif
   return true;
 }
