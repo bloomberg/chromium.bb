@@ -1807,7 +1807,6 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
   scoped_ptr<GDataEntryProto> file_in_root_proto = GetEntryInfoByPathSync(
       file_in_root);
   ASSERT_TRUE(file_in_root_proto.get());
-  std::string file_in_root_resource_id = file_in_root_proto->resource_id();
 
   ASSERT_TRUE(EntryExists(dir_in_root));
   scoped_ptr<GDataEntryProto> dir_in_root_proto = GetEntryInfoByPathSync(
@@ -1819,7 +1818,6 @@ TEST_F(GDataFileSystemTest, RemoveEntries) {
   scoped_ptr<GDataEntryProto> file_in_subdir_proto = GetEntryInfoByPathSync(
       file_in_subdir);
   ASSERT_TRUE(file_in_subdir_proto.get());
-  std::string file_in_subdir_resource_id = file_in_subdir_proto->resource_id();
 
   // Once for file in root and once for file...
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
