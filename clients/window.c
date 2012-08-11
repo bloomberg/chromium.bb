@@ -1762,6 +1762,85 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 	}
 }
 
+void
+input_grab(struct input *input, struct widget *widget, uint32_t button)
+{
+	input->grab = widget;
+	input->grab_button = button;
+}
+
+void
+input_ungrab(struct input *input)
+{
+	struct widget *widget;
+
+	input->grab = NULL;
+	if (input->pointer_focus) {
+		widget = widget_find_widget(input->pointer_focus->widget,
+					    input->sx, input->sy);
+		input_set_focus_widget(input, widget, input->sx, input->sy);
+	}
+}
+
+static void
+input_remove_pointer_focus(struct input *input)
+{
+	struct window *window = input->pointer_focus;
+
+	if (!window)
+		return;
+
+	input_set_focus_widget(input, NULL, 0, 0);
+
+	input->pointer_focus = NULL;
+	input->current_cursor = CURSOR_UNSET;
+}
+
+static void
+pointer_handle_enter(void *data, struct wl_pointer *pointer,
+		     uint32_t serial, struct wl_surface *surface,
+		     wl_fixed_t sx_w, wl_fixed_t sy_w)
+{
+	struct input *input = data;
+	struct window *window;
+	struct widget *widget;
+	float sx = wl_fixed_to_double(sx_w);
+	float sy = wl_fixed_to_double(sy_w);
+
+	if (!surface) {
+		/* enter event for a window we've just destroyed */
+		return;
+	}
+
+	input->display->serial = serial;
+	input->pointer_enter_serial = serial;
+	input->pointer_focus = wl_surface_get_user_data(surface);
+	window = input->pointer_focus;
+
+	if (window->pool) {
+		shm_pool_destroy(window->pool);
+		window->pool = NULL;
+		/* Schedule a redraw to free the pool */
+		window_schedule_redraw(window);
+	}
+
+	input->sx = sx;
+	input->sy = sy;
+
+	widget = widget_find_widget(window->widget, sx, sy);
+	input_set_focus_widget(input, widget, sx, sy);
+}
+
+static void
+pointer_handle_leave(void *data, struct wl_pointer *pointer,
+		     uint32_t serial, struct wl_surface *surface)
+{
+	struct input *input = data;
+
+	input->display->serial = serial;
+	input_remove_pointer_focus(input);
+}
+
 static void
 pointer_handle_motion(void *data, struct wl_pointer *pointer,
 		      uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
@@ -1793,26 +1872,6 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 	input_set_pointer_image(input, cursor);
 }
 
-void
-input_grab(struct input *input, struct widget *widget, uint32_t button)
-{
-	input->grab = widget;
-	input->grab_button = button;
-}
-
-void
-input_ungrab(struct input *input)
-{
-	struct widget *widget;
-
-	input->grab = NULL;
-	if (input->pointer_focus) {
-		widget = widget_find_widget(input->pointer_focus->widget,
-					    input->sx, input->sy);
-		input_set_focus_widget(input, widget, input->sx, input->sy);
-	}
-}
-
 static void
 pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
 		      uint32_t time, uint32_t button, uint32_t state_w)
@@ -1842,6 +1901,139 @@ static void
 pointer_handle_axis(void *data, struct wl_pointer *pointer,
 		    uint32_t time, uint32_t axis, wl_fixed_t value)
 {
+}
+
+static const struct wl_pointer_listener pointer_listener = {
+	pointer_handle_enter,
+	pointer_handle_leave,
+	pointer_handle_motion,
+	pointer_handle_button,
+	pointer_handle_axis,
+};
+
+static void
+input_remove_keyboard_focus(struct input *input)
+{
+	struct window *window = input->keyboard_focus;
+	struct itimerspec its;
+
+	its.it_interval.tv_sec = 0;
+	its.it_interval.tv_nsec = 0;
+	its.it_value.tv_sec = 0;
+	its.it_value.tv_nsec = 0;
+	timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
+
+	if (!window)
+		return;
+
+	window->keyboard_device = NULL;
+	if (window->keyboard_focus_handler)
+		(*window->keyboard_focus_handler)(window, NULL,
+						  window->user_data);
+
+	input->keyboard_focus = NULL;
+}
+
+static void
+keyboard_repeat_func(struct task *task, uint32_t events)
+{
+	struct input *input =
+		container_of(task, struct input, repeat_task);
+	struct window *window = input->keyboard_focus;
+	uint64_t exp;
+
+	if (read(input->repeat_timer_fd, &exp, sizeof exp) != sizeof exp)
+		/* If we change the timer between the fd becoming
+		 * readable and getting here, there'll be nothing to
+		 * read and we get EAGAIN. */
+		return;
+
+	if (window && window->key_handler) {
+		(*window->key_handler)(window, input, input->repeat_time,
+				       input->repeat_key, input->repeat_sym,
+				       WL_KEYBOARD_KEY_STATE_PRESSED,
+				       window->user_data);
+	}
+}
+
+static void
+keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
+		       uint32_t format, int fd, uint32_t size)
+{
+	struct input *input = data;
+	char *map_str;
+
+	if (!data) {
+		close(fd);
+		return;
+	}
+
+	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
+		close(fd);
+		return;
+	}
+
+	map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+	if (map_str == MAP_FAILED) {
+		close(fd);
+		return;
+	}
+
+	input->xkb.keymap = xkb_map_new_from_string(input->display->xkb_context,
+						    map_str,
+						    XKB_KEYMAP_FORMAT_TEXT_V1,
+						    0);
+	munmap(map_str, size);
+	close(fd);
+
+	if (!input->xkb.keymap) {
+		fprintf(stderr, "failed to compile keymap\n");
+		return;
+	}
+
+	input->xkb.state = xkb_state_new(input->xkb.keymap);
+	if (!input->xkb.state) {
+		fprintf(stderr, "failed to create XKB state\n");
+		xkb_map_unref(input->xkb.keymap);
+		input->xkb.keymap = NULL;
+		return;
+	}
+
+	input->xkb.control_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Control");
+	input->xkb.alt_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Mod1");
+	input->xkb.shift_mask =
+		1 << xkb_map_mod_get_index(input->xkb.keymap, "Shift");
+}
+
+static void
+keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface,
+		      struct wl_array *keys)
+{
+	struct input *input = data;
+	struct window *window;
+
+	input->display->serial = serial;
+	input->keyboard_focus = wl_surface_get_user_data(surface);
+
+	window = input->keyboard_focus;
+	window->keyboard_device = input;
+	if (window->keyboard_focus_handler)
+		(*window->keyboard_focus_handler)(window,
+						  window->keyboard_device,
+						  window->user_data);
+}
+
+static void
+keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
+		      uint32_t serial, struct wl_surface *surface)
+{
+	struct input *input = data;
+
+	input->display->serial = serial;
+	input_remove_keyboard_focus(input);
 }
 
 static void
@@ -1921,28 +2113,6 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 }
 
 static void
-keyboard_repeat_func(struct task *task, uint32_t events)
-{
-	struct input *input =
-		container_of(task, struct input, repeat_task);
-	struct window *window = input->keyboard_focus;
-	uint64_t exp;
-
-	if (read(input->repeat_timer_fd, &exp, sizeof exp) != sizeof exp)
-		/* If we change the timer between the fd becoming
-		 * readable and getting here, there'll be nothing to
-		 * read and we get EAGAIN. */
-		return;
-
-	if (window && window->key_handler) {
-		(*window->key_handler)(window, input, input->repeat_time,
-				       input->repeat_key, input->repeat_sym,
-				       WL_KEYBOARD_KEY_STATE_PRESSED,
-				       window->user_data);
-	}
-}
-
-static void
 keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 			  uint32_t serial, uint32_t mods_depressed,
 			  uint32_t mods_latched, uint32_t mods_locked,
@@ -1953,176 +2123,6 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
 }
-
-static void
-input_remove_pointer_focus(struct input *input)
-{
-	struct window *window = input->pointer_focus;
-
-	if (!window)
-		return;
-
-	input_set_focus_widget(input, NULL, 0, 0);
-
-	input->pointer_focus = NULL;
-	input->current_cursor = CURSOR_UNSET;
-}
-
-static void
-pointer_handle_enter(void *data, struct wl_pointer *pointer,
-		     uint32_t serial, struct wl_surface *surface,
-		     wl_fixed_t sx_w, wl_fixed_t sy_w)
-{
-	struct input *input = data;
-	struct window *window;
-	struct widget *widget;
-	float sx = wl_fixed_to_double(sx_w);
-	float sy = wl_fixed_to_double(sy_w);
-
-	if (!surface) {
-		/* enter event for a window we've just destroyed */
-		return;
-	}
-
-	input->display->serial = serial;
-	input->pointer_enter_serial = serial;
-	input->pointer_focus = wl_surface_get_user_data(surface);
-	window = input->pointer_focus;
-
-	if (window->pool) {
-		shm_pool_destroy(window->pool);
-		window->pool = NULL;
-		/* Schedule a redraw to free the pool */
-		window_schedule_redraw(window);
-	}
-
-	input->sx = sx;
-	input->sy = sy;
-
-	widget = widget_find_widget(window->widget, sx, sy);
-	input_set_focus_widget(input, widget, sx, sy);
-}
-
-static void
-pointer_handle_leave(void *data, struct wl_pointer *pointer,
-		     uint32_t serial, struct wl_surface *surface)
-{
-	struct input *input = data;
-
-	input->display->serial = serial;
-	input_remove_pointer_focus(input);
-}
-
-static void
-input_remove_keyboard_focus(struct input *input)
-{
-	struct window *window = input->keyboard_focus;
-	struct itimerspec its;
-
-	its.it_interval.tv_sec = 0;
-	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = 0;
-	its.it_value.tv_nsec = 0;
-	timerfd_settime(input->repeat_timer_fd, 0, &its, NULL);
-
-	if (!window)
-		return;
-
-	window->keyboard_device = NULL;
-	if (window->keyboard_focus_handler)
-		(*window->keyboard_focus_handler)(window, NULL,
-						  window->user_data);
-
-	input->keyboard_focus = NULL;
-}
-
-static void
-keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
-		      uint32_t serial, struct wl_surface *surface,
-		      struct wl_array *keys)
-{
-	struct input *input = data;
-	struct window *window;
-
-	input->display->serial = serial;
-	input->keyboard_focus = wl_surface_get_user_data(surface);
-
-	window = input->keyboard_focus;
-	window->keyboard_device = input;
-	if (window->keyboard_focus_handler)
-		(*window->keyboard_focus_handler)(window,
-						  window->keyboard_device,
-						  window->user_data);
-}
-
-static void
-keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
-		      uint32_t serial, struct wl_surface *surface)
-{
-	struct input *input = data;
-
-	input->display->serial = serial;
-	input_remove_keyboard_focus(input);
-}
-
-static void
-keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
-		       uint32_t format, int fd, uint32_t size)
-{
-	struct input *input = data;
-	char *map_str;
-
-	if (!data) {
-		close(fd);
-		return;
-	}
-
-	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
-		close(fd);
-		return;
-	}
-
-	map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
-	if (map_str == MAP_FAILED) {
-		close(fd);
-		return;
-	}
-
-	input->xkb.keymap = xkb_map_new_from_string(input->display->xkb_context,
-						    map_str,
-						    XKB_KEYMAP_FORMAT_TEXT_V1,
-						    0);
-	munmap(map_str, size);
-	close(fd);
-
-	if (!input->xkb.keymap) {
-		fprintf(stderr, "failed to compile keymap\n");
-		return;
-	}
-
-	input->xkb.state = xkb_state_new(input->xkb.keymap);
-	if (!input->xkb.state) {
-		fprintf(stderr, "failed to create XKB state\n");
-		xkb_map_unref(input->xkb.keymap);
-		input->xkb.keymap = NULL;
-		return;
-	}
-
-	input->xkb.control_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Control");
-	input->xkb.alt_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Mod1");
-	input->xkb.shift_mask =
-		1 << xkb_map_mod_get_index(input->xkb.keymap, "Shift");
-}
-
-static const struct wl_pointer_listener pointer_listener = {
-	pointer_handle_enter,
-	pointer_handle_leave,
-	pointer_handle_motion,
-	pointer_handle_button,
-	pointer_handle_axis,
-};
 
 static const struct wl_keyboard_listener keyboard_listener = {
 	keyboard_handle_keymap,
