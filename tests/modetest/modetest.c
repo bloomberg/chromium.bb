@@ -125,6 +125,7 @@ char * res##_str(int type) {					\
 			sep = ", ";				\
 		}						\
 	}							\
+	return NULL;						\
 }
 
 static const char *mode_type_names[] = {
