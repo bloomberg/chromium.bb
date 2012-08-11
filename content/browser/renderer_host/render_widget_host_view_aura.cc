@@ -776,8 +776,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       uint64 surface_handle) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   scoped_refptr<ui::Texture> surface(factory->CreateTransportClient(
-      gfx::Size(width_in_pixel, height_in_pixel), surface_handle,
-      GetCompositor()));
+      gfx::Size(width_in_pixel, height_in_pixel), surface_handle));
   if (!surface) {
     LOG(ERROR) << "Failed to create ImageTransport texture";
     return;
