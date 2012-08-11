@@ -26,6 +26,7 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
   Widget::InitParams bubble_params(Widget::InitParams::TYPE_BUBBLE);
   bubble_params.delegate = bubble;
   bubble_params.transparent = true;
+  bubble_params.accept_events = bubble->accept_events();
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
   else
@@ -115,6 +116,7 @@ BubbleDelegateView::BubbleDelegateView()
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false),
+      accept_events_(true),
       try_mirroring_arrow_(true),
       parent_window_(NULL) {
   set_background(Background::CreateSolidBackground(color_));
@@ -135,6 +137,7 @@ BubbleDelegateView::BubbleDelegateView(
       original_opacity_(255),
       border_widget_(NULL),
       use_focusless_(false),
+      accept_events_(true),
       try_mirroring_arrow_(true),
       parent_window_(NULL) {
   set_background(Background::CreateSolidBackground(color_));

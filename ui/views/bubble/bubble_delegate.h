@@ -83,6 +83,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
     use_focusless_ = use_focusless;
   }
 
+  bool accept_events() const { return accept_events_; }
+  void set_accept_events(bool accept_events) { accept_events_ = accept_events; }
+
   bool try_mirroring_arrow() const { return try_mirroring_arrow_; }
   void set_try_mirroring_arrow(bool try_mirroring_arrow) {
     try_mirroring_arrow_ = try_mirroring_arrow;
@@ -177,6 +180,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Create a popup window for focusless bubbles on Linux/ChromeOS.
   // These bubbles are not interactive and should not gain focus.
   bool use_focusless_;
+
+  // Specifies whether the popup accepts events or lets them pass through.
+  bool accept_events_;
 
   // If true (defaults to true), the arrow may be mirrored to fit the
   // bubble on screen better.

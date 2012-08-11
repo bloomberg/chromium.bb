@@ -96,6 +96,7 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   set_close_on_esc(false);
   set_close_on_deactivate(false);
   set_use_focusless(true);
+  set_accept_events(false);
   set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin,
                           kTooltipTopBottomMargin, kTooltipLeftRightMargin));
   SetLayoutManager(new views::FillLayout());
@@ -120,6 +121,9 @@ LauncherTooltipManager::LauncherTooltipBubble::LauncherTooltipBubble(
   set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset, kArrowOffset,
       kArrowOffset));
   GetBubbleFrameView()->SetBubbleBorder(bubble_border_);
+
+  // BubbleBorder2 paints its own background.
+  GetBubbleFrameView()->set_background(NULL);
 }
 
 void LauncherTooltipManager::LauncherTooltipBubble::SetText(

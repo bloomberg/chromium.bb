@@ -192,7 +192,7 @@ void BubbleBorder2::SetShadow(gfx::ShadowValue shadow) {
 }
 
 int BubbleBorder2::GetBorderThickness() const {
-  return 0;
+  return border_size_;
 }
 
 void BubbleBorder2::PaintBackground(gfx::Canvas* canvas,
