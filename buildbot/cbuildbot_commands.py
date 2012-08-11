@@ -20,6 +20,7 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
+from chromite.lib import osutils
 
 _DEFAULT_RETRIES = 3
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
@@ -39,6 +40,7 @@ _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
 _LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
+_UPLOADED_LIST_FILENAME = 'UPLOADED'
 
 class TestFailure(results_lib.StepFailure):
   pass
@@ -849,13 +851,49 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   return os.path.basename(debug_tgz)
 
 
-def UploadArchivedFile(archive_path, upload_url, filename, debug):
+def AppendToFile(file_path, string):
+  """Append the string to the given file.
+
+  This method provides atomic appends if the string is smaller than
+  PIPE_BUF (> 512 bytes). It does not guarantee atomicity once the
+  string is greater than that.
+
+  Args:
+     file_path: File to be appended to.
+     string: String to append to the file.
+  """
+  osutils.WriteFile(file_path, string, mode='a')
+
+
+def UpdateUploadedList(last_uploaded, archive_path, upload_url, debug):
+  """Updates the list of files uploaded to Google Storage.
+
+  Args:
+     last_uploaded: Filename of the last uploaded file.
+     archive_path: Path to archive_dir.
+     upload_url: Location where tarball should be uploaded.
+     debug: Whether we are in debug mode.
+  """
+
+  # Append to the uploaded list.
+  filename = _UPLOADED_LIST_FILENAME
+  AppendToFile(os.path.join(archive_path, filename), last_uploaded+'\n')
+
+  # Upload the updated list to Google Storage.
+  UploadArchivedFile(archive_path, upload_url, filename, debug,
+                     update_list=False)
+
+
+def UploadArchivedFile(archive_path, upload_url, filename, debug,
+                       update_list=False):
   """Upload the specified tarball from the archive dir to Google Storage.
 
   Args:
     archive_path: Path to archive dir.
     upload_url: Location where tarball should be uploaded.
     debug: Whether we are in debug mode.
+    filename: Filename of the tarball to upload.
+    update_list: Flag to update the list of uploaded files.
   """
 
   if upload_url:
@@ -871,6 +909,10 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug):
         cros_build_lib.Info('UploadArchivedFile would run: %s' % ' '.join(cmd))
       else:
         cros_build_lib.RunCommandCaptureOutput(cmd)
+
+    # Update the list of uploaded files.
+    if update_list:
+      UpdateUploadedList(filename, archive_path, upload_url, debug)
 
 
 def UploadSymbols(buildroot, board, official):
@@ -1223,9 +1265,7 @@ def UpdateLatestFile(bot_archive_root, set_version):
     set_version: Version of output directory.
   """
   latest_path = os.path.join(bot_archive_root, 'LATEST')
-  latest_file = open(latest_path, 'w')
-  print >> latest_file, set_version
-  latest_file.close()
+  osutils.WriteFile(latest_path, set_version, mode='w')
 
 
 def RemoveOldArchives(bot_archive_root, keep_max):
