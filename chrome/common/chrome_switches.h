@@ -425,7 +425,7 @@ extern const char kUseMockKeychain[];
 
 #if defined(OS_WIN)
 extern const char kDisableDesktopShortcuts[];
-extern const char kEnableSyncCredentialCaching[];
+extern const char kDisableSyncCredentialCaching[];
 extern const char kForceImmersive[];
 extern const char kRelaunchShortcut[];
 extern const char kWaitForHandle[];

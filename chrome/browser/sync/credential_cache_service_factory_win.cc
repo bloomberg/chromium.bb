@@ -61,11 +61,11 @@ bool CredentialCacheServiceFactory::ServiceIsCreatedWithProfile() {
 ProfileKeyedService* CredentialCacheServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
   // Only instantiate a CredentialCacheService object if we are running in the
-  // default profile on Windows 8, and if credential caching is enabled.
+  // default profile on Windows 8, and if credential caching is not disabled.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
       IsDefaultProfile(profile) &&
-      command_line->HasSwitch(switches::kEnableSyncCredentialCaching)) {
+      !command_line->HasSwitch(switches::kDisableSyncCredentialCaching)) {
     return new syncer::CredentialCacheService(profile);
   }
   return NULL;
