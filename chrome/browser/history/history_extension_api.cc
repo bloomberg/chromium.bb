@@ -68,12 +68,8 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
       new double(MilliSecondsFromTime(row.visit_time)));
   visit_item->referring_visit_id = base::Int64ToString(row.referring_visit);
 
-  const char* trans =
-      content::PageTransitionGetCoreTransitionString(row.transition);
-  DCHECK(trans) << "Invalid transition.";
-
   VisitItem::Transition transition = VisitItem::TRANSITION_LINK;
-  switch (row.transition) {
+  switch (row.transition & content::PAGE_TRANSITION_CORE_MASK) {
     case content::PAGE_TRANSITION_LINK:
       transition = VisitItem::TRANSITION_LINK;
       break;
