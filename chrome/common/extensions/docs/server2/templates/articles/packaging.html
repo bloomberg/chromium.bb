@@ -11,7 +11,7 @@ with the file extension "crx"&mdash;for example,
 
 <p>
 <b>Note:</b>
-You might not need to package your extension.
+You do not need to package your own extension.
 If you publish your extension using the
 <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>,
 then the only reason to create your own <code>.crx</code> file
@@ -26,8 +26,10 @@ Chrome Web Store getting started tutorial, starting at
 When you package an extension,
 the extension is assigned a unique key pair.
 The extension's ID is based on a hash of the public key.
-The private key is kept private
-and used to sign each version of the extension.
+The private key is used to sign each version of the extension
+and must be secured from public access.
+Be careful not to include your private key within
+your extensions!
 </p>
 
 
