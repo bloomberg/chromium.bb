@@ -114,9 +114,10 @@ void PaginationModel::UpdateScroll(double delta) {
   if (progress < 0) {
     clear_transition();
   } else if (progress > 1) {
-    if (is_valid_page(transition_.target_page))
+    if (is_valid_page(transition_.target_page)) {
       SelectPage(transition_.target_page, false);
-    clear_transition();
+      clear_transition();
+    }
   } else {
     transition_.progress = progress;
     NotifyTransitionChanged();
