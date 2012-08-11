@@ -220,10 +220,18 @@ void InitializeCompositingFieldTrial() {
     // threaded-compositing on with 1/3 probability each.
     force_compositing_mode_probability = 1;
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+    // Threaded compositing mode isn't feature complete on mac or linux yet:
+    // http://crbug.com/133602 for mac
+    // http://crbug.com/140866 for linux
+    threaded_compositing_probability = 0;
+#else
     if (!CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableThreadedCompositing))
         threaded_compositing_probability = 1;
+#endif
   }
+
 
   int force_compositing_group = trial->AppendGroup(
       content::kGpuCompositingFieldTrialForceCompositingEnabledName,
