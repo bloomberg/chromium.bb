@@ -200,6 +200,13 @@ void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
     int page_id,
     const std::vector<string16>& suggestions,
     InstantCompleteBehavior behavior) {
+  DCHECK(loader_->preview_contents() &&
+         loader_->preview_contents_->web_contents());
+  // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
+  if (!loader_->preview_contents() ||
+      !loader_->preview_contents_->web_contents()) {
+    return;
+  }
   content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
@@ -211,6 +218,13 @@ void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
 void InstantLoader::WebContentsDelegateImpl::OnInstantSupportDetermined(
     int page_id,
     bool result) {
+  DCHECK(loader_->preview_contents() &&
+         loader_->preview_contents_->web_contents());
+  // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
+  if (!loader_->preview_contents() ||
+      !loader_->preview_contents_->web_contents()) {
+    return;
+  }
   content::NavigationEntry* entry = loader_->preview_contents_->web_contents()->
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID())
@@ -232,15 +246,17 @@ void InstantLoader::WebContentsDelegateImpl
   if (loader_->supports_instant_)
     return;
 
-  loader_->supports_instant_ = supports_instant;
-  loader_->loader_delegate_->InstantSupportDetermined(loader_,
-                                                      supports_instant);
-
   // If the page doesn't support the Instant API, InstantController schedules
   // the loader for destruction. Stop sending the controller any more messages,
   // by severing the connection from the WebContents to us (its delegate).
-  if (!supports_instant)
+  if (!supports_instant) {
     loader_->preview_contents_->web_contents()->SetDelegate(NULL);
+    Observe(NULL);
+  }
+
+  loader_->supports_instant_ = supports_instant;
+  loader_->loader_delegate_->InstantSupportDetermined(loader_,
+                                                      supports_instant);
 }
 
 // InstantLoader ---------------------------------------------------------------
@@ -254,8 +270,6 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate,
           tab_contents->web_contents(),
           tab_contents->web_contents()->GetController().
                                         GetSessionStorageNamespace()))),
-      preview_delegate_(new WebContentsDelegateImpl(
-          ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       supports_instant_(false),
       instant_url_(instant_url) {
 }
@@ -323,6 +337,7 @@ void InstantLoader::Observe(int type,
 
 void InstantLoader::SetupPreviewContents() {
   content::WebContents* new_contents = preview_contents_->web_contents();
+  preview_delegate_.reset(new WebContentsDelegateImpl(this));
   WebContentsDelegateImpl* new_delegate = preview_delegate_.get();
   new_contents->SetDelegate(new_delegate);
 
@@ -353,6 +368,7 @@ void InstantLoader::SetupPreviewContents() {
 void InstantLoader::CleanupPreviewContents() {
   content::WebContents* old_contents = preview_contents_->web_contents();
   old_contents->SetDelegate(NULL);
+  preview_delegate_.reset();
 
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(false);
   preview_contents_->constrained_window_tab_helper()->set_delegate(NULL);
