@@ -51,6 +51,12 @@ using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::StrictMock;
 
+#if defined(OS_ANDROID)
+static const bool kExpectMobileBookmarks = true;
+#else
+static const bool kExpectMobileBookmarks = false;
+#endif  // defined(OS_ANDROID)
+
 class TestBookmarkModelAssociator : public BookmarkModelAssociator {
  public:
   TestBookmarkModelAssociator(
@@ -59,7 +65,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
       DataTypeErrorHandler* error_handler)
       : BookmarkModelAssociator(bookmark_model, user_share,
                                 error_handler,
-                                true /* expect_mobile_bookmarks_folder */),
+                                kExpectMobileBookmarks),
         user_share_(user_share) {}
 
   // TODO(akalin): This logic lazily creates any tagged node that is
