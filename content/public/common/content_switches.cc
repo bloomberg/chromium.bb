@@ -255,6 +255,9 @@ const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 const char kEnableCompositingForFixedPosition[] =
      "enable-fixed-position-compositing";
 
+// Enables CSS3 exclusions
+const char kEnableCssExclusions[]           = "enable-css-exclusions";
+
 // Enables CSS3 regions
 const char kEnableCssRegions[]              = "enable-css-regions";
 

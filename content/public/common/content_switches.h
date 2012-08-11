@@ -93,6 +93,7 @@ CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAcceleratedPlugins[];
 extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
+extern const char kEnableCssExclusions[];
 extern const char kEnableCssRegions[];
 extern const char kEnableCssShaders[];
 extern const char kEnableCssVariables[];

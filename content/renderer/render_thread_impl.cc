@@ -618,6 +618,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableStyleScoped(
       command_line.HasSwitch(switches::kEnableStyleScoped));
 
+  WebRuntimeFeatures::enableCSSExclusions(
+      command_line.HasSwitch(switches::kEnableCssExclusions));
+
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   if (content::GetContentClient()->renderer()->
