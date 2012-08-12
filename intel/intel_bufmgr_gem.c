@@ -2936,6 +2936,8 @@ drm_intel_gem_context_destroy(drm_intel_context *ctx)
 	if (ctx == NULL)
 		return;
 
+	VG_CLEAR(destroy);
+
 	bufmgr_gem = (drm_intel_bufmgr_gem *)ctx->bufmgr;
 	destroy.ctx_id = ctx->ctx_id;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CONTEXT_DESTROY,
