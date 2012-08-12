@@ -41,6 +41,9 @@ cr.define('cr.ui', function() {
       var i = this.selectedIndex;
       return i != -1 ? [this.selectedIndex] : [];
     },
+    set selectedIndexes(indexes) {
+      this.selectedIndex = indexes.length ? indexes[0] : -1;
+    },
 
     /**
      * Convenience getter which returns the first selected index.
