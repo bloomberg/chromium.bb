@@ -1155,6 +1155,10 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 	struct wl_pointer *pointer;
 	int was_unresponsive;
 
+	if (shsurf->ping_timer == NULL)
+		/* Just ignore unsolicited pong. */
+		return;
+
 	if (shsurf->ping_timer->serial == serial) {
 		was_unresponsive = shsurf->unresponsive;
 		shsurf->unresponsive = 0;
