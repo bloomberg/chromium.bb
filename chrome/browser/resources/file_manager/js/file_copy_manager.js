@@ -680,7 +680,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
   }
 
   function onError(reason, data) {
-    this.log_('serviceNextTaskEntry error: ' + reason + ':', data);
+    self.log_('serviceNextTaskEntry error: ' + reason + ':', data);
     errorCallback(new FileCopyManager.Error(reason, data));
   }
 
