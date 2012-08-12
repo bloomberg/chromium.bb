@@ -573,6 +573,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   prebuilts=False,
   useflags=official['useflags'] + ['pgo_generate'],
   chroot_replace=True,
+  hw_tests=['PGO_record'],
   upload_hw_test_artifacts=True,
   hw_tests_num=1,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
@@ -844,11 +845,13 @@ _release = full.derive(official, internal,
 
 _release.add_config('x86-mario-release',
   boards=['x86-mario'],
+  hw_tests=['bvt'],
 )
 
 _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
+    hw_tests=['bvt'],
   ),
   _release.add_config('x86-alex_he-release',
     boards=['x86-alex_he'],
@@ -861,6 +864,7 @@ _config.add_group('x86-alex-release-group',
 _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
+    hw_tests=['bvt'],
   ),
   _release.add_config('x86-zgb_he-release',
     boards=['x86-zgb_he'],
@@ -872,10 +876,12 @@ _config.add_group('x86-zgb-release-group',
 
 _release.add_config('stumpy-release',
   boards=['stumpy'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('lumpy-release',
   boards=['lumpy'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('link-release',
