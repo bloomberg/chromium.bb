@@ -25,13 +25,13 @@ static void AddDefaultDecodersToCollection(
   filter_collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
-                 "AudioDecoderThread")));
+                 media::MessageLoopFactory::kAudioDecoder)));
 
   scoped_refptr<media::FFmpegVideoDecoder> ffmpeg_video_decoder =
       new media::FFmpegVideoDecoder(
           base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                      base::Unretained(message_loop_factory),
-                     "VideoDecoderThread"),
+                     media::MessageLoopFactory::kVideoDecoder),
           decryptor);
   filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
 }
@@ -84,7 +84,8 @@ void BuildDefaultCollection(
     media::FilterCollection* filter_collection,
     media::Decryptor* decryptor) {
   filter_collection->SetDemuxer(new media::FFmpegDemuxer(
-      message_loop_factory->GetMessageLoop("PipelineThread"),
+      message_loop_factory->GetMessageLoop(
+          media::MessageLoopFactory::kPipeline),
       data_source));
 
   AddDefaultDecodersToCollection(message_loop_factory, filter_collection,

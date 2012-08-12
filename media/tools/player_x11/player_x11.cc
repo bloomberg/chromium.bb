@@ -98,7 +98,7 @@ void Paint(MessageLoop* message_loop, const PaintCB& paint_cb) {
 }
 
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
-bool InitPipeline(MessageLoop* message_loop,
+bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   const scoped_refptr<media::DataSource>& data_source,
                   const PaintCB& paint_cb,
                   bool /* enable_audio */,
@@ -118,11 +118,11 @@ bool InitPipeline(MessageLoop* message_loop,
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
-                 "AudioDecoderThread")));
+                 media::MessageLoopFactory::kAudioDecoder)));
   collection->GetVideoDecoders()->push_back(new media::FFmpegVideoDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
-                 "VideoDecoderThread"),
+                 media::MessageLoopFactory::kVideoDecoder),
       NULL));
 
   // Create our video renderer and save a reference to it for painting.
@@ -283,7 +283,7 @@ int main(int argc, char** argv) {
       new DataSourceLogger(CreateFileDataSource(filename),
                            command_line->HasSwitch("streaming")));
 
-  if (InitPipeline(thread->message_loop(), data_source,
+  if (InitPipeline(thread->message_loop_proxy(), data_source,
                    paint_cb, command_line->HasSwitch("audio"),
                    &pipeline, &message_loop, message_loop_factory.get())) {
     // Main loop of the application.

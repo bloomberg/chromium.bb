@@ -136,8 +136,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
-  MessageLoop* pipeline_message_loop =
-      message_loop_factory_->GetMessageLoop("PipelineThread");
+  scoped_refptr<base::MessageLoopProxy> pipeline_message_loop =
+      message_loop_factory_->GetMessageLoop(
+          media::MessageLoopFactory::kPipeline);
   pipeline_ = new media::Pipeline(pipeline_message_loop, media_log_);
 
   // Let V8 know we started new thread if we did not did it yet.

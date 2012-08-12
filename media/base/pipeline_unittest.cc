@@ -92,7 +92,8 @@ class CallbackHelper {
 class PipelineTest : public ::testing::Test {
  public:
   PipelineTest()
-      : pipeline_(new Pipeline(&message_loop_, new MediaLog())) {
+      : pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
+                               new MediaLog())) {
     mocks_.reset(new MockFilterCollection());
 
     // InitializeDemuxer() adds overriding expectations for expected non-NULL

@@ -44,11 +44,12 @@ GpuVideoDecoder::BufferData::BufferData(
 GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
-    MessageLoop* message_loop,
-    MessageLoop* vda_loop,
+    const MessageLoopFactoryCB& message_loop_factory_cb,
+    const scoped_refptr<base::MessageLoopProxy>& vda_loop_proxy,
     const scoped_refptr<Factories>& factories)
-    : gvd_loop_proxy_(message_loop->message_loop_proxy()),
-      vda_loop_proxy_(vda_loop->message_loop_proxy()),
+    : message_loop_factory_cb_(message_loop_factory_cb),
+      gvd_loop_proxy_(NULL),
+      vda_loop_proxy_(vda_loop_proxy),
       factories_(factories),
       state_(kNormal),
       demuxer_read_in_progress_(false),
@@ -57,7 +58,8 @@ GpuVideoDecoder::GpuVideoDecoder(
       next_bitstream_buffer_id_(0),
       shutting_down_(false),
       error_occured_(false) {
-  DCHECK(gvd_loop_proxy_ && factories_);
+  DCHECK(!message_loop_factory_cb_.is_null());
+  DCHECK(factories_);
 }
 
 void GpuVideoDecoder::Reset(const base::Closure& closure)  {
@@ -113,13 +115,15 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
 void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
                                  const PipelineStatusCB& orig_status_cb,
                                  const StatisticsCB& statistics_cb) {
-  if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
+  if (!gvd_loop_proxy_) {
+    gvd_loop_proxy_ = base::ResetAndReturn(&message_loop_factory_cb_).Run();
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Initialize,
         this, stream, orig_status_cb, statistics_cb));
     return;
   }
 
+  DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   PipelineStatusCB status_cb = CreateUMAReportingPipelineCB(
       "Media.GpuVideoDecoderInitializeStatus", orig_status_cb);
 

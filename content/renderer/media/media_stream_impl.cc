@@ -486,7 +486,8 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateLocalVideoDecoder(
            << video_session_id;
 
   return new CaptureVideoDecoder(
-      message_loop_factory->GetMessageLoopProxy("CaptureVideoDecoderThread"),
+      message_loop_factory->GetMessageLoop(
+          media::MessageLoopFactory::kVideoDecoder),
       video_session_id,
       vc_manager_.get(),
       capability);
@@ -502,7 +503,8 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateRemoteVideoDecoder(
            << stream->label();
 
   return new RTCVideoDecoder(
-      message_loop_factory->GetMessageLoopProxy("RtcVideoDecoderThread"),
+      message_loop_factory->GetMessageLoop(
+          media::MessageLoopFactory::kVideoDecoder),
       base::MessageLoopProxy::current(),
       stream->video_tracks()->at(0));
 }

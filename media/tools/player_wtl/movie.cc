@@ -59,8 +59,9 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
 
   message_loop_factory_.reset(new media::MessageLoopFactory());
 
-  MessageLoop* pipeline_loop =
-      message_loop_factory_->GetMessageLoop("PipelineThread");
+  scoped_refptr<base::MessageLoopProxy> pipeline_loop =
+      message_loop_factory_->GetMessageLoop(
+          media::MessageLoopFactory::kPipeline);
   pipeline_ = new Pipeline(pipeline_loop, new media::MediaLog());
 
   // Open the file.
@@ -76,11 +77,11 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
-                 "AudioDecoderThread")));
+                 media::MessageLoopFactory::kAudioDecoder)));
   collection->GetVideoDecoders()->push_back(new FFmpegVideoDecoder(
       base::Bind(&MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory_.get()),
-                 "VideoDecoderThread"),
+                 media::MessageLoopFactory::kVideoDecoder),
       NULL));
 
   // TODO(vrk): Re-enabled audio. (crbug.com/112159)

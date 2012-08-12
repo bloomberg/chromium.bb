@@ -65,8 +65,9 @@ struct Pipeline::PipelineInitState {
   scoped_refptr<AudioDecoder> audio_decoder;
 };
 
-Pipeline::Pipeline(MessageLoop* message_loop, MediaLog* media_log)
-    : message_loop_(message_loop->message_loop_proxy()),
+Pipeline::Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
+                   MediaLog* media_log)
+    : message_loop_(message_loop),
       media_log_(media_log),
       running_(false),
       seek_pending_(false),
@@ -520,8 +521,8 @@ void Pipeline::OnFilterInitialize(PipelineStatus status) {
 // makes it look like a host()->SetError() call followed by a call to
 // OnFilterStateTransition() when errors occur.
 //
-// TODO: Revisit this code when SetError() is removed from FilterHost and
-//       all the Closures are converted to PipelineStatusCB.
+// TODO(scherkus): Revisit this code when SetError() is removed from FilterHost
+// and all the Closures are converted to PipelineStatusCB.
 void Pipeline::OnFilterStateTransition(PipelineStatus status) {
   if (status != PIPELINE_OK)
     SetError(status);

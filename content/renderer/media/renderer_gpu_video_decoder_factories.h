@@ -36,7 +36,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // use.
   RendererGpuVideoDecoderFactories(
       GpuChannelHost* gpu_channel_host,
-      MessageLoop* message_loop,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>& wgc3dcbi);
 
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
@@ -77,7 +77,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   void AsyncCreateSharedMemory(
       size_t size, base::SharedMemory** shm, base::WaitableEvent* waiter);
 
-  MessageLoop* message_loop_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_refptr<GpuChannelHost> gpu_channel_host_;
   base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(RendererGpuVideoDecoderFactories);

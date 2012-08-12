@@ -17,14 +17,15 @@
 
 RendererGpuVideoDecoderFactories::~RendererGpuVideoDecoderFactories() {}
 RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
-    GpuChannelHost* gpu_channel_host, MessageLoop* message_loop,
+    GpuChannelHost* gpu_channel_host,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>& context)
     : message_loop_(message_loop),
       gpu_channel_host_(gpu_channel_host),
       context_(context) {
   DCHECK(context_);
   context_->DetachFromThread();
-  if (MessageLoop::current() == message_loop_) {
+  if (message_loop_->BelongsToCurrentThread()) {
     AsyncGetContext(NULL);
     return;
   }
@@ -51,7 +52,7 @@ media::VideoDecodeAccelerator*
 RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
     media::VideoCodecProfile profile,
     media::VideoDecodeAccelerator::Client* client) {
-  DCHECK_NE(MessageLoop::current(), message_loop_);
+  DCHECK(!message_loop_->BelongsToCurrentThread());
   media::VideoDecodeAccelerator* vda = NULL;
   base::WaitableEvent waiter(false, false);
   message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -66,7 +67,7 @@ void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator::Client* client,
       media::VideoDecodeAccelerator** vda,
       base::WaitableEvent* waiter) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (context_ && context_->GetCommandBufferProxy()) {
     *vda = gpu_channel_host_->CreateVideoDecoder(
         context_->GetCommandBufferProxy()->GetRouteID(),
@@ -81,7 +82,7 @@ bool RendererGpuVideoDecoderFactories::CreateTextures(
     int32 count, const gfx::Size& size,
     std::vector<uint32>* texture_ids,
     uint32 texture_target) {
-  DCHECK_NE(MessageLoop::current(), message_loop_);
+  DCHECK(!message_loop_->BelongsToCurrentThread());
   bool success = false;
   base::WaitableEvent waiter(false, false);
   message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -94,7 +95,7 @@ bool RendererGpuVideoDecoderFactories::CreateTextures(
 void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
     int32 count, const gfx::Size& size, std::vector<uint32>* texture_ids,
     uint32 texture_target, bool* success, base::WaitableEvent* waiter) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK(texture_target);
   if (!context_) {
     *success = false;
@@ -127,13 +128,13 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
 }
 
 void RendererGpuVideoDecoderFactories::DeleteTexture(uint32 texture_id) {
-  DCHECK_NE(MessageLoop::current(), message_loop_);
+  DCHECK(!message_loop_->BelongsToCurrentThread());
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncDeleteTexture, this, texture_id));
 }
 
 void RendererGpuVideoDecoderFactories::AsyncDeleteTexture(uint32 texture_id) {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(message_loop_->BelongsToCurrentThread());
   if (!context_)
     return;
   gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();

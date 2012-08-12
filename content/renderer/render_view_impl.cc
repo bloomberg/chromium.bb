@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -2425,16 +2426,18 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderThreadImpl::current()->GetGpuVDAContext3D() :
       base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>();
   if (context3d) {
-    MessageLoop* factories_loop =
+    scoped_refptr<base::MessageLoopProxy> factories_loop =
         RenderThreadImpl::current()->compositor_thread() ?
         RenderThreadImpl::current()->compositor_thread()->GetWebThread()
-            ->message_loop() :
-        MessageLoop::current();
+            ->message_loop()->message_loop_proxy() :
+        base::MessageLoopProxy::current();
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
             content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
     collection->GetVideoDecoders()->push_back(new media::GpuVideoDecoder(
-        message_loop_factory->GetMessageLoop("GpuVideoDecoder"),
+        base::Bind(&media::MessageLoopFactory::GetMessageLoop,
+                   base::Unretained(message_loop_factory),
+                   media::MessageLoopFactory::kVideoDecoder),
         factories_loop,
         new RendererGpuVideoDecoderFactories(
             gpu_channel_host, factories_loop, context3d)));
