@@ -996,9 +996,8 @@ bool ObfuscatedFileUtil::MigrateFromOldSandbox(
     return false;
 
   file_util::FileEnumerator file_enum(src_root, true,
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES));
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
   FilePath src_full_path;
   size_t root_path_length = src_root.value().length() + 1;  // +1 for the slash
   while (!(src_full_path = file_enum.Next()).empty()) {

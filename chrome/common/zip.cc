@@ -130,11 +130,9 @@ bool ZipWithFilterCallback(const FilePath& src_dir, const FilePath& dest_file,
   }
 
   bool success = true;
-  file_util::FileEnumerator file_enumerator(
-      src_dir, true,  // recursive
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES));
+  file_util::FileEnumerator file_enumerator(src_dir, true /* recursive */,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
     if (!filter_cb.Run(path)) {

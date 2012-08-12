@@ -170,12 +170,10 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
   // base name of |path_to_delete_pattern|.
   // If a file is not |path_to_keep|, delete it.
   bool success = true;
-  file_util::FileEnumerator enumerator(
-      path_to_delete_pattern.DirName(),
+  file_util::FileEnumerator enumerator(path_to_delete_pattern.DirName(),
       false,  // not recursive
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::SHOW_SYM_LINKS),
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::SHOW_SYM_LINKS,
       path_to_delete_pattern.BaseName().value());
   for (FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {

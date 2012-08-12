@@ -65,16 +65,15 @@ SerialPortEnumerator::StringSet SerialPortEnumerator::GenerateValidPatterns() {
 SerialPortEnumerator::StringSet
 SerialPortEnumerator::GenerateValidSerialPortNames() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  const FilePath DEV_ROOT("/dev");
-  const file_util::FileEnumerator::FileType FILES_AND_SYM_LINKS =
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::SHOW_SYM_LINKS);
+  const FilePath kDevRoot("/dev");
+  const int kFilesAndSymLinks =
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::SHOW_SYM_LINKS;
 
   StringSet valid_patterns = GenerateValidPatterns();
   StringSet name_set;
   file_util::FileEnumerator enumerator(
-      DEV_ROOT, false, FILES_AND_SYM_LINKS);
+      kDevRoot, false, kFilesAndSymLinks);
   do {
     const FilePath next_device_path(enumerator.Next());
     const std::string next_device = next_device_path.value();

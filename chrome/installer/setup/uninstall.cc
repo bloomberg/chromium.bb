@@ -466,11 +466,8 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
   DeleteResult result = DELETE_SUCCEEDED;
 
   using file_util::FileEnumerator;
-  FileEnumerator file_enumerator(
-      target_path,
-      false,
-      static_cast<FileEnumerator::FileType>(FileEnumerator::FILES |
-                                            FileEnumerator::DIRECTORIES));
+  FileEnumerator file_enumerator(target_path, false,
+      FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
   while (true) {
     FilePath to_delete(file_enumerator.Next());
     if (to_delete.empty())

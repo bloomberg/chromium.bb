@@ -57,10 +57,8 @@ void CameraDetector::CheckPresence() {
   // device may trigger costly device initialization.
   using file_util::FileEnumerator;
   FileEnumerator file_enum(
-      FilePath(kV4LSubsystemDir),
-      false,  // Don't recurse.
-      static_cast<FileEnumerator::FileType>(
-          FileEnumerator::FILES | FileEnumerator::SHOW_SYM_LINKS));
+      FilePath(kV4LSubsystemDir), false /* not recursive */,
+      FileEnumerator::FILES | FileEnumerator::SHOW_SYM_LINKS);
   for (FilePath path = file_enum.Next(); !path.empty();
        path = file_enum.Next()) {
     std::string v4l_capabilities;

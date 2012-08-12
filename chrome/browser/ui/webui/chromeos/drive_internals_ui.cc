@@ -48,10 +48,7 @@ void GetGCacheContents(const FilePath& root_path,
   const int options = (file_util::FileEnumerator::FILES |
                        file_util::FileEnumerator::DIRECTORIES |
                        file_util::FileEnumerator::SHOW_SYM_LINKS);
-  FileEnumerator enumerator(
-      root_path,
-      true,  // recursive
-      static_cast<FileEnumerator::FileType>(options));
+  FileEnumerator enumerator(root_path, true /* recursive */, options);
 
   int64 total_size = 0;
   for (FilePath current = enumerator.Next(); !current.empty();

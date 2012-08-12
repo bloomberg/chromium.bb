@@ -217,12 +217,10 @@ void PepperFileMessageFilter::OnGetDirContents(
 
   contents->clear();
 
-  file_util::FileEnumerator enumerator(
-      full_path, false,
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES |
-          file_util::FileEnumerator::INCLUDE_DOT_DOT));
+  file_util::FileEnumerator enumerator(full_path, false,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES |
+      file_util::FileEnumerator::INCLUDE_DOT_DOT);
 
   while (!enumerator.Next().empty()) {
     file_util::FileEnumerator::FindInfo info;

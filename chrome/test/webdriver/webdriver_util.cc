@@ -373,9 +373,8 @@ bool UnzipSoleFile(const FilePath& unzip_dir,
   }
 
   file_util::FileEnumerator enumerator(unzip_dir, false /* recursive */,
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES));
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
   FilePath first_file = enumerator.Next();
   if (first_file.empty()) {
     *error_msg = "Zip contained 0 files";

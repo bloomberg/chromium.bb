@@ -651,12 +651,10 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
   // Enumerate all files and directories in the extension root.
   // There is a problem when using pattern "_*" with FileEnumerator, so we have
   // to cheat with find_first_of and match all.
+  const int kFilesAndDirectories =
+      file_util::FileEnumerator::DIRECTORIES | file_util::FileEnumerator::FILES;
   file_util::FileEnumerator all_files(
-    extension_path,
-    false,
-    static_cast<file_util::FileEnumerator::FileType>(
-        file_util::FileEnumerator::DIRECTORIES |
-          file_util::FileEnumerator::FILES));
+      extension_path, false, kFilesAndDirectories);
 
   FilePath file;
   while (!(file = all_files.Next()).empty()) {

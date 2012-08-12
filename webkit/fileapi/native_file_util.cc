@@ -39,7 +39,7 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
   NativeFileEnumerator(const FilePath& root_path,
                        bool recursive,
-                       file_util::FileEnumerator::FileType file_type)
+                       int file_type)
     : file_enum_(root_path, recursive, file_type) {
 #if defined(OS_WIN)
     memset(&file_util_info_, 0, sizeof(file_util_info_));
@@ -158,11 +158,9 @@ PlatformFileError NativeFileUtil::GetFileInfo(
 FileSystemFileUtil::AbstractFileEnumerator*
 NativeFileUtil::CreateFileEnumerator(const FilePath& root_path,
                                      bool recursive) {
-  return new NativeFileEnumerator(
-      root_path, recursive,
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES));
+  return new NativeFileEnumerator(root_path, recursive,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
 }
 
 PlatformFileError NativeFileUtil::Touch(

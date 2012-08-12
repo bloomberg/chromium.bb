@@ -375,9 +375,8 @@ class GDataCacheTest : public testing::Test {
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         file_util::FileEnumerator enumerator(
             paths_to_verify[i].path_to_scan.DirName(), false /* not recursive*/,
-            static_cast<file_util::FileEnumerator::FileType>(
-                file_util::FileEnumerator::FILES |
-                file_util::FileEnumerator::SHOW_SYM_LINKS),
+            file_util::FileEnumerator::FILES |
+            file_util::FileEnumerator::SHOW_SYM_LINKS,
             paths_to_verify[i].path_to_scan.BaseName().value());
         EXPECT_TRUE(enumerator.Next().empty());
       }
@@ -415,10 +414,9 @@ class GDataCacheTest : public testing::Test {
       for (size_t i = 0; i < paths_to_verify.size(); ++i) {
         const struct PathToVerify& verify = paths_to_verify[i];
         file_util::FileEnumerator enumerator(
-            verify.path_to_scan.DirName(), false /* not recursive*/,
-            static_cast<file_util::FileEnumerator::FileType>(
-                file_util::FileEnumerator::FILES |
-                file_util::FileEnumerator::SHOW_SYM_LINKS),
+            verify.path_to_scan.DirName(), false /* not recursive */,
+            file_util::FileEnumerator::FILES |
+            file_util::FileEnumerator::SHOW_SYM_LINKS,
             verify.path_to_scan.BaseName().value());
         size_t num_files_found = 0;
         for (FilePath current = enumerator.Next(); !current.empty();

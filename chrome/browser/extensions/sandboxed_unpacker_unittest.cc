@@ -135,10 +135,8 @@ class SandboxedUnpackerTest : public testing::Test {
 
   bool TempFilesRemoved() {
     // Check that temporary files were cleaned up.
-    file_util::FileEnumerator::FileType files_and_dirs =
-      static_cast<file_util::FileEnumerator::FileType>(
-        file_util::FileEnumerator::DIRECTORIES |
-        file_util::FileEnumerator::FILES);
+    int files_and_dirs = file_util::FileEnumerator::DIRECTORIES |
+        file_util::FileEnumerator::FILES;
 
     file_util::FileEnumerator temp_iterator(
       temp_path_,

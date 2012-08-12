@@ -268,10 +268,8 @@ int main(int argc, const char* argv[]) {
 
   message_loop.RunAllPending();
 
-  file_util::FileEnumerator file_iterator(
-      profile.GetPath(), false,
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES));
+  file_util::FileEnumerator file_iterator(profile.GetPath(), false,
+      file_util::FileEnumerator::FILES);
   FilePath path = file_iterator.Next();
   while (!path.empty()) {
     FilePath dst_file = dst_dir.Append(path.BaseName());

@@ -323,10 +323,8 @@ TEST_F(IsolatedFileUtilTest, ReadDirectoryTest) {
     EntryMap expected_entry_map;
 
     FileEnumerator file_enum(
-        GetTestCasePlatformPath(test_case.path),
-        false /* recursive */,
-        static_cast<file_util::FileEnumerator::FileType>(
-            FileEnumerator::FILES | FileEnumerator::DIRECTORIES));
+        GetTestCasePlatformPath(test_case.path), false /* not recursive */,
+        FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
     FilePath current;
     while (!(current = file_enum.Next()).empty()) {
       FileEnumerator::FindInfo file_info;

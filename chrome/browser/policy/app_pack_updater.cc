@@ -277,9 +277,8 @@ void AppPackUpdater::BlockingCheckCacheInternal(
 
   // Enumerate all the files in the cache |dir|, including directories
   // and symlinks. Each unrecognized file will be erased.
-  FileEnumerator::FileType types = static_cast<FileEnumerator::FileType>(
-      FileEnumerator::FILES | FileEnumerator::DIRECTORIES |
-      FileEnumerator::SHOW_SYM_LINKS);
+  int types = FileEnumerator::FILES | FileEnumerator::DIRECTORIES |
+      FileEnumerator::SHOW_SYM_LINKS;
   FileEnumerator enumerator(dir, false /* recursive */, types);
 
   for (FilePath path = enumerator.Next();

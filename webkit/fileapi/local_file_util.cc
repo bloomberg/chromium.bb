@@ -21,7 +21,7 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   LocalFileEnumerator(const FilePath& platform_root_path,
                       const FilePath& virtual_root_path,
                       bool recursive,
-                      file_util::FileEnumerator::FileType file_type)
+                      int file_type)
       : file_enum_(platform_root_path, recursive, file_type),
         platform_root_path_(platform_root_path),
         virtual_root_path_(virtual_root_path) {
@@ -142,11 +142,9 @@ FileSystemFileUtil::AbstractFileEnumerator* LocalFileUtil::CreateFileEnumerator(
   if (GetLocalFilePath(context, root_url, &file_path) !=
       base::PLATFORM_FILE_OK)
     return new EmptyFileEnumerator();
-  return new LocalFileEnumerator(
-      file_path, root_url.path(), recursive,
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::DIRECTORIES));
+  return new LocalFileEnumerator(file_path, root_url.path(), recursive,
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::DIRECTORIES);
 }
 
 PlatformFileError LocalFileUtil::GetLocalFilePath(

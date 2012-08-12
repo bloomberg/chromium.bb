@@ -110,12 +110,10 @@ void ScanCacheDirectory(
   DCHECK(cache_map);
   DCHECK(processed_file_map);
 
-  file_util::FileEnumerator enumerator(
-      cache_paths[sub_dir_type],
+  file_util::FileEnumerator enumerator(cache_paths[sub_dir_type],
       false,  // not recursive
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::SHOW_SYM_LINKS),
+      file_util::FileEnumerator::FILES |
+      file_util::FileEnumerator::SHOW_SYM_LINKS,
       util::kWildCard);
   for (FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {

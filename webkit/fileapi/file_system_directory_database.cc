@@ -273,10 +273,9 @@ bool DatabaseCheckHelper::ScanDirectory() {
 
     file_util::FileEnumerator file_enum(
         dir_path.empty() ? path_ : path_.Append(dir_path),
-        false /* recursive */,
-        static_cast<file_util::FileEnumerator::FileType>(
-            file_util::FileEnumerator::DIRECTORIES |
-            file_util::FileEnumerator::FILES));
+        false /* not recursive */,
+        file_util::FileEnumerator::DIRECTORIES |
+        file_util::FileEnumerator::FILES);
 
     FilePath absolute_file_path;
     while (!(absolute_file_path = file_enum.Next()).empty()) {
