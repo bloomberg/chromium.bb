@@ -21,13 +21,8 @@ namespace port {
 
 class IPlatform {
  public:
-  typedef void (*ThreadFunc_t)(void *cookie);
-
   //  Get the id of the currently executing thread
   static uint32_t GetCurrentThread();
-
-  //  Called to request the platform start/stop the thread
-  static uint32_t CreateThread(ThreadFunc_t func, void *cookie);
 
   //  Request the current thread relinquish execution of msec milliseconds
   static void Relinquish(uint32_t msec);

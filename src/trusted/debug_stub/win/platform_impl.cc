@@ -37,26 +37,6 @@ uint32_t IPlatform::GetCurrentThread() {
   return static_cast<uint32_t>(GetCurrentThreadId());
 }
 
-/*
- * Since the windows compiler does not use __stdcall by default, we need to
- * modify this function pointer.
- */
-typedef unsigned (__stdcall *WinThreadFunc_t)(void *cookie);
-
-uint32_t IPlatform::CreateThread(IPlatform::ThreadFunc_t func, void* cookie) {
-  uint32_t id;
-  /*
-   * We use our own code here instead of NaClThreadCtor because
-   * it does not report the thread ID only the handle.
-   * TODO(noelallen) - Merge port and platform
-   */
-  uintptr_t res = _beginthreadex(NULL, 0,
-                                 reinterpret_cast<WinThreadFunc_t>(func),
-                                 cookie, 0, &id);
-
-  return id;
-}
-
 void IPlatform::Relinquish(uint32_t msec) {
   Sleep(msec);
 }

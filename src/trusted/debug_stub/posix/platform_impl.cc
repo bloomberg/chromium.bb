@@ -33,54 +33,11 @@
  */
 
 
-static port::IEvent* GetLaunchEvent() {
-  static port::IEvent* event_ = port::IEvent::Allocate();
-  return event_;
-}
-
 namespace port {
-
-struct StartInfo_t {
-  port::IPlatform::ThreadFunc_t func_;
-  void *cookie_;
-  volatile uint32_t id_;
-};
 
 // Get the OS id of this thread
 uint32_t IPlatform::GetCurrentThread() {
   return static_cast<uint32_t>(syscall(SYS_gettid));
-}
-
-// Use start stub, to record thread id, and signal launcher
-static void *StartFunc(void* cookie) {
-  StartInfo_t* info = reinterpret_cast<StartInfo_t*>(cookie);
-  info->id_ = (uint32_t) syscall(SYS_gettid);
-
-  printf("Started thread...\n");
-  GetLaunchEvent()->Signal();
-  info->func_(info->cookie_);
-
-  return NULL;
-}
-
-uint32_t IPlatform::CreateThread(ThreadFunc_t func, void* cookie) {
-  pthread_t thread;
-  StartInfo_t info;
-
-  // Setup the thread information
-  info.func_ = func;
-  info.cookie_ = cookie;
-
-  printf("Creating thread...\n");
-
-  // Redirect to stub and wait for signal before continuing
-  if (pthread_create(&thread, NULL, StartFunc, &info) == 0) {
-    GetLaunchEvent()->Wait();
-    printf("Found thread...\n");
-    return info.id_;
-  }
-
-  return 0;
 }
 
 void IPlatform::Relinquish(uint32_t msec) {
