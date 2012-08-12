@@ -1432,6 +1432,12 @@ void GetQueryivEXT(GLenum target, GLenum pname, GLint* params);
 
 void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params);
 
+void InsertEventMarkerEXT(GLsizei length, const GLchar* marker);
+
+void PushGroupMarkerEXT(GLsizei length, const GLchar* marker);
+
+void PopGroupMarkerEXT();
+
 void SwapBuffers();
 
 GLuint GetMaxValueInBufferCHROMIUM(

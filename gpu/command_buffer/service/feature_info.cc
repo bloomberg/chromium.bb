@@ -227,6 +227,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   AddExtensionString("GL_CHROMIUM_set_visibility");
   AddExtensionString("GL_CHROMIUM_strict_attribs");
   AddExtensionString("GL_CHROMIUM_texture_mailbox");
+  AddExtensionString("GL_EXT_debug_marker");
 
   if (!disallowed_features_.gpu_memory_manager)
     AddExtensionString("GL_CHROMIUM_gpu_memory_manager");

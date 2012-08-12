@@ -27,6 +27,7 @@
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -1175,6 +1176,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glValidateProgram.
   void DoValidateProgram(GLuint program_client_id);
 
+  void DoInsertEventMarkerEXT(GLsizei length, const GLchar* marker);
+  void DoPushGroupMarkerEXT(GLsizei length, const GLchar* group);
+  void DoPopGroupMarkerEXT(void);
+
   // Gets the number of values that will be returned by glGetXXX. Returns
   // false if pname is unknown.
   bool GetNumValuesReturnedForGLGet(GLenum pname, GLsizei* num_values);
@@ -1355,6 +1360,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void LogMessage(const std::string& msg);
   void RenderWarning(const std::string& msg);
   void PerformanceWarning(const std::string& msg);
+  const std::string& GetLogPrefix() const;
 
   bool ShouldDeferDraws() {
     return !offscreen_target_frame_buffer_.get() &&
@@ -1526,6 +1532,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // The current decoder error.
   error::Error current_decoder_error_;
+
+  DebugMarkerManager debug_marker_manager_;
+  std::string this_in_hex_;
 
   bool use_shader_translator_;
   scoped_refptr<ShaderTranslator> vertex_translator_;
@@ -1981,6 +1990,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       viewport_max_width_(0),
       viewport_max_height_(0) {
   DCHECK(group);
+
+  GLES2DecoderImpl* this_temp = this;
+  this_in_hex_ = HexEncode(&this_temp, sizeof(this_temp));
 
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
@@ -3200,7 +3212,8 @@ error::Error GLES2DecoderImpl::DoCommand(
   if (log_commands()) {
     // TODO(notme): Change this to a LOG/VLOG that works in release. Tried
     // LOG(INFO), tried VLOG(1), no luck.
-    LOG(ERROR) << "[" << this << "]" << "cmd: " << GetCommandName(command);
+    LOG(ERROR) << "[" << GetLogPrefix() << "]" << "cmd: "
+               << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
   if (command_index < arraysize(g_command_info)) {
@@ -3224,7 +3237,7 @@ error::Error GLES2DecoderImpl::DoCommand(
       if (debug()) {
         GLenum error;
         while ((error = glGetError()) != GL_NO_ERROR) {
-          LOG(ERROR) << "[" << this << "] "
+          LOG(ERROR) << "[" << GetLogPrefix() << "] "
                      << "GL ERROR: " << GLES2Util::GetStringEnum(error) << " : "
                      << GetCommandName(command);
           SetGLError(error, "DoCommand", "GL error from driver");
@@ -5095,11 +5108,16 @@ void GLES2DecoderImpl::SetGLError(
     GLenum error, const char* function_name, const char* msg) {
   if (msg) {
     last_error_ = msg;
-    LogMessage(std::string("GL ERROR :") +
+    LogMessage(GetLogPrefix() + ": " + std::string("GL ERROR :") +
                GLES2Util::GetStringEnum(error) + " : " +
                function_name + ": " + msg);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
+}
+
+const std::string& GLES2DecoderImpl::GetLogPrefix() const {
+  const std::string& prefix(debug_marker_manager_.GetMarker());
+  return prefix.empty() ? this_in_hex_ : prefix;
 }
 
 void GLES2DecoderImpl::LogMessage(const std::string& msg) {
@@ -9191,6 +9209,29 @@ void GLES2DecoderImpl::DoConsumeTextureCHROMIUM(GLenum target,
 
   BindAndApplyTextureParameters(info);
 }
+
+void GLES2DecoderImpl::DoInsertEventMarkerEXT(
+    GLsizei length, const GLchar* marker) {
+  if (!marker) {
+    marker = "";
+  }
+  debug_marker_manager_.SetMarker(
+      length ? std::string(marker, length) : std::string(marker));
+}
+
+void GLES2DecoderImpl::DoPushGroupMarkerEXT(
+    GLsizei length, const GLchar* marker) {
+  if (!marker) {
+    marker = "";
+  }
+  debug_marker_manager_.PushGroup(
+      length ? std::string(marker, length) : std::string(marker));
+}
+
+void GLES2DecoderImpl::DoPopGroupMarkerEXT(void) {
+  debug_marker_manager_.PopGroup();
+}
+
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

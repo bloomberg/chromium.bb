@@ -1574,6 +1574,28 @@
     }
   }
 
+  void InsertEventMarkerEXT(GLuint bucket_id) {
+    gles2::InsertEventMarkerEXT* c =
+        GetCmdSpace<gles2::InsertEventMarkerEXT>();
+    if (c) {
+      c->Init(bucket_id);
+    }
+  }
+
+  void PushGroupMarkerEXT(GLuint bucket_id) {
+    gles2::PushGroupMarkerEXT* c = GetCmdSpace<gles2::PushGroupMarkerEXT>();
+    if (c) {
+      c->Init(bucket_id);
+    }
+  }
+
+  void PopGroupMarkerEXT() {
+    gles2::PopGroupMarkerEXT* c = GetCmdSpace<gles2::PopGroupMarkerEXT>();
+    if (c) {
+      c->Init();
+    }
+  }
+
   void SwapBuffers() {
     gles2::SwapBuffers* c = GetCmdSpace<gles2::SwapBuffers>();
     if (c) {

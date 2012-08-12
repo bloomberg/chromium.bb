@@ -1725,11 +1725,18 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
 
 // TODO(gman): EndQueryEXT
 
+// TODO(gman): InsertEventMarkerEXT
+
+// TODO(gman): PushGroupMarkerEXT
+
+
+TEST_F(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
+  SpecializedSetup<PopGroupMarkerEXT, 0>(true);
+  PopGroupMarkerEXT cmd;
+  cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 // TODO(gman): SwapBuffers
-// TODO(gman): GetMaxValueInBufferCHROMIUM
-// TODO(gman): GenSharedIdsCHROMIUM
-
-// TODO(gman): DeleteSharedIdsCHROMIUM
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

@@ -2644,6 +2644,42 @@ error::Error GLES2DecoderImpl::HandleDeleteQueriesEXTImmediate(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleInsertEventMarkerEXT(
+  uint32 immediate_data_size, const gles2::InsertEventMarkerEXT& c) {
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string str;
+  if (!bucket->GetAsString(&str)) {
+    return error::kInvalidArguments;
+  }
+  DoInsertEventMarkerEXT(0, str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandlePushGroupMarkerEXT(
+  uint32 immediate_data_size, const gles2::PushGroupMarkerEXT& c) {
+  GLuint bucket_id = static_cast<GLuint>(c.bucket_id);
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string str;
+  if (!bucket->GetAsString(&str)) {
+    return error::kInvalidArguments;
+  }
+  DoPushGroupMarkerEXT(0, str.c_str());
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandlePopGroupMarkerEXT(
+    uint32 immediate_data_size, const gles2::PopGroupMarkerEXT& c) {
+  DoPopGroupMarkerEXT();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
     uint32 immediate_data_size, const gles2::GetMaxValueInBufferCHROMIUM& c) {
   GLuint buffer_id = c.buffer_id;

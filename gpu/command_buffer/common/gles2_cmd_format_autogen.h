@@ -8786,6 +8786,104 @@ COMPILE_ASSERT(offsetof(EndQueryEXT, target) == 4,
 COMPILE_ASSERT(offsetof(EndQueryEXT, submit_count) == 8,
                OffsetOf_EndQueryEXT_submit_count_not_8);
 
+struct InsertEventMarkerEXT {
+  typedef InsertEventMarkerEXT ValueType;
+  static const CommandId kCmdId = kInsertEventMarkerEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _bucket_id) {
+    SetHeader();
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(InsertEventMarkerEXT) == 8,
+               Sizeof_InsertEventMarkerEXT_is_not_8);
+COMPILE_ASSERT(offsetof(InsertEventMarkerEXT, header) == 0,
+               OffsetOf_InsertEventMarkerEXT_header_not_0);
+COMPILE_ASSERT(offsetof(InsertEventMarkerEXT, bucket_id) == 4,
+               OffsetOf_InsertEventMarkerEXT_bucket_id_not_4);
+
+struct PushGroupMarkerEXT {
+  typedef PushGroupMarkerEXT ValueType;
+  static const CommandId kCmdId = kPushGroupMarkerEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLuint _bucket_id) {
+    SetHeader();
+    bucket_id = _bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 bucket_id;
+};
+
+COMPILE_ASSERT(sizeof(PushGroupMarkerEXT) == 8,
+               Sizeof_PushGroupMarkerEXT_is_not_8);
+COMPILE_ASSERT(offsetof(PushGroupMarkerEXT, header) == 0,
+               OffsetOf_PushGroupMarkerEXT_header_not_0);
+COMPILE_ASSERT(offsetof(PushGroupMarkerEXT, bucket_id) == 4,
+               OffsetOf_PushGroupMarkerEXT_bucket_id_not_4);
+
+struct PopGroupMarkerEXT {
+  typedef PopGroupMarkerEXT ValueType;
+  static const CommandId kCmdId = kPopGroupMarkerEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(PopGroupMarkerEXT) == 4,
+               Sizeof_PopGroupMarkerEXT_is_not_4);
+COMPILE_ASSERT(offsetof(PopGroupMarkerEXT, header) == 0,
+               OffsetOf_PopGroupMarkerEXT_header_not_0);
+
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;

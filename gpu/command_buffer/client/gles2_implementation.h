@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "../common/debug_marker_manager.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
 #include "../client/ref_counted.h"
@@ -468,10 +469,14 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   // for error checking.
   bool MustBeContextLost();
 
+  const std::string& GetLogPrefix() const;
+
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   TransferBufferInterface* transfer_buffer_;
   std::string last_error_;
+  DebugMarkerManager debug_marker_manager_;
+  std::string this_in_hex_;
 
   std::queue<int32> swap_buffers_tokens_;
   std::queue<int32> rate_limit_tokens_;

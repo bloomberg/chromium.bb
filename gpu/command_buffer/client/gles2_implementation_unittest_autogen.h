@@ -1594,6 +1594,19 @@ TEST_F(GLES2ImplementationTest, DeleteQueriesEXT) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 // TODO: Implement unit test for BeginQueryEXT
+// TODO: Implement unit test for InsertEventMarkerEXT
+// TODO: Implement unit test for PushGroupMarkerEXT
+
+TEST_F(GLES2ImplementationTest, PopGroupMarkerEXT) {
+  struct Cmds {
+    PopGroupMarkerEXT cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init();
+
+  gl_->PopGroupMarkerEXT();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 // TODO: Implement unit test for GenSharedIdsCHROMIUM
 // TODO: Implement unit test for DeleteSharedIdsCHROMIUM
 // TODO: Implement unit test for RegisterSharedIdsCHROMIUM

@@ -202,34 +202,37 @@
   OP(DeleteQueriesEXTImmediate)                                /* 445 */ \
   OP(BeginQueryEXT)                                            /* 446 */ \
   OP(EndQueryEXT)                                              /* 447 */ \
-  OP(SwapBuffers)                                              /* 448 */ \
-  OP(GetMaxValueInBufferCHROMIUM)                              /* 449 */ \
-  OP(GenSharedIdsCHROMIUM)                                     /* 450 */ \
-  OP(DeleteSharedIdsCHROMIUM)                                  /* 451 */ \
-  OP(RegisterSharedIdsCHROMIUM)                                /* 452 */ \
-  OP(EnableFeatureCHROMIUM)                                    /* 453 */ \
-  OP(ResizeCHROMIUM)                                           /* 454 */ \
-  OP(GetRequestableExtensionsCHROMIUM)                         /* 455 */ \
-  OP(RequestExtensionCHROMIUM)                                 /* 456 */ \
-  OP(GetMultipleIntegervCHROMIUM)                              /* 457 */ \
-  OP(GetProgramInfoCHROMIUM)                                   /* 458 */ \
-  OP(CreateStreamTextureCHROMIUM)                              /* 459 */ \
-  OP(DestroyStreamTextureCHROMIUM)                             /* 460 */ \
-  OP(GetTranslatedShaderSourceANGLE)                           /* 461 */ \
-  OP(PostSubBufferCHROMIUM)                                    /* 462 */ \
-  OP(TexImageIOSurface2DCHROMIUM)                              /* 463 */ \
-  OP(CopyTextureCHROMIUM)                                      /* 464 */ \
-  OP(DrawArraysInstancedANGLE)                                 /* 465 */ \
-  OP(DrawElementsInstancedANGLE)                               /* 466 */ \
-  OP(VertexAttribDivisorANGLE)                                 /* 467 */ \
-  OP(GenMailboxCHROMIUM)                                       /* 468 */ \
-  OP(ProduceTextureCHROMIUM)                                   /* 469 */ \
-  OP(ProduceTextureCHROMIUMImmediate)                          /* 470 */ \
-  OP(ConsumeTextureCHROMIUM)                                   /* 471 */ \
-  OP(ConsumeTextureCHROMIUMImmediate)                          /* 472 */ \
-  OP(BindUniformLocationCHROMIUM)                              /* 473 */ \
-  OP(BindUniformLocationCHROMIUMImmediate)                     /* 474 */ \
-  OP(BindUniformLocationCHROMIUMBucket)                        /* 475 */ \
+  OP(InsertEventMarkerEXT)                                     /* 448 */ \
+  OP(PushGroupMarkerEXT)                                       /* 449 */ \
+  OP(PopGroupMarkerEXT)                                        /* 450 */ \
+  OP(SwapBuffers)                                              /* 451 */ \
+  OP(GetMaxValueInBufferCHROMIUM)                              /* 452 */ \
+  OP(GenSharedIdsCHROMIUM)                                     /* 453 */ \
+  OP(DeleteSharedIdsCHROMIUM)                                  /* 454 */ \
+  OP(RegisterSharedIdsCHROMIUM)                                /* 455 */ \
+  OP(EnableFeatureCHROMIUM)                                    /* 456 */ \
+  OP(ResizeCHROMIUM)                                           /* 457 */ \
+  OP(GetRequestableExtensionsCHROMIUM)                         /* 458 */ \
+  OP(RequestExtensionCHROMIUM)                                 /* 459 */ \
+  OP(GetMultipleIntegervCHROMIUM)                              /* 460 */ \
+  OP(GetProgramInfoCHROMIUM)                                   /* 461 */ \
+  OP(CreateStreamTextureCHROMIUM)                              /* 462 */ \
+  OP(DestroyStreamTextureCHROMIUM)                             /* 463 */ \
+  OP(GetTranslatedShaderSourceANGLE)                           /* 464 */ \
+  OP(PostSubBufferCHROMIUM)                                    /* 465 */ \
+  OP(TexImageIOSurface2DCHROMIUM)                              /* 466 */ \
+  OP(CopyTextureCHROMIUM)                                      /* 467 */ \
+  OP(DrawArraysInstancedANGLE)                                 /* 468 */ \
+  OP(DrawElementsInstancedANGLE)                               /* 469 */ \
+  OP(VertexAttribDivisorANGLE)                                 /* 470 */ \
+  OP(GenMailboxCHROMIUM)                                       /* 471 */ \
+  OP(ProduceTextureCHROMIUM)                                   /* 472 */ \
+  OP(ProduceTextureCHROMIUMImmediate)                          /* 473 */ \
+  OP(ConsumeTextureCHROMIUM)                                   /* 474 */ \
+  OP(ConsumeTextureCHROMIUMImmediate)                          /* 475 */ \
+  OP(BindUniformLocationCHROMIUM)                              /* 476 */ \
+  OP(BindUniformLocationCHROMIUMImmediate)                     /* 477 */ \
+  OP(BindUniformLocationCHROMIUMBucket)                        /* 478 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

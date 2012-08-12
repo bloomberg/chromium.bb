@@ -544,6 +544,15 @@ void GLES2GetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
 void GLES2GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
   gles2::GetGLContext()->GetQueryObjectuivEXT(id, pname, params);
 }
+void GLES2InsertEventMarkerEXT(GLsizei length, const GLchar* marker) {
+  gles2::GetGLContext()->InsertEventMarkerEXT(length, marker);
+}
+void GLES2PushGroupMarkerEXT(GLsizei length, const GLchar* marker) {
+  gles2::GetGLContext()->PushGroupMarkerEXT(length, marker);
+}
+void GLES2PopGroupMarkerEXT() {
+  gles2::GetGLContext()->PopGroupMarkerEXT();
+}
 void GLES2SwapBuffers() {
   gles2::GetGLContext()->SwapBuffers();
 }

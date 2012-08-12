@@ -25,8 +25,6 @@
   'sources': [
     'command_buffer/service/buffer_manager.h',
     'command_buffer/service/buffer_manager.cc',
-    'command_buffer/service/framebuffer_manager.h',
-    'command_buffer/service/framebuffer_manager.cc',
     'command_buffer/service/cmd_buffer_engine.h',
     'command_buffer/service/cmd_parser.cc',
     'command_buffer/service/cmd_parser.h',
@@ -38,6 +36,8 @@
     'command_buffer/service/context_group.cc',
     'command_buffer/service/feature_info.h',
     'command_buffer/service/feature_info.cc',
+    'command_buffer/service/framebuffer_manager.h',
+    'command_buffer/service/framebuffer_manager.cc',
     'command_buffer/service/gles2_cmd_copy_texture_chromium.cc',
     'command_buffer/service/gles2_cmd_copy_texture_chromium.h',
     'command_buffer/service/gles2_cmd_decoder.h',

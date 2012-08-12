@@ -24,6 +24,7 @@
         ],
         'sources': [
           '<(DEPTH)/gpu/command_buffer/common/cmd_buffer_common.cc',
+          '<(DEPTH)/gpu/command_buffer/common/debug_marker_manager.cc',
           '<(DEPTH)/gpu/command_buffer/common/gles2_cmd_format.cc',
           '<(DEPTH)/gpu/command_buffer/common/gles2_cmd_utils.cc',
           '<(DEPTH)/gpu/command_buffer/common/logging.cc',

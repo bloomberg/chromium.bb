@@ -3420,6 +3420,43 @@ TEST_F(GLES2FormatTest, EndQueryEXT) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, InsertEventMarkerEXT) {
+  InsertEventMarkerEXT& cmd = *GetBufferAs<InsertEventMarkerEXT>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11));
+  EXPECT_EQ(static_cast<uint32>(InsertEventMarkerEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, PushGroupMarkerEXT) {
+  PushGroupMarkerEXT& cmd = *GetBufferAs<PushGroupMarkerEXT>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLuint>(11));
+  EXPECT_EQ(static_cast<uint32>(PushGroupMarkerEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.bucket_id);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, PopGroupMarkerEXT) {
+  PopGroupMarkerEXT& cmd = *GetBufferAs<PopGroupMarkerEXT>();
+  void* next_cmd = cmd.Set(
+      &cmd);
+  EXPECT_EQ(static_cast<uint32>(PopGroupMarkerEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, SwapBuffers) {
   SwapBuffers& cmd = *GetBufferAs<SwapBuffers>();
   void* next_cmd = cmd.Set(

@@ -1714,6 +1714,21 @@ _FUNCTION_INFO = {
     'needs_size': True,
     'gl_test_func': 'DoBindUniformLocationCHROMIUM',
   },
+  'InsertEventMarkerEXT': {
+    'type': 'GLcharN',
+    'decoder_func': 'DoInsertEventMarkerEXT',
+    'expectation': False,
+  },
+  'PushGroupMarkerEXT': {
+    'type': 'GLcharN',
+    'decoder_func': 'DoPushGroupMarkerEXT',
+    'expectation': False,
+  },
+  'PopGroupMarkerEXT': {
+    'decoder_func': 'DoPopGroupMarkerEXT',
+    'expectation': False,
+    'impl_func': False,
+  },
 }
 
 
@@ -2227,7 +2242,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     if len(func.GetOriginalArgs()):
       comma = " << "
     file.Write(
-        '  GPU_CLIENT_LOG("[" << this << "] gl%s("%s%s << ")");\n' %
+        '  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] gl%s("%s%s << ")");\n' %
         (func.original_name, comma, func.MakeLogArgString()))
 
   def WriteClientGLReturnLog(self, func, file):
@@ -4276,6 +4291,49 @@ TEST_F(GLES2FormatTest, %(func_name)s) {
         })
 
 
+class GLcharNHandler(CustomHandler):
+  """Handler for functions that pass a single string with an optional len."""
+
+  def __init__(self):
+    CustomHandler.__init__(self)
+
+  def InitFunction(self, func):
+    """Overrriden from TypeHandler."""
+    func.cmd_args = []
+    func.AddCmdArg(Argument('bucket_id', 'GLuint'))
+
+  def AddImmediateFunction(self, generator, func):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def AddBucketFunction(self, generator, func):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("""error::Error GLES2DecoderImpl::Handle%(name)s(
+  uint32 immediate_data_size, const gles2::%(name)s& c) {
+  GLuint bucket_id = static_cast<GLuint>(c.%(bucket_id)s);
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket || bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+  std::string str;
+  if (!bucket->GetAsString(&str)) {
+    return error::kInvalidArguments;
+  }
+  %(gl_func_name)s(0, str.c_str());
+  return error::kNoError;
+}
+
+""" % {
+    'name': func.name,
+    'gl_func_name': func.GetGLFunctionName(),
+    'bucket_id': func.cmd_args[0].name,
+  })
+
+
 class IsHandler(TypeHandler):
   """Handler for glIs____ type and glGetError functions."""
 
@@ -4444,7 +4502,8 @@ class STRnHandler(TypeHandler):
     code_1 = """%(return_type)s %(func_name)s(%(args)s) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
 """
-    code_2 = """  GPU_CLIENT_LOG("[" << this << "] gl%(func_name)s" << "("
+    code_2 = """  GPU_CLIENT_LOG("[" << GetLogPrefix()
+      << "] gl%(func_name)s" << "("
       << %(arg0)s << ", "
       << %(arg1)s << ", "
       << static_cast<void*>(%(arg2)s) << ", "
@@ -5622,6 +5681,7 @@ class GLGenerator(object):
       'GENn': GENnHandler(),
       'GETn': GETnHandler(),
       'GLchar': GLcharHandler(),
+      'GLcharN': GLcharNHandler(),
       'HandWritten': HandWrittenHandler(),
       'Is': IsHandler(),
       'Manual': ManualHandler(),
