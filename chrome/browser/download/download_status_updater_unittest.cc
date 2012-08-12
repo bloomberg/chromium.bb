@@ -13,7 +13,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 using ::testing::AtLeast;
 using ::testing::Mock;
 using ::testing::Return;
@@ -22,10 +21,26 @@ using ::testing::StrictMock;
 using ::testing::_;
 
 class TestDownloadStatusUpdater : public DownloadStatusUpdater {
- protected:
-  virtual void UpdateAppIconDownloadProgress() OVERRIDE {
-    return;
+ public:
+  TestDownloadStatusUpdater() : notification_count_(0),
+                                acceptable_notification_item_(NULL) {
   }
+  void SetAcceptableNotificationItem(content::DownloadItem* item) {
+    acceptable_notification_item_ = item;
+  }
+  size_t NotificationCount() {
+    return notification_count_;
+  }
+ protected:
+  virtual void UpdateAppIconDownloadProgress(
+      content::DownloadItem* download) OVERRIDE {
+    ++notification_count_;
+    if (acceptable_notification_item_)
+      EXPECT_EQ(acceptable_notification_item_, download);
+  }
+ private:
+  size_t notification_count_;
+  content::DownloadItem* acceptable_notification_item_;
 };
 
 class DownloadStatusUpdaterTest : public testing::Test {
@@ -120,13 +135,16 @@ class DownloadStatusUpdaterTest : public testing::Test {
   }
 
   // Set return values relevant to |DownloadStatusUpdater::GetProgress()|
-  // for the specified item
+  // for the specified item.
   void SetItemValues(int manager_index, int item_index,
-                     int received_bytes, int total_bytes) {
-    EXPECT_CALL(*Item(manager_index, item_index), GetReceivedBytes())
+                     int received_bytes, int total_bytes, bool notify) {
+    content::MockDownloadItem* item(Item(manager_index, item_index));
+    EXPECT_CALL(*item, GetReceivedBytes())
         .WillRepeatedly(Return(received_bytes));
-    EXPECT_CALL(*Item(manager_index, item_index), GetTotalBytes())
+    EXPECT_CALL(*item, GetTotalBytes())
         .WillRepeatedly(Return(total_bytes));
+    if (notify)
+      updater_->OnDownloadUpdated(item);
   }
 
   // Transition specified item to completed.
@@ -157,7 +175,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
 
   // Pointer so we can verify that destruction triggers appropriate
   // changes.
-  DownloadStatusUpdater *updater_;
+  TestDownloadStatusUpdater *updater_;
 
   // Thread so that the DownloadManager (which is a DeleteOnUIThread
   // object) can be deleted.
@@ -198,9 +216,9 @@ TEST_F(DownloadStatusUpdaterTest, OneManagerManyItems) {
   LinkManager(0);
 
   // Prime items
-  SetItemValues(0, 0, 10, 20);
-  SetItemValues(0, 1, 50, 60);
-  SetItemValues(0, 2, 90, 90);
+  SetItemValues(0, 0, 10, 20, false);
+  SetItemValues(0, 1, 50, 60, false);
+  SetItemValues(0, 2, 90, 90, false);
 
   float progress = -1;
   int download_count = -1;
@@ -218,11 +236,44 @@ TEST_F(DownloadStatusUpdaterTest, OneManagerManyItems) {
   // Add a new item to manager and confirm progress is updated properly.
   AddItems(0, 1, 1);
   updater_->ModelChanged(Manager(0));
-  SetItemValues(0, 3, 150, 200);
+  SetItemValues(0, 3, 150, 200, false);
 
   EXPECT_TRUE(updater_->GetProgress(&progress, &download_count));
   EXPECT_FLOAT_EQ((50+150)/(60+200.0f), progress);
   EXPECT_EQ(2, download_count);
+}
+
+// Test to ensure that the download progress notification is called correctly.
+TEST_F(DownloadStatusUpdaterTest, ProgressNotification) {
+  size_t expected_notifications = updater_->NotificationCount();
+  SetupManagers(1);
+  AddItems(0, 2, 2);
+  LinkManager(0);
+
+  // Expect two notifications, one for each item; which item will come first
+  // isn't defined so it cannot be tested.
+  expected_notifications += 2;
+  ASSERT_EQ(expected_notifications, updater_->NotificationCount());
+
+  // Make progress on the first item.
+  updater_->SetAcceptableNotificationItem(Item(0, 0));
+  SetItemValues(0, 0, 10, 20, true);
+  ++expected_notifications;
+  ASSERT_EQ(expected_notifications, updater_->NotificationCount());
+
+  // Second item completes!
+  updater_->SetAcceptableNotificationItem(Item(0, 1));
+  CompleteItem(0, 1);
+  ++expected_notifications;
+  ASSERT_EQ(expected_notifications, updater_->NotificationCount());
+
+  // First item completes.
+  updater_->SetAcceptableNotificationItem(Item(0, 0));
+  CompleteItem(0, 0);
+  ++expected_notifications;
+  ASSERT_EQ(expected_notifications, updater_->NotificationCount());
+
+  updater_->SetAcceptableNotificationItem(NULL);
 }
 
 // Confirm we recognize the situation where we have an unknown size.
@@ -232,8 +283,8 @@ TEST_F(DownloadStatusUpdaterTest, UnknownSize) {
   LinkManager(0);
 
   // Prime items
-  SetItemValues(0, 0, 10, 20);
-  SetItemValues(0, 1, 50, -1);
+  SetItemValues(0, 0, 10, 20, false);
+  SetItemValues(0, 1, 50, -1, false);
 
   float progress = -1;
   int download_count = -1;
@@ -276,9 +327,9 @@ TEST_F(DownloadStatusUpdaterTest, ManyManagersMixedItems) {
   AddItems(1, 3, 1);
   LinkManager(1);
 
-  SetItemValues(0, 0, 10, 20);
-  SetItemValues(0, 1, 50, 60);
-  SetItemValues(1, 0, 80, 90);
+  SetItemValues(0, 0, 10, 20, false);
+  SetItemValues(0, 1, 50, 60, false);
+  SetItemValues(1, 0, 80, 90, false);
 
   float progress = -1;
   int download_count = -1;

@@ -60,10 +60,6 @@
 #include "chrome/browser/download/save_package_file_picker_chromeos.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/download/download_completion_observer_win.h"
-#endif  // OS_WIN
-
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadId;
@@ -143,11 +139,6 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   extension_event_router_.reset(new ExtensionDownloadsEventRouter(
       profile_, download_manager_));
 #endif
-
-#if defined(OS_WIN)
-  DownloadCompletionObserver* download_completion =
-      new DownloadCompletionObserver(dm);
-#endif  // OS_WIN
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {

@@ -15,10 +15,6 @@ namespace download_util {
 
 void AddFileToPasteboard(NSPasteboard* pasteboard, const FilePath& path);
 
-// Notify the system that a download completed. This will cause the download
-// folder in the dock to bounce.
-void NotifySystemOfDownloadComplete(const FilePath& path);
-
 }  // namespace download_util
 
 #endif  // CHROME_BROWSER_UI_COCOA_DOWNLOAD_DOWNLOAD_UTIL_MAC_H_

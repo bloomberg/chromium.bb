@@ -27,8 +27,6 @@
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
@@ -52,12 +50,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
-#if defined(OS_WIN)
-#include <shobjidl.h>
-
-#include "base/win/windows_version.h"
-#endif
-
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
@@ -68,12 +60,9 @@
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/custom_drag.h"
-#include "chrome/browser/ui/gtk/unity_service.h"
 #endif  // defined(TOOLKIT_GTK)
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "base/win/scoped_comptr.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "ui/base/dragdrop/drag_source.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
@@ -553,53 +542,6 @@ string16 GetProgressStatusText(DownloadItem* download) {
   return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_TAB_PROGRESS_STATUS,
                                     speed_text, amount, time_remaining);
 }
-
-#if !defined(OS_MACOSX)
-void UpdateAppIconDownloadProgress(int download_count,
-                                   bool progress_known,
-                                   float progress) {
-#if defined(USE_AURA)
-  // TODO(davemoore) Implement once UX for download is decided <104742>
-#elif defined(OS_WIN)
-  // Taskbar progress bar is only supported on Win7.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
-  base::win::ScopedComPtr<ITaskbarList3> taskbar;
-  HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
-                                          CLSCTX_INPROC_SERVER);
-  if (FAILED(result)) {
-    VLOG(1) << "Failed creating a TaskbarList object: " << result;
-    return;
-  }
-
-  result = taskbar->HrInit();
-  if (FAILED(result)) {
-    LOG(ERROR) << "Failed initializing an ITaskbarList3 interface.";
-    return;
-  }
-
-  // Iterate through all the browser windows, and draw the progress bar.
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-      browser_iterator != BrowserList::end(); browser_iterator++) {
-    Browser* browser = *browser_iterator;
-    BrowserWindow* window = browser->window();
-    if (!window)
-      continue;
-    HWND frame = window->GetNativeWindow();
-    if (download_count == 0 || progress == 1.0f)
-      taskbar->SetProgressState(frame, TBPF_NOPROGRESS);
-    else if (!progress_known)
-      taskbar->SetProgressState(frame, TBPF_INDETERMINATE);
-    else
-      taskbar->SetProgressValue(frame, static_cast<int>(progress * 100), 100);
-  }
-#elif defined(TOOLKIT_GTK)
-  unity::SetDownloadCount(download_count);
-  unity::SetProgressFraction(progress);
-#endif
-}
-#endif
 
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {
   return FilePath(suggested_path.value() + FILE_PATH_LITERAL(".crdownload"));

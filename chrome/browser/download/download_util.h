@@ -138,15 +138,6 @@ base::DictionaryValue* CreateDownloadItemValue(content::DownloadItem* download,
 // Get the localized status text for an in-progress download.
 string16 GetProgressStatusText(content::DownloadItem* download);
 
-// Update the application icon to indicate overall download progress.
-// |download_count| is the number of downloads currently in progress. If
-// |progress_known| is false, then at least one download is of indeterminate
-// size and |progress| is invalid, otherwise |progress| indicates the overall
-// download progress (float value from 0..1).
-void UpdateAppIconDownloadProgress(int download_count,
-                                   bool progress_known,
-                                   float progress);
-
 // Returns a .crdownload intermediate path for the |suggested_path|.
 FilePath GetCrDownloadPath(const FilePath& suggested_path);
 

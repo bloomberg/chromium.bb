@@ -42,12 +42,16 @@ class DownloadStatusUpdater
   virtual void OnDownloadDestroyed(content::DownloadItem* download) OVERRIDE;
 
  protected:
-  // Update the app icon. Virtual to be overridable for testing.
-  virtual void UpdateAppIconDownloadProgress();
+  // Platform-specific function to update the platform UI for download progress.
+  // |download| is the download item that changed. Implementations should not
+  // hold the value of |download| as it is not guaranteed to remain valid.
+  // Virtual to be overridable for testing.
+  virtual void UpdateAppIconDownloadProgress(content::DownloadItem* download);
 
  private:
-  // Update the internal state tracking an item.
-  void UpdateItem(content::DownloadItem* download);
+  // Update the internal state tracking an item. Returns true if the item was
+  // added to the set of tracked items.
+  bool UpdateItem(content::DownloadItem* download);
 
   std::set<content::DownloadManager*> managers_;
   std::set<content::DownloadItem*> items_;
