@@ -12,6 +12,7 @@
 #include <winsock2.h>
 #endif
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/port/platform.h"
 
@@ -29,13 +30,13 @@ void NaClDebugStubPlatformInit() {
   err = WSAStartup(wVersionRequested, &wsaData);
   if (err != 0) {
     // We could not find a matching DLL
-    IPlatform::LogError("WSAStartup failed with error: %d\n", err);
+    NaClLog(LOG_ERROR, "WSAStartup failed with error: %d\n", err);
     exit(-1);
   }
 
   if (HIBYTE(wsaData.wVersion) != 2) {
     // We couldn't get a matching version
-    IPlatform::LogError("Could not find a usable version of Winsock.dll\n");
+    NaClLog(LOG_ERROR, "Could not find a usable version of Winsock.dll\n");
     WSACleanup();
     exit(-1);
   }

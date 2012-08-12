@@ -33,11 +33,6 @@ class IPlatform {
   //    the page is not mapped into the debugged process.
   static bool GetMemory(uint64_t address, uint32_t length, void *dst);
   static bool SetMemory(uint64_t address, uint32_t length, void *src);
-
-  //  Log a message
-  static void LogInfo(const char *fmt, ...);
-  static void LogWarning(const char *fmt, ...);
-  static void LogError(const char *fmt, ...);
 };
 
 }  // namespace port

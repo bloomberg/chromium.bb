@@ -11,10 +11,10 @@
 #include <string>
 #include <sstream>
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/gdb_rsp/packet.h"
 #include "native_client/src/trusted/gdb_rsp/session.h"
 #include "native_client/src/trusted/gdb_rsp/util.h"
-
 #include "native_client/src/trusted/port/mutex.h"
 #include "native_client/src/trusted/port/platform.h"
 #include "native_client/src/trusted/port/transport.h"
@@ -178,7 +178,7 @@ bool Session::SendStream(const char *out) {
     int32_t tx = io_->Write(cur, len - sent);
 
     if (tx <= 0) {
-      IPlatform::LogWarning("Send of %d bytes : '%s' failed.\n", len, out);
+      NaClLog(LOG_WARNING, "Send of %d bytes : '%s' failed.\n", len, out);
       io_->Disconnect();
       connected_ = false;
       return false;
@@ -187,7 +187,7 @@ bool Session::SendStream(const char *out) {
     sent += tx;
   }
 
-  if (GetFlags() & DEBUG_SEND) IPlatform::LogInfo("TX %s\n", out);
+  if (GetFlags() & DEBUG_SEND) NaClLog(LOG_INFO, "TX %s\n", out);
   return true;
 }
 
@@ -248,7 +248,7 @@ bool Session::GetPacket(Packet *pkt) {
 
     // If we see a '$' we must have missed the last cmd
     if (ch == '$') {
-      IPlatform::LogInfo("RX Missing $, retry.\n");
+      NaClLog(LOG_INFO, "RX Missing $, retry.\n");
       goto retry;
     }
     // Keep a running XSUM
@@ -270,7 +270,7 @@ bool Session::GetPacket(Packet *pkt) {
   NibbleToInt(ch, &val);
   fin_xsum |= val;
 
-  if (GetFlags() & DEBUG_RECV) IPlatform::LogInfo("RX %s\n", in.data());
+  if (GetFlags() & DEBUG_RECV) NaClLog(LOG_INFO, "RX %s\n", in.data());
 
   // Pull off teh sequence number if we have one
   if (has_seq) {
@@ -281,7 +281,7 @@ bool Session::GetPacket(Packet *pkt) {
     pkt->SetSequence(seq);
     pkt->GetRawChar(&ch);
     if (ch != ':') {
-      IPlatform::LogError("RX mismatched SEQ.\n");
+      NaClLog(LOG_ERROR, "RX mismatched SEQ.\n");
       return false;
     }
   }
@@ -305,7 +305,7 @@ bool Session::GetPacket(Packet *pkt) {
     // Resend a bad XSUM and look for retransmit
     SendStream("-");
 
-    IPlatform::LogInfo("RX Bad XSUM, retry\n");
+    NaClLog(LOG_INFO, "RX Bad XSUM, retry\n");
     goto retry;
   }
 

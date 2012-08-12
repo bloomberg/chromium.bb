@@ -13,7 +13,6 @@
       'debug_stub.cc',
       'event_common.cc',
       'nacl_debug.cc',
-      'platform_common.cc',
       'thread_common.cc',
       'transport_common.cc',
     ],

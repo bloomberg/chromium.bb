@@ -100,7 +100,7 @@ void NaClExceptionCatcher(uint32_t id, int8_t sig, void *cookie) {
   Target* targ = static_cast<Target*>(cookie);
 
   /* Signal the target that we caught something */
-  IPlatform::LogWarning("Caught signal %d on thread %Xh.\n", sig, id);
+  NaClLog(LOG_WARNING, "Caught signal %d on thread %Xh.\n", sig, id);
   targ->Signal(id, sig, true);
 }
 

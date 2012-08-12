@@ -161,7 +161,7 @@ void Abi::Register(const char *name, RegDef *regs,
 
 const Abi* Abi::Find(const char *name) {
   if (!AbiIsAvailable()) {
-    IPlatform::LogError("Failed to initalize ABIs.");
+    NaClLog(LOG_ERROR, "Failed to initalize ABIs.");
     return NULL;
   }
 

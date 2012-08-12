@@ -27,6 +27,7 @@
 #include <string.h>
 #include <string>
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/gdb_rsp/util.h"
 #include "native_client/src/trusted/port/platform.h"
 #include "native_client/src/trusted/port/transport.h"
@@ -174,7 +175,7 @@ static SOCKET_HANDLE s_ServerSock;
 static bool SocketInit() {
   s_ServerSock = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (s_ServerSock == -1) {
-    IPlatform::LogError("Failed to create socket.\n");
+    NaClLog(LOG_ERROR, "Failed to create socket.\n");
     return false;
   }
 
@@ -200,7 +201,7 @@ ITransport* ITransport::Connect(const char *addr) {
 
   SOCKET_HANDLE s = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (s == -1) {
-    IPlatform::LogError("Failed to create connection socket.\n");
+    NaClLog(LOG_ERROR, "Failed to create connection socket.\n");
     return NULL;
   }
 
@@ -216,7 +217,7 @@ ITransport* ITransport::Connect(const char *addr) {
 
   if (::connect(s, reinterpret_cast<sockaddr*>(&saddr), sizeof(saddr)) != 0) {
     closesocket(s);
-    IPlatform::LogError("Failed to connect.\n");
+    NaClLog(LOG_ERROR, "Failed to connect.\n");
     return NULL;
   }
 
@@ -250,12 +251,12 @@ ITransport* ITransport::Accept(const char *addr) {
 
     struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
     if (bind(s_ServerSock, psaddr, addrlen)) {
-      IPlatform::LogError("Failed to bind server.\n");
+      NaClLog(LOG_ERROR, "Failed to bind server.\n");
       return NULL;
     }
 
     if (listen(s_ServerSock, 1)) {
-      IPlatform::LogError("Failed to listen.\n");
+      NaClLog(LOG_ERROR, "Failed to listen.\n");
       return NULL;
     }
 

@@ -19,27 +19,6 @@ void IPlatform::Relinquish(uint32_t msec) {
   return;
 }
 
-void IPlatform::LogInfo(const char *fmt, ...) {
-  va_list argptr;
-  va_start(argptr, fmt);
-
-  vprintf(fmt, argptr);
-}
-
-void IPlatform::LogWarning(const char *fmt, ...) {
-  va_list argptr;
-  va_start(argptr, fmt);
-
-  vprintf(fmt, argptr);
-}
-
-void IPlatform::LogError(const char *fmt, ...) {
-  va_list argptr;
-  va_start(argptr, fmt);
-
-  vprintf(fmt, argptr);
-}
-
 //  The unit tests are singly threaded, so we just do nothing
 //  for synchronization
 class MutexMock : public IMutex {

@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/gdb_rsp/packet.h"
 #include "native_client/src/trusted/gdb_rsp/util.h"
 #include "native_client/src/trusted/port/platform.h"
@@ -203,12 +204,12 @@ bool Packet::GetRawChar(char *ch) {
   // Check for RLE X*N, where X is the value, N is the reps.
   if (*ch == '*') {
     if (read_index_ < 2) {
-      IPlatform::LogError("Unexpected RLE at start of packet.\n");
+      NaClLog(LOG_ERROR, "Unexpected RLE at start of packet.\n");
       return false;
     }
 
     if (read_index_ >= write_index_) {
-      IPlatform::LogError("Unexpected EoP during RLE.\n");
+      NaClLog(LOG_ERROR, "Unexpected EoP during RLE.\n");
       return false;
     }
 
@@ -218,7 +219,7 @@ bool Packet::GetRawChar(char *ch) {
     // character to be ' ' (32) or greater).
     int32_t cnt = (data_[read_index_] - 28);
     if (cnt < 3) {
-      IPlatform::LogError("Unexpected RLE length.\n");
+      NaClLog(LOG_ERROR, "Unexpected RLE length.\n");
       return false;
     }
 

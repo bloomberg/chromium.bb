@@ -146,7 +146,7 @@ bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
 
     // Copy back the old code, and free the data
     if (!IPlatform::SetMemory(addr, bp_def->size_, data))
-      port::IPlatform::LogError("Failed to undo breakpoint.\n");
+      NaClLog(LOG_ERROR, "Failed to undo breakpoint.\n");
     delete[] data;
 
     if (bp_def->after_) {
@@ -742,7 +742,7 @@ void Target::Exit(int err_code) {
 }
 
 void Target::Detach() {
-  port::IPlatform::LogInfo("Requested Detach.\n");
+  NaClLog(LOG_INFO, "Requested Detach.\n");
 }
 
 
