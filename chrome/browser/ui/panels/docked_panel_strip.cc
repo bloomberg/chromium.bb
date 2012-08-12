@@ -585,6 +585,9 @@ bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
 }
 
 void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
+  if (are_titlebars_up_ == bring_up)
+    return;
+
   are_titlebars_up_ = bring_up;
   int task_delay_ms = 0;
 

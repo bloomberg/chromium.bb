@@ -474,6 +474,11 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
   EXPECT_FALSE(panel->IsDrawingAttention());
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
 
+  // Typical user scenario will detect the mouse in the panel
+  // after attention is cleared, causing titles to pop up, so
+  // we simulate that here.
+  MoveMouse(mouse_location);
+
   // Verify panel returns to fully minimized state after dragging ends once
   // mouse moves away from the panel.
   panel_testing->FinishDragTitlebar();

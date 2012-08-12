@@ -1043,7 +1043,14 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
   EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
   EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
 
-  // Move mouse away and panel should go back to fully minimized state.
+  // Typical user scenario will detect the mouse in the panel
+  // after attention is cleared, causing titles to pop up, so
+  // we simulate that here.
+  MoveMouseAndWaitForExpansionStateChange(panel2, hover_point_in_panel);
+  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
+
+  // Move mouse away and panels should go back to fully minimized state.
   MoveMouseAndWaitForExpansionStateChange(panel1, hover_point);
   EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
   EXPECT_EQ(Panel::MINIMIZED, panel2->expansion_state());
