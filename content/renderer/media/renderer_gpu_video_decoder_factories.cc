@@ -67,7 +67,7 @@ void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator** vda,
       base::WaitableEvent* waiter) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
-  if (context_) {
+  if (context_ && context_->GetCommandBufferProxy()) {
     *vda = gpu_channel_host_->CreateVideoDecoder(
         context_->GetCommandBufferProxy()->GetRouteID(),
         profile, client);
