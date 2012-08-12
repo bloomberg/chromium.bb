@@ -9,18 +9,25 @@
 #include <vector>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/draggable_region.h"
 #include "ui/gfx/rect.h"
+#import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
 class Profile;
 class ShellWindowCocoa;
 
 // A window controller for a minimal window to host a web app view. Passes
 // Objective-C notifications to the C++ bridge.
-@interface ShellWindowController : NSWindowController<NSWindowDelegate> {
+@interface ShellWindowController : NSWindowController
+                                  <NSWindowDelegate,
+                                   GTMWindowSheetControllerDelegate,
+                                   ConstrainedWindowSupport> {
  @private
-  ShellWindowCocoa* shellWindow_; // Weak; owns self.
+  ShellWindowCocoa* shellWindow_;  // Weak; owns self.
+  // Manages per-window sheets.
+  scoped_nsobject<GTMWindowSheetController> sheetController_;
 }
 
 @property(assign, nonatomic) ShellWindowCocoa* shellWindow;

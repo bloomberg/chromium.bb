@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -46,6 +47,29 @@
 - (void)windowDidResignKey:(NSNotification*)notification {
   if (shellWindow_)
     shellWindow_->WindowDidResignKey();
+}
+
+- (void)gtm_systemRequestsVisibilityForView:(NSView*)view {
+  [[self window] makeKeyAndOrderFront:self];
+}
+
+- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
+  if (!sheetController_.get()) {
+    sheetController_.reset([[GTMWindowSheetController alloc]
+        initWithWindow:[self window]
+              delegate:self]);
+  }
+
+  NSView* tabContentsView =
+      [window->owner()->web_contents()->GetNativeView() superview];
+  window->delegate()->RunSheet(sheetController_, tabContentsView);
+}
+
+- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
+}
+
+- (BOOL)canAttachConstrainedWindow {
+  return YES;
 }
 
 @end

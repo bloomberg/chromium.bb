@@ -18,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#import "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
@@ -31,7 +32,6 @@ class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
 @class ChromeToMobileBubbleController;
-class ConstrainedWindowMac;
 @class DevToolsController;
 @class DownloadShelfController;
 @class FindBarCocoaController;
@@ -55,7 +55,8 @@ class WebContents;
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
-                      TabStripControllerDelegate> {
+                      TabStripControllerDelegate,
+                      ConstrainedWindowSupport> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
