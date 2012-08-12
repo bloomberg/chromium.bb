@@ -65,6 +65,28 @@ Examples:
             -f include/b.h
 """
 
+
+def DieWithError(message):
+  print >> sys.stderr, message
+  sys.exit(1)
+
+
+def RunCommand(args, error_ok=False, error_message=None, **kwargs):
+  try:
+    return subprocess2.check_output(args, shell=False, **kwargs)
+  except subprocess2.CalledProcessError, e:
+    if not error_ok:
+      DieWithError(
+          'Command "%s" failed.\n%s' % (
+            ' '.join(args), error_message or e.stdout or ''))
+    return e.stdout
+
+
+def RunGit(args, **kwargs):
+  """Returns stdout."""
+  return RunCommand(['git'] + args, **kwargs)
+
+
 class InvalidScript(Exception):
   def __str__(self):
     return self.args[0] + '\n' + HELP_STRING
@@ -272,6 +294,9 @@ class GIT(SCM):
         self.diff_against)
 
   def GenerateDiff(self):
+    if RunGit(['diff-index', 'HEAD']):
+      print 'Cannot try with a dirty tree.  You must commit locally first.'
+      return None
     return scm.GIT.GenerateDiff(
         self.checkout_root,
         files=self.files,
@@ -750,7 +775,10 @@ def TryChange(argv,
       root = checkouts[0].checkout_root
       diffs = []
       for checkout in checkouts:
-        diff = checkout.GenerateDiff().splitlines(True)
+        raw_diff = checkout.GenerateDiff()
+        if not raw_diff:
+          return 1
+        diff = raw_diff.splitlines(True)
         path_diff = gclient_utils.PathDifference(root, checkout.checkout_root)
         # Munge it.
         diffs.extend(GetMungedDiff(path_diff, diff)[0])

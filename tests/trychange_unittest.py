@@ -22,6 +22,7 @@ class TryChangeTestsBase(SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(subprocess2, 'communicate')
+    self.mox.StubOutWithMock(trychange, 'RunGit')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'Capture')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GenerateDiff')
     self.mox.StubOutWithMock(trychange.scm.GIT, 'GetCheckoutRoot')
@@ -46,14 +47,12 @@ class TryChangeUnittest(TryChangeTestsBase):
   """General trychange.py tests."""
   def testMembersChanged(self):
     members = [
-      'EPILOG', 'Escape', 'GIT', 'GuessVCS', 'GetMungedDiff', 'HELP_STRING',
-      'InvalidScript', 'NoTryServerAccess', 'PrintSuccess', 'SCM', 'SVN',
-      'TryChange', 'USAGE',
-      'breakpad', 'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils',
-      'getpass', 'gen_parser',
-      'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm', 'shutil',
-      'subprocess2', 'sys', 'tempfile', 'urllib',
-    ]
+      'DieWithError', 'EPILOG', 'Escape', 'GIT', 'GetMungedDiff', 'GuessVCS',
+      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
+      'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
+      'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils', 'gen_parser',
+      'getpass', 'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm',
+      'shutil', 'subprocess2', 'sys', 'tempfile', 'urllib']
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
 
@@ -138,6 +137,7 @@ class GITUnittest(TryChangeTestsBase):
     trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GetCheckoutRoot(self.fake_root).AndReturn(self.fake_root)
     trychange.scm.GIT.GetUpstreamBranch(self.fake_root).AndReturn('somewhere')
+    trychange.RunGit(['diff-index', 'HEAD'])
     trychange.scm.GIT.GenerateDiff(self.fake_root,
                                    full_move=True,
                                    files=['foo.txt', 'bar.txt'],
