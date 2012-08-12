@@ -58,6 +58,13 @@ const char kMetricSessionRestoreTimeDescription[] =
 const char kMetricSessionRestoreTimeUnits[] = "microseconds";
 const double kMetricSessionRestoreTimeTickSize = 5000000;
 
+// Page Load Time
+const char kMetricPageLoadTimeName[] = "Page Load Time";
+const char kMetricPageLoadTimeDescription[] =
+    "The amount of time taken to load a page measured in microseconds.";
+const char kMetricPageLoadTimeUnits[] = "microseconds";
+const double kMetricPageLoadTimeTickSize = 30000000.0;
+
 // Keep this array synced with MetricTypes in the header file.
 // TODO(mtytel): i18n.
 const MetricDetails kMetricDetailsList[] = {
@@ -96,6 +103,12 @@ const MetricDetails kMetricDetailsList[] = {
     kMetricSessionRestoreTimeDescription,
     kMetricSessionRestoreTimeUnits,
     kMetricSessionRestoreTimeTickSize
+  },
+  {
+    kMetricPageLoadTimeName,
+    kMetricPageLoadTimeDescription,
+    kMetricPageLoadTimeUnits,
+    kMetricPageLoadTimeTickSize
   }
 };
 COMPILE_ASSERT(ARRAYSIZE_UNSAFE(kMetricDetailsList) == METRIC_NUMBER_OF_METRICS,

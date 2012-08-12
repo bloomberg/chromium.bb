@@ -701,4 +701,24 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorSessionRestoreBrowserTest,
   ASSERT_LT(metrics[0].value, kMaxStartupTime.ToInternalValue());
 }
 
+IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, PageLoadTime) {
+  const base::TimeDelta kMaxLoadTime = base::TimeDelta::FromSeconds(30);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                FilePath(FILE_PATH_LITERAL("title2.html"))));
+
+  Database::MetricInfoVector metrics = GetStats(METRIC_PAGE_LOAD_TIME);
+
+  ASSERT_EQ(2u, metrics.size());
+  ASSERT_LT(metrics[0].value, kMaxLoadTime.ToInternalValue());
+  ASSERT_LT(metrics[1].value, kMaxLoadTime.ToInternalValue());
+}
+
 }  // namespace performance_monitor

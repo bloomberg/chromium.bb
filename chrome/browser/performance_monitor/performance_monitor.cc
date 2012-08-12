@@ -30,6 +30,7 @@
 #include "chrome/test/base/chrome_process_util.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -146,6 +147,10 @@ void PerformanceMonitor::RegisterForNotifications() {
   // Profiles (for unclean exit)
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
       content::NotificationService::AllSources());
+
+  // Page load times
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
 }
 
 // We check if profiles exited cleanly initialization time in case they were
@@ -226,6 +231,12 @@ void PerformanceMonitor::AddEvent(scoped_ptr<Event> event) {
 
 void PerformanceMonitor::AddEventOnBackgroundThread(scoped_ptr<Event> event) {
   database_->AddEvent(*event.get());
+}
+
+void PerformanceMonitor::AddMetricOnBackgroundThread(MetricType type,
+                                                     const std::string& value) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  database_->AddMetric(type, value);
 }
 
 void PerformanceMonitor::NotifyInitialized() {
@@ -417,6 +428,21 @@ void PerformanceMonitor::Observe(int type,
                 base::Unretained(this),
                 profile->GetDebugName()));
       }
+      break;
+    }
+    case content::NOTIFICATION_LOAD_STOP: {
+      const content::LoadNotificationDetails* load_details =
+          content::Details<content::LoadNotificationDetails>(details).ptr();
+      if (!load_details)
+        break;
+      BrowserThread::PostBlockingPoolSequencedTask(
+          Database::kDatabaseSequenceToken,
+          FROM_HERE,
+          base::Bind(
+              &PerformanceMonitor::AddMetricOnBackgroundThread,
+              base::Unretained(this),
+              METRIC_PAGE_LOAD_TIME,
+              base::Int64ToString(load_details->load_time.ToInternalValue())));
       break;
     }
     default: {
