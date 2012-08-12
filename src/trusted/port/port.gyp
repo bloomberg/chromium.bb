@@ -39,7 +39,6 @@
         'platform.h',
         'thread.h',
         'transport.h',
-        'std_types.h',
     ],
   },
   'targets': [

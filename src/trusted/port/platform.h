@@ -14,7 +14,7 @@
 #ifndef NATIVE_CLIENT_PORT_PLATFORM_H_
 #define NATIVE_CLIENT_PORT_PLATFORM_H_ 1
 
-#include "native_client/src/trusted/port/std_types.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/port/transport.h"
 
 namespace port {

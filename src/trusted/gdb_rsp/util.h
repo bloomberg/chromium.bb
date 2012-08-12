@@ -11,8 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "native_client/src/trusted/port/std_types.h"
-
 namespace gdb_rsp {
 
 typedef std::vector<std::string> stringvec;
@@ -28,10 +26,6 @@ bool IntToNibble(int inInt, char *outChar);
 // Convert a pair of nibbles to a value from 0-255 or return
 // false if ethier input character is not a valid nibble.
 bool NibblesToByte(const char *inStr, int *outInt);
-
-#ifdef WIN32
-int snprintf(char *str, size_t size, const char *fmt, ...);
-#endif
 
 stringvec StringSplit(const std::string& instr, const char *delim);
 

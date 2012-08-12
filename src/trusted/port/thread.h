@@ -17,7 +17,7 @@
 #ifndef NATIVE_CLIENT_PORT_THREAD_H_
 #define NATIVE_CLIENT_PORT_THREAD_H_ 1
 
-#include "native_client/src/trusted/port/std_types.h"
+#include "native_client/src/include/portability.h"
 
 struct NaClAppThread;
 struct NaClSignalContext;

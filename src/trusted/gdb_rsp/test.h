@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "native_client/src/trusted/port/std_types.h"
 #include "native_client/src/trusted/port/platform.h"
 #include "native_client/src/trusted/port/transport.h"
 

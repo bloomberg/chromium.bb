@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "native_client/src/trusted/gdb_rsp/util.h"
-#include "native_client/src/trusted/port/std_types.h"
 
 using std::string;
 
@@ -68,16 +67,6 @@ bool NibblesToByte(const char *inStr, int *outInt) {
 
   return false;
 }
-
-#ifdef WIN32
-int snprintf(char *buf, size_t size, const char *fmt, ...) {
-  va_list argptr;
-  va_start(argptr, fmt);
-
-  int len = vsnprintf(buf, size, fmt, argptr);
-  return len;
-}
-#endif
 
 stringvec StringSplit(const string &instr, const char *delim) {
   int count = 0;
