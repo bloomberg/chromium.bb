@@ -96,6 +96,8 @@ html[dir=rtl] #user-image-preview {
 }
 
 #user-image-stream-crop {
+  /* TODO(ivankr): temporary workaround for crbug.com/142347. */
+  -webkit-transform: rotateY(360deg);
   -webkit-transition: -webkit-transform 200ms linear;
   height: 220px;
   overflow: hidden;
