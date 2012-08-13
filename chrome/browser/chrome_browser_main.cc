@@ -108,7 +108,6 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/net_module.h"
 #include "net/base/sdch_manager.h"
-#include "net/base/ssl_config_service.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_stream_factory.h"
 #include "net/spdy/spdy_session.h"

@@ -124,7 +124,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
   SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
   DisableNewTabFieldTrialIfNecesssary();
-  ChannelIDFieldTrial();
 }
 
 // This is an A/B test for the maximum number of persistent connections per
@@ -581,24 +580,5 @@ void ChromeBrowserFieldTrials::DisableNewTabFieldTrialIfNecesssary() {
 #endif
     if (ui::GetDisplayLayout() != ui::LAYOUT_DESKTOP || using_hidpi_assets)
       trial->Disable();
-  }
-}
-
-void ChromeBrowserFieldTrials::ChannelIDFieldTrial() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    net::SSLConfigService::EnableChannelIDTrial();
-  } else if (channel == chrome::VersionInfo::CHANNEL_DEV &&
-             base::FieldTrialList::IsOneTimeRandomizationEnabled()) {
-    const base::FieldTrial::Probability kDivisor = 100;
-    // 10% probability of being in the enabled group.
-    const base::FieldTrial::Probability kEnableProbability = 10;
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::FactoryGetFieldTrial(
-            "ChannelID", kDivisor, "disable", 2012, 8, 23, NULL);
-    trial->UseOneTimeRandomization();
-    int enable_group = trial->AppendGroup("enable", kEnableProbability);
-    if (trial->group() == enable_group)
-      net::SSLConfigService::EnableChannelIDTrial();
   }
 }
