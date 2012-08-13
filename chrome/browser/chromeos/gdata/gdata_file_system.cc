@@ -1292,28 +1292,50 @@ void GDataFileSystem::RemoveEntryFromNonRootDirectory(
   DCHECK(!callback.is_null());
 
   const FilePath dir_path = file_path.DirName();
-  GDataEntry* entry = directory_service_->FindEntryByPathSync(file_path);
-  GDataEntry* dir = directory_service_->FindEntryByPathSync(dir_path);
-  if (error == GDATA_FILE_OK) {
-    if (!entry || !dir) {
-      error = GDATA_FILE_ERROR_NOT_FOUND;
-    } else {
-      if (!dir->AsGDataDirectory())
-        error = GDATA_FILE_ERROR_NOT_A_DIRECTORY;
-    }
-  }
-
-  // Returns if there is an error or |dir_path| is the root directory.
-  if (error != GDATA_FILE_OK ||
-      dir->resource_id() == kGDataRootDirectoryResourceId) {
+  // Return if there is an error or |dir_path| is the root directory.
+  if (error != GDATA_FILE_OK || dir_path == FilePath(kGDataRootDirectory)) {
     callback.Run(error, file_path);
     return;
   }
 
+  directory_service_->GetEntryInfoPairByPaths(
+      file_path,
+      dir_path,
+      base::Bind(
+          &GDataFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair,
+          ui_weak_ptr_,
+          callback));
+}
+
+void GDataFileSystem::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
+    const FileMoveCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+  DCHECK(result.get());
+
+  const FilePath& file_path = result->first.path;
+  const FilePath& dir_path = result->second.path;
+  if (result->first.error != GDATA_FILE_OK) {
+    callback.Run(result->first.error, file_path);
+    return;
+  } else if (result->second.error != GDATA_FILE_OK) {
+    callback.Run(result->second.error, file_path);
+    return;
+  }
+
+  scoped_ptr<GDataEntryProto> entry_proto = result->first.proto.Pass();
+  scoped_ptr<GDataEntryProto> dir_proto = result->second.proto.Pass();
+
+  if (!dir_proto->file_info().is_directory()) {
+    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY, file_path);
+    return;
+  }
+
   documents_service_->RemoveResourceFromDirectory(
-      dir->content_url(),
-      entry->edit_url(),
-      entry->resource_id(),
+      GURL(dir_proto->content_url()),
+      GURL(entry_proto->edit_url()),
+      entry_proto->resource_id(),
       base::Bind(&GDataFileSystem::MoveEntryToRootDirectoryLocally,
                  ui_weak_ptr_,
                  callback,

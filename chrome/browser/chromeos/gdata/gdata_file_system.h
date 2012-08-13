@@ -391,6 +391,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> result);
 
+  // Part of RemoveEntryFromNonRootDirectory(). Called after
+  // GetEntryInfoPairByPaths() is complete. |callback| must not be null.
+  void RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
+    const FileMoveCallback& callback,
+    scoped_ptr<EntryInfoPairResult> result);
+
   // Removes a file or directory at |file_path| from the current directory if
   // it's not in the root directory. This essentially moves an entry to the
   // root directory on the server side.
