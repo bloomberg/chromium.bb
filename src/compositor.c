@@ -837,8 +837,10 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 							 NULL,
 							 EGL_WAYLAND_BUFFER_WL,
 							 buffer, attribs);
-			if (!es->images[i])
+			if (!es->images[i]) {
+				weston_log("failed to create img for plane %d\n", i);
 				continue;
+			}
 			es->num_images++;
 
 			glActiveTexture(GL_TEXTURE0 + i);
@@ -849,7 +851,7 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 
 		es->pitch = buffer->width;
 	} else {
-		/* unhandled buffer type */
+		weston_log("unhandled buffer type!\n");
 	}
 }
 
