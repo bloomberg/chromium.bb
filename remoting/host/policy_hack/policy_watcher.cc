@@ -97,6 +97,9 @@ scoped_ptr<base::DictionaryValue> AddDefaultValuesWhenNecessary(
   CopyStringOrDefault(to.get(), from,
                       PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
                       kDefaultTalkGadgetPrefix, kDefaultTalkGadgetPrefix);
+  CopyBooleanOrDefault(to.get(), from,
+                       PolicyWatcher::kHostRequireCurtainPolicyName,
+                       false, false);
 
   return to.Pass();
 }
@@ -114,6 +117,9 @@ const char PolicyWatcher::kHostDomainPolicyName[] =
 
 const char PolicyWatcher::kHostTalkGadgetPrefixPolicyName[] =
     "RemoteAccessHostTalkGadgetPrefix";
+
+const char PolicyWatcher::kHostRequireCurtainPolicyName[] =
+    "RemoteAccessHostRequireCurtain";
 
 const char* const PolicyWatcher::kBooleanPolicyNames[] =
     { PolicyWatcher::kNatPolicyName,

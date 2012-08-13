@@ -100,6 +100,7 @@ class PolicyWatcherTest : public testing::Test {
     dict.SetString(PolicyWatcher::kHostDomainPolicyName, "");
     dict.SetString(PolicyWatcher::kHostTalkGadgetPrefixPolicyName,
                    kDefaultTalkGadgetPrefix);
+    dict.SetBoolean(PolicyWatcher::kHostRequireCurtainPolicyName, false);
   }
 };
 

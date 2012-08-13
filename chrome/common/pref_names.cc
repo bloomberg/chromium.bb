@@ -1719,6 +1719,10 @@ const char kRemoteAccessHostDomain[] = "remote_access.host_domain";
 const char kRemoteAccessHostTalkGadgetPrefix[] =
     "remote_access.host_talkgadget_prefix";
 
+// Boolean controlling whether curtaining is required when connecting to a host.
+const char kRemoteAccessHostRequireCurtain[] =
+    "remote_access.host_require_curtain";
+
 // The last used printer and its settings.
 const char kPrintPreviewStickySettings[] =
     "printing.print_preview_sticky_settings";

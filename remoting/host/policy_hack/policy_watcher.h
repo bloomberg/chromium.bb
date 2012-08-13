@@ -58,6 +58,9 @@ class PolicyWatcher {
   // The name of the policy that controls the host talkgadget prefix.
   static const char kHostTalkGadgetPrefixPolicyName[];
 
+  // The name of the policy for requiring curtain-mode.
+  static const char kHostRequireCurtainPolicyName[];
+
  protected:
   virtual void StartWatchingInternal() = 0;
   virtual void StopWatchingInternal() = 0;

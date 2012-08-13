@@ -71,6 +71,8 @@ class PolicyPrefsTestCases(object):
     'RemoteAccessHostDomain': ('kRemoteAccessHostDomain', '', [], []),
     'RemoteAccessHostTalkGadgetPrefix':
         ('kRemoteAccessHostTalkGadgetPrefix', 'chromoting-host', [], []),
+    'RemoteAccessHostRequireCurtain':
+        ('kRemoteAccessHostRequireCurtain', False, [], []),
     'PrintingEnabled': ('kPrintingEnabled', False, [], OS_ALL),
     # Note: supported_on is empty for this policy.
     'CloudPrintProxyEnabled': ('kCloudPrintProxyEnabled', True, [], []),
