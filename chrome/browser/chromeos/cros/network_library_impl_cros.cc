@@ -27,7 +27,8 @@ namespace {
 // List of cellular operators names that should have data roaming always enabled
 // to be able to connect to any network.
 const char* kAlwaysInRoamingOperators[] = {
-  "CUBIC"
+  "CUBIC",
+  "Cubic",
 };
 
 // List of interfaces that have portal check enabled by default.
@@ -163,11 +164,12 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
   }
 }
 
-bool NetworkLibraryImplCros::UpdateCellularDeviceStatus(
-    NetworkDevice* device, PropertyIndex index) {
+bool NetworkLibraryImplCros::UpdateCellularDeviceStatus(NetworkDevice* device,
+                                                        PropertyIndex index) {
   if (index == PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING) {
-    if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
-      SetCellularDataRoamingAllowed(true);
+    if (IsCellularAlwaysInRoaming()) {
+      if (!device->data_roaming_allowed())
+        SetCellularDataRoamingAllowed(true);
     } else {
       bool settings_value;
       if ((CrosSettings::Get()->GetBoolean(
@@ -1201,19 +1203,11 @@ void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,
     CHECK(device) << "Attempted to add NULL device for path: " << device_path;
   }
   VLOG(2) << "ParseNetworkDevice:" << device->name();
-  if (device && device->type() == TYPE_CELLULAR) {
-    if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
-      SetCellularDataRoamingAllowed(true);
-    } else {
-      bool settings_value;
-      if (CrosSettings::Get()->GetBoolean(
-              kSignedDataRoamingEnabled, &settings_value) &&
-          device->data_roaming_allowed() != settings_value) {
-        // Switch back to signed settings value.
-        SetCellularDataRoamingAllowed(settings_value);
-      }
-    }
-  }
+
+  // Re-synchronize the roaming setting with the device property if required.
+  if (device && device->type() == TYPE_CELLULAR)
+    UpdateCellularDeviceStatus(device, PROPERTY_INDEX_CELLULAR_ALLOW_ROAMING);
+
   NotifyNetworkManagerChanged(false);  // Not forced.
   AddNetworkDeviceObserver(device_path, network_device_observer_.get());
 }
