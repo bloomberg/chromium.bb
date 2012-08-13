@@ -65,6 +65,7 @@ DEFINE_WINDOW_PROPERTY_KEY(float,
 namespace {
 
 const int kDefaultAnimationDurationForMenuMS = 150;
+const int kLayerAnimationsForMinimizeDurationMS = 350;
 
 // Durations for the cross-fade animation, in milliseconds.
 const float kCrossFadeDurationMinMs = 100.f;
@@ -435,7 +436,8 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
 
   rotation_about_pivot->SetReversed(show);
 
-  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(350);
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
+      kLayerAnimationsForMinimizeDurationMS);
 
   scoped_ptr<ui::LayerAnimationElement> transition(
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
@@ -447,10 +449,23 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(transition.release()));
 
+  // When hiding a window, turn off blending until the animation is
+  // 3 / 4 done to save bandwidth and reduce jank
+  if (!show) {
+    ui::LayerAnimationElement::AnimatableProperties propertiesToPause;
+    propertiesToPause.insert(ui::LayerAnimationElement::OPACITY);
+    window->layer()->GetAnimator()->ScheduleAnimation(
+      new ui::LayerAnimationSequence(
+          ui::LayerAnimationElement::CreatePauseElement(
+              propertiesToPause, (duration * 3 ) / 4)));
+  }
+
+  // Fade in and out quickly when the window is small to reduce jank
   float opacity = show ? 1.0f : 0.0f;
   window->layer()->GetAnimator()->ScheduleAnimation(
       new ui::LayerAnimationSequence(
-          ui::LayerAnimationElement::CreateOpacityElement(opacity, duration)));
+          ui::LayerAnimationElement::CreateOpacityElement(
+              opacity, duration / 4)));
 }
 
 void AnimateShowWindow_Minimize(aura::Window* window) {
@@ -469,6 +484,9 @@ void AnimateHideWindow_Minimize(aura::Window* window) {
 
   // Property sets within this scope will be implicitly animated.
   ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
+      kLayerAnimationsForMinimizeDurationMS);
+  settings.SetTransitionDuration(duration);
   settings.AddObserver(new HidingWindowAnimationObserver(window));
   window->layer()->SetVisible(false);
 
