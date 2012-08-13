@@ -29,6 +29,8 @@ class FileStream;
 // for DownloadFile and SaveFile, which keep more state information.
 class CONTENT_EXPORT BaseFile {
  public:
+  // May be constructed on any thread.  All other routines (including
+  // destruction) must occur on the FILE thread.
   BaseFile(const FilePath& full_path,
            const GURL& source_url,
            const GURL& referrer_url,

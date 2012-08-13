@@ -23,17 +23,24 @@
 class DownloadFileManager;
 class DownloadItemImpl;
 
+namespace content {
+class DownloadFileFactory;
+}
+
+namespace net {
+class BoundNetLog;
+}
+
 class CONTENT_EXPORT DownloadManagerImpl
     : public content::DownloadManager,
       private DownloadItemImplDelegate {
  public:
-  // Caller guarantees that |file_manager| and |net_log| will remain valid
+  // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
   // |factory| may be a default constructed (null) scoped_ptr; if so,
   // the DownloadManagerImpl creates and takes ownership of the
   // default DownloadItemFactory.
-  DownloadManagerImpl(DownloadFileManager* file_manager,
-                      scoped_ptr<content::DownloadItemFactory> factory,
+  DownloadManagerImpl(scoped_ptr<content::DownloadItemFactory> item_factory,
                       net::NetLog* net_log);
 
   // Implementation functions (not part of the DownloadManager interface).
@@ -62,16 +69,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual content::DownloadId StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream) OVERRIDE;
-  virtual void UpdateDownload(int32 download_id,
-                              int64 bytes_so_far,
-                              int64 bytes_per_sec,
-                              const std::string& hash_state) OVERRIDE;
-  virtual void OnResponseCompleted(int32 download_id, int64 size,
-                                   const std::string& hash) OVERRIDE;
   virtual void CancelDownload(int32 download_id) OVERRIDE;
-  virtual void OnDownloadInterrupted(
-      int32 download_id,
-      content::DownloadInterruptReason reason) OVERRIDE;
   virtual int RemoveDownloadsBetween(base::Time remove_begin,
                                      base::Time remove_end) OVERRIDE;
   virtual int RemoveDownloads(base::Time remove_begin) OVERRIDE;
@@ -94,6 +92,11 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual content::DownloadItem* GetActiveDownloadItem(int id) OVERRIDE;
   virtual bool GenerateFileHash() OVERRIDE;
 
+  // For testing; specifically, accessed from TestFileErrorInjector.
+  virtual void SetDownloadFileFactoryForTesting(
+      scoped_ptr<content::DownloadFileFactory> file_factory);
+  virtual content::DownloadFileFactory* GetDownloadFileFactoryForTesting();
+
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;
   typedef base::hash_map<int32, DownloadItemImpl*> DownloadMap;
@@ -108,8 +111,8 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual ~DownloadManagerImpl();
 
   // Creates the download item.  Must be called on the UI thread.
-  // Returns the |BoundNetLog| used by the |DownloadItem|.
-  virtual net::BoundNetLog CreateDownloadItem(DownloadCreateInfo* info);
+  virtual DownloadItemImpl* CreateDownloadItem(
+      DownloadCreateInfo* info, const net::BoundNetLog& bound_net_log);
 
   // Does nothing if |download_id| is not an active download.
   void MaybeCompleteDownloadById(int download_id);
@@ -151,12 +154,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Remove from internal maps.
   int RemoveDownloadItems(const DownloadItemImplVector& pending_deletes);
 
-  // Called in response to our request to the DownloadFileManager to
-  // create a DownloadFile.  A |reason| of
-  // content::DOWNLOAD_INTERRUPT_REASON_NONE indicates success.
-  void OnDownloadFileCreated(
-      int32 download_id, content::DownloadInterruptReason reason);
-
   // Called when the delegate has completed determining the download target.
   // Arguments following |download_id| are as per
   // content::DownloadTargetCallback.
@@ -175,7 +172,7 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Overridden from DownloadItemImplDelegate
   // (Note that |GetBrowserContext| are present in both interfaces.)
-  virtual DownloadFileManager* GetDownloadFileManager() OVERRIDE;
+  virtual void DelegateStart(DownloadItemImpl* item) OVERRIDE;
   virtual bool ShouldOpenDownload(DownloadItemImpl* item) OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
@@ -190,7 +187,10 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void AssertStateConsistent(DownloadItemImpl* download) const OVERRIDE;
 
   // Factory for creation of downloads items.
-  scoped_ptr<content::DownloadItemFactory> factory_;
+  scoped_ptr<content::DownloadItemFactory> item_factory_;
+
+  // Factory for the creation of download files.
+  scoped_ptr<content::DownloadFileFactory> file_factory_;
 
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in
@@ -203,8 +203,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   // until destruction.
   //
   // |active_downloads_| is a map of all downloads that are currently being
-  // processed. The key is the ID assigned by the DownloadFileManager,
-  // which is unique for the current session.
+  // processed.
   //
   // When a download is created through a user action, the corresponding
   // DownloadItem* is placed in |active_downloads_| and remains there until the
@@ -227,9 +226,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // The current active browser context.
   content::BrowserContext* browser_context_;
-
-  // Non-owning pointer for handling file writing on the download_thread_.
-  DownloadFileManager* file_manager_;
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   content::DownloadManagerDelegate* delegate_;
