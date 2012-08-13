@@ -27,8 +27,13 @@
 //   SimpleHost: simple_host_process.cc
 extern HMODULE g_hModule;
 
+namespace {
+
 const int DISCONNECT_HOTKEY_ID = 1000;
 const int kWindowBorderRadius = 14;
+const wchar_t kShellTrayWindowName[] = L"Shell_TrayWnd";
+
+} // namespace anonymous
 
 namespace remoting {
 
@@ -51,6 +56,7 @@ private:
   void ShutdownHost();
   void EndDialog();
   void SetStrings(const UiStrings& strings, const std::string& username);
+  void SetDialogPosition();
 
   DisconnectCallback disconnect_callback_;
   HWND hwnd_;
@@ -109,6 +115,17 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
       hwnd_ = NULL;
       return TRUE;
 
+    // Ensure the dialog stays visible if the work area dimensions change.
+    case WM_SETTINGCHANGE:
+      if (wParam == SPI_SETWORKAREA)
+        SetDialogPosition();
+      return TRUE;
+
+    // Ensure the dialog stays visible if the display dimensions change.
+    case WM_DISPLAYCHANGE:
+      SetDialogPosition();
+      return TRUE;
+
     // Handle the disconnect hot-key.
     case WM_HOTKEY:
       EndDialog();
@@ -121,21 +138,20 @@ BOOL DisconnectWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
       SetWindowLong(hwnd, DWL_MSGRESULT, HTCAPTION);
       return TRUE;
 
-    case WM_PAINT:
+    case WM_PAINT: {
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd_, &ps);
+      RECT rect;
+      GetClientRect(hwnd_, &rect);
       {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd_, &ps);
-        RECT rect;
-        GetClientRect(hwnd_, &rect);
-        {
-          base::win::ScopedSelectObject border(hdc, border_pen_);
-          base::win::ScopedSelectObject brush(hdc, GetStockObject(NULL_BRUSH));
-          RoundRect(hdc, rect.left, rect.top, rect.right - 1, rect.bottom - 1,
-                    kWindowBorderRadius, kWindowBorderRadius);
-        }
-        EndPaint(hwnd_, &ps);
-        return TRUE;
+        base::win::ScopedSelectObject border(hdc, border_pen_);
+        base::win::ScopedSelectObject brush(hdc, GetStockObject(NULL_BRUSH));
+        RoundRect(hdc, rect.left, rect.top, rect.right - 1, rect.bottom - 1,
+                  kWindowBorderRadius, kWindowBorderRadius);
       }
+      EndPaint(hwnd_, &ps);
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -182,22 +198,7 @@ void DisconnectWindowWin::Show(ChromotingHost* host,
   }
 
   SetStrings(host->ui_strings(), username);
-
-  // Try to center the window above the task-bar. If that fails, use the
-  // primary monitor. If that fails (very unlikely), use the default position.
-  HWND taskbar = FindWindow(L"Shell_TrayWnd", NULL);
-  HMONITOR monitor = MonitorFromWindow(taskbar, MONITOR_DEFAULTTOPRIMARY);
-  MONITORINFO monitor_info = {sizeof(monitor_info)};
-  RECT window_rect;
-  if (GetMonitorInfo(monitor, &monitor_info) &&
-      GetWindowRect(hwnd_, &window_rect)) {
-    int window_width = window_rect.right - window_rect.left;
-    int window_height = window_rect.bottom - window_rect.top;
-    int top = monitor_info.rcWork.bottom - window_height;
-    int left = (monitor_info.rcWork.right + monitor_info.rcWork.left -
-        window_width) / 2;
-    SetWindowPos(hwnd_, NULL, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-  }
+  SetDialogPosition();
   ShowWindow(hwnd_, SW_SHOW);
 }
 
@@ -271,6 +272,24 @@ void DisconnectWindowWin::SetStrings(const UiStrings& strings,
   HRGN rgn = CreateRoundRectRgn(0, 0, width, height, kWindowBorderRadius,
                                 kWindowBorderRadius);
   SetWindowRgn(hwnd_, rgn, TRUE);
+}
+
+void DisconnectWindowWin::SetDialogPosition() {
+  // Try to center the window above the task-bar. If that fails, use the
+  // primary monitor. If that fails (very unlikely), use the default position.
+  HWND taskbar = FindWindow(kShellTrayWindowName, NULL);
+  HMONITOR monitor = MonitorFromWindow(taskbar, MONITOR_DEFAULTTOPRIMARY);
+  MONITORINFO monitor_info = {sizeof(monitor_info)};
+  RECT window_rect;
+  if (GetMonitorInfo(monitor, &monitor_info) &&
+      GetWindowRect(hwnd_, &window_rect)) {
+    int window_width = window_rect.right - window_rect.left;
+    int window_height = window_rect.bottom - window_rect.top;
+    int top = monitor_info.rcWork.bottom - window_height;
+    int left = (monitor_info.rcWork.right + monitor_info.rcWork.left -
+        window_width) / 2;
+    SetWindowPos(hwnd_, NULL, left, top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+  }
 }
 
 void DisconnectWindowWin::Hide() {
