@@ -65,7 +65,7 @@ validator_test_exe = env.ComponentProgram(
 benchmark = env.Command(
     target='validator_ragel_benchmark_py.out',
     source=['validator_benchmark.py', validator_test_exe, env.GetIrtNexe()],
-    action='${SOURCES[0]} ${SOURCES[1]} ${SOURCES[2]}'
+    action='${PYTHON} ${SOURCES[0]} ${SOURCES[1]} ${SOURCES[2]}'
 )
 
 env.AlwaysBuild(env.Alias('dfavalidatorbenchmark', benchmark))
@@ -227,7 +227,7 @@ if generate:
   objdump, gas = env.Command(
       target=['objdump', 'gas'],
       source=['obtain_binutils.py'],
-      action='python ${SOURCES[0]} ${TARGETS[0]} ${TARGETS[1]}'
+      action='${PYTHON} ${SOURCES[0]} ${TARGETS[0]} ${TARGETS[1]}'
   )
 
   check_decoders = []
@@ -260,7 +260,7 @@ if generate:
     test_dfa_transitions = test_env.Command(
         target='test_dfa_transitions_x86_%s.c' % bits,
         source=['unreviewed/parse_dfa.py', one_instr_dot],
-        action='python ${SOURCES[0]} <"${SOURCES[1]}" >"${TARGET}"'
+        action='${PYTHON} ${SOURCES[0]} <"${SOURCES[1]}" >"${TARGET}"'
     )
 
     test_dfa_transitions_object = test_env.Object(test_dfa_transitions)
@@ -282,7 +282,7 @@ if generate:
             test_dfa,
         ],
         action=[(
-            'python ${SOURCES[0]} '
+            '${PYTHON} ${SOURCES[0]} '
             '--gas="${SOURCES[1]} --%s" '
             '--objdump="${SOURCES[2]}" '
             '--decoder="${SOURCES[3]}" '
