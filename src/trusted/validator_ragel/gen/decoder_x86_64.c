@@ -10713,6 +10713,9 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
 
   int current_state;
 
+  SET_DISP_TYPE(DISPNONE);
+  SET_IMM_TYPE(IMMNONE);
+  SET_IMM2_TYPE(IMMNONE);
   SET_REX_PREFIX(FALSE);
   SET_DATA16_PREFIX(FALSE);
   SET_LOCK_PREFIX(FALSE);

@@ -5718,6 +5718,9 @@ int DecodeChunkIA32(const uint8_t *data, size_t size,
   /* Not used in ia32_mode.  */
   instruction.prefix.rex = 0;
 
+  SET_DISP_TYPE(DISPNONE);
+  SET_IMM_TYPE(IMMNONE);
+  SET_IMM2_TYPE(IMMNONE);
   SET_DATA16_PREFIX(FALSE);
   SET_LOCK_PREFIX(FALSE);
   SET_REPNZ_PREFIX(FALSE);
