@@ -95,6 +95,17 @@ typedef enum PostInstallAction {
   POST_INSTALL_ACTION_REBOOT = 6,
 } PostInstallAction;
 
+enum AppCommandStatus {
+  // The command has never been executed.
+  COMMAND_STATUS_INIT = 1,
+  // The command is running.
+  COMMAND_STATUS_RUNNING = 2,
+  // An error occurred while launching or monitoring the command.
+  COMMAND_STATUS_ERROR = 3,
+  // The command has completed execution.
+  COMMAND_STATUS_COMPLETE = 4,
+};
+
 [
   object,
   dual,
@@ -121,7 +132,7 @@ interface IGoogleUpdate3 : IDispatch {
 [
   object,
   dual,
-  uuid(313cfb25-4888-4fc6-9e19-764d8c5fc8f8),
+  uuid(fe908cdd-22bb-472a-9870-1a0390e42f36),
   helpstring("IAppBundle Interface"),
   pointer_default(unique)
 ]
@@ -144,6 +155,11 @@ interface IAppBundle : IDispatch {
 
   [propget] HRESULT sessionId([out, retval] BSTR* session_id);
   [propput] HRESULT sessionId([in] BSTR session_id);
+
+  // Controls whether or not event pings should be sent at the end of
+  // an operation.
+  [propget] HRESULT sendPings([out, retval] VARIANT_BOOL* send_pings);
+  [propput] HRESULT sendPings([in] VARIANT_BOOL send_pings);
 
   // The priority property determines download speed/priority and the number/
   // frequency of retries.  Use values from the InstallPriority enum.
@@ -227,7 +243,7 @@ interface IAppBundle : IDispatch {
 [
   object,
   dual,
-  uuid(D999CE21-98B3-4894-BACB-A49A1D50848F),
+  uuid(76F7B787-A67C-4c73-82C7-31F5E3AABC5C),
   helpstring("IApp Interface"),
   pointer_default(unique)
 ]
@@ -265,6 +281,12 @@ interface IApp : IDispatch {
   [propget] HRESULT referralId([out, retval] BSTR*);
   [propput] HRESULT referralId([in] BSTR);
 
+  // Returns an IDispatch to a command defined by this installed app with the
+  // specified ID, or NULL if this app is not installed or the command ID is not
+  // recognized.
+  [propget] HRESULT command([in] BSTR command_id,
+                            [out, retval] IDispatch** command);
+
   // Use values from the BrowserType enum.
   [propget] HRESULT browserType([out, retval] UINT*);
   [propput] HRESULT browserType([in] UINT);
@@ -289,6 +311,29 @@ interface IApp : IDispatch {
   // the most "current" state, the currentState property needs to be queried
   // again.
   [propget] HRESULT currentState([out, retval] IDispatch**);
+};
+
+[
+  object,
+  dual,
+  uuid(4DE778FE-F195-4ee3-9DAB-FE446C239221),
+  helpstring("IAppCommand Interface"),
+  pointer_default(unique)
+]
+interface IAppCommand : IDispatch {
+  [propget] HRESULT isWebAccessible([out, retval] VARIANT_BOOL*);
+  // Use values from the AppCommandStatus enum.
+  [propget] HRESULT status([out, retval] UINT*);
+  [propget] HRESULT exitCode([out, retval] DWORD*);
+  HRESULT execute([in, optional] VARIANT arg1,
+                  [in, optional] VARIANT arg2,
+                  [in, optional] VARIANT arg3,
+                  [in, optional] VARIANT arg4,
+                  [in, optional] VARIANT arg5,
+                  [in, optional] VARIANT arg6,
+                  [in, optional] VARIANT arg7,
+                  [in, optional] VARIANT arg8,
+                  [in, optional] VARIANT arg9);
 };
 
 [
@@ -521,7 +566,7 @@ interface IAppBundleWeb : IDispatch {
 [
   object,
   dual,
-  uuid(C6398F88-69CE-44ac-B6A7-1D3E2AA46679),
+  uuid(18D0F672-18B4-48e6-AD36-6E6BF01DBBC4),
   helpstring("IAppWeb Interface"),
   pointer_default(unique),
 ]
@@ -532,10 +577,36 @@ interface IAppWeb : IDispatch {
   [propget] HRESULT currentVersionWeb([out, retval] IDispatch** current);
   [propget] HRESULT nextVersionWeb([out, retval] IDispatch** next);
 
+  // Returns an IAppCommandWeb IDispatch object, or NULL.
+  [propget] HRESULT command([in] BSTR command_id,
+                            [out, retval] IDispatch** command);
+
   HRESULT cancel();
   [propget] HRESULT currentState([out, retval] IDispatch** current_state);
   HRESULT launch();
   HRESULT uninstall();
+};
+
+[
+  object,
+  dual,
+  uuid(68D6C2BD-712E-4c96-93E8-49CB8A9AAEED),
+  helpstring("IAppCommandWeb Interface"),
+  pointer_default(unique)
+]
+interface IAppCommandWeb : IDispatch {
+  // Use values from the AppCommandStatus enum.
+  [propget] HRESULT status([out, retval] UINT*);
+  [propget] HRESULT exitCode([out, retval] DWORD*);
+  HRESULT execute([in, optional] VARIANT arg1,
+                  [in, optional] VARIANT arg2,
+                  [in, optional] VARIANT arg3,
+                  [in, optional] VARIANT arg4,
+                  [in, optional] VARIANT arg5,
+                  [in, optional] VARIANT arg6,
+                  [in, optional] VARIANT arg7,
+                  [in, optional] VARIANT arg8,
+                  [in, optional] VARIANT arg9);
 };
 
 [
@@ -717,7 +788,7 @@ interface IJobObserver : IUnknown {
   HRESULT OnInstalling();
   HRESULT OnPause();
   HRESULT OnComplete([in] LegacyCompletionCodes code,
-                     [in, string] const WCHAR* reserved);
+                     [in, string] const WCHAR* completion_text);
   HRESULT SetEventSink([in] IProgressWndEvents* ui_sink);
 };
 
@@ -778,6 +849,7 @@ library GoogleUpdate3Lib {
   interface IGoogleUpdate3;
   interface IAppBundle;
   interface IApp;
+  interface IAppCommand;
   interface IAppVersion;
   interface IPackage;
   interface ICurrentState;
@@ -785,6 +857,7 @@ library GoogleUpdate3Lib {
   interface IGoogleUpdate3Web;
   interface IAppBundleWeb;
   interface IAppWeb;
+  interface IAppCommandWeb;
   interface IAppVersionWeb;
   interface ICoCreateAsyncStatus;
 
