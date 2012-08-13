@@ -1087,6 +1087,10 @@ bool AddMountFunction::RunImpl() {
     }
     case chromeos::MOUNT_TYPE_GDATA: {
       const bool success = true;
+      // Pass back the gdata mount point path as source path.
+      const std::string& gdata_path =
+          gdata::util::GetGDataMountPointPathAsString();
+      SetResult(Value::CreateStringValue(gdata_path));
       FileBrowserEventRouterFactory::GetForProfile(profile_)->
           MountDrive(base::Bind(&AddMountFunction::SendResponse,
                                 this,
