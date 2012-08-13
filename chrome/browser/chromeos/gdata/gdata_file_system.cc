@@ -3227,7 +3227,7 @@ void GDataFileSystem::CloseFileOnUIThread(
   }
 
   // Step 1 of CloseFile: Get resource_id and md5 for |file_path|.
-  GetEntryInfoByPathAsyncOnUIThread(
+  directory_service_->GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForCloseFile,
                  ui_weak_ptr_,
