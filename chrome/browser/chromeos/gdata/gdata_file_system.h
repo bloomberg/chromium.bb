@@ -273,6 +273,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // 5) Modifies GDataEntry using the new PlatformFileInfo.
   // 6) Commits the modification to the cache system.
   // 7) Invokes the user-supplied |callback|.
+  // |callback| must not be null.
   void OnGetEntryInfoCompleteForCloseFile(
       const FilePath& file_path,
       const FileOperationCallback& callback,
@@ -291,7 +292,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       bool* get_file_info_result,
       const FileOperationCallback& callback);
   void OnGetEntryCompleteForCloseFile(
-      const FilePath& file_path,
       const base::PlatformFileInfo& file_info,
       const FileOperationCallback& callback,
       GDataFileError error,

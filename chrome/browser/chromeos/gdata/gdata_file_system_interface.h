@@ -180,6 +180,7 @@ class GDataFileSystemInterface {
   // which is opened via OpenFile(). It commits the dirty flag on the cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void CloseFile(const FilePath& file_path,
                          const FileOperationCallback& callback) = 0;
 

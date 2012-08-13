@@ -3182,6 +3182,8 @@ void GDataFileSystem::CloseFile(const FilePath& file_path,
                                 const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CloseFileOnUIThread,
                                ui_weak_ptr_,
                                file_path,
@@ -3192,6 +3194,7 @@ void GDataFileSystem::CloseFileOnUIThread(
     const FilePath& file_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (open_files_.find(file_path) == open_files_.end()) {
     // The file is not being opened.
@@ -3218,12 +3221,14 @@ void GDataFileSystem::OnGetEntryInfoCompleteForCloseFile(
     const FileOperationCallback& callback,
     GDataFileError error,
     scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
     error = GDATA_FILE_ERROR_NOT_FOUND;
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
+    callback.Run(error);
     return;
   }
 
@@ -3246,10 +3251,10 @@ void GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile(
     const std::string& md5,
     const FilePath& local_cache_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
+    callback.Run(error);
     return;
   }
 
@@ -3278,10 +3283,10 @@ void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
     bool* get_file_info_result,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (!*get_file_info_result) {
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
+    callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -3291,22 +3296,20 @@ void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryCompleteForCloseFile,
                  ui_weak_ptr_,
-                 file_path,
                  *file_info,
                  callback));
 }
 
 void GDataFileSystem::OnGetEntryCompleteForCloseFile(
-    const FilePath& file_path,
     const base::PlatformFileInfo& file_info,
     const FileOperationCallback& callback,
     GDataFileError error,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
+    callback.Run(error);
     return;
   }
 
@@ -3314,8 +3317,7 @@ void GDataFileSystem::OnGetEntryCompleteForCloseFile(
   GDataFile* file = entry->AsGDataFile();
   if (!file || file->file_md5().empty() || file->is_hosted_document()) {
     // No support for opening a directory or hosted document.
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_INVALID_OPERATION);
+    callback.Run(GDATA_FILE_ERROR_INVALID_OPERATION);
     return;
   }
   DCHECK(!file->resource_id().empty());
@@ -3344,12 +3346,12 @@ void GDataFileSystem::OnGetEntryCompleteForCloseFile(
 void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
     const FileOperationCallback& callback,
     GDataFileError error,
-    const std::string& resource_id,
-    const std::string& md5) {
+    const std::string& /* resource_id */,
+    const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  if (!callback.is_null())
-    callback.Run(error);
+  callback.Run(error);
 }
 
 void GDataFileSystem::OnCloseFileFinished(
@@ -3357,6 +3359,7 @@ void GDataFileSystem::OnCloseFileFinished(
     const FileOperationCallback& callback,
     GDataFileError result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // Step 7 of CloseFile.
   // All the invocation of |callback| from operations initiated from CloseFile
@@ -3365,8 +3368,7 @@ void GDataFileSystem::OnCloseFileFinished(
   open_files_.erase(file_path);
 
   // Then invokes the user-supplied callback function.
-  if (!callback.is_null())
-    callback.Run(result);
+  callback.Run(result);
 }
 
 void GDataFileSystem::CheckLocalModificationAndRun(

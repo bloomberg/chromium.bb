@@ -126,7 +126,9 @@ void CallSnapshotFileCallback(
   callback.Run(error, final_file_info, local_path, file_ref);
 }
 
-void OnClose(const FilePath& local_path, GDataFileError error_code) {
+// Emits debug log when GDataFileSystem::CloseFile() is complete.
+void EmitDebugLogForCloseFile(const FilePath& local_path,
+                              GDataFileError error_code) {
   DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << error_code;
 }
 
@@ -548,7 +550,8 @@ void GDataFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
   if (!ValidateUrl(url, &file_path))
     return;
 
-  file_system_->CloseFile(file_path, FileOperationCallback());
+  file_system_->CloseFile(file_path,
+                          base::Bind(&EmitDebugLogForCloseFile, file_path));
 }
 
 void GDataFileSystemProxy::CreateSnapshotFile(
@@ -732,7 +735,8 @@ void GDataFileSystemProxy::CloseWritableSnapshotFile(
     const FilePath& local_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  file_system_->CloseFile(virtual_path, base::Bind(&OnClose, virtual_path));
+  file_system_->CloseFile(virtual_path,
+                          base::Bind(&EmitDebugLogForCloseFile, virtual_path));
 }
 
 }  // namespace gdata
