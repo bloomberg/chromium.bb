@@ -129,6 +129,11 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
     return web_plugin_infos_;
   }
 
+  // Removes leading zeros from each of the components of a version string.
+  // The input version string should be in this format: XXX.YYY.ZZZ...etc.
+  static std::string RemoveLeadingZerosFromVersionComponents(
+      const std::string& version);
+
   std::string identifier_;
   string16 group_name_;
   string16 name_matcher_;

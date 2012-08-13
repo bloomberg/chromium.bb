@@ -27,12 +27,16 @@ TEST(PluginGroupTest, VersionExtraction) {
     { "10.3 d180", "10.3.180" },       // Flash (Debug)
     { "11.5.7r609", "11.5.7.609"},     // Shockwave
     { "1.6.0_22", "1.6.0.22"},         // Java
+    { "1.07.00_0005", "1.7.0.5"},      // Java with leading zeros
+    { "1..0", "1.0.0" }                // Empty version component
   };
 
   for (size_t i = 0; i < arraysize(versions); i++) {
     Version version;
     PluginGroup::CreateVersionFromString(ASCIIToUTF16(versions[i][0]),
                                          &version);
+
+    ASSERT_TRUE(version.IsValid());
     EXPECT_EQ(versions[i][1], version.GetString());
   }
 }
