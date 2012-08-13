@@ -352,17 +352,11 @@ class TemplateURLService : public WebDataServiceConsumer,
                            CreateTemplateURLFromSyncData);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           SyncKeywordConflictNeitherAutoreplace);
+                           ResolveSyncKeywordConflict);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, PreSyncDeletes);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           SyncKeywordConflictBothAutoreplace);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           SyncKeywordConflictOneAutoreplace);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           FindDuplicateOfSyncTemplateURL);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           MergeSyncAndLocalURLDuplicates);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           PreSyncDeletes);
+                           IsLocalTemplateURLBetter);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, MergeInSyncTemplateURL);
 
   friend class TemplateURLServiceTestUtil;
 
@@ -532,49 +526,46 @@ class TemplateURLService : public WebDataServiceConsumer,
   // execute the special character appending functionality.
   string16 UniquifyKeyword(const TemplateURL& turl, bool force);
 
-  // Given a TemplateURL from Sync (cloud) and a local, non-extension
-  // TemplateURL with the same keyword, selects "better" and "worse" entries:
-  //   * If one of the TemplateURLs is replaceable and the other is not, the
-  //     non-replaceable entry is better.
-  //   * Otherwise, if |local_turl| was created by policy, is the default
-  //     provider, or was modified more recently, it is better.
-  //   * Otherwise |sync_turl| is better.
-  // Then resolves the conflict:
-  //   * If the "worse" entry is |sync_turl|, and it is replaceable, add a
-  //     syncer::SyncChange to delete it, and return false.
-  //   * If the "worse" entry is |local_turl|, and it is replaceable, remove it
-  //     from the service and return true.
-  //   * Otherwise, uniquify the keyword of the "worse" entry.  If it is
-  //     |local_turl|, update it within the service.  Add a SyncChange to update
-  //     things (always for |sync_turl|, sometimes for |local_turl|; see
-  //     comments in implementation), and return true.
-  // When the function returns true, callers can then go ahead and add or update
-  // |sync_turl| within the service.  If it returns false, callers must not add
-  // the |sync_turl|, and must Remove() the |sync_turl| if it was being updated.
-  // (Be careful; calling Remove() could add an ACTION_DELETE sync change, which
-  // this function has already done.  Make sure to avoid duplicates.)
-  //
-  // Note that we never call this for conflicts with extension keywords because
-  // other code (e.g. AddToMaps()) is responsible for correctly prioritizing
-  // extension- vs. non-extension-based TemplateURLs with the same keyword.
-  bool ResolveSyncKeywordConflict(TemplateURL* sync_turl,
-                                  TemplateURL* local_turl,
+  // Returns true iff |local_turl| is considered "better" than |sync_turl| for
+  // the purposes of resolving conflicts. |local_turl| must be a TemplateURL
+  // known to the local model (though it may already be synced), and |sync_turl|
+  // is a new TemplateURL known to Sync but not yet known to the local model.
+  // The criteria for if |local_turl| is better than |sync_turl| is whether any
+  // of the following are true:
+  //  * |local_turl|'s last_modified timestamp is newer than sync_turl.
+  //  * |local_turl| is created by policy.
+  //  * |local_turl| is the local default search provider.
+  bool IsLocalTemplateURLBetter(const TemplateURL* local_turl,
+                                const TemplateURL* sync_turl);
+
+  // Given two synced TemplateURLs with a conflicting keyword, one of which
+  // needs to be added to or updated in the local model (|unapplied_sync_turl|)
+  // and one which is already known to the local model (|applied_sync_turl|),
+  // prepares the local model so that |unapplied_sync_turl| can be added to it,
+  // or applied as an update to an existing TemplateURL.
+  // Since both entries are known to Sync and one of their keywords will change,
+  // an ACTION_UPDATE will be appended to |change_list| to reflect this change.
+  // Note that |applied_sync_turl| must not be an extension keyword.
+  void ResolveSyncKeywordConflict(TemplateURL* unapplied_sync_turl,
+                                  TemplateURL* applied_sync_turl,
                                   syncer::SyncChangeList* change_list);
 
-  // Returns a TemplateURL from the service that has the same keyword and search
-  // URL as |sync_turl|, if it exists.
-  TemplateURL* FindDuplicateOfSyncTemplateURL(const TemplateURL& sync_turl);
-
-  // Given a TemplateURL from the cloud and a local matching duplicate found by
-  // FindDuplicateOfSyncTemplateURL, merges the two. If |sync_turl| is newer,
-  // this replaces |local_turl| with |sync_turl| using the service's Remove and
-  // Add. If |local_turl| is newer, this replaces |sync_turl| with |local_turl|
-  // through through adding appropriate SyncChanges to |change_list|. This
-  // method takes ownership of |sync_turl|, and adds it to the model if it is
-  // newer, so the caller must release it if need be.
-  void MergeSyncAndLocalURLDuplicates(TemplateURL* sync_turl,
-                                      TemplateURL* local_turl,
-                                      syncer::SyncChangeList* change_list);
+  // Adds |sync_turl| into the local model, possibly removing or updating a
+  // local TemplateURL to make room for it. This expects |sync_turl| to be a new
+  // entry from Sync, not currently known to the local model. |sync_data| should
+  // be a SyncDataMap where the contents are entries initially known to Sync
+  // during MergeDataAndStartSyncing.
+  // Any necessary updates to Sync will be appended to |change_list|. This can
+  // include updates on local TemplateURLs, if they are found in |sync_data|.
+  // |initial_data| should be a SyncDataMap of the entries known to the local
+  // model during MergeDataAndStartSyncing. If |sync_turl| replaces a local
+  // entry, that entry is removed from |initial_data| to prevent it from being
+  // sent up to Sync.
+  // This should only be called from MergeDataAndStartSyncing.
+  void MergeInSyncTemplateURL(TemplateURL* sync_turl,
+                              const SyncDataMap& sync_data,
+                              syncer::SyncChangeList* change_list,
+                              SyncDataMap* local_data);
 
   // Checks a newly added TemplateURL from Sync by its sync_guid and sets it as
   // the default search provider if we were waiting for it.
