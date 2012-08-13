@@ -28,6 +28,7 @@ class AutomationId {
     kTypeExtensionBgPage,
     kTypeExtensionInfobar,
     kTypeExtension,
+    kTypeAppShell,
   };
 
   static bool FromValue(

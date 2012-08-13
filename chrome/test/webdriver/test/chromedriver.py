@@ -17,11 +17,16 @@ from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 
 
 class _ViewType(object):
-  """Constants representing different web view types in Chrome."""
+  """Constants representing different web view types in Chrome.
+
+  They mirror the enum AutomationId::Type in chrome/common/automation_id.h.
+  """
+
   TAB = 1
   EXTENSION_POPUP = 2
   EXTENSION_BG_PAGE = 3
   EXTENSION_INFOBAR = 4
+  APP_SHELL = 6
 
 
 class WebDriver(RemoteWebDriver):
@@ -164,33 +169,17 @@ class Extension(object):
     self._execute(WebDriver._CHROME_MODIFY_EXTENSION,
                   {'click_button': 'page_action'})
 
+  def get_app_shell_handle(self):
+    """Returns the window handle for the app shell."""
+    return self._get_handle(_ViewType.APP_SHELL)
+
   def get_bg_page_handle(self):
-    """Returns the window handle for the background page.
-
-    This handle can be used with |WebDriver.switch_to_window|.
-
-    Returns:
-      The window handle, or None if there is no background page.
-    """
-    bg_pages = filter(lambda view: view['type'] == _ViewType.EXTENSION_BG_PAGE,
-                      self._get_views())
-    if len(bg_pages) > 0:
-      return bg_pages[0]['handle']
-    return None
+    """Returns the window handle for the background page."""
+    return self._get_handle(_ViewType.EXTENSION_BG_PAGE)
 
   def get_popup_handle(self):
-    """Returns the window handle for the open browser/page action popup.
-
-    This handle can be used with |WebDriver.switch_to_window|.
-
-    Returns:
-      The window handle, or None if there is no popup open.
-    """
-    popups = filter(lambda view: view['type'] == _ViewType.EXTENSION_POPUP,
-                    self._get_views())
-    if len(popups) > 0:
-      return popups[0]['handle']
-    return None
+    """Returns the window handle for the open browser/page action popup."""
+    return self._get_handle(_ViewType.EXTENSION_POPUP)
 
   def get_infobar_handles(self):
     """Returns a list of window handles for all open infobars of this extension.
@@ -200,6 +189,22 @@ class Extension(object):
     infobars = filter(lambda view: view['type'] == _ViewType.EXTENSION_INFOBAR,
                       self._get_views())
     return map(lambda view: view['handle'], infobars)
+
+  def _get_handle(self, type):
+    """Returns the window handle for the page of given type.
+
+    This handle can be used with |WebDriver.switch_to_window|.
+
+    Args:
+      type: The type of the window as defined in _ViewType.
+
+    Returns:
+      The window handle, or None if there is no page with the given type.
+    """
+    pages = filter(lambda view: view['type'] == type, self._get_views())
+    if len(pages) > 0:
+      return pages[0]['handle']
+    return None
 
   def _get_info(self):
     """Returns a dictionary of all this extension's info."""

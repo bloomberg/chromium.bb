@@ -428,6 +428,9 @@ AutomationId GetIdForExtensionView(
     case chrome::VIEW_TYPE_EXTENSION_INFOBAR:
       type = AutomationId::kTypeExtensionInfobar;
       break;
+    case chrome::VIEW_TYPE_APP_SHELL:
+      type = AutomationId::kTypeAppShell;
+      break;
     default:
       type = AutomationId::kTypeInvalid;
       break;
@@ -517,6 +520,7 @@ bool GetRenderViewForId(
     case AutomationId::kTypeExtensionPopup:
     case AutomationId::kTypeExtensionBgPage:
     case AutomationId::kTypeExtensionInfobar:
+    case AutomationId::kTypeAppShell:
       if (!GetExtensionRenderViewForId(id, profile, rvh))
         return false;
       break;
@@ -548,7 +552,8 @@ bool DoesObjectWithIdExist(const AutomationId& id, Profile* profile) {
     }
     case AutomationId::kTypeExtensionPopup:
     case AutomationId::kTypeExtensionBgPage:
-    case AutomationId::kTypeExtensionInfobar: {
+    case AutomationId::kTypeExtensionInfobar:
+    case AutomationId::kTypeAppShell: {
       RenderViewHost* rvh;
       return GetExtensionRenderViewForId(id, profile, &rvh);
     }

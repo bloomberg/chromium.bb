@@ -1068,6 +1068,8 @@ class ExtensionTest(ChromeDriverTest):
       '/infobar_browser_action_extension'
   PAGE_ACTION_EXTENSION = test_paths.TEST_DATA_PATH + \
       '/page_action_extension'
+  APP_SHELL = test_paths.TEST_DATA_PATH + \
+      '/app_shell_extension'
 
   def testExtensionInstallAndUninstall(self):
     driver = self.GetNewDriver()
@@ -1137,6 +1139,20 @@ class ExtensionTest(ChromeDriverTest):
     WebDriverWait(driver, 10).until(is_page_action_visible)
     ext.click_page_action()
     self._testExtensionView(driver, ext.get_popup_handle(), ext)
+
+  def testAppShellView(self):
+    driver = self.GetNewDriver({'chrome.switches':
+                                ['enable-experimental-extension-apis']})
+    ext = driver.install_extension(self.APP_SHELL)
+
+    # Navigates to the new tab page to launch the app.
+    driver.get('chrome:newtab')
+    app = driver.find_element_by_xpath("//div[@title='App Shell']")
+    app.click()
+    def is_app_window_launched(driver):
+      return ext.get_app_shell_handle() is not None
+    WebDriverWait(driver, 10).until(is_app_window_launched)
+    self._testExtensionView(driver, ext.get_app_shell_handle(), ext)
 
 
 class BadJSTest(ChromeDriverTest):

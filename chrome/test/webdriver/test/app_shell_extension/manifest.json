@@ -1,0 +1,11 @@
+{
+  "name": "App Shell",
+  "manifest_version": 2,
+  "version": "1.0",
+  "app": {
+    "background": {
+      "scripts": [ "bg.js" ]
+    }
+  },
+  "permissions": [ "experimental" ]
+}
