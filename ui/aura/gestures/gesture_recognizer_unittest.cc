@@ -1883,6 +1883,90 @@ TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
   EXPECT_FALSE(delegate->tap());
 }
 
+TEST_F(GestureRecognizerTest, PinchScrollWithPreventDefaultedRelease) {
+  scoped_ptr<QueueTouchEventDelegate> delegate(
+      new QueueTouchEventDelegate(root_window()));
+  const int kTouchId1 = 7;
+  const int kTouchId2 = 5;
+  gfx::Rect bounds(10, 20, 100, 100);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+  delegate->set_window(window.get());
+
+  delegate->Reset();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(15, 25), kTouchId1,
+      GetTime());
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 95), kTouchId1,
+      press.time_stamp() + base::TimeDelta::FromMilliseconds(200));
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(15, 25), kTouchId1,
+      move.time_stamp() + base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  delegate->Reset();
+
+  // Ack the press event.
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->tap_down());
+  delegate->Reset();
+
+  // Ack the move event.
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->scroll_begin());
+  delegate->Reset();
+
+  // Ack the release event. Although the release event has been processed, it
+  // should still generate a scroll-end event.
+  delegate->ReceivedAckPreventDefaulted();
+  EXPECT_TRUE(delegate->scroll_end());
+
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(55, 25), kTouchId2,
+      GetTime());
+  ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(45, 85), kTouchId2,
+      press2.time_stamp() + base::TimeDelta::FromMilliseconds(1000));
+  ui::TouchEvent release2(ui::ET_TOUCH_RELEASED, gfx::Point(45, 85), kTouchId2,
+      move2.time_stamp() + base::TimeDelta::FromMilliseconds(14));
+
+  // Do a pinch.
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release2);
+
+  // Ack the press and move events.
+  delegate->Reset();
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_TRUE(delegate->tap_down());
+
+  delegate->Reset();
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->scroll_begin());
+
+  delegate->Reset();
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_FALSE(delegate->pinch_begin());
+
+  delegate->Reset();
+  delegate->ReceivedAck();
+  EXPECT_TRUE(delegate->pinch_begin());
+
+  // Ack the first release. Although the release is processed, it should still
+  // generate a pinch-end event.
+  delegate->Reset();
+  delegate->ReceivedAckPreventDefaulted();
+  EXPECT_TRUE(delegate->pinch_end());
+  EXPECT_TRUE(delegate->end());
+
+  delegate->Reset();
+  delegate->ReceivedAckPreventDefaulted();
+  EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_TRUE(delegate->end());
+}
+
 TEST_F(GestureRecognizerTest, CaptureSendsGestureEnd) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
