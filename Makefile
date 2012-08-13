@@ -17,5 +17,5 @@ INCLUDE= ./include
 
 LIBRARY=libjson.a
 
-include ../../source/common.mak
+include ../../jumper/source/common.mak
 
