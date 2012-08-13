@@ -188,8 +188,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
     return 0;
   }
 
-  natp->sysret = 0;
-
   if (!NaClSignalStackAllocate(&natp->signal_stack)) {
     goto cleanup_mu;
   }

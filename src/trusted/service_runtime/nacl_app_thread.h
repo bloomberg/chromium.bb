@@ -85,8 +85,6 @@ struct NaClTlsSegment {
 struct NaClAppThread {
   struct NaClMutex          mu;
 
-  uint32_t                  sysret;
-
   /*
    * The NaCl app that contains this thread.  The app must exist as
    * long as a thread is still alive.
