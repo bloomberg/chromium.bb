@@ -11,6 +11,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -230,8 +231,12 @@ void PrintingContextWin::AskUserForSettings(
       MetroShowPrintUI metro_show_print_ui =
           reinterpret_cast<MetroShowPrintUI>(
               ::GetProcAddress(metro_module, "MetroShowPrintUI"));
-      if (metro_show_print_ui)
+      if (metro_show_print_ui) {
+        // TODO(mad): Remove this once we can send user metrics from the metro
+        // driver. crbug.com/142330
+        UMA_HISTOGRAM_ENUMERATION("Metro.Print", 1, 2);
         metro_show_print_ui();
+      }
     }
     return callback.Run(CANCEL);
   }

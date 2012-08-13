@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -109,6 +110,9 @@ bool PrintViewManager::AdvancedPrintNow() {
 }
 
 bool PrintViewManager::PrintToDestination() {
+  // TODO(mad): Remove this once we can send user metrics from the metro driver.
+  // crbug.com/142330
+  UMA_HISTOGRAM_ENUMERATION("Metro.Print", 0, 2);
   // TODO(mad): Use a passed in destination interface instead.
   g_browser_process->print_job_manager()->SetPrintDestination(
       printing::CreatePrintDestination());
