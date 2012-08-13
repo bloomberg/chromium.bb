@@ -395,6 +395,9 @@ void IOThread::Init() {
   network_change_observer_.reset(
       new LoggingNetworkChangeObserver(net_log_));
 
+  // Setup the HistogramWatcher to run on the IO thread.
+  net::NetworkChangeNotifier::InitHistogramWatcher();
+
   globals_->extension_event_router_forwarder =
       extension_event_router_forwarder_;
   ChromeNetworkDelegate* network_delegate = new ChromeNetworkDelegate(
