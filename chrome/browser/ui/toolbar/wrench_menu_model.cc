@@ -548,8 +548,13 @@ void WrenchMenuModel::Build() {
   }
 
   if (browser_defaults::kShowExitMenuItem) {
-    AddSeparator();
-    AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+#if defined(OS_WIN)
+    if (!base::win::IsMetroProcess())
+#endif
+    {
+      AddSeparator();
+      AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+    }
   }
 }
 
