@@ -255,8 +255,8 @@ void InstallerState::Initialize(const CommandLine& command_line,
     operation_ = MULTI_INSTALL;
   }
 
-  // Initial, over, and un-installs will always take place under one of the
-  // product app guids (Chrome, Chrome Frame, or App Host, in order of
+  // Initial, over, and un-installs will take place under one of the
+  // product app guids (Chrome, Chrome Frame, App Host, or Binaries, in order of
   // preference).
   if (operand == NULL) {
     BrowserDistribution::Type operand_distribution_type =
@@ -267,8 +267,6 @@ void InstallerState::Initialize(const CommandLine& command_line,
       operand_distribution_type = BrowserDistribution::CHROME_FRAME;
     else if (prefs.install_chrome_app_host())
       operand_distribution_type = BrowserDistribution::CHROME_APP_HOST;
-    else
-      NOTREACHED();
 
     operand = BrowserDistribution::GetSpecificDistribution(
         operand_distribution_type);

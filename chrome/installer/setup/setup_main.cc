@@ -360,6 +360,15 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
                                        BrowserDistribution::CHROME_BROWSER);
 
     if (!binaries) {
+      // This will only be hit if --multi-install is given with no products, or
+      // if the app host is being installed and doesn't need the binaries at
+      // user-level.
+      // The former case might be due to a request by an orphaned Application
+      // Host to re-install the binaries. Thus we add them to the installation.
+      // The latter case is fine and we let it be.
+      // If this is not an app host install and the binaries are not already
+      // present, the installation will fail later due to a lack of products to
+      // install.
       if (app_host && !chrome && !chrome_frame && !cf_state && !chrome_state) {
         DCHECK(!system_level);
         // App Host may use Chrome/Chrome binaries at system-level.
@@ -370,23 +379,20 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
                 true,  // system
                 BrowserDistribution::CHROME_BINARIES)) {
           VLOG(1) << "Installing/updating Application Host without binaries.";
-          return true;
         } else {
           // Somehow the binaries were present when the quick-enable app host
           // command was run, but now they appear to be missing.
-          // TODO(erikwright): should the binaries be implicitly added?
-          LOG(ERROR) << "Cannot install Application Host without binaries.";
-          *status = installer::APP_HOST_REQUIRES_BINARIES;
-          installer_state->WriteInstallerResult(*status, 0, NULL);
-          return false;
+          // Force binaries to be installed/updated.
+          scoped_ptr<Product> binaries_to_add(new Product(
+              BrowserDistribution::GetSpecificDistribution(
+                  BrowserDistribution::CHROME_BINARIES)));
+          binaries_to_add->SetOption(installer::kOptionMultiInstall, true);
+          binaries = installer_state->AddProduct(&binaries_to_add);
+          VLOG(1) << "Adding binaries for pre-existing App Host installation.";
         }
-      } else {
-        // Every other scenario requires the binaries to be installed/updated
-        // along with the main product.  This will only be hit if
-        // --multi-install is given with no products.  See
-        // CheckPreInstallConditions for handling of this case.
-        return true;
       }
+
+      return true;
     }
 
     if (chrome) {
