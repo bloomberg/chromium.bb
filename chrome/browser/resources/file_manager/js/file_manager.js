@@ -562,6 +562,10 @@ FileManager.prototype = {
    * One-time initialization of various DOM nodes.
    */
   FileManager.prototype.initDom_ = function() {
+    this.dialogDom_.addEventListener('drop', function(e) {
+      // Prevent opening an URL by dropping it onto the page.
+      e.preventDefault();
+    });
     // Cache nodes we'll be manipulating.
     this.previewThumbnails_ =
         this.dialogDom_.querySelector('.preview-thumbnails');
