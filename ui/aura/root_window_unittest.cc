@@ -69,11 +69,16 @@ class NonClientDelegate : public test::TestWindowDelegate {
 // seen.
 class EventCountFilter : public EventFilter {
  public:
-  EventCountFilter() : num_key_events_(0), num_mouse_events_(0) {}
+  EventCountFilter()
+      : num_key_events_(0),
+        num_mouse_events_(0),
+        num_touch_events_(0) {
+  }
   virtual ~EventCountFilter() {}
 
   int num_key_events() const { return num_key_events_; }
   int num_mouse_events() const { return num_mouse_events_; }
+  int num_touch_events() const { return num_touch_events_; }
 
   void Reset() {
     num_key_events_ = 0;
@@ -92,6 +97,7 @@ class EventCountFilter : public EventFilter {
   }
   virtual ui::TouchStatus PreHandleTouchEvent(
       Window* target, ui::TouchEvent* event) OVERRIDE {
+    num_touch_events_++;
     return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual ui::GestureStatus PreHandleGestureEvent(
@@ -105,6 +111,8 @@ class EventCountFilter : public EventFilter {
 
   // How many mouse events have been received?
   int num_mouse_events_;
+
+  int num_touch_events_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountFilter);
 };
@@ -343,6 +351,26 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
   EXPECT_TRUE(root_window()->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &known_event));
   EXPECT_EQ(1, filter->num_key_events());
+}
+
+// Tests that touch-events that are beyond the bounds of the root-window do get
+// propagated to the event filters correctly with the root as the target.
+TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
+  EventCountFilter* filter = new EventCountFilter;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  gfx::Point position = root_window()->bounds().origin();
+  position.Offset(-10, -10);
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position, 0, base::TimeDelta());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_EQ(1, filter->num_touch_events());
+
+  position = root_window()->bounds().origin();
+  position.Offset(root_window()->bounds().width() + 10,
+                  root_window()->bounds().height() + 10);
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, position, 0, base::TimeDelta());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  EXPECT_EQ(2, filter->num_touch_events());
 }
 
 namespace {

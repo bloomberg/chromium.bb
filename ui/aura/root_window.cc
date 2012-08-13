@@ -875,6 +875,8 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   if (!target && !bounds().Contains(event->location())) {
     // If the initial touch is outside the root window, target the root.
     target = this;
+    status = ProcessTouchEvent(target, event);
+    CHECK_EQ(ui::TOUCH_STATUS_UNKNOWN, status);
   } else {
     // We only come here when the first contact was within the root window.
     if (!target) {
