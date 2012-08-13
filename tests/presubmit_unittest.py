@@ -1029,6 +1029,17 @@ class InputApiUnittest(PresubmitTestsBase):
       (
         [
           # To be tested.
+          f('testing_support/google_appengine/b'),
+          f('testing_support/not_google_appengine/foo.cc'),
+        ],
+        [
+          # Expected.
+          'testing_support/not_google_appengine/foo.cc',
+        ],
+      ),
+      (
+        [
+          # To be tested.
           f('a/experimental/b'),
           f('experimental/b'),
           f('a/experimental'),
@@ -1089,7 +1100,7 @@ class InputApiUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 22)
-    self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 11)
+    self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 12)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])
       for i in range(len(results)):

@@ -195,6 +195,7 @@ class InputApi(object):
   # Path regexp that should be excluded from being considered containing source
   # files. Don't modify this list from a presubmit script!
   DEFAULT_BLACK_LIST = (
+      r"testing_support[\\\/]google_appengine[\\\/].*",
       r".*\bexperimental[\\\/].*",
       r".*\bthird_party[\\\/].*",
       # Output directories (just in case)
