@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_INFOBARS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_INFOBARS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
 
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
 // Base class for delegates that show warnings on HTTPS pages which try to
 // display or run insecure content.
@@ -51,5 +51,5 @@ class InsecureContentInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_IMPLICIT_CONSTRUCTORS(InsecureContentInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_INFOBARS_INSECURE_CONTENT_INFOBAR_DELEGATE_H_
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_CONFIRM_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_CONFIRM_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_API_INFOBARS_CONFIRM_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_API_INFOBARS_CONFIRM_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_delegate.h"
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a ConfirmInfoBar.
@@ -73,4 +73,4 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_CONFIRM_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_API_INFOBARS_CONFIRM_INFOBAR_DELEGATE_H_

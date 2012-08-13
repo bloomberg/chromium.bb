@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/link_infobar_delegate.h"
+#include "chrome/browser/api/infobars/link_infobar_delegate.h"
 
 bool LinkInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return true;

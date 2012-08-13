@@ -10,7 +10,6 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!chrome/browser/feedback/proto/extension.pb.h",
   "!chrome/browser/infobars/infobar_tab_helper.h",
   "!chrome/browser/password_manager/encryptor.h",
   "!chrome/browser/password_manager/password_manager.h",
@@ -24,8 +23,6 @@ include_rules = [
   "!chrome/browser/sync/profile_sync_service.h",
   "!chrome/browser/sync/profile_sync_service_factory.h",
   "!chrome/browser/sync/profile_sync_service_observer.h",
-  "!chrome/browser/tab_contents/confirm_infobar_delegate.h",
-  "!chrome/browser/tab_contents/link_infobar_delegate.h",
   "!chrome/browser/translate/translate_infobar_delegate.h",
   "!chrome/browser/translate/translate_manager.h",
   "!chrome/browser/ui/browser.h",

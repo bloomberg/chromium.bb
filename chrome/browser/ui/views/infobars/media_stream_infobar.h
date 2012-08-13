@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_MEDIA_STREAM_INFOBAR_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_MEDIA_STREAM_INFOBAR_H_
 
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/media/media_stream_devices_menu_model.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"

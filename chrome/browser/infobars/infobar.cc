@@ -6,8 +6,8 @@
 
 #include <cmath>
 
-#include "build/build_config.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "ui/base/animation/slide_animation.h"

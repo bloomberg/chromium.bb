@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/infobars/link_infobar.h"
 
 #include "base/logging.h"
+#include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "chrome/browser/event_disposition.h"
-#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 

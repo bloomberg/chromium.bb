@@ -5,7 +5,6 @@
 #include "chrome/browser/autofill/autofill_feedback_infobar_delegate.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/feedback/proto/extension.pb.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"

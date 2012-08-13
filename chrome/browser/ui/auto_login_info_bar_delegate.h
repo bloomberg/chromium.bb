@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTO_LOGIN_INFO_BAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_AUTO_LOGIN_INFO_BAR_DELEGATE_H_
 
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

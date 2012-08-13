@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"

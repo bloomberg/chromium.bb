@@ -4,9 +4,9 @@
 
 #include "chrome/browser/autofill/autofill_country.h"
 
-#include <map>
 #include <stddef.h>
 #include <stdint.h>
+#include <map>
 #include <utility>
 
 #include "base/logging.h"
@@ -15,8 +15,8 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/coll.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_WEBSITE_SETTINGS_WEBSITE_SETTINGS_INFOBAR_DELEGATE_H_
 
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
 // This class configures an infobar that is shown when the website settings UI
 // is closed and the settings for one or more site permissions have been

@@ -1,0 +1,6 @@
+include_rules = [
+  # TODO(joi): Reduce this list to zero exceptions.
+
+  # This looks reasonably easy to break; used by infobar_delegate.h/.cc
+  "!chrome/browser/infobars/infobar_tab_helper.h",
+]

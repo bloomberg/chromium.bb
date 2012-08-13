@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"

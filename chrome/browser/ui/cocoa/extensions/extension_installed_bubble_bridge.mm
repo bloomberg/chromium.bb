@@ -6,10 +6,10 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_tabstrip.h"

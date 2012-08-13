@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
 // This class configures an infobar shown when a page requests access to a

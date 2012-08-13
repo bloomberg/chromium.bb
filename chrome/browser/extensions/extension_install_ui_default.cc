@@ -6,11 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"

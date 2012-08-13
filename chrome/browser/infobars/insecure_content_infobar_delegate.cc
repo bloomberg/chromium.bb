@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
+#include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/google/google_util.h"

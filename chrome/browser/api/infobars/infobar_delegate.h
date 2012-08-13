@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_API_INFOBARS_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_API_INFOBARS_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/string16.h"
@@ -143,4 +143,4 @@ class InfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(InfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_INFOBARS_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_API_INFOBARS_INFOBAR_DELEGATE_H_

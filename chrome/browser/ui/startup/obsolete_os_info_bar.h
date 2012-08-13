@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/link_infobar_delegate.h"
+#include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "googleurl/src/gurl.h"
 
 class InfoBarTabHelper;

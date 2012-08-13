@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 
 // An infobar delegate that presents the user with a choice to allow or deny
 // multiple downloads from the same site. This confirmation step protects

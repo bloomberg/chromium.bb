@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_API_INFOBARS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_API_INFOBARS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
@@ -34,4 +34,4 @@ class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(SimpleAlertInfoBarDelegate);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_API_INFOBARS_SIMPLE_ALERT_INFOBAR_DELEGATE_H_

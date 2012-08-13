@@ -4,9 +4,9 @@
 
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 
+#include "chrome/browser/api/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
-#include "chrome/browser/tab_contents/insecure_content_infobar_delegate.h"
+#include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"

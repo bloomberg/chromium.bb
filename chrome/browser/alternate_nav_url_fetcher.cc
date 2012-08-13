@@ -5,10 +5,10 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/api/infobars/link_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/link_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"

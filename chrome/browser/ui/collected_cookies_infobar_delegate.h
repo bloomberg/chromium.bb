@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COLLECTED_COOKIES_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_COLLECTED_COOKIES_INFOBAR_DELEGATE_H_
 
-#include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
 
 // This class configures an infobar shown when the collected cookies dialog
 // is closed and the settings for one or more cookies have been changed.  The
