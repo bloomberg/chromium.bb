@@ -44,6 +44,7 @@
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/pnacl_coordinator.h"
+#include "native_client/src/trusted/plugin/pnacl_resources.h"
 #include "native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 #include "native_client/src/trusted/plugin/srpc_client.h"
 #include "native_client/src/trusted/plugin/utility.h"
@@ -244,6 +245,12 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
   return true;
 }
 
+// Transfer point from OpenManifestEntry() which runs on the main thread
+// (Some PPAPI actions -- like StreamAsFile -- can only run on the main thread).
+// OpenManifestEntry() is waiting on a condvar for this continuation to
+// complete.  We Broadcast and awaken OpenManifestEntry() whenever we are done
+// either here, or in a later MainThreadContinuation step, if there are
+// multiple steps.
 void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     OpenManifestEntryResource* p,
     int32_t err) {
@@ -280,21 +287,45 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
         this,
         &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
         open_cont);
-    if (!plugin_->StreamAsFile(mapped_url,
-                               stream_cc.pp_completion_callback())) {
+    //
+    if (!PnaclUrls::IsPnaclComponent(mapped_url)) {
+      if (!plugin_->StreamAsFile(mapped_url,
+                                 stream_cc.pp_completion_callback())) {
+        NaClLog(4,
+                "OpenManifestEntry_MainThreadContinuation: "
+                "StreamAsFile failed\n");
+        nacl::MutexLocker take(&mu_);
+        *p->op_complete_ptr = true;  // done...
+        *p->out_desc = -1;       // but failed.
+        p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+                                 "ServiceRuntime: StreamAsFile failed");
+        NaClXCondVarBroadcast(&cv_);
+        return;
+      }
       NaClLog(4,
-              "OpenManifestEntry_MainThreadContinuation: "
-              "StreamAsFile failed\n");
+              "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
+    } else {
+      int32_t fd = PnaclResources::GetPnaclFD(
+          plugin_,
+          PnaclUrls::StripPnaclComponentPrefix(mapped_url).c_str());
+      if (fd < 0) {
+        // We should check earlier if the pnacl component wasn't installed
+        // yet.  At this point, we can't do much anymore, so just continue
+        // with an invalid fd.
+        NaClLog(4,
+                "OpenManifestEntry_MainThreadContinuation: "
+                "GetReadonlyPnaclFd failed\n");
+        // TODO(jvoung): Separate the error codes?
+        p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+                                 "ServiceRuntime: GetPnaclFd failed");
+      }
       nacl::MutexLocker take(&mu_);
-      *p->op_complete_ptr = true;  // done...
-      *p->out_desc = -1;       // but failed.
-      p->error_info->SetReport(ERROR_MANIFEST_OPEN,
-                               "ServiceRuntime: StreamAsFile failed");
+      *p->op_complete_ptr = true;  // done!
+      *p->out_desc = fd;
       NaClXCondVarBroadcast(&cv_);
-      return;
+      NaClLog(4,
+              "OpenManifestEntry_MainThreadContinuation: GetPnaclFd okay\n");
     }
-    NaClLog(4,
-            "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
   } else {
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: "

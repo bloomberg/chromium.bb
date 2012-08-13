@@ -319,7 +319,7 @@ class Plugin : public pp::InstancePrivate {
     return main_service_runtime()->exit_status();
   }
 
-  const PPB_NaCl_Private* nacl_interface() { return nacl_interface_; }
+  const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);

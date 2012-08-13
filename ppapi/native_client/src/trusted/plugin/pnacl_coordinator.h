@@ -240,7 +240,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // Keep this last in declaration order to ensure the other variables
   // haven't been destroyed yet when its destructor runs.
   nacl::scoped_ptr<PnaclTranslateThread> translate_thread_;
-
 };
 
 //----------------------------------------------------------------------

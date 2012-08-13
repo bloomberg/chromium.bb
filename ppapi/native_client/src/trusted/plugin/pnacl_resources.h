@@ -15,6 +15,8 @@
 #include "native_client/src/trusted/plugin/delayed_callback.h"
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+
+#include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 namespace plugin {
@@ -23,21 +25,25 @@ class Manifest;
 class Plugin;
 class PnaclCoordinator;
 
+// Constants for loading LLC and LD.
 class PnaclUrls {
  public:
-  static nacl::string GetExtensionUrl() {
-    return nacl::string(kExtensionOrigin) + GetSandboxISA() + "/";
-  }
+  static bool UsePnaclExtension(const Plugin* plugin);
+  static nacl::string GetBaseUrl(bool use_extension);
+  static bool IsPnaclComponent(const nacl::string& full_url);
+  static nacl::string StripPnaclComponentPrefix(const nacl::string& full_url);
   static const nacl::string GetLlcUrl() { return nacl::string(kLlcUrl); }
   static const nacl::string GetLdUrl() { return nacl::string(kLdUrl); }
  private:
   static const char kExtensionOrigin[];
+  static const char kPnaclComponentID[];
   static const char kLlcUrl[];
   static const char kLdUrl[];
 };
 
-// Loads a list of remote resources, providing a way to get file descriptors for
-// thse resources.  All URLs in relative to resource_base_url_.
+// Loads a list of resources, providing a way to get file descriptors for
+// these resources.  URLs for resources are resolved by the manifest
+// and may either point to filesystem resources or chrome extension resources.
 class PnaclResources {
  public:
   PnaclResources(Plugin* plugin,
@@ -52,16 +58,14 @@ class PnaclResources {
         all_loaded_callback_(all_loaded_callback) {
     callback_factory_.Initialize(this);
   }
-
   virtual ~PnaclResources();
 
-  // Start fetching the URLs.  After construction, this is the first step.
-  void StartDownloads();
-  // Get the wrapper for the downloaded resource.
-  // Only valid after all_loaded_callback_ has been run.
-  nacl::DescWrapper* WrapperForUrl(const nacl::string& url) {
-    return resource_wrappers_[url];
-  }
+  // Start loading the resources.  After construction, this is the first step.
+  virtual void StartLoad();
+  // Get file descs by name. Only valid after all_loaded_callback_ has been run.
+  nacl::DescWrapper* WrapperForUrl(const nacl::string& url);
+
+  static int32_t GetPnaclFD(Plugin* plugin, const char* filename);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclResources);

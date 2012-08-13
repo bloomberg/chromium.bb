@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/pp_file_handle.h"
 
-#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl(Private);0.8"
+#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl(Private);0.9"
 
 struct PPB_NaCl_Private {
   // This function launches NaCl's sel_ldr process.  On success, the function
@@ -68,7 +68,10 @@ struct PPB_NaCl_Private {
   PP_FileHandle (*CreateTemporaryFile)(PP_Instance instance);
 
   // Return true if we are off the record.
-  PP_Bool (*IsOffTheRecord)();
+  PP_Bool (*IsOffTheRecord)(void);
+
+  // Return true if PNaCl is turned on.
+  PP_Bool (*IsPnaclEnabled)(void);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_

@@ -821,6 +821,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaCl,
       switches::kEnableNaClIPCProxy,
       switches::kEnablePasswordGeneration,
+      switches::kEnablePnacl,
       switches::kEnableWatchdog,
       switches::kExperimentalSpellcheckerFeatures,
       switches::kMemoryProfiling,

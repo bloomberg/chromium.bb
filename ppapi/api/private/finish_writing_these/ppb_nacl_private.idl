@@ -8,7 +8,7 @@
 #include "ppapi/c/private/pp_file_handle.h"
 
 /* PPB_NaCl_Private */
-interface PPB_NaCl_Private_0_8 {
+interface PPB_NaCl_Private_0_9 {
   /* This function launches NaCl's sel_ldr process.  On success, the function
    * returns true, otherwise it returns false.  When it returns true, it will
    * write |socket_count| nacl::Handles to imc_handles.
@@ -49,5 +49,9 @@ interface PPB_NaCl_Private_0_8 {
 
   /* Return true if we are off the record.
    */
-  PP_Bool IsOffTheRecord([in] PP_Instance instance);
+  PP_Bool IsOffTheRecord();
+
+  /* Return true if PNaCl is turned on.
+   */
+  PP_Bool IsPnaclEnabled();
 };

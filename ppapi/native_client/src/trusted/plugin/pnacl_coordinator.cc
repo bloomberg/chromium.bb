@@ -33,12 +33,17 @@ namespace plugin {
 //////////////////////////////////////////////////////////////////////
 //  Pnacl-specific manifest support.
 //////////////////////////////////////////////////////////////////////
-class ExtensionManifest : public Manifest {
+
+class PnaclManifest : public Manifest {
  public:
-  explicit ExtensionManifest(const pp::URLUtil_Dev* url_util)
+  PnaclManifest(const pp::URLUtil_Dev* url_util, bool use_extension)
       : url_util_(url_util),
-        manifest_base_url_(PnaclUrls::GetExtensionUrl()) { }
-  virtual ~ExtensionManifest() { }
+        manifest_base_url_(PnaclUrls::GetBaseUrl(use_extension)) {
+    // TODO(jvoung): get rid of use_extension when we no longer rely
+    // on the chrome webstore extension.  Most of this Manifest stuff
+    // can also be simplified then.
+  }
+  virtual ~PnaclManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
                              nacl::string* cache_identity,
@@ -49,7 +54,7 @@ class ExtensionManifest : public Manifest {
     UNREFERENCED_PARAMETER(cache_identity);
     UNREFERENCED_PARAMETER(error_info);
     UNREFERENCED_PARAMETER(pnacl_translate);
-    PLUGIN_PRINTF(("ExtensionManifest does not contain a program\n"));
+    PLUGIN_PRINTF(("PnaclManifest does not contain a program\n"));
     error_info->SetReport(ERROR_MANIFEST_GET_NEXE_URL,
                           "pnacl manifest does not contain a program.");
     return false;
@@ -67,7 +72,7 @@ class ExtensionManifest : public Manifest {
 
   virtual bool GetFileKeys(std::set<nacl::string>* keys) const {
     // Does not support enumeration.
-    PLUGIN_PRINTF(("ExtensionManifest does not support key enumeration\n"));
+    PLUGIN_PRINTF(("PnaclManifest does not support key enumeration\n"));
     UNREFERENCED_PARAMETER(keys);
     return false;
   }
@@ -95,7 +100,7 @@ class ExtensionManifest : public Manifest {
   }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ExtensionManifest);
+  NACL_DISALLOW_COPY_AND_ASSIGN(PnaclManifest);
 
   const pp::URLUtil_Dev* url_util_;
   nacl::string manifest_base_url_;
@@ -205,7 +210,7 @@ PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
                          resource_urls,
                          resources_cb));
   CHECK(coordinator->resources_ != NULL);
-  coordinator->resources_->StartDownloads();
+  coordinator->resources_->StartLoad();
   // ResourcesDidLoad will be invoked when all resources have been received.
   return coordinator;
 }
@@ -238,7 +243,9 @@ PnaclCoordinator::PnaclCoordinator(
     plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
     file_system_(new pp::FileSystem(plugin, PP_FILESYSTEMTYPE_LOCALTEMPORARY)),
-    manifest_(new ExtensionManifest(plugin->url_util())),
+    manifest_(new PnaclManifest(
+        plugin->url_util(),
+        plugin::PnaclUrls::UsePnaclExtension(plugin))),
     pexe_url_(pexe_url),
     cache_identity_(cache_identity),
     error_already_reported_(false),
