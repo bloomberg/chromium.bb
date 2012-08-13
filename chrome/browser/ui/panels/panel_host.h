@@ -15,7 +15,6 @@
 class FaviconTabHelper;
 class GURL;
 class Panel;
-class PrefsTabHelper;
 class Profile;
 
 namespace content {
@@ -99,7 +98,6 @@ class PanelHost : public content::WebContentsDelegate,
   // The following factory is used to close the panel via the message loop.
   base::WeakPtrFactory<PanelHost> weak_factory_;
 
-  scoped_ptr<PrefsTabHelper> prefs_tab_helper_;
   scoped_ptr<FaviconTabHelper> favicon_tab_helper_;
   scoped_ptr<content::WebContents> web_contents_;
 

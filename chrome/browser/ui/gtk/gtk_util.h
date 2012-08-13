@@ -308,6 +308,11 @@ void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label);
 // gtk_message_dialog_new.
 void ApplyMessageDialogQuirks(GtkWidget* dialog);
 
+// Performs Cut/Copy/Paste operation on the |window|.
+void DoCut(BrowserWindow* window);
+void DoCopy(BrowserWindow* window);
+void DoPaste(BrowserWindow* window);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_UI_GTK_GTK_UTIL_H_

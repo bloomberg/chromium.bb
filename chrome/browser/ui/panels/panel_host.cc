@@ -11,7 +11,6 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -54,16 +53,14 @@ void PanelHost::Init(const GURL& url) {
   content::WebContentsObserver::Observe(web_contents_.get());
 
   favicon_tab_helper_.reset(new FaviconTabHelper(web_contents_.get()));
-  prefs_tab_helper_.reset(new PrefsTabHelper(web_contents_.get()));
 
   web_contents_->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
 }
 
 void PanelHost::DestroyWebContents() {
-  favicon_tab_helper_.reset();
-  prefs_tab_helper_.reset();
   web_contents_.reset();
+  favicon_tab_helper_.reset();
 }
 
 SkBitmap PanelHost::GetPageIcon() const {

@@ -102,7 +102,6 @@ bool PanelExtensionWindowController::IsVisibleToExtension(
 Panel::Panel(const std::string& app_name,
              const gfx::Size& min_size, const gfx::Size& max_size)
     : app_name_(app_name),
-      profile_(NULL),
       panel_strip_(NULL),
       initialized_(false),
       min_size_(min_size),
@@ -143,7 +142,6 @@ void Panel::Initialize(Profile* profile, const GURL& url,
   DCHECK_EQ(EXPANDED, expansion_state_);
   DCHECK(!bounds.IsEmpty());
   initialized_ = true;
-  profile_ = profile;
   full_size_ = bounds.size();
   native_panel_ = CreateNativePanel(this, bounds);
 
@@ -217,7 +215,7 @@ CommandUpdater* Panel::command_updater() {
 }
 
 Profile* Panel::profile() const {
-  return profile_;
+  return extension_window_controller_->profile();
 }
 
 const std::string Panel::extension_id() const {

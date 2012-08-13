@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 
+#include <dlfcn.h>
 #include <gdk/gdkkeysyms.h>
 
 #include <algorithm>
@@ -60,7 +61,6 @@
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
@@ -152,6 +152,24 @@ const int kCustomFrameBackgroundVerticalOffset = 15;
 // gtk_window_get_position() after the last GTK configure-event signal.
 const int kDebounceTimeoutMilliseconds = 100;
 
+// Ubuntu patches their verrsion of GTK+ so that there is always a
+// gripper in the bottom right corner of the window. We dynamically
+// look up this symbol because it's a non-standard Ubuntu extension to
+// GTK+. We always need to disable this feature since we can't
+// communicate this to WebKit easily.
+typedef void (*gtk_window_set_has_resize_grip_func)(GtkWindow*, gboolean);
+gtk_window_set_has_resize_grip_func gtk_window_set_has_resize_grip_sym;
+
+void EnsureResizeGripFunction() {
+  static bool resize_grip_looked_up = false;
+  if (!resize_grip_looked_up) {
+    resize_grip_looked_up = true;
+    gtk_window_set_has_resize_grip_sym =
+        reinterpret_cast<gtk_window_set_has_resize_grip_func>(
+            dlsym(NULL, "gtk_window_set_has_resize_grip"));
+  }
+}
+
 // Using gtk_window_get_position/size creates a race condition, so only use
 // this to get the initial bounds.  After window creation, we pick up the
 // normal bounds by connecting to the configure-event signal.
@@ -216,6 +234,30 @@ int GetPreHandleCommandId(GdkEventKey* event) {
       break;
   }
   return -1;
+}
+
+GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
+  switch (edge) {
+    case GDK_WINDOW_EDGE_NORTH_WEST:
+      return GDK_TOP_LEFT_CORNER;
+    case GDK_WINDOW_EDGE_NORTH:
+      return GDK_TOP_SIDE;
+    case GDK_WINDOW_EDGE_NORTH_EAST:
+      return GDK_TOP_RIGHT_CORNER;
+    case GDK_WINDOW_EDGE_WEST:
+      return GDK_LEFT_SIDE;
+    case GDK_WINDOW_EDGE_EAST:
+      return GDK_RIGHT_SIDE;
+    case GDK_WINDOW_EDGE_SOUTH_WEST:
+      return GDK_BOTTOM_LEFT_CORNER;
+    case GDK_WINDOW_EDGE_SOUTH:
+      return GDK_BOTTOM_SIDE;
+    case GDK_WINDOW_EDGE_SOUTH_EAST:
+      return GDK_BOTTOM_RIGHT_CORNER;
+    default:
+      NOTREACHED();
+  }
+  return GDK_LAST_CURSOR;
 }
 
 // A helper method for setting the GtkWindow size that should be used in place
@@ -339,7 +381,9 @@ void BrowserWindowGtk::Init() {
                                              GDK_POINTER_MOTION_MASK);
 
   // Disable the resize gripper on Ubuntu.
-  gtk_window_util::DisableResizeGrip(window_);
+  EnsureResizeGripFunction();
+  if (gtk_window_set_has_resize_grip_sym)
+    gtk_window_set_has_resize_grip_sym(GTK_WINDOW(window_), FALSE);
 
   // Add this window to its own unique window group to allow for
   // window-to-parent modality.
@@ -1182,18 +1226,15 @@ void BrowserWindowGtk::ShowCreateChromeAppShortcutsDialog(
 }
 
 void BrowserWindowGtk::Cut() {
-  gtk_window_util::DoCut(
-      window_, chrome::GetActiveWebContents(browser_.get()));
+  gtk_util::DoCut(this);
 }
 
 void BrowserWindowGtk::Copy() {
-  gtk_window_util::DoCopy(
-      window_, chrome::GetActiveWebContents(browser_.get()));
+  gtk_util::DoCopy(this);
 }
 
 void BrowserWindowGtk::Paste() {
-  gtk_window_util::DoPaste(
-      window_, chrome::GetActiveWebContents(browser_.get()));
+  gtk_util::DoPaste(this);
 }
 
 void BrowserWindowGtk::ShowInstant(TabContents* preview) {
@@ -2217,7 +2258,7 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
                                     static_cast<int>(event->y), &edge);
   GdkCursorType new_cursor = GDK_LAST_CURSOR;
   if (has_hit_edge)
-    new_cursor = gtk_window_util::GdkWindowEdgeToGdkCursorType(edge);
+    new_cursor = GdkWindowEdgeToGdkCursorType(edge);
 
   GdkCursorType last_cursor = GDK_LAST_CURSOR;
   if (frame_cursor_)
