@@ -560,45 +560,6 @@ PlatformFileError ObfuscatedFileUtil::Truncate(
   return error;
 }
 
-bool ObfuscatedFileUtil::PathExists(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      url.origin(), url.type(), false);
-  if (!db)
-    return false;
-  FileId file_id;
-  return db->GetFileWithPath(url.path(), &file_id);
-}
-
-bool ObfuscatedFileUtil::DirectoryExists(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  if (IsRootDirectory(url)) {
-    // It's questionable whether we should return true or false for the
-    // root directory of nonexistent origin, but here we return true
-    // as the current implementation of ReadDirectory always returns an empty
-    // array (rather than erroring out with NOT_FOUND_ERR even) for
-    // nonexistent origins.
-    // Note: if you're going to change this behavior please also consider
-    // changiing the ReadDirectory's behavior!
-    return true;
-  }
-  FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
-      url.origin(), url.type(), false);
-  if (!db)
-    return false;
-  FileId file_id;
-  if (!db->GetFileWithPath(url.path(), &file_id))
-    return false;
-  FileInfo file_info;
-  if (!db->GetFileInfo(file_id, &file_info)) {
-    NOTREACHED();
-    return false;
-  }
-  return file_info.is_directory();
-}
-
 bool ObfuscatedFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {

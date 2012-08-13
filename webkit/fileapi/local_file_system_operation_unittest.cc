@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -215,17 +216,17 @@ class LocalFileSystemOperationTest
   bool FileExists(const FilePath& virtual_path) {
     FileSystemURL path = test_helper_.CreateURL(virtual_path);
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    if (!file_util()->PathExists(context.get(), path))
+    if (!FileUtilHelper::PathExists(context.get(), file_util(), path))
       return false;
 
     context.reset(NewContext());
-    return !file_util()->DirectoryExists(context.get(), path);
+    return !FileUtilHelper::DirectoryExists(context.get(), file_util(), path);
   }
 
   bool DirectoryExists(const FilePath& virtual_path) {
     FileSystemURL url = test_helper_.CreateURL(virtual_path);
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return file_util()->DirectoryExists(context.get(), url);
+    return FileUtilHelper::DirectoryExists(context.get(), file_util(), url);
   }
 
   FilePath CreateUniqueFileInDir(const FilePath& virtual_dir_path) {

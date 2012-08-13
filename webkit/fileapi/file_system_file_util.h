@@ -149,16 +149,6 @@ class FILEAPI_EXPORT FileSystemFileUtil {
       const FileSystemURL& url,
       int64 length) = 0;
 
-  // Returns true if a given |url| exists.
-  virtual bool PathExists(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) = 0;
-
-  // Returns true if a given |url| exists and is a directory.
-  virtual bool DirectoryExists(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) = 0;
-
   // Returns true if a given |url| is an empty directory.
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,

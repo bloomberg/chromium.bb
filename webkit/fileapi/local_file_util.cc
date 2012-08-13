@@ -186,24 +186,6 @@ PlatformFileError LocalFileUtil::Truncate(
   return NativeFileUtil::Truncate(file_path, length);
 }
 
-bool LocalFileUtil::PathExists(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  FilePath file_path;
-  if (GetLocalFilePath(context, url, &file_path) != base::PLATFORM_FILE_OK)
-    return false;
-  return NativeFileUtil::PathExists(file_path);
-}
-
-bool LocalFileUtil::DirectoryExists(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  FilePath file_path;
-  if (GetLocalFilePath(context, url, &file_path) != base::PLATFORM_FILE_OK)
-    return false;
-  return NativeFileUtil::DirectoryExists(file_path);
-}
-
 bool LocalFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {

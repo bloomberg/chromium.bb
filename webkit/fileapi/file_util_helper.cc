@@ -105,14 +105,14 @@ base::PlatformFileError CrossFileUtilHelper::DoWork() {
   base::PlatformFileError error = PerformErrorCheckAndPreparation();
   if (error != base::PLATFORM_FILE_OK)
     return error;
-  if (src_util_->DirectoryExists(context_, src_root_url_))
+  if (FileUtilHelper::DirectoryExists(context_, src_util_, src_root_url_))
     return CopyOrMoveDirectory(src_root_url_, dest_root_url_);
   return CopyOrMoveFile(src_root_url_, dest_root_url_);
 }
 
 PlatformFileError CrossFileUtilHelper::PerformErrorCheckAndPreparation() {
   // Exits earlier if the source path does not exist.
-  if (!src_util_->PathExists(context_, src_root_url_))
+  if (!FileUtilHelper::PathExists(context_, src_util_, src_root_url_))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // The parent of the |dest_root_url_| does not exist.
@@ -124,14 +124,15 @@ PlatformFileError CrossFileUtilHelper::PerformErrorCheckAndPreparation() {
     return base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
 
   // Now it is ok to return if the |dest_root_url_| does not exist.
-  if (!dest_util_->PathExists(context_, dest_root_url_))
+  if (!FileUtilHelper::PathExists(context_, dest_util_, dest_root_url_))
     return base::PLATFORM_FILE_OK;
 
   // |src_root_url_| exists and is a directory.
   // |dest_root_url_| exists and is a file.
-  bool src_is_directory = src_util_->DirectoryExists(context_, src_root_url_);
+  bool src_is_directory =
+      FileUtilHelper::DirectoryExists(context_, src_util_, src_root_url_);
   bool dest_is_directory =
-      dest_util_->DirectoryExists(context_, dest_root_url_);
+      FileUtilHelper::DirectoryExists(context_, dest_util_, dest_root_url_);
 
   // Either one of |src_root_url_| or |dest_root_url_| is directory,
   // while the other is not.
@@ -165,7 +166,8 @@ bool CrossFileUtilHelper::ParentExists(
   FilePath parent = url.path().DirName();
   if (parent == FilePath(FILE_PATH_LITERAL(".")))
     return true;
-  return file_util->DirectoryExists(context_, url.WithPath(parent));
+  return FileUtilHelper::DirectoryExists(context_, file_util,
+                                         url.WithPath(parent));
 }
 
 PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
@@ -285,6 +287,31 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveFile(
 }  // anonymous namespace
 
 // static
+bool FileUtilHelper::PathExists(FileSystemOperationContext* context,
+                                FileSystemFileUtil* file_util,
+                                const FileSystemURL& url) {
+  base::PlatformFileInfo file_info;
+  FilePath platform_path;
+  PlatformFileError error = file_util->GetFileInfo(
+      context, url, &file_info, &platform_path);
+  return error == base::PLATFORM_FILE_OK;
+}
+
+// static
+bool FileUtilHelper::DirectoryExists(FileSystemOperationContext* context,
+                                     FileSystemFileUtil* file_util,
+                                     const FileSystemURL& url) {
+  if (url.path().empty())
+    return true;
+
+  base::PlatformFileInfo file_info;
+  FilePath platform_path;
+  PlatformFileError error = file_util->GetFileInfo(
+      context, url, &file_info, &platform_path);
+  return error == base::PLATFORM_FILE_OK && file_info.is_directory;
+}
+
+// static
 base::PlatformFileError FileUtilHelper::Copy(
     FileSystemOperationContext* context,
     FileSystemFileUtil* src_file_util,
@@ -314,7 +341,7 @@ base::PlatformFileError FileUtilHelper::Delete(
     FileSystemFileUtil* file_util,
     const FileSystemURL& url,
     bool recursive) {
-  if (file_util->DirectoryExists(context, url)) {
+  if (DirectoryExists(context, file_util, url)) {
     if (!recursive)
       return file_util->DeleteSingleDirectory(context, url);
     else
@@ -333,7 +360,7 @@ base::PlatformFileError FileUtilHelper::ReadDirectory(
   DCHECK(entries);
 
   // TODO(kkanetkar): Implement directory read in multiple chunks.
-  if (!file_util->DirectoryExists(context, url))
+  if (!DirectoryExists(context, file_util, url))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(

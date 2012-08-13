@@ -42,12 +42,6 @@ class FILEAPI_EXPORT_PRIVATE DraggedFileUtil : public IsolatedFileUtil {
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) OVERRIDE;
-  virtual bool PathExists(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) OVERRIDE;
-  virtual bool DirectoryExists(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) OVERRIDE;
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;

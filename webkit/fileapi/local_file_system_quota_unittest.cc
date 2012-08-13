@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/quota/quota_manager.h"
@@ -33,7 +34,7 @@ void AssertFileErrorEq(base::PlatformFileError expected,
   ASSERT_EQ(expected, actual);
 }
 
-} // namespace
+}  // namespace
 
 class LocalFileSystemQuotaTest
     : public testing::Test,
@@ -101,13 +102,13 @@ class LocalFileSystemQuotaTest
   bool FileExists(const FilePath& virtual_path) {
     FileSystemURL path = test_helper_.CreateURL(virtual_path);
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return file_util()->PathExists(context.get(), path);
+    return FileUtilHelper::PathExists(context.get(), file_util(), path);
   }
 
   bool DirectoryExists(const FilePath& virtual_path) {
     FileSystemURL path = test_helper_.CreateURL(virtual_path);
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return file_util()->DirectoryExists(context.get(), path);
+    return FileUtilHelper::DirectoryExists(context.get(), file_util(), path);
   }
 
   FilePath CreateUniqueFileInDir(const FilePath& virtual_dir_path) {

@@ -24,6 +24,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
@@ -201,6 +202,16 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     return new FileSystemOperationContext(file_system_context_);
   }
 
+  bool PathExists(const FileSystemURL& url) {
+    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    return FileUtilHelper::PathExists(context.get(), file_util(), url);
+  }
+
+  bool DirectoryExists(const FileSystemURL& url) {
+    scoped_ptr<FileSystemOperationContext> context(NewContext());
+    return FileUtilHelper::DirectoryExists(context.get(), file_util(), url);
+  }
+
   std::string URLAndTypeToSeedString(const GURL& origin_url,
     fileapi::FileSystemType type) {
     return GetOriginIdentifierFromURL(origin_url) +
@@ -216,39 +227,24 @@ class SandboxMountPointProviderMigrationTest : public testing::Test {
     FileSystemURL root(origin_url, type, FilePath());
     FileSystemURL seed = root.WithPath(root.path().Append(seed_file_path));
 
-    context.reset(NewContext());
-    EXPECT_TRUE(file_util()->DirectoryExists(
-        context.get(), seed));
-    context.reset(NewContext());
-    EXPECT_TRUE(file_util()->DirectoryExists(
-        context.get(), seed.WithPath(seed.path().Append(seed_file_path))));
-    context.reset(NewContext());
-    EXPECT_TRUE(file_util()->DirectoryExists(
-        context.get(), seed.WithPath(seed.path().AppendASCII("d 0"))));
-    context.reset(NewContext());
-    EXPECT_TRUE(file_util()->DirectoryExists(
-        context.get(), seed.WithPath(seed.path().AppendASCII("d 1"))));
-    context.reset(NewContext());
-    EXPECT_TRUE(file_util()->PathExists(
-        context.get(), root.WithPath(root.path().AppendASCII("file 0"))));
-    context.reset(NewContext());
-    EXPECT_FALSE(file_util()->DirectoryExists(
-        context.get(), seed.WithPath(seed.path().AppendASCII("file 0"))));
-    context.reset(NewContext());
-    EXPECT_TRUE(file_util()->PathExists(
-        context.get(),
+    EXPECT_TRUE(DirectoryExists(seed));
+    EXPECT_TRUE(DirectoryExists(
+        seed.WithPath(seed.path().Append(seed_file_path))));
+    EXPECT_TRUE(DirectoryExists(
+        seed.WithPath(seed.path().AppendASCII("d 0"))));
+    EXPECT_TRUE(DirectoryExists(
+        seed.WithPath(seed.path().AppendASCII("d 1"))));
+    EXPECT_TRUE(PathExists(
+        root.WithPath(root.path().AppendASCII("file 0"))));
+    EXPECT_FALSE(DirectoryExists(
+        seed.WithPath(seed.path().AppendASCII("file 0"))));
+    EXPECT_TRUE(PathExists(
         seed.WithPath(seed.path().AppendASCII("d 0").AppendASCII("file 1"))));
-    context.reset(NewContext());
-    EXPECT_FALSE(file_util()->DirectoryExists(
-        context.get(),
+    EXPECT_FALSE(DirectoryExists(
         seed.WithPath(seed.path().AppendASCII("d 0").AppendASCII("file 1"))));
-    context.reset(NewContext());
-    EXPECT_TRUE(file_util()->PathExists(
-        context.get(),
+    EXPECT_TRUE(PathExists(
         seed.WithPath(seed.path().AppendASCII("d 0").AppendASCII("file 2"))));
-    context.reset(NewContext());
-    EXPECT_FALSE(file_util()->DirectoryExists(
-        context.get(),
+    EXPECT_FALSE(DirectoryExists(
         seed.WithPath(seed.path().AppendASCII("d 0").AppendASCII("file 2"))));
   }
 

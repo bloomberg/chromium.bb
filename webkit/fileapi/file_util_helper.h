@@ -21,6 +21,16 @@ class FileSystemURL;
 // FileSystemFileUtilProxy.  The method should be called on FILE thread.
 class FILEAPI_EXPORT_PRIVATE FileUtilHelper {
  public:
+  static bool PathExists(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* file_util,
+      const FileSystemURL& url);
+
+  static bool DirectoryExists(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* file_util,
+      const FileSystemURL& url);
+
   static base::PlatformFileError Copy(
       FileSystemOperationContext* context,
       FileSystemFileUtil* src_file_util,

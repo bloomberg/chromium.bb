@@ -71,18 +71,6 @@ PlatformFileError NativeMediaFileUtil::Truncate(
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
-bool NativeMediaFileUtil::PathExists(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  DCHECK(context);
-
-  FilePath path;
-  PlatformFileInfo file_info;
-  PlatformFileError error =
-      GetFileInfo(context, url, &file_info, &path);
-  return error == base::PLATFORM_FILE_OK;
-}
-
 bool NativeMediaFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {

@@ -39,9 +39,6 @@ class FILEAPI_EXPORT_PRIVATE NativeMediaFileUtil : public IsolatedFileUtil {
       FileSystemOperationContext* context,
       const FileSystemURL& url,
       int64 length) OVERRIDE;
-  virtual bool PathExists(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url) OVERRIDE;
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;

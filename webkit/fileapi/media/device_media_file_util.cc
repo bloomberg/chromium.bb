@@ -116,26 +116,6 @@ PlatformFileError DeviceMediaFileUtil::Truncate(
   return base::PLATFORM_FILE_ERROR_SECURITY;
 }
 
-bool DeviceMediaFileUtil::PathExists(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  if (!context->media_device())
-    return false;
-
-  FilePath path;
-  PlatformFileInfo file_info;
-  PlatformFileError error = GetFileInfo(context, url, &file_info, &path);
-  return error == base::PLATFORM_FILE_OK;
-}
-
-bool DeviceMediaFileUtil::DirectoryExists(
-    FileSystemOperationContext* context,
-    const FileSystemURL& url) {
-  if (!context->media_device())
-    return false;
-  return context->media_device()->DirectoryExists(url.path());
-}
-
 bool DeviceMediaFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
