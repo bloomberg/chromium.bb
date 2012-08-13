@@ -51,11 +51,17 @@ struct NaClThreadContext {
   /*            30 */
   uint32_t  tls_idx;
   /*            34 */
+  uint32_t  fpscr;
+  /*            38 */
+  uint32_t  sys_fpscr;
+  /*            3c */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
 
 #define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x30
+#define NACL_THREAD_CONTEXT_OFFSET_FPSCR 0x38
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR 0x3c
 
 #if !defined(__ASSEMBLER__)
 
@@ -68,6 +74,12 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_COMPILE_TIME_ASSERT(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR
                            == offsetof(struct NaClThreadContext,
                                        trusted_stack_ptr));
+  NACL_COMPILE_TIME_ASSERT(NACL_THREAD_CONTEXT_OFFSET_FPSCR
+                           == offsetof(struct NaClThreadContext,
+                                       fpscr));
+  NACL_COMPILE_TIME_ASSERT(NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR
+                           == offsetof(struct NaClThreadContext,
+                                       sys_fpscr));
 }
 
 #endif /* !defined(__ASSEMBLER__) */

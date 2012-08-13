@@ -36,7 +36,4 @@ if (not env.Bit('pnacl_generate_pexe') and
                          'run_fpu_control_word_test',
                          # Valgrind apparenty doesn't implement
                          # fnstcw;fldcw correctly.
-                         is_broken=(env.IsRunningUnderValgrind() or
-# TODO(mcgrathr): Fails on ARM waiting for fix to
-# http://code.google.com/p/nativeclient/issues/detail?id=2955
-                                    env.Bit('target_arm')))
+                         is_broken=env.IsRunningUnderValgrind())

@@ -72,8 +72,18 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   /* store thread state to the nacl_user entry */
   stmia r1, NACL_CALLEE_SAVE_LIST
 
+  /*
+   * Store the untrusted fpscr state and load the trusted fpscr into r2.
+   */
+  vmrs ip, fpscr
+  str ip, [r1, #NACL_THREAD_CONTEXT_OFFSET_FPSCR]
+  ldr r2, [r1, #NACL_THREAD_CONTEXT_OFFSET_SYS_FPSCR]
+
   /* Restore the trusted stack */
   ldr  sp, [r1, #NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR]
+
+  /* Restore the trusted fpscr. */
+  vmsr fpscr, r2
 
   bl  NaClSyscallCSegHook
 

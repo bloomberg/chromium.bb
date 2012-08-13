@@ -29,7 +29,7 @@
         .p2align 4
         .globl set_fpcw
 set_fpcw:
-        .word 0xeee11a10 /* vmsr fpscr, r1 */
+        .word 0xeee10a10 /* vmsr fpscr, r0 */
 .Lret:  bic lr, lr, #0xc000000f
         bx lr
 

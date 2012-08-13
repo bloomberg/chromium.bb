@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 
 .text
 
@@ -22,16 +23,25 @@
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSwitch):
 
 /*
- * We clear registers r2, r3, r12 (ip), lr, flag and status fields in
+ * Load the untrusted code's value of the fpscr into a scratch register.
+ */
+  ldr ip, [r0, #NACL_THREAD_CONTEXT_OFFSET_FPSCR]
+
+/*
+ * We clear registers r2, r3, lr, flag and status fields in
  * CPSR (status register) to avoid information leaks.  The remaining
  * registers are overwritten by the code that follows after.
  */
 
   mov r2, #0
   mov r3, #0
-  mov r12, #0
   mov lr, #0
   msr cpsr_fs, #0
+
+/*
+ * Restore the untrusted code's fpscr state.
+ */
+  vmsr fpscr, ip
 
   ldmia r0!, NACL_CALLEE_SAVE_LIST
   add r0, #4  /* skip prog_ctr in struct NaClThreadContext */
