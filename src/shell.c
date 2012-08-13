@@ -2636,15 +2636,15 @@ weston_surface_set_initial_position (struct weston_surface *surface,
 	range_y = (target_output->current->height - panel_height) -
 		  surface->geometry.height;
 
-	if (range_x < 0)
-		dx = 0;
-	else
+	if (range_x > 0)
 		dx = random() % range_x;
-
-	if (range_y < 0)
-		dy = panel_height;
 	else
+		dx = 0;
+
+	if (range_y > 0)
 		dy = panel_height + random() % range_y;
+	else
+		dy = panel_height;
 
 	x = target_output->x + dx;
 	y = target_output->y + dy;
