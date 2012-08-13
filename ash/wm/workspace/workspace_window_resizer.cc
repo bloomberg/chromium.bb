@@ -107,9 +107,9 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   gfx::Rect bounds =  // in |window()->parent()|'s coordinates.
       CalculateBoundsForDrag(details_, location_in_parent, grid_size);
 
-  if (wm::IsWindowNormal(details_.window))
+  if (wm::IsWindowNormal(window()))
     AdjustBoundsForMainWindow(&bounds, grid_size);
-  if (bounds != details_.window->bounds()) {
+  if (bounds != window()->bounds()) {
     if (!did_move_or_resize_)
       RestackWindows();
     did_move_or_resize_ = true;
@@ -130,8 +130,8 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location, int event_flags) {
 
   if (!attached_windows_.empty())
     LayoutAttachedWindows(bounds, grid_size);
-  if (bounds != details_.window->bounds())
-    details_.window->SetBounds(bounds);
+  if (bounds != window()->bounds())
+    window()->SetBounds(bounds);
   // WARNING: we may have been deleted.
 }
 
@@ -143,15 +143,15 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     return;
 
   if (snap_type_ == SNAP_LEFT_EDGE || snap_type_ == SNAP_RIGHT_EDGE) {
-    if (!GetRestoreBoundsInScreen(details_.window))
-      SetRestoreBoundsInParent(details_.window, details_.initial_bounds);
-    details_.window->SetBounds(snap_sizer_->target_bounds());
+    if (!GetRestoreBoundsInScreen(window()))
+      SetRestoreBoundsInParent(window(), details_.initial_bounds);
+    window()->SetBounds(snap_sizer_->target_bounds());
     return;
   }
 
   int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
                   0 : ash::Shell::GetInstance()->GetGridSize();
-  gfx::Rect bounds(GetFinalBounds(details_.window->bounds(), grid_size));
+  gfx::Rect bounds(GetFinalBounds(window()->bounds(), grid_size));
 
   // Check if the destination is another display.
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
@@ -163,26 +163,26 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
       gfx::Screen::GetDisplayNearestWindow(window()->GetRootWindow()).id()) {
     // Don't animate when moving to another display.
     const gfx::Rect dst_bounds =
-        ScreenAsh::ConvertRectToScreen(details_.window->parent(), bounds);
-    details_.window->SetBoundsInScreen(dst_bounds, dst_display);
+        ScreenAsh::ConvertRectToScreen(window()->parent(), bounds);
+    window()->SetBoundsInScreen(dst_bounds, dst_display);
     return;
   }
 
-  if (grid_size <= 1 || bounds == details_.window->bounds())
+  if (grid_size <= 1 || bounds == window()->bounds())
     return;
 
-  if (bounds.size() != details_.window->bounds().size()) {
+  if (bounds.size() != window()->bounds().size()) {
     // Don't attempt to animate a size change.
-    details_.window->SetBounds(bounds);
+    window()->SetBounds(bounds);
     return;
   }
 
   ui::ScopedLayerAnimationSettings scoped_setter(
-      details_.window->layer()->GetAnimator());
+      window()->layer()->GetAnimator());
   // Use a small duration since the grid is small.
   scoped_setter.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kSnapDurationMS));
-  details_.window->SetBounds(bounds);
+  window()->SetBounds(bounds);
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
@@ -193,7 +193,7 @@ void WorkspaceWindowResizer::RevertDrag() {
   if (!did_move_or_resize_)
     return;
 
-  details_.window->SetBounds(details_.initial_bounds);
+  window()->SetBounds(details_.initial_bounds);
   if (details_.window_component == HTRIGHT) {
     int last_x = details_.initial_bounds.right();
     for (size_t i = 0; i < attached_windows_.size(); ++i) {
@@ -362,7 +362,7 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
   // Always keep kMinOnscreenHeight on the bottom except when an extended
   // display is available and a window is being dragged.
   gfx::Rect work_area(
-      ScreenAsh::GetDisplayWorkAreaBoundsInParent(details_.window));
+      ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
   int max_y = AlignToGridRoundUp(work_area.bottom() - kMinOnscreenHeight,
                                  grid_size);
   if ((details_.window_component != HTCAPTION || !HasSecondaryRootWindow()) &&
@@ -421,9 +421,9 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
   gfx::Rect work_area(
-      ScreenAsh::GetDisplayWorkAreaBoundsInParent(details_.window));
+      ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
   return (attached_windows_.empty() &&
-          details_.window->bounds().bottom() == work_area.bottom()) ||
+          window()->bounds().bottom() == work_area.bottom()) ||
       (!attached_windows_.empty() &&
        attached_windows_.back()->bounds().bottom() == work_area.bottom());
 }
@@ -508,16 +508,16 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
     SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT_EDGE) ?
         SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
     snap_sizer_.reset(
-        new SnapSizer(details_.window, location, edge, grid_size));
+        new SnapSizer(window(), location, edge, grid_size));
   } else {
     snap_sizer_->Update(location);
   }
   if (!snap_phantom_window_controller_.get()) {
     snap_phantom_window_controller_.reset(
-        new PhantomWindowController(details_.window));
+        new PhantomWindowController(window()));
   }
   snap_phantom_window_controller_->Show(ScreenAsh::ConvertRectToScreen(
-      details_.window->parent(), snap_sizer_->target_bounds()));
+      window()->parent(), snap_sizer_->target_bounds()));
 }
 
 void WorkspaceWindowResizer::RestackWindows() {
@@ -527,10 +527,10 @@ void WorkspaceWindowResizer::RestackWindows() {
   // window with a different parent.
   typedef std::map<size_t, aura::Window*> IndexToWindowMap;
   IndexToWindowMap map;
-  aura::Window* parent = details_.window->parent();
+  aura::Window* parent = window()->parent();
   const aura::Window::Windows& windows(parent->children());
-  map[std::find(windows.begin(), windows.end(), details_.window) -
-      windows.begin()] = details_.window;
+  map[std::find(windows.begin(), windows.end(), window()) -
+      windows.begin()] = window();
   for (std::vector<aura::Window*>::const_iterator i =
            attached_windows_.begin(); i != attached_windows_.end(); ++i) {
     if ((*i)->parent() != parent)
@@ -555,7 +555,7 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total display area, not the area of a single
   // display.
-  gfx::Rect area(ScreenAsh::GetDisplayBoundsInParent(details_.window));
+  gfx::Rect area(ScreenAsh::GetDisplayBoundsInParent(window()));
   if (location.x() <= area.x())
     return SNAP_LEFT_EDGE;
   if (location.x() >= area.right() - 1)
