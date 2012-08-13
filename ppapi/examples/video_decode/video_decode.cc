@@ -459,7 +459,7 @@ void VideoDecodeDemoInstance::PictureReady(PP_Resource decoder,
 }
 
 void VideoDecodeDemoInstance::NotifyError(PP_Resource decoder,
-                                    PP_VideoDecodeError_Dev error) {
+                                          PP_VideoDecodeError_Dev error) {
   LogError(this).s() << "Received error: " << error;
   assert(!"Unexpected error; see stderr for details");
 }

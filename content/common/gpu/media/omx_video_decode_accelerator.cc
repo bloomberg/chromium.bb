@@ -289,7 +289,8 @@ void OmxVideoDecodeAccelerator::Decode(
     return;
   }
 
-  RETURN_ON_FAILURE(current_state_change_ == NO_TRANSITION &&
+  RETURN_ON_FAILURE((current_state_change_ == NO_TRANSITION ||
+                     current_state_change_ == FLUSHING) &&
                     (client_state_ == OMX_StateIdle ||
                      client_state_ == OMX_StateExecuting),
                     "Call to Decode() during invalid state or transition: "
@@ -298,6 +299,19 @@ void OmxVideoDecodeAccelerator::Decode(
 
   OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
   free_input_buffers_.pop();
+
+  if (bitstream_buffer.id() == -1 && bitstream_buffer.size() == 0) {
+    // Cook up an empty buffer w/ EOS set and feed it to OMX.
+    omx_buffer->nFilledLen = 0;
+    omx_buffer->nAllocLen = omx_buffer->nFilledLen;
+    omx_buffer->nFlags |= OMX_BUFFERFLAG_EOS;
+    omx_buffer->nTimeStamp = -2;
+    OMX_ERRORTYPE result = OMX_EmptyThisBuffer(component_handle_, omx_buffer);
+    RETURN_ON_OMX_FAILURE(result, "OMX_EmptyThisBuffer() failed",
+                          PLATFORM_FAILURE,);
+    input_buffers_at_component_++;
+    return;
+  }
 
   // Setup |omx_buffer|.
   scoped_ptr<base::SharedMemory> shm(
@@ -364,6 +378,7 @@ void OmxVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
   TRACE_EVENT1("Video Decoder", "OVDA::ReusePictureBuffer",
                "Picture id", picture_buffer_id);
   DCHECK_EQ(message_loop_, MessageLoop::current());
+
   RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
 
   OutputPictureById::iterator it = pictures_.find(picture_buffer_id);
@@ -385,17 +400,7 @@ void OmxVideoDecodeAccelerator::Flush() {
   DCHECK_EQ(client_state_, OMX_StateExecuting);
   current_state_change_ = FLUSHING;
 
-  // Cook up an empty buffer w/ EOS set and feed it to OMX.
-  OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
-  free_input_buffers_.pop();
-  omx_buffer->nFilledLen = 0;
-  omx_buffer->nAllocLen = omx_buffer->nFilledLen;
-  omx_buffer->nFlags |= OMX_BUFFERFLAG_EOS;
-  omx_buffer->nTimeStamp = -2;
-  OMX_ERRORTYPE result = OMX_EmptyThisBuffer(component_handle_, omx_buffer);
-  RETURN_ON_OMX_FAILURE(result, "OMX_EmptyThisBuffer() failed",
-                        PLATFORM_FAILURE,);
-  input_buffers_at_component_++;
+  Decode(media::BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
 }
 
 void OmxVideoDecodeAccelerator::OnReachedEOSInFlushing() {
@@ -535,6 +540,10 @@ void OmxVideoDecodeAccelerator::OnReachedPauseInResetting() {
 void OmxVideoDecodeAccelerator::DecodeQueuedBitstreamBuffers() {
   BitstreamBufferList buffers;
   buffers.swap(queued_bitstream_buffers_);
+  if (current_state_change_ == DESTROYING ||
+      current_state_change_ == ERRORING) {
+    return;
+  }
   for (size_t i = 0; i < buffers.size(); ++i)
     Decode(buffers[i]);
 }
