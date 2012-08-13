@@ -107,3 +107,7 @@ Later modifications (see chromium.patch):
   ir_to_mesa.cpp
   https://code.google.com/p/chromium/issues/detail?id=139772
   https://bugs.freedesktop.org/show_bug.cgi?id=52996
+
+- Suppressed the OOB read reported by AddressSanitizer in _mesa_add_parameter
+  from prog_parameter.c
+  http://code.google.com/p/chromium/issues/detail?id=142316
