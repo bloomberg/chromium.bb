@@ -353,6 +353,8 @@
         'cpp_variant.h',
         'dom_operations.cc',
         'dom_operations.h',
+        'fling_animator_impl_android.cc',
+        'fling_animator_impl_android.h',
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
         'gl_bindings_skia_cmd_buffer.cc',

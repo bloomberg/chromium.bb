@@ -48,6 +48,10 @@
 #include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/plugins/webplugininfo.h"
 
+#if defined(OS_ANDROID)
+#include "webkit/glue/fling_animator_impl_android.h"
+#endif
+
 #if defined(OS_LINUX)
 #include "v8/include/v8.h"
 #endif
@@ -788,5 +792,11 @@ void WebKitPlatformSupportImpl::didStopWorkerRunLoop(
   WorkerTaskRunner* worker_task_runner = WorkerTaskRunner::Instance();
   worker_task_runner->OnWorkerRunLoopStopped(runLoop);
 }
+
+#if defined(OS_ANDROID)
+WebKit::WebFlingAnimator* WebKitPlatformSupportImpl::createFlingAnimator() {
+  return new FlingAnimatorImpl();
+}
+#endif
 
 }  // namespace webkit_glue

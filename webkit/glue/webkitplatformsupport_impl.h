@@ -32,6 +32,7 @@ struct WebPluginInfo;
 }
 
 namespace WebKit {
+class WebFlingAnimator;
 class WebSocketStreamHandle;
 }
 
@@ -151,6 +152,10 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
       const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
   virtual void didStopWorkerRunLoop(
       const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
+
+#if defined(OS_ANDROID)
+  virtual WebKit::WebFlingAnimator* createFlingAnimator();
+#endif
 
  private:
   void DoTimeout() {
