@@ -78,10 +78,10 @@ AC_ARG_ENABLE(nouveau,
 	      [Enable support for nouveau's KMS API (default: auto)]),
 	      [NOUVEAU=$enableval], [NOUVEAU=auto])
 
-AC_ARG_ENABLE(vmwgfx-experimental-api,
-	      AS_HELP_STRING([--enable-vmwgfx-experimental-api],
-	      [Install vmwgfx's experimental kernel API header (default: disabled)]),
-	      [VMWGFX=$enableval], [VMWGFX=no])
+AC_ARG_ENABLE(vmwgfx,
+	      AS_HELP_STRING([--disable-vmwgfx],
+	      [Enable support for vmwgfx's KMS API (default: yes)]),
+	      [VMWGFX=$enableval], [VMWGFX=yes])
 
 AC_ARG_ENABLE(omap-experimental-api,
 	      AS_HELP_STRING([--enable-omap-experimental-api],
