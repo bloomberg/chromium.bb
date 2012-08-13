@@ -150,7 +150,7 @@ TEST_F(WindowManagerTest, Focus) {
   EXPECT_EQ(w12.get(), w12->GetFocusManager()->GetFocusedWindow());
 
   // Set the focus to w123, but make the w1 not activatable.
-  test::TestActivationDelegate *activation_delegate = new
+  test::TestActivationDelegate* activation_delegate = new
       test::TestActivationDelegate(false);
   w123->Focus();
   EXPECT_EQ(w123.get(), w12->GetFocusManager()->GetFocusedWindow());

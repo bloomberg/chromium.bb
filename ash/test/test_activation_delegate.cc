@@ -42,9 +42,11 @@ bool TestActivationDelegate::ShouldActivate(const ui::Event* event) {
   should_activate_count_++;
   return activate_;
 }
+
 void TestActivationDelegate::OnActivated() {
   activated_count_++;
 }
+
 void TestActivationDelegate::OnLostActive() {
   if (lost_active_count_++ == 0)
     window_was_active_ = wm::IsActiveWindow(window_);
