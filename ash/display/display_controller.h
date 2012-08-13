@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "ui/aura/display_observer.h"
 #include "ui/aura/display_manager.h"
 
@@ -90,6 +91,8 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   static bool IsExtendedDesktopEnabled();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, WarpMousePointer);
+
   // Creates a root window for |display| and stores it in the |root_windows_|
   // map.
   aura::RootWindow* AddRootWindowForDisplay(const gfx::Display& display);

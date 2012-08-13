@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
+#include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -644,6 +645,49 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   }
+}
+
+// Verifies if the resizer sets and resets DisplayController::dont_warp_mouse_
+// as expected.
+TEST_F(WorkspaceWindowResizerTest, WarpMousePointer) {
+  DisplayController* controller = Shell::GetInstance()->display_controller();
+  ASSERT_TRUE(controller);
+  window_->SetBounds(gfx::Rect(0, 0, 50, 60));
+
+  EXPECT_FALSE(controller->dont_warp_mouse_);
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    // While dragging a window, warp should be allowed.
+    EXPECT_FALSE(controller->dont_warp_mouse_);
+    resizer->CompleteDrag(0);
+  }
+  EXPECT_FALSE(controller->dont_warp_mouse_);
+
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    EXPECT_FALSE(controller->dont_warp_mouse_);
+    resizer->RevertDrag();
+  }
+  EXPECT_FALSE(controller->dont_warp_mouse_);
+
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTRIGHT, empty_windows()));
+    // While resizing a window, warp should NOT be allowed.
+    EXPECT_TRUE(controller->dont_warp_mouse_);
+    resizer->CompleteDrag(0);
+  }
+  EXPECT_FALSE(controller->dont_warp_mouse_);
+
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTRIGHT, empty_windows()));
+    EXPECT_TRUE(controller->dont_warp_mouse_);
+    resizer->RevertDrag();
+  }
+  EXPECT_FALSE(controller->dont_warp_mouse_);
 }
 
 // Verifies windows are correctly restacked when reordering multiple windows.
