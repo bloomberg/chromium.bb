@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/user_data_dir_dialog.h"
 #include "grit/chromium_strings.h"
@@ -56,14 +55,13 @@ void UserDataDirDialogView::DeleteDelegate() {
 }
 
 bool UserDataDirDialogView::Accept() {
-  // Directory picker
-  std::wstring dialog_title = UTF16ToWide(l10n_util::GetStringUTF16(
-      IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON));
+  // Directory picker.
   HWND owning_hwnd =
       GetAncestor(message_box_view_->GetWidget()->GetNativeView(), GA_ROOT);
   select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_FOLDER,
-                                  dialog_title, FilePath(), NULL, 0,
-                                  FilePath::StringType(), owning_hwnd, NULL);
+      l10n_util::GetStringUTF16(
+          IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON), FilePath(),
+      NULL, 0, FilePath::StringType(), owning_hwnd, NULL);
   return false;
 }
 
