@@ -105,7 +105,10 @@ _mesa_free_parameter_list(struct gl_program_parameter_list *paramList)
  * \param state  state indexes, or NULL
  * \return  index of new parameter in the list, or -1 if error (out of mem)
  */
+#if defined(ADDRESS_SANITIZER)
+// See http://crbug.com/142316.
 __attribute__((no_address_safety_analysis))
+#endif
 GLint
 _mesa_add_parameter(struct gl_program_parameter_list *paramList,
                     gl_register_file type, const char *name,
