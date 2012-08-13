@@ -904,7 +904,8 @@ void UserManagerImpl::NotifyOnLogin() {
 
 void UserManagerImpl::SetInitialUserImage(const std::string& username) {
   // Choose a random default image.
-  int image_id = base::RandInt(0, kDefaultImagesCount - 1);
+  int image_id =
+      base::RandInt(kFirstDefaultImageIndex, kDefaultImagesCount - 1);
   SaveUserDefaultImageIndex(username, image_id);
 }
 
