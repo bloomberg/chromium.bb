@@ -1,4 +1,4 @@
-/* native_client//home/khim/work/nacl-enuminsts/native_client/src/trusted/validator_ragel/gen/validator_x86_64.c
+/* native_client//home/khim/work/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_64.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for x86-64 mode.
  */
@@ -26,39 +26,39 @@ static const int x86_64_validator_en_main = 907;
 
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
+                       enum validation_options options,
                        const NaClCPUFeaturesX86 *cpu_features,
                        process_validation_error_func process_error,
                        void *userdata) {
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
-
-  const uint8_t *current_position = data;
-
-  uint8_t rex_prefix = FALSE;
-  uint8_t vex_prefix2 = 0xe0;
-  uint8_t vex_prefix3 = 0x00;
-  /* Keeps one byte of information per operand in the current instruction:
-   *  2 bits for register kinds,
-   *  5 bits for register numbers (16 regs plus RIZ). */
-  uint32_t operand_states = 0;
-  enum register_name base = NO_REG;
-  enum register_name index = NO_REG;
+  const uint8_t *current_position;
+  const uint8_t *end_of_bundle;
   int result = 0;
-
-  size_t i;
-
-  uint32_t errors_detected = 0;
+  size_t i = options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM? size : kBundleSize;
 
   assert(size % kBundleSize == 0);
 
   if (!valid_targets || !jump_dests) goto error_detected;
 
-  while (current_position < data + size) {
+  for (current_position = data, end_of_bundle = current_position + i;
+       current_position < data + size;
+       current_position = end_of_bundle,
+       end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
-    const uint8_t *end_of_bundle = current_position + kBundleSize;
-    enum register_name restricted_register = NO_REG;
     int current_state;
+    uint32_t errors_detected = 0;
+    /* Keeps one byte of information per operand in the current instruction:
+     *  2 bits for register kinds,
+     *  5 bits for register numbers (16 regs plus RIZ). */
+    uint32_t operand_states = 0;
+    enum register_name base = NO_REG;
+    enum register_name index = NO_REG;
+    enum register_name restricted_register = NO_REG;
+    uint8_t rex_prefix = FALSE;
+    uint8_t vex_prefix2 = 0xe0;
+    uint8_t vex_prefix3 = 0x00;
 
     
 	{
@@ -2307,6 +2307,8 @@ tr0:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2333,6 +2335,8 @@ tr7:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2367,6 +2371,8 @@ tr8:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2395,6 +2401,8 @@ tr13:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2423,6 +2431,8 @@ tr14:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2461,6 +2471,8 @@ tr17:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2487,6 +2499,8 @@ tr24:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2522,6 +2536,8 @@ tr25:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2551,6 +2567,8 @@ tr30:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2580,6 +2598,8 @@ tr31:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2602,6 +2622,8 @@ tr34:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2624,6 +2646,8 @@ tr38:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2644,6 +2668,8 @@ tr41:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2667,6 +2693,8 @@ tr43:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2690,6 +2718,8 @@ tr51:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2713,6 +2743,8 @@ tr60:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2742,6 +2774,8 @@ tr76:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2772,6 +2806,8 @@ tr80:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2802,6 +2838,8 @@ tr81:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2825,6 +2863,8 @@ tr82:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2856,6 +2896,8 @@ tr83:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2886,6 +2928,8 @@ tr90:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2910,6 +2954,8 @@ tr95:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2934,6 +2980,8 @@ tr96:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2957,6 +3005,8 @@ tr107:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -2992,6 +3042,8 @@ tr117:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3015,6 +3067,8 @@ tr124:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3043,6 +3097,8 @@ tr125:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3064,6 +3120,8 @@ tr144:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3088,6 +3146,8 @@ tr158:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3123,6 +3183,8 @@ tr160:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3158,6 +3220,8 @@ tr163:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3181,6 +3245,8 @@ tr174:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3204,6 +3270,8 @@ tr175:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3235,6 +3303,8 @@ tr176:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3270,6 +3340,8 @@ tr187:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3294,6 +3366,8 @@ tr197:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3315,6 +3389,8 @@ tr201:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3340,6 +3416,8 @@ tr209:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3369,6 +3447,8 @@ tr210:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3407,6 +3487,8 @@ tr218:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3442,6 +3524,8 @@ tr219:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3465,6 +3549,8 @@ tr220:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3499,6 +3585,8 @@ tr292:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3530,6 +3618,8 @@ tr299:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3555,6 +3645,8 @@ tr304:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3580,6 +3672,8 @@ tr305:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3609,6 +3703,8 @@ tr308:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3638,6 +3734,8 @@ tr309:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3667,6 +3765,8 @@ tr310:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3702,6 +3802,8 @@ tr311:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3725,6 +3827,8 @@ tr318:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3755,6 +3859,8 @@ tr319:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3790,6 +3896,8 @@ tr341:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3819,6 +3927,8 @@ tr356:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3854,6 +3964,8 @@ tr360:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3871,6 +3983,8 @@ tr372:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3893,6 +4007,8 @@ tr381:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3922,6 +4038,8 @@ tr382:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3945,6 +4063,8 @@ tr395:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3968,6 +4088,8 @@ tr399:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -3997,6 +4119,8 @@ tr410:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4032,6 +4156,8 @@ tr419:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4054,6 +4180,8 @@ tr430:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4077,6 +4205,8 @@ tr451:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4098,6 +4228,8 @@ tr490:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4127,6 +4259,8 @@ tr526:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4149,6 +4283,8 @@ tr574:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4173,6 +4309,8 @@ tr580:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4195,6 +4333,8 @@ tr581:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4225,6 +4365,8 @@ tr696:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4255,6 +4397,8 @@ tr702:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4297,6 +4441,8 @@ tr740:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4329,6 +4475,8 @@ tr744:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4371,6 +4519,8 @@ tr747:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4403,6 +4553,8 @@ tr751:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4424,6 +4576,8 @@ tr868:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4459,6 +4613,8 @@ tr964:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4482,6 +4638,8 @@ tr967:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4512,6 +4670,8 @@ tr1083:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4542,6 +4702,8 @@ tr1088:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4584,6 +4746,8 @@ tr1106:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4626,6 +4790,8 @@ tr1110:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4649,6 +4815,8 @@ tr1178:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4671,6 +4839,8 @@ tr1206:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4693,6 +4863,8 @@ tr1217:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4715,6 +4887,8 @@ tr1239:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4737,6 +4911,8 @@ tr1329:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4765,6 +4941,8 @@ tr1404:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4797,6 +4975,8 @@ tr1405:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4820,6 +5000,8 @@ tr1419:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -4858,6 +5040,8 @@ tr1420:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -6602,7 +6786,7 @@ tr39:
 	{
         process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
-        goto error_detected;
+        continue;
     }
 	goto st0;
 st0:
@@ -9682,6 +9866,8 @@ tr328:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -9869,9 +10055,9 @@ st159:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof159;
 case 159:
-	if ( 128u <= (*( current_position)) )
-		goto tr41;
-	goto tr34;
+	if ( (*( current_position)) <= 127u )
+		goto tr34;
+	goto tr41;
 tr338:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
@@ -10092,6 +10278,8 @@ tr393:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11468,6 +11656,8 @@ tr566:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11534,6 +11724,8 @@ tr568:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11586,6 +11778,8 @@ tr569:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11612,6 +11806,8 @@ tr584:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11699,6 +11895,8 @@ tr573:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11806,6 +12004,8 @@ tr576:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11832,6 +12032,8 @@ tr1203:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -11919,6 +12121,8 @@ tr579:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -12054,6 +12258,8 @@ tr570:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -12080,6 +12286,8 @@ tr585:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -12167,6 +12375,8 @@ tr588:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -14628,6 +14838,8 @@ tr1421:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19396,6 +19608,8 @@ tr1215:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19478,6 +19692,8 @@ tr1218:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19560,6 +19776,8 @@ tr1220:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19642,6 +19860,8 @@ tr1222:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19724,6 +19944,8 @@ tr1224:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19806,6 +20028,8 @@ tr1226:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19888,6 +20112,8 @@ tr1228:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -19962,6 +20188,8 @@ tr1230:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20065,6 +20293,8 @@ tr1238:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20135,6 +20365,8 @@ tr1240:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20205,6 +20437,8 @@ tr1241:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20275,6 +20509,8 @@ tr1242:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20345,6 +20581,8 @@ tr1243:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20425,6 +20663,8 @@ tr1245:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20630,6 +20870,8 @@ tr1254:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -20823,6 +21065,8 @@ tr1263:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -21028,6 +21272,8 @@ tr1272:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -21221,6 +21467,8 @@ tr1281:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -21426,6 +21674,8 @@ tr1290:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -21619,6 +21869,8 @@ tr1299:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -21824,6 +22076,8 @@ tr1308:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22017,6 +22271,8 @@ tr1317:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22334,6 +22590,8 @@ tr1327:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22408,6 +22666,8 @@ tr1330:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22474,6 +22734,8 @@ tr1332:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22548,6 +22810,8 @@ tr1334:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22614,6 +22878,8 @@ tr1336:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22688,6 +22954,8 @@ tr1338:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22754,6 +23022,8 @@ tr1340:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -22828,6 +23098,8 @@ tr1342:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -23021,6 +23293,8 @@ tr1352:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -23221,6 +23495,8 @@ tr1361:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -23414,6 +23690,8 @@ tr1371:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -23614,6 +23892,8 @@ tr1380:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -23680,6 +23960,8 @@ tr1382:
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -25595,7 +25877,7 @@ case 906:
 	{
         process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
-        goto error_detected;
+        continue;
     }
 	break;
 	}

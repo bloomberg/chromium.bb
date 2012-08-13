@@ -43,7 +43,8 @@ static NaClValidationStatus ApplyDfaValidator_x86_64(
   if (!NaClArchSupported(cpu_features)) {
     return NaClValidationFailedCpuNotSupported;
   }
-  if (ValidateChunkAMD64(data, size, cpu_features, ProcessError, 0) == 0) {
+  if (ValidateChunkAMD64(data, size, 0 /*options*/, cpu_features,
+                         ProcessError, NULL) == 0) {
     return NaClValidationSucceeded;
   }
   return NaClValidationFailed;

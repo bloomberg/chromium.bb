@@ -282,6 +282,8 @@
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -296,7 +298,7 @@
     $err{
         process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
-        goto error_detected;
+        continue;
     };
 
 }%%
@@ -304,39 +306,39 @@
 %% write data;
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
+                       enum validation_options options,
                        const NaClCPUFeaturesX86 *cpu_features,
                        process_validation_error_func process_error,
                        void *userdata) {
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
-
-  const uint8_t *current_position = data;
-
-  uint8_t rex_prefix = FALSE;
-  uint8_t vex_prefix2 = 0xe0;
-  uint8_t vex_prefix3 = 0x00;
-  /* Keeps one byte of information per operand in the current instruction:
-   *  2 bits for register kinds,
-   *  5 bits for register numbers (16 regs plus RIZ). */
-  uint32_t operand_states = 0;
-  enum register_name base = NO_REG;
-  enum register_name index = NO_REG;
+  const uint8_t *current_position;
+  const uint8_t *end_of_bundle;
   int result = 0;
-
-  size_t i;
-
-  uint32_t errors_detected = 0;
+  size_t i = options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM? size : kBundleSize;
 
   assert(size % kBundleSize == 0);
 
   if (!valid_targets || !jump_dests) goto error_detected;
 
-  while (current_position < data + size) {
+  for (current_position = data, end_of_bundle = current_position + i;
+       current_position < data + size;
+       current_position = end_of_bundle,
+       end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
-    const uint8_t *end_of_bundle = current_position + kBundleSize;
-    enum register_name restricted_register = NO_REG;
     int current_state;
+    uint32_t errors_detected = 0;
+    /* Keeps one byte of information per operand in the current instruction:
+     *  2 bits for register kinds,
+     *  5 bits for register numbers (16 regs plus RIZ). */
+    uint32_t operand_states = 0;
+    enum register_name base = NO_REG;
+    enum register_name index = NO_REG;
+    enum register_name restricted_register = NO_REG;
+    uint8_t rex_prefix = FALSE;
+    uint8_t vex_prefix2 = 0xe0;
+    uint8_t vex_prefix3 = 0x00;
 
     %% write init;
     %% write exec;

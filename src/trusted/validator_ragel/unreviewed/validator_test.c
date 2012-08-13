@@ -181,7 +181,15 @@ void ProcessError(const uint8_t *ptr, uint32_t validation_error,
     printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n",
                   (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
   }
+  if (validation_error & UNRESTRICTED_RBP_PROCESSED) {
+    printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
   if (validation_error & RESTRICTED_RSP_UNPROCESSED) {
+    printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n",
+                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
+  }
+  if (validation_error & UNRESTRICTED_RSP_PROCESSED) {
     printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n",
                   (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
   }
@@ -248,7 +256,8 @@ int ValidateFile(const char *filename, int repeat_count,
           CheckBounds(data, data_size,
                       data + section->sh_offset, section->sh_size);
           res = ValidateChunkIA32(data + section->sh_offset, section->sh_size,
-                                  cpu_features, ProcessError, &state);
+                                  0 /*options*/, cpu_features,
+                                  ProcessError, &state);
           if (res != 0) {
             return res;
           }
@@ -287,6 +296,7 @@ int ValidateFile(const char *filename, int repeat_count,
                       data + section->sh_offset, (size_t)section->sh_size);
           res = ValidateChunkAMD64(data + section->sh_offset,
                                    (size_t)section->sh_size,
+                                   0 /*options*/,
                                    cpu_features, ProcessError, &state);
           if (res != 0) {
             return res;

@@ -76,6 +76,8 @@
        if (errors_detected) {
          process_error(instruction_start, errors_detected, userdata);
          result = 1;
+       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         process_error(instruction_start, errors_detected, userdata);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -86,7 +88,7 @@
     $err{
         process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
         result = 1;
-        goto error_detected;
+        continue;
     };
 
 }%%
@@ -95,28 +97,28 @@
 
 
 int ValidateChunkIA32(const uint8_t *data, size_t size,
+                      enum validation_options options,
                       const NaClCPUFeaturesX86 *cpu_features,
                       process_validation_error_func process_error,
                       void *userdata) {
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
-
-  const uint8_t *current_position = data;
-
+  const uint8_t *current_position;
+  const uint8_t *end_of_bundle;
   int result = 0;
-
-  size_t i;
-
-  uint32_t errors_detected = 0;
+  size_t i = options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM? size : kBundleSize;
 
   assert(size % kBundleSize == 0);
 
   if (!valid_targets || !jump_dests) goto error_detected;
 
-  while (current_position < data + size) {
+  for (current_position = data, end_of_bundle = current_position + i;
+       current_position < data + size;
+       current_position = end_of_bundle,
+       end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
-    const uint8_t *end_of_bundle = current_position + kBundleSize;
+    uint32_t errors_detected = 0;
     int current_state;
 
     %% write init;

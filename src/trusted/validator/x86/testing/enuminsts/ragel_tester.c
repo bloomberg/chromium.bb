@@ -182,8 +182,8 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
     /* Fill the rest with HLTs.  */
     memset(chunk + tempstate.inst_num_bytes, 0xf4,
            sizeof(chunk) - tempstate.inst_num_bytes);
-    ValidateChunkArch(chunk, sizeof(chunk), &old_validator_features,
-                      RagelValidateError, &RState);
+    ValidateChunkArch(chunk, sizeof(chunk), 0 /*options*/,
+                      &old_validator_features, RagelValidateError, &RState);
   }
 
 #undef DecodeChunkArch

@@ -47,16 +47,25 @@ enum validation_errors {
 #define kBundleSize 32
 #define kBundleMask 31
 
+enum validation_options {
+  /* Call process_error function on instruction.  */
+  CALL_USER_FUNCTION_ON_EACH_INSTRUCTION = 0x00000001,
+  /* Process all instruction as a contiguous stream.  */
+  PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM   = 0x00000002
+};
+
 typedef void (*process_validation_error_func) (const uint8_t *ptr,
                                                uint32_t validation_error,
                                                void *userdata);
 
 int ValidateChunkAMD64(const uint8_t *data, size_t size,
+                       enum validation_options options,
                        const NaClCPUFeaturesX86 *cpu_features,
                        process_validation_error_func process_error,
                        void *userdata);
 
 int ValidateChunkIA32(const uint8_t *data, size_t size,
+                      enum validation_options options,
                       const NaClCPUFeaturesX86 *cpu_features,
                       process_validation_error_func process_error,
                       void *userdata);
