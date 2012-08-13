@@ -118,6 +118,7 @@ PlatformFileError IsolatedFileUtil::GetLocalFilePath(
     const FileSystemURL& url,
     FilePath* local_file_path) {
   DCHECK(local_file_path);
+  DCHECK(url.is_valid());
   if (url.path().empty()) {
     // Root direcory case, which should not be accessed.
     return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
@@ -137,6 +138,7 @@ PlatformFileError DraggedFileUtil::GetFileInfo(
     FilePath* platform_path) {
   DCHECK(file_info);
   std::string filesystem_id;
+  DCHECK(url.is_valid());
   if (url.path().empty()) {
     // The root directory case.
     // For now we leave three time fields (modified/accessed/creation time)
@@ -164,6 +166,7 @@ DraggedFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemURL& root,
     bool recursive) {
+  DCHECK(root.is_valid());
   if (!root.path().empty())
     return NativeFileUtil::CreateFileEnumerator(root.path(), recursive);
 
@@ -179,6 +182,7 @@ DraggedFileUtil::CreateFileEnumerator(
 bool DraggedFileUtil::IsDirectoryEmpty(
     FileSystemOperationContext* context,
     const FileSystemURL& url) {
+  DCHECK(url.is_valid());
   if (url.path().empty()) {
     // The root directory case.
     std::vector<FileInfo> toplevels;
