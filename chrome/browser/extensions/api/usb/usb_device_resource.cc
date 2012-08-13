@@ -111,17 +111,18 @@ static bool GetTransferSize(const T& input, size_t* output) {
 template<class T>
 static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
   size_t size = 0;
-  if (!GetTransferSize(input, &size)) {
+  if (!GetTransferSize(input, &size))
     return NULL;
-  }
 
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(size);
-  if (!input.data.get()) {
+  // Allocate a |size|-bytes buffer, or a one-byte buffer if |size| is 0. This
+  // is due to an impedance mismatch between IOBuffer and URBs. An IOBuffer
+  // cannot represent a zero-length buffer, while an URB can.
+  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(std::max(
+      static_cast<size_t>(1), size));
+  if (!input.data.get())
     return buffer;
-  }
 
   memcpy(buffer->data(), input.data->data(), size);
-
   return buffer;
 }
 
