@@ -148,10 +148,10 @@ void MediaGalleriesDialogController::LookUpPermissions() {
     known_galleries_[iter->first] = GalleryPermission(iter->second, false);
   }
 
-  std::set<MediaGalleryPrefId> permitted =
+  MediaGalleryPrefIdSet permitted =
       preferences_->GalleriesForExtension(extension_);
 
-  for (std::set<MediaGalleryPrefId>::iterator iter = permitted.begin();
+  for (MediaGalleryPrefIdSet::iterator iter = permitted.begin();
        iter != permitted.end(); ++iter) {
     known_galleries_[*iter].allowed = true;
   }

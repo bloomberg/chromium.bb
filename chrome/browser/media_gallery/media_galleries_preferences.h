@@ -65,6 +65,7 @@ struct MediaGalleryPrefInfo {
 
 typedef std::map<MediaGalleryPrefId, MediaGalleryPrefInfo>
     MediaGalleriesPrefInfoMap;
+typedef std::set<MediaGalleryPrefId> MediaGalleryPrefIdSet;
 
 // A class to manage the media gallery preferences.  There is one instance per
 // user profile.
@@ -85,6 +86,9 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   bool LookUpGalleryByPath(const FilePath& path,
                            MediaGalleryPrefInfo* gallery) const;
 
+  MediaGalleryPrefIdSet LookUpGalleriesByDeviceId(
+      const std::string& device_id) const;
+
   // Teaches the registry about a new gallery.
   MediaGalleryPrefId AddGallery(const std::string& device_id,
                                 const string16& display_name,
@@ -99,7 +103,7 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   // Removes the gallery identified by |id| from the store.
   void ForgetGalleryById(MediaGalleryPrefId id);
 
-  std::set<MediaGalleryPrefId> GalleriesForExtension(
+  MediaGalleryPrefIdSet GalleriesForExtension(
       const extensions::Extension& extension) const;
 
   void SetGalleryPermissionForExtension(const extensions::Extension& extension,
@@ -123,11 +127,17 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
   static string16 ComputeDisplayName(const FilePath& path);
 
  private:
+  typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>
+      DeviceIdPrefIdsMap;
+
   // The profile that owns |this|.
   Profile* profile_;
 
   // An in-memory cache of known galleries.
   MediaGalleriesPrefInfoMap known_galleries_;
+
+  // A mapping from device id to the set of gallery pref ids on that device.
+  DeviceIdPrefIdsMap device_map_;
 
   extensions::ExtensionPrefs* GetExtensionPrefs() const;
 

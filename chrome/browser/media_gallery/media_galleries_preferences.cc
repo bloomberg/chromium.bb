@@ -116,23 +116,6 @@ DictionaryValue* CreateGalleryPrefInfoDictionary(
   return dict;
 }
 
-bool FindPrefIdFromDeviceId(const MediaGalleriesPrefInfoMap& known_galleries,
-                            const std::string& device_id,
-                            MediaGalleryPrefId* pref_id)  {
-  // TODO(vandebo) Handle multiple galleries that use different paths.
-  // TODO(vandebo) Should we keep a second map device_id->pref_id?
-  for (MediaGalleriesPrefInfoMap::const_iterator it = known_galleries.begin();
-       it != known_galleries.end();
-       ++it) {
-    if (it->second.device_id == device_id) {
-      if (pref_id)
-        *pref_id = it->second.pref_id;
-      return true;
-    }
-  }
-  return false;
-}
-
 FilePath MakePathRelative(FilePath path) {
   if (!path.IsAbsolute())
     return path;
@@ -182,6 +165,7 @@ MediaGalleriesPreferences::~MediaGalleriesPreferences() {}
 
 void MediaGalleriesPreferences::InitFromPrefs() {
   known_galleries_.clear();
+  device_map_.clear();
 
   PrefService* prefs = profile_->GetPrefs();
   const ListValue* list = prefs->GetList(
@@ -197,6 +181,7 @@ void MediaGalleriesPreferences::InitFromPrefs() {
     MediaGalleryPrefInfo gallery_info;
     if (PopulateGalleryPrefInfoFromDictionary(*dict, &gallery_info))
       known_galleries_[gallery_info.pref_id] = gallery_info;
+      device_map_[gallery_info.device_id].insert(gallery_info.pref_id);
   }
 }
 
@@ -205,47 +190,70 @@ bool MediaGalleriesPreferences::LookUpGalleryByPath(
     MediaGalleryPrefInfo* gallery_info) const {
   std::string device_id =
       MediaFileSystemRegistry::GetInstance()->GetDeviceIdFromPath(path);
-  MediaGalleryPrefId pref_id;
-  if (!FindPrefIdFromDeviceId(known_galleries_, device_id, &pref_id)) {
-    if (gallery_info) {
-      gallery_info->pref_id = kInvalidMediaGalleryPrefId;
-      gallery_info->display_name = ComputeDisplayName(path);
-      gallery_info->device_id = device_id;
-      gallery_info->path = MakePathRelative(path);
-      gallery_info->type = MediaGalleryPrefInfo::kUserAdded;
-    }
-    return false;
+  FilePath relative_path = MakePathRelative(path);
+  MediaGalleryPrefIdSet galleries_on_device =
+    LookUpGalleriesByDeviceId(device_id);
+  for (MediaGalleryPrefIdSet::const_iterator it = galleries_on_device.begin();
+       it != galleries_on_device.end();
+       ++it) {
+    const MediaGalleryPrefInfo& gallery = known_galleries_.find(*it)->second;
+    if (gallery.path != relative_path)
+      continue;
+
+    if (gallery_info)
+      *gallery_info = gallery;
+    return true;
   }
 
   if (gallery_info) {
-    MediaGalleriesPrefInfoMap::const_iterator it =
-        known_galleries_.find(pref_id);
-    DCHECK(it != known_galleries_.end());
-    *gallery_info = it->second;
+    gallery_info->pref_id = kInvalidMediaGalleryPrefId;
+    gallery_info->display_name = ComputeDisplayName(path);
+    gallery_info->device_id = device_id;
+    gallery_info->path = relative_path;
+    gallery_info->type = MediaGalleryPrefInfo::kUserAdded;
   }
-  return true;
+  return false;
 }
+
+MediaGalleryPrefIdSet MediaGalleriesPreferences::LookUpGalleriesByDeviceId(
+    const std::string& device_id) const {
+  DeviceIdPrefIdsMap::const_iterator found = device_map_.find(device_id);
+  if (found == device_map_.end()) {
+    MediaGalleryPrefIdSet result;
+    return result;
+  }
+
+  return found->second;
+}
+
 
 MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
     const std::string& device_id, const string16& display_name,
     const FilePath& path, bool user_added) {
   DCHECK(display_name.length() > 0);
-  MediaGalleryPrefId existing_id;
-  if (FindPrefIdFromDeviceId(known_galleries_, device_id, &existing_id)) {
-    const MediaGalleryPrefInfo& existing = known_galleries_[existing_id];
+  FilePath relative_path = MakePathRelative(path);
+  MediaGalleryPrefIdSet galleries_on_device =
+    LookUpGalleriesByDeviceId(device_id);
+  for (MediaGalleryPrefIdSet::const_iterator it = galleries_on_device.begin();
+       it != galleries_on_device.end();
+       ++it) {
+    if (known_galleries_[*it].path != relative_path)
+      continue;
+
+    const MediaGalleryPrefInfo& existing = known_galleries_[*it];
     if (existing.type == MediaGalleryPrefInfo::kBlackListed) {
       PrefService* prefs = profile_->GetPrefs();
       ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
       ListValue* list = update.Get();
 
-      for (ListValue::const_iterator it = list->begin();
-           it != list->end();
-           ++it) {
+      for (ListValue::const_iterator list_iter = list->begin();
+           list_iter != list->end();
+           ++list_iter) {
         DictionaryValue* dict;
         MediaGalleryPrefId iter_id;
-        if ((*it)->GetAsDictionary(&dict) &&
+        if ((*list_iter)->GetAsDictionary(&dict) &&
             GetPrefId(*dict, &iter_id) &&
-            existing_id == iter_id) {
+            *it == iter_id) {
           dict->SetString(kMediaGalleriesTypeKey,
                           kMediaGalleriesTypeAutoDetectedValue);
           InitFromPrefs();
@@ -253,10 +261,9 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGallery(
         }
       }
     }
-    return existing_id;
+    return *it;
   }
 
-  FilePath relative_path = MakePathRelative(path);
   PrefService* prefs = profile_->GetPrefs();
 
   MediaGalleryPrefInfo gallery_info;
@@ -290,6 +297,9 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
   ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
   ListValue* list = update.Get();
 
+  if (known_galleries_.find(pref_id) == known_galleries_.end())
+    return;
+
   for (ListValue::iterator iter = list->begin(); iter != list->end(); ++iter) {
     DictionaryValue* dict;
     MediaGalleryPrefId iter_id;
@@ -310,10 +320,9 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
   }
 }
 
-std::set<MediaGalleryPrefId>
-MediaGalleriesPreferences::GalleriesForExtension(
+MediaGalleryPrefIdSet MediaGalleriesPreferences::GalleriesForExtension(
     const extensions::Extension& extension) const {
-  std::set<MediaGalleryPrefId> result;
+  MediaGalleryPrefIdSet result;
   if (extension.HasAPIPermission(
           extensions::APIPermission::kMediaGalleriesAllGalleries)) {
     for (MediaGalleriesPrefInfoMap::const_iterator it =
@@ -348,12 +357,16 @@ void MediaGalleriesPreferences::SetGalleryPermissionForExtension(
     const extensions::Extension& extension,
     MediaGalleryPrefId pref_id,
     bool has_permission) {
+  // The gallery may not exist anymore if the user opened a second config
+  // surface concurrently and removed it. Drop the permission update if so.
+  MediaGalleriesPrefInfoMap::iterator gallery_info =
+      known_galleries_.find(pref_id);
+  if (gallery_info == known_galleries_.end())
+    return;
+
   bool all_permission = extension.HasAPIPermission(
       extensions::APIPermission::kMediaGalleriesAllGalleries);
   if (has_permission && all_permission) {
-    MediaGalleriesPrefInfoMap::iterator gallery_info =
-        known_galleries_.find(pref_id);
-    DCHECK(gallery_info != known_galleries_.end());
     if (gallery_info->second.type == MediaGalleryPrefInfo::kAutoDetected) {
       GetExtensionPrefs()->UnsetMediaGalleryPermission(extension.id(), pref_id);
       return;
