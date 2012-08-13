@@ -5,6 +5,7 @@
 #ifndef IPC_IPC_FORWARDING_MESSAGE_FILTER_H_
 #define IPC_IPC_FORWARDING_MESSAGE_FILTER_H_
 
+#include <map>
 #include <set>
 
 #include "base/bind.h"
@@ -17,9 +18,8 @@ namespace IPC {
 
 // This class can be used to intercept routed messages and
 // deliver them to a different task runner than they would otherwise
-// be sent. Messages are filtered based on
-// based on routing_id as well as type (see message_ids_to_filter and AddRoute
-// and RemoveRoute).
+// be sent. Messages are filtered based on type. To route these messages,
+// add a MessageRouter to the handler.
 //
 // The user of this class implements ForwardingMessageFilter::Client,
 // which will receive the intercepted messages, on the specified target thread.
@@ -38,11 +38,10 @@ class IPC_EXPORT ForwardingMessageFilter : public ChannelProxy::MessageFilter {
   ForwardingMessageFilter(
       const uint32* message_ids_to_filter,
       size_t num_message_ids_to_filter,
-      base::TaskRunner* target_task_runner,
-      const Handler& handler);
+      base::TaskRunner* target_task_runner);
 
   // Define the message routes to be filtered.
-  void AddRoute(int routing_id);
+  void AddRoute(int routing_id, const Handler& handler);
   void RemoveRoute(int routing_id);
 
   // ChannelProxy::MessageFilter methods:
@@ -52,20 +51,17 @@ class IPC_EXPORT ForwardingMessageFilter : public ChannelProxy::MessageFilter {
   friend class ChannelProxy::MessageFilter;
   virtual ~ForwardingMessageFilter();
 
-  void ForwardToHandler(const Message& message);
-
   std::set<int> message_ids_to_filter_;
 
   // The handler_ only gets Run on the thread corresponding to
   // target_task_runner_.
   scoped_refptr<base::TaskRunner> target_task_runner_;
-  Handler handler_;
 
   // Protects access to routes_.
-  base::Lock routes_lock_;
+  base::Lock handlers_lock_;
 
   // Indicates the routing_ids for which messages should be filtered.
-  std::set<int> routes_;
+  std::map<int, Handler> handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingMessageFilter);
 };

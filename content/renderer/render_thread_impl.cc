@@ -56,6 +56,7 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/audio_input_message_filter.h"
@@ -70,6 +71,7 @@
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/media.h"
 #include "net/base/net_errors.h"
@@ -312,6 +314,9 @@ RenderThreadImpl::~RenderThreadImpl() {
   if (file_thread_.get())
     file_thread_->Stop();
 
+  RemoveFilter(compositor_output_surface_filter_.get());
+  compositor_output_surface_filter_ = NULL;
+
   if (compositor_initialized_) {
     WebKit::WebCompositor::shutdown();
     compositor_initialized_ = false;
@@ -518,6 +523,14 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
     WebKit::WebCompositor::initialize(NULL);
   }
   compositor_initialized_ = true;
+
+  MessageLoop* output_surface_loop = enable ?
+      compositor_thread_->message_loop() :
+      MessageLoop::current();
+
+  compositor_output_surface_filter_ = CompositorOutputSurface::CreateFilter(
+      output_surface_loop->message_loop_proxy());
+  AddFilter(compositor_output_surface_filter_.get());
 
   WebScriptController::enableV8SingleThreadMode();
 

@@ -12,24 +12,22 @@ namespace IPC {
 ForwardingMessageFilter::ForwardingMessageFilter(
     const uint32* message_ids_to_filter,
     size_t num_message_ids_to_filter,
-    base::TaskRunner* target_task_runner,
-    const Handler& handler)
-    : target_task_runner_(target_task_runner),
-      handler_(handler) {
+    base::TaskRunner* target_task_runner)
+    : target_task_runner_(target_task_runner) {
   DCHECK(target_task_runner_);
-  DCHECK(!handler_.is_null());
   for (size_t i = 0; i < num_message_ids_to_filter; i++)
     message_ids_to_filter_.insert(message_ids_to_filter[i]);
 }
 
-void ForwardingMessageFilter::AddRoute(int routing_id) {
-  base::AutoLock locked(routes_lock_);
-  routes_.insert(routing_id);
+void ForwardingMessageFilter::AddRoute(int routing_id, const Handler& handler) {
+  DCHECK(!handler.is_null());
+  base::AutoLock locked(handlers_lock_);
+  handlers_.insert(std::make_pair(routing_id, handler));
 }
 
 void ForwardingMessageFilter::RemoveRoute(int routing_id) {
-  base::AutoLock locked(routes_lock_);
-  routes_.erase(routing_id);
+  base::AutoLock locked(handlers_lock_);
+  handlers_.erase(routing_id);
 }
 
 bool ForwardingMessageFilter::OnMessageReceived(const Message& message) {
@@ -37,24 +35,22 @@ bool ForwardingMessageFilter::OnMessageReceived(const Message& message) {
       message_ids_to_filter_.end())
     return false;
 
+
+  Handler handler;
+
   {
-    base::AutoLock locked(routes_lock_);
-    if (routes_.find(message.routing_id()) == routes_.end())
+    base::AutoLock locked(handlers_lock_);
+    std::map<int, Handler>::iterator it = handlers_.find(message.routing_id());
+    if (it == handlers_.end())
       return false;
+    handler = it->second;
   }
 
-  target_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&ForwardingMessageFilter::ForwardToHandler, this, message));
+  target_task_runner_->PostTask(FROM_HERE, base::Bind(handler, message));
   return true;
 }
 
 ForwardingMessageFilter::~ForwardingMessageFilter() {
-}
-
-void ForwardingMessageFilter::ForwardToHandler(const Message& message) {
-  DCHECK(target_task_runner_->RunsTasksOnCurrentThread());
-  handler_.Run(message);
 }
 
 }  // namespace IPC

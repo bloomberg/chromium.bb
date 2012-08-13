@@ -1072,6 +1072,11 @@ void RenderWidgetHostImpl::SetDeviceScaleFactor(float scale) {
   Send(new ViewMsg_SetDeviceScaleFactor(GetRoutingID(), scale));
 }
 
+void RenderWidgetHostImpl::UpdateVSyncParameters(base::TimeTicks timebase,
+                                                 base::TimeDelta interval) {
+  Send(new ViewMsg_UpdateVSyncParameters(GetRoutingID(), timebase, interval));
+}
+
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
                                           int exit_code) {
   // Clearing this flag causes us to re-create the renderer when recovering

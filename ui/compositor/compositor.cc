@@ -14,6 +14,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositor.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
@@ -328,18 +329,61 @@ void Compositor::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
                                      float scaleFactor) {
 }
 
-WebKit::WebGraphicsContext3D* Compositor::createContext3D() {
+// Adapts a pure WebGraphicsContext3D into a WebCompositorOutputSurface.
+class WebGraphicsContextToOutputSurfaceAdapter :
+    public WebKit::WebCompositorOutputSurface {
+public:
+    explicit WebGraphicsContextToOutputSurfaceAdapter(
+        WebKit::WebGraphicsContext3D* context)
+        : m_context3D(context)
+        , m_client(0)
+    {
+    }
+
+    virtual bool bindToClient(
+        WebKit::WebCompositorOutputSurfaceClient* client) OVERRIDE
+    {
+        DCHECK(client);
+        if (!m_context3D->makeContextCurrent())
+            return false;
+        m_client = client;
+        return true;
+    }
+
+    virtual const Capabilities& capabilities() const OVERRIDE
+    {
+        return m_capabilities;
+    }
+
+    virtual WebKit::WebGraphicsContext3D* context3D() const OVERRIDE
+    {
+        return m_context3D.get();
+    }
+
+    virtual void sendFrameToParentCompositor(
+        const WebKit::WebCompositorFrame&) OVERRIDE
+    {
+    }
+
+private:
+    scoped_ptr<WebKit::WebGraphicsContext3D> m_context3D;
+    Capabilities m_capabilities;
+    WebKit::WebCompositorOutputSurfaceClient* m_client;
+};
+
+WebKit::WebCompositorOutputSurface* Compositor::createOutputSurface() {
   if (test_compositor_enabled) {
     ui::TestWebGraphicsContext3D* test_context =
       new ui::TestWebGraphicsContext3D();
     test_context->Initialize();
-    return test_context;
+    return new WebGraphicsContextToOutputSurfaceAdapter(test_context);
   } else {
-    return ContextFactory::GetInstance()->CreateContext(this);
+    return new WebGraphicsContextToOutputSurfaceAdapter(
+        ContextFactory::GetInstance()->CreateContext(this));
   }
 }
 
-void Compositor::didRebindGraphicsContext(bool success) {
+void Compositor::didRecreateOutputSurface(bool success) {
 }
 
 // Called once per draw in single-threaded compositor mode and potentially

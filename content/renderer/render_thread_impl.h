@@ -52,6 +52,10 @@ class ScopedCOMInitializer;
 }
 }
 
+namespace IPC {
+class ForwardingMessageFilter;
+}
+
 namespace content {
 class AudioRendererMixerManager;
 class MediaStreamCenter;
@@ -161,6 +165,10 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // the behavior.
   void DoNotSuspendWebKitSharedTimer();
   void DoNotNotifyWebKitOfModalLoop();
+
+  IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
+    return compositor_output_surface_filter_.get();
+  }
 
   // Will be NULL if threaded compositing has not been enabled.
   CompositorThread* compositor_thread() const {
@@ -298,6 +306,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   bool compositor_initialized_;
   scoped_ptr<CompositorThread> compositor_thread_;
+  scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
+
   scoped_ptr<content::old::BrowserPluginRegistry> browser_plugin_registry_;
 
   ObserverList<content::RenderProcessObserver> observers_;

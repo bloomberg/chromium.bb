@@ -40,6 +40,8 @@ class CompositorThread {
 
   webkit_glue::WebThreadImpl* GetWebThread() { return &thread_; }
 
+  MessageLoop* message_loop() { return thread_.message_loop(); }
+
  private:
   // Callback only from the compositor's thread.
   void RemoveInputHandler(int routing_id);

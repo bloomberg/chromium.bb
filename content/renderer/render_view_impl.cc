@@ -69,6 +69,7 @@
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
@@ -108,6 +109,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorOutputSurface.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMMessageEvent.h"
@@ -1759,49 +1761,28 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
   return new WebStorageNamespaceImpl(session_storage_namespace_id_);
 }
 
-WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
-    const WebGraphicsContext3D::Attributes& attributes) {
-  if (!webview())
+WebKit::WebCompositorOutputSurface* RenderViewImpl::createOutputSurface() {
+  // TODO(aelias): if force-software-mode is on, create an output surface
+  // without a 3D context.
+
+  // Explicitly disable antialiasing for the compositor. As of the time of
+  // this writing, the only platform that supported antialiasing for the
+  // compositor was Mac OS X, because the on-screen OpenGL context creation
+  // code paths on Windows and Linux didn't yet have multisampling support.
+  // Mac OS X essentially always behaves as though it's rendering offscreen.
+  // Multisampling has a heavy cost especially on devices with relatively low
+  // fill rate like most notebooks, and the Mac implementation would need to
+  // be optimized to resolve directly into the IOSurface shared between the
+  // GPU and browser processes. For these reasons and to avoid platform
+  // disparities we explicitly disable antialiasing.
+  WebKit::WebGraphicsContext3D::Attributes attributes;
+  attributes.antialias = false;
+  attributes.shareResources = true;
+  WebGraphicsContext3D* context = CreateGraphicsContext3D(attributes);
+  if (!context)
     return NULL;
 
-  if (GetGuestToEmbedderChannel()) {
-    WebGraphicsContext3DCommandBufferImpl* context =
-        GetGuestToEmbedderChannel()->CreateWebGraphicsContext3D(
-            this, attributes, false);
-    if (!guest_pp_instance()) {
-      guest_uninitialized_context_ = context;
-      guest_attributes_ = attributes;
-    }
-    return context;
-  }
-
-  // The WebGraphicsContext3DInProcessImpl code path is used for
-  // layout tests (though not through this code) as well as for
-  // debugging and bringing up new ports.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-        attributes, true);
-  } else {
-    GURL url;
-    if (webview()->mainFrame())
-      url = GURL(webview()->mainFrame()->document().url());
-    else
-      url = GURL("chrome://gpu/RenderViewImpl::createGraphicsContext3D");
-
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-        new WebGraphicsContext3DCommandBufferImpl(
-            surface_id(),
-            url,
-            RenderThreadImpl::current(),
-            AsWeakPtr()));
-
-    if (!context->Initialize(
-            attributes,
-            false /* bind generates resources */,
-            content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
-      return NULL;
-    return context.release();
-  }
+  return new CompositorOutputSurface(routing_id(), context);
 }
 
 void RenderViewImpl::didAddMessageToConsole(
@@ -3574,6 +3555,51 @@ void RenderViewImpl::CheckPreferredSize() {
   preferred_size_ = size;
   Send(new ViewHostMsg_DidContentsPreferredSizeChange(routing_id_,
                                                       preferred_size_));
+}
+
+WebGraphicsContext3D* RenderViewImpl::CreateGraphicsContext3D(
+    const WebGraphicsContext3D::Attributes& attributes) {
+  if (!webview())
+    return NULL;
+
+  if (GetGuestToEmbedderChannel()) {
+    WebGraphicsContext3DCommandBufferImpl* context =
+        GetGuestToEmbedderChannel()->CreateWebGraphicsContext3D(
+            this, attributes, false);
+    if (!guest_pp_instance()) {
+      guest_uninitialized_context_ = context;
+      guest_attributes_ = attributes;
+    }
+    return context;
+  }
+
+  // The WebGraphicsContext3DInProcessImpl code path is used for
+  // layout tests (though not through this code) as well as for
+  // debugging and bringing up new ports.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
+    return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
+        attributes, true);
+  } else {
+    GURL url;
+    if (webview()->mainFrame())
+      url = GURL(webview()->mainFrame()->document().url());
+    else
+      url = GURL("chrome://gpu/RenderViewImpl::createGraphicsContext3D");
+
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+        new WebGraphicsContext3DCommandBufferImpl(
+            surface_id(),
+            url,
+            RenderThreadImpl::current(),
+            AsWeakPtr()));
+
+    if (!context->Initialize(
+            attributes,
+            false /* bind generates resources */,
+            content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
+      return NULL;
+    return context.release();
+  }
 }
 
 void RenderViewImpl::EnsureMediaStreamImpl() {

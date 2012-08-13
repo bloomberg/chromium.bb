@@ -1581,6 +1581,11 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
 // which may get delayed until the browser's UI unblocks.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateIsDelayed)
 
+// Sent by the renderer when the parameters for vsync alignment have changed.
+IPC_MESSAGE_ROUTED2(ViewMsg_UpdateVSyncParameters,
+                    base::TimeTicks /* timebase */,
+                    base::TimeDelta /* interval */)
+
 // Sent by the renderer when accelerated compositing is enabled or disabled to
 // notify the browser whether or not is should do painting.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidActivateAcceleratedCompositing,

@@ -138,6 +138,7 @@ class WebMediaPlayerManagerAndroid;
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebCompositorOutputSurface;
 class WebDOMMessageEvent;
 class WebDataSource;
 class WebDragData;
@@ -431,8 +432,7 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebExternalPopupMenuClient* popup_menu_client);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
-  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
+  virtual WebKit::WebCompositorOutputSurface* createOutputSurface() OVERRIDE;
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name,
@@ -1035,6 +1035,9 @@ class RenderViewImpl : public RenderWidget,
 
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
+
+  WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   void EnsureMediaStreamImpl();
 
