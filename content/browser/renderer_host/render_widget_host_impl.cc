@@ -130,6 +130,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       should_auto_resize_(false),
       mouse_move_pending_(false),
       mouse_wheel_pending_(false),
+      select_range_pending_(false),
       needs_repainting_on_restore_(false),
       is_unresponsive_(false),
       in_flight_event_count_(0),
@@ -285,6 +286,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnMsgUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_BeginSmoothScroll, OnMsgBeginSmoothScroll)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnMsgSelectRangeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HasTouchEventHandlers,
@@ -1083,6 +1085,10 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   mouse_wheel_pending_ = false;
   coalesced_mouse_wheel_events_.clear();
 
+  // Must reset these to ensure that SelectRange works with a new renderer.
+  select_range_pending_ = false;
+  next_selection_range_.reset();
+
   // Must reset these to ensure that gesture events work with a new renderer.
   gesture_event_filter_->Reset();
 
@@ -1586,6 +1592,14 @@ void RenderWidgetHostImpl::TickActiveSmoothScrollGesture() {
   }
 }
 
+void RenderWidgetHostImpl::OnMsgSelectRangeAck() {
+  select_range_pending_ = false;
+  if (next_selection_range_.get()) {
+    scoped_ptr<SelectionRange> next(next_selection_range_.Pass());
+    SelectRange(next->start, next->end);
+  }
+}
+
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
   mouse_wheel_pending_ = false;
 
@@ -1878,6 +1892,16 @@ void RenderWidgetHostImpl::ScrollFocusedEditableNodeIntoRect(
 
 void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
                                        const gfx::Point& end) {
+  if (select_range_pending_) {
+    if (!next_selection_range_.get()) {
+      next_selection_range_.reset(new SelectionRange());
+    }
+    next_selection_range_->start = start;
+    next_selection_range_->end = end;
+    return;
+  }
+
+  select_range_pending_ = true;
   Send(new ViewMsg_SelectRange(GetRoutingID(), start, end));
 }
 

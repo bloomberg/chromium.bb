@@ -505,6 +505,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
                           bool processed);
   void OnMsgBeginSmoothScroll(bool scroll_down, bool scroll_far);
+  void OnMsgSelectRangeAck();
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
   void OnMsgHasTouchEventHandlers(bool has_handlers);
@@ -680,6 +681,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // mechanism as for mouse moves (just dropping old events when multiple ones
   // would be queued) results in very slow scrolling.
   WheelEventQueue coalesced_mouse_wheel_events_;
+
+  // (Similar to |mouse_move_pending_|.) True while waiting for SelectRange_ACK.
+  bool select_range_pending_;
+
+  // (Similar to |next_mouse_move_|.) The next SelectRange to send, if any.
+  struct SelectionRange {
+    gfx::Point start, end;
+  };
+  scoped_ptr<SelectionRange> next_selection_range_;
 
   // The time when an input event was sent to the RenderWidget.
   base::TimeTicks input_event_start_time_;

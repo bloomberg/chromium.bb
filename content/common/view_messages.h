@@ -978,6 +978,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_SelectAll)
 IPC_MESSAGE_ROUTED0(ViewMsg_Unselect)
 
 // Requests the renderer to select the region between two points.
+// Expects a SelectRange_ACK message when finished.
 IPC_MESSAGE_ROUTED2(ViewMsg_SelectRange,
                     gfx::Point /* start */,
                     gfx::Point /* end */)
@@ -1840,6 +1841,8 @@ IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_LoadFont,
 IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
                     string16 /* tooltip text string */,
                     WebKit::WebTextDirection /* text direction hint */)
+
+IPC_MESSAGE_ROUTED0(ViewHostMsg_SelectRange_ACK)
 
 // Notification that the text selection has changed.
 // Note: The secound parameter is the character based offset of the string16
