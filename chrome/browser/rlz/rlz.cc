@@ -59,7 +59,7 @@ void RecordProductEvents(bool first_run, bool google_default_search,
                          bool google_default_homepage, bool already_ran,
                          bool omnibox_used, bool homepage_used) {
   // Record the installation of chrome. We call this all the time but the rlz
-  // lib should ingore all but the first one.
+  // lib should ignore all but the first one.
   rlz_lib::RecordProductEvent(rlz_lib::CHROME,
                               RLZTracker::CHROME_OMNIBOX,
                               rlz_lib::INSTALL);
@@ -195,19 +195,22 @@ bool RLZTracker::Init(bool first_run, int delay, bool google_default_search,
   delay = (delay < kMinDelay) ? kMinDelay : delay;
   delay = (delay > kMaxDelay) ? kMaxDelay : delay;
 
-  // Register for notifications from the omnibox so that we can record when
-  // the user performs a first search.
-  registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                 content::NotificationService::AllSources());
-  // If instant is enabled we'll start searching as soon as the user starts
-  // typing in the omnibox (which triggers INSTANT_CONTROLLER_UPDATED).
-  registrar_.Add(this, chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
-                 content::NotificationService::AllSources());
+  std::string brand;
+  if (google_util::GetBrand(&brand) && !IsBrandOrganic(brand)) {
+    // Register for notifications from the omnibox so that we can record when
+    // the user performs a first search.
+    registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+                   content::NotificationService::AllSources());
+    // If instant is enabled we'll start searching as soon as the user starts
+    // typing in the omnibox (which triggers INSTANT_CONTROLLER_UPDATED).
+    registrar_.Add(this, chrome::NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
+                   content::NotificationService::AllSources());
 
-  // Register for notifications from navigations, to see if the user has used
-  // the home page.
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-                 content::NotificationService::AllSources());
+    // Register for notifications from navigations, to see if the user has used
+    // the home page.
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
+                   content::NotificationService::AllSources());
+  }
 
   rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
   ScheduleDelayedInit(delay);
