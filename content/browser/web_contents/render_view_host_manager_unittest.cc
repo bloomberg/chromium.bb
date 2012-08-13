@@ -205,27 +205,28 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   NavigateActiveAndCommit(kDestUrl);
 
   // Make a second tab.
-  TestWebContents contents2(browser_context(), NULL);
+  scoped_ptr<TestWebContents> contents2(
+      TestWebContents::Create(browser_context(), NULL));
 
   // Load the two URLs in the second tab. Note that the first navigation creates
   // a RVH that's not pending (since there is no cross-site transition), so
   // we use the committed one.
-  contents2.GetController().LoadURL(
+  contents2->GetController().LoadURL(
       kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
   TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
-      contents2.GetRenderManagerForTesting()->current_host());
-  EXPECT_FALSE(contents2.cross_navigation_pending());
+      contents2->GetRenderManagerForTesting()->current_host());
+  EXPECT_FALSE(contents2->cross_navigation_pending());
   ntp_rvh2->SendNavigate(100, kNtpUrl);
 
   // The second one is the opposite, creating a cross-site transition and
   // requiring a beforeunload ack.
-  contents2.GetController().LoadURL(
+  contents2->GetController().LoadURL(
       kDestUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
-  EXPECT_TRUE(contents2.cross_navigation_pending());
+  EXPECT_TRUE(contents2->cross_navigation_pending());
   TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
-      contents2.GetRenderManagerForTesting()->pending_render_view_host());
+      contents2->GetRenderManagerForTesting()->pending_render_view_host());
   ASSERT_TRUE(dest_rvh2);
   ntp_rvh2->SendShouldCloseACK(true);
   dest_rvh2->SendNavigate(101, kDestUrl);
@@ -241,18 +242,18 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // RenderProcessHost (not a SiteInstance).
   NavigateActiveAndCommit(kNtpUrl);
 
-  contents2.GetController().LoadURL(
+  contents2->GetController().LoadURL(
       kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
   dest_rvh2->SendShouldCloseACK(true);
-  static_cast<TestRenderViewHost*>(contents2.GetRenderManagerForTesting()->
+  static_cast<TestRenderViewHost*>(contents2->GetRenderManagerForTesting()->
      pending_render_view_host())->SendNavigate(102, kNtpUrl);
   dest_rvh2->OnSwapOutACK();
 
   EXPECT_NE(active_rvh()->GetSiteInstance(),
-            contents2.GetRenderViewHost()->GetSiteInstance());
+            contents2->GetRenderViewHost()->GetSiteInstance());
   EXPECT_EQ(active_rvh()->GetSiteInstance()->GetProcess(),
-            contents2.GetRenderViewHost()->GetSiteInstance()->GetProcess());
+            contents2->GetRenderViewHost()->GetSiteInstance()->GetProcess());
 }
 
 // Ensure that the browser ignores most IPC messages that arrive from a
@@ -393,15 +394,17 @@ TEST_F(RenderViewHostManagerTest, Init) {
       static_cast<SiteInstanceImpl*>(SiteInstance::Create(browser_context()));
   EXPECT_FALSE(instance->HasSite());
 
-  TestWebContents web_contents(browser_context(), instance);
-  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
+  scoped_ptr<TestWebContents> web_contents(
+      TestWebContents::Create(browser_context(), instance));
+  RenderViewHostManager manager(web_contents.get(), web_contents.get(),
+                                web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host = manager.current_host();
   ASSERT_TRUE(host);
-  EXPECT_TRUE(instance == host->GetSiteInstance());
-  EXPECT_TRUE(&web_contents == host->GetDelegate());
+  EXPECT_EQ(instance, host->GetSiteInstance());
+  EXPECT_EQ(web_contents.get(), host->GetDelegate());
   EXPECT_TRUE(manager.GetRenderWidgetHostView());
   EXPECT_FALSE(manager.pending_render_view_host());
 }
@@ -413,14 +416,16 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
-  TestWebContents web_contents(browser_context(), instance);
+  scoped_ptr<TestWebContents> web_contents(
+      TestWebContents::Create(browser_context(), instance));
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
-          &web_contents.GetController()));
+          &web_contents->GetController()));
 
   // Create.
-  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
+  RenderViewHostManager manager(web_contents.get(), web_contents.get(),
+                                web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -505,14 +510,16 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
-  TestWebContents web_contents(browser_context(), instance);
+  scoped_ptr<TestWebContents> web_contents(
+      TestWebContents::Create(browser_context(), instance));
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(
-          &web_contents.GetController()));
+          &web_contents->GetController()));
 
   // Create.
-  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
+  RenderViewHostManager manager(web_contents.get(), web_contents.get(),
+                                web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -656,8 +663,10 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
-  TestWebContents web_contents(browser_context(), instance);
-  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
+  scoped_ptr<TestWebContents> web_contents(
+      TestWebContents::Create(browser_context(), instance));
+  RenderViewHostManager manager(web_contents.get(), web_contents.get(),
+                                web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
@@ -790,13 +799,17 @@ TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
 
   // Create 2 new tabs and simulate them being the opener chain for the main
   // tab.  They should be in the same SiteInstance.
-  TestWebContents opener1(browser_context(), rvh1->GetSiteInstance());
-  RenderViewHostManager* opener1_manager = opener1.GetRenderManagerForTesting();
-  contents()->SetOpener(&opener1);
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), rvh1->GetSiteInstance()));
+  RenderViewHostManager* opener1_manager =
+      opener1->GetRenderManagerForTesting();
+  contents()->SetOpener(opener1.get());
 
-  TestWebContents opener2(browser_context(), rvh1->GetSiteInstance());
-  RenderViewHostManager* opener2_manager = opener2.GetRenderManagerForTesting();
-  opener1.SetOpener(&opener2);
+  scoped_ptr<TestWebContents> opener2(
+      TestWebContents::Create(browser_context(), rvh1->GetSiteInstance()));
+  RenderViewHostManager* opener2_manager =
+      opener2->GetRenderManagerForTesting();
+  opener1->SetOpener(opener2.get());
 
   // Navigate to a cross-site URL (different SiteInstance but same
   // BrowsingInstance).
@@ -855,9 +868,11 @@ TEST_F(RenderViewHostManagerTest, EnableWebUIWithSwappedOutOpener) {
 
   // Create a new tab and simulate it being the opener for the main
   // tab.  It should be in the same SiteInstance.
-  TestWebContents opener1(browser_context(), rvh1->GetSiteInstance());
-  RenderViewHostManager* opener1_manager = opener1.GetRenderManagerForTesting();
-  contents()->SetOpener(&opener1);
+  scoped_ptr<TestWebContents> opener1(
+      TestWebContents::Create(browser_context(), rvh1->GetSiteInstance()));
+  RenderViewHostManager* opener1_manager =
+      opener1->GetRenderManagerForTesting();
+  contents()->SetOpener(opener1.get());
 
   // Navigate to a different WebUI URL (different SiteInstance, same
   // BrowsingInstance).
@@ -884,10 +899,12 @@ TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   GURL guest_url("guest://abc123");
   SiteInstance* instance =
       SiteInstance::CreateForURL(browser_context(), guest_url);
-  TestWebContents web_contents(browser_context(), instance);
+  scoped_ptr<TestWebContents> web_contents(
+      TestWebContents::Create(browser_context(), instance));
 
   // Create.
-  RenderViewHostManager manager(&web_contents, &web_contents, &web_contents);
+  RenderViewHostManager manager(web_contents.get(), web_contents.get(),
+                                web_contents.get());
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 

@@ -95,14 +95,12 @@ void BrowserPluginHost::NavigateGuestFromEmbedder(
         SiteInstance::CreateForURL(web_contents()->GetBrowserContext(),
         guest_url);
     guest_web_contents =
-        static_cast<WebContentsImpl*>(
-            WebContents::Create(
-                web_contents()->GetBrowserContext(),
-                guest_site_instance,
-                MSG_ROUTING_NONE,
-                NULL, // base WebContents
-                NULL  // session storage namespace
-            ));
+        WebContentsImpl::Create(
+            web_contents()->GetBrowserContext(),
+            guest_site_instance,
+            MSG_ROUTING_NONE,
+            NULL  // base WebContents
+            );
     guest_observer =
         guest_web_contents->old_browser_plugin_host();
     guest_observer->set_embedder_render_process_host(

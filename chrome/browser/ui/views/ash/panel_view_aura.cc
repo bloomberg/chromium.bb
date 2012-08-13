@@ -107,7 +107,7 @@ void PanelHost::Init(const GURL& url) {
   site_instance_ = content::SiteInstance::CreateForURL(profile_, url);
 
   web_contents_.reset(content::WebContents::Create(
-      profile_, site_instance_.get(), MSG_ROUTING_NONE, NULL, NULL));
+      profile_, site_instance_.get(), MSG_ROUTING_NONE, NULL));
   chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);
   Observe(web_contents_.get());

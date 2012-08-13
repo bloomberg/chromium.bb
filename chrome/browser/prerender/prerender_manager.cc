@@ -233,8 +233,14 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
         RenderViewHost::FromID(process_id, route_id);
     if (!source_render_view_host)
       return NULL;
+    WebContents* source_web_contents =
+        WebContents::FromRenderViewHost(source_render_view_host);
+    if (!source_web_contents)
+      return NULL;
+    // TODO(ajwong): This does not correctly handle storage for isolated apps.
     session_storage_namespace =
-        source_render_view_host->GetSessionStorageNamespace();
+        source_web_contents->GetController()
+            .GetDefaultSessionStorageNamespace();
   }
 
   return AddPrerender(ORIGIN_LINK_REL_PRERENDER,
@@ -276,12 +282,12 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   DCHECK(CalledOnValidThread());
   DCHECK(!IsWebContentsPrerendering(web_contents));
 
-  RenderViewHost* old_render_view_host = web_contents->GetRenderViewHost();
-
   DeleteOldEntries();
   DeletePendingDeleteEntries();
+  // TODO(ajwong): This doesn't handle isolated apps correctly.
   PrerenderData* prerender_data = FindPrerenderData(
-          url, old_render_view_host->GetSessionStorageNamespace());
+          url,
+          web_contents->GetController().GetDefaultSessionStorageNamespace());
   if (!prerender_data)
     return false;
   DCHECK(prerender_data->contents_);

@@ -546,7 +546,9 @@ void TabRestoreService::PopulateTab(Tab* tab,
       tab->extension_app_id = extension->id();
   }
 
-  tab->session_storage_namespace = controller->GetSessionStorageNamespace();
+  // TODO(ajwong): This does not correctly handle storage for isolated apps.
+  tab->session_storage_namespace =
+      controller->GetDefaultSessionStorageNamespace();
 
   // Delegate may be NULL during unit tests.
   if (delegate) {

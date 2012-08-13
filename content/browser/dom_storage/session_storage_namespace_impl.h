@@ -20,7 +20,10 @@ class SessionStorageNamespaceImpl
     : NON_EXPORTED_BASE(public content::SessionStorageNamespace) {
  public:
   // Constructs a |SessionStorageNamespaceImpl| and allocates new IDs for it.
-  explicit SessionStorageNamespaceImpl(DOMStorageContextImpl* context);
+  //
+  // The CONTENT_EXPORT allows TestRenderViewHost to instantiate these.
+  CONTENT_EXPORT explicit SessionStorageNamespaceImpl(
+      DOMStorageContextImpl* context);
 
   // Constructs a |SessionStorageNamespaceImpl| by cloning
   // |namespace_to_clone|. Allocates new IDs for it.
@@ -38,6 +41,7 @@ class SessionStorageNamespaceImpl
   virtual void SetShouldPersist(bool should_persist) OVERRIDE;
 
   SessionStorageNamespaceImpl* Clone();
+  bool IsFromContext(DOMStorageContextImpl* context);
 
  private:
   explicit SessionStorageNamespaceImpl(dom_storage::DomStorageSession* clone);

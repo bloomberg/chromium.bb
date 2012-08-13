@@ -115,8 +115,7 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
       browser_context,
       site_instance,
       routing_id,
-      base_web_contents,
-      NULL);
+      base_web_contents);
   Shell* shell = CreateShell(web_contents);
   if (!url.is_empty())
     shell->LoadURL(url);

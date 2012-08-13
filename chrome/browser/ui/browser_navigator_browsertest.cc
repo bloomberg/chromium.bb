@@ -87,8 +87,7 @@ TabContents* BrowserNavigatorTest::CreateTabContents() {
       browser()->profile(),
       NULL,
       MSG_ROUTING_NONE,
-      chrome::GetActiveWebContents(browser()),
-      NULL);
+      chrome::GetActiveWebContents(browser()));
 }
 
 void BrowserNavigatorTest::RunSuppressTest(WindowOpenDisposition disposition) {

@@ -799,7 +799,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* app_contents = chrome::TabContentsFactory(
-      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
   app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
 
   model->AddTabContents(app_contents, 0, content::PageTransitionFromInt(0),
@@ -918,7 +918,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   const Extension* extension_app = GetExtension();
   ui_test_utils::NavigateToURL(browser(), url);
   TabContents* app_contents = chrome::TabContentsFactory(
-      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+      browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
   app_contents->extension_tab_helper()->SetExtensionApp(extension_app);
   model->AddTabContents(app_contents, 0, content::PageTransitionFromInt(0),
                         TabStripModel::ADD_NONE);

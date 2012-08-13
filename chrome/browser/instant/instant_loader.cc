@@ -265,11 +265,12 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate,
                              const std::string& instant_url,
                              const TabContents* tab_contents)
     : loader_delegate_(delegate),
-      preview_contents_(new TabContents(content::WebContents::Create(
-          tab_contents->profile(), NULL, MSG_ROUTING_NONE,
-          tab_contents->web_contents(),
-          tab_contents->web_contents()->GetController().
-                                        GetSessionStorageNamespace()))),
+      preview_contents_(
+          new TabContents(content::WebContents::CreateWithSessionStorage(
+            tab_contents->profile(), NULL, MSG_ROUTING_NONE,
+            tab_contents->web_contents(),
+            tab_contents->web_contents()->GetController().
+                                          GetSessionStorageNamespaceMap()))),
       supports_instant_(false),
       instant_url_(instant_url) {
 }

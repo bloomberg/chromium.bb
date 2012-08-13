@@ -118,7 +118,7 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
   // This will be deleted when the WebContentsImpl goes away.
   SiteInstance* instance = SiteInstance::Create(browser_context_.get());
 
-  return new TestWebContents(browser_context_.get(), instance);
+  return TestWebContents::Create(browser_context_.get(), instance);
 }
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {

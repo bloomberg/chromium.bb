@@ -250,7 +250,6 @@ content::WebContents* WebView::CreateWebContents(
     return content::WebContents::Create(browser_context,
                                         site_instance,
                                         MSG_ROUTING_NONE,
-                                        NULL,
                                         NULL);
   }
 

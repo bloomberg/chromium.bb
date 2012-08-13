@@ -210,8 +210,7 @@ TabContents* TabStripModel::DiscardTabContentsAt(int index) {
       WebContents::Create(profile(),
                           NULL /* site_instance */,
                           MSG_ROUTING_NONE,
-                          NULL /* base_tab_contents */,
-                          NULL /* session_storage_namespace */));
+                          NULL /* base_tab_contents */));
   TabContents* old_contents = GetContentsAt(index);
   // Copy over the state from the navigation controller so we preserve the
   // back/forward history and continue to display the correct title/favicon.

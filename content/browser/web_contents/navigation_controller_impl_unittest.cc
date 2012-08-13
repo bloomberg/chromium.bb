@@ -40,6 +40,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::RenderViewHostImplTestHarness;
+using content::SessionStorageNamespaceMap;
 using content::SiteInstance;
 using content::TestNotificationTracker;
 using content::TestRenderViewHost;
@@ -1656,9 +1657,10 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entry->SetTitle(ASCIIToUTF16("Title"));
   entry->SetContentState("state");
   entries.push_back(entry);
-  WebContentsImpl our_contents(
-      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL, NULL);
-  NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
+  scoped_ptr<WebContentsImpl> our_contents(
+      WebContentsImpl::Create(browser_context(), NULL, MSG_ROUTING_NONE,
+                              NULL));
+  NavigationControllerImpl& our_controller = our_contents->GetController();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -1723,9 +1725,10 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   entry->SetTitle(ASCIIToUTF16("Title"));
   entry->SetContentState("state");
   entries.push_back(entry);
-  WebContentsImpl our_contents(
-      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL, NULL);
-  NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
+  scoped_ptr<WebContentsImpl> our_contents(
+      WebContentsImpl::Create(browser_context(), NULL, MSG_ROUTING_NONE,
+                              NULL));
+  NavigationControllerImpl& our_controller = our_contents->GetController();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
 
@@ -1753,7 +1756,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // This pending navigation may have caused a different navigation to fail,
   // which causes the pending entry to be cleared.
   TestRenderViewHost* rvh =
-      static_cast<TestRenderViewHost*>(our_contents.GetRenderViewHost());
+      static_cast<TestRenderViewHost*>(our_contents->GetRenderViewHost());
   ViewHostMsg_DidFailProvisionalLoadWithError_Params fail_load_params;
   fail_load_params.frame_id = 1;
   fail_load_params.is_main_frame = true;
@@ -2192,8 +2195,7 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
 
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
-  NavigationControllerImpl& other_controller =
-      other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller = other_contents->GetController();
   other_controller.CopyStateFrom(controller);
 
   // other_controller should now contain 2 urls.
@@ -2212,6 +2214,26 @@ TEST_F(NavigationControllerTest, CopyStateFrom) {
   SiteInstance* instance1 =
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0));
   EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
+
+  // Ensure the SessionStorageNamespaceMaps are the same size and have
+  // the same partitons loaded.
+  //
+  // TODO(ajwong): We should load a url from a different partition earlier
+  // to make sure this map has more than one entry.
+  const SessionStorageNamespaceMap& session_storage_namespace_map =
+      controller.GetSessionStorageNamespaceMap();
+  const SessionStorageNamespaceMap& other_session_storage_namespace_map =
+      other_controller.GetSessionStorageNamespaceMap();
+  EXPECT_EQ(session_storage_namespace_map.size(),
+            other_session_storage_namespace_map.size());
+  for (SessionStorageNamespaceMap::const_iterator it =
+           session_storage_namespace_map.begin();
+       it != session_storage_namespace_map.end();
+       ++it) {
+    SessionStorageNamespaceMap::const_iterator other =
+        other_session_storage_namespace_map.find(it->first);
+    EXPECT_TRUE(other != other_session_storage_namespace_map.end());
+  }
 }
 
 // Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest.
@@ -2236,8 +2258,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
 
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
-  NavigationControllerImpl& other_controller =
-      other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
@@ -2282,8 +2303,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
 
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
-  NavigationControllerImpl& other_controller =
-      other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
   other_controller.CopyStateFromAndPrune(&controller);
 
@@ -2317,8 +2337,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
 
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
-  NavigationControllerImpl& other_controller =
-      other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller = other_contents->GetController();
   other_controller.LoadURL(
       url3, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   other_contents->ExpectSetHistoryLengthAndPrune(NULL, 1, -1);
@@ -2368,8 +2387,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
 
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
-  NavigationControllerImpl& other_controller =
-      other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url4);
   other_contents->ExpectSetHistoryLengthAndPrune(
       GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,

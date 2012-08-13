@@ -226,7 +226,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
   content::WebContents* web_contents = content::WebContents::Create(
       tab_contents_->profile(),
       tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
-      MSG_ROUTING_NONE, NULL, NULL);
+      MSG_ROUTING_NONE, NULL);
   inline_disposition_tab_contents_.reset(new TabContents(web_contents));
   Browser* browser = browser::FindBrowserWithWebContents(
       tab_contents_->web_contents());

@@ -20,7 +20,6 @@
 #include "base/values.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -172,14 +171,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       save_accessibility_tree_for_testing_(false),
       send_accessibility_updated_notifications_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
-  if (!session_storage_namespace_) {
-    DOMStorageContext* dom_storage_context =
-        BrowserContext::GetDOMStorageContext(GetProcess()->GetBrowserContext(),
-                                             instance->GetProcess()->GetID());
-    session_storage_namespace_ = new SessionStorageNamespaceImpl(
-        static_cast<DOMStorageContextImpl*>(dom_storage_context));
-  }
-
+  DCHECK(session_storage_namespace_);
   DCHECK(instance_);
   CHECK(delegate_);  // http://crbug.com/82827
 
@@ -1726,11 +1718,6 @@ void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
 
 void RenderViewHostImpl::StopFinding(content::StopFindAction action) {
   Send(new ViewMsg_StopFinding(GetRoutingID(), action));
-}
-
-content::SessionStorageNamespace*
-RenderViewHostImpl::GetSessionStorageNamespace() {
-  return session_storage_namespace_.get();
 }
 
 void RenderViewHostImpl::OnAccessibilityNotifications(

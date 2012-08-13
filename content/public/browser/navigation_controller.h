@@ -5,9 +5,11 @@
 #ifndef CONTENT_PUBLIC_BROWSER_NAVIGATION_CONTROLLER_H_
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_CONTROLLER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
@@ -22,6 +24,11 @@ class NavigationEntry;
 class SessionStorageNamespace;
 class WebContents;
 struct Referrer;
+
+// Used to store the mapping of a StoragePartition id to
+// SessionStorageNamespace.
+typedef std::map<std::string, scoped_refptr<SessionStorageNamespace> >
+    SessionStorageNamespaceMap;
 
 // A NavigationController maintains the back-forward list for a WebContents and
 // manages all navigation within that list.
@@ -228,8 +235,14 @@ class NavigationController {
 
   // Random --------------------------------------------------------------------
 
-  // The session storage namespace that all child render views should use.
-  virtual SessionStorageNamespace* GetSessionStorageNamespace() const = 0;
+  // Returns all the SessionStorageNamespace objects that this
+  // NavigationController knows about.
+  virtual const SessionStorageNamespaceMap&
+      GetSessionStorageNamespaceMap() const = 0;
+
+  // TODO(ajwong): Remove this once prerendering, instant, and session restore
+  // are migrated.
+  virtual SessionStorageNamespace* GetDefaultSessionStorageNamespace() = 0;
 
   // Sets the max restored page ID this NavigationController has seen, if it
   // was restored from a previous session.

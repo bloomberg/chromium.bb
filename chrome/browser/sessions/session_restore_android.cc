@@ -30,7 +30,7 @@ void SessionRestore::RestoreForeignSessionTab(
   TabNavigation::CreateNavigationEntriesFromTabNavigations(
         profile, session_tab.navigations, &entries);
   content::WebContents* new_web_contents = content::WebContents::Create(
-        context, NULL, MSG_ROUTING_NONE, 0, 0);
+        context, NULL, MSG_ROUTING_NONE, NULL);
   int selected_index = session_tab.normalized_navigation_index();
   new_web_contents->GetController().Restore(selected_index,
                                             true, /* from_last_session */

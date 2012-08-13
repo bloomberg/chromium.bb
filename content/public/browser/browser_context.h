@@ -53,6 +53,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       BrowserContext* browser_context);
   static DOMStorageContext* GetDOMStorageContext(
       BrowserContext* browser_context, int renderer_child_id);
+  static content::DOMStorageContext* GetDOMStorageContextByPartitionId(
+      BrowserContext* browser_context, const std::string& partition_id);
   static IndexedDBContext* GetIndexedDBContext(BrowserContext* browser_context);
   static webkit_database::DatabaseTracker* GetDatabaseTracker(
       BrowserContext* browser_context);

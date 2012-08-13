@@ -40,6 +40,10 @@ void DomStorageSession::SetShouldPersist(bool should_persist) {
   should_persist_ = should_persist;
 }
 
+bool DomStorageSession::IsFromContext(DomStorageContext* context) {
+  return context_.get() == context;
+}
+
 DomStorageSession* DomStorageSession::Clone() {
   return CloneFrom(context_, namespace_id_);
 }

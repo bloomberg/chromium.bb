@@ -74,18 +74,31 @@ class CONTENT_EXPORT WebContentsImpl
       public RenderViewHostManager::Delegate,
       public content::NotificationObserver {
  public:
-  // See WebContents::Create for a description of these parameters.
-  WebContentsImpl(content::BrowserContext* browser_context,
-                  content::SiteInstance* site_instance,
-                  int routing_id,
-                  const WebContentsImpl* base_web_contents,
-                  WebContentsImpl* opener,
-                  SessionStorageNamespaceImpl* session_storage_namespace);
   virtual ~WebContentsImpl();
+
+  static WebContentsImpl* Create(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance,
+      int routing_id,
+      const WebContentsImpl* base_web_contents);
+
+  static WebContentsImpl* CreateWithOpener(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance,
+      int routing_id,
+      const WebContentsImpl* base_web_contents,
+      WebContentsImpl* opener);
 
   // Returns the content specific prefs for the given RVH.
   static webkit_glue::WebPreferences GetWebkitPrefs(
       content::RenderViewHost* rvh, const GURL& url);
+
+  // Complex initialization here. Specifically needed to avoid having
+  // members call back into our virtual functions in the constructor.
+  virtual void Init(content::BrowserContext* browser_context,
+                    content::SiteInstance* site_instance,
+                    int routing_id,
+                    const content::WebContents* base_web_contents);
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
@@ -146,9 +159,6 @@ class CONTENT_EXPORT WebContentsImpl
     return old_browser_plugin_host_.get();
   }
 
-  // Like GetController from WebContents, but returns the concrete object.
-  NavigationControllerImpl& GetControllerImpl();
-
   // Expose the render manager for testing.
   RenderViewHostManager* GetRenderManagerForTesting();
 
@@ -157,8 +167,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual base::PropertyBag* GetPropertyBag() OVERRIDE;
   virtual content::WebContentsDelegate* GetDelegate() OVERRIDE;
   virtual void SetDelegate(content::WebContentsDelegate* delegate) OVERRIDE;
-  virtual content::NavigationController& GetController() OVERRIDE;
-  virtual const content::NavigationController& GetController() const OVERRIDE;
+  virtual NavigationControllerImpl& GetController() OVERRIDE;
+  virtual const NavigationControllerImpl& GetController() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
@@ -262,7 +272,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool OnMessageReceived(content::RenderViewHost* render_view_host,
                                  const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
-  virtual WebContents* GetAsWebContents() OVERRIDE;
+  virtual content::WebContents* GetAsWebContents() OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -434,18 +444,11 @@ class CONTENT_EXPORT WebContentsImpl
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- protected:
-  friend class content::WebContentsObserver;
-
-  // Add and remove observers for page navigation notifications. Adding or
-  // removing multiple times has no effect. The order in which notifications
-  // are sent to observers is undefined. Clients must be sure to remove the
-  // observer before they go away.
-  void AddObserver(content::WebContentsObserver* observer);
-  void RemoveObserver(content::WebContentsObserver* observer);
 
  private:
   friend class NavigationControllerImpl;
+  friend class content::WebContentsObserver;
+  friend class content::WebContents;  // To implement factory methods.
 
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, UpdateTitle);
@@ -460,6 +463,17 @@ class CONTENT_EXPORT WebContentsImpl
 
   // TODO(brettw) TestWebContents shouldn't exist!
   friend class content::TestWebContents;
+
+  // See WebContents::Create for a description of these parameters.
+  WebContentsImpl(content::BrowserContext* browser_context,
+                  WebContentsImpl* opener);
+
+  // Add and remove observers for page navigation notifications. Adding or
+  // removing multiple times has no effect. The order in which notifications
+  // are sent to observers is undefined. Clients must be sure to remove the
+  // observer before they go away.
+  void AddObserver(content::WebContentsObserver* observer);
+  void RemoveObserver(content::WebContentsObserver* observer);
 
   // Clears this tab's opener if it has been closed.
   void OnWebContentsDestroyed(content::WebContents* web_contents);

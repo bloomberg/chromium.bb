@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/test_backing_store.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/test_web_contents.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_client.h"
 #include "ui/gfx/rect.h"
@@ -20,6 +23,21 @@ using content::NativeWebKeyboardEvent;
 using webkit::forms::PasswordForm;
 
 namespace content {
+
+namespace {
+// Normally this is done by the NavigationController, but we'll fake it out
+// here for testing.
+SessionStorageNamespaceImpl* CreateSessionStorageNamespace(
+    SiteInstance* instance) {
+  RenderProcessHost* process_host = instance->GetProcess();
+  DOMStorageContext* dom_storage_context =
+      BrowserContext::GetDOMStorageContext(process_host->GetBrowserContext(),
+                                           process_host->GetID());
+  return new SessionStorageNamespaceImpl(
+      static_cast<DOMStorageContextImpl*>(dom_storage_context));
+}
+}  // namespace
+
 
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,
@@ -235,7 +253,7 @@ TestRenderViewHost::TestRenderViewHost(
                          widget_delegate,
                          routing_id,
                          swapped_out,
-                         NULL),
+                         CreateSessionStorageNamespace(instance)),
       render_view_created_(false),
       delete_counter_(NULL),
       simulate_fetch_via_proxy_(false),

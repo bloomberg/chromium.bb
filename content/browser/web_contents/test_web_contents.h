@@ -22,8 +22,10 @@ class WebContentsTester;
 // and does not do anything involving views.
 class TestWebContents : public WebContentsImpl, public WebContentsTester {
  public:
-  TestWebContents(BrowserContext* browser_context, SiteInstance* instance);
   virtual ~TestWebContents();
+
+  static TestWebContents* Create(BrowserContext* browser_context,
+                                 SiteInstance* instance);
 
   // WebContentsTester implementation.
   virtual void CommitPendingNavigation() OVERRIDE;
@@ -87,6 +89,10 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   virtual void SetHistoryLengthAndPrune(const SiteInstance* site_instance,
                                         int history_length,
                                         int32 min_page_id) OVERRIDE;
+
+ protected:
+  // The deprecated WebContentsTester still needs to subclass this.
+  explicit TestWebContents(BrowserContext* browser_context);
 
  private:
   // WebContentsImpl overrides

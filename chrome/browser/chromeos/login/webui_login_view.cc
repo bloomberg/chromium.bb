@@ -153,7 +153,6 @@ void WebUILoginView::Init(views::Widget* login_window) {
       WebContents::Create(ProfileManager::GetDefaultProfile(),
                           NULL,
                           MSG_ROUTING_NONE,
-                          NULL,
                           NULL);
   tab_contents_.reset(new TabContents(web_contents));
   webui_login_->SetWebContents(web_contents);

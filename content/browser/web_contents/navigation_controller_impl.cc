@@ -22,12 +22,14 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
@@ -37,12 +39,14 @@
 
 using content::BrowserContext;
 using content::DOMStorageContext;
+using content::GetContentClient;
 using content::GlobalRequestID;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::RenderViewHostImpl;
 using content::SessionStorageNamespace;
+using content::SessionStorageNamespaceMap;
 using content::SiteInstance;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -178,8 +182,7 @@ void NavigationController::DisablePromptOnRepost() {
 
 NavigationControllerImpl::NavigationControllerImpl(
     WebContentsImpl* web_contents,
-    BrowserContext* browser_context,
-    SessionStorageNamespaceImpl* session_storage_namespace)
+    BrowserContext* browser_context)
     : browser_context_(browser_context),
       pending_entry_(NULL),
       last_committed_entry_index_(-1),
@@ -189,14 +192,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       max_restored_page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
       needs_reload_(false),
-      session_storage_namespace_(session_storage_namespace),
       pending_reload_(NO_RELOAD) {
   DCHECK(browser_context_);
-  if (!session_storage_namespace_) {
-    session_storage_namespace_ = new SessionStorageNamespaceImpl(
-        static_cast<DOMStorageContextImpl*>(
-            BrowserContext::GetDefaultDOMStorageContext(browser_context_)));
-  }
 }
 
 NavigationControllerImpl::~NavigationControllerImpl() {
@@ -1130,7 +1127,15 @@ void NavigationControllerImpl::CopyStateFrom(
   needs_reload_ = true;
   InsertEntriesFrom(source, source.GetEntryCount());
 
-  session_storage_namespace_ = source.session_storage_namespace_->Clone();
+  for (SessionStorageNamespaceMap::const_iterator it =
+           source.session_storage_namespace_map_.begin();
+       it != source.session_storage_namespace_map_.end();
+       ++it) {
+    SessionStorageNamespaceImpl* source_namespace =
+        static_cast<SessionStorageNamespaceImpl*>(it->second.get());
+    session_storage_namespace_map_.insert(
+        make_pair(it->first, source_namespace->Clone()));
+  }
 
   FinishRestore(source.last_committed_entry_index_, false);
 
@@ -1251,6 +1256,23 @@ void NavigationControllerImpl::PruneAllButActive() {
   }
 }
 
+void NavigationControllerImpl::SetSessionStorageNamespace(
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  if (!session_storage_namespace)
+    return;
+
+  // We can't overwrite an existing SessionStorage without violating spec.
+  // Attempts to do so may give a tab access to another tab's session storage
+  // so die hard on an error.
+  bool successful_insert = session_storage_namespace_map_.insert(
+      make_pair(partition_id,
+                static_cast<SessionStorageNamespaceImpl*>(
+                    session_storage_namespace)))
+          .second;
+  CHECK(successful_insert) << "Cannot replace existing SessionStorageNamespace";
+}
+
 void NavigationControllerImpl::SetMaxRestoredPageID(int32 max_id) {
   max_restored_page_id_ = max_id;
 }
@@ -1260,8 +1282,42 @@ int32 NavigationControllerImpl::GetMaxRestoredPageID() const {
 }
 
 SessionStorageNamespace*
-    NavigationControllerImpl::GetSessionStorageNamespace() const {
-  return session_storage_namespace_;
+NavigationControllerImpl::GetSessionStorageNamespace(
+    content::SiteInstance* instance) {
+  std::string partition_id;
+  if (instance) {
+    // TODO(ajwong): When GetDefaultSessionStorageNamespace() goes away, remove
+    // this if statement so |instance| must not be NULL.
+    partition_id =
+        GetContentClient()->browser()->GetStoragePartitionIdForSiteInstance(
+            browser_context_, instance);
+  }
+
+  SessionStorageNamespaceMap::const_iterator it =
+      session_storage_namespace_map_.find(partition_id);
+  if (it != session_storage_namespace_map_.end())
+    return it->second.get();
+
+  // Create one if no one has accessed session storage for this partition yet.
+  SessionStorageNamespaceImpl* session_storage_namespace =
+      new SessionStorageNamespaceImpl(
+          static_cast<DOMStorageContextImpl*>(
+              BrowserContext::GetDOMStorageContextByPartitionId(
+                  browser_context_, partition_id)));
+  session_storage_namespace_map_[partition_id] = session_storage_namespace;
+
+  return session_storage_namespace;
+}
+
+SessionStorageNamespace*
+NavigationControllerImpl::GetDefaultSessionStorageNamespace() {
+  // TODO(ajwong): Remove if statement in GetSessionStorageNamespace().
+  return GetSessionStorageNamespace(NULL);
+}
+
+const SessionStorageNamespaceMap&
+NavigationControllerImpl::GetSessionStorageNamespaceMap() const {
+  return session_storage_namespace_map_;
 }
 
 bool NavigationControllerImpl::NeedsReload() const {

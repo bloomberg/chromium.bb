@@ -206,7 +206,7 @@ void WebDialogGtk::HandleKeyboardEvent(content::WebContents* source,
 
 gfx::NativeWindow WebDialogGtk::InitDialog() {
   tab_.reset(new TabContents(WebContents::Create(
-      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
+      browser_context(), NULL, MSG_ROUTING_NONE, NULL)));
   tab_->web_contents()->SetDelegate(this);
 
   // This must be done before loading the page; see the comments in

@@ -10,6 +10,7 @@
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_ui.h"
@@ -35,11 +36,9 @@ namespace content {
 
 class BrowserContext;
 class InterstitialPage;
-class NavigationController;
 class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHostView;
-class SessionStorageNamespace;
 class SiteInstance;
 class WebContentsDelegate;
 class WebContentsView;
@@ -51,17 +50,28 @@ class WebContents : public PageNavigator {
   // |base_web_contents| is used if we want to size the new WebContents's view
   // based on the view of an existing WebContents.  This can be NULL if not
   // needed.
-  //
-  // The session storage namespace parameter allows multiple render views and
-  // web contentses to share the same session storage (part of the WebStorage
-  // spec) space. This is useful when restoring tabs, but most callers should
-  // pass in NULL which will cause a new SessionStorageNamespace to be created.
   CONTENT_EXPORT static WebContents* Create(
       BrowserContext* browser_context,
       SiteInstance* site_instance,
       int routing_id,
+      const WebContents* base_web_contents);
+
+  // Similar to Create() above but should be used when you need to prepopulate
+  // the SessionStorageNamespaceMap of the WebContents. This can happen if
+  // you duplicate a WebContents, try to reconstitute it from a saved state,
+  // or when you create a new WebContents based on another one (eg., when
+  // servicing a window.open() call).
+  //
+  // You do not want to call this. If you think you do, make sure you completely
+  // understand when SessionStorageNamespace objects should be cloned, why
+  // they should not be shared by multiple WebContents, and what bad things
+  // can happen if you share the object.
+  CONTENT_EXPORT static WebContents* CreateWithSessionStorage(
+      BrowserContext* browser_context,
+      SiteInstance* site_instance,
+      int routing_id,
       const WebContents* base_web_contents,
-      SessionStorageNamespace* session_storage_namespace);
+      const SessionStorageNamespaceMap& session_storage_namespace_map);
 
   // Returns a WebContents that wraps the RenderViewHost, or NULL if the
   // render view host's delegate isn't a WebContents.

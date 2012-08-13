@@ -312,7 +312,7 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
           tab_contents_->profile(),
           tab_util::GetSiteInstanceForNewTab(
               tab_contents_->profile(), url),
-          MSG_ROUTING_NONE, NULL, NULL);
+          MSG_ROUTING_NONE, NULL);
 
       // Let the controller for the target TabContents know that it is hosting a
       // web intents service.

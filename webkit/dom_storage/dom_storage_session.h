@@ -34,6 +34,7 @@ class DomStorageSession
     return persistent_namespace_id_;
   }
   void SetShouldPersist(bool should_persist);
+  bool IsFromContext(DomStorageContext* context);
   DomStorageSession* Clone();
 
   // Constructs a |DomStorageSession| by cloning

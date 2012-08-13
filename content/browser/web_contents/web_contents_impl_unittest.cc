@@ -555,15 +555,16 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   // Open a new contents with the same SiteInstance, navigated to the same site.
-  TestWebContents contents2(browser_context_.get(), instance1);
-  contents2.transition_cross_site = true;
-  contents2.GetController().LoadURL(url, content::Referrer(),
+  scoped_ptr<TestWebContents> contents2(
+      TestWebContents::Create(browser_context_.get(), instance1));
+  contents2->transition_cross_site = true;
+  contents2->GetController().LoadURL(url, content::Referrer(),
                                     content::PAGE_TRANSITION_TYPED,
                                     std::string());
   // Need this page id to be 2 since the site instance is the same (which is the
   // scope of page IDs) and we want to consider this a new page.
-  contents2.TestDidNavigate(
-      contents2.GetRenderViewHost(), 2, url, content::PAGE_TRANSITION_TYPED);
+  contents2->TestDidNavigate(
+      contents2->GetRenderViewHost(), 2, url, content::PAGE_TRANSITION_TYPED);
 
   // Navigate first contents to a new site.
   const GURL url2a("http://www.yahoo.com");
@@ -580,23 +581,23 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
 
   // Navigate second contents to the same site as the first tab.
   const GURL url2b("http://mail.yahoo.com");
-  contents2.GetController().LoadURL(url2b, content::Referrer(),
+  contents2->GetController().LoadURL(url2b, content::Referrer(),
                                     content::PAGE_TRANSITION_TYPED,
                                     std::string());
   TestRenderViewHost* rvh2 =
-      static_cast<TestRenderViewHost*>(contents2.GetRenderViewHost());
+      static_cast<TestRenderViewHost*>(contents2->GetRenderViewHost());
   rvh2->SendShouldCloseACK(true);
   TestRenderViewHost* pending_rvh_b =
-      static_cast<TestRenderViewHost*>(contents2.GetPendingRenderViewHost());
+      static_cast<TestRenderViewHost*>(contents2->GetPendingRenderViewHost());
   EXPECT_TRUE(pending_rvh_b != NULL);
-  EXPECT_TRUE(contents2.cross_navigation_pending());
+  EXPECT_TRUE(contents2->cross_navigation_pending());
 
   // NOTE(creis): We used to be in danger of showing a crash page here if the
   // second contents hadn't navigated somewhere first (bug 1145430).  That case
   // is now covered by the CrossSiteBoundariesAfterCrash test.
-  contents2.TestDidNavigate(
+  contents2->TestDidNavigate(
       pending_rvh_b, 2, url2b, content::PAGE_TRANSITION_TYPED);
-  SiteInstance* instance2b = contents2.GetSiteInstance();
+  SiteInstance* instance2b = contents2->GetSiteInstance();
   EXPECT_NE(instance1, instance2b);
 
   // Both contentses should now be in the same SiteInstance.
@@ -618,21 +619,22 @@ TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
       orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
 
   // Open a related contents to a second site.
-  TestWebContents contents2(browser_context_.get(), instance1);
-  contents2.transition_cross_site = true;
+  scoped_ptr<TestWebContents> contents2(
+      TestWebContents::Create(browser_context_.get(), instance1));
+  contents2->transition_cross_site = true;
   const GURL url2("http://www.yahoo.com");
-  contents2.GetController().LoadURL(url2, content::Referrer(),
+  contents2->GetController().LoadURL(url2, content::Referrer(),
                                     content::PAGE_TRANSITION_TYPED,
                                     std::string());
   // The first RVH in contents2 isn't live yet, so we shortcut the cross site
   // pending.
   TestRenderViewHost* rvh2 = static_cast<TestRenderViewHost*>(
-      contents2.GetRenderViewHost());
-  EXPECT_FALSE(contents2.cross_navigation_pending());
-  contents2.TestDidNavigate(rvh2, 2, url2, content::PAGE_TRANSITION_TYPED);
-  SiteInstance* instance2 = contents2.GetSiteInstance();
+      contents2->GetRenderViewHost());
+  EXPECT_FALSE(contents2->cross_navigation_pending());
+  contents2->TestDidNavigate(rvh2, 2, url2, content::PAGE_TRANSITION_TYPED);
+  SiteInstance* instance2 = contents2->GetSiteInstance();
   EXPECT_NE(instance1, instance2);
-  EXPECT_FALSE(contents2.cross_navigation_pending());
+  EXPECT_FALSE(contents2->cross_navigation_pending());
 
   // Simulate a link click in first contents to second site.  Doesn't switch
   // SiteInstances, because we don't intercept WebKit navigations.
@@ -1875,8 +1877,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneSourceInterstitial) {
   GURL url3("http://foo2");
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
-  NavigationControllerImpl& other_controller =
-      other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller = other_contents->GetController();
   other_contents->NavigateAndCommit(url3);
   other_contents->ExpectSetHistoryLengthAndPrune(
       NavigationEntryImpl::FromNavigationEntry(
@@ -1904,8 +1905,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
   // Create another NavigationController.
   scoped_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
-  NavigationControllerImpl& other_controller =
-      other_contents->GetControllerImpl();
+  NavigationControllerImpl& other_controller = other_contents->GetController();
 
   // Navigate it to url2.
   GURL url2("http://foo2");

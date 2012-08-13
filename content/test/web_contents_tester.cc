@@ -15,9 +15,8 @@ namespace {
 
 class TestWebContentsCountFocus : public TestWebContents {
  public:
-  TestWebContentsCountFocus(content::BrowserContext* browser_context,
-                       content::SiteInstance* instance)
-      : TestWebContents(browser_context, instance), focus_called_(0) {
+  explicit TestWebContentsCountFocus(content::BrowserContext* browser_context)
+      : TestWebContents(browser_context), focus_called_(0) {
   }
 
   virtual int GetNumberOfFocusCalls() OVERRIDE {
@@ -34,10 +33,9 @@ class TestWebContentsCountFocus : public TestWebContents {
 
 class TestWebContentsCountSetFocusToLocationBar : public TestWebContents {
  public:
-  TestWebContentsCountSetFocusToLocationBar(
-      content::BrowserContext* browser_context,
-      SiteInstance* instance)
-      : TestWebContents(browser_context, instance), focus_called_(0) {
+  explicit TestWebContentsCountSetFocusToLocationBar(
+      content::BrowserContext* browser_context)
+      : TestWebContents(browser_context), focus_called_(0) {
   }
 
   virtual void SetFocusToLocationBar(bool select_all) { ++focus_called_; }
@@ -60,22 +58,27 @@ WebContentsTester* WebContentsTester::For(WebContents* contents) {
 WebContents* WebContentsTester::CreateTestWebContents(
     BrowserContext* browser_context,
     SiteInstance* instance) {
-  return new TestWebContents(browser_context, instance);
+  return TestWebContents::Create(browser_context, instance);
 }
 
 // static
 WebContents* WebContentsTester::CreateTestWebContentsCountSetFocusToLocationBar(
     BrowserContext* browser_context,
     SiteInstance* instance) {
-  return new TestWebContentsCountSetFocusToLocationBar(
-      browser_context, instance);
+  TestWebContentsCountSetFocusToLocationBar* web_contents =
+      new TestWebContentsCountSetFocusToLocationBar(browser_context);
+  web_contents->Init(browser_context, instance, MSG_ROUTING_NONE, NULL);
+  return web_contents;
 }
 
 // static
 WebContents* WebContentsTester::CreateTestWebContentsCountFocus(
     BrowserContext* browser_context,
     SiteInstance* instance) {
-  return new TestWebContentsCountFocus(browser_context, instance);
+  TestWebContentsCountFocus* web_contents =
+      new TestWebContentsCountFocus(browser_context);
+  web_contents->Init(browser_context, instance, MSG_ROUTING_NONE, NULL);
+  return web_contents;
 }
 
 }  // namespace content

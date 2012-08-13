@@ -72,7 +72,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
 TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
   // Create another view in the same process.
   scoped_ptr<TestWebContents> new_web_contents(
-      new TestWebContents(browser_context(), rvh()->GetSiteInstance()));
+      TestWebContents::Create(browser_context(), rvh()->GetSiteInstance()));
 
   rvh()->AllowBindings(content::BINDINGS_POLICY_WEB_UI);
   EXPECT_FALSE(rvh()->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);

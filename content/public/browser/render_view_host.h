@@ -217,8 +217,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // RenderView. See BindingsPolicy for details.
   virtual int GetEnabledBindings() const = 0;
 
-  virtual SessionStorageNamespace* GetSessionStorageNamespace() = 0;
-
   virtual SiteInstance* GetSiteInstance() const = 0;
 
   // Requests the renderer to evaluate an xpath to a frame and insert css

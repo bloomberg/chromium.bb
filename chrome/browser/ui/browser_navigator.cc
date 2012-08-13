@@ -472,8 +472,7 @@ void Navigate(NavigateParams* params) {
               tab_util::GetSiteInstanceForNewTab(
                   params->browser->profile(), url),
               MSG_ROUTING_NONE,
-              source_contents,
-              NULL);
+              source_contents);
       // This function takes ownership of |params->target_contents| until it
       // is added to a TabStripModel.
       target_contents_owner.TakeOwnership();

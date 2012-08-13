@@ -42,6 +42,11 @@ SessionStorageNamespaceImpl* SessionStorageNamespaceImpl::Clone() {
   return new SessionStorageNamespaceImpl(session_->Clone());
 }
 
+bool SessionStorageNamespaceImpl::IsFromContext(
+    DOMStorageContextImpl* context) {
+  return session_->IsFromContext(context->context());
+}
+
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     DomStorageSession* clone)
     : session_(clone) {

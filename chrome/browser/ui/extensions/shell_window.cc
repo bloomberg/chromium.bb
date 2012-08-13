@@ -89,7 +89,7 @@ ShellWindow::ShellWindow(Profile* profile,
   // subclass are not yet in place, since it's still halfway through its
   // constructor. As a result, overridden virtual methods won't be called.
   web_contents_ = WebContents::Create(
-      profile, SiteInstance::CreateForURL(profile, url), MSG_ROUTING_NONE, NULL,
+      profile, SiteInstance::CreateForURL(profile, url), MSG_ROUTING_NONE,
       NULL);
   contents_.reset(new TabContents(web_contents_));
   content::WebContentsObserver::Observe(web_contents_);

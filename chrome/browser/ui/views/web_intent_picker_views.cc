@@ -1030,7 +1030,7 @@ void WebIntentPickerViews::OnInlineDisposition(
   inline_web_contents_.reset(WebContents::Create(
       tab_contents_->profile(),
       tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
-      MSG_ROUTING_NONE, NULL, NULL));
+      MSG_ROUTING_NONE, NULL));
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.
   webview_->SetWebContents(inline_web_contents_.get());

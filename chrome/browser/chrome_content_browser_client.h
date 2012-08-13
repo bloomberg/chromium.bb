@@ -17,6 +17,10 @@ namespace content {
 class QuotaPermissionContext;
 }
 
+namespace extensions {
+class Extension;
+}
+
 class PrefService;
 
 namespace chrome {
@@ -37,6 +41,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetStoragePartitionIdForChildProcess(
       content::BrowserContext* browser_context,
       int child_process_id) OVERRIDE;
+  virtual std::string GetStoragePartitionIdForSiteInstance(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* instance) OVERRIDE;
+  virtual bool IsValidStoragePartitionId(
+      content::BrowserContext* browser_context,
+      const std::string& partition_id) OVERRIDE;
   virtual content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) OVERRIDE;
   virtual void RenderViewHostCreated(
@@ -213,6 +223,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
  private:
   // Sets io_thread_application_locale_ to the given value.
   void SetApplicationLocaleOnIOThread(const std::string& locale);
+
+  // Helper function for getting the storage partition id from an Extension
+  // object.
+  std::string GetStoragePartitionIdForExtension(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension);
 
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;

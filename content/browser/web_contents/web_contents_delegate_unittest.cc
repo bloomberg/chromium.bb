@@ -36,11 +36,11 @@ class WebContentsDelegateTest :
 
 TEST_F(WebContentsDelegateTest, UnregisterInDestructor) {
   scoped_ptr<WebContentsImpl> contents_a(
-      new WebContentsImpl(browser_context_.get(), NULL, MSG_ROUTING_NONE, NULL,
-                          NULL, NULL));
+      WebContentsImpl::Create(browser_context_.get(), NULL, MSG_ROUTING_NONE,
+                              NULL));
   scoped_ptr<WebContentsImpl> contents_b(
-      new WebContentsImpl(browser_context_.get(), NULL, MSG_ROUTING_NONE, NULL,
-                          NULL, NULL));
+      WebContentsImpl::Create(browser_context_.get(), NULL, MSG_ROUTING_NONE,
+                              NULL));
   EXPECT_EQ(NULL, contents_a->GetDelegate());
   EXPECT_EQ(NULL, contents_b->GetDelegate());
 

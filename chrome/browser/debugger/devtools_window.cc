@@ -176,7 +176,7 @@ DevToolsWindow* DevToolsWindow::Create(
     bool shared_worker_frontend) {
   // Create TabContents with devtools.
   TabContents* tab_contents =
-      chrome::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+      chrome::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL);
   tab_contents->web_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
   tab_contents->web_contents()->GetController().LoadURL(
@@ -772,4 +772,3 @@ void DevToolsWindow::UpdateBrowserToolbar() {
   if (inspected_window)
     inspected_window->UpdateToolbar(inspected_tab_, false);
 }
-

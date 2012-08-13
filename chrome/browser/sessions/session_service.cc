@@ -605,8 +605,13 @@ void SessionService::Observe(int type,
 
       // Record the association between the SessionStorageNamespace and the
       // tab.
+      //
+      // TODO(ajwong): This should be processing the whole map rather than
+      // just the default. This in particular will not work for tabs with only
+      // isolated apps which won't have a default partition.
       content::SessionStorageNamespace* session_storage_namespace =
-          tab->web_contents()->GetController().GetSessionStorageNamespace();
+          tab->web_contents()->GetController().
+              GetDefaultSessionStorageNamespace();
       ScheduleCommand(CreateSessionStorageAssociatedCommand(
           tab->restore_tab_helper()->session_id(),
           session_storage_namespace->persistent_id()));
@@ -621,7 +626,8 @@ void SessionService::Observe(int type,
       // Allow the associated sessionStorage to get deleted; it won't be needed
       // in the session restore.
       content::SessionStorageNamespace* session_storage_namespace =
-          tab->web_contents()->GetController().GetSessionStorageNamespace();
+          tab->web_contents()->GetController().
+              GetDefaultSessionStorageNamespace();
       session_storage_namespace->SetShouldPersist(false);
       TabClosed(tab->restore_tab_helper()->window_id(),
                 tab->restore_tab_helper()->session_id(),
@@ -1346,7 +1352,7 @@ void SessionService::BuildCommandsForTab(
 
   // Record the association between the sessionStorage namespace and the tab.
   content::SessionStorageNamespace* session_storage_namespace =
-      tab->web_contents()->GetController().GetSessionStorageNamespace();
+      tab->web_contents()->GetController().GetDefaultSessionStorageNamespace();
   ScheduleCommand(CreateSessionStorageAssociatedCommand(
       tab->restore_tab_helper()->session_id(),
       session_storage_namespace->persistent_id()));

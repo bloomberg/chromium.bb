@@ -193,7 +193,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
     tab_contents_->web_contents()->GetController().SetBrowserContext(profile);
   } else {
     WebContents* new_contents = WebContents::Create(
-        profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
+        profile, NULL, MSG_ROUTING_NONE, NULL);
     tab_contents_.reset(new TabContents(new_contents));
   }
 

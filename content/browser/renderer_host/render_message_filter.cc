@@ -286,7 +286,7 @@ RenderMessageFilter::RenderMessageFilter(
       incognito_(browser_context->IsOffTheRecord()),
       dom_storage_context_(static_cast<DOMStorageContextImpl*>(
           BrowserContext::GetDOMStorageContext(browser_context,
-                                               render_process_id_))),
+                                               render_process_id))),
       render_process_id_(render_process_id),
       cpu_usage_(0),
       media_observer_(media_observer) {
@@ -438,17 +438,17 @@ void RenderMessageFilter::OnMsgCreateWindow(
   }
 
   // This will clone the sessionStorage for namespace_id_to_clone.
-  scoped_refptr<SessionStorageNamespaceImpl> session_storage_namespace =
+  scoped_refptr<SessionStorageNamespaceImpl> cloned_namespace =
       new SessionStorageNamespaceImpl(dom_storage_context_,
                                       params.session_storage_namespace_id);
-  *cloned_session_storage_namespace_id = session_storage_namespace->id();
+  *cloned_session_storage_namespace_id = cloned_namespace->id();
 
   render_widget_helper_->CreateNewWindow(params,
                                          no_javascript_access,
                                          peer_handle(),
                                          route_id,
                                          surface_id,
-                                         session_storage_namespace.get());
+                                         cloned_namespace);
 }
 
 void RenderMessageFilter::OnMsgCreateWidget(int opener_id,

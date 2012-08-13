@@ -150,7 +150,6 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
       WebContents::Create(ProfileManager::GetDefaultProfile(),
                           NULL,
                           MSG_ROUTING_NONE,
-                          NULL,
                           NULL);
   tab_contents_.reset(new TabContents(web_contents));
   web_view_->SetWebContents(web_contents);

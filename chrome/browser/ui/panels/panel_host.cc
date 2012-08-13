@@ -47,7 +47,7 @@ void PanelHost::Init(const GURL& url) {
 
   web_contents_.reset(content::WebContents::Create(
       profile_, content::SiteInstance::CreateForURL(profile_, url),
-      MSG_ROUTING_NONE, NULL, NULL));
+      MSG_ROUTING_NONE, NULL));
   chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_PANEL);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());

@@ -43,11 +43,6 @@ namespace base {
 class ListValue;
 }
 
-namespace content {
-class TestRenderViewHost;
-class PowerSaveBlocker;
-}
-
 namespace ui {
 class Range;
 struct SelectedFileInfo;
@@ -55,11 +50,13 @@ struct SelectedFileInfo;
 
 namespace content {
 
-class SessionStorageNamespace;
+class PowerSaveBlocker;
 class RenderViewHostObserver;
 class RenderWidgetHostDelegate;
-struct FileChooserParams;
+class SessionStorageNamespace;
+class TestRenderViewHost;
 struct ContextMenuParams;
+struct FileChooserParams;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
 
@@ -204,8 +201,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       int permissions) OVERRIDE;
   virtual RenderViewHostDelegate* GetDelegate() const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
-  virtual SessionStorageNamespace*
-      GetSessionStorageNamespace() OVERRIDE;
   virtual SiteInstance* GetSiteInstance() const OVERRIDE;
   virtual void InsertCSS(const string16& frame_xpath,
                          const std::string& css) OVERRIDE;
@@ -368,7 +363,7 @@ class CONTENT_EXPORT RenderViewHostImpl
       const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
   virtual void OnPointerEventActivate() OVERRIDE;
   virtual void ForwardKeyboardEvent(
-      const content::NativeWebKeyboardEvent& key_event) OVERRIDE;
+      const NativeWebKeyboardEvent& key_event) OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   // Creates a new RenderView with the given route id.
@@ -506,7 +501,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgRunJavaScriptMessage(const string16& message,
                                  const string16& default_prompt,
                                  const GURL& frame_url,
-                                 content::JavaScriptMessageType type,
+                                 JavaScriptMessageType type,
                                  IPC::Message* reply_msg);
   void OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
                                    const string16& message,
@@ -650,7 +645,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Holds PowerSaveBlockers for the media players in use. Key is the
   // player_cookie passed to OnMediaNotification, value is the PowerSaveBlocker.
-  typedef std::map<int64, content::PowerSaveBlocker*> PowerSaveBlockerMap;
+  typedef std::map<int64, PowerSaveBlocker*> PowerSaveBlockerMap;
   PowerSaveBlockerMap power_save_blockers_;
 
   // A list of observers that filter messages.  Weak references.

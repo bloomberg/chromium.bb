@@ -123,15 +123,14 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
   TabContents* CreateTabContents() {
-    return chrome::TabContentsFactory(
-        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+    return chrome::TabContentsFactory(profile(), NULL, MSG_ROUTING_NONE, NULL);
   }
 
   TabContents* CreateTabContentsWithSharedRPH(
       WebContents* web_contents) {
     TabContents* retval = chrome::TabContentsFactory(profile(),
         web_contents->GetRenderViewHost()->GetSiteInstance(), MSG_ROUTING_NONE,
-        NULL, NULL);
+        NULL);
     EXPECT_EQ(retval->web_contents()->GetRenderProcessHost(),
               web_contents->GetRenderProcessHost());
     return retval;
@@ -1451,7 +1450,7 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
 // Added for http://b/issue?id=958960
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   WebContents* fake_destinations_tab =
-      WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+      WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL);
   TabContents tab_contents(fake_destinations_tab);
   TabStripDummyDelegate delegate(&tab_contents);
   TabStripModel tabstrip(&delegate, profile());

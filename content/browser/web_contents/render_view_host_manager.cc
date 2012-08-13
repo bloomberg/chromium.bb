@@ -81,7 +81,8 @@ void RenderViewHostManager::Init(content::BrowserContext* browser_context,
       RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
           routing_id, false, delegate_->
-          GetControllerForRenderManager().GetSessionStorageNamespace()));
+          GetControllerForRenderManager().GetSessionStorageNamespace(
+              site_instance)));
 
   // Keep track of renderer processes as they start to shut down.
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
@@ -584,7 +585,8 @@ int RenderViewHostManager::CreateRenderView(
         RenderViewHostFactory::Create(instance,
             render_view_delegate_, render_widget_delegate_, MSG_ROUTING_NONE,
             swapped_out, delegate_->
-            GetControllerForRenderManager().GetSessionStorageNamespace()));
+            GetControllerForRenderManager().GetSessionStorageNamespace(
+                instance)));
 
     // If the new RVH is swapped out already, store it.  Otherwise prevent the
     // process from exiting while we're trying to navigate in it.

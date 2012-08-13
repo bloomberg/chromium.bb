@@ -85,7 +85,7 @@ TabContents* BrowserTabStripModelDelegate::CreateTabContentsForURL(
     content::PageTransition transition, bool defer_load,
     content::SiteInstance* instance) const {
   TabContents* contents = TabContentsFactory(profile, instance,
-      MSG_ROUTING_NONE, GetActiveWebContents(browser_), NULL);
+      MSG_ROUTING_NONE, GetActiveWebContents(browser_));
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip
     // so that the tab contents has navigation state.

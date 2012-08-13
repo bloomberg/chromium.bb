@@ -79,9 +79,27 @@ void AddSessionStorageHistogram(InstantController::Mode mode,
   base::Histogram* histogram = base::BooleanHistogram::FactoryGet(
       "Instant.SessionStorageNamespace" + ModeToString(mode),
       base::Histogram::kUmaTargetedHistogramFlag);
-  histogram->AddBoolean(
-      tab1->web_contents()->GetController().GetSessionStorageNamespace() ==
-      tab2->web_contents()->GetController().GetSessionStorageNamespace());
+  const content::SessionStorageNamespaceMap& session_storage_map1 =
+      tab1->web_contents()->GetController().GetSessionStorageNamespaceMap();
+  const content::SessionStorageNamespaceMap& session_storage_map2 =
+      tab2->web_contents()->GetController().GetSessionStorageNamespaceMap();
+  bool is_session_storage_the_same =
+      session_storage_map1.size() == session_storage_map2.size();
+  if (is_session_storage_the_same) {
+    // The size is the same, so let's check that all entries match.
+    for (content::SessionStorageNamespaceMap::const_iterator
+             it1 = session_storage_map1.begin(),
+             it2 = session_storage_map2.begin();
+         it1 != session_storage_map1.end() &&
+             it2 != session_storage_map2.end();
+         ++it1, ++it2) {
+      if (it1->first != it2->first || it1->second != it2->second) {
+        is_session_storage_the_same = false;
+        break;
+      }
+    }
+  }
+  histogram->AddBoolean(is_session_storage_the_same);
 }
 
 }  // namespace

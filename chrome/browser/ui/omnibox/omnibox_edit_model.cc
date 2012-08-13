@@ -1165,8 +1165,8 @@ void OmniboxEditModel::DoPrerender(const AutocompleteMatch& match) {
   tab->web_contents()->GetView()->GetContainerBounds(&container_bounds);
   AutocompleteActionPredictorFactory::GetForProfile(profile_)->
       StartPrerendering(match.destination_url,
-                        tab->web_contents()->GetRenderViewHost()->
-                            GetSessionStorageNamespace(),
+                        tab->web_contents()->GetController()
+                            .GetSessionStorageNamespaceMap(),
                         container_bounds.size());
 }
 

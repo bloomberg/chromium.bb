@@ -31,7 +31,7 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
 
   // TODO(rafaelw): Implement correct session storage.
   web_contents_.reset(WebContents::Create(
-      profile_, site_instance, routing_id, NULL, NULL));
+      profile_, site_instance, routing_id, NULL));
   chrome::SetViewType(
       web_contents_.get(), chrome::VIEW_TYPE_BACKGROUND_CONTENTS);
   web_contents_->SetDelegate(this);

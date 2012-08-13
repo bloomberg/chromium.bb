@@ -119,7 +119,7 @@ TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
   SiteInstance* instance = SiteInstance::Create(profile());
   TabContents* tab_contents = chrome::TabContentsFactory(
-      profile(), instance, MSG_ROUTING_NONE, NULL, NULL);
+      profile(), instance, MSG_ROUTING_NONE, NULL);
   model_->AppendTabContents(tab_contents, true);
   EXPECT_EQ(model_->count(), 1);
 }
@@ -136,13 +136,13 @@ TEST_F(TabStripControllerTest, CorrectToolTipText) {
   // Create tab 1.
   SiteInstance* instance = SiteInstance::Create(profile());
   TabContents* tab_contents = chrome::TabContentsFactory(
-      profile(), instance, MSG_ROUTING_NONE, NULL, NULL);
+      profile(), instance, MSG_ROUTING_NONE, NULL);
   model_->AppendTabContents(tab_contents, true);
 
   // Create tab 2.
   SiteInstance* instance2 = SiteInstance::Create(profile());
   TabContents* tab_contents2 = chrome::TabContentsFactory(
-      profile(), instance2, MSG_ROUTING_NONE, NULL, NULL);
+      profile(), instance2, MSG_ROUTING_NONE, NULL);
   model_->AppendTabContents(tab_contents2, true);
 
   // Set tab 1 tooltip.

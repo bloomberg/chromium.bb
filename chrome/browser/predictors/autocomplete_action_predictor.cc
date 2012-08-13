@@ -158,12 +158,17 @@ void AutocompleteActionPredictor::ClearTransitionalMatches() {
 
 void AutocompleteActionPredictor::StartPrerendering(
     const GURL& url,
-    content::SessionStorageNamespace* session_storage_namespace,
+    const content::SessionStorageNamespaceMap& session_storage_namespace_map,
     const gfx::Size& size) {
   if (prerender_handle_.get())
     prerender_handle_->OnNavigateAway();
   if (prerender::PrerenderManager* prerender_manager =
           prerender::PrerenderManagerFactory::GetForProfile(profile_)) {
+    content::SessionStorageNamespace* session_storage_namespace = NULL;
+    content::SessionStorageNamespaceMap::const_iterator it =
+        session_storage_namespace_map.find("");
+    if (it != session_storage_namespace_map.end())
+      session_storage_namespace = it->second;
     prerender_handle_.reset(
         prerender_manager->AddPrerenderFromOmnibox(
             url, session_storage_namespace, size));

@@ -32,8 +32,9 @@ namespace content {
 
 namespace {
 
-StoragePartition* GetStoragePartition(BrowserContext* browser_context,
-                                      int renderer_child_id) {
+StoragePartition* GetStoragePartitionByPartitionId(
+    BrowserContext* browser_context,
+    const std::string& partition_id) {
   StoragePartitionMap* partition_map = static_cast<StoragePartitionMap*>(
       browser_context->GetUserData(kStorageParitionMapKeyName));
   if (!partition_map) {
@@ -41,12 +42,17 @@ StoragePartition* GetStoragePartition(BrowserContext* browser_context,
     browser_context->SetUserData(kStorageParitionMapKeyName, partition_map);
   }
 
+  return partition_map->Get(partition_id);
+}
+
+StoragePartition* GetStoragePartition(BrowserContext* browser_context,
+                                      int renderer_child_id) {
   const std::string& partition_id =
       GetContentClient()->browser()->GetStoragePartitionIdForChildProcess(
           browser_context,
           renderer_child_id);
 
-  return partition_map->Get(partition_id);
+  return GetStoragePartitionByPartitionId(browser_context, partition_id);
 }
 
 // Run |callback| on each storage partition in |browser_context|.
@@ -150,6 +156,14 @@ DOMStorageContext* BrowserContext::GetDOMStorageContext(
     int render_child_id) {
   StoragePartition* partition =
       GetStoragePartition(browser_context, render_child_id);
+  return partition->dom_storage_context();
+}
+
+DOMStorageContext* BrowserContext::GetDOMStorageContextByPartitionId(
+    BrowserContext* browser_context,
+    const std::string& partition_id) {
+  StoragePartition* partition =
+      GetStoragePartitionByPartitionId(browser_context, partition_id);
   return partition->dom_storage_context();
 }
 

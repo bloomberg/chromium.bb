@@ -522,8 +522,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         current_browser()->tab_strip_model()->GetActiveTabContents();
     if (!tab_contents)
       return NULL;
-    return tab_contents->web_contents()->GetRenderViewHost()->
-        GetSessionStorageNamespace();
+    return tab_contents->web_contents()->GetController()
+        .GetDefaultSessionStorageNamespace();
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

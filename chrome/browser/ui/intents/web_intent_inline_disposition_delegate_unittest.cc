@@ -26,7 +26,7 @@ class WebIntentInlineDispositionBrowserTest
     BrowserWithTestWindowTest::SetUp();
 
     content::WebContents* contents = content::WebContents::Create(
-        browser()->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+        browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
     tab_contents_.reset(new TabContents(contents));
     delegate_.reset(new WebIntentInlineDispositionDelegate(
         &mock_, contents, browser()));

@@ -14,7 +14,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_type.h"
 
-class SessionStorageNamespaceImpl;
 struct ViewHostMsg_FrameNavigate_Params;
 class WebContentsImpl;
 
@@ -30,8 +29,7 @@ class CONTENT_EXPORT NavigationControllerImpl
  public:
   NavigationControllerImpl(
       WebContentsImpl* web_contents,
-      content::BrowserContext* browser_context,
-      SessionStorageNamespaceImpl* session_storage_namespace);
+      content::BrowserContext* browser_context);
   virtual ~NavigationControllerImpl();
 
   // NavigationController implementation:
@@ -87,8 +85,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   virtual void GoToIndex(int index) OVERRIDE;
   virtual void GoToOffset(int offset) OVERRIDE;
   virtual void RemoveEntryAtIndex(int index) OVERRIDE;
+  virtual const content::SessionStorageNamespaceMap&
+      GetSessionStorageNamespaceMap() const OVERRIDE;
   virtual content::SessionStorageNamespace*
-      GetSessionStorageNamespace() const OVERRIDE;
+      GetDefaultSessionStorageNamespace() OVERRIDE;
   virtual void SetMaxRestoredPageID(int32 max_id) OVERRIDE;
   virtual int32 GetMaxRestoredPageID() const OVERRIDE;
   virtual bool NeedsReload() const OVERRIDE;
@@ -116,6 +116,11 @@ class CONTENT_EXPORT NavigationControllerImpl
                        const content::Referrer& referrer,
                        const base::RefCountedMemory& http_body,
                        bool is_overriding_user_agent) OVERRIDE;
+
+  // The session storage namespace that all child RenderViews belonging to
+  // |instance| should use.
+  content::SessionStorageNamespace* GetSessionStorageNamespace(
+      content::SiteInstance* instance);
 
   // Returns the index of the specified entry, or -1 if entry is not contained
   // in this NavigationController.
@@ -189,6 +194,18 @@ class CONTENT_EXPORT NavigationControllerImpl
   // reload, while only a different ref would be in-page (pages can't clear
   // refs without reload, only change to "#" which we don't count as empty).
   bool IsURLInPageNavigation(const GURL& url) const;
+
+  // Sets the SessionStorageNamespace for the given |partition_id|. This is
+  // used during initialization of a new NavigationController to allow
+  // pre-population of the SessionStorageNamespace objects. Session restore,
+  // prerendering, and the implementaion of window.open() are the primary users
+  // of this API.
+  //
+  // Calling this function when a SessionStorageNamespace has already been
+  // associated with a |partition_id| will CHECK() fail.
+  void SetSessionStorageNamespace(
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Random data ---------------------------------------------------------------
 
@@ -344,8 +361,14 @@ class CONTENT_EXPORT NavigationControllerImpl
   // The time ticks at which the last document was loaded.
   base::TimeTicks last_document_loaded_;
 
-  // The session storage id that any (indirectly) owned RenderView should use.
-  scoped_refptr<SessionStorageNamespaceImpl> session_storage_namespace_;
+  // Used to find the appropriate SessionStorageNamespace for the storage
+  // partition of a NavigationEntry.
+  //
+  // A NavigationController may contain NavigationEntries that correspond to
+  // different StoragePartitions. Even though they are part of the same
+  // NavigationController, only entries in the same StoragePartition may
+  // share session storage state with one another.
+  content::SessionStorageNamespaceMap session_storage_namespace_map_;
 
   // The maximum number of entries that a navigation controller can store.
   static size_t max_entry_count_for_testing_;

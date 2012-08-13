@@ -103,7 +103,7 @@ void WebAuthFlow::Start() {
 }
 
 WebContents* WebAuthFlow::CreateWebContents() {
-  return WebContents::Create(profile_, NULL, MSG_ROUTING_NONE, NULL, NULL);
+  return WebContents::Create(profile_, NULL, MSG_ROUTING_NONE, NULL);
 }
 
 void WebAuthFlow::ShowAuthFlowPopup() {

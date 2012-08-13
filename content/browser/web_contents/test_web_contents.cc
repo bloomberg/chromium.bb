@@ -22,16 +22,21 @@
 
 namespace content {
 
-TestWebContents::TestWebContents(BrowserContext* browser_context,
-                                 SiteInstance* instance)
-    : WebContentsImpl(browser_context, instance, MSG_ROUTING_NONE, NULL, NULL,
-                      NULL),
+TestWebContents::TestWebContents(BrowserContext* browser_context)
+    : WebContentsImpl(browser_context, NULL),
       transition_cross_site(false),
       delegate_view_override_(NULL),
       expect_set_history_length_and_prune_(false),
       expect_set_history_length_and_prune_site_instance_(NULL),
       expect_set_history_length_and_prune_history_length_(0),
       expect_set_history_length_and_prune_min_page_id_(-1) {
+}
+
+TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
+                                         SiteInstance* instance) {
+  TestWebContents* test_web_contents = new TestWebContents(browser_context);
+  test_web_contents->Init(browser_context, instance, MSG_ROUTING_NONE, NULL);
+  return test_web_contents;
 }
 
 TestWebContents::~TestWebContents() {
@@ -99,10 +104,9 @@ bool TestWebContents::CreateRenderViewForRenderManager(
 }
 
 WebContents* TestWebContents::Clone() {
-  WebContentsImpl* contents = new TestWebContents(
-      GetBrowserContext(),
-      SiteInstance::Create(GetBrowserContext()));
-  contents->GetControllerImpl().CopyStateFrom(controller_);
+  WebContentsImpl* contents =
+      Create(GetBrowserContext(), SiteInstance::Create(GetBrowserContext()));
+  contents->GetController().CopyStateFrom(controller_);
   return contents;
 }
 

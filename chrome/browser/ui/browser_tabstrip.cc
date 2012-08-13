@@ -160,14 +160,26 @@ TabContents* TabContentsFactory(
     Profile* profile,
     content::SiteInstance* site_instance,
     int routing_id,
+    const content::WebContents* base_web_contents) {
+  return new TabContents(content::WebContents::Create(profile,
+                                                      site_instance,
+                                                      routing_id,
+                                                      base_web_contents));
+}
+
+TabContents* TabContentsWithSessionStorageFactory(
+    Profile* profile,
+    content::SiteInstance* site_instance,
+    int routing_id,
     const content::WebContents* base_web_contents,
-    content::SessionStorageNamespace* session_storage_namespace) {
-  return new TabContents(content::WebContents::Create(
-      profile,
-      site_instance,
-      routing_id,
-      base_web_contents,
-      session_storage_namespace));
+    const content::SessionStorageNamespaceMap& session_storage_namespace_map) {
+  return new TabContents(
+      content::WebContents::CreateWithSessionStorage(
+          profile,
+          site_instance,
+          routing_id,
+          base_web_contents,
+          session_storage_namespace_map));
 }
 
 }  // namespace chrome

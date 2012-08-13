@@ -101,7 +101,7 @@ class LinkInfoBarControllerTest : public CocoaProfileTest,
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     tab_contents_.reset(new TabContents(WebContents::Create(
-        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
+        profile(), NULL, MSG_ROUTING_NONE, NULL)));
     tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
 
     delegate_ = new MockLinkInfoBarDelegate(this);
@@ -145,7 +145,7 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
     tab_contents_.reset(new TabContents(WebContents::Create(
-        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
+        profile(), NULL, MSG_ROUTING_NONE, NULL)));
     tab_contents_->infobar_tab_helper()->set_infobars_enabled(false);
 
     delegate_ = new MockConfirmInfoBarDelegate(this);

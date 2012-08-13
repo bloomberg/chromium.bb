@@ -67,7 +67,7 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
 
   void AppendTabToStrip() {
     TabContents* tab_contents = chrome::TabContentsFactory(
-        profile(), site_instance_, MSG_ROUTING_NONE, NULL, NULL);
+        profile(), site_instance_, MSG_ROUTING_NONE, NULL);
     browser()->tab_strip_model()->AppendTabContents(
         tab_contents, /*foreground=*/true);
   }

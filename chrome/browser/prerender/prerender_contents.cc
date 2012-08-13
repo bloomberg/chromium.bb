@@ -211,8 +211,12 @@ bool PrerenderContents::IsPendingEntry(
 
 void PrerenderContents::StartPendingPrerenders() {
   SessionStorageNamespace* session_storage_namespace = NULL;
-  if (RenderViewHost* render_view_host = GetRenderViewHostMutable())
-    session_storage_namespace = render_view_host->GetSessionStorageNamespace();
+  if (prerender_contents_.get()) {
+    // TODO(ajwong): This does not correctly handle storage for isolated apps.
+    session_storage_namespace =
+        prerender_contents_->web_contents()->GetController()
+            .GetDefaultSessionStorageNamespace();
+  }
   DCHECK(child_id_ == -1 || session_storage_namespace);
 
   std::vector<PendingPrerenderInfo> pending_prerender_list;
@@ -500,8 +504,12 @@ void PrerenderContents::OnRenderViewHostCreated(
 
 WebContents* PrerenderContents::CreateWebContents(
     SessionStorageNamespace* session_storage_namespace) {
-  return  WebContents::Create(profile_, NULL, MSG_ROUTING_NONE, NULL,
-                              session_storage_namespace);
+  // TODO(ajwong): Remove the temporary map once prerendering is aware of
+  // multiple session storage namespaces per tab.
+  content::SessionStorageNamespaceMap session_storage_namespace_map;
+  session_storage_namespace_map[""] = session_storage_namespace;
+  return  WebContents::CreateWithSessionStorage(
+      profile_, NULL, MSG_ROUTING_NONE, NULL, session_storage_namespace_map);
 }
 
 void PrerenderContents::OnUpdateFaviconURL(
