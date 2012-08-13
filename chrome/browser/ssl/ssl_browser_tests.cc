@@ -296,6 +296,16 @@ class SSLUITestBlock : public SSLUITest {
   }
 };
 
+class SSLUITestIgnoreCertErrors : public SSLUITest {
+ public:
+  SSLUITestIgnoreCertErrors() : SSLUITest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Browser will ignore certificate errors.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+};
+
 // Visits a regular page over http.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
   ASSERT_TRUE(test_server()->Start());
@@ -1449,6 +1459,38 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBlock, TestBlockRunningInsecureContent) {
   CheckAuthenticatedState(chrome::GetActiveWebContents(browser()), false);
 }
 
+// Visit a page and establish a WebSocket connection over bad https with
+// --ignore-certificate-errors. The connection should be established without
+// interstitial page showing.
+IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreCertErrors, TestWSS) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  // Start pywebsocket with TLS.
+  content::TestWebSocketServer wss_server;
+  int port = wss_server.UseRandomPort();
+  wss_server.UseTLS();
+  FilePath wss_root_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &wss_root_dir));
+  ASSERT_TRUE(wss_server.Start(wss_root_dir));
+
+  // Setup page title observer.
+  WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+
+  // Visit bad HTTPS page.
+  std::string url_path =
+      StringPrintf("%s%d%s", "https://localhost:", port, "/wss.html");
+  ui_test_utils::NavigateToURL(browser(), GURL(url_path));
+
+  // We shouldn't have an interstitial page showing here.
+
+  // Test page run a WebSocket wss connection test. The result will be shown
+  // as page title.
+  const string16 result = watcher.WaitAndGetTitle();
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
+}
 
 // TODO(jcampan): more tests to do below.
 
