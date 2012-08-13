@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/first_run_bubble.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -26,16 +26,15 @@ const int kRightInset = 2;
 }  // namespace
 
 namespace first_run {
-  void ShowFirstRunDialog(Profile* profile) {}
+void ShowFirstRunDialog(Profile* profile) {}
 }  // namespace first_run
 
 // static
 FirstRunBubble* FirstRunBubble::ShowBubble(Browser* browser,
-                                           Profile* profile,
                                            views::View* anchor_view) {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
 
-  FirstRunBubble* delegate = new FirstRunBubble(browser, profile, anchor_view);
+  FirstRunBubble* delegate = new FirstRunBubble(browser, anchor_view);
   views::BubbleDelegateView::CreateBubble(delegate);
   delegate->StartFade(true);
   return delegate;
@@ -46,7 +45,8 @@ void FirstRunBubble::Init() {
   const gfx::Font& original_font = rb.GetFont(ui::ResourceBundle::MediumFont);
 
   views::Label* title = new views::Label(l10n_util::GetStringFUTF16(
-      IDS_FR_BUBBLE_TITLE, GetDefaultSearchEngineName(profile_)));
+      IDS_FR_BUBBLE_TITLE, browser_ ?
+          GetDefaultSearchEngineName(browser_->profile()) : string16()));
   title->SetFont(original_font.DeriveFont(2, gfx::Font::BOLD));
 
   views::Link* change =
@@ -85,12 +85,9 @@ gfx::Rect FirstRunBubble::GetAnchorRect() {
   return rect;
 }
 
-FirstRunBubble::FirstRunBubble(Browser* browser,
-                               Profile* profile,
-                               views::View* anchor_view)
+FirstRunBubble::FirstRunBubble(Browser* browser, views::View* anchor_view)
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      browser_(browser),
-      profile_(profile) {
+      browser_(browser) {
 }
 
 FirstRunBubble::~FirstRunBubble() {

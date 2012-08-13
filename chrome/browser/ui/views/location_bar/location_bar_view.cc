@@ -1185,7 +1185,7 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
 #if !defined(OS_CHROMEOS)
   // First run bubble doesn't make sense for Chrome OS.
   Browser* browser = GetBrowserFromDelegate(delegate_);
-  FirstRunBubble::ShowBubble(browser, profile_, location_icon_view_);
+  FirstRunBubble::ShowBubble(browser, location_icon_view_);
 #endif
 }
 
