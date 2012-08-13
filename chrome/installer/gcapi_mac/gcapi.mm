@@ -108,6 +108,9 @@ BOOL HasChromeTicket(TicketKind kind, const passwd* user) {
   NSEnumerator* e = [keystone_paths objectEnumerator];
   id ks_path;
   while ((ks_path = [e nextObject])) {
+    if (![[NSFileManager defaultManager] fileExistsAtPath:ks_path])
+      continue;
+
     NSTask* task = nil;
     NSString* string = nil;
     bool ksadmin_ran_successfully = false;
