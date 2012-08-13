@@ -9,6 +9,11 @@ from file_system import FileNotFoundError
 import third_party.json_schema_compiler.model as model
 from docs_server_utils import SanitizeAPIName
 
+# These files are special cases that shouldn't be in the API list.
+IGNORED_FILES = [
+  'devtools'
+]
+
 class APIListDataSource(object):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
   that are used in the api_index.html and experimental.html pages.
@@ -26,7 +31,9 @@ class APIListDataSource(object):
                       for name in public_templates]
     experimental_apis = []
     chrome_apis = []
-    for i, template_name in enumerate(sorted(template_names)):
+    for template_name in sorted(template_names):
+      if template_name in IGNORED_FILES:
+        continue
       if model.UnixName(template_name) in api_names:
         if template_name.startswith('experimental'):
           experimental_apis.append({

@@ -48,18 +48,20 @@ CUSTOM_MAPPINGS = {
 EXTENSIONS_ONLY = [
   'browserAction',
   'extension',
-  'input.ime',
+  'input_ime',
+  'fontSettings',
+  'fileBrowserHandler',
   'omnibox',
   'pageAction',
   'scriptBadge',
   'windows',
-  'experimental.devtools.audits',
-  'experimental.devtools.console',
-  'experimental.discovery',
-  'experimental.infobars',
-  'experimental.offscreenTabs',
-  'experimental.processes',
-  'experimental.speechInput'
+  'experimental_devtools_audits',
+  'experimental_devtools_console',
+  'experimental_discovery',
+  'experimental_infobars',
+  'experimental_offscreenTabs',
+  'experimental_processes',
+  'experimental_speechInput'
 ]
 
 def _ReadFile(filename):
@@ -90,9 +92,7 @@ def _GetDestinations(api_name, api_dir):
   if permissions_key in permissions:
     return_list = []
     types = permissions[permissions_key]['extension_types']
-    if ('packaged_app' in types or
-        'hosted_app' in types or
-        'platform_app' in types):
+    if 'platform_app' in types:
       return_list.append('apps')
     if 'extension' in types:
       return_list.append('extensions')
