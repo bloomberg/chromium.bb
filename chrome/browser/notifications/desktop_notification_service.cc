@@ -238,6 +238,7 @@ std::string DesktopNotificationService::AddNotification(
     const string16& title,
     const string16& message,
     const GURL& icon_url,
+    const string16& replace_id,
     NotificationDelegate* delegate,
     Profile* profile) {
 #if defined(USE_ASH)
@@ -245,7 +246,7 @@ std::string DesktopNotificationService::AddNotification(
     // For Ash create a non-HTML notification with |icon_url|.
     Notification notification(GURL(), icon_url, title, message,
                               WebKit::WebTextDirectionDefault,
-                              string16(), string16(), delegate);
+                              string16(), replace_id, delegate);
     g_browser_process->notification_ui_manager()->Add(notification, profile);
     return notification.notification_id();
   }
@@ -254,7 +255,7 @@ std::string DesktopNotificationService::AddNotification(
   GURL content_url(CreateDataUrl(
       icon_url, title, message, WebKit::WebTextDirectionDefault));
   Notification notification(
-      GURL(), content_url, string16(), string16(), delegate);
+      GURL(), content_url, string16(), replace_id, delegate);
   g_browser_process->notification_ui_manager()->Add(notification, profile);
   return notification.notification_id();
 }
@@ -265,6 +266,7 @@ std::string DesktopNotificationService::AddIconNotification(
     const string16& title,
     const string16& message,
     const gfx::ImageSkia& icon,
+    const string16& replace_id,
     NotificationDelegate* delegate,
     Profile* profile) {
 #if defined(USE_ASH)
@@ -272,7 +274,7 @@ std::string DesktopNotificationService::AddIconNotification(
     // For Ash create a non-HTML notification with |icon|.
     Notification notification(GURL(), icon, title, message,
                               WebKit::WebTextDirectionDefault,
-                              string16(), string16(), delegate);
+                              string16(), replace_id, delegate);
     g_browser_process->notification_ui_manager()->Add(notification, profile);
     return notification.notification_id();
   }
@@ -281,7 +283,13 @@ std::string DesktopNotificationService::AddIconNotification(
   if (!icon.empty())
     icon_url = GURL(web_ui_util::GetImageDataUrl(icon));
   return AddNotification(
-      origin_url, title, message, icon_url, delegate, profile);
+      origin_url, title, message, icon_url, replace_id, delegate, profile);
+}
+
+// static
+void DesktopNotificationService::RemoveNotification(
+    const std::string& notification_id) {
+    g_browser_process->notification_ui_manager()->CancelById(notification_id);
 }
 
 DesktopNotificationService::DesktopNotificationService(Profile* profile,

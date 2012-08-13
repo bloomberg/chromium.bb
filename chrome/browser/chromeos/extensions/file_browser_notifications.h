@@ -84,7 +84,8 @@ class FileBrowserNotifications
   void ShowNotificationById(NotificationType type,
                             const std::string& notification_id,
                             const string16& message);
-  void HideNotificationById(const std::string& id);
+  void HideNotificationById(const std::string& notification_id);
+  void RemoveNotificationById(const std::string& notification_id);
 
   NotificationMap notification_map_;
   std::set<std::string> hidden_notifications_;

@@ -144,7 +144,7 @@ bool CloudPrintProxyService::ShowTokenExpiredNotification() {
       l10n_util::GetStringFUTF16(IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE, title);
   token_expired_delegate_ = new TokenExpiredNotificationDelegate(this);
   DesktopNotificationService::AddNotification(
-      GURL(), title, message, GURL(),
+      GURL(), title, message, GURL(), string16(),
       token_expired_delegate_.get(), profile_);
   // Keep the browser alive while we are showing the notification.
   browser::StartKeepAlive();

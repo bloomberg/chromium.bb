@@ -118,7 +118,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
   GURL icon_url(extension->GetIconURL(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
                                       ExtensionIconSet::MATCH_BIGGER));
   DesktopNotificationService::AddNotification(
-      extension->url(), title, message, icon_url,
+      extension->url(), title, message, icon_url, string16(),
       new CrashNotificationDelegate(profile, extension), profile);
 #endif
 }

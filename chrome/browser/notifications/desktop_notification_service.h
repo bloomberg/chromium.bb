@@ -103,16 +103,21 @@ class DesktopNotificationService : public content::NotificationObserver,
                                      const string16& title,
                                      const string16& message,
                                      const GURL& icon_url,
+                                     const string16& replace_id,
                                      NotificationDelegate* delegate,
                                      Profile* profile);
 
   // Same as above, but takes a gfx::ImageSkia for the icon instead.
   static std::string AddIconNotification(const GURL& origin_url,
-                                     const string16& title,
-                                     const string16& message,
-                                     const gfx::ImageSkia& icon,
-                                     NotificationDelegate* delegate,
-                                     Profile* profile);
+                                         const string16& title,
+                                         const string16& message,
+                                         const gfx::ImageSkia& icon,
+                                         const string16& replace_id,
+                                         NotificationDelegate* delegate,
+                                         Profile* profile);
+
+  // Remove any active notification corresponding to |notification_id|.
+  static void RemoveNotification(const std::string& notification_id);
 
   // The default content setting determines how to handle origins that haven't
   // been allowed or denied yet. If |provider_id| is not NULL, the id of the
