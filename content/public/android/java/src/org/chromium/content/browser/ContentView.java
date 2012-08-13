@@ -143,8 +143,12 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
 
     private static ContentView newInstance(Context context, int nativeWebContents,
             AttributeSet attrs, int defStyle, int personality) {
-        // TODO(dtrainor): Upstream JellyBean version of AccessibilityInjector when SDK is 16.
-        return new ContentView(context, nativeWebContents, attrs, defStyle, personality);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            return new ContentView(context, nativeWebContents, attrs, defStyle, personality);
+        } else {
+            return new JellyBeanContentView(context, nativeWebContents, attrs, defStyle,
+                    personality);
+        }
     }
 
     protected ContentView(Context context, int nativeWebContents, AttributeSet attrs, int defStyle,

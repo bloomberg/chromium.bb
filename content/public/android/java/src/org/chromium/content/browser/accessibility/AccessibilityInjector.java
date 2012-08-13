@@ -81,8 +81,11 @@ public class AccessibilityInjector {
      * @return An instance of a {@link AccessibilityInjector}.
      */
     public static AccessibilityInjector newInstance(ContentViewCore view) {
-        // TODO(dtrainor): Upstream JellyBean version of AccessibilityInjector when SDK is 16.
-        return new AccessibilityInjector(view);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            return new AccessibilityInjector(view);
+        } else {
+            return new JellyBeanAccessibilityInjector(view);
+        }
     }
 
     /**
