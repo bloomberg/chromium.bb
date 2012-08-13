@@ -8,6 +8,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
@@ -43,8 +44,14 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    ash::Shell::GetInstance()->
-        user_wallpaper_delegate()->OnWallpaperAnimationFinished();
+    ash::Shell* shell = ash::Shell::GetInstance();
+    shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
+    // Only removes old component when wallpaper animation finished. If we
+    // remove the old one too early, there will be a white flash during
+    // animation.
+    internal::DesktopBackgroundWidgetController* component =
+        root_window_->GetProperty(kComponentWrapper)->component();
+    root_window_->SetProperty(kWindowDesktopComponent, component);
 
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
@@ -153,8 +160,17 @@ views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
       ash::Shell::GetInstance()->user_wallpaper_delegate()->GetAnimationType();
   ash::SetWindowVisibilityAnimationType(desktop_widget->GetNativeView(),
                                         animation_type);
-  ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
-                                              ash::ANIMATE_SHOW);
+  // Disable animation when creating the first widget. Otherwise, wallpaper
+  // will animate from a white screen. Note that boot animation is different.
+  // It animates from a white background.
+  if (animation_type == ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE &&
+      NULL == root_window->GetProperty(internal::kWindowDesktopComponent)) {
+    ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
+                                                ash::ANIMATE_NONE);
+  } else {
+    ash::SetWindowVisibilityAnimationTransition(desktop_widget->GetNativeView(),
+                                                ash::ANIMATE_SHOW);
+  }
   desktop_widget->SetBounds(params.parent->bounds());
   ui::ScopedLayerAnimationSettings settings(
       desktop_widget->GetNativeView()->layer()->GetAnimator());
