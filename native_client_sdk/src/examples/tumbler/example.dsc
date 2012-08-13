@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'tumbler',

@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'pnacl'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME': 'fullscreen_tumbler',
