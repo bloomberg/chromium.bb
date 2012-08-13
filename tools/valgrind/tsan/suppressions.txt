@@ -405,12 +405,6 @@
 ############################
 # Real races in Chromium
 {
-  bug_23433
-  ThreadSanitizer:Race
-  fun:*logging*SetMinLogLevel*
-}
-
-{
   bug_24419
   ThreadSanitizer:Race
   fun:*BrowserProcessImpl*nspector*iles*
