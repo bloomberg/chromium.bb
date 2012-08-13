@@ -86,7 +86,7 @@ void GamepadPlatformDataFetcherMac::RegisterForNotifications() {
       kCFRunLoopDefaultMode);
 
   enabled_ = IOHIDManagerOpen(hid_manager_ref_,
-                              kIOHIDOptionsTypeSeizeDevice) == kIOReturnSuccess;
+                              kIOHIDOptionsTypeNone) == kIOReturnSuccess;
 }
 
 void GamepadPlatformDataFetcherMac::UnregisterFromNotifications() {
