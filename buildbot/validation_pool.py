@@ -752,6 +752,8 @@ class ValidationPool(object):
   """
 
   GLOBAL_DRYRUN = False
+  MAX_TIMEOUT = 60 * 60 * 4
+  SLEEP_TIMEOUT = 30
 
   # The grace period (in seconds) before we reject a patch due to dependency
   # errors.
@@ -891,7 +893,7 @@ class ValidationPool(object):
       return True
 
     # Limit sleep interval to the set of 1-30
-    sleep_timeout = min(max(max_timeout / 5, 1), 30)
+    sleep_timeout = min(max(max_timeout / 5, 1), cls.SLEEP_TIMEOUT)
 
     def _SleepWithExponentialBackOff(current_sleep):
       """Helper function to sleep with exponential backoff."""
@@ -962,7 +964,11 @@ class ValidationPool(object):
 
     # We choose a longer wait here as we haven't committed to anything yet. By
     # doing this here we can reduce the number of builder cycles.
-    if dryrun or cls._IsTreeOpen(max_timeout=3600):
+    end_time = time.time() + cls.MAX_TIMEOUT
+    while True:
+      if not dryrun and not cls._IsTreeOpen(max_timeout=cls.MAX_TIMEOUT):
+        raise TreeIsClosedException()
+
       # Only master configurations should call this method.
       pool = ValidationPool(overlays, build_root, build_number, builder_name,
                             True, dryrun)
@@ -976,9 +982,14 @@ class ValidationPool(object):
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
 
-      return pool
-    else:
-      raise TreeIsClosedException()
+      time_left = (end_time - time.time()) / 60
+      if pool.changes or pool.non_manifest_changes or dryrun or time_left < 0:
+        break
+
+      logging.info('Waiting for new CLs (%d minutes left)...', time_left)
+      time.sleep(cls.SLEEP_TIMEOUT)
+
+    return pool
 
   @classmethod
   def AcquirePoolFromManifest(cls, manifest, overlays, build_root, build_number,
