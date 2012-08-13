@@ -20,6 +20,7 @@
  * OF THIS SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -327,6 +328,12 @@ create_drag_cursor(struct dnd_drag *dnd_drag,
 	cairo_t *cr;
 
 	pointer = display_get_pointer_image(dnd->display, CURSOR_DRAGGING);
+	if (!pointer) {
+		fprintf(stderr, "WARNING: grabbing cursor image not found\n");
+		pointer = display_get_pointer_image(dnd->display,
+						    CURSOR_LEFT_PTR);
+		assert(pointer && "no cursor image found");
+	}
 
 	rectangle.width = item_width + 2 * pointer->width;
 	rectangle.height = item_height + 2 * pointer->height;
