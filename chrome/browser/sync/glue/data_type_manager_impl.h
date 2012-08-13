@@ -62,8 +62,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Otherwise, returns false.
   bool ProcessReconfigure();
 
-  void Restart(syncer::ConfigureReason reason,
-               BackendDataTypeConfigurer::NigoriState nigori_state);
+  void Restart(syncer::ConfigureReason reason);
   void DownloadReady(syncer::ModelTypeSet failed_configuration_types);
 
   // Notification from the SBH that download failed due to a transient
@@ -77,10 +76,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Restart().
   void AddToConfigureTime();
 
-  void ConfigureImpl(
-      TypeSet desired_types,
-      syncer::ConfigureReason reason,
-      BackendDataTypeConfigurer::NigoriState nigori_state);
+  void ConfigureImpl(TypeSet desired_types, syncer::ConfigureReason reason);
 
   BackendDataTypeConfigurer* configurer_;
   // Map of all data type controllers that are available for sync.
@@ -97,10 +93,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // The reason for the last reconfigure attempt. Not this will be set to a
   // valid value only when |needs_reconfigure_| is set.
   syncer::ConfigureReason last_configure_reason_;
-  // The value of |nigori_state| on the last reconfigure attempt.
-  // Like |last_configure_reason_|, set to a valid value only when
-  // |needs_reconfigure_| is set.
-  BackendDataTypeConfigurer::NigoriState last_nigori_state_;
 
   base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 

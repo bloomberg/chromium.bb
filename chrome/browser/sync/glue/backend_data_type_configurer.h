@@ -16,10 +16,6 @@ namespace browser_sync {
 // removed data types.
 class BackendDataTypeConfigurer {
  public:
-  // Enum representing the two "modes" of configuration.
-  // WITHOUT_NIGORI is only used by migration.
-  enum NigoriState { WITHOUT_NIGORI, WITH_NIGORI };
-
   // Configures the given set of types to add and remove.
   // |ready_task| is called on the same thread as ConfigureDataTypes
   // is called when configuration is done with the set of data types
@@ -35,7 +31,6 @@ class BackendDataTypeConfigurer {
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet types_to_add,
       syncer::ModelTypeSet types_to_remove,
-      NigoriState nigori_state,
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) = 0;
 

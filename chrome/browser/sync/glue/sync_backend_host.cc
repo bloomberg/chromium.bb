@@ -631,7 +631,6 @@ void SyncBackendHost::ConfigureDataTypes(
     syncer::ConfigureReason reason,
     syncer::ModelTypeSet types_to_add,
     syncer::ModelTypeSet types_to_remove,
-    NigoriState nigori_state,
     const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
     const base::Callback<void()>& retry_callback) {
   // Only one configure is allowed at a time.  This is guaranteed by our
@@ -642,20 +641,9 @@ void SyncBackendHost::ConfigureDataTypes(
 
   DCHECK_GT(initialization_state_, NOT_INITIALIZED);
 
-  syncer::ModelTypeSet types_to_add_with_nigori = types_to_add;
-  syncer::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
-  if (nigori_state == WITH_NIGORI) {
-    types_to_add_with_nigori.Put(syncer::NIGORI);
-    types_to_remove_with_nigori.Remove(syncer::NIGORI);
-  } else {
-    types_to_add_with_nigori.Remove(syncer::NIGORI);
-    types_to_remove_with_nigori.Put(syncer::NIGORI);
-  }
-
   // The SyncBackendRegistrar's routing info will be updated by adding the
-  // types_to_add_with_nigori to the list then removing
-  // types_to_remove_with_nigori.  Any types which are not in either of those
-  // sets will remain untouched.
+  // types_to_add to the list then removing types_to_remove.  Any types which
+  // are not in either of those sets will remain untouched.
   //
   // Types which were not in the list previously are not fully downloaded, so we
   // must ask the syncer to download them.  Any newly supported datatypes will
@@ -669,7 +657,7 @@ void SyncBackendHost::ConfigureDataTypes(
   // until they succeed or the browser is closed.
 
   syncer::ModelTypeSet types_to_download = registrar_->ConfigureDataTypes(
-      types_to_add_with_nigori, types_to_remove_with_nigori);
+      types_to_add, types_to_remove);
   if (!types_to_download.Empty())
     types_to_download.Put(syncer::NIGORI);
 
@@ -1328,9 +1316,8 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
       initialization_state_ = DOWNLOADING_NIGORI;
       ConfigureDataTypes(
           syncer::CONFIGURE_REASON_NEW_CLIENT,
+          syncer::ModelTypeSet(syncer::NIGORI),
           syncer::ModelTypeSet(),
-          syncer::ModelTypeSet(),
-          WITH_NIGORI,
           // Calls back into this function.
           base::Bind(
               &SyncBackendHost::

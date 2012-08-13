@@ -36,7 +36,6 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
       last_configure_reason_(syncer::CONFIGURE_REASON_UNKNOWN),
-      last_nigori_state_(BackendDataTypeConfigurer::WITHOUT_NIGORI),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       model_association_manager_(controllers,
                                  ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -47,20 +46,20 @@ DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
 void DataTypeManagerImpl::Configure(TypeSet desired_types,
                                     syncer::ConfigureReason reason) {
-  ConfigureImpl(desired_types, reason,
-                BackendDataTypeConfigurer::WITH_NIGORI);
+  desired_types.Put(syncer::NIGORI);
+  ConfigureImpl(desired_types, reason);
 }
 
-void DataTypeManagerImpl::ConfigureWithoutNigori(TypeSet desired_types,
+void DataTypeManagerImpl::ConfigureWithoutNigori(
+    TypeSet desired_types,
     syncer::ConfigureReason reason) {
-  ConfigureImpl(desired_types, reason,
-                BackendDataTypeConfigurer::WITHOUT_NIGORI);
+  DCHECK(!desired_types.Has(syncer::NIGORI));
+  ConfigureImpl(desired_types, reason);
 }
 
 void DataTypeManagerImpl::ConfigureImpl(
     TypeSet desired_types,
-    syncer::ConfigureReason reason,
-    BackendDataTypeConfigurer::NigoriState nigori_state) {
+    syncer::ConfigureReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
   if (state_ == STOPPING) {
@@ -81,7 +80,6 @@ void DataTypeManagerImpl::ConfigureImpl(
   }
 
   last_requested_types_ = desired_types;
-  last_nigori_state_ = nigori_state;
   // Only proceed if we're in a steady state or blocked.
   if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
     DVLOG(1) << "Received configure request while configuration in flight. "
@@ -91,12 +89,10 @@ void DataTypeManagerImpl::ConfigureImpl(
     return;
   }
 
-  Restart(reason, nigori_state);
+  Restart(reason);
 }
 
-void DataTypeManagerImpl::Restart(
-    syncer::ConfigureReason reason,
-    BackendDataTypeConfigurer::NigoriState nigori_state) {
+void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   DVLOG(1) << "Restarting...";
   model_association_manager_.Initialize(last_requested_types_);
   last_restart_time_ = base::Time::Now();
@@ -113,12 +109,13 @@ void DataTypeManagerImpl::Restart(
   // Tell the backend about the new set of data types we wish to sync.
   // The task will be invoked when updates are downloaded.
   state_ = DOWNLOAD_PENDING;
-  // Hopefully http://crbug.com/79970 will make this less verbose.
   syncer::ModelTypeSet all_types;
   for (DataTypeController::TypeMap::const_iterator it =
            controllers_->begin(); it != controllers_->end(); ++it) {
     all_types.Put(it->first);
   }
+  // NIGORI has no controller.  We must add it manually.
+  all_types.Put(syncer::NIGORI);
   const syncer::ModelTypeSet types_to_add = last_requested_types_;
   // Check that types_to_add \subseteq all_types.
   DCHECK(all_types.HasAll(types_to_add));
@@ -129,7 +126,6 @@ void DataTypeManagerImpl::Restart(
       reason,
       types_to_add,
       types_to_remove,
-      nigori_state,
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DataTypeManagerImpl::OnDownloadRetry,
@@ -157,12 +153,10 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
       base::Bind(&DataTypeManagerImpl::ConfigureImpl,
                  weak_ptr_factory_.GetWeakPtr(),
                  last_requested_types_,
-                 last_configure_reason_,
-                 last_nigori_state_));
+                 last_configure_reason_));
 
   needs_reconfigure_ = false;
   last_configure_reason_ = syncer::CONFIGURE_REASON_UNKNOWN;
-  last_nigori_state_ = BackendDataTypeConfigurer::WITHOUT_NIGORI;
   return true;
 }
 
@@ -249,8 +243,7 @@ void DataTypeManagerImpl::OnTypesLoaded() {
     return;
   }
 
-  Restart(syncer::CONFIGURE_REASON_RECONFIGURATION,
-          last_nigori_state_);
+  Restart(syncer::CONFIGURE_REASON_RECONFIGURATION);
 }
 
 

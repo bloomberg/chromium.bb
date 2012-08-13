@@ -231,7 +231,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet types_to_add,
       syncer::ModelTypeSet types_to_remove,
-      NigoriState nigori_state,
       const base::Callback<void(syncer::ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) OVERRIDE;
 

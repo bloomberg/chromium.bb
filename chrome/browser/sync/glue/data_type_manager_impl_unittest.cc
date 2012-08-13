@@ -33,21 +33,24 @@ using testing::_;
 using testing::Mock;
 using testing::ResultOf;
 
-// Fake BackendDataTypeConfigurer implementation that simply stores
-// away the nigori state and callback passed into ConfigureDataTypes.
+enum NigoriState {
+  WITH_NIGORI,
+  WITHOUT_NIGORI
+};
+
+// Fake BackendDataTypeConfigurer implementation that simply stores away the
+// callback passed into ConfigureDataTypes.
 class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
  public:
-  FakeBackendDataTypeConfigurer() : last_nigori_state_(WITHOUT_NIGORI) {}
+  FakeBackendDataTypeConfigurer() {}
   virtual ~FakeBackendDataTypeConfigurer() {}
 
   virtual void ConfigureDataTypes(
       syncer::ConfigureReason reason,
       ModelTypeSet types_to_add,
       ModelTypeSet types_to_remove,
-      NigoriState nigori_state,
       const base::Callback<void(ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) OVERRIDE {
-    last_nigori_state_ = nigori_state;
     last_ready_task_ = ready_task;
   }
 
@@ -55,15 +58,9 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
     return last_ready_task_;
   }
 
-  NigoriState last_nigori_state() const {
-    return last_nigori_state_;
-  }
-
  private:
   base::Callback<void(ModelTypeSet)> last_ready_task_;
-  NigoriState last_nigori_state_;
 };
-
 
 // Used by SetConfigureDoneExpectation.
 DataTypeManager::ConfigureStatus GetStatus(
@@ -74,11 +71,10 @@ DataTypeManager::ConfigureStatus GetStatus(
   return result->status;
 }
 
-// The actual test harness class, parametrized on NigoriState (i.e.,
-// tests are run both configuring with nigori, and configuring
-// without).
+// The actual test harness class, parametrized on nigori state (i.e., tests are
+// run both configuring with nigori, and configuring without).
 class SyncDataTypeManagerImplTest
-    : public testing::TestWithParam<BackendDataTypeConfigurer::NigoriState> {
+    : public testing::TestWithParam<NigoriState> {
  public:
   SyncDataTypeManagerImplTest()
       : ui_thread_(content::BrowserThread::UI, &ui_loop_) {}
@@ -97,7 +93,7 @@ class SyncDataTypeManagerImplTest
   }
 
   // A clearer name for the param accessor.
-  BackendDataTypeConfigurer::NigoriState GetNigoriState() {
+  NigoriState GetNigoriState() {
     return GetParam();
   }
 
@@ -120,7 +116,7 @@ class SyncDataTypeManagerImplTest
                  const DataTypeManager::TypeSet& desired_types) {
     const syncer::ConfigureReason kReason =
         syncer::CONFIGURE_REASON_RECONFIGURATION;
-    if (GetNigoriState() == BackendDataTypeConfigurer::WITH_NIGORI) {
+    if (GetNigoriState() == WITH_NIGORI) {
       dtm->Configure(desired_types, kReason);
     } else {
       dtm->ConfigureWithoutNigori(desired_types, kReason);
@@ -132,7 +128,6 @@ class SyncDataTypeManagerImplTest
   void FinishDownload(const DataTypeManager& dtm,
                       ModelTypeSet failed_download_types) {
     EXPECT_EQ(DataTypeManager::DOWNLOAD_PENDING, dtm.state());
-    EXPECT_EQ(GetNigoriState(), configurer_.last_nigori_state());
     ASSERT_FALSE(configurer_.last_ready_task().is_null());
     configurer_.last_ready_task().Run(failed_download_types);
   }
@@ -718,10 +713,10 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
 
 INSTANTIATE_TEST_CASE_P(
     WithoutNigori, SyncDataTypeManagerImplTest,
-    ::testing::Values(BackendDataTypeConfigurer::WITHOUT_NIGORI));
+    ::testing::Values(WITHOUT_NIGORI));
 
 INSTANTIATE_TEST_CASE_P(
     WithNigori, SyncDataTypeManagerImplTest,
-    ::testing::Values(BackendDataTypeConfigurer::WITH_NIGORI));
+    ::testing::Values(WITH_NIGORI));
 
 }  // namespace browser_sync
