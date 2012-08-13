@@ -90,7 +90,8 @@ function DirectoryContents(context) {
   this.scanFailedCallback_ = null;
   this.scanCancelled_ = false;
   this.filter_ = context.filter.bind(context);
-
+  this.allChunksFetched_ = false;
+  this.pendingMetadataRequests_ = 0;
   this.fileList_.prepareSort = this.prepareSort_.bind(this);
 }
 
@@ -134,8 +135,15 @@ DirectoryContents.prototype.replaceContextFileList = function() {
  * @return {string} The path.
  */
 DirectoryContents.prototype.getPath = function() {
-  console.log((new Error()).stack);
   throw 'Not implemented.';
+};
+
+/**
+ * @return {boolean} If the scan is active.
+ */
+DirectoryContents.prototype.isScanning = function() {
+  return !this.scanCancelled_ &&
+         (!this.allChunksFetched_ || this.pendingMetadataRequests_ > 0);
 };
 
 /**
@@ -182,6 +190,7 @@ DirectoryContents.prototype.readNextChunk = function() {
  */
 DirectoryContents.prototype.cancelScan = function() {
   this.scanCancelled_ = true;
+  cr.dispatchSimpleEvent(this, 'scan-cancelled');
 };
 
 
@@ -197,8 +206,10 @@ DirectoryContents.prototype.onError = function() {
  * Called in case scan has completed succesfully. Should send the event.
  * @protected
  */
-DirectoryContents.prototype.onCompleted = function() {
-  cr.dispatchSimpleEvent(this, 'scan-completed');
+DirectoryContents.prototype.lastChunkReceived = function() {
+  this.allChunksFetched_ = true;
+  if (!this.scanCancelled_ && this.pendingMetadataRequests_ === 0)
+    cr.dispatchSimpleEvent(this, 'scan-completed');
 };
 
 /**
@@ -233,12 +244,20 @@ DirectoryContents.prototype.onNewEntries = function(entries) {
   var entriesFiltered = [].filter.call(entries, this.filter_);
 
   var onPrefetched = function() {
+    this.pendingMetadataRequests_--;
     if (this.scanCancelled_)
       return;
     this.fileList_.push.apply(this.fileList_, entriesFiltered);
-    this.readNextChunk();
+
+    if (this.pendingMetadataRequests === 0 && this.allChunksFetched_) {
+      cr.dispatchSimpleEvent(this, 'scan-completed');
+    }
+
+    if (!this.allChunksFetched_)
+      this.readNextChunk();
   };
 
+  this.pendingMetadataRequests_++;
   this.prefetchMetadata(entriesFiltered, onPrefetched.bind(this));
 };
 
@@ -321,7 +340,7 @@ DirectoryContentsBasic.prototype.onChunkComplete_ = function(entries) {
     return;
 
   if (entries.length == 0) {
-    this.onCompleted();
+    this.lastChunkReceived();
     this.recordMetrics_();
     return;
   }
@@ -436,7 +455,7 @@ DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
     return;
 
   if (this.done_) {
-    this.onCompleted();
+    this.lastChunkReceived();
     return;
   }
 
@@ -444,7 +463,7 @@ DirectoryContentsGDataSearch.prototype.readNextChunk = function() {
     // TODO(tbarzic): Improve error handling.
     if (!entries) {
       console.log('Drive search encountered an error');
-      this.onCompleted();
+      this.lastChunkReceived();
       return;
     }
     this.nextFeed_ = nextFeed;
@@ -538,38 +557,34 @@ DirectoryContentsLocalSearch.prototype.scanDirectory_ = function(entry) {
   var reader = entry.createReader();
   var found = [];
 
-  var self = this;
-
   var onChunkComplete = function(entries) {
-    if (self.scanCancelled_)
+    if (this.scanCancelled_)
       return;
 
     if (entries.length === 0) {
       if (found.length > 0)
-        self.onNewEntries(found);
-      self.pendingScans_--;
-
-      if (self.pendingScans_ === 0)
-        self.onCompleted();
-
+        this.onNewEntries(found);
+      this.pendingScans_--;
+      if (this.pendingScans_ === 0)
+        this.lastChunkReceived();
       return;
     }
 
     for (var i = 0; i < entries.length; i++) {
-      if (entries[i].name.toLowerCase().indexOf(self.query_) != -1) {
+      if (entries[i].name.toLowerCase().indexOf(this.query_) != -1) {
         found.push(entries[i]);
       }
 
       if (entries[i].isDirectory)
-        self.scanDirectory_(entries[i]);
+        this.scanDirectory_(entries[i]);
     }
 
     getNextChunk();
-  };
+  }.bind(this);
 
   var getNextChunk = function() {
-    reader.readEntries(onChunkComplete, self.onError.bind(self));
-  };
+    reader.readEntries(onChunkComplete, this.onError.bind(this));
+  }.bind(this);
 
   getNextChunk();
 };

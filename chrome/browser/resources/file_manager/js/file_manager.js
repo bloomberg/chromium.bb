@@ -438,6 +438,7 @@ FileManager.prototype = {
     });
     dm.addEventListener('scan-started', this.showSpinnerLater_.bind(this));
     dm.addEventListener('scan-completed', this.showSpinner_.bind(this, false));
+    dm.addEventListener('scan-cancelled', this.hideSpinnerLater_.bind(this));
     dm.addEventListener('scan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
     dm.addEventListener('rescan-completed',
@@ -3239,15 +3240,22 @@ FileManager.prototype = {
         setTimeout(this.showSpinner_.bind(this, true), 500);
   };
 
+  FileManager.prototype.hideSpinnerLater_ = function() {
+    setTimeout(this.showSpinner_.bind(this, false), 100);
+  };
+
   FileManager.prototype.showSpinner_ = function(on) {
-    this.cancelSpinnerTimeout_();
-    if (on) {
+    if (on && this.directoryModel_ && this.directoryModel_.isScanning()) {
       if (this.directoryModel_.isSearching()) {
         this.dialogContainer_.classList.add('searching');
+        this.spinner_.style.display = 'none';
       } else {
         this.spinner_.style.display = '';
+        this.dialogContainer_.classList.remove('searching');
       }
-    } else {
+    }
+
+    if (!on && (!this.directoryModel_ || !this.directoryModel_.isScanning())) {
       this.spinner_.style.display = 'none';
       if (this.dialogContainer_)
         this.dialogContainer_.classList.remove('searching');

@@ -171,6 +171,13 @@ DirectoryModel.prototype.isReadOnly = function() {
 };
 
 /**
+ * @return {boolean} True if the a scan is active.
+ */
+DirectoryModel.prototype.isScanning = function() {
+  return this.currentDirContents_.isScanning();
+};
+
+/**
  * @return {boolean} True if search is in progress.
  */
 DirectoryModel.prototype.isSearching = function() {
@@ -460,6 +467,7 @@ DirectoryModel.prototype.scan_ = function(dirContents, successCallback) {
 
   dirContents.addEventListener('scan-completed', onSuccess);
   dirContents.addEventListener('scan-failed', onFailure);
+  dirContents.addEventListener('scan-cancelled', this.dispatchEvent.bind(this));
   dirContents.scan();
 };
 
