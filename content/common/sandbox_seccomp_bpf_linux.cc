@@ -154,7 +154,7 @@ intptr_t GpuOpenSIGSYS_Handler(const struct arch_seccomp_data& args,
 // system calls.
 
 // TODO(jln) we need to restrict the first parameter!
-bool IsKillSyscall(int sysno) {
+bool IsKill(int sysno) {
   switch (sysno) {
     case __NR_kill:
     case __NR_tkill:
@@ -165,40 +165,48 @@ bool IsKillSyscall(int sysno) {
   }
 }
 
-bool IsAllowedGettimeSyscall(int sysno) {
+bool IsAllowedGettime(int sysno) {
   switch (sysno) {
-    // case __NR_clock_getres:
     case __NR_clock_gettime:
-    // case __NR_clock_nanosleep:
     case __NR_gettimeofday:
     case __NR_time:
       return true;
-    case __NR_adjtimex:       // Privileged.
-    case __NR_settimeofday:   // Privileged.
-    case __NR_clock_adjtime:  // Privileged.
-    case __NR_clock_settime:  // Privileged.
+    case __NR_adjtimex:         // Privileged.
+    case __NR_clock_adjtime:    // Privileged.
+    case __NR_clock_getres:     // Could be allowed.
+    case __NR_clock_nanosleep:  // Could be allowed.
+    case __NR_clock_settime:    // Privileged.
+    case __NR_settimeofday:     // Privileged.
     default:
       return false;
   }
 }
 
-bool IsAmbientFileSystemSyscall(int sysno) {
+bool IsCurrentDirectory(int sysno) {
   switch (sysno)  {
-    // case __NR_getcwd:
+    case __NR_getcwd:
     case __NR_chdir:
-    // case __NR_fchdir:
-    // case __NR_umask:
+    case __NR_fchdir:
       return true;
     default:
       return false;
   }
 }
 
-// System calls that directly access the file system. They might aquire
+bool IsUmask(int sysno) {
+  switch (sysno) {
+    case __NR_umask:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// System calls that directly access the file system. They might acquire
 // a new file descriptor or otherwise perform an operation directly
 // via a path.
 // Both EPERM and ENOENT are valid errno unless otherwise noted in comment.
-bool IsFileSystemSyscall(int sysno) {
+bool IsFileSystem(int sysno) {
   switch (sysno) {
     case __NR_access:          // EPERM not a valid errno.
     case __NR_chmod:
@@ -245,31 +253,31 @@ bool IsFileSystemSyscall(int sysno) {
   }
 }
 
-// TODO(jln): these should be denied gracefully as well.
-bool IsAllowedFileSystemCapabilitySyscall(int sysno) {
+bool IsAllowedFileSystemAccessViaFd(int sysno) {
   switch (sysno) {
-    // case __NR_fadvise64:
-    // case __NR_flock:
     case __NR_fstat:
-    // case __NR_fstatfs:  // Give information about the whole filesystem.
-    // case __NR_fsync:
-    // case __NR_fdatasync:
-    // case __NR_sync_file_range:
       return true;
+    // TODO(jln): these should be denied gracefully as well (moved below).
+    case __NR_fadvise64:        // EPERM not a valid errno.
+    case __NR_fdatasync:        // EPERM not a valid errno.
+    case __NR_flock:            // EPERM not a valid errno.
+    case __NR_fstatfs:          // Give information about the whole filesystem.
+    case __NR_fsync:            // EPERM not a valid errno.
+    case __NR_sync_file_range:  // EPERM not a valid errno.
     default:
       return false;
   }
 }
 
-// EPERM is a good errno for any of these unless noted in comments.
-bool IsDeniedFileSystemCapabilitySyscall(int sysno) {
+// EPERM is a good errno for any of these.
+bool IsDeniedFileSystemAccessViaFd(int sysno) {
   switch (sysno) {
     case __NR_fallocate:
     case __NR_fchmod:
     case __NR_fchown:
     case __NR_ftruncate:
-    case __NR_getdents:    // EPERM not a valid errno.
-    case __NR_getdents64:  // EPERM not a valid errno.
+    case __NR_getdents:         // EPERM not a valid errno.
+    case __NR_getdents64:       // EPERM not a valid errno.
       return true;
     default:
       return false;
@@ -278,7 +286,7 @@ bool IsDeniedFileSystemCapabilitySyscall(int sysno) {
 
 bool IsGetSimpleId(int sysno) {
   switch (sysno) {
-    // case __NR_capget:
+    case __NR_capget:
     case __NR_getegid:
     case __NR_geteuid:
     case __NR_getgid:
@@ -331,17 +339,17 @@ bool IsProcessGroupOrSession(int sysno) {
 bool IsAllowedSignalHandling(int sysno) {
   switch (sysno) {
     case __NR_rt_sigaction:
-    // case __NR_rt_sigpending:
     case __NR_rt_sigprocmask:
-    // case __NR_rt_sigqueueinfo:
     case __NR_rt_sigreturn:
-    // case __NR_rt_sigsuspend:
-    // case __NR_rt_sigtimedwait:
-    // case __NR_rt_tgsigqueueinfo:
-    // case __NR_sigaltstack:
-    // case __NR_signalfd:
-    // case __NR_signalfd4:
       return true;
+    case __NR_rt_sigpending:
+    case __NR_rt_sigqueueinfo:
+    case __NR_rt_sigsuspend:
+    case __NR_rt_sigtimedwait:
+    case __NR_rt_tgsigqueueinfo:
+    case __NR_sigaltstack:
+    case __NR_signalfd:
+    case __NR_signalfd4:
     default:
       return false;
   }
@@ -376,25 +384,26 @@ bool IsAllowedProcessStartOrDeath(int sysno) {
     case __NR_clone:  // TODO(jln): restrict flags.
     case __NR_exit:
     case __NR_exit_group:
-    // case __NR_fork:
-    // case __NR_get_thread_area:
-    // case __NR_set_thread_area:
-    // case __NR_set_tid_address:
-    // case __NR_unshare:
-    // case __NR_vfork:
     case __NR_wait4:
     case __NR_waitid:
       return true;
     case __NR_setns:  // Privileged.
+    case __NR_fork:
+    case __NR_get_thread_area:
+    case __NR_set_thread_area:
+    case __NR_set_tid_address:
+    case __NR_unshare:
+    case __NR_vfork:
     default:
       return false;
   }
 }
 
+// It's difficult to restrict those, but there is attack surface here.
 bool IsFutex(int sysno) {
   switch (sysno) {
     case __NR_futex:
-    // case __NR_get_robust_list:
+    case __NR_get_robust_list:
     case __NR_set_robust_list:
       return true;
     default:
@@ -405,14 +414,14 @@ bool IsFutex(int sysno) {
 bool IsAllowedEpoll(int sysno) {
   switch (sysno) {
     case __NR_epoll_create:
-    // case __NR_epoll_create1:
+    case __NR_epoll_create1:
     case __NR_epoll_ctl:
-    // case __NR_epoll_ctl_old:
-    // case __NR_epoll_pwait:
     case __NR_epoll_wait:
-    // case __NR_epoll_wait_old:
       return true;
     default:
+    case __NR_epoll_ctl_old:
+    case __NR_epoll_pwait:
+    case __NR_epoll_wait_old:
       return false;
   }
 }
@@ -420,7 +429,7 @@ bool IsAllowedEpoll(int sysno) {
 bool IsAllowedGetOrModifySocket(int sysno) {
   switch (sysno) {
     case __NR_pipe:
-    // case __NR_pipe2:
+    case __NR_pipe2:
     case __NR_socketpair:  // We will want to inspect its argument.
       return true;
     default:
@@ -450,20 +459,20 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
   switch (sysno) {
     case __NR_brk:
     case __NR_madvise:
-    // case __NR_mincore:
     case __NR_mlock:
-    // case __NR_mlockall:
     case __NR_mmap:  // TODO(jln): to restrict flags.
-    // case __NR_modify_ldt:
     case __NR_mprotect:
-    // case __NR_mremap:
-    // case __NR_msync:
     case __NR_munlock:
-    // case __NR_munlockall:
     case __NR_munmap:
-    // case __NR_readahead:
-    // case __NR_remap_file_pages:
       return true;
+    case __NR_mincore:
+    case __NR_mlockall:
+    case __NR_modify_ldt:
+    case __NR_mremap:
+    case __NR_msync:
+    case __NR_munlockall:
+    case __NR_readahead:
+    case __NR_remap_file_pages:
     default:
       return false;
   }
@@ -474,29 +483,29 @@ bool IsAllowedGeneralIo(int sysno) {
     case __NR_lseek:
     case __NR_poll:
     case __NR_ppoll:
-    // case __NR_pread64:
-    // case __NR_preadv:
     case __NR_pselect6:
-    // case __NR_pwrite64:
-    // case __NR_pwritev:
     case __NR_read:
     case __NR_readv:
     case __NR_recvfrom:  // Could specify source.
-    // case __NR_recvmmsg:  // Could specify source.
     case __NR_recvmsg:   // Could specify source.
     case __NR_select:
-    // case __NR_sendfile:
-    // case __NR_sendmmsg:  // Could specify destination.
     case __NR_sendmsg:   // Could specify destination.
     case __NR_sendto:    // Could specify destination.
-    // case __NR_splice:
-    // case __NR_tee:
-    // case __NR_vmsplice:
     case __NR_write:
     case __NR_writev:
       return true;
+    case __NR_ioctl:     // Can be very powerful.
+    case __NR_pread64:
+    case __NR_preadv:
+    case __NR_pwrite64:
+    case __NR_pwritev:
+    case __NR_recvmmsg:  // Could specify source.
+    case __NR_sendfile:
+    case __NR_sendmmsg:  // Could specify destination.
+    case __NR_splice:
+    case __NR_tee:
+    case __NR_vmsplice:
     default:
-    case __NR_ioctl:  // Can be very powerful.
       return false;
   }
 }
@@ -504,9 +513,9 @@ bool IsAllowedGeneralIo(int sysno) {
 bool IsAllowedPrctl(int sysno) {
   switch (sysno) {
     case __NR_prctl:
-    // case __NR_arch_prctl:
       return true;
     default:
+    case __NR_arch_prctl:
       return false;
   }
 }
@@ -516,8 +525,8 @@ bool IsAllowedBasicScheduler(int sysno) {
     case __NR_sched_yield:
     case __NR_pause:
     case __NR_nanosleep:
-    // case __NR_getpriority:
       return true;
+    case __NR_getpriority:
     case __NR_setpriority:
     default:
       return false;
@@ -690,13 +699,13 @@ bool IsSystemVSemaphores(int sysno) {
 }
 
 // These give a lot of ambient authority and bypass the setuid sandbox.
-bool IsSystemVSharedMemory(int sysno) {
+bool IsAllowedSystemVSharedMemory(int sysno) {
   switch (sysno) {
     case __NR_shmat:
     case __NR_shmctl:
     case __NR_shmdt:
-    // case __NR_shmget:
       return true;
+    case __NR_shmget:
     default:
       return false;
   }
@@ -804,7 +813,7 @@ bool IsExtendedAttributes(int sysno) {
 
 // Various system calls that need to be researched.
 // TODO(jln): classify this better.
-bool IsMiscSyscall(int sysno) {
+bool IsMisc(int sysno) {
   switch (sysno) {
     case __NR_name_to_handle_at:
     case __NR_open_by_handle_at:
@@ -831,17 +840,17 @@ bool IsBaselinePolicyAllowed_x86_64(int sysno) {
   if (IsAllowedAddressSpaceAccess(sysno) ||
       IsAllowedBasicScheduler(sysno) ||
       IsAllowedEpoll(sysno) ||
-      IsAllowedFileSystemCapabilitySyscall(sysno) ||
+      IsAllowedFileSystemAccessViaFd(sysno) ||
       IsAllowedGeneralIo(sysno) ||
       IsAllowedGetOrModifySocket(sysno) ||
-      IsAllowedGettimeSyscall(sysno) ||
+      IsAllowedGettime(sysno) ||
       IsAllowedPrctl(sysno) ||
       IsAllowedProcessStartOrDeath(sysno) ||
       IsAllowedSignalHandling(sysno) ||
       IsFutex(sysno) ||
       IsGetSimpleId(sysno) ||
       IsKernelInteralApi(sysno) ||
-      IsKillSyscall(sysno) ||
+      IsKill(sysno) ||
       IsOperationOnFd(sysno)) {
     return true;
   } else {
@@ -854,6 +863,7 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
   if (IsAdminOperation(sysno) ||
       IsAdvancedScheduler(sysno) ||
       IsAdvancedTimer(sysno) ||
+      IsAllowedSystemVSharedMemory(sysno) ||
       IsAsyncIo(sysno) ||
       IsDebug(sysno) ||
       IsEventFd(sysno) ||
@@ -867,14 +877,13 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
       IsKernelModule(sysno) ||
       IsKeyManagement(sysno) ||
       IsMessageQueue(sysno) ||
-      IsMiscSyscall(sysno) ||
+      IsMisc(sysno) ||
       IsNetworkSocketInformation(sysno) ||
       IsNuma(sysno) ||
       IsProcessGroupOrSession(sysno) ||
       IsProcessPrivilegeChange(sysno) ||
       IsSystemVMessageQueue(sysno) ||
       IsSystemVSemaphores(sysno) ||
-      IsSystemVSharedMemory(sysno) ||
       IsTimer(sysno)) {
     return true;
   } else {
@@ -888,11 +897,11 @@ playground2::Sandbox::ErrorCode BaselinePolicy_x86_64(int sysno) {
   }
   // TODO(jln): some system calls in those sets are not supposed to
   // return ENOENT. Return the appropriate error.
-  if (IsFileSystemSyscall(sysno) || IsAmbientFileSystemSyscall(sysno)) {
+  if (IsFileSystem(sysno) || IsCurrentDirectory(sysno)) {
     return ENOENT;
   }
 
-  if (IsDeniedFileSystemCapabilitySyscall(sysno)) {
+  if (IsUmask(sysno) || IsDeniedFileSystemAccessViaFd(sysno)) {
     return EPERM;
   }
 
@@ -950,7 +959,7 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
     default:
       // These are under investigation, and hopefully not here for the long
       // term.
-      if (IsSystemVSharedMemory(sysno))
+      if (IsAllowedSystemVSharedMemory(sysno))
         return playground2::Sandbox::SB_ALLOWED;
 
       // Default on the baseline policy.
@@ -966,11 +975,11 @@ playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
     return ENOSYS;
   }
   switch (sysno) {
-    case __NR_ptrace:
-    case __NR_process_vm_readv:
-    case __NR_process_vm_writev:
     case __NR_migrate_pages:
     case __NR_move_pages:
+    case __NR_process_vm_readv:
+    case __NR_process_vm_writev:
+    case __NR_ptrace:
       return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
     default:
       return playground2::Sandbox::SB_ALLOWED;
