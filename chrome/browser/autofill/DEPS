@@ -1,17 +1,20 @@
 include_rules = [
   # Autofill is being made into a Browser Component, so we have these
-  # two basic rules followed by temporary exceptions.  Please don't
+  # three basic rules followed by temporary exceptions.  Please don't
   # add to the list of exceptions!
   "-chrome/browser",
   "+chrome/browser/api",
   "+chrome/browser/autofill",
+
+  # Permanently-allowed DEPS beyond the standard Browser
+  # Components-like DEPS above go here.
+  "+third_party/libphonenumber",  # For phone number i18n.
 
   # TODO(joi): Bring this list to zero.
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   "!chrome/browser/infobars/infobar_tab_helper.h",
-  "!chrome/browser/password_manager/encryptor.h",
   "!chrome/browser/password_manager/password_manager.h",
   "!chrome/browser/prefs/pref_change_registrar.h",
   "!chrome/browser/prefs/pref_member.h",
@@ -23,18 +26,13 @@ include_rules = [
   "!chrome/browser/sync/profile_sync_service.h",
   "!chrome/browser/sync/profile_sync_service_factory.h",
   "!chrome/browser/sync/profile_sync_service_observer.h",
-  "!chrome/browser/translate/translate_infobar_delegate.h",
-  "!chrome/browser/translate/translate_manager.h",
   "!chrome/browser/ui/browser.h",
   "!chrome/browser/ui/browser_finder.h",
-  "!chrome/browser/ui/browser_tabstrip.h",
   "!chrome/browser/ui/browser_window.h",
   "!chrome/browser/ui/chrome_pages.h",
   "!chrome/browser/ui/gtk/autofill/autofill_popup_view_gtk.h",
   "!chrome/browser/ui/gtk/gtk_theme_service.h",
   "!chrome/browser/ui/tab_contents/tab_contents.h",
-  "!chrome/browser/ui/tab_contents/test_tab_contents.h",
-  "!chrome/browser/ui/webui/feedback_ui.h",
   "!chrome/browser/webdata/autofill_entry.h",
   "!chrome/browser/webdata/web_data_service.h",
   "!chrome/browser/webdata/web_data_service_factory.h",
@@ -42,6 +40,19 @@ include_rules = [
   # and please do not introduce more #includes of these files.
 
   # TODO(akalin): Remove this dependency.
-  "+sync/util/data_encryption_win.h",
-  "+third_party/libphonenumber",  # For phone number i18n.
+  "!sync/util/data_encryption_win.h",
 ]
+
+specific_include_rules = {
+  # TODO(joi): Bring this list to zero.
+  #
+  # Do not add to the list of temporarily-allowed dependencies below,
+  # and please do not introduce more #includes of these files.
+  '.*_[a-z]*test\.cc': [
+    "!chrome/browser/password_manager/encryptor.h",
+    "!chrome/browser/translate/translate_infobar_delegate.h",
+    "!chrome/browser/translate/translate_manager.h",
+    "!chrome/browser/ui/browser_tabstrip.h",
+    "!chrome/browser/ui/tab_contents/test_tab_contents.h",
+  ]
+}
