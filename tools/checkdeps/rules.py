@@ -5,6 +5,10 @@
 """Base classes to represent dependency rules, used by checkdeps.py"""
 
 
+import os
+import re
+
+
 class Rule(object):
   """Specifies a single rule for an include, which can be one of
   ALLOW, DISALLOW and TEMP_ALLOW.
@@ -36,13 +40,13 @@ class Rule(object):
     return self._dir == other or other.startswith(self._dir + '/')
 
 
-class SpecificRule(Rule):
-  """A rule that has a specific reason not related to directory or
-  source, for failing.
+class MessageRule(Rule):
+  """A rule that has a simple message as the reason for failing,
+  unrelated to directory or source.
   """
 
   def __init__(self, reason):
-    super(SpecificRule, self).__init__(Rule.DISALLOW, '', '')
+    super(MessageRule, self).__init__(Rule.DISALLOW, '', '')
     self._reason = reason
 
   def __str__(self):
@@ -50,8 +54,8 @@ class SpecificRule(Rule):
 
 
 def ParseRuleString(rule_string, source):
-  """Returns a tuple of a boolean indicating whether the directory is an allow
-  rule, and a string holding the directory name.
+  """Returns a tuple of a character indicating what type of rule this
+  is, and a string holding the path the rule applies to.
   """
   if not rule_string:
     raise Exception('The rule string "%s" is empty\nin %s' %
@@ -66,30 +70,82 @@ def ParseRuleString(rule_string, source):
 
 
 class Rules(object):
+  """Sets of rules for files in a directory.
+
+  By default, rules are added to the set of rules applicable to all
+  dependee files in the directory.  Rules may also be added that apply
+  only to dependee files whose filename (last component of their path)
+  matches a given regular expression; hence there is one additional
+  set of rules per unique regular expression.
+  """
+
   def __init__(self):
-    """Initializes the current rules with an empty rule list."""
-    self._rules = []
+    """Initializes the current rules with an empty rule list for all
+    files.
+    """
+    # We keep the general rules out of the specific rules dictionary,
+    # as we need to always process them last.
+    self._general_rules = []
+
+    # Keys are regular expression strings, values are arrays of rules
+    # that apply to dependee files whose basename matches the regular
+    # expression.  These are applied before the general rules, but
+    # their internal order is arbitrary.
+    self._specific_rules = {}
 
   def __str__(self):
-    return 'Rules = [\n%s]' % '\n'.join(' %s' % x for x in self._rules)
+    result = ['Rules = {\n    (apply to all files): [\n%s\n    ],' % '\n'.join(
+        '      %s' % x for x in self._general_rules)]
+    for regexp, rules in self._specific_rules.iteritems():
+      result.append('    (limited to files matching %s): [\n%s\n    ]' % (
+          regexp, '\n'.join('      %s' % x for x in rules)))
+    result.append('  }')
+    return '\n'.join(result)
 
-  def AddRule(self, rule_string, source):
+  def AddRule(self, rule_string, source, dependee_regexp=None):
     """Adds a rule for the given rule string.
 
     Args:
       rule_string: The include_rule string read from the DEPS file to apply.
       source: A string representing the location of that string (filename, etc.)
               so that we can give meaningful errors.
+      dependee_regexp: The rule will only be applied to dependee files
+                       whose filename (last component of their path)
+                       matches the expression. None to match all
+                       dependee files.
     """
-    (add_rule, rule_dir) = ParseRuleString(rule_string, source)
+    (rule_type, rule_dir) = ParseRuleString(rule_string, source)
+
+    if not dependee_regexp:
+      rules_to_update = self._general_rules
+    else:
+      if dependee_regexp in self._specific_rules:
+        rules_to_update = self._specific_rules[dependee_regexp]
+      else:
+        rules_to_update = []
+
     # Remove any existing rules or sub-rules that apply. For example, if we're
     # passed "foo", we should remove "foo", "foo/bar", but not "foobar".
-    self._rules = [x for x in self._rules if not x.ParentOrMatch(rule_dir)]
-    self._rules.insert(0, Rule(add_rule, rule_dir, source))
+    rules_to_update = [x for x in rules_to_update
+                       if not x.ParentOrMatch(rule_dir)]
+    rules_to_update.insert(0, Rule(rule_type, rule_dir, source))
 
-  def RuleApplyingTo(self, allowed_dir):
-    """Returns the rule that applies to 'allowed_dir'."""
-    for rule in self._rules:
-      if rule.ChildOrMatch(allowed_dir):
+    if not dependee_regexp:
+      self._general_rules = rules_to_update
+    else:
+      self._specific_rules[dependee_regexp] = rules_to_update
+
+  def RuleApplyingTo(self, include_path, dependee_path):
+    """Returns the rule that applies to |include_path| for a dependee
+    file located at |dependee_path|.
+    """
+    dependee_filename = os.path.basename(dependee_path)
+    for regexp, specific_rules in self._specific_rules.iteritems():
+      if re.match(regexp, dependee_filename):
+        for rule in specific_rules:
+          if rule.ChildOrMatch(include_path):
+            return rule
+    for rule in self._general_rules:
+      if rule.ChildOrMatch(include_path):
         return rule
-    return SpecificRule('no rule applying.')
+    return MessageRule('no rule applying.')

@@ -96,7 +96,7 @@ class JavaChecker(object):
               self._classmap[clazz], self._base_directory)
           # Convert Windows paths to Unix style, as used in DEPS files.
           include_path = include_path.replace(os.path.sep, '/')
-          rule = rules.RuleApplyingTo(include_path)
+          rule = rules.RuleApplyingTo(include_path, filepath)
           if rule.allow == Rule.DISALLOW:
             dependee_status.AddViolation(
                 results.DependencyViolation(include_path, rule, rules))

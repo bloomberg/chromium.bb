@@ -47,6 +47,20 @@ Note that for .java files, there is currently no difference between
     "!base/evil/ok_for_now.h",
   }
 
+If you have certain include rules that should only be applied for some
+files within this directory and subdirectories, you can write a
+section named specific_include_rules that is a hash map of regular
+expressions to the list of rules that should apply to files matching
+them.  Note that such rules will always be applied before the rules
+from 'include_rules' have been applied, but the order in which rules
+associated with different regular expressions is applied is arbitrary.
+
+  specific_include_rules = {
+    ".*_(unit|browser|api)test\.cc": [
+      "+libraries/testsupport",
+    ],
+  }
+
 DEPS files may be placed anywhere in the tree. Each one applies to all
 subdirectories, where there may be more DEPS files that provide additions or
 subtractions for their own sub-trees.
@@ -79,6 +93,11 @@ from rules import Rule, Rules
 # Variable name used in the DEPS file to add or subtract include files from
 # the module-level deps.
 INCLUDE_RULES_VAR_NAME = 'include_rules'
+
+# Variable name used in the DEPS file to add or subtract include files
+# from module-level deps specific to files whose basename (last
+# component of path) matches a given regular expression.
+SPECIFIC_INCLUDE_RULES_VAR_NAME = 'specific_include_rules'
 
 # Optionally present in the DEPS file to list subdirectories which should not
 # be checked. This allows us to skip third party code, for example.
@@ -130,12 +149,14 @@ class DepsChecker(object):
     print '\nSUCCESS\n'
     return 0
 
-  def _ApplyRules(self, existing_rules, includes, cur_dir):
+  def _ApplyRules(self, existing_rules, includes, specific_includes, cur_dir):
     """Applies the given include rules, returning the new rules.
 
     Args:
       existing_rules: A set of existing rules that will be combined.
       include: The list of rules from the "include_rules" section of DEPS.
+      specific_includes: E.g. {'.*_unittest\.cc': ['+foo', '-blat']} rules
+                         from the "specific_include_rules" section of DEPS.
       cur_dir: The current directory, normalized path. We will create an
                implicit rule that allows inclusion from this directory.
 
@@ -158,13 +179,24 @@ class DepsChecker(object):
                       ' for\n  %s and base dir\n  %s' %
                       (cur_dir, self.base_directory))
 
-    # Last, apply the additional explicit rules.
-    for (_, rule_str) in enumerate(includes):
+    def AddRuleWithDescription(rule_str, dependee_regexp=None):
+      rule_block_name = 'include_rules'
+      if dependee_regexp:
+        rule_block_name = 'specific_include_rules'
       if not relative_dir:
-        rule_description = 'the top level include_rules'
+        rule_description = 'the top level %s' % rule_block_name
       else:
-        rule_description = relative_dir + "'s include_rules"
-      rules.AddRule(rule_str, rule_description)
+        rule_description = relative_dir + "'s %s" % rule_block_name
+      rules.AddRule(rule_str, rule_description, dependee_regexp)
+
+    # Apply the additional explicit rules.
+    for (_, rule_str) in enumerate(includes):
+      AddRuleWithDescription(rule_str)
+
+    # Finally, apply the specific rules.
+    for regexp, specific_rules in specific_includes.iteritems():
+      for rule_str in specific_rules:
+        AddRuleWithDescription(rule_str, regexp)
 
     return rules
 
@@ -239,9 +271,12 @@ class DepsChecker(object):
     # Even if a DEPS file does not exist we still invoke ApplyRules
     # to apply the implicit "allow" rule for the current directory
     include_rules = local_scope.get(INCLUDE_RULES_VAR_NAME, [])
+    specific_include_rules = local_scope.get(SPECIFIC_INCLUDE_RULES_VAR_NAME,
+                                             {})
     skip_subdirs = local_scope.get(SKIP_SUBDIRS_VAR_NAME, [])
 
-    return (self._ApplyRules(existing_rules, include_rules, norm_dir_name),
+    return (self._ApplyRules(existing_rules, include_rules,
+                             specific_include_rules, norm_dir_name),
             skip_subdirs)
 
   def _ApplyDirectoryRulesAndSkipSubdirs(self, parent_rules, dir_path):
@@ -357,7 +392,8 @@ class DepsChecker(object):
       rules_for_file = self.GetDirectoryRules(os.path.dirname(file_path))
       if rules_for_file:
         for line in include_lines:
-          is_include, violation = cpp.CheckLine(rules_for_file, line, True)
+          is_include, violation = cpp.CheckLine(
+              rules_for_file, line, file_path, True)
           if violation:
             rule_type = violation.violated_rule.allow
             if rule_type != Rule.ALLOW:

@@ -36,7 +36,7 @@ class CppChecker(object):
   def __init__(self, verbose):
     self._verbose = verbose
 
-  def CheckLine(self, rules, line, fail_on_temp_allow=False):
+  def CheckLine(self, rules, line, dependee_path, fail_on_temp_allow=False):
     """Checks the given line with the given rule set.
 
     Returns a tuple (is_include, dependency_violation) where
@@ -62,7 +62,7 @@ class CppChecker(object):
         print ' WARNING: directory specified with no path: ' + include_path
       return True, None
 
-    rule = rules.RuleApplyingTo(include_path)
+    rule = rules.RuleApplyingTo(include_path, dependee_path)
     if (rule.allow == Rule.DISALLOW or
         (fail_on_temp_allow and rule.allow == Rule.TEMP_ALLOW)):
       return True, results.DependencyViolation(include_path, rule, rules)
@@ -94,7 +94,7 @@ class CppChecker(object):
             in_if0 -= 1
           continue
 
-        is_include, violation = self.CheckLine(rules, line)
+        is_include, violation = self.CheckLine(rules, line, filepath)
         if is_include:
           last_include = line_num
         if violation:

@@ -24,7 +24,7 @@ class CheckDepsTest(unittest.TestCase):
         os.path.join(self.deps_checker.base_directory,
                      'tools/checkdeps/testdata'))
     problems = self.deps_checker.results_formatter.GetResults()
-    self.failUnlessEqual(3, len(problems))
+    self.failUnlessEqual(4, len(problems))
 
     def VerifySubstringsInProblems(key_path, substrings_in_sequence):
       found = False
@@ -34,7 +34,7 @@ class CheckDepsTest(unittest.TestCase):
         if index != -1:
           for substring in substrings_in_sequence:
             index = problem.find(substring, index + 1)
-            self.failUnless(index != -1)
+            self.failUnless(index != -1, '%s in %s' % (substring, problem))
           found = True
           break
       if not found:
@@ -52,6 +52,8 @@ class CheckDepsTest(unittest.TestCase):
                                ['-third_party/explicitly_disallowed',
                                 'Because of no rule applying',
                                 'Because of no rule applying'])
+    VerifySubstringsInProblems('allowed/not_a_test.cc',
+                               ['-tools/checkdeps/testdata/disallowed'])
 
   def testTempRulesGenerator(self):
     self.deps_checker.results_formatter = results.TemporaryRulesFormatter()
@@ -61,7 +63,8 @@ class CheckDepsTest(unittest.TestCase):
     temp_rules = self.deps_checker.results_formatter.GetResults()
     expected = [u'  "!third_party/explicitly_disallowed/bad.h",',
                 u'  "!third_party/no_rule/bad.h",',
-                u'  "!tools/checkdeps/testdata/disallowed/bad.h",']
+                u'  "!tools/checkdeps/testdata/disallowed/bad.h",',
+                u'  "!tools/checkdeps/testdata/disallowed/teststuff/bad.h",']
     self.failUnlessEqual(expected, temp_rules)
 
   def testCheckAddedIncludesAllGood(self):

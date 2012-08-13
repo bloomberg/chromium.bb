@@ -82,7 +82,7 @@ class NormalResultsFormatter(ResultsFormatter):
   def FormatViolation(violation, verbose=False):
     lines = []
     if verbose:
-      lines.append('For %s' % violation.rules)
+      lines.append('  For %s' % violation.rules)
     lines.append(
         '  Illegal include: "%s"\n    Because of %s' %
         (violation.include_path, str(violation.violated_rule)))
