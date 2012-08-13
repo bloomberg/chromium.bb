@@ -29,8 +29,8 @@ int PushNotificationsSendUpdateTask::ProcessStart() {
   scoped_ptr<buzz::XmlElement> stanza(
       MakeUpdateMessage(notification_,
                         GetClient()->jid().BareJid()));
-  VLOG(1) << "Sending notification " << notification_.ToString()
-          << " as stanza " << XmlElementToString(*stanza);
+  DVLOG(1) << "Sending notification " << notification_.ToString()
+           << " as stanza " << XmlElementToString(*stanza);
   if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
     LOG(WARNING) << "Could not send stanza " << XmlElementToString(*stanza);
   }

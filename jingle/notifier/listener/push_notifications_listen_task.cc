@@ -38,7 +38,7 @@ int PushNotificationsListenTask::ProcessResponse() {
     return STATE_BLOCKED;
   }
 
-  VLOG(1) << "Received stanza " << XmlElementToString(*stanza);
+  DVLOG(1) << "Received stanza " << XmlElementToString(*stanza);
 
   // The push notifications service does not need us to acknowledge receipt of
   // the notification to the buzz server.
@@ -72,7 +72,7 @@ int PushNotificationsListenTask::ProcessResponse() {
       LOG(WARNING) << "No data element found in push element "
                    << XmlElementToString(*push_element);
     }
-    VLOG(1) << "Received notification " << notification.ToString();
+    DVLOG(1) << "Received notification " << notification.ToString();
     delegate_->OnNotificationReceived(notification);
   } else {
     LOG(WARNING) << "No push element found in stanza "

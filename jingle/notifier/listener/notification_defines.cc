@@ -6,6 +6,11 @@
 
 #include <cstddef>
 
+#include "base/json/json_writer.h"
+#include "base/logging.h"
+#include "base/string_util.h"
+#include "base/values.h"
+
 namespace notifier {
 
 Subscription::Subscription() {}
@@ -60,7 +65,14 @@ bool Notification::Equals(const Notification& other) const {
 }
 
 std::string Notification::ToString() const {
-  return "{ channel: \"" + channel + "\", data: \"" + data + "\" }";
+  // Put into a DictionaryValue and convert to a string; this gives a
+  // nice hex-encoding of |data|, which may be a binary string.
+  DictionaryValue dict;
+  dict.SetString("channel", channel);
+  dict.SetString("data", data);
+  std::string str;
+  base::JSONWriter::Write(&dict, &str);
+  return str;
 }
 
 }  // namespace notifier

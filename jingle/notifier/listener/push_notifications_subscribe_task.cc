@@ -39,12 +39,12 @@ bool PushNotificationsSubscribeTask::HandleStanza(
 }
 
 int PushNotificationsSubscribeTask::ProcessStart() {
-  VLOG(1) << "Push notifications: Subscription task started.";
+  DVLOG(1) << "Push notifications: Subscription task started.";
   scoped_ptr<buzz::XmlElement> iq_stanza(
       MakeSubscriptionMessage(subscriptions_, GetClient()->jid(),
                               task_id()));
   std::string stanza_str = XmlElementToString(*iq_stanza.get());
-  VLOG(1) << "Push notifications: Subscription stanza: "
+  DVLOG(1) << "Push notifications: Subscription stanza: "
           << XmlElementToString(*iq_stanza.get());
 
   if (SendStanza(iq_stanza.get()) != buzz::XMPP_RETURN_OK) {
@@ -56,14 +56,14 @@ int PushNotificationsSubscribeTask::ProcessStart() {
 }
 
 int PushNotificationsSubscribeTask::ProcessResponse() {
-  VLOG(1) << "Push notifications: Subscription response received.";
+  DVLOG(1) << "Push notifications: Subscription response received.";
   const buzz::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
   std::string stanza_str = XmlElementToString(*stanza);
-  VLOG(1) << "Push notifications: Subscription response: "
-          << XmlElementToString(*stanza);
+  DVLOG(1) << "Push notifications: Subscription response: "
+           << XmlElementToString(*stanza);
   // We've receieved a response to our subscription request.
   if (stanza->HasAttr(buzz::QN_TYPE) &&
     stanza->Attr(buzz::QN_TYPE) == buzz::STR_RESULT) {
