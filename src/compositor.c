@@ -3535,8 +3535,6 @@ int main(int argc, char *argv[])
 
 	config_file = config_file_path("weston.ini");
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
-	if (socket_name)
-		setenv("WAYLAND_DISPLAY", socket_name, 1);
 
 	backend_init = load_module(backend, "backend_init", &backend_module);
 	if (!backend_init)
@@ -3575,6 +3573,9 @@ int main(int argc, char *argv[])
 		ret = EXIT_FAILURE;
 		goto out;
 	}
+
+	if (socket_name)
+		setenv("WAYLAND_DISPLAY", socket_name, 1);
 
 	if (!shell)
 		shell = "desktop-shell.so";
