@@ -54,7 +54,7 @@ import getos
 import http_download
 import oshelpers
 
-GSTORE = 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
+GSTORE = 'https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
 MAKE = 'nacl_sdk/make_3_81/make.exe'
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
