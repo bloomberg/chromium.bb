@@ -26,6 +26,11 @@
 
 namespace content {
 
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
+  // Ensures that tests with MANUAL_ prefix don't run automatically.
+  ASSERT_TRUE(false);
+}
+
 ContentBrowserTest::ContentBrowserTest() {
 #if defined(OS_MACOSX)
   // See comment in InProcessBrowserTest::InProcessBrowserTest().

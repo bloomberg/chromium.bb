@@ -41,6 +41,26 @@
 namespace test_launcher {
 
 namespace {
+
+// A multiplier for slow tests. We generally avoid multiplying
+// test timeouts by any constants. Here it is used as last resort
+// to implement the SLOW_ test prefix.
+const int kSlowTestTimeoutMultiplier = 5;
+
+// Tests with this prefix have a longer timeout, see above.
+const char kSlowTestPrefix[] = "SLOW_";
+
+// Tests with this prefix run before the same test without it, and use the same
+// profile. i.e. Foo.PRE_Test runs and then Foo.Test. This allows writing tests
+// that span browser restarts.
+const char kPreTestPrefix[] = "PRE_";
+
+// Manual tests only run when --run-manual is specified. This allows writing
+// tests that don't run automatically but are still in the same test binary.
+// This is useful so that a team that wants to run a few tests doesn't have to
+// add a new binary that must be compiled on all builds.
+const char kManualTestPrefix[] = "MANUAL_";
+
 TestLauncherDelegate* g_launcher_delegate;
 }
 
@@ -281,11 +301,6 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
-// A multiplier for slow tests. We generally avoid multiplying
-// test timeouts by any constants. Here it is used as last resort
-// to implement the SLOW_ test prefix.
-static const int kSlowTestTimeoutMultiplier = 5;
-
 base::TimeDelta GetTestTerminationTimeout(const std::string& test_name,
                                           base::TimeDelta default_timeout) {
   base::TimeDelta timeout = default_timeout;
@@ -293,7 +308,7 @@ base::TimeDelta GetTestTerminationTimeout(const std::string& test_name,
   // Make it possible for selected tests to request a longer timeout.
   // Generally tests should really avoid doing too much, and splitting
   // a test instead of using SLOW prefix is strongly preferred.
-  if (test_name.find("SLOW_") != std::string::npos)
+  if (test_name.find(kSlowTestPrefix) != std::string::npos)
     timeout *= kSlowTestTimeoutMultiplier;
 
   return timeout;
@@ -306,7 +321,8 @@ int RunTestInternal(const testing::TestCase* test_case,
                     bool* was_timeout) {
   if (test_case) {
     std::string pre_test_name = test_name;
-    ReplaceFirstSubstringAfterOffset(&pre_test_name, 0, ".", ".PRE_");
+    std::string replace_string = std::string(".") + kPreTestPrefix;
+    ReplaceFirstSubstringAfterOffset(&pre_test_name, 0, ".", replace_string);
     for (int i = 0; i < test_case->total_test_count(); ++i) {
       const testing::TestInfo* test_info = test_case->GetTestInfo(i);
       std::string cur_test_name = test_info->test_case_name();
@@ -483,8 +499,13 @@ bool RunTests(TestLauncherDelegate* launcher_delegate,
         continue;
       }
 
-      if (StartsWithASCII(test_info->name(), "PRE_", true))
+      if (StartsWithASCII(test_info->name(), kPreTestPrefix, true))
         continue;
+
+      if (StartsWithASCII(test_info->name(), kManualTestPrefix, true) &&
+          !command_line->HasSwitch(kRunManualTestsFlag)) {
+        continue;
+      }
 
       // Skip the test that doesn't match the filter string (if given).
       if ((!positive_filter.empty() &&
@@ -595,6 +616,10 @@ const char kGTestOutputFlag[] = "gtest_output";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
 const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
+
+// See kManualTestPrefix above.
+const char kRunManualTestsFlag[] = "run-manual";
+
 // The following is kept for historical reasons (so people that are used to
 // using it don't get surprised).
 const char kChildProcessFlag[]   = "child";
