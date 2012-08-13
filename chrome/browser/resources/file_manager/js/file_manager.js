@@ -4146,7 +4146,7 @@ FileManager.prototype = {
     this.updateCommands_();
     this.gdataSpaceInfoBar_.setAttribute('pending', '');
     chrome.fileBrowserPrivate.getSizeStats(
-        this.directoryModel_.getCurrentDirEntry().toURL(), function(result) {
+        this.directoryModel_.getCurrentRootUrl(), function(result) {
           if (!chrome.extension.lastError) {
             this.gdataSpaceInfoBar_.removeAttribute('pending');
 
