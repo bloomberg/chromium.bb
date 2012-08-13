@@ -6928,7 +6928,6 @@ void TestingAutomationProvider::DoesAutomationObjectExist(
 
 void TestingAutomationProvider::CloseTabJSON(
     DictionaryValue* args, IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
   Browser* browser;
   WebContents* tab;
   std::string error;
@@ -6942,17 +6941,17 @@ void TestingAutomationProvider::CloseTabJSON(
     }
     chrome::CloseWebContents(browser, tab);
     if (!wait_until_closed)
-      reply.SendSuccess(NULL);
+      AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
   }
   // Close other types of views asynchronously.
   RenderViewHost* view;
   if (!GetRenderViewFromJSONArgs(args, profile(), &view, &error)) {
-    reply.SendError(error);
+    AutomationJSONReply(this, reply_message).SendError(error);
     return;
   }
   view->ClosePage();
-  reply.SendSuccess(NULL);
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::SetViewBounds(
