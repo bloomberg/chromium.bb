@@ -331,20 +331,17 @@ bool BookmarkModelAssociator::NodesMatch(
   return true;
 }
 
-syncer::SyncError BookmarkModelAssociator::AssociateTaggedPermanentNode(
+bool BookmarkModelAssociator::AssociateTaggedPermanentNode(
     const BookmarkNode* permanent_node, const std::string&tag) {
   // Do nothing if |permanent_node| is already initialized and associated.
   int64 sync_id = GetSyncIdFromChromeId(permanent_node->id());
   if (sync_id != syncer::kInvalidId)
-    return syncer::SyncError();
+    return true;
   if (!GetSyncIdForTaggedNode(tag, &sync_id))
-    return unrecoverable_error_handler_->CreateAndUploadError(
-        FROM_HERE,
-        "Permanent node not found",
-        model_type());
+    return false;
 
   Associate(permanent_node, sync_id);
-  return syncer::SyncError();
+  return true;
 }
 
 bool BookmarkModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
@@ -390,26 +387,34 @@ syncer::SyncError BookmarkModelAssociator::BuildAssociations() {
   // This algorithm will not do well if the folder name has changes but the
   // children under them are all the same.
 
-  syncer::SyncError error;
   DCHECK(bookmark_model_->IsLoaded());
 
   // To prime our association, we associate the top-level nodes, Bookmark Bar
   // and Other Bookmarks.
-  error = AssociateTaggedPermanentNode(bookmark_model_->other_node(),
-                                       kOtherBookmarksTag);
-  if (error.IsSet())
-    return error;
+  if (!AssociateTaggedPermanentNode(bookmark_model_->other_node(),
+                                    kOtherBookmarksTag)) {
+    return unrecoverable_error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Other bookmarks node not found",
+        model_type());
+  }
 
-  error = AssociateTaggedPermanentNode(bookmark_model_->bookmark_bar_node(),
-                                       kBookmarkBarTag);
-  if (error.IsSet())
-    return error;
+  if (!AssociateTaggedPermanentNode(bookmark_model_->bookmark_bar_node(),
+                                    kBookmarkBarTag)) {
+    return unrecoverable_error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Bookmark bar node not found",
+        model_type());
+  }
 
-  error = AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
-                                       kMobileBookmarksTag);
-  if (error.IsSet() && expect_mobile_bookmarks_folder_)
-    return error;
-  error = syncer::SyncError();
+  if (!AssociateTaggedPermanentNode(bookmark_model_->mobile_node(),
+                                    kMobileBookmarksTag) &&
+      expect_mobile_bookmarks_folder_) {
+    return unrecoverable_error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Mobile bookmarks node not found",
+        model_type());
+  }
 
   int64 bookmark_bar_sync_id = GetSyncIdFromChromeId(
       bookmark_model_->bookmark_bar_node()->id());

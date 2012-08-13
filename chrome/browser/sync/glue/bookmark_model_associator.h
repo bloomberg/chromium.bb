@@ -124,7 +124,8 @@ class BookmarkModelAssociator
   // well known to the server and the client, and is unique within a particular
   // user's share.  For example, "other_bookmarks" is the tag for the Other
   // Bookmarks folder.  The sync nodes are server-created.
-  syncer::SyncError AssociateTaggedPermanentNode(
+  // Returns true on success, false if association failed.
+  bool AssociateTaggedPermanentNode(
       const BookmarkNode* permanent_node,
       const std::string& tag) WARN_UNUSED_RESULT;
 
