@@ -577,15 +577,6 @@ workspace_translate_in(struct workspace *ws, double fraction)
 }
 
 static void
-workspace_damage_all_surfaces(struct workspace *ws)
-{
-	struct weston_surface *surface;
-
-	wl_list_for_each(surface, &ws->layer.surface_list, layer_link)
-		weston_surface_damage(surface);
-}
-
-static void
 reverse_workspace_change_animation(struct desktop_shell *shell,
 				   unsigned int index,
 				   struct workspace *from,
@@ -600,8 +591,7 @@ reverse_workspace_change_animation(struct desktop_shell *shell,
 
 	restore_focus_state(shell, to);
 
-	workspace_damage_all_surfaces(from);
-	workspace_damage_all_surfaces(to);
+	weston_compositor_schedule_repaint(shell->compositor);
 }
 
 static void
@@ -623,8 +613,7 @@ finish_workspace_change_animation(struct desktop_shell *shell,
 				  struct workspace *from,
 				  struct workspace *to)
 {
-	workspace_damage_all_surfaces(from);
-	workspace_damage_all_surfaces(to);
+	weston_compositor_schedule_repaint(shell->compositor);
 
 	wl_list_remove(&shell->workspaces.animation.link);
 	workspace_deactivate_transforms(from);
@@ -673,15 +662,13 @@ animate_workspace_change_frame(struct weston_animation *animation,
 	y = sin(x);
 
 	if (t < DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH) {
-		workspace_damage_all_surfaces(from);
-		workspace_damage_all_surfaces(to);
+		weston_compositor_schedule_repaint(shell->compositor);
 
 		workspace_translate_out(from, shell->workspaces.anim_dir * y);
 		workspace_translate_in(to, shell->workspaces.anim_dir * y);
 		shell->workspaces.anim_current = y;
 
-		workspace_damage_all_surfaces(from);
-		workspace_damage_all_surfaces(to);
+		weston_compositor_schedule_repaint(shell->compositor);
 	}
 	else
 		finish_workspace_change_animation(shell, from, to);
@@ -721,8 +708,7 @@ animate_workspace_change(struct desktop_shell *shell,
 
 	restore_focus_state(shell, to);
 
-	workspace_damage_all_surfaces(from);
-	workspace_damage_all_surfaces(to);
+	weston_compositor_schedule_repaint(shell->compositor);
 }
 
 static void
