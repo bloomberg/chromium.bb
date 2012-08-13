@@ -37,7 +37,6 @@
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_kern_services.h"
-#include "native_client/src/trusted/service_runtime/nacl_oop_debugger_hooks.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_text.h"
@@ -832,9 +831,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     goto cleanup;
   }
 
-  /* NaClApp initialization is completed, call OOP debugger hook. */
-  NaClOopDebuggerAppCreateHook(nap);
-
   NaClXMutexLock(&nap->mu);
   nap->running = 1;
   NaClXMutexUnlock(&nap->mu);
@@ -892,8 +888,6 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
   if (NULL != nap->debug_stub_callbacks) {
     nap->debug_stub_callbacks->process_exit_hook(nap->exit_status);
   }
-
-  NaClOopDebuggerAppExitHook(nap->exit_status);
 
   return (nap->exit_status);
 }

@@ -105,7 +105,6 @@
                 'osx/crash_filter.c',
                 'osx/mach_exception_handler.c',
                 'osx/nacl_ldt.c',
-                'osx/nacl_oop_debugger_hooks.c',
                 'osx/nacl_thread_nice.c',
                 'osx/outer_sandbox.c',
                 'osx/thread_suspension.c',
@@ -144,7 +143,6 @@
                 'win/debug_exception_handler.c',
                 'win/debug_exception_handler_standalone.c',
                 'win/nacl_ldt.c',
-                'win/nacl_oop_debugger_hooks.c',
                 'win/nacl_thread_nice.c',
                 'win/sel_memory.c',
                 'win/sel_segments.c',
@@ -170,7 +168,6 @@
             ['OS=="linux"', {
               'sources': [
                 'linux/nacl_bootstrap_args.c',
-                'linux/nacl_oop_debugger_hooks.c',
                 'linux/nacl_thread_nice.c',
                 'linux/r_debug.c',
                 'linux/reserved_at_zero.c',
