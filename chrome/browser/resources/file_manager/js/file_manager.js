@@ -2207,8 +2207,8 @@ FileManager.prototype = {
 
     // Now this.selection is complete. Update buttons.
     this.updateCommonActionButtons_();
-    this.updateSearchBreadcrumbs_();
     this.updatePreviewPanelVisibility_();
+    this.updateSearchBreadcrumbs_();
     forcedShowTimeout = setTimeout(showThumbnails,
         FileManager.THUMBNAIL_SHOW_DELAY);
     onThumbnailLoaded();

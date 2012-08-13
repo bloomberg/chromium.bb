@@ -374,8 +374,8 @@ div.root-eject:hover {
 }
 
 #search-breadcrumbs {
-  padding-left: 5px;
-  padding-right: 5px;
+  -webkit-margin-end: 5px;
+  -webkit-margin-start: 5px;
 }
 
 .breadcrumbs > [collapsed]:before {
