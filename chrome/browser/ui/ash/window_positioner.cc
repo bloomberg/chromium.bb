@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/window_positioner.h"
+#include "chrome/browser/ui/ash/window_positioner.h"
 
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_controller.h"

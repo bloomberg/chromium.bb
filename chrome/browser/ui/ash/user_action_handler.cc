@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/user_action_handler.h"
+#include "chrome/browser/ui/ash/user_action_handler.h"
 
 #include "ash/wm/window_util.h"
 #include "chrome/browser/ui/browser.h"
