@@ -119,7 +119,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/ash/window_positioner.h"
+#include "chrome/browser/ui/ash/window_positioner.h"
 #elif defined(OS_WIN) && !defined(USE_AURA)
 #include "base/win/metro.h"
 #include "chrome/browser/jumplist_win.h"
