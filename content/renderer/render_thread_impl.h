@@ -218,9 +218,12 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // Returns a graphics context shared among all
   // RendererGpuVideoDecoderFactories, or NULL on error.  Context remains owned
   // by this class and must be null-tested before each use to detect context
-  // loss.  The returned WeakPtr<> is only valid on the compositor thread when
+  // loss.  The returned context is only valid on the compositor thread when
   // threaded compositing is enabled.
-  base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> GetGpuVDAContext3D();
+  WebGraphicsContext3DCommandBufferImpl* GetGpuVDAContext3D();
+
+  // Handle loss of the shared GpuVDAContext3D context above.
+  static void OnGpuVDAContextLoss();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on
@@ -299,6 +302,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   ObserverList<content::RenderProcessObserver> observers_;
 
+  class GpuVDAContextLostCallback;
+  scoped_ptr<GpuVDAContextLostCallback> context_lost_cb_;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> gpu_vda_context3d_;
 
   scoped_ptr<content::AudioRendererMixerManager> audio_renderer_mixer_manager_;

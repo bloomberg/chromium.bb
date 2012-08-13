@@ -19,14 +19,11 @@ RendererGpuVideoDecoderFactories::~RendererGpuVideoDecoderFactories() {}
 RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    const base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>& context)
+    WebGraphicsContext3DCommandBufferImpl* context)
     : message_loop_(message_loop),
-      gpu_channel_host_(gpu_channel_host),
-      context_(context) {
-  DCHECK(context_);
-  context_->DetachFromThread();
+      gpu_channel_host_(gpu_channel_host) {
   if (message_loop_->BelongsToCurrentThread()) {
-    AsyncGetContext(NULL);
+    AsyncGetContext(context, NULL);
     return;
   }
   // Threaded compositor requires us to wait for the context to be acquired.
@@ -36,12 +33,20 @@ RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
       // Unretained to avoid ref/deref'ing |*this|, which is not yet stored in a
       // scoped_refptr.  Safe because the Wait() below keeps us alive until this
       // task completes.
-      base::Unretained(this), &waiter));
+      base::Unretained(this),
+      // OK to pass raw because the pointee is only deleted on the compositor
+      // thread, and only as the result of a PostTask from the render thread
+      // which can only happen after this function returns, so our PostTask will
+      // run first.
+      context,
+      &waiter));
   waiter.Wait();
 }
 
 void RendererGpuVideoDecoderFactories::AsyncGetContext(
+    WebGraphicsContext3DCommandBufferImpl* context,
     base::WaitableEvent* waiter) {
+  context_ = context->AsWeakPtr();
   if (context_)
     context_->makeContextCurrent();
   if (waiter)

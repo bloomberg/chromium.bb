@@ -173,6 +173,17 @@ static void AddHistogramSample(void* hist, int sample) {
   histogram->Add(sample);
 }
 
+class RenderThreadImpl::GpuVDAContextLostCallback
+    : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+ public:
+  GpuVDAContextLostCallback() {}
+  virtual ~GpuVDAContextLostCallback() {}
+  virtual void onContextLost() {
+    ChildThread::current()->message_loop()->PostTask(FROM_HERE, base::Bind(
+        &RenderThreadImpl::OnGpuVDAContextLoss));
+  }
+};
+
 RenderThreadImpl* RenderThreadImpl::current() {
   return lazy_tls.Pointer()->Get();
 }
@@ -261,6 +272,8 @@ void RenderThreadImpl::Init() {
       command_line.HasSwitch(switches::kEnablePerTilePainting));
   WebKit::WebCompositor::setPartialSwapEnabled(
       command_line.HasSwitch(switches::kEnablePartialSwap));
+
+  context_lost_cb_.reset(new GpuVDAContextLostCallback());
 
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
@@ -746,27 +759,30 @@ void RenderThreadImpl::PostponeIdleNotification() {
   idle_notifications_to_skip_ = 2;
 }
 
-base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>
-RenderThreadImpl::GetGpuVDAContext3D() {
-  // If we already handed out a pointer to a context and it's been lost, create
-  // a new one.
-  if (gpu_vda_context3d_.get() && gpu_vda_context3d_->isContextLost()) {
-    if (compositor_thread()) {
-      compositor_thread()->GetWebThread()->message_loop()->DeleteSoon(
-          FROM_HERE, gpu_vda_context3d_.release());
-    } else {
-      gpu_vda_context3d_.reset();
-    }
+/* static */
+void RenderThreadImpl::OnGpuVDAContextLoss() {
+  RenderThreadImpl* self = RenderThreadImpl::current();
+  DCHECK(self);
+  if (!self->gpu_vda_context3d_.get())
+    return;
+  if (self->compositor_thread()) {
+    self->compositor_thread()->GetWebThread()->message_loop()->DeleteSoon(
+        FROM_HERE, self->gpu_vda_context3d_.release());
+  } else {
+    self->gpu_vda_context3d_.reset();
   }
+}
+
+WebGraphicsContext3DCommandBufferImpl*
+RenderThreadImpl::GetGpuVDAContext3D() {
   if (!gpu_vda_context3d_.get()) {
     gpu_vda_context3d_.reset(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             this, WebKit::WebGraphicsContext3D::Attributes(),
             GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D")));
+    gpu_vda_context3d_->setContextLostCallback(context_lost_cb_.get());
   }
-  if (!gpu_vda_context3d_.get())
-    return base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>();
-  return gpu_vda_context3d_->AsWeakPtr();
+  return gpu_vda_context3d_.get();
 }
 
 content::AudioRendererMixerManager*
