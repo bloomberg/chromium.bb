@@ -891,8 +891,10 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
     handled = status != ui::TOUCH_STATUS_UNKNOWN;
 
     if (status == ui::TOUCH_STATUS_QUEUED ||
-        status == ui::TOUCH_STATUS_QUEUED_END)
+        status == ui::TOUCH_STATUS_QUEUED_END) {
       gesture_recognizer_->QueueTouchEventForGesture(target, *event);
+      return true;
+    }
   }
 
   // Get the list of GestureEvents from GestureRecognizer.

@@ -46,6 +46,15 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
   virtual GestureSequence* GetGestureSequenceForConsumer(GestureConsumer* c);
 
  private:
+  // Sets up the target consumer for gestures based on the touch-event.
+  void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
+
+  // Processes the next queued touch-event (and discards the touch-event). The
+  // called must take ownership of the returned gestures and free them when they
+  // are not needed anymore.
+  Gestures* AdvanceTouchQueueByOne(GestureConsumer* consumer,
+                                   ui::TouchStatus status);
+
   // Overridden from GestureRecognizer
   virtual Gestures* ProcessTouchEventForGesture(
       const TouchEvent& event,
