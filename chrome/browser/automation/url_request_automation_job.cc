@@ -416,21 +416,19 @@ void URLRequestAutomationJob::StartAsync() {
   for (size_t i = 0; i < arraysize(kFilteredHeaderStrings); ++i)
     new_request_headers.RemoveHeader(kFilteredHeaderStrings[i]);
 
-  if (request_->context()) {
-    // Only add default Accept-Language and Accept-Charset if the request
-    // didn't have them specified.
-    if (!new_request_headers.HasHeader(
-        net::HttpRequestHeaders::kAcceptLanguage) &&
-        !request_->context()->accept_language().empty()) {
-      new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
-                                    request_->context()->accept_language());
-    }
-    if (!new_request_headers.HasHeader(
-        net::HttpRequestHeaders::kAcceptCharset) &&
-        !request_->context()->accept_charset().empty()) {
-      new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptCharset,
-                                    request_->context()->accept_charset());
-    }
+  // Only add default Accept-Language and Accept-Charset if the request
+  // didn't have them specified.
+  if (!new_request_headers.HasHeader(
+      net::HttpRequestHeaders::kAcceptLanguage) &&
+      !request_->context()->accept_language().empty()) {
+    new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
+                                  request_->context()->accept_language());
+  }
+  if (!new_request_headers.HasHeader(
+      net::HttpRequestHeaders::kAcceptCharset) &&
+      !request_->context()->accept_charset().empty()) {
+    new_request_headers.SetHeader(net::HttpRequestHeaders::kAcceptCharset,
+                                  request_->context()->accept_charset());
   }
 
   // Ensure that we do not send username and password fields in the referrer.
