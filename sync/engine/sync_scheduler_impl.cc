@@ -31,6 +31,12 @@ using sessions::SyncSourceInfo;
 using sync_pb::GetUpdatesCallerInfo;
 
 namespace {
+
+// For integration tests only.  Override initial backoff value.
+// TODO(tim): Remove this egregiousness, use command line flag and plumb
+// through. Done this way to reduce diffs in hotfix.
+static bool g_force_short_retry = false;
+
 bool ShouldRequestEarlyExit(const SyncProtocolError& error) {
   switch (error.error_type) {
     case SYNC_SUCCESS:
@@ -897,6 +903,43 @@ void SyncSchedulerImpl::RestartWaiting() {
                               this, &SyncSchedulerImpl::DoCanaryJob);
 }
 
+namespace {
+// TODO(tim): Move this function to syncer_error.h.
+// Return true if the command in question was attempted and did not complete
+// successfully.
+bool IsError(SyncerError error) {
+  return error != UNSET && error != SYNCER_OK;
+}
+}  // namespace
+
+// static
+void SyncSchedulerImpl::ForceShortInitialBackoffRetry() {
+  g_force_short_retry = true;
+}
+
+TimeDelta SyncSchedulerImpl::GetInitialBackoffDelay(
+    const sessions::ModelNeutralState& state) const {
+  // TODO(tim): Remove this, provide integration-test-only mechanism
+  // for override.
+  if (g_force_short_retry) {
+    return TimeDelta::FromSeconds(kInitialBackoffShortRetrySeconds);
+  }
+
+  if (IsError(state.last_get_key_result))
+    return TimeDelta::FromSeconds(kInitialBackoffRetrySeconds);
+  // Note: If we received a MIGRATION_DONE on download updates, then commit
+  // should not have taken place.  Moreover, if we receive a MIGRATION_DONE
+  // on commit, it means that download updates succeeded.  Therefore, we only
+  // need to check if either code is equal to SERVER_RETURN_MIGRATION_DONE,
+  // and not if there were any more serious errors requiring the long retry.
+  if (state.last_download_updates_result == SERVER_RETURN_MIGRATION_DONE ||
+      state.commit_result == SERVER_RETURN_MIGRATION_DONE) {
+    return TimeDelta::FromSeconds(kInitialBackoffShortRetrySeconds);
+  }
+
+  return TimeDelta::FromSeconds(kInitialBackoffRetrySeconds);
+}
+
 void SyncSchedulerImpl::HandleContinuationError(
     const SyncSessionJob& old_job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -907,7 +950,9 @@ void SyncSchedulerImpl::HandleContinuationError(
   }
 
   TimeDelta length = delay_provider_->GetDelay(
-      IsBackingOff() ? wait_interval_->length : TimeDelta::FromSeconds(1));
+      IsBackingOff() ? wait_interval_->length :
+          GetInitialBackoffDelay(
+              old_job.session->status_controller().model_neutral_state()));
 
   SDVLOG(2) << "In handle continuation error with "
             << SyncSessionJob::GetPurposeString(old_job.purpose)

@@ -55,6 +55,7 @@
 #include "net/url_request/url_request_status.h"
 #include "sync/notifier/p2p_notifier.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/engine/sync_scheduler_impl.h"
 
 using content::BrowserThread;
 
@@ -168,6 +169,9 @@ void SyncTest::SetUp() {
 #if defined(OS_MACOSX)
   Encryptor::UseMockKeychain(true);
 #endif
+
+  // TODO(tim): Use command line flag.
+  syncer::SyncSchedulerImpl::ForceShortInitialBackoffRetry();
 
   // Yield control back to the InProcessBrowserTest framework.
   InProcessBrowserTest::SetUp();

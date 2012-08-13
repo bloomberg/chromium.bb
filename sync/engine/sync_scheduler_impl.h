@@ -77,6 +77,11 @@ class SyncSchedulerImpl : public SyncScheduler {
   // TODO(tim): Look at URLRequestThrottlerEntryInterface.
   static base::TimeDelta GetRecommendedDelay(const base::TimeDelta& base_delay);
 
+  // For integration tests only.  Override initial backoff value.
+  // TODO(tim): Remove this, use command line flag and plumb through. Done
+  // this way to reduce diffs in hotfix.
+  static void ForceShortInitialBackoffRetry();
+
  private:
   enum JobProcessDecision {
     // Indicates we should continue with the current job.
@@ -143,6 +148,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
       ContinueNudgeWhileExponentialBackOff);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, TransientPollFailure);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, GetInitialBackoffDelay);
 
   // A component used to get time delays associated with exponential backoff.
   // Encapsulated into a class to facilitate testing.
@@ -227,6 +233,11 @@ class SyncSchedulerImpl : public SyncScheduler {
 
   // Helper to ScheduleNextSync in case of consecutive sync errors.
   void HandleContinuationError(const SyncSessionJob& old_job);
+
+  // Helper to calculate the initial value for exponential backoff.
+  // See possible values and comments in polling_constants.h.
+  base::TimeDelta GetInitialBackoffDelay(
+      const sessions::ModelNeutralState& state) const;
 
   // Determines if it is legal to run |job| by checking current
   // operational mode, backoff or throttling, freshness

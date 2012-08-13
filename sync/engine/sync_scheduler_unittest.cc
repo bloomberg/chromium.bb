@@ -928,7 +928,7 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
       .WillRepeatedly(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
           RecordSyncShareMultiple(&r, kMinNumSamples)));
 
-  const TimeDelta first = TimeDelta::FromSeconds(1);
+  const TimeDelta first = TimeDelta::FromSeconds(kInitialBackoffRetrySeconds);
   const TimeDelta second = TimeDelta::FromMilliseconds(2);
   const TimeDelta third = TimeDelta::FromMilliseconds(3);
   const TimeDelta fourth = TimeDelta::FromMilliseconds(4);
@@ -957,6 +957,38 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
   EXPECT_GE(r.times[2] - r.times[1], third);
   EXPECT_GE(r.times[3] - r.times[2], fourth);
   EXPECT_GE(r.times[4] - r.times[3], fifth);
+}
+
+TEST_F(SyncSchedulerTest, GetInitialBackoffDelay) {
+  sessions::ModelNeutralState state;
+  state.last_get_key_result = SYNC_SERVER_ERROR;
+  EXPECT_EQ(kInitialBackoffRetrySeconds,
+            scheduler()->GetInitialBackoffDelay(state).InSeconds());
+
+  state.last_get_key_result = UNSET;
+  state.last_download_updates_result = SERVER_RETURN_MIGRATION_DONE;
+  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+            scheduler()->GetInitialBackoffDelay(state).InSeconds());
+
+  state.last_download_updates_result = SERVER_RETURN_TRANSIENT_ERROR;
+  EXPECT_EQ(kInitialBackoffRetrySeconds,
+            scheduler()->GetInitialBackoffDelay(state).InSeconds());
+
+  state.last_download_updates_result = SERVER_RESPONSE_VALIDATION_FAILED;
+  EXPECT_EQ(kInitialBackoffRetrySeconds,
+            scheduler()->GetInitialBackoffDelay(state).InSeconds());
+
+  state.last_download_updates_result = SYNCER_OK;
+  // Note that updating credentials triggers a canary job, trumping
+  // the initial delay, but in theory we still expect this function to treat
+  // it like any other error in the system (except migration).
+  state.commit_result = SERVER_RETURN_INVALID_CREDENTIAL;
+  EXPECT_EQ(kInitialBackoffRetrySeconds,
+            scheduler()->GetInitialBackoffDelay(state).InSeconds());
+
+  state.commit_result = SERVER_RETURN_MIGRATION_DONE;
+  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
+            scheduler()->GetInitialBackoffDelay(state).InSeconds());
 }
 
 // Test that things go back to normal once a retry makes forward progress.

@@ -15,6 +15,8 @@ extern const int64 kDefaultShortPollIntervalSeconds;
 extern const int64 kDefaultLongPollIntervalSeconds;
 SYNC_EXPORT extern const int64 kMaxBackoffSeconds;
 SYNC_EXPORT extern const int kBackoffRandomizationFactor;
+SYNC_EXPORT_PRIVATE extern const int kInitialBackoffRetrySeconds;
+SYNC_EXPORT_PRIVATE extern const int kInitialBackoffShortRetrySeconds;
 
 }  // namespace syncer
 

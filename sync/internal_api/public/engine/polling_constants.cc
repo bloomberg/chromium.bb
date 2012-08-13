@@ -22,5 +22,13 @@ const int64 kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
 // Backoff interval randomization factor.
 const int kBackoffRandomizationFactor = 2;
 
-}  // namespace syncer
+// After a failure contacting sync servers, specifies how long to wait before
+// reattempting and entering exponential backoff if consecutive failures
+// occur.
+const int kInitialBackoffRetrySeconds = 60 * 5;  // 5 minutes.
 
+// Similar to kInitialBackoffRetrySeconds above, but only to be used in
+// certain exceptional error cases, such as MIGRATION_DONE.
+const int kInitialBackoffShortRetrySeconds = 1;
+
+}  // namespace syncer
