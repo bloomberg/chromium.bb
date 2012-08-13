@@ -185,7 +185,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     virtual void InitPrefs();
     // This must not be called until all the providers have been created.
     void RegisterManagementPolicyProviders();
-    void InitInfoMap();
     void Init(bool extensions_enabled);
 
     StateStore* state_store();

@@ -93,12 +93,6 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
   management_policy_->RegisterProvider(extension_prefs_.get());
 }
 
-void ExtensionSystemImpl::Shared::InitInfoMap() {
-  // The ExtensionInfoMap needs to be created before the
-  // ExtensionProcessManager.
-  extension_info_map_ = new ExtensionInfoMap();
-}
-
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
@@ -213,6 +207,8 @@ UserScriptMaster* ExtensionSystemImpl::Shared::user_script_master() {
 }
 
 ExtensionInfoMap* ExtensionSystemImpl::Shared::info_map() {
+  if (!extension_info_map_)
+    extension_info_map_ = new ExtensionInfoMap();
   return extension_info_map_.get();
 }
 
@@ -265,7 +261,9 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
     extension_devtools_manager_ = new ExtensionDevToolsManager(profile_);
   }
 
-  shared_->InitInfoMap();
+  // The ExtensionInfoMap needs to be created before the
+  // ExtensionProcessManager.
+  shared_->info_map();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
   alarm_manager_.reset(new AlarmManager(profile_, &base::Time::Now));
