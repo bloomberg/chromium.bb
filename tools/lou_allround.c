@@ -198,13 +198,13 @@ getCommands (void)
 	  printf ("(Enter an x to cancel emphasis.)\n");
 	  printf ("Enter an emphasis string: ");
 	  getInput ();
-	  strcpy (emphasis, inputBuffer);
+	  strcpy (enteredEmphasis, inputBuffer);
 	  break;
 	case 's':
 	  printf ("(Enter an x to cancel spacing.)\n");
 	  printf ("Enter a spacing string: ");
 	  getInput ();
-	  strcpy (spacing, inputBuffer);
+	  strcpy (enteredSpacing, inputBuffer);
 	  break;
 	case 'h':
 	  printf ("Commands: action\n");
@@ -402,8 +402,6 @@ main (int argc, char **argv)
 	      }
 	    if (cursorPos != -1)
 	      printf ("Cursor position: %d\n", cursorPos);
-	    if (enteredEmphasis[0])
-	      printf ("Returned emphasis: %s\n", emphasis);
 	    if (enteredSpacing[0])
 	      printf ("Returned spacing: %s\n", spacing);
 	    if (showPositions)
@@ -434,8 +432,6 @@ main (int argc, char **argv)
 			  translen, outlen);
 		if (cursorPos != -1)
 		  printf ("Cursor position: %d\n", cursorPos);
-		if (enteredEmphasis[0])
-		  printf ("Returned emphasis: %s\n", emphasis);
 		if (enteredSpacing[0])
 		  printf ("Returned spacing: %s\n", spacing);
 		if (showPositions)

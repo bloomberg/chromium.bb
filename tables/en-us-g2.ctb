@@ -57,6 +57,7 @@ always aed =
 always aer = Rosenlaer
 begword aforem 1-123456-15-134 aforementioned 
 word aforesaid 1-123456-15-234-145
+always afr 1-124-1235
 sufword after 1-124
 contraction af
 always afternoon 1-124-1345 afternoons
@@ -557,7 +558,7 @@ always ow 246
 word o'clock 135-3-14
 
 # the letter p
-word paid 1234-145
+prfword paid 1234-145
 contraction pd
 always part 5-1234
 begword parta 1234-345-2345-1 partake
