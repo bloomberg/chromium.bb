@@ -614,8 +614,9 @@ class MessageCenterContentsView : public WebContentsView {
     if (num_children == 0) {
       views::Label* label = new views::Label(l10n_util::GetStringUTF16(
           IDS_ASH_WEB_NOTFICATION_TRAY_NO_MESSAGES));
-      label->SetFont(label->font().DeriveFont(2));
+      label->SetFont(label->font().DeriveFont(1));
       label->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+      label->SetEnabledColor(SK_ColorGRAY);
       scroll_content_->AddChildView(label);
       button_view_->SetCloseAllVisible(false);
     } else {
