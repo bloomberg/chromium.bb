@@ -158,7 +158,7 @@ void ColorChooserView::HueView::OnPaint(gfx::Canvas* canvas) {
   hsv[1] = SK_Scalar1;
   hsv[2] = SK_Scalar1;
 
-  canvas->DrawRect(gfx::Rect(kHueIndicatorSize, 0,
+  canvas->FillRect(gfx::Rect(kHueIndicatorSize, 0,
                              kHueBarWidth + kBorderWidth, height() - 1),
                    SK_ColorGRAY);
   int base_left = kHueIndicatorSize + kBorderWidth;
@@ -167,8 +167,7 @@ void ColorChooserView::HueView::OnPaint(gfx::Canvas* canvas) {
                                      SkIntToScalar(
                                          kSaturationValueSize - 1 - y)),
                     SkIntToScalar(kSaturationValueSize - 1));
-    canvas->DrawLine(gfx::Point(base_left, y + kBorderWidth),
-                     gfx::Point(base_left + kHueBarWidth, y + kBorderWidth),
+    canvas->FillRect(gfx::Rect(base_left, y + kBorderWidth, kHueBarWidth, 1),
                      SkHSVToColor(hsv));
   }
 
@@ -288,9 +287,7 @@ void ColorChooserView::SaturationValueView::OnPaint(gfx::Canvas* canvas) {
     hsv[1] = SkScalarDiv(SkIntToScalar(x), scalar_size);
     for (int y = kBorderWidth; y < height() - kBorderWidth; ++y) {
       hsv[2] = SK_Scalar1 - SkScalarDiv(SkIntToScalar(y), scalar_size);
-      SkPaint paint;
-      paint.setColor(SkHSVToColor(255, hsv));
-      canvas->DrawPoint(gfx::Point(x, y), paint);
+      canvas->FillRect(gfx::Rect(x, y, 1, 1), SkHSVToColor(255, hsv));
     }
   }
 
@@ -298,32 +295,15 @@ void ColorChooserView::SaturationValueView::OnPaint(gfx::Canvas* canvas) {
   // marker in that case.
   SkColor indicator_color =
       (marker_position_.y() > width() * 3 / 4) ? SK_ColorWHITE : SK_ColorBLACK;
-  // Draw a crosshair indicator but do not draw its center to see the selected
-  // saturation/value.  Note that the DrawLine() doesn't draw the right-bottom
-  // pixel.
-  canvas->DrawLine(
-      gfx::Point(marker_position_.x(),
-                 marker_position_.y() - kSaturationValueIndicatorSize),
-      gfx::Point(marker_position_.x(),
-                 marker_position_.y()),
+  canvas->FillRect(
+      gfx::Rect(marker_position_.x(),
+                marker_position_.y() - kSaturationValueIndicatorSize,
+                1, kSaturationValueIndicatorSize * 2 + 1),
       indicator_color);
-  canvas->DrawLine(
-      gfx::Point(marker_position_.x(),
-                 marker_position_.y() + kSaturationValueIndicatorSize + 1),
-      gfx::Point(marker_position_.x(),
-                 marker_position_.y() + 1),
-      indicator_color);
-  canvas->DrawLine(
-      gfx::Point(marker_position_.x() - kSaturationValueIndicatorSize,
-                 marker_position_.y()),
-      gfx::Point(marker_position_.x(),
-                 marker_position_.y()),
-      indicator_color);
-  canvas->DrawLine(
-      gfx::Point(marker_position_.x() + kSaturationValueIndicatorSize + 1,
-                 marker_position_.y()),
-      gfx::Point(marker_position_.x() + 1,
-                 marker_position_.y()),
+  canvas->FillRect(
+      gfx::Rect(marker_position_.x() - kSaturationValueIndicatorSize,
+                marker_position_.y(),
+                kSaturationValueIndicatorSize * 2 + 1, 1),
       indicator_color);
   OnPaintBorder(canvas);
 }
