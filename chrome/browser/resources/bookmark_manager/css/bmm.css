@@ -68,8 +68,9 @@ html[dir=rtl] list .label {
 }
 
 list > .folder > .label {
-  background-image:
-      url('../../../../../ui/resources/default_100_percent/folder_closed.png');
+  background-image: -webkit-image-set(
+      url('../../../../../ui/resources/default_100_percent/common/folder_closed.png') 1x,
+      url('../../../../../ui/resources/default_200_percent/common/folder_closed.png') 2x);
 }
 
 /* We need to ensure that even empty labels take up space */
@@ -172,8 +173,9 @@ list [editing] .url {
 /* end editing */
 
 html[dir=rtl] list > .folder > .label {
-  background-image: url(
-      '../../../../../ui/resources/default_100_percent/folder_closed_rtl.png');
+  background-image: -webkit-image-set(
+      url('../../../../../ui/resources/default_100_percent/common/folder_closed_rtl.png') 1x,
+      url('../../../../../ui/resources/default_200_percent/common/folder_closed_rtl.png') 2x);
 }
 
 <if expr="is_macosx">

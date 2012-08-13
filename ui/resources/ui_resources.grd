@@ -308,10 +308,10 @@
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_DISCLOSURE_ARROW" file="discloure_arrow.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="folder_closed.png" />
-      <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="folder_closed_rtl.png" />
-      <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="folder_open.png" />
-      <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN_RTL" file="folder_open_rtl.png" />
+      <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
+      <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
+      <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="common/folder_open.png" />
+      <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN_RTL" file="common/folder_open_rtl.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME" file="frame_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" />
