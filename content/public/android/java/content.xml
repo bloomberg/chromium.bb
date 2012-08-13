@@ -14,6 +14,11 @@
     <pathelement location="${lib.dir}/chromium_base.jar" />
     <pathelement location="${lib.dir}/chromium_net.jar" />
   </path>
+
+  <path id="javac.srcdirs.additional">
+    <filelist dir="/" files="${ADDITIONAL_SRC_DIRS}" />
+  </path>
+
   <!-- Override javac path to include jars in lib.java directory -->
-  <property-value name="javac.srcdir" value="${src}:${lib.dir}" />
+  <property-value name="javac.srcdir" value="${src}:${toString:javac.srcdirs.additional}" />
 </project>
