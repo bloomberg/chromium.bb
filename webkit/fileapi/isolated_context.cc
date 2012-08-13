@@ -166,8 +166,9 @@ std::string IsolatedContext::RegisterDraggedFileSystem(
 
 std::string IsolatedContext::RegisterFileSystemForPath(
     FileSystemType type,
-    const FilePath& path,
+    const FilePath& path_in,
     std::string* register_name) {
+  FilePath path(path_in.NormalizePathSeparators());
   DCHECK(!path.ReferencesParent() && path.IsAbsolute());
   std::string name;
   if (register_name && !register_name->empty()) {
@@ -185,8 +186,14 @@ std::string IsolatedContext::RegisterFileSystemForPath(
   return filesystem_id;
 }
 
-void IsolatedContext::RevokeFileSystemByPath(const FilePath& path) {
+bool IsolatedContext::RevokeFileSystem(const std::string& filesystem_id) {
   base::AutoLock locker(lock_);
+  return UnregisterFileSystem(filesystem_id);
+}
+
+void IsolatedContext::RevokeFileSystemByPath(const FilePath& path_in) {
+  base::AutoLock locker(lock_);
+  FilePath path(path_in.NormalizePathSeparators());
   PathToID::iterator ids_iter = path_to_id_map_.find(path);
   if (ids_iter == path_to_id_map_.end())
     return;
@@ -219,16 +226,8 @@ void IsolatedContext::RemoveReference(const std::string& filesystem_id) {
   DCHECK(instance->ref_counts() > 0);
   instance->RemoveRef();
   if (instance->ref_counts() == 0) {
-    if (instance->IsSinglePathInstance()) {
-      PathToID::iterator ids_iter = path_to_id_map_.find(
-          instance->file_info().path);
-      DCHECK(ids_iter != path_to_id_map_.end());
-      ids_iter->second.erase(filesystem_id);
-      if (ids_iter->second.empty())
-        path_to_id_map_.erase(ids_iter);
-    }
-    delete instance;
-    instance_map_.erase(found);
+    bool deleted = UnregisterFileSystem(filesystem_id);
+    DCHECK(deleted);
   }
 }
 
@@ -268,6 +267,7 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
   std::string name = FilePath(components[1]).AsUTF8Unsafe();
   if (!found_instance->second->ResolvePathForName(name, &cracked_path))
     return false;
+
   for (size_t i = 2; i < components.size(); ++i)
     cracked_path = cracked_path.Append(components[i]);
   *path = cracked_path;
@@ -311,8 +311,28 @@ IsolatedContext::~IsolatedContext() {
                                        instance_map_.end());
 }
 
+bool IsolatedContext::UnregisterFileSystem(const std::string& filesystem_id) {
+  lock_.AssertAcquired();
+  IDToInstance::iterator found = instance_map_.find(filesystem_id);
+  if (found == instance_map_.end())
+    return false;
+  Instance* instance = found->second;
+  if (instance->IsSinglePathInstance()) {
+    PathToID::iterator ids_iter = path_to_id_map_.find(
+        instance->file_info().path);
+    DCHECK(ids_iter != path_to_id_map_.end());
+    ids_iter->second.erase(filesystem_id);
+    if (ids_iter->second.empty())
+      path_to_id_map_.erase(ids_iter);
+  }
+  delete found->second;
+  instance_map_.erase(found);
+  return true;
+}
+
 std::string IsolatedContext::GetNewFileSystemId() const {
   // Returns an arbitrary random string which must be unique in the map.
+  lock_.AssertAcquired();
   uint32 random_data[4];
   std::string id;
   do {

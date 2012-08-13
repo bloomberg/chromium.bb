@@ -101,6 +101,10 @@ class FILEAPI_EXPORT IsolatedContext {
                                         const FilePath& path,
                                         std::string* register_name);
 
+  // Revokes the filesystem |filesystem_id|
+  // Returns false if the |filesystem_id| is not (no longer) registered.
+  bool RevokeFileSystem(const std::string& filesystem_id);
+
   // Revokes all filesystem(s) registered for the given path.
   // This is assumed to be called when the registered path becomes
   // globally invalid, e.g. when a device for the path is detached.
@@ -208,6 +212,10 @@ class FILEAPI_EXPORT IsolatedContext {
   // Obtain an instance of this class via GetInstance().
   IsolatedContext();
   ~IsolatedContext();
+
+  // Unregisters a file system of given |filesystem_id|. Must be called with
+  // lock_ held.  Returns true if the file system is unregistered.
+  bool UnregisterFileSystem(const std::string& filesystem_id);
 
   // Returns a new filesystem_id.  Called with lock.
   std::string GetNewFileSystemId() const;
