@@ -257,6 +257,7 @@ class GDataFileSystemInterface {
   // path, or the parent directory of the path is not present yet.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread
+  // |callback| must not be null.
   virtual void CreateFile(const FilePath& file_path,
                           bool is_exclusive,
                           const FileOperationCallback& callback) = 0;

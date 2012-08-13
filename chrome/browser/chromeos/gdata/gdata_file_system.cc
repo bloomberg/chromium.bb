@@ -1462,6 +1462,8 @@ void GDataFileSystem::CreateFile(const FilePath& file_path,
                                  const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CreateFileOnUIThread,
                                ui_weak_ptr_,
                                file_path,
@@ -1474,9 +1476,10 @@ void GDataFileSystem::CreateFileOnUIThread(
     bool is_exclusive,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // First, checks the existence of a file at |file_path|.
-  FindEntryByPathAsyncOnUIThread(
+  directory_service_->GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetEntryInfoForCreateFile,
                  ui_weak_ptr_,
@@ -1490,32 +1493,31 @@ void GDataFileSystem::OnGetEntryInfoForCreateFile(
     bool is_exclusive,
     const FileOperationCallback& callback,
     GDataFileError result,
-    GDataEntry* entry) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   // The |file_path| is invalid. It is an error.
   if (result != GDATA_FILE_ERROR_NOT_FOUND &&
       result != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(result);
+    callback.Run(result);
     return;
   }
 
   // An entry already exists at |file_path|.
   if (result == GDATA_FILE_OK) {
+    DCHECK(entry_proto.get());
     // If an exclusive mode is requested, or the entry is not a regular file,
     // it is an error.
     if (is_exclusive ||
-        !entry->AsGDataFile() ||
-        entry->AsGDataFile()->is_hosted_document()) {
-      if (!callback.is_null())
-        callback.Run(GDATA_FILE_ERROR_EXISTS);
+        entry_proto->file_info().is_directory() ||
+        entry_proto->file_specific_info().is_hosted_document()) {
+      callback.Run(GDATA_FILE_ERROR_EXISTS);
       return;
     }
 
     // Otherwise nothing more to do. Succeeded.
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_OK);
+    callback.Run(GDATA_FILE_OK);
     return;
   }
 

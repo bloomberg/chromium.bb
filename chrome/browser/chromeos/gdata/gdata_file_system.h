@@ -223,12 +223,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // with the cases when an entry already existed at the path. If there was no
   // entry, a new empty file is uploaded, and when it finishes
   // DidUploadForCreateBrandNewFile does the final clean up.
+  // |callback| must not be null.
   void OnGetEntryInfoForCreateFile(
       const FilePath& file_path,
       bool is_exclusive,
       const FileOperationCallback& callback,
       GDataFileError result,
-      GDataEntry* entry);
+      scoped_ptr<GDataEntryProto> entry_proto);
   void DoUploadForCreateBrandNewFile(
       const FilePath& remote_path,
       FilePath* local_path,
