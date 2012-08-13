@@ -19,7 +19,6 @@
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
-      'WEBRTC_RELATIVE_PATH',
       '_USE_32BIT_TIME_T',
     ],
     'configurations': {
@@ -36,6 +35,7 @@
       './source',
       '../../testing/gtest/include',
       '../../third_party/libyuv/include',
+      '../../third_party/webrtc',
     ],
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
@@ -50,6 +50,7 @@
         './overrides',
         './source',
         '../../testing/gtest/include',
+        '../../third_party/webrtc',
       ],
       'defines': [
         'FEATURE_ENABLE_SSL',
@@ -57,7 +58,6 @@
         'EXPAT_RELATIVE_PATH',
         'GTEST_RELATIVE_PATH',
         'JSONCPP_RELATIVE_PATH',
-        'WEBRTC_RELATIVE_PATH',
         'NO_MAIN_THREAD_WRAPPING',
         'NO_SOUND_SYSTEM',
       ],

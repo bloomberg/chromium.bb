@@ -34,10 +34,10 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/voice_engine/main/interface/voe_audio_processing.h"
-#include "third_party/webrtc/voice_engine/main/interface/voe_base.h"
-#include "third_party/webrtc/voice_engine/main/interface/voe_file.h"
-#include "third_party/webrtc/voice_engine/main/interface/voe_network.h"
+#include "third_party/webrtc/voice_engine/include/voe_audio_processing.h"
+#include "third_party/webrtc/voice_engine/include/voe_base.h"
+#include "third_party/webrtc/voice_engine/include/voe_file.h"
+#include "third_party/webrtc/voice_engine/include/voe_network.h"
 
 using base::win::ScopedCOMInitializer;
 using testing::_;
