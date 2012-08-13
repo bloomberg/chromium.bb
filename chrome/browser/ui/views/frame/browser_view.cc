@@ -30,11 +30,13 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
@@ -330,7 +332,8 @@ BrowserView::BrowserView(Browser* browser)
       ticker_(0),
 #endif
       force_location_bar_focus_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(activate_modal_dialog_factory_(this)) {
   browser_->tab_strip_model()->AddObserver(this);
 }
 
@@ -510,20 +513,6 @@ bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {
       *accelerator = it->first;
       return true;
     }
-  }
-  return false;
-}
-
-bool BrowserView::ActivateAppModalDialog() const {
-  // If another browser is app modal, flash and activate the modal browser.
-  if (AppModalDialogQueue::GetInstance()->HasActiveDialog()) {
-    Browser* active_browser = BrowserList::GetLastActive();
-    if (active_browser && (browser_ != active_browser)) {
-      active_browser->window()->FlashFrame(true);
-      active_browser->window()->Activate();
-    }
-    AppModalDialogQueue::GetInstance()->ActivateModalDialog();
-    return true;
   }
   return false;
 }
@@ -1494,7 +1483,18 @@ bool BrowserView::CanMaximize() const {
 }
 
 bool BrowserView::CanActivate() const {
-  return !ActivateAppModalDialog();
+  if (!AppModalDialogQueue::GetInstance()->active_dialog())
+    return true;
+
+  // If another browser is app modal, flash and activate the modal browser. This
+  // has to be done in a post task, otherwise if the user clicked on a window
+  // that doesn't have the modal dialog the windows keep trying to get the focus
+  // from each other on Windows. http://crbug.com/141650.
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserView::ActivateAppModalDialog,
+                 activate_modal_dialog_factory_.GetWeakPtr()));
+  return false;
 }
 
 string16 BrowserView::GetWindowTitle() const {
@@ -2592,4 +2592,21 @@ bool BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)()) {
   // TODO(yusukes): Support non-Aura Windows.
 #endif
   return false;
+}
+
+void BrowserView::ActivateAppModalDialog() const {
+  // If another browser is app modal, flash and activate the modal browser.
+  AppModalDialog* active_dialog =
+      AppModalDialogQueue::GetInstance()->active_dialog();
+  if (!active_dialog)
+    return;
+
+  Browser* modal_browser =
+      browser::FindBrowserWithWebContents(active_dialog->web_contents());
+  if (modal_browser && (browser_ != modal_browser)) {
+    modal_browser->window()->FlashFrame(true);
+    modal_browser->window()->Activate();
+  }
+
+  AppModalDialogQueue::GetInstance()->ActivateModalDialog();
 }

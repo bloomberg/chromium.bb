@@ -176,11 +176,6 @@ class BrowserView : public BrowserWindow,
   // otherwise.
   bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator);
 
-  // Shows the next app-modal dialog box, if there is one to be shown, or moves
-  // an existing showing one to the front. Returns true if one was shown or
-  // activated, false if none was shown.
-  bool ActivateAppModalDialog() const;
-
   // Returns the selected WebContents/TabContents. Used by our
   // NonClientView's TabIconView::TabContentsProvider implementations.
   // TODO(beng): exposing this here is a bit bogus, since it's only used to
@@ -562,6 +557,10 @@ class BrowserView : public BrowserWindow,
   // and returns true if the focus is currently on a WebContent.
   bool DoCutCopyPaste(void (content::RenderWidgetHost::*method)());
 
+  // Shows the next app-modal dialog box, if there is one to be shown, or moves
+  // an existing showing one to the front.
+  void ActivateAppModalDialog() const;
+
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;
 
@@ -714,6 +713,8 @@ class BrowserView : public BrowserWindow,
 #if defined(USE_AURA)
   scoped_ptr<SearchViewController> search_view_controller_;
 #endif
+
+  mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
