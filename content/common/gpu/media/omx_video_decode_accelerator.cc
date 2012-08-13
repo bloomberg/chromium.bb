@@ -722,9 +722,6 @@ void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
   // Calls to OMX to free buffers.
   OMX_ERRORTYPE result;
 
-  if (!make_context_current_.Run())
-      return;
-
   for (OutputPictureById::iterator it = pictures_.begin();
        it != pictures_.end(); ++it) {
     OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
