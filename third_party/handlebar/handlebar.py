@@ -44,7 +44,7 @@ print(Handlebar('hello {{world}}').render(CustomContext()).text)
 """
 
 def _SafeStr(obj):
-  return obj if (type(obj) in [str, unicode]) else str(obj)
+  return obj if isinstance(obj, basestring) else str(obj)
 
 class ParseException(Exception):
   """ Exception thrown while parsing the template.
@@ -392,19 +392,18 @@ class SectionNode(DecoratorNode):
     if value == None:
       return
 
-    type_ = type(value)
-    if type_ == list:
+    if isinstance(value, list):
       for item in value:
         renderState.localContexts.insert(0, item)
         self._content.render(renderState)
         renderState.localContexts.pop(0)
-    elif type_ == dict:
+    elif isinstance(value, dict):
       renderState.localContexts.insert(0, value)
       self._content.render(renderState)
       renderState.localContexts.pop(0)
     else:
       renderState.addError("{{#", self._id,
-                           "}} cannot be rendered with a ", type_)
+                           "}} cannot be rendered with a ", type(value))
 
 class VertedSectionNode(DecoratorNode):
   """ {{?foo}} ... {{/}}
@@ -423,18 +422,19 @@ class VertedSectionNode(DecoratorNode):
 def _VertedSectionNodeShouldRender(value):
   if value == None:
     return False
-  type_ = type(value)
-  if type_ == bool:
+  if isinstance(value, bool):
     return value
-  if type_ in [int, float]:
+  if (isinstance(value, int) or
+      isinstance(value, long) or
+      isinstance(value, float)):
     return True
-  if type_ in [str, unicode]:
+  if isinstance(value, basestring):
     return True
-  if type_ == list:
+  if isinstance(value, list):
     return len(value) > 0
-  if type_ == dict:
+  if isinstance(value, dict):
     return True
-  raise TypeError("Unhandled type: " + str(type_))
+  raise TypeError("Unhandled type %s" % type(value))
 
 class InvertedSectionNode(DecoratorNode):
   """ {{^foo}} ... {{/}}
@@ -588,6 +588,14 @@ class TokenStream(object):
       self.advance()
     return buf.toString()
 
+  def advanceToNextWhitespace(self):
+    return self.advanceOverNextString(excluded=' \n\r\t')
+
+  def skipWhitespace(self):
+    while len(self.nextContents) > 0 and \
+          ' \n\r\t'.find(self.nextContents) >= 0:
+      self.advance()
+
 class Handlebar(object):
   """ A handlebar template.
   """
@@ -620,17 +628,17 @@ class Handlebar(object):
         nodes.append(token.clazz(id, tokens.nextLine))
       elif token == Token.OPEN_START_PARTIAL:
         tokens.advance()
-        id = Identifier(tokens.advanceOverNextString(excluded=' '),
+        id = Identifier(tokens.advanceToNextWhitespace(),
                         tokens.nextLine)
         partialNode = PartialNode(id, tokens.nextLine)
 
         while tokens.nextToken == Token.CHARACTER:
-          tokens.advance()
+          tokens.skipWhitespace()
           key = tokens.advanceOverNextString(excluded=':')
           tokens.advance()
           partialNode.addArgument(
               key,
-              Identifier(tokens.advanceOverNextString(excluded=' '),
+              Identifier(tokens.advanceToNextWhitespace(),
                          tokens.nextLine))
 
         tokens.advanceOver(Token.CLOSE_MUSTACHE)
