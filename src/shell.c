@@ -2591,6 +2591,68 @@ center_on_output(struct weston_surface *surface, struct weston_output *output)
 }
 
 static void
+weston_surface_set_initial_position (struct weston_surface *surface,
+				     struct desktop_shell *shell)
+{
+	struct weston_compositor *compositor = shell->compositor;
+	int ix = 0, iy = 0;
+	int range_x, range_y;
+	int dx, dy, x, y, panel_height;
+	struct weston_output *output, *target_output = NULL;
+	struct weston_seat *seat;
+
+	/* As a heuristic place the new window on the same output as the
+	 * pointer. Falling back to the output containing 0, 0.
+	 *
+	 * TODO: Do something clever for touch too?
+	 */
+	wl_list_for_each(seat, &compositor->seat_list, link) {
+		if (seat->has_pointer) {
+			ix = wl_fixed_to_int(seat->pointer.x);
+			iy = wl_fixed_to_int(seat->pointer.y);
+			break;
+		}
+	}
+
+	wl_list_for_each(output, &compositor->output_list, link) {
+		if (pixman_region32_contains_point(&output->region, ix, iy, NULL)) {
+			target_output = output;
+			break;
+		}
+	}
+
+	if (!target_output) {
+		weston_surface_set_position(surface, 10 + random() % 400,
+					   10 + random() % 400);
+		return;
+	}
+
+	/* Valid range within output where the surface will still be onscreen.
+	 * If this is negative it means that the surface is bigger than
+	 * output.
+	 */
+	panel_height = get_output_panel_height(shell, target_output);
+	range_x = target_output->current->width - surface->geometry.width;
+	range_y = (target_output->current->height - panel_height) -
+		  surface->geometry.height;
+
+	if (range_x < 0)
+		dx = 0;
+	else
+		dx = random() % range_x;
+
+	if (range_y < 0)
+		dy = panel_height;
+	else
+		dy = panel_height + random() % range_y;
+
+	x = target_output->x + dx;
+	y = target_output->y + dy;
+
+	weston_surface_set_position (surface, x, y);
+}
+
+static void
 map(struct desktop_shell *shell, struct weston_surface *surface,
     int32_t width, int32_t height, int32_t sx, int32_t sy)
 {
@@ -2609,8 +2671,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	/* initial positioning, see also configure() */
 	switch (surface_type) {
 	case SHELL_SURFACE_TOPLEVEL:
-		weston_surface_set_position(surface, 10 + random() % 400,
-					    10 + random() % 400);
+		weston_surface_set_initial_position(surface, shell);
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, shsurf->fullscreen_output);
