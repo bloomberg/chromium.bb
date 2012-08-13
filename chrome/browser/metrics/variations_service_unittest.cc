@@ -24,12 +24,12 @@ int64 TimeToProtoTime(const base::Time& time) {
 // study called "test", which contains one experiment called "abc" with
 // probability weight 100. |seed|'s study field will be cleared before adding
 // the new study.
-chrome_variations::TrialsSeed CreateTestSeed() {
-  chrome_variations::TrialsSeed seed;
-  chrome_variations::Study* study = seed.add_study();
+TrialsSeed CreateTestSeed() {
+  TrialsSeed seed;
+  Study* study = seed.add_study();
   study->set_name("test");
   study->set_default_experiment_name("abc");
-  chrome_variations::Study_Experiment* experiment = study->add_experiment();
+  Study_Experiment* experiment = study->add_experiment();
   experiment->set_name("abc");
   experiment->set_probability_weight(100);
   return seed;
@@ -122,13 +122,13 @@ TEST(VariationsServiceTest, CheckStudyLocale) {
 }
 
 TEST(VariationsServiceTest, CheckStudyPlatform) {
-  const chrome_variations::Study_Platform platforms[] = {
-    chrome_variations::Study_Platform_PLATFORM_WINDOWS,
-    chrome_variations::Study_Platform_PLATFORM_MAC,
-    chrome_variations::Study_Platform_PLATFORM_LINUX,
-    chrome_variations::Study_Platform_PLATFORM_CHROMEOS,
-    chrome_variations::Study_Platform_PLATFORM_ANDROID,
-    chrome_variations::Study_Platform_PLATFORM_IOS,
+  const Study_Platform platforms[] = {
+    Study_Platform_PLATFORM_WINDOWS,
+    Study_Platform_PLATFORM_MAC,
+    Study_Platform_PLATFORM_LINUX,
+    Study_Platform_PLATFORM_CHROMEOS,
+    Study_Platform_PLATFORM_ANDROID,
+    Study_Platform_PLATFORM_IOS,
   };
   ASSERT_EQ(Study_Platform_Platform_ARRAYSIZE,
             static_cast<int>(arraysize(platforms)));
@@ -314,7 +314,7 @@ TEST(VariationsServiceTest, LoadSeed) {
   VariationsService::RegisterPrefs(&pref_service);
 
   // Store good seed data to test if loading from prefs works.
-  chrome_variations::TrialsSeed seed = CreateTestSeed();
+  TrialsSeed seed = CreateTestSeed();
 
   std::string serialized_seed;
   seed.SerializeToString(&serialized_seed);
@@ -323,7 +323,7 @@ TEST(VariationsServiceTest, LoadSeed) {
   pref_service.SetString(prefs::kVariationsSeed, base64_serialized_seed);
 
   VariationsService variations_service;
-  chrome_variations::TrialsSeed loaded_seed;
+  TrialsSeed loaded_seed;
   EXPECT_TRUE(
       variations_service.LoadTrialsSeedFromPref(&pref_service, &loaded_seed));
 
@@ -354,7 +354,7 @@ TEST(VariationsServiceTest, StoreSeed) {
   VariationsService::RegisterPrefs(&pref_service);
   const base::Time now = base::Time::Now();
 
-  chrome_variations::TrialsSeed seed = CreateTestSeed();
+  TrialsSeed seed = CreateTestSeed();
 
   VariationsService variations_service;
   std::string serialized_seed;
