@@ -17,7 +17,9 @@
 #include "content/shell/shell_devtools_delegate.h"
 #include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
+#include "grit/net_resources.h"
 #include "net/base/net_module.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
 #include "net/base/network_change_notifier.h"
@@ -25,6 +27,8 @@
 #endif
 
 namespace content {
+
+namespace {
 
 static GURL GetStartupURL() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -42,6 +46,18 @@ static GURL GetStartupURL() {
 
   return GURL(args[0]);
 }
+
+base::StringPiece PlatformResourceProvider(int key) {
+  if (key == IDR_DIR_HEADER_HTML) {
+    base::StringPiece html_data =
+        ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_DIR_HEADER_HTML, ui::SCALE_FACTOR_NONE);
+    return html_data;
+  }
+  return base::StringPiece();
+}
+
+}  // namespace
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const MainFunctionParams& parameters)
@@ -77,7 +93,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   off_the_record_browser_context_.reset(new ShellBrowserContext(true));
 
   Shell::PlatformInitialize();
-  net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
+  net::NetModule::SetResourceProvider(PlatformResourceProvider);
 
   devtools_delegate_ = new ShellDevToolsDelegate(
       browser_context_->GetRequestContext());

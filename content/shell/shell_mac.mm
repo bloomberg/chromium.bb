@@ -142,10 +142,6 @@ namespace content {
 void Shell::PlatformInitialize() {
 }
 
-base::StringPiece Shell::PlatformResourceProvider(int key) {
-  return base::StringPiece();
-}
-
 void Shell::PlatformCleanUp() {
 }
 
@@ -190,9 +186,9 @@ void Shell::PlatformCreateWindow(int width, int height) {
   }
   CrShellWindow* window =
       [[CrShellWindow alloc] initWithContentRect:content_rect
-                                       styleMask:style_mask
-                                         backing:NSBackingStoreBuffered
-                                           defer:NO];
+                styleMask:style_mask
+                  backing:NSBackingStoreBuffered
+                    defer:NO];
   window_ = window;
   [window setShell:this];
   [window_ setTitle:kWindowTitle];

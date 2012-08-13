@@ -60,11 +60,6 @@ GtkWidget* CreateMenuBar(Shell* shell) {
 void Shell::PlatformInitialize() {
 }
 
-base::StringPiece Shell::PlatformResourceProvider(int key) {
-  NOTIMPLEMENTED();
-  return base::StringPiece();
-}
-
 void Shell::PlatformCleanUp() {
   // Nothing to clean up; GTK will clean up the widgets shortly after.
 }

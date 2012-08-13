@@ -32,11 +32,12 @@
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
+        '../net/net.gyp:net_resources',
         '../skia/skia.gyp:skia',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/ui.gyp:ui',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:webkit_support',
+        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',
@@ -239,7 +240,6 @@
       'dependencies': [
         'browser/debugger/devtools_resources.gyp:devtools_resources',
         'content_shell_resources',
-        '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
       ],
       'variables': {

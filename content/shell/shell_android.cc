@@ -20,10 +20,6 @@ using base::android::ConvertUTF8ToJavaString;
 
 namespace content {
 
-base::StringPiece Shell::PlatformResourceProvider(int key) {
-  return base::StringPiece();
-}
-
 void Shell::PlatformInitialize() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch(switches::kForceCompositingMode));

@@ -10,19 +10,12 @@
 #include <windows.h>
 
 #include "base/command_line.h"
-#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/resource_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
 #include "content/shell/shell_switches.h"
-#include "googleurl/src/gurl.h"
-#include "grit/webkit_resources.h"
-#include "grit/webkit_chromium_resources.h"
-#include "ipc/ipc_message.h"
-#include "net/base/net_module.h"
 #include "ui/base/win/hwnd_util.h"
 
 namespace {
@@ -34,15 +27,6 @@ const int kButtonWidth = 72;
 const int kURLBarHeight = 24;
 
 const int kMaxURLLength = 1024;
-
-static base::StringPiece GetRawDataResource(HMODULE module, int resource_id) {
-  void* data_ptr;
-  size_t data_size;
-  return base::win::GetDataResourceFromModule(module, resource_id, &data_ptr,
-                                              &data_size)
-      ? base::StringPiece(static_cast<char*>(data_ptr), data_size)
-      : base::StringPiece();
-}
 
 }  // namespace
 
@@ -58,10 +42,6 @@ void Shell::PlatformInitialize() {
   InitCtrlEx.dwICC  = ICC_STANDARD_CLASSES;
   InitCommonControlsEx(&InitCtrlEx);
   RegisterWindowClass();
-}
-
-base::StringPiece Shell::PlatformResourceProvider(int key) {
-  return GetRawDataResource(::GetModuleHandle(NULL), key);
 }
 
 void Shell::PlatformExit() {

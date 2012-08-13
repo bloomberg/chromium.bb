@@ -63,9 +63,6 @@ class Shell : public WebContentsDelegate,
   // Do one time initialization at application startup.
   static void PlatformInitialize();
 
-  // This is called indirectly by the modules that need access resources.
-  static base::StringPiece PlatformResourceProvider(int key);
-
   static Shell* CreateNewWindow(BrowserContext* browser_context,
                                 const GURL& url,
                                 SiteInstance* site_instance,

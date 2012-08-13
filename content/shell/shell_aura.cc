@@ -340,10 +340,6 @@ void Shell::PlatformInitialize() {
   views_delegate_ = new ShellViewsDelegateAura();
 }
 
-base::StringPiece Shell::PlatformResourceProvider(int key) {
-  return base::StringPiece();
-}
-
 void Shell::PlatformExit() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Shutdown();
