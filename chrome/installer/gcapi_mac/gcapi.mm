@@ -5,30 +5,33 @@
 #include "chrome/installer/gcapi_mac/gcapi.h"
 
 #import <Cocoa/Cocoa.h>
+#include <grp.h>
+#include <pwd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 
 namespace {
 
+// The "~~" prefixes are replaced with the home directory of the
+// console owner (i.e. not the home directory of the euid).
 NSString* const kChromeInstallPath = @"/Applications/Google Chrome.app";
 
 NSString* const kBrandKey = @"KSBrandID";
-NSString* const kSystemBrandPath = @"/Library/Google/Google Chrome Brand.plist";
-NSString* const kUserBrandPath = @"~/Library/Google/Google Chrome Brand.plist";
+NSString* const kUserBrandPath = @"~~/Library/Google/Google Chrome Brand.plist";
 
 NSString* const kSystemKsadminPath =
     @"/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
      "Contents/MacOS/ksadmin";
 
 NSString* const kUserKsadminPath =
-    @"~/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
+    @"~~/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/"
      "Contents/MacOS/ksadmin";
 
 NSString* const kSystemMasterPrefsPath =
     @"/Library/Google/Google Chrome Master Preferences";
 NSString* const kUserMasterPrefsPath =
-    @"~/Library/Application Support/Google/Google Chrome Master Preferences";
+    @"~~/Library/Application Support/Google/Google Chrome Master Preferences";
 
 NSString* const kChannelKey = @"KSChannelID";
 NSString* const kVersionKey = @"KSVersion";
@@ -60,26 +63,58 @@ bool IsOSXVersionSupported() {
   return mac_os_x_minor_version >= 6 && mac_os_x_minor_version <= 8;
 }
 
+// Returns the pid/gid of the logged-in user, even if getuid() claims that the
+// current user is root.
+// Returns NULL on error.
+passwd* GetRealUserId() {
+  CFDictionaryRef session_info_dict = CGSessionCopyCurrentDictionary();
+  [NSMakeCollectable(session_info_dict) autorelease];
+  if (!session_info_dict)
+    return NULL;  // Possibly no screen plugged in.
+
+  CFNumberRef ns_uid = (CFNumberRef)CFDictionaryGetValue(session_info_dict,
+                                                         kCGSessionUserIDKey);
+  if (CFGetTypeID(ns_uid) != CFNumberGetTypeID())
+    return NULL;
+
+  uid_t uid;
+  BOOL success = CFNumberGetValue(ns_uid, kCFNumberSInt32Type, &uid);
+  if (!success)
+    return NULL;
+
+  return getpwuid(uid);
+}
+
 enum TicketKind {
   kSystemTicket, kUserTicket
 };
 
-BOOL HasChromeTicket(TicketKind kind) {
+// Replaces "~~" with |home_dir|.
+NSString* AdjustHomedir(NSString* s, const char* home_dir) {
+  if (![s hasPrefix:@"~~"])
+    return s;
+  NSString* ns_home_dir = [NSString stringWithUTF8String:home_dir];
+  return [ns_home_dir stringByAppendingString:[s substringFromIndex:2]];
+}
+
+BOOL HasChromeTicket(TicketKind kind, const passwd* user) {
   // Don't use Objective-C 2 loop syntax, in case an installer runs on 10.4.
-  NSMutableArray* keystonePaths =
+  NSMutableArray* keystone_paths =
       [NSMutableArray arrayWithObject:kSystemKsadminPath];
-  if (kind == kUserTicket && geteuid() != 0)
-    [keystonePaths insertObject:kUserKsadminPath atIndex:0];
-  NSEnumerator* e = [keystonePaths objectEnumerator];
-  id ksPath;
-  while ((ksPath = [e nextObject])) {
+  if (kind == kUserTicket) {
+    [keystone_paths insertObject:AdjustHomedir(kUserKsadminPath, user->pw_dir)
+                        atIndex:0];
+  }
+  NSEnumerator* e = [keystone_paths objectEnumerator];
+  id ks_path;
+  while ((ks_path = [e nextObject])) {
     NSTask* task = nil;
     NSString* string = nil;
-    bool ksadminRanSuccessfully = false;
+    bool ksadmin_ran_successfully = false;
 
     @try {
       task = [[NSTask alloc] init];
-      [task setLaunchPath:ksPath];
+      [task setLaunchPath:ks_path];
 
       NSArray* arguments = @[
           kind == kUserTicket ? @"--user-store" : @"--system-store",
@@ -87,6 +122,12 @@ BOOL HasChromeTicket(TicketKind kind) {
           @"--productid",
           @"com.google.Chrome",
       ];
+      if (geteuid() == 0 && kind == kUserTicket) {
+        NSString* run_as = [NSString stringWithUTF8String:user->pw_name];
+        [task setLaunchPath:@"/usr/bin/sudo"];
+        arguments = [@[@"-u", run_as, ks_path]
+            arrayByAddingObjectsFromArray:arguments];
+      }
       [task setArguments:arguments];
 
       NSPipe* pipe = [NSPipe pipe];
@@ -99,28 +140,27 @@ BOOL HasChromeTicket(TicketKind kind) {
       NSData* data = [file readDataToEndOfFile];
       [task waitUntilExit];
 
-      ksadminRanSuccessfully = [task terminationStatus] == 0;
+      ksadmin_ran_successfully = [task terminationStatus] == 0;
       string = [[[NSString alloc] initWithData:data
                                     encoding:NSUTF8StringEncoding] autorelease];
     }
     @catch (id exception) {
-      // Most likely, ksPath didn't exist.
+      // Most likely, ks_path didn't exist.
     }
     [task release];
 
-    if (ksadminRanSuccessfully && [string length] > 0)
+    if (ksadmin_ran_successfully && [string length] > 0)
       return YES;
   }
 
   return NO;
 }
 
-// Returns the file permission mask for files created by gcapi.
-mode_t Permissions() {
-  return 0755;
-}
+// File permission mask for files created by gcapi.
+const mode_t kUserPermissions = 0755;
+const mode_t kAdminPermissions = 0775;
 
-BOOL CreatePathToFile(NSString* path) {
+BOOL CreatePathToFile(NSString* path, const passwd* user) {
   path = [path stringByDeletingLastPathComponent];
 
   // Default owner, group, permissions:
@@ -128,14 +168,21 @@ BOOL CreatePathToFile(NSString* path) {
   //   more information, see umask.
   // * The owner ID is set to the effective user ID of the process.
   // * The group ID is set to that of the parent directory.
-  // The default group ID is fine. Owner ID is fine too, since user directory
-  // paths won't be created if euid is 0. Do set permissions explicitly; for
-  // admin paths all admins can write, for user paths just the owner may.
-  NSMutableDictionary* attributes = [NSMutableDictionary
-      dictionaryWithObject:[NSNumber numberWithShort:Permissions()]
-                    forKey:NSFilePosixPermissions];
-  if (geteuid() == 0)
-    [attributes setObject:@"wheel" forKey:NSFileGroupOwnerAccountName];
+  // The default group ID is fine. Owner ID is fine if creating a system path,
+  // but when creating a user path explicitly set the owner in case euid is 0.
+  // Do set permissions explicitly; for admin paths all admins can write, for
+  // user paths just the owner may.
+  NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
+  if (user) {
+    [attributes setObject:[NSNumber numberWithShort:kUserPermissions]
+                   forKey:NSFilePosixPermissions];
+    [attributes setObject:[NSNumber numberWithInt:user->pw_uid]
+                   forKey:NSFileOwnerAccountID];
+  } else {
+    [attributes setObject:[NSNumber numberWithShort:kAdminPermissions]
+                   forKey:NSFilePosixPermissions];
+    [attributes setObject:@"admin" forKey:NSFileGroupOwnerAccountName];
+  }
 
   NSFileManager* manager = [NSFileManager defaultManager];
   return [manager createDirectoryAtPath:path
@@ -144,33 +191,42 @@ BOOL CreatePathToFile(NSString* path) {
                                   error:nil];
 }
 
-// Tries to write |data| at |system_path| or if that fails and geteuid() is not
-// 0 at |user_path|. Returns the path where it wrote, or nil on failure.
-NSString* WriteData(NSData* data, NSString* system_path, NSString* user_path) {
-  // Try system first.
-  if (CreatePathToFile(system_path) &&
-      [data writeToFile:system_path atomically:YES]) {
-    // files are created with group of parent dir (good), owner of euid (good).
-    chmod([system_path fileSystemRepresentation], Permissions() & ~0111);
-    return system_path;
-  }
-
-  // Failed, try user.
-  // -stringByExpandingTildeInPath returns root's home directory if this is run
-  // setuid root, and in that case the kSystemBrandPath path above should have
-  // worked anyway. So only try user if geteuid() isn't root.
-  if (geteuid() != 0) {
-    user_path = [user_path stringByExpandingTildeInPath];
-    if (CreatePathToFile(user_path) &&
-        [data writeToFile:user_path atomically:YES]) {
-      chmod([user_path fileSystemRepresentation], Permissions() & ~0111);
-      return user_path;
-    }
+// Tries to write |data| at |user_path|.
+// Returns the path where it wrote, or nil on failure.
+NSString* WriteUserData(NSData* data,
+                        NSString* user_path,
+                        const passwd* user) {
+  user_path = AdjustHomedir(user_path, user->pw_dir);
+  if (CreatePathToFile(user_path, user) &&
+      [data writeToFile:user_path atomically:YES]) {
+    chmod([user_path fileSystemRepresentation], kUserPermissions & ~0111);
+    chown([user_path fileSystemRepresentation], user->pw_uid, user->pw_gid);
+    return user_path;
   }
   return nil;
 }
 
-NSString* WriteBrandCode(const char* brand_code) {
+// Tries to write |data| at |system_path| or if that fails at |user_path|.
+// Returns the path where it wrote, or nil on failure.
+NSString* WriteData(NSData* data,
+                    NSString* system_path,
+                    NSString* user_path,
+                    const passwd* user) {
+  // Try system first.
+  if (CreatePathToFile(system_path, NULL) &&
+      [data writeToFile:system_path atomically:YES]) {
+    chmod([system_path fileSystemRepresentation], kAdminPermissions & ~0111);
+    // Make sure the file is owned by group admin.
+    if (group* group = getgrnam("admin"))
+      chown([system_path fileSystemRepresentation], 0, group->gr_gid);
+    return system_path;
+  }
+
+  // Failed, try user.
+  return WriteUserData(data, user_path, user);
+}
+
+NSString* WriteBrandCode(const char* brand_code, const passwd* user) {
   NSDictionary* brand_dict = @{
       kBrandKey: [NSString stringWithUTF8String:brand_code],
   };
@@ -179,15 +235,16 @@ NSString* WriteBrandCode(const char* brand_code) {
                     format:NSPropertyListBinaryFormat_v1_0
           errorDescription:nil];
 
-  return WriteData(contents, kSystemBrandPath, kUserBrandPath);
+  return WriteUserData(contents, kUserBrandPath, user);
 }
 
 BOOL WriteMasterPrefs(const char* master_prefs_contents,
-                      size_t master_prefs_contents_size) {
+                      size_t master_prefs_contents_size,
+                      const passwd* user) {
   NSData* contents = [NSData dataWithBytes:master_prefs_contents
                                     length:master_prefs_contents_size];
-  return
-      WriteData(contents, kSystemMasterPrefsPath, kUserMasterPrefsPath) != nil;
+  return WriteData(
+      contents, kSystemMasterPrefsPath, kUserMasterPrefsPath, user) != nil;
 }
 
 NSString* PathToFramework(NSString* app_path, NSDictionary* info_plist) {
@@ -214,27 +271,26 @@ bool isbrandchar(int c) {
 
 int GoogleChromeCompatibilityCheck(unsigned* reasons) {
   unsigned local_reasons = 0;
+  @autoreleasepool {
+    passwd* user = GetRealUserId();
 
-  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+    if (!IsOSXVersionSupported())
+      local_reasons |= GCCC_ERROR_OSNOTSUPPORTED;
 
-  if (!IsOSXVersionSupported())
-    local_reasons |= GCCC_ERROR_OSNOTSUPPORTED;
+    if (HasChromeTicket(kSystemTicket, NULL))
+      local_reasons |= GCCC_ERROR_ALREADYPRESENT;
 
-  if (HasChromeTicket(kSystemTicket))
-    local_reasons |= GCCC_ERROR_SYSTEMLEVELALREADYPRESENT;
+    if (HasChromeTicket(kUserTicket, user))
+      local_reasons |= GCCC_ERROR_ALREADYPRESENT;
 
-  if (geteuid() != 0 && HasChromeTicket(kUserTicket))
-    local_reasons |= GCCC_ERROR_USERLEVELALREADYPRESENT;
+    if (![[NSFileManager defaultManager] isWritableFileAtPath:@"/Applications"])
+      local_reasons |= GCCC_ERROR_ACCESSDENIED;
 
-  if (![[NSFileManager defaultManager] isWritableFileAtPath:@"/Applications"])
-    local_reasons |= GCCC_ERROR_ACCESSDENIED;
-
-  [pool drain];
-
-  // Done. Copy/return results.
+    if ([[NSFileManager defaultManager] fileExistsAtPath:kChromeInstallPath])
+      local_reasons |= GCCC_ERROR_ALREADYPRESENT;
+  }
   if (reasons != NULL)
     *reasons = local_reasons;
-
   return local_reasons == 0;
 }
 
@@ -246,6 +302,8 @@ int InstallGoogleChrome(const char* source_path,
     return 0;
 
   @autoreleasepool {
+    passwd* user = GetRealUserId();
+
     NSString* app_path = [NSString stringWithUTF8String:source_path];
     NSString* info_plist_path =
         [app_path stringByAppendingPathComponent:@"Contents/Info.plist"];
@@ -260,9 +318,13 @@ int InstallGoogleChrome(const char* source_path,
     }
 
     @try {
+      // install.sh tries to make the installed app admin-writable, but
+      // only when it's not run as root.
+      NSString* run_as = [NSString stringWithUTF8String:user->pw_name];
       NSTask* task = [[[NSTask alloc] init] autorelease];
-      [task setLaunchPath:install_script];
-      [task setArguments:@[app_path, kChromeInstallPath]];
+      [task setLaunchPath:@"/usr/bin/sudo"];
+      [task setArguments:
+          @[@"-u", run_as, install_script, app_path, kChromeInstallPath]];
       [task launch];
       [task waitUntilExit];
       if ([task terminationStatus] != 0) {
@@ -285,20 +347,21 @@ int InstallGoogleChrome(const char* source_path,
 
     NSString* brand_path = nil;
     if (valid_brand_code)
-      brand_path = WriteBrandCode(brand_code);
+      brand_path = WriteBrandCode(brand_code, user);
 
     // Write master prefs.
     if (master_prefs_contents)
-      WriteMasterPrefs(master_prefs_contents, master_prefs_contents_size);
+      WriteMasterPrefs(master_prefs_contents, master_prefs_contents_size, user);
 
-    // TODO Set default browser if requested. Will be tricky when running as
-    // root.
+    // TODO Set default browser if requested.
   }
   return 1;
 }
 
 int LaunchGoogleChrome() {
   @autoreleasepool {
+    // NSWorkspace launches processes as the current console owner,
+    // even when running with euid of 0.
     return [[NSWorkspace sharedWorkspace] launchApplication:kChromeInstallPath];
   }
 }
