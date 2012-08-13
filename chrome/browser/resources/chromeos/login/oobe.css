@@ -102,25 +102,29 @@ html[oobe=old] #inner-container {
 }
 
 html[oobe=new] #inner-container {
-  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
-                                      rgba(255,255,255,0.95));
   border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
-              0 4px 23px 5px rgba(0, 0, 0, 0.2),
-              0 2px 6px rgba(0, 0, 0, 0.15);
   overflow: hidden;
   padding: 0;
 }
 
-/* Account picker has no border and background. */
-html[oobe=new] .account-picker #inner-container {
-  background: none;
-  box-shadow: none;
+/* Screens that have a border and background. */
+html[oobe=new] #oobe.connect #inner-container,
+html[oobe=new] #oobe.eula #inner-container,
+html[oobe=new] #oobe.update #inner-container,
+html[oobe=new] #oobe.gaia-signin #inner-container,
+html[oobe=new] #oobe.enrollment #inner-container,
+html[oobe=new] #oobe.oauth-enrollment #inner-container,
+html[oobe=new] #oobe.user-image #inner-container {
+  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
+                                      rgba(255,255,255,0.95));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Only play this animation when 'down' class is removed. */
 html[oobe=new] #inner-container:not(.down) {
-  -webkit-transition: -webkit-transform 400ms ease;
+  -webkit-transition: -webkit-transform 200ms ease-in-out;
 }
 
 html[oobe=new] #inner-container.down {
@@ -287,9 +291,9 @@ html[oobe=new] .step {
 }
 
 html[oobe=new] .step.animated {
-  -webkit-transition: -webkit-transform 400ms ease,
-                      opacity 400ms ease,
-                      visibility 400ms ease;
+  -webkit-transition: -webkit-transform 200ms ease-in-out,
+                      opacity 200ms ease-in-out,
+                      visibility 200ms ease-in-out;
 }
 
 html[oobe=old][dir=ltr] .step {
@@ -367,6 +371,11 @@ html[oobe=new] #progress-dots {
   -webkit-box-pack: center;
   -webkit-margin-before: 15px;
   display: -webkit-box;
+}
+
+/* Hidden for the duration of initial transition. */
+html[oobe=new] #progress-dots.down {
+  visibility: hidden;
 }
 
 .progdot {
@@ -854,11 +863,11 @@ html[oobe=old] #update #update-screen-curtain {
 }
 
 html[oobe=new] #update #update-screen-curtain {
-  margin: 87px 45px;
+  margin: 45px 45px;
 }
 
 html[oobe=new] #update-screen-main {
-  margin: 85px 45px;
+  margin: 45px 45px;
   min-height: 114px;
   text-align: center;
 }
@@ -883,17 +892,10 @@ html[oobe=old] #update #update-cancel-hint {
 }
 
 html[oobe=new] #update #update-cancel-hint {
+  -webkit-margin-before: 15px;
+  -webkit-margin-start: 45px;
   color: rgb(170, 0, 0);
   position: absolute;
-  top: 80px;
-}
-
-html[oobe=new][dir=ltr] #update #update-cancel-hint {
-  left: 137px;
-}
-
-html[oobe=new][dir=rtl] #update #update-cancel-hint {
-  right: 137px;
 }
 
 #update #update-upper-label {

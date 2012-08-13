@@ -235,8 +235,14 @@ cr.define('cr.ui.login', function() {
         }
       } else {
         // First screen on OOBE launch.
-        $('inner-container').classList.remove('down');
-        newHeader.classList.remove('right');
+        var innerContainer = $('inner-container');
+        innerContainer.classList.remove('down');
+        innerContainer.addEventListener(
+            'webkitTransitionEnd', function f(e) {
+              innerContainer.removeEventListener('webkitTransitionEnd', f);
+              $('progress-dots').classList.remove('down');
+            });
+        newHeader.classList.remove('right');  // Old OOBE.
         // Report back first OOBE screen being painted.
         window.webkitRequestAnimationFrame(function() {
           chrome.send('loginVisible');
@@ -320,20 +326,22 @@ cr.define('cr.ui.login', function() {
     updateInnerContainerSize_: function(screen) {
       var height = screen.offsetHeight;
       var width = screen.offsetWidth;
-      for (var i = 0, screenGroup; screenGroup = SCREEN_GROUPS[i]; i++) {
-        if (screenGroup.indexOf(screen.id) != -1) {
-          // Set screen dimensions to maximum dimensions within this group.
-          for (var j = 0, screen2; screen2 = $(screenGroup[j]); j++) {
-            height = Math.max(height, screen2.offsetHeight);
-            width = Math.max(width, screen2.offsetWidth);
+      if (this.isNewOobe()) {
+        for (var i = 0, screenGroup; screenGroup = SCREEN_GROUPS[i]; i++) {
+          if (screenGroup.indexOf(screen.id) != -1) {
+            // Set screen dimensions to maximum dimensions within this group.
+            for (var j = 0, screen2; screen2 = $(screenGroup[j]); j++) {
+              height = Math.max(height, screen2.offsetHeight);
+              width = Math.max(width, screen2.offsetWidth);
+            }
+            break;
           }
-          break;
         }
       }
       $('inner-container').style.height = height + 'px';
       if (this.isNewOobe()) {
         $('inner-container').style.width = width + 'px';
-        // This requires |screen| to have |box-sizing: border-box|.
+        // This requires |screen| to have 'box-sizing: border-box'.
         screen.style.width = width + 'px';
         screen.style.height = height + 'px';
       }
