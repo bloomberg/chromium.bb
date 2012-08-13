@@ -2269,15 +2269,12 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 
 	surface->configure = pointer_cursor_surface_configure;
 	surface->private = seat;
-	empty_region(&surface->input);
-
 	seat->sprite = surface;
 	seat->hotspot_x = x;
 	seat->hotspot_y = y;
 
-	weston_surface_set_position(surface,
-				    wl_fixed_to_int(seat->seat.pointer->x) - x,
-				    wl_fixed_to_int(seat->seat.pointer->y) - y);
+	if (surface->buffer)
+		pointer_cursor_surface_configure(surface, 0, 0);
 }
 
 static const struct wl_pointer_interface pointer_interface = {
