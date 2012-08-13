@@ -44,6 +44,7 @@ struct image {
 	char *filename;
 	cairo_surface_t *image;
 	int fullscreen;
+	int *image_counter;
 };
 
 static void
@@ -112,8 +113,25 @@ fullscreen_handler(struct window *window, void *data)
 	window_set_fullscreen(window, image->fullscreen);
 }
 
+static void
+close_handler(struct window *window, void *data)
+{
+	struct image *image = data;
+
+	*image->image_counter -= 1;
+
+	if (*image->image_counter == 0)
+		display_exit(image->display);
+
+	widget_destroy(image->widget);
+	window_destroy(image->window);
+
+	free(image);
+}
+
 static struct image *
-image_create(struct display *display, const char *filename)
+image_create(struct display *display, const char *filename,
+	     int *image_counter)
 {
 	struct image *image;
 	char *b, *copy, title[512];;
@@ -140,12 +158,15 @@ image_create(struct display *display, const char *filename)
 	image->widget = frame_create(image->window, image);
 	window_set_title(image->window, title);
 	image->display = display;
+	image->image_counter = image_counter;
+	*image_counter += 1;
 
 	window_set_user_data(image->window, image);
 	widget_set_redraw_handler(image->widget, redraw_handler);
 	window_set_keyboard_focus_handler(image->window,
 					  keyboard_focus_handler);
 	window_set_fullscreen_handler(image->window, fullscreen_handler);
+	window_set_close_handler(image->window, close_handler);
 
 	widget_schedule_resize(image->widget, 500, 400);
 
@@ -157,6 +178,7 @@ main(int argc, char *argv[])
 {
 	struct display *d;
 	int i;
+	int image_counter = 0;
 
 	d = display_create(argc, argv);
 	if (d == NULL) {
@@ -165,9 +187,10 @@ main(int argc, char *argv[])
 	}
 
 	for (i = 1; i < argc; i++)
-		image_create (d, argv[i]);
+		image_create(d, argv[i], &image_counter);
 
-	display_run(d);
+	if (image_counter > 0)
+		display_run(d);
 
 	return 0;
 }
