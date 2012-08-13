@@ -12,7 +12,8 @@ MockRendererPpapiHost::MockRendererPpapiHost(RenderView* render_view,
     : sink_(),
       ppapi_host_(&sink_, NULL, ppapi::PpapiPermissions()),
       render_view_(render_view),
-      pp_instance_(instance) {
+      pp_instance_(instance),
+      has_user_gesture_(false) {
 }
 
 MockRendererPpapiHost::~MockRendererPpapiHost() {

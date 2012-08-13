@@ -33,6 +33,7 @@ class MockRendererPpapiHost : public RendererPpapiHost {
   ppapi::proxy::ResourceMessageTestSink& sink() { return sink_; }
   PP_Instance pp_instance() const { return pp_instance_; }
 
+  // Sets whether there is currently a user gesture. Defaults to false.
   void set_has_user_gesture(bool gesture) { has_user_gesture_ = gesture; }
 
   // RendererPpapiHost.

@@ -9,7 +9,6 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
 #include "content/renderer/pepper/pepper_file_chooser_host.h"
-//#include "content/renderer/pepper/pepper_instance_state_accessor.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/test_content_client.h"
 #include "ppapi/c/pp_errors.h"
@@ -72,12 +71,14 @@ std::string FilePathToUTF8(const FilePath::StringType& path) {
 
 }  // namespace
 
-/* TODO(brettw) fix & re-enable this test.
 TEST_F(PepperFileChooserHostTest, Show) {
   PP_Resource pp_resource = 123;
 
   MockRendererPpapiHost host(view_, pp_instance());
   PepperFileChooserHost chooser(&host, pp_instance(), pp_resource);
+
+  // Say there's a user gesture.
+  host.set_has_user_gesture(true);
 
   std::vector<std::string> accept;
   accept.push_back("text/plain");
@@ -134,7 +135,6 @@ TEST_F(PepperFileChooserHostTest, Show) {
   EXPECT_EQ(FilePathToUTF8(selected_info.display_name),
             chooser_results[0].name);
 }
-*/
 
 TEST_F(PepperFileChooserHostTest, NoUserGesture) {
   PP_Resource pp_resource = 123;
