@@ -9,18 +9,6 @@
     <p>
       ©2012 Google
     </p>
-    <script>
-      window.bootstrap = {
-        {{?is_apps}}
-        api_names: {{*api_list.apps.chrome}}.concat(
-            {{*api_list.apps.experimental}}),
-        {{:is_apps}}
-        api_names: {{*api_list.extensions.chrome}}.concat(
-            {{*api_list.extensions.experimental}}),
-        {{/is_apps}}
-        branchInfo: {{*branchInfo}}
-      };
-    </script>
     <script src="{{static}}/js/branch.js" type="text/javascript"></script>
     <script src="{{static}}/js/sidebar.js" type="text/javascript"></script>
     <script src="{{static}}/js/prettify.js" type="text/javascript"></script>

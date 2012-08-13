@@ -40,7 +40,7 @@ class MemcacheFileSystem(FileSystem):
         uncached.append(path)
         continue
       data, version = cached_result
-      if self.Stat(path).version > version:
+      if self.Stat(path).version != version:
         self._memcache.Delete(path, memcache.MEMCACHE_FILE_SYSTEM_READ)
         uncached.append(path)
         continue

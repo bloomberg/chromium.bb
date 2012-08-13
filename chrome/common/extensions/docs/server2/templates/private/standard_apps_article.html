@@ -11,12 +11,12 @@
       <div id="gc-pagecontent">
         <h1 class="page_title">{{article.title}}</h1>
         {{?article.toc}}
-        {{+partials.table_of_contents toc:article.toc}}
+        {{+partials.table_of_contents toc:article.toc title:apps_title}}
         {{/article.toc}}
 {{- This may contain <pre> tags so it is not indented -}}
 {{+article.intro is_apps:true}}
       </div>
     </div>
   </body>
-  {{+partials.footer is_apps:true}}
+  {{+partials.apps_footer}}
 </html>

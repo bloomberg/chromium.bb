@@ -35,7 +35,7 @@ class DictGeneratorTest(unittest.TestCase):
   def _GenerateTest(self, filename):
     expected_json = json.loads(self._ReadLocalFile('expected_' + filename))
     gen = HandlebarDictGenerator(self._LoadJSON(filename))
-    self.assertEquals(expected_json, gen.Generate([]))
+    self.assertEquals(expected_json, gen.Generate())
 
   def testGenerate(self):
     self._GenerateTest('test_file.json')
@@ -57,7 +57,7 @@ class DictGeneratorTest(unittest.TestCase):
     self.assertEquals('234,567', _FormatValue(234567))
 
   def testFormatDescription(self):
-    dict_ = HandlebarDictGenerator(self._LoadJSON('ref_test.json')).Generate([])
+    dict_ = HandlebarDictGenerator(self._LoadJSON('ref_test.json')).Generate()
     self.assertEquals(_MakeLink('#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
     self.assertEquals(

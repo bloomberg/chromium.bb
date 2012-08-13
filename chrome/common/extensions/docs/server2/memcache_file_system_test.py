@@ -36,7 +36,7 @@ class LocalFileSystemTest(unittest.TestCase):
                      sorted(self._file_system.ReadSingle('list/')))
     expected.remove('file0.html')
     self._memcache.Set('list/',
-                       (expected, self._file_system.Stat('list/')),
+                       (expected, self._file_system.Stat('list/').version),
                        memcache.MEMCACHE_FILE_SYSTEM_READ)
     self.assertEqual(expected,
                      sorted(self._file_system.ReadSingle('list/')))

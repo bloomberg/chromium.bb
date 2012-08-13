@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import os
 from StringIO import StringIO
 import unittest
@@ -10,8 +11,12 @@ import unittest
 import appengine_memcache as memcache
 import handler
 from handler import Handler
+import url_constants
 
 KNOWN_FAILURES = [
+  # Apps samples fails because it requires fetching data from github.com.
+  # This should be tested though: http://crbug.com/141910.
+  'apps/samples.html',
 ]
 
 class _MockResponse(object):
@@ -29,11 +34,14 @@ class _MockRequest(object):
 
 class IntegrationTest(unittest.TestCase):
   def testAll(self):
+    logging.getLogger().setLevel(logging.ERROR)
     base_path = os.path.join('templates', 'public')
     for path, dirs, files in os.walk(base_path):
       for name in files:
         filename = os.path.join(path, name)
-        if name in KNOWN_FAILURES or '.' in path or name.startswith('.'):
+        if (filename.split('/', 2)[-1] in KNOWN_FAILURES or
+            '.' in path or
+            name.startswith('.')):
           continue
         request = _MockRequest(filename.split('/', 2)[-1])
         response = _MockResponse()
@@ -61,7 +69,7 @@ class IntegrationTest(unittest.TestCase):
   def testWarmupRequest(self):
     for branch in ['dev', 'trunk', 'beta', 'stable']:
       handler.BRANCH_UTILITY_MEMCACHE.Set(
-          branch + '.' +  handler.OMAHA_PROXY_URL,
+          branch + '.' +  url_constants.OMAHA_PROXY_URL,
           'local',
           memcache.MEMCACHE_BRANCH_UTILITY)
     request = _MockRequest('_ah/warmup')
@@ -70,7 +78,9 @@ class IntegrationTest(unittest.TestCase):
     self.assertEqual(200, response.status)
     # Test that the pages were rendered by checking the size of the output.
     # In python 2.6 there is no 'assertGreater' method.
-    self.assertTrue(len(response.out.getvalue()) > 500000)
+    value = response.out.getvalue()
+    self.assertTrue(len(value) > 100000,
+                    msg='Response is too small, probably empty: %s' % value)
 
 if __name__ == '__main__':
   unittest.main()

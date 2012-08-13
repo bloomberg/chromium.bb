@@ -6,6 +6,7 @@ from appengine_wrappers import memcache
 
 MEMCACHE_FILE_SYSTEM_READ = 'MemcacheFileSystem.Get'
 MEMCACHE_FILE_SYSTEM_STAT = 'MemcacheFileSystem.Stat'
+MEMCACHE_GITHUB_STAT = 'MemcacheGithub.Stat'
 MEMCACHE_BRANCH_UTILITY = 'BranchUtility'
 
 class AppEngineMemcache(object):

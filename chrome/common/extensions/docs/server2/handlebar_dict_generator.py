@@ -64,16 +64,15 @@ class HandlebarDictGenerator(object):
           { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
     return ''.join(formatted_description)
 
-  def Generate(self, samples):
+  def Generate(self):
     if self._namespace is None:
-      return { 'samples': samples }
+      return {}
     return {
       'name': self._namespace.name,
       'types': map(self._GenerateType, self._namespace.types.values()),
       'functions': self._GenerateFunctions(self._namespace.functions),
       'events': map(self._GenerateEvent, self._namespace.events.values()),
-      'properties': self._GenerateProperties(self._namespace.properties),
-      'samples': samples,
+      'properties': self._GenerateProperties(self._namespace.properties)
     }
 
   def _GenerateType(self, type_):

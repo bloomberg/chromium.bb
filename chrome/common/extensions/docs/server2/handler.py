@@ -12,11 +12,13 @@ from appengine_wrappers import urlfetch
 
 from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
+from appengine_blobstore import AppEngineBlobstore
 from appengine_memcache import AppEngineMemcache
 from appengine_url_fetcher import AppEngineUrlFetcher
 from branch_utility import BranchUtility
 from example_zipper import ExampleZipper
 from file_system_cache import FileSystemCache
+from github_file_system import GithubFileSystem
 from intro_data_source import IntroDataSource
 from local_file_system import LocalFileSystem
 from memcache_file_system import MemcacheFileSystem
@@ -24,23 +26,24 @@ from samples_data_source import SamplesDataSource
 from server_instance import ServerInstance
 from subversion_file_system import SubversionFileSystem
 from template_data_source import TemplateDataSource
-from appengine_url_fetcher import AppEngineUrlFetcher
+import url_constants
 
 # The branch that the server will default to when no branch is specified in the
 # URL. This is necessary because it is not possible to pass flags to the script
 # handler.
 DEFAULT_BRANCH = 'local'
 
-SVN_URL = 'http://src.chromium.org/chrome'
-TRUNK_URL = SVN_URL + '/trunk'
-BRANCH_URL = SVN_URL + '/branches'
-
-OMAHA_PROXY_URL = 'http://omahaproxy.appspot.com/json'
 BRANCH_UTILITY_MEMCACHE = AppEngineMemcache('branch_utility')
-BRANCH_UTILITY = BranchUtility(OMAHA_PROXY_URL,
+BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,
                                DEFAULT_BRANCH,
                                AppEngineUrlFetcher(''),
                                BRANCH_UTILITY_MEMCACHE)
+
+GITHUB_FILE_SYSTEM = GithubFileSystem(
+    AppEngineUrlFetcher(url_constants.GITHUB_URL),
+    AppEngineMemcache('github'),
+    AppEngineBlobstore())
+GITHUB_CACHE_BUILDER = FileSystemCache.Builder(GITHUB_FILE_SYSTEM)
 
 STATIC_DIR_PREFIX = 'docs/server2'
 EXTENSIONS_PATH = 'chrome/common/extensions'
@@ -76,7 +79,9 @@ def _GetInstanceForBranch(branch, local_path):
                                       [INTRO_PATH, ARTICLE_PATH])
   samples_data_source_factory = SamplesDataSource.Factory(branch,
                                                           file_system,
+                                                          GITHUB_FILE_SYSTEM,
                                                           cache_builder,
+                                                          GITHUB_CACHE_BUILDER,
                                                           EXAMPLES_PATH)
   api_data_source_factory = APIDataSource.Factory(cache_builder,
                                                   API_PATH,
@@ -102,8 +107,8 @@ def _GetInstanceForBranch(branch, local_path):
 
 def _GetURLFromBranch(branch):
     if branch == 'trunk':
-      return TRUNK_URL + '/src'
-    return BRANCH_URL + '/' + branch + '/src'
+      return url_constants.SVN_TRUNK_URL + '/src'
+    return url_constants.SVN_BRANCH_URL + '/' + branch + '/src'
 
 class Handler(webapp.RequestHandler):
   def __init__(self, request, response, local_path=EXTENSIONS_PATH):
@@ -132,6 +137,10 @@ class Handler(webapp.RequestHandler):
       self._NavigateToPath('dev/extensions/samples.html')
       self._NavigateToPath('beta/extensions/samples.html')
       self._NavigateToPath('stable/extensions/samples.html')
+      # Only do this request if we are on the deployed server.
+      # Bug: http://crbug.com/141910
+      if DEFAULT_BRANCH != 'local':
+        self._NavigateToPath('apps/samples.html')
       return
 
     # Redirect paths like "directory" to "directory/". This is so relative file

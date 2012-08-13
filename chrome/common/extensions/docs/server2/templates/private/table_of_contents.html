@@ -20,7 +20,7 @@
           {{?api.properties}}<li>{{+partials.toc_properties}}</li>{{/}}
           {{?api.functions}}<li>{{+partials.toc_functions}}</li>{{/}}
           {{?api.events}}<li>{{+partials.toc_events}}</li>{{/}}
-          {{?api.samples}}<li>{{+partials.toc_samples}}</li>{{/}}
+          {{?samples_list}}<li>{{+partials.toc_samples title:title}}</li>{{/}}
         {{/api}}
       </ol>
     </li>

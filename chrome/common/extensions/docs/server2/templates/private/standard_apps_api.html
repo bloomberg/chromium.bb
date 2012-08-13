@@ -11,22 +11,16 @@
       {{+partials.apps_sidenav}}
       <div id="gc-pagecontent">
         <h1 class="page_title">chrome.{{api.name}}</h1>
-        {{?api.permissions.dev}}
-        <p class="warning">
-          <em>Warning:</em> This API is still under development. It is only
-          available for Chrome users on the
-          <span>
-            <strong>dev</strong>
-              <a href="http://www.chromium.org/getting-involved/dev-channel">early
-              release channel</a>.</span>
-        </p>
-        {{/api.permissions.dev}}
-        {{+partials.table_of_contents toc:intro.toc}}
+        {{?api.permissions.dev}}{{+partials.warning}}{{/}}
+        {{+partials.table_of_contents toc:intro.toc
+                                      samples_list:api.samples.apps
+                                      title:apps_title}}
 {{- This is unindented because it contains <pre> tags -}}
 {{+intro.intro is_apps:true}}
-        {{+partials.api_reference}}
+        {{+partials.api_reference samples_list:api.samples.apps
+                                  title:apps_title}}
       </div>
     </div>
   </body>
-  {{+partials.footer is_apps:true}}
+  {{+partials.apps_footer}}
 </html>

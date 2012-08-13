@@ -34,9 +34,15 @@ class APIDataSourceTest(unittest.TestCase):
     # Take the dict out of the list.
     expected = json.loads(self._ReadLocalFile('expected_test_file.json'))
     expected['permissions'] = None
-    self.assertEqual(expected, data_source['test_file'])
-    self.assertEqual(expected, data_source['testFile'])
-    self.assertEqual(expected, data_source['testFile.html'])
+    test1 = data_source['test_file']
+    test1.pop('samples')
+    self.assertEqual(expected, test1)
+    test2 = data_source['testFile']
+    test2.pop('samples')
+    self.assertEqual(expected, test2)
+    test3 = data_source['testFile.html']
+    test3.pop('samples')
+    self.assertEqual(expected, test3)
     self.assertRaises(FileNotFoundError, data_source.get, 'junk')
 
 if __name__ == '__main__':
