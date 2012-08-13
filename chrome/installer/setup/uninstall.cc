@@ -318,25 +318,25 @@ bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
   return ret;
 }
 
-// Deletes empty parent & empty grandparent dir of given path.
-bool DeleteEmptyParentDir(const FilePath& path) {
-  bool ret = true;
-  FilePath parent_dir = path.DirName();
-  if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir)) {
-    if (!file_util::Delete(parent_dir, true)) {
-      ret = false;
-      LOG(ERROR) << "Failed to delete folder: " << parent_dir.value();
-    }
+enum DeleteResult {
+  DELETE_SUCCEEDED,
+  DELETE_NOT_EMPTY,
+  DELETE_FAILED,
+  DELETE_REQUIRES_REBOOT,
+};
 
-    parent_dir = parent_dir.DirName();
-    if (!parent_dir.empty() && file_util::IsDirectoryEmpty(parent_dir)) {
-      if (!file_util::Delete(parent_dir, true)) {
-        ret = false;
-        LOG(ERROR) << "Failed to delete folder: " << parent_dir.value();
-      }
-    }
-  }
-  return ret;
+// Deletes the given directory if it is empty. Returns DELETE_SUCCEEDED if the
+// directory is deleted, DELETE_NOT_EMPTY if it is not empty, and DELETE_FAILED
+// otherwise.
+DeleteResult DeleteEmptyDir(const FilePath& path) {
+  if (!file_util::IsDirectoryEmpty(path))
+    return DELETE_NOT_EMPTY;
+
+  if (file_util::Delete(path, true))
+    return DELETE_SUCCEEDED;
+
+  LOG(ERROR) << "Failed to delete folder: " << path.value();
+  return DELETE_FAILED;
 }
 
 void GetLocalStateFolders(const Product& product,
@@ -367,12 +367,6 @@ FilePath BackupLocalStateFile(
   return backup;
 }
 
-enum DeleteResult {
-  DELETE_SUCCEEDED,
-  DELETE_FAILED,
-  DELETE_REQUIRES_REBOOT,
-};
-
 // Deletes all user data directories for a product.
 DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
                               bool schedule_on_failure) {
@@ -398,7 +392,13 @@ DeleteResult DeleteLocalState(const std::vector<FilePath>& local_state_folders,
   if (result == DELETE_REQUIRES_REBOOT) {
     ScheduleParentAndGrandparentForDeletion(local_state_folders[0]);
   } else {
-    DeleteEmptyParentDir(local_state_folders[0]);
+    const FilePath user_data_dir(local_state_folders[0].DirName());
+    if (!user_data_dir.empty() &&
+        DeleteEmptyDir(user_data_dir) == DELETE_SUCCEEDED) {
+      const FilePath product_dir(user_data_dir.DirName());
+      if (!product_dir.empty())
+        DeleteEmptyDir(product_dir);
+    }
   }
 
   return result;
@@ -428,6 +428,27 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
   return ret;
 }
 
+DeleteResult DeleteApplicationProductAndVendorDirectories(
+    const FilePath& application_directory) {
+  DeleteResult result(DeleteEmptyDir(application_directory));
+  if (result == DELETE_SUCCEEDED) {
+    // Now check and delete if the parent directories are empty
+    // For example Google\Chrome or Chromium
+    const FilePath product_directory(application_directory.DirName());
+    if (!product_directory.empty()) {
+        result = DeleteEmptyDir(product_directory);
+        if (result == DELETE_SUCCEEDED) {
+          const FilePath vendor_directory(product_directory.DirName());
+          if (!vendor_directory.empty())
+            result = DeleteEmptyDir(vendor_directory);
+        }
+    }
+  }
+  if (result == DELETE_NOT_EMPTY)
+    result = DELETE_SUCCEEDED;
+  return result;
+}
+
 DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
                                           const Version& installed_version) {
   const FilePath& target_path = installer_state.target_path();
@@ -446,7 +467,7 @@ DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
     result = DELETE_FAILED;
     LOG(ERROR) << "Failed to delete path: " << app_host_exe.value();
   } else {
-    DeleteEmptyParentDir(target_path);
+    result = DeleteApplicationProductAndVendorDirectories(target_path);
   }
 
   return result;
@@ -475,7 +496,7 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
     if (to_delete.BaseName().value() == installer::kChromeAppHostExe)
       continue;
 
-    VLOG(1) << "Deleting install path " << target_path.value();
+    VLOG(1) << "Deleting install path " << to_delete.value();
     if (!file_util::Delete(to_delete, true)) {
       LOG(ERROR) << "Failed to delete path (1st try): " << to_delete.value();
       if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
@@ -504,14 +525,15 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
   }
 
   if (result == DELETE_REQUIRES_REBOOT) {
+    // Delete the Application directory at reboot if empty.
+    ScheduleFileSystemEntityForDeletion(target_path.value().c_str());
+
     // If we need a reboot to continue, schedule the parent directories for
     // deletion unconditionally. If they are not empty, the session manager
     // will not delete them on reboot.
     ScheduleParentAndGrandparentForDeletion(target_path);
   } else {
-    // Now check and delete if the parent directories are empty
-    // For example Google\Chrome or Chromium
-    DeleteEmptyParentDir(target_path);
+    result = DeleteApplicationProductAndVendorDirectories(target_path);
   }
   return result;
 }
