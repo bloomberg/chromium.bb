@@ -240,12 +240,14 @@ OutputConfigurator::OutputConfigurator(bool is_extended_display_enabled)
   // Note that this can be removed once the legacy powerd support is removed.
   chromeos::DBusThreadManager* manager = chromeos::DBusThreadManager::Get();
   dbus::Bus* bus = manager->GetSystemBus();
-  dbus::ExportedObject* remote_object = bus->GetExportedObject(
-      dbus::ObjectPath(power_manager::kPowerManagerServicePath));
-  dbus::Signal signal(power_manager::kPowerManagerInterface,
-                      power_manager::kUseNewMonitorConfigSignal);
-  CHECK(signal.raw_message() != NULL);
-  remote_object->SendSignal(&signal);
+  if (bus) {
+    dbus::ExportedObject* remote_object = bus->GetExportedObject(
+        dbus::ObjectPath(power_manager::kPowerManagerServicePath));
+    dbus::Signal signal(power_manager::kPowerManagerInterface,
+                        power_manager::kUseNewMonitorConfigSignal);
+    CHECK(signal.raw_message() != NULL);
+    remote_object->SendSignal(&signal);
+  }
 
   // Cache the initial output state.
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
@@ -843,18 +845,20 @@ void OutputConfigurator::CheckIsProjectingAndNotify() {
   bool is_projecting = has_internal_output && (connected_output_count > 1);
   chromeos::DBusThreadManager* manager = chromeos::DBusThreadManager::Get();
   dbus::Bus* bus = manager->GetSystemBus();
-  dbus::ObjectProxy* power_manager_proxy = bus->GetObjectProxy(
-      power_manager::kPowerManagerServiceName,
-      dbus::ObjectPath(power_manager::kPowerManagerServicePath));
-  dbus::MethodCall method_call(
-      power_manager::kPowerManagerInterface,
-      power_manager::kSetIsProjectingMethod);
-  dbus::MessageWriter writer(&method_call);
-  writer.AppendBool(is_projecting);
-  power_manager_proxy->CallMethod(
-      &method_call,
-      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      dbus::ObjectProxy::EmptyResponseCallback());
+  if (bus) {
+    dbus::ObjectProxy* power_manager_proxy = bus->GetObjectProxy(
+        power_manager::kPowerManagerServiceName,
+        dbus::ObjectPath(power_manager::kPowerManagerServicePath));
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kSetIsProjectingMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(is_projecting);
+    power_manager_proxy->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {

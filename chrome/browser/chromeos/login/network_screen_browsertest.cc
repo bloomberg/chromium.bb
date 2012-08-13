@@ -52,6 +52,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() {
     MockDBusThreadManager* mock_dbus_thread_manager =
         new MockDBusThreadManager;
+    EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
+        .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
     cros_mock_->InitStatusAreaMocks();
     mock_network_library_ = cros_mock_->mock_network_library();

@@ -317,6 +317,8 @@ TEST_F(ParallelAuthenticatorTest, ResolveOwnerNeededFailedMount) {
 
   MockDBusThreadManager* mock_dbus_thread_manager =
       new MockDBusThreadManager;
+  EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
+      .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
   DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
   EXPECT_CALL(*mock_dbus_thread_manager->mock_cryptohome_client(), Unmount(_))
       .WillOnce(DoAll(SetArgPointee<0>(true), Return(true)));

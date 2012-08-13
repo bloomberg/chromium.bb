@@ -25,6 +25,7 @@ using ::testing::_;
 using ::testing::A;
 using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::Return;
 using ::testing::WithArg;
 
 namespace em = enterprise_management;
@@ -46,6 +47,8 @@ class SignedSettingsHelperTest : public testing::Test,
 
   virtual void SetUp() {
     SignedSettingsHelper::Get()->set_test_delegate(this);
+    EXPECT_CALL(*mock_dbus_thread_manager_, GetSystemBus())
+        .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
 
     fake_policy_data_ = BuildPolicyData();

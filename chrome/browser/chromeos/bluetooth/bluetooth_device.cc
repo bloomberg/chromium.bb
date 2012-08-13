@@ -249,9 +249,13 @@ void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,
                                 agent_path_basename);
 
     dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
-    agent_.reset(BluetoothAgentServiceProvider::Create(system_bus,
-                                                       agent_path,
-                                                       this));
+    if (system_bus) {
+      agent_.reset(BluetoothAgentServiceProvider::Create(system_bus,
+                                                         agent_path,
+                                                         this));
+    } else {
+      agent_.reset(NULL);
+    }
 
     DVLOG(1) << "Pairing: " << address_;
     DBusThreadManager::Get()->GetBluetoothAdapterClient()->

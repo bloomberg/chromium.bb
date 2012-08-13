@@ -118,6 +118,8 @@ class SignedSettingsTest : public testing::Test {
 
   virtual void SetUp() {
     file_thread_.Start();
+    EXPECT_CALL(*mock_dbus_thread_manager_, GetSystemBus())
+        .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
   }
 

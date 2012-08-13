@@ -105,8 +105,8 @@ void CrosDBusService::Initialize() {
     LOG(WARNING) << "CrosDBusService was already initialized";
     return;
   }
-  if (base::chromeos::IsRunningOnChromeOS()) {
-    dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
+  dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
+  if (base::chromeos::IsRunningOnChromeOS() && bus) {
     CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
     service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
     g_cros_dbus_service = service;
