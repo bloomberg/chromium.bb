@@ -387,11 +387,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                             bool return_tightest,
                             bool for_event_handling);
 
-  // Implementation of RemoveChild(). If |child| is being removed as the result
-  // of an add, |new_parent| is the new parent |child| is going to be parented
-  // to.
-  void RemoveChildImpl(Window* child, Window* new_parent);
-
   // Called when this window's parent has changed.
   void OnParentChanged();
 

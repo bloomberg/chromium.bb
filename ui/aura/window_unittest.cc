@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
@@ -2460,54 +2459,6 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
   // delegate is NULL.
   EXPECT_FALSE(delegate.bounds_changed());
   EXPECT_NE("0,0 100x100", window->bounds().ToString());
-}
-
-namespace {
-
-// Used by AddChildNotifications to track notification counts.
-class AddChildNotificationsObserver : public WindowObserver {
- public:
-  AddChildNotificationsObserver() : added_count_(0), removed_count_(0) {}
-
-  std::string CountStringAndReset() {
-    std::string result = base::IntToString(added_count_) + " " +
-        base::IntToString(removed_count_);
-    added_count_ = removed_count_ = 0;
-    return result;
-  }
-
-  // WindowObserver overrides:
-  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
-    added_count_++;
-  }
-  virtual void OnWindowRemovingFromRootWindow(Window* window) OVERRIDE {
-    removed_count_++;
-  }
-
- private:
-  int added_count_;
-  int removed_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddChildNotificationsObserver);
-};
-
-}  // namespace
-
-// Assertions around when root window notifications are sent.
-TEST_F(WindowTest, AddChildNotifications) {
-  AddChildNotificationsObserver observer;
-  scoped_ptr<Window> w1(CreateTestWindowWithId(1, NULL));
-  scoped_ptr<Window> w2(CreateTestWindowWithId(1, NULL));
-  w2->AddObserver(&observer);
-  w2->Focus();
-  EXPECT_TRUE(w2->HasFocus());
-
-  // Move |w2| to be a child of |w1|.
-  w1->AddChild(w2.get());
-  // Sine we moved in the same root, observer shouldn't be notified.
-  EXPECT_EQ("0 0", observer.CountStringAndReset());
-  // |w2| should still have focus after moving.
-  EXPECT_TRUE(w2->HasFocus());
 }
 
 }  // namespace test
