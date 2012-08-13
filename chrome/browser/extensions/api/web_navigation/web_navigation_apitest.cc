@@ -424,11 +424,10 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, SimpleLoad) {
       RunExtensionSubtest("webnavigation", "test_simpleLoad.html")) << message_;
 }
 
-//TODO(jochen): Flakily failing after http://crrev.com/150796.
-//IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Failures) {
-//  ASSERT_TRUE(
-//      RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
-//}
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Failures) {
+  ASSERT_TRUE(
+      RunExtensionSubtest("webnavigation", "test_failures.html")) << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
   ASSERT_TRUE(
