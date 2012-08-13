@@ -122,35 +122,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // executed, false otherwise.
   bool RunCommand(int browser_command) const WARN_UNUSED_RESULT;
 
-  // Returns whether the Bookmark bar is visible and whether we are animating
-  // it into position. Also returns whether it is currently detached from the
-  // location bar, as in the NTP.
-  // Returns false on failure.
-  bool GetBookmarkBarVisibility(bool* is_visible,
-                                bool* is_animating,
-                                bool* is_detached) WARN_UNUSED_RESULT;
-
-  // Get the bookmarks as a JSON string and put it in |json_string|.
-  // Return true on success.
-  bool GetBookmarksAsJSON(std::string* json_string) WARN_UNUSED_RESULT;
-
-  // Wait for the bookmarks to load.  Called implicitly by GetBookmarksAsJSON().
-  bool WaitForBookmarkModelToLoad() WARN_UNUSED_RESULT;
-
-  // Editing of the bookmark model.  Bookmarks are referenced by id.
-  // Bookmark or group (folder) creation:
-  bool AddBookmarkGroup(int64 parent_id, int index,
-                        std::wstring& title) WARN_UNUSED_RESULT;
-  bool AddBookmarkURL(int64 parent_id, int index,
-                      std::wstring& title, const GURL& url) WARN_UNUSED_RESULT;
-  // Bookmark editing:
-  bool ReparentBookmark(int64 id, int64 new_parent_id,
-                        int index) WARN_UNUSED_RESULT;
-  bool SetBookmarkTitle(int64 id, const std::wstring& title) WARN_UNUSED_RESULT;
-  bool SetBookmarkURL(int64 id, const GURL& url) WARN_UNUSED_RESULT;
-  // Finally, bookmark deletion:
-  bool RemoveBookmark(int64 id) WARN_UNUSED_RESULT;
-
   // Simulates a termination the browser session (as if the user logged off the
   // mahine).
   bool TerminateSession() WARN_UNUSED_RESULT;

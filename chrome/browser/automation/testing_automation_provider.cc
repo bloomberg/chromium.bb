@@ -409,24 +409,8 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_BringBrowserToFront, BringBrowserToFront)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindWindowVisibility,
                         GetFindWindowVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_BookmarkBarVisibility,
-                        GetBookmarkBarVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetBookmarksAsJSON,
-                        GetBookmarksAsJSON)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForBookmarkModelToLoad,
                                     WaitForBookmarkModelToLoad)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AddBookmarkGroup,
-                        AddBookmarkGroup)
-    IPC_MESSAGE_HANDLER(AutomationMsg_AddBookmarkURL,
-                        AddBookmarkURL)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ReparentBookmark,
-                        ReparentBookmark)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetBookmarkTitle,
-                        SetBookmarkTitle)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetBookmarkURL,
-                        SetBookmarkURL)
-    IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBookmark,
-                        RemoveBookmark)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_WaitForBrowserWindowCountToBecome,
         WaitForBrowserWindowCountToBecome)
@@ -1270,44 +1254,53 @@ void TestingAutomationProvider::GetFindWindowVisibility(int handle,
 
 // Bookmark bar visibility is based on the pref (e.g. is it in the toolbar).
 // Presence in the NTP is signalled in |detached|.
-void TestingAutomationProvider::GetBookmarkBarVisibility(int handle,
-                                                         bool* visible,
-                                                         bool* animating,
-                                                         bool* detached) {
-  *visible = false;
-  *animating = false;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      // browser->window()->IsBookmarkBarVisible() is not consistent across
-      // platforms. bookmark_bar_state() also follows prefs::kShowBookmarkBar
-      // and has a shared implementation on all platforms.
-      *visible = browser->bookmark_bar_state() == BookmarkBar::SHOW;
-      *animating = browser->window()->IsBookmarkBarAnimating();
-      *detached = browser->bookmark_bar_state() == BookmarkBar::DETACHED;
-    }
+void TestingAutomationProvider::GetBookmarkBarStatus(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
   }
+  // browser->window()->IsBookmarkBarVisible() is not consistent across
+  // platforms. bookmark_bar_state() also follows prefs::kShowBookmarkBar
+  // and has a shared implementation on all platforms.
+  DictionaryValue dict;
+  dict.SetBoolean("visible",
+                  browser->bookmark_bar_state() == BookmarkBar::SHOW);
+  dict.SetBoolean("animating", browser->window()->IsBookmarkBarAnimating());
+  dict.SetBoolean("detached",
+                  browser->bookmark_bar_state() == BookmarkBar::DETACHED);
+  reply.SendSuccess(&dict);
 }
 
 void TestingAutomationProvider::GetBookmarksAsJSON(
-    int handle,
-    std::string* bookmarks_as_json,
-    bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BookmarkModel* bookmark_model =
-          BookmarkModelFactory::GetForProfile(browser->profile());
-      if (!bookmark_model->IsLoaded()) {
-        return;
-      }
-      scoped_refptr<BookmarkStorage> storage(new BookmarkStorage(
-          browser->profile(), bookmark_model));
-      *success = storage->SerializeData(bookmarks_as_json);
-    }
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg, bookmarks_as_json;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
   }
+  BookmarkModel* bookmark_model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  if (!bookmark_model->IsLoaded()) {
+    reply.SendError("Bookmark model is not loaded");
+    return;
+  }
+  scoped_refptr<BookmarkStorage> storage(
+      new BookmarkStorage(browser->profile(), bookmark_model));
+  if (!storage->SerializeData(&bookmarks_as_json)) {
+    reply.SendError("Failed to serialize bookmarks");
+    return;
+  }
+  DictionaryValue dict;
+  dict.SetString("bookmarks_as_json", bookmarks_as_json);
+  reply.SendSuccess(&dict);
 }
 
 void TestingAutomationProvider::WaitForBookmarkModelToLoad(
@@ -1317,173 +1310,239 @@ void TestingAutomationProvider::WaitForBookmarkModelToLoad(
     Browser* browser = browser_tracker_->GetResource(handle);
     BookmarkModel* model =
         BookmarkModelFactory::GetForProfile(browser->profile());
+    AutomationProviderBookmarkModelObserver* observer =
+        new AutomationProviderBookmarkModelObserver(this, reply_message,
+                                                    model, false);
     if (model->IsLoaded()) {
+      observer->ReleaseReply();
+      delete observer;
       AutomationMsg_WaitForBookmarkModelToLoad::WriteReplyParams(
           reply_message, true);
       Send(reply_message);
-    } else {
-      // The observer will delete itself when done.
-      new AutomationProviderBookmarkModelObserver(this, reply_message,
-                                                  model);
     }
   }
 }
 
-void TestingAutomationProvider::AddBookmarkGroup(int handle,
-                                                 int64 parent_id,
-                                                 int index,
-                                                 std::wstring title,
-                                                 bool* success) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BookmarkModel* model =
-          BookmarkModelFactory::GetForProfile(browser->profile());
-      if (!model->IsLoaded()) {
-        *success = false;
-        return;
-      }
-      const BookmarkNode* parent = model->GetNodeByID(parent_id);
-      DCHECK(parent);
-      if (parent) {
-        const BookmarkNode* child = model->AddFolder(parent, index,
-                                                     WideToUTF16Hack(title));
-        DCHECK(child);
-        if (child)
-          *success = true;
-      }
-    }
+void TestingAutomationProvider::WaitForBookmarkModelToLoadJSON(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  Browser* browser;
+  std::string error_msg, bookmarks_as_json;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    AutomationJSONReply(this, reply_message).SendError(error_msg);
+    return;
   }
-  *success = false;
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  AutomationProviderBookmarkModelObserver* observer =
+      new AutomationProviderBookmarkModelObserver(this, reply_message, model,
+                                                  true);
+  if (model->IsLoaded()) {
+    observer->ReleaseReply();
+    delete observer;
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    return;
+  }
 }
 
-void TestingAutomationProvider::AddBookmarkURL(int handle,
-                                               int64 parent_id,
-                                               int index,
-                                               std::wstring title,
-                                               const GURL& url,
-                                               bool* success) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BookmarkModel* model =
-          BookmarkModelFactory::GetForProfile(browser->profile());
-      if (!model->IsLoaded()) {
-        *success = false;
-        return;
-      }
-      const BookmarkNode* parent = model->GetNodeByID(parent_id);
-      DCHECK(parent);
-      if (parent) {
-        const BookmarkNode* child = model->AddURL(parent, index,
-                                                  WideToUTF16Hack(title), url);
-        DCHECK(child);
-        if (child)
-          *success = true;
-      }
-    }
+void TestingAutomationProvider::AddBookmark(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg, url;
+  string16 title;
+  int parent_id, index;
+  bool folder;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
   }
-  *success = false;
+  if (!args->GetBoolean("is_folder", &folder)) {
+    reply.SendError("'is_folder' missing or invalid");
+    return;
+  }
+  if (!folder && !args->GetString("url", &url)) {
+    reply.SendError("'url' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("parent_id", &parent_id)) {
+    reply.SendError("'parent_id' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("index", &index)) {
+    reply.SendError("'index' missing or invalid");
+    return;
+  }
+  if (!args->GetString("title", &title)) {
+    reply.SendError("'title' missing or invalid");
+    return;
+  }
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  if (!model->IsLoaded()) {
+    reply.SendError("Bookmark model is not loaded");
+    return;
+  }
+  const BookmarkNode* parent = model->GetNodeByID(parent_id);
+  if (!parent) {
+    reply.SendError("Failed to get parent bookmark node");
+    return;
+  }
+  const BookmarkNode* child;
+  if (folder) {
+    child = model->AddFolder(parent, index, title);
+  } else {
+    child = model->AddURL(parent, index, title, GURL(url));
+  }
+  if (!child) {
+    reply.SendError("Failed to add bookmark");
+    return;
+  }
+  reply.SendSuccess(NULL);
 }
 
-void TestingAutomationProvider::ReparentBookmark(int handle,
-                                                 int64 id,
-                                                 int64 new_parent_id,
-                                                 int index,
-                                                 bool* success) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BookmarkModel* model =
-          BookmarkModelFactory::GetForProfile(browser->profile());
-      if (!model->IsLoaded()) {
-        *success = false;
-        return;
-      }
-      const BookmarkNode* node = model->GetNodeByID(id);
-      DCHECK(node);
-      const BookmarkNode* new_parent = model->GetNodeByID(new_parent_id);
-      DCHECK(new_parent);
-      if (node && new_parent) {
-        model->Move(node, new_parent, index);
-        *success = true;
-      }
-    }
+void TestingAutomationProvider::ReparentBookmark(DictionaryValue* args,
+                                                 IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  int new_parent_id, id, index;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
   }
-  *success = false;
+  if (!args->GetInteger("id", &id)) {
+    reply.SendError("'id' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("new_parent_id", &new_parent_id)) {
+    reply.SendError("'new_parent_id' missing or invalid");
+    return;
+  }
+  if (!args->GetInteger("index", &index)) {
+    reply.SendError("'index' missing or invalid");
+    return;
+  }
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  if (!model->IsLoaded()) {
+    reply.SendError("Bookmark model is not loaded");
+    return;
+  }
+  const BookmarkNode* node = model->GetNodeByID(id);
+  const BookmarkNode* new_parent = model->GetNodeByID(new_parent_id);
+  if (!node) {
+    reply.SendError("Failed to get bookmark node");
+    return;
+  }
+  if (!new_parent) {
+    reply.SendError("Failed to get new parent bookmark node");
+    return;
+  }
+  model->Move(node, new_parent, index);
+  reply.SendSuccess(NULL);
 }
 
-void TestingAutomationProvider::SetBookmarkTitle(int handle,
-                                                 int64 id,
-                                                 std::wstring title,
-                                                 bool* success) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BookmarkModel* model =
-          BookmarkModelFactory::GetForProfile(browser->profile());
-      if (!model->IsLoaded()) {
-        *success = false;
-        return;
-      }
-      const BookmarkNode* node = model->GetNodeByID(id);
-      DCHECK(node);
-      if (node) {
-        model->SetTitle(node, WideToUTF16Hack(title));
-        *success = true;
-      }
-    }
+void TestingAutomationProvider::SetBookmarkTitle(DictionaryValue* args,
+                                                 IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  string16 title;
+  int id;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
   }
-  *success = false;
+  if (!args->GetInteger("id", &id)) {
+    reply.SendError("'id' missing or invalid");
+    return;
+  }
+  if (!args->GetString("title", &title)) {
+    reply.SendError("'title' missing or invalid");
+    return;
+  }
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  if (!model->IsLoaded()) {
+    reply.SendError("Bookmark model is not loaded");
+    return;
+  }
+  const BookmarkNode* node = model->GetNodeByID(id);
+  if (!node) {
+    reply.SendError("Failed to get bookmark node");
+    return;
+  }
+  model->SetTitle(node, title);
+  reply.SendSuccess(NULL);
 }
 
-void TestingAutomationProvider::SetBookmarkURL(int handle,
-                                               int64 id,
-                                               const GURL& url,
-                                               bool* success) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BookmarkModel* model =
-          BookmarkModelFactory::GetForProfile(browser->profile());
-      if (!model->IsLoaded()) {
-        *success = false;
-        return;
-      }
-      const BookmarkNode* node = model->GetNodeByID(id);
-      DCHECK(node);
-      if (node) {
-        model->SetURL(node, url);
-        *success = true;
-      }
-    }
+void TestingAutomationProvider::SetBookmarkURL(DictionaryValue* args,
+                                               IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg, url;
+  int id;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
   }
-  *success = false;
+  if (!args->GetInteger("id", &id)) {
+    reply.SendError("'id' missing or invalid");
+    return;
+  }
+  if (!args->GetString("url", &url)) {
+    reply.SendError("'url' missing or invalid");
+    return;
+  }
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  if (!model->IsLoaded()) {
+    reply.SendError("Bookmark model is not loaded");
+    return;
+  }
+  const BookmarkNode* node = model->GetNodeByID(id);
+  if (!node) {
+    reply.SendError("Failed to get bookmark node");
+    return;
+  }
+  model->SetURL(node, GURL(url));
+  reply.SendSuccess(NULL);
 }
 
-void TestingAutomationProvider::RemoveBookmark(int handle,
-                                               int64 id,
-                                               bool* success) {
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser) {
-      BookmarkModel* model =
-          BookmarkModelFactory::GetForProfile(browser->profile());
-      if (!model->IsLoaded()) {
-        *success = false;
-        return;
-      }
-      const BookmarkNode* node = model->GetNodeByID(id);
-      DCHECK(node);
-      if (node) {
-        const BookmarkNode* parent = node->parent();
-        DCHECK(parent);
-        model->Remove(parent, parent->GetIndexOf(node));
-        *success = true;
-      }
-    }
+void TestingAutomationProvider::RemoveBookmark(DictionaryValue* args,
+                                               IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  Browser* browser;
+  std::string error_msg;
+  int id;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+    reply.SendError(error_msg);
+    return;
   }
-  *success = false;
+  if (!args->GetInteger("id", &id)) {
+    reply.SendError("'id' missing or invalid");
+    return;
+  }
+  BookmarkModel* model =
+      BookmarkModelFactory::GetForProfile(browser->profile());
+  if (!model->IsLoaded()) {
+    reply.SendError("Bookmark model is not loaded");
+    return;
+  }
+  const BookmarkNode* node = model->GetNodeByID(id);
+  if (!node) {
+    reply.SendError("Failed to get bookmark node");
+    return;
+  }
+  const BookmarkNode* parent = node->parent();
+  if (!parent) {
+    reply.SendError("Failed to get parent bookmark node");
+    return;
+  }
+  model->Remove(parent, parent->GetIndexOf(node));
+  reply.SendSuccess(NULL);
 }
 
 void TestingAutomationProvider::WaitForBrowserWindowCountToBecome(
@@ -1612,6 +1671,24 @@ void TestingAutomationProvider::BuildJSONHandlerMaps() {
       &TestingAutomationProvider::DeleteCookieInBrowserContext;
   handler_map_["SetCookieInBrowserContext"] =
       &TestingAutomationProvider::SetCookieInBrowserContext;
+
+  handler_map_["WaitForBookmarkModelToLoad"] =
+      &TestingAutomationProvider::WaitForBookmarkModelToLoadJSON;
+  handler_map_["GetBookmarksAsJSON"] =
+      &TestingAutomationProvider::GetBookmarksAsJSON;
+  handler_map_["GetBookmarkBarStatus"] =
+      &TestingAutomationProvider::GetBookmarkBarStatus;
+  handler_map_["AddBookmark"] =
+      &TestingAutomationProvider::AddBookmark;
+  handler_map_["ReparentBookmark"] =
+      &TestingAutomationProvider::ReparentBookmark;
+  handler_map_["SetBookmarkTitle"] =
+      &TestingAutomationProvider::SetBookmarkTitle;
+  handler_map_["SetBookmarkURL"] =
+      &TestingAutomationProvider::SetBookmarkURL;
+  handler_map_["RemoveBookmark"] =
+      &TestingAutomationProvider::RemoveBookmark;
+
   handler_map_["GetTabIds"] =
       &TestingAutomationProvider::GetTabIds;
   handler_map_["GetViews"] =

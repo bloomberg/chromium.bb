@@ -107,10 +107,6 @@ class AutomatedUITestBase : public UITest {
   // Returns true on success.
   bool SelectPreviousTab();
 
-  // Displays the bookmark bar.
-  // Returns true on success.
-  bool ShowBookmarkBar();
-
   // Opens the Downloads page in the current active browser window.
   // Returns true on success.
   bool ShowDownloads();

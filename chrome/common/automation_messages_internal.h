@@ -801,7 +801,7 @@ IPC_MESSAGE_CONTROL5(AutomationMsg_GetCookiesHostResponse,
                      int /* opaque_cookie_id */)
 
 // Return the bookmarks encoded as a JSON string.
-IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_GetBookmarksAsJSON,
+IPC_SYNC_MESSAGE_CONTROL1_2(AutomationMsg_DEPRECATED_GetBookmarksAsJSON,
                             int /* browser_handle */,
                             std::string /* bookmarks as a JSON string */,
                             bool /* success */)
@@ -813,36 +813,36 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_WaitForBookmarkModelToLoad,
 
 // Bookmark addition, modification, and removal.
 // Bookmarks are indexed by their id.
-IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_AddBookmarkGroup,
+IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_DEPRECATED_AddBookmarkGroup,
                             int /* browser_handle */,
                             int64 /* parent_id */,
                             int /* index */,
                             std::wstring /* title */,
                             bool /* success */)
-IPC_SYNC_MESSAGE_CONTROL5_1(AutomationMsg_AddBookmarkURL,
+IPC_SYNC_MESSAGE_CONTROL5_1(AutomationMsg_DEPRECATED_AddBookmarkURL,
                             int /* browser_handle */,
                             int64 /* parent_id */,
                             int /* index */,
                             std::wstring /* title */,
                             GURL /* url */,
                             bool /* success */)
-IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_ReparentBookmark,
+IPC_SYNC_MESSAGE_CONTROL4_1(AutomationMsg_DEPRECATED_ReparentBookmark,
                             int /* browser_handle */,
                             int64 /* id */,
                             int64 /* new_parent_id */,
                             int /* index */,
                             bool /* success */)
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetBookmarkTitle,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_SetBookmarkTitle,
                             int /* browser_handle */,
                             int64 /* id */,
                             std::wstring /* title */,
                             bool /* success */)
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetBookmarkURL,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_SetBookmarkURL,
                             int /* browser_handle */,
                             int64 /* id */,
                             GURL /* url */,
                             bool /* success */)
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_RemoveBookmark,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_RemoveBookmark,
                             int /* browser_handle */,
                             int64 /* id */,
                             bool /* success */)

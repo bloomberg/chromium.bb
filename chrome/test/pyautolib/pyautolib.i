@@ -175,59 +175,6 @@ class PyUITestBase {
   %feature("docstring", "Get the path to profile directory.") user_data_dir;
   FilePath user_data_dir() const;
 
-  %feature("docstring", "Determine if the bookmark bar is visible. "
-           "If the NTP is visible, only return true if attached "
-           "(to the chrome).") GetBookmarkBarVisibility;
-  bool GetBookmarkBarVisibility();
-
-  %feature("docstring", "Determine if the bookmark bar is detached. "
-           "This usually is only true on the NTP.") IsBookmarkBarDetached;
-  bool IsBookmarkBarDetached();
-
-  %feature("docstring", "Wait for the bookmark bar animation to complete. "
-           "|wait_for_open| specifies which kind of change we wait for.")
-      WaitForBookmarkBarVisibilityChange;
-  bool WaitForBookmarkBarVisibilityChange(bool wait_for_open,
-                                          int window_index=0);
-
-  %feature("docstring", "Get the bookmarks as a JSON string. Internal method.")
-      _GetBookmarksAsJSON;
-  std::string _GetBookmarksAsJSON(int window_index=0);
-
-  %feature("docstring", "Add a bookmark folder with the given index in the "
-                        " parent. |title| is the title/name of the folder.")
-      AddBookmarkGroup;
-  bool AddBookmarkGroup(std::wstring parent_id,
-                        int index, std::wstring title,
-                        int window_index=0);
-
-  %feature("docstring", "Add a bookmark with the given title and URL.")
-      AddBookmarkURL;
-  bool AddBookmarkURL(std::wstring parent_id,
-                      int index,
-                      std::wstring title,
-                      const std::wstring url,
-                      int window_index=0);
-
-  %feature("docstring", "Move a bookmark to a new parent.") ReparentBookmark;
-  bool ReparentBookmark(std::wstring id,
-                        std::wstring new_parent_id,
-                        int index,
-                        int window_index=0);
-
-  %feature("docstring", "Set the title of a bookmark.") SetBookmarkTitle;
-  bool SetBookmarkTitle(std::wstring id,
-                        std::wstring title,
-                        int window_index=0);
-
-  %feature("docstring", "Set the URL of a bookmark.") SetBookmarkURL;
-  bool SetBookmarkURL(std::wstring id,
-                      const std::wstring url,
-                      int window_index=0);
-
-  %feature("docstring", "Remove (delete) a bookmark.") RemoveBookmark;
-  bool RemoveBookmark(std::wstring id, int window_index=0);
-
   // Meta-method
   %feature("docstring", "Send a sync JSON request to Chrome.  "
                         "Returns a JSON dict as a response.  "

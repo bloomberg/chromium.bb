@@ -1550,6 +1550,299 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       raise JSONInterfaceError('Could not resolve browser proxy.')
     return bookmark_model.BookmarkModel(bookmarks_as_json)
 
+  def _GetBookmarksAsJSON(self, windex=0):
+    """Get bookmarks as a JSON dictionary; used by GetBookmarkModel()."""
+    cmd_dict = {
+        'command': 'GetBookmarksAsJSON',
+        'windex': windex,
+    }
+    self.WaitForBookmarkModelToLoad(windex)
+    return self._GetResultFromJSONRequest(cmd_dict,
+                                          windex=None)['bookmarks_as_json']
+
+  def WaitForBookmarkModelToLoad(self, windex=0):
+    """Gets the status of the bookmark bar as a dictionary.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'WaitForBookmarkModelToLoad',
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def GetBookmarkBarStatus(self, windex=0):
+    """Gets the status of the bookmark bar as a dictionary.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      A dictionary.
+      Example:
+        { u'visible': True,
+          u'animating': False,
+          u'detached': False, }
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'GetBookmarkBarStatus',
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def GetBookmarkBarStatus(self, windex=0):
+    """Gets the status of the bookmark bar as a dictionary.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      A dictionary.
+      Example:
+        { u'visible': True,
+          u'animating': False,
+          u'detached': False, }
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'GetBookmarkBarStatus',
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def GetBookmarkBarStatus(self, windex=0):
+    """Gets the status of the bookmark bar as a dictionary.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      A dictionary.
+      Example:
+        { u'visible': True,
+          u'animating': False,
+          u'detached': False, }
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'GetBookmarkBarStatus',
+        'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def GetBookmarkBarVisibility(self, windex=0):
+    """Returns the visibility of the bookmark bar.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      True if the bookmark bar is visible, false otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    return self.GetBookmarkBarStatus(windex)['visible']
+
+  def IsBookmarkBarDetached(self, windex=0):
+    """Returns whether the bookmark bar is detached.
+
+    Args:
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      True if the bookmark bar is detached, false otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    return self.GetBookmarkBarStatus(windex)['detached']
+
+  def WaitForBookmarkBarVisibilityChange(self, wait_for_open, windex=0):
+    """Waits until the bookmark bar is either visible or not visible.
+
+    Args:
+      wait_for_open: If True, wait until bookmark bar is visible; otherwise wait
+          until bookmark bar is not visible.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    def IsChanged(wait_for_open, windex):
+      status = self.GetBookmarkBarStatus(windex)
+      return status['visible'] == wait_for_open and not status['animating']
+    return self.WaitUntil(lambda: IsChanged(wait_for_open, windex))
+
+  def AddBookmarkGroup(self, parent_id, index, title, windex=0):
+    """Adds a bookmark folder.
+
+    Args:
+      parent_id: The parent bookmark folder.
+      index: The location in the parent's list to insert this bookmark folder.
+      title: The name of the bookmark folder.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Returns:
+      True if the bookmark bar is detached, false otherwise.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(parent_id, basestring):
+      parent_id = int(parent_id)
+    cmd_dict = {
+        'command': 'AddBookmark',
+        'parent_id': parent_id,
+        'index': index,
+        'title': title,
+        'is_folder': True,
+        'windex': windex,
+    }
+    self.WaitForBookmarkModelToLoad(windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def AddBookmarkURL(self, parent_id, index, title, url, windex=0):
+    """Add a bookmark URL.
+
+    Args:
+      parent_id: The parent bookmark folder.
+      index: The location in the parent's list to insert this bookmark.
+      title: The name of the bookmark.
+      url: The url of the bookmark.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(parent_id, basestring):
+      parent_id = int(parent_id)
+    cmd_dict = {
+        'command': 'AddBookmark',
+        'parent_id': parent_id,
+        'index': index,
+        'title': title,
+        'url': url,
+        'is_folder': False,
+        'windex': windex,
+    }
+    self.WaitForBookmarkModelToLoad(windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def ReparentBookmark(self, id, new_parent_id, index, windex=0):
+    """Move a bookmark.
+
+    Args:
+      id: The bookmark to move.
+      new_parent_id: The new parent bookmark folder.
+      index: The location in the parent's list to insert this bookmark.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(id, basestring):
+      id = int(id)
+    if isinstance(new_parent_id, basestring):
+      new_parent_id = int(new_parent_id)
+    cmd_dict = {
+        'command': 'ReparentBookmark',
+        'id': id,
+        'new_parent_id': new_parent_id,
+        'index': index,
+        'windex': windex,
+    }
+    self.WaitForBookmarkModelToLoad(windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def SetBookmarkTitle(self, id, title, windex=0):
+    """Change the title of a bookmark.
+
+    Args:
+      id: The bookmark to rename.
+      title: The new title for the bookmark.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(id, basestring):
+      id = int(id)
+    cmd_dict = {
+        'command': 'SetBookmarkTitle',
+        'id': id,
+        'title': title,
+        'windex': windex,
+    }
+    self.WaitForBookmarkModelToLoad(windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def SetBookmarkURL(self, id, url, windex=0):
+    """Change the URL of a bookmark.
+
+    Args:
+      id: The bookmark to change.
+      url: The new url for the bookmark.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(id, basestring):
+      id = int(id)
+    cmd_dict = {
+        'command': 'SetBookmarkURL',
+        'id': id,
+        'url': url,
+        'windex': windex,
+    }
+    self.WaitForBookmarkModelToLoad(windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def RemoveBookmark(self, id, windex=0):
+    """Remove a bookmark.
+
+    Args:
+      id: The bookmark to remove.
+      windex: Integer index of the browser window to use; defaults to the first
+          window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    if isinstance(id, basestring):
+      id = int(id)
+    cmd_dict = {
+        'command': 'RemoveBookmark',
+        'id': id,
+        'windex': windex,
+    }
+    self.WaitForBookmarkModelToLoad(windex)
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   def GetDownloadsInfo(self, windex=0):
     """Return info about downloads.
 

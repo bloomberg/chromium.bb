@@ -313,27 +313,6 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
                 url, number_of_navigations)) << url.spec();
 }
 
-bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
-                                                    bool wait_for_open) {
-  const int kCycles = 10;
-  const TimeDelta kDelay = TestTimeouts::action_timeout() / kCycles;
-  for (int i = 0; i < kCycles; i++) {
-    bool visible = false;
-    bool animating = true;
-    bool detached;
-    if (!browser->GetBookmarkBarVisibility(&visible, &animating, &detached))
-      return false;  // Some error.
-    if (visible == wait_for_open && !animating)
-      return true;  // Bookmark bar visibility change complete.
-
-    // Give it a chance to catch up.
-    base::PlatformThread::Sleep(kDelay);
-  }
-
-  ADD_FAILURE() << "Timeout reached in WaitForBookmarkBarVisibilityChange";
-  return false;
-}
-
 GURL UITestBase::GetActiveTabURL(int window_index) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab(window_index));
   EXPECT_TRUE(tab_proxy.get());

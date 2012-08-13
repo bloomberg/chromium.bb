@@ -1045,7 +1045,8 @@ class AutomationProviderBookmarkModelObserver : public BookmarkModelObserver {
  public:
   AutomationProviderBookmarkModelObserver(AutomationProvider* provider,
                                           IPC::Message* reply_message,
-                                          BookmarkModel* model);
+                                          BookmarkModel* model,
+                                          bool use_json_interface);
   virtual ~AutomationProviderBookmarkModelObserver();
 
   // BookmarkModelObserver:
@@ -1071,6 +1072,8 @@ class AutomationProviderBookmarkModelObserver : public BookmarkModelObserver {
       BookmarkModel* model,
       const BookmarkNode* node) OVERRIDE {}
 
+  IPC::Message* ReleaseReply();
+
  private:
   // Reply to the automation message with the given success value,
   // then delete myself (which removes myself from the bookmark model
@@ -1080,6 +1083,7 @@ class AutomationProviderBookmarkModelObserver : public BookmarkModelObserver {
   base::WeakPtr<AutomationProvider> automation_provider_;
   scoped_ptr<IPC::Message> reply_message_;
   BookmarkModel* model_;
+  bool use_json_interface_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderBookmarkModelObserver);
 };

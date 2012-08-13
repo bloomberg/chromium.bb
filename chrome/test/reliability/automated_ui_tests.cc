@@ -448,8 +448,6 @@ bool AutomatedUITest::DoAction(const std::string& action) {
     did_complete_action = SelectNextTab();
   } else if (LowerCaseEqualsASCII(action, "selectprevtab")) {
     did_complete_action = SelectPreviousTab();
-  } else if (LowerCaseEqualsASCII(action, "showbookmarks")) {
-    did_complete_action = ShowBookmarkBar();
   } else if (LowerCaseEqualsASCII(action, "setup")) {
     AutomatedUITestBase::SetUp();
     did_complete_action = true;

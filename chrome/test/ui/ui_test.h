@@ -141,12 +141,6 @@ class UITestBase {
   // assert that the tab count is valid at the end of the wait.
   void WaitUntilTabCount(int tab_count);
 
-  // Waits until the Bookmark bar has stopped animating and become fully visible
-  // (if |wait_for_open| is true) or fully hidden (if |wait_for_open| is false).
-  // This function can time out (in which case it returns false).
-  bool WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
-                                          bool wait_for_open);
-
   // Closes the specified browser.  Returns true if the browser was closed.
   // This call is blocking.  |application_closed| is set to true if this was
   // the last browser window (and therefore as a result of it closing the

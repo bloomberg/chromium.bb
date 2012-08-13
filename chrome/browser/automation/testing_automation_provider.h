@@ -161,41 +161,35 @@ class TestingAutomationProvider : public AutomationProvider,
   // Get the visibility state of the Find window.
   void GetFindWindowVisibility(int handle, bool* visible);
 
-  // Get the visibility state of the Bookmark bar.
-  void GetBookmarkBarVisibility(
-      int handle, bool* visible, bool* animating, bool* detached);
-
-  // Get the bookmarks as a JSON string.
-  void GetBookmarksAsJSON(int handle, std::string* bookmarks_as_json,
-                          bool* success);
-
   // Wait for the bookmark model to load.
   void WaitForBookmarkModelToLoad(int handle, IPC::Message* reply_message);
 
   // Set |loaded| to true if the bookmark model has loaded, else false.
   void BookmarkModelHasLoaded(int handle, bool* loaded);
 
-  // Editing, modification, and removal of bookmarks.
+  // Get the visibility state of the Bookmark bar.
+  // Returns a status dictionary over the JSON interface.
+  void GetBookmarkBarStatus(base::DictionaryValue* args,
+                            IPC::Message* reply_message);
+
+  // Get the bookmarks as a JSON string.
+  void GetBookmarksAsJSON(base::DictionaryValue* args,
+                          IPC::Message* reply_message);
+
+  // Editing, modification, and removal of bookmarks through the JSON interface.
   // Bookmarks are referenced by id.
-  void AddBookmarkGroup(int handle,
-                        int64 parent_id, int index, std::wstring title,
-                        bool* success);
-  void AddBookmarkURL(int handle,
-                      int64 parent_id, int index,
-                      std::wstring title, const GURL& url,
-                      bool* success);
-  void ReparentBookmark(int handle,
-                        int64 id, int64 new_parent_id, int index,
-                        bool* success);
-  void SetBookmarkTitle(int handle,
-                        int64 id, std::wstring title,
-                        bool* success);
-  void SetBookmarkURL(int handle,
-                      int64 id, const GURL& url,
-                      bool* success);
-  void RemoveBookmark(int handle,
-                      int64 id,
-                      bool* success);
+  void WaitForBookmarkModelToLoadJSON(base::DictionaryValue* args,
+                                      IPC::Message* reply_message);
+  void AddBookmark(base::DictionaryValue* args,
+                   IPC::Message* reply_message);
+  void ReparentBookmark(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
+  void SetBookmarkTitle(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
+  void SetBookmarkURL(base::DictionaryValue* args,
+                      IPC::Message* reply_message);
+  void RemoveBookmark(base::DictionaryValue* args,
+                      IPC::Message* reply_message);
 
   void WaitForBrowserWindowCountToBecome(int target_count,
                                          IPC::Message* reply_message);
