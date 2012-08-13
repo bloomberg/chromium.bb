@@ -510,7 +510,7 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(
   for (int i = 0; i < nb_match; ++i) {
     views::View* child = child_at(i);
     gfx::Point point_in_child_coords(point);
-    View::ConvertPointToView(this, child, &point_in_child_coords);
+    View::ConvertPointToTarget(this, child, &point_in_child_coords);
     if (child->HitTestPoint(point_in_child_coords))
       return i;
   }
@@ -541,7 +541,7 @@ gfx::Rect OmniboxPopupContentsView::CalculateTargetBounds(int h) {
 }
 
 void OmniboxPopupContentsView::UpdateLineEvent(
-    const views::LocatedEvent& event,
+    const ui::LocatedEvent& event,
     bool should_set_selected_line) {
   size_t index = GetIndexForPoint(event.location());
   model_->SetHoveredLine(index);
@@ -550,7 +550,7 @@ void OmniboxPopupContentsView::UpdateLineEvent(
 }
 
 void OmniboxPopupContentsView::OpenSelectedLine(
-    const views::LocatedEvent& event,
+    const ui::LocatedEvent& event,
     WindowOpenDisposition disposition) {
   size_t index = GetIndexForPoint(event.location());
   OpenIndex(index, disposition);

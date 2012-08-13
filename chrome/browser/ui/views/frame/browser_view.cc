@@ -411,7 +411,7 @@ gfx::Rect BrowserView::GetToolbarBounds() const {
 gfx::Rect BrowserView::GetClientAreaBounds() const {
   gfx::Rect container_bounds = contents_->bounds();
   gfx::Point container_origin = container_bounds.origin();
-  ConvertPointToView(this, parent(), &container_origin);
+  ConvertPointToTarget(this, parent(), &container_origin);
   container_bounds.set_origin(container_origin);
   return container_bounds;
 }
@@ -834,9 +834,9 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
     // The +1 in the next line creates a 1-px gap between icon and arrow tip.
     gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
         LocationBarView::kIconInternalPadding + 1);
-    ConvertPointToView(location_icon_view, this, &icon_bottom);
+    ConvertPointToTarget(location_icon_view, this, &icon_bottom);
     gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
-    ConvertPointToView(infobar_container_, this, &infobar_top);
+    ConvertPointToTarget(infobar_container_, this, &infobar_top);
 
     AutoReset<CallState> resetter(&call_state,
         is_animating ? REENTRANT_FORCE_FAST_RESIZE : REENTRANT);
@@ -1854,7 +1854,7 @@ bool BrowserView::DrawInfoBarArrows(int* x) const {
     const LocationIconView* location_icon_view =
         toolbar_->location_bar()->location_icon_view();
     gfx::Point icon_center(location_icon_view->GetImageBounds().CenterPoint());
-    ConvertPointToView(location_icon_view, this, &icon_center);
+    ConvertPointToTarget(location_icon_view, this, &icon_center);
     *x = icon_center.x();
   }
   return true;

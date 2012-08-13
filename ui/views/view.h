@@ -407,9 +407,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // |source| and |target| must be in the same widget, but doesn't need to be in
   // the same view hierarchy.
   // |source| can be NULL in which case it means the screen coordinate system.
-  static void ConvertPointToView(const View* source,
-                                 const View* target,
-                                 gfx::Point* point);
+  static void ConvertPointToTarget(const View* source,
+                                   const View* target,
+                                   gfx::Point* point);
 
   // Convert a point from a View's coordinate system to that of its Widget.
   static void ConvertPointToWidget(const View* src, gfx::Point* point);
@@ -1332,7 +1332,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // supported drag operations. When done, OnDragDone is invoked. |press_pt| is
   // in the view's coordinate system.
   // Returns true if a drag was started.
-  bool DoDrag(const LocatedEvent& event, const gfx::Point& press_pt);
+  bool DoDrag(const ui::LocatedEvent& event, const gfx::Point& press_pt);
 
   //////////////////////////////////////////////////////////////////////////////
 

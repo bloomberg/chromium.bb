@@ -10,21 +10,15 @@
 
 namespace views {
 
-////////////////////////////////////////////////////////////////////////////////
-// LocatedEvent, protected:
-
-LocatedEvent::LocatedEvent(const ui::NativeEvent& native_event)
-    : Event(native_event->native_event(),
-            native_event->type(),
-            native_event->flags()),
-      location_(static_cast<ui::LocatedEvent*>(native_event)->location()) {
+MouseEvent::MouseEvent(const ui::NativeEvent& native_event)
+    : LocatedEvent(static_cast<const ui::LocatedEvent&>(*native_event)) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 
 TouchEvent::TouchEvent(const ui::NativeEvent& event)
-    : LocatedEvent(event),
+    : LocatedEvent(static_cast<const ui::LocatedEvent&>(*event)),
       touch_id_(static_cast<ui::TouchEvent*>(event)->touch_id()),
       radius_x_(static_cast<ui::TouchEvent*>(event)->radius_x()),
       radius_y_(static_cast<ui::TouchEvent*>(event)->radius_y()),
@@ -54,7 +48,7 @@ ScrollEvent::ScrollEvent(const ui::NativeEvent& native_event)
 // GestureEvent, public:
 
 GestureEvent::GestureEvent(const ui::NativeEvent& event)
-    : LocatedEvent(event),
+    : LocatedEvent(static_cast<const ui::LocatedEvent&>(*event)),
       details_(static_cast<ui::GestureEvent*>(event)->details()) {
 }
 

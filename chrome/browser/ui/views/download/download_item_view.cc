@@ -926,7 +926,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Point& p,
   // We could be deleted now.
 }
 
-void DownloadItemView::HandlePressEvent(const views::LocatedEvent& event,
+void DownloadItemView::HandlePressEvent(const ui::LocatedEvent& event,
                                         bool active_event) {
   // The event should not activate us in dangerous mode.
   if (mode_ == DANGEROUS_MODE)
@@ -953,7 +953,7 @@ void DownloadItemView::HandlePressEvent(const views::LocatedEvent& event,
   }
 }
 
-void DownloadItemView::HandleClickEvent(const views::LocatedEvent& event,
+void DownloadItemView::HandleClickEvent(const ui::LocatedEvent& event,
                                         bool active_event) {
   // Mouse should not activate us in dangerous mode.
   if (mode_ == DANGEROUS_MODE)

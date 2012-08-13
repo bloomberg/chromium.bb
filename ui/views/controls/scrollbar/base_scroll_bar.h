@@ -99,7 +99,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
  private:
   // Changes to 'pushed' state and starts a timer to scroll repeatedly.
-  void ProcessPressEvent(const LocatedEvent& event);
+  void ProcessPressEvent(const ui::LocatedEvent& event);
 
   // Resets state to 'normal' and stops the repeater.
   void ResetState();

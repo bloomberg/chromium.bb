@@ -941,7 +941,7 @@ class HitTestView : public View {
 
 gfx::Point ConvertPointToView(View* view, const gfx::Point& p) {
   gfx::Point tmp(p);
-  View::ConvertPointToView(view->GetWidget()->GetRootView(), view, &tmp);
+  View::ConvertPointToTarget(view->GetWidget()->GetRootView(), view, &tmp);
   return tmp;
 }
 
@@ -2371,12 +2371,12 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   // Conversions from child->top and top->child.
   {
     gfx::Point point(5, 5);
-    View::ConvertPointToView(child, &top_view, &point);
+    View::ConvertPointToTarget(child, &top_view, &point);
     EXPECT_EQ(22, point.x());
     EXPECT_EQ(39, point.y());
 
     point.SetPoint(22, 39);
-    View::ConvertPointToView(&top_view, child, &point);
+    View::ConvertPointToTarget(&top_view, child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
   }
@@ -2384,12 +2384,12 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   // Conversions from child_child->top and top->child_child.
   {
     gfx::Point point(5, 5);
-    View::ConvertPointToView(child_child, &top_view, &point);
+    View::ConvertPointToTarget(child_child, &top_view, &point);
     EXPECT_EQ(133, point.x());
     EXPECT_EQ(211, point.y());
 
     point.SetPoint(133, 211);
-    View::ConvertPointToView(&top_view, child_child, &point);
+    View::ConvertPointToTarget(&top_view, child_child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
   }
@@ -2397,12 +2397,12 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   // Conversions from child_child->child and child->child_child
   {
     gfx::Point point(5, 5);
-    View::ConvertPointToView(child_child, child, &point);
+    View::ConvertPointToTarget(child_child, child, &point);
     EXPECT_EQ(42, point.x());
     EXPECT_EQ(48, point.y());
 
     point.SetPoint(42, 48);
-    View::ConvertPointToView(child, child_child, &point);
+    View::ConvertPointToTarget(child, child_child, &point);
     EXPECT_EQ(5, point.x());
     EXPECT_EQ(5, point.y());
   }
@@ -2411,7 +2411,7 @@ TEST_F(ViewTest, ConvertPointToViewWithTransform) {
   // This ensures we don't round up with negative numbers.
   {
     gfx::Point point(6, 18);
-    View::ConvertPointToView(&top_view, child, &point);
+    View::ConvertPointToTarget(&top_view, child, &point);
     EXPECT_EQ(-1, point.x());
     EXPECT_EQ(-1, point.y());
   }

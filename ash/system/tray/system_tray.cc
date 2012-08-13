@@ -464,8 +464,8 @@ bool SystemTray::PerformAction(const ui::Event& event) {
   } else {
     int arrow_offset = TrayBubbleView::InitParams::kArrowDefaultOffset;
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
-      const views::LocatedEvent& located_event =
-          static_cast<const views::LocatedEvent&>(event);
+      const ui::LocatedEvent& located_event =
+          static_cast<const ui::LocatedEvent&>(event);
       if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
         gfx::Point point(located_event.x(), 0);
         ConvertPointToWidget(this, &point);

@@ -496,7 +496,7 @@ void TreeView::OnContextMenu(const POINT& location) {
     // Make sure the mouse is over the selected node.
     TVHITTESTINFO hit_info;
     gfx::Point local_loc(location);
-    ConvertPointToView(NULL, this, &local_loc);
+    ConvertPointToTarget(NULL, this, &local_loc);
     hit_info.pt = local_loc.ToPOINT();
     HTREEITEM hit_item = TreeView_HitTest(tree_view_, &hit_info);
     if (!hit_item ||

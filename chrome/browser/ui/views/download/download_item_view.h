@@ -154,8 +154,8 @@ class DownloadItemView : public views::ButtonListener,
   void ShowContextMenuImpl(const gfx::Point& point, bool is_mouse_gesture);
 
   // Common code for handling pointer events (i.e. mouse or gesture).
-  void HandlePressEvent(const views::LocatedEvent& event, bool active_event);
-  void HandleClickEvent(const views::LocatedEvent& event, bool active_event);
+  void HandlePressEvent(const ui::LocatedEvent& event, bool active_event);
+  void HandleClickEvent(const ui::LocatedEvent& event, bool active_event);
 
   // Convenience method to paint the 3 vertical images (bottom, middle, top)
   // that form the background.

@@ -168,8 +168,8 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
           tooltip_text_.clear();
           // Mouse is over a View, ask the View for its tooltip.
           gfx::Point view_loc = last_mouse_pos_;
-          View::ConvertPointToView(widget_->GetRootView(),
-                                   last_tooltip_view_, &view_loc);
+          View::ConvertPointToTarget(widget_->GetRootView(),
+                                     last_tooltip_view_, &view_loc);
           if (last_tooltip_view_->GetTooltipText(view_loc, &tooltip_text_) &&
               !tooltip_text_.empty()) {
             // View has a valid tip, copy it into TOOLTIPINFO.
@@ -200,8 +200,8 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
         if (tooltip_height_ == 0)
           tooltip_height_ = CalcTooltipHeight();
         gfx::Point view_loc = last_mouse_pos_;
-        View::ConvertPointToView(widget_->GetRootView(),
-                                 last_tooltip_view_, &view_loc);
+        View::ConvertPointToTarget(widget_->GetRootView(),
+                                   last_tooltip_view_, &view_loc);
         if (last_tooltip_view_->GetTooltipTextOrigin(view_loc, &text_origin) &&
             SetTooltipPosition(text_origin.x(), text_origin.y())) {
           // Return true, otherwise the rectangle we specified is ignored.
@@ -280,7 +280,7 @@ void TooltipManagerWin::UpdateTooltip(const gfx::Point& mouse_pos) {
     // Tooltip is showing, and mouse is over the same view. See if the tooltip
     // text has changed.
     gfx::Point view_point = mouse_pos;
-    View::ConvertPointToView(root_view, last_tooltip_view_, &view_point);
+    View::ConvertPointToTarget(root_view, last_tooltip_view_, &view_point);
     string16 new_tooltip_text;
     bool has_tooltip_text =
         last_tooltip_view_->GetTooltipText(view_point, &new_tooltip_text);

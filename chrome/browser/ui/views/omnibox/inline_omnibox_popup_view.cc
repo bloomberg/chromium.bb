@@ -98,7 +98,7 @@ void InlineOmniboxPopupView::LayoutChildren() {
   // Make the children line up with the LocationBar.
   gfx::Point content_origin;
   // TODO(sky): this won't work correctly with LocationBarContainer.
-  views::View::ConvertPointToView(location_bar_, this, &content_origin);
+  views::View::ConvertPointToTarget(location_bar_, this, &content_origin);
   int x = content_origin.x();
   int width = location_bar_->width();
   gfx::Rect contents_rect = GetContentsBounds();
@@ -367,7 +367,7 @@ size_t InlineOmniboxPopupView::GetIndexForPoint(const gfx::Point& point) {
   for (int i = 0; i < nb_match; ++i) {
     views::View* child = child_at(i);
     gfx::Point point_in_child_coords(point);
-    View::ConvertPointToView(this, child, &point_in_child_coords);
+    View::ConvertPointToTarget(this, child, &point_in_child_coords);
     if (child->HitTestPoint(point_in_child_coords))
       return i;
   }
@@ -379,7 +379,7 @@ gfx::Rect InlineOmniboxPopupView::CalculateTargetBounds(int h) {
 }
 
 void InlineOmniboxPopupView::UpdateLineEvent(
-    const views::LocatedEvent& event,
+    const ui::LocatedEvent& event,
     bool should_set_selected_line) {
   size_t index = GetIndexForPoint(event.location());
   model_->SetHoveredLine(index);
@@ -388,7 +388,7 @@ void InlineOmniboxPopupView::UpdateLineEvent(
 }
 
 void InlineOmniboxPopupView::OpenSelectedLine(
-    const views::LocatedEvent& event,
+    const ui::LocatedEvent& event,
     WindowOpenDisposition disposition) {
   size_t index = GetIndexForPoint(event.location());
   OpenIndex(index, disposition);

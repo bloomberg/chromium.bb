@@ -340,7 +340,7 @@ void TreeView::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
     // Only invoke View's implementation (which notifies the
     // ContextMenuController) if over a node.
     gfx::Point local_point(p);
-    ConvertPointToView(NULL, this, &local_point);
+    ConvertPointToTarget(NULL, this, &local_point);
     int row = (local_point.y() - kVerticalInset) / row_height_;
     int depth;
     InternalNode* node = GetNodeByRow(row, &depth);

@@ -244,7 +244,7 @@ class VIEWS_EXPORT MenuController
   void SetSelection(MenuItemView* menu_item, int types);
 
   void SetSelectionOnPointerDown(SubmenuView* source,
-                                 const LocatedEvent& event);
+                                 const ui::LocatedEvent& event);
   void StartDrag(SubmenuView* source, const gfx::Point& location);
 
 #if defined(OS_WIN) || defined(USE_AURA)
@@ -281,7 +281,7 @@ class VIEWS_EXPORT MenuController
   // button. Returns whether a context menu was shown.
   bool ShowContextMenu(MenuItemView* menu_item,
                        SubmenuView* source,
-                       const LocatedEvent& event);
+                       const ui::LocatedEvent& event);
 
   // Closes all menus, including any menus of nested invocations of Run.
   void CloseAllNestedMenus();
@@ -412,7 +412,7 @@ class VIEWS_EXPORT MenuController
 #if defined(OS_WIN) && !defined(USE_AURA)
   // If there is a window at the location of the event, a new mouse event is
   // generated and posted to it at the given location.
-  void RepostEvent(SubmenuView* source, const LocatedEvent& event);
+  void RepostEvent(SubmenuView* source, const ui::LocatedEvent& event);
 #endif
 
   // Sets the drop target to new_item.

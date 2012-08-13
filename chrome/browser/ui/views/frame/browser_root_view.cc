@@ -131,7 +131,7 @@ bool BrowserRootView::ShouldForwardToTabStrip(
   // Allow the drop as long as the mouse is over the tabstrip or vertically
   // before it.
   gfx::Point tab_loc_in_host;
-  ConvertPointToView(tabstrip(), this, &tab_loc_in_host);
+  ConvertPointToTarget(tabstrip(), this, &tab_loc_in_host);
   return event.y() < tab_loc_in_host.y() + tabstrip()->height();
 }
 
@@ -139,7 +139,7 @@ views::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
     const views::DropTargetEvent& event,
     const ui::OSExchangeData& data) {
   gfx::Point tab_strip_loc(event.location());
-  ConvertPointToView(this, tabstrip(), &tab_strip_loc);
+  ConvertPointToTarget(this, tabstrip(), &tab_strip_loc);
   return new views::DropTargetEvent(data, tab_strip_loc.x(),
                                     tab_strip_loc.y(),
                                     event.source_operations());

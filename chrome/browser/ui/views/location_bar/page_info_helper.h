@@ -9,8 +9,11 @@
 
 class LocationBarView;
 
-namespace views {
+namespace ui {
 class LocatedEvent;
+}
+
+namespace views {
 class View;
 }
 
@@ -20,7 +23,7 @@ class PageInfoHelper {
  public:
   PageInfoHelper(const views::View* owner, LocationBarView* location_bar);
 
-  void ProcessEvent(const views::LocatedEvent& event);
+  void ProcessEvent(const ui::LocatedEvent& event);
 
  private:
   const views::View* owner_;

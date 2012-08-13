@@ -27,7 +27,7 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
         if (screen_coordinates)
           views::View::ConvertPointToScreen(view, &point);
         else
-          views::View::ConvertPointToView(view, root_view, &point);
+          views::View::ConvertPointToTarget(view, root_view, &point);
         *bounds = view->GetContentsBounds();
         bounds->set_origin(point);
       }

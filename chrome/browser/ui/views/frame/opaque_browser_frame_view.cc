@@ -114,7 +114,7 @@ bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
   DCHECK(src);
   DCHECK(dst);
   gfx::Point origin(bounds.origin());
-  views::View::ConvertPointToView(src, dst, &origin);
+  views::View::ConvertPointToTarget(src, dst, &origin);
   bounds.set_origin(origin);
   return bounds.Contains(pt);
 }
@@ -412,18 +412,18 @@ bool OpaqueBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
     return false;
   gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  View::ConvertPointToView(frame()->client_view(), this, &tabstrip_origin);
+  View::ConvertPointToTarget(frame()->client_view(), this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
   if (rect.bottom() > tabstrip_bounds.bottom())
     return false;
 
   // We convert from our parent's coordinates since we assume we fill its bounds
   // completely. We need to do this since we're not a parent of the tabstrip,
-  // meaning ConvertPointToView would otherwise return something bogus.
+  // meaning ConvertPointToTarget would otherwise return something bogus.
   // TODO(tdanderson): Initialize |browser_view_point| using |rect| instead of
   // its center point once GetEventHandlerForRect() is implemented.
   gfx::Point browser_view_point(rect.CenterPoint());
-  View::ConvertPointToView(parent(), browser_view(), &browser_view_point);
+  View::ConvertPointToTarget(parent(), browser_view(), &browser_view_point);
   return browser_view()->IsPositionInWindowCaption(browser_view_point);
 }
 
@@ -676,7 +676,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   if (toolbar_bounds.IsEmpty())
     return;
   gfx::Point toolbar_origin(toolbar_bounds.origin());
-  ConvertPointToView(browser_view(), this, &toolbar_origin);
+  ConvertPointToTarget(browser_view(), this, &toolbar_origin);
   toolbar_bounds.set_origin(toolbar_origin);
 
   int x = toolbar_bounds.x();

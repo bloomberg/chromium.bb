@@ -373,7 +373,7 @@ int BaseScrollBar::GetScrollIncrement(bool is_page, bool is_positive) {
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, private:
 
-void BaseScrollBar::ProcessPressEvent(const LocatedEvent& event) {
+void BaseScrollBar::ProcessPressEvent(const ui::LocatedEvent& event) {
   SetThumbTrackState(CustomButton::BS_PUSHED);
   gfx::Rect thumb_bounds = thumb_->bounds();
   if (IsHorizontal()) {

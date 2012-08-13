@@ -134,12 +134,12 @@ class OmniboxPopupContentsView : public views::View,
 
   // Processes a located event (e.g. mouse/gesture) and sets the selection/hover
   // state of a line in the list.
-  void UpdateLineEvent(const views::LocatedEvent& event,
+  void UpdateLineEvent(const ui::LocatedEvent& event,
                        bool should_set_selected_line);
 
   // Opens an entry from the list depending on the event and the selected
   // disposition.
-  void OpenSelectedLine(const views::LocatedEvent& event,
+  void OpenSelectedLine(const ui::LocatedEvent& event,
                         WindowOpenDisposition disposition);
 
   // Returns the target bounds given the specified content height.

@@ -571,7 +571,7 @@ void LauncherView::FadeIn(views::View* view) {
 }
 
 void LauncherView::PrepareForDrag(Pointer pointer,
-                                  const views::LocatedEvent& event) {
+                                  const ui::LocatedEvent& event) {
   DCHECK(!dragging());
   DCHECK(drag_view_);
   drag_pointer_ = pointer;
@@ -589,10 +589,10 @@ void LauncherView::PrepareForDrag(Pointer pointer,
   bounds_animator_->StopAnimatingView(drag_view_);
 }
 
-void LauncherView::ContinueDrag(const views::LocatedEvent& event) {
+void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
   // TODO: I don't think this works correctly with RTL.
   gfx::Point drag_point(event.location());
-  views::View::ConvertPointToView(drag_view_, this, &drag_point);
+  views::View::ConvertPointToTarget(drag_view_, this, &drag_point);
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
 
@@ -889,7 +889,7 @@ void LauncherView::LauncherItemMoved(int start_index, int target_index) {
 
 void LauncherView::PointerPressedOnButton(views::View* view,
                                           Pointer pointer,
-                                          const views::LocatedEvent& event) {
+                                          const ui::LocatedEvent& event) {
   if (drag_view_)
     return;
 
@@ -906,7 +906,7 @@ void LauncherView::PointerPressedOnButton(views::View* view,
 
 void LauncherView::PointerDraggedOnButton(views::View* view,
                                           Pointer pointer,
-                                          const views::LocatedEvent& event) {
+                                          const ui::LocatedEvent& event) {
   if (!dragging() && drag_view_ &&
       primary_axis_coordinate(abs(event.x() - drag_offset_),
                               abs(event.y() - drag_offset_)) >=

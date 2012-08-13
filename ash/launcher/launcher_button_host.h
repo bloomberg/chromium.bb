@@ -9,8 +9,11 @@
 #include "ash/wm/shelf_types.h"
 #include "base/string16.h"
 
-namespace views {
+namespace ui {
 class LocatedEvent;
+}
+
+namespace views {
 class View;
 }
 
@@ -30,12 +33,12 @@ class ASH_EXPORT LauncherButtonHost {
   // Invoked when a pointer device is pressed on a view.
   virtual void PointerPressedOnButton(views::View* view,
                                       Pointer pointer,
-                                      const views::LocatedEvent& event) = 0;
+                                      const ui::LocatedEvent& event) = 0;
 
   // Invoked when a pointer device is dragged over a view.
   virtual void PointerDraggedOnButton(views::View* view,
                                       Pointer pointer,
-                                      const views::LocatedEvent& event) = 0;
+                                      const ui::LocatedEvent& event) = 0;
 
   // Invoked either if a pointer device is released or mouse capture canceled.
   virtual void PointerReleasedOnButton(views::View* view,

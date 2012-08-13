@@ -12,46 +12,13 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
-// LocatedEvent, protected:
-
-#if !defined(USE_AURA)
-LocatedEvent::LocatedEvent(const ui::NativeEvent& native_event)
-    : Event(native_event,
-            ui::EventTypeFromNative(native_event),
-            ui::EventFlagsFromNative(native_event)),
-      location_(ui::EventLocationFromNative(native_event)) {
-}
-#endif
-
-// TODO(msw): Kill this legacy constructor when we update uses.
-LocatedEvent::LocatedEvent(ui::EventType type,
-                           const gfx::Point& location,
-                           int flags)
-    : Event(type, flags),
-      location_(location) {
-}
-
-LocatedEvent::LocatedEvent(const LocatedEvent& model,
-                           View* source,
-                           View* target)
-    : Event(model),
-      location_(model.location_) {
-  if (target && target != source)
-    View::ConvertPointToView(source, target, &location_);
-}
-
-LocatedEvent::LocatedEvent(const LocatedEvent& model, View* root)
-    : Event(model),
-      location_(model.location_) {
-  View::ConvertPointFromWidget(root, &location_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // MouseEvent, public:
 
+#if !defined(USE_AURA)
 MouseEvent::MouseEvent(const ui::NativeEvent& native_event)
     : LocatedEvent(native_event) {
 }
+#endif
 
 MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
     : LocatedEvent(model, source, target) {
@@ -85,7 +52,7 @@ TouchEvent::TouchEvent(ui::EventType type,
                        float radius_y,
                        float angle,
                        float force)
-      : LocatedEvent(type, gfx::Point(x, y), flags),
+      : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
         touch_id_(touch_id),
         radius_x_(radius_x),
         radius_y_(radius_y),
@@ -103,18 +70,6 @@ TouchEvent::TouchEvent(const TouchEvent& model, View* source, View* target)
 }
 
 TouchEvent::~TouchEvent() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// TouchEvent, private:
-
-TouchEvent::TouchEvent(const TouchEvent& model, View* root)
-    : LocatedEvent(model, root),
-      touch_id_(model.touch_id_),
-      radius_x_(model.radius_x_),
-      radius_y_(model.radius_y_),
-      rotation_angle_(model.rotation_angle_),
-      force_(model.force_) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,13 +96,8 @@ GestureEvent::GestureEvent(const GestureEvent& model, View* source,
 ////////////////////////////////////////////////////////////////////////////////
 // GestureEvent, private:
 
-GestureEvent::GestureEvent(const GestureEvent& model, View* root)
-    : LocatedEvent(model, root),
-      details_(model.details_) {
-}
-
 GestureEvent::GestureEvent(ui::EventType type, int x, int y, int flags)
-    : LocatedEvent(type, gfx::Point(x, y), flags),
+    : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
       details_(type, 0.f, 0.f) {
 }
 

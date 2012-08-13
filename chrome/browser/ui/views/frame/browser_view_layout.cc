@@ -34,14 +34,14 @@ const int kSpacerBookmarkBarOverlap = 1;
 // The number of pixels the metro switcher is offset from the right edge.
 const int kWindowSwitcherOffsetX = 7;
 
-// Combines View::ConvertPointToView and View::HitTest for a given |point|.
+// Combines View::ConvertPointToTarget and View::HitTest for a given |point|.
 // Converts |point| from |src| to |dst| and hit tests it against |dst|. The
 // converted |point| can then be retrieved and used for additional tests.
 bool ConvertedHitTest(views::View* src, views::View* dst, gfx::Point* point) {
   DCHECK(src);
   DCHECK(dst);
   DCHECK(point);
-  views::View::ConvertPointToView(src, dst, point);
+  views::View::ConvertPointToTarget(src, dst, point);
   return dst->HitTestPoint(*point);
 }
 
@@ -132,7 +132,7 @@ gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
 bool BrowserViewLayout::IsPositionInWindowCaption(
     const gfx::Point& point) {
   gfx::Point tabstrip_point(point);
-  views::View::ConvertPointToView(browser_view_, tabstrip_, &tabstrip_point);
+  views::View::ConvertPointToTarget(browser_view_, tabstrip_, &tabstrip_point);
   return tabstrip_->IsPositionInWindowCaption(tabstrip_point);
 }
 
@@ -146,7 +146,7 @@ int BrowserViewLayout::NonClientHitTest(
   views::View* parent = browser_view_->parent();
 
   gfx::Point point_in_browser_view_coords(point);
-  views::View::ConvertPointToView(
+  views::View::ConvertPointToTarget(
       parent, browser_view_, &point_in_browser_view_coords);
   gfx::Point test_point(point);
 
@@ -309,7 +309,7 @@ int BrowserViewLayout::LayoutTabStripRegion() {
   gfx::Rect tabstrip_bounds(
       browser_view_->frame()->GetBoundsForTabStrip(tabstrip_));
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  views::View::ConvertPointToView(browser_view_->parent(), browser_view_,
+  views::View::ConvertPointToTarget(browser_view_->parent(), browser_view_,
                                   &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
 

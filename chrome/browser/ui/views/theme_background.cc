@@ -45,7 +45,7 @@ void ThemeBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   }
 
   gfx::Point origin(0, 0);
-  views::View::ConvertPointToView(view,
+  views::View::ConvertPointToTarget(view,
                                   browser_view_->frame()->GetFrameView(),
                                   &origin);
   canvas->TileImageInt(*background,

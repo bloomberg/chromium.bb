@@ -731,7 +731,7 @@ void ToolbarView::Layout() {
     if (si_mode.animate && si_mode.is_search() &&
         !location_bar_container_->IsAnimating()) {
       gfx::Point location_bar_origin(location_bar_bounds.origin());
-      views::View::ConvertPointToView(this, location_bar_container_->parent(),
+      views::View::ConvertPointToTarget(this, location_bar_container_->parent(),
                                       &location_bar_origin);
       location_bar_container_->AnimateTo(
           gfx::Rect(location_bar_origin, location_bar_bounds.size()));
@@ -1011,7 +1011,7 @@ void ToolbarView::SetLocationBarContainerBounds(
 
   // LocationBarContainer is not a child of the ToolbarView.
   gfx::Point origin(bounds.origin());
-  views::View::ConvertPointToView(this, location_bar_container_->parent(),
+  views::View::ConvertPointToTarget(this, location_bar_container_->parent(),
                                   &origin);
   gfx::Rect target_bounds(origin, bounds.size());
   if (location_bar_container_->GetTargetBounds() != target_bounds) {

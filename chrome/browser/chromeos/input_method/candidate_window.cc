@@ -759,8 +759,8 @@ bool CandidateView::OnMousePressed(const views::MouseEvent& event) {
   // when a popup window gets hidden. http://crosbug.com/11422
 
   gfx::Point location_in_candidate_window = event.location();
-  views::View::ConvertPointToView(this, parent_candidate_window_,
-                                  &location_in_candidate_window);
+  views::View::ConvertPointToTarget(this, parent_candidate_window_,
+                                    &location_in_candidate_window);
   parent_candidate_window_->OnCandidatePressed(location_in_candidate_window);
   parent_candidate_window_->CommitCandidate();
   return false;
@@ -1183,8 +1183,8 @@ void CandidateWindowView::OnCandidatePressed(
     const gfx::Point& location) {
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
     gfx::Point converted_location = location;
-    views::View::ConvertPointToView(this, candidate_views_[i],
-                                    &converted_location);
+    views::View::ConvertPointToTarget(this, candidate_views_[i],
+                                      &converted_location);
     if (candidate_views_[i]->HitTestPoint(converted_location)) {
       SelectCandidateAt(i);
       break;

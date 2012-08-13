@@ -601,9 +601,9 @@ View* View::GetSelectedViewForGroup(int group) {
 // Coordinate conversion -------------------------------------------------------
 
 // static
-void View::ConvertPointToView(const View* source,
-                              const View* target,
-                              gfx::Point* point) {
+void View::ConvertPointToTarget(const View* source,
+                                const View* target,
+                                gfx::Point* point) {
   if (source == target)
     return;
 
@@ -757,7 +757,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
       continue;
 
     gfx::Point point_in_child_coords(point);
-    View::ConvertPointToView(this, child, &point_in_child_coords);
+    ConvertPointToTarget(this, child, &point_in_child_coords);
     if (child->HitTestPoint(point_in_child_coords))
       return child->GetEventHandlerForPoint(point_in_child_coords);
   }
@@ -2099,7 +2099,7 @@ void View::UpdateTooltip() {
 
 // Drag and drop ---------------------------------------------------------------
 
-bool View::DoDrag(const LocatedEvent& event, const gfx::Point& press_pt) {
+bool View::DoDrag(const ui::LocatedEvent& event, const gfx::Point& press_pt) {
 #if !defined(OS_MACOSX)
   int drag_operations = GetDragOperations(press_pt);
   if (drag_operations == ui::DragDropTypes::DRAG_NONE)

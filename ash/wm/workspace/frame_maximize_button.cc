@@ -279,7 +279,7 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
   return ImageButton::OnGestureEvent(event);
 }
 
-void FrameMaximizeButton::ProcessStartEvent(const views::LocatedEvent& event) {
+void FrameMaximizeButton::ProcessStartEvent(const ui::LocatedEvent& event) {
   DCHECK(is_snap_enabled_);
   // Prepare the help menu.
   if (!maximizer_.get()) {
@@ -302,7 +302,7 @@ void FrameMaximizeButton::ProcessStartEvent(const views::LocatedEvent& event) {
       &FrameMaximizeButton::UpdateSnapFromEventLocation);
 }
 
-void FrameMaximizeButton::ProcessUpdateEvent(const views::LocatedEvent& event) {
+void FrameMaximizeButton::ProcessUpdateEvent(const ui::LocatedEvent& event) {
   DCHECK(is_snap_enabled_);
   int delta_x = event.x() - press_location_.x();
   int delta_y = event.y() - press_location_.y();
@@ -314,7 +314,7 @@ void FrameMaximizeButton::ProcessUpdateEvent(const views::LocatedEvent& event) {
     UpdateSnap(event.location());
 }
 
-bool FrameMaximizeButton::ProcessEndEvent(const views::LocatedEvent& event) {
+bool FrameMaximizeButton::ProcessEndEvent(const ui::LocatedEvent& event) {
   update_timer_.Stop();
   UninstallEventFilter();
   bool should_snap = is_snap_enabled_;

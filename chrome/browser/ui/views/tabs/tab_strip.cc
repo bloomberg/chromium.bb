@@ -265,7 +265,7 @@ views::View* ConvertPointToViewAndGetEventHandler(
     views::View* dest,
     const gfx::Point& point_in_source) {
   gfx::Point dest_point(point_in_source);
-  views::View::ConvertPointToView(source, dest, &dest_point);
+  views::View::ConvertPointToTarget(source, dest, &dest_point);
   return dest->HitTestPoint(dest_point) ?
       dest->GetEventHandlerForPoint(dest_point) : NULL;
 }
@@ -862,7 +862,7 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   // button. The button has a non-rectangular shape, so if it's not in the
   // visual portions of the button we treat it as a click to the caption.
   gfx::Point point_in_newtab_coords(point);
-  View::ConvertPointToView(this, newtab_button_, &point_in_newtab_coords);
+  View::ConvertPointToTarget(this, newtab_button_, &point_in_newtab_coords);
   if (newtab_button_->GetLocalBounds().Contains(point_in_newtab_coords) &&
       !newtab_button_->HitTestPoint(point_in_newtab_coords)) {
     return true;
@@ -969,7 +969,7 @@ bool TabStrip::IsTabPinned(const BaseTab* tab) const {
 
 void TabStrip::MaybeStartDrag(
     BaseTab* tab,
-    const views::LocatedEvent& event,
+    const ui::LocatedEvent& event,
     const TabStripSelectionModel& original_selection) {
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
@@ -1063,7 +1063,7 @@ bool TabStrip::EndDrag(bool canceled) {
 BaseTab* TabStrip::GetTabAt(BaseTab* tab,
                             const gfx::Point& tab_in_tab_coordinates) {
   gfx::Point local_point = tab_in_tab_coordinates;
-  ConvertPointToView(tab, this, &local_point);
+  ConvertPointToTarget(tab, this, &local_point);
 
   views::View* view = GetEventHandlerForPoint(local_point);
   if (!view)
@@ -1831,7 +1831,7 @@ void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
       // correctly (highlighting the close button doesn't set the flags
       // correctly).
       gfx::Point location(event.location());
-      ConvertPointToView(source, this, &location);
+      ConvertPointToTarget(source, this, &location);
       if (location == last_mouse_move_location_)
         return;  // Ignore spurious moves.
       last_mouse_move_location_ = location;
@@ -1856,7 +1856,7 @@ void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
 
     case ui::ET_MOUSE_RELEASED: {
       gfx::Point location(event.location());
-      ConvertPointToView(source, this, &location);
+      ConvertPointToTarget(source, this, &location);
       last_mouse_move_location_ = location;
 
       mouse_move_count_ = 0;
@@ -2297,7 +2297,7 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
 bool TabStrip::IsPointInTab(Tab* tab,
                             const gfx::Point& point_in_tabstrip_coords) {
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
-  View::ConvertPointToView(this, tab, &point_in_tab_coords);
+  View::ConvertPointToTarget(this, tab, &point_in_tab_coords);
   return tab->HitTestPoint(point_in_tab_coords);
 }
 

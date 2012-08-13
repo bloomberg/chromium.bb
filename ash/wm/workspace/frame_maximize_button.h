@@ -68,14 +68,14 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
 
   // Initializes the snap-gesture based on the event. This should only be called
   // when the event is confirmed to have started a snap gesture.
-  void ProcessStartEvent(const views::LocatedEvent& event);
+  void ProcessStartEvent(const ui::LocatedEvent& event);
 
   // Updates the snap-state based on the current event. This should only be
   // called after the snap gesture has already started.
-  void ProcessUpdateEvent(const views::LocatedEvent& event);
+  void ProcessUpdateEvent(const ui::LocatedEvent& event);
 
   // Returns true if the window was snapped. Returns false otherwise.
-  bool ProcessEndEvent(const views::LocatedEvent& event);
+  bool ProcessEndEvent(const ui::LocatedEvent& event);
 
   // Cancels snap behavior. If |keep_menu_open| is set, a possibly opened
   // bubble help will remain open.

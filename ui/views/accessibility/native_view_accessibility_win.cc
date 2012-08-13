@@ -58,7 +58,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
     return E_FAIL;
 
   gfx::Point point(x_left, y_top);
-  views::View::ConvertPointToView(NULL, view_, &point);
+  views::View::ConvertPointToTarget(NULL, view_, &point);
 
   if (!view_->HitTestPoint(point)) {
     // If containing parent is not hit, return with failure.

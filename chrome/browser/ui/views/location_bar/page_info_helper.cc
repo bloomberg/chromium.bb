@@ -22,7 +22,7 @@ PageInfoHelper::PageInfoHelper(const views::View* owner,
       location_bar_(location_bar) {
 }
 
-void PageInfoHelper::ProcessEvent(const views::LocatedEvent& event) {
+void PageInfoHelper::ProcessEvent(const ui::LocatedEvent& event) {
   if (!owner_->HitTestPoint(event.location()))
     return;
 

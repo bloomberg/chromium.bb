@@ -33,45 +33,12 @@ class RootView;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// LocatedEvent class
-//
-// A generic event that is used for any events that is located at a specific
-// position in the screen.
-//
-////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT LocatedEvent : public ui::Event {
- public:
-  int x() const { return location_.x(); }
-  int y() const { return location_.y(); }
-  const gfx::Point& location() const { return location_; }
-
- protected:
-  explicit LocatedEvent(const ui::NativeEvent& native_event);
-
-  // TODO(msw): Kill this legacy constructor when we update uses.
-  // Simple initialization from cracked metadata.
-  LocatedEvent(ui::EventType type, const gfx::Point& location, int flags);
-
-  // Create a new LocatedEvent which is identical to the provided model.
-  // If source / target views are provided, the model location will be converted
-  // from |source| coordinate system to |target| coordinate system.
-  LocatedEvent(const LocatedEvent& model, View* source, View* target);
-
-  // This constructor is to allow converting the location of an event from the
-  // widget's coordinate system to the RootView's coordinate system.
-  LocatedEvent(const LocatedEvent& model, View* root);
-
-  gfx::Point location_;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // MouseEvent class
 //
 // A mouse event is used for any input event related to the mouse.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT MouseEvent : public LocatedEvent {
+class VIEWS_EXPORT MouseEvent : public ui::LocatedEvent {
  public:
   explicit MouseEvent(const ui::NativeEvent& native_event);
   // Create a new MouseEvent which is identical to the provided model.
@@ -82,7 +49,7 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
   // TODO(msw): Kill this legacy constructor when we update uses.
   // Create a new mouse event
   MouseEvent(ui::EventType type, int x, int y, int flags)
-      : LocatedEvent(type, gfx::Point(x, y), flags) {
+      : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags) {
   }
 
   // Conveniences to quickly test what button is down
@@ -112,14 +79,6 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
   bool IsRightMouseButton() const {
     return (flags() & ui::EF_RIGHT_MOUSE_BUTTON) != 0;
   }
-
- protected:
-  MouseEvent(const MouseEvent& model, View* root)
-      : LocatedEvent(model, root) {
-  }
-
- private:
-  friend class internal::RootView;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,7 +90,7 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
 // TouchEvent and PlatformTouchPoint.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT TouchEvent : public LocatedEvent {
+class VIEWS_EXPORT TouchEvent : public ui::LocatedEvent {
  public:
   explicit TouchEvent(const ui::NativeEvent& native_event);
 
@@ -161,10 +120,6 @@ class VIEWS_EXPORT TouchEvent : public LocatedEvent {
   float force() const { return force_; }
 
  private:
-  friend class internal::RootView;
-
-  TouchEvent(const TouchEvent& model, View* root);
-
   // The identity (typically finger) of the touch starting at 0 and incrementing
   // for each separable additional touch that the hardware can detect.
   const int touch_id_;
@@ -206,13 +161,6 @@ class VIEWS_EXPORT MouseWheelEvent : public MouseEvent {
   int offset() const { return offset_; }
 
  private:
-  friend class internal::RootView;
-
-  MouseWheelEvent(const MouseWheelEvent& model, View* root)
-      : MouseEvent(model, root),
-        offset_(model.offset_) {
-  }
-
   int offset_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWheelEvent);
@@ -226,13 +174,14 @@ class VIEWS_EXPORT MouseWheelEvent : public MouseEvent {
 // drop operation.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT DropTargetEvent : public LocatedEvent {
+class VIEWS_EXPORT DropTargetEvent : public ui::LocatedEvent {
  public:
   DropTargetEvent(const ui::OSExchangeData& data,
                   int x,
                   int y,
                   int source_operations)
-      : LocatedEvent(ui::ET_DROP_TARGET_EVENT, gfx::Point(x, y), 0),
+      : LocatedEvent(
+            ui::ET_DROP_TARGET_EVENT, gfx::Point(x, y), gfx::Point(x, y), 0),
         data_(data),
         source_operations_(source_operations) {
     // TODO(msw): Hook up key state flags for CTRL + drag and drop, etc.
@@ -259,14 +208,6 @@ class VIEWS_EXPORT ScrollEvent : public MouseEvent {
   float y_offset() const { return y_offset_; }
 
  private:
-  friend class internal::RootView;
-
-  ScrollEvent(const ScrollEvent& model, View* root)
-      : MouseEvent(model, root),
-        x_offset_(model.x_offset()),
-        y_offset_(model.y_offset()) {
-  }
-
   float x_offset_;
   float y_offset_;
 
@@ -277,7 +218,7 @@ class VIEWS_EXPORT ScrollEvent : public MouseEvent {
 // GestureEvent class
 //
 ////////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT GestureEvent : public LocatedEvent {
+class VIEWS_EXPORT GestureEvent : public ui::LocatedEvent {
  public:
   explicit GestureEvent(const ui::NativeEvent& native_event);
 
@@ -294,10 +235,6 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent {
   GestureEvent(ui::EventType type, int x, int y, int flags);
 
  private:
-  friend class internal::RootView;
-
-  GestureEvent(const GestureEvent& model, View* root);
-
   ui::GestureEventDetails details_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEvent);

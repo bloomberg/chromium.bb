@@ -144,10 +144,10 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Invoked when the pointer has moved enough to trigger a drag. Sets
   // internal state in preparation for the drag.
-  void PrepareForDrag(Pointer pointer, const views::LocatedEvent& event);
+  void PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event);
 
   // Invoked when the mouse is dragged. Updates the models as appropriate.
-  void ContinueDrag(const views::LocatedEvent& event);
+  void ContinueDrag(const ui::LocatedEvent& event);
 
   // Returns true if |typea| and |typeb| should be in the same drag range.
   bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
@@ -187,11 +187,11 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual void PointerPressedOnButton(
       views::View* view,
       Pointer pointer,
-      const views::LocatedEvent& event) OVERRIDE;
+      const ui::LocatedEvent& event) OVERRIDE;
   virtual void PointerDraggedOnButton(
       views::View* view,
       Pointer pointer,
-      const views::LocatedEvent& event) OVERRIDE;
+      const ui::LocatedEvent& event) OVERRIDE;
   virtual void PointerReleasedOnButton(views::View* view,
                                        Pointer pointer,
                                        bool canceled) OVERRIDE;
