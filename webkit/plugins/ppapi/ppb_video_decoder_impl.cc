@@ -44,6 +44,7 @@ PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() {
+  Destroy();
 }
 
 // Convert PP_VideoDecoder_Profile to media::VideoCodecProfile.
