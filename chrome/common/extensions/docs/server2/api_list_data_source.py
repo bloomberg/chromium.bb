@@ -62,5 +62,4 @@ class APIListDataSource(object):
     try:
       return self._cache.GetFromFileListing(self._api_path)[key]
     except FileNotFoundError as e:
-      logging.error(e)
-      return None
+      raise ValueError(str(e) + ': Error listing files for "%s".' % key)

@@ -82,5 +82,4 @@ class IntroDataSource(object):
         return self._cache.GetFromFile(base_path + '/' + real_path)
       except FileNotFoundError as error:
         pass
-    logging.error(error)
-    return None
+    raise ValueError(str(error) + ': No intro found for "%s".' % key)

@@ -98,6 +98,5 @@ class APIDataSource(object):
         return self._GenerateHandlebarContext(key,
             self._idl_cache.GetFromFile(self._base_path + '/' + idl_path),
             path)
-      except FileNotFoundError as e:
-        logging.error(e)
+      except FileNotFoundError:
         raise

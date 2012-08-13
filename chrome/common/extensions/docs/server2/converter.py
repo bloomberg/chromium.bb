@@ -303,7 +303,7 @@ def _MoveSingleFile(source_dir,
                                        static_data is not None)
       static_file = os.path.join(intros_dest, processed_name + '.html')
     else:
-      template_data = _MakeArticleTemplate(unix_name, path)
+      template_data = _MakeArticleTemplate(processed_name, path)
       static_file = os.path.join(articles_dest, processed_name + '.html')
     if replace or not os.path.exists(template_file):
       _WriteFile(template_file, template_data)
