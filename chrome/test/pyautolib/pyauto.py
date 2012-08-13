@@ -209,10 +209,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     if self.IsChromeOS():
       self.WaitUntil(lambda: not self.GetNetworkInfo()['offline_mode'])
 
-    if (self.IsChromeOS() and self.ShouldOOBESkipToLogin() and
-        not self.GetLoginInfo()['is_logged_in'] and
-        self.GetOOBEScreenInfo()['screen_name'] != 'login'):
-      self.SkipToLogin()
+    if (self.IsChromeOS() and not self.GetLoginInfo()['is_logged_in'] and
+        self.ShouldOOBESkipToLogin()):
+      if self.GetOOBEScreenInfo()['screen_name'] != 'login':
+        self.SkipToLogin()
+      if self.ShouldAutoLogin():
+        # Login with default creds.
+        sys.path.append('/usr/local')  # to import autotest libs
+        from autotest.cros import constants
+        creds = constants.CREDENTIALS['$default']
+        self.Login(creds[0], creds[1])
+        assert self.GetLoginInfo()['is_logged_in']
+        logging.info('Logged in as %s.' % creds[0])
 
     # If we are connected to any RemoteHosts, create PyAuto
     # instances on the remote sides and set them up too.
@@ -298,6 +306,23 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       True, if the OOBE should be skipped and automation should
             go to the 'Add user' login screen directly
       False, if the OOBE should not be skipped.
+    """
+    assert self.IsChromeOS()
+    return True
+
+  def ShouldAutoLogin(self):
+    """Determine if we should auto-login on ChromeOS at browser startup.
+
+    To be used for tests that expect user to be logged in before running test,
+    without caring which user. ShouldOOBESkipToLogin() should return True
+    for this to take effect.
+
+    Override and return False to not auto login, for tests where login is part
+    of the use case.
+
+    Returns:
+      True, if chrome should auto login after startup.
+      False, otherwise.
     """
     assert self.IsChromeOS()
     return True

@@ -105,6 +105,9 @@ class PolicyTestBase(pyauto.PyUITest):
     _auth_server = None
     _dns_server = None
 
+  def ShouldAutoLogin(self):
+    return False
+
   @staticmethod
   def _Call(command, check=False):
     """Invokes a subprocess and optionally asserts the return value is zero."""

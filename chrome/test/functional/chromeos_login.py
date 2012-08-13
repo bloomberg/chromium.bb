@@ -23,6 +23,9 @@ class ChromeosLogin(pyauto.PyUITest):
 
   assert os.geteuid() == 0, 'Need to run this test as root'
 
+  def ShouldAutoLogin(self):
+    return False
+
   def setUp(self):
     # We want a clean session_manager instance for every run,
     # so restart ui now.

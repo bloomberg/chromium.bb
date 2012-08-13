@@ -28,15 +28,10 @@ class ChromeosUtils(pyauto.PyUITest):
       python chromeos_utils.py \
         chromeos_utils.ChromeosUtils.LoginToDefaultAccount
     """
-    if self.GetLoginInfo()['is_logged_in']:
-      logging.info('Already logged in as %s.' % self.GetLoginInfo()['email'])
-      return
-    creds = constants.CREDENTIALS['$default']
-    username = creds[0]
-    passwd = creds[1]
-    self.Login(username, passwd)
-    assert self.GetLoginInfo()['is_logged_in']
-    logging.info('Logged in as %s.' % username)
+    # Should auto-login. Nothing to do here.
+    # TODO(nirnimesh): Remove this when auto-login feature
+    # reaches chromeos such that this helper is not necessary.
+    pass
 
 
 if __name__ == '__main__':

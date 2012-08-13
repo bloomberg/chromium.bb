@@ -24,7 +24,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.assertTrue(self.GetLoginInfo()['is_logged_in'],
                     msg='Expected to be logged in.')
 
-  def Login(self, user_index, expect_success):
+  def _Login(self, user_index, expect_success):
     self.assertFalse(self.GetLoginInfo()['is_logged_in'],
                      msg='Expected to be logged out.')
     policy_base.PolicyTestBase.Login(self,
@@ -77,7 +77,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
 
     # Log in as a regular so that the pod row contains at least one pod and the
     # account picker is shown.
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
 
     self.SetDevicePolicy({'guest_mode_enabled': True})
@@ -94,7 +94,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     """Checks that the account picker can be enabled/disabled."""
     # Log in as a regular user so that the pod row contains at least one pod and
     # the account picker can be shown.
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
 
     self.SetDevicePolicy({'show_user_names': False})
@@ -119,42 +119,42 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     # No whitelist
     self.SetDevicePolicy({'allow_new_users': True,
                           'show_user_names': False})
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
 
     # Empty whitelist
     self.SetDevicePolicy({'user_whitelist': []})
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
 
     self.SetDevicePolicy({'allow_new_users': True,
                           'user_whitelist': [],
                           'show_user_names': False})
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
 
     # Populated whitelist
     self.SetDevicePolicy({'user_whitelist': [self._usernames[0]],
                           'show_user_names': False})
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
-    self.Login(user_index=1, expect_success=False)
+    self._Login(user_index=1, expect_success=False)
 
     self.SetDevicePolicy({'allow_new_users': True,
                           'user_whitelist': [self._usernames[0]],
                           'show_user_names': False})
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
-    self.Login(user_index=1, expect_success=True)
+    self._Login(user_index=1, expect_success=True)
     self.Logout()
 
     # New users not allowed, populated whitelist
     self.SetDevicePolicy({'allow_new_users': False,
                           'user_whitelist': [self._usernames[0]],
                           'show_user_names': False})
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
-    self.Login(user_index=1, expect_success=False)
+    self._Login(user_index=1, expect_success=False)
 
   def testUserWhitelistInAccountPicker(self):
     """Checks that setting a whitelist removes non-whitelisted user pods."""
@@ -165,9 +165,9 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self.WaitForLoginFormReload()
 
     # Log in to populate the list of existing users.
-    self.Login(user_index=0, expect_success=True)
+    self._Login(user_index=0, expect_success=True)
     self.Logout()
-    self.Login(user_index=1, expect_success=True)
+    self._Login(user_index=1, expect_success=True)
     self.Logout()
 
     # Enable the account picker.

@@ -142,6 +142,9 @@ class NetflixTest(pyauto.PyUITest, NetflixTestHelper):
     pyauto.PyUITest.__init__(self, methodName, **kwargs)
     NetflixTestHelper.__init__(self, self)
 
+  def ShouldAutoLogin(self):
+    return False
+
   def _Login(self):
     """Perform login"""
     credentials = self.GetPrivateInfo()['test_google_account']

@@ -24,6 +24,9 @@ class AccessibilityTest(pyauto.PyUITest):
   """
   find_test_data_dir = 'find_in_page'
 
+  def ShouldAutoLogin(self):
+    return False
+
   def setUp(self):
     # We want a clean session_manager instance for every run,
     # so restart ui now.
