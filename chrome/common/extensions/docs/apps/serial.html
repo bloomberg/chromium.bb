@@ -17,8 +17,8 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.events module, which is part of the Google Chrome  extension APIs."><title>chrome.events - Google Chrome Extensions - Google Code</title></head>
-  <body doc-family="extensions">  <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
+  <meta name="description" content="Documentation for the chrome.serial module, which is part of the Google Chrome  extension APIs."><title>chrome.serial - Google Chrome Extensions - Google Code</title></head>
+  <body doc-family="apps">  <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
   <link href="../css/prettify.css" rel="stylesheet" type="text/css">
   <link href="../css/shared.css" rel="stylesheet" type="text/css">
   <div id="devModeWarning" class="displayModeWarning">
@@ -54,7 +54,7 @@
     <!-- API HEADER -->
     <table id="header" width="100%" cellspacing="0" border="0">
       <tbody><tr>
-        <td valign="middle"><a href="/"><img src="../images/chrome_logo.gif" alt="Google Chrome Extensions" style="border:0; margin:0;"></a></td>
+        <td valign="middle"><a href="http://code.google.com/"><img src="../images/chrome_logo.gif" alt="Google Code" style="border:0; margin:0;"></a></td>
         <td valign="middle" width="100%" style="padding-left:0.6em;">
           <form action="http://www.google.com/cse" id="cse" style="margin-top:0.5em">
             <div id="gsc-search-box">
@@ -65,7 +65,7 @@
                 <img class="gsc-search-button-lens" src="../images/search.png" alt="Search">
               </button>
               <br>
-              <span class="greytext">e.g. "page action" or "tabs"</span>
+              <span class="greytext">e.g. "event page" or "alarms"</span>
             </div>
           </form>
           <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -78,22 +78,19 @@
     <div id="codesiteContent" class="">
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
-        <h1>Google Chrome Extensions</h1>
+        <h1>Packaged Apps</h1>
         <ul id="home" class="gc-topnav-tabs">
           <li id="home_link">
-            <a href="index.html" title="Google Chrome Extensions home page"><span>Home</span></a>
+            <a href="about_apps.html" title="Packaged Apps home page"><span>Home</span></a>
           </li>
           <li id="docs_link">
-            <a href="docs.html" title="Official Google Chrome Extensions documentation"><span>Docs</span></a>
-          </li>
-          <li id="faq_link">
-            <a href="faq.html" title="Answers to frequently asked questions about Google Chrome Extensions"><span>FAQ</span></a>
+            <a href="develop_apps.html" title="Packaged apps developer documentation"><span>Docs</span></a>
           </li>
           <li id="samples_link">
-            <a href="samples.html" title="Sample extensions (with source code)"><span>Samples</span></a>
+            <a href="https://github.com/GoogleChrome/chrome-app-samples" title="Packaged apps samples repository"><span>Samples</span></a>
           </li>
           <li id="group_link">
-            <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions" title="Google Chrome Extensions developer forum"><span>Group</span></a>
+            <a href="http://groups.google.com/a/chromium.org/group/chromium-apps" title="Google Chrome Apps developer forum"><span>Group</span></a>
           </li>
           <li id="so_link">
             <a href="http://stackoverflow.com/questions/tagged/google-chrome-extension" title="[google-chrome-extension] tag on Stack Overflow"><span>Questions?</span></a>
@@ -104,83 +101,55 @@
       <!-- SIDENAV -->
       <div class="g-unit g-first" id="gc-toc">
         <ul>
-          <li><a href="getstarted.html">Getting Started</a></li>
-          <li><a href="overview.html">Overview</a></li>
-          <li><a href="whats_new.html">What's New?</a></li>
-          <li><h2><a href="devguide.html">Developer's Guide</a></h2>
+          <li><h2>Getting Started</h2>
             <ul>
-              <li><span>Browser UI</span>
-                <ul>
-                  <li><a href="browserAction.html">Browser Actions</a></li>
-                  <li><a href="contextMenus.html">Context Menus</a></li>
-                  <li><a href="notifications.html">Desktop Notifications</a></li>
-                  <li><a href="omnibox.html">Omnibox</a></li>
-                  <li><a href="options.html">Options Pages</a></li>
-                  <li><a href="override.html">Override Pages</a></li>
-                  <li><a href="pageAction.html">Page Actions</a></li>
-                </ul>
-              </li>
-              <li><span>Browser Interaction</span>
-                <ul>
-                  <li><a href="bookmarks.html">Bookmarks</a></li>
-                  <li><a href="cookies.html">Cookies</a></li>
-                  <li><a href="devtools.html">Developer Tools</a></li>
-                  <li class="leftNavSelected">Events</li>
-                  <li><a href="history.html">History</a></li>
-                  <li><a href="management.html">Management</a></li>
-                  <li><a href="tabs.html">Tabs</a></li>
-                  <li><a href="windows.html">Windows</a></li>
-                </ul>
-              </li>
-              <li><span>Implementation</span>
-                <ul>
-                  <li><a href="a11y.html">Accessibility</a></li>
-                  <li><a href="background_pages.html">Background Pages</a></li>
-                  <li><a href="content_scripts.html">Content Scripts</a></li>
-                  <li><a href="xhr.html">Cross-Origin XHR</a></li>
-                  <li><a href="i18n.html">Internationalization</a></li>
-                  <li><a href="messaging.html">Message Passing</a></li>
-                  <li><a href="permissions.html">Optional Permissions</a></li>
-                  <li><a href="npapi.html">NPAPI Plugins</a></li>
-                </ul>
-              </li>
-              <li><span>Finishing</span>
-                <ul>
-                  <li><a href="hosting.html">Hosting</a></li>
-                  <li><a href="external_extensions.html">Other Deployment Options</a></li>
-                </ul>
-              </li>
+              <li><a href="about_apps.html">What Are Packaged Apps?</a></li>
+              <li><a href="app_architecture.html">Understand the Architecture</a></li>
+              <li><a href="first_app.html">Create Your First App</a></li>
             </ul>
           </li>
-          <li><h2><a href="apps.html">Packaged Apps</a></h2></li>
-          <li><h2><a href="tutorials.html">Tutorials</a></h2>
+          <li><h2>Developing</h2>
             <ul>
-              <li><a href="tut_debugging.html">Debugging</a></li>
-              <li><a href="tut_analytics.html">Google Analytics</a></li>
-              <li><a href="tut_oauth.html">OAuth</a></li>
+              <li><a href="develop_apps.html">Before You Start</a></li>
+              <li><span>The Fundamentals</span>
+                <ul>
+                  <li><a href="app_lifecycle.html">Manage App Lifecycle</a></li>
+                  <li><a href="app_storage.html">Manage Data</a></li>
+                  <li><a href="offline_apps.html">Offline First</a></li>
+                  <li><a href="app_external.html">Embed Content</a></li>
+                </ul>
+              </li>
+              <li><span>Security &amp; Privacy</span>
+                <ul>
+                  <li><a href="app_identity.html">Identify User</a></li>
+                  <li><a href="app_csp.html">Comply with CSP</a></li>
+                </ul>
+              </li>
+              <li><span>Advanced Technologies</span>
+                <ul>
+                  <li><a href="app_network.html">Network Communications</a></li>
+                  <li><a href="app_hardware.html">Access Hardware Devices</a></li>
+                  <li><a href="app_intents.html">Connect Apps with Web Intents</a></li>
+                </ul>
+              </li>
+              <li><a href="app_frameworks.html">MVC Architecture</a></li>
+            </ul>
+          </li>
+          <li><h2>Deploying</h2>
+            <ul>
+              <li><a href="publish_app.html">Publish</a></li>
             </ul>
           </li>
           <li><h2>Reference</h2>
             <ul>
-              <li><span>Formats</span>
-                <ul>
-                  <li><a href="manifest.html">Manifest Files</a></li>
-                  <li><a href="match_patterns.html">Match Patterns</a></li>
-                </ul>
-              </li>
-              <li><a href="permission_warnings.html">Permission Warnings</a></li>
-              <li><a href="api_index.html">chrome.* APIs</a></li>
-              <li><a href="api_other.html">Other APIs</a></li>
+              <li><a href="manifest.html">Manifest Files</a></li>
+              <li><a href="api_index.html">Chrome JavaScript APIs</a></li>
+              <li><a href="api_other.html">Supported Libraries</a></li>
+              <li><a href="app_deprecated.html">Disabled Web Features</a></li>
             </ul>
           </li>
-          <li><h2><a href="samples.html">Samples</a></h2></li>
-          <li><h2>More</h2>
-            <ul>
-              <li><a href="https://developers.google.com/chrome/web-store/docs/">Chrome Web Store</a></li>
-              <li><a href="https://developers.google.com/chrome/apps/docs/developers_guide">Hosted Apps</a></li>
-              <li><a href="themes.html">Themes</a></li>
-            </ul>
-          </li>
+          <li><h2><a href="https://github.com/GoogleChrome/chrome-app-samples">Samples</a></h2></li>
+          <li><h2><a href="app_known_issues.html">Known Issues</a></h2></li>
         </ul>
       </div>
       <script>
@@ -188,53 +157,58 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.events</h1>
+        <h1 class="page_title">chrome.serial</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li>
-              <a href="#declarative">Declarative Event Handlers</a>
-              <ol>
-              </ol>
-            </li>
               <li>
-                <a href="#apiReference">API reference: chrome.events</a>
+                <a href="#apiReference">API reference: chrome.serial</a>
                 <ol>
+                  <li>
+            <a href="#global-methods">Methods</a>
+            <ol>
+              <li>
+                <a href="#method-close">close</a>
+              </li><li>
+                <a href="#method-flush">flush</a>
+              </li><li>
+                <a href="#method-getControlSignals">getControlSignals</a>
+              </li><li>
+                <a href="#method-getPorts">getPorts</a>
+              </li><li>
+                <a href="#method-open">open</a>
+              </li><li>
+                <a href="#method-read">read</a>
+              </li><li>
+                <a href="#method-setControlSignals">setControlSignals</a>
+              </li><li>
+                <a href="#method-write">write</a>
+              </li>
+            </ol>
+          </li>
                   <li>
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-events.Event">Event</a>
-                <ol>
-                  <li>
-            <a href="#global-events.Event-methods">Methods</a>
-            <ol>
-              <li>
-                <a href="#method-events.Event-addListener">addListener</a>
-              </li><li>
-                <a href="#method-events.Event-addRules">addRules</a>
-              </li><li>
-                <a href="#method-events.Event-getRules">getRules</a>
-              </li><li>
-                <a href="#method-events.Event-hasListener">hasListener</a>
-              </li><li>
-                <a href="#method-events.Event-hasListeners">hasListeners</a>
-              </li><li>
-                <a href="#method-events.Event-removeListener">removeListener</a>
-              </li><li>
-                <a href="#method-events.Event-removeRules">removeRules</a>
-              </li>
-            </ol>
-          </li>
-                </ol>
-              </li><li>
-                <a href="#type-events.Rule">Rule</a>
+                <a href="#type-serial.OpenOptions">serial.OpenOptions</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-events.UrlFilter">UrlFilter</a>
+                <a href="#type-serial.OpenInfo">serial.OpenInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-serial.ReadInfo">serial.ReadInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-serial.WriteInfo">serial.WriteInfo</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-serial.ControlSignalOptions">serial.ControlSignalOptions</a>
                 <ol>
                 </ol>
               </li>
@@ -246,805 +220,51 @@
         </div>
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
+        <p class="warning">
+          <!-- Standard content lead-in for APIs that are not yet available on
+          the stable channel. -->
+          <em>Warning:</em> This API is still under development. It is only
+          available for Chrome users on the
+          <span>
+            <strong>dev</strong>
+              <a href="http://www.chromium.org/getting-involved/dev-channel">early
+              release channel</a>.</span>
+          <a href="TODO">Learn more</a>.
+        </p>
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><p>
-An <code>Event</code> is an object
-that allows you to be notified
-when something interesting happens.
-Here's an example of using the
-<code>chrome.tabs.onCreated</code> event
-to be notified whenever there's a new tab:
-</p>
-<pre>chrome.tabs.onCreated.<b>addListener(function(</b>tab<b>) {</b>
-  appendToLog('tabs.onCreated --'
-              + ' window: ' + tab.windowId
-              + ' tab: '    + tab.id
-              + ' index: '  + tab.index
-              + ' url: '    + tab.url);
-<b>});</b>
-</pre>
-<p>
-As the example shows,
-you register for notification using <code>addListener()</code>.
-The argument to <code>addListener()</code>
-is always a function that you define to handle the event,
-but the parameters to the function depend on
-which event you're handling.
-Checking the documentation for
-<a href="tabs.html#event-onCreated"><code>chrome.tabs.onCreated</code></a>,
-you can see that the function has a single parameter:
-a <a href="tabs.html#type-tabs.Tab">Tab</a> object
-that has details about the newly created tab.
-</p>
-<div class="doc-family extensions">
-<h2 id="declarative">Declarative Event Handlers</h2>
-<p>
-The declarative event handlers provide a means to define rules consisting of
-declarative conditions and actions. Conditions are evaluated in the browser
-rather than the JavaScript engine which reduces roundtrip latencies and allows
-for very high efficiency.
-</p>
-<p>Declarative event handlers are used for example in the <a href="declarativeWebRequest.html">Declarative Web Request API</a> and possibly
-further extension APIs in the future. This page describes the underlying
-concepts of all declarative event handlers.
-</p>
-<h3 id="rules">Rules</h3>
-<p>The simplest possible rule consists of one or more conditions and one or more
-actions:</p>
-<pre>var rule = {
-  conditions: [ /* my conditions */ ],
-  actions: [ /* my actions */ ]
-};
-</pre>
-<p>If any of the conditions is fulfilled, all actions are executed.</p>
-<p>In addition to conditions and actions you may give each rule an identifier,
-which simplifies unregistering previously registered rules, and a priority to
-define precedences among rules. Priorities are only considered if rules conflict
-each other or need to be executed in a specific order.</p>
-<pre>var rule = {
-  id: "my rule",  // optional, will be generated if not set.
-  priority: 100,  // optional, defaults to 100.
-  conditions: [ /* my conditions */ ],
-  actions: [ /* my actions */ ]
-};
-</pre>
-<h3 id="eventobjects">Event objects</h3>
-<p>
-<a href="events.html">Event objects</a> may support rules. These event objects
-don't call a callback function when events happer but test whether any
-registered rule has at least one fulfilled condition and execute the actions
-associated with this rule. Event objects supporting the declarative API have
-three relevant methods: <a href="#method-addRules"><code>addRules()</code></a>,
-<a href="#method-removeRules"><code>removeRules()</code></a>, and
-<a href="#method-getRules"><code>getRules()</code></a>.
-</p>
-<h3 id="addingrules">Adding rules</h3>
-<p>
-To add rules call the <code>addRules()</code> function of the event object. It
-takes an array of rule instances as its first parameter and a callback function
-that is called on completion.
-</p>
-<pre>var rule_list = [rule1, rule2, ...];
-function addRules(rule_list, function callback(details) {...});
-</pre>
-<p>
-If the rules were inserted successfully, the <code>details</code> parameter
-contains an array of inserted rules appearing in the same order as in the passed
-<code>rule_list</code> where the optional parameters <code>id</code> and
-<code>priority</code> were filled with the generated values. If any rule is
-invalid, e.g., because it contained an invalid condition or action, none of the
-rules are added and the <a href="extension.html#property-lastError">lastError</a> variable is set when
-the callback function is called. Each rule in <code>rule_list</code> must
-contain a unique identifier that is not currently used by another rule or an
-empty identifier.
-</p>
-<h3 id="removingrules">Removing rules</h3>
-<p>
-To remove rules call the <code>removeRules()</code> function. It accepts an
-optional array of rule identifiers as its first parameter and a callback
-function as its second parameter.
-</p>
-<pre>var rule_ids = ["id1", "id2", ...];
-function removeRules(rule_ids, function callback() {...});
-</pre>
-<p>
-If <code>rule_ids</code> is an array of identifiers, all rules having
-identifiers listed in the array are removed. If <code>rule_ids</code> lists an
-identifier, that is unknown, this identifier is silently ignored. If
-<code>rule_ids</code> is <code>undefined</code>, all registered rules of this
-extension are removed. The <code>callback()</code> function is called when the
-rules were removed.
-</p>
-<h3 id="retrievingrules">Retrieving rules</h3>
-<p>
-To retrieve a list of currently registered rules, call the
-<code>getRules()</code> function. It accepts an optional array of rule
-identifiers with the same semantics as <code>removeRules</code> and a callback
-function.
-</p>
-<pre>var rule_ids = ["id1", "id2", ...];
-function getRules(rule_ids, function callback(details) {...});
-</pre>
-<p>
-The <code>details</code> parameter passed to the <code>calback()</code> function
-refers to an array of rules including filled optional parameters.
-</p>
-</div>
-</div>
+        <div id="static"></div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.events</h2>
+        <h2>API reference: chrome.serial</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
-            <!-- /apiGroup -->
-          <!-- EVENTS -->
-           <!-- /apiGroup -->
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types"></a>
-            <h3 id="types">Types</h3>
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a name="type-events.Event"></a>
-              <h4>events.Event</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>An object which allows the addition and removal of listeners for a Chrome event.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <dd>
-            <div class="apiGroup">
-            <a name="global-events.Event-methods"></a>
-            <h3>Methods of events.Event</h3>
+          <div id="methodsTemplate" class="apiGroup">
+            <a name="global-methods"></a>
+            <h3>Methods</h3>
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-events.Event-addListener"></a> <!-- method-anchor -->
-              <h4>addListener</h4>
+              <a name="method-close"></a> <!-- method-anchor -->
+              <h4>close</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>events.Event.addListener</span>(<span class="null"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                  <span>chrome.serial.close</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>CloseCallback</span></var></span>)</div>
               <div class="description">
-                <p>Registers an event listener <em>callback</em> to an event.</p>
+                <p>Closes an open connection.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
           <dt>
-            <var>callback</var>
+            <var>connectionId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Called when an event occurs. The parameters of this function depend on the type of event.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-events.Event-addRules"></a> <!-- method-anchor -->
-              <h4>addRules</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>events.Event.addRules</span>(<span class="null"><span>array of events.Rule</span>
-                      <var><span>rules</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Registers rules to handle events.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>rules</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <a href="events.html#type-events.Rule">events.Rule</a>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Rules to be registered. These do not replace previously registered rules.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Called with registered rules.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of events.Rule rules</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>rules</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <a href="events.html#type-events.Rule">events.Rule</a>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Rules that were registered, the optional parameters are filled with values.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-events.Event-getRules"></a> <!-- method-anchor -->
-              <h4>getRules</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>events.Event.getRules</span>(<span class="optional"><span>array of string</span>
-                      <var><span>ruleIdentifiers</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Returns currently registered rules.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>ruleIdentifiers</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If an array is passed, only rules with identifiers contained in this array are returned.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Called with registered rules.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The <em>callback</em> parameter should specify a function
-                    that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of events.Rule rules</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>rules</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <a href="events.html#type-events.Rule">events.Rule</a>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Rules that were registered, the optional parameters are filled with values.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-events.Event-hasListener"></a> <!-- method-anchor -->
-              <h4>hasListener</h4>
-              <div class="summary"><span>boolean</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>events.Event.hasListener</span>(<span class="null"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Listener whose registration status shall be tested.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>boolean</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>True if <em>callback</em> is registered to the event.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-events.Event-hasListeners"></a> <!-- method-anchor -->
-              <h4>hasListeners</h4>
-              <div class="summary"><span>boolean</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>events.Event.hasListeners</span>()</div>
-              <div class="description">
-                <!-- PARAMETERS -->
-                <dl>
-                </dl>
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>boolean</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>True if any event listeners are registered to the event.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-events.Event-removeListener"></a> <!-- method-anchor -->
-              <h4>removeListener</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>events.Event.removeListener</span>(<span class="null"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Deregisters an event listener <em>callback</em> from an event.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Listener that shall be unregistered.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-events.Event-removeRules"></a> <!-- method-anchor -->
-              <h4>removeRules</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>events.Event.removeRules</span>(<span class="optional"><span>array of string</span>
-                      <var><span>ruleIdentifiers</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Unregisters currently registered rules.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>ruleIdentifiers</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>If an array is passed, only rules with identifiers contained in this array are unregistered.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Called when rules were unregistered.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div>  <!-- /apiItem -->
-          </div>
-          </dd>
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div class="apiItem">
-              <a name="type-events.Rule"></a>
-              <h4>events.Rule</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Description of a declarative rule for handling events.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>id</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Optional identifier that allows referencing this rule.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>conditions</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <span>any</span>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>List of conditions that can trigger the actions.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>actions</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <span>any</span>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>List of actions that are triggered if one of the condtions is fulfilled.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>priority</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>integer</span>
@@ -1054,7 +274,918 @@ refers to an array of rules including filled optional parameters.
                 </div>
               </em>
           </dt>
-          <dd>Optional priority of this rule. Defaults to 100.</dd>
+          <dd>The id of the opened connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>CloseCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Returns true if operation was successful.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-flush"></a> <!-- method-anchor -->
+              <h4>flush</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.serial.flush</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>FlushCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Flushes all bytes in the given connection's input and output buffers.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>FlushCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Returns true if operation was successful.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getControlSignals"></a> <!-- method-anchor -->
+              <h4>getControlSignals</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.serial.getControlSignals</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>GetControlSignalsCallback</span></var></span>)</div>
+              <div class="description">
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>GetControlSignalsCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Returns a snapshot of current control signals.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>options</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="serial.html#type-serial.ControlSignalOptions">serial.ControlSignalOptions</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getPorts"></a> <!-- method-anchor -->
+              <h4>getPorts</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.serial.getPorts</span>(<span class="null"><span>function</span>
+                      <var><span>GetPortsCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Returns names of valid ports on this machine, each of which is likely to be valid to pass as the port argument to open(). The list is regenerated each time this method is called, as port validity is dynamic.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>GetPortsCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>ports</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-open"></a> <!-- method-anchor -->
+              <h4>open</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.serial.open</span>(<span class="null"><span>string</span>
+                      <var><span>port</span></var></span><span class="optional"><span>, </span><span>serial.OpenOptions</span>
+                      <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>OpenCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Opens a connection to the given serial port.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>port</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The name of the serial port to open.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>options</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="serial.html#type-serial.OpenOptions">serial.OpenOptions</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Connection options.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>OpenCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>openInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="serial.html#type-serial.OpenInfo">serial.OpenInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-read"></a> <!-- method-anchor -->
+              <h4>read</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.serial.read</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>bytesToRead</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>ReadCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Reads a byte from the given connection.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>bytesToRead</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The number of bytes to read.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>ReadCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>readInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="serial.html#type-serial.ReadInfo">serial.ReadInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-setControlSignals"></a> <!-- method-anchor -->
+              <h4>setControlSignals</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.serial.setControlSignals</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>serial.ControlSignalOptions</span>
+                      <var><span>options</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>SetControlSignalsCallback</span></var></span>)</div>
+              <div class="description">
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>options</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="serial.html#type-serial.ControlSignalOptions">serial.ControlSignalOptions</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>SetControlSignalsCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Returns true if operation was successful.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>result</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-write"></a> <!-- method-anchor -->
+              <h4>write</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.serial.write</span>(<span class="null"><span>integer</span>
+                      <var><span>connectionId</span></var></span><span class="null"><span>, </span><span>ArrayBuffer</span>
+                      <var><span>data</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>WriteCallback</span></var></span>)</div>
+              <div class="description">
+                <p>Writes a string to the given connection.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>connectionId</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The id of the connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The string to write.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>WriteCallback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>writeInfo</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="serial.html#type-serial.WriteInfo">serial.WriteInfo</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div>  <!-- /apiItem -->
+          </div>  <!-- /apiGroup -->
+          <!-- EVENTS -->
+           <!-- /apiGroup -->
+          <!-- TYPES -->
+          <div class="apiGroup">
+            <a name="types"></a>
+            <h3 id="types">Types</h3>
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-serial.OpenOptions"></a>
+              <h4>serial.OpenOptions</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>bitrate</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The requested bitrate of the connection to be opened. For compatibility with the widest range of hardware, this number should match one of commonly-available bitrates, such as 110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200. There is no guarantee, of course, that the device connected to the serial port will support the requested bitrate, even if the port itself supports that bitrate.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1068,8 +1199,8 @@ refers to an array of rules including filled optional parameters.
           <!-- FUNCTION PARAMETERS -->
         </div>
             </div><div class="apiItem">
-              <a name="type-events.UrlFilter"></a>
-              <h4>events.UrlFilter</h4>
+              <a name="type-serial.OpenInfo"></a>
+              <h4>serial.OpenInfo</h4>
               <div>
           <dt>
               <em>
@@ -1085,29 +1216,84 @@ refers to an array of rules including filled optional parameters.
                 </div>
               </em>
           </dt>
-          <dd>Filters URLs for various criteria</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
               <div>
                 <div>
           <dt>
-            <var>hostContains</var>
+            <var>connectionId</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>integer</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the host name of the URL contains a specified string.</dd>
+          <dd>The id of the opened connection.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-serial.ReadInfo"></a>
+              <h4>serial.ReadInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>bytesRead</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The number of bytes received, or a negative number if an error occurred. This number will be smaller than the number of bytes requested in the original read call if the call would need to block to read that number of bytes.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1116,7 +1302,115 @@ refers to an array of rules including filled optional parameters.
               </div><div>
                 <div>
           <dt>
-            <var>hostEquals</var>
+            <var>data</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>ArrayBuffer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The data received.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-serial.WriteInfo"></a>
+              <h4>serial.WriteInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>bytesWritten</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The number of bytes written.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-serial.ControlSignalOptions"></a>
+              <h4>serial.ControlSignalOptions</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>cts</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -1124,14 +1418,16 @@ refers to an array of rules including filled optional parameters.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the host name of the URL is equal to a specified string.</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1140,7 +1436,7 @@ refers to an array of rules including filled optional parameters.
               </div><div>
                 <div>
           <dt>
-            <var>hostPrefix</var>
+            <var>dcd</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -1148,14 +1444,14 @@ refers to an array of rules including filled optional parameters.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the host name of the URL starts with a specified string.</dd>
+          <dd>Serial control signals that your machine can receive. If a get operation fails, success will be false, and these fields will be absent. DCD (Data Carrier Detect) is equivalent to RLSD (Receive Line Signal Detect) on some platforms.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1164,7 +1460,7 @@ refers to an array of rules including filled optional parameters.
               </div><div>
                 <div>
           <dt>
-            <var>hostSuffix</var>
+            <var>dtr</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -1172,14 +1468,14 @@ refers to an array of rules including filled optional parameters.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the host name of the URL ends with a specified string.</dd>
+          <dd>Serial control signals that your machine can send. Missing fields will be set to false.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1188,7 +1484,7 @@ refers to an array of rules including filled optional parameters.
               </div><div>
                 <div>
           <dt>
-            <var>pathContains</var>
+            <var>rts</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -1196,338 +1492,16 @@ refers to an array of rules including filled optional parameters.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>boolean</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the path segment of the URL contains a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>pathEquals</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the path segment of the URL is equal to a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>pathPrefix</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the path segment of the URL starts with a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>pathSuffix</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the path segment of the URL ends with a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>queryContains</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the query segment of the URL contains a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>queryEquals</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the query segment of the URL is equal to a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>queryPrefix</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the query segment of the URL starts with a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>querySuffix</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the query segment of the URL ends with a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>urlContains</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the URL contains a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>urlEquals</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the URL is equal to a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>urlPrefix</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the URL starts with a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>urlSuffix</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the URL ends with a specified string.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>schemes</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the scheme of the URL is equal to any of the schemes specified in the array.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>ports</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <span>integer or array of integer</span>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Matches if the port of the URL is contained in any of the specified port lists. For example <code>[80, 443, [1000, 1200]]</code> matches all requests on port 80, 443 and in the range 1000-1200.</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
