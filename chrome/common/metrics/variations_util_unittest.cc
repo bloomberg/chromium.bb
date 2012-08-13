@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests for the Experiment Helpers.
+// Tests for the Variations Helpers.
 
 #include <set>
 
@@ -11,11 +11,11 @@
 #include "base/metrics/field_trial.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variations_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace experiments_helper {
+namespace chrome_variations {
 
 namespace {
 
@@ -28,9 +28,9 @@ chrome_variations::VariationID GetIDForTrial(base::FieldTrial* trial) {
 
 }  // namespace
 
-class ExperimentsHelperTest : public ::testing::Test {
+class VariationsHelperTest : public ::testing::Test {
  public:
-  ExperimentsHelperTest() {
+  VariationsHelperTest() {
     // Since the API can only be called on the UI thread, we have to fake that
     // we're on it.
     ui_thread_.reset(new content::TestBrowserThread(
@@ -53,7 +53,7 @@ class ExperimentsHelperTest : public ::testing::Test {
   scoped_ptr<content::TestBrowserThread> ui_thread_;
 };
 
-TEST_F(ExperimentsHelperTest, HashName) {
+TEST_F(VariationsHelperTest, HashName) {
   // Make sure hashing is stable on all platforms.
   struct {
     const char* name;
@@ -74,7 +74,7 @@ TEST_F(ExperimentsHelperTest, HashName) {
   }
 }
 
-TEST_F(ExperimentsHelperTest, GetFieldTrialSelectedGroups) {
+TEST_F(VariationsHelperTest, GetFieldTrialSelectedGroups) {
   typedef std::set<SelectedGroupId, SelectedGroupIdCompare> SelectedGroupIdSet;
   std::string trial_one("trial one");
   std::string group_one("group one");
@@ -116,7 +116,7 @@ TEST_F(ExperimentsHelperTest, GetFieldTrialSelectedGroups) {
 
 // Test that if the trial is immediately disabled, GetGoogleVariationID just
 // returns the empty ID.
-TEST_F(ExperimentsHelperTest, DisableImmediately) {
+TEST_F(VariationsHelperTest, DisableImmediately) {
   int default_group_number = -1;
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrial("trial", 100, "default",
@@ -131,7 +131,7 @@ TEST_F(ExperimentsHelperTest, DisableImmediately) {
 // Test that successfully associating the FieldTrial with some ID, and then
 // disabling the FieldTrial actually makes GetGoogleVariationID correctly
 // return the empty ID.
-TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
+TEST_F(VariationsHelperTest, DisableAfterInitialization) {
   const std::string default_name = "default";
   const std::string non_default_name = "non_default";
 
@@ -151,7 +151,7 @@ TEST_F(ExperimentsHelperTest, DisableAfterInitialization) {
 }
 
 // Test various successful association cases.
-TEST_F(ExperimentsHelperTest, AssociateGoogleVariationID) {
+TEST_F(VariationsHelperTest, AssociateGoogleVariationID) {
   const std::string default_name1 = "default1";
   scoped_refptr<base::FieldTrial> trial_true(
       base::FieldTrialList::FactoryGetFieldTrial("d1", 10, default_name1,
@@ -187,7 +187,7 @@ TEST_F(ExperimentsHelperTest, AssociateGoogleVariationID) {
 
 // Test that not associating a FieldTrial with any IDs ensure that the empty ID
 // will be returned.
-TEST_F(ExperimentsHelperTest, NoAssociation) {
+TEST_F(VariationsHelperTest, NoAssociation) {
   const std::string default_name = "default";
   scoped_refptr<base::FieldTrial> no_id_trial(
       base::FieldTrialList::FactoryGetFieldTrial("d3", 10, default_name,
@@ -203,7 +203,7 @@ TEST_F(ExperimentsHelperTest, NoAssociation) {
 }
 
 // Ensure that the AssociateGoogleVariationIDForce works as expected.
-TEST_F(ExperimentsHelperTest, ForceAssociation) {
+TEST_F(VariationsHelperTest, ForceAssociation) {
   EXPECT_EQ(chrome_variations::kEmptyID,
             GetGoogleVariationID("trial", "group"));
   AssociateGoogleVariationID("trial", "group",
@@ -219,7 +219,7 @@ TEST_F(ExperimentsHelperTest, ForceAssociation) {
             GetGoogleVariationID("trial", "group"));
 }
 
-TEST_F(ExperimentsHelperTest, GenerateExperimentChunks) {
+TEST_F(VariationsHelperTest, GenerateExperimentChunks) {
   const char* kExperimentStrings[] = {
       "1d3048f1-9de009d0",
       "cd73da34-cf196cb",
@@ -266,11 +266,11 @@ TEST_F(ExperimentsHelperTest, GenerateExperimentChunks) {
       experiments.push_back(UTF8ToUTF16(kExperimentStrings[j]));
 
     std::vector<string16> chunks;
-    GenerateExperimentChunks(experiments, &chunks);
+    GenerateVariationChunks(experiments, &chunks);
     ASSERT_EQ(cases[i].expected_chunks_length, chunks.size());
     for (size_t j = 0; j < chunks.size(); ++j)
       EXPECT_EQ(UTF8ToUTF16(cases[i].expected_chunks[j]), chunks[j]);
   }
 }
 
-}  // namespace experiments_helper
+}  // namespace chrome_variations

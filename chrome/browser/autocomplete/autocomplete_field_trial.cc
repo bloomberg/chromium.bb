@@ -8,7 +8,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variations_util.h"
 #include "chrome/common/metrics/variation_ids.h"
 
 namespace {
@@ -84,7 +84,7 @@ void AutocompleteFieldTrial::Activate() {
     trial->UseOneTimeRandomization();
 
   // Mark this group in suggest requests to Google.
-  experiments_helper::AssociateGoogleVariationID(
+  chrome_variations::AssociateGoogleVariationID(
       kSuggestFieldTrialName, "0", chrome_variations::kSuggestIDMin);
   DCHECK_EQ(kSuggestFieldTrialNumberOfGroups,
       chrome_variations::kSuggestIDMax - chrome_variations::kSuggestIDMin + 1);
@@ -95,7 +95,7 @@ void AutocompleteFieldTrial::Activate() {
   for (int i = 1; i < kSuggestFieldTrialNumberOfGroups; i++) {
     const std::string group_name = base::IntToString(i);
     trial->AppendGroup(group_name, 1);
-    experiments_helper::AssociateGoogleVariationID(
+    chrome_variations::AssociateGoogleVariationID(
         kSuggestFieldTrialName, group_name,
         static_cast<chrome_variations::VariationID>(
             chrome_variations::kSuggestIDMin + i));

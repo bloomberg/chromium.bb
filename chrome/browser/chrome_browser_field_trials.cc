@@ -22,7 +22,7 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variations_util.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
@@ -64,7 +64,7 @@ void SetupSingleUniformityFieldTrial(
           trial_name, divisor, kDefaultGroupName, 2015, 1, 1, NULL));
   if (one_time_randomized)
       trial->UseOneTimeRandomization();
-  experiments_helper::AssociateGoogleVariationID(trial_name, kDefaultGroupName,
+  chrome_variations::AssociateGoogleVariationID(trial_name, kDefaultGroupName,
       trial_base_id);
   // Loop starts with group 1 because the field trial automatically creates a
   // default group, which would be group 0.
@@ -72,7 +72,7 @@ void SetupSingleUniformityFieldTrial(
     const std::string group_name = StringPrintf("group_%02d", group_number);
     DVLOG(1) << "    Group name = " << group_name;
     trial->AppendGroup(group_name, kProbabilityPerGroup);
-    experiments_helper::AssociateGoogleVariationID(trial_name, group_name,
+    chrome_variations::AssociateGoogleVariationID(trial_name, group_name,
         static_cast<chrome_variations::VariationID>(trial_base_id +
                                                     group_number));
   }

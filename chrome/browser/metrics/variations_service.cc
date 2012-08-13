@@ -17,7 +17,7 @@
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
@@ -459,9 +459,9 @@ void VariationsService::CreateTrialFromStudy(const Study& study,
     if (experiment.has_experiment_id()) {
       const VariationID variation_id =
           static_cast<VariationID>(experiment.experiment_id());
-      experiments_helper::AssociateGoogleVariationIDForce(study.name(),
-                                                          experiment.name(),
-                                                          variation_id);
+      AssociateGoogleVariationIDForce(study.name(),
+                                      experiment.name(),
+                                      variation_id);
     }
   }
 

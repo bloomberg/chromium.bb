@@ -13,7 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
@@ -227,10 +227,10 @@ void SetExperimentList(const std::vector<string16>& experiments) {
   NSString* const kExperimentChunkFormat = @"experiment-chunk-%zu";  // 1-based.
 
   std::vector<string16> chunks;
-  experiments_helper::GenerateExperimentChunks(experiments, &chunks);
+  chrome_variations::GenerateVariationChunks(experiments, &chunks);
 
-  // Store up to |kMaxReportedExperimentChunks| chunks.
-  for (size_t i = 0; i < kMaxReportedExperimentChunks; ++i) {
+  // Store up to |kMaxReportedVariationChunks| chunks.
+  for (size_t i = 0; i < kMaxReportedVariationChunks; ++i) {
     NSString* key = [NSString stringWithFormat:kExperimentChunkFormat, i + 1];
     if (i < chunks.size()) {
       NSString* value = base::SysUTF16ToNSString(chunks[i]);
@@ -241,8 +241,8 @@ void SetExperimentList(const std::vector<string16>& experiments) {
   }
 
   // Make note of the total number of experiments, which may be greater than
-  // what was able to fit in |kMaxReportedExperimentChunks|. This is useful
-  // when correlating stability with the number of experiments running
+  // what was able to fit in |kMaxReportedVariationChunks|. This is useful when
+  // correlating stability with the number of experiments running
   // simultaneously.
   SetCrashKeyValue(kNumExperimentsKey,
                    [NSString stringWithFormat:@"%zu", experiments.size()]);

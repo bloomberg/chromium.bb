@@ -25,7 +25,7 @@ extern "C" void __declspec(dllexport) __cdecl SetExperimentList2(
   size_t current_experiment = 0;
   string16 current_chunk(google_breakpad::CustomInfoEntry::kValueMaxLength, 0);
   while (current_experiment < experiment_strings_size &&
-         num_chunks < kMaxReportedExperimentChunks) {
+         num_chunks < kMaxReportedVariationChunks) {
     // Check if we have enough room to add another experiment to the current
     // chunk string. If not, we commit the current chunk string and start over.
     if (current_chunk.size() + wcslen(experiment_strings[current_experiment]) >
@@ -46,7 +46,7 @@ extern "C" void __declspec(dllexport) __cdecl SetExperimentList2(
   }
 
   // Commit the last chunk that didn't get big enough yet.
-  if (!current_chunk.empty() && num_chunks < kMaxReportedExperimentChunks) {
+  if (!current_chunk.empty() && num_chunks < kMaxReportedVariationChunks) {
     base::wcslcpy(
         (*breakpad_win::g_custom_entries)[
             breakpad_win::g_experiment_chunks_offset + num_chunks].value,
@@ -55,7 +55,7 @@ extern "C" void __declspec(dllexport) __cdecl SetExperimentList2(
   }
 
   // Make note of the total number of experiments,
-  // even if it's > kMaxReportedExperimentChunks. This is useful when
+  // even if it's > kMaxReportedVariationChunks. This is useful when
   // correlating stability with the number of experiments running
   // simultaneously.
   base::wcslcpy(

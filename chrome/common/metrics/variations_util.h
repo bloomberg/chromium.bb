@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_EXPERIMENTS_HELPER_H_
-#define CHROME_COMMON_METRICS_EXPERIMENTS_HELPER_H_
+#ifndef CHROME_COMMON_METRICS_VARIATIONS_UTIL_H_
+#define CHROME_COMMON_METRICS_VARIATIONS_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -16,7 +16,7 @@
 // base::FieldTrial.
 //
 // This includes a simple API used to handle getting and setting
-// data related to Google-specific experiments in the browser. This is meant to
+// data related to Google-specific variations in the browser. This is meant to
 // be an extension to the base::FieldTrial for Google-specific functionality.
 //
 // These calls are meant to be made directly after appending all your groups to
@@ -45,7 +45,7 @@
 // The AssociateGoogleVariationID and GetGoogleVariationID API methods are
 // thread safe.
 
-namespace experiments_helper {
+namespace chrome_variations {
 
 // The Unique ID of a trial and its selected group, where the name and group
 // identifiers are hashes of the trial and group name strings.
@@ -100,16 +100,16 @@ chrome_variations::VariationID GetGoogleVariationID(
     const std::string& trial_name,
     const std::string& group_name);
 
-// Generates experiment chunks from |experiment_strings| that are suitable for
+// Generates variation chunks from |variation_strings| that are suitable for
 // crash reporting.
-void GenerateExperimentChunks(const std::vector<string16>& experiment_strings,
-                              std::vector<string16>* chunks);
+void GenerateVariationChunks(const std::vector<string16>& variation_strings,
+                             std::vector<string16>* chunks);
 
-// Get the current set of chosen FieldTrial groups (aka experiments) and send
+// Get the current set of chosen FieldTrial groups (aka variations) and send
 // them to the child process logging module so it can save it for crash dumps.
-void SetChildProcessLoggingExperimentList();
+void SetChildProcessLoggingVariationList();
 
-}  // namespace experiments_helper
+}  // namespace chrome_variations
 
 // Expose some functions for testing. These functions just wrap functionality
 // that is implemented above.
@@ -117,10 +117,10 @@ namespace testing {
 
 void TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
     const base::FieldTrial::SelectedGroups& selected_groups,
-    std::vector<experiments_helper::SelectedGroupId>* name_group_ids);
+    std::vector<chrome_variations::SelectedGroupId>* name_group_ids);
 
 uint32 TestHashName(const std::string& name);
 
 }  // namespace testing
 
-#endif  // CHROME_COMMON_METRICS_EXPERIMENTS_HELPER_H_
+#endif  // CHROME_COMMON_METRICS_VARIATIONS_UTIL_H_

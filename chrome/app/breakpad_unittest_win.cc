@@ -29,7 +29,7 @@ class ChromeAppBreakpadTest : public testing::Test {
                  (*g_custom_entries)[g_num_of_experiments_offset].value);
     // We make a copy of the array that we empty as we find the experiments.
     Experiments experiments_left(experiments);
-    for (int i = 0; i < kMaxReportedExperimentChunks; ++i) {
+    for (int i = 0; i < kMaxReportedVariationChunks; ++i) {
       EXPECT_STREQ(base::StringPrintf(L"experiment-chunk-%i", i + 1).c_str(),
                    (*g_custom_entries)[g_experiment_chunks_offset + i].name);
       if (experiments_left.empty()) {

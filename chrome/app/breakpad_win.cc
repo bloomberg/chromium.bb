@@ -422,7 +422,7 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
   // And the test code depends on this.
   DCHECK_EQ(g_num_of_experiments_offset + 1, g_experiment_chunks_offset);
   // one-based index for the name suffix.
-  for (int i = 1; i <= kMaxReportedExperimentChunks; ++i) {
+  for (int i = 1; i <= kMaxReportedVariationChunks; ++i) {
     g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
         base::StringPrintf(L"experiment-chunk-%i", i).c_str(), L""));
   }

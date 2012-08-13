@@ -31,10 +31,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
+#include "chrome/common/metrics/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/content_browser_client.h"
@@ -59,7 +59,7 @@ using metrics::OmniboxEventProto;
 using metrics::ProfilerEventProto;
 using metrics::SystemProfileProto;
 using tracked_objects::ProcessDataSnapshot;
-typedef experiments_helper::SelectedGroupId SelectedGroupId;
+typedef chrome_variations::SelectedGroupId SelectedGroupId;
 typedef SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 
 namespace {
@@ -349,7 +349,7 @@ int MetricsLog::GetScreenCount() const {
 
 void MetricsLog::GetFieldTrialIds(
     std::vector<SelectedGroupId>* field_trial_ids) const {
-  experiments_helper::GetFieldTrialSelectedGroupIds(field_trial_ids);
+  chrome_variations::GetFieldTrialSelectedGroupIds(field_trial_ids);
 }
 
 void MetricsLog::WriteStabilityElement(

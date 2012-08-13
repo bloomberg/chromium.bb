@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/experiments_helper.h"
+#include "chrome/common/metrics/variations_util.h"
 
 #include <map>
 #include <vector>
@@ -31,7 +31,7 @@ class GroupMapAccessor {
 
   // Note that this normally only sets the ID for a group the first time, unless
   // |force| is set to true, in which case it will always override it.
-  void AssociateID(const experiments_helper::SelectedGroupId& group_identifier,
+  void AssociateID(const chrome_variations::SelectedGroupId& group_identifier,
                    chrome_variations::VariationID id,
                    const bool force) {
     base::AutoLock scoped_lock(lock_);
@@ -41,7 +41,7 @@ class GroupMapAccessor {
   }
 
   chrome_variations::VariationID GetID(
-      const experiments_helper::SelectedGroupId& group_identifier) {
+      const chrome_variations::SelectedGroupId& group_identifier) {
     base::AutoLock scoped_lock(lock_);
     GroupToIDMap::const_iterator it = group_to_id_map_.find(group_identifier);
     if (it == group_to_id_map_.end())
@@ -50,9 +50,9 @@ class GroupMapAccessor {
   }
 
  private:
-  typedef std::map<experiments_helper::SelectedGroupId,
+  typedef std::map<chrome_variations::SelectedGroupId,
       chrome_variations::VariationID,
-      experiments_helper::SelectedGroupIdCompare> GroupToIDMap;
+      chrome_variations::SelectedGroupIdCompare> GroupToIDMap;
 
   base::Lock lock_;
   GroupToIDMap group_to_id_map_;
@@ -75,10 +75,10 @@ uint32 HashName(const std::string& name) {
   return base::ByteSwapToLE32(bits);
 }
 
-experiments_helper::SelectedGroupId MakeSelectedGroupId(
+chrome_variations::SelectedGroupId MakeSelectedGroupId(
     const std::string& trial_name,
     const std::string& group_name) {
-  experiments_helper::SelectedGroupId id;
+  chrome_variations::SelectedGroupId id;
   id.name = HashName(trial_name);
   id.group = HashName(group_name);
   return id;
@@ -87,7 +87,7 @@ experiments_helper::SelectedGroupId MakeSelectedGroupId(
 // Populates |name_group_ids| based on |selected_groups|.
 void GetFieldTrialSelectedGroupIdsForSelectedGroups(
     const base::FieldTrial::SelectedGroups& selected_groups,
-    std::vector<experiments_helper::SelectedGroupId>* name_group_ids) {
+    std::vector<chrome_variations::SelectedGroupId>* name_group_ids) {
   DCHECK(name_group_ids->empty());
   for (base::FieldTrial::SelectedGroups::const_iterator it =
        selected_groups.begin(); it != selected_groups.end(); ++it) {
@@ -97,7 +97,7 @@ void GetFieldTrialSelectedGroupIdsForSelectedGroups(
 
 }  // namespace
 
-namespace experiments_helper {
+namespace chrome_variations {
 
 void GetFieldTrialSelectedGroupIds(
     std::vector<SelectedGroupId>* name_group_ids) {
@@ -132,13 +132,13 @@ chrome_variations::VariationID GetGoogleVariationID(
       MakeSelectedGroupId(trial_name, group_name));
 }
 
-void GenerateExperimentChunks(const std::vector<string16>& experiments,
-                              std::vector<string16>* chunks) {
+void GenerateVariationChunks(const std::vector<string16>& experiments,
+                             std::vector<string16>* chunks) {
   string16 current_chunk;
   for (size_t i = 0; i < experiments.size(); ++i) {
     const size_t needed_length =
         (current_chunk.empty() ? 1 : 0) + experiments[i].length();
-    if (current_chunk.length() + needed_length > kMaxExperimentChunkSize) {
+    if (current_chunk.length() + needed_length > kMaxVariationChunkSize) {
       chunks->push_back(current_chunk);
       current_chunk = experiments[i];
     } else {
@@ -151,7 +151,7 @@ void GenerateExperimentChunks(const std::vector<string16>& experiments,
     chunks->push_back(current_chunk);
 }
 
-void SetChildProcessLoggingExperimentList() {
+void SetChildProcessLoggingVariationList() {
   std::vector<SelectedGroupId> name_group_ids;
   GetFieldTrialSelectedGroupIds(&name_group_ids);
   std::vector<string16> experiment_strings(name_group_ids.size());
@@ -162,7 +162,7 @@ void SetChildProcessLoggingExperimentList() {
   child_process_logging::SetExperimentList(experiment_strings);
 }
 
-}  // namespace experiments_helper
+}  // namespace chrome_variations
 
 // Functions below are exposed for testing explicitly behind this namespace.
 // They simply wrap existing functions in this file.
@@ -170,7 +170,7 @@ namespace testing {
 
 void TestGetFieldTrialSelectedGroupIdsForSelectedGroups(
     const base::FieldTrial::SelectedGroups& selected_groups,
-    std::vector<experiments_helper::SelectedGroupId>* name_group_ids) {
+    std::vector<chrome_variations::SelectedGroupId>* name_group_ids) {
   ::GetFieldTrialSelectedGroupIdsForSelectedGroups(selected_groups,
                                                    name_group_ids);
 }

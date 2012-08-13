@@ -25,15 +25,15 @@ struct GPUInfo;
 // dependency.
 static const int kMaxReportedActiveExtensions = 10;
 
-// The maximum number of experiment chunks we will report.
+// The maximum number of variation chunks we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.
-static const int kMaxReportedExperimentChunks = 15;
+static const int kMaxReportedVariationChunks = 15;
 
-// The maximum size of an experiment chunk. This size was picked to be
+// The maximum size of a variation chunk. This size was picked to be
 // consistent between platforms and the value was chosen from the Windows
 // limit of google_breakpad::CustomInfoEntry::kValueMaxLength.
-static const size_t kMaxExperimentChunkSize = 64;
+static const size_t kMaxVariationChunkSize = 64;
 
 // The maximum number of prn-info-* records.
 static const size_t kMaxReportedPrinterRecords = 4;
