@@ -94,8 +94,7 @@ void RecordRepeatHistograms(Result result,
 
 }  // namespace
 
-// Disabled for M22.
-bool CaptivePortalService::is_disabled_for_testing_ = true;
+bool CaptivePortalService::is_disabled_for_testing_ = false;
 
 class CaptivePortalService::RecheckBackoffEntry : public net::BackoffEntry {
  public:
