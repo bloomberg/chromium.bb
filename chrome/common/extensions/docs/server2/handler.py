@@ -36,7 +36,7 @@ DEFAULT_BRANCH = 'local'
 BRANCH_UTILITY_MEMCACHE = AppEngineMemcache('branch_utility')
 BRANCH_UTILITY = BranchUtility(url_constants.OMAHA_PROXY_URL,
                                DEFAULT_BRANCH,
-                               AppEngineUrlFetcher(''),
+                               AppEngineUrlFetcher(None),
                                BRANCH_UTILITY_MEMCACHE)
 
 GITHUB_FILE_SYSTEM = GithubFileSystem(
@@ -59,7 +59,8 @@ FULL_EXAMPLES_PATH = DOCS_PATH + '/' + EXAMPLES_PATH
 # Global cache of instances because Handler is recreated for every request.
 SERVER_INSTANCES = {}
 
-def _GetInstanceForBranch(branch, local_path):
+def _GetInstanceForBranch(channel_name, local_path):
+  branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
   if branch in SERVER_INSTANCES:
     return SERVER_INSTANCES[branch]
   if branch == 'local':
@@ -87,7 +88,7 @@ def _GetInstanceForBranch(branch, local_path):
                                                   API_PATH,
                                                   samples_data_source_factory)
   template_data_source_factory = TemplateDataSource.Factory(
-      branch,
+      channel_name,
       api_data_source_factory,
       api_list_data_source,
       intro_data_source,
@@ -110,6 +111,12 @@ def _GetURLFromBranch(branch):
       return url_constants.SVN_TRUNK_URL + '/src'
     return url_constants.SVN_BRANCH_URL + '/' + branch + '/src'
 
+def _CleanBranches():
+  numbers = BRANCH_UTILITY.GetAllBranchNumbers()
+  for key in SERVER_INSTANCES.keys():
+    if key not in numbers:
+      SERVER_INSTANCES.pop(key)
+
 class Handler(webapp.RequestHandler):
   def __init__(self, request, response, local_path=EXTENSIONS_PATH):
     self._local_path = local_path
@@ -117,23 +124,21 @@ class Handler(webapp.RequestHandler):
 
   def _NavigateToPath(self, path):
     channel_name, real_path = BRANCH_UTILITY.SplitChannelNameFromPath(path)
-    branch = BRANCH_UTILITY.GetBranchNumberForChannelName(channel_name)
     # TODO: Detect that these are directories and serve index.html out of them.
     if real_path.strip('/') == 'apps':
       real_path = 'apps/index.html'
     if real_path.strip('/') == 'extensions':
       real_path = 'extensions/index.html'
-    # TODO: This leaks Server instances when branch bumps.
-    _GetInstanceForBranch(branch, self._local_path).Get(real_path,
-                                                        self.request,
-                                                        self.response)
+    _CleanBranches()
+    _GetInstanceForBranch(channel_name, self._local_path).Get(real_path,
+                                                              self.request,
+                                                              self.response)
 
   def get(self):
     path = self.request.path
     if '_ah/warmup' in path:
       logging.info('Warmup request.')
-      if DEFAULT_BRANCH != 'local':
-        self._NavigateToPath('trunk/extensions/samples.html')
+      self._NavigateToPath('trunk/extensions/samples.html')
       self._NavigateToPath('dev/extensions/samples.html')
       self._NavigateToPath('beta/extensions/samples.html')
       self._NavigateToPath('stable/extensions/samples.html')

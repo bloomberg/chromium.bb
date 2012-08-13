@@ -23,11 +23,17 @@ class AppEngineUrlFetcher(object):
   def Fetch(self, url):
     """Fetches a file synchronously.
     """
-    return urlfetch.fetch(self._base_path + '/' + url)
+    if self._base_path is not None:
+      return urlfetch.fetch(self._base_path + '/' + url)
+    else:
+      return urlfetch.fetch(url)
 
   def FetchAsync(self, url):
     """Fetches a file asynchronously, and returns a Future with the result.
     """
     rpc = urlfetch.create_rpc()
-    urlfetch.make_fetch_call(rpc, self._base_path + '/' + url)
+    if self._base_path is not None:
+      urlfetch.make_fetch_call(rpc, self._base_path + '/' + url)
+    else:
+      urlfetch.make_fetch_call(rpc, url)
     return Future(delegate=_AsyncFetchDelegate(rpc))

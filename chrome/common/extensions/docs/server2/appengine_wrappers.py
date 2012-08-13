@@ -13,6 +13,59 @@ try:
   import google.appengine.api.memcache as memcache
   import google.appengine.api.urlfetch as urlfetch
 except ImportError:
+  import re
+
+  FAKE_URL_FETCHER_CONFIGURATION = None
+
+  def ConfigureFakeUrlFetch(configuration):
+    """|configuration| is a dictionary mapping strings to fake urlfetch classes.
+    A fake urlfetch class just needs to have a fetch method. The keys of the
+    dictionary are treated as regex, and they are matched with the URL to
+    determine which fake urlfetch is used.
+    """
+    global FAKE_URL_FETCHER_CONFIGURATION
+    FAKE_URL_FETCHER_CONFIGURATION = dict(
+        (re.compile(k), v) for k, v in configuration.iteritems())
+
+  def _GetConfiguration(key):
+    if not FAKE_URL_FETCHER_CONFIGURATION:
+      raise ValueError('No fake fetch paths have been configured. '
+                       'See ConfigureFakeUrlFetch in appengine_wrappers.py.')
+    for k, v in FAKE_URL_FETCHER_CONFIGURATION.iteritems():
+      if k.match(key):
+        return v
+    return None
+
+  class FakeUrlFetch(object):
+    """A fake urlfetch module that uses the current
+    |FAKE_URL_FETCHER_CONFIGURATION| to map urls to fake fetchers.
+    """
+    class _Response(object):
+      def __init__(self, content):
+        self.content = content
+        self.headers = { 'content-type': 'none' }
+        self.status_code = 200
+
+    class _RPC(object):
+      def __init__(self):
+        self.result = None
+
+      def wait(self):
+        pass
+
+      def get_result(self):
+        return self.result
+
+    def fetch(self, url):
+      return self._Response(_GetConfiguration(url).fetch(url))
+
+    def create_rpc(self):
+      return self._RPC()
+
+    def make_fetch_call(self, rpc, url):
+      rpc.result = self.fetch(url)
+  urlfetch = FakeUrlFetch()
+
   class NotImplemented(object):
     def __getattr__(self, attr):
       raise NotImplementedError()
@@ -41,28 +94,6 @@ except ImportError:
       if namespace in self._cache:
         self._cache[namespace].pop(key)
   memcache = InMemoryMemcache()
-
-  class FakeUrlfetch(object):
-    class _RPC(object):
-      def wait(self):
-        pass
-
-      def get_result(self):
-        return FakeUrlfetch._Result()
-
-    class _Result(object):
-      def __init__(self):
-        self.content = '{ "commit": { "tree": { "sha": 0 } } }'
-
-    def fetch(self, url):
-      return self._Result()
-
-    def create_rpc(self):
-      return self._RPC()
-
-    def make_fetch_call(self, rpc, url):
-      pass
-  urlfetch = FakeUrlfetch()
 
   # A fake webapp.RequestHandler class for Handler to extend.
   class webapp(object):

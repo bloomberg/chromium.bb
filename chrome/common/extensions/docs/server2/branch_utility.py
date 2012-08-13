@@ -14,6 +14,10 @@ class BranchUtility(object):
     self._fetcher = fetcher
     self._memcache = memcache
 
+  def GetAllBranchNumbers(self):
+    return [self.GetBranchNumberForChannelName(branch)
+            for branch in ['dev', 'beta', 'stable', 'trunk', 'local']]
+
   def SplitChannelNameFromPath(self, path):
     try:
       first, second = path.split('/', 1)
@@ -26,8 +30,11 @@ class BranchUtility(object):
       return (self._default_branch, path)
 
   def GetBranchNumberForChannelName(self, channel_name):
-    """Returns an empty string if the branch number cannot be found.
-    Throws exception on network errors.
+    """Returns the branch number for a channel name. If the |channel_name| is
+    'trunk' or 'local', then |channel_name| will be returned unchanged. These
+    are returned unchanged because 'trunk' has a separate URL from the other
+    branches and should be handled differently. 'local' is also a special branch
+    for development that should be handled differently.
     """
     if channel_name in ['trunk', 'local']:
       return channel_name
@@ -59,6 +66,6 @@ class BranchUtility(object):
     self._memcache.Set(channel_name + '.' + self._base_path,
                        sorted_branches[0][0],
                        memcache.MEMCACHE_BRANCH_UTILITY,
-                       86400)
+                       time=86400)
 
     return sorted_branches[0][0]

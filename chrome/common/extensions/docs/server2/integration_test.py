@@ -5,12 +5,12 @@
 
 import logging
 import os
+import re
 from StringIO import StringIO
 import unittest
 
 import appengine_memcache as memcache
-import handler
-from handler import Handler
+import appengine_wrappers
 import url_constants
 
 KNOWN_FAILURES = [
@@ -18,6 +18,46 @@ KNOWN_FAILURES = [
   # This should be tested though: http://crbug.com/141910.
   'apps/samples.html',
 ]
+
+def _ReadFile(path):
+  with open(path, 'r') as f:
+    return f.read()
+
+class FakeOmahaProxy(object):
+  def fetch(self, url):
+    return _ReadFile(os.path.join('test_data', 'branch_utility', 'first.json'))
+
+class FakeSubversionServer(object):
+  def __init__(self):
+    self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
+
+  def fetch(self, url):
+    path = os.path.join(
+        os.pardir, os.pardir, self._base_pattern.match(url).group(1))
+    if os.path.isdir(path):
+      html = ['<html>Revision 000000']
+      for f in os.listdir(path):
+        if os.path.isdir(os.path.join(path, f)):
+          html.append('<a>' + f + '/</a>')
+        else:
+          html.append('<a>' + f + '</a>')
+      html.append('</html>')
+      return '\n'.join(html)
+    return _ReadFile(path)
+
+class FakeGithub(object):
+  def fetch(self, url):
+    return '{ "commit": { "tree": { "sha": 0} } }'
+
+appengine_wrappers.ConfigureFakeUrlFetch({
+  url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(),
+  '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(),
+  '%s/.*' % url_constants.GITHUB_URL: FakeGithub()
+})
+
+# Import Handler later because it immediately makes a request to github. We need
+# the fake urlfetch to be in place first.
+from handler import Handler
 
 class _MockResponse(object):
   def __init__(self):
@@ -67,11 +107,6 @@ class IntegrationTest(unittest.TestCase):
       self.assertTrue(response.out.getvalue())
 
   def testWarmupRequest(self):
-    for branch in ['dev', 'trunk', 'beta', 'stable']:
-      handler.BRANCH_UTILITY_MEMCACHE.Set(
-          branch + '.' +  url_constants.OMAHA_PROXY_URL,
-          'local',
-          memcache.MEMCACHE_BRANCH_UTILITY)
     request = _MockRequest('_ah/warmup')
     response = _MockResponse()
     Handler(request, response, local_path='../..').get()
