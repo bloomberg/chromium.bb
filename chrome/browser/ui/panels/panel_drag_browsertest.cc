@@ -11,9 +11,6 @@
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
-// Refactor has only been done for Win and Mac panels so far.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-
 class PanelDragBrowserTest : public BasePanelBrowserTest {
  public:
   PanelDragBrowserTest() : BasePanelBrowserTest() {
@@ -1340,5 +1337,3 @@ IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragDetachedPanelToTop) {
 
   panel_manager->CloseAll();
 }
-
-#endif // OS_WIN || OS_MACOSX
