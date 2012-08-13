@@ -188,7 +188,8 @@ cr.define('options', function() {
     },
 
     /**
-     * @param {boolean} present Whether a camera is present or not.
+     * Whether a camera is present or not.
+     * @type {boolean}
      */
     get cameraPresent() {
       return this.cameraPresent_;
@@ -197,6 +198,15 @@ cr.define('options', function() {
       this.cameraPresent_ = value;
       if (this.cameraLive)
         this.cameraImage = null;
+    },
+
+    /**
+     * Whether camera is actually streaming video. May be |false| even when
+     * camera is present and shown but still initializing.
+     * @type {boolean}
+     */
+    get cameraOnline() {
+      return this.previewElement.classList.contains('online');
     },
 
     /**
@@ -439,8 +449,11 @@ cr.define('options', function() {
      * Performs photo capture from the live camera stream.
      * @param {function=} opt_callback Callback that receives taken photo as
      *     data URL.
+     * @return {boolean} Whether photo capture was successful.
      */
     takePhoto: function(opt_callback) {
+      if (!this.cameraOnline)
+        return false;
       var canvas = document.createElement('canvas');
       canvas.width = CAPTURE_SIZE.width;
       canvas.height = CAPTURE_SIZE.height;
@@ -456,6 +469,7 @@ cr.define('options', function() {
         self.cameraImage = this.src;
       });
       previewImg.src = photoURL;
+      return true;
     },
 
     /**

@@ -286,7 +286,6 @@ cr.define('oobe', function() {
     },
 
     /**
-<<<<<<< HEAD
      * Appends default images to the image grid. Should only be called once.
      * @param {Array.<{url: string, author: string, website: string,
      *     title: string}>} images An array of default images data,
@@ -376,6 +375,7 @@ cr.define('oobe', function() {
             el.id = 'profile-image';
           });
       this.profileImage_.type = 'profile';
+      this.profileImageLoading = true;
 
       // Add camera stream element.
       imageGrid.cameraImage = null;
