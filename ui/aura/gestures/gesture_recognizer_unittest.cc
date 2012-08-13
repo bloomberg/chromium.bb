@@ -1878,7 +1878,7 @@ TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
   EXPECT_FALSE(delegate->tap());
 }
 
-TEST_F(GestureRecognizerTest, CaptureSendsTapUp) {
+TEST_F(GestureRecognizerTest, CaptureSendsGestureEnd) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TestGestureRecognizer* gesture_recognizer =
@@ -1901,6 +1901,33 @@ TEST_F(GestureRecognizerTest, CaptureSendsTapUp) {
   RunAllPendingInMessageLoop();
 
   EXPECT_TRUE(delegate->end());
+}
+
+TEST_F(GestureRecognizerTest, PressDoesNotCrash) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  TestGestureRecognizer* gesture_recognizer =
+      new TestGestureRecognizer(root_window());
+  root_window()->SetGestureRecognizerForTesting(gesture_recognizer);
+
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, gfx::Rect(10, 10, 300, 300), NULL));
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(45, 45), 7, GetTime());
+  press.set_radius_x(40);
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_EQ(gfx::Rect(5, 5, 80, 80).ToString(),
+            delegate->bounding_box().ToString());
+  delegate->Reset();
+
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, gfx::Point(55, 45), 7, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+
+  // This new press should not generate a tap-down.
+  EXPECT_FALSE(delegate->begin());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_FALSE(delegate->scroll_begin());
 }
 
 TEST_F(GestureRecognizerTest, TwoFingerTap) {

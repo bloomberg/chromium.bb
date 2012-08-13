@@ -298,8 +298,14 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       return NULL;
     GesturePoint* new_point = &points_[event.touch_id()];
     // We shouldn't be able to get two PRESSED events from the same
-    // finger without either a RELEASE or CANCEL in between.
-    DCHECK(!new_point->in_use());
+    // finger without either a RELEASE or CANCEL in between. But let's not crash
+    // in a release build.
+    if (new_point->in_use()) {
+      LOG(ERROR) << "Received a second press for a point: " << event.touch_id();
+      new_point->ResetVelocity();
+      new_point->UpdateValues(event);
+      return NULL;
+    }
     new_point->set_point_id(point_count_++);
     new_point->set_touch_id(event.touch_id());
   }
@@ -312,7 +318,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   point.UpdateValues(event);
   RecreateBoundingBox();
   flags_ = event.flags();
-  const int point_id = points_[event.touch_id()].point_id();
+  const int point_id = point.point_id();
   if (point_id < 0)
     return NULL;
 
@@ -351,7 +357,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       }
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:
-      NoGesture(event, point, gestures.get());
+      set_state(GS_NO_GESTURE);
       break;
     case GST_SCROLL_FIRST_MOVED:
       if (scroll_type_ == ST_VERTICAL ||
@@ -458,33 +464,22 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   // could end up with gaps.
   if (event.type() == ui::ET_TOUCH_RELEASED ||
       event.type() == ui::ET_TOUCH_CANCELLED) {
-    GesturePoint& old_point = points_[event.touch_id()];
     for (int i = 0; i < kMaxGesturePoints; ++i) {
-      GesturePoint& point = points_[i];
-      if (point.point_id() > old_point.point_id())
-        point.set_point_id(point.point_id() - 1);
+      GesturePoint& iter_point = points_[i];
+      if (iter_point.point_id() > point.point_id())
+        iter_point.set_point_id(iter_point.point_id() - 1);
     }
 
-    if (old_point.in_use()) {
-      old_point.Reset();
-      --point_count_;
-      DCHECK_GE(point_count_, 0);
-      RecreateBoundingBox();
-      if (state_ == GS_PINCH) {
-        pinch_distance_current_ = BoundingBoxDiagonal(bounding_box_);
-        pinch_distance_start_ = pinch_distance_current_;
-      }
+    point.Reset();
+    --point_count_;
+    CHECK_GE(point_count_, 0);
+    RecreateBoundingBox();
+    if (state_ == GS_PINCH) {
+      pinch_distance_current_ = BoundingBoxDiagonal(bounding_box_);
+      pinch_distance_start_ = pinch_distance_current_;
     }
   }
-
   return gestures.release();
-}
-
-void GestureSequence::Reset() {
-  set_state(GS_NO_GESTURE);
-  for (int i = 0; i < kMaxGesturePoints; ++i)
-    points_[i].Reset();
-  point_count_ = 0;
 }
 
 void GestureSequence::RecreateBoundingBox() {
@@ -798,12 +793,6 @@ bool GestureSequence::ScrollUpdate(const TouchEvent& event,
     return false;
   AppendScrollGestureUpdate(point, point.last_touch_position(), gestures);
   return true;
-}
-
-bool GestureSequence::NoGesture(const TouchEvent&,
-    const GesturePoint& point, Gestures*) {
-  Reset();
-  return false;
 }
 
 bool GestureSequence::TouchDown(const TouchEvent& event,

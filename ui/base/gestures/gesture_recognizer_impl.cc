@@ -38,9 +38,9 @@ class MirroredTouchEvent : public TouchEvent {
  public:
   explicit MirroredTouchEvent(const TouchEvent* real)
       : TouchEvent(real->type(),
-                       real->location(),
-                       real->touch_id(),
-                       real->time_stamp()) {
+                   real->location(),
+                   real->touch_id(),
+                   real->time_stamp()) {
     set_flags(real->flags());
     set_radius(real->radius_x(), real->radius_y());
     set_rotation_angle(real->rotation_angle());
