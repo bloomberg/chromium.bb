@@ -173,4 +173,27 @@ TEST(ImageSkiaTest, GetBitmap) {
   EXPECT_FALSE(bitmap->isNull());
 }
 
+TEST(ImageSkiaTest, GetBitmapFromEmpty) {
+  // Create an image with 1 representation and remove it so the ImageSkiaStorage
+  // is left with no representations.
+  ImageSkia empty_image(ImageSkiaRep(Size(100, 200), ui::SCALE_FACTOR_100P));
+  ImageSkia empty_image_copy(empty_image);
+  empty_image.RemoveRepresentation(ui::SCALE_FACTOR_100P);
+
+  // Check that ImageSkia::bitmap() still returns a valid SkBitmap pointer for
+  // the image and all its copies.
+  const SkBitmap* bitmap = empty_image_copy.bitmap();
+  ASSERT_NE(static_cast<SkBitmap*>(NULL), bitmap);
+  EXPECT_TRUE(bitmap->isNull());
+  EXPECT_TRUE(bitmap->empty());
+}
+
+TEST(ImageSkiaTest, OperatorBitmapFromSource) {
+  ImageSkia image_skia(new DynamicSource(Size(100, 200)), Size(100, 200));
+  // ImageSkia should use the source to create the bitmap.
+  const SkBitmap& bitmap = image_skia;
+  ASSERT_NE(static_cast<SkBitmap*>(NULL), &bitmap);
+  EXPECT_FALSE(bitmap.isNull());
+}
+
 }  // namespace gfx

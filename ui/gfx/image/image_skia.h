@@ -113,7 +113,7 @@ class UI_EXPORT ImageSkia {
   // This function should only be used in unittests and on platforms which do
   // not support scale factors other than 1x.
   // TODO(pkotwicz): Return null SkBitmap when the object has no 1x bitmap.
-  const SkBitmap* bitmap() const;
+  const SkBitmap* bitmap() const { return &operator SkBitmap&(); }
 
   // Returns a vector with the image reps contained in this object.
   // There is no guarantee that this will return all images rep for

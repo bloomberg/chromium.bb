@@ -165,13 +165,6 @@ ImageSkia& ImageSkia::operator=(const SkBitmap& other) {
   return *this;
 }
 
-ImageSkia::operator SkBitmap&() const {
-  if (isNull())
-    return const_cast<SkBitmap&>(NullImageRep().sk_bitmap());
-
-  return const_cast<SkBitmap&>(storage_->image_reps()[0].sk_bitmap());
-}
-
 ImageSkia::~ImageSkia() {
 }
 
@@ -279,16 +272,18 @@ std::vector<ImageSkiaRep> ImageSkia::image_reps() const {
   return image_reps;
 }
 
-const SkBitmap* ImageSkia::bitmap() const {
+ImageSkia::operator SkBitmap&() const {
   if (isNull()) {
     // Callers expect a ImageSkiaRep even if it is |isNull()|.
     // TODO(pkotwicz): Fix this.
-    return &NullImageRep().sk_bitmap();
+    return NullImageRep().mutable_sk_bitmap();
   }
 
   ImageSkiaReps::iterator it =
       storage_->FindRepresentation(ui::SCALE_FACTOR_100P, true);
-  return &it->sk_bitmap();
+  if (it != storage_->image_reps().end())
+    return it->mutable_sk_bitmap();
+  return NullImageRep().mutable_sk_bitmap();
 }
 
 void ImageSkia::Init(const ImageSkiaRep& image_rep) {
