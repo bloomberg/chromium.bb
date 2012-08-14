@@ -158,15 +158,6 @@
     return result;
   };
 
-  // Adds keys in |src| that aren't present in |dest| to |dest|.
-  function merge(dest, src) {
-    for (var k in src) {
-      if (!dest.hasOwnProperty(k)) {
-        dest[k] = src[k];
-      }
-    }
-  }
-
   // Event object.  If opt_eventName is provided, this object represents
   // the unique instance of that named event, and dispatching an event
   // with that name will route through this object's listeners. Note that
@@ -183,12 +174,11 @@
   chrome.Event = function(opt_eventName, opt_argSchemas, opt_eventOptions) {
     this.eventName_ = opt_eventName;
     this.listeners_ = [];
-    this.eventOptions_ = opt_eventOptions || {};
-    merge(this.eventOptions_,
+    this.eventOptions_ = opt_eventOptions ||
         {supportsFilters: false,
          supportsListeners: true,
          supportsRules: false,
-        });
+        };
 
     if (this.eventOptions_.supportsRules && !opt_eventName)
       throw new Error("Events that support rules require an event name.");

@@ -167,10 +167,6 @@
               <a href="#declarative">Declarative Event Handlers</a>
               <ol>
               </ol>
-            </li><li>
-              <a href="#filtered">Filtered events</a>
-              <ol>
-              </ol>
             </li>
               <li>
                 <a href="#apiReference">API reference: chrome.events</a>
@@ -342,36 +338,6 @@ function getRules(rule_ids, function callback(details) {...});
 The <code>details</code> parameter passed to the <code>calback()</code> function
 refers to an array of rules including filled optional parameters.
 </p>
-</div>
-<div class="doc-family extensions">
-<h2 id="filtered">Filtered events</h2>
-<p>Filtered events are a mechanism that allows listeners to specify a subset of
-events that they are interested in. A listener that makes use of a filter won't
-be invoked for events that don't pass the filter, which makes the listening
-code more declarative and efficient - an <a href="event_pages.html">event
-  page</a> page need not be woken up to handle events it doesn't care
-about.</p>
-<p>Filtered events are intended to allow a transition from manual filtering
-code like this:</p>
-<pre>chrome.webNavigation.onCommitted.addListener(function(e) {
-  if (hasHostSuffix(e.url, 'google.com') ||
-      hasHostSuffix(e.url, 'google.com.au')) {
-    // ...
-  }
-});
-</pre>
-<p>into this:</p>
-<pre>chrome.webNavigation.onCommitted.addListener(function(e) {
-  // ...
-}, {url: [{hostSuffix: 'google.com'},
-          {hostSuffix: 'google.com.au'}]});
-</pre>
-<p>Events support specific filters that are meaningful to that event. The list
-of filters that an event supports will be listed in the documentation for that
-event in the "filters" section.</p>
-<p>When matching URLs (as in the example above), event filters support the same
-URL matching capabilities as expressable with a <a href="events.html#type-UrlFilter">UrlFilter</a>, except for scheme and port
-matching.</p>
 </div>
 </div>
         <!-- API PAGE -->
