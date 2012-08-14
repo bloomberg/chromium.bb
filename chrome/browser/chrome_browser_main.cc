@@ -56,6 +56,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/page_cycler/page_cycler.h"
+#include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/performance_monitor/startup_timer.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -1429,6 +1430,12 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 #else
   base::RunLoop run_loop;
 #endif
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRunPerformanceMonitor)) {
+    performance_monitor::PerformanceMonitor::GetInstance()->Start();
+  }
+
   run_loop.Run();
 
   return true;

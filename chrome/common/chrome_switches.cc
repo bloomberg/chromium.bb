@@ -1154,6 +1154,12 @@ const char kResetVariationState[]           = "reset-variation-state";
 // sent to the ui_test.
 const char kRestoreLastSession[]            = "restore-last-session";
 
+// Launches PerformanceMonitor at startup, which will gather statistics about
+// Chrome's CPU and memory usage, page load times, startup times, and network
+// usage, and will also store information about events which may be of interest,
+// such as extension-related occurrences and crashes.
+const char kRunPerformanceMonitor[]         = "run-performance-monitor";
+
 // Disable saving pages as HTML-only, disable saving pages as HTML Complete
 // (with a directory of sub-resources). Enable only saving pages as MHTML.
 // See http://crbug.com/120416 for how to remove this switch.

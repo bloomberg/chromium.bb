@@ -306,6 +306,7 @@ extern const char kRemoteDebuggingFrontend[];
 extern const char kRendererPrintPreview[];
 extern const char kResetVariationState[];
 extern const char kRestoreLastSession[];
+extern const char kRunPerformanceMonitor[];
 extern const char kSavePageAsMHTML[];
 extern const char kSbURLPrefix[];
 extern const char kSbDisableAutoUpdate[];
