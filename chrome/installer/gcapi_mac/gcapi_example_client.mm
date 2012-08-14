@@ -25,6 +25,7 @@ void Usage() {
 
 int main(int argc, char* argv[]) {
   const option kLongOptions[] = {
+    { "criteria-check", no_argument, NULL, 'c' },
     { "force-reinstall", no_argument, NULL, 'r' },
     { "install", required_argument, NULL, 'i' },
     { "brand", required_argument, NULL, 'b' },
