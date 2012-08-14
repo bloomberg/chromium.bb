@@ -179,6 +179,7 @@ struct widget {
 	widget_leave_handler_t leave_handler;
 	widget_motion_handler_t motion_handler;
 	widget_button_handler_t button_handler;
+	widget_axis_handler_t axis_handler;
 	void *user_data;
 	int opaque;
 	int tooltip_count;
@@ -1059,6 +1060,13 @@ widget_set_button_handler(struct widget *widget,
 }
 
 void
+widget_set_axis_handler(struct widget *widget,
+			widget_axis_handler_t handler)
+{
+	widget->axis_handler = handler;
+}
+
+void
 widget_schedule_redraw(struct widget *widget)
 {
 	window_schedule_redraw(widget->window);
@@ -1918,6 +1926,17 @@ static void
 pointer_handle_axis(void *data, struct wl_pointer *pointer,
 		    uint32_t time, uint32_t axis, wl_fixed_t value)
 {
+	struct input *input = data;
+	struct widget *widget;
+
+	widget = input->focus_widget;
+	if (input->grab)
+		widget = input->grab;
+	if (widget && widget->axis_handler)
+		(*widget->axis_handler)(widget,
+					input, time,
+					axis, value,
+					widget->user_data);
 }
 
 static const struct wl_pointer_listener pointer_listener = {

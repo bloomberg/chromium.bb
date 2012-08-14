@@ -196,6 +196,11 @@ typedef void (*widget_button_handler_t)(struct widget *widget,
 					uint32_t button,
 					enum wl_pointer_button_state state,
 					void *data);
+typedef void (*widget_axis_handler_t)(struct widget *widget,
+				      struct input *input, uint32_t time,
+				      uint32_t axis,
+				      wl_fixed_t value,
+				      void *data);
 
 struct window *
 window_create(struct display *display);
@@ -365,6 +370,9 @@ widget_set_motion_handler(struct widget *widget,
 void
 widget_set_button_handler(struct widget *widget,
 			  widget_button_handler_t handler);
+void
+widget_set_axis_handler(struct widget *widget,
+			widget_axis_handler_t handler);
 
 void
 widget_schedule_redraw(struct widget *widget);
