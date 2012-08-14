@@ -111,3 +111,30 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   }
   NaClXMutexUnlock(&natp->suspend_mu);
 }
+
+int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
+  DWORD previous_suspend_count;
+
+  if (natp->fault_signal == 0) {
+    return 0;
+  }
+  *signal = natp->fault_signal;
+  natp->fault_signal = 0;
+  AtomicIncrement(&natp->nap->faulted_thread_count, -1);
+  /*
+   * Decrement Windows' suspension count for the thread.  This undoes
+   * the effect of debug_exception_handler.c's SuspendThread() call.
+   */
+  previous_suspend_count = ResumeThread(natp->thread.tid);
+  if (previous_suspend_count == (DWORD) -1) {
+    NaClLog(LOG_FATAL, "NaClAppThreadUnblockIfFaulted: "
+            "ResumeThread() call failed\n");
+  }
+  /*
+   * This thread should already have been suspended using
+   * NaClUntrustedThreadSuspend(), so the thread will not actually
+   * resume until NaClUntrustedThreadResume() is called.
+   */
+  DCHECK(previous_suspend_count >= 2);
+  return 1;
+}

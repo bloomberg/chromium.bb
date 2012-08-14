@@ -76,7 +76,7 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
   }
 }
 
-void NaClSuspendSignalHandler(struct NaClSignalContext *regs) {
+static void HandleSuspendSignal(struct NaClSignalContext *regs) {
   uint32_t tls_idx = NaClTlsGetIdx();
   struct NaClAppThread *natp = nacl_thread[tls_idx];
   struct NaClSignalContext *suspended_registers = natp->suspended_registers;
@@ -84,7 +84,7 @@ void NaClSuspendSignalHandler(struct NaClSignalContext *regs) {
   /* Sanity check. */
   if (natp->suspend_state != (NACL_APP_THREAD_UNTRUSTED |
                               NACL_APP_THREAD_SUSPENDING)) {
-    NaClSignalErrorMessage("NaClSuspendSignalHandler: "
+    NaClSignalErrorMessage("HandleSuspendSignal: "
                            "Unexpected suspend_state\n");
     NaClAbort();
   }
@@ -126,6 +126,66 @@ void NaClSuspendSignalHandler(struct NaClSignalContext *regs) {
   if (suspended_registers != NULL) {
     *regs = *suspended_registers;
   }
+}
+
+static void HandleUntrustedFault(int signal,
+                                 struct NaClSignalContext *regs,
+                                 struct NaClAppThread *natp) {
+  /* Sanity check. */
+  if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) == 0) {
+    NaClSignalErrorMessage("HandleUntrustedFault: Unexpected suspend_state\n");
+    NaClAbort();
+  }
+
+  /* Notify the debug stub by marking this thread as faulted. */
+  natp->fault_signal = signal;
+  AtomicIncrement(&natp->nap->faulted_thread_count, 1);
+
+  /*
+   * We now expect the debug stub to suspend this thread via the
+   * thread suspension API.  This will allow the debug stub to get the
+   * register state at the point the fault happened.  The debug stub
+   * will be able to modify the register state before unblocking the
+   * thread using NaClAppThreadUnblockIfFaulted().
+   */
+  do {
+    int new_signal;
+    sigset_t sigset;
+    sigemptyset(&sigset);
+    sigaddset(&sigset, NACL_THREAD_SUSPEND_SIGNAL);
+    if (sigwait(&sigset, &new_signal) != 0) {
+      NaClSignalErrorMessage("HandleUntrustedFault: sigwait() failed\n");
+      NaClAbort();
+    }
+    if (new_signal != NACL_THREAD_SUSPEND_SIGNAL) {
+      NaClSignalErrorMessage("HandleUntrustedFault: "
+                             "sigwait() returned unexpected result\n");
+      NaClAbort();
+    }
+    HandleSuspendSignal(regs);
+  } while (natp->fault_signal != 0);
+}
+
+int NaClThreadSuspensionSignalHandler(int signal,
+                                      struct NaClSignalContext *regs,
+                                      int is_untrusted,
+                                      struct NaClAppThread *natp) {
+  /*
+   * We handle NACL_THREAD_SUSPEND_SIGNAL even if is_untrusted is
+   * false, because the thread suspension signal can occur in trusted
+   * code while switching from or to untrusted code while
+   * suspend_state contains NACL_APP_THREAD_UNTRUSTED.
+   */
+  if (signal == NACL_THREAD_SUSPEND_SIGNAL) {
+    HandleSuspendSignal(regs);
+    return 1;
+  }
+  if (is_untrusted && natp->nap->enable_faulted_thread_queue) {
+    HandleUntrustedFault(signal, regs, natp);
+    return 1;
+  }
+  /* We did not handle this signal. */
+  return 0;
 }
 
 /* Wait for the thread to indicate that it has suspended. */
@@ -213,4 +273,21 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
    * if it actually suspended during the context switch.
    */
   FutexWake(&natp->suspend_state, 1);
+}
+
+int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
+  /* This function may only be called on a thread that is suspended. */
+  DCHECK(natp->suspend_state == (NACL_APP_THREAD_UNTRUSTED |
+                                 NACL_APP_THREAD_SUSPENDING |
+                                 NACL_APP_THREAD_SUSPENDED) ||
+         natp->suspend_state == (NACL_APP_THREAD_TRUSTED |
+                                 NACL_APP_THREAD_SUSPENDING));
+
+  if (natp->fault_signal == 0) {
+    return 0;
+  }
+  *signal = natp->fault_signal;
+  natp->fault_signal = 0;
+  AtomicIncrement(&natp->nap->faulted_thread_count, -1);
+  return 1;
 }

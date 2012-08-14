@@ -141,26 +141,22 @@ void IThread::Release(IThread *ithread) {
   }
 }
 
-void IThread::SuspendAllThreadsExceptSignaled(uint32_t signaled_tid) {
+void IThread::SuspendAllThreads() {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
 
   CHECK(!map.empty());
 
-  NaClUntrustedThreadsSuspendAllButOne(
-      map.begin()->second->natp_->nap,
-      signaled_tid == 0 ? NULL : map[signaled_tid]->natp_,
-      /* save_registers= */ 1);
+  NaClUntrustedThreadsSuspendAll(map.begin()->second->natp_->nap,
+                                 /* save_registers= */ 1);
 
   for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
     Thread *thread = it->second;
-    if (thread->id_ != signaled_tid) {
-      NaClAppThreadGetSuspendedRegisters(thread->natp_, &thread->context_);
-    }
+    NaClAppThreadGetSuspendedRegisters(thread->natp_, &thread->context_);
   }
 }
 
-void IThread::ResumeAllThreadsExceptSignaled(uint32_t signaled_tid) {
+void IThread::ResumeAllThreads() {
   MutexLock lock(ThreadGetLock());
   ThreadMap_t &map = *ThreadGetMap();
 
@@ -168,14 +164,65 @@ void IThread::ResumeAllThreadsExceptSignaled(uint32_t signaled_tid) {
 
   for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
     Thread *thread = it->second;
-    if (thread->id_ != signaled_tid) {
-      NaClAppThreadSetSuspendedRegisters(thread->natp_, &thread->context_);
-    }
+    NaClAppThreadSetSuspendedRegisters(thread->natp_, &thread->context_);
   }
 
-  NaClUntrustedThreadsResumeAllButOne(
-      map.begin()->second->natp_->nap,
-      signaled_tid == 0 ? NULL : map[signaled_tid]->natp_);
+  NaClUntrustedThreadsResumeAll(map.begin()->second->natp_->nap);
+}
+
+void IThread::SuspendSingleThread(uint32_t thread_id) {
+  MutexLock lock(ThreadGetLock());
+  Thread *thread = (*ThreadGetMap())[thread_id];
+  NaClUntrustedThreadSuspend(thread->natp_, /* save_registers= */ 1);
+  NaClAppThreadGetSuspendedRegisters(thread->natp_, &thread->context_);
+}
+
+void IThread::ResumeSingleThread(uint32_t thread_id) {
+  MutexLock lock(ThreadGetLock());
+  Thread *thread = (*ThreadGetMap())[thread_id];
+  NaClAppThreadSetSuspendedRegisters(thread->natp_, &thread->context_);
+  NaClUntrustedThreadResume(thread->natp_);
+}
+
+// HasThreadFaulted() returns whether the given thread has been
+// blocked as a result of faulting.  The thread does not need to be
+// currently suspended.
+bool IThread::HasThreadFaulted(uint32_t thread_id) {
+  MutexLock lock(ThreadGetLock());
+  Thread *thread = (*ThreadGetMap())[thread_id];
+  return thread->natp_->fault_signal != 0;
+}
+
+// UnqueueSpecificFaultedThread() takes a thread that has been blocked
+// as a result of faulting and unblocks it, returning the type of
+// fault via |signal|.  As a precondition, the thread must be
+// currently suspended.
+void IThread::UnqueueSpecificFaultedThread(uint32_t thread_id,
+                                           int8_t *signal) {
+  MutexLock lock(ThreadGetLock());
+  Thread *thread = (*ThreadGetMap())[thread_id];
+  int exception_code;
+  CHECK(NaClAppThreadUnblockIfFaulted(thread->natp_, &exception_code));
+  *signal = IThread::ExceptionToSignal(exception_code);
+}
+
+// UnqueueAnyFaultedThread() picks a thread that has been blocked as a
+// result of faulting and unblocks it.  It returns the thread's ID via
+// |thread_id| and the type of fault via |signal|.  As a precondition,
+// all threads must be currently suspended.
+void IThread::UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal) {
+  MutexLock lock(ThreadGetLock());
+  ThreadMap_t *map = ThreadGetMap();
+  for (ThreadMap_t::iterator it = map->begin(); it != map->end(); ++it) {
+    Thread *thread = it->second;
+    int exception_code;
+    if (NaClAppThreadUnblockIfFaulted(thread->natp_, &exception_code)) {
+      *signal = IThread::ExceptionToSignal(exception_code);
+      *thread_id = thread->GetId();
+      return;
+    }
+  }
+  NaClLog(LOG_FATAL, "UnqueueAnyFaultedThread: No threads queued\n");
 }
 
 }  // namespace port

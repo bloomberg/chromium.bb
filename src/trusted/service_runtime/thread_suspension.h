@@ -80,8 +80,20 @@ void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
 void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
                                         const struct NaClSignalContext *regs);
 
+/*
+ * NaClAppThreadUnblockIfFaulted() takes a thread that has been
+ * suspended using NaClUntrustedThreadsSuspendAll().  If the thread
+ * has been blocked as a result of faulting in untrusted code, the
+ * function unblocks the thread and returns true, and it returns the
+ * type of the fault via |signal|.  Otherwise, it returns false.
+ */
+int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal);
+
 #if NACL_LINUX
-void NaClSuspendSignalHandler(struct NaClSignalContext *regs);
+int NaClThreadSuspensionSignalHandler(int signal,
+                                      struct NaClSignalContext *regs,
+                                      int is_untrusted,
+                                      struct NaClAppThread *natp);
 #endif
 
 EXTERN_C_END

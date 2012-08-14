@@ -197,6 +197,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   }
   natp->suspend_state = NACL_APP_THREAD_TRUSTED;
   natp->suspended_registers = NULL;
+  natp->fault_signal = 0;
 
   natp->dynamic_delete_generation = 0;
 

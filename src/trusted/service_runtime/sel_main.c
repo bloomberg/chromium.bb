@@ -197,7 +197,6 @@ int main(int  argc,
   int                           skip_qualification = 0;
   int                           handle_signals = 0;
   int                           enable_debug_stub = 0;
-  int                           enable_exception_handling = 0;
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
   struct NaClEnvCleanser        env_cleanser;
@@ -278,7 +277,7 @@ int main(int  argc,
         break;
 #endif
       case 'e':
-        enable_exception_handling = 1;
+        nap->enable_exception_handling = 1;
         break;
       case 'E':
         /*
@@ -306,7 +305,6 @@ int main(int  argc,
         break;
 
       case 'g':
-        handle_signals = 1;
         enable_debug_stub = 1;
         break;
 
@@ -461,10 +459,9 @@ int main(int  argc,
   state.skip_validator = (debug_mode_ignore_validator > 1);
 
   if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
-    enable_exception_handling = 1;
-  }
-  if (enable_exception_handling) {
     state.enable_exception_handling = 1;
+  }
+  if (state.enable_exception_handling || enable_debug_stub) {
 #if NACL_WINDOWS
     state.attach_debug_exception_handler_func =
         NaClDebugExceptionHandlerStandaloneAttach;

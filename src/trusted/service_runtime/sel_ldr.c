@@ -236,6 +236,8 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->debug_exception_handler_state = NACL_DEBUG_EXCEPTION_HANDLER_NOT_STARTED;
   nap->attach_debug_exception_handler_func = NULL;
 #endif
+  nap->enable_faulted_thread_queue = 0;
+  nap->faulted_thread_count = 0;
 
   return 1;
 

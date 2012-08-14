@@ -108,7 +108,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
   int ret_code = 1;
   struct NaClEnvCleanser env_cleanser;
   int skip_qualification;
-  int handle_signals = args->enable_debug_stub;
 
 #if NACL_OSX
   /* Mac dynamic libraries cannot access the environ variable directly. */
@@ -201,12 +200,10 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
    * of faults inside x86-64 sandboxed code.  The sandbox is not
    * secure on 64-bit Windows without this.
    */
-  if (!args->enable_debug_stub) {
 #if (NACL_WINDOWS && NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && \
      NACL_BUILD_SUBARCH == 64)
-    NaClPatchWindowsExceptionDispatcher();
+  NaClPatchWindowsExceptionDispatcher();
 #endif
-  }
   NaClSignalTestCrashOnStartup();
 
   /*
@@ -225,10 +222,11 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
     NaClSignalAssertNoHandlers();
   }
 
-  if (args->enable_exception_handling) {
-    nap->enable_exception_handling = 1;
+  nap->enable_exception_handling = args->enable_exception_handling;
+
+  if (args->enable_exception_handling || args->enable_debug_stub) {
 #if NACL_LINUX
-    handle_signals = 1;
+    NaClSignalHandlerInit();
 #elif NACL_OSX
     if (!NaClInterceptMachExceptions()) {
       NaClLog(LOG_FATAL, "NaClChromeMainStart: "
@@ -240,10 +238,6 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
 #else
 # error Unknown host OS
 #endif
-  }
-
-  if (handle_signals) {
-    NaClSignalHandlerInit();
   }
 
   /* Give debuggers a well known point at which xlate_base is known.  */

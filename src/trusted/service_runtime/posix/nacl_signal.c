@@ -329,11 +329,12 @@ static void SignalCatch(int sig, siginfo_t *info, void *uc) {
 #endif
 
 #if NACL_LINUX
-  if (sig == NACL_THREAD_SUSPEND_SIGNAL) {
-    NaClSuspendSignalHandler(&sigCtx);
-    NaClSignalContextToHandler(uc, &sigCtx);
-    /* Resume untrusted code using possibly modified register state. */
-    return;
+  if (sig != SIGINT && sig != SIGQUIT) {
+    if (NaClThreadSuspensionSignalHandler(sig, &sigCtx, is_untrusted, natp)) {
+      NaClSignalContextToHandler(uc, &sigCtx);
+      /* Resume untrusted code using possibly modified register state. */
+      return;
+    }
   }
 #endif
 
@@ -358,23 +359,19 @@ void NaClSignalHandlerInitPlatform() {
   sa.sa_sigaction = SignalCatch;
   sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
 
-  /* Mask all exceptions we catch to prevent re-entry */
+  /*
+   * Mask all signals we catch to prevent re-entry.
+   *
+   * In particular, NACL_THREAD_SUSPEND_SIGNAL must be masked while we
+   * are handling a fault from untrusted code, otherwise the
+   * suspension signal will interrupt the trusted fault handler.  That
+   * would cause NaClAppThreadGetSuspendedRegisters() to report
+   * trusted-code register state rather than untrusted-code register
+   * state from the point where the fault occurred.
+   */
   for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {
     sigaddset(&sa.sa_mask, s_Signals[a]);
   }
-#if NACL_LINUX
-  /*
-   * Don't mask NACL_THREAD_SUSPEND_SIGNAL.
-   * When NaClUntrustedThreadSuspend() decides to suspend a thread, it doesn't
-   * know that it's about to enter (for example) the SIGTRAP handler.  If it
-   * sends NACL_THREAD_SUSPEND_SIGNAL, it will expect to get a reply from the
-   * NACL_THREAD_SUSPEND_SIGNAL handler.  Since the SIGTRAP handler may block
-   * for a while, we need to make sure that the reply is prompt.  Moreover,
-   * the debug stub's SIGTRAP handler will in turn try to suspend threads,
-   * resulting in deadlock.
-   */
-  CHECK(sigdelset(&sa.sa_mask, NACL_THREAD_SUSPEND_SIGNAL) == 0);
-#endif
 
   /* Install all handlers */
   for (a = 0; a < NACL_ARRAY_SIZE(s_Signals); a++) {

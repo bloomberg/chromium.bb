@@ -33,6 +33,8 @@
 #include "native_client/src/trusted/port/mutex.h"
 #include "native_client/src/trusted/port/thread.h"
 
+struct NaClApp;
+
 namespace gdb_rsp {
 
 class Abi;
@@ -61,7 +63,7 @@ class Target {
 
  public:
   // Contruct a Target object.  By default use the native ABI.
-  explicit Target(const Abi *abi = NULL);
+  explicit Target(struct NaClApp *nap, const Abi *abi = NULL);
   ~Target();
 
   // Init must be the first function called to correctlty
@@ -76,12 +78,6 @@ class Target {
   // seeing the modified memory.
   bool AddTemporaryBreakpoint(uint64_t address);
   bool RemoveTemporaryBreakpoints(port::IThread *thread);
-
-  // This function should be called by a tracked thread when it takes
-  // an exception.  It takes sig_start_ to prevent other exceptions
-  // from signalling thread.  If wait is true, it will then  block on
-  // sig_done_ until a continue is issued by the host.
-  void Signal(uint32_t id, int8_t sig, bool wait);
 
   // This function will spin on a session, until it closes.  If an
   // exception is caught, it will signal the exception thread by
@@ -123,17 +119,11 @@ class Target {
   port::IThread *GetThread(uint32_t id);
 
  private:
+  struct NaClApp *nap_;
   const Abi *abi_;
 
   // This mutex protects debugging state (threads_, cur_signal, sig_thread_)
   port::IMutex *mutex_;
-
-  // This event is signalled when the target is really to process an
-  // exception.  It ensures only one exception is processed at a time.
-  port::IEvent *sig_start_;
-
-  // This event is signalled when the target done processing an exception.
-  port::IEvent *sig_done_;
 
   Session *session_;
 
@@ -148,11 +138,11 @@ class Target {
 
   // Signal being processed.
   // Set to 0 when execution was interrupted by GDB and not by a signal.
-  volatile int8_t cur_signal_;
+  int8_t cur_signal_;
 
   // Signaled thread id.
   // Set to 0 when execution was interrupted by GDB and not by a signal.
-  volatile uint32_t sig_thread_;
+  uint32_t sig_thread_;
 
   // Thread for subsequent registers access operations.
   uint32_t reg_thread_;
@@ -161,6 +151,7 @@ class Target {
   // suspended.
   uint32_t step_over_breakpoint_thread_;
 
+  // TODO(mseaborn): Remove this, because we can get mem_start from nap_.
   uint64_t mem_base_;
 };
 

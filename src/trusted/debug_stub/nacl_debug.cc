@@ -28,6 +28,10 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug_init.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+#if NACL_WINDOWS
+# include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+#endif
+
 using port::IPlatform;
 using port::IThread;
 using port::ITransport;
@@ -96,14 +100,6 @@ void WINAPI NaClStubThread(void *ptr) {
   }
 }
 
-void NaClExceptionCatcher(uint32_t id, int8_t sig, void *cookie) {
-  Target* targ = static_cast<Target*>(cookie);
-
-  /* Signal the target that we caught something */
-  NaClLog(LOG_WARNING, "Caught signal %d on thread %Xh.\n", sig, id);
-  targ->Signal(id, sig, true);
-}
-
 void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
   UNREFERENCED_PARAMETER(natp);
 
@@ -142,10 +138,11 @@ void NaClDebugStop(int ErrCode) throw() {
  */
 int NaClDebugInit(struct NaClApp *nap) {
   nap->debug_stub_callbacks = &debug_callbacks;
+  nap->enable_faulted_thread_queue = 1;
   NaClDebugStubInit();
 
   CHECK(g_target == NULL);
-  g_target = new Target();
+  g_target = new Target(nap);
   CHECK(g_target != NULL);
   g_target->Init();
 
@@ -158,8 +155,15 @@ int NaClDebugInit(struct NaClApp *nap) {
   }
   g_target->AddTemporaryBreakpoint(nap->initial_entry_pt + nap->mem_start);
 
+#if NACL_WINDOWS
+  if (!NaClDebugExceptionHandlerEnsureAttached(nap)) {
+    NaClLog(LOG_ERROR, "NaClDebugInit: "
+            "Failed to attach debug exception handler\n");
+    return 0;
+  }
+#endif
+
   NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
-  IThread::SetExceptionCatch(NaClExceptionCatcher, g_target);
   CHECK(NaClThreadCtor(thread, NaClStubThread, g_target,
                        NACL_KERN_STACK_SIZE));
 

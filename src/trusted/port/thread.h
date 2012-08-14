@@ -40,9 +40,14 @@ class IThread {
   static IThread *Create(uint32_t id, struct NaClAppThread *natp);
   static IThread *Acquire(uint32_t id);
   static void Release(IThread *thread);
-  static void SuspendAllThreadsExceptSignaled(uint32_t signaled_tid);
-  static void ResumeAllThreadsExceptSignaled(uint32_t signaled_tid);
-  static void SetExceptionCatch(CatchFunc_t func, void *cookie);
+  static void SuspendAllThreads();
+  static void ResumeAllThreads();
+  static void SuspendSingleThread(uint32_t thread_id);
+  static void ResumeSingleThread(uint32_t thread_id);
+  static bool HasThreadFaulted(uint32_t thread_id);
+  static void UnqueueSpecificFaultedThread(uint32_t thread_id, int8_t *signal);
+  static void UnqueueAnyFaultedThread(uint32_t *thread_id, int8_t *signal);
+  static int ExceptionToSignal(int exception_code);
 
  protected:
   virtual ~IThread() {}  // Prevent delete of base pointer

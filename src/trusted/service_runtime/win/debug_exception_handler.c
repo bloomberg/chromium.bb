@@ -34,7 +34,7 @@ struct StartupInfo {
 
 static int HandleException(const struct StartupInfo *startup_info,
                            HANDLE process_handle, DWORD windows_thread_id,
-                           HANDLE thread_handle);
+                           HANDLE thread_handle, DWORD exception_code);
 
 
 static BOOL GetAddrProtection(HANDLE process_handle, uintptr_t addr,
@@ -178,7 +178,8 @@ void NaClDebugExceptionHandlerRun(HANDLE process_handle,
           exception_code =
               debug_event.u.Exception.ExceptionRecord.ExceptionCode;
           if (HandleException(startup_info, process_handle,
-                              debug_event.dwThreadId, thread_handle)) {
+                              debug_event.dwThreadId, thread_handle,
+                              exception_code)) {
             continue_status = DBG_CONTINUE;
           } else if (exception_code == EXCEPTION_BREAKPOINT) {
             /*
@@ -298,9 +299,37 @@ static BOOL GetThreadIndex(const struct StartupInfo *startup_info,
 }
 #endif
 
+static BOOL QueueFaultedThread(HANDLE process_handle, HANDLE thread_handle,
+                               struct NaClApp *nap_remote,
+                               struct NaClApp *app_copy,
+                               struct NaClAppThread *natp_remote,
+                               int exception_code) {
+  /*
+   * Increment faulted_thread_count.  This needs to be atomic.  It
+   * will be atomic because the target process is suspended.
+   */
+  Atomic32 new_thread_count = app_copy->faulted_thread_count + 1;
+  if (!WRITE_MEM(process_handle, &nap_remote->faulted_thread_count,
+                 &new_thread_count)) {
+    return FALSE;
+  }
+  if (!WRITE_MEM(process_handle, &natp_remote->fault_signal, &exception_code)) {
+    return FALSE;
+  }
+  /*
+   * Increment the thread's suspension count so that this thread
+   * remains suspended when the process is resumed.  This thread will
+   * later be resumed by NaClAppThreadUnblockIfFaulted().
+   */
+  if (SuspendThread(thread_handle) == (DWORD) -1) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
 static BOOL HandleException(const struct StartupInfo *startup_info,
                             HANDLE process_handle, DWORD windows_thread_id,
-                            HANDLE thread_handle) {
+                            HANDLE thread_handle, DWORD exception_code) {
   CONTEXT context;
   uint32_t nacl_thread_index;
   uintptr_t addr_space_size;
@@ -372,6 +401,12 @@ static BOOL HandleException(const struct StartupInfo *startup_info,
     return FALSE;
   }
 #endif
+
+  if (app_copy.enable_faulted_thread_queue) {
+    return QueueFaultedThread(process_handle, thread_handle,
+                              appthread_copy.nap, &app_copy, natp_remote,
+                              exception_code);
+  }
 
   exception_stack = appthread_copy.exception_stack;
   exception_flag = appthread_copy.exception_flag;

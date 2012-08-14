@@ -28,6 +28,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_ 1
 
+#include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/elf.h"
@@ -362,6 +363,19 @@ struct NaClApp {
   enum NaClDebugExceptionHandlerState debug_exception_handler_state;
   NaClAttachDebugExceptionHandlerFunc attach_debug_exception_handler_func;
 #endif
+  /*
+   * enable_faulted_thread_queue is a boolean which enables handling
+   * of untrusted faults which is used by the debug stub.  When an
+   * untrusted thread faults, it is blocked until
+   * NaClAppThreadUnblockIfFaulted() is called on the thread.
+   */
+  int                       enable_faulted_thread_queue;
+  /*
+   * faulted_thread_count is the number of NaClAppThreads for which
+   * fault_signal is non-zero.
+   */
+  Atomic32                  faulted_thread_count;
+
   const struct NaClValidatorInterface *validator;
 };
 

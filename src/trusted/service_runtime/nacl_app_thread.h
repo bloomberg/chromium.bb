@@ -115,6 +115,12 @@ struct NaClAppThread {
    * nacl_syscall_hook.c).
    */
   struct NaClSignalContext  *suspended_registers;
+  /*
+   * If fault_signal is non-zero, the thread has faulted and so has
+   * been suspended.  fault_signal indicates the type of fault (it is
+   * a signal number on Linux and an exception code on Windows).
+   */
+  int fault_signal;
 
   /*
    * 'user' contains all the architecture-specific state for this thread.

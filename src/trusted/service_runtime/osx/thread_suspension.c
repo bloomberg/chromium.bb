@@ -85,3 +85,11 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   }
   NaClXMutexUnlock(&natp->suspend_mu);
 }
+
+int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(signal);
+
+  NaClLog(LOG_FATAL, "NaClAppThreadUnblockIfFaulted: Not implemented on Mac\n");
+  return 0;
+}
