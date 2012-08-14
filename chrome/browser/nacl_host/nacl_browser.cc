@@ -4,6 +4,7 @@
 
 #include "chrome/browser/nacl_host/nacl_browser.h"
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -12,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -30,13 +32,14 @@ enum ValidationCacheStatus {
   CACHE_MAX
 };
 
-// Determine the name of the IRT file based on the architecture.
-#define NACL_IRT_FILE_NAME(arch_string) \
-  (FILE_PATH_LITERAL("nacl_irt_")       \
-   FILE_PATH_LITERAL(arch_string)       \
-   FILE_PATH_LITERAL(".nexe"))
-
 const FilePath::StringType NaClIrtName() {
+  FilePath::StringType irt_name;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNaClIPCProxy))
+    irt_name.append(FILE_PATH_LITERAL("nacl_ipc_irt_"));
+  else
+    irt_name.append(FILE_PATH_LITERAL("nacl_irt_"));
+
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(ARCH_CPU_X86_64)
   bool is64 = true;
@@ -46,15 +49,21 @@ const FilePath::StringType NaClIrtName() {
 #else
   bool is64 = false;
 #endif
-  return is64 ? NACL_IRT_FILE_NAME("x86_64") : NACL_IRT_FILE_NAME("x86_32");
+  if (is64)
+    irt_name.append(FILE_PATH_LITERAL("x86_64"));
+  else
+    irt_name.append(FILE_PATH_LITERAL("x86_32"));
+
 #elif defined(ARCH_CPU_ARMEL)
   // TODO(mcgrathr): Eventually we'll need to distinguish arm32 vs thumb2.
   // That may need to be based on the actual nexe rather than a static
   // choice, which would require substantial refactoring.
-  return NACL_IRT_FILE_NAME("arm");
+  irt_name.append(FILE_PATH_LITERAL("arm"));
 #else
 #error Add support for your architecture to NaCl IRT file selection
 #endif
+  irt_name.append(FILE_PATH_LITERAL(".nexe"));
+  return irt_name;
 }
 
 bool CheckEnvVar(const char* name, bool default_value) {
