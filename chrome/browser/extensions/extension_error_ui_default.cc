@@ -89,8 +89,9 @@ string16 ExtensionErrorUIDefault::ExtensionGlobalError::
 
 void ExtensionErrorUIDefault::ExtensionGlobalError::
     OnBubbleViewDidClose(Browser* browser) {
+  // This call deletes error_ui_ (and as a result of error_ui_ destruction,
+  // object pointed by this also gets deleted).
   error_ui_->BubbleViewDidClose();
-  error_ui_->browser_ = NULL;
 }
 
 void ExtensionErrorUIDefault::ExtensionGlobalError::

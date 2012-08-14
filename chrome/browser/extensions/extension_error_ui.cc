@@ -86,6 +86,7 @@ string16 ExtensionErrorUI::GetBubbleViewCancelButtonLabel() {
 }
 
 void ExtensionErrorUI::BubbleViewDidClose() {
+  // This call deletes ExtensionErrorUI object referenced by this.
   extension_service_->HandleExtensionAlertClosed();
 }
 
