@@ -49,6 +49,8 @@ chrome/app/theme/chromium/BRANDING
 # license. This third-party code is taken from Mozilla, the license for which
 # we already pick up from third_party/npapi/.
 chrome/browser/download/download_extensions.cc
+# String 'copyright' used in code.
+chrome/browser/importer/firefox_importer_utils.cc
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
 # license. Not used on Android.
 chrome/browser/importer/firefox_profile_lock.cc

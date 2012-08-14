@@ -4,6 +4,7 @@ Version: unknown
 License: Custom license
 License File: LICENSE
 Security Critical: yes
+License Android Compatible: yes
 
 Description:
 Contain support for ICC color profile on top of jpeg6b (and up) library.

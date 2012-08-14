@@ -31,6 +31,40 @@ sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools'))
 import licenses
 
 
+def GetIncompatibleDirectories():
+  """Gets a list of third-party directories which use licenses incompatible
+  with Android. This is used by the snapshot tool.
+  Returns:
+    A list of directories.
+  """
+
+  whitelist = [
+    'Apache( Version)? 2(\.0)?',
+    '(New )?BSD( 3-Clause)?( with advertising clause)?',
+    'L?GPL ?v?2(\.[01])?( or later)?',
+    'MIT(/X11)?(-like)?',
+    'MPL 1\.1 ?/ ?GPL 2(\.0)? ?/ ?LGPL 2\.1',
+    'Microsoft Limited Public License',
+    'Microsoft Permissive License',
+    'Public Domain',
+    'SGI Free Software License B',
+    'X11',
+  ]
+  regex = '^(%s)$' % '|'.join(whitelist)
+  result = []
+  for directory in _FindThirdPartyDirs():
+    metadata = licenses.ParseDir(directory)
+    if metadata.get('License Android Compatible', 'no') == 'yes':
+      continue
+    license = re.split(' [Ll]icenses?$', metadata['License'])[0]
+    tokens = [x.strip() for x in re.split(' and |,', license) if len(x) > 0]
+    for token in tokens:
+      if not re.match(regex, token, re.IGNORECASE):
+        result.append(directory)
+        break
+  return result
+
+
 def _CheckLicenseHeaders(directory_list, whitelisted_files):
   """Checks that all files which are not in a listed third-party directory,
   and which do not use the standard Chromium license, are whitelisted.

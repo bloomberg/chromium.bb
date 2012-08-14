@@ -109,6 +109,7 @@ SPECIAL_CASES = {
         "Name": "open-vcdiff",
         "URL": "http://code.google.com/p/open-vcdiff",
         "License": "Apache 2.0, MIT, GPL v2 and custom licenses",
+        "License Android Compatible": "yes",
     },
     os.path.join('testing', 'gmock'): {
         "Name": "gmock",
@@ -247,7 +248,7 @@ def ParseDir(path):
 
     # Relative path to a file containing some html we're required to place in
     # about:credits.
-    optional_keys = ["Required Text"]
+    optional_keys = ["Required Text", "License Android Compatible"]
 
     if path in SPECIAL_CASES:
         metadata.update(SPECIAL_CASES[path])
