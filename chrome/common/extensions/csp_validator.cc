@@ -46,6 +46,10 @@ bool HasOnlySecureTokens(StringTokenizer& tokenizer) {
     // We might need to relax this whitelist over time.
     if (source == "'self'" ||
         source == "'none'" ||
+        source == "http://127.0.0.1" ||
+        LowerCaseEqualsASCII(source, "http://localhost") ||
+        StartsWithASCII(source, "http://127.0.0.1:", false) ||
+        StartsWithASCII(source, "http://localhost:", false) ||
         StartsWithASCII(source, "https://", true) ||
         StartsWithASCII(source, "chrome://", true) ||
         StartsWithASCII(source, "chrome-extension://", true) ||

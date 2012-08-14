@@ -76,6 +76,21 @@ TEST(ExtensionCSPValidator, IsSecure) {
       "default-src 'self' google.com"));
   EXPECT_TRUE(ContentSecurityPolicyIsSecure(
       "default-src 'self' https://*.google.com"));
+
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http://127.0.0.1"));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http://localhost"));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http://lOcAlHoSt"));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http://127.0.0.1:9999"));
+  EXPECT_TRUE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http://localhost:8888"));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http://127.0.0.1.example.com"));
+  EXPECT_FALSE(ContentSecurityPolicyIsSecure(
+      "default-src 'self' http://localhost.example.com"));
 }
 
 TEST(ExtensionCSPValidator, IsSandboxed) {
