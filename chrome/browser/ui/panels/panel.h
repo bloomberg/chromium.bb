@@ -336,6 +336,8 @@ class Panel : public BaseWindow,
   // This name should be set when the panel is created.
   const std::string app_name_;
 
+  Profile* profile_;
+
   // Current collection of panels to which this panel belongs. This determines
   // the panel's screen layout.
   PanelStrip* panel_strip_;  // Owned by PanelManager.

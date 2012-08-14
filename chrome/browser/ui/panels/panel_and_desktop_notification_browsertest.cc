@@ -18,10 +18,6 @@
 #include "content/public/common/show_desktop_notification_params.h"
 #include "ui/gfx/screen.h"
 
-
-// Refactor has only been done for Win and Mac panels so far.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-
 // Desktop notification code subscribes to various panel change notifications
 // so that it knows when to adjusts balloon positions. In order to give
 // desktop notification code a chance to process the change notifications,
@@ -403,5 +399,3 @@ IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, InteractWithTwoPanels) {
   MessageLoopForUI::current()->RunAllPending();
   EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 }
-
-#endif // OS_WIN || OS_MACOSX

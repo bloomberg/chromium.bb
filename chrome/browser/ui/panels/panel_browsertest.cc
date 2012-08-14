@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
+#include "chrome/browser/ui/panels/test_panel_active_state_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -41,9 +42,6 @@
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
-
-// Refactor has only been done for Win and Mac panels so far.
-#if defined(OS_WIN) || defined(OS_MACOSX)
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -1275,9 +1273,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FocusLostOnMinimize) {
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
 
-  panel->SetExpansionState(Panel::MINIMIZED);
-  MessageLoop::current()->RunAllPending();
-  WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
+  PanelActiveStateObserver signal(panel, false);
+  panel->Minimize();
+  signal.Wait();
   panel->Close();
 }
 
@@ -1593,4 +1591,3 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_Accelerator) {
   EXPECT_EQ(0, panel_manager->num_panels());
 }
 
-#endif // OS_WIN || OS_MACOSX
