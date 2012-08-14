@@ -30,8 +30,6 @@ include_rules = [
   "!chrome/browser/ui/browser_finder.h",
   "!chrome/browser/ui/browser_window.h",
   "!chrome/browser/ui/chrome_pages.h",
-  "!chrome/browser/ui/gtk/autofill/autofill_popup_view_gtk.h",
-  "!chrome/browser/ui/gtk/gtk_theme_service.h",
   "!chrome/browser/ui/tab_contents/tab_contents.h",
   "!chrome/browser/webdata/autofill_entry.h",
   "!chrome/browser/webdata/web_data_service.h",
