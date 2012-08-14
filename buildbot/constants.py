@@ -117,6 +117,7 @@ HWTEST_DEFAULT_NUM = 4
 HWTEST_MACH_POOL = 'bvt'
 HWTEST_PALADIN_POOL = 'cq-bvt'
 HWTEST_CHROME_PFQ_POOL = 'chromepfq'
+HWTEST_TRYBOT_POOL = 'try-bot'
 
 # Defines VM Test types.
 SMOKE_SUITE_TEST_TYPE = 'smoke_suite'

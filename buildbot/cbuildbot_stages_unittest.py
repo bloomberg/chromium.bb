@@ -655,6 +655,9 @@ class HWTestStageTest(AbstractStageTest):
     argv = ['--remote-trybot', '--hwtest', '-r', self.build_root, self.bot_id]
     parser = cbuildbot._CreateParser()
     (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
+    self.build_config = config.OverrideConfigForTrybot(self.build_config,
+                                                       self.options.
+                                                       remote_trybot)
 
     build = 'trybot-%s/%s' % (self.bot_id,
                               self.archive_stage_mock.GetVersion().
@@ -663,7 +666,7 @@ class HWTestStageTest(AbstractStageTest):
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
-                            constants.HWTEST_MACH_POOL,
+                            constants.HWTEST_TRYBOT_POOL,
                             constants.HWTEST_DEFAULT_NUM,
                             False)
 
@@ -678,6 +681,9 @@ class HWTestStageTest(AbstractStageTest):
     argv = ['--remote-trybot', '-r', self.build_root, self.bot_id]
     parser = cbuildbot._CreateParser()
     (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
+    self.build_config = config.OverrideConfigForTrybot(self.build_config,
+                                                       self.options.
+                                                       remote_trybot)
 
     build = '%s/%s' % (self.bot_id,
                        self.archive_stage_mock.GetVersion().AndReturn('ver'))
@@ -685,7 +691,7 @@ class HWTestStageTest(AbstractStageTest):
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
-                            constants.HWTEST_MACH_POOL,
+                            constants.HWTEST_TRYBOT_POOL,
                             constants.HWTEST_DEFAULT_NUM,
                             True)
 
