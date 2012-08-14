@@ -171,9 +171,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // execution of GetFileByPath() method.
   struct GetFileFromCacheParams;
 
-
   // Struct used for StartFileUploadOnUIThread().
   struct StartFileUploadParams;
+
+  // Struct used for AddUploadedFile.
+  struct AddUploadedFileParams;
 
   // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from
@@ -501,7 +503,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Callback when an entry is moved to another directory on the client side.
   // Notifies the directory change and runs |callback|.
-  // |callback| must not be null.
+  // |callback| may be null.
   void NotifyAndRunFileMoveCallback(
       const FileMoveCallback& callback,
       GDataFileError error,
@@ -515,11 +517,27 @@ class GDataFileSystem : public GDataFileSystemInterface,
       GDataFileError error,
       const FilePath& moved_file_path);
 
+  // FileMoveCallback for directory changes.
+  void OnDirectoryChangeFileMoveCallback(
+      GDataFileError error,
+      const FilePath& directory_path);
+
   // Callback for GetEntryByResourceIdAsync.
   // Removes stale entry upon upload of file.
-  static void RemoveStaleEntryOnUpload(const std::string& resource_id,
-                                       GDataDirectory* parent_dir,
-                                       GDataEntry* existing_entry);
+  void RemoveStaleEntryOnUpload(const std::string& resource_id,
+                                GDataDirectory* parent_dir,
+                                const FileMoveCallback& callback,
+                                GDataEntry* existing_entry);
+
+  // Continues to add an uploaded file after existing entry has been deleted.
+  void ContinueAddUploadedFile(AddUploadedFileParams* params,
+                               GDataFileError error,
+                               const FilePath& file_path);
+
+  // Adds the uploaded file to the cache.
+  void AddUploadedFileToCache(AddUploadedFileParams* params,
+                              GDataFileError error,
+                              const FilePath& file_path);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
@@ -723,10 +741,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void RequestDirectoryRefreshOnUIThread(const FilePath& file_path);
   void OnRequestDirectoryRefresh(GetDocumentsParams* params,
                                  GDataFileError error);
-  void RequestDirectoryRefreshByEntry(const FilePath& directory_path,
-                                      const std::string& directory_resource_id,
-                                      const FileResourceIdMap& file_map,
-                                      GDataEntry* directory_entry);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,
                                  const FilePath& virtual_dir_path,

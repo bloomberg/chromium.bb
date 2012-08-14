@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 
 #include <leveldb/db.h>
-#include <vector>
 
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -254,6 +253,8 @@ void GDataDirectory::InitFromDocumentEntry(DocumentEntry* doc) {
 }
 
 void GDataDirectory::AddEntry(GDataEntry* entry) {
+  DCHECK(!entry->parent());
+
   // The entry name may have been changed due to prior name de-duplication.
   // We need to first restore the file name based on the title before going
   // through name de-duplication again when it is added to another directory.
@@ -296,14 +297,18 @@ void GDataDirectory::AddEntry(GDataEntry* entry) {
 bool GDataDirectory::TakeOverEntries(GDataDirectory* dir) {
   for (GDataFileCollection::iterator iter = dir->child_files_.begin();
        iter != dir->child_files_.end(); ++iter) {
-    AddEntry(iter->second);
+    GDataEntry* entry = iter->second;
+    entry->SetParent(NULL);
+    AddEntry(entry);
   }
   dir->child_files_.clear();
 
   for (GDataDirectoryCollection::iterator iter =
       dir->child_directories_.begin();
        iter != dir->child_directories_.end(); ++iter) {
-    AddEntry(iter->second);
+    GDataEntry* entry = iter->second;
+    entry->SetParent(NULL);
+    AddEntry(entry);
   }
   dir->child_directories_.clear();
   return true;
@@ -355,6 +360,8 @@ void GDataDirectory::RemoveChild(GDataEntry* entry) {
   // Then delete it from tree.
   child_files_.erase(base_name);
   child_directories_.erase(base_name);
+
+  entry->SetParent(NULL);
 }
 
 void GDataDirectory::RemoveChildren() {
@@ -563,12 +570,27 @@ void GDataDirectoryService::ClearRoot() {
   root_.reset();
 }
 
+void GDataDirectoryService::AddEntryToDirectory(
+    GDataDirectory* directory,
+    GDataEntry* new_entry,
+    const FileMoveCallback& callback) {
+  DCHECK(directory);
+  DCHECK(new_entry);
+  DCHECK(!callback.is_null());
+
+  directory->AddEntry(new_entry);
+  DVLOG(1) << "AddEntryToDirectory " << new_entry->GetFilePath().value();
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(callback, GDATA_FILE_OK, new_entry->GetFilePath()));
+}
+
 void GDataDirectoryService::MoveEntryToDirectory(
     const FilePath& directory_path,
     GDataEntry* entry,
     const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(entry);
+  DCHECK(!callback.is_null());
 
   if (entry->parent())
     entry->parent()->RemoveChild(entry);
@@ -585,10 +607,22 @@ void GDataDirectoryService::MoveEntryToDirectory(
     moved_file_path = entry->GetFilePath();
     error = GDATA_FILE_OK;
   }
-  if (!callback.is_null()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, error, moved_file_path));
-  }
+  DVLOG(1) << "MoveEntryToDirectory " << moved_file_path.value();
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, error, moved_file_path));
+}
+
+void GDataDirectoryService::RemoveEntryFromParent(
+    GDataEntry* entry,
+    const FileMoveCallback& callback) {
+  GDataDirectory* parent = entry->parent();
+  DCHECK(parent);
+  DCHECK(!callback.is_null());
+  DVLOG(1) << "RemoveEntryFromParent " << entry->GetFilePath().value();
+
+  parent->RemoveEntry(entry);
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(callback, GDATA_FILE_OK, parent->GetFilePath()));
 }
 
 void GDataDirectoryService::AddEntryToResourceMap(GDataEntry* entry) {
@@ -732,6 +766,50 @@ void GDataDirectoryService::RefreshFileInternal(
     entry_parent->RemoveEntry(old_entry);
     entry_parent->AddEntry(fresh_file.release());
   }
+}
+
+void GDataDirectoryService::RefreshDirectory(
+    const std::string& directory_resource_id,
+    const ResourceMap& file_map,
+    const FileMoveCallback& callback) {
+  DCHECK(!callback.is_null());
+  GetEntryByResourceIdAsync(
+      directory_resource_id,
+      base::Bind(&GDataDirectoryService::RefreshDirectoryInternal,
+                 file_map,
+                 callback));
+}
+
+// static
+void GDataDirectoryService::RefreshDirectoryInternal(
+    const ResourceMap& file_map,
+    const FileMoveCallback& callback,
+    GDataEntry* directory_entry) {
+  DCHECK(!callback.is_null());
+
+  if (!directory_entry) {
+    callback.Run(GDATA_FILE_ERROR_NOT_FOUND, FilePath());
+    return;
+  }
+
+  GDataDirectory* directory = directory_entry->AsGDataDirectory();
+  if (!directory) {
+    callback.Run(GDATA_FILE_ERROR_NOT_A_DIRECTORY, FilePath());
+    return;
+  }
+
+  directory->RemoveChildFiles();
+  // Add files from file_map.
+  for (ResourceMap::const_iterator it = file_map.begin();
+       it != file_map.end(); ++it) {
+    scoped_ptr<GDataEntry> entry(it->second);
+    // Skip if it's not a file (i.e. directory).
+    if (!entry->AsGDataFile())
+      continue;
+    directory->AddEntry(entry.release());
+  }
+
+  callback.Run(GDATA_FILE_OK, directory->GetFilePath());
 }
 
 void GDataDirectoryService::InitFromDB(

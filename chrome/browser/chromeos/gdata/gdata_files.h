@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -329,7 +330,6 @@ class GDataDirectory : public GDataEntry {
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
   friend class GDataDirectoryService;
-  friend class GDataFileSystem;
   friend class GDataWapiFeedProcessor;
 
   explicit GDataDirectory(GDataDirectoryService* directory_service);
@@ -387,6 +387,8 @@ class GDataDirectoryService {
 
   // Map of resource id and serialized GDataEntry.
   typedef std::map<std::string, std::string> SerializedMap;
+  // Map of resource id strings to GDataEntry*.
+  typedef std::map<std::string, GDataEntry*> ResourceMap;
 
   GDataDirectoryService();
   ~GDataDirectoryService();
@@ -421,12 +423,25 @@ class GDataDirectoryService {
   // Sets root directory resource id and initialize the root entry.
   void InitializeRootEntry(const std::string& root_id);
 
-  // Move |entry| to |directory_path| asynchronously. Removes entry from
+  // Add |new entry| to |directory| and invoke the callback asynchronously.
+  // |callback| may not be null.
+  // TODO(achuith,satorux): Use GDataEntryProto instead for new_entry.
+  // crbug.com/142048
+  void AddEntryToDirectory(GDataDirectory* directory,
+                           GDataEntry* new_entry,
+                           const FileMoveCallback& callback);
+
+  // Moves |entry| to |directory_path| asynchronously. Removes entry from
   // previous parent. Must be called on UI thread. |callback| is called on the
-  // UI thread.
+  // UI thread. |callback| may not be null.
   void MoveEntryToDirectory(const FilePath& directory_path,
                             GDataEntry* entry,
                             const FileMoveCallback& callback);
+
+  // Removes |entry| from its parent. Calls |callback| with the path of the
+  // parent directory. |callback| may not be null.
+  void RemoveEntryFromParent(GDataEntry* entry,
+                             const FileMoveCallback& callback);
 
   // Adds the entry to resource map.
   void AddEntryToResourceMap(GDataEntry* entry);
@@ -479,9 +494,11 @@ class GDataDirectoryService {
   // fresh value |fresh_file|.
   void RefreshFile(scoped_ptr<GDataFile> fresh_file);
 
-  // Replaces file entry |old_entry| with its fresh value |fresh_file|.
-  static void RefreshFileInternal(scoped_ptr<GDataFile> fresh_file,
-                                  GDataEntry* old_entry);
+  // Removes all child files of |directory| and replace with file_map.
+  // |callback| is called with the directory path. |callback| may not be null.
+  void RefreshDirectory(const std::string& directory_resource_id,
+                        const ResourceMap& file_map,
+                        const FileMoveCallback& callback);
 
   // Serializes/Parses to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
@@ -494,9 +511,6 @@ class GDataDirectoryService {
   void SaveToDB();
 
  private:
-  // A map table of file's resource string to its GDataFile* entry.
-  typedef std::map<std::string, GDataEntry*> ResourceMap;
-
   // Initializes the resource map using serialized_resources fetched from the
   // database.
   void InitResourceMap(CreateDBParams* create_params,
@@ -509,7 +523,9 @@ class GDataDirectoryService {
   scoped_ptr<GDataEntry> FromProtoString(
       const std::string& serialized_proto);
 
-  // ...
+  // Continues with GetEntryInfoPairByPaths after the first GDataEntry has been
+  // asynchronously fetched. This fetches the second GDataEntry only if the
+  // first was found.
   void GetEntryInfoPairByPathsAfterGetFirst(
       const FilePath& first_path,
       const FilePath& second_path,
@@ -517,13 +533,27 @@ class GDataDirectoryService {
       GDataFileError error,
       scoped_ptr<GDataEntryProto> entry_proto);
 
-  // ...
+  // Continues with GetIntroInfoPairByPaths after the second GDataEntry has been
+  // asynchronously fetched.
   void GetEntryInfoPairByPathsAfterGetSecond(
       const FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
       scoped_ptr<EntryInfoPairResult> result,
       GDataFileError error,
       scoped_ptr<GDataEntryProto> entry_proto);
+
+  // These internal functions need friend access to private GDataDirectory
+  // methods.
+  // Replaces file entry |old_entry| with its fresh value |fresh_file|.
+  static void RefreshFileInternal(scoped_ptr<GDataFile> fresh_file,
+                                  GDataEntry* old_entry);
+
+  // Removes all child files of |directory| and replace with file_map.
+  // |callback| may not be null.
+  static void RefreshDirectoryInternal(const ResourceMap& file_map,
+                                       const FileMoveCallback& callback,
+                                       GDataEntry* directory_entry);
+
 
   // Private data members.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

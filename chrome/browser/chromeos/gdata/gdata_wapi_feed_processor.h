@@ -21,7 +21,7 @@ class GDataDirectoryService;
 class GDataEntry;
 
 typedef std::map<std::string /* resource_id */, GDataEntry*>
-FileResourceIdMap;
+    FileResourceIdMap;
 
 // Struct used to record UMA stats with FeedToFileResourceMap().
 struct FeedToFileResourceMapUmaStats {
