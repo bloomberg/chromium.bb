@@ -15,11 +15,6 @@ namespace internal {
 
 // This class hides difference between two possible background implementations:
 // effective Layer-based for solid color, and Widget-based for images.
-// DesktopBackgroundWidgetController is installed as an owned property on the
-// RootWindow. To avoid a white flash during wallpaper changes the old
-// DesktopBackgroundWidgetController is moved to a secondary property
-// (kComponentWrapper). When the animation completes the old
-// DesktopBackgroundWidgetController is destroyed.
 class DesktopBackgroundWidgetController {
  public:
   // Create
@@ -48,30 +43,10 @@ class DesktopBackgroundWidgetController {
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundWidgetController);
 };
 
-// This class wraps a DesktopBackgroundWidgetController pointer. It is installed
-// as an owned property on the RootWindow. DesktopBackgroundWidgetController is
-// moved to this property before animation completes. After animation completes,
-// the kWindowDesktopComponent property on RootWindow is set to the
-// DesktopBackgroundWidgetController in this class.
-class ComponentWrapper {
- public:
-  explicit ComponentWrapper(
-      DesktopBackgroundWidgetController* component);
-  ~ComponentWrapper() {}
-  DesktopBackgroundWidgetController* component() { return component_; }
-
- private:
-  DesktopBackgroundWidgetController* component_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComponentWrapper);
-};
-
 // Window property key, that binds instance of DesktopBackgroundWidgetController
 // to root windows.
 extern const aura::WindowProperty<DesktopBackgroundWidgetController*>* const
     kWindowDesktopComponent;
-
-extern const aura::WindowProperty<ComponentWrapper*>* const kComponentWrapper;
 
 }  // namespace internal
 }  // namespace ash

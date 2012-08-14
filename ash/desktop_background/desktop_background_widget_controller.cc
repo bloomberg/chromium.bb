@@ -8,14 +8,12 @@
 #include "ui/views/widget/widget.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::DesktopBackgroundWidgetController*);
-DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::ComponentWrapper*);
 
 namespace ash {
 namespace internal {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(DesktopBackgroundWidgetController,
                                  kWindowDesktopComponent, NULL);
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ComponentWrapper, kComponentWrapper, NULL);
 
 DesktopBackgroundWidgetController::DesktopBackgroundWidgetController(
     views::Widget* widget) : widget_(widget) {
@@ -41,6 +39,7 @@ void DesktopBackgroundWidgetController::SetBounds(gfx::Rect bounds) {
     layer_->SetBounds(bounds);
 }
 
+
 void DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
                                                  int src_container,
                                                  int dest_container) {
@@ -52,10 +51,6 @@ void DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
     root_window->GetChildById(src_container)->layer()->Remove(layer);
     root_window->GetChildById(dest_container)->layer()->Add(layer);
   }
-}
-
-ComponentWrapper::ComponentWrapper(
-    DesktopBackgroundWidgetController* component) : component_(component) {
 }
 
 }  // namespace internal

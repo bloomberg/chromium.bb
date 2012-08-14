@@ -287,8 +287,6 @@ void RootWindowController::CloseChildWindows() {
   // Close background widget first as it depends on tooltip.
   root_window_->SetProperty(kWindowDesktopComponent,
       static_cast<DesktopBackgroundWidgetController*>(NULL));
-  root_window_->SetProperty(kComponentWrapper,
-                            static_cast<ComponentWrapper*>(NULL));
 
   workspace_controller_.reset();
   aura::client::SetTooltipClient(root_window_.get(), NULL);
