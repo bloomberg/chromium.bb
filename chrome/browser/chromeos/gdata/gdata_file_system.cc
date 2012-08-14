@@ -3229,16 +3229,16 @@ void GDataFileSystem::CloseFileOnUIThread(
   // Step 1 of CloseFile: Get resource_id and md5 for |file_path|.
   directory_service_->GetEntryInfoByPath(
       file_path,
-      base::Bind(&GDataFileSystem::OnGetEntryInfoCompleteForCloseFile,
+      base::Bind(&GDataFileSystem::CloseFileOnUIThreadAfterGetEntryInfo,
                  ui_weak_ptr_,
                  file_path,
-                 base::Bind(&GDataFileSystem::OnCloseFileFinished,
+                 base::Bind(&GDataFileSystem::CloseFileOnUIThreadFinalize,
                             ui_weak_ptr_,
                             file_path,
                             callback)));
 }
 
-void GDataFileSystem::OnGetEntryInfoCompleteForCloseFile(
+void GDataFileSystem::CloseFileOnUIThreadAfterGetEntryInfo(
     const FilePath& file_path,
     const FileOperationCallback& callback,
     GDataFileError error,
@@ -3254,118 +3254,21 @@ void GDataFileSystem::OnGetEntryInfoCompleteForCloseFile(
     return;
   }
 
-  // Step 2 of CloseFile: Get the local path of the cache. Since CloseFile must
-  // always be called on paths opened by OpenFile, the file must be cached,
-  cache_->GetFileOnUIThread(
-      entry_proto->resource_id(),
-      entry_proto->file_specific_info().file_md5(),
-      base::Bind(&GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile,
-                 ui_weak_ptr_,
-                 file_path,
-                 callback));
-}
-
-void GDataFileSystem::OnGetCacheFilePathCompleteForCloseFile(
-    const FilePath& file_path,
-    const FileOperationCallback& callback,
-    GDataFileError error,
-    const std::string& resource_id,
-    const std::string& md5,
-    const FilePath& local_cache_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != GDATA_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  // Step 3 of CloseFile: Retrieves the (possibly modified) PlatformFileInfo of
-  // the cache file.
-  base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
-  bool* get_file_info_result = new bool(false);
-  util::PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      blocking_task_runner_,
-      base::Bind(&GetFileInfoOnBlockingPool,
-                 local_cache_path,
-                 base::Unretained(file_info),
-                 base::Unretained(get_file_info_result)),
-      base::Bind(&GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile,
-                 ui_weak_ptr_,
-                 file_path,
-                 base::Owned(file_info),
-                 base::Owned(get_file_info_result),
-                 callback));
-}
-
-void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
-    const FilePath& file_path,
-    base::PlatformFileInfo* file_info,
-    bool* get_file_info_result,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (!*get_file_info_result) {
-    callback.Run(GDATA_FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  // Step 4 of CloseFile: Find GDataEntry corresponding to |file_path|, for
-  // modifying the entry's metadata.
-  FindEntryByPathAsyncOnUIThread(
-      file_path,
-      base::Bind(&GDataFileSystem::OnGetEntryCompleteForCloseFile,
-                 ui_weak_ptr_,
-                 *file_info,
-                 callback));
-}
-
-void GDataFileSystem::OnGetEntryCompleteForCloseFile(
-    const base::PlatformFileInfo& file_info,
-    const FileOperationCallback& callback,
-    GDataFileError error,
-    GDataEntry* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != GDATA_FILE_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  DCHECK(entry);
-  GDataFile* file = entry->AsGDataFile();
-  if (!file || file->file_md5().empty() || file->is_hosted_document()) {
-    // No support for opening a directory or hosted document.
-    callback.Run(GDATA_FILE_ERROR_INVALID_OPERATION);
-    return;
-  }
-  DCHECK(!file->resource_id().empty());
-
-  // Step 5 of CloseFile:
-  // Update the in-memory meta data. Until the committed cache is uploaded in
-  // background to the server and the change is propagated back, this in-memory
-  // meta data is referred by subsequent file operations. So it needs to reflect
-  // the modification made before committing.
-  file->set_file_info(file_info);
-
-  // Step 6 of CloseFile: Commit the modification in cache. This will trigger
+  // Step 2 of CloseFile: Commit the modification in cache. This will trigger
   // background upload.
   // TODO(benchan,kinaba): Call ClearDirtyInCache instead of CommitDirtyInCache
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
   cache_->CommitDirtyOnUIThread(
-      file->resource_id(),
-      file->file_md5(),
-      base::Bind(&GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
+      entry_proto->resource_id(),
+      entry_proto->file_specific_info().file_md5(),
+      base::Bind(&GDataFileSystem::CloseFileOnUIThreadAfterCommitDirtyInCache,
                  ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
+void GDataFileSystem::CloseFileOnUIThreadAfterCommitDirtyInCache(
     const FileOperationCallback& callback,
     GDataFileError error,
     const std::string& /* resource_id */,
@@ -3376,14 +3279,14 @@ void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
   callback.Run(error);
 }
 
-void GDataFileSystem::OnCloseFileFinished(
+void GDataFileSystem::CloseFileOnUIThreadFinalize(
     const FilePath& file_path,
     const FileOperationCallback& callback,
     GDataFileError result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // Step 7 of CloseFile.
+  // Step 3 of CloseFile.
   // All the invocation of |callback| from operations initiated from CloseFile
   // must go through here. Removes the |file_path| from the remembered set so
   // that subsequent operations can open the file again.

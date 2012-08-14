@@ -264,43 +264,23 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Invoked during the process of CloseFile. What is done here is as follows:
   // 1) Gets resource_id and md5 of the entry at |file_path|.
-  // 2) Gets the local path of the cache file from resource_id and md5.
-  // 3) Gets PlatformFileInfo of the modified local cache file.
-  // 4) Gets GDataEntry for |file_path|.
-  // 5) Modifies GDataEntry using the new PlatformFileInfo.
-  // 6) Commits the modification to the cache system.
-  // 7) Invokes the user-supplied |callback|.
+  // 2) Commits the modification to the cache system.
+  // 3) Removes the |file_path| from the remembered set of opened files.
+  // 4) Invokes the user-supplied |callback|.
   // |callback| must not be null.
-  void OnGetEntryInfoCompleteForCloseFile(
+  void CloseFileOnUIThreadAfterGetEntryInfo(
       const FilePath& file_path,
       const FileOperationCallback& callback,
       GDataFileError error,
       scoped_ptr<GDataEntryProto> entry_proto);
-  void OnGetCacheFilePathCompleteForCloseFile(
-      const FilePath& file_path,
-      const FileOperationCallback& callback,
-      GDataFileError error,
-      const std::string& resource_id,
-      const std::string& md5,
-      const FilePath& local_cache_path);
-  void OnGetModifiedFileInfoCompleteForCloseFile(
-      const FilePath& file_path,
-      base::PlatformFileInfo* file_info,
-      bool* get_file_info_result,
-      const FileOperationCallback& callback);
-  void OnGetEntryCompleteForCloseFile(
-      const base::PlatformFileInfo& file_info,
-      const FileOperationCallback& callback,
-      GDataFileError error,
-      GDataEntry* entry);
-  void OnCommitDirtyInCacheCompleteForCloseFile(
+  void CloseFileOnUIThreadAfterCommitDirtyInCache(
       const FileOperationCallback& callback,
       GDataFileError error,
       const std::string& resource_id,
       const std::string& md5);
-  void OnCloseFileFinished(const FilePath& file_path,
-                           const FileOperationCallback& callback,
-                           GDataFileError result);
+  void CloseFileOnUIThreadFinalize(const FilePath& file_path,
+                                   const FileOperationCallback& callback,
+                                   GDataFileError result);
 
   // Invoked upon completion of GetFileByPath initiated by Copy. If
   // GetFileByPath reports no error, calls TransferRegularFile to transfer
