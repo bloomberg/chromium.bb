@@ -428,7 +428,7 @@ GLES2Implementation::GLES2Implementation(
   GPU_DCHECK(transfer_buffer);
 
   char temp[128];
-  sprintf(temp, "%p", this);
+  sprintf(temp, "%p", static_cast<void*>(this));
   this_in_hex_ = std::string(temp);
 
   GPU_CLIENT_LOG_CODE_BLOCK({
