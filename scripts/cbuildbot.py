@@ -1029,13 +1029,6 @@ def _FinishParsing(options, args):
     release_mode_with_patches = (options.buildbot and patches and
                                  not options.debug)
 
-  # When running in release mode, make sure we are running with checked-in code.
-  # We want checked-in cbuildbot/scripts to prevent errors, and we want to build
-  # a release image with checked-in code for CrOS packages.
-  if release_mode_with_patches:
-    cros_build_lib.Die(
-        'Cannot provide patches when running with --buildbot!')
-
   if options.buildbot and options.remote_trybot:
     cros_build_lib.Die(
         '--buildbot and --remote-trybot cannot be used together.')
