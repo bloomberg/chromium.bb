@@ -381,9 +381,8 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
     BrowserActionButton* button = browser_action_views_[i]->button();
     if (button == sender) {
       // Set the dragging image for the icon.
-      scoped_ptr<gfx::Canvas> canvas(
-          browser_action_views_[i]->GetIconWithBadge());
-      drag_utils::SetDragImageOnDataObject(*canvas, button->size(), press_pt,
+      gfx::ImageSkia badge(browser_action_views_[i]->GetIconWithBadge());
+      drag_utils::SetDragImageOnDataObject(badge, button->size(), press_pt,
                                            data);
 
       // Fill in the remaining info.

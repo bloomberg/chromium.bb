@@ -249,9 +249,9 @@ class BrowserActionButton : public content::NotificationObserver,
     gtk_widget_queue_draw(button());
   }
 
-  SkBitmap GetIcon() {
+  gfx::ImageSkia GetIcon() {
     return *extension_->browser_action()->GetIcon(
-        toolbar_->GetCurrentTabId()).ToSkBitmap();
+        toolbar_->GetCurrentTabId()).ToImageSkia();
   }
 
   MenuGtk* GetContextMenu() {

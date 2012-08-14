@@ -10,6 +10,8 @@
 #include "skia/ext/platform_canvas.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
@@ -87,6 +89,63 @@ class BlendingImageSource : public gfx::ImageSkiaSource {
   double alpha_;
 
   DISALLOW_COPY_AND_ASSIGN(BlendingImageSource);
+};
+
+class SuperimposedImageSource : public gfx::CanvasImageSource {
+ public:
+  SuperimposedImageSource(const ImageSkia& first,
+                          const ImageSkia& second)
+      : gfx::CanvasImageSource(first.size(), false /* is opaque */),
+        first_(first),
+        second_(second) {
+  }
+
+  virtual ~SuperimposedImageSource() {}
+
+  // gfx::CanvasImageSource override.
+  virtual void Draw(Canvas* canvas) OVERRIDE {
+    canvas->DrawImageInt(first_, 0, 0);
+    canvas->DrawImageInt(second_,
+                         (first_.width() - second_.width()) / 2,
+                         (first_.height() - second_.height()) / 2);
+  }
+
+ private:
+  const ImageSkia first_;
+  const ImageSkia second_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuperimposedImageSource);
+};
+
+class TransparentImageSource : public gfx::ImageSkiaSource {
+ public:
+  TransparentImageSource(const ImageSkia& image, double alpha)
+      : image_(image),
+        alpha_(alpha) {
+  }
+
+  virtual ~TransparentImageSource() {}
+
+ private:
+  // gfx::ImageSkiaSource overrides:
+  virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
+    SkBitmap alpha;
+    const float scale = ui::GetScaleFactorScale(image_rep.scale_factor());
+    alpha.setConfig(SkBitmap::kARGB_8888_Config,
+                    static_cast<int>(image_.size().width() * scale),
+                    static_cast<int>(image_.size().height() * scale));
+    alpha.allocPixels();
+    alpha.eraseColor(SkColorSetARGB(alpha_ * 256, 0, 0, 0));
+    return ImageSkiaRep(SkBitmapOperations::CreateMaskedBitmap(
+        image_rep.sk_bitmap(), alpha),
+                        image_rep.scale_factor());
+  }
+
+  ImageSkia image_;
+  double alpha_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransparentImageSource);
 };
 
 class MaskedImageSource : public gfx::ImageSkiaSource {
@@ -319,6 +378,19 @@ ImageSkia ImageSkiaOperations::CreateBlendedImage(const ImageSkia& first,
                                                   const ImageSkia& second,
                                                   double alpha) {
   return ImageSkia(new BlendingImageSource(first, second, alpha), first.size());
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateSuperimposedImage(
+    const ImageSkia& first,
+    const ImageSkia& second) {
+  return ImageSkia(new SuperimposedImageSource(first, second), first.size());
+}
+
+// static
+ImageSkia ImageSkiaOperations::CreateTransparentImage(const ImageSkia& image,
+                                                      double alpha) {
+  return ImageSkia(new TransparentImageSource(image, alpha), image.size());
 }
 
 // static

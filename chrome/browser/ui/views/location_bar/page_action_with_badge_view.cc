@@ -36,7 +36,7 @@ void PageActionWithBadgeView::Layout() {
   // sized icons (such as 16x16) have either a 5 or a 4 pixel whitespace
   // (padding) above and below. It looks better to have the extra pixel above
   // the icon than below it, so we add a pixel. http://crbug.com/25708.
-  const SkBitmap& image = image_view()->GetImage();
+  const gfx::ImageSkia& image = image_view()->GetImage();
   int y = (image.height() + 1) % 2;  // Even numbers: 1px padding. Odd: 0px.
   image_view_->SetBounds(0, y, width(), height());
 }

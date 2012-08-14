@@ -271,9 +271,8 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
 
   // Set the image.
   gfx::Image icon = page_action_->GetIcon(current_tab_id_);
-  if (!icon.IsEmpty()) {
+  if (!icon.IsEmpty())
     SetImage(*icon.ToImageSkia());
-  }
 
   SetVisible(true);
 }

@@ -20,26 +20,13 @@
 #include "ui/base/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_skia_source.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 using extensions::Extension;
-
-namespace {
-
-// Return a more transparent |image|, with 25% of its original opacity.
-SkBitmap MakeTransparent(const SkBitmap& image) {
-  SkBitmap alpha;
-  alpha.setConfig(SkBitmap::kARGB_8888_Config, image.width(), image.height());
-  alpha.allocPixels();
-  alpha.eraseColor(SkColorSetARGB(64, 0, 0, 0));
-
-  return SkBitmapOperations::CreateMaskedBitmap(image, alpha);
-}
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionView
@@ -64,23 +51,15 @@ BrowserActionView::BrowserActionView(const Extension* extension,
 BrowserActionView::~BrowserActionView() {
 }
 
-gfx::Canvas* BrowserActionView::GetIconWithBadge() {
+gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
   int tab_id = delegate_->GetCurrentTabId();
 
-  SkBitmap icon =
-      *button_->extension()->browser_action()->GetIcon(tab_id).ToSkBitmap();
-
-  // Dim the icon if our button is disabled.
+  const ExtensionAction* action = button_->extension()->browser_action();
+  gfx::Size spacing(0, ToolbarView::kVertSpacing);
+  gfx::ImageSkia icon = *action->GetIcon(tab_id).ToImageSkia();
   if (!button_->IsEnabled(tab_id))
-    icon = MakeTransparent(icon);
-
-  gfx::Canvas* canvas =
-      new gfx::Canvas(gfx::ImageSkiaRep(icon, ui::SCALE_FACTOR_100P), false);
-
-  gfx::Rect bounds(icon.width(), icon.height() + ToolbarView::kVertSpacing);
-  button_->extension()->browser_action()->PaintBadge(canvas, bounds, tab_id);
-
-  return canvas;
+    icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
+  return action->GetIconWithBadge(icon, tab_id, spacing);
 }
 
 void BrowserActionView::Layout() {
@@ -261,39 +240,23 @@ void BrowserActionButton::UpdateState() {
              views::CustomButton::BS_NORMAL);
   }
 
-  SkBitmap icon(*browser_action()->GetIcon(tab_id).ToSkBitmap());
+  gfx::ImageSkia icon = *browser_action()->GetIcon(tab_id).ToImageSkia();
+
   if (!icon.isNull()) {
     if (!browser_action()->GetIsVisible(tab_id))
-      icon = MakeTransparent(icon);
-    SkPaint paint;
-    paint.setXfermode(SkXfermode::Create(SkXfermode::kSrcOver_Mode));
+      icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
+
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-    SkBitmap bg;
-    rb.GetBitmapNamed(IDR_BROWSER_ACTION)->copyTo(&bg,
-        SkBitmap::kARGB_8888_Config);
-    SkCanvas bg_canvas(bg);
-    bg_canvas.drawBitmap(icon, SkIntToScalar((bg.width() - icon.width()) / 2),
-        SkIntToScalar((bg.height() - icon.height()) / 2), &paint);
-    SetIcon(bg);
+    gfx::ImageSkia bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION);
+    SetIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon));
 
-    SkBitmap bg_h;
-    rb.GetBitmapNamed(IDR_BROWSER_ACTION_H)->copyTo(&bg_h,
-        SkBitmap::kARGB_8888_Config);
-    SkCanvas bg_h_canvas(bg_h);
-    bg_h_canvas.drawBitmap(icon,
-        SkIntToScalar((bg_h.width() - icon.width()) / 2),
-        SkIntToScalar((bg_h.height() - icon.height()) / 2), &paint);
-    SetHoverIcon(bg_h);
+    gfx::ImageSkia bg_h = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION_H);
+    SetHoverIcon(gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_h, icon));
 
-    SkBitmap bg_p;
-    rb.GetBitmapNamed(IDR_BROWSER_ACTION_P)->copyTo(&bg_p,
-        SkBitmap::kARGB_8888_Config);
-    SkCanvas bg_p_canvas(bg_p);
-    bg_p_canvas.drawBitmap(icon,
-        SkIntToScalar((bg_p.width() - icon.width()) / 2),
-        SkIntToScalar((bg_p.height() - icon.height()) / 2), &paint);
-    SetPushedIcon(bg_p);
+    gfx::ImageSkia bg_p = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION_P);
+    SetPushedIcon(
+        gfx::ImageSkiaOperations::CreateSuperimposedImage(bg_p, icon));
   }
 
   // If the browser action name is empty, show the extension name instead.

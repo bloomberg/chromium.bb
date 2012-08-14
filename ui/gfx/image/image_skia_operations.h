@@ -24,6 +24,14 @@ class UI_EXPORT ImageSkiaOperations {
                                       const ImageSkia& second,
                                       double alpha);
 
+  // Creates an image that is the original image with opacity set to |alpha|.
+  static ImageSkia CreateTransparentImage(const ImageSkia& image, double alpha);
+
+  // Creates new image by painting first and second image respectively.
+  // The second image is centered in respect to the first image.
+  static ImageSkia CreateSuperimposedImage(const ImageSkia& first,
+                                           const ImageSkia& second);
+
   // Create an image that is the original image masked out by the mask defined
   // in the alpha image. The images must use the kARGB_8888_Config config and
   // be of equal dimensions.
