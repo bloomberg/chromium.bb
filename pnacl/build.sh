@@ -249,7 +249,7 @@ SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
 # NOTE: this can be overwritten by merge-tool.sh
-readonly UPSTREAM_REV=${UPSTREAM_REV:-a900402b247f}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-0d7734befa98}
 
 readonly BINUTILS_REV=95a4e0cd6450
 readonly GOLD_REV=5d1c8d6e094d
