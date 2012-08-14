@@ -1523,7 +1523,7 @@ body:not([ctrl-pressing]) [visibleif='ctrl'] {
 }
 
 #list-container .table-header-cell:hover {
-  background-color: #f2f2f2;
+  background-color: #ececec;
 }
 
 button:focus {
