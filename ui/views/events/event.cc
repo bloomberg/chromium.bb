@@ -12,19 +12,6 @@
 namespace views {
 
 ////////////////////////////////////////////////////////////////////////////////
-// MouseEvent, public:
-
-#if !defined(USE_AURA)
-MouseEvent::MouseEvent(const ui::NativeEvent& native_event)
-    : LocatedEvent(native_event) {
-}
-#endif
-
-MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
-    : LocatedEvent(model, source, target) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 
 #if !defined(USE_AURA)

@@ -109,11 +109,11 @@ class VIEWS_EXPORT MenuController
   //
   // NOTE: the coordinates of the events are in that of the
   // MenuScrollViewContainer.
-  void OnMousePressed(SubmenuView* source, const MouseEvent& event);
-  void OnMouseDragged(SubmenuView* source, const MouseEvent& event);
-  void OnMouseReleased(SubmenuView* source, const MouseEvent& event);
-  void OnMouseMoved(SubmenuView* source, const MouseEvent& event);
-  void OnMouseEntered(SubmenuView* source, const MouseEvent& event);
+  void OnMousePressed(SubmenuView* source, const ui::MouseEvent& event);
+  void OnMouseDragged(SubmenuView* source, const ui::MouseEvent& event);
+  void OnMouseReleased(SubmenuView* source, const ui::MouseEvent& event);
+  void OnMouseMoved(SubmenuView* source, const ui::MouseEvent& event);
+  void OnMouseEntered(SubmenuView* source, const ui::MouseEvent& event);
 #if defined(OS_LINUX)
   bool OnMouseWheel(SubmenuView* source, const MouseWheelEvent& event);
 #endif
@@ -431,13 +431,13 @@ class VIEWS_EXPORT MenuController
   // that they react to click-drag-release as if the user clicked on the view
   // itself.
   void UpdateActiveMouseView(SubmenuView* event_source,
-                             const MouseEvent& event,
+                             const ui::MouseEvent& event,
                              View* target_menu);
 
   // Sends a mouse release event to the current |active_mouse_view_| and sets
   // it to null.
   void SendMouseReleaseToActiveView(SubmenuView* event_source,
-                                    const MouseEvent& event);
+                                    const ui::MouseEvent& event);
 
   // Sends a mouse capture lost event to the current |active_mouse_view_| and
   // sets it to null.

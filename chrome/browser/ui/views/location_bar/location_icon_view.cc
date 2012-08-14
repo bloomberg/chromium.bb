@@ -17,13 +17,13 @@ LocationIconView::LocationIconView(LocationBarView* location_bar)
 LocationIconView::~LocationIconView() {
 }
 
-bool LocationIconView::OnMousePressed(const views::MouseEvent& event) {
+bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
   // We want to show the dialog on mouse release; that is the standard behavior
   // for buttons.
   return true;
 }
 
-void LocationIconView::OnMouseReleased(const views::MouseEvent& event) {
+void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
   page_info_helper_.ProcessEvent(event);
 }
 

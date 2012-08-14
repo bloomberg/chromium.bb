@@ -52,10 +52,10 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual ~NativeTextfieldViews();
 
   // View overrides:
-  virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool GetDropFormats(
@@ -231,17 +231,17 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   bool Paste();
 
   // Tracks the mouse clicks for single/double/triple clicks.
-  void TrackMouseClicks(const MouseEvent& event);
+  void TrackMouseClicks(const ui::MouseEvent& event);
 
   // Handles mouse press events.
-  void HandleMousePressEvent(const MouseEvent& event);
+  void HandleMousePressEvent(const ui::MouseEvent& event);
 
   // Returns true if the current text input type allows access by the IME.
   bool ImeEditingAllowed() const;
 
   // Returns true if distance between |event| and |last_click_location_|
   // exceeds the drag threshold.
-  bool ExceededDragThresholdFromLastClickLocation(const MouseEvent& event);
+  bool ExceededDragThresholdFromLastClickLocation(const ui::MouseEvent& event);
 
   // Checks if a char is ok to be inserted into the textfield. The |ch| is a
   // modified character, i.e., modifiers took effect when generating this char.

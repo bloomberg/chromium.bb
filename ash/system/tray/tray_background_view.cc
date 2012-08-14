@@ -146,12 +146,12 @@ TrayBackgroundView::TrayBackgroundView(
 TrayBackgroundView::~TrayBackgroundView() {
 }
 
-void TrayBackgroundView::OnMouseEntered(const views::MouseEvent& event) {
+void TrayBackgroundView::OnMouseEntered(const ui::MouseEvent& event) {
   hover_background_animator_.SetPaintsBackground(true,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
-void TrayBackgroundView::OnMouseExited(const views::MouseEvent& event) {
+void TrayBackgroundView::OnMouseExited(const ui::MouseEvent& event) {
   hover_background_animator_.SetPaintsBackground(false,
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }

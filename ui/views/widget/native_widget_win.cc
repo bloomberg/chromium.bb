@@ -1628,7 +1628,7 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
 
   MSG msg = { hwnd(), message, w_param, l_param, 0,
               { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) } };
-  MouseEvent event(msg);
+  ui::MouseEvent event(msg);
   if (!touch_ids_.empty() || ui::IsMouseEventFromTouch(message))
     event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
 

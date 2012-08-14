@@ -119,21 +119,18 @@ void ActionableView::DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds) {
 bool ActionableView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
-    // TODO(beng): remove once views::Event is gone.
-    views::MouseEvent synthetic_event(
-        ui::ET_MOUSE_RELEASED, 0, 0, ui::EF_LEFT_MOUSE_BUTTON);
-    return PerformAction(synthetic_event);
+    return PerformAction(event);
   }
   return false;
 }
 
-bool ActionableView::OnMousePressed(const views::MouseEvent& event) {
+bool ActionableView::OnMousePressed(const ui::MouseEvent& event) {
   // Return true so that this view starts capturing the events.
   has_capture_ = true;
   return true;
 }
 
-void ActionableView::OnMouseReleased(const views::MouseEvent& event) {
+void ActionableView::OnMouseReleased(const ui::MouseEvent& event) {
   if (has_capture_ && GetLocalBounds().Contains(event.location()))
     PerformAction(event);
 }
@@ -232,14 +229,14 @@ gfx::Size HoverHighlightView::GetPreferredSize() {
   return size;
 }
 
-void HoverHighlightView::OnMouseEntered(const views::MouseEvent& event) {
+void HoverHighlightView::OnMouseEntered(const ui::MouseEvent& event) {
   hover_ = true;
   if (text_highlight_color_ && text_label_)
     text_label_->SetEnabledColor(text_highlight_color_);
   SchedulePaint();
 }
 
-void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
+void HoverHighlightView::OnMouseExited(const ui::MouseEvent& event) {
   hover_ = false;
   if (text_default_color_ && text_label_)
     text_label_->SetEnabledColor(text_default_color_);
@@ -311,7 +308,7 @@ void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   contents->SetBoundsRect(bounds);
 }
 
-void FixedSizedScrollView::OnMouseEntered(const views::MouseEvent& event) {
+void FixedSizedScrollView::OnMouseEntered(const ui::MouseEvent& event) {
   // TODO(sad): This is done to make sure that the scroll view scrolls on
   // mouse-wheel events. This is ugly, and Ben thinks this is weird. There
   // should be a better fix for this.
@@ -346,12 +343,12 @@ gfx::Size TrayPopupTextButton::GetPreferredSize() {
   return size;
 }
 
-void TrayPopupTextButton::OnMouseEntered(const views::MouseEvent& event) {
+void TrayPopupTextButton::OnMouseEntered(const ui::MouseEvent& event) {
   hover_ = true;
   SchedulePaint();
 }
 
-void TrayPopupTextButton::OnMouseExited(const views::MouseEvent& event) {
+void TrayPopupTextButton::OnMouseExited(const ui::MouseEvent& event) {
   hover_ = false;
   SchedulePaint();
 }

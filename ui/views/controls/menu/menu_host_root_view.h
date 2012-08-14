@@ -25,10 +25,10 @@ class MenuHostRootView : public internal::RootView {
   void ClearSubmenu() { submenu_ = NULL; }
 
   // Overridden from View:
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
 

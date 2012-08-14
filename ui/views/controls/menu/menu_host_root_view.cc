@@ -16,7 +16,7 @@ MenuHostRootView::MenuHostRootView(Widget* widget,
       forward_drag_to_menu_controller_(true) {
 }
 
-bool MenuHostRootView::OnMousePressed(const MouseEvent& event) {
+bool MenuHostRootView::OnMousePressed(const ui::MouseEvent& event) {
   forward_drag_to_menu_controller_ =
       !GetLocalBounds().Contains(event.location()) ||
       !RootView::OnMousePressed(event);
@@ -25,7 +25,7 @@ bool MenuHostRootView::OnMousePressed(const MouseEvent& event) {
   return true;
 }
 
-bool MenuHostRootView::OnMouseDragged(const MouseEvent& event) {
+bool MenuHostRootView::OnMouseDragged(const ui::MouseEvent& event) {
   if (forward_drag_to_menu_controller_ && GetMenuController()) {
     GetMenuController()->OnMouseDragged(submenu_, event);
     return true;
@@ -33,7 +33,7 @@ bool MenuHostRootView::OnMouseDragged(const MouseEvent& event) {
   return RootView::OnMouseDragged(event);
 }
 
-void MenuHostRootView::OnMouseReleased(const MouseEvent& event) {
+void MenuHostRootView::OnMouseReleased(const ui::MouseEvent& event) {
   RootView::OnMouseReleased(event);
   if (forward_drag_to_menu_controller_ && GetMenuController()) {
     forward_drag_to_menu_controller_ = false;
@@ -41,7 +41,7 @@ void MenuHostRootView::OnMouseReleased(const MouseEvent& event) {
   }
 }
 
-void MenuHostRootView::OnMouseMoved(const MouseEvent& event) {
+void MenuHostRootView::OnMouseMoved(const ui::MouseEvent& event) {
   RootView::OnMouseMoved(event);
   if (GetMenuController())
     GetMenuController()->OnMouseMoved(submenu_, event);

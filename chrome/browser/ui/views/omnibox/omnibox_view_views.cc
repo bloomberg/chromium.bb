@@ -98,7 +98,7 @@ class AutocompleteTextfield : public views::Textfield {
     return omnibox_view_->HandleKeyReleaseEvent(event);
   }
 
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     // Pass through the views::Textfield's return value; we don't need to
     // override its behavior.
     bool result = views::Textfield::OnMousePressed(event);
@@ -106,13 +106,13 @@ class AutocompleteTextfield : public views::Textfield {
     return result;
   }
 
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
     bool result = views::Textfield::OnMouseDragged(event);
     omnibox_view_->HandleMouseDragEvent(event);
     return result;
   }
 
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
     views::Textfield::OnMouseReleased(event);
     omnibox_view_->HandleMouseReleaseEvent(event);
   }
@@ -382,17 +382,17 @@ bool OmniboxViewViews::HandleKeyReleaseEvent(const ui::KeyEvent& event) {
   return false;
 }
 
-void OmniboxViewViews::HandleMousePressEvent(const views::MouseEvent& event) {
+void OmniboxViewViews::HandleMousePressEvent(const ui::MouseEvent& event) {
   select_all_on_mouse_release_ =
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       !textfield_->HasFocus();
 }
 
-void OmniboxViewViews::HandleMouseDragEvent(const views::MouseEvent& event) {
+void OmniboxViewViews::HandleMouseDragEvent(const ui::MouseEvent& event) {
   select_all_on_mouse_release_ = false;
 }
 
-void OmniboxViewViews::HandleMouseReleaseEvent(const views::MouseEvent& event) {
+void OmniboxViewViews::HandleMouseReleaseEvent(const ui::MouseEvent& event) {
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
       select_all_on_mouse_release_) {
     // Select all in the reverse direction so as not to scroll the caret

@@ -302,7 +302,7 @@ gfx::Size TreeView::GetPreferredSize() {
   return preferred_size_;
 }
 
-bool TreeView::OnMousePressed(const MouseEvent& event) {
+bool TreeView::OnMousePressed(const ui::MouseEvent& event) {
   int row = (event.y() - kVerticalInset) / row_height_;
   int depth;
   InternalNode* node = GetNodeByRow(row, &depth);

@@ -325,7 +325,7 @@ bool BrowserActionButton::Activate() {
   return false;
 }
 
-bool BrowserActionButton::OnMousePressed(const views::MouseEvent& event) {
+bool BrowserActionButton::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsRightMouseButton()) {
     return IsPopup() ? MenuButton::OnMousePressed(event)
                      : TextButton::OnMousePressed(event);
@@ -338,7 +338,7 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& event) {
   return false;
 }
 
-void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event) {
+void BrowserActionButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (IsPopup() || context_menu_) {
     // TODO(erikkay) this never actually gets called (probably because of the
     // loss of focus).
@@ -348,7 +348,7 @@ void BrowserActionButton::OnMouseReleased(const views::MouseEvent& event) {
   }
 }
 
-void BrowserActionButton::OnMouseExited(const views::MouseEvent& event) {
+void BrowserActionButton::OnMouseExited(const ui::MouseEvent& event) {
   if (IsPopup() || context_menu_)
     MenuButton::OnMouseExited(event);
   else

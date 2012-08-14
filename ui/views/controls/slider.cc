@@ -223,19 +223,19 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 }
 
-bool Slider::OnMousePressed(const views::MouseEvent& event) {
+bool Slider::OnMousePressed(const ui::MouseEvent& event) {
   if (listener_)
     listener_->SliderDragStarted(this);
   MoveButtonTo(event.location());
   return true;
 }
 
-bool Slider::OnMouseDragged(const views::MouseEvent& event) {
+bool Slider::OnMouseDragged(const ui::MouseEvent& event) {
   MoveButtonTo(event.location());
   return true;
 }
 
-void Slider::OnMouseReleased(const views::MouseEvent& event) {
+void Slider::OnMouseReleased(const ui::MouseEvent& event) {
   if (listener_)
     listener_->SliderDragEnded(this);
 }

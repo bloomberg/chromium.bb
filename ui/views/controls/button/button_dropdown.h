@@ -40,13 +40,13 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton {
   bool IsMenuShowing() const;
 
   // Overridden from views::View
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   // Showing the drop down results in a MouseCaptureLost, we need to ignore it.
   virtual void OnMouseCaptureLost() OVERRIDE {}
-  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   // Display the right-click menu, as triggered by the keyboard, for instance.
   // Using the member function ShowDropDownMenu for the actual display.
   virtual void ShowContextMenu(const gfx::Point& p,

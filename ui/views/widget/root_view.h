@@ -97,12 +97,12 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   virtual bool IsDrawn() const OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const MouseWheelEvent& event) OVERRIDE;
   virtual bool OnScrollEvent(const ScrollEvent& event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
@@ -131,12 +131,12 @@ class VIEWS_EXPORT RootView : public View, public FocusTraversable {
   // cursor during drag operations. The location of the mouse should be in the
   // current coordinate system (i.e. any necessary transformation should be
   // applied to the point prior to calling this).
-  void UpdateCursor(const MouseEvent& event);
+  void UpdateCursor(const ui::MouseEvent& event);
 
   // Updates the last_mouse_* fields from e. The location of the mouse should be
   // in the current coordinate system (i.e. any necessary transformation should
   // be applied to the point prior to calling this).
-  void SetMouseLocationAndFlags(const MouseEvent& event);
+  void SetMouseLocationAndFlags(const ui::MouseEvent& event);
 
   //////////////////////////////////////////////////////////////////////////////
 

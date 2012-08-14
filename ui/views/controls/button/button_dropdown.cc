@@ -57,7 +57,7 @@ bool ButtonDropDown::IsMenuShowing() const {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-bool ButtonDropDown::OnMousePressed(const MouseEvent& event) {
+bool ButtonDropDown::OnMousePressed(const ui::MouseEvent& event) {
   if (enabled() && ShouldShowMenu() &&
       IsTriggerableEvent(event) && HitTestPoint(event.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
@@ -75,7 +75,7 @@ bool ButtonDropDown::OnMousePressed(const MouseEvent& event) {
   return ImageButton::OnMousePressed(event);
 }
 
-bool ButtonDropDown::OnMouseDragged(const MouseEvent& event) {
+bool ButtonDropDown::OnMouseDragged(const ui::MouseEvent& event) {
   bool result = ImageButton::OnMouseDragged(event);
 
   if (show_menu_factory_.HasWeakPtrs()) {
@@ -91,7 +91,7 @@ bool ButtonDropDown::OnMouseDragged(const MouseEvent& event) {
   return result;
 }
 
-void ButtonDropDown::OnMouseReleased(const MouseEvent& event) {
+void ButtonDropDown::OnMouseReleased(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event) ||
       (event.IsRightMouseButton() && !HitTestPoint(event.location()))) {
     ImageButton::OnMouseReleased(event);
@@ -111,7 +111,7 @@ std::string ButtonDropDown::GetClassName() const {
   return kViewClassName;
 }
 
-void ButtonDropDown::OnMouseExited(const MouseEvent& event) {
+void ButtonDropDown::OnMouseExited(const ui::MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   // A right click release triggers an exit event. We want to
   // remain in a PUSHED state until the drop down menu closes.

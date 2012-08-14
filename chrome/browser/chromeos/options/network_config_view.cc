@@ -300,12 +300,12 @@ void ControlledSettingIndicatorView::Layout() {
 }
 
 void ControlledSettingIndicatorView::OnMouseEntered(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   image_view_->SetImage(color_image_);
 }
 
 void ControlledSettingIndicatorView::OnMouseExited(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   image_view_->SetImage(gray_image_);
 }
 

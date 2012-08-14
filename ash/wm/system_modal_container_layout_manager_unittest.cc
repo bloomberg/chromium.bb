@@ -81,7 +81,7 @@ class EventTestWindow : public TestWindow {
   }
 
   // Overridden from views::View:
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     mouse_presses_++;
     return false;
   }

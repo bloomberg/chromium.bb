@@ -23,7 +23,7 @@ class DesktopBackgroundView : public views::WidgetDelegateView,
  private:
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
   // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,

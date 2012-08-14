@@ -72,7 +72,7 @@ NativeComboboxViews::~NativeComboboxViews() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeComboboxViews, View overrides:
 
-bool NativeComboboxViews::OnMousePressed(const views::MouseEvent& mouse_event) {
+bool NativeComboboxViews::OnMousePressed(const ui::MouseEvent& mouse_event) {
   combobox_->RequestFocus();
   if (mouse_event.IsLeftMouseButton()) {
     UpdateFromModel();
@@ -82,7 +82,7 @@ bool NativeComboboxViews::OnMousePressed(const views::MouseEvent& mouse_event) {
   return true;
 }
 
-bool NativeComboboxViews::OnMouseDragged(const views::MouseEvent& mouse_event) {
+bool NativeComboboxViews::OnMouseDragged(const ui::MouseEvent& mouse_event) {
   return true;
 }
 

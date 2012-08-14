@@ -518,7 +518,7 @@ void PanelBrowserFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_TITLEBAR;
 }
 
-bool PanelBrowserFrameView::OnMousePressed(const views::MouseEvent& event) {
+bool PanelBrowserFrameView::OnMousePressed(const ui::MouseEvent& event) {
   gfx::Point mouse_location = event.location();
 
   if (CanResize() &&
@@ -536,7 +536,7 @@ bool PanelBrowserFrameView::OnMousePressed(const views::MouseEvent& event) {
   return BrowserNonClientFrameView::OnMousePressed(event);
 }
 
-bool PanelBrowserFrameView::OnMouseDragged(const views::MouseEvent& event) {
+bool PanelBrowserFrameView::OnMouseDragged(const ui::MouseEvent& event) {
   // |event.location| is in the view's coordinate system. Convert it to the
   // screen coordinate system.
   gfx::Point mouse_location = event.location();
@@ -547,7 +547,7 @@ bool PanelBrowserFrameView::OnMouseDragged(const views::MouseEvent& event) {
   return BrowserNonClientFrameView::OnMouseDragged(event);
 }
 
-void PanelBrowserFrameView::OnMouseReleased(const views::MouseEvent& event) {
+void PanelBrowserFrameView::OnMouseReleased(const ui::MouseEvent& event) {
   if (panel_browser_view_->OnTitlebarMouseReleased(
           event.IsControlDown() ? panel::APPLY_TO_ALL : panel::NO_MODIFIER))
     return;

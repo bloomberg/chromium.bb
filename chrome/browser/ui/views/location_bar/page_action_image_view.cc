@@ -162,14 +162,14 @@ void PageActionImageView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = UTF8ToUTF16(tooltip_);
 }
 
-bool PageActionImageView::OnMousePressed(const views::MouseEvent& event) {
+bool PageActionImageView::OnMousePressed(const ui::MouseEvent& event) {
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.  (Also, triggering on mouse press causes bugs like
   // http://crbug.com/33155.)
   return true;
 }
 
-void PageActionImageView::OnMouseReleased(const views::MouseEvent& event) {
+void PageActionImageView::OnMouseReleased(const ui::MouseEvent& event) {
   if (!HitTestPoint(event.location()))
     return;
 

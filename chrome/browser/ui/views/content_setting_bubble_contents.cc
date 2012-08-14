@@ -52,9 +52,9 @@ class ContentSettingBubbleContents::Favicon : public views::ImageView {
 
  private:
   // views::View overrides:
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
-  virtual gfx::NativeCursor GetCursor(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
 
   ContentSettingBubbleContents* parent_;
   views::Link* link_;
@@ -73,12 +73,12 @@ ContentSettingBubbleContents::Favicon::~Favicon() {
 }
 
 bool ContentSettingBubbleContents::Favicon::OnMousePressed(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   return event.IsLeftMouseButton() || event.IsMiddleMouseButton();
 }
 
 void ContentSettingBubbleContents::Favicon::OnMouseReleased(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   if ((event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
      HitTestPoint(event.location())) {
     parent_->LinkClicked(link_, event.flags());
@@ -86,7 +86,7 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
 }
 
 gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
 #if defined(USE_AURA)
   return ui::kCursorHand;
 #elif defined(OS_WIN)

@@ -184,7 +184,7 @@ void FrameMaximizeButton::OnWindowDestroying(aura::Window* window) {
   }
 }
 
-bool FrameMaximizeButton::OnMousePressed(const views::MouseEvent& event) {
+bool FrameMaximizeButton::OnMousePressed(const ui::MouseEvent& event) {
   is_snap_enabled_ = event.IsLeftMouseButton();
   if (is_snap_enabled_)
     ProcessStartEvent(event);
@@ -192,7 +192,7 @@ bool FrameMaximizeButton::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-void FrameMaximizeButton::OnMouseEntered(const views::MouseEvent& event) {
+void FrameMaximizeButton::OnMouseEntered(const ui::MouseEvent& event) {
   ImageButton::OnMouseEntered(event);
   if (!maximizer_.get()) {
     DCHECK(GetWidget());
@@ -206,7 +206,7 @@ void FrameMaximizeButton::OnMouseEntered(const views::MouseEvent& event) {
   }
 }
 
-void FrameMaximizeButton::OnMouseExited(const views::MouseEvent& event) {
+void FrameMaximizeButton::OnMouseExited(const ui::MouseEvent& event) {
   ImageButton::OnMouseExited(event);
   // Remove the bubble menu when the button is not pressed and the mouse is not
   // within the bubble.
@@ -227,13 +227,13 @@ void FrameMaximizeButton::OnMouseExited(const views::MouseEvent& event) {
   }
 }
 
-bool FrameMaximizeButton::OnMouseDragged(const views::MouseEvent& event) {
+bool FrameMaximizeButton::OnMouseDragged(const ui::MouseEvent& event) {
   if (is_snap_enabled_)
     ProcessUpdateEvent(event);
   return ImageButton::OnMouseDragged(event);
 }
 
-void FrameMaximizeButton::OnMouseReleased(const views::MouseEvent& event) {
+void FrameMaximizeButton::OnMouseReleased(const ui::MouseEvent& event) {
   maximizer_.reset();
   if (!ProcessEndEvent(event))
     ImageButton::OnMouseReleased(event);

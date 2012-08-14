@@ -47,7 +47,7 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
   // View:
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
 
   // views::MouseWatcherListener.
   virtual void MouseMovedOutOfHost() OVERRIDE;

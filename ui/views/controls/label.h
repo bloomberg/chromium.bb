@@ -187,9 +187,9 @@ class VIEWS_EXPORT Label : public View {
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   // Mouse enter/exit are overridden to render mouse over background color.
   // These invoke SetContainsMouse as necessary.
-  virtual void OnMouseMoved(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseEntered(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   // Gets the tooltip text for labels that are wider than their bounds, except
   // when the label is multiline, in which case it just returns false (no
@@ -240,7 +240,7 @@ class VIEWS_EXPORT Label : public View {
 
   // If the mouse is over the text, SetContainsMouse(true) is invoked, otherwise
   // SetContainsMouse(false) is invoked.
-  void UpdateContainsMouse(const MouseEvent& event);
+  void UpdateContainsMouse(const ui::MouseEvent& event);
 
   // Updates whether the mouse is contained in the Label. If the new value
   // differs from the current value, and a mouse over background is specified,

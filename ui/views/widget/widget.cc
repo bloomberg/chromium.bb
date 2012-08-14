@@ -1063,7 +1063,7 @@ bool Widget::OnKeyEvent(const ui::KeyEvent& event) {
   return static_cast<internal::RootView*>(GetRootView())->OnKeyEvent(event);
 }
 
-bool Widget::OnMouseEvent(const MouseEvent& event) {
+bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
   ScopedEvent scoped(this, event);
   switch (event.type()) {
     case ui::ET_MOUSE_PRESSED:

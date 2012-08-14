@@ -33,13 +33,13 @@ AppListButton::AppListButton(views::ButtonListener* listener,
 AppListButton::~AppListButton() {
 }
 
-bool AppListButton::OnMousePressed(const views::MouseEvent& event) {
+bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
   ImageButton::OnMousePressed(event);
   host_->PointerPressedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 
-void AppListButton::OnMouseReleased(const views::MouseEvent& event) {
+void AppListButton::OnMouseReleased(const ui::MouseEvent& event) {
   ImageButton::OnMouseReleased(event);
   host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, false);
 }
@@ -49,23 +49,23 @@ void AppListButton::OnMouseCaptureLost() {
   ImageButton::OnMouseCaptureLost();
 }
 
-bool AppListButton::OnMouseDragged(const views::MouseEvent& event) {
+bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
   ImageButton::OnMouseDragged(event);
   host_->PointerDraggedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 
-void AppListButton::OnMouseMoved(const views::MouseEvent& event) {
+void AppListButton::OnMouseMoved(const ui::MouseEvent& event) {
   ImageButton::OnMouseMoved(event);
   host_->MouseMovedOverButton(this);
 }
 
-void AppListButton::OnMouseEntered(const views::MouseEvent& event) {
+void AppListButton::OnMouseEntered(const ui::MouseEvent& event) {
   ImageButton::OnMouseEntered(event);
   host_->MouseEnteredButton(this);
 }
 
-void AppListButton::OnMouseExited(const views::MouseEvent& event) {
+void AppListButton::OnMouseExited(const ui::MouseEvent& event) {
   ImageButton::OnMouseExited(event);
   host_->MouseExitedButton(this);
 }

@@ -60,7 +60,7 @@ class CandidateView : public views::View {
   friend class CandidateWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
   // Overridden from View:
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
   // Notifies labels of their new background colors.  Called whenever the view's
   // background color changes.

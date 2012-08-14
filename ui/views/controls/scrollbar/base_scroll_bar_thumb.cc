@@ -65,22 +65,22 @@ int BaseScrollBarThumb::GetPosition() const {
   return y() - track_bounds.y();
 }
 
-void BaseScrollBarThumb::OnMouseEntered(const MouseEvent& event) {
+void BaseScrollBarThumb::OnMouseEntered(const ui::MouseEvent& event) {
   SetState(CustomButton::BS_HOT);
 }
 
-void BaseScrollBarThumb::OnMouseExited(const MouseEvent& event) {
+void BaseScrollBarThumb::OnMouseExited(const ui::MouseEvent& event) {
   SetState(CustomButton::BS_NORMAL);
 }
 
-bool BaseScrollBarThumb::OnMousePressed(const MouseEvent& event) {
+bool BaseScrollBarThumb::OnMousePressed(const ui::MouseEvent& event) {
   mouse_offset_ = scroll_bar_->IsHorizontal() ? event.x() : event.y();
   drag_start_position_ = GetPosition();
   SetState(CustomButton::BS_PUSHED);
   return true;
 }
 
-bool BaseScrollBarThumb::OnMouseDragged(const MouseEvent& event) {
+bool BaseScrollBarThumb::OnMouseDragged(const ui::MouseEvent& event) {
   // If the user moves the mouse more than |kScrollThumbDragOutSnap| outside
   // the bounds of the thumb, the scrollbar will snap the scroll back to the
   // point it was at before the drag began.
@@ -107,7 +107,7 @@ bool BaseScrollBarThumb::OnMouseDragged(const MouseEvent& event) {
   return true;
 }
 
-void BaseScrollBarThumb::OnMouseReleased(const MouseEvent& event) {
+void BaseScrollBarThumb::OnMouseReleased(const ui::MouseEvent& event) {
   OnMouseCaptureLost();
 }
 

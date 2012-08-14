@@ -15,10 +15,12 @@
 namespace {
 
 void ClickAt(views::View* view, int x, int y) {
-  views::MouseEvent press(ui::ET_MOUSE_PRESSED, x, y, ui::EF_LEFT_MOUSE_BUTTON);
+  gfx::Point point(x, y);
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, point, point,
+                       ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMousePressed(press);
-  views::MouseEvent release(ui::ET_MOUSE_RELEASED, x, y,
-      ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, point, point,
+                         ui::EF_LEFT_MOUSE_BUTTON);
   view->OnMouseReleased(release);
 }
 

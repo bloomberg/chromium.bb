@@ -142,7 +142,7 @@ bool DateView::PerformAction(const ui::Event& event) {
   return true;
 }
 
-void DateView::OnMouseEntered(const views::MouseEvent& event) {
+void DateView::OnMouseEntered(const ui::MouseEvent& event) {
   if (!actionable_)
     return;
   date_label_->SetEnabledColor(kHeaderTextColorHover);
@@ -150,7 +150,7 @@ void DateView::OnMouseEntered(const views::MouseEvent& event) {
   SchedulePaint();
 }
 
-void DateView::OnMouseExited(const views::MouseEvent& event) {
+void DateView::OnMouseExited(const ui::MouseEvent& event) {
   if (!actionable_)
     return;
   date_label_->SetEnabledColor(kHeaderTextColorNormal);
@@ -198,7 +198,7 @@ bool TimeView::PerformAction(const ui::Event& event) {
   return false;
 }
 
-bool TimeView::OnMousePressed(const views::MouseEvent& event) {
+bool TimeView::OnMousePressed(const ui::MouseEvent& event) {
   // Let the event fall through.
   return false;
 }

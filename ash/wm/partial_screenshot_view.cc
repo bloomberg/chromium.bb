@@ -59,7 +59,7 @@ void PartialScreenshotView::StartPartialScreenshot(
 }
 
 gfx::NativeCursor PartialScreenshotView::GetCursor(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   // Always use "crosshair" cursor.
   return ui::kCursorCross;
 }
@@ -96,12 +96,12 @@ void PartialScreenshotView::OnMouseCaptureLost() {
   Cancel();
 }
 
-bool PartialScreenshotView::OnMousePressed(const views::MouseEvent& event) {
+bool PartialScreenshotView::OnMousePressed(const ui::MouseEvent& event) {
   start_position_ = event.location();
   return true;
 }
 
-bool PartialScreenshotView::OnMouseDragged(const views::MouseEvent& event) {
+bool PartialScreenshotView::OnMouseDragged(const ui::MouseEvent& event) {
   current_position_ = event.location();
   SchedulePaint();
   is_dragging_ = true;
@@ -113,7 +113,7 @@ bool PartialScreenshotView::OnMouseWheel(const views::MouseWheelEvent& event) {
   return true;
 }
 
-void PartialScreenshotView::OnMouseReleased(const views::MouseEvent& event) {
+void PartialScreenshotView::OnMouseReleased(const ui::MouseEvent& event) {
   Cancel();
   if (!is_dragging_)
     return;

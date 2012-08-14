@@ -44,7 +44,7 @@ std::string Link::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::NativeCursor Link::GetCursor(const MouseEvent& event) {
+gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
   if (!enabled())
     return gfx::kNullCursor;
 #if defined(USE_AURA)
@@ -61,7 +61,7 @@ bool Link::HitTestRect(const gfx::Rect& rect) const {
   return View::HitTestRect(rect);
 }
 
-bool Link::OnMousePressed(const MouseEvent& event) {
+bool Link::OnMousePressed(const ui::MouseEvent& event) {
   if (!enabled() ||
       (!event.IsLeftMouseButton() && !event.IsMiddleMouseButton()))
     return false;
@@ -69,14 +69,14 @@ bool Link::OnMousePressed(const MouseEvent& event) {
   return true;
 }
 
-bool Link::OnMouseDragged(const MouseEvent& event) {
+bool Link::OnMouseDragged(const ui::MouseEvent& event) {
   SetPressed(enabled() &&
              (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
              HitTestPoint(event.location()));
   return true;
 }
 
-void Link::OnMouseReleased(const MouseEvent& event) {
+void Link::OnMouseReleased(const ui::MouseEvent& event) {
   // Change the highlight first just in case this instance is deleted
   // while calling the controller
   OnMouseCaptureLost();

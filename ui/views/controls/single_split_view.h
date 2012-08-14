@@ -41,7 +41,7 @@ class VIEWS_EXPORT SingleSplitView : public View {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overriden to return a resize cursor when over the divider.
-  virtual gfx::NativeCursor GetCursor(const MouseEvent& event) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
 
   Orientation orientation() const {
     return is_horizontal_ ? HORIZONTAL_SPLIT : VERTICAL_SPLIT;
@@ -74,8 +74,8 @@ class VIEWS_EXPORT SingleSplitView : public View {
 
  protected:
   // View overrides.
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 

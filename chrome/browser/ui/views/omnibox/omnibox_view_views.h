@@ -70,9 +70,9 @@ class OmniboxViewViews
 
   // Called when mouse events are generated on the textfield.
   // The views::Textfield implementations will be executed first.
-  void HandleMousePressEvent(const views::MouseEvent& event);
-  void HandleMouseDragEvent(const views::MouseEvent& event);
-  void HandleMouseReleaseEvent(const views::MouseEvent& event);
+  void HandleMousePressEvent(const ui::MouseEvent& event);
+  void HandleMouseDragEvent(const ui::MouseEvent& event);
+  void HandleMouseReleaseEvent(const ui::MouseEvent& event);
 
   // Called when Focus is set/unset on textfield.
   void HandleFocusIn();

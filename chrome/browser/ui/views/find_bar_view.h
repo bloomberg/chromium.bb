@@ -102,7 +102,7 @@ class FindBarView : public DropdownBarView,
       : view_to_focus_on_mousedown_(view_to_focus_on_mousedown) {}
 
    private:
-    virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+    virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
 
     views::Textfield* view_to_focus_on_mousedown_;
 

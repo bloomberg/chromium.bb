@@ -69,7 +69,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, DISABLED_OkButton) {
   // Simulate pressing the OK button.  Set the message loop in the bubble
   // view so that it can be quit once the bubble is hidden.
   views::ButtonListener* listener = view;
-  const views::MouseEvent event(ui::ET_MOUSE_PRESSED, 0, 0, 0);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
+                             gfx::Point(), gfx::Point(),
+                             0);
   listener->ButtonPressed(view->ok_button_, event);
 
   // View should no longer be showing.  The message loop will exit once the
@@ -88,7 +90,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
   // Simulate pressing the undo button.  Set the message loop in the bubble
   // view so that it can be quit once the bubble is hidden.
   views::ButtonListener* listener = view;
-  const views::MouseEvent event(ui::ET_MOUSE_PRESSED, 0, 0, 0);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
+                             gfx::Point(), gfx::Point(),
+                             0);
   listener->ButtonPressed(view->undo_button_, event);
 
   // View should no longer be showing.  The message loop will exit once the

@@ -64,12 +64,12 @@ class LocatedEventHandlerView : public views::View {
   virtual void ProcessEventAtLocation(const gfx::Point& location) = 0;
 
   // views::View overrides:
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     ProcessEventAtLocation(event.location());
     return true;
   }
 
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
     ProcessEventAtLocation(event.location());
     return true;
   }

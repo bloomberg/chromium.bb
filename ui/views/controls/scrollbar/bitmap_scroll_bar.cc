@@ -57,13 +57,13 @@ class AutorepeatButton : public ImageButton {
   virtual ~AutorepeatButton() {}
 
  protected:
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     Button::NotifyClick(event);
     repeater_.Start();
     return true;
   }
 
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE {
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
     OnMouseCaptureLost();
   }
 
@@ -78,9 +78,9 @@ class AutorepeatButton : public ImageButton {
 #elif defined(OS_LINUX)
     gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
 #endif
-    views::MouseEvent event(ui::ET_MOUSE_RELEASED,
-                            cursor_point.x(), cursor_point.y(),
-                            ui::EF_LEFT_MOUSE_BUTTON);
+    ui::MouseEvent event(ui::ET_MOUSE_RELEASED,
+                         cursor_point, cursor_point,
+                         ui::EF_LEFT_MOUSE_BUTTON);
     Button::NotifyClick(event);
   }
 

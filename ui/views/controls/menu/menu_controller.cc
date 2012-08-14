@@ -436,12 +436,12 @@ void MenuController::Cancel(ExitType type) {
 }
 
 void MenuController::OnMousePressed(SubmenuView* source,
-                                    const MouseEvent& event) {
+                                    const ui::MouseEvent& event) {
   SetSelectionOnPointerDown(source, event);
 }
 
 void MenuController::OnMouseDragged(SubmenuView* source,
-                                    const MouseEvent& event) {
+                                    const ui::MouseEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
   UpdateScrolling(part);
 
@@ -469,7 +469,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
 }
 
 void MenuController::OnMouseReleased(SubmenuView* source,
-                                     const MouseEvent& event) {
+                                     const ui::MouseEvent& event) {
   if (!blocking_run_)
     return;
 
@@ -518,12 +518,12 @@ void MenuController::OnMouseReleased(SubmenuView* source,
 }
 
 void MenuController::OnMouseMoved(SubmenuView* source,
-                                  const MouseEvent& event) {
+                                  const ui::MouseEvent& event) {
   HandleMouseLocation(source, event.location());
 }
 
 void MenuController::OnMouseEntered(SubmenuView* source,
-                                    const MouseEvent& event) {
+                                    const ui::MouseEvent& event) {
   // MouseEntered is always followed by a mouse moved, so don't need to
   // do anything here.
 }
@@ -2011,7 +2011,7 @@ void MenuController::StopScrolling() {
 }
 
 void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
-                                           const MouseEvent& event,
+                                           const ui::MouseEvent& event,
                                            View* target_menu) {
   View* target = NULL;
   gfx::Point target_menu_loc(event.location());
@@ -2034,13 +2034,14 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
       gfx::Point target_point(target_menu_loc);
       View::ConvertPointToTarget(
           target_menu, active_mouse_view_, &target_point);
-      MouseEvent mouse_entered_event(ui::ET_MOUSE_ENTERED,
-                                     target_point.x(), target_point.y(), 0);
+      ui::MouseEvent mouse_entered_event(ui::ET_MOUSE_ENTERED,
+                                         target_point, target_point,
+                                         0);
       active_mouse_view_->OnMouseEntered(mouse_entered_event);
 
-      MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED,
-                                     target_point.x(), target_point.y(),
-                                     event.flags());
+      ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED,
+                                         target_point, target_point,
+                                         event.flags());
       active_mouse_view_->OnMousePressed(mouse_pressed_event);
     }
   }
@@ -2048,15 +2049,15 @@ void MenuController::UpdateActiveMouseView(SubmenuView* event_source,
   if (active_mouse_view_) {
     gfx::Point target_point(target_menu_loc);
     View::ConvertPointToTarget(target_menu, active_mouse_view_, &target_point);
-    MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED,
-                                   target_point.x(), target_point.y(),
-                                   event.flags());
+    ui::MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED,
+                                       target_point, target_point,
+                                       event.flags());
     active_mouse_view_->OnMouseDragged(mouse_dragged_event);
   }
 }
 
 void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
-                                                  const MouseEvent& event) {
+                                                  const ui::MouseEvent& event) {
   if (!active_mouse_view_)
     return;
 
@@ -2064,8 +2065,9 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
   View::ConvertPointToScreen(event_source->GetScrollViewContainer(),
                              &target_loc);
   View::ConvertPointToTarget(NULL, active_mouse_view_, &target_loc);
-  MouseEvent release_event(ui::ET_MOUSE_RELEASED, target_loc.x(),
-                           target_loc.y(), event.flags());
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
+                           target_loc, target_loc,
+                           event.flags());
   // Reset the active_mouse_view_ before sending mouse released. That way if it
   // calls back to us, we aren't in a weird state.
   View* active_view = active_mouse_view_;

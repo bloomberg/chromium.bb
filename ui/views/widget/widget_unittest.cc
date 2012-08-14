@@ -75,7 +75,7 @@ class MouseView : public View {
   }
   virtual ~MouseView() {}
 
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     return true;
   }
 };
@@ -213,14 +213,17 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   RunPendingMessages();
 
   // Click on child1
-  MouseEvent pressed(ui::ET_MOUSE_PRESSED, 45, 45, ui::EF_LEFT_MOUSE_BUTTON);
+  gfx::Point p1(45, 45);
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, p1, p1,
+                         ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(pressed);
 
   EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
   EXPECT_TRUE(WidgetHasMouseCapture(child1));
   EXPECT_FALSE(WidgetHasMouseCapture(child2));
 
-  MouseEvent released(ui::ET_MOUSE_RELEASED, 45, 45, ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent released(ui::ET_MOUSE_RELEASED, p1, p1,
+                          ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(released);
 
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
@@ -230,14 +233,16 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   RunPendingMessages();
 
   // Click on child2
-  MouseEvent pressed2(ui::ET_MOUSE_PRESSED, 315, 45, ui::EF_LEFT_MOUSE_BUTTON);
+  gfx::Point p2(315, 45);
+  ui::MouseEvent pressed2(ui::ET_MOUSE_PRESSED, p2, p2,
+                          ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_TRUE(toplevel->OnMouseEvent(pressed2));
   EXPECT_TRUE(WidgetHasMouseCapture(toplevel));
   EXPECT_TRUE(WidgetHasMouseCapture(child2));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));
 
-  MouseEvent released2(ui::ET_MOUSE_RELEASED, 315, 45,
-                       ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent released2(ui::ET_MOUSE_RELEASED, p2, p2,
+                           ui::EF_LEFT_MOUSE_BUTTON);
   toplevel->OnMouseEvent(released2);
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));

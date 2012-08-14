@@ -804,10 +804,9 @@ bool NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
     MouseWheelEvent wheel_event(scroll_event);
     return delegate_->OnMouseEvent(wheel_event);
   }
-  MouseEvent mouse_event(event);
   if (tooltip_manager_.get())
     tooltip_manager_->UpdateTooltip();
-  return delegate_->OnMouseEvent(mouse_event);
+  return delegate_->OnMouseEvent(*event);
 }
 
 ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {

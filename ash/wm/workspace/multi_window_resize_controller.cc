@@ -79,26 +79,26 @@ class MultiWindowResizeController::ResizeView : public views::View {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->DrawImageInt(*image_, 0, 0);
   }
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->StartResize(location);
     return true;
   }
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->Resize(location, event.flags());
     return true;
   }
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
     controller_->CompleteResize(event.flags());
   }
   virtual void OnMouseCaptureLost() OVERRIDE {
     controller_->CancelResize();
   }
   virtual gfx::NativeCursor GetCursor(
-      const views::MouseEvent& event) OVERRIDE {
+      const ui::MouseEvent& event) OVERRIDE {
     int component = (direction_ == LEFT_RIGHT) ? HTRIGHT : HTBOTTOM;
     return aura::shared::CompoundEventFilter::CursorForWindowComponent(
         component);

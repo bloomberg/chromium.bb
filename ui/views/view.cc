@@ -764,7 +764,7 @@ View* View::GetEventHandlerForPoint(const gfx::Point& point) {
   return this;
 }
 
-gfx::NativeCursor View::GetCursor(const MouseEvent& event) {
+gfx::NativeCursor View::GetCursor(const ui::MouseEvent& event) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   static HCURSOR arrow = LoadCursor(NULL, IDC_ARROW);
   return arrow;
@@ -802,27 +802,27 @@ bool View::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 
-bool View::OnMousePressed(const MouseEvent& event) {
+bool View::OnMousePressed(const ui::MouseEvent& event) {
   return false;
 }
 
-bool View::OnMouseDragged(const MouseEvent& event) {
+bool View::OnMouseDragged(const ui::MouseEvent& event) {
   return false;
 }
 
-void View::OnMouseReleased(const MouseEvent& event) {
+void View::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void View::OnMouseCaptureLost() {
 }
 
-void View::OnMouseMoved(const MouseEvent& event) {
+void View::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
-void View::OnMouseEntered(const MouseEvent& event) {
+void View::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
-void View::OnMouseExited(const MouseEvent& event) {
+void View::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 ui::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
@@ -1900,7 +1900,7 @@ void View::DestroyLayer() {
 
 // Input -----------------------------------------------------------------------
 
-bool View::ProcessMousePressed(const MouseEvent& event, DragInfo* drag_info) {
+bool View::ProcessMousePressed(const ui::MouseEvent& event, DragInfo* drag_info) {
   int drag_operations =
       (enabled_ && event.IsOnlyLeftMouseButton() &&
        HitTestPoint(event.location())) ?
@@ -1922,7 +1922,7 @@ bool View::ProcessMousePressed(const MouseEvent& event, DragInfo* drag_info) {
   return !!context_menu_controller || result;
 }
 
-bool View::ProcessMouseDragged(const MouseEvent& event, DragInfo* drag_info) {
+bool View::ProcessMouseDragged(const ui::MouseEvent& event, DragInfo* drag_info) {
   // Copy the field, that way if we're deleted after drag and drop no harm is
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
@@ -1943,7 +1943,7 @@ bool View::ProcessMouseDragged(const MouseEvent& event, DragInfo* drag_info) {
   return (context_menu_controller != NULL) || possible_drag;
 }
 
-void View::ProcessMouseReleased(const MouseEvent& event) {
+void View::ProcessMouseReleased(const ui::MouseEvent& event) {
   if (context_menu_controller_ && event.IsOnlyRightMouseButton()) {
     // Assume that if there is a context menu controller we won't be deleted
     // from mouse released.

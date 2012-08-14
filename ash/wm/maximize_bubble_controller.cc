@@ -346,8 +346,8 @@ class BubbleDialogButton : public views::ImageButton {
 
   // CustomButton overrides:
   virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
  private:
   // The creating class which needs to get notified in case of a hover event.
@@ -730,12 +730,12 @@ void BubbleDialogButton::OnMouseCaptureLost() {
   views::ImageButton::OnMouseCaptureLost();
 }
 
-void BubbleDialogButton::OnMouseEntered(const views::MouseEvent& event) {
+void BubbleDialogButton::OnMouseEntered(const ui::MouseEvent& event) {
   button_row_->ButtonHovered(this);
   views::ImageButton::OnMouseEntered(event);
 }
 
-void BubbleDialogButton::OnMouseExited(const views::MouseEvent& event) {
+void BubbleDialogButton::OnMouseExited(const ui::MouseEvent& event) {
   button_row_->ButtonHovered(NULL);
   views::ImageButton::OnMouseExited(event);
 }

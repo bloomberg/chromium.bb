@@ -402,13 +402,13 @@ gfx::Size DownloadItemView::GetPreferredSize() {
 
 // Handle a mouse click and open the context menu if the mouse is
 // over the drop-down region.
-bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
+bool DownloadItemView::OnMousePressed(const ui::MouseEvent& event) {
   HandlePressEvent(event, event.IsOnlyLeftMouseButton());
   return true;
 }
 
 // Handle drag (file copy) operations.
-bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
+bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
   // Mouse should not activate us in dangerous mode.
   if (IsShowingWarningDialog())
     return true;
@@ -436,7 +436,7 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void DownloadItemView::OnMouseReleased(const views::MouseEvent& event) {
+void DownloadItemView::OnMouseReleased(const ui::MouseEvent& event) {
   HandleClickEvent(event, event.IsOnlyLeftMouseButton());
 }
 
@@ -454,7 +454,7 @@ void DownloadItemView::OnMouseCaptureLost() {
   }
 }
 
-void DownloadItemView::OnMouseMoved(const views::MouseEvent& event) {
+void DownloadItemView::OnMouseMoved(const ui::MouseEvent& event) {
   // Mouse should not activate us in dangerous mode.
   if (mode_ == DANGEROUS_MODE)
     return;
@@ -472,7 +472,7 @@ void DownloadItemView::OnMouseMoved(const views::MouseEvent& event) {
   }
 }
 
-void DownloadItemView::OnMouseExited(const views::MouseEvent& event) {
+void DownloadItemView::OnMouseExited(const ui::MouseEvent& event) {
   // Mouse should not activate us in dangerous mode.
   if (mode_ == DANGEROUS_MODE)
     return;

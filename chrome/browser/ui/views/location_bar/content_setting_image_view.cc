@@ -174,13 +174,13 @@ void ContentSettingImageView::AnimationCanceled(
   AnimationEnded(animation);
 }
 
-bool ContentSettingImageView::OnMousePressed(const views::MouseEvent& event) {
+bool ContentSettingImageView::OnMousePressed(const ui::MouseEvent& event) {
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
   return true;
 }
 
-void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
+void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
   if (!HitTestPoint(event.location()))
     return;
 

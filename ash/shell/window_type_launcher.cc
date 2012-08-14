@@ -265,7 +265,7 @@ void WindowTypeLauncher::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
 }
 
-bool WindowTypeLauncher::OnMousePressed(const views::MouseEvent& event) {
+bool WindowTypeLauncher::OnMousePressed(const ui::MouseEvent& event) {
   // Overridden so we get OnMouseReleased and can show the context menu.
   return true;
 }

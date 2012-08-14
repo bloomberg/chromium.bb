@@ -240,7 +240,7 @@ void AppNonClientFrameViewAura::UpdateThrobber(bool running) {
 }
 
 void AppNonClientFrameViewAura::OnMouseEntered(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   if (!control_view_) {
     // This can only happen when the frame-view (|this|) is in the process of
     // destroying itself, but the control-widget has already closed, and some

@@ -126,7 +126,7 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
+bool DesktopBackgroundView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 

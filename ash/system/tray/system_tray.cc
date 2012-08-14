@@ -477,12 +477,12 @@ bool SystemTray::PerformAction(const ui::Event& event) {
   return true;
 }
 
-void SystemTray::OnMouseEntered(const views::MouseEvent& event) {
+void SystemTray::OnMouseEntered(const ui::MouseEvent& event) {
   TrayBackgroundView::OnMouseEntered(event);
   should_show_launcher_ = true;
 }
 
-void SystemTray::OnMouseExited(const views::MouseEvent& event) {
+void SystemTray::OnMouseExited(const ui::MouseEvent& event) {
   TrayBackgroundView::OnMouseExited(event);
   // When the popup closes we'll update |should_show_launcher_|.
   if (!bubble_.get())

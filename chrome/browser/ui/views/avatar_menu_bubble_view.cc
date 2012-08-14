@@ -135,8 +135,8 @@ class EditProfileLink : public views::Link {
   explicit EditProfileLink(const string16& title,
                            HighlightDelegate* delegate);
 
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 
@@ -154,13 +154,13 @@ EditProfileLink::EditProfileLink(const string16& title,
       state_(views::CustomButton::BS_NORMAL) {
 }
 
-void EditProfileLink::OnMouseEntered(const views::MouseEvent& event) {
+void EditProfileLink::OnMouseEntered(const ui::MouseEvent& event) {
   views::Link::OnMouseEntered(event);
   state_ = views::CustomButton::BS_HOT;
   delegate_->OnHighlightStateChanged();
 }
 
-void EditProfileLink::OnMouseExited(const views::MouseEvent& event) {
+void EditProfileLink::OnMouseExited(const ui::MouseEvent& event) {
   views::Link::OnMouseExited(event);
   state_ = views::CustomButton::BS_NORMAL;
   delegate_->OnHighlightStateChanged();
@@ -204,8 +204,8 @@ class ProfileItemView : public views::CustomButton,
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 
@@ -323,12 +323,12 @@ void ProfileItemView::Layout() {
                         edit_size.width(), edit_size.height());
 }
 
-void ProfileItemView::OnMouseEntered(const views::MouseEvent& event) {
+void ProfileItemView::OnMouseEntered(const ui::MouseEvent& event) {
   views::CustomButton::OnMouseEntered(event);
   OnHighlightStateChanged();
 }
 
-void ProfileItemView::OnMouseExited(const views::MouseEvent& event) {
+void ProfileItemView::OnMouseExited(const ui::MouseEvent& event) {
   views::CustomButton::OnMouseExited(event);
   OnHighlightStateChanged();
 }

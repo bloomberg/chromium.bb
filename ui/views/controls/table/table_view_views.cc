@@ -150,7 +150,7 @@ bool TableView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool TableView::OnMousePressed(const MouseEvent& event) {
+bool TableView::OnMousePressed(const ui::MouseEvent& event) {
   RequestFocus();
   int row = event.y() / row_height_;
   if (row >= 0 && row < RowCount()) {

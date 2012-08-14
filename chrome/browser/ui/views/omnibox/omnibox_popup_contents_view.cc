@@ -312,7 +312,7 @@ views::View* OmniboxPopupContentsView::GetEventHandlerForPoint(
 }
 
 bool OmniboxPopupContentsView::OnMousePressed(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   ignore_mouse_drag_ = false;  // See comment on |ignore_mouse_drag_| in header.
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
     UpdateLineEvent(event, event.IsLeftMouseButton());
@@ -320,14 +320,14 @@ bool OmniboxPopupContentsView::OnMousePressed(
 }
 
 bool OmniboxPopupContentsView::OnMouseDragged(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
     UpdateLineEvent(event, !ignore_mouse_drag_ && event.IsLeftMouseButton());
   return true;
 }
 
 void OmniboxPopupContentsView::OnMouseReleased(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   if (ignore_mouse_drag_) {
     OnMouseCaptureLost();
     return;
@@ -344,17 +344,17 @@ void OmniboxPopupContentsView::OnMouseCaptureLost() {
 }
 
 void OmniboxPopupContentsView::OnMouseMoved(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   model_->SetHoveredLine(GetIndexForPoint(event.location()));
 }
 
 void OmniboxPopupContentsView::OnMouseEntered(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   model_->SetHoveredLine(GetIndexForPoint(event.location()));
 }
 
 void OmniboxPopupContentsView::OnMouseExited(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   model_->SetHoveredLine(OmniboxPopupModel::kNoMatch);
 }
 

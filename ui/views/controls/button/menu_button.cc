@@ -177,7 +177,7 @@ std::string MenuButton::GetClassName() const {
   return kViewClassName;
 }
 
-bool MenuButton::OnMousePressed(const MouseEvent& event) {
+bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
   RequestFocus();
   if (state() != BS_DISABLED) {
     // If we're draggable (GetDragOperations returns a non-zero value), then
@@ -195,7 +195,7 @@ bool MenuButton::OnMousePressed(const MouseEvent& event) {
   return true;
 }
 
-void MenuButton::OnMouseReleased(const MouseEvent& event) {
+void MenuButton::OnMouseReleased(const ui::MouseEvent& event) {
   // Explicitly test for left mouse button to show the menu. If we tested for
   // !IsTriggerableEvent it could lead to a situation where we end up showing
   // the menu and context menu (this would happen if the right button is not
@@ -214,7 +214,7 @@ void MenuButton::OnMouseReleased(const MouseEvent& event) {
 // BaseButton::OnMouseExited will get the event and will set the button's state
 // to BS_NORMAL instead of keeping the state BM_PUSHED. This, in turn, will
 // cause the button to appear depressed while the menu is displayed.
-void MenuButton::OnMouseExited(const MouseEvent& event) {
+void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
   if ((state_ != BS_DISABLED) && (!menu_visible_) && (!InDrag())) {
     SetState(BS_NORMAL);
   }

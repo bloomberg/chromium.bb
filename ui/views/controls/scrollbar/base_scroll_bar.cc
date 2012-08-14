@@ -112,13 +112,13 @@ void BaseScrollBar::ScrollByContentsOffset(int contents_offset) {
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, View implementation:
 
-bool BaseScrollBar::OnMousePressed(const MouseEvent& event) {
+bool BaseScrollBar::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton())
     ProcessPressEvent(event);
   return true;
 }
 
-void BaseScrollBar::OnMouseReleased(const MouseEvent& event) {
+void BaseScrollBar::OnMouseReleased(const ui::MouseEvent& event) {
   OnMouseCaptureLost();
 }
 

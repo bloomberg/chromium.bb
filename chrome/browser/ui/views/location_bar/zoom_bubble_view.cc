@@ -112,11 +112,11 @@ void ZoomBubbleView::StopTimer() {
   timer_.Stop();
 }
 
-void ZoomBubbleView::OnMouseEntered(const views::MouseEvent& event) {
+void ZoomBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
   StopTimer();
 }
 
-void ZoomBubbleView::OnMouseExited(const views::MouseEvent& event) {
+void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
   StartTimerIfNecessary();
 }
 

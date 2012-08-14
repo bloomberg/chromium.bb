@@ -47,7 +47,7 @@ class BaseTab::TabCloseButton : public views::ImageButton {
   explicit TabCloseButton(BaseTab* tab) : views::ImageButton(tab), tab_(tab) {}
   virtual ~TabCloseButton() {}
 
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     if (tab_->controller())
       tab_->controller()->OnMouseEventInTab(this, event);
 
@@ -60,24 +60,24 @@ class BaseTab::TabCloseButton : public views::ImageButton {
   // We need to let the parent know about mouse state so that it
   // can highlight itself appropriately. Note that Exit events
   // fire before Enter events, so this works.
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
     CustomButton::OnMouseEntered(event);
     parent()->OnMouseEntered(event);
   }
 
-  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
     if (tab_->controller())
       tab_->controller()->OnMouseEventInTab(this, event);
     CustomButton::OnMouseMoved(event);
   }
 
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
     if (tab_->controller())
       tab_->controller()->OnMouseEventInTab(this, event);
     CustomButton::OnMouseReleased(event);
   }
 
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
     CustomButton::OnMouseExited(event);
     parent()->OnMouseExited(event);
   }
@@ -302,7 +302,7 @@ ui::ThemeProvider* BaseTab::GetThemeProvider() const {
   return tp ? tp : theme_provider_;
 }
 
-bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
+bool BaseTab::OnMousePressed(const ui::MouseEvent& event) {
   if (!controller())
     return false;
 
@@ -337,13 +337,13 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-bool BaseTab::OnMouseDragged(const views::MouseEvent& event) {
+bool BaseTab::OnMouseDragged(const ui::MouseEvent& event) {
   if (controller())
     controller()->ContinueDrag(this, event.location());
   return true;
 }
 
-void BaseTab::OnMouseReleased(const views::MouseEvent& event) {
+void BaseTab::OnMouseReleased(const ui::MouseEvent& event) {
   if (!controller())
     return;
 
@@ -386,16 +386,16 @@ void BaseTab::OnMouseCaptureLost() {
     controller()->EndDrag(true);
 }
 
-void BaseTab::OnMouseEntered(const views::MouseEvent& event) {
+void BaseTab::OnMouseEntered(const ui::MouseEvent& event) {
   hover_controller_.Show();
 }
 
-void BaseTab::OnMouseMoved(const views::MouseEvent& event) {
+void BaseTab::OnMouseMoved(const ui::MouseEvent& event) {
   if (controller())
     controller()->OnMouseEventInTab(this, event);
 }
 
-void BaseTab::OnMouseExited(const views::MouseEvent& event) {
+void BaseTab::OnMouseExited(const ui::MouseEvent& event) {
   hover_controller_.Hide();
 }
 

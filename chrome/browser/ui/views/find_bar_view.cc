@@ -461,7 +461,7 @@ void FindBarView::UpdateMatchCountAppearance(bool no_match) {
 }
 
 bool FindBarView::FocusForwarderView::OnMousePressed(
-    const views::MouseEvent& event) {
+    const ui::MouseEvent& event) {
   if (view_to_focus_on_mousedown_) {
     view_to_focus_on_mousedown_->ClearSelection();
     view_to_focus_on_mousedown_->RequestFocus();

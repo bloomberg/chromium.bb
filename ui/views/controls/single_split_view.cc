@@ -90,7 +90,7 @@ gfx::Size SingleSplitView::GetPreferredSize() {
   return gfx::Size(width, height);
 }
 
-gfx::NativeCursor SingleSplitView::GetCursor(const MouseEvent& event) {
+gfx::NativeCursor SingleSplitView::GetCursor(const ui::MouseEvent& event) {
   if (!IsPointInDivider(event.location()))
     return gfx::kNullCursor;
 #if defined(USE_AURA)
@@ -149,7 +149,7 @@ void SingleSplitView::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
 
-bool SingleSplitView::OnMousePressed(const MouseEvent& event) {
+bool SingleSplitView::OnMousePressed(const ui::MouseEvent& event) {
   if (!IsPointInDivider(event.location()))
     return false;
   drag_info_.initial_mouse_offset = GetPrimaryAxisSize(event.x(), event.y());
@@ -158,7 +158,7 @@ bool SingleSplitView::OnMousePressed(const MouseEvent& event) {
   return true;
 }
 
-bool SingleSplitView::OnMouseDragged(const MouseEvent& event) {
+bool SingleSplitView::OnMouseDragged(const ui::MouseEvent& event) {
   if (child_count() < 2)
     return false;
 

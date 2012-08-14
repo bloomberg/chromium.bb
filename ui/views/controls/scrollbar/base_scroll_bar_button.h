@@ -30,8 +30,8 @@ class VIEWS_EXPORT BaseScrollBarButton : public CustomButton {
   virtual ~BaseScrollBarButton();
 
  protected:
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
 
  private:

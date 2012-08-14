@@ -68,12 +68,12 @@ bool ZoomView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   return !ZoomBubbleView::IsShowing() && ImageView::GetTooltipText(p, tooltip);
 }
 
-bool ZoomView::OnMousePressed(const views::MouseEvent& event) {
+bool ZoomView::OnMousePressed(const ui::MouseEvent& event) {
   // Do nothing until mouse is released.
   return true;
 }
 
-void ZoomView::OnMouseReleased(const views::MouseEvent& event) {
+void ZoomView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location())) {
     ZoomBubbleView::ShowBubble(
         this, location_bar_delegate_->GetTabContents(), false);

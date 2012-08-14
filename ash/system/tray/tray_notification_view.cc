@@ -115,7 +115,7 @@ void TrayNotificationView::ButtonPressed(views::Button* sender,
   HandleClose();
 }
 
-bool TrayNotificationView::OnMousePressed(const views::MouseEvent& event) {
+bool TrayNotificationView::OnMousePressed(const ui::MouseEvent& event) {
   HandleClickAction();
   return true;
 }

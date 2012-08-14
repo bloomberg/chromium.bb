@@ -26,7 +26,7 @@ class CaptureTrackingView : public views::View {
   void reset() { got_press_ = got_capture_lost_ = false; }
 
   // Overridden from views::View
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
 
  private:

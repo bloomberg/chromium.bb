@@ -146,27 +146,31 @@ TEST(SingleSplitViewTest, MouseDrag) {
   split.Layout();
 
   // Drag divider to the right, in 2 steps.
-  MouseEvent mouse_pressed(
-      ui::ET_MOUSE_PRESSED, 7, kInitialDividerOffset + kMouseOffset, 0);
+  gfx::Point press_point(7, kInitialDividerOffset + kMouseOffset);
+  ui::MouseEvent mouse_pressed(
+      ui::ET_MOUSE_PRESSED, press_point, press_point, 0);
   ASSERT_TRUE(split.OnMousePressed(mouse_pressed));
   EXPECT_EQ(kInitialDividerOffset, split.divider_offset());
 
-  MouseEvent mouse_dragged_1(
-      ui::ET_MOUSE_DRAGGED, 5,
-      kInitialDividerOffset + kMouseOffset + kMouseMoveDelta, 0);
+  gfx::Point drag_1_point(
+      5, kInitialDividerOffset + kMouseOffset + kMouseMoveDelta);
+  ui::MouseEvent mouse_dragged_1(
+      ui::ET_MOUSE_DRAGGED, drag_1_point, drag_1_point, 0);
   ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_1));
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta, split.divider_offset());
 
-  MouseEvent mouse_dragged_2(
-      ui::ET_MOUSE_DRAGGED, 6,
-      kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2, 0);
+  gfx::Point drag_2_point(
+      6, kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2);
+  ui::MouseEvent mouse_dragged_2(
+      ui::ET_MOUSE_DRAGGED, drag_2_point, drag_2_point, 0);
   ASSERT_TRUE(split.OnMouseDragged(mouse_dragged_2));
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta * 2,
             split.divider_offset());
 
-  MouseEvent mouse_released(
-      ui::ET_MOUSE_RELEASED, 7,
-      kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2, 0);
+  gfx::Point release_point(
+      7, kInitialDividerOffset + kMouseOffset + kMouseMoveDelta * 2);
+  ui::MouseEvent mouse_released(
+      ui::ET_MOUSE_RELEASED, release_point, release_point, 0);
   split.OnMouseReleased(mouse_released);
   EXPECT_EQ(kInitialDividerOffset + kMouseMoveDelta * 2,
             split.divider_offset());

@@ -82,13 +82,8 @@ bool SearchResultListView::OnKeyPressed(const ui::KeyEvent& event) {
       SetSelectedIndex(std::min(selected_index_ + 1, last_visible_index_));
       return true;
     case ui::VKEY_RETURN:
-      if (selected_index_ >= 0) {
-        // TODO(beng): remove once views::Event is gone.
-        views::MouseEvent synthetic_event(
-            ui::ET_MOUSE_RELEASED, 0, 0,
-            ui::EF_LEFT_MOUSE_BUTTON | event.flags());
-        ButtonPressed(GetResultViewAt(selected_index_), synthetic_event);
-      }
+      if (selected_index_ >= 0)
+        ButtonPressed(GetResultViewAt(selected_index_), event);
       return true;
     default:
       break;

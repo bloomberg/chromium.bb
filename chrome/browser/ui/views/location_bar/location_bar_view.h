@@ -258,9 +258,9 @@ class LocationBarView : public LocationBar,
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Event Handlers
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
 #endif
 
@@ -422,7 +422,7 @@ class LocationBarView : public LocationBar,
 
 #if !defined(USE_AURA)
   // Helper for the Mouse event handlers that does all the real work.
-  void OnMouseEvent(const views::MouseEvent& event, UINT msg);
+  void OnMouseEvent(const ui::MouseEvent& event, UINT msg);
 #endif
 
   // Returns true if the suggest text is valid.

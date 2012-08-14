@@ -250,7 +250,7 @@ class OverFlowButton : public views::MenuButton {
       : MenuButton(NULL, string16(), owner, false),
         owner_(owner) {}
 
-  virtual bool OnMousePressed(const views::MouseEvent& e) {
+  virtual bool OnMousePressed(const ui::MouseEvent& e) {
     owner_->StopThrobbing(true);
     return views::MenuButton::OnMousePressed(e);
   }

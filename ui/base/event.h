@@ -207,6 +207,34 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
              const gfx::Point& root_location,
              int flags);
 
+  // Conveniences to quickly test what button is down
+  bool IsOnlyLeftMouseButton() const {
+    return (flags() & ui::EF_LEFT_MOUSE_BUTTON) &&
+      !(flags() & (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
+  }
+
+  bool IsLeftMouseButton() const {
+    return (flags() & ui::EF_LEFT_MOUSE_BUTTON) != 0;
+  }
+
+  bool IsOnlyMiddleMouseButton() const {
+    return (flags() & ui::EF_MIDDLE_MOUSE_BUTTON) &&
+      !(flags() & (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
+  }
+
+  bool IsMiddleMouseButton() const {
+    return (flags() & ui::EF_MIDDLE_MOUSE_BUTTON) != 0;
+  }
+
+  bool IsOnlyRightMouseButton() const {
+    return (flags() & ui::EF_RIGHT_MOUSE_BUTTON) &&
+      !(flags() & (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON));
+  }
+
+  bool IsRightMouseButton() const {
+    return (flags() & ui::EF_RIGHT_MOUSE_BUTTON) != 0;
+  }
+
   // Compares two mouse down events and returns true if the second one should
   // be considered a repeat of the first.
   static bool IsRepeatedClickEvent(
@@ -219,9 +247,10 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   // Set the click count for a mousedown message. Can be 1, 2 or 3.
   void SetClickCount(int click_count);
 
- private:
+ protected:
   explicit MouseEvent(const MouseEvent& model);
 
+ private:
   gfx::Point root_location_;
 
   static MouseEvent* last_click_event_;

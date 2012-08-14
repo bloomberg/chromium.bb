@@ -150,7 +150,7 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButton, View overrides:
 
-void ReloadButton::OnMouseExited(const views::MouseEvent& event) {
+void ReloadButton::OnMouseExited(const ui::MouseEvent& event) {
   ButtonDropDown::OnMouseExited(event);
   if (!IsMenuShowing())
     ChangeMode(intended_mode_, true);

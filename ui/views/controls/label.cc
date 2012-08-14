@@ -230,15 +230,15 @@ bool Label::HitTestRect(const gfx::Rect& rect) const {
   return false;
 }
 
-void Label::OnMouseMoved(const MouseEvent& event) {
+void Label::OnMouseMoved(const ui::MouseEvent& event) {
   UpdateContainsMouse(event);
 }
 
-void Label::OnMouseEntered(const MouseEvent& event) {
+void Label::OnMouseEntered(const ui::MouseEvent& event) {
   UpdateContainsMouse(event);
 }
 
-void Label::OnMouseExited(const MouseEvent& event) {
+void Label::OnMouseExited(const ui::MouseEvent& event) {
   SetContainsMouse(false);
 }
 
@@ -384,7 +384,7 @@ void Label::RecalculateColors() {
       requested_disabled_color_;
 }
 
-void Label::UpdateContainsMouse(const MouseEvent& event) {
+void Label::UpdateContainsMouse(const ui::MouseEvent& event) {
   SetContainsMouse(GetTextBounds().Contains(event.x(), event.y()));
 }
 

@@ -325,13 +325,13 @@ gfx::Rect LauncherButton::GetIconBounds() const {
   return icon_view_->bounds();
 }
 
-bool LauncherButton::OnMousePressed(const views::MouseEvent& event) {
+bool LauncherButton::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
   host_->PointerPressedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 
-void LauncherButton::OnMouseReleased(const views::MouseEvent& event) {
+void LauncherButton::OnMouseReleased(const ui::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
   host_->PointerReleasedOnButton(this, LauncherButtonHost::MOUSE, false);
 }
@@ -342,24 +342,24 @@ void LauncherButton::OnMouseCaptureLost() {
   CustomButton::OnMouseCaptureLost();
 }
 
-bool LauncherButton::OnMouseDragged(const views::MouseEvent& event) {
+bool LauncherButton::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
   host_->PointerDraggedOnButton(this, LauncherButtonHost::MOUSE, event);
   return true;
 }
 
-void LauncherButton::OnMouseMoved(const views::MouseEvent& event) {
+void LauncherButton::OnMouseMoved(const ui::MouseEvent& event) {
   CustomButton::OnMouseMoved(event);
   host_->MouseMovedOverButton(this);
 }
 
-void LauncherButton::OnMouseEntered(const views::MouseEvent& event) {
+void LauncherButton::OnMouseEntered(const ui::MouseEvent& event) {
   AddState(STATE_HOVERED);
   CustomButton::OnMouseEntered(event);
   host_->MouseEnteredButton(this);
 }
 
-void LauncherButton::OnMouseExited(const views::MouseEvent& event) {
+void LauncherButton::OnMouseExited(const ui::MouseEvent& event) {
   ClearState(STATE_HOVERED);
   CustomButton::OnMouseExited(event);
   host_->MouseExitedButton(this);

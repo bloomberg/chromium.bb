@@ -16,13 +16,13 @@ EVBubbleView::EVBubbleView(const int background_images[],
 EVBubbleView::~EVBubbleView() {
 }
 
-bool EVBubbleView::OnMousePressed(const views::MouseEvent& event) {
+bool EVBubbleView::OnMousePressed(const ui::MouseEvent& event) {
   // We want to show the dialog on mouse release; that is the standard behavior
   // for buttons.
   return true;
 }
 
-void EVBubbleView::OnMouseReleased(const views::MouseEvent& event) {
+void EVBubbleView::OnMouseReleased(const ui::MouseEvent& event) {
   page_info_helper_.ProcessEvent(event);
 }
 

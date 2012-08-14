@@ -723,7 +723,7 @@ gfx::Point CandidateView::GetCandidateLabelPosition() const {
   return candidate_label_->GetMirroredPosition();
 }
 
-bool CandidateView::OnMousePressed(const views::MouseEvent& event) {
+bool CandidateView::OnMousePressed(const ui::MouseEvent& event) {
   // TODO(kinaba): investigate a way to delay the commit until OnMouseReleased.
   // Mouse-down selection is a temporally workaround for crosbug.com/11423.
   //

@@ -75,8 +75,8 @@ class ContentSettingImageView : public views::ImageView,
 
  private:
   // views::ImageView overrides:
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 

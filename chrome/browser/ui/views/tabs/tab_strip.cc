@@ -294,7 +294,7 @@ class NewTabButton : public views::ImageButton {
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
 #if defined(OS_WIN) && !defined(USE_AURA)
-  void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 #endif
   virtual ui::GestureStatus OnGestureEvent(
       const views::GestureEvent& event) OVERRIDE;
@@ -353,7 +353,7 @@ void NewTabButton::GetHitTestMask(gfx::Path* path) const {
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-void NewTabButton::OnMouseReleased(const views::MouseEvent& event) {
+void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyRightMouseButton()) {
     gfx::Point point(event.x(), event.y());
     views::View::ConvertPointToScreen(this, &point);
@@ -556,8 +556,9 @@ void TabStrip::RemoveTabDelegate::HighlightCloseButton() {
   gfx::Point position = gfx::Screen::GetCursorScreenPoint();
   views::View* root_view = widget->GetRootView();
   views::View::ConvertPointFromScreen(root_view, &position);
-  views::MouseEvent mouse_event(
-      ui::ET_MOUSE_MOVED, position.x(), position.y(), ui::EF_IS_SYNTHESIZED);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED,
+                             position, position,
+                             ui::EF_IS_SYNTHESIZED);
   root_view->OnMouseMoved(mouse_event);
 }
 
@@ -1023,9 +1024,9 @@ void TabStrip::MaybeStartDrag(
   if (adjust_layout_ &&
       ((event.type() == ui::ET_MOUSE_PRESSED &&
         (((event.flags() & ui::EF_FROM_TOUCH) &&
-          static_cast<const views::MouseEvent&>(event).IsLeftMouseButton()) ||
+          static_cast<const ui::MouseEvent&>(event).IsLeftMouseButton()) ||
          (!(event.flags() & ui::EF_FROM_TOUCH) &&
-          static_cast<const views::MouseEvent&>(event).IsControlDown()))) ||
+          static_cast<const ui::MouseEvent&>(event).IsControlDown()))) ||
        (event.type() == ui::ET_GESTURE_BEGIN && !event.IsControlDown()))) {
     move_behavior = TabDragController::MOVE_VISIBILE_TABS;
   }
@@ -1084,7 +1085,7 @@ void TabStrip::ClickActiveTab(const BaseTab* tab) const {
 }
 
 void TabStrip::OnMouseEventInTab(views::View* source,
-                                 const views::MouseEvent& event) {
+                                 const ui::MouseEvent& event) {
   UpdateLayoutTypeFromMouseEvent(source, event);
 }
 
@@ -1383,19 +1384,19 @@ const views::View* TabStrip::GetViewByID(int view_id) const {
   return View::GetViewByID(view_id);
 }
 
-bool TabStrip::OnMousePressed(const views::MouseEvent& event) {
+bool TabStrip::OnMousePressed(const ui::MouseEvent& event) {
   UpdateLayoutTypeFromMouseEvent(this, event);
   // We can't return true here, else clicking in an empty area won't drag the
   // window.
   return false;
 }
 
-bool TabStrip::OnMouseDragged(const views::MouseEvent& event) {
+bool TabStrip::OnMouseDragged(const ui::MouseEvent& event) {
   ContinueDrag(this, event.location());
   return true;
 }
 
-void TabStrip::OnMouseReleased(const views::MouseEvent& event) {
+void TabStrip::OnMouseReleased(const ui::MouseEvent& event) {
   EndDrag(false);
   UpdateLayoutTypeFromMouseEvent(this, event);
 }
@@ -1404,7 +1405,7 @@ void TabStrip::OnMouseCaptureLost() {
   EndDrag(true);
 }
 
-void TabStrip::OnMouseMoved(const views::MouseEvent& event) {
+void TabStrip::OnMouseMoved(const ui::MouseEvent& event) {
   UpdateLayoutTypeFromMouseEvent(this, event);
 }
 
@@ -1797,7 +1798,7 @@ void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
 }
 
 void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
-                                              const views::MouseEvent& event) {
+                                              const ui::MouseEvent& event) {
   if (!adjust_layout_ || ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
     return;
 

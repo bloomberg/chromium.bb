@@ -58,8 +58,8 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE = 0;
   virtual void Layout() OVERRIDE = 0;
-  virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;

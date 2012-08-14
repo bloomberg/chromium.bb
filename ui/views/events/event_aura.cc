@@ -10,10 +10,6 @@
 
 namespace views {
 
-MouseEvent::MouseEvent(const ui::NativeEvent& native_event)
-    : LocatedEvent(static_cast<const ui::LocatedEvent&>(*native_event)) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent, public:
 
@@ -31,7 +27,7 @@ TouchEvent::TouchEvent(const ui::NativeEvent& event)
 // MouseWheelEvent, public:
 
 MouseWheelEvent::MouseWheelEvent(const ui::NativeEvent& native_event)
-    : MouseEvent(native_event),
+    : MouseEvent(static_cast<const ui::MouseEvent&>(*native_event)),
       offset_(ui::GetMouseWheelOffset(native_event->native_event())) {
 }
 
@@ -39,7 +35,7 @@ MouseWheelEvent::MouseWheelEvent(const ui::NativeEvent& native_event)
 // ScrollEvent, public:
 
 ScrollEvent::ScrollEvent(const ui::NativeEvent& native_event)
-    : MouseEvent(native_event) {
+    : MouseEvent(static_cast<const ui::MouseEvent&>(*native_event)) {
   CHECK(ui::GetScrollOffsets(
       native_event->native_event(), &x_offset_, &y_offset_));
 }

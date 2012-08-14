@@ -933,7 +933,7 @@ void LocationBarView::SelectAll() {
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-bool LocationBarView::OnMousePressed(const views::MouseEvent& event) {
+bool LocationBarView::OnMousePressed(const ui::MouseEvent& event) {
   UINT msg;
   if (event.IsLeftMouseButton()) {
     msg = (event.flags() & ui::EF_IS_DOUBLE_CLICK) ?
@@ -952,12 +952,12 @@ bool LocationBarView::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-bool LocationBarView::OnMouseDragged(const views::MouseEvent& event) {
+bool LocationBarView::OnMouseDragged(const ui::MouseEvent& event) {
   OnMouseEvent(event, WM_MOUSEMOVE);
   return true;
 }
 
-void LocationBarView::OnMouseReleased(const views::MouseEvent& event) {
+void LocationBarView::OnMouseReleased(const ui::MouseEvent& event) {
   UINT msg;
   if (event.IsLeftMouseButton()) {
     msg = WM_LBUTTONUP;
@@ -1170,7 +1170,7 @@ void LocationBarView::RefreshPageActionViews() {
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
+void LocationBarView::OnMouseEvent(const ui::MouseEvent& event, UINT msg) {
   OmniboxViewWin* omnibox_win = GetOmniboxViewWin(location_entry_.get());
   if (omnibox_win) {
     UINT flags = event.native_event().wParam;

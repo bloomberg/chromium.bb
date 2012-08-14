@@ -108,7 +108,7 @@ class VIEWS_EXPORT MenuDelegate {
   virtual bool ShouldCloseAllMenusOnExecute(int id);
 
   // Executes the specified command. mouse_event_flags give the flags of the
-  // mouse event that triggered this to be invoked (views::MouseEvent
+  // mouse event that triggered this to be invoked (ui::MouseEvent
   // flags). mouse_event_flags is 0 if this is triggered by a user gesture
   // other than a mouse event.
   virtual void ExecuteCommand(int id, int mouse_event_flags);

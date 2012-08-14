@@ -123,12 +123,12 @@ class TrayPopupItemContainer : public views::View {
     PreferredSizeChanged();
   }
 
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
     hover_ = true;
     SchedulePaint();
   }
 
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
     hover_ = false;
     SchedulePaint();
   }

@@ -32,7 +32,7 @@ std::string ResizeArea::GetClassName() const {
   return kViewClassName;
 }
 
-gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
+gfx::NativeCursor ResizeArea::GetCursor(const ui::MouseEvent& event) {
   if (!enabled())
     return gfx::kNullCursor;
 #if defined(USE_AURA)
@@ -43,7 +43,7 @@ gfx::NativeCursor ResizeArea::GetCursor(const MouseEvent& event) {
 #endif
 }
 
-bool ResizeArea::OnMousePressed(const views::MouseEvent& event) {
+bool ResizeArea::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
     return false;
 
@@ -57,7 +57,7 @@ bool ResizeArea::OnMousePressed(const views::MouseEvent& event) {
   return true;
 }
 
-bool ResizeArea::OnMouseDragged(const views::MouseEvent& event) {
+bool ResizeArea::OnMouseDragged(const ui::MouseEvent& event) {
   if (!event.IsLeftMouseButton())
     return false;
 
@@ -65,7 +65,7 @@ bool ResizeArea::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
-void ResizeArea::OnMouseReleased(const views::MouseEvent& event) {
+void ResizeArea::OnMouseReleased(const ui::MouseEvent& event) {
   ReportResizeAmount(event.x(), true);
 }
 

@@ -430,7 +430,7 @@ class WebNotificationView : public views::View,
   }
 
   // views::View overrides.
-  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     tray_->OnClicked(notification_.id);
     return true;
   }

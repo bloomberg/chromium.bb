@@ -75,7 +75,7 @@ class Tab : public BaseTab {
   virtual void GetHitTestMask(gfx::Path* path) const OVERRIDE;
   virtual bool GetTooltipTextOrigin(const gfx::Point& p,
                                     gfx::Point* origin) const OVERRIDE;
-  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
 
   // Paint various portions of the Tab
   gfx::ImageSkia* GetTabBackgroundImage(chrome::search::Mode::Type mode) const;

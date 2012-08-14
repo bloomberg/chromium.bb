@@ -67,7 +67,7 @@ class DragTestView : public views::View {
     data->SetString(UTF8ToUTF16("I am being dragged"));
   }
 
-  bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+  bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     return true;
   }
 

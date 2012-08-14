@@ -389,12 +389,12 @@ gfx::Size TrayBubbleView::GetPreferredSize() {
   return gfx::Size(params_.bubble_width, height);
 }
 
-void TrayBubbleView::OnMouseEntered(const views::MouseEvent& event) {
+void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
   if (host_)
     host_->OnMouseEnteredView();
 }
 
-void TrayBubbleView::OnMouseExited(const views::MouseEvent& event) {
+void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
   if (host_)
     host_->OnMouseExitedView();
 }

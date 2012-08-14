@@ -425,7 +425,7 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
   PaintDivider(canvas);
 }
 
-bool PanelFrameView::OnMousePressed(const views::MouseEvent& event) {
+bool PanelFrameView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton()) {
     // |event.location| is in the view's coordinate system. Convert it to the
     // screen coordinate system.
@@ -441,7 +441,7 @@ bool PanelFrameView::OnMousePressed(const views::MouseEvent& event) {
   return NonClientFrameView::OnMousePressed(event);
 }
 
-bool PanelFrameView::OnMouseDragged(const views::MouseEvent& event) {
+bool PanelFrameView::OnMouseDragged(const ui::MouseEvent& event) {
   // |event.location| is in the view's coordinate system. Convert it to the
   // screen coordinate system.
   gfx::Point mouse_location = event.location();
@@ -452,7 +452,7 @@ bool PanelFrameView::OnMouseDragged(const views::MouseEvent& event) {
   return NonClientFrameView::OnMouseDragged(event);
 }
 
-void PanelFrameView::OnMouseReleased(const views::MouseEvent& event) {
+void PanelFrameView::OnMouseReleased(const ui::MouseEvent& event) {
   if (panel_view_->OnTitlebarMouseReleased(
           event.IsControlDown() ? panel::APPLY_TO_ALL : panel::NO_MODIFIER))
     return;

@@ -20,13 +20,13 @@ BaseScrollBarButton::BaseScrollBarButton(ButtonListener* listener)
 BaseScrollBarButton::~BaseScrollBarButton() {
 }
 
-bool BaseScrollBarButton::OnMousePressed(const MouseEvent& event) {
+bool BaseScrollBarButton::OnMousePressed(const ui::MouseEvent& event) {
   Button::NotifyClick(event);
   repeater_.Start();
   return true;
 }
 
-void BaseScrollBarButton::OnMouseReleased(const MouseEvent& event) {
+void BaseScrollBarButton::OnMouseReleased(const ui::MouseEvent& event) {
   OnMouseCaptureLost();
 }
 
@@ -41,9 +41,9 @@ void BaseScrollBarButton::RepeaterNotifyClick() {
 #else
   gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
 #endif
-  views::MouseEvent event(ui::ET_MOUSE_RELEASED,
-                          cursor_point.x(), cursor_point.y(),
-                          ui::EF_LEFT_MOUSE_BUTTON);
+  ui::MouseEvent event(ui::ET_MOUSE_RELEASED,
+                       cursor_point, cursor_point,
+                       ui::EF_LEFT_MOUSE_BUTTON);
   Button::NotifyClick(event);
 }
 

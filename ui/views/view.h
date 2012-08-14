@@ -508,7 +508,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // responsible for managing the lifetime of the returned object, though that
   // lifetime may vary from platform to platform. On Windows and Aura,
   // the cursor is a shared resource.
-  virtual gfx::NativeCursor GetCursor(const MouseEvent& event);
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event);
 
   // A convenience function which calls HitTestRect() with a rect of size
   // 1x1 and an origin of |point|.
@@ -532,7 +532,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Default implementation returns true if a ContextMenuController has been
   // set, false otherwise. Override as needed.
   //
-  virtual bool OnMousePressed(const MouseEvent& event);
+  virtual bool OnMousePressed(const ui::MouseEvent& event);
 
   // This method is invoked when the user clicked on this control.
   // and is still moving the mouse with a button pressed.
@@ -544,7 +544,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Default implementation returns true if a ContextMenuController has been
   // set, false otherwise. Override as needed.
   //
-  virtual bool OnMouseDragged(const MouseEvent& event);
+  virtual bool OnMouseDragged(const ui::MouseEvent& event);
 
   // This method is invoked when the user releases the mouse
   // button. The event is in the receiver's coordinate system.
@@ -552,7 +552,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Default implementation notifies the ContextMenuController is appropriate.
   // Subclasses that wish to honor the ContextMenuController should invoke
   // super.
-  virtual void OnMouseReleased(const MouseEvent& event);
+  virtual void OnMouseReleased(const ui::MouseEvent& event);
 
   // This method is invoked when the mouse press/drag was canceled by a
   // system/user gesture.
@@ -562,17 +562,17 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The event is in the receiver's coordinate system.
   //
   // Default implementation does nothing. Override as needed.
-  virtual void OnMouseMoved(const MouseEvent& event);
+  virtual void OnMouseMoved(const ui::MouseEvent& event);
 
   // This method is invoked when the mouse enters this control.
   //
   // Default implementation does nothing. Override as needed.
-  virtual void OnMouseEntered(const MouseEvent& event);
+  virtual void OnMouseEntered(const ui::MouseEvent& event);
 
   // This method is invoked when the mouse exits this control
   // The provided event location is always (0, 0)
   // Default implementation does nothing. Override as needed.
-  virtual void OnMouseExited(const MouseEvent& event);
+  virtual void OnMouseExited(const ui::MouseEvent& event);
 
   // This method is invoked for each touch event. Default implementation
   // does nothing. Override as needed.
@@ -1277,9 +1277,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // RootView invokes these. These in turn invoke the appropriate OnMouseXXX
   // method. If a drag is detected, DoDrag is invoked.
-  bool ProcessMousePressed(const MouseEvent& event, DragInfo* drop_info);
-  bool ProcessMouseDragged(const MouseEvent& event, DragInfo* drop_info);
-  void ProcessMouseReleased(const MouseEvent& event);
+  bool ProcessMousePressed(const ui::MouseEvent& event, DragInfo* drop_info);
+  bool ProcessMouseDragged(const ui::MouseEvent& event, DragInfo* drop_info);
+  void ProcessMouseReleased(const ui::MouseEvent& event);
 
   // RootView will invoke this with incoming TouchEvents. Returns the result
   // of OnTouchEvent.

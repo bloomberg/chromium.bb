@@ -15,7 +15,7 @@ CaptureTrackingView::CaptureTrackingView()
 CaptureTrackingView::~CaptureTrackingView() {
 }
 
-bool CaptureTrackingView::OnMousePressed(const views::MouseEvent& event) {
+bool CaptureTrackingView::OnMousePressed(const ui::MouseEvent& event) {
   got_press_ = true;
   return true;
 }

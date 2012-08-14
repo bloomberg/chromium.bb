@@ -63,12 +63,12 @@ bool ChromeToMobileView::GetTooltipText(const gfx::Point& p,
   return views::ImageView::GetTooltipText(p, tooltip);
 }
 
-bool ChromeToMobileView::OnMousePressed(const views::MouseEvent& event) {
+bool ChromeToMobileView::OnMousePressed(const ui::MouseEvent& event) {
   // Show the bubble on mouse release; that is standard button behavior.
   return true;
 }
 
-void ChromeToMobileView::OnMouseReleased(const views::MouseEvent& event) {
+void ChromeToMobileView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
     command_updater_->ExecuteCommand(IDC_CHROME_TO_MOBILE_PAGE);
 }

@@ -51,13 +51,13 @@ bool StarView::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   return views::ImageView::GetTooltipText(p, tooltip);
 }
 
-bool StarView::OnMousePressed(const views::MouseEvent& event) {
+bool StarView::OnMousePressed(const ui::MouseEvent& event) {
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
   return true;
 }
 
-void StarView::OnMouseReleased(const views::MouseEvent& event) {
+void StarView::OnMouseReleased(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
     command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
 }

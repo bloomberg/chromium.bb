@@ -31,7 +31,7 @@ enum EventType {
 // |view| is the view receiving |event|. This function sends the event to all
 // the Views up the hierarchy that has |notify_enter_exit_on_child_| flag turned
 // on, but does not contain |sibling|.
-void NotifyEnterExitOfDescendant(const MouseEvent& event,
+void NotifyEnterExitOfDescendant(const ui::MouseEvent& event,
                                  EventType type,
                                  View* view,
                                  View* sibling) {
@@ -197,7 +197,7 @@ void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
   }
 }
 
-bool RootView::OnMousePressed(const MouseEvent& event) {
+bool RootView::OnMousePressed(const ui::MouseEvent& event) {
   UpdateCursor(event);
   SetMouseLocationAndFlags(event);
 
@@ -205,7 +205,8 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
   // a pressed -> drag -> released session. In that case we send the
   // event to mouse_pressed_handler_
   if (mouse_pressed_handler_) {
-    MouseEvent mouse_pressed_event(event, this, mouse_pressed_handler_);
+    ui::MouseEvent mouse_pressed_event(event, static_cast<View*>(this),
+                                       mouse_pressed_handler_);
     drag_info_.Reset();
     mouse_pressed_handler_->ProcessMousePressed(mouse_pressed_event,
                                                 &drag_info_);
@@ -227,7 +228,8 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
     }
 
     // See if this view wants to handle the mouse press.
-    MouseEvent mouse_pressed_event(event, this, mouse_pressed_handler_);
+    ui::MouseEvent mouse_pressed_event(event, static_cast<View*>(this),
+                                       mouse_pressed_handler_);
 
     // Remove the double-click flag if the handler is different than the
     // one which got the first click part of the double-click.
@@ -273,22 +275,24 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
   return hit_disabled_view;
 }
 
-bool RootView::OnMouseDragged(const MouseEvent& event) {
+bool RootView::OnMouseDragged(const ui::MouseEvent& event) {
   if (mouse_pressed_handler_) {
     SetMouseLocationAndFlags(event);
 
-    MouseEvent mouse_event(event, this, mouse_pressed_handler_);
+    ui::MouseEvent mouse_event(event, static_cast<View*>(this),
+                               mouse_pressed_handler_);
     return mouse_pressed_handler_->ProcessMouseDragged(mouse_event,
                                                        &drag_info_);
   }
   return false;
 }
 
-void RootView::OnMouseReleased(const MouseEvent& event) {
+void RootView::OnMouseReleased(const ui::MouseEvent& event) {
   UpdateCursor(event);
 
   if (mouse_pressed_handler_) {
-    MouseEvent mouse_released(event, this, mouse_pressed_handler_);
+    ui::MouseEvent mouse_released(event, static_cast<View*>(this),
+                                  mouse_pressed_handler_);
     // We allow the view to delete us from ProcessMouseReleased. As such,
     // configure state such that we're done first, then call View.
     View* mouse_pressed_handler = mouse_pressed_handler_;
@@ -304,8 +308,10 @@ void RootView::OnMouseCaptureLost() {
   if (mouse_pressed_handler_ || gesture_handler_) {
     // Synthesize a release event for UpdateCursor.
     if (mouse_pressed_handler_) {
-      MouseEvent release_event(ui::ET_MOUSE_RELEASED, last_mouse_event_x_,
-                               last_mouse_event_y_, last_mouse_event_flags_);
+      gfx::Point last_point(last_mouse_event_x_, last_mouse_event_y_);
+      ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED,
+                                   last_point, last_point,
+                                   last_mouse_event_flags_);
       UpdateCursor(release_event);
     }
     // We allow the view to delete us from OnMouseCaptureLost. As such,
@@ -321,7 +327,7 @@ void RootView::OnMouseCaptureLost() {
   }
 }
 
-void RootView::OnMouseMoved(const MouseEvent& event) {
+void RootView::OnMouseMoved(const ui::MouseEvent& event) {
   View* v = GetEventHandlerForPoint(event.location());
   // Find the first enabled view, or the existing move handler, whichever comes
   // first.  The check for the existing handler is because if a view becomes
@@ -339,7 +345,8 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
       }
       View* old_handler = mouse_move_handler_;
       mouse_move_handler_ = v;
-      MouseEvent entered_event(event, this, mouse_move_handler_);
+      ui::MouseEvent entered_event(event, static_cast<View*>(this),
+                                   mouse_move_handler_);
       if (!mouse_move_handler_->notify_enter_exit_on_child() ||
           !mouse_move_handler_->Contains(old_handler)) {
         mouse_move_handler_->OnMouseEntered(entered_event);
@@ -347,7 +354,8 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
             old_handler);
       }
     }
-    MouseEvent moved_event(event, this, mouse_move_handler_);
+    ui::MouseEvent moved_event(event, static_cast<View*>(this),
+                               mouse_move_handler_);
     mouse_move_handler_->OnMouseMoved(moved_event);
     if (!(moved_event.flags() & ui::EF_IS_NON_CLIENT))
       widget_->SetCursor(mouse_move_handler_->GetCursor(moved_event));
@@ -362,7 +370,7 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
   }
 }
 
-void RootView::OnMouseExited(const MouseEvent& event) {
+void RootView::OnMouseExited(const ui::MouseEvent& event) {
   if (mouse_move_handler_ != NULL) {
     mouse_move_handler_->OnMouseExited(event);
     NotifyEnterExitOfDescendant(event, EVENT_EXIT, mouse_move_handler_, NULL);
@@ -585,14 +593,15 @@ void RootView::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
 
 // Input -----------------------------------------------------------------------
 
-void RootView::UpdateCursor(const MouseEvent& event) {
+void RootView::UpdateCursor(const ui::MouseEvent& event) {
   if (!(event.flags() & ui::EF_IS_NON_CLIENT)) {
     View* v = GetEventHandlerForPoint(event.location());
-    widget_->SetCursor(v->GetCursor(MouseEvent(event, this, v)));
+    ui::MouseEvent me(event, static_cast<View*>(this), v);
+    widget_->SetCursor(v->GetCursor(me));
   }
 }
 
-void RootView::SetMouseLocationAndFlags(const MouseEvent& event) {
+void RootView::SetMouseLocationAndFlags(const ui::MouseEvent& event) {
   last_mouse_event_flags_ = event.flags();
   last_mouse_event_x_ = event.x();
   last_mouse_event_y_ = event.y();
