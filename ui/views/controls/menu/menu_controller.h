@@ -468,10 +468,6 @@ class VIEWS_EXPORT MenuController
   // If true, we're showing.
   bool showing_;
 
-  // Is true for some menu types and only until the first mouse press or mouse
-  // release event occurs.
-  bool drop_first_release_event_;
-
   // Indicates what to exit.
   ExitType exit_type_;
 

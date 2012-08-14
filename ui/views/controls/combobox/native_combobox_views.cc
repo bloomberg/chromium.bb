@@ -32,6 +32,12 @@ const int kLeftInsetSize = 4;
 const int kBottomInsetSize = 4;
 const int kRightInsetSize = 4;
 
+// Menu border widths
+const int kMenuBorderWidthLeft = 1;
+const int kMenuBorderWidthTop = 1;
+const int kMenuBorderWidthRight = 1;
+const int kMenuBorderWidthBottom = 2;
+
 // Limit how small a combobox can be.
 const int kMinComboboxWidth = 148;
 
@@ -58,7 +64,7 @@ NativeComboboxViews::NativeComboboxViews(Combobox* combobox)
     : combobox_(combobox),
       text_border_(new FocusableBorder()),
       disclosure_arrow_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_DISCLOSURE_ARROW).ToImageSkia()),
+          IDR_MENU_DROPARROW).ToImageSkia()),
       dropdown_open_(false),
       selected_index_(-1),
       content_width_(0),
@@ -325,15 +331,18 @@ void NativeComboboxViews::ShowDropDownMenu() {
   // Extend the menu to the width of the combobox.
   MenuItemView* menu = dropdown_list_menu_runner_->GetMenu();
   SubmenuView* submenu = menu->CreateSubmenu();
-  submenu->set_minimum_preferred_width(size().width());
-
-#if defined(USE_AURA)
-  // Aura style is to have the menu over the bounds. Below bounds is default.
-  menu->set_menu_position(views::MenuItemView::POSITION_OVER_BOUNDS);
-#endif
+  submenu->set_minimum_preferred_width(size().width() -
+                                (kMenuBorderWidthLeft + kMenuBorderWidthRight));
 
   gfx::Rect lb = GetLocalBounds();
   gfx::Point menu_position(lb.origin());
+
+  // Inset the menu's requested position so the border of the menu lines up
+  // with the border of the combobox.
+  menu_position.set_x(menu_position.x() + kMenuBorderWidthLeft);
+  menu_position.set_y(menu_position.y() + kMenuBorderWidthTop);
+  lb.set_width(lb.width() - (kMenuBorderWidthLeft + kMenuBorderWidthRight));
+
   View::ConvertPointToScreen(this, &menu_position);
   if (menu_position.x() < 0)
       menu_position.set_x(0);

@@ -305,9 +305,6 @@
       <structure type="chrome_scaled_image" name="IDR_CONTENT_RIGHT_SIDE" file="content_right_side.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_FAVICON" file="default_favicon.png" />
       <structure type="chrome_scaled_image" name="IDR_DEFAULT_LARGE_FAVICON" file="default_large_favicon.png" />
-      <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_DISCLOSURE_ARROW" file="discloure_arrow.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_RTL" file="common/folder_closed_rtl.png" />
       <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="common/folder_open.png" />

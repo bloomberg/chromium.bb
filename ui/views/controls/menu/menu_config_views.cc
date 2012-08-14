@@ -19,7 +19,7 @@ MenuConfig* MenuConfig::Create() {
   config->text_color = ui::NativeTheme::instance()->GetSystemColor(
       ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
   config->submenu_horizontal_margin_size = 0;
-  config->submenu_vertical_margin_size = 2;
+  config->submenu_vertical_margin_size = 0;
   config->submenu_horizontal_inset = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   config->arrow_to_edge_padding = 20;

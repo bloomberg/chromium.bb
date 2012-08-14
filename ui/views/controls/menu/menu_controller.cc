@@ -277,11 +277,6 @@ MenuItemView* MenuController::Run(Widget* parent,
   possible_drag_ = false;
   drag_in_progress_ = false;
 
-  // We need to drop the first mouse release event when the menu has been
-  // layed out over the bounds.
-  drop_first_release_event_ =
-      root->GetRequestedMenuPosition() == MenuItemView::POSITION_OVER_BOUNDS;
-
   bool nested_menu = showing_;
   if (showing_) {
     // Only support nesting of blocking_run menus, nesting of
@@ -472,18 +467,6 @@ void MenuController::OnMouseReleased(SubmenuView* source,
                                      const ui::MouseEvent& event) {
   if (!blocking_run_)
     return;
-
-  // We must ignore the first release event when it occured within the original
-  // bounds.
-  if (drop_first_release_event_ && (event.flags() & ui::EF_LEFT_MOUSE_BUTTON)) {
-    drop_first_release_event_ = false;
-    gfx::Point loc(event.location());
-    View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
-    DCHECK(!state_.initial_bounds.IsEmpty());
-    if (state_.initial_bounds.Contains(loc))
-      return;
-  }
-  drop_first_release_event_ = false;
 
   DCHECK(state_.item);
   possible_drag_ = false;
@@ -792,7 +775,6 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
                                                const ui::LocatedEvent& event) {
   if (!blocking_run_)
     return;
-  drop_first_release_event_ = false;
 
   DCHECK(!active_mouse_view_);
 
@@ -1049,7 +1031,6 @@ MenuController::MenuController(bool blocking,
                                internal::MenuControllerDelegate* delegate)
     : blocking_run_(blocking),
       showing_(false),
-      drop_first_release_event_(false),
       exit_type_(EXIT_NONE),
       did_capture_(false),
       result_(NULL),
@@ -1555,8 +1536,7 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   gfx::Size pref = submenu->GetScrollViewContainer()->GetPreferredSize();
 
   // Don't let the menu go too wide.
-  if (item->actual_menu_position() != MenuItemView::POSITION_OVER_BOUNDS)
-    pref.set_width(std::min(pref.width(),
+  pref.set_width(std::min(pref.width(),
                             item->GetDelegate()->GetMaxWidthForMenu(item)));
   if (!state_.monitor_bounds.IsEmpty())
     pref.set_width(std::min(pref.width(), state_.monitor_bounds.width()));
@@ -1569,22 +1549,12 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
   if (!item->GetParentMenuItem()) {
     // First item, position relative to initial location.
     x = state_.initial_bounds.x();
-    if (item->actual_menu_position() == MenuItemView::POSITION_OVER_BOUNDS)
-      y = state_.initial_bounds.y();
-    else
-      y = state_.initial_bounds.bottom();
+    y = state_.initial_bounds.bottom();
     if (state_.anchor == MenuItemView::TOPRIGHT)
       x = x + state_.initial_bounds.width() - pref.width();
 
     if (!state_.monitor_bounds.IsEmpty() &&
-        pref.height() > state_.monitor_bounds.height() &&
-        item->actual_menu_position() == MenuItemView::POSITION_OVER_BOUNDS) {
-      // Handle very tall menus.
-      pref.set_height(state_.monitor_bounds.height());
-      y = state_.monitor_bounds.y();
-    } else if (!state_.monitor_bounds.IsEmpty() &&
-        y + pref.height() > state_.monitor_bounds.bottom() &&
-        item->actual_menu_position() != MenuItemView::POSITION_OVER_BOUNDS) {
+        y + pref.height() > state_.monitor_bounds.bottom()) {
       // The menu doesn't fit fully below the button on the screen. The menu
       // position with respect to the bounds will be preserved if it has
       // already been drawn. When the requested positioning is below the bounds
@@ -1649,15 +1619,6 @@ gfx::Rect MenuController::CalculateMenuBounds(MenuItemView* item,
       pref.set_height(std::min(pref.height(),
           state_.initial_bounds.y() - state_.monitor_bounds.y()));
       y = state_.initial_bounds.y() - pref.height();
-    } else if (item->actual_menu_position() ==
-               MenuItemView::POSITION_OVER_BOUNDS) {
-      // Center vertically assuming all items have the same height.
-      int middle = state_.initial_bounds.y() - pref.height() / 2;
-      if (submenu->GetMenuItemCount() > 0)
-        middle += submenu->GetMenuItemAt(0)->GetPreferredSize().height() / 2;
-      y = std::max(state_.monitor_bounds.y(), middle);
-      if (y + pref.height() > state_.monitor_bounds.bottom())
-        y = state_.monitor_bounds.bottom() - pref.height();
     } else {
       item->set_actual_menu_position(MenuItemView::POSITION_BELOW_BOUNDS);
     }

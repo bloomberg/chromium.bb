@@ -100,8 +100,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   enum MenuPosition {
     POSITION_BEST_FIT,
     POSITION_ABOVE_BOUNDS,
-    POSITION_BELOW_BOUNDS,
-    POSITION_OVER_BOUNDS
+    POSITION_BELOW_BOUNDS
   };
 
   // Constructor for use with the top level menu item. This menu is never
@@ -217,11 +216,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the type of this menu.
   const Type& GetType() const { return type_; }
 
-  // Returns the requested menu position.
-  const MenuPosition& GetRequestedMenuPosition() {
-    return requested_menu_position_;
-  }
-
   // Sets whether this item is selected. This is invoked as the user moves
   // the mouse around the menu while open.
   void SetSelected(bool selected);
@@ -299,12 +293,6 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Set top and bottom margins in pixels.  If no margin is set or a
   // negative margin is specified then MenuConfig values are used.
   void SetMargins(int top_margin, int bottom_margin);
-
-  // Set the position of the menu with respect to the bounds (top
-  // level only).
-  void set_menu_position(MenuPosition menu_position) {
-    requested_menu_position_ = menu_position;
-  }
 
   // Suppress the right margin if this is set to false.
   void set_use_right_margin(bool use_right_margin) {
