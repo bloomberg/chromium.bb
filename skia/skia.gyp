@@ -593,10 +593,10 @@
               'sources/': [
                 ['include', 'ext/platform_device_linux\\.cc$'],
                 ['include', 'ext/platform_canvas_linux\\.cc$'],
+                ['exclude', '../third_party/skia/src/pdf/'],
               ],
               'sources!': [
                 'ext/vector_platform_device_skia.cc',
-                '../third_party/skia/src/pdf/SkPDFFont.cpp',
               ],
               'export_dependent_settings': [
                 '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',

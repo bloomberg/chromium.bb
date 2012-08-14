@@ -264,23 +264,21 @@
     'renderer/websharedworkerrepository_impl.h',
   ],
   'conditions': [
-    ['toolkit_uses_gtk == 1', {
-      'conditions': [
-        ['input_speech==0', {
-          'sources!': [
-            'renderer/input_tag_speech_dispatcher.cc',
-            'renderer/input_tag_speech_dispatcher.h',
-            'renderer/speech_recognition_dispatcher.cc',
-            'renderer/speech_recognition_dispatcher.h',
-          ]
-        }],
-        ['notifications==0', {
-          'sources!': [
-            'renderer/notification_provider.cc',
-            'renderer/active_notification_tracker.cc',
-          ],
-        }],
+    ['notifications==0', {
+      'sources!': [
+        'renderer/notification_provider.cc',
+        'renderer/active_notification_tracker.cc',
       ],
+    }],
+    ['input_speech==0', {
+      'sources!': [
+        'renderer/input_tag_speech_dispatcher.cc',
+        'renderer/input_tag_speech_dispatcher.h',
+        'renderer/speech_recognition_dispatcher.cc',
+        'renderer/speech_recognition_dispatcher.h',
+      ]
+    }],
+    ['toolkit_uses_gtk == 1', {
       'dependencies': [
         '../build/linux/system.gyp:gtk',
       ],

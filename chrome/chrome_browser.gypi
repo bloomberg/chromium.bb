@@ -4516,6 +4516,7 @@
         }, {  # safe_browsing==0
           'dependencies!': [
             'safe_browsing_report_proto',
+            '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources!': [
             'browser/renderer_host/safe_browsing_resource_throttle.cc',
@@ -4982,7 +4983,9 @@
             'browser/page_cycler/page_cycler.cc',
             'browser/page_cycler/page_cycler.h',
             'browser/ui/browser.cc',
+            'browser/ui/browser_command_controller.cc',
             'browser/ui/browser_finder.cc',
+            'browser/ui/browser_instant_controller.cc',
             'browser/ui/browser_list.cc',
             'browser/ui/browser_navigator.cc',
             'browser/ui/browser_otr_state.cc',
@@ -5021,7 +5024,14 @@
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/chrome_to_mobile'],
+            ['exclude', '^browser/first_run/'],
+            ['include', '^browser/first_run/first_run.cc'], # For ctor/dtor of a struct.
             ['exclude', '^browser/importer/'],
+            ['exclude', '^browser/lifetime/'],
+            ['exclude', '^browser/service/'],
+            ['exclude', '^browser/speech/'],
+            ['exclude', '^browser/sync/glue/app_'],
+            ['exclude', '^browser/sync/glue/extension_'],
             ['exclude', '^browser/ui/intents/'],
             ['exclude', '^browser/ui/omnibox/'],
             ['exclude', '^browser/ui/panels/'],

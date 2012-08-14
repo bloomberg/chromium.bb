@@ -2458,6 +2458,12 @@
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/chrome_to_mobile'],
+            ['exclude', '^browser/first_run/'],
+            ['exclude', '^browser/importer/'],
+            ['exclude', '^browser/lifetime/'],
+            ['exclude', '^browser/speech/'],
+            ['exclude', '^browser/sync/glue/app_'],
+            ['exclude', '^browser/sync/glue/extension_'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/intents/'],
             ['exclude', '^browser/ui/omnibox/'],
@@ -2474,6 +2480,7 @@
             ['exclude', '^browser/ui/webui/suggestions_internals'],
             ['exclude', '^browser/ui/webui/sync_promo'],
             # No service process on Android.
+            ['exclude', '^browser/service/'],
             ['exclude', '^common/service_'],
             ['exclude', '^service/'],
           ],

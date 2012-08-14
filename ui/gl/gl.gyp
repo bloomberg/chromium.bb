@@ -191,6 +191,7 @@
           'sources!': [
             '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.cc',
             '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.h',
+            'gl_context_osmesa.cc',
             'system_monitor_posix.cc',
           ],
           'defines': [

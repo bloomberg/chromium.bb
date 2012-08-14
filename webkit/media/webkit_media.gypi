@@ -65,8 +65,13 @@
         ['OS == "android"', {
           'sources!': [
             'audio_decoder.cc',
+            'audio_decoder.h',
+            'filter_helpers.cc',
+            'filter_helpers.h',
             'webmediaplayer_impl.cc',
             'webmediaplayer_impl.h',
+            'webmediaplayer_proxy.cc',
+            'webmediaplayer_proxy.h',
           ],
           'dependencies': [
             '<(DEPTH)/media/media.gyp:player_android',
