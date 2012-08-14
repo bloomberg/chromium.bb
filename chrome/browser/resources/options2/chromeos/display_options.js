@@ -56,6 +56,13 @@ cr.define('options', function() {
       chrome.send('getDisplayInfo');
     },
 
+    /** @override */
+    onVisibilityChanged_: function() {
+      OptionsPage.prototype.onVisibilityChanged_(this);
+      if (this.visible)
+        chrome.send('getDisplayInfo');
+    },
+
     /**
      * Collects the current data and sends it to Chrome.
      * @private
