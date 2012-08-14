@@ -2269,9 +2269,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSessionStorage) {
   GoBackToPageBeforePrerender();
 }
 
+#if defined(OS_MACOSX)
+// http://crbug.com/142535 - Times out on Chrome Mac release builder
+#define MAYBE_ControlGroup DISABLED_ControlGroup
+#else
+#define MAYBE_ControlGroup ControlGroup
+#endif
 // Checks that the control group works.  A JS alert cannot be detected in the
 // control group.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ControlGroup) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MAYBE_ControlGroup) {
   RestorePrerenderMode restore_prerender_mode;
   PrerenderManager::SetMode(
       PrerenderManager::PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP);
