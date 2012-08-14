@@ -30,6 +30,9 @@ enum GestureActionType {
   GESTURE_DESKTOP_PINCH,
   GESTURE_WEBPAGE_PINCH,
   GESTURE_WEBPAGE_SCROLL,
+  GESTURE_WEBPAGE_TAP,
+  GESTURE_TABSTRIP_TAP,
+  GESTURE_BEZEL_DOWN,
 // NOTE: Add new action types only immediately above this line. Also, make sure
 // the enum list in tools/histogram/histograms.xml is updated with any change in
 // here.
@@ -98,6 +101,8 @@ GestureActionType FindGestureActionType(aura::Window* window,
   if (!window || window->GetRootWindow() == window) {
     if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
       return GESTURE_BEZEL_SCROLL;
+    if (event.type() == ui::ET_GESTURE_BEGIN)
+      return GESTURE_BEZEL_DOWN;
     return GESTURE_UNKNOWN;
   }
 
@@ -118,6 +123,8 @@ GestureActionType FindGestureActionType(aura::Window* window,
       return GESTURE_WEBPAGE_PINCH;
     if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
       return GESTURE_WEBPAGE_SCROLL;
+    if (event.type() == ui::ET_GESTURE_TAP)
+      return GESTURE_WEBPAGE_TAP;
     return GESTURE_UNKNOWN;
   }
 
@@ -139,6 +146,8 @@ GestureActionType FindGestureActionType(aura::Window* window,
       return GESTURE_TABSTRIP_SCROLL;
     if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
       return GESTURE_TABSTRIP_PINCH;
+    if (event.type() == ui::ET_GESTURE_TAP)
+      return GESTURE_TABSTRIP_TAP;
     return GESTURE_UNKNOWN;
   }
 
@@ -273,10 +282,10 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
   }
 
   // Record the location of the touch points.
-  const int kBucketCount = 100;
+  const int kBucketCountForLocation = 100;
   const gfx::Rect bounds = target->GetRootWindow()->bounds();
-  const int bucket_size_x = bounds.width() / kBucketCount;
-  const int bucket_size_y = bounds.height() / kBucketCount;
+  const int bucket_size_x = bounds.width() / kBucketCountForLocation;
+  const int bucket_size_y = bounds.height() / kBucketCountForLocation;
 
   gfx::Point position = event.root_location();
 
@@ -299,19 +308,18 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 #else
     position = ui::EventLocationFromNative(event.native_event());
 #endif
+    position = position.Scale(1. / target->layer()->device_scale_factor());
   }
 
   position.set_x(std::min(bounds.width() - 1, std::max(0, position.x())));
   position.set_y(std::min(bounds.height() - 1, std::max(0, position.y())));
 
-  STATIC_HISTOGRAM_POINTER_BLOCK("Ash.TouchPositionX",
-      Add(position.x() / bucket_size_x),
-      base::LinearHistogram::FactoryGet("Ash.TouchPositionX", 1, kBucketCount,
-          kBucketCount + 1, base::Histogram::kUmaTargetedHistogramFlag));
-  STATIC_HISTOGRAM_POINTER_BLOCK("Ash.TouchPositionY",
-      Add(position.y() / bucket_size_y),
-      base::LinearHistogram::FactoryGet("Ash.TouchPositionY", 1, kBucketCount,
-          kBucketCount + 1, base::Histogram::kUmaTargetedHistogramFlag));
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchPositionX",
+      position.x() / bucket_size_x,
+      0, kBucketCountForLocation, kBucketCountForLocation + 1);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchPositionY",
+      position.y() / bucket_size_y,
+      0, kBucketCountForLocation, kBucketCountForLocation + 1);
 
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     Shell::GetInstance()->delegate()->RecordUserMetricsAction(
@@ -336,9 +344,8 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
     // Record the number of touch-points currently active for the window.
     const int kMaxTouchPoints = 10;
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.ActiveTouchPoints",
-        std::min(static_cast<int>(details->last_start_time_.size()),
-                 kMaxTouchPoints),
-        1, kMaxTouchPoints, kMaxTouchPoints);
+        details->last_start_time_.size(),
+        1, kMaxTouchPoints, kMaxTouchPoints + 1);
   } else if (event.type() == ui::ET_TOUCH_RELEASED) {
     if (details->last_start_time_.count(event.touch_id())) {
       base::TimeDelta duration = event.time_stamp() -
