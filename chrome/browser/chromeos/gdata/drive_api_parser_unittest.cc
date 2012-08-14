@@ -170,6 +170,12 @@ TEST_F(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ("My first file data", file1.title());
   EXPECT_EQ("application/octet-stream", file1.mime_type());
 
+  EXPECT_FALSE(file1.labels().is_starred());
+  EXPECT_FALSE(file1.labels().is_hidden());
+  EXPECT_FALSE(file1.labels().is_trashed());
+  EXPECT_FALSE(file1.labels().is_restricted());
+  EXPECT_TRUE(file1.labels().is_viewed());
+
   base::Time created_time;
   ASSERT_TRUE(gdata::util::GetTimeFromString("2012-07-24T08:51:16.570Z",
                                              &created_time));
@@ -206,6 +212,13 @@ TEST_F(DriveAPIParserTest, FileListParser) {
   const FileResource& file2 = *filelist->items()[1];
   EXPECT_EQ("Test Google Document", file2.title());
   EXPECT_EQ("application/vnd.google-apps.document", file2.mime_type());
+
+  EXPECT_TRUE(file2.labels().is_starred());
+  EXPECT_TRUE(file2.labels().is_hidden());
+  EXPECT_TRUE(file2.labels().is_trashed());
+  EXPECT_TRUE(file2.labels().is_restricted());
+  EXPECT_TRUE(file2.labels().is_viewed());
+
   EXPECT_EQ(0U, file2.file_size());
 
   ASSERT_EQ(0U, file2.parents().size());

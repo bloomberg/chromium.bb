@@ -98,6 +98,13 @@ const char kEmbedLink[] = "embedLink";
 const char kParents[] = "parents";
 const char kThumbnailLink[] = "thumbnailLink";
 const char kWebContentLink[] = "webContentLink";
+const char kLabels[] = "labels";
+// These 5 flags are defined under |labels|.
+const char kLabelStarred[] = "starred";
+const char kLabelHidden[] = "hidden";
+const char kLabelTrashed[] = "trashed";
+const char kLabelRestricted[] = "restricted";
+const char kLabelViewed[] = "viewed";
 
 const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
@@ -395,6 +402,7 @@ void FileResource::RegisterJSONConverter(
                                        GetGURLFromString);
   converter->RegisterStringField(kTitle, &FileResource::title_);
   converter->RegisterStringField(kMimeType, &FileResource::mime_type_);
+  converter->RegisterNestedField(kLabels, &FileResource::labels_);
   converter->RegisterCustomField<base::Time>(
       kCreatedDate,
       &FileResource::created_date_,
@@ -583,6 +591,48 @@ bool ChangeList::Parse(const base::Value& value) {
   base::JSONValueConverter<ChangeList> converter;
   if (!converter.Convert(value, this)) {
     LOG(ERROR) << "Unable to parse: Invalid ChangeList";
+    return false;
+  }
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FileLabels implementation
+
+FileLabels::FileLabels()
+    : starred_(false),
+      hidden_(false),
+      trashed_(false),
+      restricted_(false),
+      viewed_(false) {}
+
+FileLabels::~FileLabels() {}
+
+// static
+void FileLabels::RegisterJSONConverter(
+    base::JSONValueConverter<FileLabels>* converter) {
+  converter->RegisterBoolField(kLabelStarred, &FileLabels::starred_);
+  converter->RegisterBoolField(kLabelHidden, &FileLabels::hidden_);
+  converter->RegisterBoolField(kLabelTrashed, &FileLabels::trashed_);
+  converter->RegisterBoolField(kLabelRestricted, &FileLabels::restricted_);
+  converter->RegisterBoolField(kLabelViewed, &FileLabels::viewed_);
+}
+
+// static
+scoped_ptr<FileLabels> FileLabels::CreateFrom(const base::Value& value) {
+  scoped_ptr<FileLabels> resource(new FileLabels());
+  if (!resource->Parse(value)) {
+    LOG(ERROR) << "Unable to create: Invalid FileLabels JSON!";
+    return scoped_ptr<FileLabels>(NULL);
+  }
+  return resource.Pass();
+}
+
+bool FileLabels::Parse(const base::Value& value) {
+  base::JSONValueConverter<FileLabels> converter;
+  if (!converter.Convert(value, this)) {
+    LOG(ERROR) << "Unable to parse: Invalid FileLabels";
     return false;
   }
   return true;

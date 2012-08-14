@@ -299,6 +299,49 @@ class ParentReference {
   DISALLOW_COPY_AND_ASSIGN(ParentReference);
 };
 
+// FileLabels represents labels for file or folder.
+// https://developers.google.com/drive/v2/reference/files
+class FileLabels {
+ public:
+
+  ~FileLabels();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<FileLabels>* converter);
+
+  // Creates about resource from parsed JSON.
+  static scoped_ptr<FileLabels> CreateFrom(const base::Value& value);
+
+  // Whether this file is starred by the user.
+  bool is_starred() const { return starred_; }
+  // Whether this file is hidden from the user.
+  bool is_hidden() const { return hidden_; }
+  // Whether this file has been trashed.
+  bool is_trashed() const { return trashed_; }
+  // Whether viewers are prevented from downloading this file.
+  bool is_restricted() const { return restricted_; }
+  // Whether this file has been viewed by this user.
+  bool is_viewed() const { return viewed_; }
+
+ private:
+  friend class FileResource;
+  FileLabels();
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+  bool Parse(const base::Value& value);
+
+  bool starred_;
+  bool hidden_;
+  bool trashed_;
+  bool restricted_;
+  bool viewed_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileLabels);
+};
+
 // FileResource represents a file or folder metadata in Drive.
 // https://developers.google.com/drive/v2/reference/files
 class FileResource {
@@ -337,6 +380,9 @@ class FileResource {
 
   // Returns MIME type of this file.
   const std::string& mime_type() const { return mime_type_; }
+
+  // Returns labels for this file.
+  const FileLabels& labels() const { return labels_; }
 
   // Returns created time of this file.
   const base::Time& created_date() const { return created_date_; }
@@ -389,6 +435,7 @@ class FileResource {
   GURL self_link_;
   std::string title_;
   std::string mime_type_;
+  FileLabels labels_;
   base::Time created_date_;
   base::Time modified_by_me_date_;
   GURL download_url_;

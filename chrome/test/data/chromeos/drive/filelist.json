@@ -66,9 +66,9 @@
    "mimeType": "application/vnd.google-apps.document",
    "labels": {
     "starred": true,
-    "hidden": false,
-    "trashed": false,
-    "restricted": false,
+    "hidden": true,
+    "trashed": true,
+    "restricted": true,
     "viewed": true
    },
    "createdDate": "2012-07-27T04:54:09.686Z",
