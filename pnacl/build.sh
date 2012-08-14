@@ -84,13 +84,12 @@ readonly THIRD_PARTY="${NACL_ROOT}"/../third_party
 
 # The location of Mercurial sources (absolute)
 readonly TC_SRC="${PNACL_ROOT}/src"
-readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
-readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_GOLD="${TC_SRC}/gold"
 
 # Git sources
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
+readonly TC_SRC_LLVM="${PNACL_GIT_ROOT}/llvm"
 readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
 readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
 readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/nacl-newlib"
@@ -248,14 +247,11 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
-# NOTE: this can be overwritten by merge-tool.sh
-readonly UPSTREAM_REV=${UPSTREAM_REV:-0d7734befa98}
 
 readonly BINUTILS_REV=95a4e0cd6450
 readonly GOLD_REV=5d1c8d6e094d
 
 # Repositories
-readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 # NOTE: this is essentially another binutils repo but a much more
 #       recent revision to pull in all the latest gold changes
@@ -351,13 +347,11 @@ setup-newlib-env() {
 hg-info-all() {
   hg-pull-all
 
-  hg-info "${TC_SRC_UPSTREAM}"   ${UPSTREAM_REV}
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
   hg-info "${TC_SRC_GOLD}"       ${GOLD_REV}
 }
 
 update-all() {
-  hg-update-upstream
   hg-update-binutils
   hg-update-gold
 }
@@ -532,14 +526,6 @@ svn-update-common() {
   fi
 }
 
-hg-update-upstream() {
-  llvm-unlink-clang
-  if ! ${PNACL_MERGE_TESTING} ; then
-    hg-update-common "upstream" ${UPSTREAM_REV} "${TC_SRC_UPSTREAM}"
-  fi
-  llvm-link-clang
-}
-
 #@ hg-update-binutils    - Update BINUTILS to the stable revision
 hg-update-binutils() {
   # Clean the binutils generated file first, so that sanity checks
@@ -554,19 +540,13 @@ hg-update-gold() {
   hg-update-common "gold" ${GOLD_REV} "${TC_SRC_GOLD}"
 }
 
-
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
 #@                         (REPO can be llvm, binutils)
 hg-pull-all() {
   StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
-  hg-pull-upstream
   hg-pull-binutils
   hg-pull-gold
-}
-
-hg-pull-upstream() {
-  hg-pull "${TC_SRC_UPSTREAM}"
 }
 
 hg-pull-binutils() {
@@ -582,16 +562,10 @@ hg-pull-gold() {
 #@                          (skips repos which are already checked out)
 checkout-all() {
   StepBanner "CHECKOUT-ALL"
-  hg-checkout-upstream
   hg-checkout-binutils
   hg-checkout-gold
+  llvm-unlink-clang # TODO(dschuff): check if this is still necessary
   git-sync
-}
-
-hg-checkout-upstream() {
-  if ! ${PNACL_MERGE_TESTING} ; then
-    hg-checkout ${REPO_UPSTREAM} "${TC_SRC_UPSTREAM}" ${UPSTREAM_REV}
-  fi
   llvm-link-clang
 }
 
@@ -625,6 +599,26 @@ git-sync() {
   newlib-nacl-headers
 }
 
+gerrit-upload() {
+  # Upload to gerrit code review
+  # (Note: normally we use Rietveld code review. This is only useful if
+  # e.g. we want external users to use gerrit instead of rietveld so we can
+  # easily merge their commits without giving them direct access). But
+  # this at least documents the specifics of uploading to our repo
+  # TODO(dschuff): Find a good way to persist the user's login. maybe
+  # do something like what depot tools does
+  if ! [ -f ~/.gerrit_username ]; then
+    echo "Enter your gerrit username: "
+    read user
+    echo "Saving gerrit username (${user}) to ~/.gerrit_username"
+    echo ${user} > ~/.gerrit_username
+  else
+    local user=$(cat ~/.gerrit_username)
+  fi
+  cd "${TC_SRC_LLVM}"
+  git push ssh://${user}@gerrit.chromium.org:29418/native_client/pnacl-llvm \
+    HEAD:refs/for/master
+}
 
 #@-------------------------------------------------------------------------
 
@@ -688,7 +682,7 @@ everything() {
 everything-hg() {
   mkdir -p "${INSTALL_ROOT}"
   checkout-all
-  StepBanner "Updating upstreaming repository"
+  StepBanner "Updating repositories"
   update-all
 }
 
@@ -1318,7 +1312,7 @@ llvm-clean() {
 #+ llvm-link-clang       - Add tools/clang symlink into llvm directory
 llvm-link-clang() {
   rm -f "${TC_SRC_LLVM}"/tools/clang
-  # Symbolic link named : ${TC_SRC}/upstream/llvm/tools/clang
+  # Symbolic link named : ${TC_SRC_LLVM}/tools/clang
   # Needs to point to   : ${TC_SRC_CLANG}
   ln -sf "${TC_SRC_CLANG}" "${TC_SRC_LLVM}"/tools/clang
 }

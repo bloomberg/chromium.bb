@@ -1,4 +1,5 @@
 vars = {
+  "pnacl_llvm_rev": "efa7b3d5c85f0242787eb091dadedc2727215df4",
   "pnacl_gcc_rev": "a8b45d06c8fdf36cfdb7c996393940077097d988",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
@@ -16,6 +17,8 @@ vars = {
 }
 
 deps = {
+  "llvm":
+    Var("nacl_base_readonly") + "/pnacl-llvm.git@" + Var("pnacl_llvm_rev"),
   "gcc":
     Var("nacl_base_readonly") + "/pnacl-gcc.git@" + Var("pnacl_gcc_rev"),
   "glibc":
