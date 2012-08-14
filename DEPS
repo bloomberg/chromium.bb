@@ -5,8 +5,8 @@ vars = {
   # value.  chromebinaries_rev should match LKGR so that we can download
   # the binaries, but sometimes chrome_rev needs to be more recent to get
   # source changes when LKGR is lagging too far back.
-  "chromebinaries_rev": "147940",
-  "chrome_rev": "147940",
+  "chromebinaries_rev": "151484",
+  "chrome_rev": "151484",
   # NOTE!  These four should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "617",

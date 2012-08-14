@@ -50,7 +50,7 @@ def WaitForNexeLoad(browser, tab_index=0):
   '[SHUTDOWN]' after fully loading.
   """
   # Make sure the window has focus (runs about 10x faster on multitab tests.)
-  browser.GetBrowserWindow(0).ActivateTab(tab_index)
+  browser.ActivateTab(tab_index)
   AssertNoCrash(browser, tab_index)
   AssertTrueOrLogTab(browser, browser.WaitUntil(
       lambda:
@@ -67,7 +67,7 @@ def VerifyAllTestsPassed(browser, tab_index=0):
   'All tests passed' when all tests have passed.
   """
   # Make sure the window has focus (runs about 10x faster on multitab tests.)
-  browser.GetBrowserWindow(0).ActivateTab(tab_index)
+  browser.ActivateTab(tab_index)
   AssertNoCrash(browser, tab_index)
   success = (browser.FindInPage(
               '0 failed, 0 errors', tab_index=tab_index)['match_count'] == 1

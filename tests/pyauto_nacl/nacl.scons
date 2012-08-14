@@ -119,7 +119,9 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.PyAutoTesterIsBroken() or
                                  env.PyAutoTesterSurfawayAsyncIsBroken())
 
+
 # reload.py
+#TODO(noelallen) - Fix or renable when pyauto interface allows
 node = SimplePyAutoTester(
     env,
     'pyauto_reload.out',
@@ -131,7 +133,7 @@ env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_reload_test',
                        is_flaky=True,
-                       is_broken=env.PyAutoTesterIsBroken() or
+                       is_broken=True or
                                  ('TRUSTED_ENV' in env and
                                   env['TRUSTED_ENV'].Bit('windows') and
                                   env.Bit('target_x86_32')))
@@ -148,7 +150,7 @@ env.AddNodeToTestSuite(node,
                        ['pyauto_tests'],
                        'run_pyauto_multiple_nexes_test',
                        is_flaky=True,
-                       is_broken=env.PyAutoTesterIsBroken())
+                       is_broken=True)
 
 uma_test_files = []
 uma_test_nmfs = []
