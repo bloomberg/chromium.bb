@@ -65,10 +65,18 @@ bool ActivityReplay::Parse(const string& data,
     return false;
   log_.SetHardwareProperties(hwprops_);
   ListValue* entries = NULL;
+  ListValue* next_layer_entries = NULL;
+  char next_layer_path[PATH_MAX];
+  snprintf(next_layer_path, sizeof(next_layer_path), "%s.%s",
+           ActivityLog::kKeyNext, ActivityLog::kKeyRoot);
   if (!dict->GetList(ActivityLog::kKeyRoot, &entries)) {
     Err("Unable to get list of entries from root.");
     return false;
   }
+  if (dict->GetList(next_layer_path, &next_layer_entries) &&
+      (entries->GetSize() < next_layer_entries->GetSize()))
+    entries = next_layer_entries;
+
   for (size_t i = 0; i < entries->GetSize(); ++i) {
     DictionaryValue* entry = NULL;
     if (!entries->GetDictionary(i, &entry)) {
