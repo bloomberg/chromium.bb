@@ -401,6 +401,8 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->base.border.bottom = c->border.bottom;
 	output->base.border.left = c->border.left;
 	output->base.border.right = c->border.right;
+	output->base.make = "waywayland";
+	output->base.model = "none";
 
 	weston_output_move(&output->base, 0, 0);
 
