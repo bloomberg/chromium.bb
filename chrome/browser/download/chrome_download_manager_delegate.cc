@@ -132,9 +132,17 @@ ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
   download_manager_ = dm;
   download_history_.reset(new DownloadHistory(profile_));
-  download_history_->Load(
-      base::Bind(&DownloadManager::OnPersistentStoreQueryComplete,
-                 base::Unretained(dm)));
+  if (!profile_->IsOffTheRecord()) {
+    // DownloadManager should not be RefCountedThreadSafe.
+    // ChromeDownloadManagerDelegate outlives DownloadManager, and
+    // DownloadHistory uses a scoped canceller to cancel tasks when it is
+    // deleted. Almost all callbacks to DownloadManager should use weak pointers
+    // or bounce off a container object that uses ManagerGoingDown() to simulate
+    // a weak pointer.
+    download_history_->Load(
+        base::Bind(&DownloadManager::OnPersistentStoreQueryComplete,
+                   download_manager_));
+  }
 #if !defined(OS_ANDROID)
   extension_event_router_.reset(new ExtensionDownloadsEventRouter(
       profile_, download_manager_));
@@ -424,9 +432,14 @@ bool ChromeDownloadManagerDelegate::GenerateFileHash() {
 
 void ChromeDownloadManagerDelegate::AddItemToPersistentStore(
     DownloadItem* item) {
+  if (profile_->IsOffTheRecord()) {
+    OnItemAddedToPersistentStore(
+        item->GetId(), download_history_->GetNextFakeDbHandle());
+    return;
+  }
   download_history_->AddEntry(item,
       base::Bind(&ChromeDownloadManagerDelegate::OnItemAddedToPersistentStore,
-                 base::Unretained(this)));
+                 this));
 }
 
 void ChromeDownloadManagerDelegate::UpdateItemInPersistentStore(
@@ -448,6 +461,8 @@ void ChromeDownloadManagerDelegate::RemoveItemFromPersistentStore(
 void ChromeDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
     base::Time remove_begin,
     base::Time remove_end) {
+  if (profile_->IsOffTheRecord())
+    return;
   download_history_->RemoveEntriesBetween(remove_begin, remove_end);
 }
 
@@ -578,7 +593,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
   download_history_->CheckVisitedReferrerBefore(
       download_id, download->GetReferrerUrl(),
       base::Bind(&ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone,
-                 base::Unretained(this), download_id, callback, danger_type));
+                 this, download_id, callback, danger_type));
 }
 
 void ChromeDownloadManagerDelegate::CheckClientDownloadDone(

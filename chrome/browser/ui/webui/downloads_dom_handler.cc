@@ -10,16 +10,20 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/i18n/rtl.h"
+#include "base/i18n/time_formatting.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -29,12 +33,14 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/fileicon_source.h"
+#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(OS_MACOSX)
@@ -85,6 +91,127 @@ void CountDownloadsDOMEvents(DownloadsDOMEvent event) {
   UMA_HISTOGRAM_ENUMERATION("Download.DOMEvent",
                             event,
                             DOWNLOADS_DOM_EVENT_MAX);
+}
+
+// Returns a string constant to be used as the |danger_type| value in
+// CreateDownloadItemValue().  We only return strings for DANGEROUS_FILE,
+// DANGEROUS_URL, DANGEROUS_CONTENT, and UNCOMMON_CONTENT because the
+// |danger_type| value is only defined if the value of |state| is |DANGEROUS|.
+const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
+  switch (danger_type) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      return "DANGEROUS_FILE";
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+      return "DANGEROUS_URL";
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      return "DANGEROUS_CONTENT";
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return "UNCOMMON_CONTENT";
+    default:
+      // We shouldn't be returning a danger type string if it is
+      // NOT_DANGEROUS or MAYBE_DANGEROUS_CONTENT.
+      NOTREACHED();
+      return "";
+  }
+}
+
+// Return a JSON dictionary containing some of the attributes of |download|.
+// The JSON dictionary will also have a field "id" set to |id|, and a field
+// "otr" set to |incognito|.
+DictionaryValue* CreateDownloadItemValue(
+    content::DownloadItem* download,
+    int id,
+    bool incognito) {
+  DictionaryValue* file_value = new DictionaryValue();
+
+  file_value->SetInteger(
+      "started", static_cast<int>(download->GetStartTime().ToTimeT()));
+  file_value->SetString(
+      "since_string", TimeFormat::RelativeDate(download->GetStartTime(), NULL));
+  file_value->SetString(
+      "date_string", base::TimeFormatShortDate(download->GetStartTime()));
+  file_value->SetInteger("id", id);
+
+  FilePath download_path(download->GetTargetFilePath());
+  file_value->Set("file_path", base::CreateFilePathValue(download_path));
+  file_value->SetString("file_url",
+                        net::FilePathToFileURL(download_path).spec());
+
+  // Keep file names as LTR.
+  string16 file_name = download->GetFileNameToReportUser().LossyDisplayName();
+  file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
+  file_value->SetString("file_name", file_name);
+  file_value->SetString("url", download->GetURL().spec());
+  file_value->SetBoolean("otr", incognito);
+  file_value->SetInteger("total", static_cast<int>(download->GetTotalBytes()));
+  file_value->SetBoolean("file_externally_removed",
+                         download->GetFileExternallyRemoved());
+
+  if (download->IsInProgress()) {
+    if (download->GetSafetyState() == content::DownloadItem::DANGEROUS) {
+      file_value->SetString("state", "DANGEROUS");
+      // These are the only danger states we expect to see (and the UI is
+      // equipped to handle):
+      DCHECK(download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+             download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+             download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+             download->GetDangerType() ==
+                 content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
+      const char* danger_type_value =
+          GetDangerTypeString(download->GetDangerType());
+      file_value->SetString("danger_type", danger_type_value);
+    } else if (download->IsPaused()) {
+      file_value->SetString("state", "PAUSED");
+    } else {
+      file_value->SetString("state", "IN_PROGRESS");
+    }
+
+    file_value->SetString("progress_status_text",
+        download_util::GetProgressStatusText(download));
+
+    file_value->SetInteger("percent",
+        static_cast<int>(download->PercentComplete()));
+    file_value->SetInteger("received",
+        static_cast<int>(download->GetReceivedBytes()));
+  } else if (download->IsInterrupted()) {
+    file_value->SetString("state", "INTERRUPTED");
+
+    file_value->SetString("progress_status_text",
+        download_util::GetProgressStatusText(download));
+
+    file_value->SetInteger("percent",
+        static_cast<int>(download->PercentComplete()));
+    file_value->SetInteger("received",
+        static_cast<int>(download->GetReceivedBytes()));
+    file_value->SetString("last_reason_text",
+        BaseDownloadItemModel::InterruptReasonMessage(
+            download->GetLastReason()));
+  } else if (download->IsCancelled()) {
+    file_value->SetString("state", "CANCELLED");
+  } else if (download->IsComplete()) {
+    if (download->GetSafetyState() == content::DownloadItem::DANGEROUS)
+      file_value->SetString("state", "DANGEROUS");
+    else
+      file_value->SetString("state", "COMPLETE");
+  } else {
+    NOTREACHED() << "state undefined";
+  }
+
+  return file_value;
+}
+
+// Return true if |download_id| refers to a download that belongs to the
+// incognito download manager, if one exists.
+bool IsItemIncognito(
+    int32 download_id,
+    content::DownloadManager* manager,
+    content::DownloadManager* original_manager) {
+  // |original_manager| is only non-NULL if |manager| is incognito.
+  return (original_manager &&
+          (manager->GetDownload(download_id) != NULL));
 }
 
 }  // namespace
@@ -182,7 +309,10 @@ void DownloadsDOMHandler::OnDownloadUpdated(content::DownloadItem* download) {
   const int id = static_cast<int>(it - download_items_.begin());
 
   ListValue results_value;
-  results_value.Append(download_util::CreateDownloadItemValue(download, id));
+  results_value.Append(CreateDownloadItemValue(download, id, IsItemIncognito(
+      download->GetId(),
+      download_manager_,
+      original_profile_download_manager_)));
   web_ui()->CallJavascriptFunction("downloadUpdated", results_value);
 }
 
@@ -358,7 +488,10 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
       continue;
     int index = static_cast<int>(it - download_items_.begin());
     if (index <= kMaxDownloads)
-      results_value.Append(download_util::CreateDownloadItemValue(*it, index));
+      results_value.Append(CreateDownloadItemValue(*it, index, IsItemIncognito(
+            (*it)->GetId(),
+            download_manager_,
+            original_profile_download_manager_)));
   }
 
   web_ui()->CallJavascriptFunction("downloadsList", results_value);

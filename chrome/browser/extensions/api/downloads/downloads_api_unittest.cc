@@ -1350,13 +1350,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   GoOffTheRecord();
   DownloadItem* off_item = CreateSlowTestDownload();
   ASSERT_TRUE(off_item);
-  ASSERT_TRUE(off_item->IsOtr());
   off_item_arg = DownloadItemIdAsArgList(off_item);
 
   GoOnTheRecord();
   DownloadItem* on_item = CreateSlowTestDownload();
   ASSERT_TRUE(on_item);
-  ASSERT_FALSE(on_item->IsOtr());
   on_item_arg = DownloadItemIdAsArgList(on_item);
   ASSERT_TRUE(on_item->GetFullPath() != off_item->GetFullPath());
 

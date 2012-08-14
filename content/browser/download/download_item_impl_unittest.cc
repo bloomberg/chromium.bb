@@ -221,7 +221,7 @@ class DownloadItemTest : public testing::Test {
         new testing::NiceMock<MockRequestHandle>);
     DownloadItemImpl* download =
         new DownloadItemImpl(&delegate_, *(info_.get()),
-                             request_handle.Pass(), false, net::BoundNetLog());
+                             request_handle.Pass(), net::BoundNetLog());
     allocated_downloads_.insert(download);
     return download;
   }

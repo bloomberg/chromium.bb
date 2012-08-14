@@ -190,7 +190,9 @@ bool ValidateFilename(const string16& filename) {
   return true;
 }
 
-scoped_ptr<base::DictionaryValue> DownloadItemToJSON(DownloadItem* item) {
+scoped_ptr<base::DictionaryValue> DownloadItemToJSON(
+    DownloadItem* item,
+    bool incognito) {
   base::DictionaryValue* json = new base::DictionaryValue();
   json->SetInteger(kIdKey, item->GetId());
   json->SetString(kUrlKey, item->GetOriginalUrl().spec());
@@ -206,7 +208,7 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(DownloadItem* item) {
       (item->GetStartTime() - base::Time::UnixEpoch()).InMilliseconds());
   json->SetInteger(kBytesReceivedKey, item->GetReceivedBytes());
   json->SetInteger(kTotalBytesKey, item->GetTotalBytes());
-  json->SetBoolean(kIncognito, item->IsOtr());
+  json->SetBoolean(kIncognito, incognito);
   if (item->GetState() == DownloadItem::INTERRUPTED) {
     json->SetInteger(kErrorKey, static_cast<int>(item->GetLastReason()));
   } else if (item->GetState() == DownloadItem::CANCELLED) {
@@ -318,15 +320,23 @@ bool IsNotTemporaryDownloadFilter(const DownloadItem& item) {
   return !item.IsTemporary();
 }
 
+// Set |manager| to the on-record DownloadManager, and |incognito_manager| to
+// the off-record DownloadManager if one exists and is requested via
+// |include_incognito|. This should work regardless of whether |profile| is
+// original or incognito.
 void GetManagers(
     Profile* profile,
     bool include_incognito,
-    DownloadManager** manager, DownloadManager** incognito_manager) {
-  *manager = BrowserContext::GetDownloadManager(profile);
-  *incognito_manager = NULL;
-  if (include_incognito && profile->HasOffTheRecordProfile()) {
+    DownloadManager** manager,
+    DownloadManager** incognito_manager) {
+  *manager = BrowserContext::GetDownloadManager(profile->GetOriginalProfile());
+  if (profile->HasOffTheRecordProfile() &&
+      (include_incognito ||
+       profile->IsOffTheRecord())) {
     *incognito_manager = BrowserContext::GetDownloadManager(
         profile->GetOffTheRecordProfile());
+  } else {
+    *incognito_manager = NULL;
   }
 }
 
@@ -396,8 +406,8 @@ void CompileDownloadQueryOrderBy(
 
 void RunDownloadQuery(
     const extensions::api::downloads::DownloadQuery& query_in,
-    Profile* profile,
-    bool include_incognito,
+    DownloadManager* manager,
+    DownloadManager* incognito_manager,
     std::string* error,
     DownloadQuery::DownloadVector* results) {
   // TODO(benjhayden): Consider switching from LazyInstance to explicit string
@@ -453,9 +463,6 @@ void RunDownloadQuery(
     }
   }
 
-  DownloadManager* manager = NULL;
-  DownloadManager* incognito_manager = NULL;
-  GetManagers(profile, include_incognito, &manager, &incognito_manager);
   DownloadQuery::DownloadVector all_items;
   if (query_in.id.get()) {
     DownloadItem* item = manager->GetDownload(*query_in.id.get());
@@ -470,6 +477,31 @@ void RunDownloadQuery(
           FilePath(FILE_PATH_LITERAL("")), &all_items);
   }
   query_out.Search(all_items.begin(), all_items.end(), results);
+}
+
+void DispatchEventInternal(
+    Profile* target_profile,
+    const char* event_name,
+    const std::string& json_args,
+    scoped_ptr<base::ListValue> event_args) {
+  target_profile->GetExtensionEventRouter()->DispatchEventToRenderers(
+      event_name,
+      event_args.Pass(),
+      target_profile,
+      GURL(),
+      extensions::EventFilteringInfo());
+
+  ExtensionDownloadsEventRouter::DownloadsNotificationSource
+    notification_source;
+  notification_source.event_name = event_name;
+  notification_source.profile = target_profile;
+  content::Source<ExtensionDownloadsEventRouter::DownloadsNotificationSource>
+    content_source(&notification_source);
+  std::string args_copy(json_args);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
+      content_source,
+      content::Details<std::string>(&args_copy));
 }
 
 }  // namespace
@@ -574,16 +606,28 @@ bool DownloadsSearchFunction::RunImpl() {
   scoped_ptr<extensions::api::downloads::Search::Params> params(
       extensions::api::downloads::Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
+  DownloadManager* manager = NULL;
+  DownloadManager* incognito_manager = NULL;
+  GetManagers(profile(), include_incognito(), &manager, &incognito_manager);
   DownloadQuery::DownloadVector results;
-  RunDownloadQuery(params->query, profile(), include_incognito(),
-                   &error_, &results);
+  RunDownloadQuery(params->query,
+                   manager,
+                   incognito_manager,
+                   &error_,
+                   &results);
   if (!error_.empty())
     return false;
+
   base::ListValue* json_results = new base::ListValue();
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
        it != results.end(); ++it) {
-    scoped_ptr<base::DictionaryValue> item(DownloadItemToJSON(*it));
-    json_results->Append(item.release());
+    DownloadItem* item = *it;
+    int32 download_id = item->GetId();
+    bool off_record = ((incognito_manager != NULL) &&
+                       (incognito_manager->GetDownload(download_id) != NULL));
+    scoped_ptr<base::DictionaryValue> json_item(DownloadItemToJSON(
+        *it, off_record));
+    json_results->Append(json_item.release());
   }
   SetResult(json_results);
   RecordApiFunctions(DOWNLOADS_FUNCTION_SEARCH);
@@ -796,8 +840,6 @@ ExtensionDownloadsEventRouter::ExtensionDownloadsEventRouter(
   : profile_(profile),
     manager_(manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_);
-  DCHECK(manager_);
   manager_->AddObserver(this);
 }
 
@@ -851,7 +893,8 @@ void ExtensionDownloadsEventRouter::OnDownloadUpdated(DownloadItem* item) {
   int download_id = item->GetId();
 
   base::DictionaryValue* old_json = item_jsons_[download_id];
-  scoped_ptr<base::DictionaryValue> new_json(DownloadItemToJSON(item));
+  scoped_ptr<base::DictionaryValue> new_json(DownloadItemToJSON(
+        item, profile_->IsOffTheRecord()));
   scoped_ptr<base::DictionaryValue> delta(new base::DictionaryValue());
   delta->SetInteger(kIdKey, download_id);
   std::set<std::string> new_fields;
@@ -905,7 +948,7 @@ void ExtensionDownloadsEventRouter::OnDownloadCreated(
 
   download_item->AddObserver(this);
   scoped_ptr<base::DictionaryValue> json_item(
-      DownloadItemToJSON(download_item));
+      DownloadItemToJSON(download_item, profile_->IsOffTheRecord()));
   DispatchEvent(extensions::event_names::kOnDownloadCreated,
                 json_item->DeepCopy());
   int32 download_id = download_item->GetId();
@@ -926,23 +969,27 @@ void ExtensionDownloadsEventRouter::ManagerGoingDown(
 void ExtensionDownloadsEventRouter::DispatchEvent(
     const char* event_name, base::Value* arg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(arg);
   std::string json_args;
   base::JSONWriter::Write(args.get(), &json_args);
-
-  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
-      event_name,
-      args.Pass(),
-      profile_,
-      GURL(),
-      extensions::EventFilteringInfo());
-
-  DownloadsNotificationSource notification_source;
-  notification_source.event_name = event_name;
-  notification_source.profile = profile_;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
-      content::Source<DownloadsNotificationSource>(&notification_source),
-      content::Details<std::string>(&json_args));
+  // There is a one EDER for each on-record Profile, and a separate EDER for
+  // each off-record Profile, so there is exactly one EDER for each
+  // DownloadManager.  EDER only watches its own DM, so all the items that an
+  // EDER sees are either all on-record or all off-record. However, we want
+  // extensions in off-record contexts to see on-record items. So, if this EDER
+  // is watching an on-record DM, and there is a corresponding off-record
+  // Profile, then dispatch this event to both the on-record Profile and the
+  // off-record Profile.  There may or may not be an off-record Profile, so send
+  // a *copy* of |args| to the off-record Profile, and Pass() |args|
+  // to the Profile that we know is there.
+  if (profile_->HasOffTheRecordProfile() &&
+      !profile_->IsOffTheRecord()) {
+    DispatchEventInternal(
+        profile_->GetOffTheRecordProfile(),
+        event_name,
+        json_args,
+        scoped_ptr<base::ListValue>(args->DeepCopy()));
+  }
+  DispatchEventInternal(profile_, event_name, json_args, args.Pass());
 }

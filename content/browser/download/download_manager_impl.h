@@ -44,7 +44,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual DownloadItemImpl* CreateSavePackageDownloadItem(
       const FilePath& main_file_path,
       const GURL& page_url,
-      bool is_otr,
       const std::string& mime_type,
       content::DownloadItem::Observer* observer);
 

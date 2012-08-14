@@ -80,8 +80,7 @@ void DownloadHistory::AddEntry(
   // the neck first. YMMV.
   HistoryService* hs = HistoryServiceFactory::GetForProfileIfExists(
       profile_, Profile::EXPLICIT_ACCESS);
-  if (download_item->IsOtr() ||
-      download_crx_util::IsExtensionDownload(*download_item) ||
+  if (download_crx_util::IsExtensionDownload(*download_item) ||
       download_item->IsTemporary() || !hs) {
     callback.Run(download_item->GetId(), GetNextFakeDbHandle());
     return;

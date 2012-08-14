@@ -260,7 +260,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual const FilePath& GetForcedFilePath() const = 0;
   virtual bool HasUserGesture() const = 0;
   virtual PageTransition GetTransitionType() const = 0;
-  virtual bool IsOtr() const = 0;
   virtual bool IsTemporary() const = 0;
   virtual void SetIsTemporary(bool temporary) = 0;
   virtual void SetOpened(bool opened) = 0;

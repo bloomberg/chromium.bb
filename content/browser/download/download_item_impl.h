@@ -44,7 +44,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    const DownloadCreateInfo& info,
                    scoped_ptr<DownloadRequestHandleInterface> request_handle,
-                   bool is_otr,
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for the "Save Page As..." feature:
@@ -52,7 +51,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    const FilePath& path,
                    const GURL& url,
-                   bool is_otr,
                    content::DownloadId download_id,
                    const std::string& mime_type,
                    const net::BoundNetLog& bound_net_log);
@@ -181,7 +179,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual const FilePath& GetForcedFilePath() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual content::PageTransition GetTransitionType() const OVERRIDE;
-  virtual bool IsOtr() const OVERRIDE;
   virtual bool IsTemporary() const OVERRIDE;
   virtual void SetIsTemporary(bool temporary) OVERRIDE;
   virtual void SetOpened(bool opened) OVERRIDE;
@@ -382,9 +379,6 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   bool auto_opened_;
 
   bool is_persisted_;
-
-  // True if the download was initiated in an incognito window.
-  bool is_otr_;
 
   // True if the item was downloaded temporarily.
   bool is_temporary_;

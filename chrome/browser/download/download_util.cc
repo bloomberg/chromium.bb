@@ -75,28 +75,6 @@
 
 namespace {
 
-// Returns a string constant to be used as the |danger_type| value in
-// CreateDownloadItemValue().  We only return strings for DANGEROUS_FILE,
-// DANGEROUS_URL, DANGEROUS_CONTENT, and UNCOMMON_CONTENT because the
-// |danger_type| value is only defined if the value of |state| is |DANGEROUS|.
-const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
-  switch (danger_type) {
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return "DANGEROUS_FILE";
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
-      return "DANGEROUS_URL";
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-      return "DANGEROUS_CONTENT";
-    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-      return "UNCOMMON_CONTENT";
-    default:
-      // We shouldn't be returning a danger type string if it is
-      // NOT_DANGEROUS or MAYBE_DANGEROUS_CONTENT.
-      NOTREACHED();
-      return "";
-  }
-}
-
 // Get the opacity based on |animation_progress|, with values in [0.0, 1.0].
 // Range of return value is [0, 255].
 int GetOpacity(double animation_progress) {
@@ -419,88 +397,6 @@ void DragDownload(const DownloadItem* download,
   DownloadItemDrag::BeginDrag(download, icon);
 }
 #endif  // USE_X11
-
-DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
-  DictionaryValue* file_value = new DictionaryValue();
-
-  file_value->SetInteger("started",
-      static_cast<int>(download->GetStartTime().ToTimeT()));
-  file_value->SetString("since_string",
-      TimeFormat::RelativeDate(download->GetStartTime(), NULL));
-  file_value->SetString("date_string",
-      base::TimeFormatShortDate(download->GetStartTime()));
-  file_value->SetInteger("id", id);
-
-  FilePath download_path(download->GetTargetFilePath());
-  file_value->Set("file_path", base::CreateFilePathValue(download_path));
-  file_value->SetString("file_url",
-                        net::FilePathToFileURL(download_path).spec());
-
-  // Keep file names as LTR.
-  string16 file_name = download->GetFileNameToReportUser().LossyDisplayName();
-  file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
-  file_value->SetString("file_name", file_name);
-  file_value->SetString("url", download->GetURL().spec());
-  file_value->SetBoolean("otr", download->IsOtr());
-  file_value->SetInteger("total", static_cast<int>(download->GetTotalBytes()));
-  file_value->SetBoolean("file_externally_removed",
-                         download->GetFileExternallyRemoved());
-
-  if (download->IsInProgress()) {
-    if (download->GetSafetyState() == DownloadItem::DANGEROUS) {
-      file_value->SetString("state", "DANGEROUS");
-      // These are the only danger states we expect to see (and the UI is
-      // equipped to handle):
-      DCHECK(download->GetDangerType() ==
-                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-             download->GetDangerType() ==
-                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-             download->GetDangerType() ==
-                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
-             download->GetDangerType() ==
-                 content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT);
-      const char* danger_type_value =
-          GetDangerTypeString(download->GetDangerType());
-      file_value->SetString("danger_type", danger_type_value);
-    } else if (download->IsPaused()) {
-      file_value->SetString("state", "PAUSED");
-    } else {
-      file_value->SetString("state", "IN_PROGRESS");
-    }
-
-    file_value->SetString("progress_status_text",
-        GetProgressStatusText(download));
-
-    file_value->SetInteger("percent",
-        static_cast<int>(download->PercentComplete()));
-    file_value->SetInteger("received",
-        static_cast<int>(download->GetReceivedBytes()));
-  } else if (download->IsInterrupted()) {
-    file_value->SetString("state", "INTERRUPTED");
-
-    file_value->SetString("progress_status_text",
-        GetProgressStatusText(download));
-
-    file_value->SetInteger("percent",
-        static_cast<int>(download->PercentComplete()));
-    file_value->SetInteger("received",
-        static_cast<int>(download->GetReceivedBytes()));
-    file_value->SetString("last_reason_text",
-        BaseDownloadItemModel::InterruptReasonMessage(
-            download->GetLastReason()));
-  } else if (download->IsCancelled()) {
-    file_value->SetString("state", "CANCELLED");
-  } else if (download->IsComplete()) {
-    if (download->GetSafetyState() == DownloadItem::DANGEROUS)
-      file_value->SetString("state", "DANGEROUS");
-    else
-      file_value->SetString("state", "COMPLETE");
-  } else {
-    NOTREACHED() << "state undefined";
-  }
-
-  return file_value;
-}
 
 string16 GetProgressStatusText(DownloadItem* download) {
   int64 total = download->GetTotalBytes();

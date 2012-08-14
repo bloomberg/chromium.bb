@@ -1448,10 +1448,12 @@ AutomationProviderDownloadUpdatedObserver::
 AutomationProviderDownloadUpdatedObserver(
     AutomationProvider* provider,
     IPC::Message* reply_message,
-    bool wait_for_open)
+    bool wait_for_open,
+    bool incognito)
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message),
-      wait_for_open_(wait_for_open) {
+      wait_for_open_(wait_for_open),
+      incognito_(incognito) {
 }
 
 AutomationProviderDownloadUpdatedObserver::
@@ -1468,7 +1470,7 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
 
   if (provider_) {
     scoped_ptr<DictionaryValue> return_value(
-        provider_->GetDictionaryFromDownloadItem(download));
+        provider_->GetDictionaryFromDownloadItem(download, incognito_));
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
         return_value.get());
   }
@@ -1481,7 +1483,7 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadOpened(
 
   if (provider_) {
     scoped_ptr<DictionaryValue> return_value(
-        provider_->GetDictionaryFromDownloadItem(download));
+        provider_->GetDictionaryFromDownloadItem(download, incognito_));
     AutomationJSONReply(provider_, reply_message_.release()).SendSuccess(
         return_value.get());
   }

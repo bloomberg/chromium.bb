@@ -139,7 +139,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetForcedFilePath, const FilePath&());
   MOCK_CONST_METHOD0(HasUserGesture, bool());
   MOCK_CONST_METHOD0(GetTransitionType, content::PageTransition());
-  MOCK_CONST_METHOD0(IsOtr, bool());
   MOCK_CONST_METHOD0(IsTemporary, bool());
   MOCK_METHOD1(SetIsTemporary, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
@@ -270,13 +269,11 @@ class MockDownloadItemFactory
       DownloadItemImplDelegate* delegate,
       const DownloadCreateInfo& info,
       scoped_ptr<DownloadRequestHandleInterface> request_handle,
-      bool is_otr,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
       const FilePath& path,
       const GURL& url,
-      bool is_otr,
       content::DownloadId download_id,
       const std::string& mime_type,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
@@ -335,7 +332,6 @@ DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
     DownloadItemImplDelegate* delegate,
     const DownloadCreateInfo& info,
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
-    bool is_otr,
     const net::BoundNetLog& bound_net_log) {
   int local_id = info.download_id.local();
   DCHECK(items_.find(local_id) == items_.end());
@@ -353,7 +349,6 @@ DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
     DownloadItemImplDelegate* delegate,
     const FilePath& path,
     const GURL& url,
-    bool is_otr,
     content::DownloadId download_id,
     const std::string& mime_type,
     const net::BoundNetLog& bound_net_log) {

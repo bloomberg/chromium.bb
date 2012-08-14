@@ -156,7 +156,8 @@ class AutomationProvider
   // Get the DictionaryValue equivalent for a download item. Caller owns the
   // DictionaryValue.
   base::DictionaryValue* GetDictionaryFromDownloadItem(
-      const content::DownloadItem* download);
+      const content::DownloadItem* download,
+      bool incognito);
 
  protected:
   friend struct content::BrowserThread::DeleteOnThread<

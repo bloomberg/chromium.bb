@@ -169,7 +169,6 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       safety_state_(SAFE),
       auto_opened_(false),
       is_persisted_(true),
-      is_otr_(false),
       is_temporary_(false),
       all_data_saved_(false),
       opened_(info.opened),
@@ -191,7 +190,6 @@ DownloadItemImpl::DownloadItemImpl(
     DownloadItemImplDelegate* delegate,
     const DownloadCreateInfo& info,
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
-    bool is_otr,
     const net::BoundNetLog& bound_net_log)
     : request_handle_(request_handle.Pass()),
       download_id_(info.download_id),
@@ -225,7 +223,6 @@ DownloadItemImpl::DownloadItemImpl(
       safety_state_(SAFE),
       auto_opened_(false),
       is_persisted_(false),
-      is_otr_(is_otr),
       is_temporary_(!info.save_info.file_path.empty()),
       all_data_saved_(false),
       opened_(false),
@@ -251,7 +248,6 @@ DownloadItemImpl::DownloadItemImpl(
 DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    const FilePath& path,
                                    const GURL& url,
-                                   bool is_otr,
                                    DownloadId download_id,
                                    const std::string& mime_type,
                                    const net::BoundNetLog& bound_net_log)
@@ -282,7 +278,6 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       safety_state_(SAFE),
       auto_opened_(false),
       is_persisted_(false),
-      is_otr_(is_otr),
       is_temporary_(false),
       all_data_saved_(false),
       opened_(false),
@@ -1040,7 +1035,6 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         " received = %" PRId64
         " reason = %s"
         " paused = %c"
-        " otr = %c"
         " safety = %s"
         " last_modified = '%s'"
         " etag = '%s'"
@@ -1052,7 +1046,6 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
         GetReceivedBytes(),
         InterruptReasonDebugString(last_reason_).c_str(),
         IsPaused() ? 'T' : 'F',
-        IsOtr() ? 'T' : 'F',
         DebugSafetyStateString(GetSafetyState()),
         GetLastModifiedTime().c_str(),
         GetETag().c_str(),
@@ -1139,7 +1132,6 @@ bool DownloadItemImpl::GetFileExternallyRemoved() const {
 DownloadItem::SafetyState DownloadItemImpl::GetSafetyState() const {
   return safety_state_;
 }
-bool DownloadItemImpl::IsOtr() const { return is_otr_; }
 bool DownloadItemImpl::GetAutoOpened() { return auto_opened_; }
 FilePath DownloadItemImpl::GetTargetName() const {
   return target_path_.BaseName();

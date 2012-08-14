@@ -293,7 +293,6 @@ bool SavePackage::Init(
   download_ = download_manager_->CreateSavePackageDownloadItem(
       saved_main_file_path_,
       page_url_,
-      browser_context->IsOffTheRecord(),
       ((save_type_ == content::SAVE_PAGE_TYPE_AS_MHTML) ?
        "multipart/related" : "text/html"),
       this);

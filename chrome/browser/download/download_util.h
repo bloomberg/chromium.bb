@@ -130,11 +130,6 @@ void DragDownload(const content::DownloadItem* download,
 
 // Helpers ---------------------------------------------------------------------
 
-// Creates a representation of a download in a format that the downloads
-// HTML page can understand.
-base::DictionaryValue* CreateDownloadItemValue(content::DownloadItem* download,
-                                               int id);
-
 // Get the localized status text for an in-progress download.
 string16 GetProgressStatusText(content::DownloadItem* download);
 

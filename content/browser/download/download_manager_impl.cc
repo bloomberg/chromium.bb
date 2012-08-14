@@ -178,21 +178,19 @@ class DownloadItemFactoryImpl : public content::DownloadItemFactory {
         DownloadItemImplDelegate* delegate,
         const DownloadCreateInfo& info,
         scoped_ptr<DownloadRequestHandleInterface> request_handle,
-        bool is_otr,
         const net::BoundNetLog& bound_net_log) OVERRIDE {
       return new DownloadItemImpl(delegate, info, request_handle.Pass(),
-                                  is_otr, bound_net_log);
+                                  bound_net_log);
     }
 
     virtual DownloadItemImpl* CreateSavePageItem(
         DownloadItemImplDelegate* delegate,
         const FilePath& path,
         const GURL& url,
-        bool is_otr,
         content::DownloadId download_id,
         const std::string& mime_type,
         const net::BoundNetLog& bound_net_log) OVERRIDE {
-      return new DownloadItemImpl(delegate, path, url, is_otr, download_id,
+      return new DownloadItemImpl(delegate, path, url, download_id,
                                   mime_type, bound_net_log);
     }
 };
@@ -374,13 +372,9 @@ void DownloadManagerImpl::SearchDownloads(const string16& query,
   for (DownloadMap::iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
     DownloadItemImpl* download_item = it->second;
-    // Display Incognito downloads only in Incognito window, and vice versa.
-    // The Incognito Downloads page will get the list of non-Incognito downloads
-    // from its parent profile.
     // TODO(benjhayden): Don't check IsPersisted().
     if (!download_item->IsTemporary() &&
         download_item->IsPersisted() &&
-        (browser_context_->IsOffTheRecord() == download_item->IsOtr()) &&
         download_item->MatchesQuery(query_lower)) {
       result->push_back(download_item);
     }
@@ -531,7 +525,7 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
       this, *info,
       scoped_ptr<DownloadRequestHandleInterface>(
           new DownloadRequestHandle(info->request_handle)).Pass(),
-      browser_context_->IsOffTheRecord(), bound_net_log);
+      bound_net_log);
 
   DCHECK(!ContainsKey(downloads_, download->GetId()));
   downloads_[download->GetId()] = download;
@@ -545,7 +539,6 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
 DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
     const FilePath& main_file_path,
     const GURL& page_url,
-    bool is_otr,
     const std::string& mime_type,
     DownloadItem::Observer* observer) {
   net::BoundNetLog bound_net_log =
@@ -554,7 +547,6 @@ DownloadItemImpl* DownloadManagerImpl::CreateSavePackageDownloadItem(
       this,
       main_file_path,
       page_url,
-      is_otr,
       GetNextId(),
       mime_type,
       bound_net_log);

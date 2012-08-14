@@ -1096,7 +1096,8 @@ class AutomationProviderDownloadUpdatedObserver
   AutomationProviderDownloadUpdatedObserver(
       AutomationProvider* provider,
       IPC::Message* reply_message,
-      bool wait_for_open);
+      bool wait_for_open,
+      bool incognito);
   virtual ~AutomationProviderDownloadUpdatedObserver();
 
   virtual void OnDownloadUpdated(content::DownloadItem* download);
@@ -1106,6 +1107,7 @@ class AutomationProviderDownloadUpdatedObserver
   base::WeakPtr<AutomationProvider> provider_;
   scoped_ptr<IPC::Message> reply_message_;
   bool wait_for_open_;
+  bool incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadUpdatedObserver);
 };
