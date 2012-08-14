@@ -56,13 +56,13 @@ const struct {
   { true, 2, kBufferSize - 2 },
   { true, kBufferSize - 1, 1 },
   { false, kBufferSize, 0 },
-  { false, kBufferSize, -1 },
+  { false, kBufferSize, static_cast<size_t>(-1) },
   { false, kBufferSize + 1, 0 },
-  { false, -1, 2 },
+  { false, static_cast<size_t>(-1), 2 },
   { false, 1, kBufferSize },
   { false, kBufferSize - 1, 2 },
-  { false, 0, -1 },
-  { false, 1, -1 },
+  { false, 0, static_cast<size_t>(-1) },
+  { false, 1, static_cast<size_t>(-1) },
 };
 const size_t kNumSubranges = sizeof(kSubranges) / sizeof(kSubranges[0]);
 
