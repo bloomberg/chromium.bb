@@ -185,8 +185,9 @@ TEST_F(SyncNotifierRegistrarTest, MultipleRegistration) {
   registrar.UpdateRegisteredIds(&handler1, ids);
 
   registrar.DetachFromThreadForTest();
-  EXPECT_DEATH({ registrar.UpdateRegisteredIds(&handler2, ids); },
-               "Duplicate registration: .*");
+  // We expect a death via CHECK(). We can't match against the CHECK() message
+  // though since they are removed in official builds.
+  EXPECT_DEATH({ registrar.UpdateRegisteredIds(&handler2, ids); }, "");
 }
 
 // Make sure that passing an empty set to UpdateRegisteredIds clears the
