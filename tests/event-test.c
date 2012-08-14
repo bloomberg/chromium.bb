@@ -37,7 +37,8 @@ handle_surface(struct test_client *client)
 	struct wl_resource *resource;
 	struct weston_surface *surface;
 	struct weston_layer *layer = client->data;
-	struct wl_seat *seat;
+	struct wl_list *seat_list;
+	struct weston_seat *seat;
 
 	assert(sscanf(client->buf, "surface %u", &id) == 1);
 	fprintf(stderr, "got surface id %u\n", id);
@@ -53,7 +54,9 @@ handle_surface(struct test_client *client)
 	wl_list_insert(&layer->surface_list, &surface->layer_link);
 	weston_surface_damage(surface);
 
-	seat = &client->compositor->seat->seat;
+	seat_list = &client->compositor->seat_list;
+	assert(wl_list_length(seat_list) == 1);
+	seat = container_of(seat_list->next, struct weston_seat, link);
 	client->compositor->focus = 1; /* Make it work even if pointer is
 					* outside X window. */
 	notify_motion(seat, 100,

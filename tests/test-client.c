@@ -60,8 +60,8 @@ struct surface {
 
 static void
 pointer_handle_enter(void *data, struct wl_pointer *pointer,
-			   uint32_t serial, struct wl_surface *surface,
-			   wl_fixed_t x, wl_fixed_t y)
+		     uint32_t serial, struct wl_surface *surface,
+		     wl_fixed_t x, wl_fixed_t y)
 {
 	struct input *input = data;
 
@@ -207,7 +207,8 @@ output_handle_geometry(void *data,
 		       int physical_height,
 		       int subpixel,
 		       const char *make,
-		       const char *model)
+		       const char *model,
+		       int32_t transform)
 {
 	struct output *output = data;
 
