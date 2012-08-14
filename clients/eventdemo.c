@@ -90,7 +90,7 @@ struct eventdemo {
 
 /**
  * \brief CALLBACK function, Wayland requests the window to redraw.
- * \param window window to be redrawn
+ * \param widget widget to be redrawn
  * \param data user data associated to the window
  *
  * Draws a red rectangle as demonstration of per-window data.
@@ -126,7 +126,7 @@ redraw_handler(struct widget *widget, void *data)
 
 /**
  * \brief CALLBACK function, Wayland requests the window to resize.
- * \param window window to be resized
+ * \param widget widget to be resized
  * \param width desired width
  * \param height desired height
  * \param data user data associated to the window
@@ -205,7 +205,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 
 /**
  * \brief CALLBACK function, Wayland informs about button event
- * \param window window
+ * \param widget widget
  * \param input input device that caused the button event
  * \param time time the event happend
  * \param button button
@@ -231,7 +231,7 @@ button_handler(struct widget *widget, struct input *input, uint32_t time,
 
 /**
  * \brief CALLBACK function, Waylands informs about pointer motion
- * \param window window
+ * \param widget widget
  * \param input input device that caused the motion event
  * \param time time the event happend
  * \param x absolute x position
