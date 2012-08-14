@@ -232,19 +232,7 @@ scoped_refptr<Authenticator> CreateAuthenticatorNewUser(
   return new MockAuthenticator(consumer, kNewUsername, kPassword);
 }
 
-// These tests are failing under ASan, but not natively.
-// See http://crbug.com/126224
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ExistingUserLogin DISABLED_ExistingUserLogin
-#define MAYBE_AutoEnrollAfterSignIn DISABLED_AutoEnrollAfterSignIn
-#define MAYBE_NewUserDontAutoEnrollAfterSignIn \
-    DISABLED_NewUserDontAutoEnrollAfterSignIn
-#else
-#define MAYBE_ExistingUserLogin ExistingUserLogin
-#define MAYBE_AutoEnrollAfterSignIn AutoEnrollAfterSignIn
-#define MAYBE_NewUserDontAutoEnrollAfterSignIn NewUserDontAutoEnrollAfterSignIn
-#endif  // defined(ADDRESS_SANITIZER)
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, MAYBE_ExistingUserLogin) {
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(1);
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
@@ -273,8 +261,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, MAYBE_ExistingUserLogin) {
   content::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
-                       MAYBE_AutoEnrollAfterSignIn) {
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(1);
@@ -291,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
-                       MAYBE_NewUserDontAutoEnrollAfterSignIn) {
+                       NewUserDontAutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(0);
