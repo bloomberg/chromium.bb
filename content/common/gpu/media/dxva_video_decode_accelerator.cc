@@ -584,6 +584,21 @@ void DXVAVideoDecodeAccelerator::Decode(
   inputs_before_decode_++;
 
   HRESULT hr = decoder_->ProcessInput(0, sample, 0);
+  // As per msdn if the decoder returns MF_E_NOTACCEPTING then it means that it
+  // has enough data to produce an output sample. In this case the recommended
+  // options are to
+  // 1. Generate new output by calling IMFTransform::ProcessOutput
+  // 2. Flush the input data
+  // We implement the first option, i.e to retrieve the output sample and then
+  // process the input again. Failure in either of these steps is treated as a
+  // decoder failure.
+  if (hr == MF_E_NOTACCEPTING) {
+    DoDecode();
+    RETURN_AND_NOTIFY_ON_FAILURE((state_ == kStopped || state_ == kNormal),
+        "Failed to process output. Unexpected decoder state: " << state_,
+        PLATFORM_FAILURE,);
+    hr = decoder_->ProcessInput(0, sample, 0);
+  }
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to process input sample",
       PLATFORM_FAILURE,);
 
