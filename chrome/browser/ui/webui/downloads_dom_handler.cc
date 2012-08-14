@@ -192,7 +192,8 @@ void DownloadsDOMHandler::OnDownloadDestroyed(
   OrderedDownloads::iterator it = std::find(download_items_.begin(),
                                             download_items_.end(),
                                             download);
-  *it = NULL;
+  if (it != download_items_.end())
+    *it = NULL;
   // A later ModelChanged() notification will change the WebUI's
   // view of the downloads list.
 }
