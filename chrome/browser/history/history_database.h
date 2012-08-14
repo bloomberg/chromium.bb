@@ -149,16 +149,13 @@ class HistoryDatabase : public DownloadDatabase,
   virtual base::Time GetEarlyExpirationThreshold();
   virtual void UpdateEarlyExpirationThreshold(base::Time threshold);
 
-  // Returns the database connection so that unit tests can directly access it.
-  sql::Connection* get_db_for_testing() { return &db_; }
-
  private:
 #if defined(OS_ANDROID)
   // AndroidProviderBackend uses the |db_|.
   friend class AndroidProviderBackend;
   FRIEND_TEST_ALL_PREFIXES(AndroidURLsMigrationTest, MigrateToVersion22);
 #endif
-  friend class InMemoryURLIndexTestBase;
+  friend class InMemoryURLIndexTest;
   FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
 
   // Overridden from URLDatabase:

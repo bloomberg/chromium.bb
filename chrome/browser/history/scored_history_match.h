@@ -22,11 +22,14 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   ScoredHistoryMatch();  // Required by STL.
 
   // Creates a new match with a raw score calculated for the history item given
-  // in |row|. First determines if the row qualifies by seeing if all of the
-  // terms in |terms_vector| occur in |row|. If so, calculates a raw score.
-  // This raw score allows the results to be ordered and can be used to
-  // influence the final score calculated by the client of this index.
-  // If the row does not qualify the raw score will be 0.
+  // in |row| by first determining if all of the terms in |terms_vector| occur
+  // in |row| and, if so, calculating a raw score based on 1) starting position
+  // of each term in the user input, 2) completeness of each term's match,
+  // 3) ordering of the occurrence of each term (i.e. they appear in order),
+  // 4) last visit time (compared to |now|), and 5) number of visits.
+  // This raw score allows the results to be ordered and can be used
+  // to influence the final score calculated by the client of this
+  // index.
   ScoredHistoryMatch(const URLRow& row,
                      const string16& lower_string,
                      const String16Vector& terms_vector,

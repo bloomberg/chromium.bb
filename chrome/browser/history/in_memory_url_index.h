@@ -16,9 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/string16.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/cancelable_request.h"
@@ -26,7 +24,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/scored_history_match.h"
-#include "chrome/browser/history/url_index_private_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sql/connection.h"
@@ -38,13 +35,19 @@ namespace base {
 class Time;
 }
 
+namespace in_memory_url_index {
+class InMemoryURLIndexCacheItem;
+}
+
 namespace history {
 
-class InMemoryURLIndexObserver;
-class URLDatabase;
-struct URLsDeletedDetails;
-struct URLsModifiedDetails;
+namespace imui = in_memory_url_index;
+
+class HistoryDatabase;
+class URLIndexPrivateData;
 struct URLVisitedDetails;
+struct URLsModifiedDetails;
+struct URLsDeletedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -68,25 +71,28 @@ struct URLVisitedDetails;
 class InMemoryURLIndex : public content::NotificationObserver,
                          public base::SupportsWeakPtr<InMemoryURLIndex> {
  public:
-  // Observer is used for blocking until the InMemoryURLIndex has finished
-  // loading. Usage typically follows this pattern:
-  //    InMemoryURLIndex::Observer observer(index); // Create observer.
-  //    MessageLoop::current()->Run();              // Blocks until loaded.
-  //
-  class Observer {
+  // Defines an abstract class which is notified upon completion of restoring
+  // the index's private data either by reading from the cache file or by
+  // rebuilding from the history database.
+  class RestoreCacheObserver {
    public:
-    explicit Observer(InMemoryURLIndex* index);
+    virtual ~RestoreCacheObserver();
 
-    // Called when the InMemoryURLIndex has completed loading.
-    virtual void Loaded();
+    // Callback that lets the observer know that the restore operation has
+    // completed. |succeeded| indicates if the restore was successful. This is
+    // called on the UI thread.
+    virtual void OnCacheRestoreFinished(bool succeeded) = 0;
+  };
 
-   private:
-    friend class InMemoryURLIndexTestBase;
-    virtual ~Observer();
+  // Defines an abstract class which is notified upon completion of saving
+  // the index's private data to the cache file.
+  class SaveCacheObserver {
+   public:
+    virtual ~SaveCacheObserver();
 
-    InMemoryURLIndex* index_;
-
-    DISALLOW_COPY_AND_ASSIGN(Observer);
+    // Callback that lets the observer know that the save succeeded.
+    // This is called on the UI thread.
+    virtual void OnCacheSaveFinished(bool succeeded) = 0;
   };
 
   // |profile|, which may be NULL during unit testing, is used to register for
@@ -100,17 +106,13 @@ class InMemoryURLIndex : public content::NotificationObserver,
   virtual ~InMemoryURLIndex();
 
   // Opens and prepares the index of historical URL visits. If the index private
-  // data cannot be restored from its cache database then it is rebuilt from the
-  // history database. |disable_cache| causes the InMemoryURLIndex to not create
-  // or use its cache database.
-  void Init(bool disable_cache);
+  // data cannot be restored from its cache file then it is rebuilt from the
+  // history database.
+  void Init();
 
-  // Signals that any outstanding initialization should be canceled.
-  void Shutdown();
-
-  // Returns true if the index has been loaded or rebuilt and so is available
-  // for use.
-  bool index_available() const { return index_available_; }
+  // Signals that any outstanding initialization should be canceled and
+  // flushes the cache to disk.
+  void ShutDown();
 
   // Scans the history index and returns a vector with all scored, matching
   // history items. This entry point simply forwards the call on to the
@@ -118,26 +120,32 @@ class InMemoryURLIndex : public content::NotificationObserver,
   // refer to that class.
   ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string);
 
-  // Deletes the index entry, if any, for the given |url|.
-  void DeleteURL(const GURL& url);
+  // Sets the optional observers for completion of restoral and saving of the
+  // index's private data.
+  void set_restore_cache_observer(
+      RestoreCacheObserver* restore_cache_observer) {
+    restore_cache_observer_ = restore_cache_observer;
+  }
+  void set_save_cache_observer(SaveCacheObserver* save_cache_observer) {
+    save_cache_observer_ = save_cache_observer;
+  }
 
  private:
   friend class ::HistoryQuickProviderTest;
-  friend class InMemoryURLIndex::Observer;
-  friend class InMemoryURLIndexCacheTest;
   friend class InMemoryURLIndexTest;
-  friend class InMemoryURLIndexTestBase;
-  friend class IntercessionaryIndexTest;
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, ExpireRow);
-  FRIEND_TEST_ALL_PREFIXES(IntercessionaryIndexTest, CacheDatabaseFailure);
-  FRIEND_TEST_ALL_PREFIXES(IntercessionaryIndexTest,
-                           ShutdownDuringCacheRefresh);
+  friend class InMemoryURLIndexCacheTest;
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
+
+  // Creating one of me without a history path is not allowed (tests excepted).
+  InMemoryURLIndex();
 
   // HistoryDBTask used to rebuild our private data from the history database.
   class RebuildPrivateDataFromHistoryDBTask : public HistoryDBTask {
    public:
-    explicit RebuildPrivateDataFromHistoryDBTask(InMemoryURLIndex* index);
+    explicit RebuildPrivateDataFromHistoryDBTask(
+        InMemoryURLIndex* index,
+        const std::string& languages,
+        const std::set<std::string>& scheme_whitelist);
 
     virtual bool RunOnDBThread(HistoryBackend* backend,
                                history::HistoryDatabase* db) OVERRIDE;
@@ -147,56 +155,27 @@ class InMemoryURLIndex : public content::NotificationObserver,
     virtual ~RebuildPrivateDataFromHistoryDBTask();
 
     InMemoryURLIndex* index_;  // Call back to this index at completion.
+    std::string languages_;  // Languages for word-breaking.
+    std::set<std::string> scheme_whitelist_;  // Schemes to be indexed.
     bool succeeded_;  // Indicates if the rebuild was successful.
     scoped_refptr<URLIndexPrivateData> data_;  // The rebuilt private data.
 
     DISALLOW_COPY_AND_ASSIGN(RebuildPrivateDataFromHistoryDBTask);
   };
 
-  // For unit testing only.
-  InMemoryURLIndex(const FilePath& history_dir, const std::string& languages);
+  // Initializes all index data members in preparation for restoring the index
+  // from the cache or a complete rebuild from the history database.
+  void ClearPrivateData();
 
-  // Completes index initialization once the cache DB has been initialized.
-  void OnPrivateDataInitDone(bool succeeded);
+  // Constructs a file path for the cache file within the same directory where
+  // the history database is kept and saves that path to |file_path|. Returns
+  // true if |file_path| can be successfully constructed. (This function
+  // provided as a hook for unit testing.)
+  bool GetCacheFilePath(FilePath* file_path);
 
-  // Adds or removes an observer that is notified when the index has been
-  // loaded.
-  void AddObserver(InMemoryURLIndex::Observer* observer);
-  void RemoveObserver(InMemoryURLIndex::Observer* observer);
-
-  // Handles notifications of history changes.
-  virtual void Observe(int notification_type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // Notification handlers.
-  void OnURLVisited(const URLVisitedDetails* details);
-  void OnURLsModified(const URLsModifiedDetails* details);
-  void OnURLsDeleted(const URLsDeletedDetails* details);
-
-  // Posts any outstanding updates to the index which were queued while the
-  // index was being initialized.
-  void FlushPendingUpdates();
-
-  // Restores the index's private data from the cache database stored in the
-  // profile directory. If no database is found or can be restored then look
-  // for an old version protobuf-based cache file.
-  void PostRestoreFromCacheTask();
-
-  // Determines if the private data was successfully restored from the cache
-  // database, as indicated by |succeeded|, or if the private data must be
-  // rebuilt from the history database. If successful, notifies any
-  // |restore_cache_observer_|. Otherwise, kicks off a rebuild from the history
-  // database.
-  void OnCacheRestoreDone(bool succeeded);
-
-  // Notifies all observers that the index has been loaded or rebuilt.
-  void NotifyHasLoaded();
-
-  // Rebuilds the index from the history database if the history database has
-  // been loaded, otherwise registers for the history loaded notification so
-  // that the rebuild can take place at a later time.
-  void RebuildFromHistoryIfLoaded();
+  // Restores the index's private data from the cache file stored in the
+  // profile directory.
+  void PostRestoreFromCacheFileTask();
 
   // Schedules a history task to rebuild our private data from the history
   // database.
@@ -210,73 +189,90 @@ class InMemoryURLIndex : public content::NotificationObserver,
       bool succeeded,
       scoped_refptr<URLIndexPrivateData> private_data);
 
-  // Posts a task to completely reset the private data and the backing cache.
-  void PostResetPrivateDataTask();
+  // Rebuilds the history index from the history database in |history_db|.
+  // Used for unit testing only.
+  void RebuildFromHistory(HistoryDatabase* history_db);
 
-  // Posts a task to completely replace the cache database with a current
-  // image of the index private data.
-  void PostRefreshCacheTask();
+  // Determines if the private data was successfully reloaded from the cache
+  // file or if the private data must be rebuilt from the history database.
+  // |private_data_ptr|'s data will be NULL if the cache file load failed. If
+  // successful, sets the private data and notifies any
+  // |restore_cache_observer_|. Otherwise, kicks off a rebuild from the history
+  // database.
+  void OnCacheLoadDone(
+    scoped_refptr<URLIndexPrivateData> private_data_ptr);
 
-  // Callback used by PostRefreshCacheTask and PostResetPrivateDataTask to
-  // notify observers that the cache database contents have been refreshed or
-  // reset and that the loading of the index is complete.
-  void OnCacheRefreshOrResetDone();
+  // Callback function that sets the private data from the just-restored-from-
+  // file |private_data|. Notifies any |restore_cache_observer_| that the
+  // restore has succeeded.
+  void OnCacheRestored(URLIndexPrivateData* private_data);
 
-  // Attempts to refresh the cache database in response to a notification that
-  // an update transaction has failed. If the refresh fails then the cache
-  // database is ignored and an attempt will be made to rebuild the cache
-  // the next time the associated profile is opened.
-  void RepairCacheDatabase();
+  // Posts a task to cache the index private data and write the cache file to
+  // the profile directory.
+  void PostSaveToCacheFileTask();
 
-  // Returns a pointer to our private data.
-  scoped_refptr<URLIndexPrivateData> private_data() { return private_data_; }
+  // Saves private_data_ to the given |path|. Runs on the UI thread.
+  // Provided for unit testing so that a test cache file can be used.
+  void DoSaveToCacheFile(const FilePath& path);
 
-  // Returns the blocking pool sequence token.
-  base::SequencedWorkerPool::SequenceToken sequence_token_for_testing() {
-    return sequence_token_;
-  }
+  // Notifies the observer, if any, of the success of the private data caching.
+  // |succeeded| is true on a successful save.
+  void OnCacheSaveDone(scoped_refptr<RefCountedBool> succeeded);
+
+  // Handles notifications of history changes.
+  virtual void Observe(int notification_type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  // Notification handlers.
+  void OnURLVisited(const URLVisitedDetails* details);
+  void OnURLsModified(const URLsModifiedDetails* details);
+  void OnURLsDeleted(const URLsDeletedDetails* details);
+
+  // Sets the directory wherein the cache file will be maintained.
+  // For unit test usage only.
+  void set_history_dir(const FilePath& dir_path) { history_dir_ = dir_path; }
+
+  // Returns a pointer to our private data. For unit testing only.
+  URLIndexPrivateData* private_data() { return private_data_.get(); }
+
+  // Returns the set of whitelisted schemes. For unit testing only.
+  const std::set<std::string>& scheme_whitelist() { return scheme_whitelist_; }
 
   // The profile, may be null when testing.
   Profile* profile_;
 
+  // Directory where cache file resides. This is, except when unit testing,
+  // the same directory in which the profile's history database is found. It
+  // should never be empty.
+  FilePath history_dir_;
+
   // Languages used during the word-breaking process during indexing.
   std::string languages_;
 
-  // Directory where cache database or protobuf-based cache file resides.
-  // This is, except when unit testing, the same directory in which the
-  // profile's history database is found.
-  FilePath history_dir_;
+  // Only URLs with a whitelisted scheme are indexed.
+  std::set<std::string> scheme_whitelist_;
 
   // The index's durable private data.
   scoped_refptr<URLIndexPrivateData> private_data_;
 
-  // Sequence token for coordinating database tasks. This is shared with
-  // our private data and its cache database.
-  const base::SequencedWorkerPool::SequenceToken sequence_token_;
-
-  bool index_available_;  // True when index is available for updating.
-
-  // Contains index updates queued up while the index is unavailable. This
-  // usually during profile startup.
-  enum UpdateType { UPDATE_VISIT, DELETE_VISIT };
-
-  struct IndexUpdateItem {
-    IndexUpdateItem(UpdateType update_type, URLRow row);
-    ~IndexUpdateItem();
-
-    UpdateType update_type;
-    URLRow row;   // The row to be updated or deleted.
-  };
-  typedef std::vector<IndexUpdateItem> PendingUpdates;
-  PendingUpdates pending_updates_;
-
-  ObserverList<InMemoryURLIndex::Observer> observers_;
+  // Observers to notify upon restoral or save of the private data cache.
+  RestoreCacheObserver* restore_cache_observer_;
+  SaveCacheObserver* save_cache_observer_;
 
   CancelableRequestConsumer cache_reader_consumer_;
   content::NotificationRegistrar registrar_;
 
   // Set to true once the shutdown process has begun.
   bool shutdown_;
+
+  // Set to true when changes to the index have been made and the index needs
+  // to be cached. Set to false when the index has been cached. Used as a
+  // temporary safety check to insure that the cache is saved before the
+  // index has been destructed.
+  // TODO(mrossetti): Eliminate once the transition to SQLite has been done.
+  // http://crbug.com/83659
+  bool needs_to_be_cached_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };

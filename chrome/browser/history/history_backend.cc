@@ -993,7 +993,7 @@ void HistoryBackend::IterateURLs(HistoryService::URLEnumerator* iterator) {
     if (db_->InitURLEnumeratorForEverything(&e)) {
       URLRow info;
       while (e.GetNextURL(&info)) {
-        iterator->OnURL(info);
+        iterator->OnURL(info.url());
       }
       iterator->OnComplete(true);  // Success.
       return;

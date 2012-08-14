@@ -50,10 +50,6 @@ class HistoryProvider : public AutocompleteProvider {
   // trailing whitespace, or if always_prevent_inline_autocomplete is true.
   bool PreventInlineAutocomplete(const AutocompleteInput& input);
 
-  // Finds and removes the match from the current collection of matches and
-  // backing data.
-  void DeleteMatchFromMatches(const AutocompleteMatch& match);
-
   // If true, we always prevent inline autocompletions.
   bool always_prevent_inline_autocomplete_;
 };

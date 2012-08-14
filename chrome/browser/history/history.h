@@ -111,7 +111,7 @@ class HistoryService : public CancelableRequestProvider,
   // the history files. The BookmarkService is used when deleting URLs to
   // test if a URL is bookmarked; it may be NULL during testing.
   bool Init(const FilePath& history_dir, BookmarkService* bookmark_service) {
-    return Init(history_dir, bookmark_service, false, false);
+    return Init(history_dir, bookmark_service, false);
   }
 
   // Triggers the backend to load if it hasn't already, and then returns whether
@@ -254,7 +254,7 @@ class HistoryService : public CancelableRequestProvider,
    public:
     // Indicates that a URL is available. There will be exactly one call for
     // every URL in history.
-    virtual void OnURL(const history::URLRow& url_row) = 0;
+    virtual void OnURL(const GURL& url) = 0;
 
     // Indicates we are done iterating over URLs. Once called, there will be no
     // more callbacks made. This call is guaranteed to occur, even if there are
@@ -389,11 +389,8 @@ class HistoryService : public CancelableRequestProvider,
                               const QueryMostVisitedURLsCallback& callback);
 
   // Request the |result_count| URLs filtered and sorted based on the |filter|.
-  // If |extended_info| is true, additional data will be provided in the
-  // results. Computing this additional data is expensive, likely to become
-  // more expensive as additional data points are added in future changes, and
-  // not useful in most cases. Set |extended_info| to true only if you
-  // explicitly require the additional data.
+  // If |extended_info| is enabled, additional data will be provided in the
+  // results.
   Handle QueryFilteredURLs(
       int result_count,
       const history::VisitFilter& filter,
@@ -621,11 +618,6 @@ class HistoryService : public CancelableRequestProvider,
   // history. We filter out some URLs such as JavaScript.
   static bool CanAddURL(const GURL& url);
 
-  // Returns the history backend associated with this service.
-  history::HistoryBackend* get_history_backend_for_testing() {
-    return history_backend_.get();
-  }
-
  protected:
   virtual ~HistoryService();
 
@@ -644,14 +636,13 @@ class HistoryService : public CancelableRequestProvider,
 #endif
   friend class base::RefCountedThreadSafe<HistoryService>;
   friend class BackendDelegate;
-  friend class CacheTestingProfile;
   friend class FaviconService;
   friend class history::HistoryBackend;
   friend class history::HistoryQueryTest;
   friend class HistoryOperation;
   friend class HistoryURLProvider;
   friend class HistoryURLProviderTest;
-  friend class InMemoryURLIndexTestBase;
+  friend class history::InMemoryURLIndexTest;
   template<typename Info, typename Callback> friend class DownloadRequest;
   friend class PageUsageRequest;
   friend class RedirectRequest;
@@ -662,14 +653,11 @@ class HistoryService : public CancelableRequestProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Low-level Init().  Same as the public version, but adds the |no_db| and
-  // |disable_index_cache| parameters that are only set by unittests.  |no_db|
-  // causes the backend to not init its DB. |disable_index_cache| causes the
-  // InMemoryURLIndex to not create or use its cache database.
+  // Low-level Init().  Same as the public version, but adds a |no_db| parameter
+  // that is only set by unittests which causes the backend to not init its DB.
   bool Init(const FilePath& history_dir,
             BookmarkService* bookmark_service,
-            bool no_db,
-            bool disable_index_cache);
+            bool no_db);
 
   // Called by the HistoryURLProvider class to schedule an autocomplete, it
   // will be called back on the internal history thread with the history
@@ -938,7 +926,6 @@ class HistoryService : public CancelableRequestProvider,
   // A cache of the user-typed URLs kept in memory that is used by the
   // autocomplete system. This will be NULL until the database has been created
   // on the background thread.
-  // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
 
   // The profile, may be null when testing.
@@ -961,8 +948,6 @@ class HistoryService : public CancelableRequestProvider,
   bool needs_top_sites_migration_;
 
   // The index used for quick history lookups.
-  // TODO(mrossetti): Move in_memory_url_index out of history_service.
-  // See http://crbug.com/138321
   scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   scoped_refptr<ObserverListThreadSafe<history::VisitDatabaseObserver> >

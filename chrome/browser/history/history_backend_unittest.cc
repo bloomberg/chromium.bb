@@ -55,10 +55,10 @@ class HistoryBackendTest;
 // This just forwards the messages we're interested in to the test object.
 class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
  public:
-  explicit HistoryBackendTestDelegate(HistoryBackendTest* test);
+  explicit HistoryBackendTestDelegate(HistoryBackendTest* test) : test_(test) {}
 
   virtual void NotifyProfileError(int backend_id,
-                                  sql::InitStatus init_status) OVERRIDE;
+                                  sql::InitStatus init_status) OVERRIDE {}
   virtual void SetInMemoryBackend(int backend_id,
                                   InMemoryHistoryBackend* backend) OVERRIDE;
   virtual void BroadcastNotifications(int type,
@@ -66,7 +66,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
   virtual void DBLoaded(int backend_id) OVERRIDE;
   virtual void StartTopSitesMigration(int backend_id) OVERRIDE;
   virtual void NotifyVisitDBObserversOnAddVisit(
-      const BriefVisitInfo& info) OVERRIDE;
+      const BriefVisitInfo& info) OVERRIDE {}
 
  private:
   // Not owned by us.
@@ -78,21 +78,21 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
 class HistoryBackendCancelableRequest : public CancelableRequestProvider,
                                        public CancelableRequestConsumerBase {
  public:
-  HistoryBackendCancelableRequest();
+  HistoryBackendCancelableRequest() {}
 
   // CancelableRequestConsumerBase overrides:
   virtual void OnRequestAdded(
       CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE;
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
   virtual void OnRequestRemoved(
       CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE;
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
   virtual void WillExecute(
       CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE;
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
   virtual void DidExecute(
       CancelableRequestProvider* provider,
-      CancelableRequestProvider::Handle handle) OVERRIDE;
+      CancelableRequestProvider::Handle handle) OVERRIDE {}
 
   template<class RequestType>
   CancelableRequestProvider::Handle MockScheduleOfRequest(
@@ -104,16 +104,21 @@ class HistoryBackendCancelableRequest : public CancelableRequestProvider,
 
 class HistoryBackendTest : public testing::Test {
  public:
-  HistoryBackendTest();
-  virtual ~HistoryBackendTest();
+  HistoryBackendTest() : bookmark_model_(NULL), loaded_(false) {}
+  virtual ~HistoryBackendTest() {
+  }
 
   // Callback for QueryMostVisited.
   void OnQueryMostVisited(CancelableRequestProvider::Handle handle,
-                          history::MostVisitedURLList data);
+                          history::MostVisitedURLList data) {
+    most_visited_list_.swap(data);
+  }
 
   // Callback for QueryFiltered.
   void OnQueryFiltered(CancelableRequestProvider::Handle handle,
-                       const history::FilteredURLList& data);
+                       const history::FilteredURLList& data) {
+    filtered_list_ = data;
+  }
 
   const history::MostVisitedURLList& get_most_visited_list() const {
     return most_visited_list_;
@@ -124,12 +129,34 @@ class HistoryBackendTest : public testing::Test {
   }
 
  protected:
-  void AddRedirectChain(const char* sequence[], int page_id);
+  scoped_refptr<HistoryBackend> backend_;  // Will be NULL on init failure.
+  scoped_ptr<InMemoryHistoryBackend> mem_backend_;
 
-  void AddRedirectChainWithTransitionAndTime(const char* sequence[],
-                                             int page_id,
-                                             content::PageTransition transition,
-                                             base::Time time);
+  void AddRedirectChain(const char* sequence[], int page_id) {
+    AddRedirectChainWithTransitionAndTime(sequence, page_id,
+                                          content::PAGE_TRANSITION_LINK,
+                                          Time::Now());
+  }
+
+  void AddRedirectChainWithTransitionAndTime(
+      const char* sequence[],
+      int page_id,
+      content::PageTransition transition,
+      base::Time time) {
+    history::RedirectList redirects;
+    for (int i = 0; sequence[i] != NULL; ++i)
+      redirects.push_back(GURL(sequence[i]));
+
+    int int_scope = 1;
+    void* scope = 0;
+    memcpy(&scope, &int_scope, sizeof(int_scope));
+    scoped_refptr<history::HistoryAddPageArgs> request(
+        new history::HistoryAddPageArgs(
+            redirects.back(), time, scope, page_id, GURL(),
+            redirects, transition, history::SOURCE_BROWSED,
+            true));
+    backend_->AddPage(request);
+  }
 
   // Adds CLIENT_REDIRECT page transition.
   // |url1| is the source URL and |url2| is the destination.
@@ -138,54 +165,94 @@ class HistoryBackendTest : public testing::Test {
   // updated transition code of the visit records for |url1| and |url2| is
   // returned by filling in |*transition1| and |*transition2|, respectively.
   // |time| is a time of the redirect.
-  void  AddClientRedirect(const GURL& url1,
-                          const GURL& url2,
-                          bool did_replace,
+  void  AddClientRedirect(const GURL& url1, const GURL& url2, bool did_replace,
                           base::Time time,
-                          int* transition1,
-                          int* transition2);
+                          int* transition1, int* transition2) {
+    void* const dummy_scope = reinterpret_cast<void*>(0x87654321);
+    history::RedirectList redirects;
+    if (url1.is_valid())
+      redirects.push_back(url1);
+    if (url2.is_valid())
+      redirects.push_back(url2);
+    scoped_refptr<HistoryAddPageArgs> request(
+        new HistoryAddPageArgs(url2, time, dummy_scope, 0, url1,
+            redirects, content::PAGE_TRANSITION_CLIENT_REDIRECT,
+            history::SOURCE_BROWSED, did_replace));
+    backend_->AddPage(request);
 
-  int GetTransition(const GURL& url);
+    *transition1 = getTransition(url1);
+    *transition2 = getTransition(url2);
+  }
 
-  FilePath get_test_dir() { return test_dir_; }
+  int getTransition(const GURL& url) {
+    if (!url.is_valid())
+      return 0;
+    URLRow row;
+    URLID id = backend_->db()->GetRowForURL(url, &row);
+    VisitVector visits;
+    EXPECT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
+    return visits[0].transition;
+  }
 
-  FaviconID GetFavicon(const GURL& url, IconType icon_type);
+  FilePath getTestDir() {
+    return test_dir_;
+  }
 
-  scoped_refptr<HistoryBackend> backend_;  // Will be NULL on init failure.
-  scoped_ptr<InMemoryHistoryBackend> mem_backend_;
+  FaviconID GetFavicon(const GURL& url, IconType icon_type) {
+    IconMapping icon_mapping;
+    if (backend_->thumbnail_db_->GetIconMappingForPageURL(url, icon_type,
+                                                          &icon_mapping))
+      return icon_mapping.icon_id;
+    else
+      return 0;
+  }
+
   BookmarkModel bookmark_model_;
+
+ protected:
   bool loaded_;
 
  private:
   friend class HistoryBackendTestDelegate;
 
   // testing::Test
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() {
+    if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
+                                           &test_dir_))
+      return;
+    backend_ = new HistoryBackend(test_dir_,
+                                  0,
+                                  new HistoryBackendTestDelegate(this),
+                                  &bookmark_model_);
+    backend_->Init(std::string(), false);
+  }
+  virtual void TearDown() {
+    if (backend_.get())
+      backend_->Closing();
+    backend_ = NULL;
+    mem_backend_.reset();
+    file_util::Delete(test_dir_, true);
+  }
 
-  void SetInMemoryBackend(int backend_id, InMemoryHistoryBackend* backend);
+  void SetInMemoryBackend(int backend_id, InMemoryHistoryBackend* backend) {
+    mem_backend_.reset(backend);
+  }
 
-  void BroadcastNotifications(int type, HistoryDetails* details);
+  void BroadcastNotifications(int type,
+                                      HistoryDetails* details) {
+    // Send the notifications directly to the in-memory database.
+    content::Details<HistoryDetails> det(details);
+    mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
+
+    // The backend passes ownership of the details pointer to us.
+    delete details;
+  }
 
   MessageLoop message_loop_;
   FilePath test_dir_;
   history::MostVisitedURLList most_visited_list_;
   history::FilteredURLList filtered_list_;
 };
-
-// HistoryBackendTestDelegate --------------------------------------------------
-
-HistoryBackendTestDelegate::HistoryBackendTestDelegate(HistoryBackendTest* test)
-    : test_(test) {
-}
-
-void HistoryBackendTestDelegate::NotifyProfileError(int backend_id,
-                                  sql::InitStatus init_status) {
-}
-
-void HistoryBackendTestDelegate::NotifyVisitDBObserversOnAddVisit(
-      const BriefVisitInfo& info) {
-}
 
 void HistoryBackendTestDelegate::SetInMemoryBackend(int backend_id,
     InMemoryHistoryBackend* backend) {
@@ -204,141 +271,6 @@ void HistoryBackendTestDelegate::DBLoaded(int backend_id) {
 
 void HistoryBackendTestDelegate::StartTopSitesMigration(int backend_id) {
   test_->backend_->MigrateThumbnailsDatabase();
-}
-
-// HistoryBackendCancelableRequest ---------------------------------------------
-
-HistoryBackendCancelableRequest::HistoryBackendCancelableRequest() {}
-
-void HistoryBackendCancelableRequest::OnRequestAdded(
-    CancelableRequestProvider* provider,
-    CancelableRequestProvider::Handle handle) {}
-void HistoryBackendCancelableRequest::OnRequestRemoved(
-    CancelableRequestProvider* provider,
-    CancelableRequestProvider::Handle handle) {}
-void HistoryBackendCancelableRequest::WillExecute(
-    CancelableRequestProvider* provider,
-    CancelableRequestProvider::Handle handle) {}
-void HistoryBackendCancelableRequest::DidExecute(
-    CancelableRequestProvider* provider,
-    CancelableRequestProvider::Handle handle) {}
-
-// HistoryBackendTest ----------------------------------------------------------
-
-HistoryBackendTest::HistoryBackendTest()
-    : bookmark_model_(NULL),
-      loaded_(false) {
-}
-
-HistoryBackendTest::~HistoryBackendTest() {}
-
-void HistoryBackendTest::OnQueryMostVisited(
-    CancelableRequestProvider::Handle handle,
-    history::MostVisitedURLList data) {
-  most_visited_list_.swap(data);
-}
-
-void HistoryBackendTest::OnQueryFiltered(
-    CancelableRequestProvider::Handle handle,
-    const history::FilteredURLList& data) {
-  filtered_list_ = data;
-}
-
-void HistoryBackendTest::AddRedirectChain(const char* sequence[], int page_id) {
-  AddRedirectChainWithTransitionAndTime(sequence, page_id,
-                                        content::PAGE_TRANSITION_LINK,
-                                        Time::Now());
-}
-
-void HistoryBackendTest::AddRedirectChainWithTransitionAndTime(
-    const char* sequence[],
-    int page_id,
-    content::PageTransition transition,
-    base::Time time) {
-  history::RedirectList redirects;
-  for (int i = 0; sequence[i] != NULL; ++i)
-    redirects.push_back(GURL(sequence[i]));
-
-  int int_scope = 1;
-  void* scope = 0;
-  memcpy(&scope, &int_scope, sizeof(int_scope));
-  scoped_refptr<history::HistoryAddPageArgs> request(
-      new history::HistoryAddPageArgs(redirects.back(), time, scope, page_id,
-                                      GURL(), redirects, transition,
-                                      history::SOURCE_BROWSED, true));
-  backend_->AddPage(request);
-}
-
-void  HistoryBackendTest::AddClientRedirect(const GURL& url1,
-                                            const GURL& url2,
-                                            bool did_replace,
-                                            base::Time time,
-                                            int* transition1,
-                                            int* transition2) {
-  void* const dummy_scope = reinterpret_cast<void*>(0x87654321);
-  history::RedirectList redirects;
-  if (url1.is_valid())
-    redirects.push_back(url1);
-  if (url2.is_valid())
-    redirects.push_back(url2);
-  scoped_refptr<HistoryAddPageArgs> request(
-      new HistoryAddPageArgs(url2, time, dummy_scope, 0, url1,
-          redirects, content::PAGE_TRANSITION_CLIENT_REDIRECT,
-          history::SOURCE_BROWSED, did_replace));
-  backend_->AddPage(request);
-
-  *transition1 = GetTransition(url1);
-  *transition2 = GetTransition(url2);
-}
-
-int HistoryBackendTest::GetTransition(const GURL& url) {
-  if (!url.is_valid())
-    return 0;
-  URLRow row;
-  URLID id = backend_->db()->GetRowForURL(url, &row);
-  VisitVector visits;
-  EXPECT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
-  return visits[0].transition;
-}
-
-FaviconID HistoryBackendTest::GetFavicon(const GURL& url, IconType icon_type) {
-  IconMapping icon_mapping;
-  return backend_->thumbnail_db_->GetIconMappingForPageURL(url, icon_type,
-      &icon_mapping) ? icon_mapping.icon_id : 0;
-}
-
-void HistoryBackendTest::SetUp() {
-  if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
-                                         &test_dir_))
-    return;
-  backend_ = new HistoryBackend(test_dir_,
-                                0,
-                                new HistoryBackendTestDelegate(this),
-                                &bookmark_model_);
-  backend_->Init(std::string(), false);
-}
-
-void HistoryBackendTest::TearDown() {
-  if (backend_.get())
-    backend_->Closing();
-  backend_ = NULL;
-  mem_backend_.reset();
-  file_util::Delete(test_dir_, true);
-}
-
-void HistoryBackendTest::SetInMemoryBackend(int backend_id,
-                                            InMemoryHistoryBackend* backend) {
-  mem_backend_.reset(backend);
-}
-
-void HistoryBackendTest::BroadcastNotifications(int type,
-                                                HistoryDetails* details) {
-  // Send the notifications directly to the in-memory database.
-  content::Details<HistoryDetails> det(details);
-  mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
-
-  // The backend passes ownership of the details pointer to us.
-  delete details;
 }
 
 // http://crbug.com/114287
@@ -1094,7 +1026,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
 
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
-  FilePath new_history_path(get_test_dir());
+  FilePath new_history_path(getTestDir());
   file_util::Delete(new_history_path, true);
   file_util::CreateDirectory(new_history_path);
   FilePath new_history_file = new_history_path.Append(chrome::kHistoryFilename);
@@ -1567,7 +1499,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
 
   // Copy history database file to current directory so that it will be deleted
   // in Teardown.
-  FilePath new_history_path(get_test_dir());
+  FilePath new_history_path(getTestDir());
   file_util::Delete(new_history_path, true);
   file_util::CreateDirectory(new_history_path);
   FilePath new_history_file = new_history_path.Append(chrome::kHistoryFilename);
