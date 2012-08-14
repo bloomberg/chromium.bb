@@ -20,6 +20,7 @@
         'json_schema_files': [
           'bookmarks.json',
           'content_settings.json',
+          'context_menus.json',
           'cookies.json',
           'debugger.json',
           'events.json',

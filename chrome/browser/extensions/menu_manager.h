@@ -181,9 +181,8 @@ class MenuItem {
                             std::string* error);
 
   // Sets any document and target URL patterns from |properties|.
-  bool PopulateURLPatterns(const base::DictionaryValue& properties,
-                           const char* document_url_patterns_key,
-                           const char* target_url_patterns_key,
+  bool PopulateURLPatterns(std::vector<std::string>* document_url_patterns,
+                           std::vector<std::string>* target_url_patterns,
                            std::string* error);
 
  protected:

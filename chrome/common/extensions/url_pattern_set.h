@@ -84,6 +84,11 @@ class URLPatternSet {
                 bool allow_file_access,
                 std::string* error);
 
+  bool Populate(const std::vector<std::string>& patterns,
+                int valid_schemes,
+                bool allow_file_access,
+                std::string* error);
+
  private:
   // The list of URL patterns that comprise the extent.
   std::set<URLPattern> patterns_;

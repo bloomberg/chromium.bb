@@ -88,6 +88,26 @@ scoped_ptr<base::Value> MenuItemsToValue(const MenuItem::List& items) {
   return scoped_ptr<Value>(list.release());
 }
 
+bool GetStringList(const DictionaryValue& dict,
+                   const std::string& key,
+                   std::vector<std::string>* out) {
+  if (!dict.HasKey(key))
+    return true;
+
+  const ListValue* list = NULL;
+  if (!dict.GetListWithoutPathExpansion(key, &list))
+    return false;
+
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    std::string pattern;
+    if (!list->GetString(i, &pattern))
+      return false;
+    out->push_back(pattern);
+  }
+
+  return true;
+}
+
 }  // namespace
 
 MenuItem::MenuItem(const Id& id,
@@ -203,14 +223,14 @@ MenuItem* MenuItem::Populate(const std::string& extension_id,
   if (!value.GetString(kStringUIDKey, &id.string_uid))
     return NULL;
   int type_int;
-  Type type;
+  Type type = NORMAL;
   if (!value.GetInteger(kTypeKey, &type_int))
     return NULL;
   type = static_cast<Type>(type_int);
   std::string title;
   if (type != SEPARATOR && !value.GetString(kTitleKey, &title))
     return NULL;
-  bool checked;
+  bool checked = false;
   if ((type == CHECKBOX || type == RADIO) &&
       !value.GetBoolean(kCheckedKey, &checked)) {
     return NULL;
@@ -228,9 +248,18 @@ MenuItem* MenuItem::Populate(const std::string& extension_id,
   scoped_ptr<MenuItem> result(new MenuItem(
       id, title, checked, enabled, type, contexts));
 
-  if (!result->PopulateURLPatterns(
-          value, kDocumentURLPatternsKey, kTargetURLPatternsKey, error))
+  std::vector<std::string> document_url_patterns;
+  if (!GetStringList(value, kDocumentURLPatternsKey, &document_url_patterns))
     return NULL;
+  std::vector<std::string> target_url_patterns;
+  if (!GetStringList(value, kTargetURLPatternsKey, &target_url_patterns))
+    return NULL;
+
+  if (!result->PopulateURLPatterns(&document_url_patterns,
+                                   &target_url_patterns,
+                                   error)) {
+    return NULL;
+  }
 
   // parent_id is filled in from the value, but it might not be valid. It's left
   // to be validated upon being added (via AddChildItem) to the menu manager.
@@ -243,25 +272,19 @@ MenuItem* MenuItem::Populate(const std::string& extension_id,
   return result.release();
 }
 
-bool MenuItem::PopulateURLPatterns(const DictionaryValue& properties,
-                                   const char* document_url_patterns_key,
-                                   const char* target_url_patterns_key,
-                                   std::string* error) {
-  if (properties.HasKey(document_url_patterns_key)) {
-    const ListValue* list = NULL;
-    if (!properties.GetList(document_url_patterns_key, &list))
-      return false;
+bool MenuItem::PopulateURLPatterns(
+    std::vector<std::string>* document_url_patterns,
+    std::vector<std::string>* target_url_patterns,
+    std::string* error) {
+  if (document_url_patterns) {
     if (!document_url_patterns_.Populate(
-            *list, URLPattern::SCHEME_ALL, true, error)) {
+            *document_url_patterns, URLPattern::SCHEME_ALL, true, error)) {
       return false;
     }
   }
-  if (properties.HasKey(target_url_patterns_key)) {
-    const ListValue* list = NULL;
-    if (!properties.GetList(target_url_patterns_key, &list))
-      return false;
+  if (target_url_patterns) {
     if (!target_url_patterns_.Populate(
-            *list, URLPattern::SCHEME_ALL, true, error)) {
+            *target_url_patterns, URLPattern::SCHEME_ALL, true, error)) {
       return false;
     }
   }

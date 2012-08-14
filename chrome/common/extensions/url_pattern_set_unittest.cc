@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/extension.h"
 
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -213,6 +214,28 @@ TEST(URLPatternSetTest, Duplicates) {
 
   // The sets should still be equal after adding a duplicate.
   EXPECT_EQ(set2, set1);
+}
+
+TEST(URLPatternSetTest, ToValueAndPopulate) {
+  URLPatternSet set1;
+  URLPatternSet set2;
+
+  std::vector<std::string> patterns;
+  patterns.push_back("http://www.google.com/*");
+  patterns.push_back("http://www.yahoo.com/*");
+
+  for (size_t i = 0; i < patterns.size(); ++i)
+    AddPattern(&set1, patterns[i]);
+
+  std::string error;
+  bool allow_file_access = false;
+  scoped_ptr<base::ListValue> value(set1.ToValue());
+  set2.Populate(*value, URLPattern::SCHEME_ALL, allow_file_access, &error);
+  EXPECT_EQ(set1, set2);
+
+  set2.ClearPatterns();
+  set2.Populate(patterns, URLPattern::SCHEME_ALL, allow_file_access, &error);
+  EXPECT_EQ(set1, set2);
 }
 
 TEST(URLPatternSetTest, NwayUnion) {

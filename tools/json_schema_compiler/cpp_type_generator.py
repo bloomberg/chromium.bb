@@ -277,6 +277,9 @@ class CppTypeGenerator(object):
     for type_ in self._namespace.types.values():
       for prop in type_.properties.values():
         dependencies |= self._PropertyTypeDependencies(prop)
+    for event in self._namespace.events.values():
+      for param in event.params:
+        dependencies |= self._PropertyTypeDependencies(param)
 
     dependency_namespaces = dict()
     for dependency in dependencies:

@@ -190,6 +190,70 @@ TEST_F(MenuManagerTest, ChildFunctions) {
   ASSERT_EQ(0, item2->child_count());
 }
 
+TEST_F(MenuManagerTest, PopulateFromValue) {
+  Extension* extension = AddExtension("test");
+
+  bool incognito = true;
+  int type = MenuItem::CHECKBOX;
+  std::string title("TITLE");
+  bool checked = true;
+  bool enabled = true;
+  MenuItem::ContextList contexts;
+  contexts.Add(MenuItem::PAGE);
+  contexts.Add(MenuItem::SELECTION);
+  int contexts_value = 0;
+  ASSERT_TRUE(contexts.ToValue()->GetAsInteger(&contexts_value));
+
+  ListValue* document_url_patterns(new ListValue());
+  document_url_patterns->Append(
+      Value::CreateStringValue("http://www.google.com/*"));
+  document_url_patterns->Append(
+      Value::CreateStringValue("http://www.reddit.com/*"));
+
+  ListValue* target_url_patterns(new ListValue());
+  target_url_patterns->Append(
+      Value::CreateStringValue("http://www.yahoo.com/*"));
+  target_url_patterns->Append(
+      Value::CreateStringValue("http://www.facebook.com/*"));
+
+  base::DictionaryValue value;
+  value.SetBoolean("incognito", incognito);
+  value.SetString("string_uid", std::string());
+  value.SetInteger("type", type);
+  value.SetString("title", title);
+  value.SetBoolean("checked", checked);
+  value.SetBoolean("enabled", enabled);
+  value.SetInteger("contexts", contexts_value);
+  value.Set("document_url_patterns", document_url_patterns);
+  value.Set("target_url_patterns", target_url_patterns);
+
+  std::string error;
+  scoped_ptr<MenuItem> item(MenuItem::Populate(extension->id(), value, &error));
+  ASSERT_TRUE(item.get());
+
+  EXPECT_EQ(extension->id(), item->extension_id());
+  EXPECT_EQ(incognito, item->incognito());
+  EXPECT_EQ(title, item->title());
+  EXPECT_EQ(checked, item->checked());
+  EXPECT_EQ(item->checked(), item->checked());
+  EXPECT_EQ(enabled, item->enabled());
+  EXPECT_EQ(contexts, item->contexts());
+
+  URLPatternSet document_url_pattern_set;
+  document_url_pattern_set.Populate(*document_url_patterns,
+                                    URLPattern::SCHEME_ALL,
+                                    true,
+                                    &error);
+  EXPECT_EQ(document_url_pattern_set, item->document_url_patterns());
+
+  URLPatternSet target_url_pattern_set;
+  target_url_pattern_set.Populate(*target_url_patterns,
+                                   URLPattern::SCHEME_ALL,
+                                   true,
+                                   &error);
+  EXPECT_EQ(target_url_pattern_set, item->target_url_patterns());
+}
+
 // Tests that deleting a parent properly removes descendants.
 TEST_F(MenuManagerTest, DeleteParent) {
   Extension* extension = AddExtension("1111");

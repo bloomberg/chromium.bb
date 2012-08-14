@@ -175,22 +175,19 @@ scoped_ptr<base::ListValue> URLPatternSet::ToValue() const {
   return value.Pass();
 }
 
-bool URLPatternSet::Populate(const base::ListValue& value,
+bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
                              int valid_schemes,
                              bool allow_file_access,
                              std::string* error) {
   ClearPatterns();
-  for (size_t i = 0; i < value.GetSize(); ++i) {
-    std::string item;
-    if (!value.GetString(i, &item))
-      return false;
+  for (size_t i = 0; i < patterns.size(); ++i) {
     URLPattern pattern(valid_schemes);
-    if (pattern.Parse(item) != URLPattern::PARSE_SUCCESS) {
+    if (pattern.Parse(patterns[i]) != URLPattern::PARSE_SUCCESS) {
       if (error) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidURLPatternError, item);
+            kInvalidURLPatternError, patterns[i]);
       } else {
-        LOG(ERROR) << "Invalid url pattern: " << item;
+        LOG(ERROR) << "Invalid url pattern: " << patterns[i];
       }
       return false;
     }
@@ -201,4 +198,18 @@ bool URLPatternSet::Populate(const base::ListValue& value,
     AddPattern(pattern);
   }
   return true;
+}
+
+bool URLPatternSet::Populate(const base::ListValue& value,
+                             int valid_schemes,
+                             bool allow_file_access,
+                             std::string* error) {
+  std::vector<std::string> patterns;
+  for (size_t i = 0; i < value.GetSize(); ++i) {
+    std::string item;
+    if (!value.GetString(i, &item))
+      return false;
+    patterns.push_back(item);
+  }
+  return Populate(patterns, valid_schemes, allow_file_access, error);
 }
