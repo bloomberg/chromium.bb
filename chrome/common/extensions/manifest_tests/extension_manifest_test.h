@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace errors = extension_manifest_errors;
@@ -135,6 +136,14 @@ class ExtensionManifestTest : public testing::Test {
       EXPECT_TYPE type);
 
   bool enable_apps_;
+
+  // Force the manifest tests to run as though it were dev channel, since
+  // several tests rely on manifest features being available that aren't
+  // on stable/beta.
+  //
+  // These objects nest, so if a test wants to explicitly test the behaviour
+  // on stable or beta, declare it inside that test.
+  extensions::Feature::ScopedCurrentChannel current_channel_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_TESTS_EXTENSION_MANIFEST_TEST_H_

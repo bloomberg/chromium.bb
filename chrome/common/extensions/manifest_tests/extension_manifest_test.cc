@@ -16,7 +16,9 @@
 
 using extensions::Extension;
 
-ExtensionManifestTest::ExtensionManifestTest() : enable_apps_(true) {}
+ExtensionManifestTest::ExtensionManifestTest()
+    : enable_apps_(true),
+      current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
 
 // static
 DictionaryValue* ExtensionManifestTest::LoadManifestFile(
