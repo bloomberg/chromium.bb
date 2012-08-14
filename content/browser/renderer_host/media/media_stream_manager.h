@@ -96,10 +96,6 @@ class CONTENT_EXPORT MediaStreamManager
                       int render_view_id, const StreamOptions& options,
                       const GURL& security_origin, std::string* label);
 
-  // Cancels all non-finished GenerateStream request, i.e. request for which
-  // StreamGenerated hasn't been called.
-  void CancelRequests(MediaStreamRequester* requester);
-
   // Cancel generate stream.
   void CancelGenerateStream(const std::string& label);
 

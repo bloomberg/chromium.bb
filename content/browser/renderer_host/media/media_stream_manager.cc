@@ -183,46 +183,11 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
   StartEnumeration(&new_request, label);
 
   // Get user confirmation to use capture devices.
-  // Need to make an asynchronous call to make sure the |requester| gets the
-  // |label| before it would receive any event.
-  BrowserThread::PostTask(BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&MediaStreamDeviceSettings::RequestCaptureDeviceUsage,
-                 base::Unretained(device_settings_.get()),
-                 *label, render_process_id,
-                 render_view_id, options,
-                 security_origin));
-}
-
-void MediaStreamManager::CancelRequests(MediaStreamRequester* requester) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DeviceRequests::iterator it = requests_.begin();
-  while (it != requests_.end()) {
-    if (it->second.requester == requester && !RequestDone(it->second)) {
-      // The request isn't complete, but there might be some devices already
-      // opened -> close them.
-      DeviceRequest* request = &(it->second);
-      if (request->state[content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE] ==
-          DeviceRequest::STATE_OPENING) {
-        for (StreamDeviceInfoArray::iterator it =
-             request->audio_devices.begin(); it != request->audio_devices.end();
-             ++it) {
-          audio_input_device_manager()->Close(it->session_id);
-        }
-      }
-      if (request->state[content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE] ==
-          DeviceRequest::STATE_OPENING) {
-        for (StreamDeviceInfoArray::iterator it =
-             request->video_devices.begin(); it != request->video_devices.end();
-             ++it) {
-          video_capture_manager()->Close(it->session_id);
-        }
-      }
-      requests_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
+  device_settings_->RequestCaptureDeviceUsage(*label,
+                                              render_process_id,
+                                              render_view_id,
+                                              options,
+                                              security_origin);
 }
 
 void MediaStreamManager::CancelGenerateStream(const std::string& label) {
@@ -276,7 +241,8 @@ void MediaStreamManager::StopGeneratedStream(const std::string& label) {
          video_it != it->second.video_devices.end(); ++video_it) {
       video_capture_manager()->Close(video_it->session_id);
     }
-    if (it->second.type == DeviceRequest::GENERATE_STREAM) {
+    if (it->second.type == DeviceRequest::GENERATE_STREAM &&
+        RequestDone(it->second)) {
       NotifyObserverDevicesClosed(&(it->second));
     }
     requests_.erase(it);
@@ -595,11 +561,7 @@ void MediaStreamManager::DevicesEnumerated(
         }
         break;
       default:
-        BrowserThread::PostTask(BrowserThread::IO,
-            FROM_HERE,
-            base::Bind(&MediaStreamDeviceSettings::AvailableDevices,
-                       base::Unretained(device_settings_.get()),
-                       *it, stream_type, devices));
+        device_settings_->AvailableDevices(*it, stream_type, devices);
     }
   }
   label_list.clear();
@@ -639,17 +601,22 @@ void MediaStreamManager::Error(MediaStreamType stream_type,
             it->second.requester->VideoDeviceFailed(it->first, device_idx);
           }
           GetDeviceManager(stream_type)->Close(capture_session_id);
-          devices->erase(device_it);
-        } else if (it->second.audio_devices.size()
-            + it->second.video_devices.size() <= 1) {
-          // 2. Device not opened and no other devices for this request ->
-          //    signal stream error and remove the request.
-          it->second.requester->StreamGenerationFailed(it->first);
-          requests_.erase(it);
+          // We don't erase the devices here so that we can update the UI
+          // properly in StopGeneratedStream().
+          it->second.state[stream_type] = DeviceRequest::STATE_ERROR;
         } else {
-          // 3. Not opened but other devices exists for this request -> remove
-          //    device from list, but don't signal an error.
-          devices->erase(device_it);
+          // Request is not done, devices are not opened in this case.
+          if ((it->second.audio_devices.size() +
+               it->second.video_devices.size()) <= 1) {
+            // 2. Device not opened and no other devices for this request ->
+            //    signal stream error and remove the request.
+            it->second.requester->StreamGenerationFailed(it->first);
+            requests_.erase(it);
+          } else {
+            // 3. Not opened but other devices exists for this request -> remove
+            //    device from list, but don't signal an error.
+            devices->erase(device_it);
+          }
         }
         return;
       }
@@ -791,8 +758,13 @@ void MediaStreamManager::DevicesFromRequest(
 bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Check if all devices are opened.
-  if (Requested(request.options,
-                content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE)) {
+  MediaStreamType stream_type = content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
+  if (Requested(request.options, stream_type)) {
+    if (request.state[stream_type] != DeviceRequest::STATE_DONE &&
+        request.state[stream_type] != DeviceRequest::STATE_ERROR) {
+      return false;
+    }
+
     for (StreamDeviceInfoArray::const_iterator it =
          request.audio_devices.begin(); it != request.audio_devices.end();
          ++it) {
@@ -801,8 +773,14 @@ bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
       }
     }
   }
-  if (Requested(request.options,
-                content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE)) {
+
+  stream_type = content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
+  if (Requested(request.options, stream_type)) {
+    if (request.state[stream_type] != DeviceRequest::STATE_DONE &&
+        request.state[stream_type] != DeviceRequest::STATE_ERROR) {
+      return false;
+    }
+
     for (StreamDeviceInfoArray::const_iterator it =
          request.video_devices.begin(); it != request.video_devices.end();
          ++it) {
@@ -811,6 +789,7 @@ bool MediaStreamManager::RequestDone(const DeviceRequest& request) const {
       }
     }
   }
+
   return true;
 }
 

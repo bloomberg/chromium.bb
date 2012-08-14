@@ -337,7 +337,55 @@ TEST_F(MediaStreamDispatcherHostTest, FailDevice) {
 
   // TODO(perkj): test audio device failure?
 
+  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesClosed(_, _, _));
   host_->OnStopGeneratedStream(label);
+  EXPECT_EQ(host_->NumberOfStreams(), 0u);
+}
+
+TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
+  StreamOptions options(false, true);
+
+  EXPECT_CALL(*host_, GetMediaObserver())
+      .WillRepeatedly(Return(media_observer_.get()));
+
+  // Create multiple GenerateStream requests.
+  size_t streams = 5;
+  for (size_t i = 1; i <= streams; ++i) {
+    host_->OnGenerateStream(kPageRequestId + i, options);
+    EXPECT_EQ(host_->NumberOfStreams(), i);
+  }
+
+  // Calling OnChannelClosing() to cancel all the pending requests.
+  host_->OnChannelClosing();
+
+  // Streams should have been cleaned up.
+  EXPECT_EQ(host_->NumberOfStreams(), 0u);
+}
+
+TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
+  StreamOptions options(false, true);
+
+  EXPECT_CALL(*host_, GetMediaObserver())
+      .WillRepeatedly(Return(media_observer_.get()));
+
+  // Create first group of streams.
+  size_t generated_streams = 3;
+  for (size_t i = 0; i < generated_streams; ++i) {
+    EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId + i, 0, 1));
+    host_->OnGenerateStream(kPageRequestId + i, options);
+  }
+  EXPECT_EQ(host_->NumberOfStreams(), generated_streams);
+  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesOpened(_, _, _))
+      .Times(3);
+  // Wait until the streams are all generated.
+  WaitForResult();
+
+  // Calling OnChannelClosing() to cancel all the pending/generated streams.
+  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesClosed(_, _, _))
+      .Times(3);
+  host_->OnChannelClosing();
+
+  // Streams should have been cleaned up.
   EXPECT_EQ(host_->NumberOfStreams(), 0u);
 }
 

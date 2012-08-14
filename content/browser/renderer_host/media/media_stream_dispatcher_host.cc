@@ -142,18 +142,20 @@ void MediaStreamDispatcherHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
   DVLOG(1) << "MediaStreamDispatcherHost::OnChannelClosing";
 
-  // Since the IPC channel is gone, cancel pending requests and close all
-  // requested VideoCaptureDevices.
-  GetManager()->CancelRequests(this);
+  // Since the IPC channel is gone, close all requesting/requested streams.
   for (StreamMap::iterator it = streams_.begin();
        it != streams_.end();
-       it++) {
+       ++it) {
     std::string label = it->first;
     GetManager()->StopGeneratedStream(label);
   }
+  // Clear the map after we have stopped all the streams.
+  streams_.clear();
 }
 
-MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {}
+MediaStreamDispatcherHost::~MediaStreamDispatcherHost() {
+  DCHECK(streams_.empty());
+}
 
 void MediaStreamDispatcherHost::OnGenerateStream(
     int render_view_id,
@@ -170,7 +172,7 @@ void MediaStreamDispatcherHost::OnGenerateStream(
 
   std::string label;
   GetManager()->GenerateStream(this, render_process_id_, render_view_id,
-                            components, security_origin, &label);
+                               components, security_origin, &label);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
 }

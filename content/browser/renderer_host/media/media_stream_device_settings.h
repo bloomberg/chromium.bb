@@ -27,8 +27,8 @@
 
 namespace media_stream {
 
-class MediaStreamDeviceSettingsRequest;
 class SettingsRequester;
+struct MediaStreamDeviceSettingsRequest;
 
 // MediaStreamDeviceSettings is responsible for getting user permission to use
 // a media capture device as well as selecting what device to use.
@@ -72,14 +72,17 @@ class CONTENT_EXPORT MediaStreamDeviceSettings {
 
   // Returns true if the UI is already processing a request for this render
   // view.
-  bool IsUiBusy(int render_view_id, int render_process_id);
+  bool IsUIBusy(int render_view_id, int render_process_id);
 
-  // Finds a request ready to be sent to UI for user approval.
-  std::string FindReadyRequestForView(int render_view_id,
-                                      int render_process_id);
+  // Process the next pending request and bring it up to the UI on the given
+  // page for user approval.
+  void ProcessNextRequestForView(int render_view_id, int render_process_id);
 
   // Posts a request to be approved/denied by UI.
-  void PostRequestToUi(const std::string& label);
+  void PostRequestToUI(const std::string& label);
+
+  // Posts a request to fake UI which is used for testing purpose.
+  void PostRequestToFakeUI(const std::string& label);
 
   SettingsRequester* requester_;
   SettingsRequests requests_;

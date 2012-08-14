@@ -214,7 +214,6 @@ void MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread(
   if (!status_icon_)
     return;
 
-  DCHECK(!tabs_.empty());
   RemoveCaptureDeviceTab(render_process_id, render_view_id, devices);
 }
 
@@ -307,6 +306,7 @@ void MediaStreamCaptureIndicator::OnImageLoaded(
 
 void MediaStreamCaptureIndicator::Hide() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(tabs_.empty());
   if (!status_icon_)
     return;
 
@@ -332,9 +332,11 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
        iter != tabs_.end();  ++iter) {
     string16 tab_title = GetTitle(iter->render_process_id,
                                   iter->render_view_id);
-    // The tab has gone away.
-    if (tab_title.empty())
+    if (tab_title.empty()) {
+      // Delete the entry since the tab has gone away.
+      tabs_.erase(iter);
       continue;
+    }
 
     // Check if any audio and video devices have been used.
     audio = audio || iter->audio_ref_count > 0;
@@ -351,9 +353,10 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
     ++command_id;
   }
 
-  // All the tabs have gone away.
-  if (!audio && !video)
+  if (!audio && !video) {
+    Hide();
     return;
+  }
 
   // The icon will take the ownership of the passed context menu.
   status_icon_->SetContextMenu(menu.release());
@@ -439,9 +442,6 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
   if (iter->audio_ref_count == 0 && iter->video_ref_count == 0)
     tabs_.erase(iter);
 
-  if (tabs_.empty())
-    Hide();
-  else
-    UpdateStatusTrayIconContextMenu();
+  UpdateStatusTrayIconContextMenu();
 }
 
