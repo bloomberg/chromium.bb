@@ -622,8 +622,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/locales/en-US.pak',
-          '<(PRODUCT_DIR)/theme_resources_100_percent.pak',
-          '<(PRODUCT_DIR)/ui_resources_100_percent.pak',
         ],
         'isolate_dependency_untracked': [
           'test/data/firefox2_nss/',
