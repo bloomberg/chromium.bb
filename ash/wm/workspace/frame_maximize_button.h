@@ -63,17 +63,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   virtual ui::GestureStatus OnGestureEvent(
       const views::GestureEvent& event) OVERRIDE;
 
-  // Unit test overwrite: Change the UI delay used for the bubble show up.
-  void set_bubble_appearance_delay_ms(int bubble_appearance_delay_ms) {
-    bubble_appearance_delay_ms_ = bubble_appearance_delay_ms;
-  }
-
-  // Unit test accessor for the maximize bubble.
-  MaximizeBubbleController* maximizer() { return maximizer_.get(); }
-
-  // Unit test to see if phantom window is open.
-  bool phantom_window_open() { return phantom_window_.get() != NULL; }
-
  private:
   class EscapeEventFilter;
 
@@ -146,9 +135,6 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   base::OneShotTimer<FrameMaximizeButton> update_timer_;
 
   scoped_ptr<MaximizeBubbleController> maximizer_;
-
-  // The delay of the bubble appearance.
-  int bubble_appearance_delay_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameMaximizeButton);
 };
