@@ -93,6 +93,9 @@ struct wayland_input {
 	struct wl_touch *touch;
 	struct wl_list link;
 	uint32_t key_serial;
+	uint32_t enter_serial;
+	int focus;
+	struct wayland_output *output;
 };
 
 
@@ -524,6 +527,34 @@ static const struct wl_output_listener output_listener = {
 	display_handle_mode
 };
 
+static void
+check_focus(struct wayland_input *input, wl_fixed_t x, wl_fixed_t y)
+{
+	struct wayland_compositor *c = input->compositor;
+	int width, height, inside;
+
+	width = input->output->mode.width;
+	height = input->output->mode.height;
+
+	inside = c->border.left <= wl_fixed_to_int(x) &&
+		wl_fixed_to_int(x) < width + c->border.left &&
+		c->border.top <= wl_fixed_to_int(y) &&
+		wl_fixed_to_int(y) < height + c->border.top;
+
+	if (!input->focus && inside) {
+		notify_pointer_focus(&input->base, &input->output->base,
+				     x - wl_fixed_from_int(c->border.left),
+				     y = wl_fixed_from_int(c->border.top));
+		wl_pointer_set_cursor(input->pointer,
+				      input->enter_serial, NULL, 0, 0);
+	} else if (input->focus && !inside) {
+		notify_pointer_focus(&input->base, NULL, 0, 0);
+		/* FIXME: Should set default cursor here. */
+	}
+
+	input->focus = inside;
+}
+
 /* parent input interface */
 static void
 input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
@@ -531,13 +562,12 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 			   wl_fixed_t x, wl_fixed_t y)
 {
 	struct wayland_input *input = data;
-	struct wayland_output *output;
 
 	/* XXX: If we get a modifier event immediately before the focus,
 	 *      we should try to keep the same serial. */
-	output = wl_surface_get_user_data(surface);
-	notify_pointer_focus(&input->base, &output->base, x, y);
-	wl_pointer_set_cursor(input->pointer, serial, NULL, 0, 0);
+	input->enter_serial = serial;
+	input->output = wl_surface_get_user_data(surface);
+	check_focus(input, x, y);
 }
 
 static void
@@ -547,6 +577,8 @@ input_handle_pointer_leave(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 
 	notify_pointer_focus(&input->base, NULL, 0, 0);
+	input->output = NULL;
+	input->focus = 0;
 }
 
 static void
@@ -556,9 +588,11 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 	struct wayland_compositor *c = input->compositor;
 
-	notify_motion(&input->base, time,
-		      x - wl_fixed_from_int(c->border.left),
-		      y - wl_fixed_from_int(c->border.top));
+	check_focus(input, x, y);
+	if (input->focus)
+		notify_motion(&input->base, time,
+			      x - wl_fixed_from_int(c->border.left),
+			      y - wl_fixed_from_int(c->border.top));
 }
 
 static void
