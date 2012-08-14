@@ -314,8 +314,10 @@ RenderThreadImpl::~RenderThreadImpl() {
   if (file_thread_.get())
     file_thread_->Stop();
 
-  RemoveFilter(compositor_output_surface_filter_.get());
-  compositor_output_surface_filter_ = NULL;
+  if (compositor_output_surface_filter_.get()) {
+    RemoveFilter(compositor_output_surface_filter_.get());
+    compositor_output_surface_filter_ = NULL;
+  }
 
   if (compositor_initialized_) {
     WebKit::WebCompositor::shutdown();
