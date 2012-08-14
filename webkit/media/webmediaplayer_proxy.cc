@@ -201,7 +201,7 @@ media::ChunkDemuxer::Status WebMediaPlayerProxy::DemuxerAddId(
 }
 
 bool WebMediaPlayerProxy::DemuxerSetTimestampOffset(
-    const std::string& id, double offset) {
+    const std::string& id, base::TimeDelta offset) {
   return chunk_demuxer_->SetTimestampOffset(id, offset);
 }
 

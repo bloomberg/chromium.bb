@@ -98,7 +98,7 @@ class WebMediaPlayerProxy
   void DemuxerAbort(const std::string& id);
   void DemuxerEndOfStream(media::PipelineStatus status);
   void DemuxerShutdown();
-  bool DemuxerSetTimestampOffset(const std::string& id, double offset);
+  bool DemuxerSetTimestampOffset(const std::string& id, base::TimeDelta offset);
 
   // DecryptorClient implementation.
   virtual void KeyAdded(const std::string& key_system,
