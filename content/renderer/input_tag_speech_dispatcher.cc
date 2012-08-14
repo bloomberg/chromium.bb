@@ -63,9 +63,7 @@ bool InputTagSpeechDispatcher::startRecognition(
   params.origin_url = UTF16ToUTF8(origin.toString());
   params.render_view_id = routing_id();
   params.request_id = request_id;
-  gfx::Size scroll = render_view()->GetWebView()->mainFrame()->scrollOffset();
   params.element_rect = element_rect;
-  params.element_rect.Offset(-scroll.width(), -scroll.height());
 
   Send(new InputTagSpeechHostMsg_StartRecognition(params));
   VLOG(1) << "InputTagSpeechDispatcher::startRecognition exit";
