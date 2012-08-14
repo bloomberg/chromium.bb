@@ -22,11 +22,6 @@ namespace extensions {
 TEST_F(ExtensionManifestTest, BackgroundPermission) {
   LoadAndExpectError("background_permission.json",
                      errors::kBackgroundPermissionNeeded);
-
-  scoped_refptr<Extension> extension;
-  extension = LoadAndExpectSuccess("background_permission_alias.json");
-  EXPECT_TRUE(extension->HasAPIPermission(
-        extensions::APIPermission::kBackground));
 }
 
 TEST_F(ExtensionManifestTest, BackgroundScripts) {
