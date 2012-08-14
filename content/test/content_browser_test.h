@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/test/browser_test.h"
-#include "content/test/browser_test_base.h"
+#include "content/public/test/browser_test_base.h"
 
 class GURL;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/browser_test_base.h"
+#include "content/public/test/browser_test_base.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -38,6 +38,8 @@ static void DumpStackTraceSignalHandler(int signal) {
 
 }  // namespace
 
+namespace content {
+
 BrowserTestBase::BrowserTestBase() {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
@@ -60,7 +62,7 @@ void BrowserTestBase::SetUp() {
 
   command_line->AppendSwitch(switches::kDomAutomationController);
 
-  content::MainFunctionParams params(*command_line);
+  MainFunctionParams params(*command_line);
   params.ui_task =
       new base::Closure(
           base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));
@@ -90,3 +92,5 @@ void BrowserTestBase::CreateTestServer(const char* test_server_base) {
       net::TestServer::kLocalhost,
       FilePath().AppendASCII(test_server_base)));
 }
+
+}  // namespace content

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_BROWSER_TEST_BASE_H_
-#define CONTENT_TEST_BROWSER_TEST_BASE_H_
+#ifndef CONTENT_PUBLIC_TEST_BROWSER_TEST_BASE_H_
+#define CONTENT_PUBLIC_TEST_BROWSER_TEST_BASE_H_
 
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "net/test/test_server.h"
 
 class CommandLine;
+
+namespace content {
 
 class BrowserTestBase : public testing::Test {
  public:
@@ -87,4 +89,6 @@ class BrowserTestBase : public testing::Test {
 #endif
 };
 
-#endif  // CONTENT_TEST_BROWSER_TEST_BASE_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_BASE_H_

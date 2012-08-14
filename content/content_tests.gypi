@@ -28,6 +28,7 @@
       'sources': [
         'public/test/accessibility_test_utils_win.h',
         'public/test/browser_test.h',
+        'public/test/browser_test_base.h',
         'public/test/browser_test_utils.h',
         'public/test/content_test_suite_base.h',
         'public/test/download_test_observer.h',
@@ -78,7 +79,6 @@
         'gpu/gpu_idirect3d9_mock_win.h',
         'test/accessibility_test_utils_win.cc',
         'test/browser_test_base.cc',
-        'test/browser_test_base.h',
         'test/browser_test_utils.cc',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
