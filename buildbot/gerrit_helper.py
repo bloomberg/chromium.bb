@@ -34,10 +34,6 @@ class FailedToReachGerrit(GerritException):
 class GerritHelper():
   """Helper class to manage interaction with Gerrit server."""
 
-  _CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
-                    'AND CommitReady=+1 AND age:5m '
-                    'AND NOT ( CodeReview=-2 OR Verified=-1 )')
-
   _GERRIT_MAX_QUERY_RETURN = 500
 
   def __init__(self, internal):

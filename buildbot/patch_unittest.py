@@ -45,7 +45,7 @@ FAKE_PATCH_JSON = {
 # Change-ID of a known open change in public gerrit.
 GERRIT_OPEN_CHANGEID = '8366'
 GERRIT_MERGED_CHANGEID = '3'
-GERRIT_ABANDONED_CHANGEID = '1'
+GERRIT_ABANDONED_CHANGEID = '2'
 
 
 class UsableAssertRaises(object):
@@ -632,6 +632,19 @@ class TestGerritPatch(TestGitRepoPatch):
     self.assertTrue(merged.IsAlreadyMerged())
     self.assertFalse(abandoned.IsAlreadyMerged())
     self.assertFalse(still_open.IsAlreadyMerged())
+
+  def testApprovalTimestamp(self):
+    """Test that the approval timestamp is correctly extracted from JSON."""
+    repo = self._MakeRepo('git', self.source)
+    for approvals, expected in [(None, 0), ([], 0), ([1], 1), ([1, 3, 2], 3)]:
+      currentPatchSet = copy.deepcopy(FAKE_PATCH_JSON['currentPatchSet'])
+      if approvals is not None:
+        currentPatchSet['approvals'] = [{'grantedOn': x} for x in approvals]
+      patch = self._MkPatch(repo, self._GetSha1(repo, self.DEFAULT_TRACKING),
+                            currentPatchSet=currentPatchSet)
+      msg = 'Expected %r, but got %r (approvals=%r)' % (
+          expected, patch.approval_timestamp, approvals)
+      self.assertEqual(patch.approval_timestamp, expected, msg)
 
   @property
   def test_json(self):

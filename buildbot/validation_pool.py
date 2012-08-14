@@ -753,6 +753,10 @@ class ValidationPool(object):
 
   GLOBAL_DRYRUN = False
 
+  # The grace period (in seconds) before we reject a patch due to dependency
+  # errors.
+  REJECTION_GRACE_PERIOD = 30 * 60
+
   def __init__(self, overlays, build_root, build_number, builder_name,
                is_master, dryrun, changes=None, non_os_changes=None,
                conflicting_changes=None, helper_pool=None):
@@ -1056,6 +1060,45 @@ class ValidationPool(object):
 
     return changes_in_manifest, changes_not_in_manifest
 
+  @classmethod
+  def _FilterDependencyErrors(cls, errors):
+    """Filter out ignorable DependencyError exceptions.
+
+    If a dependency isn't marked as ready, or a dependency fails to apply,
+    we only complain after REJECTION_GRACE_PERIOD has passed since the patch
+    was uploaded.
+
+    This helps in two situations:
+      1) If the developer is in the middle of marking a stack of changes as
+         ready, we won't reject their work until the grace period has passed.
+      2) If the developer marks a big circular stack of changes as ready, and
+         some change in the middle of the stack doesn't apply, the user will
+         get a chance to rebase their change before we mark all the changes as
+         'not ready'.
+
+    This function filters out dependency errors that can be ignored due to
+    the grace period.
+
+    Args:
+      errors: List of exceptions to filter.
+
+    Returns:
+      List of unfiltered exceptions.
+    """
+    reject_timestamp = time.time() - cls.REJECTION_GRACE_PERIOD
+    results = []
+    for error in errors:
+      results.append(error)
+      if reject_timestamp < error.patch.approval_timestamp:
+        while error is not None:
+          if isinstance(error, cros_patch.DependencyError):
+            logging.info('Ignoring dependency errors for %s due to grace '
+                         'period', error.patch)
+            results.pop()
+            break
+          error = getattr(error, 'error', None)
+    return results
+
   def ApplyPoolIntoRepo(self, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
 
@@ -1098,12 +1141,14 @@ class ValidationPool(object):
       for change in applied:
         self._HandleApplySuccess(change)
 
+    failed_tot = self._FilterDependencyErrors(failed_tot)
     if failed_tot:
       logging.info(
           'The following changes could not cleanly be applied to ToT: %s',
           ' '.join([c.patch.id for c in failed_tot]))
       self._HandleApplyFailure(failed_tot)
 
+    failed_inflight = self._FilterDependencyErrors(failed_inflight)
     if failed_inflight:
       logging.info(
           'The following changes could not cleanly be applied against the '

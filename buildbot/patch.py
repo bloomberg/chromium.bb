@@ -1064,6 +1064,9 @@ class GerritPatch(GitRepoPatch):
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
     self.status = patch_dict['status']
+    approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
+    self.approval_timestamp = \
+        max(x['grantedOn'] for x in approvals) if approvals else 0
 
   def __reduce__(self):
     """Used for pickling to re-create patch object."""

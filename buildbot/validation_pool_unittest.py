@@ -84,7 +84,7 @@ class base_mixin(object):
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', internal=False,
-                tracking_branch='refs/heads/master'):
+                tracking_branch='refs/heads/master', approval_timestamp=0):
     # pylint: disable=W0201
     # We have to use a custom mock class to fix some brain behaviour of
     # pymox where multiple separate mocks can easily equal each other
@@ -108,6 +108,7 @@ class base_mixin(object):
     patch.LookupAliases = functools.partial(
         self._LookupAliases, patch)
     patch.tracking_branch = tracking_branch
+    patch.approval_timestamp = approval_timestamp
     return patch
 
   @staticmethod
@@ -704,6 +705,18 @@ class TestCoreLogic(base_mixin, mox.MoxTestBase):
 
     self.mox.ReplayAll()
     self.assertRaises(MyException, pool.ApplyPoolIntoRepo)
+    self.mox.VerifyAll()
+
+  def testFilterDependencyErrors(self):
+    """Verify that dependency errors are correctly filtered out."""
+    failures = [cros_patch.ApplyPatchException(x) for x in self.GetPatches(2)]
+    failures += [cros_patch.DependencyError(x, y) for x, y in
+                 zip(self.GetPatches(2), failures)]
+    failures[0].patch.approval_timestamp = time.time()
+    failures[-1].patch.approval_timestamp = time.time()
+    self.mox.ReplayAll()
+    result = validation_pool.ValidationPool._FilterDependencyErrors(failures)
+    self.assertEquals(set(failures[:-1]), set(result))
     self.mox.VerifyAll()
 
   def testFilterNonCrosProjects(self):
