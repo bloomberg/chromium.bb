@@ -1862,6 +1862,7 @@
         'browser/ui/website_settings/website_settings_unittest.cc',
         'browser/ui/webui/chrome_web_ui_data_source_unittest.cc',
         'browser/ui/webui/fileicon_source_unittest.cc',
+        'browser/ui/webui/ntp/android/partner_bookmarks_shim_unittest.cc',
         'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
         'browser/ui/webui/options2/language_options_handler_unittest.cc',
         'browser/ui/webui/policy_ui_unittest.cc',

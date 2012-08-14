@@ -4936,6 +4936,10 @@
           'dependencies': [
             'chrome_browser_jni_headers',
           ],
+          'sources': [
+            'browser/ui/webui/ntp/android/partner_bookmarks_shim.cc',
+            'browser/ui/webui/ntp/android/partner_bookmarks_shim.h',
+          ],
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',
             # Bookmark export/import are handled via the BookmarkColumns
