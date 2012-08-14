@@ -26,7 +26,14 @@ class WebsiteSettingsUIBridge;
   // Display the identity status (e.g. verified, not verified).
   NSTextField* identityStatusField_;
 
-  NSView* permissionsContentView_;
+  // The main content view for the Permissions tab.
+  NSView* permissionsTabContentView_;
+
+  // Container for cookies info on the Permissions tab.
+  NSView* cookiesView_;
+
+  // Container for permission info on the Permissions tab.
+  NSView* permissionsView_;
 
   NSImageView* identityStatusIcon_;
   NSTextField* identityStatusDescriptionField_;
@@ -39,8 +46,6 @@ class WebsiteSettingsUIBridge;
   NSImageView* firstVisitIcon_;
   NSTextField* firstVisitHeaderField_;
   NSTextField* firstVisitDescriptionField_;
-
-  CGFloat permissionsTabHeight_;
 
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.

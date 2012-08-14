@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/website_settings_bubble_controller.h"
 
+#include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -33,20 +34,21 @@ const CGFloat kFramePadding = 10;
 // Spacing between the optional headline and description text views.
 const CGFloat kHeadlineSpacing = 2;
 
-// Spacing between the image and the text.
-const CGFloat kImageSpacing = 10;
+// Spacing between images on the Connection tab and the text.
+const CGFloat kConnectionImageSpacing = 10;
 
-// Square size of the image.
-const CGFloat kImageSize = 30;
+// Square size of the images on the Connections tab.
+const CGFloat kConnectionImageSize = 30;
 
-// The X position of the text fields. Variants for with and without an image.
-const CGFloat kTextXPositionNoImage = kFramePadding;
-const CGFloat kTextXPosition = kTextXPositionNoImage + kImageSize +
-    kImageSpacing;
+// Square size of the permission images.
+const CGFloat kPermissionImageSize = 19;
 
-// Width of the text fields.
-const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
-    kFramePadding * 2);
+// Vertical adjustment for the permission images.
+// They have an extra pixel of padding on the bottom edge.
+const CGFloat kPermissionImageYAdjust = 1;
+
+// Spacing between a permission image and the text.
+const CGFloat kPermissionImageSpacing = 3;
 
 // The amount of padding given to tab view contents.
 const CGFloat kTabViewContentsPadding = kFramePadding;
@@ -82,6 +84,17 @@ const ContentSetting kPermissionsMenuSettings[] = {
   CONTENT_SETTING_BLOCK,
   CONTENT_SETTING_DEFAULT
 };
+
+// Return the text color to use for the indentity status when the site's
+// identity has been verified.
+NSColor* IdentityVerifiedTextColor() {
+  // RGB components are specified using integer RGB [0-255] values for easy
+  // comparison to other platforms.
+  return [NSColor colorWithCalibratedRed:0x07/255.0
+                                   green:0x95/255.0
+                                    blue:0
+                                   alpha:1.0];
+}
 
 }  // namespace
 
@@ -249,7 +262,7 @@ const ContentSetting kPermissionsMenuSettings[] = {
 - (void)initializeContents {
   // Keeps track of the position that the next control should be drawn at.
   NSPoint controlOrigin = NSMakePoint(
-      kTextXPositionNoImage,
+      kFramePadding,
       kFramePadding + info_bubble::kBubbleArrowHeight);
 
   // Create the container view that uses flipped coordinates.
@@ -321,7 +334,7 @@ const ContentSetting kPermissionsMenuSettings[] = {
   [tabView_ setControlSize:NSSmallControlSize];
   [contentView_ addSubview:tabView_.get()];
 
-  permissionsContentView_ = [self addPermissionsTabToTabView:tabView_];
+  permissionsTabContentView_ = [self addPermissionsTabToTabView:tabView_];
   [self addConnectionTabToTabView:tabView_];
 
   // Replace the window's content.
@@ -339,6 +352,17 @@ const ContentSetting kPermissionsMenuSettings[] = {
   scoped_nsobject<NSView> contentView([[WebsiteSettingsContentView alloc]
       initWithFrame:[tabView_ contentRect]]);
   [item setView:contentView.get()];
+
+  // Initialize the two containers that hold the controls. The initial frames
+  // are arbitrary, and will be adjusted after the controls are laid out.
+  cookiesView_ = [[[WebsiteSettingsContentView alloc]
+      initWithFrame:[tabView_ contentRect]] autorelease];
+  permissionsView_ = [[[WebsiteSettingsContentView alloc]
+      initWithFrame:[tabView_ contentRect]] autorelease];
+
+  [contentView addSubview:cookiesView_];
+  [contentView addSubview:permissionsView_];
+
   return contentView.get();
 }
 
@@ -352,11 +376,13 @@ const ContentSetting kPermissionsMenuSettings[] = {
   // Place all the text at the same position. It will be adjusted in
   // performLayout.
   NSPoint textPosition = NSMakePoint(
-      kTabViewContentsPadding + kImageSize + kImageSpacing,
+      kTabViewContentsPadding + kConnectionImageSize + kConnectionImageSpacing,
       kTabViewContentsPadding);
+  NSSize imageSize = NSMakeSize(kConnectionImageSize, kConnectionImageSize);
 
-  identityStatusIcon_ =
-      [self addImageToView:contentView atOffset:kTabViewContentsPadding];
+  identityStatusIcon_ = [self addImageWithSize:imageSize
+                                        toView:contentView
+                                      atOffset:kTabViewContentsPadding];
   identityStatusDescriptionField_ =
       [self addText:string16()
            withSize:[NSFont smallSystemFontSize]
@@ -365,8 +391,9 @@ const ContentSetting kPermissionsMenuSettings[] = {
             atPoint:textPosition];
   separatorAfterIdentity_ = [self addSeparatorToView:contentView];
 
-  connectionStatusIcon_ =
-      [self addImageToView:contentView atOffset:kTabViewContentsPadding];
+  connectionStatusIcon_ = [self addImageWithSize:imageSize
+                                          toView:contentView
+                                        atOffset:kTabViewContentsPadding];
   connectionStatusDescriptionField_ =
       [self addText:string16()
            withSize:[NSFont smallSystemFontSize]
@@ -375,8 +402,9 @@ const ContentSetting kPermissionsMenuSettings[] = {
             atPoint:textPosition];
   separatorAfterConnection_ = [self addSeparatorToView:contentView];
 
-  firstVisitIcon_ =
-      [self addImageToView:contentView atOffset:kTabViewContentsPadding];
+  firstVisitIcon_ = [self addImageWithSize:imageSize
+                                    toView:contentView
+                                  atOffset:kTabViewContentsPadding];
   firstVisitHeaderField_ =
       [self addText:l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE)
            withSize:[NSFont smallSystemFontSize]
@@ -414,7 +442,12 @@ const ContentSetting kPermissionsMenuSettings[] = {
   CGFloat yPos = NSMaxY([identityField_ frame]) + kHeadlineSpacing;
   yPos = [self setYPositionOfView:identityStatusField_ to:yPos];
 
-  // Lay out the connection tab.
+  // Lay out the Permissions tab.
+  NSRect permissionsViewFrame = [permissionsView_ frame];
+  permissionsViewFrame.origin.y = NSMaxY([cookiesView_ frame]);
+  [permissionsView_ setFrame:permissionsViewFrame];
+
+  // Lay out the Connection tab.
 
   // Lay out the identity status section.
   [self sizeTextFieldHeightToFit:identityStatusDescriptionField_];
@@ -452,13 +485,18 @@ const ContentSetting kPermissionsMenuSettings[] = {
   NSRect tabViewFrame = [tabView_ frame];
   tabViewFrame.origin.y = NSMaxY(segmentedControlFrame);
 
+  // Determine the height of the tab contents.
+
   CGFloat connectionTabHeight = std::max(
       NSMaxY([firstVisitDescriptionField_ frame]),
       NSMaxY([firstVisitIcon_ frame ]));
   connectionTabHeight += kVerticalSpacing;
 
+  CGFloat permissionsTabHeight =
+      NSHeight([cookiesView_ frame]) + NSHeight([permissionsView_ frame]);
+
   CGFloat tabContentHeight = std::max(connectionTabHeight,
-                                      permissionsTabHeight_);
+                                      permissionsTabHeight);
   tabViewFrame.size.height = tabContentHeight +
       NSHeight(tabViewFrame) - NSHeight([tabView_ contentRect]);
   [tabView_ setFrame:tabViewFrame];
@@ -536,7 +574,7 @@ const ContentSetting kPermissionsMenuSettings[] = {
   // Size the text to take up the full available width, with some padding.
   // The height is arbitrary as it will be adjusted later.
   CGFloat width = NSWidth([view frame]) - point.x - kFramePadding;
-  NSRect frame = NSMakeRect(point.x, point.y, width, kImageSize);
+  NSRect frame = NSMakeRect(point.x, point.y, width, 100);
   scoped_nsobject<NSTextField> textField(
      [[NSTextField alloc] initWithFrame:frame]);
   [self configureTextFieldAsLabel:textField.get()];
@@ -551,9 +589,10 @@ const ContentSetting kPermissionsMenuSettings[] = {
 
 // Add an image as a subview of the given view, placed at a pre-determined x
 // position and the given y position. Return the new NSImageView.
-- (NSImageView*)addImageToView:(NSView*)view
-                      atOffset:(CGFloat)offset {
-  NSRect frame = NSMakeRect(kFramePadding, offset, kImageSize, kImageSize);
+- (NSImageView*)addImageWithSize:(NSSize)size
+                          toView:(NSView*)view
+                        atOffset:(CGFloat)offset {
+  NSRect frame = NSMakeRect(kFramePadding, offset, size.width, size.height);
   scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
   [imageView setImageFrameStyle:NSImageFrameNone];
@@ -672,6 +711,18 @@ const ContentSetting kPermissionsMenuSettings[] = {
     (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
                   toView:(NSView*)view
                  atPoint:(NSPoint)point {
+  // TODO(dubroy): Remove this check by refactoring GetPermissionIcon to take
+  // the PermissionInfo object as its argument.
+  ContentSetting setting = permissionInfo.setting == CONTENT_SETTING_DEFAULT ?
+      permissionInfo.default_setting : permissionInfo.setting;
+  NSImage* image = WebsiteSettingsUI::GetPermissionIcon(
+      permissionInfo.type, setting).ToNSImage();
+  NSImageView* imageView = [self addImageWithSize:[image size]
+                                           toView:view
+                                         atOffset:point.y];
+  [imageView setImage:image];
+  point.x += kPermissionImageSize + kPermissionImageSpacing;
+
   string16 labelText =
       WebsiteSettingsUI::PermissionTypeToUIString(permissionInfo.type) +
       ASCIIToUTF16(":");
@@ -697,7 +748,60 @@ const ContentSetting kPermissionsMenuSettings[] = {
   popUpPosition.y -= titleRect.origin.y;
   [button setFrameOrigin:popUpPosition];
 
+  // Align the icon with the text.
+  [self alignPermissionIcon:imageView withTextField:label];
+
   return std::max(NSHeight([label frame]), NSHeight([button frame]));
+}
+
+// Align an image with a text field by vertically centering the image on
+// the cap height of the first line of text.
+- (void)alignPermissionIcon:(NSImageView*)imageView
+              withTextField:(NSTextField*)textField {
+  NSFont* font = [textField font];
+
+  // Calculate the offset from the top of the text field.
+  CGFloat capHeight = [font capHeight];
+  CGFloat offset = (kPermissionImageSize - capHeight) / 2 -
+      ([font ascender] - capHeight) - kPermissionImageYAdjust;
+
+  NSRect frame = [imageView frame];
+  frame.origin.y -= offset;
+  [imageView setFrame:frame];
+}
+
+- (CGFloat)addCookieInfo:
+    (const WebsiteSettingsUI::CookieInfo&)cookieInfo
+                  toView:(NSView*)view
+                 atPoint:(NSPoint)point {
+  NSImage* image = WebsiteSettingsUI::GetPermissionIcon(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW).ToNSImage();
+  NSImageView* imageView = [self addImageWithSize:[image size]
+                                           toView:view
+                                         atOffset:point.y];
+  [imageView setImage:image];
+  point.x += kPermissionImageSize + kPermissionImageSpacing;
+
+  string16 labelText = l10n_util::GetStringFUTF16(
+      IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
+      UTF8ToUTF16(cookieInfo.cookie_source),
+      base::IntToString16(cookieInfo.allowed),
+      base::IntToString16(cookieInfo.blocked));
+
+  NSTextField* label = [self addText:labelText
+                            withSize:[NSFont smallSystemFontSize]
+                                bold:NO
+                              toView:view
+                             atPoint:point];
+
+  // Shrink the label to fit the text width.
+  NSSize requiredSize = [[label cell] cellSizeForBounds:[label frame]];
+  [label setFrameSize:requiredSize];
+
+  // Align the icon with the text.
+  [self alignPermissionIcon:imageView withTextField:label];
+
+  return NSHeight([label frame]);
 }
 
 // Set the content of the identity and identity status fields.
@@ -706,6 +810,13 @@ const ContentSetting kPermissionsMenuSettings[] = {
       base::SysUTF8ToNSString(identityInfo.site_identity)];
   [identityStatusField_ setStringValue:
       base::SysUTF16ToNSString(identityInfo.GetIdentityStatusText())];
+
+  WebsiteSettings::SiteIdentityStatus status = identityInfo.identity_status;
+  if (status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
+      status == WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT ||
+      status == WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
+    [identityStatusField_ setTextColor:IdentityVerifiedTextColor()];
+  }
 
   [identityStatusIcon_ setImage:WebsiteSettingsUI::GetIdentityIcon(
       identityInfo.identity_status).ToNSImage()];
@@ -720,28 +831,59 @@ const ContentSetting kPermissionsMenuSettings[] = {
   [self performLayout];
 }
 
-- (void)setFirstVisit:(const string16&)firstVisit {
-  [firstVisitIcon_ setImage:
-      WebsiteSettingsUI::GetFirstVisitIcon(firstVisit).ToNSImage()];
-  [firstVisitDescriptionField_ setStringValue:
-      base::SysUTF16ToNSString(firstVisit)];
-  [self performLayout];
+- (void)setCookieInfo:(const CookieInfoList&)cookieInfoList {
+  [cookiesView_ setSubviews:[NSArray array]];
+  NSPoint controlOrigin = NSMakePoint(kFramePadding, kFramePadding);
+
+  NSTextField* header = [self addText:ASCIIToUTF16("Cookies")
+                             withSize:[NSFont smallSystemFontSize]
+                                 bold:YES
+                               toView:cookiesView_
+                              atPoint:controlOrigin];
+  [self sizeTextFieldHeightToFit:header];
+  controlOrigin.y += NSHeight([header frame]) + kPermissionsTabSpacing;
+
+  for (CookieInfoList::const_iterator it = cookieInfoList.begin();
+       it != cookieInfoList.end();
+       ++it) {
+    CGFloat rowHeight = [self addCookieInfo:*it
+                                     toView:cookiesView_
+                                    atPoint:controlOrigin];
+    controlOrigin.y += rowHeight + kPermissionsTabSpacing;
+  }
+  [cookiesView_ setFrameSize:NSMakeSize(kWindowWidth, controlOrigin.y)];
 }
 
 - (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList {
-  [permissionsContentView_ setSubviews:[NSArray array]];
+  [permissionsView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, kFramePadding);
+
+  NSTextField* header = [self addText:ASCIIToUTF16("Permissions")
+                             withSize:[NSFont smallSystemFontSize]
+                                 bold:YES
+                               toView:permissionsView_
+                              atPoint:controlOrigin];
+  [self sizeTextFieldHeightToFit:header];
+  controlOrigin.y += NSHeight([header frame]) + kPermissionsTabSpacing;
 
   for (PermissionInfoList::const_iterator permission =
            permissionInfoList.begin();
        permission != permissionInfoList.end();
        ++permission) {
     CGFloat rowHeight = [self addPermission:*permission
-                                     toView:permissionsContentView_
+                                     toView:permissionsView_
                                     atPoint:controlOrigin];
     controlOrigin.y += rowHeight + kPermissionsTabSpacing;
   }
-  permissionsTabHeight_ = controlOrigin.y;
+  [permissionsView_ setFrameSize:NSMakeSize(kWindowWidth, controlOrigin.y)];
+}
+
+- (void)setFirstVisit:(const string16&)firstVisit {
+  [firstVisitIcon_ setImage:
+      WebsiteSettingsUI::GetFirstVisitIcon(firstVisit).ToNSImage()];
+  [firstVisitDescriptionField_ setStringValue:
+      base::SysUTF16ToNSString(firstVisit)];
+  [self performLayout];
 }
 
 @end
@@ -786,18 +928,19 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
   [bubble_controller showWindow:nil];
 }
 
+void WebsiteSettingsUIBridge::SetIdentityInfo(
+    const WebsiteSettingsUI::IdentityInfo& identity_info) {
+  [bubble_controller_ setIdentityInfo:identity_info];
+}
+
 void WebsiteSettingsUIBridge::SetCookieInfo(
     const CookieInfoList& cookie_info_list) {
+  [bubble_controller_ setCookieInfo:cookie_info_list];
 }
 
 void WebsiteSettingsUIBridge::SetPermissionInfo(
     const PermissionInfoList& permission_info_list) {
   [bubble_controller_ setPermissionInfo:permission_info_list];
-}
-
-void WebsiteSettingsUIBridge::SetIdentityInfo(
-    const WebsiteSettingsUI::IdentityInfo& identity_info) {
-  [bubble_controller_ setIdentityInfo:identity_info];
 }
 
 void WebsiteSettingsUIBridge::SetFirstVisit(const string16& first_visit) {

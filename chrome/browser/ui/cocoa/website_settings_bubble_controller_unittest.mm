@@ -9,7 +9,7 @@
 #include "testing/gtest_mac.h"
 
 @interface WebsiteSettingsBubbleController (ExposedForTesting)
-- (NSView*)permissionsContentView;
+- (NSView*)permissionsView;
 - (NSImageView*)identityStatusIcon;
 - (NSTextField*)identityStatusDescriptionField;
 - (NSImageView*)connectionStatusIcon;
@@ -18,8 +18,8 @@
 @end
 
 @implementation WebsiteSettingsBubbleController (ExposedForTesting)
-- (NSView*)permissionsContentView {
-  return permissionsContentView_;
+- (NSView*)permissionsView {
+  return permissionsView_;
 }
 
 - (NSImageView*)identityStatusIcon {
@@ -205,9 +205,10 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   }
   bridge_->SetPermissionInfo(list);
 
-  // There should be two subviews per permission: a label and a select box.
-  NSArray* subviews = [[controller_ permissionsContentView] subviews];
-  EXPECT_EQ(arraysize(kTestPermissionTypes) * 2, [subviews count]);
+  // There should be three subviews per permission (an icon, a label and a
+  // select box), plus a text label for the Permission section.
+  NSArray* subviews = [[controller_ permissionsView] subviews];
+  EXPECT_EQ(arraysize(kTestPermissionTypes) * 3 + 1, [subviews count]);
 
   // Ensure that there is a distinct label for each permission.
   NSMutableSet* labels = [NSMutableSet set];
@@ -215,7 +216,8 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
     if ([view isKindOfClass:[NSTextField class]])
       [labels addObject:[static_cast<NSTextField*>(view) stringValue]];
   }
-  EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
+  // The section header ("Permissions") will also be found, hence the +1.
+  EXPECT_EQ(arraysize(kTestPermissionTypes) + 1, [labels count]);
 
   // Find the first permission pop-up button
   NSPopUpButton* button = nil;
