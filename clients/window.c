@@ -1579,9 +1579,6 @@ frame_menu_func(struct window *window, int index, void *data)
 		if (window->fullscreen_handler)
 			window->fullscreen_handler(window, window->user_data);
 		break;
-	case 2: /* rotate */
-	case 3: /* scale */
-		break;
 	}
 }
 
@@ -1592,12 +1589,13 @@ window_show_frame_menu(struct window *window,
 	int32_t x, y;
 
 	static const char *entries[] = {
-		"Close", "Fullscreen", "Rotate", "Scale"
+		"Close", "Fullscreen"
 	};
 
 	input_get_position(input, &x, &y);
 	window_show_menu(window->display, input, time, window,
-			 x - 10, y - 10, frame_menu_func, entries, 4);
+			 x - 10, y - 10, frame_menu_func, entries,
+			 ARRAY_LENGTH(entries));
 }
 
 static int
