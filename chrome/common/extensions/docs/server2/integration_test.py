@@ -37,6 +37,8 @@ class FakeSubversionServer(object):
     if os.path.isdir(path):
       html = ['<html>Revision 000000']
       for f in os.listdir(path):
+        if f.startswith('.'):
+          continue
         if os.path.isdir(os.path.join(path, f)):
           html.append('<a>' + f + '/</a>')
         else:
