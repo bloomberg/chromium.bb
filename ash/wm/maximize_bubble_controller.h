@@ -9,12 +9,16 @@
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace aura {
+class Window;
+}
+
 namespace base {
 class Timer;
 }
 
-namespace aura {
-class Window;
+namespace views {
+class CustomButton;
 }
 
 namespace ash {
@@ -27,7 +31,8 @@ class ASH_EXPORT MaximizeBubbleController {
   class Bubble;
 
   MaximizeBubbleController(FrameMaximizeButton* frame_maximize_button,
-                           bool is_maximized);
+                           bool is_maximized,
+                           int appearance_delay_ms);
   // Called from the outside to destroy the interface to the UI visuals.
   // The visuals will then delete when possible (maybe asynchronously).
   virtual ~MaximizeBubbleController();
@@ -58,6 +63,10 @@ class ASH_EXPORT MaximizeBubbleController {
   // The status of the associated window: Maximized or normal.
   bool is_maximized() const { return is_maximized_; }
 
+  // A unit test function to return buttons of the sub menu. |state| can be
+  // either SNAP_LEFT, SNAP_RIGHT or SNAP_MINIMIZE.
+  views::CustomButton* GetButtonForUnitTest(SnapType state);
+
  protected:
   // Called from the the Bubble class to destroy itself: It tells the owning
   // object that it will destroy itself asynchronously. The owner will then
@@ -79,6 +88,9 @@ class ASH_EXPORT MaximizeBubbleController {
 
   // The timer for the delayed creation of the menu.
   scoped_ptr<base::Timer> timer_;
+
+  // The appearance delay in ms (delay and fade in & fade out delay).
+  const int appearance_delay_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeBubbleController);
 };

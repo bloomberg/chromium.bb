@@ -50,9 +50,6 @@ const int kLabelSpacing = 4;
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
 
-// The delay of the bubble appearance.
-const int kBubbleAppearanceDelayMS = 200;
-
 // The animation offset in y for the bubble when appearing.
 const int kBubbleAnimationOffsetY = 5;
 
@@ -217,7 +214,7 @@ class BubbleMouseWatcherHost: public views::MouseWatcherHost {
 class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
                                          public views::MouseWatcherListener {
  public:
-  explicit Bubble(MaximizeBubbleController* owner);
+  explicit Bubble(MaximizeBubbleController* owner, int appearance_delay_ms_);
   virtual ~Bubble() {}
 
   // The window of the menu under which the SnapSizer will get created.
@@ -256,6 +253,10 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
   // of an asynchronous shutdown.
   MaximizeBubbleController* controller() const { return owner_; }
 
+  // Added for unit test: Retrieve the button for an action.
+  // |state| can be either SNAP_LEFT, SNAP_RIGHT or SNAP_MINIMIZE.
+  views::CustomButton* GetButtonForUnitTest(SnapType state);
+
  private:
   // True if the shut down has been initiated.
   bool shutting_down_;
@@ -278,6 +279,9 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
   // The mouse watcher which takes care of out of window hover events.
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
 
+  // The fade delay - if 0 it will show / hide immediately.
+  const int appearance_delay_ms_;
+
   DISALLOW_COPY_AND_ASSIGN(Bubble);
 };
 
@@ -294,6 +298,12 @@ class BubbleContentsButtonRow : public views::View,
                              const ui::Event& event) OVERRIDE;
   // Called from BubbleDialogButton.
   void ButtonHovered(BubbleDialogButton* sender);
+
+  // Added for unit test: Retrieve the button for an action.
+  // |state| can be either SNAP_LEFT, SNAP_RIGHT or SNAP_MINIMIZE.
+  views::CustomButton* GetButtonForUnitTest(SnapType state);
+
+  MaximizeBubbleController::Bubble* bubble() { return bubble_; }
 
  private:
   // The owning object which gets notifications.
@@ -318,6 +328,12 @@ class BubbleContentsView : public views::View {
   // This function can be executed through the frame maximize button as well as
   // through hover operations.
   void SetSnapType(SnapType snap_type);
+
+  // Added for unit test: Retrieve the button for an action.
+  // |state| can be either SNAP_LEFT, SNAP_RIGHT or SNAP_MINIMIZE.
+  views::CustomButton* GetButtonForUnitTest(SnapType state) {
+    return buttons_view_->GetButtonForUnitTest(state);
+  }
 
  private:
   // The owning class.
@@ -347,6 +363,7 @@ class BubbleDialogButton : public views::ImageButton {
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
 
  private:
   // The creating class which needs to get notified in case of a hover event.
@@ -355,14 +372,17 @@ class BubbleDialogButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(BubbleDialogButton);
 };
 
-MaximizeBubbleController::Bubble::Bubble(MaximizeBubbleController* owner)
+MaximizeBubbleController::Bubble::Bubble(
+    MaximizeBubbleController* owner,
+    int appearance_delay_ms)
     : views::BubbleDelegateView(owner->frame_maximize_button(),
                                 views::BubbleBorder::TOP_RIGHT),
       shutting_down_(false),
       owner_(owner),
       bubble_widget_(NULL),
       contents_view_(NULL),
-      bubble_border_(NULL) {
+      bubble_border_(NULL),
+      appearance_delay_ms_(appearance_delay_ms) {
   set_margins(gfx::Insets());
 
   // The window needs to be owned by the root so that the SnapSizer does not
@@ -401,7 +421,10 @@ MaximizeBubbleController::Bubble::Bubble(MaximizeBubbleController* owner)
   // Recalculate size with new border.
   SizeToContents();
 
-  StartFade(true);
+  if (!appearance_delay_ms_)
+    Show();
+  else
+    StartFade(true);
 
   mouse_watcher_.reset(new views::MouseWatcher(
       new BubbleMouseWatcherHost(this),
@@ -518,12 +541,20 @@ void MaximizeBubbleController::Bubble::ControllerRequestsCloseAndDelete() {
 
   // Close the widget asynchronously after the hide animation is finished.
   initial_position_ = bubble_widget_->GetNativeWindow()->bounds();
-  StartFade(false);
+  if (!appearance_delay_ms_)
+    bubble_widget_->CloseNow();
+  else
+    StartFade(false);
 }
 
 void MaximizeBubbleController::Bubble::SetSnapType(SnapType snap_type) {
   if (contents_view_)
     contents_view_->SetSnapType(snap_type);
+}
+
+views::CustomButton* MaximizeBubbleController::Bubble::GetButtonForUnitTest(
+    SnapType state) {
+  return contents_view_->GetButtonForUnitTest(state);
 }
 
 BubbleContentsButtonRow::BubbleContentsButtonRow(
@@ -583,6 +614,21 @@ void BubbleContentsButtonRow::ButtonHovered(BubbleDialogButton* sender) {
     bubble_->controller()->OnButtonHover(SNAP_RIGHT);
   else
     bubble_->controller()->OnButtonHover(SNAP_NONE);
+}
+
+views::CustomButton* BubbleContentsButtonRow::GetButtonForUnitTest(
+    SnapType state) {
+  switch (state) {
+    case SNAP_LEFT:
+      return left_button_;
+    case SNAP_MINIMIZE:
+      return minimize_button_;
+    case SNAP_RIGHT:
+      return right_button_;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
 }
 
 BubbleContentsView::BubbleContentsView(
@@ -646,19 +692,25 @@ void BubbleContentsView::SetSnapType(SnapType snap_type) {
 
 MaximizeBubbleController::MaximizeBubbleController(
     FrameMaximizeButton* frame_maximize_button,
-    bool is_maximized)
+    bool is_maximized,
+    int appearance_delay_ms)
     : frame_maximize_button_(frame_maximize_button),
       bubble_(NULL),
-      is_maximized_(is_maximized) {
+      is_maximized_(is_maximized),
+      appearance_delay_ms_(appearance_delay_ms) {
   // Create the task which will create the bubble delayed.
   base::OneShotTimer<MaximizeBubbleController>* new_timer =
       new base::OneShotTimer<MaximizeBubbleController>();
+  // Note: Even if there was no delay time given, we need to have a timer.
   new_timer->Start(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kBubbleAppearanceDelayMS),
+      base::TimeDelta::FromMilliseconds(
+          appearance_delay_ms_ ? appearance_delay_ms_ : 10),
       this,
       &MaximizeBubbleController::CreateBubble);
   timer_.reset(new_timer);
+  if (!appearance_delay_ms_)
+    CreateBubble();
 }
 
 MaximizeBubbleController::~MaximizeBubbleController() {
@@ -692,6 +744,11 @@ void MaximizeBubbleController::OnButtonHover(SnapType snap_type) {
   frame_maximize_button_->SnapButtonHovered(snap_type);
 }
 
+views::CustomButton* MaximizeBubbleController::GetButtonForUnitTest(
+    SnapType state) {
+  return bubble_ ? bubble_->GetButtonForUnitTest(state) : NULL;
+}
+
 void MaximizeBubbleController::RequestDestructionThroughOwner() {
   // Tell the parent to destroy us (if this didn't happen yet).
   if (timer_.get()) {
@@ -704,7 +761,7 @@ void MaximizeBubbleController::RequestDestructionThroughOwner() {
 
 void MaximizeBubbleController::CreateBubble() {
   if (!bubble_)
-    bubble_ = new Bubble(this);
+    bubble_ = new Bubble(this, appearance_delay_ms_);
 
   timer_->Stop();
 }
@@ -737,6 +794,22 @@ void BubbleDialogButton::OnMouseEntered(const ui::MouseEvent& event) {
 void BubbleDialogButton::OnMouseExited(const ui::MouseEvent& event) {
   button_row_->ButtonHovered(NULL);
   views::ImageButton::OnMouseExited(event);
+}
+
+bool BubbleDialogButton::OnMouseDragged(const ui::MouseEvent& event) {
+  if (!button_row_->bubble()->controller())
+    return false;
+
+  // Remove the phantom window when we leave the button.
+  gfx::Point screen_location(event.location());
+  View::ConvertPointToScreen(this, &screen_location);
+  if (!GetBoundsInScreen().Contains(screen_location))
+    button_row_->ButtonHovered(NULL);
+  else
+    button_row_->ButtonHovered(this);
+
+  // Pass the event on to the normal handler.
+  return views::ImageButton::OnMouseDragged(event);
 }
 
 }  // namespace ash
