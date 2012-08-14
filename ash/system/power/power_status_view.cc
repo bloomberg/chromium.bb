@@ -114,14 +114,18 @@ void PowerStatusView::UpdateTextForDefaultView() {
           ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
               IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
     } else if (hour || min){
+      string16 minute = min < 10 ?
+          ASCIIToUTF16("0") + base::IntToString16(min) :
+          base::IntToString16(min);
       battery_time =
           l10n_util::GetStringFUTF16(
               IDS_ASH_STATUS_TRAY_BATTERY_TIME_ONLY,
               base::IntToString16(hour),
-              base::IntToString16(min)) +
-          ASCIIToUTF16(" - ");
+              minute);
     }
-    string16 battery_status = battery_time + battery_percentage;
+    string16 battery_status = battery_time.empty() ?
+        battery_percentage :
+        battery_percentage + ASCIIToUTF16(" - ") + battery_time;
     time_status_label_->SetText(battery_status);
   }
 }
@@ -155,13 +159,21 @@ void PowerStatusView::UpdateTextForNotificationView() {
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
   } else if (hour || min) {
-    time_label_->SetText(
+    if (supply_status_.line_power_on) {
+      time_label_->SetText(
         l10n_util::GetStringFUTF16(
-            supply_status_.line_power_on ?
-            IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL :
-            IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_EMPTY,
+            IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,
             base::IntToString16(hour),
             base::IntToString16(min)));
+    } else {
+        // This is a low battery warning, which prompts user when battery
+        // time left is not much (ie in minutes).
+        min = hour * 60 + min;
+        time_label_->SetText(
+            l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_EMPTY,
+                base::IntToString16(min)));
+    }
   } else {
     time_label_->SetText(string16());
   }
