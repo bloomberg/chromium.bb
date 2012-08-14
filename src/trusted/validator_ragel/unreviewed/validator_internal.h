@@ -178,6 +178,31 @@ static FORCEINLINE int MarkJumpTarget(size_t jump_dest,
 }
 
 
+static INLINE int ProcessInvalidJumpTargets(
+    const uint8_t *data,
+    size_t size,
+    uint8_t *valid_targets,
+    uint8_t *jump_dests,
+    process_validation_error_func process_error,
+    void *userdata) {
+  size_t i;
+
+  assert(size % 32 == 0);
+
+  for (i = 0; i < size / 32; i++) {
+    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
+    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+    if ((jump_dest_mask & ~valid_target_mask) != 0) {
+      // TODO(shcherbina): report address precisely, not just 32-byte block
+      process_error(data + i * 32, BAD_JUMP_TARGET, userdata);
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+
 /*
  * Process rel8_operand.  Note: rip points to the beginning of the next
  * instruction here and x86 encoding guarantees rel8 field is the last one

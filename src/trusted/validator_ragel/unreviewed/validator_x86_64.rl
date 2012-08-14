@@ -315,13 +315,20 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
   int result = 0;
-  size_t i = options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM? size : kBundleSize;
 
   assert(size % kBundleSize == 0);
 
-  if (!valid_targets || !jump_dests) goto error_detected;
+  if (!valid_targets || !jump_dests) {
+    result = 1;
+    goto error_detected;
+  }
 
-  for (current_position = data, end_of_bundle = current_position + i;
+  if (options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM)
+    end_of_bundle = data + size;
+  else
+    end_of_bundle = data + kBundleSize;
+
+  for (current_position = data;
        current_position < data + size;
        current_position = end_of_bundle,
        end_of_bundle = current_position + kBundleSize) {
@@ -352,15 +359,12 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     }
   }
 
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      process_error(data + i * 32, BAD_JUMP_TARGET, userdata);
-      result = 1;
-      break;
-    }
-  }
+  if (ProcessInvalidJumpTargets(
+      data, size,
+      valid_targets,
+      jump_dests,
+      process_error, userdata))
+    result = 1;
 
 error_detected:
   free(jump_dests);

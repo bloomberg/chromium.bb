@@ -1,4 +1,4 @@
-/* native_client//home/khim/work/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_32.c
+/* native_client//usr/local/google/home/shcherbina/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_32.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for ia32 mode.
  */
@@ -40,13 +40,20 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
   int result = 0;
-  size_t i = options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM? size : kBundleSize;
 
   assert(size % kBundleSize == 0);
 
-  if (!valid_targets || !jump_dests) goto error_detected;
+  if (!valid_targets || !jump_dests) {
+    result = 1;
+    goto error_detected;
+  }
 
-  for (current_position = data, end_of_bundle = current_position + i;
+  if (options & PROCESS_CHUNK_AS_A_CONTIGUOUS_STREAM)
+    end_of_bundle = data + size;
+  else
+    end_of_bundle = data + kBundleSize;
+
+  for (current_position = data;
        current_position < data + size;
        current_position = end_of_bundle,
        end_of_bundle = current_position + kBundleSize) {
@@ -1898,13 +1905,21 @@ st29:
 case 29:
 	switch( (*( current_position)) ) {
 		case 4u: goto st2;
+		case 5u: goto st3;
 		case 12u: goto st2;
+		case 13u: goto st3;
 		case 20u: goto st2;
+		case 21u: goto st3;
 		case 28u: goto st2;
+		case 29u: goto st3;
 		case 36u: goto st2;
+		case 37u: goto st3;
 		case 44u: goto st2;
+		case 45u: goto st3;
 		case 52u: goto st2;
+		case 53u: goto st3;
 		case 60u: goto st2;
+		case 61u: goto st3;
 		case 68u: goto st8;
 		case 76u: goto st8;
 		case 84u: goto st8;
@@ -1922,39 +1937,15 @@ case 29:
 		case 180u: goto st9;
 		case 188u: goto st9;
 	}
-	if ( (*( current_position)) < 38u ) {
-		if ( (*( current_position)) < 14u ) {
-			if ( (*( current_position)) > 3u ) {
-				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
-					goto tr0;
-			} else
-				goto tr0;
-		} else if ( (*( current_position)) > 19u ) {
-			if ( (*( current_position)) > 27u ) {
-				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 22u )
-				goto tr0;
-		} else
+	if ( (*( current_position)) < 64u ) {
+		if ( (*( current_position)) <= 63u )
 			goto tr0;
-	} else if ( (*( current_position)) > 43u ) {
-		if ( (*( current_position)) < 62u ) {
-			if ( (*( current_position)) > 51u ) {
-				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
-					goto tr0;
-			} else if ( (*( current_position)) >= 46u )
-				goto tr0;
-		} else if ( (*( current_position)) > 63u ) {
-			if ( (*( current_position)) > 127u ) {
-				if ( 192u <= (*( current_position)) )
-					goto tr16;
-			} else if ( (*( current_position)) >= 64u )
-				goto st7;
-		} else
-			goto tr0;
+	} else if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto st3;
 	} else
-		goto tr0;
-	goto st3;
+		goto st7;
+	goto tr16;
 st30:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof30;
@@ -6215,13 +6206,21 @@ st197:
 case 197:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
+		case 5u: goto st36;
 		case 12u: goto st35;
+		case 13u: goto st36;
 		case 20u: goto st35;
+		case 21u: goto st36;
 		case 28u: goto st35;
+		case 29u: goto st36;
 		case 36u: goto st35;
+		case 37u: goto st36;
 		case 44u: goto st35;
+		case 45u: goto st36;
 		case 52u: goto st35;
+		case 53u: goto st36;
 		case 60u: goto st35;
+		case 61u: goto st36;
 		case 68u: goto st41;
 		case 76u: goto st41;
 		case 84u: goto st41;
@@ -6239,39 +6238,15 @@ case 197:
 		case 180u: goto st42;
 		case 188u: goto st42;
 	}
-	if ( (*( current_position)) < 38u ) {
-		if ( (*( current_position)) < 14u ) {
-			if ( (*( current_position)) > 3u ) {
-				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
-					goto st10;
-			} else
-				goto st10;
-		} else if ( (*( current_position)) > 19u ) {
-			if ( (*( current_position)) > 27u ) {
-				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
-					goto st10;
-			} else if ( (*( current_position)) >= 22u )
-				goto st10;
-		} else
+	if ( (*( current_position)) < 64u ) {
+		if ( (*( current_position)) <= 63u )
 			goto st10;
-	} else if ( (*( current_position)) > 43u ) {
-		if ( (*( current_position)) < 62u ) {
-			if ( (*( current_position)) > 51u ) {
-				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
-					goto st10;
-			} else if ( (*( current_position)) >= 46u )
-				goto st10;
-		} else if ( (*( current_position)) > 63u ) {
-			if ( (*( current_position)) > 127u ) {
-				if ( 192u <= (*( current_position)) )
-					goto tr16;
-			} else if ( (*( current_position)) >= 64u )
-				goto st40;
-		} else
-			goto st10;
+	} else if ( (*( current_position)) > 127u ) {
+		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
+			goto st36;
 	} else
-		goto st10;
-	goto st36;
+		goto st40;
+	goto tr16;
 tr342:
 	{
     SET_VEX_PREFIX3(*current_position);
@@ -9611,15 +9586,12 @@ case 245:
 
   }
 
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
-    if ((jump_dest_mask & ~valid_target_mask) != 0) {
-      process_error(data + i * 32, BAD_JUMP_TARGET, userdata);
-      result = 1;
-      break;
-    }
-  }
+  if (ProcessInvalidJumpTargets(
+      data, size,
+      valid_targets,
+      jump_dests,
+      process_error, userdata))
+    result = 1;
 
 error_detected:
   free(jump_dests);
