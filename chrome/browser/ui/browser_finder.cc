@@ -153,23 +153,6 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   return NULL;
 }
 
-Browser* FindBrowserForController(
-    const content::NavigationController* controller,
-    int* index_result) {
-  for (BrowserList::const_iterator it = BrowserList::begin();
-       it != BrowserList::end(); ++it) {
-    int index = (*it)->tab_strip_model()->GetIndexOfWebContents(
-        controller->GetWebContents());
-    if (index != TabStripModel::kNoTab) {
-      if (index_result)
-        *index_result = index;
-      return *it;
-    }
-  }
-  return NULL;
-}
-
-
 Browser* FindLastActiveWithProfile(Profile* profile) {
   // We are only interested in last active browsers, so we don't fall back to
   // all browsers like FindBrowserWith* do.

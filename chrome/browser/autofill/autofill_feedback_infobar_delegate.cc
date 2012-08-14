@@ -45,8 +45,7 @@ string16 AutofillFeedbackInfoBarDelegate::GetLinkText() const {
 bool AutofillFeedbackInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
   chrome::ShowFeedbackPage(
-      browser::FindBrowserForController(
-          &owner()->web_contents()->GetController(), NULL),
+      browser::FindBrowserWithWebContents(owner()->web_contents()),
       feedback_message_,
       std::string(kCategoryTagAutofill));
   return true;

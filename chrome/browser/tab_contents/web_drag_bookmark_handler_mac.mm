@@ -51,8 +51,8 @@ void WebDragBookmarkHandlerMac::OnDrop() {
     }
 
     // Focus the target browser.
-    Browser* browser = browser::FindBrowserForController(
-        &tab_->web_contents()->GetController(), NULL);
+    Browser* browser = browser::FindBrowserWithWebContents(
+        tab_->web_contents());
     if (browser)
       browser->window()->Show();
   }

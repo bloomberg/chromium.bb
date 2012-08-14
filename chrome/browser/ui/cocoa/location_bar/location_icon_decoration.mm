@@ -106,7 +106,7 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
     NOTREACHED();
     return true;
   }
-  Browser* browser = browser::FindBrowserForController(&controller, NULL);
+  Browser* browser = browser::FindBrowserWithWebContents(tab);
   chrome::ShowPageInfo(browser, tab, nav_entry->GetURL(), nav_entry->GetSSL(),
                        true);
   return true;

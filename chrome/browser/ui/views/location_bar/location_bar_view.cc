@@ -1147,8 +1147,7 @@ void LocationBarView::RefreshPageActionViews() {
 
   WebContents* contents = GetWebContentsFromDelegate(delegate_);
   if (!page_action_views_.empty() && contents) {
-    Browser* browser =
-        browser::FindBrowserForController(&contents->GetController(), NULL);
+    Browser* browser = browser::FindBrowserWithWebContents(contents);
     GURL url = chrome::GetActiveWebContents(browser)->GetURL();
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
