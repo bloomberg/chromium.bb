@@ -205,6 +205,9 @@ window_create_transient(struct display *display, struct window *parent,
 struct window *
 window_create_custom(struct display *display);
 
+int
+window_has_focus(struct window *window);
+
 typedef void (*menu_func_t)(struct window *window, int index, void *data);
 
 void

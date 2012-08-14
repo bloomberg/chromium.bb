@@ -145,7 +145,8 @@ struct window {
 	int resize_needed;
 	int type;
 	int transparent;
-	struct input *keyboard_device;
+	int focus_count;
+
 	enum window_buffer_type buffer_type;
 
 	cairo_surface_t *cairo_surface;
@@ -767,6 +768,12 @@ window_attach_surface(struct window *window)
 		wl_region_destroy(window->opaque_region);
 		window->opaque_region = NULL;
 	}
+}
+
+int
+window_has_focus(struct window *window)
+{
+	return window->focus_count > 0;
 }
 
 void
@@ -1514,7 +1521,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 
 	cr = cairo_create(window->cairo_surface);
 
-	if (window->keyboard_device)
+	if (window->focus_count)
 		flags |= THEME_FRAME_ACTIVE;
 	theme_render_frame(t, cr, widget->allocation.width,
 			   widget->allocation.height, window->title, flags);
@@ -1938,7 +1945,7 @@ input_remove_keyboard_focus(struct input *input)
 	if (!window)
 		return;
 
-	window->keyboard_device = NULL;
+	window->focus_count--;
 	if (window->keyboard_focus_handler)
 		(*window->keyboard_focus_handler)(window, NULL,
 						  window->user_data);
@@ -2031,11 +2038,10 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 	input->keyboard_focus = wl_surface_get_user_data(surface);
 
 	window = input->keyboard_focus;
-	window->keyboard_device = input;
+	window->focus_count++;
 	if (window->keyboard_focus_handler)
 		(*window->keyboard_focus_handler)(window,
-						  window->keyboard_device,
-						  window->user_data);
+						  input, window->user_data);
 }
 
 static void
@@ -2064,7 +2070,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
 	input->display->serial = serial;
 	code = key + 8;
-	if (!window || window->keyboard_device != input || !input->xkb.state)
+	if (!window || !input->xkb.state)
 		return;
 
 	num_syms = xkb_key_get_syms(input->xkb.state, code, &syms);

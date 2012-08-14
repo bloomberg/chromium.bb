@@ -404,7 +404,6 @@ struct terminal {
 	struct utf8_state_machine state_machine;
 	int margin;
 	int fullscreen;
-	int focused;
 	struct color_scheme *color_scheme;
 	struct terminal_color color_table[256];
 	cairo_font_extents_t extents;
@@ -537,7 +536,7 @@ terminal_decode_attr(struct terminal *terminal, int row, int col,
 	if ((attr.a & ATTRMASK_INVERSE) ||
 	    decoded->attr.s ||
 	    ((terminal->mode & MODE_SHOW_CURSOR) &&
-	     terminal->focused && terminal->row == row &&
+	     window_has_focus(terminal->window) && terminal->row == row &&
 	     terminal->column == col)) {
 		foreground = attr.bg;
 		background = attr.fg;
@@ -999,7 +998,8 @@ redraw_handler(struct widget *widget, void *data)
 	attr.key = ~0;
 	glyph_run_flush(&run, attr);
 
-	if ((terminal->mode & MODE_SHOW_CURSOR) && !terminal->focused) {
+	if ((terminal->mode & MODE_SHOW_CURSOR) &&
+	    !window_has_focus(terminal->window)) {
 		d = 0.5;
 
 		cairo_set_line_width(cr, 1);
@@ -2260,7 +2260,6 @@ keyboard_focus_handler(struct window *window,
 {
 	struct terminal *terminal = data;
 
-	terminal->focused = (device != NULL);
 	window_schedule_redraw(terminal->window);
 }
 
