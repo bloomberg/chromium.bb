@@ -24,6 +24,5 @@ install:
 	  $(BIN)/me2me_virtual_host
 	install $(TOOLS)/gaia_auth.py -m 0644 $(SHARE)
 	install $(TOOLS)/keygen.py -m 0644 $(SHARE)
-	install $(RELEASE)/Xvfb-randr -m 0755 $(BIN)
 	install $(RELEASE)/remoting_host_keygen -m 0755 $(LIB)
 	install $(RELEASE)/remoting_me2me_host -m 0755 $(LIB)
