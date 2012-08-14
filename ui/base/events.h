@@ -156,6 +156,10 @@ UI_EXPORT KeyboardCode KeyboardCodeFromNative(
 // Returns true if the message is a mouse event.
 UI_EXPORT bool IsMouseEvent(const base::NativeEvent& native_event);
 
+// Returns the flags of the button that changed during a press/release.
+UI_EXPORT int GetChangedMouseButtonFlagsFromNative(
+    const base::NativeEvent& native_event);
+
 // Gets the mouse wheel offset from a native event.
 UI_EXPORT int GetMouseWheelOffset(const base::NativeEvent& native_event);
 

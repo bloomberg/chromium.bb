@@ -974,7 +974,8 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
       break;
     case ui::ET_MOUSE_RELEASED:
       mouse_pressed_handler_ = NULL;
-      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
+      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask &
+          ~event->changed_button_flags();
       Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
       break;
     default:

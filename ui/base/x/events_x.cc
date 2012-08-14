@@ -863,6 +863,29 @@ bool IsMouseEvent(const base::NativeEvent& native_event) {
   return false;
 }
 
+int GetChangedMouseButtonFlagsFromNative(
+    const base::NativeEvent& native_event) {
+  switch (native_event->type) {
+    case ButtonPress:
+    case ButtonRelease:
+      return GetEventFlagsFromXState(native_event->xbutton.state);
+    case GenericEvent: {
+      XIDeviceEvent* xievent =
+          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+      switch (xievent->evtype) {
+        case XI_ButtonPress:
+        case XI_ButtonRelease:
+          return GetEventFlagsForButton(EventButtonFromNative(native_event));
+        default:
+          break;
+      }
+    }
+    default:
+      break;
+  }
+  return 0;
+}
+
 int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   int button = native_event->type == GenericEvent
     ? EventButtonFromNative(native_event) : native_event->xbutton.button;

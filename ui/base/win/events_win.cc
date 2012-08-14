@@ -224,6 +224,12 @@ bool IsMouseEvent(const base::NativeEvent& native_event) {
          IsNonClientMouseEvent(native_event);
 }
 
+int GetChangedMouseButtonFlagsFromNative(
+    const base::NativeEvent& native_event) {
+  // TODO(sky): implement me.
+  return 0;
+}
+
 int GetMouseWheelOffset(const base::NativeEvent& native_event) {
   DCHECK(native_event.message == WM_MOUSEWHEEL);
   return GET_WHEEL_DELTA_WPARAM(native_event.wParam);

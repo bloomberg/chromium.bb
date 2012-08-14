@@ -187,7 +187,8 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   // converted from |source| coordinate system to |target| coordinate system.
   template <class T>
   MouseEvent(const MouseEvent& model, T* source, T* target)
-      : LocatedEvent(model, source, target) {
+      : LocatedEvent(model, source, target),
+        changed_button_flags_(model.changed_button_flags_) {
   }
 
   template <class T>
@@ -196,7 +197,8 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
              T* target,
              EventType type,
              int flags)
-      : LocatedEvent(model, source, target) {
+      : LocatedEvent(model, source, target),
+        changed_button_flags_(model.changed_button_flags_) {
     set_type(type);
     set_flags(flags);
   }
@@ -247,16 +249,27 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   // Set the click count for a mousedown message. Can be 1, 2 or 3.
   void SetClickCount(int click_count);
 
+  // Identifies the button that changed. During a press this corresponds to the
+  // button that was pressed and during a release this corresponds to the button
+  // that was released.
+  // NOTE: during a press and release flags() contains the complete set of
+  // flags. Use this to determine the button that was pressed or released.
+  int changed_button_flags() const { return changed_button_flags_; }
+
  protected:
   explicit MouseEvent(const MouseEvent& model);
 
  private:
-  gfx::Point root_location_;
-
-  static MouseEvent* last_click_event_;
   // Returns the repeat count based on the previous mouse click, if it is
   // recent enough and within a small enough distance.
   static int GetRepeatCount(const MouseEvent& click_event);
+
+  gfx::Point root_location_;
+
+  // See description above getter for details.
+  int changed_button_flags_;
+
+  static MouseEvent* last_click_event_;
 };
 
 class UI_EXPORT TouchEvent : public LocatedEvent {

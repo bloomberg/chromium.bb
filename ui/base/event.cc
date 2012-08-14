@@ -125,7 +125,9 @@ void LocatedEvent::UpdateForRootTransform(const Transform& root_transform) {
 }
 
 MouseEvent::MouseEvent(const base::NativeEvent& native_event)
-    : LocatedEvent(native_event) {
+    : LocatedEvent(native_event),
+      changed_button_flags_(
+          GetChangedMouseButtonFlagsFromNative(native_event)) {
   if (type() == ET_MOUSE_PRESSED)
     SetClickCount(GetRepeatCount(*this));
 }
@@ -134,7 +136,8 @@ MouseEvent::MouseEvent(EventType type,
                        const gfx::Point& location,
                        const gfx::Point& root_location,
                        int flags)
-    : LocatedEvent(type, location, root_location, flags) {
+    : LocatedEvent(type, location, root_location, flags),
+      changed_button_flags_(0) {
 }
 
 // static
