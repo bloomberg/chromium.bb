@@ -876,13 +876,14 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
 void ViewSource(Browser* browser, TabContents* contents) {
   DCHECK(contents);
 
-  NavigationEntry* active_entry =
-    contents->web_contents()->GetController().GetActiveEntry();
-  if (!active_entry)
+  // Use the last committed entry, since the pending entry hasn't loaded yet and
+  // won't be copied into the cloned tab.
+  NavigationEntry* entry =
+    contents->web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
     return;
 
-  ViewSource(browser, contents, active_entry->GetURL(),
-             active_entry->GetContentState());
+  ViewSource(browser, contents, entry->GetURL(), entry->GetContentState());
 }
 
 void ViewSource(Browser* browser,
@@ -892,6 +893,8 @@ void ViewSource(Browser* browser,
   content::RecordAction(UserMetricsAction("ViewSource"));
   DCHECK(contents);
 
+  // Note that Clone does not copy the pending or transient entries, so the
+  // active entry in view_source_contents will be the last committed entry.
   TabContents* view_source_contents = contents->Clone();
   view_source_contents->web_contents()->GetController().PruneAllButActive();
   NavigationEntry* active_entry =

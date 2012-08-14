@@ -64,11 +64,18 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
   GURL url1("http://foo/1");
   GURL url2("http://foo/2");
   GURL url3("http://foo/3");
+  GURL url4("http://foo/4");
 
-  // Navigate to the three urls, then go back.
+  // Navigate to three urls, plus a pending URL that hasn't committed.
   AddTab(browser(), url1);
   NavigateAndCommitActiveTab(url2);
   NavigateAndCommitActiveTab(url3);
+  content::NavigationController& orig_controller =
+      chrome::GetWebContentsAt(browser(), 0)->GetController();
+  orig_controller.LoadURL(
+      url4, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_EQ(3, orig_controller.GetEntryCount());
+  EXPECT_TRUE(orig_controller.GetPendingEntry());
 
   size_t initial_window_count = BrowserList::size();
 
@@ -85,11 +92,49 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
   // Verify the stack of urls.
   content::NavigationController& controller =
       chrome::GetWebContentsAt(browser(), 1)->GetController();
-  ASSERT_EQ(3, controller.GetEntryCount());
-  ASSERT_EQ(2, controller.GetCurrentEntryIndex());
-  ASSERT_TRUE(url1 == controller.GetEntryAtIndex(0)->GetURL());
-  ASSERT_TRUE(url2 == controller.GetEntryAtIndex(1)->GetURL());
-  ASSERT_TRUE(url3 == controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url2, controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url3, controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_FALSE(controller.GetPendingEntry());
+}
+
+// Tests IDC_VIEW_SOURCE (See http://crbug.com/138140).
+TEST_F(BrowserCommandsTest, ViewSource) {
+  GURL url1("http://foo/1");
+  GURL url2("http://foo/2");
+
+  // Navigate to a URL, plus a pending URL that hasn't committed.
+  AddTab(browser(), url1);
+  content::NavigationController& orig_controller =
+      chrome::GetWebContentsAt(browser(), 0)->GetController();
+  orig_controller.LoadURL(
+      url2, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_EQ(1, orig_controller.GetEntryCount());
+  EXPECT_TRUE(orig_controller.GetPendingEntry());
+
+  size_t initial_window_count = BrowserList::size();
+
+  // View Source.
+  chrome::ExecuteCommand(browser(), IDC_VIEW_SOURCE);
+
+  // The view source tab should not end up in a new window.
+  size_t window_count = BrowserList::size();
+  ASSERT_EQ(initial_window_count, window_count);
+
+  // And we should have a newly duplicated tab.
+  ASSERT_EQ(2, browser()->tab_count());
+
+  // Verify we are viewing the source of the last committed entry.
+  GURL view_source_url("view-source:http://foo/1");
+  content::NavigationController& controller =
+      chrome::GetWebContentsAt(browser(), 1)->GetController();
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(view_source_url, controller.GetEntryAtIndex(0)->GetVirtualURL());
+  EXPECT_FALSE(controller.GetPendingEntry());
 }
 
 TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
