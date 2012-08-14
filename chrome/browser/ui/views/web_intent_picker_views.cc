@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -779,6 +781,11 @@ class WebIntentPickerViews : public views::ButtonListener,
   // Ownership of the WebContents we are displaying in the inline disposition.
   scoped_ptr<WebContents> inline_web_contents_;
 
+  // Indicate if dialog should display its own close button.
+  // TODO(groby): Only relevant until new ConstrainedWindow is implemented,
+  // from then on always true.
+  bool use_close_button_;
+
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerViews);
 };
 
@@ -805,6 +812,9 @@ WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
       more_suggestions_link_(NULL),
       choose_another_service_link_(NULL),
       displaying_web_contents_(false) {
+  use_close_button_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableFramelessConstrainedDialogs);
+
   model_->set_observer(this);
   InitContents();
 
@@ -954,8 +964,10 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
   header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                        GridLayout::USE_PREF, 0, 0);  // Link.
   header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                       GridLayout::USE_PREF, 0, 0);  // Close Button.
+  if (use_close_button_) {
+    header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                         GridLayout::USE_PREF, 0, 0);  // Close Button.
+  }
 
   views::ColumnSet* full_cs = grid_layout->AddColumnSet(1);
   full_cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
@@ -984,7 +996,8 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
     choose_another_service_link_->set_listener(this);
   }
 
-  grid_layout->AddView(CreateCloseButton());
+  if (use_close_button_)
+    grid_layout->AddView(CreateCloseButton());
 
   // Inline web contents row.
   grid_layout->StartRow(0, 1);
@@ -1101,8 +1114,10 @@ void WebIntentPickerViews::InitContents() {
   header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
                        GridLayout::USE_PREF, 0, 0);  // Title.
   header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                       GridLayout::USE_PREF, 0, 0);  // Close Button.
+  if (use_close_button_) {
+    header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                         GridLayout::USE_PREF, 0, 0);  // Close Button.
+  }
 
   views::ColumnSet* full_cs = grid_layout->AddColumnSet(kFullWidthColumnSet);
   full_cs->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
@@ -1123,7 +1138,8 @@ void WebIntentPickerViews::InitContents() {
   action_label_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
   grid_layout->AddView(action_label_);
 
-  grid_layout->AddView(CreateCloseButton());
+  if (use_close_button_)
+    grid_layout->AddView(CreateCloseButton());
 
   // Padding row.
   grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
