@@ -638,7 +638,7 @@ def signal_handler(signum, stackframe):
 
 
 def main():
-  DEFAULT_SIZE = "1280x1024"
+  DEFAULT_SIZE = "1280x800"
   parser = optparse.OptionParser(
       "Usage: %prog [options] [ -- [ X server options ] ]")
   parser.add_option("-s", "--size", dest="size", action="append",
