@@ -13,17 +13,15 @@
 AutofillExternalDelegate* AutofillExternalDelegate::Create(
     TabContents* tab_contents,
     AutofillManager* autofill_manager) {
-  return new AutofillExternalDelegateGtk(tab_contents,
-                                         autofill_manager);
+  return new AutofillExternalDelegateGtk(tab_contents, autofill_manager);
 }
 
 AutofillExternalDelegateGtk::AutofillExternalDelegateGtk(
     TabContents* tab_contents,
     AutofillManager* autofill_manager)
     : AutofillExternalDelegate(tab_contents, autofill_manager),
-      web_contents_(tab_contents->web_contents()),
       event_handler_id_(0) {
-  tab_native_view_ = web_contents_->GetView()->GetNativeView();
+  tab_native_view_ = web_contents()->GetView()->GetNativeView();
 }
 
 AutofillExternalDelegateGtk::~AutofillExternalDelegateGtk() {
@@ -69,7 +67,7 @@ void AutofillExternalDelegateGtk::CreateViewIfNeeded() {
   if (view_.get())
     return;
 
-  view_.reset(new AutofillPopupViewGtk(web_contents_,
+  view_.reset(new AutofillPopupViewGtk(web_contents(),
                                        GtkThemeService::GetFrom(profile()),
                                        this,
                                        tab_native_view_));

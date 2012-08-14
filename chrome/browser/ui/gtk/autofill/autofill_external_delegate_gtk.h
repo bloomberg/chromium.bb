@@ -14,10 +14,6 @@
 
 class AutofillPopupViewGtk;
 
-namespace content {
-class WebContents;
-}
-
 class AutofillExternalDelegateGtk : public AutofillExternalDelegate {
  public:
   AutofillExternalDelegateGtk(TabContents* tab_contents,
@@ -50,7 +46,6 @@ class AutofillExternalDelegateGtk : public AutofillExternalDelegate {
 
   scoped_ptr<AutofillPopupViewGtk> view_;
 
-  content::WebContents* web_contents_;  // Weak reference.
   gfx::NativeView tab_native_view_;  // Weak reference.
 
   // The handler value for the focus out event, allows us to block and unblock

@@ -21,6 +21,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace content {
+class WebContents;
+}
+
 // TODO(csharp): A lot of the logic in this class is copied from autofillagent.
 // Once Autofill is moved out of WebKit this class should be the only home for
 // this logic. See http://crbug.com/51644
@@ -132,6 +136,9 @@ class AutofillExternalDelegate {
 
   // Return the profile that this autofill delegate is currently working with.
   Profile* profile() { return tab_contents_->profile(); }
+
+  // Return the web_contents assoicated with this delegate.
+  content::WebContents* web_contents() { return tab_contents_->web_contents(); }
 
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.
