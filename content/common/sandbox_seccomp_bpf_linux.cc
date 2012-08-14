@@ -147,9 +147,9 @@ intptr_t GpuOpenSIGSYS_Handler(const struct arch_seccomp_data& args,
   }
 }
 
-#if defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__)
 
-// The functions below cover all existing x86_64 system calls.
+// The functions below cover all existing x86_64 and i386 system calls.
 // The implicitly defined sets form a partition of the sets of
 // system calls.
 
@@ -176,7 +176,13 @@ bool IsAllowedGettime(int sysno) {
     case __NR_clock_getres:     // Could be allowed.
     case __NR_clock_nanosleep:  // Could be allowed.
     case __NR_clock_settime:    // Privileged.
+#if defined(__i386__)
+    case __NR_ftime:            // Obsolete.
+#endif
     case __NR_settimeofday:     // Privileged.
+#if defined(__i386__)
+    case __NR_stime:
+#endif
     default:
       return false;
   }
@@ -211,23 +217,36 @@ bool IsFileSystem(int sysno) {
     case __NR_access:          // EPERM not a valid errno.
     case __NR_chmod:
     case __NR_chown:
+#if defined(__i386__)
+    case __NR_chown32:
+#endif
     case __NR_creat:
     case __NR_execve:
     case __NR_faccessat:       // EPERM not a valid errno.
     case __NR_fchmodat:
     case __NR_fchownat:        // Should be called chownat ?
+#if defined(__x86_64__)
+    case __NR_newfstatat:      // fstatat(). EPERM not a valid errno.
+#elif defined(__i386__)
+    case __NR_fstatat64:
+#endif
     case __NR_futimesat:       // Should be called utimesat ?
     case __NR_lchown:
+#if defined(__i386__)
+    case __NR_lchown32:
+#endif
     case __NR_link:
     case __NR_linkat:
     case __NR_lookup_dcookie:  // ENOENT not a valid errno.
     case __NR_lstat:           // EPERM not a valid errno.
+#if defined(__i386__)
+    case __NR_oldlstat:
+    case __NR_lstat64:
+#endif
     case __NR_mkdir:
     case __NR_mkdirat:
     case __NR_mknod:
     case __NR_mknodat:
-    case __NR_newfstatat:      // EPERM not a valid errno.
-                               // Should be called statat ?
     case __NR_open:
     case __NR_openat:
     case __NR_readlink:        // EPERM not a valid errno.
@@ -236,10 +255,20 @@ bool IsFileSystem(int sysno) {
     case __NR_renameat:
     case __NR_rmdir:
     case __NR_stat:            // EPERM not a valid errno.
+#if defined(__i386__)
+    case __NR_oldstat:
+    case __NR_stat64:
+#endif
     case __NR_statfs:          // EPERM not a valid errno.
+#if defined(__i386__)
+    case __NR_statfs64:
+#endif
     case __NR_symlink:
     case __NR_symlinkat:
     case __NR_truncate:
+#if defined(__i386__)
+    case __NR_truncate64:
+#endif
     case __NR_unlink:
     case __NR_unlinkat:
     case __NR_uselib:          // Neither EPERM, nor ENOENT are valid errno.
@@ -256,13 +285,25 @@ bool IsFileSystem(int sysno) {
 bool IsAllowedFileSystemAccessViaFd(int sysno) {
   switch (sysno) {
     case __NR_fstat:
+#if defined(__i386__)
+    case __NR_fstat64:
+#endif
       return true;
     // TODO(jln): these should be denied gracefully as well (moved below).
     case __NR_fadvise64:        // EPERM not a valid errno.
+#if defined(__i386__)
+    case __NR_fadvise64_64:
+#endif
     case __NR_fdatasync:        // EPERM not a valid errno.
     case __NR_flock:            // EPERM not a valid errno.
     case __NR_fstatfs:          // Give information about the whole filesystem.
+#if defined(__i386__)
+    case __NR_fstatfs64:
+#endif
     case __NR_fsync:            // EPERM not a valid errno.
+#if defined(__i386__)
+    case __NR_oldfstat:
+#endif
     case __NR_sync_file_range:  // EPERM not a valid errno.
     default:
       return false;
@@ -275,9 +316,18 @@ bool IsDeniedFileSystemAccessViaFd(int sysno) {
     case __NR_fallocate:
     case __NR_fchmod:
     case __NR_fchown:
+#if defined(__i386__)
+    case __NR_fchown32:
+#endif
     case __NR_ftruncate:
+#if defined(__i386__)
+    case __NR_ftruncate64:
+#endif
     case __NR_getdents:         // EPERM not a valid errno.
     case __NR_getdents64:       // EPERM not a valid errno.
+#if defined(__i386__)
+    case __NR_readdir:
+#endif
       return true;
     default:
       return false;
@@ -288,16 +338,37 @@ bool IsGetSimpleId(int sysno) {
   switch (sysno) {
     case __NR_capget:
     case __NR_getegid:
+#if defined(__i386__)
+    case __NR_getegid32:
+#endif
     case __NR_geteuid:
+#if defined(__i386__)
+    case __NR_geteuid32:
+#endif
     case __NR_getgid:
+#if defined(__i386__)
+    case __NR_getgid32:
+#endif
     case __NR_getgroups:
+#if defined(__i386__)
+    case __NR_getgroups32:
+#endif
     case __NR_getpid:
     case __NR_getppid:
     case __NR_getresgid:
+#if defined(__i386__)
+    case __NR_getresgid32:
+#endif
     case __NR_getresuid:
+#if defined(__i386__)
+    case __NR_getresuid32:
+#endif
     case __NR_getsid:
     case __NR_gettid:
     case __NR_getuid:
+#if defined(__i386__)
+    case __NR_getuid32:
+#endif
       return true;
     default:
       return false;
@@ -318,6 +389,17 @@ bool IsProcessPrivilegeChange(int sysno) {
     case __NR_setresuid:
     case __NR_setreuid:
     case __NR_setuid:
+#if defined(__i386__)
+    case __NR_setfsgid32:
+    case __NR_setfsuid32:
+    case __NR_setgid32:
+    case __NR_setgroups32:
+    case __NR_setregid32:
+    case __NR_setresgid32:
+    case __NR_setresuid32:
+    case __NR_setreuid32:
+    case __NR_setuid32:
+#endif
       return true;
     default:
       return false;
@@ -341,6 +423,11 @@ bool IsAllowedSignalHandling(int sysno) {
     case __NR_rt_sigaction:
     case __NR_rt_sigprocmask:
     case __NR_rt_sigreturn:
+#if defined(__i386__)
+    case __NR_sigaction:
+    case __NR_sigprocmask:
+    case __NR_sigreturn:
+#endif
       return true;
     case __NR_rt_sigpending:
     case __NR_rt_sigqueueinfo:
@@ -350,6 +437,13 @@ bool IsAllowedSignalHandling(int sysno) {
     case __NR_sigaltstack:
     case __NR_signalfd:
     case __NR_signalfd4:
+#if defined(__i386__)
+    case __NR_signal:
+    case __NR_sigpending:
+    case __NR_sigsuspend:
+    case __NR_sgetmask:  // Obsolete.
+    case __NR_ssetmask:
+#endif
     default:
       return false;
   }
@@ -362,7 +456,12 @@ bool IsOperationOnFd(int sysno) {
     case __NR_dup2:
     case __NR_dup3:
     case __NR_fcntl:  // TODO(jln): we may want to restrict arguments.
+#if defined(__i386__)
+    case __NR_fcntl64:
+#endif
+#if defined(__x86_64__)
     case __NR_shutdown:
+#endif
       return true;
     default:
       return false;
@@ -386,6 +485,9 @@ bool IsAllowedProcessStartOrDeath(int sysno) {
     case __NR_exit_group:
     case __NR_wait4:
     case __NR_waitid:
+#if defined(__i386__)
+    case __NR_waitpid:
+#endif
       return true;
     case __NR_setns:  // Privileged.
     case __NR_fork:
@@ -419,9 +521,13 @@ bool IsAllowedEpoll(int sysno) {
     case __NR_epoll_wait:
       return true;
     default:
+#if defined(__x86_64__)
     case __NR_epoll_ctl_old:
+#endif
     case __NR_epoll_pwait:
+#if defined(__x86_64__)
     case __NR_epoll_wait_old:
+#endif
       return false;
   }
 }
@@ -430,19 +536,36 @@ bool IsAllowedGetOrModifySocket(int sysno) {
   switch (sysno) {
     case __NR_pipe:
     case __NR_pipe2:
+#if defined(__x86_64__)
     case __NR_socketpair:  // We will want to inspect its argument.
+#endif
       return true;
     default:
+#if defined(__x86_64__)
     case __NR_accept:
     case __NR_accept4:
     case __NR_bind:
     case __NR_connect:
     case __NR_socket:
     case __NR_listen:
+#endif
       return false;
   }
 }
 
+#if defined(__i386__)
+// Big multiplexing system call for sockets.
+bool IsSocketCall(int sysno) {
+  switch (sysno) {
+    case __NR_socketcall:
+      return true;
+    default:
+      return false;
+  }
+}
+#endif
+
+#if defined(__x86_64__)
 bool IsNetworkSocketInformation(int sysno) {
   switch (sysno) {
     case __NR_getpeername:
@@ -454,13 +577,17 @@ bool IsNetworkSocketInformation(int sysno) {
       return false;
   }
 }
+#endif
 
 bool IsAllowedAddressSpaceAccess(int sysno) {
   switch (sysno) {
     case __NR_brk:
     case __NR_madvise:
     case __NR_mlock:
-    case __NR_mmap:  // TODO(jln): to restrict flags.
+    case __NR_mmap:   // TODO(jln): to restrict flags.
+#if defined(__i386__)
+    case __NR_mmap2:
+#endif
     case __NR_mprotect:
     case __NR_munlock:
     case __NR_munmap:
@@ -473,6 +600,10 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
     case __NR_munlockall:
     case __NR_readahead:
     case __NR_remap_file_pages:
+#if defined(__i386__)
+    case __NR_vm86:
+    case __NR_vm86old:
+#endif
     default:
       return false;
   }
@@ -481,16 +612,26 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
 bool IsAllowedGeneralIo(int sysno) {
   switch (sysno) {
     case __NR_lseek:
+#if defined(__i386__)
+    case __NR__llseek:
+#endif
     case __NR_poll:
     case __NR_ppoll:
     case __NR_pselect6:
     case __NR_read:
     case __NR_readv:
+#if defined(__x86_64__)
     case __NR_recvfrom:  // Could specify source.
     case __NR_recvmsg:   // Could specify source.
+#endif
     case __NR_select:
+#if defined(__i386__)
+    case __NR__newselect:
+#endif
+#if defined(__x86_64__)
     case __NR_sendmsg:   // Could specify destination.
     case __NR_sendto:    // Could specify destination.
+#endif
     case __NR_write:
     case __NR_writev:
       return true;
@@ -501,6 +642,9 @@ bool IsAllowedGeneralIo(int sysno) {
     case __NR_pwritev:
     case __NR_recvmmsg:  // Could specify source.
     case __NR_sendfile:
+#if defined(__i386__)
+    case __NR_sendfile64:
+#endif
     case __NR_sendmmsg:  // Could specify destination.
     case __NR_splice:
     case __NR_tee:
@@ -515,7 +659,9 @@ bool IsAllowedPrctl(int sysno) {
     case __NR_prctl:
       return true;
     default:
+#if defined(__x86_64__)
     case __NR_arch_prctl:
+#endif
       return false;
   }
 }
@@ -527,6 +673,9 @@ bool IsAllowedBasicScheduler(int sysno) {
     case __NR_nanosleep:
       return true;
     case __NR_getpriority:
+#if defined(__i386__)
+    case __NR_nice:
+#endif
     case __NR_setpriority:
     default:
       return false;
@@ -535,6 +684,9 @@ bool IsAllowedBasicScheduler(int sysno) {
 
 bool IsAdminOperation(int sysno) {
   switch (sysno) {
+#if defined(__i386__)
+    case __NR_bdflush:
+#endif
     case __NR_kexec_load:
     case __NR_reboot:
     case __NR_setdomainname:
@@ -577,6 +729,9 @@ bool IsFsControl(int sysno) {
     case __NR_quotactl:
     case __NR_swapoff:
     case __NR_swapon:
+#if defined(__i386__)
+    case __NR_umount:
+#endif
     case __NR_umount2:
       return true;
     default:
@@ -616,6 +771,10 @@ bool IsGlobalProcessEnvironment(int sysno) {
   switch (sysno) {
     case __NR_acct:         // Privileged.
     case __NR_getrlimit:
+#if defined(__i386__)
+    case __NR_ugetrlimit:
+    case __NR_ulimit:
+#endif
     case __NR_getrusage:
     case __NR_personality:  // Can change its personality as well.
     case __NR_prlimit64:    // Like setrlimit / getrlimit.
@@ -645,6 +804,10 @@ bool IsGlobalSystemStatus(int sysno) {
     case __NR_sysfs:
     case __NR_sysinfo:
     case __NR_uname:
+#if defined(__i386__)
+    case __NR_olduname:
+    case __NR_oldolduname:
+#endif
       return true;
     default:
       return false;
@@ -686,6 +849,7 @@ bool IsKeyManagement(int sysno) {
   }
 }
 
+#if defined(__x86_64__)
 bool IsSystemVSemaphores(int sysno) {
   switch (sysno) {
     case __NR_semctl:
@@ -697,7 +861,9 @@ bool IsSystemVSemaphores(int sysno) {
       return false;
   }
 }
+#endif
 
+#if defined(__x86_64__)
 // These give a lot of ambient authority and bypass the setuid sandbox.
 bool IsAllowedSystemVSharedMemory(int sysno) {
   switch (sysno) {
@@ -710,7 +876,9 @@ bool IsAllowedSystemVSharedMemory(int sysno) {
       return false;
   }
 }
+#endif
 
+#if defined(__x86_64__)
 bool IsSystemVMessageQueue(int sysno) {
   switch (sysno) {
     case __NR_msgctl:
@@ -722,6 +890,19 @@ bool IsSystemVMessageQueue(int sysno) {
       return false;
   }
 }
+#endif
+
+#if defined(__i386__)
+// Big system V multiplexing system call.
+bool IsSystemVIpc(int sysno) {
+  switch (sysno) {
+    case __NR_ipc:
+      return true;
+    default:
+      return false;
+  }
+}
+#endif
 
 bool IsAdvancedScheduler(int sysno) {
   switch (sysno) {
@@ -822,10 +1003,28 @@ bool IsMisc(int sysno) {
     case __NR_vhangup:
     // The system calls below are not implemented.
     case __NR_afs_syscall:
+#if defined(__i386__)
+    case __NR_break:
+#endif
     case __NR_getpmsg:
+#if defined(__i386__)
+    case __NR_gtty:
+    case __NR_idle:
+    case __NR_lock:
+    case __NR_mpx:
+    case __NR_prof:
+    case __NR_profil:
+#endif
     case __NR_putpmsg:
+#if defined(__x86_64__)
     case __NR_security:
+#endif
+#if defined(__i386__)
+    case __NR_stty:
+#endif
+#if defined(__x86_64__)
     case __NR_tuxcall:
+#endif
     case __NR_vserver:
       return true;
     default:
@@ -835,7 +1034,6 @@ bool IsMisc(int sysno) {
 
 // End of the system call sets section.
 
-// x86_64 only because it references system calls that are multiplexed on IA32.
 bool IsBaselinePolicyAllowed_x86_64(int sysno) {
   if (IsAllowedAddressSpaceAccess(sysno) ||
       IsAllowedBasicScheduler(sysno) ||
@@ -863,7 +1061,9 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
   if (IsAdminOperation(sysno) ||
       IsAdvancedScheduler(sysno) ||
       IsAdvancedTimer(sysno) ||
+#if defined(__x86_64__)
       IsAllowedSystemVSharedMemory(sysno) ||
+#endif
       IsAsyncIo(sysno) ||
       IsDebug(sysno) ||
       IsEventFd(sysno) ||
@@ -878,12 +1078,22 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
       IsKeyManagement(sysno) ||
       IsMessageQueue(sysno) ||
       IsMisc(sysno) ||
+#if defined(__x86_64__)
       IsNetworkSocketInformation(sysno) ||
+#endif
       IsNuma(sysno) ||
       IsProcessGroupOrSession(sysno) ||
       IsProcessPrivilegeChange(sysno) ||
+#if defined(__i386__)
+      IsSocketCall(sysno) ||  // We'll need to handle this properly to build
+                              // a x86_32 policy.
+#endif
+#if defined(__x86_64__)
       IsSystemVMessageQueue(sysno) ||
       IsSystemVSemaphores(sysno) ||
+#elif defined(__i386__)
+      IsSystemVIpc(sysno) ||
+#endif
       IsTimer(sysno)) {
     return true;
   } else {
@@ -891,6 +1101,7 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
   }
 }
 
+// x86_64 only for now. Needs to be adapted and tested for i386.
 playground2::Sandbox::ErrorCode BaselinePolicy_x86_64(int sysno) {
   if (IsBaselinePolicyAllowed_x86_64(sysno)) {
     return playground2::Sandbox::SB_ALLOWED;
@@ -914,13 +1125,15 @@ playground2::Sandbox::ErrorCode BaselinePolicy_x86_64(int sysno) {
   return playground2::Sandbox::ErrorCode(CrashSIGSYS_Handler, NULL);
 }
 
-// x86_64 only because it references system calls that are multiplexed on IA32.
+// x86_64 only for now. Needs to be adapted and tested for i386.
 playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
   switch(sysno) {
     case __NR_ioctl:
       return playground2::Sandbox::SB_ALLOWED;
+#if defined(__x86_64__)
     case __NR_socket:
       return EACCES;  // Nvidia binary driver.
+#endif
     case __NR_open:
       // Accelerated video decode is enabled by default only on Chrome OS.
       if (IsAcceleratedVideoDecodeEnabled()) {
@@ -945,7 +1158,7 @@ playground2::Sandbox::ErrorCode GpuProcessPolicy_x86_64(int sysno) {
   }
 }
 
-// x86_64 only because it references system calls that are multiplexed on IA32.
+// x86_64 only for now. Needs to be adapted and tested for i386.
 playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
   switch (sysno) {
     case __NR_sched_getaffinity:
@@ -954,19 +1167,23 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
       return playground2::Sandbox::SB_ALLOWED;
     case __NR_ioctl:
       return ENOTTY;  // Flash Access.
+#if defined(__x86_64__)
     case __NR_socket:
       return EACCES;
+#endif
     default:
+#if defined(__x86_64__)
       // These are under investigation, and hopefully not here for the long
       // term.
       if (IsAllowedSystemVSharedMemory(sysno))
         return playground2::Sandbox::SB_ALLOWED;
+#endif
 
       // Default on the baseline policy.
       return  BaselinePolicy_x86_64(sysno);
   }
 }
-#endif
+#endif  // defined(__x86_64__) || defined(__i386__)
 
 playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
