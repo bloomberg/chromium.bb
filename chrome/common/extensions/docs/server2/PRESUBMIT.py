@@ -16,7 +16,8 @@ import build_server
 build_server.main()
 sys.path.pop(0)
 
-WHITELIST = [ r'.+_test.py$' ]
+# TODO(cduvall) Include integration_test.py again.
+WHITELIST = [ r'^[^i].+_test.py$' ]
 
 def CheckChangeOnUpload(input_api, output_api):
   return input_api.canned_checks.RunUnitTestsInDirectory(
