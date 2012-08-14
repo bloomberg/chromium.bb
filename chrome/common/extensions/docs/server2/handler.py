@@ -66,10 +66,13 @@ def _GetInstanceForBranch(channel_name, local_path):
   if branch == 'local':
     file_system = LocalFileSystem(local_path)
   else:
-    fetcher = AppEngineUrlFetcher(
-        _GetURLFromBranch(branch) + '/' + EXTENSIONS_PATH)
-    file_system = MemcacheFileSystem(SubversionFileSystem(fetcher),
-                                     AppEngineMemcache(branch))
+    svn_url = _GetURLFromBranch(branch) + '/' + EXTENSIONS_PATH
+    stat_fetcher = AppEngineUrlFetcher(
+        svn_url.replace(url_constants.SVN_URL, url_constants.VIEWVC_URL))
+    fetcher = AppEngineUrlFetcher(svn_url)
+    file_system = MemcacheFileSystem(
+        SubversionFileSystem(fetcher, stat_fetcher),
+        AppEngineMemcache(branch))
 
   cache_builder = FileSystemCache.Builder(file_system)
   api_list_data_source = APIListDataSource(cache_builder,

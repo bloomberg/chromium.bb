@@ -14,8 +14,8 @@ class MemcacheFileSystem(FileSystem):
     self._memcache = memcache
 
   def Stat(self, path):
-    """Stats the directory given, or if a file is given, the file's parent
-    directory.
+    """Stats the directory given, or if a file is given, stats the files parent
+    directory to get info about the file.
     """
     version = self._memcache.Get(path, memcache.MEMCACHE_FILE_SYSTEM_STAT)
     if version is None:
@@ -23,6 +23,11 @@ class MemcacheFileSystem(FileSystem):
       self._memcache.Set(path,
                          stat_info.version,
                          memcache.MEMCACHE_FILE_SYSTEM_STAT)
+      if stat_info.child_versions is not None:
+        for child_path, child_version in stat_info.child_versions.iteritems():
+          self._memcache.Set(path.rsplit('/', 1)[0] + '/' + child_path,
+                             child_version,
+                             memcache.MEMCACHE_FILE_SYSTEM_STAT)
     else:
       stat_info = self.StatInfo(version)
     return stat_info
@@ -45,12 +50,15 @@ class MemcacheFileSystem(FileSystem):
         uncached.append(path)
         continue
       result[path] = data
-    new_items = self._file_system.Read(uncached, binary=binary).Get()
-    for item in new_items:
-      version = self.Stat(item).version
-      value = new_items[item]
-      self._memcache.Set(item,
-                         (value, version),
-                         memcache.MEMCACHE_FILE_SYSTEM_READ)
-      result[item] = value
+    if uncached:
+      # TODO(cduvall): if there are uncached items we should return an
+      # asynchronous future. http://crbug.com/142013
+      new_items = self._file_system.Read(uncached, binary=binary).Get()
+      for item in new_items:
+        version = self.Stat(item).version
+        value = new_items[item]
+        self._memcache.Set(item,
+                           (value, version),
+                           memcache.MEMCACHE_FILE_SYSTEM_READ)
+        result[item] = value
     return Future(value=result)

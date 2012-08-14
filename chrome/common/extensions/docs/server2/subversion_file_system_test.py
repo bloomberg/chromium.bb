@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import unittest
 
@@ -11,8 +12,13 @@ from subversion_file_system import SubversionFileSystem
 
 class SubversionFileSystemTest(unittest.TestCase):
   def setUp(self):
-    fetcher = FakeUrlFetcher(os.path.join('test_data', 'file_system'))
-    self._file_system = SubversionFileSystem(fetcher)
+    self._base_path = os.path.join('test_data', 'file_system')
+    fetcher = FakeUrlFetcher(self._base_path)
+    self._file_system = SubversionFileSystem(fetcher, fetcher)
+
+  def _ReadLocalFile(self, filename):
+    with open(os.path.join(self._base_path, filename), 'r') as f:
+      return f.read()
 
   def testReadFiles(self):
     expected = {
@@ -32,8 +38,10 @@ class SubversionFileSystemTest(unittest.TestCase):
                      sorted(self._file_system.ReadSingle('list/')))
 
   def testStat(self):
-    # Value is hard-coded into FakeUrlFetcher.
-    self.assertEqual(0, self._file_system.Stat('list/dir/').version)
+    stat_info = self._file_system.Stat('stat/')
+    self.assertEquals('151113', stat_info.version)
+    self.assertEquals(json.loads(self._ReadLocalFile('stat_result.json')),
+                      stat_info.child_versions)
 
 if __name__ == '__main__':
   unittest.main()

@@ -21,6 +21,10 @@ class FakeUrlFetcher(object):
       return f.read()
 
   def _ListDir(self, directory):
+    # In some tests, we need to test listing a directory from the HTML returned
+    # from SVN. This reads an HTML file that has the directories HTML.
+    if not os.path.isdir(os.path.join(self._base_path, directory)):
+      return self._ReadFile(directory[:-1])
     files = os.listdir(os.path.join(self._base_path, directory))
     html = '<html><title>Revision: 00000</title>\n'
     for filename in files:

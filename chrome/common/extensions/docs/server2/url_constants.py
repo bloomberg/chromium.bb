@@ -8,5 +8,6 @@ RAW_GITHUB_BASE = ('https://github.com/GoogleChrome/chrome-app-samples/raw/'
                    'master')
 OMAHA_PROXY_URL = 'http://omahaproxy.appspot.com/json'
 SVN_URL = 'http://src.chromium.org/chrome'
+VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome'
 SVN_TRUNK_URL = SVN_URL + '/trunk'
 SVN_BRANCH_URL = SVN_URL + '/branches'

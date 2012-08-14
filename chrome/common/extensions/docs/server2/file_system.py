@@ -22,8 +22,9 @@ class FileSystem(object):
   class StatInfo(object):
     """The result of calling Stat on a FileSystem.
     """
-    def __init__(self, version):
+    def __init__(self, version, child_versions=None):
       self.version = version
+      self.child_versions = child_versions
 
   def Read(self, paths, binary=False):
     """Reads each file in paths and returns a dictionary mapping the path to the
@@ -42,7 +43,8 @@ class FileSystem(object):
     return self.Read([path]).Get()[path]
 
   def Stat(self, path):
-    """Gets the version number of |path| if it is a directory, or the parent
-    directory if it is a file.
+    """Returns a |StatInfo| object containing the version of |path|. If |path|
+    is a directory, |StatInfo| will have the versions of all the children of
+    the directory in |StatInfo.child_versions|.
     """
     raise NotImplementedError()

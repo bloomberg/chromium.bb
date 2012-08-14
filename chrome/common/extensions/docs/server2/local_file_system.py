@@ -52,10 +52,16 @@ class LocalFileSystem(file_system.FileSystem):
         result[path] = self._ReadFile(self._ConvertToFilepath(path), binary)
     return Future(value=result)
 
+  def _CreateStatInfo(self, path):
+    if path.endswith('/'):
+      versions = dict((filename, os.stat(os.path.join(path, filename)).st_mtime)
+                      for filename in os.listdir(path))
+    else:
+      versions = None
+    return self.StatInfo(os.stat(path).st_mtime, versions)
+
   def Stat(self, path):
     try:
-      return self.StatInfo(
-          os.stat(os.path.join(self._base_path, path)).st_mtime)
+      return self._CreateStatInfo(os.path.join(self._base_path, path))
     except OSError:
       raise file_system.FileNotFoundError(path)
-
