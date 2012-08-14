@@ -25,7 +25,6 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/common/debug_flags.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_descriptors.h"
@@ -436,8 +435,6 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state,
 
   // Add command line arguments that should be applied to all UI tests.
   PrepareTestCommandline(&command_line, state.include_testing_id);
-  DebugFlags::ProcessDebugFlags(
-      &command_line, content::PROCESS_TYPE_UNKNOWN, false);
 
   // Sometimes one needs to run the browser under a special environment
   // (e.g. valgrind) without also running the test harness (e.g. python)
