@@ -57,8 +57,10 @@ class MemcacheFileSystem(FileSystem):
       for item in new_items:
         version = self.Stat(item).version
         value = new_items[item]
+        # Cache this file forever.
         self._memcache.Set(item,
                            (value, version),
-                           memcache.MEMCACHE_FILE_SYSTEM_READ)
+                           memcache.MEMCACHE_FILE_SYSTEM_READ,
+                           time=0)
         result[item] = value
     return Future(value=result)
