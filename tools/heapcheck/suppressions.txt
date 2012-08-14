@@ -1481,9 +1481,3 @@
    ...
    fun:ExtensionAction::GetIconAnimation
 }
-{
-   bug_141322
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:MediaGalleriesPreferencesTest
-}
