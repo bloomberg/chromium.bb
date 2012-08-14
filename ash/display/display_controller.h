@@ -69,6 +69,11 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   }
   void SetSecondaryDisplayLayout(SecondaryDisplayLayout layout);
 
+  int secondary_display_offset() const {
+    return secondary_display_offset_;
+  }
+  void SetSecondaryDisplayOffset(int offset);
+
   void set_dont_warp_mouse(bool dont_warp_mouse) {
     dont_warp_mouse_ = dont_warp_mouse;
   }
@@ -102,6 +107,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   std::map<int, aura::RootWindow*> root_windows_;
 
   SecondaryDisplayLayout secondary_display_layout_;
+
+  // The offset of the position of the secondary display.  The offset is
+  // based on the top/left edge of the primary display.
+  int secondary_display_offset_;
 
   // If true, the mouse pointer can't move from one display to another.
   bool dont_warp_mouse_;

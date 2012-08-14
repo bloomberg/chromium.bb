@@ -737,6 +737,10 @@ const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
 //  3 - The secondary display is at the left of the primary display.
 // TODO(mukai,oshima): update the format of the multi-display settings.
 const char kSecondaryDisplayLayout[] = "settings.display.secondary_layout";
+
+// An integer pref that specifies how far the secondary display is positioned
+// from the edge of the primary display.
+const char kSecondaryDisplayOffset[] = "settings.display.secondary_offset";
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

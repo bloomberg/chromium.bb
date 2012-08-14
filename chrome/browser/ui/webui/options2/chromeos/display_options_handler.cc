@@ -130,10 +130,12 @@ void DisplayOptionsHandler::SendDisplayInfo() {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   base::FundamentalValue layout(
       pref_service->GetInteger(prefs::kSecondaryDisplayLayout));
+  base::FundamentalValue offset(
+      pref_service->GetInteger(prefs::kSecondaryDisplayOffset));
 
   web_ui()->CallJavascriptFunction(
       "options.DisplayOptions.setDisplayInfo",
-      mirroring, displays, layout);
+      mirroring, displays, layout, offset);
 }
 
 void DisplayOptionsHandler::FadeOutForMirroringFinished(bool is_mirroring) {
@@ -146,9 +148,11 @@ void DisplayOptionsHandler::FadeOutForMirroringFinished(bool is_mirroring) {
   // Not necessary to start fade-in animation.  OutputConfigurator will do that.
 }
 
-void DisplayOptionsHandler::FadeOutForDisplayLayoutFinished(int layout) {
+void DisplayOptionsHandler::FadeOutForDisplayLayoutFinished(
+    int layout, int offset) {
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
   pref_service->SetInteger(prefs::kSecondaryDisplayLayout, layout);
+  pref_service->SetInteger(prefs::kSecondaryDisplayOffset, offset);
   SendDisplayInfo();
   ash::Shell::GetInstance()->output_configurator_animation()->
       StartFadeInAnimation();
@@ -172,8 +176,10 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
 
 void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
   double layout = -1;
-  if (!args->GetDouble(0, &layout)) {
+  double offset = -1;
+  if (!args->GetDouble(0, &layout) || !args->GetDouble(1, &offset)) {
     LOG(ERROR) << "Invalid parameter";
+    SendDisplayInfo();
     return;
   }
   DCHECK_LE(DisplayController::TOP, layout);
@@ -182,7 +188,8 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
       StartFadeOutAnimation(base::Bind(
           &DisplayOptionsHandler::FadeOutForDisplayLayoutFinished,
           base::Unretained(this),
-          static_cast<int>(layout)));
+          static_cast<int>(layout),
+          static_cast<int>(offset)));
 }
 
 }  // namespace options2

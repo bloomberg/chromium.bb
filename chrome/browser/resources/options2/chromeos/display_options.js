@@ -8,6 +8,9 @@ cr.define('options', function() {
   // The scale ratio of the display rectangle to its original size.
   /** @const */ var VISUAL_SCALE = 1 / 10;
 
+  // The number of pixels to share the edges between displays.
+  /** @const */ var MIN_OFFSET_OVERLAP = 5;
+
   /**
    * Enumeration of secondary display layout.  The value has to be same as the
    * values in ash/monitor/monitor_controller.cc.
@@ -29,7 +32,7 @@ cr.define('options', function() {
                      loadTimeData.getString('displayOptionsPageTabTitle'),
                      'display-options');
     this.mirroring_ = false;
-    this.focused_index_ = null;
+    this.focusedIndex_ = null;
     this.displays_ = [];
   }
 
@@ -49,10 +52,26 @@ cr.define('options', function() {
         chrome.send('setMirroring', [this.mirroring_]);
       }).bind(this);
 
-      $('display-options-apply').onclick = (function() {
-        chrome.send('setDisplayLayout', [this.layout_]);
-      }).bind(this);
+      $('display-options-apply').onclick = this.applyResult_.bind(this);
       chrome.send('getDisplayInfo');
+    },
+
+    /**
+     * Collects the current data and sends it to Chrome.
+     * @private
+     */
+    applyResult_: function() {
+      // Offset is calculated from top or left edge.
+      var primary = this.displays_[0];
+      var secondary = this.displays_[1];
+      var offset;
+      if (this.layout_ == SecondaryDisplayLayout.LEFT ||
+          this.layout_ == SecondaryDisplayLayout.RIGHT) {
+        offset = secondary.div.offsetTop - primary.div.offsetTop;
+      } else {
+        offset = secondary.div.offsetLeft - primary.div.offsetLeft;
+      }
+      chrome.send('setDisplayLayout', [this.layout_, offset / VISUAL_SCALE]);
     },
 
     /**
@@ -203,8 +222,30 @@ cr.define('options', function() {
      * @param {Event} e The mouse up event.
      */
     onMouseUp_: function(e) {
-      if (this.dragging_)
+      if (this.dragging_) {
+        // Make sure the dragging location is connected.
+        var primaryDiv = this.displays_[0].div;
+        var draggingDiv = this.dragging_.display.div;
+        if (this.layout_ == SecondaryDisplayLayout.LEFT ||
+            this.layout_ == SecondaryDisplayLayout.RIGHT) {
+          var top = Math.max(draggingDiv.offsetTop,
+                             primaryDiv.offsetTop - draggingDiv.offsetHeight +
+                             MIN_OFFSET_OVERLAP);
+          top = Math.min(top,
+                         primaryDiv.offsetTop + primaryDiv.offsetHeight -
+                         MIN_OFFSET_OVERLAP);
+          draggingDiv.style.top = top + 'px';
+        } else {
+          var left = Math.max(draggingDiv.offsetLeft,
+                              primaryDiv.offsetLeft - draggingDiv.offsetWidth +
+                              MIN_OFFSET_OVERLAP);
+          left = Math.min(left,
+                          primaryDiv.offsetLeft + primaryDiv.offsetWidth -
+                          MIN_OFFSET_OVERLAP);
+          draggingDiv.style.left = left + 'px';
+        }
         this.dragging_ = null;
+      }
       this.updateSelectedDisplayDescription_();
       return false;
     },
@@ -308,15 +349,28 @@ cr.define('options', function() {
      */
     layoutDisplays_: function() {
       var totalHeight = 0;
+      var boundingBox = {left: 0, right: 0, top: 0, bottom: 0};
       for (var i = 0; i < this.displays_.length; i++) {
-        totalHeight += this.displays_[i].height * VISUAL_SCALE;
+        var display = this.displays_[i];
+        totalHeight += display.height * VISUAL_SCALE;
+        boundingBox.left = Math.min(boundingBox.left, display.x * VISUAL_SCALE);
+        boundingBox.right = Math.max(
+            boundingBox.right, (display.x + display.width) * VISUAL_SCALE);
+        boundingBox.top = Math.min(boundingBox.top, display.y * VISUAL_SCALE);
+        boundingBox.bottom = Math.max(
+            boundingBox.bottom, (display.y + display.height) * VISUAL_SCALE);
       }
 
       // Prepare enough area for thisplays_view by adding the maximum height.
       this.displaysView_.style.height = totalHeight + 'px';
 
-      var basePoint = {x: 0, y: 0};
-      var boundingSize = {width: 0, height: 0};
+      // Centering the bounding box of the display rectangles.
+      var offset = {x: $('display-options-displays-view').offsetWidth / 2 -
+                       (boundingBox.left + boundingBox.right) / 2,
+                    y: totalHeight / 2 -
+                       (boundingBox.top + boundingBox.bottom) / 2};
+
+
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         var div = document.createElement('div');
@@ -336,58 +390,12 @@ cr.define('options', function() {
           launcher.style.width = display.div.style.width;
           div.appendChild(launcher);
         }
-        switch (this.layout_) {
-        case SecondaryDisplayLayout.RIGHT:
-          display.div.style.top = '0';
-          display.div.style.left = basePoint.x + 'px';
-          basePoint.x += display.width * VISUAL_SCALE;
-          boundingSize.width += display.width * VISUAL_SCALE;
-          boundingSize.height = Math.max(boundingSize.height,
-                                         display.height * VISUAL_SCALE);
-          break;
-        case SecondaryDisplayLayout.LEFT:
-          display.div.style.top = '0';
-          basePoint.x -= display.width * VISUAL_SCALE;
-          display.div.style.left = basePoint.x + 'px';
-          boundingSize.width += display.width * VISUAL_SCALE;
-          boundingSize.height = Math.max(boundingSize.height,
-                                         display.height * VISUAL_SCALE);
-          break;
-        case SecondaryDisplayLayout.TOP:
-          display.div.style.left = '0';
-          basePoint.y -= display.height * VISUAL_SCALE;
-          display.div.style.top = basePoint.y + 'px';
-          boundingSize.width = Math.max(boundingSize.width,
-                                        display.width * VISUAL_SCALE);
-          boundingSize.height += display.height * VISUAL_SCALE;
-          break;
-        case SecondaryDisplayLayout.BOTTOM:
-          display.div.style.left = '0';
-          display.div.style.top = basePoint.y + 'px';
-          basePoint.y += display.height * VISUAL_SCALE;
-          boundingSize.width = Math.max(boundingSize.width,
-                                        display.width * VISUAL_SCALE);
-          boundingSize.height += display.height * VISUAL_SCALE;
-          break;
-        }
+        div.style.left = display.x * VISUAL_SCALE + offset.x + 'px';
+        div.style.top = display.y * VISUAL_SCALE + offset.y + 'px';
 
         div.appendChild(document.createTextNode(display.name));
 
         this.displaysView_.appendChild(div);
-      }
-
-      // Centering the display rectangles.
-      var offset = {x: $('display-options-displays-view').offsetWidth / 2 -
-                       boundingSize.width / 2,
-                    y: totalHeight / 2 - boundingSize.height / 2};
-      if (basePoint.x < 0)
-        offset.x -= basePoint.x;
-      if (basePoint.y < 0)
-        offset.y -= basePoint.y;
-      for (var i = 0; i < this.displays_.length; i++) {
-        var div = this.displays_[i].div;
-        div.style.left = div.offsetLeft + offset.x + 'px';
-        div.style.top = div.offsetTop + offset.y + 'px';
       }
     },
 
@@ -397,10 +405,12 @@ cr.define('options', function() {
      * @param {boolean} mirroring Whether current mode is mirroring or not.
      * @param {Array} displays The list of the display information.
      * @param {SecondaryDisplayLayout} layout The layout strategy.
+     * @param {number} offset The offset of the secondary display.
      */
-    onDisplayChanged_: function(mirroring, displays, layout) {
+    onDisplayChanged_: function(mirroring, displays, layout, offset) {
       this.mirroring_ = mirroring;
       this.layout_ = layout;
+      this.offset_ = offset;
 
       $('display-options-toggle-mirroring').textContent =
           loadTimeData.getString(
@@ -424,8 +434,10 @@ cr.define('options', function() {
     },
   };
 
-  DisplayOptions.setDisplayInfo = function(mirroring, displays, layout) {
-    DisplayOptions.getInstance().onDisplayChanged_(mirroring, displays, layout);
+  DisplayOptions.setDisplayInfo = function(
+      mirroring, displays, layout, offset) {
+    DisplayOptions.getInstance().onDisplayChanged_(
+        mirroring, displays, layout, offset);
   };
 
   // Export

@@ -266,6 +266,7 @@ extern const char kOAuth1Token[];
 extern const char kOAuth1Secret[];
 extern const char kEnableCrosDRM[];
 extern const char kSecondaryDisplayLayout[];
+extern const char kSecondaryDisplayOffset[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kIpcDisabledMessages[];
 extern const char kShowHomeButton[];

@@ -4,6 +4,8 @@
 
 #include "ash/display/display_controller.h"
 
+#include <algorithm>
+
 #include "ash/ash_switches.h"
 #include "ash/display/multi_display_manager.h"
 #include "ash/root_window_controller.h"
@@ -22,9 +24,17 @@
 
 namespace ash {
 namespace internal {
+namespace {
+
+// The number of pixels to overlap between the primary and secondary displays,
+// in case that the offset value is too large.
+const int kMinimumOverlapForInvalidOffset = 50;
+
+}
 
 DisplayController::DisplayController()
     : secondary_display_layout_(RIGHT),
+      secondary_display_offset_(0),
       dont_warp_mouse_(false) {
   aura::Env::GetInstance()->display_manager()->AddObserver(this);
 }
@@ -119,6 +129,11 @@ DisplayController::GetAllRootWindowControllers() {
 void DisplayController::SetSecondaryDisplayLayout(
     SecondaryDisplayLayout layout) {
   secondary_display_layout_ = layout;
+  UpdateDisplayBoundsForLayout();
+}
+
+void DisplayController::SetSecondaryDisplayOffset(int offset) {
+  secondary_display_offset_ = offset;
   UpdateDisplayBoundsForLayout();
 }
 
@@ -243,18 +258,33 @@ void DisplayController::UpdateDisplayBoundsForLayout() {
   gfx::Point new_secondary_origin = primary_bounds.origin();
 
   // TODO(oshima|mukai): Implement more flexible layout.
+
+  // Ignore the offset in case the secondary display doesn't share edges with
+  // the primary display.
+  int offset = secondary_display_offset_;
+  if (secondary_display_layout_ == TOP || secondary_display_layout_ == BOTTOM) {
+    offset = std::min(
+        offset, primary_bounds.width() - kMinimumOverlapForInvalidOffset);
+    offset = std::max(
+        offset, -secondary_bounds.width() + kMinimumOverlapForInvalidOffset);
+  } else {
+    offset = std::min(
+        offset, primary_bounds.height() - kMinimumOverlapForInvalidOffset);
+    offset = std::max(
+        offset, -secondary_bounds.height() + kMinimumOverlapForInvalidOffset);
+  }
   switch (secondary_display_layout_) {
     case TOP:
-      new_secondary_origin.Offset(0, -secondary_bounds.height());
+      new_secondary_origin.Offset(offset, -secondary_bounds.height());
       break;
     case RIGHT:
-      new_secondary_origin.Offset(primary_bounds.width(), 0);
+      new_secondary_origin.Offset(primary_bounds.width(), offset);
       break;
     case BOTTOM:
-      new_secondary_origin.Offset(0, primary_bounds.height());
+      new_secondary_origin.Offset(offset, primary_bounds.height());
       break;
     case LEFT:
-      new_secondary_origin.Offset(-secondary_bounds.width(), 0);
+      new_secondary_origin.Offset(-secondary_bounds.width(), offset);
       break;
   }
   gfx::Insets insets = secondary_display->GetWorkAreaInsets();

@@ -252,6 +252,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kSecondaryDisplayLayout,
                              static_cast<int>(DisplayController::RIGHT),
                              PrefService::UNSYNCABLE_PREF);
+  // The offset of the secondary display position from the primary display.
+  prefs->RegisterIntegerPref(prefs::kSecondaryDisplayOffset,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 
   // Mobile plan notifications default to on.
   prefs->RegisterBooleanPref(prefs::kShowPlanNotifications,
@@ -361,6 +365,7 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
 
   secondary_display_layout_.Init(prefs::kSecondaryDisplayLayout, prefs, this);
+  secondary_display_offset_.Init(prefs::kSecondaryDisplayOffset, prefs, this);
 
   enable_drm_.Init(prefs::kEnableCrosDRM, prefs, this);
 }
@@ -587,6 +592,11 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
           SetSecondaryDisplayLayout(
               static_cast<DisplayController::SecondaryDisplayLayout>(layout));
     }
+  }
+
+  if (!pref_name || *pref_name == prefs::kSecondaryDisplayOffset) {
+    ash::Shell::GetInstance()->display_controller()->
+        SetSecondaryDisplayOffset(secondary_display_offset_.GetValue());
   }
 
   // Init or update protected content (DRM) support.

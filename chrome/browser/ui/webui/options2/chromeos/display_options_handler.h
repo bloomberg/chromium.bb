@@ -50,8 +50,10 @@ class DisplayOptionsHandler : public ::options2::OptionsPageUIHandler,
   void FadeOutForMirroringFinished(bool is_mirroring);
 
   // Called when the fade-out animation for secondary display layout change is
-  // finished.
-  void FadeOutForDisplayLayoutFinished(int layout);
+  // finished.  |layout| specifies the four positions of the secondary display
+  // (left/right/top/bottom), and |offset| is the offset length from the
+  // left/top edge of the primary display.
+  void FadeOutForDisplayLayoutFinished(int layout, int offset);
 
   // Handlers of JS messages.
   void HandleDisplayInfo(const base::ListValue* unused_args);
