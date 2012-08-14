@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
@@ -142,6 +143,16 @@ class DummyVolumeControlDelegate : public VolumeControlDelegate {
     return consume_;
   }
   virtual void SetVolumePercent(double percent) OVERRIDE {
+  }
+  virtual bool IsAudioMuted() const OVERRIDE {
+    return false;
+  }
+  virtual void SetAudioMuted(bool muted) OVERRIDE {
+  }
+  virtual float GetVolumeLevel() const OVERRIDE {
+    return 0.0;
+  }
+  virtual void SetVolumeLevel(float level) OVERRIDE {
   }
 
   int handle_volume_mute_count() const {
@@ -615,12 +626,12 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator f9(ui::VKEY_F9, ui::EF_NONE);
   const ui::Accelerator f10(ui::VKEY_F10, ui::EF_NONE);
   {
-    EXPECT_FALSE(GetController()->Process(f8));
-    EXPECT_FALSE(GetController()->Process(f9));
-    EXPECT_FALSE(GetController()->Process(f10));
+    EXPECT_TRUE(GetController()->Process(f8));
+    EXPECT_TRUE(GetController()->Process(f9));
+    EXPECT_TRUE(GetController()->Process(f10));
     DummyVolumeControlDelegate* delegate =
         new DummyVolumeControlDelegate(false);
-    GetController()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_FALSE(GetController()->Process(f8));
@@ -637,7 +648,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
   {
     DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
-    GetController()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(GetController()->Process(f8));
@@ -658,7 +669,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   {
     DummyVolumeControlDelegate* delegate =
         new DummyVolumeControlDelegate(false);
-    GetController()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_FALSE(GetController()->Process(volume_mute));
@@ -675,7 +686,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   }
   {
     DummyVolumeControlDelegate* delegate = new DummyVolumeControlDelegate(true);
-    GetController()->SetVolumeControlDelegate(
+    ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
         scoped_ptr<VolumeControlDelegate>(delegate).Pass());
     EXPECT_EQ(0, delegate->handle_volume_mute_count());
     EXPECT_TRUE(GetController()->Process(volume_mute));

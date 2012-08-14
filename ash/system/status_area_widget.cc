@@ -14,6 +14,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/volume_control_delegate.h"
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -22,15 +23,46 @@ namespace ash {
 
 namespace {
 
+class DummyVolumeControlDelegate : public VolumeControlDelegate {
+ public:
+  DummyVolumeControlDelegate() {}
+  virtual ~DummyVolumeControlDelegate() {}
+
+  virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE {
+    return true;
+  }
+  virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE {
+    return true;
+  }
+  virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE {
+    return true;
+  }
+  virtual void SetVolumePercent(double percent) OVERRIDE {
+  }
+  virtual bool IsAudioMuted() const OVERRIDE {
+    return true;
+  }
+  virtual void SetAudioMuted(bool muted) OVERRIDE {
+  }
+  virtual float GetVolumeLevel() const OVERRIDE {
+    return 0.0;
+  }
+  virtual void SetVolumeLevel(float level) OVERRIDE {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyVolumeControlDelegate);
+};
+
 class DummySystemTrayDelegate : public SystemTrayDelegate {
  public:
   DummySystemTrayDelegate()
-      : muted_(false),
-        wifi_enabled_(true),
+      : wifi_enabled_(true),
         cellular_enabled_(true),
         bluetooth_enabled_(true),
-        volume_(0.5),
-        caps_lock_enabled_(false) {
+        caps_lock_enabled_(false),
+        volume_control_delegate_(
+            ALLOW_THIS_IN_INITIALIZER_LIST(new DummyVolumeControlDelegate)) {
   }
 
   virtual ~DummySystemTrayDelegate() {}
@@ -89,22 +121,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual void ShowHelp() OVERRIDE {
-  }
-
-  virtual bool IsAudioMuted() const OVERRIDE {
-    return muted_;
-  }
-
-  virtual void SetAudioMuted(bool muted) OVERRIDE {
-    muted_ = muted;
-  }
-
-  virtual float GetVolumeLevel() const OVERRIDE {
-    return volume_;
-  }
-
-  virtual void SetVolumeLevel(float volume) OVERRIDE {
-    volume_ = volume;
   }
 
   virtual bool IsCapsLockOn() const OVERRIDE {
@@ -260,13 +276,22 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ChangeProxySettings() OVERRIDE {
   }
 
-  bool muted_;
+  virtual VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE {
+    return volume_control_delegate_.get();
+  }
+
+  virtual void SetVolumeControlDelegate(
+      scoped_ptr<VolumeControlDelegate> delegate) OVERRIDE {
+    volume_control_delegate_.swap(delegate);
+  }
+
+
   bool wifi_enabled_;
   bool cellular_enabled_;
   bool bluetooth_enabled_;
-  float volume_;
   bool caps_lock_enabled_;
   gfx::ImageSkia null_image_;
+  scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DummySystemTrayDelegate);
 };

@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
+#include "ash/volume_control_delegate.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
@@ -39,7 +40,18 @@ const int kVolumeImageHeight = 25;
 // The one for mute is at the 0 index and the other
 // four are used for ascending volume levels.
 const int kVolumeLevels = 4;
+
+bool IsAudioMuted() {
+  return Shell::GetInstance()->tray_delegate()->
+      GetVolumeControlDelegate()->IsAudioMuted();
 }
+
+float GetVolumeLevel() {
+  return Shell::GetInstance()->tray_delegate()->
+      GetVolumeControlDelegate()->GetVolumeLevel();
+}
+
+}  // namespace
 
 namespace tray {
 
@@ -58,10 +70,8 @@ class VolumeButton : public views::ToggleImageButton {
   virtual ~VolumeButton() {}
 
   void Update() {
-    ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
-    float level = delegate->GetVolumeLevel();
-    int image_index = delegate->IsAudioMuted() ?
+    float level = GetVolumeLevel();
+    int image_index = IsAudioMuted() ?
         0 : (level == 1.0 ?
              kVolumeLevels :
              std::max(1, int(std::ceil(level * (kVolumeLevels - 1)))));
@@ -101,9 +111,7 @@ class MuteButton : public ash::internal::TrayBarButtonWithTitle {
   virtual ~MuteButton() {}
 
   void Update() {
-    ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
-    UpdateButton(delegate->IsAudioMuted());
+    UpdateButton(IsAudioMuted());
     SchedulePaint();
   }
 
@@ -115,7 +123,7 @@ class VolumeSlider : public views::Slider {
   explicit VolumeSlider(views::SliderListener* listener)
       : views::Slider(listener, views::Slider::HORIZONTAL) {
     set_focus_border_color(kFocusBorderColor);
-    SetValue(ash::Shell::GetInstance()->tray_delegate()->GetVolumeLevel());
+    SetValue(GetVolumeLevel());
     SetAccessibleName(
             ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
                 IDS_ASH_STATUS_TRAY_VOLUME));
@@ -124,7 +132,7 @@ class VolumeSlider : public views::Slider {
   virtual ~VolumeSlider() {}
 
   void Update() {
-    UpdateState(!ash::Shell::GetInstance()->tray_delegate()->IsAudioMuted());
+    UpdateState(!IsAudioMuted());
   }
 
   DISALLOW_COPY_AND_ASSIGN(VolumeSlider);
@@ -179,9 +187,8 @@ class VolumeView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     CHECK(sender == icon_ || sender == mute_);
-    ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
-    delegate->SetAudioMuted(!delegate->IsAudioMuted());
+    ash::Shell::GetInstance()->tray_delegate()->
+        GetVolumeControlDelegate()->SetAudioMuted(!IsAudioMuted());
   }
 
   // Overridden from views:SliderListener.
@@ -190,9 +197,8 @@ class VolumeView : public views::View,
                                   float old_value,
                                   views::SliderChangeReason reason) OVERRIDE {
     if (reason == views::VALUE_CHANGED_BY_USER) {
-      ash::SystemTrayDelegate* delegate =
-          ash::Shell::GetInstance()->tray_delegate();
-      delegate->SetVolumeLevel(value);
+      ash::Shell::GetInstance()->tray_delegate()->
+          GetVolumeControlDelegate()->SetVolumeLevel(value);
     }
     icon_->Update();
   }
@@ -216,9 +222,7 @@ TrayVolume::~TrayVolume() {
 }
 
 bool TrayVolume::GetInitialVisibility() {
-  ash::SystemTrayDelegate* delegate =
-      ash::Shell::GetInstance()->tray_delegate();
-  return delegate->IsAudioMuted();
+  return IsAudioMuted();
 }
 
 views::View* TrayVolume::CreateDefaultView(user::LoginStatus status) {
@@ -248,7 +252,7 @@ void TrayVolume::OnVolumeChanged(float percent) {
     tray_view()->SetVisible(GetInitialVisibility());
 
   if (volume_view_) {
-    if (ash::Shell::GetInstance()->tray_delegate()->IsAudioMuted())
+    if (IsAudioMuted())
       percent = 0.0;
     volume_view_->SetVolumeLevel(percent);
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);

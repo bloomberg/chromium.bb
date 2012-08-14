@@ -13,6 +13,7 @@
 #include "ash/system/user/login_status.h"
 #include "base/file_path.h"
 #include "base/i18n/time_formatting.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -96,6 +97,8 @@ struct ASH_EXPORT IMEInfo {
 
 typedef std::vector<IMEInfo> IMEInfoList;
 
+class VolumeControlDelegate;
+
 class SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
@@ -141,18 +144,6 @@ class SystemTrayDelegate {
 
   // Shows help.
   virtual void ShowHelp() = 0;
-
-  // Is the system audio muted?
-  virtual bool IsAudioMuted() const = 0;
-
-  // Mutes/Unmutes the audio system.
-  virtual void SetAudioMuted(bool muted) = 0;
-
-  // Gets the volume level. The range is [0, 1.0].
-  virtual float GetVolumeLevel() const = 0;
-
-  // Sets the volume level. The range is [0, 1.0].
-  virtual void SetVolumeLevel(float level) = 0;
 
   // Gets whether the caps lock is on.
   virtual bool IsCapsLockOn() const = 0;
@@ -278,6 +269,14 @@ class SystemTrayDelegate {
 
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;
+
+  // Returns VolumeControlDelegate.
+  virtual VolumeControlDelegate* GetVolumeControlDelegate() const = 0;
+
+  // Sets VolumeControlDelegate.
+  virtual void SetVolumeControlDelegate(
+      scoped_ptr<VolumeControlDelegate> delegate) = 0;
+
 };
 
 }  // namespace ash

@@ -13,6 +13,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_animations.h"
@@ -692,10 +693,8 @@ bool SystemGestureEventFilter::HandleDeviceControl(
     if (delegate)
       delegate->SetBrightnessPercent(100.0 - percent, true);
   } else if (start_location_ == BEZEL_START_RIGHT) {
-    ash::VolumeControlDelegate* delegate =
-        accelerator->volume_control_delegate();
-    if (delegate)
-      delegate->SetVolumePercent(100.0 - percent);
+    Shell::GetInstance()->tray_delegate()->GetVolumeControlDelegate()->
+        SetVolumePercent(100.0 - percent);
   } else {
     return true;
   }

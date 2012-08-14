@@ -83,15 +83,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
       keyboard_brightness_control_delegate);
   void SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate> screenshot_delegate);
-  void SetVolumeControlDelegate(
-      scoped_ptr<VolumeControlDelegate> volume_control_delegate);
-
   BrightnessControlDelegate* brightness_control_delegate() const {
     return brightness_control_delegate_.get();
-  }
-
-  VolumeControlDelegate* volume_control_delegate() const {
-    return volume_control_delegate_.get();
   }
 
  private:
@@ -116,7 +109,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   scoped_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   scoped_ptr<ScreenshotDelegate> screenshot_delegate_;
-  scoped_ptr<VolumeControlDelegate> volume_control_delegate_;
 
   // A map from accelerators to the AcceleratorAction values, which are used in
   // the implementation.

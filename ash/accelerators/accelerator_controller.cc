@@ -499,16 +499,16 @@ bool AcceleratorController::PerformAction(int action,
             HandleKeyboardBrightnessUp(accelerator);
       break;
     case VOLUME_MUTE:
-      if (volume_control_delegate_.get())
-        return volume_control_delegate_->HandleVolumeMute(accelerator);
+      return shell->tray_delegate()->GetVolumeControlDelegate()->
+          HandleVolumeMute(accelerator);
       break;
     case VOLUME_DOWN:
-      if (volume_control_delegate_.get())
-        return volume_control_delegate_->HandleVolumeDown(accelerator);
+      return shell->tray_delegate()->GetVolumeControlDelegate()->
+          HandleVolumeDown(accelerator);
       break;
     case VOLUME_UP:
-      if (volume_control_delegate_.get())
-        return volume_control_delegate_->HandleVolumeUp(accelerator);
+      return shell->tray_delegate()->GetVolumeControlDelegate()->
+          HandleVolumeUp(accelerator);
       break;
     case FOCUS_LAUNCHER:
       if (shell->launcher())
@@ -697,11 +697,6 @@ void AcceleratorController::SetKeyboardBrightnessControlDelegate(
 void AcceleratorController::SetScreenshotDelegate(
     scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
   screenshot_delegate_.swap(screenshot_delegate);
-}
-
-void AcceleratorController::SetVolumeControlDelegate(
-    scoped_ptr<VolumeControlDelegate> volume_control_delegate) {
-  volume_control_delegate_.swap(volume_control_delegate);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

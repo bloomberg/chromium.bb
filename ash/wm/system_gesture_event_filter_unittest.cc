@@ -10,6 +10,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/volume_control_delegate.h"
@@ -69,6 +70,17 @@ class DummyVolumeControlDelegate : public VolumeControlDelegate,
   virtual void SetVolumePercent(double percent) OVERRIDE {
     SetPercent(percent);
   }
+  virtual bool IsAudioMuted() const OVERRIDE {
+    return false;
+  }
+  virtual void SetAudioMuted(bool muted) OVERRIDE {
+  }
+  virtual float GetVolumeLevel() const OVERRIDE {
+    return 0.0;
+  }
+  virtual void SetVolumeLevel(float level) OVERRIDE {
+  }
+
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyVolumeControlDelegate);
@@ -199,7 +211,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
 
   DummyVolumeControlDelegate* delegateVolume =
       new DummyVolumeControlDelegate();
-  accelerator->SetVolumeControlDelegate(
+  ash::Shell::GetInstance()->tray_delegate()->SetVolumeControlDelegate(
       scoped_ptr<VolumeControlDelegate>(delegateVolume).Pass());
 
   const int kTouchId = 5;

@@ -21,6 +21,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
+#include "ash/volume_control_delegate.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/chromeos/chromeos_version.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -171,7 +173,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         search_key_mapped_to_(input_method::kSearchKey),
         screen_locked_(false),
         connected_network_state_(STATE_UNKNOWN),
-        data_promo_notification_(new DataPromoNotification()) {
+        data_promo_notification_(new DataPromoNotification()),
+        volume_control_delegate_(ALLOW_THIS_IN_INITIALIZER_LIST(
+            new VolumeController)) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
@@ -335,22 +339,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShowHelp() OVERRIDE {
     chrome::ShowHelp(GetAppropriateBrowser(), chrome::HELP_SOURCE_MENU);
-  }
-
-  virtual bool IsAudioMuted() const OVERRIDE {
-    return AudioHandler::GetInstance()->IsMuted();
-  }
-
-  virtual void SetAudioMuted(bool muted) OVERRIDE {
-    return AudioHandler::GetInstance()->SetMuted(muted);
-  }
-
-  virtual float GetVolumeLevel() const OVERRIDE {
-    return AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
-  }
-
-  virtual void SetVolumeLevel(float level) OVERRIDE {
-    AudioHandler::GetInstance()->SetVolumePercent(level * 100.f);
   }
 
   virtual bool IsCapsLockOn() const OVERRIDE {
@@ -721,6 +709,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     BaseLoginDisplayHost::default_host()->OpenProxySettings();
   }
 
+  virtual ash::VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE
+  {
+    return volume_control_delegate_.get();
+  }
+
+  virtual void SetVolumeControlDelegate(
+      scoped_ptr<ash::VolumeControlDelegate> delegate) OVERRIDE {
+    volume_control_delegate_.swap(delegate);
+  }
  private:
   // Returns the last active browser. If there is no such browser, creates a new
   // browser window with an empty tab and returns it.
@@ -1249,6 +1246,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   BooleanPrefMember accessibility_enabled_;
 
   scoped_ptr<DataPromoNotification> data_promo_notification_;
+
+  scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };

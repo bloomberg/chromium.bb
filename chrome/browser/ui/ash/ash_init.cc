@@ -29,7 +29,6 @@
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/ash/keyboard_brightness_controller_chromeos.h"
@@ -87,9 +86,6 @@ void OpenAsh() {
   shell->accelerator_controller()->SetKeyboardBrightnessControlDelegate(
       scoped_ptr<ash::KeyboardBrightnessControlDelegate>(
           new KeyboardBrightnessController).Pass());
-  shell->accelerator_controller()->SetVolumeControlDelegate(
-      scoped_ptr<ash::VolumeControlDelegate>(new VolumeController).Pass());
-
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(
       chromeos::accessibility::IsHighContrastEnabled());
 

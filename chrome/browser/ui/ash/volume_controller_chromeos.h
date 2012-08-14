@@ -20,6 +20,10 @@ class VolumeController : public ash::VolumeControlDelegate {
   virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool HandleVolumeDown(const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool HandleVolumeUp(const ui::Accelerator& accelerator) OVERRIDE;
+  virtual bool IsAudioMuted() const OVERRIDE;
+  virtual void SetAudioMuted(bool muted) OVERRIDE;
+  virtual float GetVolumeLevel() const OVERRIDE;
+  virtual void SetVolumeLevel(float level) OVERRIDE;
   virtual void SetVolumePercent(double percent) OVERRIDE;
 
  private:
