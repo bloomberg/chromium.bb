@@ -344,6 +344,17 @@ void OmxVideoDecodeAccelerator::Decode(
 void OmxVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  // If we are resetting/destroying/erroring, don't bother, as
+  // OMX_FillThisBuffer will fail anyway. In case we're in the middle of
+  // closing, this will put the Accelerator in ERRORING mode, which has the
+  // unwanted side effect of not going through the OMX_FreeBuffers path and
+  // leaks memory.
+  if (current_state_change_ == RESETTING ||
+      current_state_change_ == DESTROYING ||
+      current_state_change_ == ERRORING)
+    return;
+
   RETURN_ON_FAILURE(CanFillBuffer(), "Can't fill buffer", ILLEGAL_STATE,);
 
   DCHECK_EQ(output_buffers_at_component_, 0);
@@ -815,8 +826,7 @@ void OmxVideoDecodeAccelerator::FillBufferDoneTask(
   if (buffer->nFlags & OMX_BUFFERFLAG_EOS) {
     buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
     OnReachedEOSInFlushing();
-    if (current_state_change_ != DESTROYING)
-      ReusePictureBuffer(picture_buffer_id);
+    ReusePictureBuffer(picture_buffer_id);
     return;
   }
 
