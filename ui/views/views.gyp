@@ -589,7 +589,7 @@
       ],
     },  # target_name: views_unittests
     {
-      'target_name': 'views_examples_lib',
+      'target_name': 'views_examples_with_content_lib',
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
@@ -669,9 +669,9 @@
           ],
         }],
       ],
-    },  # target_name: views_examples_lib
+    },  # target_name: views_examples_with_content_lib
     {
-      'target_name': 'views_examples_exe',
+      'target_name': 'views_examples_with_content_exe',
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
@@ -685,7 +685,7 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
-        'views_examples_lib',
+        'views_examples_with_content_lib',
       ],
       'include_dirs': [
         '../..',
@@ -736,6 +736,6 @@
           ],
         }],
       ],
-    },  # target_name: views_examples_lib
+    },  # target_name: views_examples_with_content_exe
   ],
 }
