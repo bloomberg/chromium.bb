@@ -46,7 +46,6 @@
           'nacl_error_log_hook.c',
           'nacl_globals.c',
           'nacl_kern_services.c',
-          'nacl_memory_object.c',
           'nacl_resource.c',
           'nacl_reverse_quota_interface.c',
           'nacl_signal_common.c',

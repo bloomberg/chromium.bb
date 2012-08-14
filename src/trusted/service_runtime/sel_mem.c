@@ -20,7 +20,6 @@
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/nacl_memory_object.h"
 
 #define START_ENTRIES   5   /* tramp+text, rodata, data, bss, stack */
 #define REMOVE_MARKED_DEBUG 0
@@ -34,19 +33,17 @@
  *
  * Regions are described by (relative) starting page number, the
  * number of pages, and the protection that the pages should have.
- *
- * Takes ownership of NaClMemObj.
  */
-struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t             page_num,
-                                          size_t                npages,
-                                          int                   prot,
-                                          struct NaClMemObj     *nmop) {
+struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t               page_num,
+                                          size_t                  npages,
+                                          int                     prot,
+                                          enum NaClVmmapEntryType vmmap_type) {
   struct NaClVmmapEntry *entry;
 
   NaClLog(4,
           "NaClVmmapEntryMake(0x%"NACL_PRIxPTR",0x%"NACL_PRIxS","
-          "0x%x,0x%"NACL_PRIxPTR")\n",
-          page_num, npages, prot, (uintptr_t) nmop);
+          "0x%x,0x%x)\n",
+          page_num, npages, prot, (int) vmmap_type);
   entry = (struct NaClVmmapEntry *) malloc(sizeof *entry);
   if (NULL == entry) {
     return 0;
@@ -55,7 +52,7 @@ struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t             page_num,
   entry->page_num = page_num;
   entry->npages = npages;
   entry->prot = prot;
-  entry->nmop = nmop;
+  entry->vmmap_type = vmmap_type;
   entry->removed = 0;
   return entry;
 }
@@ -65,12 +62,9 @@ void  NaClVmmapEntryFree(struct NaClVmmapEntry *entry) {
   NaClLog(4,
           ("NaClVmmapEntryFree(0x%08"NACL_PRIxPTR
            "): (0x%"NACL_PRIxPTR",0x%"NACL_PRIxS","
-           "0x%x,0x%"NACL_PRIxPTR")\n"),
+           "0x%x,0x%x)\n"),
           (uintptr_t) entry,
-          entry->page_num, entry->npages, entry->prot, (uintptr_t) entry->nmop);
-
-  NaClMemObjSafeDtor(entry->nmop);
-  free(entry->nmop);
+          entry->page_num, entry->npages, entry->prot, (int) entry->vmmap_type);
 
   free(entry);
 }
@@ -247,18 +241,17 @@ void NaClVmmapMakeSorted(struct NaClVmmap  *self) {
 #endif
 }
 
-void NaClVmmapAdd(struct NaClVmmap   *self,
-                  uintptr_t          page_num,
-                  size_t             npages,
-                  int                prot,
-                  struct NaClMemObj  *nmop) {
+void NaClVmmapAdd(struct NaClVmmap          *self,
+                  uintptr_t                 page_num,
+                  size_t                    npages,
+                  int                       prot,
+                  enum NaClVmmapEntryType   vmmap_type) {
   struct NaClVmmapEntry *entry;
 
   NaClLog(2,
           ("NaClVmmapAdd(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxPTR", "
-           "0x%"NACL_PRIxS", 0x%x, "
-           "0x%08"NACL_PRIxPTR")\n"),
-          (uintptr_t) self, page_num, npages, prot, (uintptr_t) nmop);
+           "0x%"NACL_PRIxS", 0x%x, 0x%x)\n"),
+          (uintptr_t) self, page_num, npages, prot, (int) vmmap_type);
   if (self->nvalid == self->size) {
     size_t                    new_size = 2 * self->size;
     struct NaClVmmapEntry     **new_map;
@@ -271,7 +264,7 @@ void NaClVmmapAdd(struct NaClVmmap   *self,
     self->size = new_size;
   }
   /* self->nvalid < self->size */
-  entry = NaClVmmapEntryMake(page_num, npages, prot, nmop);
+  entry = NaClVmmapEntryMake(page_num, npages, prot, vmmap_type);
 
   self->vmentry[self->nvalid] = entry;
   self->is_sorted = 0;
@@ -281,24 +274,23 @@ void NaClVmmapAdd(struct NaClVmmap   *self,
 
 /*
  * Update the virtual memory map.  Deletion is handled by a remove
- * flag, since a NULL nmop just means that the memory is backed by the
- * system paging file.
+ * flag, since a NACL_VMMAP_ENTRY_ANONYMOUS vmmap_type just means
+ * that the memory is backed by the system paging file.
  */
-static void NaClVmmapUpdate(struct NaClVmmap   *self,
-                            uintptr_t          page_num,
-                            size_t             npages,
-                            int                prot,
-                            struct NaClMemObj  *nmop,
-                            int                remove) {
+static void NaClVmmapUpdate(struct NaClVmmap          *self,
+                            uintptr_t                 page_num,
+                            size_t                    npages,
+                            int                       prot,
+                            enum NaClVmmapEntryType   vmmap_type,
+                            int                       remove) {
   /* update existing entries or create new entry as needed */
   size_t                i;
   uintptr_t             new_region_end_page = page_num + npages;
 
   NaClLog(2,
-          ("NaClVmmapUpdate(0x%08"NACL_PRIxPTR", "
-           "0x%"NACL_PRIxPTR", 0x%"NACL_PRIxS", "
-           "0x%x, 0x%08"NACL_PRIxPTR", %d)\n"),
-          (uintptr_t) self, page_num, npages, prot, (uintptr_t) nmop,
+          ("NaClVmmapUpdate(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxPTR
+           ", 0x%"NACL_PRIxS", 0x%x, 0x%x, 0x%x)\n"),
+          (uintptr_t) self, page_num, npages, prot, (int) vmmap_type,
           remove);
   NaClVmmapMakeSorted(self);
 
@@ -307,8 +299,6 @@ static void NaClVmmapUpdate(struct NaClVmmap   *self,
   for (i = 0; i < self->nvalid; i++) {
     struct NaClVmmapEntry *ent = self->vmentry[i];
     uintptr_t             ent_end_page = ent->page_num + ent->npages;
-    nacl_off64_t          additional_offset =
-        (new_region_end_page - ent->page_num) << NACL_PAGESHIFT;
 
     if (ent->page_num < page_num && new_region_end_page < ent_end_page) {
       /*
@@ -319,7 +309,7 @@ static void NaClVmmapUpdate(struct NaClVmmap   *self,
                    new_region_end_page,
                    ent_end_page - new_region_end_page,
                    ent->prot,
-                   NaClMemObjSplit(ent->nmop, additional_offset));
+                   ent->vmmap_type);
       ent->npages = page_num - ent->page_num;
       break;
     } else if (ent->page_num < page_num && page_num < ent_end_page) {
@@ -328,9 +318,6 @@ static void NaClVmmapUpdate(struct NaClVmmap   *self,
     } else if (ent->page_num < new_region_end_page &&
                new_region_end_page < ent_end_page) {
       /* New mapping overlaps start of existing mapping. */
-
-      NaClMemObjIncOffset(ent->nmop, additional_offset);
-
       ent->page_num = new_region_end_page;
       ent->npages = ent_end_page - new_region_end_page;
       break;
@@ -345,34 +332,34 @@ static void NaClVmmapUpdate(struct NaClVmmap   *self,
   }
 
   if (!remove) {
-    NaClVmmapAdd(self, page_num, npages, prot, nmop);
+    NaClVmmapAdd(self, page_num, npages, prot, vmmap_type);
   }
 
   NaClVmmapRemoveMarked(self);
 }
 
-void NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
-                               uintptr_t          page_num,
-                               size_t             npages,
-                               int                prot,
-                               struct NaClMemObj  *nmop) {
+void NaClVmmapAddWithOverwrite(struct NaClVmmap         *self,
+                               uintptr_t                page_num,
+                               size_t                   npages,
+                               int                      prot,
+                               enum NaClVmmapEntryType  vmmap_type) {
   NaClVmmapUpdate(self,
                   page_num,
                   npages,
                   prot,
-                  nmop,
+                  vmmap_type,
                   /* remove= */ 0);
 }
 
-void NaClVmmapRemove(struct NaClVmmap   *self,
-                     uintptr_t          page_num,
-                     size_t             npages,
-                     struct NaClMemObj  *nmop) {
+void NaClVmmapRemove(struct NaClVmmap         *self,
+                     uintptr_t                page_num,
+                     size_t                   npages,
+                     enum NaClVmmapEntryType  vmmap_type) {
   NaClVmmapUpdate(self,
                   page_num,
                   npages,
                   /* prot= */ 0,
-                  nmop,
+                  vmmap_type,
                   /* remove=*/ 1);
 }
 

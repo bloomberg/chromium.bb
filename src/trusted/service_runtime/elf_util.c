@@ -754,7 +754,7 @@ NaClErrorCode NaClElfImageLoadDynamically(struct NaClElfImage *image,
                                   php->p_vaddr >> NACL_PAGESHIFT,
                                   mapping_size >> NACL_PAGESHIFT,
                                   PROT_READ,
-                                  NULL);
+                                  NACL_VMMAP_ENTRY_ANONYMOUS);
       }
     }
   }

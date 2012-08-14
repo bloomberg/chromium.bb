@@ -485,7 +485,7 @@ void  NaClMemRegionPrinter(void                   *state,
           (entry->page_num + entry->npages) << NACL_PAGESHIFT);
   gprintf(gp,   "prot   0x%08x\n", entry->prot);
   gprintf(gp,   "%sshared/backed by a file\n",
-          (NULL == entry->nmop) ? "not " : "");
+          (NACL_VMMAP_ENTRY_MAPPED == entry->vmmap_type) ? "not " : "");
 }
 
 void  NaClAppPrintDetails(struct NaClApp  *nap,

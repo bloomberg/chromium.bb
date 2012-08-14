@@ -119,7 +119,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                0,
                NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
                PROT_NONE,
-               (struct NaClMemObj *) NULL);
+               NACL_VMMAP_ENTRY_ANONYMOUS);
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
   /*
@@ -149,7 +149,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                region_size >> NACL_PAGESHIFT,
                PROT_READ | PROT_EXEC,
-               NULL);
+               NACL_VMMAP_ENTRY_ANONYMOUS);
 
   start_addr = NaClUserToSys(nap, nap->dynamic_text_start);
   region_size = nap->dynamic_text_end - nap->dynamic_text_start;
@@ -172,9 +172,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ | PROT_EXEC,
-                 NaClMemObjMake(nap->text_shm,
-                                region_size,
-                                0));
+                 NACL_VMMAP_ENTRY_MAPPED);
   }
 
   if (0 != nap->rodata_start) {
@@ -215,7 +213,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ,
-                 (struct NaClMemObj *) NULL);
+                 NACL_VMMAP_ENTRY_ANONYMOUS);
   }
 
   /*
@@ -248,7 +246,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                  region_size >> NACL_PAGESHIFT,
                  PROT_READ | PROT_WRITE,
-                 (struct NaClMemObj *) NULL);
+                 NACL_VMMAP_ENTRY_ANONYMOUS);
   }
 
   /* stack is read/write but not execute */
@@ -279,6 +277,6 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                nap->stack_size >> NACL_PAGESHIFT,
                PROT_READ | PROT_WRITE,
-               (struct NaClMemObj *) NULL);
+               NACL_VMMAP_ENTRY_ANONYMOUS);
   return LOAD_OK;
 }

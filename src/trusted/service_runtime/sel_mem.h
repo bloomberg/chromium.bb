@@ -13,7 +13,6 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/trusted/service_runtime/nacl_memory_object.h"
 
 EXTERN_C_BEGIN
 
@@ -33,12 +32,24 @@ EXTERN_C_BEGIN
  * memory regions.
  */
 
+/*
+ * NaClVmmapEntryType exists for Windows support. NACL_VMMAP_ENTRY_ANONYMOUS
+ * indicates anonymous memory mappings that were created with VirtualAlloc()
+ * and must therefore be unmapped using VirtualFree(). NACL_VMMAP_ENTRY_MAPPED
+ * indicates mappings that were created with MapViewOfFileEx() and must
+ * therefore be unmapped using UnmapViewOfFile().
+ */
+enum NaClVmmapEntryType {
+  NACL_VMMAP_ENTRY_ANONYMOUS = 1,
+  NACL_VMMAP_ENTRY_MAPPED
+};
+
 struct NaClVmmapEntry {
-  uintptr_t             page_num;   /* base virtual address >> NACL_PAGESHIFT */
-  size_t                npages;     /* number of pages */
-  int                   prot;       /* mprotect attribute */
-  struct NaClMemObj     *nmop;      /* how to get memory for move/remap */
-  int                   removed;    /* flag set in NaClVmmapUpdate */
+  uintptr_t               page_num;   /* base virtual addr >> NACL_PAGESHIFT */
+  size_t                  npages;     /* number of pages */
+  int                     prot;       /* mprotect attribute */
+  enum NaClVmmapEntryType vmmap_type; /* memory entry type */
+  int                     removed;    /* flag set in NaClVmmapUpdate */
 };
 
 struct NaClVmmap {
@@ -72,30 +83,30 @@ void  NaClVmmapDtor(struct NaClVmmap  *self);
  * with any existing ones. This function is intended for sandbox startup
  * only when non-overlapping mappings are being added.
  */
-void  NaClVmmapAdd(struct NaClVmmap   *self,
-                   uintptr_t          page_num,
-                   size_t             npages,
-                   int                prot,
-                   struct NaClMemObj  *nmop);
+void  NaClVmmapAdd(struct NaClVmmap         *self,
+                   uintptr_t                page_num,
+                   size_t                   npages,
+                   int                      prot,
+                   enum NaClVmmapEntryType  vmmap_type);
 
 /*
  * NaClVmmapAddWithOverwrite checks the existing mappings and resizes
  * them if necessary to fit in the newly mapped region.
  */
-void  NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
-                                uintptr_t          page_num,
-                                size_t             npages,
-                                int                prot,
-                                struct NaClMemObj  *nmop);
+void  NaClVmmapAddWithOverwrite(struct NaClVmmap          *self,
+                                uintptr_t                 page_num,
+                                size_t                    npages,
+                                int                       prot,
+                                enum NaClVmmapEntryType   vmmap_type);
 
 /*
  * NaClVmmapRemove modifies the specified region and updates the existing
  * mappings if necessary.
  */
-void  NaClVmmapRemove(struct NaClVmmap   *self,
-                      uintptr_t          page_num,
-                      size_t             npages,
-                      struct NaClMemObj  *nmop);
+void  NaClVmmapRemove(struct NaClVmmap          *self,
+                      uintptr_t                 page_num,
+                      size_t                    npages,
+                      enum NaClVmmapEntryType   vmmap_type);
 
 /*
  * NaClVmmapFindPage and NaClVmmapFindPageIter only works if pnum is

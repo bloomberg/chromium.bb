@@ -104,14 +104,6 @@ int32_t NaClCommonSysStat(struct NaClAppThread *natp,
                           const char           *path,
                           struct nacl_abi_stat *nasp);
 
-void NaClCommonUtilUpdateAddrMap(struct NaClApp   *nap,
-                                 uintptr_t        sysaddr,
-                                 size_t           nbytes,
-                                 int              sysprot,
-                                 struct NaClDesc  *backing_desc,
-                                 nacl_off64_t     backing_bytes,
-                                 nacl_off64_t     offset_bytes);
-
 /* bool */
 int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
                                                      uintptr_t      usraddr,

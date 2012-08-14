@@ -1013,37 +1013,6 @@ cleanup:
   return retval;
 }
 
-void NaClCommonUtilUpdateAddrMap(struct NaClApp       *nap,
-                                 uintptr_t            sysaddr,
-                                 size_t               nbytes,
-                                 int                  sysprot,
-                                 struct NaClDesc      *backing_desc,
-                                 nacl_off64_t         backing_bytes,
-                                 nacl_off64_t         offset_bytes) {
-  uintptr_t                   usraddr;
-  struct NaClMemObj           *nmop;
-
-  NaClLog(3,
-          ("NaClCommonUtilUpdateAddrMap(0x%08"NACL_PRIxPTR", "
-           "0x%08"NACL_PRIxPTR", "
-           "0x%"NACL_PRIxS", 0x%x, 0x%08"NACL_PRIxPTR", 0x%"NACL_PRIx64", "
-           "0x%"NACL_PRIx64")\n"),
-          (uintptr_t) nap, sysaddr, nbytes,
-          sysprot, (uintptr_t) backing_desc, backing_bytes,
-          offset_bytes);
-  usraddr = NaClSysToUser(nap, sysaddr);
-  nmop = NULL;
-  if (NULL != backing_desc) {
-    nmop = NaClMemObjMake(backing_desc, backing_bytes, offset_bytes);
-  }
-
-  NaClVmmapAddWithOverwrite(&nap->mem_map,
-                            usraddr >> NACL_PAGESHIFT,
-                            nbytes >> NACL_PAGESHIFT,
-                            sysprot,
-                            nmop);
-}
-
 
 int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
                                                      uintptr_t      usraddr,
@@ -1084,7 +1053,6 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
   uintptr_t                   endaddr;
   uintptr_t                   map_result;
   int                         holding_app_lock;
-  struct NaClMemObj           *nmop;
   struct nacl_abi_stat        stbuf;
   size_t                      alloc_rounded_length;
   nacl_off64_t                file_size;
@@ -1093,7 +1061,6 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
   size_t                      alloc_rounded_file_bytes;
 
   holding_app_lock = 0;
-  nmop = NULL;
   ndp = NULL;
 
   allowed_flags = (NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED
@@ -1357,9 +1324,9 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
   /*
    * Never allow users to say that mmapped pages are executable.  This
    * is primarily for the service runtime's own bookkeeping -- prot is
-   * used in NaClCommonUtilUpdateAddrMap -- since %cs restriction
-   * makes page protection irrelevant, it doesn't matter that on many
-   * systems (w/o NX) PROT_READ implies PROT_EXEC.
+   * used in NaClVmmapAddWithOverwrite -- since %cs restriction makes
+   * page protection irrelevant, it doesn't matter that on many systems
+   * (w/o NX) PROT_READ implies PROT_EXEC.
    */
   prot &= ~NACL_ABI_PROT_EXEC;
 
@@ -1421,18 +1388,24 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     if (map_result != sysaddr) {
       NaClLog(LOG_FATAL, "system mmap did not honor NACL_ABI_MAP_FIXED\n");
     }
-    if (prot == NACL_ABI_PROT_NONE) {
+    if (ndp == NULL || prot == NACL_ABI_PROT_NONE) {
       /*
        * windows nacl_host_desc implementation requires that PROT_NONE
        * memory be freed using VirtualFree rather than
        * UnmapViewOfFile.  TODO(bsy): remove this ugliness.
        */
-      NaClCommonUtilUpdateAddrMap(nap, sysaddr, length, PROT_NONE,
-                                  NULL, file_size, offset);
+      NaClVmmapAddWithOverwrite(&nap->mem_map,
+                                NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
+                                length >> NACL_PAGESHIFT,
+                                PROT_NONE,
+                                NACL_VMMAP_ENTRY_ANONYMOUS);
     } else {
       /* record change for file-backed memory */
-      NaClCommonUtilUpdateAddrMap(nap, sysaddr, length, NaClProtMap(prot),
-                                  ndp, file_size, offset);
+      NaClVmmapAddWithOverwrite(&nap->mem_map,
+                                NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
+                                length >> NACL_PAGESHIFT,
+                                NaClProtMap(prot),
+                                NACL_VMMAP_ENTRY_MAPPED);
     }
   } else {
     map_result = sysaddr;
@@ -1484,9 +1457,6 @@ cleanup:
   }
   if (NULL != ndp) {
     NaClDescUnref(ndp);
-  }
-  if (NaClPtrIsNegErrno(&map_result)) {
-    free(nmop);
   }
 
   /*
@@ -1571,36 +1541,51 @@ static int32_t MunmapInternal(struct NaClApp *nap,
       continue;
     }
     NaClLog(3,
-            ("NaClSysMunmap: addr 0x%08x, nmop 0x%08x\n"),
-            addr, entry->nmop);
-    if (NULL == entry->nmop) {
-      /* anonymous memory; we just decommit it and thus make it inaccessible */
-      if (!VirtualFree((void *) addr,
-                       NACL_MAP_PAGESIZE,
-                       MEM_DECOMMIT)) {
-        int error = GetLastError();
-        NaClLog(LOG_FATAL,
-                ("NaClSysMunmap: Could not VirtualFree MEM_DECOMMIT"
-                 " addr 0x%08x, error %d (0x%x)\n"),
-                addr, error, error);
-      }
-    } else {
-      NaClDescUnmapUnsafe(entry->nmop->ndp, (void *) addr, NACL_MAP_PAGESIZE);
-      /*
-       * Fill the address space hole that we opened with
-       * NaClDescUnmapUnsafe().
-       */
-      if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
-                        PAGE_READWRITE)) {
-        NaClLog(LOG_FATAL, "MunmapInternal: "
-                "failed to fill hole with VirtualAlloc(), error %d\n",
-                GetLastError());
-      }
+            ("NaClSysMunmap: addr 0x%08x, type 0x%x\n"),
+            addr, (int) entry->vmmap_type);
+    switch (entry->vmmap_type) {
+      case NACL_VMMAP_ENTRY_ANONYMOUS:
+        /*
+         * Anonymous memory; we just decommit it and thus
+         * make it inaccessible.
+         */
+        if (!VirtualFree((void *) addr,
+                         NACL_MAP_PAGESIZE,
+                         MEM_DECOMMIT)) {
+          int error = GetLastError();
+          NaClLog(LOG_FATAL,
+                  ("NaClSysMunmap: Could not VirtualFree MEM_DECOMMIT"
+                   " addr 0x%08x, error %d (0x%x)\n"),
+                  addr, error, error);
+        }
+        break;
+      case NACL_VMMAP_ENTRY_MAPPED:
+        if (!UnmapViewOfFile((void *) addr)) {
+          int error = GetLastError();
+          NaClLog(LOG_FATAL,
+                  ("NaClSysMunmap: UnmapViewOfFile failed"
+                   " addr 0x%08x, error %d (0x%x)\n"),
+                  addr, error, error);
+        }
+        /*
+         * Fill the address space hole that we opened
+         * with UnmapViewOfFile().
+         */
+        if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
+                          PAGE_READWRITE)) {
+          NaClLog(LOG_FATAL, "MunmapInternal: "
+                  "failed to fill hole with VirtualAlloc(), error %d\n",
+                  GetLastError());
+        }
+        break;
+      default:
+        NaClLog(LOG_FATAL, "MunmapInternal: invalid vmmap_type\n");
+        break;
     }
     NaClVmmapRemove(&nap->mem_map,
                     NaClSysToUser(nap, (uintptr_t) addr) >> NACL_PAGESHIFT,
                     NACL_PAGES_PER_MAP,
-                    (struct NaClMemObj *) NULL);
+                    NACL_VMMAP_ENTRY_ANONYMOUS);
   }
   return 0;
 }
@@ -1625,7 +1610,7 @@ static int32_t MunmapInternal(struct NaClApp *nap,
   NaClVmmapRemove(&nap->mem_map,
                   NaClSysToUser(nap, (uintptr_t) sysaddr) >> NACL_PAGESHIFT,
                   length >> NACL_PAGESHIFT,
-                  (struct NaClMemObj *) NULL);
+                  NACL_VMMAP_ENTRY_ANONYMOUS);
   return 0;
 }
 #endif
