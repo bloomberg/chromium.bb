@@ -833,7 +833,7 @@ bool WrenchMenu::CanDrop(MenuItemView* menu,
 
 int WrenchMenu::GetDropOperation(
     MenuItemView* item,
-    const views::DropTargetEvent& event,
+    const ui::DropTargetEvent& event,
     DropPosition* position) {
   return is_bookmark_command(item->GetCommand()) ?
       bookmark_menu_delegate_->GetDropOperation(item, event, position) :
@@ -842,7 +842,7 @@ int WrenchMenu::GetDropOperation(
 
 int WrenchMenu::OnPerformDrop(MenuItemView* menu,
                               DropPosition position,
-                              const views::DropTargetEvent& event) {
+                              const ui::DropTargetEvent& event) {
   if (!is_bookmark_command(menu->GetCommand()))
     return ui::DragDropTypes::DRAG_NONE;
 

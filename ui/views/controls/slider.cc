@@ -261,7 +261,7 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::GestureStatus Slider::OnGestureEvent(const views::GestureEvent& event) {
+ui::GestureStatus Slider::OnGestureEvent(const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
       event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
       event.type() == ui::ET_GESTURE_SCROLL_END ||

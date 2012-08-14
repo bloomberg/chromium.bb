@@ -43,7 +43,7 @@ class ASH_EXPORT PartialScreenshotView
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 
   bool is_dragging_;

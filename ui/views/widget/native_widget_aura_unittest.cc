@@ -216,7 +216,8 @@ class GestureTrackingView : public views::View {
   }
 
   // View overrides:
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE {
+  virtual ui::GestureStatus OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE {
     got_gesture_event_ = true;
     return consume_gesture_event_ ? ui::GESTURE_STATUS_CONSUMED :
         ui::GESTURE_STATUS_UNKNOWN;

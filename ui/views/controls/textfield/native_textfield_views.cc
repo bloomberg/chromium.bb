@@ -35,7 +35,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_views_model.h"
-#include "ui/views/events/event.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/metrics.h"
 #include "ui/views/views_delegate.h"
@@ -148,7 +147,7 @@ void NativeTextfieldViews::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
-    const GestureEvent& event) {
+    const ui::GestureEvent& event) {
   ui::GestureStatus status = textfield_->OnGestureEvent(event);
   if (status != ui::GESTURE_STATUS_UNKNOWN)
     return status;
@@ -205,7 +204,7 @@ bool NativeTextfieldViews::CanDrop(const OSExchangeData& data) {
   return textfield_->enabled() && !textfield_->read_only() && data.HasString();
 }
 
-int NativeTextfieldViews::OnDragUpdated(const DropTargetEvent& event) {
+int NativeTextfieldViews::OnDragUpdated(const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
   bool in_selection = GetRenderText()->IsPointInSelection(event.location());
   is_drop_cursor_visible_ = !in_selection;
@@ -222,7 +221,7 @@ int NativeTextfieldViews::OnDragUpdated(const DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
 }
 
-int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
+int NativeTextfieldViews::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
   DCHECK(!initiating_drag_ ||
          !GetRenderText()->IsPointInSelection(event.location()));

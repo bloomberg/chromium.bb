@@ -26,7 +26,7 @@ class PageNavigator;
 class WebContents;
 }
 
-namespace views {
+namespace ui {
 class DropTargetEvent;
 }
 
@@ -46,7 +46,7 @@ int BookmarkDragOperation(Profile* profile, const BookmarkNode* node);
 // |parent| is the parent node the drop is to occur on and |index| the index the
 // drop is over.
 int BookmarkDropOperation(Profile* profile,
-                          const views::DropTargetEvent& event,
+                          const ui::DropTargetEvent& event,
                           const BookmarkNodeData& data,
                           const BookmarkNode* parent,
                           int index);

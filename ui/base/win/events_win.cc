@@ -12,6 +12,8 @@
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/gfx/point.h"
 
+namespace ui {
+
 namespace {
 
 // From MSDN.
@@ -88,19 +90,19 @@ bool IsKeyEvent(const base::NativeEvent& native_event) {
 // Checks the current global state and the state sent by client mouse messages.
 int KeyStateFlagsFromNative(const base::NativeEvent& native_event) {
   int flags = 0;
-  flags |= base::win::IsAltPressed() ? ui::EF_ALT_DOWN : ui::EF_NONE;
-  flags |= base::win::IsShiftPressed() ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
-  flags |= base::win::IsCtrlPressed() ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
+  flags |= base::win::IsAltPressed() ? EF_ALT_DOWN : EF_NONE;
+  flags |= base::win::IsShiftPressed() ? EF_SHIFT_DOWN : EF_NONE;
+  flags |= base::win::IsCtrlPressed() ? EF_CONTROL_DOWN : EF_NONE;
 
   // Check key messages for the extended key flag.
   if (IsKeyEvent(native_event))
-    flags |= (HIWORD(native_event.lParam) & KF_EXTENDED) ? ui::EF_EXTENDED : 0;
+    flags |= (HIWORD(native_event.lParam) & KF_EXTENDED) ? EF_EXTENDED : 0;
 
   // Most client mouse messages include key state information.
   if (IsClientMouseEvent(native_event)) {
     int win_flags = GET_KEYSTATE_WPARAM(native_event.wParam);
-    flags |= (win_flags & MK_SHIFT) ? ui::EF_SHIFT_DOWN : 0;
-    flags |= (win_flags & MK_CONTROL) ? ui::EF_CONTROL_DOWN : 0;
+    flags |= (win_flags & MK_SHIFT) ? EF_SHIFT_DOWN : 0;
+    flags |= (win_flags & MK_CONTROL) ? EF_CONTROL_DOWN : 0;
   }
 
   return flags;
@@ -120,16 +122,14 @@ int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
     win_flags |= GET_KEYSTATE_WPARAM(native_event.wParam);
 
   int flags = 0;
-  flags |= (win_flags & MK_LBUTTON) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
-  flags |= (win_flags & MK_MBUTTON) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
-  flags |= (win_flags & MK_RBUTTON) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
-  flags |= IsNonClientMouseEvent(native_event) ? ui::EF_IS_NON_CLIENT : 0;
+  flags |= (win_flags & MK_LBUTTON) ? EF_LEFT_MOUSE_BUTTON : 0;
+  flags |= (win_flags & MK_MBUTTON) ? EF_MIDDLE_MOUSE_BUTTON : 0;
+  flags |= (win_flags & MK_RBUTTON) ? EF_RIGHT_MOUSE_BUTTON : 0;
+  flags |= IsNonClientMouseEvent(native_event) ? EF_IS_NON_CLIENT : 0;
   return flags;
 }
 
 }  // namespace
-
-namespace ui {
 
 void UpdateDeviceList() {
   NOTIMPLEMENTED();
@@ -311,13 +311,24 @@ base::NativeEvent CreateNoopEvent() {
 }
 
 int GetModifiersFromACCEL(const ACCEL& accel) {
-  int modifiers = ui::EF_NONE;
+  int modifiers = EF_NONE;
   if (accel.fVirt & FSHIFT)
-    modifiers |= ui::EF_SHIFT_DOWN;
+    modifiers |= EF_SHIFT_DOWN;
   if (accel.fVirt & FCONTROL)
-    modifiers |= ui::EF_CONTROL_DOWN;
+    modifiers |= EF_CONTROL_DOWN;
   if (accel.fVirt & FALT)
-    modifiers |= ui::EF_ALT_DOWN;
+    modifiers |= EF_ALT_DOWN;
+  return modifiers;
+}
+
+int GetModifiersFromKeyState() {
+  int modifiers = EF_NONE;
+  if (base::win::IsShiftPressed())
+    modifiers |= EF_SHIFT_DOWN;
+  if (base::win::IsCtrlPressed())
+    modifiers |= EF_CONTROL_DOWN;
+  if (base::win::IsAltPressed())
+    modifiers |= EF_ALT_DOWN;
   return modifiers;
 }
 

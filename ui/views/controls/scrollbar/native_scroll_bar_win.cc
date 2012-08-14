@@ -270,7 +270,7 @@ bool NativeScrollBarWin::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool NativeScrollBarWin::OnMouseWheel(const MouseWheelEvent& e) {
+bool NativeScrollBarWin::OnMouseWheel(const ui::MouseWheelEvent& e) {
   if (!sb_container_.get())
     return false;
   sb_container_->ScrollWithOffset(e.offset());

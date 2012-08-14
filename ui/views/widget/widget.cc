@@ -1105,10 +1105,10 @@ bool Widget::OnMouseEvent(const ui::MouseEvent& event) {
       return false;
     case ui::ET_MOUSEWHEEL:
       return GetRootView()->OnMouseWheel(
-          reinterpret_cast<const MouseWheelEvent&>(event));
+          reinterpret_cast<const ui::MouseWheelEvent&>(event));
     case ui::ET_SCROLL:
       return GetRootView()->OnScrollEvent(
-          reinterpret_cast<const ScrollEvent&>(event));
+          reinterpret_cast<const ui::ScrollEvent&>(event));
     default:
       return false;
   }
@@ -1122,12 +1122,12 @@ void Widget::OnMouseCaptureLost() {
   is_mouse_button_pressed_ = false;
 }
 
-ui::TouchStatus Widget::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus Widget::OnTouchEvent(const ui::TouchEvent& event) {
   ScopedEvent scoped(this, event);
   return GetRootView()->OnTouchEvent(event);
 }
 
-ui::GestureStatus Widget::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus Widget::OnGestureEvent(const ui::GestureEvent& event) {
   ScopedEvent scoped(this, event);
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:

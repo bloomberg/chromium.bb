@@ -227,7 +227,9 @@ DWORD OmniboxViewWin::EditDropTarget::OnDrop(IDataObject* data_object,
   effect = OnDragOver(data_object, key_state, cursor_position, effect);
 
   ui::OSExchangeData os_data(new ui::OSExchangeDataProviderWin(data_object));
-  views::DropTargetEvent event(os_data, cursor_position.x, cursor_position.y,
+  gfx::Point point(cursor_position.x, cursor_position.y);
+  ui::DropTargetEvent event(
+      os_data, point, point,
       ui::DragDropTypes::DropEffectToDragOperation(effect));
 
   int drag_operation = edit_->OnPerformDropImpl(event, edit_->in_drag());
@@ -956,7 +958,7 @@ views::View* OmniboxViewWin::AddToView(views::View* parent) {
   return native_view_host_;
 }
 
-int OmniboxViewWin::OnPerformDrop(const views::DropTargetEvent& event) {
+int OmniboxViewWin::OnPerformDrop(const ui::DropTargetEvent& event) {
   return OnPerformDropImpl(event, false);
 }
 
@@ -972,7 +974,7 @@ int OmniboxViewWin::WidthOfTextAfterCursor() {
   return WidthNeededToDisplay(GetText().substr(start));
 }
 
-int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,
+int OmniboxViewWin::OnPerformDropImpl(const ui::DropTargetEvent& event,
                                       bool in_drag) {
   const ui::OSExchangeData& data = event.data();
 

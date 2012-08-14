@@ -57,13 +57,13 @@ class MenuScrollButton : public View {
     return true;  // Always return true so that drop events are targeted to us.
   }
 
-  virtual void OnDragEntered(const DropTargetEvent& event) {
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) {
     DCHECK(host_->GetMenuItem()->GetMenuController());
     host_->GetMenuItem()->GetMenuController()->OnDragEnteredScrollButton(
         host_, is_up_);
   }
 
-  virtual int OnDragUpdated(const DropTargetEvent& event) {
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) {
     return ui::DragDropTypes::DRAG_NONE;
   }
 
@@ -72,7 +72,7 @@ class MenuScrollButton : public View {
     host_->GetMenuItem()->GetMenuController()->OnDragExitedScrollButton(host_);
   }
 
-  virtual int OnPerformDrop(const DropTargetEvent& event) {
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) {
     return ui::DragDropTypes::DRAG_NONE;
   }
 

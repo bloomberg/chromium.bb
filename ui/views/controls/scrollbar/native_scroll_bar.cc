@@ -76,13 +76,14 @@ bool NativeScrollBar::OnKeyPressed(const ui::KeyEvent& event) {
   return native_wrapper_->GetView()->OnKeyPressed(event);
 }
 
-ui::GestureStatus NativeScrollBar::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus NativeScrollBar::OnGestureEvent(
+    const ui::GestureEvent& event) {
   if (!native_wrapper_)
     return ui::GESTURE_STATUS_UNKNOWN;
   return native_wrapper_->GetView()->OnGestureEvent(event);
 }
 
-bool NativeScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
+bool NativeScrollBar::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (!native_wrapper_)
     return false;
   return native_wrapper_->GetView()->OnMouseWheel(event);

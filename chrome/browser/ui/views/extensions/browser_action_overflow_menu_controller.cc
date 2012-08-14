@@ -156,7 +156,7 @@ bool BrowserActionOverflowMenuController::CanDrop(
 
 int BrowserActionOverflowMenuController::GetDropOperation(
     views::MenuItemView* item,
-    const views::DropTargetEvent& event,
+    const ui::DropTargetEvent& event,
     DropPosition* position) {
   // Don't allow dropping from the BrowserActionContainer into slot 0 of the
   // overflow menu since once the move has taken place the item you are dragging
@@ -177,7 +177,7 @@ int BrowserActionOverflowMenuController::GetDropOperation(
 int BrowserActionOverflowMenuController::OnPerformDrop(
     views::MenuItemView* menu,
     DropPosition position,
-    const views::DropTargetEvent& event) {
+    const ui::DropTargetEvent& event) {
   BrowserActionDragData drop_data;
   if (!drop_data.Read(event.data()))
     return ui::DragDropTypes::DRAG_NONE;

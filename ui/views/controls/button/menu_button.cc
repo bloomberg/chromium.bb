@@ -18,7 +18,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
-#include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -220,7 +219,7 @@ void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
   }
 }
 
-ui::GestureStatus MenuButton::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus MenuButton::OnGestureEvent(const ui::GestureEvent& event) {
   if (state() != BS_DISABLED && event.type() == ui::ET_GESTURE_TAP) {
     if (Activate())
       return ui::GESTURE_STATUS_CONSUMED;

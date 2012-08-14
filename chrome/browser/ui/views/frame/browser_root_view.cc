@@ -56,18 +56,18 @@ bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
   return GetPasteAndGoURL(data, NULL);
 }
 
-void BrowserRootView::OnDragEntered(const views::DropTargetEvent& event) {
+void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
   if (ShouldForwardToTabStrip(event)) {
     forwarding_to_tab_strip_ = true;
-    scoped_ptr<views::DropTargetEvent> mapped_event(
+    scoped_ptr<ui::DropTargetEvent> mapped_event(
         MapEventToTabStrip(event, event.data()));
     tabstrip()->OnDragEntered(*mapped_event.get());
   }
 }
 
-int BrowserRootView::OnDragUpdated(const views::DropTargetEvent& event) {
+int BrowserRootView::OnDragUpdated(const ui::DropTargetEvent& event) {
   if (ShouldForwardToTabStrip(event)) {
-    scoped_ptr<views::DropTargetEvent> mapped_event(
+    scoped_ptr<ui::DropTargetEvent> mapped_event(
         MapEventToTabStrip(event, event.data()));
     if (!forwarding_to_tab_strip_) {
       tabstrip()->OnDragEntered(*mapped_event.get());
@@ -88,7 +88,7 @@ void BrowserRootView::OnDragExited() {
   }
 }
 
-int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
+int BrowserRootView::OnPerformDrop(const ui::DropTargetEvent& event) {
   if (!forwarding_to_tab_strip_)
     return ui::DragDropTypes::DRAG_NONE;
 
@@ -109,7 +109,7 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
     mapped_data.SetURL(url, string16());
   }
   forwarding_to_tab_strip_ = false;
-  scoped_ptr<views::DropTargetEvent> mapped_event(
+  scoped_ptr<ui::DropTargetEvent> mapped_event(
       MapEventToTabStrip(event, mapped_data));
   return tabstrip()->OnPerformDrop(*mapped_event);
 }
@@ -124,7 +124,7 @@ std::string BrowserRootView::GetClassName() const {
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(
-    const views::DropTargetEvent& event) {
+    const ui::DropTargetEvent& event) {
   if (!tabstrip()->visible())
     return false;
 
@@ -135,14 +135,13 @@ bool BrowserRootView::ShouldForwardToTabStrip(
   return event.y() < tab_loc_in_host.y() + tabstrip()->height();
 }
 
-views::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
-    const views::DropTargetEvent& event,
+ui::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
+    const ui::DropTargetEvent& event,
     const ui::OSExchangeData& data) {
   gfx::Point tab_strip_loc(event.location());
   ConvertPointToTarget(this, tabstrip(), &tab_strip_loc);
-  return new views::DropTargetEvent(data, tab_strip_loc.x(),
-                                    tab_strip_loc.y(),
-                                    event.source_operations());
+  return new ui::DropTargetEvent(data, tab_strip_loc, tab_strip_loc,
+                                 event.source_operations());
 }
 
 TabStrip* BrowserRootView::tabstrip() const {

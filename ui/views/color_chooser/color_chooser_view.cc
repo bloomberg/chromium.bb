@@ -16,7 +16,6 @@
 #include "ui/views/color_chooser/color_chooser_listener.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/events/event.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
@@ -75,7 +74,7 @@ class LocatedEventHandlerView : public views::View {
   }
 
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE {
+      const ui::GestureEvent& event) OVERRIDE {
     if (event.type() == ui::ET_GESTURE_TAP ||
         event.type() == ui::ET_GESTURE_TAP_DOWN ||
         event.IsScrollGestureEvent()) {

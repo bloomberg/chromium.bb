@@ -33,21 +33,21 @@ class BrowserRootView : public views::internal::RootView {
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
   virtual bool AreDropTypesRequired() OVERRIDE;
   virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
-  virtual void OnDragEntered(const views::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
 
  private:
   // Returns true if the event should be forwarded to the tabstrip.
-  bool ShouldForwardToTabStrip(const views::DropTargetEvent& event);
+  bool ShouldForwardToTabStrip(const ui::DropTargetEvent& event);
 
   // Converts the event from the hosts coordinate system to the tabstrips
   // coordinate system.
-  views::DropTargetEvent* MapEventToTabStrip(
-      const views::DropTargetEvent& event,
+  ui::DropTargetEvent* MapEventToTabStrip(
+      const ui::DropTargetEvent& event,
       const ui::OSExchangeData& data);
 
   inline TabStrip* tabstrip() const;

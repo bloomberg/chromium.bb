@@ -28,7 +28,7 @@ class LocationIconView
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE;
+      const ui::GestureEvent& event) OVERRIDE;
 
   // TouchableLocationBarView.
   virtual int GetBuiltInHorizontalPadding() const OVERRIDE;

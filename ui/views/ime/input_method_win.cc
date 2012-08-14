@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "ui/base/event.h"
+#include "ui/base/events.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/events/event.h"
 
 // Extra number of chars before and after selection (or composition) range which
 // is returned to IME for improving conversion accuracy.
@@ -262,7 +262,7 @@ LRESULT InputMethodWin::OnChar(
     return 0;
 
   GetTextInputClient()->InsertChar(static_cast<char16>(wparam),
-                                   GetModifiersFromKeyState());
+                                   ui::GetModifiersFromKeyState());
   return 0;
 }
 

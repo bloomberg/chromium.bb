@@ -12,7 +12,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "googleurl/src/gurl.h"
-#include "ui/views/events/event.h"
 
 using content::NativeWebKeyboardEvent;
 using content::SiteInstance;

@@ -75,8 +75,8 @@ class OverflowBubbleView : public views::BubbleDelegateView {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-  virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
-  virtual bool OnScrollEvent(const views::ScrollEvent & event) OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
+  virtual bool OnScrollEvent(const ui::ScrollEvent& event) OVERRIDE;
 
   // views::BubbleDelegate overrides:
   virtual gfx::Rect GetBubbleBounds() OVERRIDE;
@@ -178,7 +178,7 @@ void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {
   SizeToContents();
 }
 
-bool OverflowBubbleView::OnMouseWheel(const views::MouseWheelEvent& event) {
+bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (is_horizontal_alignment())
     ScrollByXOffset(-event.offset());
   else
@@ -188,7 +188,7 @@ bool OverflowBubbleView::OnMouseWheel(const views::MouseWheelEvent& event) {
   return true;
 }
 
-bool OverflowBubbleView::OnScrollEvent(const views::ScrollEvent & event) {
+bool OverflowBubbleView::OnScrollEvent(const ui::ScrollEvent& event) {
   ScrollByXOffset(-event.x_offset());
   ScrollByYOffset(-event.y_offset());
   Layout();

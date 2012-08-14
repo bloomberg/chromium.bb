@@ -114,7 +114,7 @@ class OmniboxViewWin
   virtual bool IsImeComposing() const OVERRIDE;
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual gfx::Font GetFont() OVERRIDE;
   virtual int WidthOfTextAfterCursor() OVERRIDE;
 
@@ -383,7 +383,7 @@ class OmniboxViewWin
   bool OnAfterPossibleChangeInternal(bool force_text_changed);
 
   // Common implementation for performing a drop on the edit view.
-  int OnPerformDropImpl(const views::DropTargetEvent& event, bool in_drag);
+  int OnPerformDropImpl(const ui::DropTargetEvent& event, bool in_drag);
 
   scoped_ptr<OmniboxPopupView> popup_view_;
 

@@ -246,11 +246,11 @@ bool BrowserActionsContainer::CanDrop(const OSExchangeData& data) {
 }
 
 void BrowserActionsContainer::OnDragEntered(
-    const views::DropTargetEvent& event) {
+    const ui::DropTargetEvent& event) {
 }
 
 int BrowserActionsContainer::OnDragUpdated(
-    const views::DropTargetEvent& event) {
+    const ui::DropTargetEvent& event) {
   // First check if we are above the chevron (overflow) menu.
   if (GetEventHandlerForPoint(event.location()) == chevron_) {
     if (!show_menu_task_factory_.HasWeakPtrs() && !overflow_menu_)
@@ -315,7 +315,7 @@ void BrowserActionsContainer::OnDragExited() {
 }
 
 int BrowserActionsContainer::OnPerformDrop(
-    const views::DropTargetEvent& event) {
+    const ui::DropTargetEvent& event) {
   BrowserActionDragData data;
   if (!data.Read(event.data()))
     return ui::DragDropTypes::DRAG_NONE;

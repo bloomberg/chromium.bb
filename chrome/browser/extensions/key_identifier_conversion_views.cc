@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/events/event.h"
 
 using content::BrowserThread;
 

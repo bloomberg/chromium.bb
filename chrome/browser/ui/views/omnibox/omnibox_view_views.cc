@@ -46,7 +46,6 @@
 #include "ui/gfx/render_text.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/events/event.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/views_delegate.h"
@@ -711,7 +710,7 @@ views::View* OmniboxViewViews::AddToView(views::View* parent) {
   return this;
 }
 
-int OmniboxViewViews::OnPerformDrop(const views::DropTargetEvent& event) {
+int OmniboxViewViews::OnPerformDrop(const ui::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_NONE;
 }

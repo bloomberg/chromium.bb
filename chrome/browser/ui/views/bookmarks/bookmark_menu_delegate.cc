@@ -182,7 +182,7 @@ bool BookmarkMenuDelegate::CanDrop(MenuItemView* menu,
 
 int BookmarkMenuDelegate::GetDropOperation(
     MenuItemView* item,
-    const views::DropTargetEvent& event,
+    const ui::DropTargetEvent& event,
     views::MenuDelegate::DropPosition* position) {
   // Should only get here if we have drop data.
   DCHECK(drop_data_.is_valid());
@@ -227,7 +227,7 @@ int BookmarkMenuDelegate::GetDropOperation(
 int BookmarkMenuDelegate::OnPerformDrop(
     MenuItemView* menu,
     views::MenuDelegate::DropPosition position,
-    const views::DropTargetEvent& event) {
+    const ui::DropTargetEvent& event) {
   const BookmarkNode* drop_node = menu_id_to_node_map_[menu->GetCommand()];
   DCHECK(drop_node);
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);

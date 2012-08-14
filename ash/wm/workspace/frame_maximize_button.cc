@@ -246,7 +246,7 @@ void FrameMaximizeButton::OnMouseCaptureLost() {
 }
 
 ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     is_snap_enabled_ = true;
     ProcessStartEvent(event);

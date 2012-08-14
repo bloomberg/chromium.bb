@@ -13,7 +13,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)

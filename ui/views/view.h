@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "ui/base/event.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/compositor/layer_delegate.h"
@@ -24,7 +25,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/events/event.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_comptr.h"
@@ -41,7 +41,6 @@ class Path;
 namespace ui {
 struct AccessibleViewState;
 class Compositor;
-class KeyEvent;
 class Layer;
 class TextInputClient;
 class Texture;
@@ -576,7 +575,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // This method is invoked for each touch event. Default implementation
   // does nothing. Override as needed.
-  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event);
+  virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event);
 
   // This method is invoked for each GestureEvent created by GestureRecognizer.
   // Default implementation does nothing. Override as needed.
@@ -591,7 +590,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // scroll-gesture events will be sent to this View. However all the other
   // gesture-events (e.g. ET_GESTURE_END, ET_GESTURE_PINCH_BEGIN etc.) will
   // continue to be dispatched to the first View.
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event);
+  virtual ui::GestureStatus OnGestureEvent(const ui::GestureEvent& event);
 
   // Set the MouseHandler for a drag session.
   //
@@ -625,13 +624,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // if the event has been processed and false otherwise. This message is sent
   // if the view is focused. If the event has not been processed, the parent
   // will be given a chance.
-  virtual bool OnMouseWheel(const MouseWheelEvent& event);
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& event);
 
   // Invoked when user scrolls (e.g. using two-finger scroll on touch pad).
   // Returns true if the event has been processed and false otherwise. The event
   // is sent to the view where the event happens first. If it has not been
   // processed, the parent will be given a chance.
-  virtual bool OnScrollEvent(const ScrollEvent& event);
+  virtual bool OnScrollEvent(const ui::ScrollEvent& event);
 
   // See field for description.
   void set_notify_enter_exit_on_child(bool notify) {
@@ -831,13 +830,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // drop session and CanDrop returns true. This is immediately
   // followed by an invocation of OnDragUpdated, and eventually one of
   // OnDragExited or OnPerformDrop.
-  virtual void OnDragEntered(const DropTargetEvent& event);
+  virtual void OnDragEntered(const ui::DropTargetEvent& event);
 
   // Invoked during a drag and drop session while the mouse is over the view.
   // This should return a bitmask of the DragDropTypes::DragOperation supported
   // based on the location of the event. Return 0 to indicate the drop should
   // not be accepted.
-  virtual int OnDragUpdated(const DropTargetEvent& event);
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event);
 
   // Invoked during a drag and drop session when the mouse exits the views, or
   // when the drag session was canceled and the mouse was over the view.
@@ -845,7 +844,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Invoked during a drag and drop session when OnDragUpdated returns a valid
   // operation and the user release the mouse.
-  virtual int OnPerformDrop(const DropTargetEvent& event);
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event);
 
   // Invoked from DoDrag after the drag completes. This implementation does
   // nothing, and is intended for subclasses to do cleanup.
@@ -1283,11 +1282,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // RootView will invoke this with incoming TouchEvents. Returns the result
   // of OnTouchEvent.
-  ui::TouchStatus ProcessTouchEvent(const TouchEvent& event);
+  ui::TouchStatus ProcessTouchEvent(const ui::TouchEvent& event);
 
   // RootView will invoke this with incoming GestureEvents. This will invoke
   // OnGestureEvent and return the result.
-  ui::GestureStatus ProcessGestureEvent(const GestureEvent& event);
+  ui::GestureStatus ProcessGestureEvent(const ui::GestureEvent& event);
 
   // Accelerators --------------------------------------------------------------
 

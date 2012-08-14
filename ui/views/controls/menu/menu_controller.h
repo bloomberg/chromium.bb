@@ -115,10 +115,10 @@ class VIEWS_EXPORT MenuController
   void OnMouseMoved(SubmenuView* source, const ui::MouseEvent& event);
   void OnMouseEntered(SubmenuView* source, const ui::MouseEvent& event);
 #if defined(OS_LINUX)
-  bool OnMouseWheel(SubmenuView* source, const MouseWheelEvent& event);
+  bool OnMouseWheel(SubmenuView* source, const ui::MouseWheelEvent& event);
 #endif
   ui::GestureStatus OnGestureEvent(SubmenuView* source,
-                                   const GestureEvent& event);
+                                   const ui::GestureEvent& event);
 
   bool GetDropFormats(
       SubmenuView* source,
@@ -126,10 +126,10 @@ class VIEWS_EXPORT MenuController
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
   bool AreDropTypesRequired(SubmenuView* source);
   bool CanDrop(SubmenuView* source, const ui::OSExchangeData& data);
-  void OnDragEntered(SubmenuView* source, const DropTargetEvent& event);
-  int OnDragUpdated(SubmenuView* source, const DropTargetEvent& event);
+  void OnDragEntered(SubmenuView* source, const ui::DropTargetEvent& event);
+  int OnDragUpdated(SubmenuView* source, const ui::DropTargetEvent& event);
   void OnDragExited(SubmenuView* source);
-  int OnPerformDrop(SubmenuView* source, const DropTargetEvent& event);
+  int OnPerformDrop(SubmenuView* source, const ui::DropTargetEvent& event);
 
   // Invoked from the scroll buttons of the MenuScrollViewContainer.
   void OnDragEnteredScrollButton(SubmenuView* source, bool is_up);

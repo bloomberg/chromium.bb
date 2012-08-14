@@ -400,7 +400,7 @@ bool ScrollView::OnKeyPressed(const ui::KeyEvent& event) {
   return processed;
 }
 
-ui::GestureStatus ScrollView::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus ScrollView::OnGestureEvent(const ui::GestureEvent& event) {
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
 
   // If the event happened on one of the scrollbars, then those events are
@@ -421,7 +421,7 @@ ui::GestureStatus ScrollView::OnGestureEvent(const GestureEvent& event) {
   return status;
 }
 
-bool ScrollView::OnMouseWheel(const MouseWheelEvent& e) {
+bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   bool processed = false;
   // Give vertical scrollbar priority
   if (vert_sb_->visible())

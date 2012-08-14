@@ -11,7 +11,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/events/event.h"
 
 class TabContents;
 

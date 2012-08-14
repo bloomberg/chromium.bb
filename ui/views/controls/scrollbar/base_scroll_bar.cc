@@ -167,7 +167,7 @@ bool BaseScrollBar::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-ui::GestureStatus BaseScrollBar::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus BaseScrollBar::OnGestureEvent(const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     ProcessPressEvent(event);
     return ui::GESTURE_STATUS_CONSUMED;
@@ -200,7 +200,7 @@ ui::GestureStatus BaseScrollBar::OnGestureEvent(const GestureEvent& event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
-bool BaseScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
+bool BaseScrollBar::OnMouseWheel(const ui::MouseWheelEvent& event) {
   ScrollByContentsOffset(event.offset());
   return true;
 }

@@ -40,8 +40,11 @@ class Font;
 }
 
 namespace views {
-class DropTargetEvent;
 class View;
+}
+
+namespace ui {
+class DropTargetEvent;
 }
 #endif
 
@@ -204,7 +207,7 @@ class OmniboxView {
   virtual views::View* AddToView(views::View* parent) = 0;
 
   // Performs the drop of a drag and drop operation on the view.
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) = 0;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) = 0;
 
   // Returns the font.
   virtual gfx::Font GetFont() = 0;

@@ -14,7 +14,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/events/event.h"
 #include "ui/views/views_export.h"
 
 // The FocusManager class is used to handle focus traversal, store/restore

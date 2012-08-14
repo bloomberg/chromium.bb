@@ -10,7 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace views {
+namespace ui {
 class DropTargetEvent;
 }
 
@@ -25,7 +25,7 @@ class BookmarkDropInfo {
 
   // Invoke this from OnDragUpdated. It resets source_operations,
   // is_control_down, last_y and updates the autoscroll timer as necessary.
-  void Update(const views::DropTargetEvent& event);
+  void Update(const ui::DropTargetEvent& event);
 
   // Data from the drag.
   void SetData(const BookmarkNodeData& data) { data_ = data; }

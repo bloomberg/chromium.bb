@@ -28,7 +28,7 @@ void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 ui::GestureStatus LocationIconView::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     page_info_helper_.ProcessEvent(event);
     return ui::GESTURE_STATUS_CONSUMED;

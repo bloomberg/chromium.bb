@@ -170,10 +170,10 @@ class BookmarkBarView : public DetachableToolbarView,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
   virtual bool AreDropTypesRequired() OVERRIDE;
   virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
-  virtual void OnDragEntered(const views::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void ShowContextMenu(const gfx::Point& p,
                                bool is_mouse_gesture) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
@@ -317,7 +317,7 @@ class BookmarkBarView : public DetachableToolbarView,
   void StartShowFolderDropMenuTimer(const BookmarkNode* node);
 
   // Calculates the location for the drop in |location|.
-  void CalculateDropLocation(const views::DropTargetEvent& event,
+  void CalculateDropLocation(const ui::DropTargetEvent& event,
                              const BookmarkNodeData& data,
                              DropLocation* location);
 

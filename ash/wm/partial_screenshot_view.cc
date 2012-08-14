@@ -108,7 +108,7 @@ bool PartialScreenshotView::OnMouseDragged(const ui::MouseEvent& event) {
   return true;
 }
 
-bool PartialScreenshotView::OnMouseWheel(const views::MouseWheelEvent& event) {
+bool PartialScreenshotView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   // Do nothing but do not propagate events futhermore.
   return true;
 }

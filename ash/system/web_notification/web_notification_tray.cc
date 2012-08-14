@@ -438,7 +438,7 @@ class WebNotificationView : public views::View,
   }
 
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE {
+      const ui::GestureEvent& event) OVERRIDE {
     if (event.type() != ui::ET_GESTURE_TAP)
       return ui::GESTURE_STATUS_UNKNOWN;
     tray_->OnClicked(notification_.id);

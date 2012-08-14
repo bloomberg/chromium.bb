@@ -204,7 +204,7 @@ bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
   return true;
 }
 
-ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus CustomButton::OnGestureEvent(const ui::GestureEvent& event) {
   if (state_ == BS_DISABLED)
     return Button::OnGestureEvent(event);
 

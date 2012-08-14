@@ -14,7 +14,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/events/event.h"
 
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
@@ -112,7 +111,7 @@ bool Link::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-ui::GestureStatus Link::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus Link::OnGestureEvent(const ui::GestureEvent& event) {
   if (!enabled())
     return ui::GESTURE_STATUS_UNKNOWN;
 

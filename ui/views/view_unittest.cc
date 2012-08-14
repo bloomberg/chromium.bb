@@ -27,7 +27,6 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/events/event.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/test/views_test_base.h"
@@ -186,6 +185,18 @@ void ScrambleTree(views::View* view) {
     view->SetVisible(!view->visible());
 }
 
+// Convenience to make constructing a GestureEvent simpler.
+class GestureEventForTest : public ui::GestureEvent {
+ public:
+  GestureEventForTest(ui::EventType type, int x, int y, int flags)
+      : GestureEvent(type, x, y, flags, base::TimeDelta(),
+                     ui::GestureEventDetails(type, 0.0f, 0.0f), 0) {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
+};
+
 }  // namespace
 
 namespace views {
@@ -219,9 +230,10 @@ class TestView : public View {
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event) OVERRIDE;
   // Ignores GestureEvent by default.
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE;
   virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
   virtual void SchedulePaintInRect(const gfx::Rect& rect) OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
@@ -263,7 +275,7 @@ class TestViewIgnoreTouch : public TestView {
   virtual ~TestViewIgnoreTouch() {}
 
  private:
-  virtual ui::TouchStatus OnTouchEvent(const TouchEvent& event) OVERRIDE;
+  virtual ui::TouchStatus OnTouchEvent(const ui::TouchEvent& event) OVERRIDE;
 };
 
 // A view subclass that consumes all Gesture events for testing purposes.
@@ -273,7 +285,8 @@ class TestViewConsumeGesture : public TestView {
   virtual ~TestViewConsumeGesture() {}
 
  protected:
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE {
+  virtual ui::GestureStatus OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE {
     last_gesture_event_type_ = event.type();
     location_.SetPoint(event.x(), event.y());
     return ui::GESTURE_STATUS_CONSUMED;
@@ -290,7 +303,8 @@ class TestViewIgnoreGesture: public TestView {
   virtual ~TestViewIgnoreGesture() {}
 
  private:
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE {
+  virtual ui::GestureStatus OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE {
     return ui::GESTURE_STATUS_UNKNOWN;
   }
 
@@ -305,7 +319,8 @@ class TestViewIgnoreScrollGestures : public TestViewConsumeGesture {
   virtual ~TestViewIgnoreScrollGestures() {}
 
  private:
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE {
+  virtual ui::GestureStatus OnGestureEvent(
+      const ui::GestureEvent& event) OVERRIDE {
     if (event.IsScrollGestureEvent())
       return ui::GESTURE_STATUS_UNKNOWN;
     return TestViewConsumeGesture::OnGestureEvent(event);
@@ -460,7 +475,7 @@ TEST_F(ViewTest, DeleteOnPressed) {
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent
 ////////////////////////////////////////////////////////////////////////////////
-ui::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus TestView::OnTouchEvent(const ui::TouchEvent& event) {
   last_touch_event_type_ = event.type();
   location_.SetPoint(event.x(), event.y());
   if (!in_touch_sequence_) {
@@ -479,7 +494,7 @@ ui::TouchStatus TestView::OnTouchEvent(const TouchEvent& event) {
                                          ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::TouchStatus TestViewIgnoreTouch::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus TestViewIgnoreTouch::OnTouchEvent(const ui::TouchEvent& event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
@@ -512,12 +527,11 @@ TEST_F(ViewTest, TouchEvent) {
   v1->Reset();
   v2->Reset();
 
-  TouchEvent unhandled(ui::ET_TOUCH_MOVED,
-                       400,
-                       400,
-                       0, /* no flags */
-                       0, /* first finger touch */
-                       1.0, 0.0, 1.0, 0.0);
+  ui::TestTouchEvent unhandled(ui::ET_TOUCH_MOVED,
+                               400, 400,
+                               0, /* no flags */
+                               0, /* first finger touch */
+                               1.0, 0.0, 1.0, 0.0);
   root->OnTouchEvent(unhandled);
 
   EXPECT_EQ(v1->last_touch_event_type_, 0);
@@ -527,12 +541,11 @@ TEST_F(ViewTest, TouchEvent) {
   v1->Reset();
   v2->Reset();
 
-  TouchEvent pressed(ui::ET_TOUCH_PRESSED,
-                     110,
-                     120,
-                     0, /* no flags */
-                     0, /* first finger touch */
-                     1.0, 0.0, 1.0, 0.0);
+  ui::TestTouchEvent pressed(ui::ET_TOUCH_PRESSED,
+                             110, 120,
+                             0, /* no flags */
+                             0, /* first finger touch */
+                             1.0, 0.0, 1.0, 0.0);
   v2->last_touch_event_was_handled_ = true;
   root->OnTouchEvent(pressed);
 
@@ -545,12 +558,11 @@ TEST_F(ViewTest, TouchEvent) {
   // Drag event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  TouchEvent dragged(ui::ET_TOUCH_MOVED,
-                     50,
-                     40,
-                     0, /* no flags */
-                     0, /* first finger touch */
-                     1.0, 0.0, 1.0, 0.0);
+  ui::TestTouchEvent dragged(ui::ET_TOUCH_MOVED,
+                             50, 40,
+                             0, /* no flags */
+                             0, /* first finger touch */
+                             1.0, 0.0, 1.0, 0.0);
 
   root->OnTouchEvent(dragged);
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_MOVED);
@@ -562,8 +574,10 @@ TEST_F(ViewTest, TouchEvent) {
   // Released event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  TouchEvent released(ui::ET_TOUCH_RELEASED, 0, 0, 0, 0 /* first finger */,
-                      1.0, 0.0, 1.0, 0.0);
+  ui::TestTouchEvent released(ui::ET_TOUCH_RELEASED, 0, 0,
+                              0, /* no flags */
+                              0, /* first finger */
+                              1.0, 0.0, 1.0, 0.0);
   v2->last_touch_event_was_handled_ = true;
   root->OnTouchEvent(released);
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_RELEASED);
@@ -575,7 +589,7 @@ TEST_F(ViewTest, TouchEvent) {
   widget->CloseNow();
 }
 
-ui::GestureStatus TestView::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus TestView::OnGestureEvent(const ui::GestureEvent& event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 

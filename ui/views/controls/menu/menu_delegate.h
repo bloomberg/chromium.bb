@@ -13,7 +13,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/events/event.h"
 
 using ui::OSExchangeData;
 
@@ -149,7 +148,7 @@ class VIEWS_EXPORT MenuDelegate {
   //
   // If a drop should not be allowed, returned ui::DragDropTypes::DRAG_NONE.
   virtual int GetDropOperation(MenuItemView* item,
-                               const DropTargetEvent& event,
+                               const ui::DropTargetEvent& event,
                                DropPosition* position);
 
   // Invoked to perform the drop operation. This is ONLY invoked if
@@ -159,7 +158,7 @@ class VIEWS_EXPORT MenuDelegate {
   // menu indicates the menu the drop occurred on.
   virtual int OnPerformDrop(MenuItemView* menu,
                             DropPosition position,
-                            const DropTargetEvent& event);
+                            const ui::DropTargetEvent& event);
 
   // Invoked to determine if it is possible for the user to drag the specified
   // menu item.

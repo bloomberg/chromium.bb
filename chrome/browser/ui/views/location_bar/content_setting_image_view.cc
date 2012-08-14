@@ -20,7 +20,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
-#include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
 
 using content::WebContents;
@@ -130,7 +129,7 @@ gfx::Size ContentSettingImageView::GetPreferredSize() {
 }
 
 ui::GestureStatus ContentSettingImageView::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     OnClick();
     return ui::GESTURE_STATUS_CONSUMED;

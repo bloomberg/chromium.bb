@@ -58,7 +58,7 @@
 #endif
 
 using content::UserMetricsAction;
-using views::DropTargetEvent;
+using ui::DropTargetEvent;
 
 namespace {
 
@@ -297,7 +297,7 @@ class NewTabButton : public views::ImageButton {
   void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
 #endif
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE;
+      const ui::GestureEvent& event) OVERRIDE;
   void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
@@ -366,7 +366,7 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
 #endif
 
 ui::GestureStatus NewTabButton::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   // Consume all gesture events here so that the parent (BaseTab) does not
   // start consuming gestures.
   views::ImageButton::OnGestureEvent(event);
@@ -1410,7 +1410,7 @@ void TabStrip::OnMouseMoved(const ui::MouseEvent& event) {
 }
 
 ui::GestureStatus TabStrip::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_END:
       EndDrag(false);
@@ -2111,7 +2111,7 @@ void TabStrip::SetDropIndex(int tab_data_index, bool drop_before) {
   drop_info_->arrow_window->Show();
 }
 
-int TabStrip::GetDropEffect(const views::DropTargetEvent& event) {
+int TabStrip::GetDropEffect(const ui::DropTargetEvent& event) {
   const int source_ops = event.source_operations();
   if (source_ops & ui::DragDropTypes::DRAG_COPY)
     return ui::DragDropTypes::DRAG_COPY;

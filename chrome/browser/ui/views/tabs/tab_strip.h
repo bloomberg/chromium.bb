@@ -198,10 +198,10 @@ class TabStrip : public views::View,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   // NOTE: the drag and drop methods are invoked from FrameView. This is done
   // to allow for a drop region that extends outside the bounds of the TabStrip.
-  virtual void OnDragEntered(const views::DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual views::View* GetEventHandlerForPoint(
       const gfx::Point& point) OVERRIDE;
@@ -229,7 +229,7 @@ class TabStrip : public views::View,
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE;
+      const ui::GestureEvent& event) OVERRIDE;
 
  private:
   typedef std::map<int, std::vector<BaseTab*> > TabsClosingMap;
@@ -400,14 +400,14 @@ class TabStrip : public views::View,
   gfx::Rect GetDropBounds(int drop_index, bool drop_before, bool* is_beneath);
 
   // Updates the location of the drop based on the event.
-  void UpdateDropIndex(const views::DropTargetEvent& event);
+  void UpdateDropIndex(const ui::DropTargetEvent& event);
 
   // Sets the location of the drop, repainting as necessary.
   void SetDropIndex(int tab_data_index, bool drop_before);
 
   // Returns the drop effect for dropping a URL on the tab strip. This does
   // not query the data in anyway, it only looks at the source operations.
-  int GetDropEffect(const views::DropTargetEvent& event);
+  int GetDropEffect(const ui::DropTargetEvent& event);
 
   // Returns the image to use for indicating a drop on a tab. If is_down is
   // true, this returns an arrow pointing down.

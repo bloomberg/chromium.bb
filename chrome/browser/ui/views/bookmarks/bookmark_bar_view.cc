@@ -76,7 +76,7 @@ using content::PageNavigator;
 using content::Referrer;
 using content::UserMetricsAction;
 using views::CustomButton;
-using views::DropTargetEvent;
+using ui::DropTargetEvent;
 using views::MenuButton;
 using views::MenuItemView;
 using views::View;

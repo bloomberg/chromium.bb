@@ -51,7 +51,7 @@ class ContentSettingImageView : public views::ImageView,
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE;
+      const ui::GestureEvent& event) OVERRIDE;
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;

@@ -187,7 +187,7 @@ void ContentsView::Layout() {
 }
 
 ui::GestureStatus ContentsView::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   if (show_state_ != SHOW_APPS)
     return ui::GESTURE_STATUS_UNKNOWN;
 
@@ -233,7 +233,7 @@ bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
-bool ContentsView::OnMouseWheel(const views::MouseWheelEvent& event) {
+bool ContentsView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (show_state_ != SHOW_APPS)
     return false;
 
@@ -246,7 +246,7 @@ bool ContentsView::OnMouseWheel(const views::MouseWheelEvent& event) {
   return false;
 }
 
-bool ContentsView::OnScrollEvent(const views::ScrollEvent & event) {
+bool ContentsView::OnScrollEvent(const ui::ScrollEvent& event) {
   if (show_state_ != SHOW_APPS)
     return false;
 

@@ -811,7 +811,7 @@ bool ToolbarView::CanDrop(const ui::OSExchangeData& data) {
   return data.HasURL() || data.HasString();
 }
 
-int ToolbarView::OnDragUpdated(const views::DropTargetEvent& event) {
+int ToolbarView::OnDragUpdated(const ui::DropTargetEvent& event) {
   if (event.source_operations() & ui::DragDropTypes::DRAG_COPY) {
     return ui::DragDropTypes::DRAG_COPY;
   } else if (event.source_operations() & ui::DragDropTypes::DRAG_LINK) {
@@ -820,7 +820,7 @@ int ToolbarView::OnDragUpdated(const views::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-int ToolbarView::OnPerformDrop(const views::DropTargetEvent& event) {
+int ToolbarView::OnPerformDrop(const ui::DropTargetEvent& event) {
   return location_bar_->GetLocationEntry()->OnPerformDrop(event);
 }
 

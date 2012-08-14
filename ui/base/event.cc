@@ -230,9 +230,34 @@ void MouseEvent::SetClickCount(int click_count) {
 MouseEvent::MouseEvent(const MouseEvent& model) : LocatedEvent(model) {
 }
 
+MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
+#if defined(USE_AURA)
+    : MouseEvent(static_cast<const MouseEvent&>(*native_event)),
+      offset_(GetMouseWheelOffset(native_event->native_event())) {
+#else
+    : MouseEvent(native_event),
+      offset_(GetMouseWheelOffset(native_event)) {
+#endif
+}
+
+MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
+    : MouseEvent(scroll_event),
+      offset_(scroll_event.y_offset()) {
+  set_type(ET_MOUSEWHEEL);
+}
+
+#if defined(OS_WIN)
+// This value matches windows WHEEL_DELTA.
+// static
+const int MouseWheelEvent::kWheelDelta = 120;
+#else
+// This value matches GTK+ wheel scroll amount.
+const int MouseWheelEvent::kWheelDelta = 53;
+#endif
+
 TouchEvent::TouchEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
-      touch_id_(ui::GetTouchId(native_event)),
+      touch_id_(GetTouchId(native_event)),
       radius_x_(GetTouchRadiusX(native_event)),
       radius_y_(GetTouchRadiusY(native_event)),
       rotation_angle_(GetTouchAngle(native_event)),
@@ -240,9 +265,9 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
 }
 
 TouchEvent::TouchEvent(EventType type,
-                               const gfx::Point& location,
-                               int touch_id,
-                               base::TimeDelta time_stamp)
+                       const gfx::Point& location,
+                       int touch_id,
+                       base::TimeDelta time_stamp)
     : LocatedEvent(type, location, location, 0),
       touch_id_(touch_id),
       radius_x_(0.0f),
@@ -263,6 +288,22 @@ void TouchEvent::UpdateForRootTransform(const Transform& root_transform) {
     radius_x_ /= scale.x();
   if (scale.y())
     radius_y_ /= scale.y();
+}
+
+TestTouchEvent::TestTouchEvent(EventType type,
+                               int x,
+                               int y,
+                               int flags,
+                               int touch_id,
+                               float radius_x,
+                               float radius_y,
+                               float angle,
+                               float force)
+    : TouchEvent(type, gfx::Point(x, y), touch_id, base::TimeDelta()) {
+  set_flags(flags);
+  set_radius(radius_x, radius_y);
+  set_rotation_angle(angle);
+  set_force(force);
 }
 
 KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)

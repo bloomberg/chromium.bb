@@ -378,7 +378,7 @@ void RootView::OnMouseExited(const ui::MouseEvent& event) {
   }
 }
 
-bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
+bool RootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   bool consumed = false;
   for (View* v = GetFocusManager()->GetFocusedView();
        v && v != this && !consumed; v = v->parent())
@@ -386,7 +386,7 @@ bool RootView::OnMouseWheel(const MouseWheelEvent& event) {
   return consumed;
 }
 
-bool RootView::OnScrollEvent(const ScrollEvent& event) {
+bool RootView::OnScrollEvent(const ui::ScrollEvent& event) {
   bool consumed = false;
   for (View* v = GetEventHandlerForPoint(event.location());
        v && v != this && !consumed; v = v->parent())
@@ -394,7 +394,7 @@ bool RootView::OnScrollEvent(const ScrollEvent& event) {
   return consumed;
 }
 
-ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus RootView::OnTouchEvent(const ui::TouchEvent& event) {
   // TODO: this looks all wrong. On a TOUCH_PRESSED we should figure out the
   // view and target that view with all touches with the same id until the
   // release (or keep it if captured).
@@ -405,7 +405,8 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
 
   if (touch_pressed_handler_) {
-    TouchEvent touch_event(event, this, touch_pressed_handler_);
+    ui::TouchEvent touch_event(event, static_cast<View*>(this),
+                               touch_pressed_handler_);
     status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
     if (status == ui::TOUCH_STATUS_END)
       touch_pressed_handler_ = NULL;
@@ -423,7 +424,8 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
     }
 
     // See if this view wants to handle the touch
-    TouchEvent touch_event(event, this, touch_pressed_handler_);
+    ui::TouchEvent touch_event(event, static_cast<View*>(this),
+                               touch_pressed_handler_);
     status = touch_pressed_handler_->ProcessTouchEvent(touch_event);
 
     // The view could have removed itself from the tree when handling
@@ -452,7 +454,7 @@ ui::TouchStatus RootView::OnTouchEvent(const TouchEvent& event) {
   return status;
 }
 
-ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus RootView::OnGestureEvent(const ui::GestureEvent& event) {
   ui::GestureStatus status = ui::GESTURE_STATUS_UNKNOWN;
 
   if (gesture_handler_) {
@@ -461,7 +463,7 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
     View* handler = scroll_gesture_handler_ &&
         (event.IsScrollGestureEvent() || event.IsFlingScrollEvent())  ?
             scroll_gesture_handler_ : gesture_handler_;
-    GestureEvent handler_event(event, this, handler);
+    ui::GestureEvent handler_event(event, static_cast<View*>(this), handler);
 
     ui::GestureStatus status = handler->ProcessGestureEvent(handler_event);
 
@@ -487,7 +489,8 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
       for (scroll_gesture_handler_ = gesture_handler_->parent();
           scroll_gesture_handler_ && scroll_gesture_handler_ != this;
           scroll_gesture_handler_ = scroll_gesture_handler_->parent()) {
-        GestureEvent gesture_event(event, this, scroll_gesture_handler_);
+        ui::GestureEvent gesture_event(event, static_cast<View*>(this),
+                                       scroll_gesture_handler_);
         status = scroll_gesture_handler_->ProcessGestureEvent(gesture_event);
         if (status == ui::GESTURE_STATUS_CONSUMED)
           return status;
@@ -508,7 +511,8 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
     }
 
     // See if this view wants to handle the Gesture.
-    GestureEvent gesture_event(event, this, gesture_handler_);
+    ui::GestureEvent gesture_event(event, static_cast<View*>(this),
+                                   gesture_handler_);
     status = gesture_handler_->ProcessGestureEvent(gesture_event);
 
     // The view could have removed itself from the tree when handling

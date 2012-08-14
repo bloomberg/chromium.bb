@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "ui/base/event.h"
-#include "ui/views/events/event.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"

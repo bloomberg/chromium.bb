@@ -102,11 +102,11 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   bool AreDropTypesRequired(views::MenuItemView* menu);
   bool CanDrop(views::MenuItemView* menu, const ui::OSExchangeData& data);
   int GetDropOperation(views::MenuItemView* item,
-                       const views::DropTargetEvent& event,
+                       const ui::DropTargetEvent& event,
                        views::MenuDelegate::DropPosition* position);
   int OnPerformDrop(views::MenuItemView* menu,
                     views::MenuDelegate::DropPosition position,
-                    const views::DropTargetEvent& event);
+                    const ui::DropTargetEvent& event);
   bool ShowContextMenu(views::MenuItemView* source,
                        int id,
                        const gfx::Point& p,

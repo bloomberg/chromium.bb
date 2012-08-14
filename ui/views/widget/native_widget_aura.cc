@@ -792,16 +792,15 @@ bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
 bool NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
   if (event->type() == ui::ET_MOUSEWHEEL) {
-    MouseWheelEvent wheel_event(event);
+    ui::MouseWheelEvent wheel_event(event);
     return delegate_->OnMouseEvent(wheel_event);
   }
   if (event->type() == ui::ET_SCROLL) {
-    ScrollEvent scroll_event(static_cast<ui::ScrollEvent*>(event));
-    if (delegate_->OnMouseEvent(scroll_event))
+    if (delegate_->OnMouseEvent(*event))
       return true;
 
     // Convert unprocessed scroll events into wheel events.
-    MouseWheelEvent wheel_event(scroll_event);
+    ui::MouseWheelEvent wheel_event(*static_cast<ui::ScrollEvent*>(event));
     return delegate_->OnMouseEvent(wheel_event);
   }
   if (tooltip_manager_.get())
@@ -811,15 +810,13 @@ bool NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
 
 ui::TouchStatus NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
   DCHECK(window_->IsVisible());
-  TouchEvent touch_event(event);
-  return delegate_->OnTouchEvent(touch_event);
+  return delegate_->OnTouchEvent(*event);
 }
 
 ui::GestureStatus NativeWidgetAura::OnGestureEvent(
     ui::GestureEvent* event) {
   DCHECK(window_->IsVisible());
-  GestureEvent gesture_event(event);
-  return delegate_->OnGestureEvent(gesture_event);
+  return delegate_->OnGestureEvent(*event);
 }
 
 bool NativeWidgetAura::CanFocus() {

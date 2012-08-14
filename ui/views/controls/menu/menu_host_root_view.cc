@@ -47,7 +47,7 @@ void MenuHostRootView::OnMouseMoved(const ui::MouseEvent& event) {
     GetMenuController()->OnMouseMoved(submenu_, event);
 }
 
-bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
+bool MenuHostRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 #if defined(OS_LINUX)
   // ChromeOS uses MenuController to forward events like other
   // mouse events.
@@ -62,7 +62,8 @@ bool MenuHostRootView::OnMouseWheel(const MouseWheelEvent& event) {
 #endif
 }
 
-ui::GestureStatus MenuHostRootView::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus MenuHostRootView::OnGestureEvent(
+    const ui::GestureEvent& event) {
   RootView::OnGestureEvent(event);
   // ChromeOS uses MenuController to forward events like other
   // mouse events.

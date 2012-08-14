@@ -63,8 +63,8 @@ int DropHelper::OnDrop(const OSExchangeData& data,
   gfx::Point view_location(root_view_location);
   View* root_view = drop_view->GetWidget()->GetRootView();
   View::ConvertPointToTarget(root_view, drop_view, &view_location);
-  DropTargetEvent drop_event(data, view_location.x(), view_location.y(),
-                             drag_operation);
+  ui::DropTargetEvent drop_event(data, view_location, view_location,
+                                 drag_operation);
   return drop_view->OnPerformDrop(drop_event);
 }
 
@@ -126,10 +126,10 @@ void DropHelper::NotifyDragEntered(const OSExchangeData& data,
 
   gfx::Point target_view_location(root_view_location);
   View::ConvertPointToTarget(root_view_, target_view_, &target_view_location);
-  DropTargetEvent enter_event(data,
-                              target_view_location.x(),
-                              target_view_location.y(),
-                              drag_operation);
+  ui::DropTargetEvent enter_event(data,
+                                  target_view_location,
+                                  target_view_location,
+                                  drag_operation);
   target_view_->OnDragEntered(enter_event);
 }
 
@@ -141,10 +141,10 @@ int DropHelper::NotifyDragOver(const OSExchangeData& data,
 
   gfx::Point target_view_location(root_view_location);
   View::ConvertPointToTarget(root_view_, target_view_, &target_view_location);
-  DropTargetEvent enter_event(data,
-                              target_view_location.x(),
-                              target_view_location.y(),
-                              drag_operation);
+  ui::DropTargetEvent enter_event(data,
+                                  target_view_location,
+                                  target_view_location,
+                                  drag_operation);
   return target_view_->OnDragUpdated(enter_event);
 }
 

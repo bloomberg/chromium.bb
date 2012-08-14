@@ -513,14 +513,15 @@ void MenuController::OnMouseEntered(SubmenuView* source,
 
 #if defined(OS_LINUX)
 bool MenuController::OnMouseWheel(SubmenuView* source,
-                                  const MouseWheelEvent& event) {
+                                  const ui::MouseWheelEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
   return part.submenu && part.submenu->OnMouseWheel(event);
 }
 #endif
 
-ui::GestureStatus MenuController::OnGestureEvent(SubmenuView* source,
-                                                 const GestureEvent& event) {
+ui::GestureStatus MenuController::OnGestureEvent(
+    SubmenuView* source,
+    const ui::GestureEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     SetSelectionOnPointerDown(source, event);
@@ -569,12 +570,12 @@ bool MenuController::CanDrop(SubmenuView* source, const OSExchangeData& data) {
 }
 
 void MenuController::OnDragEntered(SubmenuView* source,
-                                   const DropTargetEvent& event) {
+                                   const ui::DropTargetEvent& event) {
   valid_drop_coordinates_ = false;
 }
 
 int MenuController::OnDragUpdated(SubmenuView* source,
-                                  const DropTargetEvent& event) {
+                                  const ui::DropTargetEvent& event) {
   StopCancelAllTimer();
 
   gfx::Point screen_loc(event.location());
@@ -641,7 +642,7 @@ void MenuController::OnDragExited(SubmenuView* source) {
 }
 
 int MenuController::OnPerformDrop(SubmenuView* source,
-                                  const DropTargetEvent& event) {
+                                  const ui::DropTargetEvent& event) {
   DCHECK(drop_target_);
   // NOTE: the delegate may delete us after invoking OnPerformDrop, as such
   // we don't call cancel here.

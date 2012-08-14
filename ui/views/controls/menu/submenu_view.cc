@@ -180,12 +180,12 @@ bool SubmenuView::CanDrop(const OSExchangeData& data) {
   return GetMenuItem()->GetMenuController()->CanDrop(this, data);
 }
 
-void SubmenuView::OnDragEntered(const DropTargetEvent& event) {
+void SubmenuView::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(GetMenuItem()->GetMenuController());
   GetMenuItem()->GetMenuController()->OnDragEntered(this, event);
 }
 
-int SubmenuView::OnDragUpdated(const DropTargetEvent& event) {
+int SubmenuView::OnDragUpdated(const ui::DropTargetEvent& event) {
   DCHECK(GetMenuItem()->GetMenuController());
   return GetMenuItem()->GetMenuController()->OnDragUpdated(this, event);
 }
@@ -195,12 +195,12 @@ void SubmenuView::OnDragExited() {
   GetMenuItem()->GetMenuController()->OnDragExited(this);
 }
 
-int SubmenuView::OnPerformDrop(const DropTargetEvent& event) {
+int SubmenuView::OnPerformDrop(const ui::DropTargetEvent& event) {
   DCHECK(GetMenuItem()->GetMenuController());
   return GetMenuItem()->GetMenuController()->OnPerformDrop(this, event);
 }
 
-bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
+bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
   gfx::Rect vis_bounds = GetVisibleBounds();
   int menu_item_count = GetMenuItemCount();
   if (vis_bounds.height() == height() || !menu_item_count) {
@@ -220,7 +220,7 @@ bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
 
   // If the first item isn't entirely visible, make it visible, otherwise make
   // the next/previous one entirely visible.
-  int delta = abs(e.offset() / MouseWheelEvent::kWheelDelta);
+  int delta = abs(e.offset() / ui::MouseWheelEvent::kWheelDelta);
   for (bool scroll_up = (e.offset() > 0); delta != 0; --delta) {
     int scroll_target;
     if (scroll_up) {
@@ -245,7 +245,7 @@ bool SubmenuView::OnMouseWheel(const MouseWheelEvent& e) {
   return true;
 }
 
-ui::GestureStatus SubmenuView::OnGestureEvent(const GestureEvent& e) {
+ui::GestureStatus SubmenuView::OnGestureEvent(const ui::GestureEvent& e) {
   ui::GestureStatus to_return = ui::GESTURE_STATUS_CONSUMED;
   switch (e.type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:

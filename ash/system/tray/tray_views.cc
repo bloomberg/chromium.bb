@@ -149,7 +149,7 @@ void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 }
 
 ui::GestureStatus ActionableView::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
     return PerformAction(event) ? ui::GESTURE_STATUS_CONSUMED :
                                   ui::GESTURE_STATUS_UNKNOWN;

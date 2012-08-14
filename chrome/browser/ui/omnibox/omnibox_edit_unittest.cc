@@ -69,7 +69,7 @@ class TestingOmniboxView : public OmniboxView {
     return entry_width;
   }
   virtual views::View* AddToView(views::View* parent) OVERRIDE { return NULL; }
-  virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE {
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
     return 0;
   }
   virtual gfx::Font GetFont() { return gfx::Font(); }

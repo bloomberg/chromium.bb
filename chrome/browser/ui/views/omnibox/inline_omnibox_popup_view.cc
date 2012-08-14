@@ -285,7 +285,7 @@ void InlineOmniboxPopupView::OnMouseExited(
 }
 
 ui::GestureStatus InlineOmniboxPopupView::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:
     case ui::ET_GESTURE_SCROLL_BEGIN:

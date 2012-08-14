@@ -119,14 +119,14 @@ bool BookmarkMenuController::CanDrop(MenuItemView* menu,
 
 int BookmarkMenuController::GetDropOperation(
     MenuItemView* item,
-    const views::DropTargetEvent& event,
+    const ui::DropTargetEvent& event,
     DropPosition* position) {
   return menu_delegate_->GetDropOperation(item, event, position);
 }
 
 int BookmarkMenuController::OnPerformDrop(MenuItemView* menu,
                                           DropPosition position,
-                                          const views::DropTargetEvent& event) {
+                                          const ui::DropTargetEvent& event) {
   int result = menu_delegate_->OnPerformDrop(menu, position, event);
   if (for_drop_)
     delete this;

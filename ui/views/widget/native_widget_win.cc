@@ -1650,7 +1650,7 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
     // Reroute the mouse wheel to the window under the pointer if applicable.
     return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
-            delegate_->OnMouseEvent(MouseWheelEvent(msg))) ? 0 : 1;
+            delegate_->OnMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
   }
 
   bool handled = delegate_->OnMouseEvent(event);

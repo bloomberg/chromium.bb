@@ -16,7 +16,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/events/event.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"

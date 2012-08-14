@@ -366,7 +366,7 @@ void LauncherButton::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 ui::GestureStatus LauncherButton::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       AddState(STATE_HOVERED);

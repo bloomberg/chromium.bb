@@ -25,7 +25,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/events/event.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/widget/widget.h"

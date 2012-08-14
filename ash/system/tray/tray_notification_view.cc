@@ -121,7 +121,7 @@ bool TrayNotificationView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 ui::GestureStatus TrayNotificationView::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   if (event.type() != ui::ET_GESTURE_TAP)
     return ui::GESTURE_STATUS_UNKNOWN;
   HandleClickAction();

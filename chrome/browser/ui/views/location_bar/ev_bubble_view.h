@@ -27,7 +27,7 @@ class EVBubbleView : public IconLabelBubbleView {
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE;
+      const ui::GestureEvent& event) OVERRIDE;
 
  private:
   PageInfoHelper page_info_helper_;

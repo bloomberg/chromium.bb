@@ -81,7 +81,7 @@ bool MenuDelegate::AreDropTypesRequired(MenuItemView* menu) {
 }
 
 int MenuDelegate::GetDropOperation(MenuItemView* item,
-                                   const DropTargetEvent& event,
+                                   const ui::DropTargetEvent& event,
                                    DropPosition* position) {
   NOTREACHED() << "If you override CanDrop, you need to override this too";
   return ui::DragDropTypes::DRAG_NONE;
@@ -89,7 +89,7 @@ int MenuDelegate::GetDropOperation(MenuItemView* item,
 
 int MenuDelegate::OnPerformDrop(MenuItemView* menu,
                                 DropPosition position,
-                                const DropTargetEvent& event) {
+                                const ui::DropTargetEvent& event) {
   NOTREACHED() << "If you override CanDrop, you need to override this too";
   return ui::DragDropTypes::DRAG_NONE;
 }

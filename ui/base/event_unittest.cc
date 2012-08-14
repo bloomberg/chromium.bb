@@ -99,4 +99,111 @@ TEST(EventTest, Repeated) {
   EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
 }
 
+// Bug 99129.
+#if defined(USE_AURA)
+#define MAYBE_KeyEvent FAILS_KeyEvent
+#define MAYBE_KeyEventDirectUnicode FAILS_KeyEventDirectUnicode
+#else
+#define MAYBE_KeyEvent KeyEvent
+#define MAYBE_KeyEventDirectUnicode KeyEventDirectUnicode
+#endif
+
+TEST(EventTest, MAYBE_KeyEvent) {
+  static const struct {
+    KeyboardCode key_code;
+    int flags;
+    uint16 character;
+    uint16 unmodified_character;
+  } kTestData[] = {
+    { VKEY_A, 0, 'a', 'a' },
+    { VKEY_A, EF_SHIFT_DOWN, 'A', 'A' },
+    { VKEY_A, EF_CAPS_LOCK_DOWN, 'A', 'a' },
+    { VKEY_A, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, 'a', 'A' },
+    { VKEY_A, EF_CONTROL_DOWN, 0x01, 'a' },
+    { VKEY_A, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x01', 'A' },
+    { VKEY_Z, 0, 'z', 'z' },
+    { VKEY_Z, EF_SHIFT_DOWN, 'Z', 'Z' },
+    { VKEY_Z, EF_CAPS_LOCK_DOWN, 'Z', 'z' },
+    { VKEY_Z, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, 'z', 'Z' },
+    { VKEY_Z, EF_CONTROL_DOWN, '\x1A', 'z' },
+    { VKEY_Z, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x1A', 'Z' },
+
+    { VKEY_2, EF_CONTROL_DOWN, '\0', '2' },
+    { VKEY_2, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0', '@' },
+    { VKEY_6, EF_CONTROL_DOWN, '\0', '6' },
+    { VKEY_6, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x1E', '^' },
+    { VKEY_OEM_MINUS, EF_CONTROL_DOWN, '\0', '-' },
+    { VKEY_OEM_MINUS, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\x1F', '_'},
+    { VKEY_OEM_4, EF_CONTROL_DOWN, '\x1B', '[' },
+    { VKEY_OEM_4, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0', '{' },
+    { VKEY_OEM_5, EF_CONTROL_DOWN, '\x1C', '\\' },
+    { VKEY_OEM_5, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0', '|' },
+    { VKEY_OEM_6, EF_CONTROL_DOWN, '\x1D', ']' },
+    { VKEY_OEM_6, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0', '}' },
+    { VKEY_RETURN, EF_CONTROL_DOWN, '\x0A', '\r' },
+
+    { VKEY_0, 0, '0', '0' },
+    { VKEY_0, EF_SHIFT_DOWN, ')', ')' },
+    { VKEY_0, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, ')', ')' },
+    { VKEY_0, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0', ')' },
+
+    { VKEY_9, 0, '9', '9' },
+    { VKEY_9, EF_SHIFT_DOWN, '(', '(' },
+    { VKEY_9, EF_SHIFT_DOWN | EF_CAPS_LOCK_DOWN, '(', '(' },
+    { VKEY_9, EF_SHIFT_DOWN | EF_CONTROL_DOWN, '\0', '(' },
+
+    { VKEY_NUMPAD0, EF_CONTROL_DOWN, '\0', '0' },
+    { VKEY_NUMPAD0, EF_SHIFT_DOWN, '0', '0' },
+
+    { VKEY_NUMPAD9, EF_CONTROL_DOWN, '\0', '9' },
+    { VKEY_NUMPAD9, EF_SHIFT_DOWN, '9', '9' },
+
+    { VKEY_TAB, EF_CONTROL_DOWN, '\0', '\t' },
+    { VKEY_TAB, EF_SHIFT_DOWN, '\t', '\t' },
+
+    { VKEY_MULTIPLY, EF_CONTROL_DOWN, '\0', '*' },
+    { VKEY_MULTIPLY, EF_SHIFT_DOWN, '*', '*' },
+    { VKEY_ADD, EF_CONTROL_DOWN, '\0', '+' },
+    { VKEY_ADD, EF_SHIFT_DOWN, '+', '+' },
+    { VKEY_SUBTRACT, EF_CONTROL_DOWN, '\0', '-' },
+    { VKEY_SUBTRACT, EF_SHIFT_DOWN, '-', '-' },
+    { VKEY_DECIMAL, EF_CONTROL_DOWN, '\0', '.' },
+    { VKEY_DECIMAL, EF_SHIFT_DOWN, '.', '.' },
+    { VKEY_DIVIDE, EF_CONTROL_DOWN, '\0', '/' },
+    { VKEY_DIVIDE, EF_SHIFT_DOWN, '/', '/' },
+
+    { VKEY_OEM_1, EF_CONTROL_DOWN, '\0', ';' },
+    { VKEY_OEM_1, EF_SHIFT_DOWN, ':', ':' },
+    { VKEY_OEM_PLUS, EF_CONTROL_DOWN, '\0', '=' },
+    { VKEY_OEM_PLUS, EF_SHIFT_DOWN, '+', '+' },
+    { VKEY_OEM_COMMA, EF_CONTROL_DOWN, '\0', ',' },
+    { VKEY_OEM_COMMA, EF_SHIFT_DOWN, '<', '<' },
+    { VKEY_OEM_PERIOD, EF_CONTROL_DOWN, '\0', '.' },
+    { VKEY_OEM_PERIOD, EF_SHIFT_DOWN, '>', '>' },
+    { VKEY_OEM_3, EF_CONTROL_DOWN, '\0', '`' },
+    { VKEY_OEM_3, EF_SHIFT_DOWN, '~', '~' },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestData); ++i) {
+    KeyEvent key(ET_KEY_PRESSED, kTestData[i].key_code, kTestData[i].flags);
+    EXPECT_EQ(kTestData[i].character, key.GetCharacter())
+        << " Index:" << i << " key_code:" << kTestData[i].key_code;
+    EXPECT_EQ(kTestData[i].unmodified_character, key.GetUnmodifiedCharacter())
+        << " Index:" << i << " key_code:" << kTestData[i].key_code;
+  }
+}
+
+TEST(EventTest, MAYBE_KeyEventDirectUnicode) {
+  KeyEvent key(ET_KEY_PRESSED, VKEY_UNKNOWN, EF_SHIFT_DOWN);
+  key.set_character(0x1234U);
+  key.set_unmodified_character(0x4321U);
+  EXPECT_EQ(0x1234U, key.GetCharacter());
+  EXPECT_EQ(0x4321U, key.GetUnmodifiedCharacter());
+  KeyEvent key2(ET_KEY_RELEASED, VKEY_UNKNOWN, EF_CONTROL_DOWN);
+  key2.set_character(0x4321U);
+  key2.set_unmodified_character(0x1234U);
+  EXPECT_EQ(0x4321U, key2.GetCharacter());
+  EXPECT_EQ(0x1234U, key2.GetUnmodifiedCharacter());
+}
+
 }  // namespace ui

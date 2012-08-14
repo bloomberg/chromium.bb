@@ -93,7 +93,7 @@ bool NativeComboboxViews::OnMouseDragged(const ui::MouseEvent& mouse_event) {
 }
 
 ui::GestureStatus NativeComboboxViews::OnGestureEvent(
-    const views::GestureEvent& gesture_event) {
+    const ui::GestureEvent& gesture_event) {
   if (gesture_event.type() == ui::ET_GESTURE_TAP) {
     UpdateFromModel();
     ShowDropDownMenu();

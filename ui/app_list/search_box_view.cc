@@ -85,7 +85,7 @@ void SearchBoxView::Layout() {
   search_box_->SetBoundsRect(edit_frame);
 }
 
-bool SearchBoxView::OnMouseWheel(const views::MouseWheelEvent& event) {
+bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   if (contents_view_)
     return contents_view_->OnMouseWheel(event);
 

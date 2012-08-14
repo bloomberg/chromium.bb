@@ -61,7 +61,7 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton,
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(
-      const views::GestureEvent& event) OVERRIDE;
+      const ui::GestureEvent& event) OVERRIDE;
 
  private:
   class EscapeEventFilter;

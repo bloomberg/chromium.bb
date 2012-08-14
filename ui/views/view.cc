@@ -825,11 +825,11 @@ void View::OnMouseEntered(const ui::MouseEvent& event) {
 void View::OnMouseExited(const ui::MouseEvent& event) {
 }
 
-ui::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
+ui::TouchStatus View::OnTouchEvent(const ui::TouchEvent& event) {
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
-ui::GestureStatus View::OnGestureEvent(const GestureEvent& event) {
+ui::GestureStatus View::OnGestureEvent(const ui::GestureEvent& event) {
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
@@ -847,11 +847,11 @@ bool View::OnKeyReleased(const ui::KeyEvent& event) {
   return false;
 }
 
-bool View::OnMouseWheel(const MouseWheelEvent& event) {
+bool View::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return false;
 }
 
-bool View::OnScrollEvent(const ScrollEvent& event) {
+bool View::OnScrollEvent(const ui::ScrollEvent& event) {
   return false;
 }
 
@@ -1014,17 +1014,17 @@ bool View::CanDrop(const OSExchangeData& data) {
   return false;
 }
 
-void View::OnDragEntered(const DropTargetEvent& event) {
+void View::OnDragEntered(const ui::DropTargetEvent& event) {
 }
 
-int View::OnDragUpdated(const DropTargetEvent& event) {
+int View::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
 void View::OnDragExited() {
 }
 
-int View::OnPerformDrop(const DropTargetEvent& event) {
+int View::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
@@ -1959,13 +1959,13 @@ void View::ProcessMouseReleased(const ui::MouseEvent& event) {
   // WARNING: we may have been deleted.
 }
 
-ui::TouchStatus View::ProcessTouchEvent(const TouchEvent& event) {
+ui::TouchStatus View::ProcessTouchEvent(const ui::TouchEvent& event) {
   // TODO(rjkroege): Implement a grab scheme similar to as as is found in
   //                 MousePressed.
   return OnTouchEvent(event);
 }
 
-ui::GestureStatus View::ProcessGestureEvent(const GestureEvent& event) {
+ui::GestureStatus View::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (context_menu_controller_ &&
       (event.type() == ui::ET_GESTURE_LONG_PRESS ||
        event.type() == ui::ET_GESTURE_TWO_FINGER_TAP)) {

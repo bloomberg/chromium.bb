@@ -497,7 +497,7 @@ bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 ui::GestureStatus DownloadItemView::OnGestureEvent(
-    const views::GestureEvent& event) {
+    const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     HandlePressEvent(event, true);
     return ui::GESTURE_STATUS_CONSUMED;

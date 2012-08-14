@@ -30,7 +30,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_views_model.h"
-#include "ui/views/events/event.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -863,7 +862,8 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
   EXPECT_EQ(ui::OSExchangeData::STRING, formats);
   EXPECT_TRUE(custom_formats.empty());
   EXPECT_TRUE(textfield_view_->CanDrop(data));
-  DropTargetEvent drop(data, GetCursorPositionX(6), 0,
+  gfx::Point drop_point(GetCursorPositionX(6), 0);
+  ui::DropTargetEvent drop(data, drop_point, drop_point,
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE);
   EXPECT_EQ(ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE,
             textfield_view_->OnDragUpdated(drop));
@@ -964,7 +964,7 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheRight) {
   // Drop "ello" after "w".
   const gfx::Point kDropPoint(GetCursorPositionX(7), 0);
   EXPECT_TRUE(textfield_view_->CanDrop(data));
-  DropTargetEvent drop_a(data, kDropPoint.x(), 0, operations);
+  ui::DropTargetEvent drop_a(data, kDropPoint, kDropPoint, operations);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
             textfield_view_->OnDragUpdated(drop_a));
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
@@ -1018,7 +1018,8 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_ToTheLeft) {
 
   // Drop " worl" after "h".
   EXPECT_TRUE(textfield_view_->CanDrop(data));
-  DropTargetEvent drop_a(data, GetCursorPositionX(1), 0, operations);
+  gfx::Point drop_point(GetCursorPositionX(1), 0);
+  ui::DropTargetEvent drop_a(data, drop_point, drop_point, operations);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
             textfield_view_->OnDragUpdated(drop_a));
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE,
@@ -1055,8 +1056,9 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_Canceled) {
   textfield_view_->WriteDragDataForView(NULL, click.location(), &data);
   EXPECT_TRUE(textfield_view_->CanDrop(data));
   // Drag the text over somewhere valid, outside the current selection.
-  DropTargetEvent drop(data, GetCursorPositionX(2), 0,
-                       ui::DragDropTypes::DRAG_MOVE);
+  gfx::Point drop_point(GetCursorPositionX(2), 0);
+  ui::DropTargetEvent drop(data, drop_point, drop_point,
+                           ui::DragDropTypes::DRAG_MOVE);
   EXPECT_EQ(ui::DragDropTypes::DRAG_MOVE, textfield_view_->OnDragUpdated(drop));
   // "Cancel" the drag, via move and release over the selection, and OnDragDone.
   gfx::Point drag_point(GetCursorPositionX(9), 0);

@@ -89,7 +89,7 @@ class LauncherButton : public views::CustomButton {
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual ui::GestureStatus OnGestureEvent(const views::GestureEvent& event)
+  virtual ui::GestureStatus OnGestureEvent(const ui::GestureEvent& event)
       OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void Layout() OVERRIDE;

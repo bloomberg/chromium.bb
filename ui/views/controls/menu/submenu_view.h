@@ -67,16 +67,16 @@ class VIEWS_EXPORT SubmenuView : public View,
       std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
   virtual bool AreDropTypesRequired() OVERRIDE;
   virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
-  virtual void OnDragEntered(const DropTargetEvent& event) OVERRIDE;
-  virtual int OnDragUpdated(const DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
-  virtual int OnPerformDrop(const DropTargetEvent& event) OVERRIDE;
+  virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
 
   // Scrolls on menu item boundaries.
-  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
+  virtual bool OnMouseWheel(const ui::MouseWheelEvent& e) OVERRIDE;
 
   // Scrolls on menu item boundaries.
-  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& e) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const ui::GestureEvent& e) OVERRIDE;
 
   // Returns true if the menu is showing.
   bool IsShowing();

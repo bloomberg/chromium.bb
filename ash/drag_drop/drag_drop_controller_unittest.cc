@@ -15,7 +15,6 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/event.h"
-#include "ui/views/events/event.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -81,11 +80,11 @@ class DragTestView : public views::View {
     return true;
   }
 
-  void OnDragEntered(const views::DropTargetEvent& event) OVERRIDE {
+  void OnDragEntered(const ui::DropTargetEvent& event) OVERRIDE {
     num_drag_enters_++;
   }
 
-  int OnDragUpdated(const views::DropTargetEvent& event) OVERRIDE {
+  int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE {
     num_drag_updates_++;
     return ui::DragDropTypes::DRAG_COPY;
   }
@@ -94,7 +93,7 @@ class DragTestView : public views::View {
     num_drag_exits_++;
   }
 
-  int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE {
+  int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
     num_drops_++;
     return ui::DragDropTypes::DRAG_COPY;
   }
