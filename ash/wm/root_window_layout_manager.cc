@@ -39,8 +39,11 @@ void RootWindowLayoutManager::OnWindowResized() {
     for (j = (*i)->children().begin(); j != (*i)->children().end(); ++j)
       (*j)->SetBounds(fullscreen_bounds);
   }
-  internal::DesktopBackgroundWidgetController* background =
-      owner_->GetProperty(internal::kWindowDesktopComponent);
+  internal::DesktopBackgroundWidgetController* background = NULL;
+  internal::ComponentWrapper* wrapper =
+      owner_->GetProperty(internal::kComponentWrapper);
+  if (wrapper)
+    background = wrapper->component();
   if (background)
     background->SetBounds(fullscreen_bounds);
 }
