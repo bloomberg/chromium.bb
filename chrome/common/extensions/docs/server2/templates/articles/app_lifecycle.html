@@ -75,7 +75,7 @@ when your application is launched in any way:
 </p>
 
 <pre>
-chrome.experimental.app.onLaunched.addListener(function() { 
+chrome.app.runtime.onLaunched.addListener(function() { 
   // Tell your app what to launch and how.
 });
 </pre>
@@ -100,7 +100,7 @@ for example, a chat panel.
   with a 'shell' window:</p>
 
 <pre>
-chrome.experimental.app.onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('main.html', {
     width: 800,
     height: 600,
@@ -118,7 +118,7 @@ chrome.experimental.app.onLaunched.addListener(function() {
 </p>
 
 <pre>
-chrome.experimental.app.onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('index.html', {
     width: 400,
     height: 200,

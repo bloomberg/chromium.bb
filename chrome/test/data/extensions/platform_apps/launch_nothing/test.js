@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Check that there is no launchData.
-function onLaunched(launchData) {
+chrome.app.runtime.onLaunched.addListener(function (launchData) {
+  // Check that there is no launchData.
   chrome.test.runTests([
     function testIntent() {
       chrome.test.assertTrue(!launchData, "LaunchData found");
       chrome.test.succeed();
     }
   ]);
-}
-
-chrome.experimental.app.onLaunched.addListener(onLaunched);
+});

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/experimental.app_custom_bindings.h"
+#include "chrome/renderer/extensions/app_runtime_custom_bindings.h"
 
 #include "base/string_number_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
@@ -44,7 +44,7 @@ v8::Handle<v8::Value> CreateBlob(const v8::Arguments &args) {
 
 namespace extensions {
 
-ExperimentalAppCustomBindings::ExperimentalAppCustomBindings()
+AppRuntimeCustomBindings::AppRuntimeCustomBindings()
     : ChromeV8Extension(NULL) {
   RouteStaticFunction("DeserializeString", &DeserializeString);
   RouteStaticFunction("CreateBlob", &CreateBlob);

@@ -350,7 +350,7 @@ Here's a sample that creates two windows,
 one for the main app window that isn't sandboxed,
 and one for the sandboxed page:
 </p>
-<pre>chrome.experimental.app.onLaunched.addListener(function() {
+<pre>chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('window.html', {
     'width': 400,
     'height': 400,
@@ -393,7 +393,7 @@ that posts a message to the sandboxed page it
 opens:
 </p>
 <pre>var myWin = null;
-chrome.experimental.app.onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('sandboxed.html', {
     'width': 400,
     'height': 400

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom bindings for the experimental.app API.
+// Custom bindings for the chrome.app.runtime API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
-var appNatives = requireNative('experimental_app');
+var appNatives = requireNative('app_runtime');
 var DeserializeString = appNatives.DeserializeString;
 var CreateBlob = appNatives.CreateBlob;
 
-chromeHidden.Event.registerArgumentMassager('experimental.app.onLaunched',
+chromeHidden.Event.registerArgumentMassager('app.runtime.onLaunched',
     function(args, dispatch) {
   var launchData = args[0];
   var intentData = args[1];

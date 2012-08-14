@@ -26,6 +26,7 @@ class APIPermission {
     kActiveTab,
     kAlarms,
     kAppNotifications,
+    kAppRuntime,
     kAppWindow,
     kAudioCapture,
     kBackground,

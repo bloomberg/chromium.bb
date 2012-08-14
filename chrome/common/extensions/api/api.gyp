@@ -38,6 +38,7 @@
         ],
         'idl_schema_files': [
           'alarms.idl',
+          'app_runtime.idl',
           'app_window.idl',
           'downloads.idl',
           'experimental_bluetooth.idl',

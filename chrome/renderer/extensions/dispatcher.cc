@@ -20,12 +20,12 @@
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/api_definitions_natives.h"
 #include "chrome/renderer/extensions/app_bindings.h"
+#include "chrome/renderer/extensions/app_runtime_custom_bindings.h"
 #include "chrome/renderer/extensions/app_window_custom_bindings.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/experimental.app_custom_bindings.h"
 #include "chrome/renderer/extensions/experimental.usb_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
@@ -566,6 +566,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
       scoped_ptr<NativeHandler>(new AppBindings(this, context)));
+  module_system->RegisterNativeHandler("app_runtime",
+      scoped_ptr<NativeHandler>(new AppRuntimeCustomBindings()));
   module_system->RegisterNativeHandler("app_window",
       scoped_ptr<NativeHandler>(new AppWindowCustomBindings(this)));
   module_system->RegisterNativeHandler("context_menus",
@@ -573,8 +575,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("extension",
       scoped_ptr<NativeHandler>(
           new ExtensionCustomBindings(this)));
-  module_system->RegisterNativeHandler("experimental_app",
-      scoped_ptr<NativeHandler>(new ExperimentalAppCustomBindings()));
   module_system->RegisterNativeHandler("experimental_mediaGalleries",
       scoped_ptr<NativeHandler>(new MediaGalleryCustomBindings()));
   module_system->RegisterNativeHandler("experimental_usb",
@@ -620,6 +620,7 @@ void Dispatcher::PopulateSourceMap() {
 
   // Custom bindings.
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
@@ -630,8 +631,6 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("declarativeWebRequest",
                              IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("devtools", IDR_DEVTOOLS_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.app",
-                             IDR_EXPERIMENTAL_APP_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.bluetooth",
                              IDR_EXPERIMENTAL_BLUETOOTH_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.mediaGalleries",

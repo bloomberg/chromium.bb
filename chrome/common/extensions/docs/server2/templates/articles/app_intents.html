@@ -66,7 +66,7 @@ feeds, you would add the following to your manifest.
 Your application will receive intent payload through the <code>onLaunched</code> event.
 </p>
 <pre>
-chrome.experimental.app.onLaunched(function(intent) {
+chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   if(intent.action == "http://webinents.org/view" &amp;&amp;
      intent.type == "application/atom+xml") {
@@ -92,7 +92,7 @@ with the action set to "http://webintents.org/view", the type set to the
 mime-type of the file and the data as a <code>FileEntry</code> object.
 </p>
 <pre>
-chrome.experimental.app.onLaunched(function(intent) {
+chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   var data = intent.data;
 });
@@ -109,7 +109,7 @@ chrome.experimental.app.onLaunched(function(intent) {
 </p>
 
 <pre>
-chrome.experimental.app.onLaunched(function(intent) {
+chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   var data = intent.data;
   if(data instanceof FileEntry) {
@@ -140,7 +140,7 @@ using <code>intent.postResult</code>:
 </p>
 
 <pre>
-chrome.experimental.app.onLaunched(function(intent) {
+chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   console.log(intent.action);
   console.log(intent.type);
@@ -211,7 +211,7 @@ window.navigator.webkitStartActivity(intent, onSuccess, onError);
 
 <h3>Service</h3>
 <pre>
-chrome.experimental.app.onLaunched(function(intent) {
+chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   console.log(intent.action);
   console.log(intent.type);

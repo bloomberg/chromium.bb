@@ -1,0 +1,36 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace app.runtime {
+
+  callback NullCallback = void ();
+
+  // A WebIntents intent object.
+  [inline_doc] dictionary Intent {
+    // The WebIntent being invoked.
+    DOMString action;
+
+    // The MIME type of the data.
+    DOMString type;
+
+    // Data associated with the intent.
+    any data;
+
+    // Callback to be compatible with WebIntents.
+    NullCallback postResult;
+
+    // Callback to be compatible with WebIntents.
+    NullCallback postFailure;
+  };
+
+  // Optional data for the launch.
+  [inline_doc] dictionary LaunchData {
+    Intent intent;
+  };
+
+  interface Events {
+    static void onLaunched(optional LaunchData launchData);
+  };
+
+};

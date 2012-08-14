@@ -13,6 +13,10 @@
     "extension_types": ["extension", "packaged_app", "platform_app"],
     "min_manifest_version": 2
   },
+  "app.runtime": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "app.window": {
     "channel": "dev",
     "extension_types": ["platform_app"]

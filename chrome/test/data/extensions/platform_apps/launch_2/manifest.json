@@ -7,7 +7,4 @@
       "scripts": ["test.js"]
     }
   },
-  "permissions": [
-    "experimental"
-  ]
 }

@@ -10,7 +10,9 @@
       "title": "Test editor"
     }
   },
-  "permissions": ["experimental", "fileSystem"],
+  "permissions": [
+    "fileSystem"
+  ],
   "app": {
     "background": {
       "scripts": ["test.js"]

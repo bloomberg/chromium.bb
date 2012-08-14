@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Test that there is a launchData.intent, it is set up proerly, and that the
-// FileEntry in launchData.intent.data can be read.
-function onLaunched(launchData) {
+chrome.app.runtime.onLaunched.addListener(function (launchData) {
+  // Test that there is a launchData.intent, it is set up proerly, and that the
+  // FileEntry in launchData.intent.data can be read.
   chrome.test.runTests([
     function testGetDisplayPath() {
       chrome.test.assertFalse(!launchData, "No launchData");
@@ -22,6 +22,4 @@ function onLaunched(launchData) {
       }));
     }
   ]);
-}
-
-chrome.experimental.app.onLaunched.addListener(onLaunched);
+});

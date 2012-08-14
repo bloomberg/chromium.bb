@@ -72,7 +72,7 @@ with the following content:
 </p>
 
 <pre>
-chrome.experimental.app.onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('window.html', {
     'width': 400,
     'height': 500
@@ -166,4 +166,3 @@ and click on your new app icon.
 </p>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>
-

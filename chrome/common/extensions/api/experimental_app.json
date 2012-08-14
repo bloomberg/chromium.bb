@@ -79,49 +79,6 @@
           }
         ]
       }
-    ],
-    "events": [
-      {
-        "name": "onLaunched",
-        "type": "function",
-        "description": "Fired when the app is launched.",
-        "parameters": [
-          {
-            "type": "object",
-            "name": "launchData",
-            "description": "Optional data for the launch.",
-            "optional": true,
-            "properties": {
-              "intent": {
-                "type": "object",
-                "description": "A WebIntents intent object.",
-                "properties": {
-                  "action": {
-                    "type": "string",
-                    "description": "The WebIntent being invoked."
-                  },
-                  "type": {
-                    "type": "string",
-                    "description": "The MIME type of the data."
-                  },
-                  "data": {
-                    "type": "any",
-                    "description": "Data associated with the intent."
-                  },
-                  "postResult": {
-                    "type": "function",
-                    "description": "Null callback to be compatible with WebIntents."
-                  },
-                  "postFailure": {
-                    "type": "function",
-                    "description": "Null callback to be compatible with WebIntents."
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
     ]
   }
 ]

@@ -261,7 +261,7 @@ feeds, you would add the following to your manifest.
 <p>
 Your application will receive intent payload through the <code>onLaunched</code> event.
 </p>
-<pre>chrome.experimental.app.onLaunched(function(intent) {
+<pre>chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   if(intent.action == "http://webinents.org/view" &amp;&amp;
      intent.type == "application/atom+xml") {
@@ -282,7 +282,7 @@ This will implicity launch your application with an intent payload populated
 with the action set to "http://webintents.org/view", the type set to the 
 mime-type of the file and the data as a <code>FileEntry</code> object.
 </p>
-<pre>chrome.experimental.app.onLaunched(function(intent) {
+<pre>chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   var data = intent.data;
 });
@@ -296,7 +296,7 @@ mime-type of the file and the data as a <code>FileEntry</code> object.
   file on the disk,
   and you can write data back to it.
 </p>
-<pre>chrome.experimental.app.onLaunched(function(intent) {
+<pre>chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   var data = intent.data;
   if(data instanceof FileEntry) {
@@ -322,7 +322,7 @@ with the app that invoked them.
 It's easy to send data back to the calling client
 using <code>intent.postResult</code>:
 </p>
-<pre>chrome.experimental.app.onLaunched(function(intent) {
+<pre>chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   console.log(intent.action);
   console.log(intent.type);
@@ -376,7 +376,7 @@ var onError = function() {};
 window.navigator.webkitStartActivity(intent, onSuccess, onError);
 </pre>
 <a name="H3-9"></a><h3>Service</h3>
-<pre>chrome.experimental.app.onLaunched(function(intent) {
+<pre>chrome.app.runtime.onLaunched(function(intent) {
   // App Launched
   console.log(intent.action);
   console.log(intent.type);

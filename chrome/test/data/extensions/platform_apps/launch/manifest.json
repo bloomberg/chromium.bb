@@ -6,8 +6,5 @@
     "background": {
       "scripts": ["test.js"]
     }
-  },
-  "permissions": [
-    "experimental"
-  ]
+  }
 }

@@ -17,7 +17,7 @@
     <script type="text/javascript" src="../js/api_page_generator.js"></script>
     <script type="text/javascript" src="../js/bootstrap.js"></script>
     <script type="text/javascript" src="../js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.app module, which is part of the Google Chrome  extension APIs."><title>Experimental App APIs - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.app.runtime module, which is part of the Google Chrome  extension APIs."><title>chrome.app.runtime - Google Chrome Extensions - Google Code</title></head>
   <body doc-family="apps">  <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
   <link href="../css/prettify.css" rel="stylesheet" type="text/css">
   <link href="../css/shared.css" rel="stylesheet" type="text/css">
@@ -157,14 +157,14 @@
       </script>
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Experimental App APIs</h1>
+        <h1 class="page_title">chrome.app.runtime</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.app</a>
+                <a href="#apiReference">API reference: chrome.app.runtime</a>
                 <ol>
                   <li>
             <a href="#global-events">Events</a>
@@ -181,15 +181,11 @@
         <!-- /TABLE OF CONTENTS -->
         <!-- Standard content lead-in for experimental API pages -->
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Experimental App APIs</div>
-<!-- BEGIN AUTHORED CONTENT -->
-<p>The current methods allow applications to generate passive notifications.</p>
-<!-- END AUTHORED CONTENT -->
-</div>
+        <div id="static"></div>
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.app</h2>
+        <h2>API reference: chrome.app.runtime</h2>
           <!-- PROPERTIES -->
            <!-- /apiGroup -->
           <!-- METHODS -->
@@ -204,10 +200,9 @@
               <h4>onLaunched</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.app.</span><span>onLaunched</span><span class="subdued">.addListener</span>(function(<span>object launchData</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.app.runtime.</span><span>onLaunched</span><span class="subdued">.addListener</span>(function(<span>object launchData</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
-                <p>Fired when the app is launched.</p>
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -230,7 +225,9 @@
                 </div>
               </em>
           </dt>
-          <dd>Optional data for the launch.</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -251,7 +248,9 @@
                 </div>
               </em>
           </dt>
-          <dd>A WebIntents intent object.</dd>
+          <dd class="todo">
+            Undocumented.
+          </dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -273,29 +272,6 @@
               </em>
           </dt>
           <dd>The WebIntent being invoked.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>type</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>The MIME type of the data.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -327,29 +303,6 @@
               </div><div>
                 <div>
           <dt>
-            <var>postResult</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Null callback to be compatible with WebIntents.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
             <var>postFailure</var>
               <em>
                 <!-- TYPE -->
@@ -364,7 +317,57 @@
                 </div>
               </em>
           </dt>
-          <dd>Null callback to be compatible with WebIntents.</dd>
+          <dd>Callback to be compatible with WebIntents.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>postResult</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Callback to be compatible with WebIntents.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+          <dd>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>type</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The MIME type of the data.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

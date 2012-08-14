@@ -179,7 +179,7 @@ and one for the sandboxed page:
 </p>
 
 <pre>
-chrome.experimental.app.onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('window.html', {
     'width': 400,
     'height': 400,
@@ -236,7 +236,7 @@ opens:
 <pre>
 var myWin = null;
 
-chrome.experimental.app.onLaunched.addListener(function() {
+chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('sandboxed.html', {
     'width': 400,
     'height': 400
@@ -279,4 +279,3 @@ window.addEventListener('message', messageHandler);
 </pre>
 
 <p class="backtotop"><a href="#top">Back to top</a></p>
-

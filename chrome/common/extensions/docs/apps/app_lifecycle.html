@@ -255,7 +255,7 @@ Your event page must include the <code>onLaunched()</code> function.
 This function is called
 when your application is launched in any way:
 </p>
-<pre>chrome.experimental.app.onLaunched.addListener(function() { 
+<pre>chrome.app.runtime.onLaunched.addListener(function() { 
   // Tell your app what to launch and how.
 });
 </pre>
@@ -274,7 +274,7 @@ for example, a chat panel.
 </p>
 <p>Here's a sample <code>background.js</code>
   with a 'shell' window:</p>
-<pre>chrome.experimental.app.onLaunched.addListener(function() {
+<pre>chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('main.html', {
     width: 800,
     height: 600,
@@ -289,7 +289,7 @@ for example, a chat panel.
 <p>Here's a sample <code>background.js</code>
   with a 'panel' window:
 </p>
-<pre>chrome.experimental.app.onLaunched.addListener(function() {
+<pre>chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('index.html', {
     width: 400,
     height: 200,
