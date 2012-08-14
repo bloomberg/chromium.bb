@@ -90,9 +90,13 @@ int DeepHeapProfile::FillOrderedProfile(char buffer[], int buffer_size) {
       }
     }
 
-    // Write maps into a .maps file with using the global buffer.
-    WriteMapsToFile(filename_prefix_, kProfilerBufferSize, profiler_buffer_);
+    // Write maps into "|filename_prefix|.<pid>.maps" using global buffer.
+    WriteMapsToFile(filename_prefix_, 0,
+                    kProfilerBufferSize, profiler_buffer_);
   }
+  // Write maps into "|filename_prefix|.<pid>.|count|.maps" using global buffer.
+  WriteMapsToFile(filename_prefix_, dump_count_,
+                  kProfilerBufferSize, profiler_buffer_);
 
   // Reset committed sizes of buckets.
   ResetCommittedSize(deep_table_);
@@ -323,11 +327,18 @@ size_t DeepHeapProfile::GetCommittedSize(
 
 // static
 void DeepHeapProfile::WriteMapsToFile(const char* filename_prefix,
+                                      unsigned count,
                                       int buffer_size,
                                       char buffer[]) {
   char filename[100];
-  snprintf(filename, sizeof(filename),
-           "%s.%05d.maps", filename_prefix, static_cast<int>(getpid()));
+  if (count > 0) {
+    snprintf(filename, sizeof(filename),
+             "%s.%05d.%04d.maps", filename_prefix, static_cast<int>(getpid()),
+             count);
+  } else {
+    snprintf(filename, sizeof(filename),
+             "%s.%05d.maps", filename_prefix, static_cast<int>(getpid()));
+  }
 
   RawFD maps_fd = RawOpenForWriting(filename);
   RAW_DCHECK(maps_fd != kIllegalRawFD, "");

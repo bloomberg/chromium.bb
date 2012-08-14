@@ -189,9 +189,12 @@ class DeepHeapProfile {
                                  uint64 first_address,
                                  uint64 last_address);
 
-  // Write re-formatted /proc/self/maps into a file which has |filename_prefix|
-  // with using |buffer| of size |buffer_size|.
+  // Write re-formatted /proc/self/maps into a file with using |buffer| of
+  // size |buffer_size|.
+  // If |count| is zero, the filename will be "|filename_prefix|.<pid>.maps".
+  // Otherwise, "|filename_prefix|.<pid>.|count|.maps".
   static void WriteMapsToFile(const char* filename_prefix,
+                              unsigned count,
                               int buffer_size,
                               char buffer[]);
 
