@@ -550,7 +550,8 @@ function listChromeAPIs(includeExperimental) {
         "experimental.devtools.audits", "experimental.devtools.console",
         "experimental.discovery", "experimental.infobars",
         "experimental.keybinding", "experimental.offscreenTabs",
-        "experimental.processes", "experimental.speechInput"
+        "experimental.processes", "experimental.speechInput",
+        "devtools.inspectedWindow", "devtools.panels", "devtools.network"
       ].indexOf(item) == -1;
     });
   }
