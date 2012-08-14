@@ -82,13 +82,7 @@ static int infoleak_check_state(void) {
   return ok;
 }
 
-/*
- * TODO(mcgrathr): Currently broken pending fix for
- * http://code.google.com/p/nativeclient/issues/detail?id=2954
- * So for now we are instead just testing that test_infoleak syscall
- * itself clobbers state as expected.
- */
-#define EXPECT_OK 0
+#define EXPECT_OK 1
 
 #else
 

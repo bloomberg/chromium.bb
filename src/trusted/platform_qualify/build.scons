@@ -73,6 +73,8 @@ if env.Bit('build_x86') and env.Bit('target_x86'):
 if env.Bit('build_arm'):
   # Compile ARM primitives for checking XN functionality
   pql_inputs += ['arch/arm/nacl_dep_qualify_arch.c']
+  # Compile ARM primitives for checking VFP/vector features.
+  pql_inputs += ['arch/arm/nacl_qualify_fpu.c']
 
 
 # ----------------------------------------------------------
