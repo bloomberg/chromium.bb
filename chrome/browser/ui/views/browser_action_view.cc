@@ -49,6 +49,7 @@ BrowserActionView::BrowserActionView(const Extension* extension,
 }
 
 BrowserActionView::~BrowserActionView() {
+  button_->Destroy();
 }
 
 gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
@@ -78,10 +79,10 @@ void BrowserActionView::Layout() {
 void BrowserActionView::ViewHierarchyChanged(bool is_add,
                                              View* parent,
                                              View* child) {
-  if (is_add && (child == this)) {
+  if (is_add && (child == this) && (GetWidget() != NULL) && (button_ == NULL)) {
     button_ = new BrowserActionButton(extension_, browser_, delegate_);
     button_->set_drag_controller(delegate_);
-
+    button_->set_owned_by_client();
     AddChildView(button_);
     button_->UpdateState();
   }
