@@ -21,13 +21,13 @@ function getItemNamed(list, name) {
   return null;
 }
 
-// Verifies that the item's name, enabled, and isApp properties match |name|,
-// |enabled|, and |isApp|, and checks against any additional name/value
+// Verifies that the item's name, enabled, and type properties match |name|,
+// |enabled|, and |type|, and checks against any additional name/value
 // properties from |additional_properties|.
-function checkItem(item, name, enabled, isApp, additional_properties) {
+function checkItem(item, name, enabled, type, additional_properties) {
   assertTrue(item !== null);
   assertEq(name, item.name);
-  assertEq(isApp, item.isApp);
+  assertEq(type, item.type);
   assertEq(enabled, item.enabled);
 
   for (var propname in additional_properties) {
@@ -40,9 +40,9 @@ function checkItem(item, name, enabled, isApp, additional_properties) {
 }
 
 // Gets an extension/app with |name| in |list|, verifies that its enabled
-// and isApp properties match |enabled| and |isApp|, and checks against any
+// and type properties match |enabled| and |type|, and checks against any
 // additional name/value properties from |additional_properties|.
-function checkItemInList(list, name, enabled, isApp, additional_properties) {
+function checkItemInList(list, name, enabled, type, additional_properties) {
   var item = getItemNamed(list, name);
-  checkItem(item, name, enabled, isApp, additional_properties);
+  checkItem(item, name, enabled, type, additional_properties);
 }

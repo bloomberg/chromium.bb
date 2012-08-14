@@ -49,6 +49,8 @@ using base::IntToString;
 using content::BrowserThread;
 using content::UtilityProcessHost;
 using content::UtilityProcessHostClient;
+using extensions::api::management::ExtensionInfo;
+using extensions::api::management::IconInfo;
 using extensions::Extension;
 using extensions::ExtensionSystem;
 using extensions::PermissionMessages;
@@ -99,6 +101,18 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   info->may_disable = system->management_policy()->
       UserMayModifySettings(&extension, NULL);
   info->is_app = extension.is_app();
+  if (info->is_app) {
+    if (extension.is_packaged_app())
+      info->type = ExtensionInfo::TYPE_LEGACY_PACKAGED_APP;
+    else if (extension.is_hosted_app())
+      info->type = ExtensionInfo::TYPE_HOSTED_APP;
+    else
+      info->type = ExtensionInfo::TYPE_PACKAGED_APP;
+  } else if (extension.is_theme()) {
+    info->type = ExtensionInfo::TYPE_THEME;
+  } else {
+    info->type = ExtensionInfo::TYPE_EXTENSION;
+  }
 
   if (info->enabled) {
     info->disabled_reason = management::ExtensionInfo::DISABLED_REASON_NONE;

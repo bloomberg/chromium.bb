@@ -8,7 +8,7 @@
     "types": [
       {
         "id": "IconInfo",
-        "description": "Information about an icon belonging to an extension or app.",
+        "description": "Information about an icon belonging to an extension, app, or theme.",
         "type": "object",
         "properties": {
           "size": { "type": "integer", "description": "A number representing the width and height of the icon. Likely values include (but are not limited to) 128, 48, 24, and 16."  },
@@ -17,7 +17,7 @@
       },
       {
         "id": "ExtensionInfo",
-        "description": "Information about an installed extension or app.",
+        "description": "Information about an installed extension, app, or theme.",
         "type": "object",
         "properties": {
           "id": {
@@ -25,15 +25,15 @@
             "type": "string"
           },
           "name": {
-            "description": "The name of this extension or app.",
+            "description": "The name of this extension, app, or theme.",
             "type": "string"
           },
           "description": {
-            "description": "The description of this extension or app.",
+            "description": "The description of this extension, app, or theme.",
             "type": "string"
           },
           "version": {
-            "description": "The <a href='manifest.html#version'>version</a> of this extension or app.",
+            "description": "The <a href='manifest.html#version'>version</a> of this extension, app, or theme.",
             "type": "string"
           },
           "mayDisable": {
@@ -52,7 +52,13 @@
           },
           "isApp": {
             "description": "True if this is an app.",
-            "type": "boolean"
+            "type": "boolean",
+            "nodoc": true
+          },
+          "type": {
+            "description": "The type of this extension, app, or theme.",
+            "type": "string",
+            "enum": ["extension", "hosted_app", "packaged_app", "legacy_packaged_app", "theme"]
           },
           "appLaunchUrl": {
             "description": "The launch url (only present for apps).",
@@ -60,17 +66,17 @@
             "optional": true
           },
           "homepageUrl": {
-            "description": "The URL of the homepage of this extension or app.",
+            "description": "The URL of the homepage of this extension, app, or theme.",
             "type": "string",
             "optional": true
           },
           "updateUrl": {
-            "description": "The update URL of this extension or app.",
+            "description": "The update URL of this extension, app, or theme.",
             "type": "string",
             "optional": true
           },
           "offlineEnabled": {
-            "description": "Whether the extension or app declares that it supports offline.",
+            "description": "Whether the extension, app, or theme declares that it supports offline.",
             "type": "boolean"
           },
           "optionsUrl": {
@@ -130,7 +136,7 @@
       },
       {
         "name": "get",
-        "description": "Returns information about the installed extension or app that has the given ID.",
+        "description": "Returns information about the installed extension, app, or theme that has the given ID.",
         "parameters": [
           {
             "name": "id",
@@ -279,7 +285,7 @@
           {
            "name": "id",
            "type": "string",
-           "description": "The id of the extension or app that was uninstalled."
+           "description": "The id of the extension, app, or theme that was uninstalled."
           }
         ]
       },

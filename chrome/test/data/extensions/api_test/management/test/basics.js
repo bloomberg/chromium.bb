@@ -47,27 +47,28 @@ var tests = [
     chrome.management.getAll(callback(function(items) {
       chrome.test.assertEq(10, items.length);
 
-      checkItemInList(items, "Extension Management API Test", true, false);
-      checkItemInList(items, "description", true, false,
+      checkItemInList(items, "Extension Management API Test", true,
+                      "extension");
+      checkItemInList(items, "description", true, "extension",
           { "description": "a short description" });
-      checkItemInList(items, "enabled_app", true, true,
+      checkItemInList(items, "enabled_app", true, "hosted_app",
           { "appLaunchUrl": "http://www.google.com/",
             "offlineEnabled": true,
             "updateUrl": "http://example.com/update.xml" });
-      checkItemInList(items, "disabled_app", false, true,
+      checkItemInList(items, "disabled_app", false, "hosted_app",
           { "disabledReason": "unknown" });
-      checkItemInList(items, "enabled_extension", true, false,
+      checkItemInList(items, "enabled_extension", true, "extension",
           { "homepageUrl": "http://example.com/" });
-      checkItemInList(items, "disabled_extension", false, false,
+      checkItemInList(items, "disabled_extension", false, "extension",
           { "optionsUrl": "chrome-extension://<ID>/pages/options.html",
             "disabledReason": "unknown" });
-      checkItemInList(items, "description", true, false,
+      checkItemInList(items, "description", true, "extension",
           { "installType": "development" });
-      checkItemInList(items, "internal_extension", true, false,
+      checkItemInList(items, "internal_extension", true, "extension",
           { "installType": "normal" });
-      checkItemInList(items, "external_extension", true, false,
+      checkItemInList(items, "external_extension", true, "extension",
           { "installType": "sideload" });
-      checkItemInList(items, "admin_extension", true, false,
+      checkItemInList(items, "admin_extension", true, "extension",
           { "installType": "admin" });
 
       // Check that we got the icons correctly
@@ -80,7 +81,7 @@ var tests = [
       // Check that we can retrieve this extension by ID.
       chrome.management.get(extension.id, callback(function(same_extension) {
         checkItem(same_extension, extension.name, extension.enabled,
-                  extension.isApp, extension.additional_properties);
+                  extension.type, extension.additional_properties);
       }));
 
       // Check that we have a permission defined.
@@ -134,10 +135,10 @@ var tests = [
 
     chrome.management.getAll(callback(function(items) {
       var enabled_app = getItemNamed(items, "enabled_app");
-      checkItem(enabled_app, "enabled_app", true, true);
+      checkItem(enabled_app, "enabled_app", true, "hosted_app");
       chrome.management.setEnabled(enabled_app.id, false, callback(function() {
         chrome.management.get(enabled_app.id, callback(function(now_disabled) {
-          checkItem(now_disabled, "enabled_app", false, true);
+          checkItem(now_disabled, "enabled_app", false, "hosted_app");
         }));
       }));
     }));
@@ -150,10 +151,10 @@ var tests = [
     });
     chrome.management.getAll(callback(function(items) {
       var disabled = getItemNamed(items, "disabled_extension");
-      checkItem(disabled, "disabled_extension", false, false);
+      checkItem(disabled, "disabled_extension", false, "extension");
       chrome.management.setEnabled(disabled.id, true, callback(function() {
         chrome.management.get(disabled.id, callback(function(now_enabled) {
-          checkItem(now_enabled, "disabled_extension", true, false);
+          checkItem(now_enabled, "disabled_extension", true, "extension");
         }));
       }));
     }));

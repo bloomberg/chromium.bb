@@ -301,7 +301,7 @@ The one method that doesn't require the "management" permission is
                       <var><span>id</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Returns information about the installed extension or app that has the given ID.</p>
+                <p>Returns information about the installed extension, app, or theme that has the given ID.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1229,7 +1229,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>The id of the extension or app that was uninstalled.</dd>
+          <dd>The id of the extension, app, or theme that was uninstalled.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1269,7 +1269,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>Information about an icon belonging to an extension or app.</dd>
+          <dd>Information about an icon belonging to an extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1344,7 +1344,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>Information about an installed extension or app.</dd>
+          <dd>Information about an installed extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1388,7 +1388,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>The name of this extension or app.</dd>
+          <dd>The name of this extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1411,7 +1411,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>The description of this extension or app.</dd>
+          <dd>The description of this extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1434,7 +1434,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>The <a href="manifest.html#version">version</a> of this extension or app.</dd>
+          <dd>The <a href="manifest.html#version">version</a> of this extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1515,21 +1515,23 @@ The one method that doesn't require the "management" permission is
               </div><div>
                 <div>
           <dt>
-            <var>isApp</var>
+            <var>type</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>boolean</span>
+                        <span>string</span>
+                        <span>["extension", "hosted_app", "packaged_app", "legacy_packaged_app", "theme"]</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>True if this is an app.</dd>
+          <dd>The type of this extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1577,7 +1579,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>The URL of the homepage of this extension or app.</dd>
+          <dd>The URL of the homepage of this extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1601,7 +1603,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>The update URL of this extension or app.</dd>
+          <dd>The update URL of this extension, app, or theme.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1624,7 +1626,7 @@ The one method that doesn't require the "management" permission is
                 </div>
               </em>
           </dt>
-          <dd>Whether the extension or app declares that it supports offline.</dd>
+          <dd>Whether the extension, app, or theme declares that it supports offline.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
