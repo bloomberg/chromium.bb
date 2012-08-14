@@ -274,8 +274,16 @@ eventdemo_create(struct display *d)
 		return NULL;
 
 	e->window = window_create(d);
-	e->widget = frame_create(e->window, e);
-	window_set_title(e->window, title);
+
+	if (noborder) {
+		/* Demonstrate how to create a borderless window.
+		 * Move windows with META + left mouse button.
+		 */
+		e->widget = window_add_widget(e->window, e);
+	} else {
+		e->widget = frame_create(e->window, e);
+		window_set_title(e->window, title);
+	}
 	e->display = d;
 
 	/* The eventdemo window draws a red rectangle as a demonstration
@@ -308,12 +316,6 @@ eventdemo_create(struct display *d)
 
 	/* Set the callback motion handler for the window */
 	widget_set_motion_handler(e->widget, motion_handler);
-
-	/* Demonstrate how to create a borderless window.
-	   Move windows with META + left mouse button.
-	 */
-	if (noborder) {
-	}
 
 	/* Initial drawing of the window */
 	window_schedule_resize(e->window, width, height);
