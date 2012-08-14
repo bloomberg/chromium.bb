@@ -13,6 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -241,6 +242,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   // When waiting for visible page action count to change, we wait until it
   // reaches this value.
   int target_visible_page_action_count_;
+
+  // Make the current channel "dev" for the duration of the test.
+  extensions::Feature::ScopedCurrentChannel current_channel_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSERTEST_H_
