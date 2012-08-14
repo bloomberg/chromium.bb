@@ -834,6 +834,7 @@ class Segment {
   //  -1 = error: an out-of-order frame was detected
   //  0 = do not create a new cluster, and write frame to the existing cluster
   //  1 = create a new cluster, and write frame to that new cluster
+  //  2 = create a new cluster, and re-run test
   int TestFrame(uint64 track_num, uint64 timestamp_ns, bool key) const;
 
   // Create a new cluster, using the earlier of the first enqueued

@@ -387,6 +387,8 @@ uint64 WriteMetadataBlock(IMkvWriter* writer,
   // We use a single byte for the track number of the block, which
   // means the block header is exactly 4 bytes.
 
+  // TODO(matthewjheaney): use EbmlMasterElementSize and WriteEbmlMasterElement
+
   const uint64 block_payload_size = 4 + length;
   const int32 block_size = GetCodedUIntSize(block_payload_size);
   const uint64 block_elem_size = 1 + block_size + block_payload_size;
@@ -437,7 +439,7 @@ uint64 WriteMetadataBlock(IMkvWriter* writer,
 
   // Write Duration element
 
-  if (WriteID(writer, kMkvDuration))  // 1-byte ID size
+  if (WriteID(writer, kMkvBlockDuration))  // 1-byte ID size
     return 0;
 
   if (WriteUInt(writer, duration_payload_size))

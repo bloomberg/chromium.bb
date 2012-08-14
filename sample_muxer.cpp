@@ -9,6 +9,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <list>
+#include <string>
 
 // libwebm parser includes
 #include "mkvreader.hpp"
@@ -18,6 +20,10 @@
 #include "mkvmuxer.hpp"
 #include "mkvwriter.hpp"
 #include "mkvmuxerutil.hpp"
+
+#include "sample_muxer_metadata.h"
+
+using mkvmuxer::uint64;
 
 namespace {
 
@@ -47,13 +53,87 @@ void Usage() {
   printf("\n");
   printf("Cues options:\n");
   printf("  -output_cues_block_number <int> >0 outputs cue block number\n");
+  printf("\n");
+  printf("Metadata options:\n");
+  printf("  -webvtt-subtitles <vttfile>    "
+         "add WebVTT subtitles as metadata track\n");
+  printf("  -webvtt-captions <vttfile>     "
+         "add WebVTT captions as metadata track\n");
+  printf("  -webvtt-descriptions <vttfile> "
+         "add WebVTT descriptions as metadata track\n");
+  printf("  -webvtt-metadata <vttfile>     "
+         "add WebVTT subtitles as metadata track\n");
 }
 
-} //end namespace
+struct MetadataFile {
+  const char* name;
+  SampleMuxerMetadata::Kind kind;
+};
+
+typedef std::list<MetadataFile> metadata_files_t;
+
+// Cache the WebVTT filenames specified as command-line args.
+bool LoadMetadataFiles(
+    const metadata_files_t& files,
+    SampleMuxerMetadata* metadata) {
+  typedef metadata_files_t::const_iterator iter_t;
+
+  iter_t i = files.begin();
+  const iter_t j = files.end();
+
+  while (i != j) {
+    const metadata_files_t::value_type& v = *i++;
+
+    if (!metadata->Load(v.name, v.kind))
+      return false;
+  }
+
+  return true;
+}
+
+int ParseArgWebVTT(
+    char* argv[],
+    int* argv_index,
+    int argc_check,
+    metadata_files_t* metadata_files) {
+  int& i = *argv_index;
+
+  enum { kCount = 4 };
+  struct Arg { const char* name; SampleMuxerMetadata::Kind kind; };
+  const Arg args[kCount] = {
+    { "-webvtt-subtitles", SampleMuxerMetadata::kSubtitles },
+    { "-webvtt-captions", SampleMuxerMetadata::kCaptions },
+    { "-webvtt-descriptions", SampleMuxerMetadata::kDescriptions },
+    { "-webvtt-metadata", SampleMuxerMetadata::kMetadata }
+  };
+
+  for (int idx = 0; idx < kCount; ++idx) {
+    const Arg& arg = args[idx];
+
+    if (strcmp(arg.name, argv[i]) != 0)  // no match
+      continue;
+
+    ++i;  // consume arg name here
+
+    if (i > argc_check) {
+      printf("missing value for %s\n", arg.name);
+      return -1;  // error
+    }
+
+    MetadataFile f;
+    f.name = argv[i];  // arg value is consumed via caller's loop idx
+    f.kind = arg.kind;
+
+    metadata_files->push_back(f);
+    return 1;  // successfully parsed WebVTT arg
+  }
+
+  return 0;  // not a WebVTT arg
+}
+
+} // end namespace
 
 int main(int argc, char* argv[]) {
-  using mkvmuxer::uint64;
-
   char* input = NULL;
   char* output = NULL;
 
@@ -77,6 +157,8 @@ int main(int argc, char* argv[]) {
   uint64 display_width = 0;
   uint64 display_height = 0;
   uint64 stereo_mode = 0;
+
+  metadata_files_t metadata_files;
 
   const int argc_check = argc - 1;
   for (int i = 1; i < argc; ++i) {
@@ -130,6 +212,9 @@ int main(int argc, char* argv[]) {
                i < argc_check) {
       output_cues_block_number =
           strtol(argv[++i], &end, 10) == 0 ? false : true;
+    } else if (int e = ParseArgWebVTT(argv, &i, argc_check, &metadata_files)) {
+      if (e < 0)
+        return EXIT_FAILURE;
     }
   }
 
@@ -204,11 +289,12 @@ int main(int argc, char* argv[]) {
   info->set_writing_app("sample_muxer");
 
   // Set Tracks element attributes
-  enum { kVideoTrack = 1, kAudioTrack = 2 };
   const mkvparser::Tracks* const parser_tracks = parser_segment->GetTracks();
   unsigned long i = 0;
   uint64 vid_track = 0; // no track added
   uint64 aud_track = 0; // no track added
+
+  using mkvparser::Track;
 
   while (i != parser_tracks->GetTracksCount()) {
     int track_num = i++;
@@ -226,7 +312,7 @@ int main(int argc, char* argv[]) {
 
     const long long track_type = parser_track->GetType();
 
-    if (track_type == kVideoTrack && output_video) {
+    if (track_type == Track::kVideo && output_video) {
       // Get the video track from the parser
       const mkvparser::VideoTrack* const pVideoTrack =
           static_cast<const mkvparser::VideoTrack*>(parser_track);
@@ -264,7 +350,7 @@ int main(int argc, char* argv[]) {
       if (rate > 0.0) {
         video->set_frame_rate(rate);
       }
-    } else if (track_type == kAudioTrack && output_audio) {
+    } else if (track_type == Track::kAudio && output_audio) {
       // Get the audio track from the parser
       const mkvparser::AudioTrack* const pAudioTrack =
           static_cast<const mkvparser::AudioTrack*>(parser_track);
@@ -307,6 +393,17 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  // We have created all the video and audio tracks.  If any WebVTT
+  // files were specified as command-line args, then parse them and
+  // add a track to the output file corresponding to each metadata
+  // input file.
+
+  SampleMuxerMetadata metadata;
+  metadata.Init(&muxer_segment);
+
+  if (!LoadMetadataFiles(metadata_files, &metadata))
+    return EXIT_FAILURE;
+
   // Set Cues element attributes
   mkvmuxer::Cues* const cues = muxer_segment.GetCues();
   cues->set_output_block_number(output_cues_block_number);
@@ -339,11 +436,16 @@ int main(int argc, char* argv[]) {
           parser_tracks->GetTrackByNumber(
               static_cast<unsigned long>(trackNum));
       const long long track_type = parser_track->GetType();
+      const long long time_ns = block->GetTime(cluster);
 
-      if ((track_type == kAudioTrack && output_audio) ||
-          (track_type == kVideoTrack && output_video)) {
+      // Flush any metadata frames to the output file, before we write
+      // the current block.
+      if (!metadata.Write(time_ns))
+        return EXIT_FAILURE;
+
+      if ((track_type == Track::kAudio && output_audio) ||
+          (track_type == Track::kVideo && output_video)) {
         const int frame_count = block->GetFrameCount();
-        const long long time_ns = block->GetTime(cluster);
         const bool is_key = block->IsKey();
 
         for (int i = 0; i < frame_count; ++i) {
@@ -361,7 +463,7 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
 
           uint64 track_num = vid_track;
-          if (track_type == kAudioTrack)
+          if (track_type == Track::kAudio)
             track_num = aud_track;
 
           if (!muxer_segment.AddFrame(data,
@@ -387,6 +489,11 @@ int main(int argc, char* argv[]) {
     cluster = parser_segment->GetNext(cluster);
   }
 
+  // We have exhausted all video and audio frames in the input file.
+  // Flush any remaining metadata frames to the output file.
+  if (!metadata.Write(-1))
+    return EXIT_FAILURE;
+
   muxer_segment.Finalize();
 
   delete [] data;
@@ -397,6 +504,3 @@ int main(int argc, char* argv[]) {
 
   return EXIT_SUCCESS;
 }
-
-
-

@@ -1965,27 +1965,15 @@ int Segment::TestFrame(uint64 track_number,
   if (frame_timecode < last_cluster_timecode)  // should never happen
     return -1;  // error
 
-  // Handle the case when the frame we are testing has a timestamp
-  // equal to the cluster's timestamp.  This can happen if some
-  // non-video keyframe (that is, a WebVTT cue or audio block) first
-  // creates the initial cluster (at t=0), and then we test a video
-  // keyframe.  We don't want to create a new cluster just yet (see
-  // the predicate below, which specifies the creation of a new
-  // cluster when a video keyframe is detected); instead we want to
-  // force the frame to be written to the existing cluster.
-
-  if (frame_timecode == last_cluster_timecode)
-    return 0;
-
   // If the frame has a timestamp significantly larger than the last
   // cluster (in Matroska, cluster-relative timestamps are serialized
   // using a 16-bit signed integer), then we cannot write this frame
-  // that cluster, and so we must create a new cluster.
+  // to that cluster, and so we must create a new cluster.
 
   const int64 delta_timecode = frame_timecode - last_cluster_timecode;
 
   if (delta_timecode > std::numeric_limits<int16>::max())
-    return 1;
+    return 2;
 
   // We decide to create a new cluster when we have a video keyframe.
   // This will flush queued (audio) frames, and write the keyframe
@@ -2095,24 +2083,31 @@ bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
 bool Segment::DoNewClusterProcessing(uint64 track_number,
                                      uint64 frame_timestamp_ns,
                                      bool is_key) {
-  // Based on the characteristics of the current frame and current
-  // cluster, decide whether to create a new cluster.
-  const int result = TestFrame(track_number, frame_timestamp_ns, is_key);
-  if (result < 0)  // error
-    return false;
+  for (;;) {
+    // Based on the characteristics of the current frame and current
+    // cluster, decide whether to create a new cluster.
+    const int result = TestFrame(track_number, frame_timestamp_ns, is_key);
+    if (result < 0)  // error
+      return false;
 
-  // A non-zero result means create a new cluster.
-  if (result > 0 && !MakeNewCluster(frame_timestamp_ns))
-    return false;
+    // A non-zero result means create a new cluster.
+    if (result > 0 && !MakeNewCluster(frame_timestamp_ns))
+      return false;
 
-  // Write queued (audio) frames.
-  const int frame_count = WriteFramesAll();
-  if (frame_count < 0)  // error
-    return false;
+    // Write queued (audio) frames.
+    const int frame_count = WriteFramesAll();
+    if (frame_count < 0)  // error
+      return false;
 
-  // Write the current frame to the current cluster (if TestFrame
-  // returns 0) or to a newly created cluster (TestFrame returns 1).
-  return true;
+    // Write the current frame to the current cluster (if TestFrame
+    // returns 0) or to a newly created cluster (TestFrame returns 1).
+    if (result <= 1)
+      return true;
+
+    // TestFrame returned 2, which means there was a large time
+    // difference between the cluster and the frame itself.  Do the
+    // test again, comparing the frame to the new cluster.
+  }
 }
 
 bool Segment::CheckHeaderInfo() {
