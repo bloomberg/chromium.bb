@@ -150,7 +150,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
     ASSERT_FALSE(result->HasError());
   }
 
-  // This would be triggered by extension uninstall via an ExtensionDataDeleter.
+  // This would be triggered by extension uninstall via a DataDeleter.
   frontend_->DeleteStorageSoon(id);
   MessageLoop::current()->RunAllPending();
 

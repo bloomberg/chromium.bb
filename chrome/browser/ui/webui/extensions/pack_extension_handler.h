@@ -16,7 +16,7 @@
 // Clear browser data handler page UI handler.
 class PackExtensionHandler : public content::WebUIMessageHandler,
                              public ui::SelectFileDialog::Listener,
-                             public PackExtensionJob::Client {
+                             public extensions::PackExtensionJob::Client {
  public:
   PackExtensionHandler();
   virtual ~PackExtensionHandler();
@@ -55,7 +55,7 @@ class PackExtensionHandler : public content::WebUIMessageHandler,
   void ShowAlert(const std::string& message);
 
   // Used to package the extension.
-  scoped_refptr<PackExtensionJob> pack_job_;
+  scoped_refptr<extensions::PackExtensionJob> pack_job_;
 
   // Returned by the SelectFileDialog machinery. Used to initiate the selection
   // dialog.

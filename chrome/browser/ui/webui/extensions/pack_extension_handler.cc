@@ -69,8 +69,8 @@ void PackExtensionHandler::OnPackSuccess(const FilePath& crx_file,
                                          const FilePath& pem_file) {
   ListValue arguments;
   arguments.Append(Value::CreateStringValue(
-      UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file,
-                                                           pem_file))));
+      UTF16ToUTF8(extensions::PackExtensionJob::StandardSuccessMessage(
+          crx_file, pem_file))));
   web_ui()->CallJavascriptFunction(
       "PackExtensionOverlay.showSuccessMessage", arguments);
 }
@@ -141,7 +141,8 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
     return;
   }
 
-  pack_job_ = new PackExtensionJob(this, root_directory, key_file, run_flags);
+  pack_job_ = new extensions::PackExtensionJob(
+      this, root_directory, key_file, run_flags);
   pack_job_->Start();
 }
 

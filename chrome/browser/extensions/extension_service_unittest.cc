@@ -976,7 +976,7 @@ class ExtensionServiceTest
 
 // Receives notifications from a PackExtensionJob, indicating either that
 // packing succeeded or that there was some error.
-class PackExtensionTestClient : public PackExtensionJob::Client {
+class PackExtensionTestClient : public extensions::PackExtensionJob::Client {
  public:
   PackExtensionTestClient(const FilePath& expected_crx_path,
                           const FilePath& expected_private_key_path);
@@ -1747,9 +1747,9 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
         temp_dir.path().Append(expected_private_key_names[i]);
     PackExtensionTestClient pack_client(expected_crx_path,
                                         expected_private_key_path);
-    scoped_refptr<PackExtensionJob> packer(
-        new PackExtensionJob(&pack_client, output_dir, FilePath(),
-                             ExtensionCreator::kOverwriteCRX));
+    scoped_refptr<extensions::PackExtensionJob> packer(
+        new extensions::PackExtensionJob(&pack_client, output_dir, FilePath(),
+                                         ExtensionCreator::kOverwriteCRX));
     packer->Start();
 
     // The packer will post a notification task to the current thread's message

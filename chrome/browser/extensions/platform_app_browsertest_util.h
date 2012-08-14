@@ -8,9 +8,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-namespace extensions {
-class Extension;
-}
 
 namespace content {
 class WebContents;
@@ -19,6 +16,9 @@ class WebContents;
 class CommandLine;
 class ShellWindow;
 
+namespace extensions {
+class Extension;
+
 class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
@@ -26,7 +26,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
  protected:
   // Runs the app named |name| out of the platform_apps subdirectory. Waits
   // until it is launched.
-  const extensions::Extension* LoadAndLaunchPlatformApp(const char* name);
+  const Extension* LoadAndLaunchPlatformApp(const char* name);
 
   // Gets the WebContents associated with the first shell window that is found
   // (most tests only deal with one platform app window, so this is good
@@ -35,13 +35,12 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
   // Runs chrome.windows.getAll for the given extension and returns the number
   // of windows that the function returns.
-  size_t RunGetWindowsFunctionForExtension(
-      const extensions::Extension* extension);
+  size_t RunGetWindowsFunctionForExtension(const Extension* extension);
 
   // Runs chrome.windows.get(|window_id|) for the the given extension and
   // returns whether or not a window was found.
-  bool RunGetWindowFunctionForExtension(
-      int window_id, const extensions::Extension* extension);
+  bool RunGetWindowFunctionForExtension(int window_id,
+                                        const Extension* extension);
 
   // Returns the number of shell windows.
   size_t GetShellWindowCount();
@@ -55,10 +54,12 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   void SetCommandLineArg(const std::string& test_file);
 
   // Creates an empty shell window for |extension|.
-  ShellWindow* CreateShellWindow(const extensions::Extension* extension);
+  ShellWindow* CreateShellWindow(const Extension* extension);
 
   // Closes |window| and waits until it's gone.
   void CloseShellWindow(ShellWindow* window);
 };
+
+}
 
 #endif  // CHROME_BROWSER_EXTENSIONS_PLATFORM_APP_BROWSERTEST_UTIL_H_

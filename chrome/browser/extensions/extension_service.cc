@@ -43,8 +43,8 @@
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/data_deleter.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
-#include "chrome/browser/extensions/extension_data_deleter.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
@@ -757,10 +757,10 @@ bool ExtensionService::UninstallExtension(
   if (extension->is_hosted_app() &&
       !profile_->GetExtensionSpecialStoragePolicy()->
           IsStorageProtected(launch_web_url_origin)) {
-    ExtensionDataDeleter::StartDeleting(
+    extensions::DataDeleter::StartDeleting(
         profile_, extension_id, launch_web_url_origin, is_storage_isolated);
   }
-  ExtensionDataDeleter::StartDeleting(
+  extensions::DataDeleter::StartDeleting(
       profile_, extension_id, extension->url(), is_storage_isolated);
 
   UntrackTerminatedExtension(extension_id);

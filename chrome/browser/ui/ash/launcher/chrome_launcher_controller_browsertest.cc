@@ -38,7 +38,7 @@
 using extensions::Extension;
 using content::WebContents;
 
-typedef PlatformAppBrowserTest LauncherPlatformAppBrowserTest;
+typedef extensions::PlatformAppBrowserTest LauncherPlatformAppBrowserTest;
 
 class LauncherAppBrowserTest : public ExtensionBrowserTest {
  protected:

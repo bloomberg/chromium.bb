@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_data_deleter.h"
+#include "chrome/browser/extensions/data_deleter.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -31,22 +31,21 @@ using content::DOMStorageContext;
 using content::IndexedDBContext;
 using content::ResourceContext;
 
+namespace extensions {
+
 // static
-void ExtensionDataDeleter::StartDeleting(
-    Profile* profile,
-    const std::string& extension_id,
-    const GURL& storage_origin,
-    bool is_storage_isolated) {
+void DataDeleter::StartDeleting(Profile* profile,
+                                const std::string& extension_id,
+                                const GURL& storage_origin,
+                                bool is_storage_isolated) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
-  scoped_refptr<ExtensionDataDeleter> deleter =
-      new ExtensionDataDeleter(
-          profile, extension_id, storage_origin, is_storage_isolated);
+  scoped_refptr<DataDeleter> deleter = new DataDeleter(
+      profile, extension_id, storage_origin, is_storage_isolated);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &ExtensionDataDeleter::DeleteCookiesOnIOThread, deleter));
+      base::Bind(&DataDeleter::DeleteCookiesOnIOThread, deleter));
 
   BrowserContext::GetDefaultDOMStorageContext(profile)->DeleteOrigin(
       storage_origin);
@@ -54,30 +53,29 @@ void ExtensionDataDeleter::StartDeleting(
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,
       base::Bind(
-          &ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread, deleter,
+          &DataDeleter::DeleteIndexedDBOnWebkitThread,
+          deleter,
           make_scoped_refptr(BrowserContext::GetIndexedDBContext(profile))));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &ExtensionDataDeleter::DeleteDatabaseOnFileThread, deleter));
+      base::Bind(&DataDeleter::DeleteDatabaseOnFileThread, deleter));
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &ExtensionDataDeleter::DeleteFileSystemOnFileThread, deleter));
+      base::Bind(&DataDeleter::DeleteFileSystemOnFileThread, deleter));
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &ExtensionDataDeleter::DeleteAppcachesOnIOThread, deleter,
-          profile->GetResourceContext()));
+      base::Bind(&DataDeleter::DeleteAppcachesOnIOThread,
+                 deleter,
+                 profile->GetResourceContext()));
 
   profile->GetExtensionService()->settings_frontend()->
       DeleteStorageSoon(extension_id);
 }
 
-ExtensionDataDeleter::ExtensionDataDeleter(
+DataDeleter::DataDeleter(
     Profile* profile,
     const std::string& extension_id,
     const GURL& storage_origin,
@@ -102,10 +100,10 @@ ExtensionDataDeleter::ExtensionDataDeleter(
       webkit_database::DatabaseUtil::GetOriginIdentifier(storage_origin_);
 }
 
-ExtensionDataDeleter::~ExtensionDataDeleter() {
+DataDeleter::~DataDeleter() {
 }
 
-void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
+void DataDeleter::DeleteCookiesOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieMonster* cookie_monster =
       extension_request_context_->GetURLRequestContext()->cookie_store()->
@@ -115,20 +113,20 @@ void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
         storage_origin_, net::CookieMonster::DeleteCallback());
 }
 
-void ExtensionDataDeleter::DeleteDatabaseOnFileThread() {
+void DataDeleter::DeleteDatabaseOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int rv = database_tracker_->DeleteDataForOrigin(
       origin_id_, net::CompletionCallback());
   DCHECK(rv == net::OK || rv == net::ERR_IO_PENDING);
 }
 
-void ExtensionDataDeleter::DeleteIndexedDBOnWebkitThread(
+void DataDeleter::DeleteIndexedDBOnWebkitThread(
     scoped_refptr<IndexedDBContext> indexed_db_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   indexed_db_context->DeleteForOrigin(storage_origin_);
 }
 
-void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {
+void DataDeleter::DeleteFileSystemOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   file_system_context_->DeleteDataForOriginOnFileThread(storage_origin_);
 
@@ -139,8 +137,10 @@ void ExtensionDataDeleter::DeleteFileSystemOnFileThread() {
     file_util::Delete(isolated_app_path_, true);
 }
 
-void ExtensionDataDeleter::DeleteAppcachesOnIOThread(ResourceContext* context) {
+void DataDeleter::DeleteAppcachesOnIOThread(ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ResourceContext::GetAppCacheService(context)->DeleteAppCachesForOrigin(
       storage_origin_, net::CompletionCallback());
 }
+
+}  // namespace extensions

@@ -72,7 +72,7 @@ ShellWindow* ShellWindow::Create(Profile* profile,
   // This object will delete itself when the window is closed.
   ShellWindow* window =
       ShellWindow::CreateImpl(profile, extension, url, params);
-  ShellWindowRegistry::Get(profile)->AddShellWindow(window);
+  extensions::ShellWindowRegistry::Get(profile)->AddShellWindow(window);
   return window;
 }
 
@@ -235,7 +235,7 @@ void ShellWindow::AddNewContents(WebContents* source,
 }
 
 void ShellWindow::OnNativeClose() {
-  ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
+  extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
   delete this;
 }
 

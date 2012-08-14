@@ -15,6 +15,8 @@
 
 using content::BrowserThread;
 
+namespace extensions {
+
 PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& root_directory,
                                    const FilePath& key_file,
@@ -51,7 +53,7 @@ void PackExtensionJob::Run() {
 
   // TODO(aa): Need to internationalize the errors that ExtensionCreator
   // returns. See bug 20734.
-  extensions::ExtensionCreator creator;
+  ExtensionCreator creator;
   if (creator.Run(root_directory_, crx_file_out_, key_file_, key_file_out_,
                   run_flags_)) {
     if (asynchronous_) {
@@ -82,7 +84,7 @@ void PackExtensionJob::ReportSuccessOnClientThread() {
 
 void PackExtensionJob::ReportFailureOnClientThread(
     const std::string& error,
-    extensions::ExtensionCreator::ErrorType error_type) {
+    ExtensionCreator::ErrorType error_type) {
   if (client_)
     client_->OnPackFailure(error, error_type);
 }
@@ -103,3 +105,5 @@ string16 PackExtensionJob::StandardSuccessMessage(const FilePath& crx_file,
         key_file_string);
   }
 }
+
+}  // namespace extensions

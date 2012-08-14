@@ -20,7 +20,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class ExtensionNavigationObserver;
 class NetPrefObserver;
 class PrefService;
 class PromoResourceService;

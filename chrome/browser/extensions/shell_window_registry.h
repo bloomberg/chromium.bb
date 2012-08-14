@@ -21,6 +21,8 @@ namespace content {
 class RenderViewHost;
 }
 
+namespace extensions {
+
 // The ShellWindowRegistry tracks the ShellWindows for all platform apps for a
 // particular profile.
 // This class is planned to evolve into tracking all PlatformApps for a
@@ -88,5 +90,7 @@ class ShellWindowRegistry : public ProfileKeyedService {
   ShellWindowSet shell_windows_;
   ObserverList<Observer> observers_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_SHELL_WINDOW_REGISTRY_H_

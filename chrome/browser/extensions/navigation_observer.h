@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_NAVIGATION_OBSERVER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_NAVIGATION_OBSERVER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_NAVIGATION_OBSERVER_H_
+#define CHROME_BROWSER_EXTENSIONS_NAVIGATION_OBSERVER_H_
 
 #include <set>
 #include <string>
@@ -18,15 +18,17 @@ namespace content {
 class NavigationController;
 }
 
-// The ExtensionNavigationObserver listens to navigation notifications. If the
-// user navigates into an extension that has been disabled due to a permission
+namespace extensions {
+
+// The NavigationObserver listens to navigation notifications. If the user
+// navigates into an extension that has been disabled due to a permission
 // increase, it prompts the user to accept the new permissions and re-enables
 // the extension.
-class ExtensionNavigationObserver : public ExtensionInstallPrompt::Delegate,
-                                    public content::NotificationObserver {
+class NavigationObserver : public ExtensionInstallPrompt::Delegate,
+                           public content::NotificationObserver {
  public:
-  explicit ExtensionNavigationObserver(Profile* profile);
-  virtual ~ExtensionNavigationObserver();
+  explicit NavigationObserver(Profile* profile);
+  virtual ~NavigationObserver();
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -59,6 +61,10 @@ class ExtensionNavigationObserver : public ExtensionInstallPrompt::Delegate,
 
   // The extension ids we've already prompted the user about.
   std::set<std::string> prompted_extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_NAVIGATION_OBSERVER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_NAVIGATION_OBSERVER_H_

@@ -26,7 +26,9 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class PlatformAppBrowserTest;
 class WindowController;
+
 struct DraggableRegion;
 }
 
@@ -89,7 +91,7 @@ class ShellWindow : public content::NotificationObserver,
 
  private:
   // PlatformAppBrowserTest needs access to web_contents()
-  friend class PlatformAppBrowserTest;
+  friend class extensions::PlatformAppBrowserTest;
 
   // Instantiates a platform-specific ShellWindow subclass (one implementation
   // per platform). Public users of ShellWindow should use ShellWindow::Create.

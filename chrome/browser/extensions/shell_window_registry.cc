@@ -9,6 +9,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+namespace extensions {
+
 ShellWindowRegistry::ShellWindowRegistry() {}
 
 ShellWindowRegistry::~ShellWindowRegistry() {}
@@ -103,3 +105,5 @@ bool ShellWindowRegistry::Factory::ServiceIsCreatedWithProfile() {
 bool ShellWindowRegistry::Factory::ServiceIsNULLWhileTesting() {
   return false;
 }
+
+}  // namespace extensions

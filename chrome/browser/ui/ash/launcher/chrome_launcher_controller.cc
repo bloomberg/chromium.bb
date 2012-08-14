@@ -76,7 +76,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   }
   instance_ = this;
   model_->AddObserver(this);
-  ShellWindowRegistry::Get(profile_)->AddObserver(this);
+  extensions::ShellWindowRegistry::Get(profile_)->AddObserver(this);
   app_tab_helper_.reset(new LauncherAppTabHelper(profile_));
   app_icon_loader_.reset(new LauncherAppIconLoader(profile_, this));
 
@@ -93,7 +93,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
-  ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
+  extensions::ShellWindowRegistry::Get(profile_)->RemoveObserver(this);
   model_->RemoveObserver(this);
   for (IDToItemMap::iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
@@ -197,7 +197,7 @@ void ChromeLauncherController::Unpin(ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
   DCHECK(!id_to_item_map_[id].controller);
 
-  if (ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
+  if (extensions::ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
       id_to_item_map_[id].app_id).size() > 0) {
     int index = model_->ItemIndexByID(id);
     ash::LauncherItem item = model_->items()[index];
@@ -706,9 +706,9 @@ void ChromeLauncherController::OnWindowRemovingFromRootWindow(
 
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
   platform_app_windows_.remove(window);
-  ShellWindowRegistry::ShellWindowSet remaining_windows =
-      ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
-      id_to_item_map_[id].app_id);
+  extensions::ShellWindowRegistry::ShellWindowSet remaining_windows =
+      extensions::ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
+          id_to_item_map_[id].app_id);
 
   // We can't count on getting called before or after the ShellWindowRegistry.
   if (remaining_windows.size() > 1 ||

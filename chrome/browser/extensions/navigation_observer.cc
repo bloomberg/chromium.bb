@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_navigation_observer.h"
+#include "chrome/browser/extensions/navigation_observer.h"
 
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -15,17 +15,17 @@
 using content::NavigationController;
 using content::NavigationEntry;
 
-ExtensionNavigationObserver::ExtensionNavigationObserver(Profile* profile)
-    : profile_(profile) {
+namespace extensions {
+
+NavigationObserver::NavigationObserver(Profile* profile) : profile_(profile) {
   RegisterForNotifications();
 }
 
-ExtensionNavigationObserver::~ExtensionNavigationObserver() {}
+NavigationObserver::~NavigationObserver() {}
 
-void ExtensionNavigationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void NavigationObserver::Observe(int type,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   if (type != content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
     NOTREACHED();
     return;
@@ -40,12 +40,12 @@ void ExtensionNavigationObserver::Observe(
   PromptToEnableExtensionIfNecessary(controller);
 }
 
-void ExtensionNavigationObserver::RegisterForNotifications() {
+void NavigationObserver::RegisterForNotifications() {
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
 }
 
-void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
+void NavigationObserver::PromptToEnableExtensionIfNecessary(
     NavigationController* nav_controller) {
   // Bail out if we're already running a prompt.
   if (!in_progress_prompt_extension_id_.empty())
@@ -56,8 +56,7 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
     return;
 
   ExtensionService* extension_service = profile_->GetExtensionService();
-  const extensions::Extension* extension =
-      extension_service->disabled_extensions()->
+  const Extension* extension = extension_service->disabled_extensions()->
       GetExtensionOrAppByURL(ExtensionURLInfo(nav_entry->GetURL()));
   if (!extension)
     return;
@@ -67,8 +66,7 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
     return;
   prompted_extensions_.insert(extension->id());
 
-  extensions::ExtensionPrefs* extension_prefs =
-      extension_service->extension_prefs();
+  ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
   if (extension_prefs->DidExtensionEscalatePermissions(extension->id())) {
     // Keep track of the extension id and nav controller we're prompting for.
     // These must be reset in InstallUIProceed and InstallUIAbort.
@@ -82,9 +80,9 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
   }
 }
 
-void ExtensionNavigationObserver::InstallUIProceed() {
+void NavigationObserver::InstallUIProceed() {
   ExtensionService* extension_service = profile_->GetExtensionService();
-  const extensions::Extension* extension = extension_service->GetExtensionById(
+  const Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
   NavigationController* nav_controller =
       in_progress_prompt_navigation_controller_;
@@ -101,9 +99,9 @@ void ExtensionNavigationObserver::InstallUIProceed() {
   nav_controller->Reload(true);
 }
 
-void ExtensionNavigationObserver::InstallUIAbort(bool user_initiated) {
+void NavigationObserver::InstallUIAbort(bool user_initiated) {
   ExtensionService* extension_service = profile_->GetExtensionService();
-  const extensions::Extension* extension = extension_service->GetExtensionById(
+  const Extension* extension = extension_service->GetExtensionById(
       in_progress_prompt_extension_id_, true);
 
   in_progress_prompt_extension_id_ = "";
@@ -116,3 +114,5 @@ void ExtensionNavigationObserver::InstallUIAbort(bool user_initiated) {
   ExtensionService::RecordPermissionMessagesHistogram(
       extension, histogram_name.c_str());
 }
+
+}  // namespace extensions

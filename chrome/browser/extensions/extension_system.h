@@ -18,7 +18,6 @@
 
 class ExtensionDevToolsManager;
 class ExtensionInfoMap;
-class ExtensionNavigationObserver;
 class ExtensionProcessManager;
 class ExtensionService;
 class Profile;
@@ -34,6 +33,7 @@ class ExtensionSystemSharedFactory;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class MessageService;
+class NavigationObserver;
 class RulesRegistryService;
 class StateStore;
 class UserScriptMaster;
@@ -213,7 +213,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<LazyBackgroundTaskQueue> lazy_background_task_queue_;
     scoped_ptr<MessageService> message_service_;
     scoped_ptr<EventRouter> extension_event_router_;
-    scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
+    scoped_ptr<NavigationObserver> navigation_observer_;
   };
 
   Profile* profile_;

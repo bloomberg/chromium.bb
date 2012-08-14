@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extensions_startup.h"
+#include "chrome/browser/extensions/startup_helper.h"
 
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -12,11 +12,12 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
 
-ExtensionsStartupUtil::ExtensionsStartupUtil() : pack_job_succeeded_(false) {}
+namespace extensions {
 
-void ExtensionsStartupUtil::OnPackSuccess(
-    const FilePath& crx_path,
-    const FilePath& output_private_key_path) {
+StartupHelper::StartupHelper() : pack_job_succeeded_(false) {}
+
+void StartupHelper::OnPackSuccess(const FilePath& crx_path,
+                                  const FilePath& output_private_key_path) {
   pack_job_succeeded_ = true;
   chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Success"),
       PackExtensionJob::StandardSuccessMessage(crx_path,
@@ -24,14 +25,13 @@ void ExtensionsStartupUtil::OnPackSuccess(
       chrome::MESSAGE_BOX_TYPE_INFORMATION);
 }
 
-void ExtensionsStartupUtil::OnPackFailure(
-    const std::string& error_message,
-    extensions::ExtensionCreator::ErrorType type) {
+void StartupHelper::OnPackFailure(const std::string& error_message,
+                                  ExtensionCreator::ErrorType type) {
   chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Error"),
       UTF8ToUTF16(error_message), chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
-bool ExtensionsStartupUtil::PackExtension(const CommandLine& cmd_line) {
+bool StartupHelper::PackExtension(const CommandLine& cmd_line) {
   if (!cmd_line.HasSwitch(switches::kPackExtension))
     return false;
 
@@ -45,15 +45,15 @@ bool ExtensionsStartupUtil::PackExtension(const CommandLine& cmd_line) {
   // Launch a job to perform the packing on the file thread.  Ignore warnings
   // from the packing process. (e.g. Overwrite any existing crx file.)
   pack_job_ = new PackExtensionJob(this, src_dir, private_key_path,
-                                   extensions::ExtensionCreator::kOverwriteCRX);
+                                   ExtensionCreator::kOverwriteCRX);
   pack_job_->set_asynchronous(false);
   pack_job_->Start();
 
   return pack_job_succeeded_;
 }
 
-bool ExtensionsStartupUtil::UninstallExtension(const CommandLine& cmd_line,
-                                               Profile* profile) {
+bool StartupHelper::UninstallExtension(const CommandLine& cmd_line,
+                                       Profile* profile) {
   DCHECK(profile);
 
   if (!cmd_line.HasSwitch(switches::kUninstallExtension))
@@ -69,7 +69,9 @@ bool ExtensionsStartupUtil::UninstallExtension(const CommandLine& cmd_line,
                                                     extension_id);
 }
 
-ExtensionsStartupUtil::~ExtensionsStartupUtil() {
+StartupHelper::~StartupHelper() {
   if (pack_job_.get())
     pack_job_->ClearClient();
 }
+
+}  // namespace extensions

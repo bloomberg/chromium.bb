@@ -30,8 +30,8 @@
 #include "webkit/glue/web_intent_service_data.h"
 
 using content::BrowserThread;
-using extensions::Extension;
-using extensions::ExtensionSystem;
+
+namespace extensions {
 
 namespace {
 
@@ -304,8 +304,6 @@ class PlatformAppBlobIntentLauncher
 };
 
 }  // namespace
-
-namespace extensions {
 
 void LaunchPlatformApp(Profile* profile,
                        const Extension* extension,

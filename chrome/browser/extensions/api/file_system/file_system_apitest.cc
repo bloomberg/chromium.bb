@@ -9,17 +9,17 @@
 
 using extensions::FileSystemChooseFileFunction;
 
-class FileSystemApiTest : public PlatformAppBrowserTest {
+class FileSystemApiTest : public extensions::PlatformAppBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
     test_root_folder_ = test_data_dir_.AppendASCII("api_test")
         .AppendASCII("file_system");
   }
 
   virtual void TearDown() OVERRIDE {
     FileSystemChooseFileFunction::StopSkippingPickerForTest();
-    PlatformAppBrowserTest::TearDown();
+    extensions::PlatformAppBrowserTest::TearDown();
   };
 
  protected:

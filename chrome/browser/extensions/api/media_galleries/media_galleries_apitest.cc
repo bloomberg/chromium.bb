@@ -20,10 +20,11 @@
 
 namespace {
 
-class ExperimentalMediaGalleriesAppBrowserTest : public PlatformAppBrowserTest {
+class ExperimentalMediaGalleriesAppBrowserTest
+    : public extensions::PlatformAppBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 };

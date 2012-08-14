@@ -17,7 +17,8 @@
 #include "content/public/browser/render_process_host.h"
 
 using content::WebContents;
-using extensions::Extension;
+
+namespace extensions {
 
 namespace {
 // Non-abstract RenderViewContextMenu class.
@@ -222,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
 
   // Load the extension
   ResultCatcher catcher;
-  const extensions::Extension* extension = LoadExtension(
+  const Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("platform_apps/launch_file"));
   ASSERT_TRUE(extension);
 
@@ -313,3 +314,5 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   observer.Wait();
   ASSERT_EQ(2, browser()->tab_count());
 }
+
+}  // namespace extensions

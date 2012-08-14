@@ -51,7 +51,7 @@ class ChromeLauncherController
       public ash::LauncherModelObserver,
       public ash::ShellObserver,
       public content::NotificationObserver,
-      public ShellWindowRegistry::Observer,
+      public extensions::ShellWindowRegistry::Observer,
       public aura::client::ActivationChangeObserver,
       public aura::WindowObserver {
  public:

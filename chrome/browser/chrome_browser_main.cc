@@ -37,7 +37,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extensions_startup.h"
+#include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/google/google_search_counter.h"
 #include "chrome/browser/google/google_util.h"
@@ -461,8 +461,8 @@ bool ProcessSingletonNotificationCallback(const CommandLine& command_line,
       return true;
     }
 
-    ExtensionsStartupUtil ext_startup_util;
-    ext_startup_util.UninstallExtension(command_line, profile);
+    extensions::StartupHelper extension_startup_helper;
+    extension_startup_helper.UninstallExtension(command_line, profile);
     return true;
   }
 
@@ -990,8 +990,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // If the command line specifies --pack-extension, attempt the pack extension
   // startup action and exit.
   if (parsed_command_line().HasSwitch(switches::kPackExtension)) {
-    ExtensionsStartupUtil extension_startup_util;
-    if (extension_startup_util.PackExtension(parsed_command_line()))
+    extensions::StartupHelper extension_startup_helper;
+    if (extension_startup_helper.PackExtension(parsed_command_line()))
       return content::RESULT_CODE_NORMAL_EXIT;
     return chrome::RESULT_CODE_PACK_EXTENSION_ERROR;
   }
@@ -1266,8 +1266,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // specifies --uninstall-extension, attempt the uninstall extension startup
   // action.
   if (parsed_command_line().HasSwitch(switches::kUninstallExtension)) {
-    ExtensionsStartupUtil ext_startup_util;
-    if (ext_startup_util.UninstallExtension(parsed_command_line(), profile_))
+    extensions::StartupHelper extension_startup_helper;
+    if (extension_startup_helper.UninstallExtension(
+            parsed_command_line(), profile_))
       return content::RESULT_CODE_NORMAL_EXIT;
     return chrome::RESULT_CODE_UNINSTALL_EXTENSION_ERROR;
   }

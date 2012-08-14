@@ -13,10 +13,10 @@
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
-class BrowserTagTest : public PlatformAppBrowserTest {
+class BrowserTagTest : public extensions::PlatformAppBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
-    PlatformAppBrowserTest::SetUpCommandLine(command_line);
+    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
 #if !defined(OS_MACOSX)
     CHECK(test_launcher_utils::OverrideGLImplementation(
           command_line, gfx::kGLImplementationOSMesaName)) <<

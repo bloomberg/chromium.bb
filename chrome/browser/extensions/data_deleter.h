@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DATA_DELETER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_DATA_DELETER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_DATA_DELETER_H_
+#define CHROME_BROWSER_EXTENSIONS_DATA_DELETER_H_
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -32,12 +32,13 @@ class DatabaseTracker;
 
 class Profile;
 
+namespace extensions {
+
 // A helper class that takes care of removing local storage, databases and
 // cookies for a given extension. This is used by
 // ExtensionService::ClearExtensionData() upon uninstalling an extension.
-class ExtensionDataDeleter
-  : public base::RefCountedThreadSafe<
-        ExtensionDataDeleter, content::BrowserThread::DeleteOnUIThread> {
+class DataDeleter : public base::RefCountedThreadSafe<
+    DataDeleter, content::BrowserThread::DeleteOnUIThread> {
  public:
   // Starts removing data. The extension should not be running when this is
   // called. Cookies are deleted on the current thread, local storage and
@@ -52,14 +53,13 @@ class ExtensionDataDeleter
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class base::DeleteHelper<ExtensionDataDeleter>;
+  friend class base::DeleteHelper<DataDeleter>;
 
-  ExtensionDataDeleter(
-      Profile* profile,
-      const std::string& extension_id,
-      const GURL& storage_origin,
-      bool is_storage_isolated);
-  ~ExtensionDataDeleter();
+  DataDeleter(Profile* profile,
+              const std::string& extension_id,
+              const GURL& storage_origin,
+              bool is_storage_isolated);
+  ~DataDeleter();
 
   // Deletes the cookies for the extension. May only be called on the io
   // thread.
@@ -103,7 +103,9 @@ class ExtensionDataDeleter
   // is its directory which we should delete.
   FilePath isolated_app_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionDataDeleter);
+  DISALLOW_COPY_AND_ASSIGN(DataDeleter);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DATA_DELETER_H_
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_DATA_DELETER_H_

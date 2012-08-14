@@ -277,7 +277,8 @@ void SelectFileDialogExtension::SelectFileImpl(
         g_browser_process->profile_manager()->GetLoadedProfiles();
     for (std::vector<Profile*>::const_iterator i(profiles.begin());
          i < profiles.end(); ++i) {
-      ShellWindowRegistry* registry = ShellWindowRegistry::Get(*i);
+      extensions::ShellWindowRegistry* registry =
+          extensions::ShellWindowRegistry::Get(*i);
       DCHECK(registry);
       ShellWindow* shell_window = registry->GetShellWindowForNativeWindow(
           owner_window);

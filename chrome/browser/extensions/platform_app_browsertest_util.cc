@@ -17,12 +17,12 @@
 #include "content/public/test/test_utils.h"
 
 using content::WebContents;
-using extensions::Extension;
 
 namespace utils = extension_function_test_utils;
 
-void PlatformAppBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
+namespace extensions {
+
+void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
 }
@@ -119,3 +119,5 @@ void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {
   window->Close();
   destroyed_observer.Wait();
 }
+
+}  // namespace extensions

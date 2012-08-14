@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_navigation_observer.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
@@ -27,6 +26,7 @@
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/message_service.h"
+#include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -99,8 +99,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   lazy_background_task_queue_.reset(new LazyBackgroundTaskQueue(profile_));
   message_service_.reset(new MessageService(lazy_background_task_queue_.get()));
   extension_event_router_.reset(new EventRouter(profile_));
-  extension_navigation_observer_.reset(
-      new ExtensionNavigationObserver(profile_));
+  navigation_observer_.reset(new NavigationObserver(profile_));
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
 
