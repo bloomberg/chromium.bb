@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
@@ -95,8 +96,26 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
 
+  int port = 0;
+// On android the port number isn't used.
+#if !defined(OS_ANDROID)
+  // See if the user specified a port on the command line (useful for
+  // automation). If not, use an ephemeral port by specifying 0.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
+    int temp_port;
+    std::string port_str =
+        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+    if (base::StringToInt(port_str, &temp_port) &&
+        temp_port > 0 && temp_port < 65535) {
+      port = temp_port;
+    } else {
+      DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
+    }
+  }
+#endif
   devtools_delegate_ = new ShellDevToolsDelegate(
-      browser_context_->GetRequestContext());
+      port, browser_context_->GetRequestContext());
 
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     Shell::CreateNewWindow(browser_context_.get(),

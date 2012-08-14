@@ -1140,9 +1140,6 @@ const char kReloadKilledTabs[]              = "reload-killed-tabs";
 // Uses custom front-end URL for the remote debugging.
 const char kRemoteDebuggingFrontend[]       = "remote-debugging-frontend";
 
-// Enables remote debug over HTTP on the specified port.
-const char kRemoteDebuggingPort[]           = "remote-debugging-port";
-
 // Enables print preview in the renderer. This flag is generated internally by
 // Chrome and does nothing when directly passed to the browser.
 const char kRendererPrintPreview[]          = "renderer-print-preview";

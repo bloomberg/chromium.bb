@@ -303,7 +303,6 @@ extern const char kRecordStats[];
 extern const char kRecordMode[];
 extern const char kReloadKilledTabs[];
 extern const char kRemoteDebuggingFrontend[];
-extern const char kRemoteDebuggingPort[];
 extern const char kRendererPrintPreview[];
 extern const char kResetVariationState[];
 extern const char kRestoreLastSession[];
