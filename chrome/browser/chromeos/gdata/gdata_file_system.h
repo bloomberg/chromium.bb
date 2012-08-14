@@ -224,20 +224,17 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // entry, a new empty file is uploaded, and when it finishes
   // DidUploadForCreateBrandNewFile does the final clean up.
   // |callback| must not be null.
-  void OnGetEntryInfoForCreateFile(
-      const FilePath& file_path,
-      bool is_exclusive,
-      const FileOperationCallback& callback,
-      GDataFileError result,
-      scoped_ptr<GDataEntryProto> entry_proto);
-  void DoUploadForCreateBrandNewFile(
-      const FilePath& remote_path,
-      FilePath* local_path,
-      const FileOperationCallback& callback);
-  void DidUploadForCreateBrandNewFile(
-      const FilePath& local_path,
-      const FileOperationCallback& callback,
-      GDataFileError result);
+  void OnGetEntryInfoForCreateFile(const FilePath& file_path,
+                                   bool is_exclusive,
+                                   const FileOperationCallback& callback,
+                                   GDataFileError result,
+                                   scoped_ptr<GDataEntryProto> entry_proto);
+  void DoUploadForCreateBrandNewFile(const FilePath& remote_path,
+                                     FilePath* local_path,
+                                     const FileOperationCallback& callback);
+  void DidUploadForCreateBrandNewFile(const FilePath& local_path,
+                                      const FileOperationCallback& callback,
+                                      GDataFileError result);
 
   // Invoked upon completion of GetEntryInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
@@ -425,12 +422,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // ready for modification.
   //
   // Must be called on UI thread.
-  void OnMarkDirtyInCacheCompleteForOpenFile(
-      const OpenFileCallback& callback,
-      GDataFileError error,
-      const std::string& resource_id,
-      const std::string& md5,
-      const FilePath& cache_file_path);
+  void OnMarkDirtyInCacheCompleteForOpenFile(const OpenFileCallback& callback,
+                                             GDataFileError error,
+                                             const std::string& resource_id,
+                                             const std::string& md5,
+                                             const FilePath& cache_file_path);
 
   // Callback for handling document copy attempt.
   // |callback| must not be null.
@@ -453,36 +449,31 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GURL& document_url);
 
   // Callback for handling account metadata fetch.
-  void OnGetAvailableSpace(
-      const GetAvailableSpaceCallback& callback,
-      GDataErrorCode status,
-      scoped_ptr<base::Value> data);
+  void OnGetAvailableSpace(const GetAvailableSpaceCallback& callback,
+                           GDataErrorCode status,
+                           scoped_ptr<base::Value> data);
 
   // Callback for handling Drive V2 about resource fetch.
-  void OnGetAboutResource(
-      const GetAvailableSpaceCallback& callback,
-      GDataErrorCode status,
-      scoped_ptr<base::Value> data);
+  void OnGetAboutResource(const GetAvailableSpaceCallback& callback,
+                          GDataErrorCode status,
+                          scoped_ptr<base::Value> data);
 
   // Callback for handling document remove attempt.
-  void OnRemovedDocument(
-      const FileOperationCallback& callback,
-      const FilePath& file_path,
-      GDataErrorCode status,
-      const GURL& document_url);
+  void OnRemovedDocument(const FileOperationCallback& callback,
+                         const FilePath& file_path,
+                         GDataErrorCode status,
+                         const GURL& document_url);
 
   // Callback for handling directory create requests.
-  void OnCreateDirectoryCompleted(
-      const CreateDirectoryParams& params,
-      GDataErrorCode status,
-      scoped_ptr<base::Value> created_entry);
+  void OnCreateDirectoryCompleted(const CreateDirectoryParams& params,
+                                  GDataErrorCode status,
+                                  scoped_ptr<base::Value> created_entry);
 
   // Callback for handling file downloading requests.
-  void OnFileDownloaded(
-    const GetFileFromCacheParams& params,
-    GDataErrorCode status,
-    const GURL& content_url,
-    const FilePath& downloaded_file_path);
+  void OnFileDownloaded(const GetFileFromCacheParams& params,
+                        GDataErrorCode status,
+                        const GURL& content_url,
+                        const FilePath& downloaded_file_path);
 
   // Unpins file if cache entry is pinned.
   void UnpinIfPinned(const std::string& resource_id,
@@ -492,12 +483,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
   // an error in case we don't have enough disk space.
-  void OnFileDownloadedAndSpaceChecked(
-      const GetFileFromCacheParams& params,
-      GDataErrorCode status,
-      const GURL& content_url,
-      const FilePath& downloaded_file_path,
-      bool* has_enough_space);
+  void OnFileDownloadedAndSpaceChecked(const GetFileFromCacheParams& params,
+                                       GDataErrorCode status,
+                                       const GURL& content_url,
+                                       const FilePath& downloaded_file_path,
+                                       bool* has_enough_space);
 
   // Callback for handling internal StoreToCache() calls after downloading
   // file content.
@@ -518,12 +508,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // another directory. Moves a file or directory at |file_path| to root on
   // the client side.
   // |callback| must not be null.
-  void MoveEntryToRootDirectoryLocally(
-      const FileMoveCallback& callback,
-      const FilePath& file_path,
-      const FilePath& dir_path,
-      GDataErrorCode status,
-      const GURL& document_url);
+  void MoveEntryToRootDirectoryLocally(const FileMoveCallback& callback,
+                                       const FilePath& file_path,
+                                       const FilePath& dir_path,
+                                       GDataErrorCode status,
+                                       const GURL& document_url);
 
   // Removes a file or directory under |file_path| on the client side and the
   // corresponding file from cache if it exists.  Returns PLATFORM_FILE_OK if
@@ -555,7 +544,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
   GDataFileError AddNewDirectory(const FilePath& directory_path,
-                                          base::Value* entry_value);
+                                 base::Value* entry_value);
 
   // Given non-existing |directory_path|, finds the first missing parent
   // directory of |directory_path|.
@@ -573,24 +562,21 @@ class GDataFileSystem : public GDataFileSystemInterface,
                        GDataEntry* entry);
 
   // Runs the callback and notifies that the initial load is finished.
-  void RunAndNotifyInitialLoadFinished(
-    const FindEntryCallback& callback,
-    GDataFileError error,
-    GDataEntry* entry);
+  void RunAndNotifyInitialLoadFinished(const FindEntryCallback& callback,
+                                       GDataFileError error,
+                                       GDataEntry* entry);
 
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.
-  void OnTransferCompleted(
-      const FileOperationCallback& callback,
-      GDataFileError error,
-      scoped_ptr<UploadFileInfo> upload_file_info);
+  void OnTransferCompleted(const FileOperationCallback& callback,
+                           GDataFileError error,
+                           scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Kicks off file upload once it receives |file_size| and |content_type|.
-  void StartFileUploadOnUIThread(
-      const StartFileUploadParams& params,
-      GDataFileError* error,
-      int64* file_size,
-      std::string* content_type);
+  void StartFileUploadOnUIThread(const StartFileUploadParams& params,
+                                 GDataFileError* error,
+                                 int64* file_size,
+                                 std::string* content_type);
 
   // Part of StartFileUploadOnUIThread(). Called after GetEntryInfoByPath()
   // is complete.
@@ -669,36 +655,33 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Called when GDataCache::GetFileOnUIThread() is completed for
   // UpdateFileByResourceId().
-  void OnGetFileCompleteForUpdateFile(
-      const FileOperationCallback& callback,
-      GDataFileError error,
-      const std::string& resource_id,
-      const std::string& md5,
-      const FilePath& cache_file_path);
+  void OnGetFileCompleteForUpdateFile(const FileOperationCallback& callback,
+                                      GDataFileError error,
+                                      const std::string& resource_id,
+                                      const std::string& md5,
+                                      const FilePath& cache_file_path);
 
   // Callback for getting the size of the cache file in the blocking pool.
-  void OnGetFileSizeCompleteForUpdateFile(
-      const FileOperationCallback& callback,
-      const std::string& resource_id,
-      const std::string& md5,
-      const FilePath& cache_file_path,
-      GDataFileError* error,
-      int64* file_size);
+  void OnGetFileSizeCompleteForUpdateFile(const FileOperationCallback& callback,
+                                          const std::string& resource_id,
+                                          const std::string& md5,
+                                          const FilePath& cache_file_path,
+                                          GDataFileError* error,
+                                          int64* file_size);
 
   // Callback for GDataRootDirectory::GetEntryByResourceIdAsync.
   void OnGetFileCompleteForUpdateFileByEntry(
-    const FileOperationCallback& callback,
-    const std::string& md5,
-    int64 file_size,
-    const FilePath& cache_file_path,
-    GDataEntry* entry);
+      const FileOperationCallback& callback,
+      const std::string& md5,
+      int64 file_size,
+      const FilePath& cache_file_path,
+      GDataEntry* entry);
 
   // Called when GDataUploader::UploadUpdatedFile() is completed for
   // UpdateFileByResourceId().
-  void OnUpdatedFileUploaded(
-    const FileOperationCallback& callback,
-    GDataFileError error,
-    scoped_ptr<UploadFileInfo> upload_file_info);
+  void OnUpdatedFileUploaded(const FileOperationCallback& callback,
+                             GDataFileError error,
+                             scoped_ptr<UploadFileInfo> upload_file_info);
 
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
@@ -740,29 +723,25 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetEntryInfoByEntryOnUIThread(
       const GetEntryInfoWithFilePathCallback& callback,
       GDataEntry* entry);
-  void UpdateFileByResourceIdOnUIThread(
-      const std::string& resource_id,
-      const FileOperationCallback& callback);
+  void UpdateFileByResourceIdOnUIThread(const std::string& resource_id,
+                                        const FileOperationCallback& callback);
   void UpdateFileByEntryOnUIThread(const FileOperationCallback& callback,
-      GDataEntry* entry);
-  void GetEntryInfoByPathAsyncOnUIThread(
-      const FilePath& file_path,
-      const GetEntryInfoCallback& callback);
+                                   GDataEntry* entry);
+  void GetEntryInfoByPathAsyncOnUIThread(const FilePath& file_path,
+                                         const GetEntryInfoCallback& callback);
   void GetEntryInfoByResourceIdOnUIThread(
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback);
   void ReadDirectoryByPathAsyncOnUIThread(
       const FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback);
-  void RequestDirectoryRefreshOnUIThread(
-      const FilePath& file_path);
+  void RequestDirectoryRefreshOnUIThread(const FilePath& file_path);
   void OnRequestDirectoryRefresh(GetDocumentsParams* params,
                                  GDataFileError error);
-  void RequestDirectoryRefreshByEntry(
-      const FilePath& directory_path,
-      const std::string& directory_resource_id,
-      const FileResourceIdMap& file_map,
-      GDataEntry* directory_entry);
+  void RequestDirectoryRefreshByEntry(const FilePath& directory_path,
+                                      const std::string& directory_resource_id,
+                                      const FileResourceIdMap& file_map,
+                                      GDataEntry* directory_entry);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,
                                  const FilePath& virtual_dir_path,
@@ -788,18 +767,18 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Part of RemoveOnUIThread(). Called after GetEntryInfoByPath() is
   // complete.
   void RemoveOnUIThreadAfterGetEntryInfo(
-    const FilePath& file_path,
-    bool is_recursive,
-    const FileOperationCallback& callback,
-    GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto);
+      const FilePath& file_path,
+      bool is_recursive,
+      const FileOperationCallback& callback,
+      GDataFileError error,
+      scoped_ptr<GDataEntryProto> entry_proto);
 
   // Part of RequestDirectoryRefreshOnUIThread(). Called after
   // GetEntryInfoByPath() is complete.
   void RequestDirectoryRefreshOnUIThreadAfterGetEntryInfo(
-    const FilePath& file_path,
-    GDataFileError error,
-    scoped_ptr<GDataEntryProto> entry_proto);
+      const FilePath& file_path,
+      GDataFileError error,
+      scoped_ptr<GDataEntryProto> entry_proto);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the
