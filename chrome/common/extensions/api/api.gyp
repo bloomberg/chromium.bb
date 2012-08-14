@@ -47,6 +47,7 @@
           'experimental_idltest.idl',
           'experimental_media_galleries.idl',
           'experimental_push_messaging.idl',
+          'experimental_system_info_cpu.idl',
           'experimental_usb.idl',
           'file_system.idl',
           'serial.idl',

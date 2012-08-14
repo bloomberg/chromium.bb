@@ -2760,6 +2760,7 @@
         'browser/extensions/api/runtime/runtime_apitest.cc',
         'browser/extensions/api/serial/serial_apitest.cc',
         'browser/extensions/api/socket/socket_apitest.cc',
+        'browser/extensions/api/system_info_cpu/system_info_cpu_apitest.cc',
         'browser/extensions/api/tabs/tabs_test.cc',
         'browser/extensions/api/terminal/terminal_private_apitest.cc',
         'browser/extensions/api/test/apitest_apitest.cc',
