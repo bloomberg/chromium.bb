@@ -25,7 +25,9 @@ class Rect;
 class SURFACE_EXPORT AcceleratedPresenter
     : public base::RefCountedThreadSafe<AcceleratedPresenter> {
  public:
-  typedef base::Callback<void(bool)> CompletionTaskl;
+  typedef base::Callback<void(bool,
+                              base::TimeTicks,
+                              base::TimeDelta)> CompletionTask;
 
   explicit AcceleratedPresenter(gfx::NativeWindow window);
 
@@ -42,7 +44,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void AsyncPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
-      const base::Callback<void(bool)>& completion_task);
+      const CompletionTask& completion_task);
 
   // Schedule the presenter to free all its resources. This can be called on any
   // thread.
@@ -71,7 +73,7 @@ class SURFACE_EXPORT AcceleratedPresenter
   void DoPresentAndAcknowledge(
       const gfx::Size& size,
       int64 surface_handle,
-      const base::Callback<void(bool)>& completion_task);
+      const CompletionTask& completion_task);
   void DoSuspend();
   void DoPresent(HDC dc, bool* presented);
   bool DoRealPresent(HDC dc);
@@ -85,7 +87,8 @@ class SURFACE_EXPORT AcceleratedPresenter
   // and an interval_denominator of 60000, resulting in an interval of
   // 1001/60000 ~= .016683 seconds
   // Note: This function assumes lock_ is acquired.
-  void GetPresentationStats(base::TimeTicks* timebase,
+  // Returns true on success.
+  bool GetPresentationStats(base::TimeTicks* timebase,
                             uint32* interval_numerator,
                             uint32* interval_denominator);
 

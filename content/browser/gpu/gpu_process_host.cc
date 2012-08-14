@@ -127,13 +127,16 @@ void AcceleratedSurfaceBuffersSwappedCompletedForGPU(int host_id,
 
 // This sends a ViewMsg_SwapBuffers_ACK directly to the renderer process
 // (RenderWidget). This path is currently not used with the threaded compositor.
-void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(int surface_id) {
+void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
+    int surface_id,
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
         base::Bind(&AcceleratedSurfaceBuffersSwappedCompletedForRenderer,
-                   surface_id));
+                   surface_id, timebase, interval));
     return;
   }
 
@@ -150,14 +153,19 @@ void AcceleratedSurfaceBuffersSwappedCompletedForRenderer(int surface_id) {
   if (!rwh)
     return;
   RenderWidgetHostImpl::From(rwh)->AcknowledgeSwapBuffersToRenderer();
+  if (interval != base::TimeDelta())
+    RenderWidgetHostImpl::From(rwh)->UpdateVSyncParameters(timebase, interval);
 }
 
 void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
                                                int route_id,
                                                int surface_id,
-                                               bool alive) {
+                                               bool alive,
+                                               base::TimeTicks timebase,
+                                               base::TimeDelta interval) {
   AcceleratedSurfaceBuffersSwappedCompletedForGPU(host_id, route_id, alive);
-  AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id);
+  AcceleratedSurfaceBuffersSwappedCompletedForRenderer(surface_id, timebase,
+                                                       interval);
 }
 
 }  // anonymous namespace
@@ -648,10 +656,8 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
 
   base::ScopedClosureRunner scoped_completion_runner(
       base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
-                 host_id_,
-                 params.route_id,
-                 params.surface_id,
-                 true));
+                 host_id_, params.route_id, params.surface_id,
+                 true, base::TimeTicks(), base::TimeDelta()));
 
   gfx::PluginWindowHandle handle =
       GpuSurfaceTracker::Get()->GetSurfaceWindowHandle(params.surface_id);

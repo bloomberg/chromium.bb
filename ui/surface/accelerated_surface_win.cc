@@ -432,11 +432,11 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
 void AcceleratedPresenter::AsyncPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
-    const base::Callback<void(bool)>& completion_task) {
+    const CompletionTask& completion_task) {
   if (!surface_handle) {
     TRACE_EVENT1("gpu", "EarlyOut_ZeroSurfaceHandle",
                  "surface_handle", surface_handle);
-    completion_task.Run(true);
+    completion_task.Run(true, base::TimeTicks(), base::TimeDelta());
     return;
   }
 
@@ -675,7 +675,7 @@ static base::TimeDelta GetSwapDelay() {
 void AcceleratedPresenter::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_handle,
-    const base::Callback<void(bool)>& completion_task) {
+    const CompletionTask& completion_task) {
   TRACE_EVENT1(
       "gpu", "DoPresentAndAcknowledge", "surface_handle", surface_handle);
 
@@ -688,13 +688,13 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   if (!present_thread_->device()) {
     if (!completion_task.is_null())
-      completion_task.Run(false);
+      completion_task.Run(false, base::TimeTicks(), base::TimeDelta());
     return;
   }
 
   // Ensure the task is always run and while the lock is taken.
-  base::ScopedClosureRunner scoped_completion_runner(base::Bind(completion_task,
-                                                                true));
+  base::ScopedClosureRunner scoped_completion_runner(
+      base::Bind(completion_task, true, base::TimeTicks(), base::TimeDelta()));
 
   // If invalidated, do nothing, the window is gone.
   if (!window_)
@@ -849,6 +849,24 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     }
   }
 
+  {
+    TRACE_EVENT0("gpu", "GetPresentationStats");
+    base::TimeTicks timebase;
+    base::TimeDelta interval;
+    uint32 numerator = 0, denominator = 0;
+    if (GetPresentationStats(&timebase, &numerator, &denominator) &&
+        numerator > 0 && denominator > 0) {
+      int64 interval_micros =
+          static_cast<int64>(1000000 * numerator) / denominator;
+      interval = base::TimeDelta::FromMicroseconds(interval_micros);
+    }
+    scoped_completion_runner.Release();
+    completion_task.Run(true, timebase, interval);
+    TRACE_EVENT2("gpu", "GetPresentationStats",
+                 "timebase", timebase.ToInternalValue(),
+                 "interval", interval.ToInternalValue());
+  }
+
   hidden_ = false;
 }
 
@@ -862,7 +880,7 @@ void AcceleratedPresenter::DoReleaseSurface() {
   source_texture_.Release();
 }
 
-void AcceleratedPresenter::GetPresentationStats(base::TimeTicks* timebase,
+bool AcceleratedPresenter::GetPresentationStats(base::TimeTicks* timebase,
                                                 uint32* interval_numerator,
                                                 uint32* interval_denominator) {
   lock_.AssertAcquired();
@@ -871,13 +889,18 @@ void AcceleratedPresenter::GetPresentationStats(base::TimeTicks* timebase,
   timing_info.cbSize = sizeof(timing_info);
   HRESULT result = DwmGetCompositionTimingInfo(window_, &timing_info);
   if (result != S_OK)
-    return;
+    return false;
 
   *timebase = base::TimeTicks::FromQPCValue(
       static_cast<LONGLONG>(timing_info.qpcVBlank));
+  // Offset from QPC-space to TimeTicks::Now-space.
+  *timebase += (base::TimeTicks::Now() - base::TimeTicks::HighResNow());
+
   // Swap the numerator/denominator to convert frequency to period.
   *interval_numerator = timing_info.rateRefresh.uiDenominator;
   *interval_denominator = timing_info.rateRefresh.uiNumerator;
+
+  return true;
 }
 
 AcceleratedSurface::AcceleratedSurface(gfx::NativeWindow window)
