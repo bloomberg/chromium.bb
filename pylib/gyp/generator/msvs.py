@@ -294,6 +294,11 @@ def _BuildCommandLineForRuleRaw(spec, cmd, cygwin_shell, has_input_path,
       command = ['type']
     else:
       command = [cmd[0].replace('/', '\\')]
+    # Add call before command to ensure that commands can be tied together one
+    # after the other without aborting in Incredibuild, since IB makes a bat
+    # file out of the raw command string, and some commands (like python) are
+    # actually batch files themselves.
+    command.insert(0, 'call')
     # Fix the paths
     # TODO(quote): This is a really ugly heuristic, and will miss path fixing
     #              for arguments like "--arg=path" or "/opt:path".
