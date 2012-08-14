@@ -825,8 +825,10 @@ DocumentEntry* DocumentEntry::CreateFromFileResource(const FileResource& file) {
   entry->file_md5_ = file.md5_checksum();
   entry->file_size_ = file.file_size();
 
-  entry->deleted_ = false;  // later filled by CreateFromChangeResource.
-  entry->removed_ = false;  // later filled by CreateFromChangeResource.
+  // If file is removed completely, that information is only available in
+  // ChangeResource, and is reflected in |removed_|. If file is trashed, the
+  // file entry still exists but with its "trashed" label true.
+  entry->deleted_ = file.labels().is_trashed();
 
   // FeedEntry
   entry->etag_ = file.etag();
@@ -875,7 +877,7 @@ DocumentEntry*
 DocumentEntry::CreateFromChangeResource(const ChangeResource& change) {
   DocumentEntry* entry = CreateFromFileResource(change.file());
 
-  entry->deleted_ = change.is_deleted();
+  // If |is_deleted()| returns true, the file is removed from Drive.
   entry->removed_ = change.is_deleted();
 
   return entry;
