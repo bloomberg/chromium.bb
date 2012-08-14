@@ -579,20 +579,24 @@ hg-checkout-gold() {
 
 git-sync() {
   local gitbase="${PNACL_GIT_ROOT}"
+  # Disable depot tools auto-update for these invocations. (It
+  # will still get updated when it is invoked at the start of each build,
+  # and we don't want it updating from cygwin here)
+  export DEPOT_TOOLS_UPDATE=0
 
   mkdir -p "${gitbase}"
   cp "${PNACL_ROOT}"/gclient_template "${gitbase}/.gclient"
 
   if ! [ -d "${gitbase}/dummydir" ]; then
     spushd "${gitbase}"
-    ${GCLIENT} update --verbose
+    ${GCLIENT} update --verbose -j1
     spopd
   fi
 
   newlib-nacl-headers-clean
   cp "${PNACL_ROOT}"/DEPS "${gitbase}"/dummydir
   spushd "${gitbase}"
-  ${GCLIENT} update --verbose
+  ${GCLIENT} update --verbose -j1
   spopd
 
   # Copy nacl headers into newlib tree.
