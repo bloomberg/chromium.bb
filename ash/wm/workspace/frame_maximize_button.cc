@@ -32,6 +32,9 @@ namespace {
 // Delay before forcing an update of the snap location.
 const int kUpdateDelayMS = 400;
 
+// The delay of the bubble appearance.
+const int kBubbleAppearanceDelayMS = 200;
+
 }
 
 // EscapeEventFilter is installed on the RootWindow to track when the escape key
@@ -107,7 +110,8 @@ FrameMaximizeButton::FrameMaximizeButton(views::ButtonListener* listener,
       is_snap_enabled_(false),
       exceeded_drag_threshold_(false),
       window_(NULL),
-      snap_type_(SNAP_NONE) {
+      snap_type_(SNAP_NONE),
+      bubble_appearance_delay_ms_(kBubbleAppearanceDelayMS) {
   // TODO(sky): nuke this. It's temporary while we don't have good images.
   SetImageAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
 }
@@ -202,7 +206,8 @@ void FrameMaximizeButton::OnMouseEntered(const ui::MouseEvent& event) {
     }
     maximizer_.reset(new MaximizeBubbleController(
         this,
-        frame_->GetWidget()->IsMaximized()));
+        frame_->GetWidget()->IsMaximized(),
+        bubble_appearance_delay_ms_));
   }
 }
 
@@ -285,7 +290,8 @@ void FrameMaximizeButton::ProcessStartEvent(const ui::LocatedEvent& event) {
   if (!maximizer_.get()) {
     maximizer_.reset(new MaximizeBubbleController(
         this,
-        frame_->GetWidget()->IsMaximized()));
+        frame_->GetWidget()->IsMaximized(),
+        bubble_appearance_delay_ms_));
   } else {
     // If the menu did not show up yet, we delay it even a bit more.
     maximizer_->DelayCreation();

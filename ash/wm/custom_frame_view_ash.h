@@ -12,6 +12,7 @@
 
 namespace ash {
 class FramePainter;
+class FrameMaximizeButton;
 }
 namespace gfx {
 class Font;
@@ -40,7 +41,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
      explicit TestApi(CustomFrameViewAsh* frame) : frame_(frame) {
      }
 
-     views::ImageButton* maximize_button() const {
+     ash::FrameMaximizeButton* maximize_button() const {
        return frame_->maximize_button_;
      }
 
@@ -81,7 +82,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   // Not owned.
   views::Widget* frame_;
 
-  views::ImageButton* maximize_button_;
+  ash::FrameMaximizeButton* maximize_button_;
   views::ImageButton* close_button_;
   views::ImageButton* window_icon_;
 
