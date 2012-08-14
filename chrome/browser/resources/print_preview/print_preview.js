@@ -657,7 +657,9 @@ cr.define('print_preview', function() {
         }
       }
 
-      if (e.keyCode == 13 /*enter*/ && this.printTicketStore_.isTicketValid()) {
+      if (e.keyCode == 13 /*enter*/ &&
+          !this.destinationSearch_.getIsVisible() &&
+          this.printTicketStore_.isTicketValid()) {
         assert(this.uiState_ == PrintPreview.UiState_.READY,
           'Trying to print when not in ready state: ' + this.uiState_);
         this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
