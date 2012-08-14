@@ -23,6 +23,7 @@ import android.webkit.DownloadListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.WeakContext;
+import org.chromium.content.app.AppResource;
 import org.chromium.content.browser.ContentViewGestureHandler;
 import org.chromium.content.browser.TouchPoint;
 import org.chromium.content.browser.ZoomManager;
@@ -279,6 +280,15 @@ public class ContentViewCore implements MotionEventDelegate {
             mContainerView.setVerticalScrollBarEnabled(false);
         }
         mContainerView.setClickable(true);
+
+        String contentDescription = "Web View";
+        if (AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION == 0) {
+            Log.w(TAG, "Setting contentDescription to 'Web View' as no value was specified.");
+        } else {
+            contentDescription = mContext.getResources().getString(
+                    AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION);
+        }
+        mContainerView.setContentDescription(contentDescription);
 
         mZoomManager = new ZoomManager(context, this);
         mZoomManager.updateMultiTouchSupport();

@@ -57,6 +57,9 @@ public class AppResource {
     /** String for the Web Search button in the action bar. */
     public static int STRING_ACTION_BAR_WEB_SEARCH;
 
+    /** String for the Content View accessibility contentDescription. */
+    public static int STRING_CONTENT_VIEW_CONTENT_DESCRIPTION;
+
     /** String for the Clear button in the date picker dialog. */
     public static int STRING_DATE_PICKER_DIALOG_CLEAR;
 
