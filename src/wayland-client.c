@@ -63,6 +63,7 @@ struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
 	int fd;
+	int close_fd;
 	uint32_t mask;
 	struct wl_map objects;
 	struct wl_list global_listener_list;
@@ -300,12 +301,12 @@ static const struct wl_display_listener display_listener = {
 };
 
 static int
-connect_to_socket(struct wl_display *display, const char *name)
+connect_to_socket(const char *name)
 {
 	struct sockaddr_un addr;
 	socklen_t size;
 	const char *runtime_dir;
-	int name_size;
+	int name_size, fd;
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
 	if (!runtime_dir) {
@@ -323,8 +324,8 @@ connect_to_socket(struct wl_display *display, const char *name)
 	if (name == NULL)
 		name = "wayland-0";
 
-	display->fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
-	if (display->fd < 0)
+	fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
+	if (fd < 0)
 		return -1;
 
 	memset(&addr, 0, sizeof addr);
@@ -338,7 +339,7 @@ connect_to_socket(struct wl_display *display, const char *name)
 		fprintf(stderr,
 		       "error: socket path \"%s/%s\" plus null terminator"
 		       " exceeds 108 bytes\n", runtime_dir, name);
-		close(display->fd);
+		close(fd);
 		/* to prevent programs reporting
 		 * "failed to add socket: Success" */
 		errno = ENAMETOOLONG;
@@ -347,21 +348,19 @@ connect_to_socket(struct wl_display *display, const char *name)
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
 
-	if (connect(display->fd, (struct sockaddr *) &addr, size) < 0) {
-		close(display->fd);
+	if (connect(fd, (struct sockaddr *) &addr, size) < 0) {
+		close(fd);
 		return -1;
 	}
 
-	return 0;
+	return fd;
 }
 
 WL_EXPORT struct wl_display *
-wl_display_connect(const char *name)
+wl_display_connect_to_fd(int fd)
 {
 	struct wl_display *display;
 	const char *debug;
-	char *connection, *end;
-	int flags;
 
 	debug = getenv("WAYLAND_DEBUG");
 	if (debug)
@@ -372,22 +371,8 @@ wl_display_connect(const char *name)
 		return NULL;
 
 	memset(display, 0, sizeof *display);
-	connection = getenv("WAYLAND_SOCKET");
-	if (connection) {
-		display->fd = strtol(connection, &end, 0);
-		if (*end != '\0') {
-			free(display);
-			return NULL;
-		}
-		flags = fcntl(display->fd, F_GETFD);
-		if (flags != -1)
-			fcntl(display->fd, F_SETFD, flags | FD_CLOEXEC);
-		unsetenv("WAYLAND_SOCKET");
-	} else if (connect_to_socket(display, name) < 0) {
-		free(display);
-		return NULL;
-	}
 
+	display->fd = fd;
 	wl_map_init(&display->objects);
 	wl_list_init(&display->global_listener_list);
 	wl_list_init(&display->global_list);
@@ -414,6 +399,36 @@ wl_display_connect(const char *name)
 	return display;
 }
 
+WL_EXPORT struct wl_display *
+wl_display_connect(const char *name)
+{
+	struct wl_display *display;
+	char *connection, *end;
+	int flags, fd;
+
+	connection = getenv("WAYLAND_SOCKET");
+	if (connection) {
+		fd = strtol(connection, &end, 0);
+		if (*end != '\0')
+			return NULL;
+
+		flags = fcntl(fd, F_GETFD);
+		if (flags != -1)
+			fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+		unsetenv("WAYLAND_SOCKET");
+	} else {
+		fd = connect_to_socket(name);
+		if (fd < 0)
+			return NULL;
+	}
+
+	display = wl_display_connect_to_fd(fd);
+	if (display)
+		display->close_fd = 1;
+
+	return display;
+}
+
 WL_EXPORT void
 wl_display_disconnect(struct wl_display *display)
 {
@@ -429,7 +444,9 @@ wl_display_disconnect(struct wl_display *display)
 			      &display->global_listener_list, link)
 		free(listener);
 
-	close(display->fd);
+	if (display->close_fd)
+		close(display->fd);
+
 	free(display);
 }
 
