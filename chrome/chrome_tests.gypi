@@ -1808,6 +1808,7 @@
         'browser/ui/gtk/bookmarks/bookmark_editor_gtk_unittest.cc',
         'browser/ui/gtk/bookmarks/bookmark_utils_gtk_unittest.cc',
         'browser/ui/gtk/event_utils_unittest.cc',
+        'browser/ui/gtk/extensions/media_galleries_dialog_gtk_unittest.cc',
         'browser/ui/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',
         'browser/ui/gtk/gtk_theme_service_unittest.cc',
         'browser/ui/gtk/omnibox/omnibox_popup_view_gtk_unittest.cc',

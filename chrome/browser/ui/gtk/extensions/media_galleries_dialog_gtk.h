@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -17,6 +18,7 @@
 namespace chrome {
 
 class MediaGalleriesDialogController;
+class MediaGalleriesDialogTest;
 
 // The media galleries configuration view for Gtk. It will immediately show
 // upon construction.
@@ -42,6 +44,10 @@ class MediaGalleriesDialogGtk : public MediaGalleriesDialog,
   CHROMEGTK_CALLBACK_0(MediaGalleriesDialogGtk, void, OnCancel);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, InitializeCheckboxes);
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ToggleCheckboxes);
+  FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
+
   typedef std::map<const MediaGalleryPrefInfo*, GtkWidget*> CheckboxMap;
 
   // Creates the widget hierarchy.

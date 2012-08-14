@@ -26,7 +26,10 @@ MediaGalleriesDialogGtk::MediaGalleriesDialogGtk(
         ignore_toggles_(false),
         accepted_(false) {
   InitWidgets();
-  window_ = new ConstrainedWindowGtk(controller->tab_contents(), this);
+
+  // May be NULL during tests.
+  if (controller->tab_contents())
+    window_ = new ConstrainedWindowGtk(controller->tab_contents(), this);
 }
 
 MediaGalleriesDialogGtk::~MediaGalleriesDialogGtk() {
@@ -124,7 +127,8 @@ void MediaGalleriesDialogGtk::DeleteDelegate() {
 }
 
 void MediaGalleriesDialogGtk::OnToggled(GtkWidget* widget) {
-  gtk_widget_set_sensitive(confirm_, TRUE);
+  if (confirm_)
+    gtk_widget_set_sensitive(confirm_, TRUE);
 
   if (ignore_toggles_)
     return;

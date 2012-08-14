@@ -69,8 +69,9 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   string16 GetHeader();
   string16 GetSubtext();
   void OnAddFolderClicked();
-  void GalleryToggled(const MediaGalleryPrefInfo* pref_info, bool enabled);
-  void DialogFinished(bool accepted);
+  virtual void GalleryToggled(const MediaGalleryPrefInfo* pref_info,
+                              bool enabled);
+  virtual void DialogFinished(bool accepted);
 
   // SelectFileDialog::Listener implementation:
   virtual void FileSelected(const FilePath& path,
@@ -84,14 +85,22 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
     return tab_contents_;
   }
 
+ protected:
+  // For use with tests.
+  MediaGalleriesDialogController();
+
+  virtual ~MediaGalleriesDialogController();
+
+  // This map excludes those galleries which have been blacklisted; it only
+  // counts active known galleries.
+  KnownGalleryPermissions known_galleries_;
+
  private:
   // This type is for media galleries that have been added via "add gallery"
   // button, but have not yet been committed to the prefs system and will be
   // forgotten if the user Cancels. Since they don't have IDs assigned yet, it's
   // just a list and not a map.
   typedef std::list<GalleryPermission> NewGalleryPermissions;
-
-  virtual ~MediaGalleriesDialogController();
 
   // Populates |known_galleries_|.
   void LookUpPermissions();
@@ -103,12 +112,9 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   TabContents* tab_contents_;
 
   // This is just a reference, but it's assumed that it won't become invalid
-  // while the dialog is showing.
-  const extensions::Extension& extension_;
+  // while the dialog is showing. Will be NULL only during tests.
+  const extensions::Extension* extension_;
 
-  // This map excludes those galleries which have been blacklisted; it only
-  // counts active known galleries.
-  KnownGalleryPermissions known_galleries_;
   NewGalleryPermissions new_galleries_;
 
   // We run this callback when done.

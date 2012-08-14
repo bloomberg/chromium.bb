@@ -25,14 +25,19 @@ MediaGalleriesDialogController::MediaGalleriesDialogController(
     const Extension& extension,
     const base::Callback<void(void)>& on_finish)
       : tab_contents_(tab_contents),
-        extension_(extension),
+        extension_(&extension),
         on_finish_(on_finish),
         preferences_(MediaGalleriesPreferencesFactory::GetForProfile(
-          tab_contents_->profile())) {
+            tab_contents_->profile())) {
   LookUpPermissions();
 
   dialog_.reset(MediaGalleriesDialog::Create(this));
 }
+
+MediaGalleriesDialogController::MediaGalleriesDialogController()
+    : tab_contents_(NULL),
+      extension_(NULL),
+      preferences_(NULL) {}
 
 MediaGalleriesDialogController::~MediaGalleriesDialogController() {
   if (select_folder_dialog_.get())
@@ -40,15 +45,16 @@ MediaGalleriesDialogController::~MediaGalleriesDialogController() {
 }
 
 string16 MediaGalleriesDialogController::GetHeader() {
+  std::string extension_name(extension_ ? extension_->name() : "");
   return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_HEADER,
-                                    UTF8ToUTF16(extension_.name()));
+                                    UTF8ToUTF16(extension_name));
 }
 
 string16 MediaGalleriesDialogController::GetSubtext() {
-  if (extension_.HasAPIPermission(
+  if (extension_ && extension_->HasAPIPermission(
           extensions::APIPermission::kMediaGalleriesRead)) {
     return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_READ_SUBTEXT,
-                                      UTF8ToUTF16(extension_.name()));
+                                      UTF8ToUTF16(extension_->name()));
   }
   // TODO(estade): handle write et al.
   return string16();
@@ -149,7 +155,7 @@ void MediaGalleriesDialogController::LookUpPermissions() {
   }
 
   MediaGalleryPrefIdSet permitted =
-      preferences_->GalleriesForExtension(extension_);
+      preferences_->GalleriesForExtension(*extension_);
 
   for (MediaGalleryPrefIdSet::iterator iter = permitted.begin();
        iter != permitted.end(); ++iter) {
@@ -161,7 +167,7 @@ void MediaGalleriesDialogController::SavePermissions() {
   for (KnownGalleryPermissions::iterator iter = known_galleries_.begin();
        iter != known_galleries_.end(); ++iter) {
     preferences_->SetGalleryPermissionForExtension(
-        extension_, iter->first, iter->second.allowed);
+        *extension_, iter->first, iter->second.allowed);
   }
 
   for (NewGalleryPermissions::iterator iter = new_galleries_.begin();
@@ -174,7 +180,7 @@ void MediaGalleriesDialogController::SavePermissions() {
     MediaGalleryPrefId id = preferences_->AddGallery(
         gallery.device_id, gallery.display_name, gallery.path, true);
     preferences_->SetGalleryPermissionForExtension(
-        extension_, id, true);
+        *extension_, id, true);
   }
 }
 
