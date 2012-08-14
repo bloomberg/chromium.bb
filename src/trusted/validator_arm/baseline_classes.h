@@ -255,7 +255,7 @@ class BreakPointAndConstantPoolHead : public Immediate16Use {
 class BranchToRegister : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
   static const UpdatesLinkRegisterBit5Interface link_register;
   static const ConditionBits28To31Interface cond;
 
@@ -289,7 +289,7 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const Imm12Bits0To11Interface imm12;
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
   static const Imm4Bits16To19Interface imm4;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
@@ -333,9 +333,9 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
 class Binary2RegisterBitRange : public ClassDecoder {
  public:
   // Interface for components of the instruction.
-  static const RegNBits0To3Interface n;
+  static const RegBits0To3Interface n;
   static const Imm5Bits7To11Interface lsb;
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
   static const Imm5Bits16To20Interface imm5;
   static const ConditionBits28To31Interface cond;
 
@@ -376,8 +376,8 @@ class Binary2RegisterImmediateOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const Imm12Bits0To11Interface imm;
-  static const RegDBits12To15Interface d;
-  static const RegNBits16To19Interface n;
+  static const RegBits12To15Interface d;
+  static const RegBits16To19Interface n;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -425,7 +425,7 @@ class BinaryRegisterImmediateTest : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const Imm12Bits0To11Interface imm;
-  static const RegNBits16To19Interface n;
+  static const RegBits16To19Interface n;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -470,8 +470,8 @@ class MaskedBinaryRegisterImmediateTest : public BinaryRegisterImmediateTest {
 class Unary2RegisterOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
-  static const RegDBits12To15Interface d;
+  static const RegBits0To3Interface m;
+  static const RegBits12To15Interface d;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -531,9 +531,9 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates
 class Binary3RegisterOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
-  static const RegDBits12To15Interface d;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
+  static const RegBits12To15Interface d;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -561,8 +561,8 @@ class Binary3RegisterOp : public ClassDecoder {
 // NaCl disallows writing to PC to cause a jump.
 class LoadExclusive2RegisterOp : public ClassDecoder {
  public:
-  static const RegTBits12To15Interface t;
-  static const RegNBits16To19Interface n;
+  static const RegBits12To15Interface t;
+  static const RegBits16To19Interface n;
   static const ConditionBits28To31Interface cond;
 
   LoadExclusive2RegisterOp() {}
@@ -582,7 +582,7 @@ class LoadExclusive2RegisterOp : public ClassDecoder {
 //    Rt=14, then unpredictable (i.e. Rt2=R15).
 class LoadExclusive2RegisterDoubleOp : public LoadExclusive2RegisterOp {
  public:
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   LoadExclusive2RegisterDoubleOp() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -611,8 +611,8 @@ class LoadStore2RegisterImm8Op : public ClassDecoder {
  public:
   static const Imm4Bits0To3Interface imm4L;
   static const Imm4Bits8To11Interface imm4H;
-  static const RegTBits12To15Interface t;
-  static const RegNBits16To19Interface n;
+  static const RegBits12To15Interface t;
+  static const RegBits16To19Interface n;
   static const WritesBit21Interface writes;
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
@@ -665,7 +665,7 @@ class LoadStore2RegisterImm8DoubleOp
     : public LoadStore2RegisterImm8Op {
  public:
   // Interface for components in the instruction (and not inherited).
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   LoadStore2RegisterImm8DoubleOp()
       : LoadStore2RegisterImm8Op() {}
@@ -742,8 +742,8 @@ class Store2RegisterImm8DoubleOp
 class LoadStore2RegisterImm12Op : public ClassDecoder {
  public:
   static const Imm12Bits0To11Interface imm12;
-  static const RegTBits12To15Interface t;
-  static const RegNBits16To19Interface n;
+  static const RegBits12To15Interface t;
+  static const RegBits16To19Interface n;
   static const WritesBit21Interface writes;
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
@@ -802,7 +802,7 @@ class LoadStoreRegisterList : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const RegisterListBits0To15Interface register_list;
-  static const RegNBits16To19Interface n;
+  static const RegBits16To19Interface n;
   static const WritesBit21Interface wback;
   static const ConditionBits28To31Interface cond;
 
@@ -863,8 +863,8 @@ class LoadStoreVectorOp : public CondVfpOp {
  public:
   // Interfaces for components in the instruction.
   static const Imm8Bits0To7Interface imm8;
-  static const RegDBits12To15Interface vd;
-  static const RegNBits16To19Interface n;
+  static const RegBits12To15Interface vd;
+  static const RegBits16To19Interface n;
   static const WritesBit21Interface wback;
   static const Imm1Bit22Interface d_bit;
   static const AddOffsetBit23Interface direction;
@@ -994,9 +994,9 @@ class StoreVectorRegister : public LoadStoreVectorRegister {
 class Binary3RegisterOpAltA : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
-  static const RegDBits16To19Interface d;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
+  static const RegBits16To19Interface d;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1027,9 +1027,9 @@ class Binary3RegisterOpAltA : public ClassDecoder {
 class Binary3RegisterOpAltB : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
-  static const RegDBits12To15Interface d;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits12To15Interface d;
+  static const RegBits16To19Interface n;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1072,10 +1072,10 @@ class Binary3RegisterOpAltBNoCondUpdates : public Binary3RegisterOpAltB {
 class Binary4RegisterDualOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
-  static const RegABits12To15Interface a;
-  static const RegDBits16To19Interface d;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
+  static const RegBits12To15Interface a;
+  static const RegBits16To19Interface d;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1111,10 +1111,10 @@ class Binary4RegisterDualOp : public ClassDecoder {
 class Binary4RegisterDualResult : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
-  static const RegDBits12To15Interface d_lo;
-  static const RegDBits16To19Interface d_hi;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
+  static const RegBits12To15Interface d_lo;
+  static const RegBits16To19Interface d_hi;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1142,9 +1142,9 @@ class Binary4RegisterDualResult : public ClassDecoder {
 class LoadStore3RegisterOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
-  static const RegTBits12To15Interface t;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits12To15Interface t;
+  static const RegBits16To19Interface n;
   static const WritesBit21Interface writes;
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
@@ -1193,7 +1193,7 @@ class Store3RegisterOp : public LoadStore3RegisterOp {
 class LoadStore3RegisterDoubleOp : public LoadStore3RegisterOp {
  public:
   // Interface for components in the instruction (and not inherited).
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   LoadStore3RegisterDoubleOp() : LoadStore3RegisterOp() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -1244,9 +1244,9 @@ class Store3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
 // NaCl disallows writing to PC to cause a jump.
 class StoreExclusive3RegisterOp : public ClassDecoder {
  public:
-  static const RegTBits0To3Interface t;
-  static const RegDBits12To15Interface d;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface t;
+  static const RegBits12To15Interface d;
+  static const RegBits16To19Interface n;
   static const ConditionBits28To31Interface cond;
 
   StoreExclusive3RegisterOp() {}
@@ -1267,7 +1267,7 @@ class StoreExclusive3RegisterOp : public ClassDecoder {
 //    Rd=Rt2, then unpredictable.
 class StoreExclusive3RegisterDoubleOp : public StoreExclusive3RegisterOp {
  public:
-  static const RegT2Bits0To3Interface t2;
+  static const RegBits0To3Plus1Interface t2;
 
   StoreExclusive3RegisterDoubleOp() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -1302,9 +1302,9 @@ class StoreExclusive3RegisterDoubleOp : public StoreExclusive3RegisterOp {
 class LoadStore3RegisterImm5Op : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
-  static const RegTBits12To15Interface t;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits12To15Interface t;
+  static const RegBits16To19Interface n;
   static const WritesBit21Interface writes;
   static const AddOffsetBit23Interface direction;
   static const PrePostIndexingBit24Interface indexing;
@@ -1379,10 +1379,10 @@ class Store3RegisterImm5Op : public LoadStore3RegisterImm5Op {
 class Unary2RegisterImmedShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
   static const ShiftTypeBits5To6Interface shift_type;
   static const Imm5Bits7To11Interface imm;
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1432,10 +1432,10 @@ class Unary2RegisterImmedShiftedOpRegsNotPc
 class Unary2RegisterSatImmedShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface n;
+  static const RegBits0To3Interface n;
   static const ShiftTypeBits5To6Interface shift_type;
   static const Imm5Bits7To11Interface imm5;
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
   static const Imm5Bits16To20Interface sat_immed;
   static const ConditionBits28To31Interface cond;
 
@@ -1475,10 +1475,10 @@ class Unary2RegisterSatImmedShiftedOp : public ClassDecoder {
 class Unary3RegisterShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
   static const ShiftTypeBits5To6Interface shift_type;
-  static const RegSBits8To11Interface s;
-  static const RegDBits12To15Interface d;
+  static const RegBits8To11Interface s;
+  static const RegBits12To15Interface d;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1520,11 +1520,11 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
 class Binary3RegisterImmedShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
   static const ShiftTypeBits5To6Interface shift_type;
   static const Imm5Bits7To11Interface imm;
-  static const RegDBits12To15Interface d;
-  static const RegNBits16To19Interface n;
+  static const RegBits12To15Interface d;
+  static const RegBits16To19Interface n;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1584,10 +1584,10 @@ class Binary3RegisterImmedShiftedOpRegsNotPc
 class Binary4RegisterShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
-  static const RegSBits8To11Interface s;
-  static const RegDBits12To15Interface d;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits8To11Interface s;
+  static const RegBits12To15Interface d;
+  static const RegBits16To19Interface n;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1620,10 +1620,10 @@ class Binary4RegisterShiftedOp : public ClassDecoder {
 class Binary2RegisterImmedShiftedTest : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
   static const ShiftTypeBits5To6Interface shift_type;
   static const Imm5Bits7To11Interface imm;
-  static const RegNBits16To19Interface n;
+  static const RegBits16To19Interface n;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1665,10 +1665,10 @@ class Binary2RegisterImmedShiftedTest : public ClassDecoder {
 class Binary3RegisterShiftedTest : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
   static const ShiftTypeBits5To6Interface shift_type;
-  static const RegSBits8To11Interface s;
-  static const RegNBits16To19Interface n;
+  static const RegBits8To11Interface s;
+  static const RegBits16To19Interface n;
   static const UpdatesConditionsBit20Interface conditions;
   static const ConditionBits28To31Interface cond;
 
@@ -1697,9 +1697,9 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
 // are not modeled, other than their index.
 class VectorUnary2RegisterOpBase : public UncondNop {
  public:
-  static const RegMBits0To3Interface vm;
+  static const RegBits0To3Interface vm;
   static const Imm1Bit5Interface m;
-  static const RegDBits12To15Interface vd;
+  static const RegBits12To15Interface vd;
   static const Imm1Bit22Interface d;
 
   VectorUnary2RegisterOpBase() {}
@@ -1764,11 +1764,11 @@ class VectorUnary2RegisterDup : public VectorUnary2RegisterOpBase {
 // are not modeled, other than their index.
 class VectorBinary3RegisterOpBase : public UncondNop {
  public:
-  static const RegMBits0To3Interface vm;
+  static const RegBits0To3Interface vm;
   static const Imm1Bit5Interface m;
   static const Imm1Bit7Interface n;
-  static const RegDBits12To15Interface vd;
-  static const RegNBits16To19Interface vn;
+  static const RegBits12To15Interface vd;
+  static const RegBits16To19Interface vn;
   static const Imm1Bit22Interface d;
 
   VectorBinary3RegisterOpBase() {}
@@ -1861,7 +1861,7 @@ class VectorBinary3RegisterLookupOp : public VectorBinary3RegisterOpBase {
 // If t=15 then UNPREDICTABLE
 class VfpUsesRegOp : public CondVfpOp {
  public:
-  static const RegTBits12To15Interface t;
+  static const RegBits12To15Interface t;
 
   // Methods for class.
   VfpUsesRegOp() {}
@@ -1887,7 +1887,7 @@ class VfpUsesRegOp : public CondVfpOp {
 // in FPSCR.
 class VfpMrsOp : public CondVfpOp {
  public:
-  static const RegTBits12To15Interface t;
+  static const RegBits12To15Interface t;
 
   // Methods for class.
   VfpMrsOp() {}
@@ -1917,7 +1917,7 @@ class VfpMrsOp : public CondVfpOp {
 // Note: We don't model Register S[Vn:N] since it can't effect NaCl validation.
 class MoveVfpRegisterOp : public CondVfpOp {
  public:
-  static const RegTBits12To15Interface t;
+  static const RegBits12To15Interface t;
   static const UpdatesArmRegisterBit20Interface to_arm_reg;
 
   // Methods for class.
@@ -1960,8 +1960,8 @@ class MoveVfpRegisterOpWithTypeSel : public MoveVfpRegisterOp {
 class DuplicateToVfpRegisters : public CondVfpOp {
  public:
   static const Imm1Bit5Interface e;
-  static const RegTBits12To15Interface t;
-  static const RegDBits16To19Interface vd;
+  static const RegBits12To15Interface t;
+  static const RegBits16To19Interface vd;
   static const FlagBit21Interface is_two_regs;
   static const Imm1Bit22Interface b;
 

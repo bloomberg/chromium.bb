@@ -53,7 +53,7 @@ class DontCareInst : public ClassDecoder {
 class DontCareInstRdNotPc : public DontCareInst {
  public:
   // We use the following Rd to capture the register being set.
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
 
   DontCareInstRdNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -71,9 +71,9 @@ class DontCareInstRnRsRmNotPc : public DontCareInst {
  public:
   // We use the following Rm, Rs, and Rn to capture the
   // registers that need checking.
-  static const RegMBits0To3Interface m;
-  static const RegSBits8To11Interface s;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits8To11Interface s;
+  static const RegBits16To19Interface n;
 
   DontCareInstRnRsRmNotPc() : DontCareInst() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -125,7 +125,7 @@ class Defs12To15 : public NoPcAssignClassDecoder {
   Defs12To15() {}
 
   // We use the following Rd to capture the register being set.
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
 
   virtual RegisterList defs(Instruction i) const;
 
@@ -138,7 +138,7 @@ class Defs12To15 : public NoPcAssignClassDecoder {
 class Defs12To15CondsDontCare : public NoPcAssignCondsDontCare {
  public:
   // We use the following Rd to capture the register being set.
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
 
   Defs12To15CondsDontCare() {}
   virtual RegisterList defs(Instruction i) const;
@@ -156,8 +156,8 @@ class Defs12To15CondsDontCareRdRnNotPc : public Defs12To15CondsDontCare {
  public:
   // We use the following Rd and Rn to capture the
   // registers that need checking.
-  static const RegNBits0To3Interface n;
-  static const RegDBits12To15Interface d;
+  static const RegBits0To3Interface n;
+  static const RegBits12To15Interface d;
 
   Defs12To15CondsDontCareRdRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -175,8 +175,8 @@ class Defs12To15RdRnNotPc : public Defs12To15 {
  public:
   // We use the following Rd and Rn to capture the
   // registers that need checking.
-  static const RegNBits0To3Interface n;
-  static const RegDBits12To15Interface d;
+  static const RegBits0To3Interface n;
+  static const RegBits12To15Interface d;
 
   Defs12To15RdRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -195,9 +195,9 @@ class Defs12To15RdRmRnNotPc : public Defs12To15 {
  public:
   // We use the following Rd, Rm, and Rn to capture the
   // registers that need checking.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
-  static const RegDBits12To15Interface d;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
+  static const RegBits12To15Interface d;
 
   Defs12To15RdRmRnNotPc() : Defs12To15() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -218,9 +218,9 @@ class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
  public:
   // We use the following Rm, Rs, and Rn to capture the
   // registers that need checking.
-  static const RegMBits0To3Interface m;
-  static const RegSBits8To11Interface s;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits8To11Interface s;
+  static const RegBits16To19Interface n;
 
   Defs12To15RdRnRsRmNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -240,9 +240,9 @@ class Defs12To15CondsDontCareRdRnRsRmNotPc
  public:
   // We use the following Rm, Rs, and Rn to capture the
   // registers that need checking.
-  static const RegMBits0To3Interface m;
-  static const RegSBits8To11Interface s;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits8To11Interface s;
+  static const RegBits16To19Interface n;
 
   Defs12To15CondsDontCareRdRnRsRmNotPc()
       : Defs12To15CondsDontCare() {}
@@ -257,7 +257,7 @@ class Defs12To15CondsDontCareRdRnRsRmNotPc
 class Defs16To19CondsDontCare : public NoPcAssignClassDecoder {
  public:
   // We use the following Rd to capture the register being set.
-  static const RegDBits16To19Interface d;
+  static const RegBits16To19Interface d;
 
   Defs16To19CondsDontCare() {}
   virtual RegisterList defs(Instruction i) const;
@@ -270,8 +270,8 @@ class Defs16To19CondsDontCare : public NoPcAssignClassDecoder {
 class Defs16To19CondsDontCareRdRmRnNotPc : public Defs16To19CondsDontCare {
  public:
   // We use the following interfaces to capture the registers used.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
 
   Defs16To19CondsDontCareRdRmRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -284,9 +284,9 @@ class Defs16To19CondsDontCareRdRmRnNotPc : public Defs16To19CondsDontCare {
 class Defs16To19CondsDontCareRdRaRmRnNotPc : public Defs16To19CondsDontCare {
  public:
   // We use the following interfaces to capture the registers used.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
-  static const RegABits12To15Interface a;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
+  static const RegBits12To15Interface a;
 
   Defs16To19CondsDontCareRdRaRmRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -301,8 +301,8 @@ class Defs16To19CondsDontCareRdRaRmRnNotPc : public Defs16To19CondsDontCare {
 class Defs12To19CondsDontCare : public NoPcAssignClassDecoder {
  public:
   // We use the following interfaces to capture the registers being set.
-  static const RegDBits12To15Interface d_lo;
-  static const RegDBits16To19Interface d_hi;
+  static const RegBits12To15Interface d_lo;
+  static const RegBits16To19Interface d_hi;
 
   Defs12To19CondsDontCare() {}
   virtual RegisterList defs(Instruction i) const;
@@ -317,8 +317,8 @@ class Defs12To19CondsDontCare : public NoPcAssignClassDecoder {
 class Defs12To19CondsDontCareRdRmRnNotPc : public Defs12To19CondsDontCare {
  public:
   // We use the following interfaces to capture the registers being tested.
-  static const RegNBits0To3Interface n;
-  static const RegMBits8To11Interface m;
+  static const RegBits0To3Interface n;
+  static const RegBits8To11Interface m;
 
   Defs12To19CondsDontCareRdRmRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -335,9 +335,9 @@ class Defs12To15CondsDontCareRnRdRmNotPc : public Defs12To15CondsDontCare {
  public:
   // We use the following Rm, Rd, and Rn to capture the registers
   // that need checking.
-  static const RegMBits0To3Interface m;
-  static const RegDBits12To15Interface d;
-  static const RegNBits16To19Interface n;
+  static const RegBits0To3Interface m;
+  static const RegBits12To15Interface d;
+  static const RegBits16To19Interface n;
 
   Defs12To15CondsDontCareRnRdRmNotPc() : Defs12To15CondsDontCare() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -351,7 +351,7 @@ class Defs12To15CondsDontCareRnRdRmNotPc : public Defs12To15CondsDontCare {
 class TestIfAddressMasked : public NoPcAssignClassDecoder {
  public:
   static const Imm12Bits0To11Interface imm12;
-  static const RegNBits16To19Interface n;
+  static const RegBits16To19Interface n;
 
   TestIfAddressMasked() {}
   virtual RegisterList defs(Instruction i) const;
@@ -402,7 +402,7 @@ class VfpOp : public CoprocessorOp {
 class BasedAddressUsingRn : public ClassDecoder {
  public:
   // The base address register.
-  static const RegNBits16To19Interface n;
+  static const RegBits16To19Interface n;
 
   BasedAddressUsingRn() {}
   virtual Register base_address_register(Instruction i) const;
@@ -415,10 +415,10 @@ class BasedAddressUsingRn : public ClassDecoder {
 class LoadBasedMemory : public BasedAddressUsingRn {
  public:
   // The base address register.
-  static const RegNBits16To19Interface n;
+  static const RegBits16To19Interface n;
   // The destination register (May be named different than t,
   // but appears in the same bit locations).
-  static const RegTBits12To15Interface t;
+  static const RegBits12To15Interface t;
 
   LoadBasedMemory() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -432,7 +432,7 @@ class LoadBasedMemory : public BasedAddressUsingRn {
 // uses Rt2 as defined by Rt).
 class LoadBasedMemoryDouble : public LoadBasedMemory {
  public:
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   LoadBasedMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -466,7 +466,7 @@ class LoadBasedMemoryWithWriteBack : public LoadBasedMemory {
 class LoadBasedOffsetMemory : public LoadBasedMemoryWithWriteBack {
  public:
   // The offset register.
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
 
   LoadBasedOffsetMemory() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -478,7 +478,7 @@ class LoadBasedOffsetMemory : public LoadBasedMemoryWithWriteBack {
 // Defines a LoadBasedOffsetMemory, which also writes to Rt2.
 class LoadBasedOffsetMemoryDouble : public LoadBasedOffsetMemory {
  public:
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   LoadBasedOffsetMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -503,7 +503,7 @@ class LoadBasedImmedMemory : public LoadBasedMemoryWithWriteBack {
 // Defines a LoadBasedImmedMemory, which also writes to Rt2.
 class LoadBasedImmedMemoryDouble : public LoadBasedImmedMemory {
  public:
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   LoadBasedImmedMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -516,8 +516,8 @@ class LoadBasedImmedMemoryDouble : public LoadBasedImmedMemory {
 // Defines a based memory store from register Rt(3:0).
 class StoreBasedMemoryRtBits0To3 : public BasedAddressUsingRn {
  public:
-  static const RegTBits0To3Interface t;
-  static const RegDBits12To15Interface d;
+  static const RegBits0To3Interface t;
+  static const RegBits12To15Interface d;
 
   StoreBasedMemoryRtBits0To3() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -531,7 +531,7 @@ class StoreBasedMemoryRtBits0To3 : public BasedAddressUsingRn {
 // wide (i.e uses Rt2 as defined by Rt).
 class StoreBasedMemoryDoubleRtBits0To3 : public StoreBasedMemoryRtBits0To3 {
  public:
-  static const RegT2Bits0To3Interface t2;
+  static const RegBits0To3Plus1Interface t2;
 
   StoreBasedMemoryDoubleRtBits0To3() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -543,7 +543,7 @@ class StoreBasedMemoryDoubleRtBits0To3 : public StoreBasedMemoryRtBits0To3 {
 // Defines a based memory store from register Rt(15, 12), with writeback.
 class StoreBasedMemoryWithWriteBack : public BasedAddressUsingRn {
  public:
-  static const RegTBits12To15Interface t;
+  static const RegBits12To15Interface t;
   static const WritesBit21Interface writes;
   static const PrePostIndexingBit24Interface indexing;
   bool HasWriteBack(const Instruction i) const {
@@ -563,7 +563,7 @@ class StoreBasedMemoryWithWriteBack : public BasedAddressUsingRn {
 // defined in register Rm.
 class StoreBasedOffsetMemory : public StoreBasedMemoryWithWriteBack {
  public:
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
 
   StoreBasedOffsetMemory() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -575,7 +575,7 @@ class StoreBasedOffsetMemory : public StoreBasedMemoryWithWriteBack {
 // Defines a StoreBasedOffsetMemory, which also uses Rt2.
 class StoreBasedOffsetMemoryDouble : public StoreBasedOffsetMemory {
  public:
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   StoreBasedOffsetMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -598,7 +598,7 @@ class StoreBasedImmedMemory : public StoreBasedMemoryWithWriteBack {
 // Defines a StoreBasedImmedMemory, which also uses Rt2
 class StoreBasedImmedMemoryDouble : public StoreBasedImmedMemory {
  public:
-  static const RegT2Bits12To15Interface t2;
+  static const RegBits12To15Plus1Interface t2;
 
   StoreBasedImmedMemoryDouble() {}
   virtual SafetyLevel safety(Instruction i) const;
@@ -1057,7 +1057,7 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
 // Hence the cryptic name.
 class BxBlx : public OldClassDecoder {
  public:
-  static const RegMBits0To3Interface m;
+  static const RegBits0To3Interface m;
   static const UpdatesLinkRegisterBit5Interface link_register;
 
   BxBlx() {}
@@ -1103,7 +1103,7 @@ class Branch : public OldClassDecoder {
 class Unary1RegisterSet : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
   static const ReadSpsrBit22Interface read_spsr;
   static const ConditionBits28To31Interface cond;
 
@@ -1130,7 +1130,7 @@ class Unary1RegisterSet : public ClassDecoder {
 class Unary1RegisterUse : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  static const RegNBits0To3Interface n;
+  static const RegBits0To3Interface n;
   static const Imm2Bits18To19Interface mask;
   static const ConditionBits28To31Interface cond;
 
@@ -1165,7 +1165,7 @@ class Unary1RegisterBitRange : public ClassDecoder {
  public:
   // Interface for components of the instruction.
   static const Imm5Bits7To11Interface lsb;
-  static const RegDBits12To15Interface d;
+  static const RegBits12To15Interface d;
   static const Imm5Bits16To20Interface msb;
   static const ConditionBits28To31Interface cond;
 
