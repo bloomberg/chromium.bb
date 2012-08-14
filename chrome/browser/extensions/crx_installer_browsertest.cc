@@ -5,7 +5,6 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_test_observer.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -209,10 +209,10 @@ IN_PROC_BROWSER_TEST_F(
       content::BrowserContext::GetDownloadManager(browser()->profile());
 
   LOG(ERROR) << "PackAndInstallExtension: Setting observer";
-  scoped_ptr<DownloadTestObserver> observer(
-      new DownloadTestObserverTerminal(
+  scoped_ptr<content::DownloadTestObserver> observer(
+      new content::DownloadTestObserverTerminal(
           download_manager, kNumDownloadsExpected,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   LOG(ERROR) << "PackAndInstallExtension: Navigating to URL";
   ui_test_utils::NavigateToURLWithDisposition(browser(), url, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);

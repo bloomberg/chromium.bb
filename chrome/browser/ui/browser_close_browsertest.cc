@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_test_observer.h"
+#include "chrome/browser/download/download_test_file_chooser_observer.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +26,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/test/net/url_request_slow_download_job.h"
 
 using content::BrowserContext;
@@ -117,9 +118,9 @@ class BrowserCloseTest : public InProcessBrowserTest {
     // to get to IN_PROGRESS.
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(browser->profile());
-    scoped_ptr<DownloadTestObserver> observer(
-        new DownloadTestObserverInProgress(download_manager,
-                                           num_downloads));
+    scoped_ptr<content::DownloadTestObserver> observer(
+        new content::DownloadTestObserverInProgress(download_manager,
+                                                    num_downloads));
 
     // Set of that number of downloads.
     size_t count_downloads = num_downloads;
@@ -150,8 +151,8 @@ class BrowserCloseTest : public InProcessBrowserTest {
           DownloadServiceFactory::GetForProfile(*pit);
       if (download_service->HasCreatedDownloadManager()) {
         DownloadManager *mgr = BrowserContext::GetDownloadManager(*pit);
-        scoped_refptr<DownloadTestFlushObserver> observer(
-            new DownloadTestFlushObserver(mgr));
+        scoped_refptr<content::DownloadTestFlushObserver> observer(
+            new content::DownloadTestFlushObserver(mgr));
         observer->WaitForFlush();
       }
       if ((*pit)->HasOffTheRecordProfile()) {
@@ -161,8 +162,8 @@ class BrowserCloseTest : public InProcessBrowserTest {
         if (incognito_download_service->HasCreatedDownloadManager()) {
           DownloadManager *mgr = BrowserContext::GetDownloadManager(
               (*pit)->GetOffTheRecordProfile());
-          scoped_refptr<DownloadTestFlushObserver> observer(
-              new DownloadTestFlushObserver(mgr));
+          scoped_refptr<content::DownloadTestFlushObserver> observer(
+              new content::DownloadTestFlushObserver(mgr));
           observer->WaitForFlush();
         }
       }

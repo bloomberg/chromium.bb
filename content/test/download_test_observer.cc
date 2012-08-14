@@ -2,23 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/public/test/download_test_observer.h"
+
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_test_observer.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
-using content::DownloadItem;
-using content::DownloadManager;
+namespace content {
 
 namespace {
 
@@ -75,7 +72,7 @@ void DownloadTestObserver::Init() {
 void DownloadTestObserver::WaitForFinished() {
   if (!IsFinished()) {
     waiting_ = true;
-    content::RunMessageLoop();
+    RunMessageLoop();
     waiting_ = false;
   }
 }
@@ -176,7 +173,7 @@ size_t DownloadTestObserver::NumDangerousDownloadsSeen() const {
 }
 
 size_t DownloadTestObserver::NumDownloadsSeenInState(
-    content::DownloadItem::DownloadState state) const {
+    DownloadItem::DownloadState state) const {
   StateMap::const_iterator it = states_observed_.find(state);
 
   if (it == states_observed_.end())
@@ -206,7 +203,7 @@ void DownloadTestObserver::SignalIfFinished() {
 }
 
 DownloadTestObserverTerminal::DownloadTestObserverTerminal(
-    content::DownloadManager* download_manager,
+    DownloadManager* download_manager,
     size_t wait_count,
     DangerousDownloadAction dangerous_download_action)
         : DownloadTestObserver(download_manager,
@@ -224,12 +221,12 @@ DownloadTestObserverTerminal::~DownloadTestObserverTerminal() {
 
 
 bool DownloadTestObserverTerminal::IsDownloadInFinalState(
-    content::DownloadItem* download) {
+    DownloadItem* download) {
   return (download->GetState() != DownloadItem::IN_PROGRESS);
 }
 
 DownloadTestObserverInProgress::DownloadTestObserverInProgress(
-    content::DownloadManager* download_manager,
+    DownloadManager* download_manager,
     size_t wait_count)
         : DownloadTestObserver(download_manager,
                                wait_count,
@@ -246,7 +243,7 @@ DownloadTestObserverInProgress::~DownloadTestObserverInProgress() {
 
 
 bool DownloadTestObserverInProgress::IsDownloadInFinalState(
-    content::DownloadItem* download) {
+    DownloadItem* download) {
   return (download->GetState() == DownloadItem::IN_PROGRESS);
 }
 
@@ -258,7 +255,7 @@ DownloadTestFlushObserver::DownloadTestFlushObserver(
 void DownloadTestFlushObserver::WaitForFlush() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   download_manager_->AddObserver(this);
-  content::RunMessageLoop();
+  RunMessageLoop();
 }
 
 void DownloadTestFlushObserver::ModelChanged(DownloadManager* manager) {
@@ -350,7 +347,7 @@ void DownloadTestFlushObserver::PingIOThread(int cycle) {
 }
 
 DownloadTestItemCreationObserver::DownloadTestItemCreationObserver()
-    : download_id_(content::DownloadId::Invalid()),
+    : download_id_(DownloadId::Invalid()),
       error_(net::OK),
       called_back_count_(0),
       waiting_(false) {
@@ -364,13 +361,13 @@ void DownloadTestItemCreationObserver::WaitForDownloadItemCreation() {
 
   if (called_back_count_ == 0) {
     waiting_ = true;
-    content::RunMessageLoop();
+    RunMessageLoop();
     waiting_ = false;
   }
 }
 
 void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
-    content::DownloadId download_id, net::Error error) {
+    DownloadId download_id, net::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   download_id_ = download_id;
@@ -382,69 +379,10 @@ void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
     MessageLoopForUI::current()->Quit();
 }
 
-const content::DownloadUrlParameters::OnStartedCallback
+const DownloadUrlParameters::OnStartedCallback
     DownloadTestItemCreationObserver::callback() {
   return base::Bind(
       &DownloadTestItemCreationObserver::DownloadItemCreationCallback, this);
 }
 
-namespace internal {
-
-// Test ChromeDownloadManagerDelegate that controls whether how file chooser
-// dialogs are handled. By default, file chooser dialogs are disabled.
-class MockFileChooserDownloadManagerDelegate
-    : public ChromeDownloadManagerDelegate {
- public:
-  explicit MockFileChooserDownloadManagerDelegate(Profile* profile)
-      : ChromeDownloadManagerDelegate(profile),
-        file_chooser_enabled_(false),
-        file_chooser_displayed_(false) {}
-
-  void EnableFileChooser(bool enable) {
-    file_chooser_enabled_ = enable;
-  }
-
-  bool TestAndResetDidShowFileChooser() {
-    bool did_show = file_chooser_displayed_;
-    file_chooser_displayed_ = false;
-    return did_show;
-  }
-
- private:
-  virtual ~MockFileChooserDownloadManagerDelegate() {}
-
-  virtual void ChooseDownloadPath(DownloadItem* item,
-                                  const FilePath& suggested_path,
-                                  const FileSelectedCallback&
-                                      callback) OVERRIDE {
-    file_chooser_displayed_ = true;
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback,
-                   (file_chooser_enabled_ ? suggested_path : FilePath())));
-  }
-
-  bool file_chooser_enabled_;
-  bool file_chooser_displayed_;
-};
-
-}  // namespace internal
-
-DownloadTestFileChooserObserver::DownloadTestFileChooserObserver(
-    Profile* profile) {
-  test_delegate_ =
-      new internal::MockFileChooserDownloadManagerDelegate(profile);
-  DownloadServiceFactory::GetForProfile(profile)->
-      SetDownloadManagerDelegateForTesting(test_delegate_.get());
-}
-
-DownloadTestFileChooserObserver::~DownloadTestFileChooserObserver() {
-}
-
-void DownloadTestFileChooserObserver::EnableFileChooser(bool enable) {
-  test_delegate_->EnableFileChooser(enable);
-}
-
-bool DownloadTestFileChooserObserver::TestAndResetDidShowFileChooser() {
-  return test_delegate_->TestAndResetDidShowFileChooser();
-}
+}  // namespace content

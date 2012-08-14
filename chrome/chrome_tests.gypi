@@ -114,6 +114,8 @@
         'browser/chromeos/settings/mock_signed_settings_helper.cc',
         'browser/chromeos/settings/mock_signed_settings_helper.h',
         # The only thing used from browser is Browser::Type.
+	'browser/download/download_test_file_chooser_observer.cc',
+	'browser/download/download_test_file_chooser_observer.h',
         'browser/extensions/mock_extension_special_storage_policy.cc',
         'browser/extensions/mock_extension_special_storage_policy.h',
         'browser/extensions/test_extension_prefs.cc',
@@ -2715,7 +2717,6 @@
         'browser/download/download_danger_prompt_browsertest.cc',
         'browser/extensions/api/downloads/downloads_api_unittest.cc',
         'browser/download/download_query_unittest.cc',
-        'browser/download/download_test_observer.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/errorpage_browsertest.cc',
         'browser/extensions/active_tab_apitest.cc',

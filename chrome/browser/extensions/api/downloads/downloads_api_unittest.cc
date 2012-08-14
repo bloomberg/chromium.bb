@@ -14,7 +14,7 @@
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_test_observer.h"
+#include "chrome/browser/download/download_test_file_chooser_observer.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/test/net/url_request_slow_download_job.h"
 #include "net/base/data_url.h"
 #include "net/base/net_util.h"
@@ -390,7 +391,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   void CreateSlowTestDownloads(
       size_t count, DownloadManager::DownloadVector* items) {
     for (size_t i = 0; i < count; ++i) {
-      scoped_ptr<DownloadTestObserver> observer(
+      scoped_ptr<content::DownloadTestObserver> observer(
           CreateInProgressDownloadObserver(1));
       GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
       ui_test_utils::NavigateToURLWithDisposition(
@@ -405,7 +406,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   DownloadItem* CreateSlowTestDownload() {
-    scoped_ptr<DownloadTestObserver> observer(
+    scoped_ptr<content::DownloadTestObserver> observer(
         CreateInProgressDownloadObserver(1));
     GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
     DownloadManager* manager = GetCurrentManager();
@@ -437,7 +438,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   void FinishPendingSlowDownloads() {
-    scoped_ptr<DownloadTestObserver> observer(
+    scoped_ptr<content::DownloadTestObserver> observer(
         CreateDownloadObserver(1));
     GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
     ui_test_utils::NavigateToURLWithDisposition(
@@ -447,15 +448,15 @@ class DownloadExtensionTest : public ExtensionApiTest {
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   }
 
-  DownloadTestObserver* CreateDownloadObserver(size_t download_count) {
-    return new DownloadTestObserverTerminal(
+  content::DownloadTestObserver* CreateDownloadObserver(size_t download_count) {
+    return new content::DownloadTestObserverTerminal(
         GetCurrentManager(), download_count,
-        DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   }
 
-  DownloadTestObserver* CreateInProgressDownloadObserver(
+  content::DownloadTestObserver* CreateInProgressDownloadObserver(
       size_t download_count) {
-    return new DownloadTestObserverInProgress(
+    return new content::DownloadTestObserverInProgress(
         GetCurrentManager(), download_count);
   }
 

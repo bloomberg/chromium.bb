@@ -24,7 +24,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/download/download_test_observer.h"
+#include "chrome/browser/download/download_test_file_chooser_observer.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -59,6 +59,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_mock_http_job.h"
@@ -346,31 +347,33 @@ class DownloadTest : public InProcessBrowserTest {
 
   // Create a DownloadTestObserverTerminal that will wait for the
   // specified number of downloads to finish.
-  DownloadTestObserver* CreateWaiter(Browser* browser, int num_downloads) {
+  content::DownloadTestObserver* CreateWaiter(
+      Browser* browser, int num_downloads) {
     DownloadManager* download_manager = DownloadManagerForBrowser(browser);
-    return new DownloadTestObserverTerminal(
+    return new content::DownloadTestObserverTerminal(
         download_manager, num_downloads,
-        DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+        content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
   }
 
   // Create a DownloadTestObserverInProgress that will wait for the
   // specified number of downloads to start.
-  DownloadTestObserver* CreateInProgressWaiter(Browser* browser,
-                                               int num_downloads) {
+  content::DownloadTestObserver* CreateInProgressWaiter(
+      Browser* browser, int num_downloads) {
     DownloadManager* download_manager = DownloadManagerForBrowser(browser);
-    return new DownloadTestObserverInProgress(
+    return new content::DownloadTestObserverInProgress(
         download_manager, num_downloads);
   }
 
   // Create a DownloadTestObserverTerminal that will wait for the
   // specified number of downloads to finish, or for
   // a dangerous download warning to be shown.
-  DownloadTestObserver* DangerousDownloadWaiter(
+  content::DownloadTestObserver* DangerousDownloadWaiter(
       Browser* browser,
       int num_downloads,
-      DownloadTestObserver::DangerousDownloadAction dangerous_download_action) {
+      content::DownloadTestObserver::DangerousDownloadAction
+      dangerous_download_action) {
     DownloadManager* download_manager = DownloadManagerForBrowser(browser);
-    return new DownloadTestObserverTerminal(
+    return new content::DownloadTestObserverTerminal(
         download_manager, num_downloads,
         dangerous_download_action);
   }
@@ -402,7 +405,8 @@ class DownloadTest : public InProcessBrowserTest {
                                       WindowOpenDisposition disposition,
                                       int browser_test_flags) {
     // Setup notification, navigate, and block.
-    scoped_ptr<DownloadTestObserver> observer(CreateWaiter(browser, 1));
+    scoped_ptr<content::DownloadTestObserver> observer(
+        CreateWaiter(browser, 1));
     // This call will block until the condition specified by
     // |browser_test_flags|, but will not wait for the download to finish.
     ui_test_utils::NavigateToURLWithDisposition(browser,
@@ -493,7 +497,8 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Download a partial web page in a background tab and wait.
     // The mock system will not complete until it gets a special URL.
-    scoped_ptr<DownloadTestObserver> observer(CreateWaiter(browser, 1));
+    scoped_ptr<content::DownloadTestObserver> observer(
+        CreateWaiter(browser, 1));
     ui_test_utils::NavigateToURL(browser, url);
 
     // TODO(ahendrickson): check download status text before downloading.
@@ -629,11 +634,11 @@ class DownloadTest : public InProcessBrowserTest {
     WebContents* web_contents = chrome::GetActiveWebContents(browser());
     ASSERT_TRUE(web_contents) << s.str();
 
-    scoped_ptr<DownloadTestObserver> observer(
-        new DownloadTestObserverTerminal(
+    scoped_ptr<content::DownloadTestObserver> observer(
+        new content::DownloadTestObserverTerminal(
             download_manager,
             1,
-            DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+            content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
     if (download_info.download_method == DOWNLOAD_DIRECT) {
       // Go directly to download.  Don't wait for navigation.
@@ -641,8 +646,8 @@ class DownloadTest : public InProcessBrowserTest {
       // NOTE: |prompt_for_save_location| may change during the download.
       save_info.prompt_for_save_location = false;
 
-      scoped_refptr<DownloadTestItemCreationObserver> creation_observer(
-          new DownloadTestItemCreationObserver);
+      scoped_refptr<content::DownloadTestItemCreationObserver>
+          creation_observer(new content::DownloadTestItemCreationObserver);
 
       scoped_ptr<DownloadUrlParameters> params(
           DownloadUrlParameters::FromWebContents(web_contents, url, save_info));
@@ -894,11 +899,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
 
   // Download the file and wait.  We expect the Select File dialog to appear
   // due to the MIME type, but we still wait until the download completes.
-  scoped_ptr<DownloadTestObserver> observer(
-      new DownloadTestObserverTerminal(
+  scoped_ptr<content::DownloadTestObserver> observer(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()),
           1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -1409,7 +1414,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
 
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
-  scoped_ptr<DownloadTestObserver> observer1(
+  scoped_ptr<content::DownloadTestObserver> observer1(
       CreateInProgressWaiter(browser(), 1));
   ui_test_utils::NavigateToURL(
       browser(), GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl));
@@ -1444,7 +1449,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
 
   // Allow the first request to finish.  We do this by loading a third URL
   // in a separate tab.
-  scoped_ptr<DownloadTestObserver> observer2(CreateWaiter(browser(), 1));
+  scoped_ptr<content::DownloadTestObserver> observer2(
+      CreateWaiter(browser(), 1));
   GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(),
@@ -1494,7 +1500,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
 
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
-  scoped_ptr<DownloadTestObserver> observer(
+  scoped_ptr<content::DownloadTestObserver> observer(
       CreateInProgressWaiter(browser(), 1));
   ui_test_utils::NavigateToURL(
       browser(), GURL(URLRequestSlowDownloadJob::kUnknownSizeUrl));
@@ -1509,8 +1515,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
 
   // Cancel the download and wait for download system quiesce.
   downloads[0]->Delete(DownloadItem::DELETE_DUE_TO_USER_DISCARD);
-  scoped_refptr<DownloadTestFlushObserver> flush_observer(
-      new DownloadTestFlushObserver(
+  scoped_refptr<content::DownloadTestFlushObserver> flush_observer(
+      new content::DownloadTestFlushObserver(
           DownloadManagerForBrowser(browser())));
   flush_observer->WaitForFlush();
 
@@ -1617,7 +1623,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
 
   // Create a download, wait until it's complete, and confirm
   // we're in the expected state.
-  scoped_ptr<DownloadTestObserver> observer(CreateWaiter(browser(), 1));
+  scoped_ptr<content::DownloadTestObserver> observer(
+      CreateWaiter(browser(), 1));
   ui_test_utils::NavigateToURL(browser(), url);
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -1668,10 +1675,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
 
   GURL extension_url(URLRequestMockHTTPJob::GetMockUrl(kGoodCrxPath));
 
-  scoped_ptr<DownloadTestObserver> observer(
+  scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
           browser(), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_DENY));
   ui_test_utils::NavigateToURL(browser(), extension_url);
 
   observer->WaitForFinished();
@@ -1700,10 +1707,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
   download_crx_util::SetMockInstallPromptForTesting(
       new MockAbortExtensionInstallPrompt());
 
-  scoped_ptr<DownloadTestObserver> observer(
+  scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
           browser(), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
 
   observer->WaitForFinished();
@@ -1732,10 +1739,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
   // finish the install.
   SetAllowMockInstallPrompt();
 
-  scoped_ptr<DownloadTestObserver> observer(
+  scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
           browser(), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
 
   observer->WaitForFinished();
@@ -1762,10 +1769,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
   // install failed below.
   SetAllowMockInstallPrompt();
 
-  scoped_ptr<DownloadTestObserver> observer(
+  scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
           browser(), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
 
   observer->WaitForFinished();
@@ -1789,10 +1796,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
   // finish the install.
   SetAllowMockInstallPrompt();
 
-  scoped_ptr<DownloadTestObserver> observer(
+  scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(
           browser(), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), extension_url);
 
   observer->WaitForFinished();
@@ -1950,10 +1957,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   WebContents* web_contents = chrome::GetActiveWebContents(browser());
   ASSERT_TRUE(web_contents);
 
-  DownloadTestObserver* observer(
-      new DownloadTestObserverTerminal(
+  content::DownloadTestObserver* observer(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::DownloadSaveInfo save_info;
   save_info.prompt_for_save_location = true;
   scoped_ptr<DownloadUrlParameters> params(
@@ -1984,7 +1991,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   content::DownloadSaveInfo save_info;
   save_info.file_path = target_file_full_path;
 
-  DownloadTestObserver* observer(CreateWaiter(browser(), 1));
+  content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(web_contents, url, save_info));
   DownloadManagerForBrowser(browser())->DownloadUrl(params.Pass());
@@ -2020,10 +2027,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   // is not bypassed then this will fail since the server is no longer
   // reachable.
   ASSERT_TRUE(test_server()->Stop());
-  scoped_ptr<DownloadTestObserver> waiter(
-      new DownloadTestObserverTerminal(
+  scoped_ptr<content::DownloadTestObserver> waiter(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   chrome::SavePage(browser());
   waiter->WaitForFinished();
   EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -2036,10 +2043,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   ASSERT_EQ(url, download_items[0]->GetOriginalUrl());
 
   // Try to download it via a context menu.
-  scoped_ptr<DownloadTestObserver> waiter_context_menu(
-      new DownloadTestObserverTerminal(
+  scoped_ptr<content::DownloadTestObserver> waiter_context_menu(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::ContextMenuParams context_menu_params;
   context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   context_menu_params.src_url = url;
@@ -2099,10 +2106,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   // reachable. This will also fail if it tries to be retrieved via "GET"
   // rather than "POST".
   ASSERT_TRUE(test_server()->Stop());
-  scoped_ptr<DownloadTestObserver> waiter(
-      new DownloadTestObserverTerminal(
+  scoped_ptr<content::DownloadTestObserver> waiter(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   chrome::SavePage(browser());
   waiter->WaitForFinished();
   EXPECT_EQ(1u, waiter->NumDownloadsSeenInState(DownloadItem::COMPLETE));
@@ -2115,10 +2122,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   ASSERT_EQ(jpeg_url, download_items[0]->GetOriginalUrl());
 
   // Try to download it via a context menu.
-  scoped_ptr<DownloadTestObserver> waiter_context_menu(
-      new DownloadTestObserverTerminal(
+  scoped_ptr<content::DownloadTestObserver> waiter_context_menu(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   content::ContextMenuParams context_menu_params;
   context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   context_menu_params.src_url = jpeg_url;
@@ -2411,8 +2418,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDangerousBlobData) {
   ASSERT_TRUE(test_server()->Start());
   GURL url(test_server()->GetURL(path));
 
-  DownloadTestObserver* observer(DangerousDownloadWaiter(
-      browser(), 1, DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
+  content::DownloadTestObserver* observer(DangerousDownloadWaiter(
+      browser(), 1,
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT));
   ui_test_utils::NavigateToURL(browser(), url);
   observer->WaitForFinished();
 
@@ -2434,10 +2442,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
   ASSERT_TRUE(url.is_valid());
   ui_test_utils::NavigateToURL(browser(), url);
 
-  scoped_ptr<DownloadTestObserver> waiter(
-      new DownloadTestObserverTerminal(
+  scoped_ptr<content::DownloadTestObserver> waiter(
+      new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
-          DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
   // Click on the link with the alt key pressed. This will download the link
   // target.
