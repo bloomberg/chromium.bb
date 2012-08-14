@@ -542,6 +542,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                        GDataEntry* entry);
 
   // Runs the callback and notifies that the initial load is finished.
+  // |callback| must not be null.
   void RunAndNotifyInitialLoadFinished(const FindEntryCallback& callback,
                                        GDataFileError error,
                                        GDataEntry* entry);
@@ -598,6 +599,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                       bool* has_enough_space);
 
   // Helper function used to perform synchronous file search on UI thread.
+  // |callback| must not be null.
   void FindEntryByPathSyncOnUIThread(const FilePath& search_file_path,
                                      const FindEntryCallback& callback);
 
@@ -608,17 +610,20 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void InitializePreferenceObserver();
 
   // Called when an entry is found for GetEntryInfoByPath().
+  // |callback| must not be null.
   void OnGetEntryInfo(const GetEntryInfoCallback& callback,
                       GDataFileError error,
                       GDataEntry* entry);
 
   // Called when an entry is found for ReadDirectoryByPath().
+  // |callback| must not be null.
   void OnReadDirectory(const ReadDirectoryWithSettingCallback& callback,
                        GDataFileError error,
                        GDataEntry* entry);
 
   // Finds file info by using virtual |file_path|. This call will also
   // retrieve and refresh file system content from server and disk cache.
+  // |callback| must not be null.
   void FindEntryByPathAsyncOnUIThread(const FilePath& search_file_path,
                                       const FindEntryCallback& callback);
 
@@ -763,6 +768,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
   // local dirty cache for the entry, and if there is, replace the
   // PlatformFileInfo part of the |entry_proto| with the locally modified info.
+  // |callback| must not be null.
   void CheckLocalModificationAndRun(scoped_ptr<GDataEntryProto> entry_proto,
                                     const GetEntryInfoCallback& callback);
   void CheckLocalModificationAndRunAfterGetCacheEntry(

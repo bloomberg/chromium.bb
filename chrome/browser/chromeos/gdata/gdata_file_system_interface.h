@@ -137,6 +137,7 @@ class GDataFileSystemInterface {
   // does not initiate content refreshing.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
       const GetEntryInfoWithFilePathCallback& callback) = 0;
@@ -302,6 +303,7 @@ class GDataFileSystemInterface {
   // retrieve and refresh file system content from server and disk cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void GetEntryInfoByPath(const FilePath& file_path,
                                   const GetEntryInfoCallback& callback) = 0;
 
@@ -309,6 +311,7 @@ class GDataFileSystemInterface {
   // and refresh file system content from server and disk cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // |callback| must not be null.
   virtual void ReadDirectoryByPath(
       const FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback) = 0;
