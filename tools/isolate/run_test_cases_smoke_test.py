@@ -99,6 +99,17 @@ class TraceTestCases(unittest.TestCase):
     ]
     self._check_results(expected_out_re, out, err)
 
+  def test_simple_gtest_list_error(self):
+    out, err, return_code = RunTest('gtest_fake_error.py')
+
+    expected_out_re = [
+        'Failed to run .+gtest_fake_error.py',
+        'Unable to list tests'
+    ]
+
+    self.assertEqual(1, return_code)
+    self._check_results(expected_out_re, out, err)
+
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv

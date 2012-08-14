@@ -707,7 +707,9 @@ def main(argv):
         options.shards)
 
   if not test_cases:
-    return 0
+    # If test_cases is None then there was a problem generating the tests to
+    # run, so this should be considered a failure.
+    return int(test_cases is None)
 
   if options.no_dump:
     result_file = None
