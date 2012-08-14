@@ -100,6 +100,7 @@
     'public/browser/load_from_memory_cache_details.h',
     'public/browser/load_notification_details.h',
     'public/browser/native_web_keyboard_event.h',
+    'public/browser/navigation_controller.cc',
     'public/browser/navigation_controller.h',
     'public/browser/navigation_details.cc',
     'public/browser/navigation_details.h',

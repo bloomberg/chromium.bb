@@ -14,8 +14,14 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/referrer.h"
+#include "googleurl/src/gurl.h"
 
-class GURL;
+namespace base {
+
+class RefCountedMemory;
+
+}  // namespace base
 
 namespace content {
 
@@ -23,7 +29,6 @@ class BrowserContext;
 class NavigationEntry;
 class SessionStorageNamespace;
 class WebContents;
-struct Referrer;
 
 // Used to store the mapping of a StoragePartition id to
 // SessionStorageNamespace.
@@ -44,6 +49,35 @@ class NavigationController {
     RELOAD_ORIGINAL_REQUEST_URL  // Reload using the original request URL.
   };
 
+  // Load type used in LoadURLParams.
+  enum LoadURLType {
+    // For loads that do not fall into any types below.
+    LOAD_TYPE_DEFAULT,
+
+    // An http post load request initiated from browser side.
+    // The post data is passed in |browser_initiated_post_data|.
+    LOAD_TYPE_BROWSER_INITIATED_HTTP_POST,
+
+    // Loads a 'data:' scheme URL with specified base URL and a history entry
+    // URL. This is only safe to be used for browser-initiated data: URL
+    // navigations, since it shows arbitrary content as if it comes from
+    // |virtual_url_for_data_url|.
+    LOAD_TYPE_DATA
+  };
+
+  // User agent override type used in LoadURLParams.
+  enum UserAgentOverrideOption {
+    // Use the override value from the previous NavigationEntry in the
+    // NavigationController.
+    UA_OVERRIDE_INHERIT,
+
+    // Use the default user agent.
+    UA_OVERRIDE_FALSE,
+
+    // Use the user agent override, if it's available.
+    UA_OVERRIDE_TRUE
+  };
+
   // Creates a navigation entry and translates the virtual url to a real one.
   // This is a general call; prefer LoadURL[FromRenderer]/TransferURL below.
   // Extra headers are separated by \n.
@@ -54,6 +88,58 @@ class NavigationController {
       bool is_renderer_initiated,
       const std::string& extra_headers,
       BrowserContext* browser_context);
+
+  // Extra optional parameters for LoadURLWithParams.
+  struct CONTENT_EXPORT LoadURLParams {
+    // The url to load. This field is required.
+    GURL url;
+
+    // See LoadURLType comments above.
+    LoadURLType load_type;
+
+    // PageTransition for this load. See PageTransition for details.
+    // Note the default value in constructor below.
+    PageTransition transition_type;
+
+    // Referrer for this load. Empty if none.
+    Referrer referrer;
+
+    // Extra headers for this load, separated by \n.
+    std::string extra_headers;
+
+    // True for renderer-initiated navigations. This is
+    // important for tracking whether to display pending URLs.
+    bool is_renderer_initiated;
+
+    // User agent override for this load. See comments in
+    // UserAgentOverrideOption definition.
+    UserAgentOverrideOption override_user_agent;
+
+    // Marks the new navigation as being transferred from one RVH to another.
+    // In this case the browser can recycle the old request once the new
+    // renderer wants to navigate. Identifies the request ID of the old request.
+    GlobalRequestID transferred_global_request_id;
+
+    // Used in LOAD_TYPE_DATA loads only. Used for specifying a base URL
+    // for pages loaded via data URLs.
+    GURL base_url_for_data_url;
+
+    // Used in LOAD_TYPE_DATA loads only. URL displayed to the user for
+    // data loads.
+    GURL virtual_url_for_data_url;
+
+    // Used in LOAD_TYPE_BROWSER_INITIATED_HTTP_POST loads only. Carries the
+    // post data of the load. Ownership is transferred to NavigationController
+    // after LoadURLWithParams call.
+    scoped_refptr<base::RefCountedMemory> browser_initiated_post_data;
+
+    explicit LoadURLParams(const GURL& url);
+    ~LoadURLParams();
+
+    // Allows copying of LoadURLParams struct.
+    LoadURLParams(const LoadURLParams& other);
+    LoadURLParams& operator=(const LoadURLParams& other);
+  };
 
   // Disables checking for a repost and prompting the user. This is used during
   // testing.
@@ -167,36 +253,9 @@ class NavigationController {
                        PageTransition type,
                        const std::string& extra_headers) = 0;
 
-  // Same as LoadURL, but for renderer-initiated navigations.  This state is
-  // important for tracking whether to display pending URLs.
-  virtual void LoadURLFromRenderer(const GURL& url,
-                                   const Referrer& referrer,
-                                   PageTransition type,
-                                   const std::string& extra_headers) = 0;
-
-  // Same as LoadURL, but allows overriding the user agent of the
-  // NavigationEntry before it loads.
-  // TODO(dfalcantara): Consolidate the LoadURL* interfaces.
-  virtual void LoadURLWithUserAgentOverride(const GURL& url,
-                                            const Referrer& referrer,
-                                            PageTransition type,
-                                            bool is_renderer_initiated,
-                                            const std::string& extra_headers,
-                                            bool is_overriding_user_agent) = 0;
-
-  // Behaves like LoadURL() and LoadURLFromRenderer() but marks the new
-  // navigation as being transferred from one RVH to another. In this case the
-  // browser can recycle the old request once the new renderer wants to
-  // navigate.
-  // |transferred_global_request_id| identifies the request ID of the old
-  // request.
-  virtual void TransferURL(
-      const GURL& url,
-      const Referrer& referrer,
-      PageTransition transition,
-      const std::string& extra_headers,
-      const GlobalRequestID& transferred_global_request_id,
-      bool is_renderer_initiated) = 0;
+  // More general version of LoadURL. See comments in LoadURLParams for
+  // using |params|.
+  virtual void LoadURLWithParams(const LoadURLParams& params) = 0;
 
   // Loads the current page if this NavigationController was restored from
   // history and the current page has not loaded yet.

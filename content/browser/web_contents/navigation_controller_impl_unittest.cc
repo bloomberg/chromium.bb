@@ -184,6 +184,97 @@ TEST_F(NavigationControllerTest, LoadURL) {
   EXPECT_EQ(contents()->GetMaxPageID(), 1);
 }
 
+void CheckNavigationEntryMatchLoadParams(
+    NavigationController::LoadURLParams& load_params,
+    NavigationEntryImpl* entry) {
+  EXPECT_EQ(load_params.url, entry->GetURL());
+  EXPECT_EQ(load_params.referrer.url, entry->GetReferrer().url);
+  EXPECT_EQ(load_params.referrer.policy, entry->GetReferrer().policy);
+  EXPECT_EQ(load_params.transition_type, entry->GetTransitionType());
+  EXPECT_EQ(load_params.extra_headers, entry->extra_headers());
+
+  EXPECT_EQ(load_params.is_renderer_initiated, entry->is_renderer_initiated());
+  EXPECT_EQ(load_params.base_url_for_data_url, entry->GetBaseURLForDataURL());
+  if (!load_params.virtual_url_for_data_url.is_empty()) {
+    EXPECT_EQ(load_params.virtual_url_for_data_url, entry->GetVirtualURL());
+  }
+  if (NavigationController::UA_OVERRIDE_INHERIT !=
+      load_params.override_user_agent) {
+    bool should_override = (NavigationController::UA_OVERRIDE_TRUE ==
+        load_params.override_user_agent);
+    EXPECT_EQ(should_override, entry->GetIsOverridingUserAgent());
+  }
+  EXPECT_EQ(load_params.browser_initiated_post_data,
+      entry->GetBrowserInitiatedPostData());
+  EXPECT_EQ(load_params.transferred_global_request_id,
+      entry->transferred_global_request_id());
+}
+
+TEST_F(NavigationControllerTest, LoadURLWithParams) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  NavigationController::LoadURLParams load_params(GURL("http://foo"));
+  load_params.referrer = content::Referrer(GURL("http://referrer"),
+      WebKit::WebReferrerPolicyDefault);
+  load_params.transition_type = content::PAGE_TRANSITION_GENERATED;
+  load_params.extra_headers = "content-type: text/plain";
+  load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
+  load_params.is_renderer_initiated = true;
+  load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
+  load_params.transferred_global_request_id = content::GlobalRequestID(2,3);
+
+  controller.LoadURLWithParams(load_params);
+  NavigationEntryImpl* entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetPendingEntry());
+
+  CheckNavigationEntryMatchLoadParams(load_params, entry);
+}
+
+TEST_F(NavigationControllerTest, LoadURLWithExtraParams_Data) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  NavigationController::LoadURLParams load_params(
+      GURL("data:text/html,dataurl"));
+  load_params.load_type = NavigationController::LOAD_TYPE_DATA;
+  load_params.base_url_for_data_url = GURL("http://foo");
+  load_params.virtual_url_for_data_url = GURL("about:blank");
+  load_params.override_user_agent = NavigationController::UA_OVERRIDE_FALSE;
+
+  controller.LoadURLWithParams(load_params);
+  NavigationEntryImpl* entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetPendingEntry());
+
+  CheckNavigationEntryMatchLoadParams(load_params, entry);
+}
+
+TEST_F(NavigationControllerTest, LoadURLWithExtraParams_HttpPost) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  NavigationController::LoadURLParams load_params(GURL("https://posturl"));
+  load_params.transition_type = content::PAGE_TRANSITION_TYPED;
+  load_params.load_type =
+      NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
+  load_params.override_user_agent = NavigationController::UA_OVERRIDE_TRUE;
+
+
+  const unsigned char* raw_data =
+      reinterpret_cast<const unsigned char*>("d\n\0a2");
+  const int length = 5;
+  std::vector<unsigned char> post_data_vector(raw_data, raw_data+length);
+  scoped_refptr<base::RefCountedBytes> data =
+      base::RefCountedBytes::TakeVector(&post_data_vector);
+  load_params.browser_initiated_post_data = data.get();
+
+  controller.LoadURLWithParams(load_params);
+  NavigationEntryImpl* entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          controller.GetPendingEntry());
+
+  CheckNavigationEntryMatchLoadParams(load_params, entry);
+}
+
 // Tests what happens when the same page is loaded again.  Should not create a
 // new session history entry. This is what happens when you press enter in the
 // URL bar to reload: a pending entry is created and then it is discarded when
@@ -512,9 +603,10 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
 
   // Now make a pending new navigation, initiated by the renderer.
   const GURL kNewURL("http://eh");
-  controller.LoadURLFromRenderer(
-      kNewURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
-      std::string());
+  NavigationController::LoadURLParams load_url_params(kNewURL);
+  load_url_params.transition_type = content::PAGE_TRANSITION_TYPED;
+  load_url_params.is_renderer_initiated = true;
+  controller.LoadURLWithParams(load_url_params);
   EXPECT_EQ(0U, notifications.size());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
@@ -564,31 +656,6 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_FALSE(controller.GetVisibleEntry());
 
   contents()->SetDelegate(NULL);
-}
-
-// Test NavigationEntry is constructed correctly. No other logic tested.
-TEST_F(NavigationControllerTest, PostURL) {
-  NavigationControllerImpl& controller = controller_impl();
-
-  const GURL url("http://foo1");
-
-  const int length = 5;
-  const unsigned char* raw_data =
-      reinterpret_cast<const unsigned char*>("d\n\0a2");
-  std::vector<unsigned char> post_data_vector(raw_data, raw_data+length);
-  scoped_refptr<base::RefCountedBytes> data =
-      base::RefCountedBytes::TakeVector(&post_data_vector);
-
-  controller.PostURL(url, content::Referrer(), *data.get(), true);
-
-  NavigationEntryImpl* post_entry =
-      NavigationEntryImpl::FromNavigationEntry(
-          controller.GetPendingEntry());
-
-  EXPECT_TRUE(post_entry);
-  EXPECT_TRUE(post_entry->GetHasPostData());
-  EXPECT_EQ(data->front(),
-      post_entry->GetBrowserInitiatedPostData()->front());
 }
 
 TEST_F(NavigationControllerTest, Reload) {
@@ -2027,9 +2094,9 @@ TEST_F(NavigationControllerTest, DontShowRendererURLUntilCommit) {
 
   // For link clicks (renderer-initiated navigations), the active entry should
   // update before commit but the visible should not.
-  controller.LoadURLFromRenderer(url1, content::Referrer(),
-                                 content::PAGE_TRANSITION_LINK,
-                                 std::string());
+  NavigationController::LoadURLParams load_url_params(url1);
+  load_url_params.is_renderer_initiated = true;
+  controller.LoadURLWithParams(load_url_params);
   EXPECT_EQ(url1, controller.GetActiveEntry()->GetURL());
   EXPECT_EQ(url0, controller.GetVisibleEntry()->GetURL());
   EXPECT_TRUE(

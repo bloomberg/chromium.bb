@@ -218,25 +218,19 @@ void LoadURLInContents(WebContents* target_contents,
                        const GURL& url,
                        chrome::NavigateParams* params,
                        const std::string& extra_headers) {
-  if (params->transferred_global_request_id != GlobalRequestID()) {
-    target_contents->GetController().TransferURL(
-        url,
-        params->referrer,
-        params->transition, extra_headers,
-        params->transferred_global_request_id,
-        params->is_renderer_initiated);
-  } else if (params->is_renderer_initiated) {
-    target_contents->GetController().LoadURLFromRenderer(
-        url,
-        params->referrer,
-        params->transition,  extra_headers);
-  } else {
-    target_contents->GetController().LoadURL(
-        url,
-        params->referrer,
-        params->transition,  extra_headers);
-  }
+  content::NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.referrer = params->referrer;
+  load_url_params.transition_type = params->transition;
+  load_url_params.extra_headers = extra_headers;
 
+  if (params->transferred_global_request_id != GlobalRequestID()) {
+    load_url_params.is_renderer_initiated = params->is_renderer_initiated;
+    load_url_params.transferred_global_request_id =
+        params->transferred_global_request_id;
+  } else if (params->is_renderer_initiated) {
+    load_url_params.is_renderer_initiated = true;
+  }
+  target_contents->GetController().LoadURLWithParams(load_url_params);
 }
 
 // This class makes sure the Browser object held in |params| is made visible

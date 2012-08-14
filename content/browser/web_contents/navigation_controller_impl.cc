@@ -563,121 +563,91 @@ void NavigationControllerImpl::AddTransientEntry(NavigationEntryImpl* entry) {
   web_contents_->NotifyNavigationStateChanged(kInvalidateAll);
 }
 
-void NavigationControllerImpl::TransferURL(
-    const GURL& url,
-    const content::Referrer& referrer,
-    content::PageTransition transition,
-    const std::string& extra_headers,
-    const GlobalRequestID& transferred_global_request_id,
-    bool is_renderer_initiated) {
-  // The user initiated a load, we don't need to reload anymore.
-  needs_reload_ = false;
-
-  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-      CreateNavigationEntry(
-          url, referrer, transition, is_renderer_initiated, extra_headers,
-          browser_context_));
-  entry->set_transferred_global_request_id(transferred_global_request_id);
-
-  LoadEntry(entry);
-}
-
 void NavigationControllerImpl::LoadURL(
     const GURL& url,
     const content::Referrer& referrer,
     content::PageTransition transition,
     const std::string& extra_headers) {
-  if (content::HandleDebugURL(url, transition))
+  LoadURLParams params(url);
+  params.referrer = referrer;
+  params.transition_type = transition;
+  params.extra_headers = extra_headers;
+  LoadURLWithParams(params);
+}
+
+void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
+  if (content::HandleDebugURL(params.url, params.transition_type))
     return;
 
-  bool override = ShouldKeepOverride(GetLastCommittedEntry());
-  LoadURLWithUserAgentOverride(url, referrer, transition, false, extra_headers,
-      override);
-}
+  // Checks based on params.load_type.
+  switch (params.load_type) {
+    case LOAD_TYPE_DEFAULT:
+      break;
+    case LOAD_TYPE_BROWSER_INITIATED_HTTP_POST:
+      if (!params.url.SchemeIs(chrome::kHttpScheme) &&
+          !params.url.SchemeIs(chrome::kHttpsScheme)) {
+        NOTREACHED() << "Http post load must use http(s) scheme.";
+        return;
+      }
+      break;
+    case LOAD_TYPE_DATA:
+      if (!params.url.SchemeIs(chrome::kDataScheme)) {
+        NOTREACHED() << "Data load must use data scheme.";
+        return;
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
+  };
 
-void NavigationControllerImpl::LoadURLFromRenderer(
-    const GURL& url,
-    const content::Referrer& referrer,
-    content::PageTransition transition,
-    const std::string& extra_headers) {
-  bool override = ShouldKeepOverride(GetLastCommittedEntry());
-  LoadURLWithUserAgentOverride(url, referrer, transition, true, extra_headers,
-      override);
-}
-
-void NavigationControllerImpl::LoadURLWithUserAgentOverride(
-    const GURL& url,
-    const content::Referrer& referrer,
-    content::PageTransition transition,
-    bool is_renderer_initiated,
-    const std::string& extra_headers,
-    bool is_overriding_user_agent) {
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-      CreateNavigationEntry(
-          url, referrer, transition, is_renderer_initiated, extra_headers,
-          browser_context_));
-  entry->SetIsOverridingUserAgent(is_overriding_user_agent);
-
-  LoadEntry(entry);
-}
-
-void NavigationControllerImpl::LoadDataWithBaseURL(
-    const GURL& data_url,
-    const content::Referrer& referrer,
-    const GURL& base_url,
-    const GURL& history_url,
-    bool is_overriding_user_agent) {
-  // Make sure we don't allow non-'data:' URLs.
-  if (!data_url.SchemeIs(chrome::kDataScheme)) {
-    NOTREACHED();
-    return;
+  bool override = false;
+  switch (params.override_user_agent) {
+    case UA_OVERRIDE_INHERIT:
+      override = ShouldKeepOverride(GetLastCommittedEntry());
+      break;
+    case UA_OVERRIDE_TRUE:
+      override = true;
+      break;
+    case UA_OVERRIDE_FALSE:
+      override = false;
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
-  needs_reload_ = false;
-
   NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
       CreateNavigationEntry(
-          data_url,
-          referrer,
-          content::PAGE_TRANSITION_TYPED,
-          false,
-          std::string(),
+          params.url,
+          params.referrer,
+          params.transition_type,
+          params.is_renderer_initiated,
+          params.extra_headers,
           browser_context_));
-  entry->SetIsOverridingUserAgent(is_overriding_user_agent);
-  entry->SetBaseURLForDataURL(base_url);
-  entry->SetVirtualURL(history_url);
+  entry->SetIsOverridingUserAgent(override);
+  entry->set_transferred_global_request_id(
+      params.transferred_global_request_id);
 
-  LoadEntry(entry);
-}
-
-void NavigationControllerImpl::PostURL(
-    const GURL& url,
-    const content::Referrer& referrer,
-    const base::RefCountedMemory& http_body,
-    bool is_overriding_user_agent) {
-  // Must be http scheme for a post request.
-  if (!url.SchemeIs(chrome::kHttpScheme) &&
-      !url.SchemeIs(chrome::kHttpsScheme)) {
-    NOTREACHED();
-    return;
-  }
-
-  needs_reload_ = false;
-
-  NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-      CreateNavigationEntry(
-          url,
-          referrer,
-          content::PAGE_TRANSITION_TYPED,
-          false,
-          std::string(),
-          browser_context_));
-  entry->SetIsOverridingUserAgent(is_overriding_user_agent);
-  entry->SetHasPostData(true);
-  entry->SetBrowserInitiatedPostData(&http_body);
+  switch (params.load_type) {
+    case LOAD_TYPE_DEFAULT:
+      break;
+    case LOAD_TYPE_BROWSER_INITIATED_HTTP_POST:
+      entry->SetHasPostData(true);
+      entry->SetBrowserInitiatedPostData(
+          params.browser_initiated_post_data);
+      break;
+    case LOAD_TYPE_DATA:
+      entry->SetBaseURLForDataURL(params.base_url_for_data_url);
+      entry->SetVirtualURL(params.virtual_url_for_data_url);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  };
 
   LoadEntry(entry);
 }

@@ -451,10 +451,16 @@ void ContentViewCoreImpl::LoadUrlWithUserAgentOverride(
     const std::string& user_agent_override) {
   web_contents()->SetUserAgentOverride(user_agent_override);
   bool is_overriding_user_agent(!user_agent_override.empty());
-  content::Referrer referer;
-  web_contents()->GetController().LoadURLWithUserAgentOverride(
-      url, referer, content::PageTransitionFromInt(page_transition),
-      false, std::string(), is_overriding_user_agent);
+
+  content::NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.transition_type =
+      content::PageTransitionFromInt(page_transition);
+  load_url_params.override_user_agent = is_overriding_user_agent ?
+      content::NavigationController::UA_OVERRIDE_TRUE :
+      content::NavigationController::UA_OVERRIDE_FALSE;
+
+  web_contents()->GetController().LoadURLWithParams(load_url_params);
+
   PostLoadUrl(url);
 }
 
