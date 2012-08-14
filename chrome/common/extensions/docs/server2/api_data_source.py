@@ -85,7 +85,9 @@ class APIDataSource(object):
   def _GenerateHandlebarContext(self, handlebar, path):
     return_dict = {
       'permissions': self._GetFeature(path),
-      'samples': _LazySamplesGetter(path, self._samples)
+      # Disabled to help with performance until we figure out
+      # http://crbug.com/142011.
+      'samples': None # _LazySamplesGetter(path, self._samples)
     }
     return_dict.update(handlebar.Generate())
     return return_dict
