@@ -118,6 +118,18 @@ const char kFile[] = "file";
 // https://developers.google.com/drive/v2/reference/changes/list
 const char kChangeListKind[] = "drive#changeList";
 
+// Google Apps MIME types:
+const char kGoogleDocumentMimeType[] = "application/vnd.google-apps.document";
+const char kGoogleDrawingMimeType[] = "application/vnd.google-apps.drawing";
+const char kGoogleFormMimeType[] = "application/vnd.google-apps.form";
+const char kGooglePresentationMimeType[] =
+    "application/vnd.google-apps.presentation";
+const char kGoogleScriptMimeType[] = "application/vnd.google-apps.script";
+const char kGoogleSiteMimeType[] = "application/vnd.google-apps.site";
+const char kGoogleSpreadsheetMimeType[] =
+    "application/vnd.google-apps.spreadsheet";
+const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
+
 // Maps category name to enum IconCategory.
 struct AppIconCategoryMap {
   gdata::DriveAppIcon::IconCategory category;
@@ -428,6 +440,24 @@ scoped_ptr<FileResource> FileResource::CreateFrom(const base::Value& value) {
 
 bool FileResource::IsDirectory() const {
   return mime_type_ == kDriveFolderMimeType;
+}
+
+DocumentEntry::EntryKind FileResource::GetKind() const {
+  if (mime_type() == kGoogleDocumentMimeType)
+    return DocumentEntry::DOCUMENT;
+  if (mime_type() == kGoogleSpreadsheetMimeType)
+    return DocumentEntry::SPREADSHEET;
+  if (mime_type() == kGooglePresentationMimeType)
+    return DocumentEntry::PRESENTATION;
+  if (mime_type() == kGoogleDrawingMimeType)
+    return DocumentEntry::DRAWING;
+  if (mime_type() == kGoogleTableMimeType)
+    return DocumentEntry::TABLE;
+  if (mime_type() == kDriveFolderMimeType)
+    return DocumentEntry::FOLDER;
+  if (mime_type() == "application/pdf")
+    return DocumentEntry::PDF;
+  return DocumentEntry::FILE;
 }
 
 bool FileResource::Parse(const base::Value& value) {

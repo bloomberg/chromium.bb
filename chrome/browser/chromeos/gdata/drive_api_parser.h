@@ -15,6 +15,9 @@
 #include "base/string_piece.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+// TODO(kochi): Eliminate this dependency once dependency to EntryKind is gone.
+// http://crbug.com/142293
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 
 namespace base {
 class Value;
@@ -314,6 +317,11 @@ class FileResource {
   // Note: "folder" is used elsewhere in this file to match Drive API reference,
   // but outside this file we use "directory" to match HTML5 filesystem API.
   bool IsDirectory() const;
+
+  // Returns EntryKind for this file.
+  // TODO(kochi): Remove this once FileResource is directly converted to proto.
+  // http://crbug.com/142293
+  DocumentEntry::EntryKind GetKind() const;
 
   // Returns file ID.  This is unique in all files in Google Drive.
   const std::string& file_id() const { return file_id_; }
