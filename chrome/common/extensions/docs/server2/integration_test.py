@@ -27,6 +27,27 @@ class FakeOmahaProxy(object):
   def fetch(self, url):
     return _ReadFile(os.path.join('test_data', 'branch_utility', 'first.json'))
 
+class FakeViewvcServer(object):
+  def __init__(self):
+    self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
+
+  def fetch(self, url):
+    path = os.path.join(
+        os.pardir, os.pardir, self._base_pattern.match(url).group(1))
+    if os.path.isdir(path):
+      html = ['<html><td>Directory revision:</td><td><a>000000</a></td>']
+      for f in os.listdir(path):
+        if f.startswith('.'):
+          continue
+        html.append('<td><a name="%s"></a></td>' % f)
+        if os.path.isdir(os.path.join(path, f)):
+          html.append('<td><a title="dir"><strong>000000</strong></a></td>')
+        else:
+          html.append('<td><a title="file"><strong>000000</strong></a></td>')
+      html.append('</html>')
+      return '\n'.join(html)
+    return _ReadFile(path)
+
 class FakeSubversionServer(object):
   def __init__(self):
     self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
@@ -54,6 +75,7 @@ class FakeGithub(object):
 appengine_wrappers.ConfigureFakeUrlFetch({
   url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(),
   '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(),
+  '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(),
   '%s/.*' % url_constants.GITHUB_URL: FakeGithub()
 })
 
