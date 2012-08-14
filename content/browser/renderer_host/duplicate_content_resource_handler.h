@@ -56,6 +56,10 @@ class DuplicateContentResourceHandler: public LayeredResourceHandler {
   MH_UINT32 pmurhash_ph1_;
   MH_UINT32 pmurhash_pcarry_;
 
+  // Used to track if it's a request we're interested in. If it's not, then we
+  // early out to avoid calculating the hash unnecessarily.
+  bool track_request_;
+
   DISALLOW_COPY_AND_ASSIGN(DuplicateContentResourceHandler);
 };
 
