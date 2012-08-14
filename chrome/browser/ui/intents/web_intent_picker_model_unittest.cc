@@ -224,7 +224,19 @@ TEST_F(WebIntentPickerModelTest, SetInlineDisposition) {
   EXPECT_EQ(kUrl2, model_.inline_disposition_url());
 
   model_.Clear();
-
   EXPECT_FALSE(model_.IsInlineDisposition());
   EXPECT_EQ(GURL::EmptyGURL(), model_.inline_disposition_url());
+}
+
+
+TEST_F(WebIntentPickerModelTest, WaitingForSuggestions) {
+  // Default status is that "waiting for suggestions".
+  EXPECT_TRUE(model_.IsWaitingForSuggestions());
+
+  // "waiting" status can be toggled manually.
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
+  model_.SetWaitingForSuggestions(false);
+  EXPECT_FALSE(model_.IsWaitingForSuggestions());
+  model_.SetWaitingForSuggestions(true);
+  EXPECT_TRUE(model_.IsWaitingForSuggestions());
 }

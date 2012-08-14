@@ -137,6 +137,12 @@ class WebIntentPickerModel {
   // Returns true if the picker is currently displaying an inline service.
   bool IsInlineDisposition() const;
 
+  // Returns true if there is still a pending request for suggestions from CWS.
+  bool IsWaitingForSuggestions() const;
+
+  // Set the "waiting for suggestions" status to |waiting|
+  void SetWaitingForSuggestions(bool waiting);
+
   // Returns the url of the intent service that is being displayed inline, or
   // GURL::EmptyGURL() if none.
   const GURL& inline_disposition_url() const { return inline_disposition_url_; }
@@ -170,6 +176,9 @@ class WebIntentPickerModel {
   // The non-empty url of the default service if the WebIntentsRegistry
   // finds a default service matching the intent being dispatched.
   GURL default_service_url_;
+
+  // Indicates that there are still open requests to CWS.
+  bool waiting_for_suggestions_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };

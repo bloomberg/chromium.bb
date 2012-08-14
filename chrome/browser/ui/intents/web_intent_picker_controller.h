@@ -45,6 +45,24 @@ class WebIntentPickerController
       public WebIntentPickerDelegate,
       public extensions::WebstoreInstaller::Delegate {
  public:
+
+  // The various states that the UI may be in. Public for testing.
+  enum WebIntentPickerState {
+    kPickerHidden,  // Picker not displayed at all.
+    kPickerSetup,  // Initial setup. Acquires data, keeps picker hidden.
+    kPickerWaiting, // Displaying "waiting for CWS".
+    kPickerWaitLong,  // "waiting" has displayed for longer than min. time.
+    kPickerMain,  // Displaying main picker dialog.
+  };
+
+  // Events that happen during picker life time. Drive state machine.
+  enum WebIntentPickerEvent {
+    kPickerEventHiddenSetupTimeout,  // Time for hidden setup exired.
+    kPickerEventMaxWaitTimeExceeded,  // Exceeded max wait time for CWS results.
+    kPickerEventRegistryDataComplete,  // Data from the registry has arrived.
+    kPickerEventAsyncDataComplete,  // Data from registry and CWS has arrived.
+  };
+
   explicit WebIntentPickerController(TabContents* tab_contents);
   virtual ~WebIntentPickerController();
 
@@ -156,6 +174,9 @@ class WebIntentPickerController
   void OnExtensionIconURLFetchComplete(const string16& extension_id,
                                        const net::URLFetcher* source);
 
+  // Called whenever intent data (both from registry and CWS) arrives.
+  void OnIntentDataArrived();
+
   typedef base::Callback<void(const gfx::Image&)>
       ExtensionIconAvailableCallback;
   // Called on a worker thread to decode and resize the extension's icon.
@@ -171,15 +192,26 @@ class WebIntentPickerController
   // Called when an extension's icon failed to be decoded or resized.
   void OnExtensionIconUnavailable(const string16& extension_id);
 
+  // Signals that a picker event has occurred.
+  void OnPickerEvent(WebIntentPickerEvent event);
+
   // Decrements the |pending_async_count_| and notifies the picker if it
   // reaches zero.
   void AsyncOperationFinished();
+
+  // Invoke the specified service at |service_url| with chosen |disposition|.
+  void InvokeService(const WebIntentPickerModel::InstalledService& service);
+
+  // Sets current dialog state.
+  void SetDialogState(WebIntentPickerState state);
 
   // Helper to create picker dialog UI.
   void CreatePicker();
 
   // Closes the currently active picker.
   void ClosePicker();
+
+  WebIntentPickerState dialog_state_;  // Current state of the dialog.
 
   // A weak pointer to the tab contents that the picker is displayed on.
   TabContents* tab_contents_;
@@ -200,6 +232,9 @@ class WebIntentPickerController
 
   // A count of outstanding WebIntentsRegistry calls.
   int pending_registry_calls_count_;
+
+  // Indicator that there is a pending request for cws data.
+  bool pending_cws_request_;
 
   // Is true if the picker is currently visible.
   // This bool is not equivalent to picker != NULL in a unit test. In that
@@ -228,6 +263,9 @@ class WebIntentPickerController
   CancelableRequestConsumerTSimple<size_t> favicon_consumer_;
 
   base::WeakPtrFactory<WebIntentPickerController> weak_ptr_factory_;
+
+  // Timer factory for minimum display time of "waiting" dialog.
+  base::WeakPtrFactory<WebIntentPickerController> timer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerController);
 };

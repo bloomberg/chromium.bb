@@ -27,6 +27,7 @@ class TabContentsContainerGtk;
 class TabContents;
 class ThrobberGtk;
 class WebIntentPickerDelegate;
+class WaitingDialog;
 
 // GTK implementation of WebIntentPicker.
 class WebIntentPickerGtk : public WebIntentPicker,
@@ -87,6 +88,9 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // Initialize the contents of the picker. After this call, contents_ will be
   // non-NULL.
   void InitContents();
+
+  // Initialize the main picker dialog.
+  void InitMainContents();
 
   // Reset contents to the initial picker state.
   void ResetContents();
@@ -154,6 +158,8 @@ class WebIntentPickerGtk : public WebIntentPicker,
 
   // The throbber to display when installing an extension.
   scoped_ptr<ThrobberGtk> throbber_;
+
+  scoped_ptr<WaitingDialog> waiting_dialog_;
 
   // A weak pointer to the constrained window.
   ConstrainedWindowGtk* window_;

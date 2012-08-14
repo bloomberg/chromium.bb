@@ -22,7 +22,8 @@ const size_t kMaxSuggestionCount = 5;  // Maximum number of visible suggestions.
 }  // namespace
 
 WebIntentPickerModel::WebIntentPickerModel()
-    : observer_(NULL) {
+    : observer_(NULL),
+      waiting_for_suggestions_(true) {
 }
 
 WebIntentPickerModel::~WebIntentPickerModel() {
@@ -58,6 +59,7 @@ void WebIntentPickerModel::Clear() {
   action_.clear();
   type_.clear();
   inline_disposition_url_ = GURL::EmptyGURL();
+  waiting_for_suggestions_ = true;
   if (observer_)
     observer_->OnModelChanged(this);
 }
@@ -153,6 +155,16 @@ void WebIntentPickerModel::SetInlineDisposition(const GURL& url) {
 
 bool WebIntentPickerModel::IsInlineDisposition() const {
   return !inline_disposition_url_.is_empty();
+}
+
+bool WebIntentPickerModel::IsWaitingForSuggestions() const {
+  return waiting_for_suggestions_;
+}
+
+void WebIntentPickerModel::SetWaitingForSuggestions(bool waiting) {
+  waiting_for_suggestions_ = waiting;
+  if (observer_)
+    observer_->OnModelChanged(this);
 }
 
 void WebIntentPickerModel::DestroyAll() {

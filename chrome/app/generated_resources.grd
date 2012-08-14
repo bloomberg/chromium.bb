@@ -16961,6 +16961,9 @@ Battery full
     <message name="IDS_INTENT_PICKER_USE_ANOTHER_SERVICE" desc="Button text providing a way for the user to not use the web intents service they are on, and select a new one.">
       Use another service
     </message>
+    <message name="IDS_INTENT_PICKER_WAIT_FOR_CWS" desc="Prompt indicating to the user that Chrome is currently waiting for results from the Chrome Web Store">
+      Waiting for Chrome Web Store
+    </message>
 
     <!-- Web Intents common actions -->
     <message name="IDS_WEB_INTENTS_ACTION_SHARE" desc="Question asking the user to pick a service for the 'share' action.">

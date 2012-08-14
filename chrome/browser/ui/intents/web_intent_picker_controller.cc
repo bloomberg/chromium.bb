@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -59,6 +60,13 @@ const char kViewActionURL[] = "http://webintents.org/view";
 const char kPickActionURL[] = "http://webintents.org/pick";
 const char kSubscribeActionURL[] = "http://webintents.org/subscribe";
 const char kSaveActionURL[] = "http://webintents.org/save";
+
+// Maximum amount of time to delay displaying dialog while waiting for data.
+const int kMaxHiddenSetupTimeMs = 200;
+
+// Minimum amount of time to show waiting dialog, if it is shown.
+const int kMinThrobberDisplayTimeMs = 2000;
+
 
 // Gets the favicon service for the profile in |tab_contents|.
 FaviconService* GetFaviconService(TabContents* tab_contents) {
@@ -161,17 +169,20 @@ class SourceWindowObserver : content::WebContentsObserver {
 
 WebIntentPickerController::WebIntentPickerController(
     TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+    : dialog_state_(kPickerHidden),
+      tab_contents_(tab_contents),
       picker_(NULL),
       picker_model_(new WebIntentPickerModel()),
       pending_async_count_(0),
       pending_registry_calls_count_(0),
+      pending_cws_request_(false),
       picker_shown_(false),
       window_disposition_source_(NULL),
       source_intents_dispatcher_(NULL),
       intents_dispatcher_(NULL),
       service_tab_(NULL),
-      weak_ptr_factory_(this) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)) {
   content::NavigationController* controller =
       &tab_contents->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
@@ -191,9 +202,13 @@ void WebIntentPickerController::SetIntentsDispatcher(
       base::Bind(&WebIntentPickerController::OnSendReturnMessage,
                  weak_ptr_factory_.GetWeakPtr()));
 }
-
 void WebIntentPickerController::ShowDialog(const string16& action,
                                            const string16& type) {
+
+  // As soon as the dialog is requested, block all input events
+  // on the original tab.
+  tab_contents_->constrained_window_tab_helper()->BlockTabContent(true);
+
   // Only show a picker once.
   // TODO(gbillock): There's a hole potentially admitting multiple
   // in-flight dispatches since we don't create the picker
@@ -247,9 +262,10 @@ void WebIntentPickerController::ShowDialog(const string16& action,
     }
   }
 
-  pending_async_count_ += 2;
-  pending_registry_calls_count_ += 1;
+  SetDialogState(kPickerSetup);
 
+  pending_async_count_++;
+  pending_registry_calls_count_++;
   GetWebIntentsRegistry(tab_contents_)->GetIntentServices(
       action, type,
           base::Bind(&WebIntentPickerController::OnWebIntentServicesAvailable,
@@ -265,10 +281,12 @@ void WebIntentPickerController::ShowDialog(const string16& action,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-    GetCWSIntentsRegistry(tab_contents_)->GetIntentServices(
-        action, type,
-        base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
+  pending_cws_request_ = true;
+  pending_async_count_++;
+  GetCWSIntentsRegistry(tab_contents_)->GetIntentServices(
+      picker_model_->action(), picker_model_->type(),
+      base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebIntentPickerController::Observe(
@@ -529,11 +547,7 @@ void WebIntentPickerController::WebIntentServicesForExplicitIntent(
 
     AddServiceToModel(services[i]);
 
-    if (services[i].disposition ==
-        webkit_glue::WebIntentServiceData::DISPOSITION_INLINE)
-      CreatePicker();
-    OnServiceChosen(services[i].service_url,
-                    ConvertDisposition(services[i].disposition));
+    InvokeService(picker_model_->GetInstalledServiceAt(i));
     AsyncOperationFinished();
     return;
   }
@@ -569,18 +583,13 @@ void WebIntentPickerController::RegistryCallsCompleted() {
             GURL(picker_model_->default_service_url()));
 
     if (default_service != NULL) {
-      if (default_service->disposition ==
-          WebIntentPickerModel::DISPOSITION_INLINE)
-        CreatePicker();
-
-      OnServiceChosen(default_service->url, default_service->disposition);
+      InvokeService(*default_service);
       return;
     }
   }
 
-  CreatePicker();
-  picker_->SetActionString(GetIntentActionString(
-      UTF16ToUTF8(picker_model_->action())));
+  OnPickerEvent(kPickerEventRegistryDataComplete);
+  OnIntentDataArrived();
 }
 
 void WebIntentPickerController::OnFaviconDataAvailable(
@@ -635,6 +644,8 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
   }
 
   AsyncOperationFinished();
+  pending_cws_request_ = false;
+  OnIntentDataArrived();
 }
 
 void WebIntentPickerController::OnExtensionIconURLFetchComplete(
@@ -680,6 +691,14 @@ void WebIntentPickerController::OnExtensionIconURLFetchComplete(
                  base::Passed(&response),
                  available_callback,
                  unavailable_callback));
+}
+
+void WebIntentPickerController::OnIntentDataArrived() {
+  DCHECK(picker_model_.get());
+
+  if (!pending_cws_request_ &&
+      pending_registry_calls_count_ == 0)
+    OnPickerEvent(kPickerEventAsyncDataComplete);
 }
 
 // static
@@ -754,6 +773,48 @@ bool WebIntentPickerController::ShowLocationBarPickerTool() {
   return window_disposition_source_ || source_intents_dispatcher_;
 }
 
+void WebIntentPickerController::OnPickerEvent(WebIntentPickerEvent event) {
+  switch (event) {
+    case kPickerEventHiddenSetupTimeout:
+      DCHECK(dialog_state_ == kPickerSetup);
+      SetDialogState(kPickerWaiting);
+      break;
+
+    case kPickerEventMaxWaitTimeExceeded:
+      DCHECK(dialog_state_ == kPickerWaiting);
+
+      // If registry data is complete, go to main dialog. Otherwise, wait.
+      if (pending_registry_calls_count_ == 0)
+        SetDialogState(kPickerMain);
+      else
+        SetDialogState(kPickerWaitLong);
+      break;
+
+    case kPickerEventRegistryDataComplete:
+      DCHECK(dialog_state_ == kPickerSetup ||
+             dialog_state_ == kPickerWaiting ||
+             dialog_state_ == kPickerWaitLong);
+
+      // If minimum wait dialog time is exceeded, display main dialog.
+      // Either way, we don't do a thing.
+      break;
+
+    case kPickerEventAsyncDataComplete:
+      DCHECK(dialog_state_ == kPickerSetup ||
+              dialog_state_ == kPickerWaiting);
+
+      // In setup state, transition to main dialog. In waiting state, let
+      // timer expire.
+      if (dialog_state_ == kPickerSetup)
+        SetDialogState(kPickerMain);
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
 void WebIntentPickerController::AsyncOperationFinished() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (--pending_async_count_ == 0) {
@@ -762,14 +823,82 @@ void WebIntentPickerController::AsyncOperationFinished() {
   }
 }
 
+void WebIntentPickerController::InvokeService(
+    const WebIntentPickerModel::InstalledService& service) {
+  if (service.disposition == WebIntentPickerModel::DISPOSITION_INLINE) {
+    SetDialogState(kPickerMain);
+  }
+  OnServiceChosen(service.url, service.disposition);
+}
+
+void WebIntentPickerController::SetDialogState(WebIntentPickerState state) {
+  // Ignore events that don't change state.
+  if (state == dialog_state_)
+    return;
+
+  // Any pending timers are abandoned on state changes.
+  timer_factory_.InvalidateWeakPtrs();
+
+  switch (state) {
+    case kPickerSetup:
+      DCHECK(dialog_state_ == kPickerHidden);
+
+      // Post timer CWS pending
+      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+          base::Bind(&WebIntentPickerController::OnPickerEvent,
+                     timer_factory_.GetWeakPtr(),
+                     kPickerEventHiddenSetupTimeout),
+          base::TimeDelta::FromMilliseconds(kMaxHiddenSetupTimeMs));
+      break;
+
+    case kPickerWaiting:
+      DCHECK(dialog_state_ == kPickerSetup);
+      // Waiting dialog can be dismissed after minimum wait time.
+      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+          base::Bind(&WebIntentPickerController::OnPickerEvent,
+                     timer_factory_.GetWeakPtr(),
+                     kPickerEventMaxWaitTimeExceeded),
+          base::TimeDelta::FromMilliseconds(kMinThrobberDisplayTimeMs));
+      break;
+
+    case kPickerWaitLong:
+      DCHECK(dialog_state_ == kPickerWaiting);
+      break;
+
+    case kPickerMain:
+      // No DCHECK - main state can be reached from any state.
+      // Ready to display data.
+      picker_model_->SetWaitingForSuggestions(false);
+      break;
+
+    case kPickerHidden:
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+
+  }
+
+  dialog_state_ = state;
+
+  // Create picker dialog when changing away from hidden state.
+  if (dialog_state_ != kPickerHidden && dialog_state_ != kPickerSetup)
+    CreatePicker();
+}
+
+
 void WebIntentPickerController::CreatePicker() {
   // If picker is non-NULL, it was set by a test.
   if (picker_ == NULL)
     picker_ = WebIntentPicker::Create(tab_contents_, this, picker_model_.get());
+  picker_->SetActionString(GetIntentActionString(
+      UTF16ToUTF8(picker_model_->action())));
   picker_shown_ = true;
 }
 
 void WebIntentPickerController::ClosePicker() {
+  SetDialogState(kPickerHidden);
   if (picker_)
     picker_->Close();
 }

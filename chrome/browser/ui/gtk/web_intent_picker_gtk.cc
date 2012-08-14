@@ -137,6 +137,67 @@ GtkWidget* CreateStarsWidget(double rating) {
 
 } // namespace
 
+// Create a new Widget for the "waiting for CWS" display.
+
+class WaitingDialog {
+ public:
+  explicit WaitingDialog(GtkThemeService* theme_service);
+  ~WaitingDialog();
+
+  GtkWidget* widget() const { return widget_.get(); }
+ private:
+  // Initialize the widget.
+  void Init();
+
+  // The actual GtkWidget
+  ui::OwnedWidgetGtk widget_;
+
+  // Waiting throbber.
+  scoped_ptr<ThrobberGtk> throbber_;
+
+  // Weak pointer to theme service.
+  GtkThemeService* theme_service_;
+};
+
+WaitingDialog::WaitingDialog(GtkThemeService* theme_service)
+    : theme_service_(theme_service) {
+  DCHECK(theme_service_);
+  Init();
+}
+
+WaitingDialog::~WaitingDialog() {
+  widget_.Destroy();
+}
+
+void WaitingDialog::Init() {
+  const int kDialogSpacing = 30;
+
+  widget_.Own(gtk_vbox_new(FALSE, 0));
+  GtkWidget* vbox = widget_.get();
+
+  // Create throbber
+  ThrobberGtk* throbber = new ThrobberGtk(theme_service_);
+  GtkWidget* throbber_alignment = gtk_alignment_new(0.5, 0.5, 0, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(throbber_alignment), kDialogSpacing,
+                            kMainContentPixelSize, 0, 0);
+  gtk_container_add(GTK_CONTAINER(throbber_alignment), throbber->widget());
+  gtk_box_pack_start(GTK_BOX(vbox), throbber_alignment, TRUE, TRUE, 0);
+
+  // Add the message text.
+  GtkWidget* message_label = theme_service_->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_INTENT_PICKER_WAIT_FOR_CWS).c_str(),
+      ui::kGdkBlack);
+
+  GtkWidget* label_alignment = gtk_alignment_new(0.5, 0.5, 0, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(label_alignment),
+                            kMainContentPixelSize, kDialogSpacing, 0, 0);
+  gtk_container_add(GTK_CONTAINER(label_alignment), message_label);
+  gtk_box_pack_start(GTK_BOX(vbox), label_alignment, TRUE, TRUE, 0);
+
+  // TODO(groby): use IDR_SPEECH_INPUT_SPINNER. Pending fix for ThrobberGtk.
+  // Animate throbber
+  throbber->Start();
+}
 // static
 WebIntentPicker* WebIntentPicker::Create(TabContents* tab_contents,
                                          WebIntentPickerDelegate* delegate,
@@ -183,7 +244,8 @@ void WebIntentPickerGtk::Close() {
 
 void WebIntentPickerGtk::SetActionString(const string16& action) {
   header_label_text_ = action;
-  gtk_label_set_text(GTK_LABEL(header_label_), UTF16ToUTF8(action).c_str());
+  if (header_label_)
+    gtk_label_set_text(GTK_LABEL(header_label_), UTF16ToUTF8(action).c_str());
 }
 
 void WebIntentPickerGtk::OnExtensionInstallSuccess(const std::string& id) {
@@ -206,9 +268,14 @@ void WebIntentPickerGtk::OnExtensionInstallFailure(const std::string& id) {
 }
 
 void WebIntentPickerGtk::OnModelChanged(WebIntentPickerModel* model) {
+  if (waiting_dialog_.get() && !model->IsWaitingForSuggestions()) {
+    waiting_dialog_.reset();
+    InitMainContents();
+  }
   UpdateInstalledServices();
   UpdateCWSLabel();
   UpdateSuggestedExtensions();
+  SetActionString(header_label_text_);
 }
 
 void WebIntentPickerGtk::OnFaviconChanged(WebIntentPickerModel* model,
@@ -332,6 +399,7 @@ void WebIntentPickerGtk::OnPendingAsyncCompleted() {
   AddTitle(sub_contents);
 
   // Replace the dialog header.
+  DCHECK(header_label_);
   gtk_label_set_text(
       GTK_LABEL(header_label_),
       l10n_util::GetStringUTF8(IDS_INTENT_PICKER_NO_SERVICES_TITLE).c_str());
@@ -376,12 +444,13 @@ void WebIntentPickerGtk::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
-  GtkThemeService* theme_service = GetThemeService(tab_contents_);
-  if (theme_service->UsingNativeTheme())
-    gtk_util::UndoForceFontSize(header_label_);
-  else
-    gtk_util::ForceFontSizePixels(header_label_, kHeaderLabelPixelSize);
-
+  if (header_label_) {
+    GtkThemeService* theme_service = GetThemeService(tab_contents_);
+    if (theme_service->UsingNativeTheme())
+      gtk_util::UndoForceFontSize(header_label_);
+    else
+      gtk_util::ForceFontSizePixels(header_label_, kHeaderLabelPixelSize);
+  }
   UpdateInstalledServices();
   UpdateSuggestedExtensions();
 }
@@ -470,8 +539,25 @@ void WebIntentPickerGtk::InitContents() {
 
   gtk_widget_set_size_request(contents_, kMainContentWidth, -1);
 
+  if (model_ && model_->IsWaitingForSuggestions()) {
+    gtk_util::RemoveAllChildren(contents_);
+    AddCloseButton(contents_);
+    waiting_dialog_.reset(new WaitingDialog(theme_service));
+    gtk_box_pack_start(GTK_BOX(contents_), waiting_dialog_->widget(),
+                       TRUE, TRUE, 0);
+  } else {
+    InitMainContents();
+  }
+}
+
+void WebIntentPickerGtk::InitMainContents() {
+  GtkThemeService* theme_service = GetThemeService(tab_contents_);
+
+  gtk_util::RemoveAllChildren(contents_);
+
   AddCloseButton(contents_);
   GtkWidget* sub_contents = CreateSubContents(contents_);
+
   AddTitle(sub_contents);
 
   // Add separation between the installed services list and the app suggestions.
@@ -526,6 +612,8 @@ void WebIntentPickerGtk::InitContents() {
 
   // Throbber, which will be added to the hierarchy when necessary.
   throbber_.reset(new ThrobberGtk(theme_service));
+
+  gtk_widget_show_all(contents_);
 }
 
 void WebIntentPickerGtk::ResetContents() {
@@ -538,7 +626,7 @@ void WebIntentPickerGtk::ResetContents() {
   inline_disposition_tab_contents_.reset(NULL);
 
   // Re-initialize picker widgets and data.
-  InitContents();
+  InitMainContents();
   UpdateInstalledServices();
   UpdateCWSLabel();
   UpdateSuggestedExtensions();
@@ -588,6 +676,9 @@ void WebIntentPickerGtk::AddTitle(GtkWidget* containingBox) {
 }
 
 void WebIntentPickerGtk::UpdateInstalledServices() {
+  if (!button_vbox_)
+    return;
+
   gtk_util::RemoveAllChildren(button_vbox_);
 
   if (model_->GetInstalledServiceCount() == 0) {
@@ -621,6 +712,9 @@ void WebIntentPickerGtk::UpdateInstalledServices() {
 }
 
 void WebIntentPickerGtk::UpdateCWSLabel() {
+  if (!button_vbox_)
+    return;
+
   gtk_widget_set_visible(gtk_widget_get_parent(button_vbox_),
                          model_->GetInstalledServiceCount() != 0);
 
@@ -630,6 +724,9 @@ void WebIntentPickerGtk::UpdateCWSLabel() {
 }
 
 void WebIntentPickerGtk::UpdateSuggestedExtensions() {
+  if (!extensions_vbox_)
+    return;
+
   GtkThemeService* theme_service = GetThemeService(tab_contents_);
 
   gtk_util::RemoveAllChildren(extensions_vbox_);
@@ -687,10 +784,12 @@ void WebIntentPickerGtk::UpdateSuggestedExtensions() {
 
 void WebIntentPickerGtk::SetWidgetsEnabled(bool enabled) {
   gboolean data = enabled;
-  gtk_container_foreach(GTK_CONTAINER(button_vbox_), EnableWidgetCallback,
-                        &data);
-  gtk_container_foreach(GTK_CONTAINER(extensions_vbox_), EnableWidgetCallback,
-                        &data);
+  if (button_vbox_)
+    gtk_container_foreach(GTK_CONTAINER(button_vbox_), EnableWidgetCallback,
+                          &data);
+  if (extensions_vbox_)
+    gtk_container_foreach(GTK_CONTAINER(extensions_vbox_), EnableWidgetCallback,
+                          &data);
 }
 
 GtkWidget* WebIntentPickerGtk::AddThrobberToExtensionAt(size_t index) {
