@@ -53,6 +53,12 @@
             },
           ],
         },
+      ],
+    }],
+    # TODO(bbudge) Remove the build_ppapi_ipc_proxy_untrusted flag, factor out common
+    # properties from both IRT flavors, and build them side by side.
+    ['disable_nacl==0 and disable_nacl_untrusted==0 and build_ppapi_ipc_proxy_untrusted==0', {
+      'targets': [
         {
           'target_name': 'nacl_irt',
           'type': 'none',
@@ -177,16 +183,20 @@
             '../../native_client/src/shared/gio/gio.gyp:gio_lib',
           ],
         },
+      ],
+    }],
+    ['disable_nacl==0 and disable_nacl_untrusted==0 and build_ppapi_ipc_proxy_untrusted==1', {
+      'targets': [
         {
-          'target_name': 'nacl_ipc_irt',
+          'target_name': 'nacl_irt',
           'type': 'none',
           'variables': {
-            'nexe_target': 'nacl_ipc_irt',
+            'nexe_target': 'nacl_irt',
             # These out_* fields override the default filenames, which
             # include a "_newlib" suffix.
-            'out_newlib64': '<(PRODUCT_DIR)/nacl_ipc_irt_x86_64.nexe',
-            'out_newlib32': '<(PRODUCT_DIR)/nacl_ipc_irt_x86_32.nexe',
-            'out_newlib_arm': '<(PRODUCT_DIR)/nacl_ipc_irt_arm.nexe',
+            'out_newlib64': '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+            'out_newlib32': '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
+            'out_newlib_arm': '<(PRODUCT_DIR)/nacl_irt_arm.nexe',
             'build_glibc': 0,
             'build_newlib': 1,
             'include_dirs': [
@@ -365,7 +375,7 @@
             ],
           },
           'dependencies': [
-            '../ppapi_ipc_proxy_untrusted.gyp:ppapi_proxy_untrusted',
+            '../ppapi_proxy_untrusted.gyp:ppapi_proxy_untrusted',
             '../ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../../gpu/command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
             '../../gpu/gpu_untrusted.gyp:command_buffer_client_untrusted',

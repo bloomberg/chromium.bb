@@ -80,7 +80,6 @@
             ['disable_nacl_untrusted==0', {
               'dependencies': [
                 '../ppapi/native_client/native_client.gyp:nacl_irt',
-                '../ppapi/native_client/native_client.gyp:nacl_ipc_irt',
               ],
             }],
           ],
