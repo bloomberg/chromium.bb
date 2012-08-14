@@ -1870,6 +1870,8 @@ void GDataFileSystem::GetEntryInfoByPath(const FilePath& file_path,
                                          const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!callback.is_null());
+
   RunTaskOnUIThread(
       base::Bind(&GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread,
                  ui_weak_ptr_,
@@ -1881,6 +1883,7 @@ void GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread(
     const FilePath& file_path,
     const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   FindEntryByPathAsyncOnUIThread(
       file_path,
@@ -1893,10 +1896,10 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
                                     GDataFileError error,
                                     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error, scoped_ptr<GDataEntryProto>());
+    callback.Run(error, scoped_ptr<GDataEntryProto>());
     return;
   }
   DCHECK(entry);
