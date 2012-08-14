@@ -122,7 +122,6 @@ MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
       mic_image_(NULL),
       camera_image_(NULL),
       balloon_image_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       request_index_(0) {
 }
 
@@ -274,7 +273,8 @@ void MediaStreamCaptureIndicator::ShowBalloon(
     pending_messages_[request_index_++] =
         l10n_util::GetStringFUTF16(message_id,
                                    UTF8ToUTF16(extension->name()));
-    tracker_.LoadImage(
+    EnsureImageLoadingTracker();
+    tracker_->LoadImage(
         extension,
         extension->GetIconResource(32, ExtensionIconSet::MATCH_BIGGER),
         gfx::Size(32, 32),
@@ -307,6 +307,10 @@ void MediaStreamCaptureIndicator::OnImageLoaded(
 void MediaStreamCaptureIndicator::Hide() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(tabs_.empty());
+
+  // We have to destroy |tracker_| on the UI thread.
+  tracker_.reset();
+
   if (!status_icon_)
     return;
 
@@ -445,3 +449,12 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
   UpdateStatusTrayIconContextMenu();
 }
 
+void MediaStreamCaptureIndicator::EnsureImageLoadingTracker() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (tracker_.get())
+    return;
+
+  tracker_.reset(new ImageLoadingTracker(this));
+  pending_messages_.clear();
+  request_index_ = 0;
+}

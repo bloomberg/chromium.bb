@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -127,6 +128,9 @@ class MediaStreamCaptureIndicator
   // UpdateStatusTrayIconContextMenu().
   void UpdateStatusTrayIconDisplay(bool audio, bool video);
 
+  // Initializes image loading state.
+  void EnsureImageLoadingTracker();
+
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.
   StatusIcon* status_icon_;
@@ -141,7 +145,7 @@ class MediaStreamCaptureIndicator
   CaptureDeviceTabs tabs_;
 
   // Tracks the load of extension icons.
-  ImageLoadingTracker tracker_;
+  scoped_ptr<ImageLoadingTracker> tracker_;
   // The messages to display when extension images are loaded. The index
   // corresponds to the index of the associated LoadImage request.
   std::map<int, string16> pending_messages_;
