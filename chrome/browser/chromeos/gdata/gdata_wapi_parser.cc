@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
@@ -804,6 +805,83 @@ DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
 }
 
 // static
+DocumentEntry* DocumentEntry::CreateFromFileResource(const FileResource& file) {
+  scoped_ptr<DocumentEntry> entry(new DocumentEntry());
+
+  // DocumentEntry
+  entry->resource_id_ = file.file_id();
+  entry->id_ = file.file_id();
+  entry->kind_ = file.GetKind();
+  entry->title_ = UTF8ToUTF16(file.title());
+  entry->published_time_ = file.created_date();
+  // TODO(kochi): entry->labels_
+  entry->content_.url_ = file.web_content_link();
+  entry->content_.mime_type_ = file.mime_type();
+  // TODO(kochi): entry->feed_links_
+
+  // For file entries
+  entry->filename_ = UTF8ToUTF16(file.title());
+  entry->suggested_filename_ = UTF8ToUTF16(file.title());
+  entry->file_md5_ = file.md5_checksum();
+  entry->file_size_ = file.file_size();
+
+  entry->deleted_ = false;  // later filled by CreateFromChangeResource.
+  entry->removed_ = false;  // later filled by CreateFromChangeResource.
+
+  // FeedEntry
+  entry->etag_ = file.etag();
+  // entry->authors_
+  // entry->links_.
+  if (!file.parents().empty()) {
+    Link* link = new Link();
+    link->type_ = Link::PARENT;
+    link->href_ = file.parents()[0]->parent_link();
+    entry->links_.push_back(link);
+  }
+  if (!file.self_link().is_empty()) {
+    Link* link = new Link();
+    link->type_ = Link::EDIT;
+    link->href_ = file.self_link();
+    entry->links_.push_back(link);
+  }
+  if (!file.thumbnail_link().is_empty()) {
+    Link* link = new Link();
+    link->type_ = Link::THUMBNAIL;
+    link->href_ = file.thumbnail_link();
+    entry->links_.push_back(link);
+  }
+  if (!file.alternate_link().is_empty()) {
+    Link* link = new Link();
+    link->type_ = Link::ALTERNATE;
+    link->href_ = file.alternate_link();
+    entry->links_.push_back(link);
+  }
+  if (!file.embed_link().is_empty()) {
+    Link* link = new Link();
+    link->type_ = Link::EMBED;
+    link->href_ = file.embed_link();
+    entry->links_.push_back(link);
+  }
+  // entry->categories_
+  entry->updated_time_ = file.modified_by_me_date();
+
+  // TODO: Do we need this?
+  entry->FillRemainingFields();
+  return entry.release();
+}
+
+// static
+DocumentEntry*
+DocumentEntry::CreateFromChangeResource(const ChangeResource& change) {
+  DocumentEntry* entry = CreateFromFileResource(change.file());
+
+  entry->deleted_ = change.is_deleted();
+  entry->removed_ = change.is_deleted();
+
+  return entry;
+}
+
+// static
 std::string DocumentEntry::GetEntryNodeName() {
   return kEntryNode;
 }
@@ -875,6 +953,23 @@ scoped_ptr<DocumentFeed> DocumentFeed::CreateFrom(const base::Value& value) {
     return scoped_ptr<DocumentFeed>(NULL);
   }
 
+  return feed.Pass();
+}
+
+// static
+scoped_ptr<DocumentFeed> DocumentFeed::CreateFromChangeList(
+    const ChangeList& changelist) {
+  scoped_ptr<DocumentFeed> feed(new DocumentFeed());
+  int64 largest_changestamp = 0;
+  ScopedVector<ChangeResource>::const_iterator iter =
+      changelist.items().begin();
+  while (iter != changelist.items().end()) {
+    const FileResource& file = (*iter)->file();
+    largest_changestamp = std::max(largest_changestamp, (*iter)->change_id());
+    feed->entries_.push_back(DocumentEntry::CreateFromFileResource(file));
+    ++iter;
+  }
+  feed->largest_changestamp_ = largest_changestamp;
   return feed.Pass();
 }
 

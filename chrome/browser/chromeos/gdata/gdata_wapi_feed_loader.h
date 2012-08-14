@@ -211,6 +211,15 @@ class GDataWapiFeedLoader {
       GDataErrorCode status,
       scoped_ptr<base::Value> data);
 
+  // Callback for handling response from |GDataDocumentsService::GetChanglist|.
+  // Invokes |callback| when done.
+  void OnGetChangelist(ContentOrigin initial_origin,
+                       const LoadDocumentFeedCallback& callback,
+                       GetDocumentsParams* params,
+                       base::TimeTicks start_time,
+                       GDataErrorCode status,
+                       scoped_ptr<base::Value> data);
+
   // Save filesystem to disk.
   void SaveFileSystem();
 

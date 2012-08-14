@@ -464,6 +464,29 @@ void GDataWapiFeedLoader::LoadFromServer(
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
       new std::vector<DocumentFeed*>);
   const base::TimeTicks start_time = base::TimeTicks::Now();
+
+  if (gdata::util::IsDriveV2ApiEnabled()) {
+    documents_service_->GetChangelist(
+        feed_to_load,
+        start_changestamp,
+        base::Bind(&GDataWapiFeedLoader::OnGetChangelist,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   initial_origin,
+                   feed_load_callback,
+                   base::Owned(new GetDocumentsParams(
+                       start_changestamp,
+                       root_feed_changestamp,
+                       feed_list.release(),
+                       should_fetch_multiple_feeds,
+                       search_file_path,
+                       search_query,
+                       directory_resource_id,
+                       entry_found_callback,
+                       NULL)),
+                   start_time));
+    return;
+  }
+
   documents_service_->GetDocuments(
       feed_to_load,
       start_changestamp,
@@ -554,7 +577,6 @@ void GDataWapiFeedLoader::OnGetDocuments(
     if (!callback.is_null()) {
       callback.Run(params, GDATA_FILE_ERROR_FAILED);
     }
-
     return;
   }
   const bool has_next_feed_url = current_feed->GetNextFeedURL(&next_feed_url);
@@ -634,6 +656,126 @@ void GDataWapiFeedLoader::OnGetDocuments(
                     OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Gdata.EntireFeedLoadTime",
+                      base::TimeTicks::Now() - start_time);
+
+  if (!callback.is_null())
+    callback.Run(params, error);
+}
+
+void GDataWapiFeedLoader::OnGetChangelist(
+    ContentOrigin initial_origin,
+    const LoadDocumentFeedCallback& callback,
+    GetDocumentsParams* params,
+    base::TimeTicks start_time,
+    GDataErrorCode status,
+    scoped_ptr<base::Value> data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (params->feed_list->empty()) {
+    UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
+                        base::TimeTicks::Now() - start_time);
+  }
+
+  GDataFileError error = util::GDataToGDataFileError(status);
+  if (error == GDATA_FILE_OK &&
+      (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
+    error = GDATA_FILE_ERROR_FAILED;
+  }
+
+  if (error != GDATA_FILE_OK) {
+    directory_service_->set_origin(initial_origin);
+
+    if (!callback.is_null())
+      callback.Run(params, error);
+
+    return;
+  }
+
+  GURL next_feed_url;
+  scoped_ptr<ChangeList> current_feed(ChangeList::CreateFrom(*data));
+  if (!current_feed.get()) {
+    if (!callback.is_null()) {
+      callback.Run(params, GDATA_FILE_ERROR_FAILED);
+    }
+    return;
+  }
+  const bool has_next_feed = !current_feed->next_page_token().empty();
+
+#ifndef NDEBUG
+  // Save initial root feed for analysis.
+  std::string file_name =
+      base::StringPrintf("DEBUG_changelist_%" PRId64 ".json",
+                         params->start_changestamp);
+  util::PostBlockingPoolSequencedTask(
+      FROM_HERE,
+      blocking_task_runner_,
+      base::Bind(&SaveFeedOnBlockingPoolForDebugging,
+                 cache_->GetCacheDirectoryPath(
+                     GDataCache::CACHE_TYPE_META).Append(file_name),
+                 base::Passed(&data)));
+#endif
+
+  // Add the current feed to the list of collected feeds for this directory.
+  scoped_ptr<DocumentFeed> feed =
+      DocumentFeed::CreateFromChangeList(*current_feed);
+  params->feed_list->push_back(feed.release());
+
+  // Compute and notify the number of entries fetched so far.
+  int num_accumulated_entries = 0;
+  for (size_t i = 0; i < params->feed_list->size(); ++i)
+    num_accumulated_entries += params->feed_list->at(i)->entries().size();
+
+  // Check if we need to collect more data to complete the directory list.
+  if (params->should_fetch_multiple_feeds && has_next_feed) {
+
+    // Post an UI update event to make the UI smoother.
+    GetDocumentsUiState* ui_state = params->ui_state.get();
+    if (ui_state == NULL) {
+      ui_state = new GetDocumentsUiState(base::TimeTicks::Now());
+      params->ui_state.reset(ui_state);
+    }
+    DCHECK(ui_state);
+
+    if ((ui_state->num_fetched_documents - ui_state->num_showing_documents)
+        < kFetchUiUpdateStep) {
+      // Currently the UI update is stopped. Start UI periodic callback.
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ui_state->weak_ptr_factory.GetWeakPtr()));
+    }
+    ui_state->num_fetched_documents = num_accumulated_entries;
+    ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
+
+    // Kick of the remaining part of the feeds.
+    documents_service_->GetChangelist(
+        current_feed->next_link(),
+        params->start_changestamp,
+        base::Bind(&GDataWapiFeedLoader::OnGetChangelist,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   initial_origin,
+                   callback,
+                   base::Owned(
+                       new GetDocumentsParams(
+                           params->start_changestamp,
+                           params->root_feed_changestamp,
+                           params->feed_list.release(),
+                           params->should_fetch_multiple_feeds,
+                           params->search_file_path,
+                           params->search_query,
+                           params->directory_resource_id,
+                           params->callback,
+                           NULL)),
+                   start_time));
+    return;
+  }
+
+  // Notify the observers that a document feed is fetched.
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDocumentFeedFetched(num_accumulated_entries));
+
+  UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
                       base::TimeTicks::Now() - start_time);
 
   if (!callback.is_null())

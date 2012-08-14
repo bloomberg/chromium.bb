@@ -36,6 +36,13 @@ class RepeatedMessageConverter;
 // http://code.google.com/apis/documents/.
 namespace gdata {
 
+// TODO(kochi): These forward declarations will be unnecessary once
+// http://crbug.com/142293 is resolved.
+class ChangeList;
+class ChangeResource;
+class FileList;
+class FileResource;
+
 // Defines link (URL) of an entity (document, file, feed...). Each entity could
 // have more than one link representing it.
 class Link {
@@ -371,6 +378,14 @@ class DocumentEntry : public FeedEntry {
   // Creates document entry from parsed XML.
   static DocumentEntry* CreateFromXml(XmlReader* xml_reader);
 
+  // Creates document entry from FileResource.
+  // TODO(kochi): This should go away soon. http://crbug.com/142293
+  static DocumentEntry* CreateFromFileResource(const FileResource& file);
+
+  // Creates document entry from ChangeResource.
+  // Todo(Kochi): This should go away soon. http://crbug.com/142293
+  static DocumentEntry* CreateFromChangeResource(const ChangeResource& change);
+
   // Returns name of entry node.
   static std::string GetEntryNodeName();
 
@@ -512,6 +527,10 @@ class DocumentFeed : public FeedEntry {
   // FillRemainingFields comment and implementation in DocumentEntry
   // class for the details.
   static scoped_ptr<DocumentFeed> CreateFrom(const base::Value& value);
+  // Variant of CreateFrom() above, creates feed from parsed ChangeList.
+  // TODO(kochi): This should go away soon. http://crbug.com/142293
+  static scoped_ptr<DocumentFeed> CreateFromChangeList(
+      const ChangeList& changelist);
 
   // Registers the mapping between JSON field names and the members in
   // this class.
