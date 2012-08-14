@@ -38,6 +38,10 @@ html[dir='rtl'] .icon {
 }
 
 .extension-icon {
+  content: -webkit-image-set(
+      url('../../app/theme/default_100_percent/extensions_section.png') 1x,
+      url('../../app/theme/default_200_percent/extensions_section.png') 2x);
+  display: inline-block;
   left: 0;
   margin-top: -15px;
   position: absolute;
