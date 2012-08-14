@@ -62,7 +62,6 @@ cr.define('sync_promo', function() {
       this.hideOuterLoginUI_();
       $('promo-skip').hidden = false;
 
-      this.showSetupUI_();
       chrome.send('SyncPromo:Initialize');
 
       var self = this;
@@ -140,14 +139,16 @@ cr.define('sync_promo', function() {
     },
 
     /**
-     * Called when the page is unloading to record number of times a user tried
-     * to sign in and if they left while a throbber was running.
+     * Called when the page is unloading.
      * @private
      */
-    recordPageViewActions_: function() {
+    onUnload: function() {
+      // Record number of times a user tried to sign in and if they left
+      // while a throbber was running.
       chrome.send('SyncPromo:RecordSignInAttempts', [this.signInAttempts_]);
       if (this.throbberStart_)
         chrome.send('SyncPromo:UserFlowAction', [actions.LEFT_DURING_THROBBER]);
+      chrome.send('SyncSetupDidClosePage');
     },
 
     /** @inheritDoc */
@@ -192,10 +193,6 @@ cr.define('sync_promo', function() {
     SyncPromo.getInstance().showErrorUI_();
   };
 
-  SyncPromo.showSetupUI = function() {
-    SyncPromo.getInstance().showSetupUI_();
-  };
-
   SyncPromo.showSyncSetupPage = function(page, args) {
     SyncPromo.getInstance().showSyncSetupPage_(page, args);
   };
@@ -217,8 +214,8 @@ cr.define('sync_promo', function() {
     SyncPromo.getInstance().initializePage();
   };
 
-  SyncPromo.recordPageViewActions = function() {
-    SyncPromo.getInstance().recordPageViewActions_();
+  SyncPromo.onUnload = function() {
+    SyncPromo.getInstance().onUnload();
   };
 
   SyncPromo.populatePromoMessage = function(resName) {
@@ -234,5 +231,5 @@ cr.define('sync_promo', function() {
 var OptionsPage = options.OptionsPage;
 var SyncSetupOverlay = sync_promo.SyncPromo;
 window.addEventListener('DOMContentLoaded', sync_promo.SyncPromo.initialize);
-window.addEventListener('beforeunload',
-    sync_promo.SyncPromo.recordPageViewActions.bind(sync_promo.SyncPromo));
+window.addEventListener('unload',
+    sync_promo.SyncPromo.onUnload.bind(sync_promo.SyncPromo));

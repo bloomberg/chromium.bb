@@ -209,10 +209,6 @@ void SyncPromoHandler::HandleCloseSyncPromo(const base::ListValue* args) {
 }
 
 void SyncPromoHandler::HandleInitializeSyncPromo(const base::ListValue* args) {
-  // If this is a page reload, then we have to inform the login service
-  // the old UI closed. If this is an initial load, this call will do nothing.
-  GetLoginUIService()->LoginUIClosed(this);
-
   // Open the sync wizard to the login screen.
   OpenSyncSetup(true);
   // We don't need to compute anything for this, just do this every time.
