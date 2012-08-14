@@ -119,9 +119,6 @@ ButterBar.prototype.update_ = function(message, opt_options) {
     this.butter_.querySelector('.progress-track').style.width =
         (opt_options.progress * 100) + '%';
   }
-
-  this.butter_.style.left =
-      (this.dialogDom_.clientWidth - this.butter_.clientWidth) / 2 + 'px';
 };
 
 /**

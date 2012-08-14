@@ -84,16 +84,31 @@ input[type='submit'][disabled]:hover {
   opacity: 0.8;
 }
 
+#butter-bar-container {
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 3;
+}
+
 #butter-bar {
   -webkit-box-align: end;
   -webkit-box-orient: horizontal;
   -webkit-transition: opacity 300ms;
-  background-color: rgba(95, 95, 95, 0.17);
+  background-color: #e3e3e3;
   color: #222;
   display: -webkit-box;
+  max-width: 340px;
+  min-width: 40px;
   padding: 0 1em;
-  position: absolute;
+  pointer-events: auto;
   top: 1px;
+  width: 30%;
+  z-index: 2;
 }
 
 #butter-bar:not(.visible) {
@@ -102,6 +117,8 @@ input[type='submit'][disabled]:hover {
 }
 
 #butter-bar .content {
+  -webkit-box-flex: 1;
+  overflow: hidden;
   padding-bottom: 4px;
   padding-top: 4px;
 }
@@ -140,11 +157,11 @@ input[type='submit'][disabled]:hover {
 }
 
 .progress-bar {
+  -webkit-box-flex: 1;
   border: 1px solid #999;
   margin-bottom: 2px;
   margin-top: 3px;
   padding: 1px;
-  width: 320px;
 }
 
 .progress-track {
