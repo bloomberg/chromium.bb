@@ -162,7 +162,8 @@ class WebNotificationList {
     notifications_.clear();
   }
 
-  void RemoveNotificationsBySource(const std::string& id) {
+  void SendRemoveNotificationsBySource(WebNotificationTray* tray,
+                                       const std::string& id) {
     Notifications::iterator source_iter = GetNotification(id);
     if (source_iter == notifications_.end())
       return;
@@ -171,11 +172,12 @@ class WebNotificationList {
          loopiter != notifications_.end(); ) {
       Notifications::iterator curiter = loopiter++;
       if (curiter->display_source == display_source)
-        EraseNotification(curiter);
+        tray->SendRemoveNotification(curiter->id);
     }
   }
 
-  void RemoveNotificationsByExtension(const std::string& id) {
+  void SendRemoveNotificationsByExtension(WebNotificationTray* tray,
+                                          const std::string& id) {
     Notifications::iterator source_iter = GetNotification(id);
     if (source_iter == notifications_.end())
       return;
@@ -184,7 +186,7 @@ class WebNotificationList {
          loopiter != notifications_.end(); ) {
       Notifications::iterator curiter = loopiter++;
       if (curiter->extension_id == extension_id)
-        EraseNotification(curiter);
+        tray->SendRemoveNotification(curiter->id);
     }
   }
 
@@ -995,17 +997,17 @@ void WebNotificationTray::SendRemoveAllNotifications() {
 // When we disable notifications, we remove any existing matching
 // notifications to avoid adding complicated UI to re-enable the source.
 void WebNotificationTray::DisableByExtension(const std::string& id) {
-  // Will call SendRemoveNotification for each matching notification.
-  notification_list_->RemoveNotificationsByExtension(id);
   if (delegate_)
     delegate_->DisableExtension(id);
+  // Will call SendRemoveNotification for each matching notification.
+  notification_list_->SendRemoveNotificationsByExtension(this, id);
 }
 
 void WebNotificationTray::DisableByUrl(const std::string& id) {
-  // Will call SendRemoveNotification for each matching notification.
-  notification_list_->RemoveNotificationsBySource(id);
   if (delegate_)
     delegate_->DisableNotificationsFromSource(id);
+  // Will call SendRemoveNotification for each matching notification.
+  notification_list_->SendRemoveNotificationsBySource(this, id);
 }
 
 bool WebNotificationTray::PerformAction(const ui::Event& event) {

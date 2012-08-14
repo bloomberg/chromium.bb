@@ -4,9 +4,11 @@
 
 #include "ash/system/tray/tray_bubble_view.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "grit/ash_strings.h"
@@ -463,7 +465,7 @@ bool TrayBubbleView::Host::PreHandleKeyEvent(aura::Window* target,
 bool TrayBubbleView::Host::PreHandleMouseEvent(aura::Window* target,
                                                ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_PRESSED)
-    ProcessLocatedEvent(*event);
+    ProcessLocatedEvent(target, *event);
   return false;
 }
 
@@ -471,7 +473,7 @@ ui::TouchStatus TrayBubbleView::Host::PreHandleTouchEvent(
     aura::Window* target,
     ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED)
-    ProcessLocatedEvent(*event);
+    ProcessLocatedEvent(target, *event);
   return ui::TOUCH_STATUS_UNKNOWN;
 }
 
@@ -482,7 +484,16 @@ ui::GestureStatus TrayBubbleView::Host::PreHandleGestureEvent(
 }
 
 void TrayBubbleView::Host::ProcessLocatedEvent(
-    const ui::LocatedEvent& event) {
+    aura::Window* target, const ui::LocatedEvent& event) {
+  if (target) {
+    // Don't process events that occurred inside an embedded menu.
+    RootWindowController* root_controller =
+        GetRootWindowController(target->GetRootWindow());
+    if (root_controller && root_controller->GetContainer(
+            ash::internal::kShellWindowId_MenuContainer)->Contains(target)) {
+      return;
+    }
+  }
   if (!widget_)
     return;
   gfx::Rect bounds = widget_->GetNativeWindow()->GetBoundsInRootWindow();

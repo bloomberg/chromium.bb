@@ -59,7 +59,8 @@ class TrayBubbleView : public views::BubbleDelegateView {
         ui::GestureEvent* event) OVERRIDE;
 
    private:
-    void ProcessLocatedEvent(const ui::LocatedEvent& event);
+    void ProcessLocatedEvent(aura::Window* target,
+                             const ui::LocatedEvent& event);
 
     views::Widget* widget_;
     views::View* tray_view_;

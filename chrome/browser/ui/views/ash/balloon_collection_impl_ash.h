@@ -65,6 +65,8 @@ class BalloonCollectionImplAsh : public BalloonCollectionImpl,
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile) OVERRIDE;
 
+  const extensions::Extension* GetBalloonExtension(Balloon* balloon);
+
  private:
   // Set of unique ids associated with system notifications, used by
   // MakeBalloon to determine whether or not to enable Web UI.

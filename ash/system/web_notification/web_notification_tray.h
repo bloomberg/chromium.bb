@@ -143,6 +143,7 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
   class Bubble;
   friend class internal::WebNotificationButtonView;
   friend class internal::WebNotificationMenuModel;
+  friend class internal::WebNotificationList;
   friend class internal::WebNotificationView;
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationBubble);

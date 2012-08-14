@@ -59,17 +59,10 @@ void BalloonCollectionImplAsh::Add(const Notification& notification,
 void BalloonCollectionImplAsh::DisableExtension(
     const std::string& notifcation_id) {
   Balloon* balloon = base().FindBalloonById(notifcation_id);
-  if (!balloon)
-    return;
-  ExtensionService* extension_service =
-      balloon->profile()->GetExtensionService();
-  const GURL& origin = balloon->notification().origin_url();
-  const extensions::Extension* extension =
-      extension_service->extensions()->GetExtensionOrAppByURL(
-          ExtensionURLInfo(origin));
+  const extensions::Extension* extension = GetBalloonExtension(balloon);
   if (!extension)
     return;
-  extension_service->DisableExtension(
+  balloon->profile()->GetExtensionService()->DisableExtension(
       extension->id(), extensions::Extension::DISABLE_USER_ACTION);
 }
 
@@ -93,7 +86,10 @@ void BalloonCollectionImplAsh::ShowSettings(const std::string& notifcation_id) {
   Profile* profile =
       balloon ? balloon->profile() : ProfileManager::GetDefaultProfile();
   Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
-  chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  if (GetBalloonExtension(balloon))
+    chrome::ShowExtensions(browser);
+  else
+    chrome::ShowContentSettings(browser, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void BalloonCollectionImplAsh::OnClicked(const std::string& notifcation_id) {
@@ -166,6 +162,17 @@ Balloon* BalloonCollectionImplAsh::MakeBalloon(
     balloon->set_view(balloon_view);
   }
   return balloon;
+}
+
+const extensions::Extension* BalloonCollectionImplAsh::GetBalloonExtension(
+    Balloon* balloon) {
+  if (!balloon)
+    return NULL;
+  ExtensionService* extension_service =
+      balloon->profile()->GetExtensionService();
+  const GURL& origin = balloon->notification().origin_url();
+  return extension_service->extensions()->GetExtensionOrAppByURL(
+      ExtensionURLInfo(origin));
 }
 
 // For now, only use BalloonCollectionImplAsh on ChromeOS, until
