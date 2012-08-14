@@ -77,9 +77,6 @@ void VersionUpdaterMac::CheckForUpdate(
     AutoupdateStatus recent_status = [keystone_glue recentStatus];
     if ([keystone_glue asyncOperationPending] ||
         recent_status == kAutoupdateRegisterFailed ||
-        recent_status == kAutoupdateCheckFailed ||
-        recent_status == kAutoupdateInstallFailed ||
-        recent_status == kAutoupdatePromoteFailed ||
         recent_status == kAutoupdateNeedsPromotion) {
       // If an asynchronous update operation is currently pending, such as a
       // check for updates or an update installation attempt, set the status
