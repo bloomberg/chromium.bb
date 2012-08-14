@@ -1068,6 +1068,10 @@
           "output": "já-rás-sze-rű"
         }, 
         {
+          "input": "járásszékhely", 
+          "output": "já-rás-szék-hely"
+        }, 
+        {
           "input": "jáspisszobor", 
           "output": "jás-pis-szo-bor"
         }, 

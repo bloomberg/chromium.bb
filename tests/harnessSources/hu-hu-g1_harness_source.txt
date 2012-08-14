@@ -1295,6 +1295,11 @@ járásszerű
 testmode: backtranslate
 járásszerű 
 
+járásszékhely
+
+testmode: backtranslate
+járásszékhely
+
 jáspisszobor
 
 testmode: backtranslate

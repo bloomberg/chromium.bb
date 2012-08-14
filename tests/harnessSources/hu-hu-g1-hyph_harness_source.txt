@@ -796,6 +796,9 @@ testmode: hyphenate
 járásszerű
 
 testmode: hyphenate
+járásszékhely
+
+testmode: hyphenate
 jáspisszobor
 
 testmode: hyphenate

@@ -1043,6 +1043,10 @@
           "output": "járásszerű "
         }, 
         {
+          "input": "⠚⠈⠗⠈⠎⠱⠡⠅⠓⠑⠸", 
+          "output": "járásszékhely"
+        }, 
+        {
           "input": "⠚⠈⠎⠏⠊⠎⠱⠕⠃⠕⠗", 
           "output": "jáspisszobor"
         }, 
@@ -4209,6 +4213,10 @@
         {
           "input": "járásszerű ", 
           "output": "⠚⠈⠗⠈⠎⠱⠑⠗⠾ "
+        }, 
+        {
+          "input": "járásszékhely", 
+          "output": "⠚⠈⠗⠈⠎⠱⠡⠅⠓⠑⠸"
         }, 
         {
           "input": "jáspisszobor", 

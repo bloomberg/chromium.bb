@@ -317,6 +317,7 @@ begword tetszés 2345-15-2345-156-16-234	For example tetszészaj, tetszészsivaj
 always városzaj 1236-4-1235-135-234-126-1-245	For example városzajon, városzajt words
 partword városzs 1236-4-1235-135-234-345	For example városzsarnok word
 always részárás 1235-16-234-126-4-1235-4-234	For example részárás beginning words need this exception
+partword járás 245-4-1235-4-234	For example járásszerű, járásszékhely, időjárásszolgálat words
 
 #ssz related exceptions
 #Following exception words and word parts need writing one s and one sz braille letter
@@ -587,7 +588,6 @@ begword csipkéssz 146-24-1234-13-16-234-156	For example csipkésszélű word
 begword csobbanásszer 146-135-12-12-1-1345-4-234-156-15-1235	For example csobbanásszerű word
 begword csuklássz 146-136-13-123-4-234-156	For example csuklásszerű word
 partword lépcsősszár 123-16-1234-146-12456-234-156-4-1235	For example lépcsősszárnyú word
-partword járásszer 245-4-1235-4-234-156-15-1235	For example búcsújárásszerű, járásszerű words
 partword csavarásszer 146-1-1236-1-1235-4-234-156-15-1235	For example csavarásszerű word
 partword ájulásszer 4-245-136-123-4-234-156-15-1235	For example ájulásszerű word
 partword aranyosszők 1-1235-1-1246-135-234-156-12456-13	For example aranyosszőke word
@@ -627,7 +627,6 @@ word hisszék 125-24-156-156-16-13
 partword örgésszerű 12345-1235-1245-16-234-156-15-1235-23456	For example hörgésszerű, zörgésszerű, dörgésszerű words
 partword hússzállít 125-346-234-156-4-123-123-34-2345	For example hússzállító, hússzállítmány words
 begword hússzín 125-346-234-156-34-1345	For example hússzínű word
-partword járásszolg 245-4-1235-4-234-156-135-123-1245	For example időjárásszolgálat word
 always irtásszél 24-1235-2345-4-234-156-16-123	For example irtásszél word
 begword jelentéssz 245-15-123-15-1345-2345-16-234-156	For example jelentésszerű, jelentésszint word
 begword katekizmussz 13-1-2345-15-13-24-126-134-136-234-156	For example katekizmusszerű word
