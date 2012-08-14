@@ -11,7 +11,7 @@
 #include "native_client/src/include/nacl_asm.h"
 
 
-#if defined(__i386__) || (defined(_WIN32) && !defined(_WIN64))
+#if NACL_BUILD_SUBARCH == 32
 
 /*
  * use cdecl calling convention
@@ -40,7 +40,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove8):
   ret
   .align 8
 
-#elif defined(__x86_64__) || defined(_WIN64)
+#elif NACL_BUILD_SUBARCH == 64
 
 /*
  * TODO(jansel): Note that the 64 bit versions here are unreachable
@@ -49,7 +49,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(onestore_memmove8):
  * 64 bit is enabled.
  */
 
-#ifdef _WIN64
+#if NACL_WINDOWS
 /* WIN64 uses its own calling convention */
 # define DST %rcx
 # define SRC %rdx

@@ -24,7 +24,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
-#ifdef WIN32
+#if NACL_WINDOWS
 #define snprintf sprintf_s
 #endif
 

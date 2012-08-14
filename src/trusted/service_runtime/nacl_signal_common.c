@@ -19,7 +19,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-#ifdef WIN32
+#if NACL_WINDOWS
 #include <io.h>
 #define write _write
 #else

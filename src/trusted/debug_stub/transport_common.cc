@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#ifdef _WIN32
+#if NACL_WINDOWS
 #include <windows.h>
 #ifndef AF_IPX
 #include <winsock2.h>

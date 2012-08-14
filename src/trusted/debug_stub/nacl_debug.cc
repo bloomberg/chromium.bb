@@ -39,7 +39,7 @@ using port::ITransport;
 using gdb_rsp::Session;
 using gdb_rsp::Target;
 
-#ifdef WIN32
+#if NACL_WINDOWS
 /* Disable warning for unwind disabled when exceptions used */
 #pragma warning(disable:4530)
 #endif

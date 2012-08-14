@@ -205,7 +205,7 @@ class Time {
   // (Jan 1, 1970).  Webkit uses this format to represent time.
   double ToDoubleT() const;
 
-#ifdef WIN32
+#if NACL_WINDOWS
   static Time FromFileTime(FILETIME ft);
   FILETIME ToFileTime() const;
 #endif
@@ -429,7 +429,7 @@ class TimeTicks {
   // Tick count in microseconds.
   int64_t ticks_;
 
-#ifdef WIN32
+#if NACL_WINDOWS
   // The function to use for counting ticks.
   typedef int (__stdcall *TickFunction)(void);
   static TickFunction tick_function_;

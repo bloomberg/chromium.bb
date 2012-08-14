@@ -43,7 +43,7 @@ enum NaClSignalResult {
   NACL_SIGNAL_RETURN    /* Skip all other handlers and return */
 };
 
-#ifdef _WIN32
+#if NACL_WINDOWS
 enum PosixSignals {
   SIGINT  = 2,
   SIGQUIT = 3,
