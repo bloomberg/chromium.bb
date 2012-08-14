@@ -349,10 +349,12 @@ void Window::StackChildBelow(Window* child, Window* target) {
 }
 
 void Window::AddChild(Window* child) {
+  RootWindow* old_root = child->GetRootWindow();
+
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
       children_.end());
   if (child->parent())
-    child->parent()->RemoveChild(child);
+    child->parent()->RemoveChildImpl(child, this);
   child->parent_ = this;
 
   layer_->Add(child->layer_);
@@ -363,8 +365,8 @@ void Window::AddChild(Window* child) {
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
   child->OnParentChanged();
 
-  RootWindow* root_window = child->GetRootWindow();
-  if (root_window) {
+  RootWindow* root_window = GetRootWindow();
+  if (root_window && old_root != root_window) {
     root_window->OnWindowAddedToRootWindow(child);
     child->NotifyAddedToRootWindow();
   }
@@ -389,26 +391,7 @@ void Window::RemoveTransientChild(Window* child) {
 }
 
 void Window::RemoveChild(Window* child) {
-  Windows::iterator i = std::find(children_.begin(), children_.end(), child);
-  DCHECK(i != children_.end());
-  if (layout_manager_.get())
-    layout_manager_->OnWillRemoveWindowFromLayout(child);
-  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
-  RootWindow* root_window = child->GetRootWindow();
-  if (root_window) {
-    root_window->OnWindowRemovedFromRootWindow(child);
-    child->NotifyRemovingFromRootWindow();
-  }
-  child->parent_ = NULL;
-  // We should only remove the child's layer if the child still owns that layer.
-  // Someone else may have acquired ownership of it via AcquireLayer() and may
-  // expect the hierarchy to go unchanged as the Window is destroyed.
-  if (child->layer_owner_.get())
-    layer_->Remove(child->layer_);
-  children_.erase(i);
-  child->OnParentChanged();
-  if (layout_manager_.get())
-    layout_manager_->OnWindowRemovedFromLayout(child);
+  RemoveChildImpl(child, NULL);
 }
 
 bool Window::Contains(const Window* other) const {
@@ -774,6 +757,30 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
   }
 
   return delegate_ ? this : NULL;
+}
+
+void Window::RemoveChildImpl(Window* child, Window* new_parent) {
+  Windows::iterator i = std::find(children_.begin(), children_.end(), child);
+  DCHECK(i != children_.end());
+  if (layout_manager_.get())
+    layout_manager_->OnWillRemoveWindowFromLayout(child);
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWillRemoveWindow(child));
+  RootWindow* root_window = child->GetRootWindow();
+  if (root_window &&
+      (!new_parent || new_parent->GetRootWindow() != root_window)) {
+    root_window->OnWindowRemovedFromRootWindow(child);
+    child->NotifyRemovingFromRootWindow();
+  }
+  child->parent_ = NULL;
+  // We should only remove the child's layer if the child still owns that layer.
+  // Someone else may have acquired ownership of it via AcquireLayer() and may
+  // expect the hierarchy to go unchanged as the Window is destroyed.
+  if (child->layer_owner_.get())
+    layer_->Remove(child->layer_);
+  children_.erase(i);
+  child->OnParentChanged();
+  if (layout_manager_.get())
+    layout_manager_->OnWindowRemovedFromLayout(child);
 }
 
 void Window::OnParentChanged() {
