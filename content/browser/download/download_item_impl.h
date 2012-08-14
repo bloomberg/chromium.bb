@@ -17,7 +17,6 @@
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_destination_observer.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "googleurl/src/gurl.h"
@@ -26,14 +25,8 @@
 
 class DownloadItemImplDelegate;
 
-namespace content {
-class DownloadFile;
-}
-
 // See download_item.h for usage.
-class CONTENT_EXPORT DownloadItemImpl
-    : public content::DownloadItem,
-      public content::DownloadDestinationObserver {
+class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
  public:
   // Note that it is the responsibility of the caller to ensure that a
   // DownloadItemImplDelegate passed to a DownloadItemImpl constructor
@@ -68,9 +61,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Implementation functions (not part of the DownloadItem interface).
 
-  // Start the download
-  virtual void Start(scoped_ptr<content::DownloadFile> download_file);
-
   // Called when the target path has been determined. |target_path| is the
   // suggested target path. |disposition| indicates how the target path should
   // be used (see TargetDisposition). |danger_type| is the danger level of
@@ -90,6 +80,14 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Set the item's DB handle.
   virtual void SetDbHandle(int64 handle);
+
+  // Cancels the off-thread aspects of the download.
+  // TODO(rdsmith): This should be private and only called from
+  // DownloadItem::Cancel/Interrupt; it isn't now because we can't
+  // call those functions from
+  // DownloadManager::FileSelectionCancelled() without doing some
+  // rewrites of the DownloadManager queues.
+  virtual void OffThreadCancel();
 
   // Called when the downloaded file is removed.
   virtual void OnDownloadedFileRemoved();
@@ -112,15 +110,10 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void MarkAsComplete();
 
   // Called when all data has been saved. Only has display effects.
-  virtual void OnAllDataSaved(const std::string& final_hash);
+  virtual void OnAllDataSaved(int64 size, const std::string& final_hash);
 
   // Called by SavePackage to set the total number of bytes on the item.
   virtual void SetTotalBytes(int64 total_bytes);
-
-  // Provide a weak pointer reference to a DownloadDestinationObserver
-  // for use by download destinations.
-  base::WeakPtr<content::DownloadDestinationObserver>
-      DestinationObserverAsWeakPtr();
 
   // Notify observers that this item is being removed by the user.
   virtual void NotifyRemoved();
@@ -207,17 +200,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void MockDownloadOpenForTesting() OVERRIDE;
 
  private:
-  // DownloadDestinationObserver
-  virtual void DestinationUpdate(int64 bytes_so_far,
-                                 int64 bytes_per_sec,
-                                 const std::string& hash_state) OVERRIDE;
-  virtual void DestinationError(
-      content::DownloadInterruptReason reason) OVERRIDE;
-  virtual void DestinationCompleted(const std::string& final_hash) OVERRIDE;
-
-  // For weak pointer downcasting.
-  friend class base::WeakPtr<content::DownloadDestinationObserver>;
-
   // Construction common to all constructors. |active| should be true for new
   // downloads and false for downloads from the history.
   // |download_type| indicates to the net log system what kind of download
@@ -232,6 +214,12 @@ class CONTENT_EXPORT DownloadItemImpl
   // internal cleanup, file rename, and potentially auto-open.  (Dangerous
   // downloads still may block on user acceptance after this point.)
   void MaybeCompleteDownload();
+
+  // Internal helper for maintaining consistent received and total sizes, and
+  // setting the final hash.
+  // Should only be called from |OnAllDataSaved|.
+  void ProgressComplete(int64 bytes_so_far,
+                        const std::string& final_hash);
 
   // Called when the entire download operation (including renaming etc)
   // is completed.
@@ -254,10 +242,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // name.
   void OnDownloadRenamedToIntermediateName(
       content::DownloadInterruptReason reason, const FilePath& full_path);
-
-  // Callback from file thread when we initialize the DownloadFile.
-  void OnDownloadFileInitialized(
-      content::DownloadInterruptReason result);
 
   // Callback from file thread when we release the DownloadFile.
   void OnDownloadFileReleased();
@@ -419,12 +403,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_;
-
-  // DownloadFile associated with this download.  Note that this
-  // pointer may only be used or destroyed on the FILE thread.
-  // This pointer will be non-null only while the DownloadItem is in
-  // the IN_PROGRESS state.
-  scoped_ptr<content::DownloadFile> download_file_;
 
   // Net log to use for this download.
   const net::BoundNetLog bound_net_log_;

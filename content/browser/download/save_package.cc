@@ -18,6 +18,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_stats.h"
@@ -338,8 +339,7 @@ void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
   // Must call OnAllDataSaved here in order for
   // GDataDownloadObserver::ShouldUpload() to return true.
   // ShouldCompleteDownload() may depend on the gdata uploader to finish.
-  download_->UpdateProgress(size, CurrentSpeed(), "");
-  download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
+  download_->OnAllDataSaved(size, DownloadItem::kEmptyFileHash);
   if (!download_manager_->GetDelegate() ||
       download_manager_->GetDelegate()->ShouldCompleteDownload(
           download_, base::Bind(&SavePackage::Finish, this))) {
@@ -742,10 +742,9 @@ void SavePackage::Finish() {
                  save_ids));
 
   if (download_) {
-    if (save_type_ != content::SAVE_PAGE_TYPE_AS_MHTML) {
-      download_->UpdateProgress(all_save_items_count_, CurrentSpeed(), "");
-      download_->OnAllDataSaved(DownloadItem::kEmptyFileHash);
-    }
+    if (save_type_ != content::SAVE_PAGE_TYPE_AS_MHTML)
+      download_->OnAllDataSaved(all_save_items_count_,
+                                DownloadItem::kEmptyFileHash);
     download_->MarkAsComplete();
     FinalizeDownloadEntry();
   }
