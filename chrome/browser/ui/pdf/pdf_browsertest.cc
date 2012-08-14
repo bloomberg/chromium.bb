@@ -200,6 +200,9 @@ class PDFBrowserTest : public InProcessBrowserTest,
 #if defined(OS_CHROMEOS)
 // TODO(sanjeevr): http://crbug.com/79837
 #define MAYBE_Basic DISABLED_Basic
+#elif defined(OS_MACOSX)
+// Fails on release builder for Mac: http://crbug.com/142531
+#define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
 #endif
