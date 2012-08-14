@@ -36,14 +36,19 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
         weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     DCHECK(tracker_);
     DCHECK(client_);
-    client_tracker_ = tracker_->GetClientTracker(client_->id());
-    DCHECK(client_tracker_);
+    client_tracker_ = base::AsWeakPtr(
+        tracker_->GetClientTracker(client_->id()));
+    DCHECK(client_tracker_.get());
   }
   virtual ~GatherUsageTaskBase() {}
 
   // Get total usage for the given |origins|.
   void GetUsageForOrigins(const std::set<GURL>& origins, StorageType type) {
     DCHECK(original_task_runner()->BelongsToCurrentThread());
+    if (!client_tracker()) {
+      DeleteSoon();
+      return;
+    }
     // We do not get usage for origins for which we have valid usage cache.
     std::vector<GURL> origins_to_gather;
     std::set<GURL> cached_origins;
@@ -87,13 +92,17 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
   }
 
   UsageTracker* tracker() const { return tracker_; }
-  ClientUsageTracker* client_tracker() const { return client_tracker_; }
+  ClientUsageTracker* client_tracker() const { return client_tracker_.get(); }
 
  private:
   void DidGetUsage(int64 usage) {
+    if (!client_tracker()) {
+      DeleteSoon();
+      return;
+    }
+
     DCHECK(original_task_runner()->BelongsToCurrentThread());
     DCHECK(!pending_origins_.empty());
-    DCHECK(client_tracker_);
 
     // Defend against confusing inputs from QuotaClients.
     DCHECK_GE(usage, 0);
@@ -121,7 +130,7 @@ class ClientUsageTracker::GatherUsageTaskBase : public QuotaTask {
 
   QuotaClient* client_;
   UsageTracker* tracker_;
-  ClientUsageTracker* client_tracker_;
+  base::WeakPtr<ClientUsageTracker> client_tracker_;
   std::deque<GURL> pending_origins_;
   std::map<GURL, int64> origin_usage_map_;
   base::WeakPtrFactory<GatherUsageTaskBase> weak_factory_;

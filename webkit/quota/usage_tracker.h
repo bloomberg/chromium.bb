@@ -80,7 +80,8 @@ class UsageTracker : public QuotaTaskObserver {
 // This class holds per-client usage tracking information and caches per-host
 // usage data.  An instance of this class is created per client.
 class ClientUsageTracker : public SpecialStoragePolicy::Observer,
-                           public base::NonThreadSafe {
+                           public base::NonThreadSafe,
+                           public base::SupportsWeakPtr<ClientUsageTracker> {
  public:
   ClientUsageTracker(UsageTracker* tracker,
                      QuotaClient* client,
