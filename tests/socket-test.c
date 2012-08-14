@@ -36,17 +36,20 @@ static const struct sockaddr_un example_sockaddr_un;
 
 #define TOO_LONG (1 + sizeof example_sockaddr_un.sun_path)
 
+/* Ensure the connection doesn't fail due to lack of XDG_RUNTIME_DIR. */
+static void require_xdg_runtime_dir()
+{
+	char *val = getenv("XDG_RUNTIME_DIR");
+	if (!val)
+		assert(0 && "set $XDG_RUNTIME_DIR to run this test");
+}
+
 TEST(socket_path_overflow_client_connect)
 {
 	char path[TOO_LONG];
 	struct wl_display *d;
-	int ret;
 
-	/* Ensure the connection doesn't fail due to lack of
-	   XDG_RUNTIME_DIR. Don't use setenv(), as that allocates
-	   memory and creates a spurious memory leak failure. */
-	ret = putenv("XDG_RUNTIME_DIR=.");
-	assert(ret == 0);
+	require_xdg_runtime_dir();
 
 	memset(path, 'a', sizeof path);
 	path[sizeof path - 1] = '\0';
@@ -62,11 +65,7 @@ TEST(socket_path_overflow_server_create)
 	struct wl_display *d;
 	int ret;
 
-	/* Ensure the connection doesn't fail due to lack of
-	   XDG_RUNTIME_DIR. Don't use setenv(), as that allocates
-	   memory and creates a spurious memory leak failure. */
-	ret = putenv("XDG_RUNTIME_DIR=.");
-	assert(ret == 0);
+	require_xdg_runtime_dir();
 
 	memset(path, 'a', sizeof path);
 	path[sizeof path - 1] = '\0';
