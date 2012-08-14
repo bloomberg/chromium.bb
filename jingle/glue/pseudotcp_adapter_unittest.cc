@@ -303,7 +303,7 @@ class TCPChannelTester : public base::RefCountedThreadSafe<TCPChannelTester> {
 class PseudoTcpAdapterTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
-    JingleThreadWrapper::EnsureForCurrentThread();
+    JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
     host_socket_ = new FakeSocket();
     client_socket_ = new FakeSocket();

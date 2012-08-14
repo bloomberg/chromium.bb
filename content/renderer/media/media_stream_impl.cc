@@ -370,7 +370,7 @@ void MediaStreamImpl::OnSocketDispatcherDestroyed() {
 
 void MediaStreamImpl::InitializeWorkerThread(talk_base::Thread** thread,
                                              base::WaitableEvent* event) {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
   *thread = jingle_glue::JingleThreadWrapper::current();
   event->Signal();
@@ -392,7 +392,7 @@ void MediaStreamImpl::DeleteIpcNetworkManager() {
 bool MediaStreamImpl::EnsurePeerConnectionFactory() {
   DCHECK(CalledOnValidThread());
   if (!signaling_thread_) {
-    jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
+    jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
     jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
     signaling_thread_ = jingle_glue::JingleThreadWrapper::current();
   }

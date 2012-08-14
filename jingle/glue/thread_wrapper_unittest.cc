@@ -81,7 +81,7 @@ class ThreadWrapperTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    JingleThreadWrapper::EnsureForCurrentThread();
+    JingleThreadWrapper::EnsureForCurrentMessageLoop();
     thread_ = talk_base::Thread::Current();
   }
 
@@ -230,7 +230,7 @@ TEST_F(ThreadWrapperTest, SendSameThread) {
 
 void InitializeWrapperForNewThread(talk_base::Thread** thread,
                                    base::WaitableEvent* done_event) {
-  JingleThreadWrapper::EnsureForCurrentThread();
+  JingleThreadWrapper::EnsureForCurrentMessageLoop();
   JingleThreadWrapper::current()->set_send_allowed(true);
   *thread = JingleThreadWrapper::current();
   done_event->Signal();

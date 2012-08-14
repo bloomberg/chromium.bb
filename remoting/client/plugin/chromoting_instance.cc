@@ -467,7 +467,7 @@ void ChromotingInstance::OnFirstFrameReceived() {
 void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   host_connection_.reset(new protocol::ConnectionToHost(true));
   scoped_ptr<AudioPlayer> audio_player(new PepperAudioPlayer(this));

@@ -58,7 +58,7 @@ bool P2PTransportImpl::Init(WebKit::WebFrame* web_frame,
 
   // Before proceeding, ensure we have libjingle thread wrapper for
   // the current thread.
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   name_ = name;
   event_handler_ = event_handler;

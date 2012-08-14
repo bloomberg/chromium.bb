@@ -312,7 +312,7 @@ LibjingleTransportFactory::LibjingleTransportFactory(
     : http_port_allocator_(port_allocator.get()),
       port_allocator_(port_allocator.Pass()),
       incoming_only_(incoming_only) {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 }
 
 LibjingleTransportFactory::LibjingleTransportFactory()
@@ -322,7 +322,7 @@ LibjingleTransportFactory::LibjingleTransportFactory()
       port_allocator_(new cricket::BasicPortAllocator(
           network_manager_.get(), socket_factory_.get())),
       incoming_only_(false) {
-  jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
+  jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   port_allocator_->set_flags(
       cricket::PORTALLOCATOR_DISABLE_TCP |
       cricket::PORTALLOCATOR_DISABLE_STUN |
