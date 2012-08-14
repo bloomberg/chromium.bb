@@ -1546,3 +1546,7 @@ body:not([ctrl-pressing]) [visibleif='ctrl'] {
 button:focus {
   outline-color: rgb(77, 144, 254);
 }
+
+#new-folder {
+  margin-right: 30px;
+}

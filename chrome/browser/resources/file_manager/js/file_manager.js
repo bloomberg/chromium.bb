@@ -670,6 +670,9 @@ FileManager.prototype = {
     this.defaultActionMenuItem_.addEventListener('activate',
         this.dispatchSelectionAction_.bind(this));
 
+    this.dialogDom_.querySelector('#new-folder').addEventListener('click',
+      this.onNewFolderCommand_.bind(this));
+
     this.fileTypeSelector_ = this.dialogDom_.querySelector('#file-type');
     this.initFileTypeFilter_();
     // Populate the static localized strings.
@@ -2056,7 +2059,7 @@ FileManager.prototype = {
    * nothing if no item is being renamed or such an item disappeared.
    *
    * While refreshing file list it gets repopulated with new file entries.
-   * There is not a big difference wether DOM items stay the same or not.
+   * There is not a big difference whether DOM items stay the same or not.
    * Except for the item that the user is renaming.
    */
   FileManager.prototype.restoreItemBeingRenamed_ = function() {
