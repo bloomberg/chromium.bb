@@ -5,6 +5,7 @@
 cr.define('options.internet', function() {
   var OptionsPage = options.OptionsPage;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var IPAddressField = options.internet.IPAddressField;
 
   /**
    * Network settings constants. These enums must match their C++
@@ -252,10 +253,20 @@ cr.define('options.internet', function() {
       $('auto-proxy').addEventListener('click', this.disableManualProxy_);
       $('proxy-all-protocols').addEventListener('click',
                                                 this.toggleSingleProxy_);
+
       observePrefsUI($('direct-proxy'));
       observePrefsUI($('manual-proxy'));
       observePrefsUI($('auto-proxy'));
       observePrefsUI($('proxy-all-protocols'));
+
+      $('ip-automatic-configuration-checkbox').addEventListener('click',
+        this.handleIpAutoConfig_);
+      $('automatic-dns-radio').addEventListener('click',
+        this.handleNameServerTypeChange_);
+      $('google-dns-radio').addEventListener('click',
+        this.handleNameServerTypeChange_);
+      $('user-dns-radio').addEventListener('click',
+        this.handleNameServerTypeChange_);
     },
 
     /**
@@ -285,6 +296,36 @@ cr.define('options.internet', function() {
     },
 
     /**
+     * Handler for when the IP automatic configuration checkbox is clicked.
+     * @param {Event} e The click event.
+     * @private
+     */
+    handleIpAutoConfig_: function(e) {
+      var checked = $('ip-automatic-configuration-checkbox').checked;
+      var fields = [$('ip-address'), $('ip-netmask'), $('ip-gateway')];
+      for (var i = 0; i < fields.length; ++i) {
+        fields[i].editable = !checked;
+        if (checked) {
+          var model = fields[i].model;
+          model.value = model.automatic;
+          fields[i].model = model;
+        }
+      }
+      if (!checked)
+        $('ip-address').focus();
+    },
+
+    /**
+     * Handler for when the name server selection changes.
+     * @param {Event} e The click event.
+     * @private
+     */
+    handleNameServerTypeChange_: function(event) {
+      var type = event.target.value;
+      DetailsInternetPage.updateNameServerDisplay(type);
+    },
+
+    /**
      * Update details page controls.
      * @private
      */
@@ -295,6 +336,8 @@ cr.define('options.internet', function() {
       // TODO(chocobo): Once ipconfig is moved to flimflam service objects,
       //   we need to redo this logic to allow configuration of all networks.
       $('ipconfig-section').hidden = !this.connected && this.deviceConnected;
+      $('ipconfig-dns-section').hidden =
+        !this.connected && this.deviceConnected;
 
       // Network type related.
       updateHidden('#details-internet-page .cellular-details', !this.cellular);
@@ -542,14 +585,69 @@ cr.define('options.internet', function() {
                    $('auto-connect-network-cellular').checked ? 'true' :
                        'false']);
     }
-    var ipConfigList = $('ip-config-list');
-    chrome.send('setIPConfig', [String(servicePath),
-                                $('ip-type-dhcp').checked ? 'true' : 'false',
-                                ipConfigList.dataModel.item(0).value,
-                                ipConfigList.dataModel.item(1).value,
-                                ipConfigList.dataModel.item(2).value,
-                                ipConfigList.dataModel.item(3).value]);
+
+    var nameServerTypes = ['automatic', 'google', 'user'];
+    var nameServerType = 'automatic';
+    for (var i = 0; i < nameServerTypes.length; ++i) {
+      if ($(nameServerTypes[i] + '-dns-radio').checked) {
+        nameServerType = nameServerTypes[i];
+        break;
+      }
+    }
+
+    // Skip any empty values.
+    var userNameServers = [];
+    for (var i = 1; i <= 4; ++i) {
+      var nameServerField = $('ipconfig-dns' + i);
+      if (nameServerField && nameServerField.model &&
+          nameServerField.model.value) {
+        userNameServers.push(nameServerField.model.value);
+      }
+    }
+
+    userNameServers = userNameServers.join(',');
+
+    chrome.send('setIPConfig',
+                [servicePath,
+                 Boolean($('ip-automatic-configuration-checkbox').checked),
+                 $('ip-address').model.value || '',
+                 $('ip-netmask').model.value || '',
+                 $('ip-gateway').model.value || '',
+                 nameServerType,
+                 userNameServers]);
     OptionsPage.closeOverlay();
+  };
+
+  DetailsInternetPage.updateNameServerDisplay = function(type) {
+    var editable = type == 'user';
+    var fields = [$('ipconfig-dns1'), $('ipconfig-dns2'),
+                  $('ipconfig-dns3'), $('ipconfig-dns4')];
+    for (var i = 0; i < fields.length; ++i) {
+      fields[i].editable = editable;
+    }
+    if (editable)
+      $('ipconfig-dns1').focus();
+
+    var automaticDns = $('automatic-dns-display');
+    var googleDns = $('google-dns-display');
+    var userDns = $('user-dns-settings');
+    switch (type) {
+      case 'automatic':
+        automaticDns.setAttribute('selected', '');
+        googleDns.removeAttribute('selected');
+        userDns.removeAttribute('selected');
+        break;
+      case 'google':
+        automaticDns.removeAttribute('selected');
+        googleDns.setAttribute('selected', '');
+        userDns.removeAttribute('selected');
+        break;
+      case 'user':
+        automaticDns.removeAttribute('selected');
+        googleDns.removeAttribute('selected');
+        userDns.setAttribute('selected', '');
+        break;
+    }
   };
 
   DetailsInternetPage.showDetailedInfo = function(data) {
@@ -610,81 +708,85 @@ cr.define('options.internet', function() {
     detailsPage.showStaticIPConfig = data.showStaticIPConfig;
     $('connection-state').textContent = data.connectionState;
 
-    var inetAddress = '';
-    var inetSubnetAddress = '';
-    var inetGateway = '';
-    var inetDns = '';
-    $('ip-type-dhcp').checked = true;
-    if (data.ipconfigStatic.value) {
-      inetAddress = data.ipconfigStatic.value.address;
-      inetSubnetAddress = data.ipconfigStatic.value.subnetAddress;
-      inetGateway = data.ipconfigStatic.value.gateway;
-      inetDns = data.ipconfigStatic.value.dns;
-      $('ip-type-static').checked = true;
-    } else if (data.ipconfigDHCP.value) {
-      inetAddress = data.ipconfigDHCP.value.address;
-      inetSubnetAddress = data.ipconfigDHCP.value.subnetAddress;
-      inetGateway = data.ipconfigDHCP.value.gateway;
-      inetDns = data.ipconfigDHCP.value.dns;
+    var ipAutoConfig = data.ipAutoConfig ? 'automatic' : 'user';
+    $('ip-automatic-configuration-checkbox').checked = data.ipAutoConfig;
+    var inetAddress = {autoConfig: ipAutoConfig};
+    var inetNetmask = {autoConfig: ipAutoConfig};
+    var inetGateway = {autoConfig: ipAutoConfig};
+
+    if (data.ipconfig.value) {
+      inetAddress.automatic = data.ipconfig.value.address;
+      inetAddress.value = data.ipconfig.value.address;
+      inetNetmask.automatic = data.ipconfig.value.netmask;
+      inetNetmask.value = data.ipconfig.value.netmask;
+      inetGateway.automatic = data.ipconfig.value.gateway;
+      inetGateway.value = data.ipconfig.value.gateway;
     }
 
-    // Hide the dhcp/static radio if needed.
-    $('ip-type-dhcp-div').hidden = !data.showStaticIPConfig;
-    $('ip-type-static-div').hidden = !data.showStaticIPConfig;
+    // Override the "automatic" values with the real saved DHCP values,
+    // if they are set.
+    if (data.savedIP.address) {
+      inetAddress.automatic = data.savedIP.address;
+      inetAddress.value = data.savedIP.address;
+    }
+    if (data.savedIP.netmask) {
+      inetNetmask.automatic = data.savedIP.netmask;
+      inetNetmask.value = data.savedIP.netmask;
+    }
+    if (data.savedIP.gateway) {
+      inetGateway.automatic = data.savedIP.gateway;
+      inetGateway.value = data.savedIP.gateway;
+    }
 
-    var ipConfigList = $('ip-config-list');
-    options.internet.IPConfigList.decorate(ipConfigList);
-    ipConfigList.disabled =
-        $('ip-type-dhcp').checked || data.ipconfigStatic.controlledBy ||
-        !data.showStaticIPConfig;
-    ipConfigList.autoExpands = true;
-    var model = new ArrayDataModel([]);
-    model.push({
-      property: 'inetAddress',
-      name: loadTimeData.getString('inetAddress'),
-      value: inetAddress,
-    });
-    model.push({
-      property: 'inetSubnetAddress',
-      name: loadTimeData.getString('inetSubnetAddress'),
-      value: inetSubnetAddress,
-    });
-    model.push({
-      property: 'inetGateway',
-      name: loadTimeData.getString('inetGateway'),
-      value: inetGateway,
-    });
-    model.push({
-      property: 'inetDns',
-      name: loadTimeData.getString('inetDns'),
-      value: inetDns,
-    });
-    ipConfigList.dataModel = model;
-
-    $('ip-type-dhcp').addEventListener('click', function(event) {
-      // Disable ipConfigList and switch back to dhcp values (if any).
-      if (data.ipconfigDHCP.value) {
-        var config = data.ipconfigDHCP.value;
-        ipConfigList.dataModel.item(0).value = config.address;
-        ipConfigList.dataModel.item(1).value = config.subnetAddress;
-        ipConfigList.dataModel.item(2).value = config.gateway;
-        ipConfigList.dataModel.item(3).value = config.dns;
+    if (ipAutoConfig == 'user') {
+      if (data.staticIP.value.address) {
+        inetAddress.value = data.staticIP.value.address;
+        inetAddress.user = data.staticIP.value.address;
       }
-      ipConfigList.dataModel.updateIndex(0);
-      ipConfigList.dataModel.updateIndex(1);
-      ipConfigList.dataModel.updateIndex(2);
-      ipConfigList.dataModel.updateIndex(3);
-      // Unselect all so we don't keep the currently selected field editable.
-      ipConfigList.selectionModel.unselectAll();
-      ipConfigList.disabled = true;
-    });
+      if (data.staticIP.value.netmask) {
+        inetNetmask.value = data.staticIP.value.netmask;
+        inetNetmask.user = data.staticIP.value.netmask;
+      }
+      if (data.staticIP.value.gateway) {
+        inetGateway.value = data.staticIP.value.gateway;
+        inetGateway.user = data.staticIP.value.gateway;
+      }
+    }
 
-    $('ip-type-static').addEventListener('click', function(event) {
-      // Enable ipConfigList.
-      ipConfigList.disabled = false;
-      ipConfigList.focus();
-      ipConfigList.selectionModel.selectedIndex = 0;
-    });
+    var configureAddressField = function(field, model) {
+      IPAddressField.decorate(field);
+      field.model = model;
+      field.editable = model.autoConfig == 'user';
+    };
+
+    configureAddressField($('ip-address'), inetAddress);
+    configureAddressField($('ip-netmask'), inetNetmask);
+    configureAddressField($('ip-gateway'), inetGateway);
+
+    if (data.ipconfig.value && data.ipconfig.value.nameServers)
+      $('automatic-dns-display').textContent = data.ipconfig.value.nameServers;
+
+    if (data.savedIP && data.savedIP.nameServers)
+      $('automatic-dns-display').textContent = data.savedIP.nameServers;
+
+    if (data.nameServersGoogle)
+      $('google-dns-display').textContent = data.nameServersGoogle;
+
+    var nameServersUser = [];
+    if (data.staticIP.value.nameServers)
+      nameServersUser = data.staticIP.value.nameServers.split(',');
+
+    var nameServerModels = [];
+    for (var i = 0; i < 4; ++i)
+      nameServerModels.push({value: nameServersUser[i] || ''});
+
+    $(data.nameServerType + '-dns-radio').checked = true;
+    configureAddressField($('ipconfig-dns1'), nameServerModels[0]);
+    configureAddressField($('ipconfig-dns2'), nameServerModels[1]);
+    configureAddressField($('ipconfig-dns3'), nameServerModels[2]);
+    configureAddressField($('ipconfig-dns4'), nameServerModels[3]);
+
+    DetailsInternetPage.updateNameServerDisplay(data.nameServerType);
 
     if (data.hardwareAddress) {
       $('hardware-address').textContent = data.hardwareAddress;
@@ -711,9 +813,9 @@ cr.define('options.internet', function() {
         $('wifi-bssid-entry').hidden = true;
       }
       $('wifi-ip-address').textContent = inetAddress;
-      $('wifi-subnet-address').textContent = inetSubnetAddress;
+      $('wifi-netmask').textContent = inetNetmask;
       $('wifi-gateway').textContent = inetGateway;
-      $('wifi-dns').textContent = inetDns;
+      $('wifi-name-servers').textContent = inetNameServers;
       if (data.encryption && data.encryption.length > 0) {
         $('wifi-security').textContent = data.encryption;
         $('wifi-security-entry').hidden = false;

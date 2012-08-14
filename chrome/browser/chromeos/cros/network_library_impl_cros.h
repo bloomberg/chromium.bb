@@ -28,7 +28,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
       const std::string& device_path) OVERRIDE;
 
   virtual void CallConfigureService(const std::string& identifier,
-                                    const DictionaryValue* info) OVERRIDE;
+                                    const base::DictionaryValue* info) OVERRIDE;
   virtual void CallConnectToNetwork(Network* network) OVERRIDE;
   virtual void CallRequestWifiNetworkAndConnect(
       const std::string& ssid, ConnectionSecurity security) OVERRIDE;
@@ -73,7 +73,12 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
       const std::string& device_path,
       std::string* hardware_address,
       HardwareAddressFormat format) OVERRIDE;
-  virtual void SetIPConfig(const NetworkIPConfig& ipconfig) OVERRIDE;
+  virtual void SetIPParameters(const std::string& service_path,
+                               const std::string& address,
+                               const std::string& netmask,
+                               const std::string& gateway,
+                               const std::string& name_servers,
+                               int dhcp_usage_mask) OVERRIDE;
 
   //////////////////////////////////////////////////////////////////////////////
   // Callbacks.
@@ -116,37 +121,48 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   void NetworkDeviceUpdate(const std::string& device_path,
                            const base::DictionaryValue* properties);
 
+ private:
+  // Structure used to pass IP parameter info to a DoSetIPParameters callback,
+  // since Bind only takes up to six parameters.
+  struct IPParameterInfo;
+
+  // Second half of setting IP Parameters.  SetIPParameters above kicks off
+  // an async information fetch, and this completes the operation when that
+  // fetch is complete.
+  void SetIPParametersCallback(const IPParameterInfo& info,
+                               const std::string& service_path,
+                               const base::DictionaryValue* properties);
+
   // Second half of refreshing IPConfig for a network.  Refreshes all IP config
   // paths found in properties.
   void RefreshIPConfigCallback(const std::string& device_path,
                                const base::DictionaryValue* properties);
 
- private:
   // This processes all Manager update messages.
   bool NetworkManagerStatusChanged(const std::string& key, const Value* value);
-  void ParseNetworkManager(const DictionaryValue& dict);
-  void UpdateTechnologies(const ListValue* technologies, int* bitfieldp);
-  void UpdateAvailableTechnologies(const ListValue* technologies);
-  void UpdateEnabledTechnologies(const ListValue* technologies);
-  void UpdateConnectedTechnologies(const ListValue* technologies);
+  void ParseNetworkManager(const base::DictionaryValue& dict);
+  void UpdateTechnologies(const base::ListValue* technologies, int* bitfieldp);
+  void UpdateAvailableTechnologies(const base::ListValue* technologies);
+  void UpdateEnabledTechnologies(const base::ListValue* technologies);
+  void UpdateConnectedTechnologies(const base::ListValue* technologies);
 
   // Update network lists.
-  void UpdateNetworkServiceList(const ListValue* services);
-  void UpdateWatchedNetworkServiceList(const ListValue* services);
+  void UpdateNetworkServiceList(const base::ListValue* services);
+  void UpdateWatchedNetworkServiceList(const base::ListValue* services);
   Network* ParseNetwork(const std::string& service_path,
-                        const DictionaryValue& info);
+                        const base::DictionaryValue& info);
 
-  void UpdateRememberedNetworks(const ListValue* profiles);
+  void UpdateRememberedNetworks(const base::ListValue* profiles);
   void RequestRememberedNetworksUpdate();
   void UpdateProfile(const std::string& profile_path,
-                     const DictionaryValue* properties);
+                     const base::DictionaryValue* properties);
   Network* ParseRememberedNetwork(const std::string& service_path,
-                                  const DictionaryValue& info);
+                                  const base::DictionaryValue& info);
 
   // NetworkDevice list management functions.
-  void UpdateNetworkDeviceList(const ListValue* devices);
+  void UpdateNetworkDeviceList(const base::ListValue* devices);
   void ParseNetworkDevice(const std::string& device_path,
-                          const DictionaryValue& info);
+                          const base::DictionaryValue& info);
 
   // Empty device observer to ensure that device property updates are received.
   class NetworkLibraryDeviceObserver : public NetworkDeviceObserver {

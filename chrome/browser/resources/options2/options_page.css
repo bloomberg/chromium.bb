@@ -140,6 +140,53 @@ div.disabled {
   padding-top: 20px;
 }
 
+
+/* Editable text field properties */
+.editable-text-field > * {
+  -webkit-box-align: center;
+  -webkit-transition: 150ms background-color;
+  border: none;
+  box-sizing: border-box;
+  display: -webkit-box;
+  height: 20px;
+  margin: 0;
+}
+
+.editable-text-field > .spacer {
+  /* The above height rule should not apply to spacers. */
+  height: 0;
+}
+
+.editable-text-field .editable-text {
+  padding: 2px 3px;
+}
+
+.editable-text-field .static-text {
+  height: 24px;
+  overflow: hidden;
+  padding: 3px 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editable-text-field:not([editable]) > [displaymode='edit'] {
+  display: none;
+}
+
+.editable-text-field[editable] > [displaymode='static'] {
+  display: none;
+}
+
+.editable-text-field[empty] > input[type='text'] {
+  color: #ccc;
+  font-style: italic;
+}
+
+.editable-text-field[disabled] {
+  opacity: 0.6;
+}
+
+/* Editable List properties */
 list > * {
   -webkit-box-align: center;
   -webkit-transition: 150ms background-color;
@@ -276,7 +323,7 @@ list .static-text {
   white-space: nowrap;
 }
 
-list[inlineeditable] input {
+list[type='text'][inlineeditable] input {
   box-sizing: border-box;
   margin: 0;
   width: 100%;

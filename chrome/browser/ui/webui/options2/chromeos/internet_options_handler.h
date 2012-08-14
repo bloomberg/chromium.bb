@@ -126,6 +126,12 @@ class InternetOptionsHandler
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.
   void PopulateDictionaryDetails(const chromeos::Network* network);
+  // This is the second half of PopulateDictionaryDetails after the asynchronous
+  // request for Shill's service properties.
+  void PopulateDictionaryDetailsCallback(
+      const chromeos::Network* network,
+      const std::string& service_path,
+      const base::DictionaryValue* shill_properties);
   void PopulateWifiDetails(const chromeos::WifiNetwork* wifi,
                            base::DictionaryValue* dictionary);
   void PopulateWimaxDetails(const chromeos::WimaxNetwork* wimax,

@@ -33,11 +33,6 @@ struct NetworkIPConfig {
 
   std::string ToString() const;
 
-  // Gets the PrefixLength for an IPv4 netmask.
-  // For example, "255.255.255.0" => 24
-  // If the netmask is invalid, this will return -1;
-  // TODO(chocobo): Add support for IPv6.
-  int32 GetPrefixLength() const;
   std::string device_path;  // This looks like "/device/0011aa22bb33"
   IPConfigType type;
   std::string address;

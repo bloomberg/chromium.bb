@@ -22,6 +22,16 @@ using content::BrowserThread;
 
 namespace chromeos {
 
+// Structure used to pass IP parameter info to a DoSetIPParameters callback,
+// since Bind only takes up to six parameters.
+struct NetworkLibraryImplCros::IPParameterInfo {
+  std::string address;
+  std::string netmask;
+  std::string gateway;
+  std::string name_servers;
+  int dhcp_usage_mask;
+};
+
 namespace {
 
 // List of cellular operators names that should have data roaming always enabled
@@ -535,97 +545,42 @@ NetworkIPConfigVector NetworkLibraryImplCros::GetIPConfigs(
   return ipconfig_vector;
 }
 
-void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
-  if (ipconfig.device_path.empty())
+void NetworkLibraryImplCros::SetIPParameters(const std::string& service_path,
+                                             const std::string& address,
+                                             const std::string& netmask,
+                                             const std::string& gateway,
+                                             const std::string& name_servers,
+                                             int dhcp_usage_mask) {
+  if (service_path.empty())
     return;
 
-  VLOG(1) << "Setting IPConfig: " << ipconfig.ToString();
+  VLOG(1) << "Setting IP parameters: "
+      << "address: " << address
+      << (dhcp_usage_mask & USE_DHCP_ADDRESS ?
+          " (ignored)" : " (in use)")
+      << "netmask: " << netmask
+      << (dhcp_usage_mask & USE_DHCP_NETMASK ?
+          " (ignored)" : " (in use)")
+      << "gateway: " << gateway
+      << (dhcp_usage_mask & USE_DHCP_GATEWAY ?
+          " (ignored)" : " (in use)")
+      << "name_servers: " << name_servers
+      << (dhcp_usage_mask & USE_DHCP_NAME_SERVERS ?
+          " (ignored)" : " (in use)");
 
-  NetworkIPConfig* ipconfig_dhcp = NULL;
-  std::string ipconfig_dhcp_path;
-  NetworkIPConfig* ipconfig_static = NULL;
-  std::string ipconfig_static_path;
+  // Have to pass these in a structure, since Bind only takes up to six
+  // parameters.
+  IPParameterInfo info;
+  info.address = address;
+  info.netmask = netmask;
+  info.gateway = gateway;
+  info.name_servers = name_servers;
+  info.dhcp_usage_mask = dhcp_usage_mask;
+  chromeos::NetworkPropertiesCallback callback =
+      base::Bind(&NetworkLibraryImplCros::SetIPParametersCallback,
+                 weak_ptr_factory_.GetWeakPtr(), info);
 
-  NetworkIPConfigVector ipconfigs;
-  std::vector<std::string> ipconfig_paths;
-  CrosListIPConfigs(ipconfig.device_path, &ipconfigs, &ipconfig_paths, NULL);
-  for (size_t i = 0; i < ipconfigs.size(); ++i) {
-    if (ipconfigs[i].type == chromeos::IPCONFIG_TYPE_DHCP) {
-      ipconfig_dhcp = &ipconfigs[i];
-      ipconfig_dhcp_path = ipconfig_paths[i];
-    } else if (ipconfigs[i].type == chromeos::IPCONFIG_TYPE_IPV4) {
-      ipconfig_static = &ipconfigs[i];
-      ipconfig_static_path = ipconfig_paths[i];
-    }
-  }
-
-  NetworkIPConfigVector ipconfigs2;
-  std::vector<std::string> ipconfig_paths2;
-  if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP) {
-    // If switching from static to DHCP, create new DHCP IPConfig.
-    if (!ipconfig_dhcp &&
-        !CrosAddIPConfig(ipconfig.device_path, chromeos::IPCONFIG_TYPE_DHCP)) {
-      LOG(ERROR) << "Unable to add new DHCP IPConfig";
-      return;
-    }
-    // User wants DHCP now. So delete the static IPConfig.
-    if (ipconfig_static)
-      CrosRemoveIPConfig(ipconfig_static_path);
-  } else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4) {
-    // If switching from DHCP to static, create new static IPConfig.
-    if (!ipconfig_static) {
-      if (!CrosAddIPConfig(ipconfig.device_path,
-                           chromeos::IPCONFIG_TYPE_IPV4)) {
-        LOG(ERROR) << "Unable to add new static IPConfig";
-        return;
-      }
-      // Now find the newly created IPConfig.
-      if (CrosListIPConfigs(ipconfig.device_path, &ipconfigs2,
-                            &ipconfig_paths2, NULL)) {
-        for (size_t i = 0; i < ipconfigs2.size(); ++i) {
-          if (ipconfigs2[i].type == chromeos::IPCONFIG_TYPE_IPV4) {
-            ipconfig_static = &ipconfigs2[i];
-            ipconfig_static_path = ipconfig_paths2[i];
-          }
-        }
-      }
-      if (!ipconfig_static) {
-        LOG(ERROR) << "Unable to find newly added static IPConfig";
-        return;
-      }
-    }
-
-    // Save any changed details.
-    if (ipconfig.address != ipconfig_static->address) {
-      base::StringValue value(ipconfig.address);
-      CrosSetNetworkIPConfigProperty(ipconfig_static_path,
-                                     flimflam::kAddressProperty, value);
-    }
-    if (ipconfig.netmask != ipconfig_static->netmask) {
-      int prefixlen = ipconfig.GetPrefixLength();
-      if (prefixlen == -1) {
-        VLOG(1) << "IPConfig prefix length is invalid for netmask "
-            << ipconfig.netmask;
-      } else {
-        base::FundamentalValue value(prefixlen);
-        CrosSetNetworkIPConfigProperty(ipconfig_static_path,
-                                       flimflam::kPrefixlenProperty, value);
-      }
-    }
-    if (ipconfig.gateway != ipconfig_static->gateway) {
-      base::StringValue value(ipconfig.gateway);
-      CrosSetNetworkIPConfigProperty(ipconfig_static_path,
-                                     flimflam::kGatewayProperty, value);
-    }
-    if (ipconfig.name_servers != ipconfig_static->name_servers) {
-      base::StringValue value(ipconfig.name_servers);
-      CrosSetNetworkIPConfigProperty(ipconfig_static_path,
-                                     flimflam::kNameServersProperty, value);
-    }
-    // Remove DHCP IPConfig if there is one.
-    if (ipconfig_dhcp)
-      CrosRemoveIPConfig(ipconfig_dhcp_path);
-  }
+  CrosRequestNetworkServiceProperties(service_path, callback);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1210,6 +1165,125 @@ void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,
 
   NotifyNetworkManagerChanged(false);  // Not forced.
   AddNetworkDeviceObserver(device_path, network_device_observer_.get());
+}
+
+void NetworkLibraryImplCros::SetIPParametersCallback(
+    const IPParameterInfo& info,
+    const std::string& service_path,
+    const base::DictionaryValue* properties) {
+  // Find the properties we're going to set, and minimize the DBus calls below
+  // by not clearing if it's already cleared, and not setting if it's already
+  // set to the same value. Also, don't reconnect at the end if nothing changed.
+  bool something_changed = false;
+  std::string current_address;
+  int32 current_prefixlen = -1;
+  std::string current_gateway;
+  std::string current_name_servers;
+  bool address_exists = properties->GetStringWithoutPathExpansion(
+      shill::kStaticIPAddressProperty,
+      &current_address);
+  VLOG_IF(2, address_exists) << shill::kStaticIPAddressProperty
+                             << "=" << current_address;
+  bool prefixlen_exists = properties->GetIntegerWithoutPathExpansion(
+      shill::kStaticIPPrefixlenProperty,
+      &current_prefixlen);
+  VLOG_IF(2, prefixlen_exists) << shill::kStaticIPPrefixlenProperty
+                               << "=" << current_prefixlen;
+  bool gateway_exists = properties->GetStringWithoutPathExpansion(
+      shill::kStaticIPGatewayProperty,
+      &current_gateway);
+  VLOG_IF(2, gateway_exists) << shill::kStaticIPGatewayProperty
+                             << "=" << current_gateway;
+  bool name_servers_exist = properties->GetStringWithoutPathExpansion(
+      shill::kStaticIPNameServersProperty,
+      &current_name_servers);
+  VLOG_IF(2, name_servers_exist) << shill::kStaticIPNameServersProperty
+                                 << "=" << current_name_servers;
+
+  if (info.dhcp_usage_mask & USE_DHCP_ADDRESS) {
+    if (address_exists) {
+      something_changed = true;
+      CrosClearNetworkServiceProperty(service_path,
+                                      shill::kStaticIPAddressProperty);
+      VLOG(2) << "Clearing " << shill::kStaticIPAddressProperty;
+    }
+  } else if (current_address != info.address) {
+    base::StringValue value(info.address);
+    VLOG(2) << "Setting " << shill::kStaticIPAddressProperty
+            << " to " << info.address;
+    something_changed = true;
+    CrosSetNetworkServiceProperty(service_path,
+                                  shill::kStaticIPAddressProperty,
+                                  value);
+  }
+
+  if (info.dhcp_usage_mask & USE_DHCP_NETMASK) {
+    if (prefixlen_exists) {
+      something_changed = true;
+      CrosClearNetworkServiceProperty(service_path,
+                                      shill::kStaticIPPrefixlenProperty);
+      VLOG(2) << "Clearing " << shill::kStaticIPPrefixlenProperty;
+    }
+  } else {
+    int prefixlen = CrosNetmaskToPrefixLength(info.netmask);
+    if (prefixlen == -1) {
+      VLOG(1) << "IPConfig prefix length is invalid for netmask "
+              << info.netmask;
+    } else if (current_prefixlen != prefixlen) {
+      base::FundamentalValue value(prefixlen);
+      VLOG(2) << "Setting " << shill::kStaticIPPrefixlenProperty
+              << " to " << prefixlen;
+      something_changed = true;
+      CrosSetNetworkServiceProperty(service_path,
+                                    shill::kStaticIPPrefixlenProperty,
+                                    value);
+    }
+  }
+
+  if (info.dhcp_usage_mask & USE_DHCP_GATEWAY) {
+    if (gateway_exists) {
+      something_changed = true;
+      CrosClearNetworkServiceProperty(service_path,
+                                      shill::kStaticIPGatewayProperty);
+      VLOG(2) << "Clearing " << shill::kStaticIPGatewayProperty;
+    }
+  } else if (current_gateway != info.gateway){
+    base::StringValue value(info.gateway);
+    VLOG(2) << "Setting " << shill::kStaticIPGatewayProperty
+            << " to " << info.gateway;
+    something_changed = true;
+    CrosSetNetworkServiceProperty(service_path,
+                                  shill::kStaticIPGatewayProperty,
+                                  value);
+  }
+
+  if (info.dhcp_usage_mask & USE_DHCP_NAME_SERVERS) {
+    if (name_servers_exist) {
+      something_changed = true;
+      CrosClearNetworkServiceProperty(service_path,
+                                      shill::kStaticIPNameServersProperty);
+      VLOG(2) << "Clearing " << shill::kStaticIPNameServersProperty;
+    }
+  } else if (current_name_servers != info.name_servers){
+    base::StringValue value(info.name_servers);
+    VLOG(2) << "Setting " << shill::kStaticIPNameServersProperty
+            << " to " << info.name_servers;
+    something_changed = true;
+    CrosSetNetworkServiceProperty(service_path,
+                                  shill::kStaticIPNameServersProperty,
+                                  value);
+  }
+
+  if (!something_changed)
+    return;
+
+  // Find the network associated with this service path, and attempt to refresh
+  // its IP parameters, so that the changes to the service properties can take
+  // effect.
+  Network* network = FindNetworkByPath(service_path);
+
+  if (network && network->connecting_or_connected())
+    RefreshIPConfig(network);
 }
 
 }  // namespace chromeos

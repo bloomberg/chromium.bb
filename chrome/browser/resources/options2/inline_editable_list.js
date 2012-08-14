@@ -180,7 +180,7 @@ cr.define('options', function() {
     /**
      * The HTML element that should have focus initially when editing starts,
      * if a specific element wasn't clicked.
-     * Defaults to the first <input> element; can be overriden by subclasses if
+     * Defaults to the first <input> element; can be overridden by subclasses if
      * a different element should be focused.
      * @type {HTMLElement}
      */
@@ -192,7 +192,7 @@ cr.define('options', function() {
      * Whether the input in currently valid to submit. If this returns false
      * when editing would be submitted, either editing will not be ended,
      * or it will be cancelled, depending on the context.
-     * Can be overrided by subclasses to perform input validation.
+     * Can be overridden by subclasses to perform input validation.
      * @type {boolean}
      */
     get currentInputIsValid() {
@@ -201,7 +201,7 @@ cr.define('options', function() {
 
     /**
      * Returns true if the item has been changed by an edit.
-     * Can be overrided by subclasses to return false when nothing has changed
+     * Can be overridden by subclasses to return false when nothing has changed
      * to avoid unnecessary commits.
      * @type {boolean}
      */
@@ -296,7 +296,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Called a key is pressed. Handles committing and cancelling edits.
+     * Called when a key is pressed. Handles committing and canceling edits.
      * @param {Event} e The key down event.
      * @private
      */

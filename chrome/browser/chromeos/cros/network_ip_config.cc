@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/cros/network_ip_config.h"
 
 #include "base/logging.h"
-#include "base/string_tokenizer.h"
 
 namespace chromeos {
 
@@ -49,51 +48,6 @@ std::string NetworkIPConfig::ToString() const {
       + " netmask: " + netmask
       + " gateway: " + gateway
       + " name_servers: " + name_servers;
-}
-
-int32 NetworkIPConfig::GetPrefixLength() const {
-  int count = 0;
-  int prefixlen = 0;
-  StringTokenizer t(netmask, ".");
-  while (t.GetNext()) {
-    // If there are more than 4 numbers, then it's invalid.
-    if (count == 4) {
-      return -1;
-    }
-    std::string token = t.token();
-    // If we already found the last mask and the current one is not
-    // "0" then the netmask is invalid. For example, 255.224.255.0
-    if (prefixlen / 8 != count) {
-      if (token != "0") {
-        return -1;
-      }
-    } else if (token == "255") {
-      prefixlen += 8;
-    } else if (token == "254") {
-      prefixlen += 7;
-    } else if (token == "252") {
-      prefixlen += 6;
-    } else if (token == "248") {
-      prefixlen += 5;
-    } else if (token == "240") {
-      prefixlen += 4;
-    } else if (token == "224") {
-      prefixlen += 3;
-    } else if (token == "192") {
-      prefixlen += 2;
-    } else if (token == "128") {
-      prefixlen += 1;
-    } else if (token == "0") {
-      prefixlen += 0;
-    } else {
-      // mask is not a valid number.
-      return -1;
-    }
-    count++;
-  }
-  if (count < 4)
-    return -1;
-  return prefixlen;
 }
 
 }  // namespace chromeos

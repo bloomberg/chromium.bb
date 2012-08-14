@@ -675,8 +675,34 @@ NetworkIPConfigVector NetworkLibraryImplStub::GetIPConfigs(
   return ip_configs_;
 }
 
-void NetworkLibraryImplStub::SetIPConfig(const NetworkIPConfig& ipconfig) {
-    ip_configs_.push_back(ipconfig);
+void NetworkLibraryImplStub::SetIPParameters(const std::string& service_path,
+                                             const std::string& address,
+                                             const std::string& netmask,
+                                             const std::string& gateway,
+                                             const std::string& name_servers,
+                                             int dhcp_usage_mask) {
+  VLOG(1) << "Setting IP parameters:"
+      << "\n  address: " << address
+      << (dhcp_usage_mask & USE_DHCP_ADDRESS ?
+          " (ignored)" : " (in use)")
+      << "\n  netmask: " << netmask
+      << (dhcp_usage_mask & USE_DHCP_NETMASK ?
+          " (ignored)" : " (in use)")
+      << "\n  gateway: " << gateway
+      << (dhcp_usage_mask & USE_DHCP_GATEWAY ?
+          " (ignored)" : " (in use)")
+      << "\n  name_servers: " << name_servers
+      << (dhcp_usage_mask & USE_DHCP_NAME_SERVERS ?
+          " (ignored)" : " (in use)");
+
+    Network* network = FindNetworkByPath(service_path);
+    if (network)
+      ip_configs_.push_back(NetworkIPConfig(network->device_path(),
+                                            IPCONFIG_TYPE_IPV4,
+                                            address,
+                                            netmask,
+                                            gateway,
+                                            name_servers));
 }
 
 }  // namespace chromeos

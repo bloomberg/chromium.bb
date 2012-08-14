@@ -14363,14 +14363,32 @@ Press any key to continue exploring.
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
         Connection status:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_DHCP" desc="In settings Internet options, the label for use DHCP.">
-        Use DHCP
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_IP_AUTOMATIC_CONFIGURATION" desc="In the IP address fields, labels automatic connection toggle">
+        Configure automatically
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_STATIC_IP" desc="In settings Internet options, the label for use static ip.">
-        Use static IP
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_AUTOMATIC_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the automatic DNS selection.">
+        Automatic name servers
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_GOOGLE_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the Google DNS selection.">
+        Google name servers
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the user DNS selection.">
+        Custom name servers
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_1" desc="In the name server type radio for static ip configuration, is placeholder text for server 1">
+        Server 1
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_2" desc="In the name server type radio for static ip configuration, is placeholder text for server 2">
+        Server 2
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_3" desc="In the name server type radio for static ip configuration, is placeholder text for server 3">
+        Server 3
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_4" desc="In the name server type radio for static ip configuration, is placeholder text for server 4">
+        Server 4
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings Internet options, the label for IP address.">
-        IP Address:
+        IP address:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings Internet options, the label for subnet mask.">
         Subnet mask:

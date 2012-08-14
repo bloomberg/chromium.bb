@@ -31,7 +31,7 @@
   -webkit-box-flex: 1;
   -webkit-box-sizing: border-box;
   -webkit-padding-end: 10px;
-  height: 350px;
+  height: 380px;
   min-width: 480px;
   overflow-y: auto;
 }
@@ -55,3 +55,29 @@
   margin-top: 8px;
 }
 
+#ipconfig-section {
+  border-top: 1px solid #eee;
+  margin-bottom: 10px;
+  padding-top: 10px;
+}
+
+#ipconfig-dns-section {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+#user-dns-settings:not([selected]) {
+  display: none;
+}
+
+.dns-display {
+  -webkit-margin-start: 24px;
+  -webkit-transition: opacity 150ms ease-in-out;
+  color: #bbb;
+  font-style: italic;
+}
+
+.dns-display:not([selected]) {
+  -webkit-transition: opacity 150ms ease-in-out;
+  display: none;
+}

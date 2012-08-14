@@ -7,6 +7,7 @@
 // as a single resource.
 <include src="controlled_setting.js"></include>
 <include src="deletable_item_list.js"></include>
+<include src="editable_text_field.js"></include>
 <include src="inline_editable_list.js"></include>
 <include src="options_page.js"></include>
 <include src="preferences.js"></include>
@@ -17,7 +18,7 @@
   <include src="../shared/js/chromeos/ui_account_tweaks.js"></include>
   <include src="chromeos/cellular_plan_element.js"></include>
   <include src="chromeos/change_picture_options.js"></include>
-  <include src="chromeos/internet_detail_ip_config_list.js"></include>
+  <include src="chromeos/internet_detail_ip_address_field.js"></include>
   <include src="chromeos/internet_detail.js"></include>
   <include src="chromeos/network_list.js"></include>
   <include src="chromeos/preferred_networks.js"></include>

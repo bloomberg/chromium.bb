@@ -77,7 +77,12 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
       const std::string& device_path,
       std::string* hardware_address,
       HardwareAddressFormat format) OVERRIDE;
-  virtual void SetIPConfig(const NetworkIPConfig& ipconfig) OVERRIDE;
+  virtual void SetIPParameters(const std::string& service_path,
+                               const std::string& address,
+                               const std::string& netmask,
+                               const std::string& gateway,
+                               const std::string& name_servers,
+                               int dhcp_usage_mask) OVERRIDE;
 
  private:
   void AddStubNetwork(Network* network, NetworkProfileType profile_type);

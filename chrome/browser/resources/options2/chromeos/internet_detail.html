@@ -116,16 +116,16 @@
             <td id="wifi-ip-address" class="option-value"></td>
           </tr>
           <tr class="wifi-network-setting">
-            <td class="option-name" i18n-content="inetSubnetAddress"></td>
-            <td id="wifi-subnet-address" class="option-value"></td>
+            <td class="option-name" i18n-content="inetNetmask"></td>
+            <td id="wifi-netmask" class="option-value"></td>
           </tr>
           <tr class="wifi-network-setting">
             <td class="option-name" i18n-content="inetGateway"></td>
             <td id="wifi-gateway" class="option-value"></td>
           </tr>
           <tr class="wifi-network-setting">
-            <td class="option-name" i18n-content="inetDns"></td>
-            <td id="wifi-dns" class="option-value"></td>
+            <td class="option-name" i18n-content="inetNameServers"></td>
+            <td id="wifi-name-servers" class="option-value"></td>
           </tr>
           <tr id="wifi-security-entry">
             <td class="options-name" i18n-content="inetEncryption"></td>
@@ -405,27 +405,87 @@
         </table>
       </section>
       <section id="ipconfig-section">
-        <div>
-          <div id="ip-type-dhcp-div" class="radio">
-            <label>
-              <input type="radio" name="iptype" id="ip-type-dhcp" value="1">
-              <span i18n-content="useDHCP"></span>
-            </label>
-            <span class="controlled-setting-indicator" data="ipconfigDHCP"
-                for="ip-type-dhcp"></span>
-          </div>
-          <div id="ip-type-static-div" class="radio">
-            <label>
-              <input type="radio" name="iptype" id="ip-type-static" value="0">
-              <span i18n-content="useStaticIP"></span>
-            </label>
-            <span class="controlled-setting-indicator" data="ipconfigStatic"
-                for="ip-type-static"></span>
-          </div>
-          <div id="ip-config-management" class="settings-list">
-            <list id="ip-config-list"></list>
-          </div>
+        <div id="ip-automatic-configuration" class="checkbox">
+          <label>
+            <input id="ip-automatic-configuration-checkbox"
+                type="checkbox">
+            <span i18n-content="ipAutomaticConfiguration"></span>
+          </label>
+          <span class="controlled-setting-indicator" data="ipconfigDHCP"
+              for="ip-automatic-configuration"></span>
         </div>
+        <div>
+        <table id="ip-address-settings">
+          <tr>
+            <td class="spacer" width="14px"></td>
+            <td class="option-name" i18n-content="inetAddress"></td>
+            <td><div id="ip-address"></div></td>
+          </tr>
+          <tr>
+            <td class="spacer" width="14px"></td>
+            <td class="option-name" id="ip-netmask-label"
+                i18n-content="inetNetmask"></td>
+            <td><div id="ip-netmask"></div></td>
+          </tr>
+          <tr>
+            <td class="spacer" width="14px"></td>
+            <td class="option-name" i18n-content="inetGateway"></td>
+            <td><div id="ip-gateway"></div></td>
+          </tr>
+        </table>
+      </section>
+      <section id="ipconfig-dns-section">
+        <div class="radio">
+          <label>
+            <input id="automatic-dns-radio" type="radio" name="dnstype"
+                value="automatic">
+            <span i18n-content="automaticNameServers"></span>
+          </label>
+        </div>
+        <div id="automatic-dns-display" class="dns-display"></div>
+        <div class="radio">
+          <label>
+            <input id="google-dns-radio" type="radio" name="dnstype"
+                value="google">
+            <span i18n-content="googleNameServers"></span>
+          </label>
+        </div>
+        <div id="google-dns-display" class="dns-display"></div>
+        <div class="radio">
+          <label>
+            <input id="user-dns-radio" type="radio" name="dnstype"
+                value="user">
+            <span i18n-content="userNameServers"></span>
+          </label>
+        </div>
+        <table id="user-dns-settings">
+          <tr>
+            <td class="spacer" width="14px"></td> 
+            <td>
+              <div id="ipconfig-dns1" i18n-placeholder-text="userNameServer1"
+                  allow-empty>
+              </div>
+            </td>
+            <td>
+              <div id="ipconfig-dns2" i18n-placeholder-text="userNameServer2"
+                  allow-empty>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="spacer" width="14px"></td>
+            <td>
+              <div id="ipconfig-dns3" i18n-placeholder-text="userNameServer3"
+                  allow-empty>
+              </div>
+            </td>
+            <td>
+              <div id="ipconfig-dns4" i18n-placeholder-text="userNameServer4"
+                  allow-empty>
+              </div>
+            </td>
+          </tr>
+        </table>
       </section>
     </div>
     <div id="security-tab"

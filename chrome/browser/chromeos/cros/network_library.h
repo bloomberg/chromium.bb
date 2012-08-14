@@ -1222,6 +1222,19 @@ class NetworkLibrary {
     FORMAT_COLON_SEPARATED_HEX
   };
 
+  // Used to configure which IP parameters will be specified by DHCP and which
+  // will be set by the user.
+  enum UseDHCP {
+    USE_DHCP_ADDRESS      = 0x1,
+    USE_DHCP_NETMASK      = 0x1 << 1,
+    USE_DHCP_GATEWAY      = 0x1 << 2,
+    USE_DHCP_NAME_SERVERS = 0x1 << 3,
+    USE_DHCP_ALL_ROUTING_INFO =
+        (USE_DHCP_ADDRESS |
+         USE_DHCP_NETMASK |
+         USE_DHCP_GATEWAY),
+  };
+
   class NetworkManagerObserver {
    public:
     // Called when the state of the network manager has changed,
@@ -1656,10 +1669,18 @@ class NetworkLibrary {
       std::string* hardware_address,
       HardwareAddressFormat) = 0;
 
-  // Sets an IP config. This is called when user changes from dhcp to static
-  // or vice versa or when user changes the ip config info.
-  // If nothing is changed, this method does nothing.
-  virtual void SetIPConfig(const NetworkIPConfig& ipconfig) = 0;
+  // Sets the configuration of the IP parameters. This is called when user
+  // changes IP settings from dhcp to static or vice versa or when user changes
+  // the ip config info. If nothing is changed, this method does nothing.
+  // |dhcp_usage_mask| is a bitmask composed of items from the UseDHCP enum, and
+  // indicates which of the supplied values are overridden by values given by
+  // the default IP acquisition technique for the service (DHCP, usually).
+  virtual void SetIPParameters(const std::string& service_path,
+                               const std::string& address,
+                               const std::string& netmask,
+                               const std::string& gateway,
+                               const std::string& name_servers,
+                               int dhcp_usage_mask) = 0;
 
   // This will connect to a preferred network if the currently connected
   // network is not preferred. This should be called when the active profile

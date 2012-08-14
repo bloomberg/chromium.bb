@@ -293,6 +293,15 @@ bool CrosGetWifiAccessPoints(WifiAccessPointVector* result);
 // Configures the network service specified by |properties|.
 void CrosConfigureService(const base::DictionaryValue& properties);
 
+// Converts a |prefix_length| to a netmask. (for IPv4 only)
+// e.g. a |prefix_length| of 24 is converted to a netmask of "255.255.255.0".
+// Invalid prefix lengths will return the empty string.
+std::string CrosPrefixLengthToNetmask(int32 prefix_length);
+
+// Converts a |netmask| to a prefixlen. (for IPv4 only)
+// e.g. a |netmask| of 255.255.255.0 is converted to a prefixlen of 24
+int32 CrosNetmaskToPrefixLength(const std::string& netmask);
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_CROS_NETWORK_FUNCTIONS_H_

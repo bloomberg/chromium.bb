@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_tokenizer.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/sms_watcher.h"
@@ -231,26 +232,6 @@ IPConfigType ParseIPConfigType(const std::string& type) {
   return IPCONFIG_TYPE_UNKNOWN;
 }
 
-// Converts a prefix length to a netmask. (for ipv4)
-// e.g. a netmask of 255.255.255.0 has a prefixlen of 24
-std::string PrefixlenToNetmask(int32 prefixlen) {
-  std::string netmask;
-  for (int i = 0; i < 4; i++) {
-    int len = 8;
-    if (prefixlen >= 8) {
-      prefixlen -= 8;
-    } else {
-      len = prefixlen;
-      prefixlen = 0;
-    }
-    if (i > 0)
-      netmask += ".";
-    int num = len == 0 ? 0 : ((2L << (len - 1)) - 1) << (8 - len);
-    netmask += StringPrintf("%d", num);
-  }
-  return netmask;
-}
-
 // Converts a list of name servers to a string.
 std::string ConvertNameSerersListToString(const base::ListValue& name_servers) {
   std::string result;
@@ -305,8 +286,11 @@ bool ParseIPConfig(const std::string& device_path,
     LOG(ERROR) << "Cannot get name servers.";
   }
   ipconfig_vector->push_back(
-      NetworkIPConfig(device_path, ParseIPConfigType(type_string), address,
-                      PrefixlenToNetmask(prefix_len), gateway,
+      NetworkIPConfig(device_path,
+                      ParseIPConfigType(type_string),
+                      address,
+                      CrosPrefixLengthToNetmask(prefix_len),
+                      gateway,
                       name_servers_string));
   return true;
 }
@@ -775,6 +759,72 @@ bool CrosGetWifiAccessPoints(WifiAccessPointVector* result) {
 void CrosConfigureService(const base::DictionaryValue& properties) {
   DBusThreadManager::Get()->GetFlimflamManagerClient()->ConfigureService(
       properties, base::Bind(&DoNothing));
+}
+
+std::string CrosPrefixLengthToNetmask(int32 prefix_length) {
+  std::string netmask;
+  // Return the empty string for invalid inputs.
+  if (prefix_length < 0 || prefix_length > 32)
+    return netmask;
+  for (int i = 0; i < 4; i++) {
+    int remainder = 8;
+    if (prefix_length >= 8) {
+      prefix_length -= 8;
+    } else {
+      remainder = prefix_length;
+      prefix_length = 0;
+    }
+    if (i > 0)
+      netmask += ".";
+    int value = remainder == 0 ? 0 :
+        ((2L << (remainder - 1)) - 1) << (8 - remainder);
+    netmask += StringPrintf("%d", value);
+  }
+  return netmask;
+}
+
+int32 CrosNetmaskToPrefixLength(const std::string& netmask) {
+  int count = 0;
+  int prefix_length = 0;
+  StringTokenizer t(netmask, ".");
+  while (t.GetNext()) {
+    // If there are more than 4 numbers, then it's invalid.
+    if (count == 4)
+      return -1;
+
+    std::string token = t.token();
+    // If we already found the last mask and the current one is not
+    // "0" then the netmask is invalid. For example, 255.224.255.0
+    if (prefix_length / 8 != count) {
+      if (token != "0")
+        return -1;
+    } else if (token == "255") {
+      prefix_length += 8;
+    } else if (token == "254") {
+      prefix_length += 7;
+    } else if (token == "252") {
+      prefix_length += 6;
+    } else if (token == "248") {
+      prefix_length += 5;
+    } else if (token == "240") {
+      prefix_length += 4;
+    } else if (token == "224") {
+      prefix_length += 3;
+    } else if (token == "192") {
+      prefix_length += 2;
+    } else if (token == "128") {
+      prefix_length += 1;
+    } else if (token == "0") {
+      prefix_length += 0;
+    } else {
+      // mask is not a valid number.
+      return -1;
+    }
+    count++;
+  }
+  if (count < 4)
+    return -1;
+  return prefix_length;
 }
 
 }  // namespace chromeos
