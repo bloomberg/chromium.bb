@@ -234,7 +234,8 @@
     "lang": "en-US",
     "name": "Windows Media Player",
     "help_url": "https://support.google.com/chrome/?p=plugin_wmp",
-    "url": "http://interoplabs.blob.core.windows.net/wmpff/wmpfirefoxplugin.exe"
+    "url": "http://www.interoperabilitybridges.com/wmp-extension-for-chrome",
+    "displayurl": true
   },
   "divx-player": {
     "mime_types": [
