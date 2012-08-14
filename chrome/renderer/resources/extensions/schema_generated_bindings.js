@@ -342,15 +342,20 @@
 
           var eventName = apiDef.namespace + "." + eventDef.name;
           var customEvent = customEvents[apiDef.namespace];
+          var options = eventDef.options || {};
+
+          if (eventDef.filters && eventDef.filters.length > 0)
+            options.supportsFilters = true;
+
           if (customEvent) {
             mod[eventDef.name] = new customEvent(
                 eventName, eventDef.parameters, eventDef.extraParameters,
-                eventDef.options);
+                options);
           } else if (eventDef.anonymous) {
             mod[eventDef.name] = new chrome.Event();
           } else {
             mod[eventDef.name] = new chrome.Event(
-                eventName, eventDef.parameters, eventDef.options);
+                eventName, eventDef.parameters, options);
           }
         });
       }
