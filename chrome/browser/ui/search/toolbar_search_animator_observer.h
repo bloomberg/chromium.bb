@@ -13,10 +13,12 @@ namespace search {
 // This class defines the observer interface for |ToolbarSearchAnimator|.
 class ToolbarSearchAnimatorObserver {
  public:
-  // Called from ui::AnimationDelegate::AnimationProgressed.
+  // Called from ui::AnimationDelegate::AnimationProgressed for fading in
+  // toolbar gradient background.
   virtual void OnToolbarBackgroundAnimatorProgressed() = 0;
 
-  // Called when animation is canceled and jumps to the end state.
+  // Called when toolbar gradient background animation is canceled and jumps to
+  // the end state.
   // If animation is canceled because the active tab is deactivated or detached
   // or closing, |tab_contents| contains the tab's contents.
   // Otherwise, if animation is canceled because of mode change, |tab_contents|

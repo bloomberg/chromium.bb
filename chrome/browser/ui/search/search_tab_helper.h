@@ -45,7 +45,8 @@ class SearchTabHelper : public content::WebContentsObserver,
 
  private:
   // Sets the mode of the model based on |url|.
-  void UpdateModel(const GURL& url);
+  // |animate| is set in the Mode passed to the model.
+  void UpdateModel(const GURL& url, bool animate);
 
   const bool is_search_enabled_;
 

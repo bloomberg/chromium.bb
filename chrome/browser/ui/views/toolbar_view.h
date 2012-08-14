@@ -125,7 +125,8 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
 
   // Overridden from chrome::search::SearchModelObserver:
-  virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
+  virtual void ModeChanged(const chrome::search::Mode& old_mode,
+                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Overridden from CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;

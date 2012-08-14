@@ -293,7 +293,8 @@ void SearchViewController::StackAtTop() {
 void SearchViewController::InstantReady() {
 }
 
-void SearchViewController::ModeChanged(const chrome::search::Mode& mode) {
+void SearchViewController::ModeChanged(const chrome::search::Mode& old_mode,
+                                       const chrome::search::Mode& new_mode) {
   UpdateState();
 }
 

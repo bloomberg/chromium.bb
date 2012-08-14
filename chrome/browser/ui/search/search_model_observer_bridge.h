@@ -25,8 +25,9 @@ class SearchModelObserverBridge : public SearchModelObserver {
   }
 
   // SearchModelObserver:
-  virtual void ModeChanged(const Mode& mode) OVERRIDE {
-    [receiver_ modeChanged:mode];
+  virtual void ModeChanged(const Mode& old_mode,
+                           const Mode& new_mode) OVERRIDE {
+    [receiver_ modeChanged:old_mode newMode:new_mode];
   }
 
  private:

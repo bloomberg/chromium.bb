@@ -18,7 +18,7 @@ SearchModel::SearchModel(TabContents* contents)
 SearchModel::~SearchModel() {
 }
 
-void SearchModel::SetMode(const Mode& mode) {
+void SearchModel::SetMode(const Mode& new_mode) {
   if (!contents_)
     return;
 
@@ -26,12 +26,14 @@ void SearchModel::SetMode(const Mode& mode) {
       << "Please do not try to set the SearchModel mode without first "
       << "checking if Search is enabled.";
 
-  if (mode_ == mode)
+  if (mode_ == new_mode)
     return;
 
-  mode_ = mode;
+  const Mode old_mode = mode_;
+  mode_ = new_mode;
 
-  FOR_EACH_OBSERVER(SearchModelObserver, observers_, ModeChanged(mode_));
+  FOR_EACH_OBSERVER(SearchModelObserver, observers_,
+                    ModeChanged(old_mode, mode_));
 
   // Animation is transient, it is cleared after observers are notified.
   mode_.animate = false;

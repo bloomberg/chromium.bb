@@ -89,7 +89,8 @@ class LocationBarView : public LocationBar,
   virtual void SetAnimationOffset(int offset) OVERRIDE;
 
   // chrome::search::SearchModelObserver:
-  virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
+  virtual void ModeChanged(const chrome::search::Mode& old_mode,
+                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // Returns the offset used while animating.
   int animation_offset() const { return animation_offset_; }

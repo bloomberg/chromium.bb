@@ -103,7 +103,8 @@ class BrowserTabStripController
                                       int model_index) OVERRIDE;
 
   // chrome::search::SearchModelObserver implementation:
-  virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
+  virtual void ModeChanged(const chrome::search::Mode& old_mode,
+                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // chrome::search::ToolbarSearchAnimatorObserver implementation:
   virtual void OnToolbarBackgroundAnimatorProgressed() OVERRIDE;

@@ -58,7 +58,8 @@ class SearchViewController
   void InstantReady();
 
   // chrome::search::SearchModelObserver overrides:
-  virtual void ModeChanged(const chrome::search::Mode& mode) OVERRIDE;
+  virtual void ModeChanged(const chrome::search::Mode& old_mode,
+                           const chrome::search::Mode& new_mode) OVERRIDE;
 
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;

@@ -22,8 +22,8 @@ SearchDelegate::~SearchDelegate() {
   DCHECK(!tab_model_) << "All tabs should have been deactivated or closed.";
 }
 
-void SearchDelegate::ModeChanged(const Mode& mode) {
-  browser_model_->SetMode(mode);
+void SearchDelegate::ModeChanged(const Mode& old_mode, const Mode& new_mode) {
+  browser_model_->SetMode(new_mode);
 }
 
 void SearchDelegate::OnTabActivated(TabContents* contents) {

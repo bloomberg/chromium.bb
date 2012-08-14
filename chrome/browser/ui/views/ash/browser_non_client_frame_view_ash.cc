@@ -282,34 +282,23 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
     chrome::search::Mode mode =
         browser_view()->browser()->search_model()->mode();
     bool fading_in = false;
-    // For |MODE_SEARCH|, get current state of background animation to figure
-    // out if we're waiting to fade in or in the process of fading in new
-    // background for |MODE_SEARCH|.
-    // In the former case, just paint the previous background for |MODE_NTP|.
-    // In the latter case, paint the previous background for |MODE_NTP| and then
-    // the new background at specified opacity value.
-    if (mode.is_search()) {
-      chrome::search::ToolbarSearchAnimator::BackgroundState background_state =
-          chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_DEFAULT;
-      double search_background_opacity = -1.0f;
-      browser_view()->browser()->search_delegate()->toolbar_search_animator().
-          GetCurrentBackgroundState(&background_state,
-                                    &search_background_opacity);
-      if (background_state &
-          chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_NTP) {
-        // Paint background for |MODE_NTP|.
-        PaintToolbarBackground(canvas, chrome::search::Mode::MODE_NTP);
-        // We're done if we're not showing background for SEARCH mode.
-        if (!(background_state & chrome::search::ToolbarSearchAnimator::
-                  BACKGROUND_STATE_SEARCH)) {
-          return;
-        }
-        // Otherwise, we're fading in the new background at
-        // |search_background_opacity|.
-        fading_in = true;
-        canvas->SaveLayerAlpha(static_cast<uint8>(
-            search_background_opacity * 0xFF));
-      }
+    // Get current opacity of gradient background animation to figure out if
+    // we need to paint both flat and gradient backgrounds or just one:
+    // - if |gradient_opacity| < 1f, paint flat background at full opacity, and
+    // only paint gradient background if |gradient_opacity| is not 0f;
+    // - if |gradient_opacity| is 1f, paint the background for the current mode
+    // at full opacity.
+    double gradient_opacity = browser_view()->browser()->search_delegate()->
+        toolbar_search_animator().GetGradientOpacity();
+    if (gradient_opacity < 1.0f) {
+      // Paint flat background of |MODE_NTP|.
+      PaintToolbarBackground(canvas, chrome::search::Mode::MODE_NTP);
+      // We're done if we're not showing gradient background.
+      if (gradient_opacity == 0.0f)
+        return;
+      // Otherwise, we're fading in gradient background at |gradient_opacity|.
+      fading_in = true;
+      canvas->SaveLayerAlpha(static_cast<uint8>(gradient_opacity * 0xFF));
     }
     // Paint the background for the current mode.
     PaintToolbarBackground(canvas, mode.mode);
@@ -560,14 +549,15 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
                        toolbar_right->width(), theme_toolbar->height());
 
   // Only draw the content/toolbar separator if Instant Extended API is disabled
-  // or mode is DEFAULT.
+  // or mode is |DEFAULT|.
   bool extended_instant_enabled = chrome::search::IsInstantExtendedAPIEnabled(
       browser_view()->browser()->profile());
   if (!extended_instant_enabled || mode == chrome::search::Mode::MODE_DEFAULT) {
     canvas->FillRect(
         gfx::Rect(x + kClientEdgeThickness,
                   toolbar_bounds.bottom() - kClientEdgeThickness,
-                  w - (2 * kClientEdgeThickness), kClientEdgeThickness),
+                  w - (2 * kClientEdgeThickness),
+                  kClientEdgeThickness),
         ThemeService::GetDefaultColor(extended_instant_enabled ?
             ThemeService::COLOR_SEARCH_SEPARATOR_LINE :
                 ThemeService::COLOR_TOOLBAR_SEPARATOR));

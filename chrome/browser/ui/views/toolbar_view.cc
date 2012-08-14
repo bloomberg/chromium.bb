@@ -489,10 +489,11 @@ void ToolbarView::OnInputInProgress(bool in_progress) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, chrome::search::SearchModelObserver implementation:
-void ToolbarView::ModeChanged(const chrome::search::Mode& mode) {
+void ToolbarView::ModeChanged(const chrome::search::Mode& old_mode,
+                              const chrome::search::Mode& new_mode) {
   // Layout location bar to determine the visibility of each of its child
   // view based on toolbar mode change.
-  if (mode.is_ntp())
+  if (new_mode.is_ntp())
     location_bar_->Layout();
 
   Layout();

@@ -29,7 +29,7 @@ class SearchDelegate : public SearchModelObserver {
   virtual ~SearchDelegate();
 
   // Overrides for SearchModelObserver:
-  virtual void ModeChanged(const Mode& mode) OVERRIDE;
+  virtual void ModeChanged(const Mode& old_mode, const Mode& new_mode) OVERRIDE;
 
   // When the active tab is changed, the model state of this new active tab is
   // propagated to the browser.

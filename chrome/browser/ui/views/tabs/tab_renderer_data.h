@@ -51,11 +51,7 @@ struct TabRendererData {
   bool blocked;
   bool app;
   chrome::search::Mode::Type mode;
-  // Only applicable if |mode| is chrome::search::Mode::SEARCH.
-  chrome::search::ToolbarSearchAnimator::BackgroundState background_state;
-  // Only applicable if |background_state| is or a combination including
-  // chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_SHOW_NEW;
-  double search_background_opacity;
+  double gradient_background_opacity;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_

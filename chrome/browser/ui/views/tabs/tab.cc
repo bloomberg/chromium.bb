@@ -518,29 +518,28 @@ gfx::ImageSkia* Tab::GetTabBackgroundImage(
 void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsActive()) {
     bool fading_in = false;
-    // If mode is SEARCH, we might be waiting to fade in or fading in new
-    // background, in which case, the previous background needs to be painted.
-    if (data().mode == chrome::search::Mode::MODE_SEARCH &&
-        data().background_state &
-            chrome::search::ToolbarSearchAnimator::BACKGROUND_STATE_NTP) {
-      // Paint background for NTP mode.
+    // If |gradient_background_opacity| < 1f, paint flat background at full
+    // opacity, and only paint gradient background if
+    // |gradient_background_opacity| is not 0f;
+    // if |gradient_opacity| is 1f, paint the background for the current mode
+    // at full opacity.
+    if (data().gradient_background_opacity < 1.0f) {
+      // Paint flat background of NTP mode.
       PaintActiveTabBackground(canvas,
           GetTabBackgroundImage(chrome::search::Mode::MODE_NTP));
-      // We're done if we're not showing background for |MODE_SEARCH|.
-      if (!(data().background_state & chrome::search::ToolbarSearchAnimator::
-            BACKGROUND_STATE_SEARCH)) {
+      // We're done if we're not showing gradient background.
+      if (data().gradient_background_opacity == 0.0f)
         return;
-      }
-      // Otherwise, we're fading in the background for |MODE_SEARCH| at
-      // |data().search_background_opacity|.
+      // Otherwise, we're fading in the gradient background at
+      // |data().gradient_background_opacity|.
       fading_in = true;
       canvas->SaveLayerAlpha(
-          static_cast<uint8>(data().search_background_opacity * 0xFF),
+          static_cast<uint8>(data().gradient_background_opacity * 0xFF),
           gfx::Rect(width(), height()));
     }
     // Paint the background for the current mode.
     PaintActiveTabBackground(canvas, GetTabBackgroundImage(data().mode));
-    // If we're fading in and have saved canvas, restore it now.
+    // If we're fading and have saved canvas, restore it now.
     if (fading_in)
       canvas->Restore();
   } else {

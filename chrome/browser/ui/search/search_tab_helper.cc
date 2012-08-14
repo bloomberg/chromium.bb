@@ -74,7 +74,8 @@ void SearchTabHelper::NavigateToPendingEntry(
   if (!is_search_enabled_)
     return;
 
-  UpdateModel(url);
+  // Do not animate if this url is the very first navigation for the tab.
+  UpdateModel(url, !web_contents()->GetController().IsInitialNavigation());
 }
 
 void SearchTabHelper::Observe(
@@ -84,16 +85,21 @@ void SearchTabHelper::Observe(
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   content::LoadCommittedDetails* committed_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
-  UpdateModel(committed_details->entry->GetURL());
+  // TODO(dhollowa): NavigationController::IsInitialNavigation() is always false
+  // by the time NOTIFICATION_NAV_ENTRY_COMMITTED is received, so please handle
+  // it appropriately when restructuring NavigateToPendingEntry() and this
+  // methods.
+  UpdateModel(committed_details->entry->GetURL(),
+              !web_contents()->GetController().IsInitialNavigation());
 }
 
-void SearchTabHelper::UpdateModel(const GURL& url) {
+void SearchTabHelper::UpdateModel(const GURL& url, bool animate) {
   Mode::Type type = Mode::MODE_DEFAULT;
   if (IsNTP(url))
     type = Mode::MODE_NTP;
   else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
     type = Mode::MODE_SEARCH;
-  model_.SetMode(Mode(type, true));
+  model_.SetMode(Mode(type, animate));
 }
 
 }  // namespace search

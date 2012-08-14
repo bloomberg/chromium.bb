@@ -14,7 +14,7 @@ struct Mode;
 class SearchModelObserver {
  public:
   // Informs the observer that the mode has changed.
-  virtual void ModeChanged(const Mode& mode) = 0;
+  virtual void ModeChanged(const Mode& old_mode, const Mode& new_mode) = 0;
 
  protected:
   virtual ~SearchModelObserver() {}
