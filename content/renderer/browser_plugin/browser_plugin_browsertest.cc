@@ -87,7 +87,7 @@ TEST_F(BrowserPluginTest, InitialResize) {
   EXPECT_EQ(480, params.height);
   // Verify that the browser plugin wasn't already waiting on a resize when this
   // resize happened.
-  EXPECT_EQ(false, params.resize_pending);
+  EXPECT_FALSE(params.resize_pending);
 
   MockBrowserPlugin* browser_plugin =
       static_cast<MockBrowserPlugin*>(
