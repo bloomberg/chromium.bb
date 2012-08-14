@@ -152,6 +152,25 @@ void MapperXGEAR(
   mapped->axesLength = kNumAxes;
 }
 
+void MapperSmartJoyPLUS(
+    const WebKit::WebGamepad& input,
+    WebKit::WebGamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[kButtonPrimary] = input.buttons[2];
+  mapped->buttons[kButtonTertiary] = input.buttons[3];
+  mapped->buttons[kButtonQuaternary] = input.buttons[0];
+  mapped->buttons[kButtonStart] = input.buttons[8];
+  mapped->buttons[kButtonBackSelect] = input.buttons[9];
+  mapped->buttons[kButtonLeftShoulder] = input.buttons[6];
+  mapped->buttons[kButtonRightShoulder] = input.buttons[7];
+  mapped->buttons[kButtonLeftTrigger] = input.buttons[4];
+  mapped->buttons[kButtonRightTrigger] = input.buttons[5];
+  DpadFromAxis(mapped, input.axes[9]);
+  mapped->axes[kAxisRightStickY] = input.axes[5];
+  mapped->buttonsLength = kNumButtons - 1; /* no meta */
+  mapped->axesLength = kNumAxes;
+}
+
 struct MappingData {
   const char* const vendor_id;
   const char* const product_id;
@@ -164,6 +183,7 @@ struct MappingData {
   { "046d", "c218", MapperDirectInputStyle },   // Logitech F510, D mode
   { "046d", "c219", MapperDirectInputStyle },   // Logitech F710, D mode
   { "054c", "0268", MapperPlaystationSixAxis }, // Playstation SIXAXIS
+  { "0925", "0005", MapperSmartJoyPLUS },       // SmartJoy PLUS Adapter
   { "0e8f", "0003", MapperXGEAR },              // XFXforce XGEAR PS2 Controller
   { "2222", "0060", MapperDirectInputStyle },   // Macally iShockX, analog mode
   { "2222", "4010", MapperMacallyIShock },      // Macally iShock

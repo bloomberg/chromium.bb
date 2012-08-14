@@ -43,7 +43,7 @@ void MapperXInputStyleGamepad(
   mapped->axesLength = kNumAxes;
 }
 
-void MapperMP8866(
+void MapperLakeviewResearch(
     const WebKit::WebGamepad& input,
     WebKit::WebGamepad* mapped) {
   *mapped = input;
@@ -125,7 +125,8 @@ struct MappingData {
   { "046d", "c21e", MapperXInputStyleGamepad }, // Logitech F510
   { "046d", "c21f", MapperXInputStyleGamepad }, // Logitech F710
   { "054c", "0268", MapperPlaystationSixAxis }, // Playstation SIXAXIS
-  { "0925", "8866", MapperMP8866 }, // WiseGroup MP-8866
+  { "0925", "0005", MapperLakeviewResearch }, // SmartJoy PLUS Adapter
+  { "0925", "8866", MapperLakeviewResearch }, // WiseGroup MP-8866
   { "0e8f", "0003", MapperXGEAR }, // XFXforce XGEAR PS2 Controller
 };
 
