@@ -5,13 +5,11 @@
 
 import logging
 import os
-import re
 from StringIO import StringIO
 import unittest
 
 import appengine_memcache as memcache
-import appengine_wrappers
-import url_constants
+from fake_fetchers import ConfigureFakeFetchers
 
 KNOWN_FAILURES = [
   # Apps samples fails because it requires fetching data from github.com.
@@ -19,65 +17,7 @@ KNOWN_FAILURES = [
   'apps/samples.html',
 ]
 
-def _ReadFile(path):
-  with open(path, 'r') as f:
-    return f.read()
-
-class FakeOmahaProxy(object):
-  def fetch(self, url):
-    return _ReadFile(os.path.join('test_data', 'branch_utility', 'first.json'))
-
-class FakeViewvcServer(object):
-  def __init__(self):
-    self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
-
-  def fetch(self, url):
-    path = os.path.join(
-        os.pardir, os.pardir, self._base_pattern.match(url).group(1))
-    if os.path.isdir(path):
-      html = ['<html><td>Directory revision:</td><td><a>000000</a></td>']
-      for f in os.listdir(path):
-        if f.startswith('.'):
-          continue
-        html.append('<td><a name="%s"></a></td>' % f)
-        if os.path.isdir(os.path.join(path, f)):
-          html.append('<td><a title="dir"><strong>000000</strong></a></td>')
-        else:
-          html.append('<td><a title="file"><strong>000000</strong></a></td>')
-      html.append('</html>')
-      return '\n'.join(html)
-    return _ReadFile(path)
-
-class FakeSubversionServer(object):
-  def __init__(self):
-    self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
-
-  def fetch(self, url):
-    path = os.path.join(
-        os.pardir, os.pardir, self._base_pattern.match(url).group(1))
-    if os.path.isdir(path):
-      html = ['<html>Revision 000000']
-      for f in os.listdir(path):
-        if f.startswith('.'):
-          continue
-        if os.path.isdir(os.path.join(path, f)):
-          html.append('<a>' + f + '/</a>')
-        else:
-          html.append('<a>' + f + '</a>')
-      html.append('</html>')
-      return '\n'.join(html)
-    return _ReadFile(path)
-
-class FakeGithub(object):
-  def fetch(self, url):
-    return '{ "commit": { "tree": { "sha": 0} } }'
-
-appengine_wrappers.ConfigureFakeUrlFetch({
-  url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(),
-  '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(),
-  '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(),
-  '%s/.*' % url_constants.GITHUB_URL: FakeGithub()
-})
+ConfigureFakeFetchers()
 
 # Import Handler later because it immediately makes a request to github. We need
 # the fake urlfetch to be in place first.

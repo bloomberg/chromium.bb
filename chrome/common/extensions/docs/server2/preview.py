@@ -23,6 +23,10 @@ import build_server
 # Copy all the files necessary to run the server. These are cleaned up when the
 # server quits.
 build_server.main()
+
+from fake_fetchers import ConfigureFakeFetchers
+ConfigureFakeFetchers()
+
 from handler import Handler
 
 class Response(object):
