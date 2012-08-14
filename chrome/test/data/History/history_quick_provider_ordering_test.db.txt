@@ -1,0 +1,49 @@
+/*
+  The schema of the database is defined by HISTORY_URL_ROW_FIELDS found in
+  url_database.h and is equivalent to:
+
+  CREATE TABLE urls(id INTEGER PRIMARY KEY,
+                    url LONGVARCHAR,
+                    title LONGVARCHAR,
+                    visit_count INTEGER DEFAULT 0 NOT NULL,
+                    typed_count INTEGER DEFAULT 0 NOT NULL,
+                    last_visit_time INTEGER NOT NULL,
+                    hidden INTEGER DEFAULT 0 NOT NULL,
+                    favicon_id INTEGER DEFAULT 0 NOT NULL);
+
+  The quick history autocomplete provider filters out history items that:
+    1) have not been visited in kLowQualityMatchAgeLimitInDays, AND
+    2) for which the URL was not explicitly typed at least
+       kLowQualityMatchTypedLimit + 1 times, AND
+    3) have not been visited at least kLowQualityMatchVisitLimit + 1 times.
+  So we create history items in all of those combinations.
+
+  Note that the last_visit_time column for this test table represents the
+  relative number of days prior to 'today' to which the final column
+  value will be set during test setup. Beware: Do not set this number
+  to be equal to kLowQualityMatchAgeLimitInDays.
+
+  The ordering, URLs and titles must be kept in sync with the unit tests found
+  in in_memory_url_index_unittest.cc.
+*/
+INSERT INTO "urls" VALUES(1,'http://www.teamliquid.net/tlpd/korean/games/21648_bisu_vs_iris','',6,3,256,0,29);
+INSERT INTO "urls" VALUES(2,'http://www.amazon.com/','amazon.com: online shopping for electronics, apparel, computers, books, dvds & more',20,20,10,0,29);
+INSERT INTO "urls" VALUES(3,'http://www.teamliquid.net/forum/viewmessage.php?topic_id=52045&currentpage=83','google images',6,6,0,0,29);
+INSERT INTO "urls" VALUES(4,'http://www.tempurpedic.com/','tempur-pedic',7,7,0,0,29);
+INSERT INTO "urls" VALUES(5,'http://www.teamfortress.com/','',5,5,6,0,29);
+INSERT INTO "urls" VALUES(6,'http://www.rottentomatoes.com/','',3,3,7,0,29);
+INSERT INTO "urls" VALUES(7,'http://music.google.com/music/listen?u=0#start_pl','',3,3,9,0,29);
+INSERT INTO "urls" VALUES(8,'https://www.emigrantdirect.com/','high interest savings account, high yield savings - emigrantdirect',5,5,3,0,29);
+INSERT INTO "urls" VALUES(9,'http://store.steampowered.com/','',6,6,1,0,29);
+INSERT INTO "urls" VALUES(10,'http://techmeme.com/','techmeme',111,110,4,0,29);
+INSERT INTO "urls" VALUES(11,'http://www.teamliquid.net/tlpd','team liquid progaming database',15,15,2,0,29);
+INSERT INTO "urls" VALUES(12,'http://store.steampowered.com/','the steam summer camp sale',6,6,1,0,29);
+INSERT INTO "urls" VALUES(13,'http://www.teamliquid.net/tlpd/korean/players','tlpd - bw korean - player index',100,45,219,0,29);
+INSERT INTO "urls" VALUES(14,'http://slashdot.org/','slashdot: news for nerds, stuff that matters',3,3,6,0,29);
+INSERT INTO "urls" VALUES(15,'http://translate.google.com/','google translate',3,3,0,0,29);
+INSERT INTO "urls" VALUES(16,'http://arstechnica.com/','ars technica',3,3,3,0,29);
+INSERT INTO "urls" VALUES(17,'http://www.rottentomatoes.com/','movies | movie trailers | reviews - rotten tomatoes',3,3,7,0,29);
+INSERT INTO "urls" VALUES(18,'http://www.teamliquid.net/','team liquid - starcraft 2 and brood war pro gaming news',26,25,3,0,29);
+INSERT INTO "urls" VALUES(19,'http://metaleater.com/','metaleater',4,3,8,0,29);
+INSERT INTO "urls" VALUES(20,'http://half.com/','half.com: textbooks , books , music , movies , games , video games',4,4,6,0,29);
+INSERT INTO "urls" VALUES(21,'http://teamliquid.net/','team liquid - starcraft 2 and brood war pro gaming news',8,5,9,0,29);

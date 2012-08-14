@@ -35,27 +35,28 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   String16Vector string_vec =
       String16VectorFromString16(string_a, false, &actual_starts_a);
   ASSERT_EQ(7U, string_vec.size());
+
   // See if we got the words we expected.
-  EXPECT_EQ(UTF8ToUTF16("http"), string_vec[0]);
-  EXPECT_EQ(UTF8ToUTF16("www"), string_vec[1]);
-  EXPECT_EQ(UTF8ToUTF16("google"), string_vec[2]);
-  EXPECT_EQ(UTF8ToUTF16("com"), string_vec[3]);
-  EXPECT_EQ(UTF8ToUTF16("frammy"), string_vec[4]);
-  EXPECT_EQ(UTF8ToUTF16("the"), string_vec[5]);
-  EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[6]);
+  EXPECT_EQ(ASCIIToUTF16("http"), string_vec[0]);
+  EXPECT_EQ(ASCIIToUTF16("www"), string_vec[1]);
+  EXPECT_EQ(ASCIIToUTF16("google"), string_vec[2]);
+  EXPECT_EQ(ASCIIToUTF16("com"), string_vec[3]);
+  EXPECT_EQ(ASCIIToUTF16("frammy"), string_vec[4]);
+  EXPECT_EQ(ASCIIToUTF16("the"), string_vec[5]);
+  EXPECT_EQ(ASCIIToUTF16("brammy"), string_vec[6]);
+
   // Verify the word starts.
   size_t expected_starts_a[] = {0, 7, 11, 18, 23, 31, 35};
   EXPECT_TRUE(IntArraysEqual(expected_starts_a, arraysize(expected_starts_a),
                              actual_starts_a));
-
   WordStarts actual_starts_b;
   string_vec = String16VectorFromString16(string_a, true, &actual_starts_b);
   ASSERT_EQ(5U, string_vec.size());
-  EXPECT_EQ(UTF8ToUTF16("http://"), string_vec[0]);
-  EXPECT_EQ(UTF8ToUTF16("www.google.com/"), string_vec[1]);
-  EXPECT_EQ(UTF8ToUTF16("frammy"), string_vec[2]);
-  EXPECT_EQ(UTF8ToUTF16("the"), string_vec[3]);
-  EXPECT_EQ(UTF8ToUTF16("brammy"), string_vec[4]);
+  EXPECT_EQ(ASCIIToUTF16("http://"), string_vec[0]);
+  EXPECT_EQ(ASCIIToUTF16("www.google.com/"), string_vec[1]);
+  EXPECT_EQ(ASCIIToUTF16("frammy"), string_vec[2]);
+  EXPECT_EQ(ASCIIToUTF16("the"), string_vec[3]);
+  EXPECT_EQ(ASCIIToUTF16("brammy"), string_vec[4]);
   size_t expected_starts_b[] = {0, 7, 23, 31, 35};
   EXPECT_TRUE(IntArraysEqual(expected_starts_b, arraysize(expected_starts_b),
                              actual_starts_b));
@@ -65,6 +66,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   WordStarts actual_starts_c;
   string_vec = String16VectorFromString16(string_c, false, &actual_starts_c);
   ASSERT_EQ(8U, string_vec.size());
+
   // Note that we stop collecting words and word starts at kMaxSignificantChars.
   size_t expected_starts_c[] = {1, 7, 16, 22, 32, 43};
   EXPECT_TRUE(IntArraysEqual(expected_starts_c, arraysize(expected_starts_c),
@@ -76,12 +78,13 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   WordStarts actual_starts_d;
   String16Set string_set = String16SetFromString16(string_d, &actual_starts_d);
   EXPECT_EQ(5U, string_set.size());
+
   // See if we got the words we expected.
-  EXPECT_TRUE(string_set.find(UTF8ToUTF16("com")) != string_set.end());
-  EXPECT_TRUE(string_set.find(UTF8ToUTF16("google")) != string_set.end());
-  EXPECT_TRUE(string_set.find(UTF8ToUTF16("http")) != string_set.end());
-  EXPECT_TRUE(string_set.find(UTF8ToUTF16("search")) != string_set.end());
-  EXPECT_TRUE(string_set.find(UTF8ToUTF16("web")) != string_set.end());
+  EXPECT_TRUE(string_set.find(ASCIIToUTF16("com")) != string_set.end());
+  EXPECT_TRUE(string_set.find(ASCIIToUTF16("google")) != string_set.end());
+  EXPECT_TRUE(string_set.find(ASCIIToUTF16("http")) != string_set.end());
+  EXPECT_TRUE(string_set.find(ASCIIToUTF16("search")) != string_set.end());
+  EXPECT_TRUE(string_set.find(ASCIIToUTF16("web")) != string_set.end());
   size_t expected_starts_d[] = {0, 7, 11, 18, 22, 29, 36, 40};
   EXPECT_TRUE(IntArraysEqual(expected_starts_d, arraysize(expected_starts_d),
                              actual_starts_d));
@@ -113,7 +116,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
 
   // Test MatchTermInString
   TermMatches matches_g = MatchTermInString(
-      UTF8ToUTF16("x"), UTF8ToUTF16("axbxcxdxex fxgx/hxixjx.kx"), 123);
+      ASCIIToUTF16("x"), ASCIIToUTF16("axbxcxdxex fxgx/hxixjx.kx"), 123);
   const size_t expected_offsets[] = { 1, 3, 5, 7, 9, 12, 14, 17, 19, 21, 24 };
   ASSERT_EQ(arraysize(expected_offsets), matches_g.size());
   for (size_t i = 0; i < arraysize(expected_offsets); ++i)

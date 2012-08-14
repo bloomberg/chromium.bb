@@ -318,6 +318,13 @@ enum NotificationType {
   // The details are none and the source is a Profile*.
   NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
 
+  // HistoryQuickProvider and InMemoryURLIndex -------------------------------
+
+  // Sent when an update operation to the InMemoryURLCacheDatabase fails
+  // indicating that the database is probably corrupt.  The source is the
+  // instance of the InMemoryURLCacheDatabase. Details is not used.
+  NOTIFICATION_IN_MEMORY_URL_CACHE_DATABASE_FAILURE,
+
   // TopSites ----------------------------------------------------------------
 
   // Sent by TopSites when it finishes loading. The source is the profile the

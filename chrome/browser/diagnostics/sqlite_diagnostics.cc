@@ -99,7 +99,8 @@ class HistogramUniquifier {
       "Sqlite.History.Error",
       "Sqlite.Thumbnail.Error",
       "Sqlite.Text.Error",
-      "Sqlite.Web.Error"
+      "Sqlite.Web.Error",
+      "Sqlite.HQPCache.Error"
     };
     return kHistogramNames[unique];
   }
@@ -127,6 +128,10 @@ sql::ErrorDelegate* GetErrorHandlerForWebDb() {
   return new sql::DiagnosticErrorDelegate<HistogramUniquifier<4> >();
 }
 
+sql::ErrorDelegate* GetErrorHandlerForHQPCacheDb() {
+  return new sql::DiagnosticErrorDelegate<HistogramUniquifier<5> >();
+}
+
 DiagnosticTest* MakeSqliteWebDbTest() {
   return new SqliteIntegrityTest(true, ASCIIToUTF16("Web DB"),
                                  FilePath(chrome::kWebDataFilename));
@@ -150,6 +155,12 @@ DiagnosticTest* MakeSqliteArchivedHistoryDbTest() {
 DiagnosticTest* MakeSqliteThumbnailsDbTest() {
   return new SqliteIntegrityTest(false, ASCIIToUTF16("Thumbnails DB"),
                                  FilePath(chrome::kThumbnailsFilename));
+}
+
+DiagnosticTest* MakeSqliteHQPCacheDbTest() {
+  return new SqliteIntegrityTest(false,
+                                 ASCIIToUTF16("History Provider Cache DB"),
+                                 FilePath(chrome::kHQPCacheDBFilename));
 }
 
 DiagnosticTest* MakeSqliteAppCacheDbTest() {

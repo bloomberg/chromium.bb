@@ -14,12 +14,12 @@ namespace history {
 class ScoredHistoryMatchTest : public testing::Test {
  protected:
   // Convenience function to create a URLRow with basic data for |url|, |title|,
-  // |visit_count|, and |typed_count|. |last_visit_ago| gives the number of
-  // days from now to set the URL's last_visit.
+  // |visit_count|, and |typed_count|. |days_since_last_visit| gives the number
+  // of days ago to which to set the URL's last_visit.
   URLRow MakeURLRow(const char* url,
                     const char* title,
                     int visit_count,
-                    int last_visit_ago,
+                    int days_since_last_visit,
                     int typed_count);
 
   // Convenience functions for easily creating vectors of search terms.
@@ -38,28 +38,28 @@ class ScoredHistoryMatchTest : public testing::Test {
 URLRow ScoredHistoryMatchTest::MakeURLRow(const char* url,
                                           const char* title,
                                           int visit_count,
-                                          int last_visit_ago,
+                                          int days_since_last_visit,
                                           int typed_count) {
   URLRow row(GURL(url), 0);
-  row.set_title(UTF8ToUTF16(title));
+  row.set_title(ASCIIToUTF16(title));
   row.set_visit_count(visit_count);
   row.set_typed_count(typed_count);
   row.set_last_visit(base::Time::NowFromSystemTime() -
-                     base::TimeDelta::FromDays(last_visit_ago));
+                     base::TimeDelta::FromDays(days_since_last_visit));
   return row;
 }
 
 String16Vector ScoredHistoryMatchTest::Make1Term(const char* term) const {
   String16Vector original_terms;
-  original_terms.push_back(UTF8ToUTF16(term));
+  original_terms.push_back(ASCIIToUTF16(term));
   return original_terms;
 }
 
 String16Vector ScoredHistoryMatchTest::Make2Terms(const char* term_1,
                                                   const char* term_2) const {
   String16Vector original_terms;
-  original_terms.push_back(UTF8ToUTF16(term_1));
-  original_terms.push_back(UTF8ToUTF16(term_2));
+  original_terms.push_back(ASCIIToUTF16(term_1));
+  original_terms.push_back(ASCIIToUTF16(term_2));
   return original_terms;
 }
 
@@ -82,6 +82,7 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
   RowWordStarts word_starts;
+
   // Test scores based on position.
   // TODO(mpearson): Test new_scoring if we're actually going to turn it
   // on by default.  This requires setting word_starts, which isn't done
@@ -91,31 +92,37 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
   ScoredHistoryMatch scored_b(row_a, ASCIIToUTF16("bcd"), Make1Term("bcd"),
                               word_starts, now);
   EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
+
   // Test scores based on length.
   ScoredHistoryMatch scored_c(row_a, ASCIIToUTF16("abcd"), Make1Term("abcd"),
                               word_starts, now);
   EXPECT_LT(scored_a.raw_score, scored_c.raw_score);
+
   // Test scores based on order.
   ScoredHistoryMatch scored_d(row_a, ASCIIToUTF16("abcdef"),
                               Make2Terms("abc", "def"), word_starts, now);
   ScoredHistoryMatch scored_e(row_a, ASCIIToUTF16("def abc"),
                               Make2Terms("def", "abc"), word_starts, now);
   EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
+
   // Test scores based on visit_count.
   URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 30, 1));
   ScoredHistoryMatch scored_f(row_b, ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts, now);
   EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
+
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 3, 10, 1));
   ScoredHistoryMatch scored_g(row_c, ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts, now);
   EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
+
   // Test scores based on typed_count.
   URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 3, 30, 10));
   ScoredHistoryMatch scored_h(row_d, ASCIIToUTF16("abc"), Make1Term("abc"),
                               word_starts, now);
   EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
+
   // Test scores based on a terms appearing multiple times.
   URLRow row_i(MakeURLRow("http://csi.csi.csi/csi_csi",
       "CSI Guide to CSI Las Vegas, CSI New York, CSI Provo", 3, 30, 10));

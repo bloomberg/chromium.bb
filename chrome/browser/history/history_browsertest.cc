@@ -70,8 +70,8 @@ class HistoryEnumerator : public HistoryService::URLEnumerator {
     content::RunMessageLoop();
   }
 
-  virtual void OnURL(const GURL& url) {
-    urls_.push_back(url);
+  virtual void OnURL(const history::URLRow& url_row) {
+    urls_.push_back(url_row.url());
   }
 
   virtual void OnComplete(bool success) {
