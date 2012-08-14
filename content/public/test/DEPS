@@ -2,3 +2,13 @@ include_rules = [
   "-content",
   "+content/public",
 ]
+
+# Ensure we don't leak internal content headers through public headers.
+specific_include_rules = {
+  ".*\.cc": [
+    # Testing utilities can access anything in content/
+    "+content",
+    "+media/base",
+    "+third_party/iaccessible2",
+  ],
+}
