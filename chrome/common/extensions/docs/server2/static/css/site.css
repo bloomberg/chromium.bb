@@ -340,11 +340,9 @@ span.displayModeWarning {
   top: 0px;
 }
 
-#gc-toc ul .leftNavSelected {
-  background-color: #F1F1F1;
-  color: black;
+#gc-toc .leftNavSelected {
+  color: #39F;
   text-decoration: none;
-  z-index: 1;
   position: relative;
 }
 

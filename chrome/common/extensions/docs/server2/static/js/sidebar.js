@@ -58,31 +58,43 @@
     var toc = document.getElementById('gc-toc');
     if (!toc)
       return;
-    var items = toc.getElementsByTagName('li');
+
+    // Figure out which link matches the current page so it can be styled
+    // differently.
+    var links = toc.getElementsByTagName('a');
     var selectedNode = null;
+    var path_parts = document.location.pathname.replace(/\/+$/, '').split('/')
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].getAttribute('href') != path_parts[path_parts.length - 1])
+        continue;
+      links[i].className = 'leftNavSelected';
+      links[i].removeAttribute('href');
+      selectedNode = links[i];
+    }
+
+    // Go through the items on the sidebar and add toggles.
+    var items = toc.getElementsByTagName('li');
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
-      if (item.className == 'leftNavSelected') {
-        selectedNode = item;
-      } else if (item.firstChild &&
-                 item.firstChild.tagName == 'SPAN') {
-        // Only assign toggles to text nodes in the sidebar.
-        var a = document.createElement('a');
-        a.className = 'toggle selected';
-        a.appendChild(document.createTextNode(' '));
-        a.onclick = function() {
-          toggleList(this.parentNode.getElementsByTagName('ul'));
-        };
-        item.firstChild.onclick = function() {
-          toggleList(this.parentNode.getElementsByTagName('ul'));
-        };
-        item.insertBefore(a, item.firstChild);
-        toggleList(item.getElementsByTagName('ul'));
-      }
+      if (!item.firstChild || item.firstChild.tagName != 'SPAN')
+        continue;
+      // Only assign toggles to text nodes in the sidebar.
+      var a = document.createElement('a');
+      a.className = 'toggle selected';
+      a.appendChild(document.createTextNode(' '));
+      a.onclick = function() {
+        toggleList(this.parentNode.getElementsByTagName('ul'));
+      };
+      item.firstChild.onclick = function() {
+        toggleList(this.parentNode.getElementsByTagName('ul'));
+      };
+      item.insertBefore(a, item.firstChild);
+      toggleList(item.getElementsByTagName('ul'));
     }
-    if (selectedNode) {
+
+    // Reveal the selected link.
+    if (selectedNode)
       revealAncestor(selectedNode);
-    }
   };
 
   initSidebar();
