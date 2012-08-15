@@ -16,16 +16,10 @@ tree {
   border-radius: 2px;
   color: black;
   cursor: default;
-  line-height: 20px;
+  line-height: 28px;
   padding: 0 3px;
   position: relative;
   white-space: nowrap;
-}
-
-@media (pointer:coarse) {
-  .tree-item > .tree-row {
-    line-height: 40px;
-  }
 }
 
 .expand-icon {
@@ -38,15 +32,9 @@ tree {
   height: 16px;
   opacity: .6;
   position: relative;
-  top: 2px;
+  top: 6px;
   vertical-align: top;
   width: 16px;
-}
-
-@media (pointer:coarse) {
-  .expand-icon {
-    vertical-align: text-top;
-  }
 }
 
 html[dir=rtl] .expand-icon {

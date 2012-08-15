@@ -29,7 +29,7 @@
 </if>
   <section>
     <h3 i18n-content="sectionTitleAppearance"></h3>
-    <div>
+    <div class="settings-row">
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">
       <button id="set-wallpaper" i18n-content="setWallpaper"
           guest-visibility="disabled"></button>
@@ -199,12 +199,12 @@
         <button id="privacyClearDataButton"
             i18n-content="privacyClearDataButton"></button>
       </div>
-      <div id="privacy-explanation" class="settings-row">
+      <p id="privacy-explanation" class="settings-row">
         <span i18n-content="improveBrowsingExperience"></span>
         <span i18n-content="disableWebServices"></span>
         <a target="_blank" i18n-content="learnMore"
             i18n-values="href:privacyLearnMoreURL"></a>
-      </div>
+      </p>
       <div class="checkbox">
         <label>
           <input id="alternateErrorPagesEnabled"
@@ -385,8 +385,10 @@
   <section>
     <h3 i18n-content="advancedSectionTitleLanguages"></h3>
     <span class="settings-row" i18n-content="languageSectionLabel"></span>
-    <button id="language-button"
-        i18n-content="languageAndSpellCheckSettingsButton"></button>
+    <div class="settings-row">
+      <button id="language-button"
+          i18n-content="languageAndSpellCheckSettingsButton"></button>
+    </div>
     <div class="checkbox">
       <label>
         <input id="enableTranslate" pref="translate.enabled"
@@ -459,8 +461,8 @@
     <section id="cloud-print-connector-section">
       <h3 i18n-content="advancedSectionTitleCloudPrint"></h3>
       <div>
-        <span id="cloudPrintConnectorLabel" class="settings-row"
-             i18n-content="cloudPrintConnectorDisabledLabel"></span>
+        <p id="cloudPrintConnectorLabel" class="settings-row"
+             i18n-content="cloudPrintConnectorDisabledLabel"></p>
         <div class="settings-row">
           <button id="cloudPrintConnectorSetupButton"
               i18n-content="cloudPrintConnectorDisabledButton"></button>

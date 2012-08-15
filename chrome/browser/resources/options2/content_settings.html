@@ -42,12 +42,14 @@
                 class="clear-plugin-lso-data-disabled"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="cookies"
-            i18n-content="manage_exceptions"></button>
-        <button id="show-cookies-button"
-            i18n-content="cookies_show_cookies"></button>
-        <button id="show-app-cookies-button"
-            i18n-content="cookies_show_app_cookies"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="cookies"
+              i18n-content="manage_exceptions"></button>
+          <button id="show-cookies-button"
+              i18n-content="cookies_show_cookies"></button>
+          <button id="show-app-cookies-button"
+              i18n-content="cookies_show_app_cookies"></button>
+        </div>
      </div>
     </section>
     <!-- Image filter -->
@@ -66,8 +68,10 @@
             <span i18n-content="images_block"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="images"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="images"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
     <!-- JavaScript filter -->
@@ -86,8 +90,10 @@
             <span i18n-content="javascript_block"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="javascript"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="javascript"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
     <!-- Handlers settings -->
@@ -108,8 +114,10 @@
             <span i18n-content="handlers_block"></span>
           </label>
         </div>
-        <button id="manage-handlers-button" contentType="handlers"
-            i18n-content="manage_handlers"></button>
+        <div class="settings-row">
+          <button id="manage-handlers-button" contentType="handlers"
+              i18n-content="manage_handlers"></button>
+        </div>
       </div>
     </section>
     <!-- Plug-ins filter -->
@@ -134,8 +142,10 @@
             <span i18n-content="plugins_block"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="plugins"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="plugins"
+              i18n-content="manage_exceptions"></button>
+        </div>
         <div id="disable-plugins-container">
           <a href="chrome://plugins" i18n-content="disableIndividualPlugins"
               target="_blank"></a>
@@ -158,8 +168,10 @@
             <span i18n-content="popups_block"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="popups"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="popups"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
     <!-- Location filter -->
@@ -184,8 +196,10 @@
             <span i18n-content="location_block"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="location"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="location"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
     <!-- Notifications filter tab contents -->
@@ -210,14 +224,16 @@
             <span i18n-content="notifications_block"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="notifications"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="notifications"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
     <!-- Fullscreen filter -->
     <section>
       <h3 i18n-content="fullscreen_tab_label"></h3>
-      <div>
+      <div class="settings-row">
         <button class="exceptions-list-button" contentType="fullscreen"
             i18n-content="manage_exceptions"></button>
       </div>
@@ -244,8 +260,10 @@
             <span i18n-content="mouselock_block"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="mouselock"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="mouselock"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
     <!-- Intent registration filter -->
@@ -275,9 +293,11 @@
             <span i18n-content="pepperFlashCameramicBlock"></span>
           </label>
         </div>
-        <button class="exceptions-list-button"
-            contentType="pepper-flash-cameramic"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button"
+              contentType="pepper-flash-cameramic"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
 <if expr="pp_ifdef('chromeos')">
@@ -314,13 +334,15 @@
             <span i18n-content="mediaStreamBlock"></span>
           </label>
         </div>
-        <button class="exceptions-list-button" contentType="media-stream"
-            i18n-content="manage_exceptions"></button>
+        <div class="settings-row">
+          <button class="exceptions-list-button" contentType="media-stream"
+              i18n-content="manage_exceptions"></button>
+        </div>
       </div>
     </section>
     <section id="media-galleries-section" hidden>
       <h3 i18n-content="mediaGalleriesSectionLabel"></h3>
-      <div>
+      <div class="settings-row">
         <button id="manage-galleries-button"
             i18n-content="manageGalleriesButton"></button>
       </div>

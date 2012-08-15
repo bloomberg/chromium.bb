@@ -414,3 +414,12 @@ html[dir=rtl] .network-menu-item {
   -webkit-transition: height 200ms;
   overflow-y: hidden;
 }
+
+#keyboard-overlay .option-value > select {
+  width: 100%;
+}
+
+#keyboard-overlay table {
+  /* Same as .settings-row {margin}. */
+  -webkit-border-vertical-spacing: 0.65em;
+}

@@ -32,6 +32,7 @@
 
 .language-options-header,
 .language-options-footer {
+  line-height: 1.2em;
   margin: 10px 0;
 }
 
@@ -81,6 +82,9 @@
 #language-options-input-method-list button {
   -webkit-margin-start: 20px;
   display: block;
+  /* Same margin as .settings-row. */
+  margin-bottom: 0.65em;
+  margin-top: 0.65em;
 }
 
 #language-options-list {
@@ -128,6 +132,11 @@
 #add-language-overlay-language-list {
   -webkit-column-count: 2;
   -webkit-column-gap: 20px;
+}
+
+#add-language-overlay-language-list > li > button.link-button {
+  padding-bottom: 8px;
+  padding-top: 8px;
 }
 
 #add-language-overlay-page {

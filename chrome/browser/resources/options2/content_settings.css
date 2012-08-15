@@ -53,7 +53,9 @@ select.exception-setting {
 }
 
 #disable-plugins-container {
-  margin: 7px 0;
+  /* Same as .checkbox and .radio padding. Using padding instead of margin
+   * to ensure minimum height for tap target. */
+  padding: 7px 0;
 }
 
 div[role='listitem'][managedby] {

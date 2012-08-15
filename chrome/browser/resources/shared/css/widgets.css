@@ -35,10 +35,6 @@ input[type='radio'] {
 select {
   min-height: 2em;
   min-width: 4em;
-<if expr="pp_ifdef('chromeos')">
-  /* Without this rule, chromeos button text is too high on the button. */
-  padding-top: 3px;
-</if>
 <if expr="is_win">
   /* The following platform-specific rule is necessary to get adjacent
    * buttons, text inputs, and so forth to align on their borders while also
@@ -106,10 +102,6 @@ textarea {
 <if expr="is_win or is_macosx">
   /* For better alignment between adjacent buttons and inputs. */
   padding-bottom: 4px;
-</if>
-<if expr="pp_ifdef('chromeos')">
-  /* For better alignment between adjacent buttons and inputs. */
-  padding-bottom: 2px;
 </if>
 }
 
@@ -291,14 +283,11 @@ input:disabled:-webkit-any([type='password'],
  *   </div>
  */
 
-.checkbox,
-.radio {
-  margin: 0.65em 0;
-}
-
 :-webkit-any(.checkbox, .radio) label {
   /* Don't expand horizontally: <http://crbug.com/112091>. */
   display: -webkit-inline-box;
+  padding-bottom: 7px;
+  padding-top: 7px;
 }
 
 :-webkit-any(.checkbox, .radio) label input ~ span {

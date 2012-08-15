@@ -22,6 +22,7 @@ list > * {
   -webkit-padding-start: 3px;
   color: hsl(0, 0%, 70%);
   display: -webkit-box;
+  line-height: 30px;
   padding-bottom: 0;
   padding-top: 0;
   text-decoration: none;

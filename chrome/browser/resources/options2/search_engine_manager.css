@@ -17,7 +17,8 @@
 
 .search-engine-list .favicon {
   height: 16px;
-  padding: 1px 7px 0 7px;
+  line-height: 16px;
+  padding: 0 7px;
   width: 16px;
 }
 
@@ -66,7 +67,7 @@
 
 .search-engine-list .url-column .list-inline-button {
   margin-top: 0;
-  padding: 1px 6px;
+  padding: 1px 6px 2px 6px;
 }
 
 .search-engine-list > :not(:hover):not([editing]) .url-column
