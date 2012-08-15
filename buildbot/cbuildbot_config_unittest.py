@@ -196,6 +196,7 @@ class CBuildBotTest(mox.MoxTestBase):
     for build_name, config in cbuildbot_config.config.iteritems():
       if (config['important'] and
           config['chrome_rev'] == constants.CHROME_REV_LATEST and
+          config['overlays'] == constants.PUBLIC_OVERLAYS and
           config['build_type'] == constants.CHROME_PFQ_TYPE):
         boards = set(config['boards'])
         self.assertTrue(boards.issubset(watched_boards),
