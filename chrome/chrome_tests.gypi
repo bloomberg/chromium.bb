@@ -3097,12 +3097,8 @@
           ],
           'conditions': [
             ['disable_nacl_untrusted==0', {
-              'sources': [
-                'test/nacl/nacl_browsertest.cc',
-              ],
               'dependencies': [
-                'test/data/nacl/nacl_test_data.gyp:nacl_tests',
-                '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
+              '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
               ],
             }],
             ['OS=="win" or OS=="linux"', {

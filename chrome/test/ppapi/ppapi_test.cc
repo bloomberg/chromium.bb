@@ -166,13 +166,13 @@ void PPAPITestBase::RunTestAndReload(const std::string& test_case) {
 
 void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
   FilePath document_root;
-  ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
+  ASSERT_TRUE(GetHTTPDocumentRoot(&document_root));
   RunHTTPTestServer(document_root, test_case, "");
 }
 
 void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
   FilePath document_root;
-  ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
+  ASSERT_TRUE(GetHTTPDocumentRoot(&document_root));
   net::TestServer test_server(net::BaseTestServer::HTTPSOptions(),
                               document_root);
   ASSERT_TRUE(test_server.Start());
@@ -189,7 +189,7 @@ void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
   int port = server.UseRandomPort();
   ASSERT_TRUE(server.Start(websocket_root_dir));
   FilePath http_document_root;
-  ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
+  ASSERT_TRUE(GetHTTPDocumentRoot(&http_document_root));
   RunHTTPTestServer(http_document_root, test_case,
                     StringPrintf("websocket_port=%d", port));
 }
@@ -254,6 +254,45 @@ void PPAPITestBase::RunHTTPTestServer(
 
   GURL url = test_server.GetURL(query);
   RunTestURL(url);
+}
+
+bool PPAPITestBase::GetHTTPDocumentRoot(FilePath* document_root) {
+  // For HTTP tests, we use the output DIR to grab the generated files such
+  // as the NEXEs.
+  FilePath exe_dir = CommandLine::ForCurrentProcess()->GetProgram().DirName();
+  FilePath src_dir;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
+    return false;
+
+  // TestServer expects a path relative to source. So we must first
+  // generate absolute paths to SRC and EXE and from there generate
+  // a relative path.
+  if (!exe_dir.IsAbsolute()) file_util::AbsolutePath(&exe_dir);
+  if (!src_dir.IsAbsolute()) file_util::AbsolutePath(&src_dir);
+  if (!exe_dir.IsAbsolute())
+    return false;
+  if (!src_dir.IsAbsolute())
+    return false;
+
+  size_t match, exe_size, src_size;
+  std::vector<FilePath::StringType> src_parts, exe_parts;
+
+  // Determine point at which src and exe diverge, and create a relative path.
+  exe_dir.GetComponents(&exe_parts);
+  src_dir.GetComponents(&src_parts);
+  exe_size = exe_parts.size();
+  src_size = src_parts.size();
+  for (match = 0; match < exe_size && match < src_size; ++match) {
+    if (exe_parts[match] != src_parts[match])
+      break;
+  }
+  for (size_t tmp_itr = match; tmp_itr < src_size; ++tmp_itr) {
+    *document_root = document_root->Append(FILE_PATH_LITERAL(".."));
+  }
+  for (; match < exe_size; ++match) {
+    *document_root = document_root->Append(exe_parts[match]);
+  }
+  return true;
 }
 
 PPAPITest::PPAPITest() {
