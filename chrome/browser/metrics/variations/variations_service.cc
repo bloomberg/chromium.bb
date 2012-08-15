@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/variations_service.h"
+#include "chrome/browser/metrics/variations/variations_service.h"
 
 #include <set>
 
@@ -17,7 +17,7 @@
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"

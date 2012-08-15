@@ -11,7 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_METRICS_VARIATIONS_UTIL_H_
-#define CHROME_COMMON_METRICS_VARIATIONS_UTIL_H_
+#ifndef CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_
+#define CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_
 
 #include <string>
 #include <vector>
 
 #include "base/metrics/field_trial.h"
 #include "base/string16.h"
-#include "chrome/common/metrics/variation_ids.h"
+#include "chrome/common/metrics/variations/variation_ids.h"
 
 // This namespace provides various helpers that extend the functionality around
 // base::FieldTrial.
@@ -123,4 +123,4 @@ uint32 TestHashName(const std::string& name);
 
 }  // namespace testing
 
-#endif  // CHROME_COMMON_METRICS_VARIATIONS_UTIL_H_
+#endif  // CHROME_COMMON_METRICS_VARIATIONS_VARIATIONS_UTIL_H_

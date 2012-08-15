@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/user_script.h"
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/metrics/proto/chrome_experiments.pb.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"

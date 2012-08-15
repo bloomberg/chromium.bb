@@ -8,8 +8,8 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/metrics/variations_util.h"
-#include "chrome/common/metrics/variation_ids.h"
+#include "chrome/common/metrics/variations/variation_ids.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 
 namespace {
 

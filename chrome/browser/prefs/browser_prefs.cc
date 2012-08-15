@@ -30,7 +30,7 @@
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/metrics/variations_service.h"
+#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
 #include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/predictor.h"

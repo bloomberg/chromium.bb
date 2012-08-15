@@ -13,7 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/common/gpu_info.h"
 #include "googleurl/src/gurl.h"

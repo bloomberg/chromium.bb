@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"

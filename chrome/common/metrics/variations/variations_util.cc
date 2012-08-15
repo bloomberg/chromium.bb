@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 
 #include <map>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/sys_byteorder.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/metrics/variation_ids.h"
+#include "chrome/common/metrics/variations/variation_ids.h"
 
 namespace {
 

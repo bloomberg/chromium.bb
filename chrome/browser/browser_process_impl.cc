@@ -37,7 +37,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "chrome/browser/metrics/variations_service.h"
+#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"

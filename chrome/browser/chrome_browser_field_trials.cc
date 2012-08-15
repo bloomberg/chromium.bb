@@ -22,7 +22,7 @@
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"

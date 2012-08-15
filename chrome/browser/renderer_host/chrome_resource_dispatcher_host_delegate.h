@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
-#include "chrome/common/metrics/variation_ids.h"
+#include "chrome/common/metrics/variations/variation_ids.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
 class DelayedResourceQueue;

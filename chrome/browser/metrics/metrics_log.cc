@@ -34,7 +34,7 @@
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
-#include "chrome/common/metrics/variations_util.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/content_browser_client.h"

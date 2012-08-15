@@ -5,7 +5,7 @@
 #include "base/base64.h"
 #include "base/string_split.h"
 #include "chrome/browser/metrics/proto/study.pb.h"
-#include "chrome/browser/metrics/variations_service.h"
+#include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
