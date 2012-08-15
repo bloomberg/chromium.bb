@@ -1,4 +1,5 @@
 bin_PROGRAMS =					\
+	weston-info				\
 	$(terminal)
 
 noinst_PROGRAMS =				\
@@ -54,7 +55,6 @@ clients_programs =				\
 	clickdot				\
 	editor					\
 	keyboard				\
-	weston-info				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
