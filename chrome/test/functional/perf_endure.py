@@ -59,8 +59,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
   _DMPROF_SCRIPT_PATH = os.path.join(_DMPROF_DIR_PATH, 'dmprof')
 
-  _CHROME_BIN_PATH = os.path.join(perf.BasePerfTest.BrowserPath(), 'chrome')
-
   def setUp(self):
     # The environment variables for the Deep Memory Profiler must be set
     # before perf.BasePerfTest.setUp() to inherit them to Chrome.
@@ -393,12 +391,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
                            'endure.%05d.%s.json' % (proc_info['tab_pid'],
                                                     last_sequence_id)), 'w+')
           self._deep_memory_profile_proc = subprocess.Popen(
-              '%s --json %s %s %s' % (self._DMPROF_SCRIPT_PATH,
-                                      self._CHROME_BIN_PATH,
-                                      os.path.join(self._DMPROF_DIR_PATH,
-                                                   'policy.l0.txt'),
-                                      os.path.join(self._deep_tempdir,
-                                                   first_dump)),
+              '%s json %s' % (self._DMPROF_SCRIPT_PATH,
+                              os.path.join(self._deep_tempdir, first_dump)),
               shell=True, stdout=self._deep_memory_profile_json_file)
           # Don't wait for the new process since dmprof may take long time.
 
@@ -461,6 +455,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
           json_data = json.load(json_f)
         if json_data['version'] == 'JSON_DEEP_1':
           deep_memory_profile_results = json_data['snapshots']
+        elif json_data['version'] == 'JSON_DEEP_2':
+          deep_memory_profile_results = json_data['policies']['l0']['snapshots']
       if deep_memory_profile_results:
         self._OutputPerfGraphValue(
             'DMP-TCMallocUsed', [
