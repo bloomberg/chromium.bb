@@ -25,13 +25,19 @@
 #include "content/public/common/content_switches.h"
 
 // These are the only architectures supported for now.
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__arm__)
 #define SECCOMP_BPF_SANDBOX
 #endif
 
 #if defined(SECCOMP_BPF_SANDBOX)
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+
+#if defined(__i386__) || defined(__x86_64__)
 #include "sandbox/linux/services/x86_linux_syscalls.h"
+#elif defined(__arm__)
+// This file doesn't yet list all syscalls.
+#include "sandbox/linux/services/arm_linux_syscalls.h"
+#endif
 
 namespace {
 
@@ -1183,7 +1189,7 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
       return  BaselinePolicy_x86_64(sysno);
   }
 }
-#endif  // defined(__x86_64__) || defined(__i386__)
+#endif  // defined(__i386__) || defined(__x86_64__)
 
 playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
@@ -1192,7 +1198,9 @@ playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
     return ENOSYS;
   }
   switch (sysno) {
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_migrate_pages:
+#endif
     case __NR_move_pages:
     case __NR_process_vm_readv:
     case __NR_process_vm_writev:
@@ -1259,15 +1267,16 @@ playground2::Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
   // This will be our default if we need one.
   return AllowAllPolicy;
 #else
-  // On IA32, we only have a small blacklist at the moment.
+  // On other architectures (currently IA32 or ARM),
+  // we only have a small blacklist at the moment.
   (void) process_type;
   return BlacklistPtracePolicy;
 #endif  // __x86_64__
 }
 
 // Initialize the seccomp-bpf sandbox.
-bool StartBpfSandbox_x86(const CommandLine& command_line,
-                         const std::string& process_type) {
+bool StartBpfSandbox(const CommandLine& command_line,
+                     const std::string& process_type) {
   playground2::Sandbox::EvaluateSyscall SyscallPolicy =
       GetProcessSyscallPolicy(command_line, process_type);
 
@@ -1329,7 +1338,7 @@ bool SandboxSeccompBpf::StartSandbox(const std::string& process_type) {
       // Process-specific policy.
       ShouldEnableSeccompBpf(process_type) &&
       SupportsSandbox()) {
-    return StartBpfSandbox_x86(command_line, process_type);
+    return StartBpfSandbox(command_line, process_type);
   }
 #endif
   return false;
