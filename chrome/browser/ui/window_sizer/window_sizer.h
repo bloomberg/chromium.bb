@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -93,7 +94,8 @@ class WindowSizer {
                                      gfx::Rect* window_bounds);
 
   // Returns the default origin for popups of the given size.
-  static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size);
+  static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size,
+                                          chrome::HostDesktopType type);
 
   // The number of pixels which are kept free top, left and right when a window
   // gets positioned to its default location.

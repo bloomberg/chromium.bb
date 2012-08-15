@@ -277,7 +277,9 @@ enum {
     if ((browser_->is_type_popup() || browser_->is_type_panel()) &&
          windowRect.x() == 0 && windowRect.y() == 0) {
       gfx::Size size = windowRect.size();
-      windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
+      windowRect.set_origin(
+          WindowSizer::GetDefaultPopupOrigin(size,
+                                             browser_->host_desktop_type()));
     }
 
     // Size and position the window.  Note that it is not yet onscreen.  Popup

@@ -57,6 +57,12 @@ Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 // NULL.  WARNING: see warnings in BrowserList::GetLastActive().
 Browser* FindLastActiveWithProfile(Profile* profile);
 
+// Identical in behavior to BrowserList::GetLastActive(), except that the most
+// recently open browser owned on the desktop described by |type| is returned.
+// If none exist, returns NULL.  WARNING: see warnings in
+// BrowserList::GetLastActive().
+Browser* FindLastActiveWithHostDesktopType(chrome::HostDesktopType type);
+
 // Returns the number of browsers with the Profile |profile|.
 size_t GetBrowserCount(Profile* profile);
 

@@ -7,21 +7,23 @@
 #import <Cocoa/Cocoa.h>
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 
 // How much horizontal and vertical offset there is between newly
 // opened windows.
 const int WindowSizer::kWindowTilePixels = 22;
 
 // static
-gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
+gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size,
+                                              chrome::HostDesktopType type) {
   NSRect work_area = [[NSScreen mainScreen] visibleFrame];
   NSRect main_area = [[[NSScreen screens] objectAtIndex:0] frame];
   NSPoint corner = NSMakePoint(NSMinX(work_area), NSMaxY(work_area));
 
-  if (Browser* b = BrowserList::GetLastActive()) {
-    NSWindow* window = b->window()->GetNativeWindow();
+  if (Browser* browser = browser::FindLastActiveWithHostDesktopType(type)) {
+    NSWindow* window = browser->window()->GetNativeWindow();
     NSRect window_frame = [window frame];
 
     // Limit to not overflow the work area right and bottom edges.

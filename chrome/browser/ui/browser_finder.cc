@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_impl.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
@@ -159,6 +160,14 @@ Browser* FindLastActiveWithProfile(Profile* profile) {
   return FindBrowserMatching(
       BrowserList::begin_last_active(), BrowserList::end_last_active(), profile,
       Browser::FEATURE_NONE, kMatchAny);
+}
+
+Browser* FindLastActiveWithHostDesktopType(chrome::HostDesktopType type) {
+  chrome::BrowserListImpl* browser_list_impl =
+      chrome::BrowserListImpl::GetInstance(type);
+  if (browser_list_impl)
+    return browser_list_impl->GetLastActive();
+  return NULL;
 }
 
 size_t GetBrowserCount(Profile* profile) {

@@ -8,8 +8,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/screen.h"
 
 // Used to pad the default new window size.  On Windows, this is also used for
@@ -19,10 +20,12 @@
 const int WindowSizer::kWindowTilePixels = 10;
 
 // static
-gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
+gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size,
+                                              chrome::HostDesktopType type) {
   gfx::Rect monitor_bounds = gfx::Screen::GetPrimaryDisplay().work_area();
   gfx::Point corner(monitor_bounds.x(), monitor_bounds.y());
-  if (Browser* browser = BrowserList::GetLastActive()) {
+
+  if (Browser* browser = browser::FindLastActiveWithHostDesktopType(type)) {
     GtkWindow* window =
         reinterpret_cast<GtkWindow*>(browser->window()->GetNativeWindow());
     int x = 0, y = 0;
