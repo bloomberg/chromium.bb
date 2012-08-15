@@ -24,8 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/epoll.h>
-#include <sys/timerfd.h>
 
 #include <wayland-client.h>
 
@@ -87,12 +85,8 @@ struct seat_info {
 struct weston_info {
 	struct wl_display *display;
 
-	int epoll_fd;
-	int timer_fd;
-	int display_fd;
-	uint32_t mask;
-
 	struct wl_list infos;
+	bool roundtrip_needed;
 };
 
 static void
@@ -260,6 +254,8 @@ add_seat_info(struct weston_info *info, uint32_t id, uint32_t version)
 
 	seat->seat = wl_display_bind(info->display, id, &wl_seat_interface);
 	wl_seat_add_listener(seat->seat, &seat_listener, seat);
+
+	info->roundtrip_needed = true;
 }
 
 static void
@@ -287,6 +283,8 @@ add_shm_info(struct weston_info *info, uint32_t id, uint32_t version)
 
 	shm->shm = wl_display_bind(info->display, id, &wl_shm_interface);
 	wl_shm_add_listener(shm->shm, &shm_listener, shm);
+
+	info->roundtrip_needed = true;
 }
 
 static void
@@ -339,6 +337,8 @@ add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 					 &wl_output_interface);
 	wl_output_add_listener(output->output, &output_listener,
 			       output);
+
+	info->roundtrip_needed = true;
 }
 
 static void
@@ -376,60 +376,10 @@ print_infos(struct wl_list *infos)
 		info->print(info);
 }
 
-static int
-event_mask_update(uint32_t mask, void *data)
-{
-	struct weston_info *info = data;
-
-	info->mask = mask;
-
-	return 0;
-}
-
-enum epoll_source_type {
-	TYPE_DISPLAY,
-	TYPE_TIMERFD
-};
-
-static void
-main_loop(struct weston_info *info)
-{
-	bool running;
-	struct epoll_event ep[16];
-	int i, count;
-	uint32_t tag;
-
-	running = true;
-
-	while (running) {
-		wl_display_flush(info->display);
-
-		count = epoll_wait(info->epoll_fd,
-				   ep, ARRAY_LENGTH(ep), -1);
-
-		for (i = 0; i < count; i++) {
-			tag = ep[i].data.u32;
-
-			if (tag == TYPE_DISPLAY) {
-				wl_display_iterate(info->display,
-						   info->mask);
-			} else if (tag == TYPE_TIMERFD) {
-				running = false;
-			} else {
-				fprintf(stderr, "unexpected fd type %u\n",
-					tag);
-				abort();
-			}
-		}
-	}
-}
-
 int
 main(int argc, char **argv)
 {
 	struct weston_info info;
-	struct epoll_event ep;
-	struct itimerspec spec;
 
 	info.display = wl_display_connect(NULL);
 	if (!info.display) {
@@ -439,35 +389,14 @@ main(int argc, char **argv)
 
 	wl_list_init(&info.infos);
 
-	info.epoll_fd = os_epoll_create_cloexec();
-	info.display_fd = wl_display_get_fd(info.display, event_mask_update,
-					    &info);
-
-	ep.events = EPOLLIN;
-	ep.data.u32 = TYPE_DISPLAY;
-	epoll_ctl(info.epoll_fd, EPOLL_CTL_ADD, info.display_fd, &ep);
-
-	info.timer_fd = timerfd_create(CLOCK_REALTIME, 0);
-	if (info.timer_fd < 0) {
-		fprintf(stderr, "failed to create timer fd: %m\n");
-		return -1;
-	}
-
-	ep.events = EPOLLIN;
-	ep.data.u32 = TYPE_TIMERFD;
-	epoll_ctl(info.epoll_fd, EPOLL_CTL_ADD, info.timer_fd, &ep);
-
 	wl_display_add_global_listener(info.display,
 				       global_handler,
 				       &info);
 
-	spec.it_interval.tv_sec = 0;
-	spec.it_interval.tv_nsec = 0;
-	spec.it_value.tv_sec = 0;
-	spec.it_value.tv_nsec = 200 * 1000 * 1000;
-	timerfd_settime(info.timer_fd, 0, &spec, NULL);
-
-	main_loop(&info);
+	do {
+		info.roundtrip_needed = false;
+		wl_display_roundtrip(info.display);
+	} while (info.roundtrip_needed);
 
 	print_infos(&info.infos);
 
