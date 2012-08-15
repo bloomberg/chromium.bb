@@ -9,6 +9,9 @@
 namespace remoting {
 namespace protocol {
 
+MouseInputFilter::MouseInputFilter() {
+}
+
 MouseInputFilter::MouseInputFilter(InputStub* input_stub)
     : InputFilter(input_stub) {
   input_max_.setEmpty();

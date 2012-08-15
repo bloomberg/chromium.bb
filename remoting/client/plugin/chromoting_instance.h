@@ -31,11 +31,14 @@
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
 #include "remoting/client/plugin/mac_key_event_processor.h"
+#include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/cursor_shape_stub.h"
+#include "remoting/protocol/input_event_tracker.h"
+#include "remoting/protocol/mouse_input_filter.h"
 
 namespace base {
 class DictionaryValue;
@@ -48,17 +51,11 @@ class Module;
 
 namespace remoting {
 
-namespace protocol {
-class InputEventTracker;
-class MouseInputFilter;
-}  // namespace protocol
-
 class ChromotingClient;
 class ChromotingStats;
 class ClientContext;
 class FrameConsumerProxy;
 class PepperAudioPlayer;
-class PepperInputHandler;
 class PepperView;
 class PepperXmppProxy;
 class RectangleUpdateDecoder;
@@ -187,19 +184,20 @@ class ChromotingInstance :
   PepperPluginThreadDelegate plugin_thread_delegate_;
   scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
   ClientContext context_;
-  scoped_ptr<protocol::ConnectionToHost> host_connection_;
+  scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<PepperView> view_;
 
-  scoped_refptr<RectangleUpdateDecoder> rectangle_decoder_;
+  scoped_ptr<protocol::ConnectionToHost> host_connection_;
+  scoped_ptr<ChromotingClient> client_;
 
-  scoped_ptr<protocol::MouseInputFilter> mouse_input_filter_;
-  scoped_ptr<protocol::InputEventTracker> input_tracker_;
+  // Input pipeline components, in reverse order of distance from input source.
+  protocol::MouseInputFilter mouse_input_filter_;
+  protocol::InputEventTracker input_tracker_;
 #if defined(OS_MACOSX)
-  scoped_ptr<MacKeyEventProcessor> mac_key_event_processor_;
+  MacKeyEventProcessor mac_key_event_processor_;
 #endif
   KeyEventMapper key_mapper_;
-  scoped_ptr<PepperInputHandler> input_handler_;
-  scoped_ptr<ChromotingClient> client_;
+  PepperInputHandler input_handler_;
 
   // XmppProxy is a refcounted interface used to perform thread-switching and
   // detaching between objects whose lifetimes are controlled by pepper, and

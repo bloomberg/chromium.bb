@@ -20,6 +20,7 @@ namespace protocol {
 // output dimensions, before passing events on to |input_stub|.
 class MouseInputFilter : public InputFilter {
  public:
+  MouseInputFilter();
   explicit MouseInputFilter(InputStub* input_stub);
   virtual ~MouseInputFilter();
 

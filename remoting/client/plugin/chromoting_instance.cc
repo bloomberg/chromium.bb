@@ -39,9 +39,7 @@
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/libjingle_transport_factory.h"
-#include "remoting/protocol/mouse_input_filter.h"
 
 // Windows defines 'PostMessage', so we have to undef it.
 #if defined(PostMessage)
@@ -155,6 +153,16 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       plugin_task_runner_(
           new PluginThreadTaskRunner(&plugin_thread_delegate_)),
       context_(plugin_task_runner_),
+      input_tracker_(&mouse_input_filter_),
+#if defined(OS_MACOSX)
+      // On Mac we need an extra filter to inject missing keyup events.
+      // See remoting/client/plugin/mac_key_event_processor.h for more details.
+      mac_key_event_processor_(&input_tracker_),
+      key_mapper_(&mac_key_event_processor_),
+#else
+      key_mapper_(&input_tracker_),
+#endif
+      input_handler_(&key_mapper_),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
   RequestFilteringInputEvents(PP_INPUTEVENT_CLASS_KEYBOARD);
@@ -346,9 +354,7 @@ void ChromotingInstance::DidChangeView(const pp::View& view) {
 
   view_->SetView(view);
 
-  if (mouse_input_filter_.get()) {
-    mouse_input_filter_->set_input_size(view_->get_view_size_dips());
-  }
+  mouse_input_filter_.set_input_size(view_->get_view_size_dips());
 }
 
 bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
@@ -359,11 +365,9 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
 
   // TODO(wez): When we have a good hook into Host dimensions changes, move
   // this there.
-  // If |input_handler_| is valid, then |mouse_input_filter_| must also be
-  // since they are constructed together as part of the input pipeline
-  mouse_input_filter_->set_output_size(view_->get_screen_size());
+  mouse_input_filter_.set_output_size(view_->get_screen_size());
 
-  return input_handler_->HandleInputEvent(event);
+  return input_handler_.HandleInputEvent(event);
 }
 
 void ChromotingInstance::SetDesktopSize(const SkISize& size,
@@ -476,24 +480,9 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
                                      rectangle_decoder_.get(),
                                      audio_player.Pass()));
 
-  // Construct the input pipeline
-  mouse_input_filter_.reset(
-      new protocol::MouseInputFilter(host_connection_->input_stub()));
-  mouse_input_filter_->set_input_size(view_->get_view_size_dips());
-  input_tracker_.reset(
-      new protocol::InputEventTracker(mouse_input_filter_.get()));
-
-#if defined(OS_MACOSX)
-  // On Mac we need an extra filter to inject missing keyup events.
-  // See remoting/client/plugin/mac_key_event_processor.h for more details.
-  mac_key_event_processor_.reset(
-      new MacKeyEventProcessor(input_tracker_.get()));
-  key_mapper_.set_input_stub(mac_key_event_processor_.get());
-#else
-  key_mapper_.set_input_stub(input_tracker_.get());
-#endif
-  input_handler_.reset(
-      new PepperInputHandler(&key_mapper_));
+  // Connect the input pipeline to the protocol stub & initialize components.
+  mouse_input_filter_.set_input_stub(host_connection_->input_stub());
+  mouse_input_filter_.set_input_size(view_->get_view_size_dips());
 
   LOG(INFO) << "Connecting to " << config.host_jid
             << ". Local jid: " << config.local_jid << ".";
@@ -533,9 +522,8 @@ void ChromotingInstance::Disconnect() {
     client_.reset();
   }
 
-  input_handler_.reset();
-  input_tracker_.reset();
-  mouse_input_filter_.reset();
+  // Disconnect the input pipeline and teardown the connection.
+  mouse_input_filter_.set_input_stub(NULL);
   host_connection_.reset();
 }
 
@@ -545,13 +533,13 @@ void ChromotingInstance::OnIncomingIq(const std::string& iq) {
 
 void ChromotingInstance::ReleaseAllKeys() {
   if (IsConnected())
-    input_tracker_->ReleaseAll();
+    input_tracker_.ReleaseAll();
 }
 
 void ChromotingInstance::InjectKeyEvent(const protocol::KeyEvent& event) {
   // Inject after the KeyEventMapper, so the event won't get mapped or trapped.
   if (IsConnected())
-    input_tracker_->InjectKeyEvent(event);
+    input_tracker_.InjectKeyEvent(event);
 }
 
 void ChromotingInstance::RemapKey(uint32 in_usb_keycode,
