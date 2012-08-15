@@ -685,11 +685,7 @@ BrowserThemePack::BrowserThemePack()
       colors_(NULL),
       display_properties_(NULL),
       source_images_(NULL) {
-#if defined(OS_MACOSX)
   scale_factors_ = ui::GetSupportedScaleFactors();
-#else
-  scale_factors_.push_back(ui::SCALE_FACTOR_100P);
-#endif
 }
 
 void BrowserThemePack::BuildHeader(const Extension* extension) {
