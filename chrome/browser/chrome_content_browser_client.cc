@@ -155,7 +155,8 @@ const char* kPredefinedAllowedSocketOrigins[] = {
   "pdeelgamlgannhelgoegilelnnojegoh",  // see crbug.com/134099
   "cabapfdbkniadpollkckdnedaanlciaj",  // see crbug.com/134099
   "mapljbgnjledlpdmlchihnmeclmefbba",  // see crbug.com/134099
-  "ghbfeebgmiidnnmeobbbaiamklmpbpii"   // see crbug.com/134099
+  "ghbfeebgmiidnnmeobbbaiamklmpbpii",  // see crbug.com/134099
+  "jdfhpkjeckflbbleddjlpimecpbjdeep"   // see crbug.com/142514
 };
 
 // Handles rewriting Web UI URLs.
