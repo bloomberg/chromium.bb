@@ -69,29 +69,47 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
   state->unchanged = FALSE;
 }
 
+/* Returns true if data 66 prefix is specified for the instruction,
+ * and the isntruction doesn't ignore the data 66 prefix.
+ */
+#define NACL_PREFIX_INST_DATA66(state) \
+  (NaClHasBit((state)->prefix_mask, kPrefixDATA16) && \
+      (NACL_EMPTY_IFLAGS == \
+       ((state)->inst->flags & NACL_IFLAG(SizeIgnoresData16))))
+
 /* Computes the number of bytes defined for operands of the matched
- * instruction of the given state.
+ * instruction of the given state. Returns 0 if the operand size could
+ * not be computed, due to ambiguities in the prefix bytes.
  */
 static int NaClExtractOpSize(NaClInstState* state) {
   if (NaClHasBit(state->inst->flags, NACL_IFLAG(OperandSize_b))) {
     return 1;
   }
   if (NACL_TARGET_SUBARCH == 64) {
-    if ((state->rexprefix && NaClRexW(state->rexprefix)) ||
-        (NaClHasBit(state->inst->flags, NACL_IFLAG(OperandSizeForce64)))) {
+    if (NaClRexW(state->rexprefix)) {
+      if (NACL_PREFIX_INST_DATA66(state))
+        /* According to the AMD and INTEL manuals, if both prefix 66 and
+         * rex.w is specified, the rex.w should be used. However, rather
+         * than tempt fate, we disallow this combination of prefixes for
+         * any such instruction, since the same effect can be achieved
+         * without the 66 prefix.
+         */
+        return 0;
       return 8;
     }
-  }
-  if (NaClHasBit(state->prefix_mask, kPrefixDATA16) &&
-      (NACL_EMPTY_IFLAGS ==
-       (state->inst->flags & NACL_IFLAG(SizeIgnoresData16)))) {
+    if (NaClHasBit(state->inst->flags, NACL_IFLAG(OperandSizeForce64))) {
+      return 8;
+    }
+    if (NACL_PREFIX_INST_DATA66(state))
+      return 2;
+    else if (NaClHasBit(state->inst->flags, NACL_IFLAG(OperandSizeDefaultIs64)))
+      return 8;
+    else
+      return 4;
+  } else if (NACL_PREFIX_INST_DATA66(state))
     return 2;
-  }
-  if ((NACL_TARGET_SUBARCH == 64) &&
-      NaClHasBit(state->inst->flags, NACL_IFLAG(OperandSizeDefaultIs64))) {
-    return 8;
-  }
-  return 4;
+  else
+    return 4;
 }
 
 /* Computes the number of bits defined for addresses of the matched
@@ -355,9 +373,16 @@ static void NaClConsumeInstBytes(NaClInstState* state,
  * the pattern match if any problems.
  */
 static Bool NaClConsumeAndCheckOperandSize(NaClInstState* state) {
+  /* Get and check that operand size is defined. */
   state->operand_size = NaClExtractOpSize(state);
   DEBUG(NaClLog(LOG_INFO,
                 "operand size = %"NACL_PRIu8"\n", state->operand_size));
+  if (0 == state->operand_size) {
+    DEBUG(NaClLog(LOG_INFO,
+                  "Fails: operand size is zero.\n"));
+    return FALSE;
+  }
+
   /* Check if instruction has flags specifying legal sizes. If so,
    * make sure that the size matches.
    */

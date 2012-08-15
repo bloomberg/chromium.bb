@@ -4,10 +4,10 @@
 0000000000000011: 66 64 41 89 c0                               mov %r8w, %ax
 0000000000000016: 89 ff                                        mov %edi, %edi
 0000000000000018: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-000000000000001c: 66 f3 48 ab                                  [P] dontcare [%rdi] (s), %rax (u)
+000000000000001c: 66 f3 48 ab                                  invalid
 0000000000000020: 89 ff                                        mov %edi, %edi
 0000000000000022: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-0000000000000026: f3 66 48 ab                                  [P] dontcare [%rdi] (s), %rax (u)
+0000000000000026: f3 66 48 ab                                  invalid
 000000000000002a: 66 90                                        [P] dontcare
 000000000000002c: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
 000000000000002f: 66 66 66 90                                  [P] dontcare %ax (suz), %ax (suz)

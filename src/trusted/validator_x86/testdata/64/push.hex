@@ -1,0 +1,13 @@
+# Tests that push operand sizes work correctly.
+
+# The following tests the default size (which is 4 bytes).
+68 03 04 05 06
+
+# The following tests that rex.w doesn't effect the size.
+48 68 03 04 05 06
+
+# The following tests that data66 defines the size as 2 bytes.
+66 68 03 04
+
+# The following shows that we don't allow rex.w and a data 66 prefix.
+66 48 68 03 04
