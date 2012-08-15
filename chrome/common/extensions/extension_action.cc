@@ -195,7 +195,7 @@ const int ExtensionAction::kDefaultTabId = -1;
 ExtensionAction::IconAnimation::IconAnimation(
     ui::AnimationDelegate* delegate)
     // 100ms animation at 50fps (so 5 animation frames in total).
-    : ui::LinearAnimation(1000, 50, delegate) {}
+    : ui::LinearAnimation(100, 50, delegate) {}
 
 ExtensionAction::IconAnimation::~IconAnimation() {}
 
