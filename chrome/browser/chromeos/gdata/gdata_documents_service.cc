@@ -111,6 +111,19 @@ void DocumentsService::GetDocuments(const GURL& url,
   runner_->StartOperationWithRetry(operation);
 }
 
+void DocumentsService::GetFilelist(const GURL& url,
+                                   const std::string& search_query,
+                                   const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetFilelistOperation* operation =
+      new GetFilelistOperation(operation_registry(),
+                               url,
+                               search_query,
+                               callback);
+  runner_->StartOperationWithRetry(operation);
+}
+
 void DocumentsService::GetChangelist(const GURL& url,
                                      int64 start_changestamp,
                                      const GetDataCallback& callback) {
@@ -132,6 +145,17 @@ void DocumentsService::GetDocumentEntry(const std::string& resource_id,
       new GetDocumentEntryOperation(operation_registry(),
                                     resource_id,
                                     callback);
+  runner_->StartOperationWithRetry(operation);
+}
+
+void DocumentsService::GetFile(const std::string& file_id,
+                               const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetFileOperation* operation =
+      new GetFileOperation(operation_registry(),
+                           file_id,
+                           callback);
   runner_->StartOperationWithRetry(operation);
 }
 

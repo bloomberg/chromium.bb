@@ -74,6 +74,48 @@ class GetChangelistOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetChangelistOperation);
 };
 
+//============================= GetFlielistOperation ===========================
+
+// This class performs the operation for fetching Filelist.
+class GetFilelistOperation : public GetDataOperation {
+ public:
+  GetFilelistOperation(GDataOperationRegistry* registry,
+                       const GURL& url,
+                       const std::string& search_string,
+                       const GetDataCallback& callback);
+  virtual ~GetFilelistOperation();
+
+ protected:
+  // Overridden from GetDataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  GURL url_;
+  std::string search_string_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetFilelistOperation);
+};
+
+//=============================== GetFlieOperation =============================
+
+// This class performs the operation for fetching a file.
+class GetFileOperation : public GetDataOperation {
+ public:
+  GetFileOperation(GDataOperationRegistry* registry,
+                   const std::string& file_id,
+                   const GetDataCallback& callback);
+  virtual ~GetFileOperation();
+
+ protected:
+  // Overridden from GetDataOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  std::string file_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetFileOperation);
+};
+
 }  // namespace gdata
 
 #endif  // CHROME_BROWSER_CHROMEOS_GDATA_DRIVE_API_OPERATIONS_H_

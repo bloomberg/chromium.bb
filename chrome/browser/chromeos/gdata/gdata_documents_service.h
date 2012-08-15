@@ -102,11 +102,27 @@ class DocumentsServiceInterface {
                              int64 start_changestamp,
                              const GetDataCallback& callback) = 0;
 
+  // Fetches a filelist from |url| with |search_query|, using Drive V2 API. If
+  // this URL is empty the call will use the default URL. Specify |url| when
+  // pagenated request should be issued.
+  // |search_query| specifies query string, whose syntax is described at
+  // https://developers.google.com/drive/search-parameters
+  virtual void GetFilelist(const GURL& url,
+                           const std::string& search_query,
+                           const GetDataCallback& callback) = 0;
+
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
   virtual void GetDocumentEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) = 0;
+
+  // Fetches single entry metadata from server. The entry's file id equals
+  // |file_id|.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  // https://developers.google.com/drive/v2/reference/files/get
+  virtual void GetFile(const std::string& file_id,
+                       const GetDataCallback& callback) = 0;
 
   // Gets the account metadata from the server using the default account
   // metadata URL. Upon completion, invokes |callback| with results on the
@@ -229,11 +245,16 @@ class DocumentsService : public DocumentsServiceInterface {
                             const std::string& search_query,
                             const std::string& directory_resource_id,
                             const GetDataCallback& callback) OVERRIDE;
+  virtual void GetFilelist(const GURL& url,
+                           const std::string& search_query,
+                           const GetDataCallback& callback) OVERRIDE;
   virtual void GetChangelist(const GURL& url,
                              int64 start_changestamp,
                              const GetDataCallback& callback) OVERRIDE;
   virtual void GetDocumentEntry(const std::string& resource_id,
                                 const GetDataCallback& callback) OVERRIDE;
+  virtual void GetFile(const std::string& file_id,
+                       const GetDataCallback& callback) OVERRIDE;
 
   virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
   virtual void GetAboutResource(const GetDataCallback& callback) OVERRIDE;

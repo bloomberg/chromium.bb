@@ -34,11 +34,16 @@ class MockDocumentsService : public DocumentsServiceInterface {
                                   const std::string& search_string,
                                   const std::string& directory_resource_id,
                                   const GetDataCallback& callback));
+  MOCK_METHOD3(GetFilelist, void(const GURL& feed_url,
+                                 const std::string& search_string,
+                                 const GetDataCallback& callback));
   MOCK_METHOD3(GetChangelist, void(const GURL& feed_url,
                                    int64 start_changestamp,
                                    const GetDataCallback& callback));
   MOCK_METHOD2(GetDocumentEntry, void(const std::string& resource_id,
                                       const GetDataCallback& callback));
+  MOCK_METHOD2(GetFile, void(const std::string& file_id,
+                             const GetDataCallback& callback));
   MOCK_METHOD1(GetAccountMetadata, void(const GetDataCallback& callback));
   MOCK_METHOD1(GetAboutResource, void(const GetDataCallback& callback));
   MOCK_METHOD1(GetApplicationList, void(const GetDataCallback& callback));
