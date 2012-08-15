@@ -37,25 +37,21 @@ class WebIntentPicker {
   virtual void SetActionString(const string16& action) = 0;
 
   // Called when an extension is successfully installed via the picker.
-  virtual void OnExtensionInstallSuccess(const std::string& id) {}
+  virtual void OnExtensionInstallSuccess(const std::string& id) = 0;
 
   // Called when an extension installation started via the picker has failed.
-  virtual void OnExtensionInstallFailure(const std::string& id) {}
+  virtual void OnExtensionInstallFailure(const std::string& id) = 0;
 
   // Called when the inline disposition experiences an auto-resize.
-  virtual void OnInlineDispositionAutoResize(const gfx::Size& size) {}
+  virtual void OnInlineDispositionAutoResize(const gfx::Size& size) = 0;
 
   // Called when the controller has finished all pending asynchronous
   // activities.
-  virtual void OnPendingAsyncCompleted() {}
+  virtual void OnPendingAsyncCompleted() = 0;
 
   // Called when the inline disposition's web contents have been loaded.
   virtual void OnInlineDispositionWebContentsLoaded(
       content::WebContents* web_contents) {}
-
-  // Get the default size of the inline disposition tab container.
-  static gfx::Size GetDefaultInlineDispositionSize(
-      content::WebContents* web_contents);
 
   // Get the minimum size of the inline disposition content container.
   static gfx::Size GetMinInlineDispositionSize();
