@@ -193,6 +193,13 @@ class GDataWapiFeedLoader {
       GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
 
+  // Callback for handling response from
+  // |GDataDocumentsService::GetApplicationList|.
+  // If the application list is successfully parsed, passes the list to
+  // Drive webapps registry.
+  void OnGetApplicationList(GDataErrorCode status,
+                            scoped_ptr<base::Value> json);
+
   // Callback for handling feed content fetching while searching for file info.
   // This callback is invoked after async feed fetch operation that was
   // invoked by StartDirectoryRefresh() completes. This callback will update

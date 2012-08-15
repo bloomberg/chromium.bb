@@ -248,6 +248,12 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
                    initial_origin,
                    local_changestamp,
                    callback));
+    // Drive v2 needs a separate application list fetch operation.
+    // TODO(kochi): Application list rarely changes and do not necessarily
+    // refresed as often as files.
+    documents_service_->GetApplicationList(
+        base::Bind(&GDataWapiFeedLoader::OnGetApplicationList,
+                   weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -311,7 +317,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
     return;
   }
 
-  webapps_registry_->UpdateFromFeed(account_metadata.get());
+  webapps_registry_->UpdateFromFeed(*account_metadata.get());
 
   bool changes_detected = true;
   if (local_changestamp >= account_metadata->largest_changestamp()) {
@@ -424,6 +430,24 @@ void GDataWapiFeedLoader::OnGetAboutResource(
                  callback,
                  base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
                             weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GDataWapiFeedLoader::OnGetApplicationList(
+    GDataErrorCode status,
+    scoped_ptr<base::Value> json) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GDataFileError error = util::GDataToGDataFileError(status);
+  if (error != GDATA_FILE_OK)
+    return;
+
+  if (json.get()) {
+    scoped_ptr<AppList> applist(AppList::CreateFrom(*json));
+    if (applist.get()) {
+      VLOG(1) << "applist get success";
+      webapps_registry_->UpdateFromApplicationList(*applist.get());
+    }
+  }
 }
 
 // TODO(kochi): Fix too many parameters.  http://crbug.com/141359

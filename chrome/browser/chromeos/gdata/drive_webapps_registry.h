@@ -16,6 +16,8 @@
 
 namespace gdata {
 
+class AppList;
+
 // Data structure that defines WebApp
 struct DriveWebAppInfo {
   DriveWebAppInfo(const std::string& app_id,
@@ -51,7 +53,7 @@ class DriveWebAppsRegistryInterface {
  public:
   virtual ~DriveWebAppsRegistryInterface() {}
 
-  // Gets the list of web |apps| matching |file| and it |mime_type|.
+  // Gets the list of web |apps| matching |file| and its |mime_type|.
   virtual void GetWebAppsForFile(const FilePath& file,
                                  const std::string& mime_type,
                                  ScopedVector<DriveWebAppInfo>* apps) = 0;
@@ -63,7 +65,11 @@ class DriveWebAppsRegistryInterface {
 
   // Updates the list of drive-enabled WebApps with freshly fetched account
   // metadata feed.
-  virtual void UpdateFromFeed(AccountMetadataFeed* metadata) = 0;
+  virtual void UpdateFromFeed(const AccountMetadataFeed& metadata) = 0;
+
+  // Updates the list of drive-enabled WebApps with freshly fetched account
+  // metadata feed.
+  virtual void UpdateFromApplicationList(const AppList& applist) = 0;
 };
 
 // The production implementation of DriveWebAppsRegistryInterface.
@@ -79,7 +85,8 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
                                  ScopedVector<DriveWebAppInfo>* apps) OVERRIDE;
   virtual std::set<std::string> GetExtensionsForWebStoreApp(
       const std::string& web_store_id) OVERRIDE;
-  virtual void UpdateFromFeed(AccountMetadataFeed* metadata) OVERRIDE;
+  virtual void UpdateFromFeed(const AccountMetadataFeed& metadata) OVERRIDE;
+  virtual void UpdateFromApplicationList(const AppList& applist) OVERRIDE;
 
  private:
   // Defines WebApp application details that are associated with a given

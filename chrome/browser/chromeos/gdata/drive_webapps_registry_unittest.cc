@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/common/chrome_paths.h"
@@ -20,10 +21,6 @@ using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
 
-#define IF_EXPECT_EQ(arg1, arg2) \
-  EXPECT_EQ(arg1, arg2); \
-  if (arg1 == arg2)
-
 namespace gdata {
 
 class DriveWebAppsRegistryTest : public testing::Test {
@@ -32,15 +29,15 @@ class DriveWebAppsRegistryTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_){
   }
 
-  static Value* LoadJSONFile(const std::string& filename) {
+  static Value* LoadJSONFile(const std::string& prefix,
+                             const std::string& filename) {
     FilePath path;
     std::string error;
     // Test files for this unit test are located in
     // src/chrome/test/data/chromeos/gdata/*
     PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.AppendASCII("chromeos")
-        .AppendASCII("gdata")
-        .AppendASCII(filename.c_str());
+    path = path.AppendASCII("chromeos").AppendASCII(prefix)
+           .AppendASCII(filename);
     EXPECT_TRUE(file_util::PathExists(path)) <<
         "Couldn't find " << path.value();
 
@@ -95,7 +92,7 @@ class DriveWebAppsRegistryTest : public testing::Test {
 };
 
 TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
-  scoped_ptr<Value> document(LoadJSONFile("account_metadata.json"));
+  scoped_ptr<Value> document(LoadJSONFile("gdata", "account_metadata.json"));
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
   DictionaryValue* entry_value;
@@ -108,42 +105,73 @@ TEST_F(DriveWebAppsRegistryTest, LoadAndFindWebApps) {
       AccountMetadataFeed::CreateFrom(*document));
   ASSERT_TRUE(feed.get());
   scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
-  web_apps->UpdateFromFeed(feed.get());
+  web_apps->UpdateFromFeed(*feed.get());
 
   // Find by extension 'ext_1'.
   ScopedVector<DriveWebAppInfo> ext_1_results;
   FilePath ext1_file(FILE_PATH_LITERAL("gdata/SampleFile.ext_1"));
   web_apps->GetWebAppsForFile(ext1_file, std::string(), &ext_1_results);
-  IF_EXPECT_EQ(1U, ext_1_results.size()) {
-    EXPECT_TRUE(VerifyApp1(ext_1_results, true));
-  }
+  ASSERT_EQ(1U, ext_1_results.size());
+  EXPECT_TRUE(VerifyApp1(ext_1_results, true));
 
   // Find by extension 'ext_3'.
   ScopedVector<DriveWebAppInfo> ext_3_results;
   FilePath ext3_file(FILE_PATH_LITERAL("gdata/AnotherFile.ext_3"));
   web_apps->GetWebAppsForFile(ext3_file, std::string(), &ext_3_results);
-  IF_EXPECT_EQ(2U, ext_3_results.size()) {
-    EXPECT_TRUE(VerifyApp1(ext_3_results, false));
-    EXPECT_TRUE(VerifyApp2(ext_3_results, true));
-  }
+  ASSERT_EQ(2U, ext_3_results.size());
+  EXPECT_TRUE(VerifyApp1(ext_3_results, false));
+  EXPECT_TRUE(VerifyApp2(ext_3_results, true));
 
   // Find by mimetype 'ext_3'.
   ScopedVector<DriveWebAppInfo> mime_results;
   web_apps->GetWebAppsForFile(FilePath(), "application/test_type_2",
                               &mime_results);
-  IF_EXPECT_EQ(1U, mime_results.size()) {
-    EXPECT_TRUE(VerifyApp2(mime_results, true));
-  }
+  ASSERT_EQ(1U, mime_results.size());
+  EXPECT_TRUE(VerifyApp2(mime_results, true));
 
   // Find by extension and mimetype.
   ScopedVector<DriveWebAppInfo> mime_ext_results;
   FilePath mime_file(FILE_PATH_LITERAL("gdata/MimeFile.ext_2"));
   web_apps->GetWebAppsForFile(mime_file, "application/test_type_2",
                               &mime_ext_results);
-  IF_EXPECT_EQ(2U, mime_ext_results.size()) {
-    EXPECT_TRUE(VerifyApp1(mime_ext_results, true));
-    EXPECT_TRUE(VerifyApp2(mime_ext_results, true));
-  }
+  ASSERT_EQ(2U, mime_ext_results.size());
+  EXPECT_TRUE(VerifyApp1(mime_ext_results, true));
+  EXPECT_TRUE(VerifyApp2(mime_ext_results, true));
+}
+
+TEST_F(DriveWebAppsRegistryTest, LoadAndFindDriveWebApps) {
+  scoped_ptr<Value> document(LoadJSONFile("drive", "applist.json"));
+  ASSERT_TRUE(document.get());
+  ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
+
+  // Load feed.
+  scoped_ptr<AppList> app_list(AppList::CreateFrom(*document));
+  ASSERT_TRUE(app_list.get());
+  scoped_ptr<DriveWebAppsRegistry> web_apps(new DriveWebAppsRegistry);
+  web_apps->UpdateFromApplicationList(*app_list.get());
+
+  // Find by primary extension 'exe'.
+  ScopedVector<DriveWebAppInfo> ext_results;
+  FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
+  web_apps->GetWebAppsForFile(ext_file, std::string(), &ext_results);
+  ASSERT_EQ(1U, ext_results.size());
+  VerifyApp(ext_results, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
+            "Drive app 1", "", true);
+
+  // Find by primary MIME type.
+  ScopedVector<DriveWebAppInfo> primary_app;
+  web_apps->GetWebAppsForFile(FilePath(),
+      "application/vnd.google-apps.drive-sdk.123456788192", &primary_app);
+  ASSERT_EQ(1U, primary_app.size());
+  VerifyApp(primary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
+            "Drive app 1", "", true);
+
+  // Find by secondary MIME type.
+  ScopedVector<DriveWebAppInfo> secondary_app;
+  web_apps->GetWebAppsForFile(FilePath(), "text/html", &secondary_app);
+  ASSERT_EQ(1U, secondary_app.size());
+  VerifyApp(secondary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
+            "Drive app 1", "", false);
 }
 
 }  // namespace gdata

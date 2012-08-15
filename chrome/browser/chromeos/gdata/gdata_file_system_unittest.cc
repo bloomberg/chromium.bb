@@ -17,6 +17,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/gdata/drive_api_parser.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
@@ -192,7 +193,8 @@ class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
                                        ScopedVector<DriveWebAppInfo>* apps));
   MOCK_METHOD1(GetExtensionsForWebStoreApp,
                std::set<std::string>(const std::string& web_store_id));
-  MOCK_METHOD1(UpdateFromFeed, void(AccountMetadataFeed* metadata));
+  MOCK_METHOD1(UpdateFromFeed, void(const AccountMetadataFeed& metadata));
+  MOCK_METHOD1(UpdateFromApplicationList, void(const AppList& applist));
 };
 
 class GDataFileSystemTest : public testing::Test {
@@ -886,7 +888,7 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_CALL(*mock_doc_service_,
               GetDocuments(Eq(GURL()), _, _, _, _)).Times(1);
 
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   file_system_->GetEntryInfoByPath(
       FilePath(FILE_PATH_LITERAL("drive")), callback);
@@ -1223,7 +1225,7 @@ TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   mock_doc_service_->set_account_metadata(
       LoadJSONFile("account_metadata.json"));
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
   EXPECT_CALL(*mock_doc_service_, GetDocuments(_, _, _, _, _)).Times(0);
 
   // Kicks loading of cached file system and query for server update.
@@ -1235,7 +1237,7 @@ TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
   mock_doc_service_->set_account_metadata(
       LoadJSONFile("account_metadata.json"));
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   file_system_->CheckForUpdates();
   test_util::RunBlockingPoolTask();
@@ -2491,7 +2493,7 @@ TEST_F(GDataFileSystemTest, ContentSearchWithNewEntry) {
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
   EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "", _, _))
       .Times(1);
-  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(NotNull())).Times(1);
+  EXPECT_CALL(*mock_webapps_registry_, UpdateFromFeed(_)).Times(1);
 
   SearchCallback callback = base::Bind(&DriveSearchCallback,
       &message_loop_, kExpectedResults, ARRAYSIZE_UNSAFE(kExpectedResults));
