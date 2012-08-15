@@ -299,7 +299,7 @@ void ExtensionAction::CacheIcon(const std::string& path,
 }
 
 void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
-  SetValue(&icon_, tab_id, *image.ToImageSkia());
+  SetValue(&icon_, tab_id, image.AsImageSkia());
 }
 
 gfx::Image ExtensionAction::GetIcon(int tab_id) const {
