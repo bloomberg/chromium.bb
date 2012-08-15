@@ -32,6 +32,8 @@ class UsbDeviceResource : public ApiResource {
   UsbDeviceResource(ApiResourceEventNotifier* notifier, UsbDevice* device);
   virtual ~UsbDeviceResource();
 
+  void Close();
+
   // All of the *Transfer variants that are exposed here adapt their arguments
   // for the underlying UsbDevice's interface and invoke the corresponding
   // methods with completion callbacks that call OnTransferComplete on the event

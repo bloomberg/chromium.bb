@@ -11,6 +11,8 @@
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/experimental_usb.h"
 
+class UsbDevice;
+
 namespace extensions {
 
 class ApiResourceEventNotifier;
@@ -33,6 +35,8 @@ class UsbFindDeviceFunction : public UsbAsyncApiFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.usb.findDevice");
 
   UsbFindDeviceFunction();
+
+  static void SetDeviceForTest(UsbDevice* device);
 
  protected:
   virtual ~UsbFindDeviceFunction();

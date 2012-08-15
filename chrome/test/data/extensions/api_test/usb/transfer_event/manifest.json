@@ -1,0 +1,11 @@
+{
+  "name": "USB Transfer Events",
+  "version": "1.0",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["test.js"]
+  },
+  "permissions": [
+    "experimental"
+  ]
+}

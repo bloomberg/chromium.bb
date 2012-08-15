@@ -25,6 +25,12 @@ namespace IsochronousTransfer =
 using extensions::api::experimental_usb::Device;
 using std::vector;
 
+namespace {
+
+static UsbDevice* device_for_test_ = NULL;
+
+}  // namespace
+
 namespace extensions {
 
 UsbAsyncApiFunction::UsbAsyncApiFunction()
@@ -43,6 +49,10 @@ UsbFindDeviceFunction::UsbFindDeviceFunction() : event_notifier_(NULL) {}
 
 UsbFindDeviceFunction::~UsbFindDeviceFunction() {}
 
+void UsbFindDeviceFunction::SetDeviceForTest(UsbDevice* device) {
+  device_for_test_ = device;
+}
+
 bool UsbFindDeviceFunction::Prepare() {
   parameters_ = FindDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
@@ -51,12 +61,16 @@ bool UsbFindDeviceFunction::Prepare() {
 }
 
 void UsbFindDeviceFunction::Work() {
-  UsbService* const service =
-      UsbServiceFactory::GetInstance()->GetForProfile(profile());
-  DCHECK(service) << "No UsbService associated with profile.";
+  UsbDevice* device = NULL;
+  if (device_for_test_) {
+    device = device_for_test_;
+  } else {
+    UsbService* const service = UsbServiceFactory::GetInstance()->GetForProfile(
+        profile());
+    device = service->FindDevice(parameters_->vendor_id,
+                                 parameters_->product_id);
+  }
 
-  UsbDevice* const device = service->FindDevice(parameters_->vendor_id,
-                                                parameters_->product_id);
   if (!device) {
     SetResult(base::Value::CreateNullValue());
     return;
@@ -87,6 +101,10 @@ bool UsbCloseDeviceFunction::Prepare() {
 }
 
 void UsbCloseDeviceFunction::Work() {
+  UsbDeviceResource* const device = manager_->Get(parameters_->device.handle);
+  if (device)
+    device->Close();
+
   manager_->Remove(parameters_->device.handle);
 }
 

@@ -55,47 +55,54 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
   PlatformUsbDeviceHandle handle() { return handle_; }
 
   // Close the USB device and release the underlying platform device.
-  void Close();
+  virtual void Close();
 
-  void ControlTransfer(const TransferDirection direction,
-                       const TransferRequestType request_type,
-                       const TransferRecipient recipient,
-                       const uint8 request,
-                       const uint16 value,
-                       const uint16 index,
-                       net::IOBuffer* buffer,
-                       const size_t length,
-                       const unsigned int timeout,
-                       const UsbTransferCallback& callback);
+  virtual void ControlTransfer(const TransferDirection direction,
+                               const TransferRequestType request_type,
+                               const TransferRecipient recipient,
+                               const uint8 request,
+                               const uint16 value,
+                               const uint16 index,
+                               net::IOBuffer* buffer,
+                               const size_t length,
+                               const unsigned int timeout,
+                               const UsbTransferCallback& callback);
 
-  void BulkTransfer(const TransferDirection direction,
-                    const uint8 endpoint,
-                    net::IOBuffer* buffer,
-                    const size_t length,
-                    const unsigned int timeout,
-                    const UsbTransferCallback& callback);
+  virtual void BulkTransfer(const TransferDirection direction,
+                            const uint8 endpoint,
+                            net::IOBuffer* buffer,
+                            const size_t length,
+                            const unsigned int timeout,
+                            const UsbTransferCallback& callback);
 
-  void InterruptTransfer(const TransferDirection direction,
-                         const uint8 endpoint,
-                         net::IOBuffer* buffer,
-                         const size_t length,
-                         const unsigned int timeout,
-                         const UsbTransferCallback& callback);
+  virtual void InterruptTransfer(const TransferDirection direction,
+                                 const uint8 endpoint,
+                                 net::IOBuffer* buffer,
+                                 const size_t length,
+                                 const unsigned int timeout,
+                                 const UsbTransferCallback& callback);
 
-  void IsochronousTransfer(const TransferDirection direction,
-                           const uint8 endpoint,
-                           net::IOBuffer* buffer,
-                           const size_t length,
-                           const unsigned int packets,
-                           const unsigned int packet_length,
-                           const unsigned int timeout,
-                           const UsbTransferCallback& callback);
+  virtual void IsochronousTransfer(const TransferDirection direction,
+                                   const uint8 endpoint,
+                                   net::IOBuffer* buffer,
+                                   const size_t length,
+                                   const unsigned int packets,
+                                   const unsigned int packet_length,
+                                   const unsigned int timeout,
+                                   const UsbTransferCallback& callback);
 
   // Normal code should not call this function. It is called by the platform's
   // callback mechanism in such a way that it cannot be made private. Invokes
   // the callbacks associated with a given transfer, and removes it from the
   // in-flight transfer set.
   void TransferComplete(PlatformUsbTransferHandle transfer);
+
+ protected:
+  // This constructor variant is for use in testing only.
+  UsbDevice();
+
+  friend class base::RefCounted<UsbDevice>;
+  virtual ~UsbDevice();
 
  private:
   struct Transfer {
@@ -105,9 +112,6 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
     scoped_refptr<net::IOBuffer> buffer;
     UsbTransferCallback callback;
   };
-
-  friend class base::RefCounted<UsbDevice>;
-  virtual ~UsbDevice();
 
   // Checks that the device has not yet been closed.
   void CheckDevice();

@@ -99,6 +99,8 @@ UsbDevice::UsbDevice(UsbService* service, PlatformUsbDeviceHandle handle)
   DCHECK(handle) << "Cannot create device with NULL handle.";
 }
 
+UsbDevice::UsbDevice() : service_(NULL), handle_(NULL) {}
+
 UsbDevice::~UsbDevice() {}
 
 void UsbDevice::Close() {

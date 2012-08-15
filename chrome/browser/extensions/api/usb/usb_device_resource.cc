@@ -157,7 +157,13 @@ UsbDeviceResource::UsbDeviceResource(ApiResourceEventNotifier* notifier,
                                      UsbDevice* device)
     : ApiResource(notifier), device_(device) {}
 
-UsbDeviceResource::~UsbDeviceResource() {}
+UsbDeviceResource::~UsbDeviceResource() {
+  Close();
+}
+
+void UsbDeviceResource::Close() {
+  device_->Close();
+}
 
 void UsbDeviceResource::ControlTransfer(const ControlTransferInfo& transfer) {
   UsbDevice::TransferDirection direction;
