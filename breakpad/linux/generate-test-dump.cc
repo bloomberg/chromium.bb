@@ -37,7 +37,7 @@
 #include "breakpad/src/common/linux/linux_libc_support.h"
 #include "third_party/lss/linux_syscall_support.h"
 
-static bool DumpCallback(const char* dump_path, const char* minidump_id,
+static bool DumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
                          void* context, bool success) {
   if (!success) {
     static const char msg[] = "Failed to write minidump\n";
@@ -47,10 +47,8 @@ static bool DumpCallback(const char* dump_path, const char* minidump_id,
 
   static const char msg[] = "Wrote minidump: ";
   sys_write(2, msg, sizeof(msg) - 1);
-  sys_write(2, dump_path, my_strlen(dump_path));
-  sys_write(2, "/", 1);
-  sys_write(2, minidump_id, my_strlen(minidump_id));
-  sys_write(2, ".dmp\n", 5);
+  sys_write(2, descriptor.path(), strlen(descriptor.path()));
+  sys_write(2, "\n", 1);
 
   return true;
 }
@@ -61,8 +59,9 @@ static void DoSomethingWhichCrashes() {
 }
 
 int main() {
-  google_breakpad::ExceptionHandler breakpad(".", NULL, DumpCallback, NULL,
-                                             true);
+  google_breakpad::MinidumpDescriptor minidump(".");
+  google_breakpad::ExceptionHandler breakpad(minidump, NULL, DumpCallback, NULL,
+                                             true, -1);
   DoSomethingWhichCrashes();
   return 0;
 }
