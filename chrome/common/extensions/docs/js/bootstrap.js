@@ -20,7 +20,9 @@ var fileXHREnabled = function() {
 var officialURL = (function() {
   var candidates = [
     'http://code.google.com/chrome/extensions/',
+    'https://code.google.com/chrome/extensions/',
     'http://developer.chrome.com/',
+    'https://developer.chrome.com/',
 
     // TODO(aa): Remove this one once developer.chrome.com is live.
     'http://chrome-apps-doc.appspot.com/'
