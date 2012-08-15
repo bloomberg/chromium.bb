@@ -74,6 +74,10 @@ class BackgroundModeManager
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundAppInstallUninstallWhileDisabled);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           BackgroundModeDisabledPreventsKeepAliveOnStartup);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           DisableBackgroundModeUnderTestFlag);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            EnableAfterBackgroundAppInstall);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            MultiProfile);
@@ -153,6 +157,9 @@ class BackgroundModeManager
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Called when the kBackgroundModeEnabled preference changes.
+  void OnBackgroundModeEnabledPrefChanged();
 
   // BackgroundApplicationListModel::Observer implementation.
   virtual void OnApplicationDataChanged(const extensions::Extension* extension,
@@ -255,6 +262,9 @@ class BackgroundModeManager
 
   // Returns the number of background apps for a profile.
   virtual int GetBackgroundAppCountForProfile(Profile* const profile) const;
+
+  // Returns true if we should be in background mode.
+  bool ShouldBeInBackgroundMode() const;
 
   // Reference to the profile info cache. It is used to update the background
   // app status of profiles when they open/close background apps.

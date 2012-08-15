@@ -183,12 +183,12 @@ BackgroundModeManager::BackgroundModeManager(
   }
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
-  // in the background until the user explicitly terminates it, by acting as if
-  // we loaded a background app.
-  if (command_line->HasSwitch(switches::kKeepAliveForTest)) {
+  // in the background until the user explicitly terminates it.
+  if (command_line->HasSwitch(switches::kKeepAliveForTest))
     keep_alive_for_test_ = true;
+
+  if (ShouldBeInBackgroundMode())
     StartBackgroundMode();
-  }
 
   // Listen for the application shutting down so we can decrement our KeepAlive
   // count.
@@ -288,10 +288,7 @@ void BackgroundModeManager::Observe(
     case chrome::NOTIFICATION_PREF_CHANGED:
       DCHECK(*content::Details<std::string>(details).ptr() ==
              prefs::kBackgroundModeEnabled);
-      if (IsBackgroundModePrefEnabled())
-        EnableBackgroundMode();
-      else
-        DisableBackgroundMode();
+      OnBackgroundModeEnabledPrefChanged();
       break;
     case chrome::NOTIFICATION_EXTENSIONS_READY:
       // Extensions are loaded, so we don't need to manually keep the browser
@@ -345,6 +342,13 @@ void BackgroundModeManager::Observe(
   }
 }
 
+void BackgroundModeManager::OnBackgroundModeEnabledPrefChanged() {
+  if (IsBackgroundModePrefEnabled())
+    EnableBackgroundMode();
+  else
+    DisableBackgroundMode();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //  BackgroundModeManager, BackgroundApplicationListModel::Observer overrides
 void BackgroundModeManager::OnApplicationDataChanged(
@@ -356,9 +360,6 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
   if (!IsBackgroundModePrefEnabled())
     return;
 
-  // Figure out what just happened based on the count of background apps.
-  int count = GetBackgroundAppCount();
-
   // Update the profile cache with the fact whether background apps are running
   // for this profile.
   size_t profile_index = profile_cache_->GetIndexOfProfileWithPath(
@@ -368,7 +369,7 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
         profile_index, GetBackgroundAppCountForProfile(profile) != 0);
   }
 
-  if (count == 0) {
+  if (!ShouldBeInBackgroundMode()) {
     // We've uninstalled our last background app, make sure we exit background
     // mode and no longer launch on startup.
     EnableLaunchOnStartup(false);
@@ -535,10 +536,10 @@ void BackgroundModeManager::EndKeepAliveForStartup() {
 }
 
 void BackgroundModeManager::StartBackgroundMode() {
+  DCHECK(ShouldBeInBackgroundMode());
   // Don't bother putting ourselves in background mode if we're already there
   // or if background mode is disabled.
-  if (in_background_mode_ ||
-      (!IsBackgroundModePrefEnabled() && !keep_alive_for_test_))
+  if (in_background_mode_)
     return;
 
   // Mark ourselves as running in background mode.
@@ -559,9 +560,8 @@ void BackgroundModeManager::StartBackgroundMode() {
 void BackgroundModeManager::InitStatusTrayIcon() {
   // Only initialize status tray icons for those profiles which actually
   // have a background app running.
-  if (keep_alive_for_test_ || GetBackgroundAppCount() > 0) {
+  if (ShouldBeInBackgroundMode())
     CreateStatusTrayIcon();
-  }
 }
 
 void BackgroundModeManager::EndBackgroundMode() {
@@ -582,8 +582,7 @@ void BackgroundModeManager::EndBackgroundMode() {
 void BackgroundModeManager::EnableBackgroundMode() {
   DCHECK(IsBackgroundModePrefEnabled());
   // If background mode should be enabled, but isn't, turn it on.
-  if (!in_background_mode_ &&
-      (GetBackgroundAppCount() > 0 || keep_alive_for_test_)) {
+  if (!in_background_mode_ && ShouldBeInBackgroundMode()) {
     StartBackgroundMode();
     EnableLaunchOnStartup(true);
   }
@@ -615,6 +614,11 @@ int BackgroundModeManager::GetBackgroundAppCountForProfile(
     Profile* const profile) const {
   BackgroundModeData* bmd = GetBackgroundModeData(profile);
   return bmd->GetBackgroundAppCount();
+}
+
+bool BackgroundModeManager::ShouldBeInBackgroundMode() const {
+  return IsBackgroundModePrefEnabled() &&
+      (GetBackgroundAppCount() > 0 || keep_alive_for_test_);
 }
 
 void BackgroundModeManager::OnBackgroundAppInstalled(

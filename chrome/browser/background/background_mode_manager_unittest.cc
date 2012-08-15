@@ -32,10 +32,10 @@ class BackgroundModeManagerTest : public testing::Test {
 
 class TestBackgroundModeManager : public BackgroundModeManager {
  public:
-  explicit TestBackgroundModeManager(
-      CommandLine* command_line, ProfileInfoCache* cache)
+  TestBackgroundModeManager(
+      CommandLine* command_line, ProfileInfoCache* cache, bool enabled)
       : BackgroundModeManager(command_line, cache),
-        enabled_(true),
+        enabled_(enabled),
         app_count_(0),
         profile_app_count_(0),
         have_status_tray_(false),
@@ -55,7 +55,10 @@ class TestBackgroundModeManager : public BackgroundModeManager {
   void SetBackgroundAppCountForProfile(int count) {
     profile_app_count_ = count;
   }
-  void SetEnabled(bool enabled) { enabled_ = enabled; }
+  void SetEnabled(bool enabled) {
+    enabled_ = enabled;
+    OnBackgroundModeEnabledPrefChanged();
+  }
   bool HaveStatusTray() const { return have_status_tray_; }
   bool IsLaunchOnStartup() const { return launch_on_startup_; }
  private:
@@ -85,7 +88,7 @@ static void AssertBackgroundModeInactive(
 TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
   TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache());
+      command_line_.get(), profile_manager_.profile_info_cache(), true);
   manager.RegisterProfile(profile);
   EXPECT_FALSE(browser::WillKeepAlive());
 
@@ -105,7 +108,7 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppLoadUnload) {
 TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
   TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache());
+      command_line_.get(), profile_manager_.profile_info_cache(), true);
   manager.RegisterProfile(profile);
   // Turn off background mode.
   manager.SetEnabled(false);
@@ -135,7 +138,7 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstallWhileDisabled) {
 TEST_F(BackgroundModeManagerTest, EnableAfterBackgroundAppInstall) {
   TestingProfile* profile = profile_manager_.CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache());
+      command_line_.get(), profile_manager_.profile_info_cache(), true);
   manager.RegisterProfile(profile);
 
   // Install app, should show status tray icon.
@@ -168,7 +171,7 @@ TEST_F(BackgroundModeManagerTest, MultiProfile) {
   TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
   TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache());
+      command_line_.get(), profile_manager_.profile_info_cache(), true);
   manager.RegisterProfile(profile1);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(browser::WillKeepAlive());
@@ -209,7 +212,7 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
   TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
   TestingProfile* profile2 = profile_manager_.CreateTestingProfile("p2");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache());
+      command_line_.get(), profile_manager_.profile_info_cache(), true);
   manager.RegisterProfile(profile1);
   manager.RegisterProfile(profile2);
   EXPECT_FALSE(browser::WillKeepAlive());
@@ -251,10 +254,11 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheStorage) {
   // profiles in the cache.
   EXPECT_EQ(2u, cache->GetNumberOfProfiles());
 }
+
 TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
   TestBackgroundModeManager manager(
-      command_line_.get(), profile_manager_.profile_info_cache());
+      command_line_.get(), profile_manager_.profile_info_cache(), true);
   manager.RegisterProfile(profile1);
   EXPECT_FALSE(browser::WillKeepAlive());
 
@@ -285,4 +289,25 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   // Check that the background mode data we think is in the map actually is.
   EXPECT_EQ(UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
+}
+
+TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {
+  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  command_line_->AppendSwitch(switches::kKeepAliveForTest);
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache(), true);
+  manager.RegisterProfile(profile1);
+  EXPECT_TRUE(manager.ShouldBeInBackgroundMode());
+  manager.SetEnabled(false);
+  EXPECT_FALSE(manager.ShouldBeInBackgroundMode());
+}
+
+TEST_F(BackgroundModeManagerTest,
+       BackgroundModeDisabledPreventsKeepAliveOnStartup) {
+  TestingProfile* profile1 = profile_manager_.CreateTestingProfile("p1");
+  command_line_->AppendSwitch(switches::kKeepAliveForTest);
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager_.profile_info_cache(), false);
+  manager.RegisterProfile(profile1);
+  EXPECT_FALSE(manager.ShouldBeInBackgroundMode());
 }
