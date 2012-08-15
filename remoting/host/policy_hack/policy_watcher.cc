@@ -123,7 +123,8 @@ const char PolicyWatcher::kHostRequireCurtainPolicyName[] =
 
 const char* const PolicyWatcher::kBooleanPolicyNames[] =
     { PolicyWatcher::kNatPolicyName,
-      PolicyWatcher::kHostRequireTwoFactorPolicyName
+      PolicyWatcher::kHostRequireTwoFactorPolicyName,
+      PolicyWatcher::kHostRequireCurtainPolicyName
     };
 
 const int PolicyWatcher::kBooleanPolicyNamesNum =

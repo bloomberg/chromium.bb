@@ -50,6 +50,7 @@
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "remoting/host/curtain_mode_mac.h"
 #include "remoting/host/sighup_listener_mac.h"
@@ -103,7 +104,14 @@ class HostProcess
         allow_nat_traversal_(true),
         restarting_(false),
         shutting_down_(false),
-        exit_code_(kSuccessExitCode) {
+        exit_code_(kSuccessExitCode)
+#if defined(OS_MACOSX)
+      , curtain_(base::Bind(&HostProcess::OnDisconnectRequested,
+                            base::Unretained(this)),
+                 base::Bind(&HostProcess::OnDisconnectRequested,
+                            base::Unretained(this)))
+#endif
+  {
     context_.reset(
         new ChromotingHostContext(message_loop_.message_loop_proxy()));
     context_->Start();
@@ -319,6 +327,10 @@ class HostProcess
       return;
     }
 
+    if (!host_) {
+      StartHost();
+    }
+
     bool bool_value;
     std::string string_value;
     if (policies->GetString(policy_hack::PolicyWatcher::kHostDomainPolicyName,
@@ -328,6 +340,11 @@ class HostProcess
     if (policies->GetBoolean(policy_hack::PolicyWatcher::kNatPolicyName,
                              &bool_value)) {
       OnNatPolicyUpdate(bool_value);
+    }
+    if (policies->GetBoolean(
+            policy_hack::PolicyWatcher::kHostRequireCurtainPolicyName,
+            &bool_value)) {
+      OnCurtainPolicyUpdate(bool_value);
     }
   }
 
@@ -356,15 +373,44 @@ class HostProcess
     bool policy_changed = allow_nat_traversal_ != nat_traversal_enabled;
     allow_nat_traversal_ = nat_traversal_enabled;
 
-    if (host_) {
-      // Restart the host if the policy has changed while the host was
-      // online.
-      if (policy_changed)
-        RestartHost();
-    } else {
-      // Just start the host otherwise.
-      StartHost();
+    if (policy_changed) {
+      RestartHost();
     }
+  }
+
+  void OnCurtainPolicyUpdate(bool curtain_required) {
+#if defined(OS_MACOSX)
+    if (!context_->network_task_runner()->BelongsToCurrentThread()) {
+      context_->network_task_runner()->PostTask(FROM_HERE, base::Bind(
+          &HostProcess::OnCurtainPolicyUpdate, base::Unretained(this),
+          curtain_required));
+      return;
+    }
+
+    if (curtain_required) {
+      // If curtain mode is required, then we can't currently support remoting
+      // the login screen. This is because we don't curtain the login screen
+      // and the current daemon architecture means that the connction is closed
+      // immediately after login, leaving the host system uncurtained.
+      //
+      // TODO(jamiewalch): Fix this once we have implemented the multi-process
+      // daemon architecture (crbug.com/134894)
+      base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
+          CGSessionCopyCurrentDictionary());
+      const void* logged_in = CFDictionaryGetValue(session,
+                                                   kCGSessionLoginDoneKey);
+      if (logged_in != kCFBooleanTrue) {
+        Shutdown(kLoginScreenNotSupportedExitCode);
+        return;
+      }
+
+      host_->AddStatusObserver(&curtain_);
+      curtain_.SetEnabled(true);
+    } else {
+      curtain_.SetEnabled(false);
+      host_->RemoveStatusObserver(&curtain_);
+    }
+#endif
   }
 
   void StartHost() {
@@ -445,12 +491,6 @@ class HostProcess
     host_user_interface_->Start(
         host_, base::Bind(&HostProcess::OnDisconnectRequested,
                           base::Unretained(this)));
-#endif
-
-#if defined(OS_MACOSX)
-    curtain_.Init(base::Bind(&HostProcess::OnDisconnectRequested,
-                             base::Unretained(this)));
-    host_->AddStatusObserver(&curtain_);
 #endif
 
     host_->Start();

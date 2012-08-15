@@ -29,11 +29,12 @@ enum HostExitCodes {
   kInvalidHostIdExitCode = 3,
   kInvalidOauthCredentialsExitCode = 4,
   kInvalidHostDomainExitCode = 5,
+  kLoginScreenNotSupportedExitCode = 6,
 
   // The range of the exit codes that should be interpreted as a permanent error
   // condition.
   kMinPermanentErrorExitCode = kInvalidHostConfigurationExitCode,
-  kMaxPermanentErrorExitCode = kInvalidHostDomainExitCode
+  kMaxPermanentErrorExitCode = kLoginScreenNotSupportedExitCode
 };
 
 #if defined(OS_WIN)

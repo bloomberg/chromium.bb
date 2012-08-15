@@ -18,30 +18,37 @@ const char* kCGSessionPath =
 
 namespace remoting {
 
-CurtainMode::CurtainMode() : event_handler_(NULL) {
+CurtainMode::CurtainMode(const base::Closure& on_session_activate,
+                         const base::Closure& on_error)
+    : on_session_activate_(on_session_activate),
+      on_error_(on_error),
+      connection_active_(false),
+      event_handler_(NULL) {
 }
 
 CurtainMode::~CurtainMode() {
-  if (event_handler_) {
-    RemoveEventHandler(event_handler_);
+  SetEnabled(false);
+}
+
+void CurtainMode::SetEnabled(bool enabled) {
+  if (enabled) {
+    if (connection_active_) {
+      if (!ActivateCurtain()) {
+        on_error_.Run();
+      }
+    }
+  } else {
+    RemoveEventHandler();
   }
 }
 
-bool CurtainMode::Init(const base::Closure& on_session_activate) {
-  DCHECK(on_session_activate_.is_null());
-  on_session_activate_ = on_session_activate;
-  EventTypeSpec event;
-  event.eventClass = kEventClassSystem;
-  event.eventKind = kEventSystemUserSessionActivated;
-  OSStatus result = InstallApplicationEventHandler(
-      NewEventHandlerUPP(SessionActivateHandler), 1, &event, this,
-      &event_handler_);
-  return result == noErr;
-}
+bool CurtainMode::ActivateCurtain() {
+  // Try to install the switch-in handler. Do this before switching out the
+  // current session so that the console session is not affected if it fails.
+  if (!InstallEventHandler()) {
+    return false;
+  }
 
-void CurtainMode::OnClientAuthenticated(const std::string& jid) {
-  // If the current session is attached to the console and is not showing
-  // the logon screen then switch it out to ensure privacy.
   base::mac::ScopedCFTypeRef<CFDictionaryRef> session(
       CGSessionCopyCurrentDictionary());
   const void* on_console = CFDictionaryGetValue(session,
@@ -55,8 +62,29 @@ void CurtainMode::OnClientAuthenticated(const std::string& jid) {
     } else if (child > 0) {
       int status = 0;
       waitpid(child, &status, 0);
+      if (status != 0) {
+        LOG(ERROR) << kCGSessionPath << " failed.";
+        return false;
+      }
+    } else {
+      LOG(ERROR) << "fork() failed.";
+      return false;
     }
   }
+  return true;
+}
+
+// TODO(jamiewalch): This code assumes at most one client connection at a time.
+// Add OnFirstClientConnected and OnLastClientDisconnected optional callbacks
+// to the HostStatusObserver interface to address this.
+void CurtainMode::OnClientAuthenticated(const std::string& jid) {
+  connection_active_ = true;
+  SetEnabled(true);
+}
+
+void CurtainMode::OnClientDisconnected(const std::string& jid) {
+  SetEnabled(false);
+  connection_active_ = false;
 }
 
 OSStatus CurtainMode::SessionActivateHandler(EventHandlerCallRef handler,
@@ -68,9 +96,28 @@ OSStatus CurtainMode::SessionActivateHandler(EventHandlerCallRef handler,
 }
 
 void CurtainMode::OnSessionActivate() {
-  if (!on_session_activate_.is_null()) {
-    on_session_activate_.Run();
+  on_session_activate_.Run();
+}
+
+bool CurtainMode::InstallEventHandler() {
+  OSStatus result = noErr;
+  if (!event_handler_) {
+    EventTypeSpec event;
+    event.eventClass = kEventClassSystem;
+    event.eventKind = kEventSystemUserSessionActivated;
+    result = ::InstallApplicationEventHandler(
+        NewEventHandlerUPP(SessionActivateHandler), 1, &event, this,
+        &event_handler_);
   }
+  return result == noErr;
+}
+
+bool CurtainMode::RemoveEventHandler() {
+  OSStatus result = noErr;
+  if (event_handler_) {
+    result = ::RemoveEventHandler(event_handler_);
+  }
+  return result == noErr;
 }
 
 }  // namespace remoting

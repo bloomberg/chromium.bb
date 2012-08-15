@@ -916,6 +916,7 @@ def main():
         logging.info("Host domain is blocked by policy - exiting.")
         os.remove(host.config_file)
         return 0
+      # Nothing to do for Mac-only status 6 (login screen unsupported)
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG)
