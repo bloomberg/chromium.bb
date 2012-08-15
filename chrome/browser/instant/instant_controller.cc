@@ -110,7 +110,6 @@ InstantController::InstantController(InstantControllerDelegate* delegate,
       mode_(mode),
       last_active_tab_(NULL),
       last_verbatim_(false),
-      last_complete_behavior_(INSTANT_COMPLETE_NOW),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       is_showing_(false),
       loader_processed_last_update_(false) {
@@ -189,8 +188,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
     // actually be inline autocompleted. For example, it may get trumped by
     // a history suggestion. If our suggestion does make it, the omnibox will
     // call Update() again, at which time we'll update |last_full_text_|.
-    *suggested_text = last_suggestion_;
-    *complete_behavior = last_complete_behavior_;
+    *suggested_text = last_suggestion_.text;
+    *complete_behavior = last_suggestion_.behavior;
 
     // We need to call Show() here because of this:
     // 1. User has typed a query (say Q). Instant overlay is showing results.
@@ -209,8 +208,8 @@ bool InstantController::Update(const AutocompleteMatch& match,
 
   // Reset the last suggestion, as it's no longer valid.
   suggested_text->clear();
-  last_suggestion_.clear();
-  *complete_behavior = last_complete_behavior_ = INSTANT_COMPLETE_NOW;
+  last_suggestion_ = InstantSuggestion();
+  *complete_behavior = INSTANT_COMPLETE_NOW;
 
   if (mode_ != SILENT) {
     loader_->Update(last_full_text_, last_verbatim_);
@@ -424,31 +423,29 @@ bool InstantController::commit_on_pointer_release() const {
 
 void InstantController::SetSuggestions(
     InstantLoader* loader,
-    const std::vector<string16>& suggestions,
-    InstantCompleteBehavior behavior) {
+    const std::vector<InstantSuggestion>& suggestions) {
   DCHECK_EQ(loader_.get(), loader);
   if (loader_ != loader || IsOutOfDate() || mode_ == SILENT || mode_ == HIDDEN)
     return;
 
   loader_processed_last_update_ = true;
 
-  string16 suggestion;
+  InstantSuggestion suggestion;
   if (!suggestions.empty())
     suggestion = suggestions[0];
 
-  string16 suggestion_lower = base::i18n::ToLower(suggestion);
+  string16 suggestion_lower = base::i18n::ToLower(suggestion.text);
   string16 user_text_lower = base::i18n::ToLower(last_user_text_);
   if (user_text_lower.size() >= suggestion_lower.size() ||
       suggestion_lower.compare(0, user_text_lower.size(), user_text_lower)) {
-    suggestion.clear();
+    suggestion.text.clear();
   } else {
-    suggestion.erase(0, last_user_text_.size());
+    suggestion.text.erase(0, last_user_text_.size());
   }
 
   last_suggestion_ = suggestion;
-  last_complete_behavior_ = behavior;
   if (!last_verbatim_)
-    delegate_->SetSuggestedText(suggestion, behavior);
+    delegate_->SetSuggestedText(suggestion.text, suggestion.behavior);
 
   if (mode_ != SUGGEST)
     Show();
@@ -526,8 +523,7 @@ void InstantController::DeleteLoader() {
   last_full_text_.clear();
   last_user_text_.clear();
   last_verbatim_ = false;
-  last_suggestion_.clear();
-  last_complete_behavior_ = INSTANT_COMPLETE_NOW;
+  last_suggestion_ = InstantSuggestion();
   last_transition_type_ = content::PAGE_TRANSITION_LINK;
   last_omnibox_bounds_ = gfx::Rect();
   url_for_history_ = GURL();

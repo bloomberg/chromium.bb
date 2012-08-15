@@ -32,6 +32,10 @@ class SearchBoxExtension {
 
   static bool PageSupportsInstant(WebKit::WebFrame* frame);
 
+  // Extended API.
+  static void DispatchAutocompleteResults(WebKit::WebFrame* frame);
+  static void DispatchKeyPress(WebKit::WebFrame* frame);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtension);
 };

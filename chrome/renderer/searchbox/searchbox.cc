@@ -14,18 +14,31 @@ SearchBox::SearchBox(content::RenderView* render_view)
       content::RenderViewObserverTracker<SearchBox>(render_view),
       verbatim_(false),
       selection_start_(0),
-      selection_end_(0) {
+      selection_end_(0),
+      results_base_(0),
+      key_code_(0) {
 }
 
 SearchBox::~SearchBox() {
 }
 
-void SearchBox::SetSuggestions(const std::vector<string16>& suggestions,
-                               InstantCompleteBehavior behavior) {
+void SearchBox::SetSuggestions(
+    const std::vector<InstantSuggestion>& suggestions) {
+  if (!suggestions.empty() &&
+      suggestions[0].behavior == INSTANT_COMPLETE_REPLACE) {
+    query_ = suggestions[0].text;
+    verbatim_ = true;
+    selection_start_ = selection_end_ = query_.size();
+  }
   // Explicitly allow empty vector to be sent to the browser.
   render_view()->Send(new ChromeViewHostMsg_SetSuggestions(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions,
-      behavior));
+      render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions));
+}
+
+void SearchBox::SetInstantPreviewHeight(int height, InstantSizeUnits units) {
+  render_view()->Send(new ChromeViewHostMsg_SetInstantPreviewHeight(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), height,
+      units));
 }
 
 gfx::Rect SearchBox::GetRect() {
@@ -53,16 +66,19 @@ bool SearchBox::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxResize, OnResize)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_DetermineIfPageSupportsInstant,
                         OnDetermineIfPageSupportsInstant)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxAutocompleteResults,
+                        OnAutocompleteResults)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SearchBoxKeyPress, OnKeyPress)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void SearchBox::OnChange(const string16& value,
+void SearchBox::OnChange(const string16& query,
                          bool verbatim,
                          size_t selection_start,
                          size_t selection_end) {
-  value_ = value;
+  query_ = query;
   verbatim_ = verbatim;
   selection_start_ = selection_start;
   selection_end_ = selection_end;
@@ -72,10 +88,10 @@ void SearchBox::OnChange(const string16& value,
   }
 }
 
-void SearchBox::OnSubmit(const string16& value) {
-  value_ = value;
+void SearchBox::OnSubmit(const string16& query) {
+  query_ = query;
   verbatim_ = true;
-  selection_start_ = selection_end_ = value_.size();
+  selection_start_ = selection_end_ = query_.size();
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchSubmit(
         render_view()->GetWebView()->mainFrame());
@@ -83,10 +99,10 @@ void SearchBox::OnSubmit(const string16& value) {
   Reset();
 }
 
-void SearchBox::OnCancel(const string16& value) {
-  value_ = value;
+void SearchBox::OnCancel(const string16& query) {
+  query_ = query;
   verbatim_ = true;
-  selection_start_ = selection_end_ = value_.size();
+  selection_start_ = selection_end_ = query_.size();
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
     extensions_v8::SearchBoxExtension::DispatchCancel(
         render_view()->GetWebView()->mainFrame());
@@ -111,9 +127,30 @@ void SearchBox::OnDetermineIfPageSupportsInstant() {
   }
 }
 
+void SearchBox::OnAutocompleteResults(
+    const std::vector<InstantAutocompleteResult>& results) {
+  results_base_ += autocomplete_results_.size();
+  autocomplete_results_ = results;
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchAutocompleteResults(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
+void SearchBox::OnKeyPress(int key_code) {
+  key_code_ = key_code;
+  if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    extensions_v8::SearchBoxExtension::DispatchKeyPress(
+        render_view()->GetWebView()->mainFrame());
+  }
+}
+
 void SearchBox::Reset() {
-  value_.clear();
+  query_.clear();
   verbatim_ = false;
   selection_start_ = selection_end_ = 0;
+  results_base_ = 0;
   rect_ = gfx::Rect();
+  autocomplete_results_.clear();
+  key_code_ = 0;
 }

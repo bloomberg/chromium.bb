@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/string16.h"
 #include "chrome/common/instant_types.h"
 
 class InstantLoader;
@@ -19,8 +18,7 @@ class InstantLoaderDelegate {
   // Invoked when the loader has suggested text.
   virtual void SetSuggestions(
       InstantLoader* loader,
-      const std::vector<string16>& suggestions,
-      InstantCompleteBehavior behavior) = 0;
+      const std::vector<InstantSuggestion>& suggestions) = 0;
 
   // Commit the preview.
   virtual void CommitInstantLoader(InstantLoader* loader) = 0;

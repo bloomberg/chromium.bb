@@ -203,6 +203,7 @@
         'common/icon_messages.h',
         'common/important_file_writer.cc',
         'common/important_file_writer.h',
+        'common/instant_types.cc',
         'common/instant_types.h',
         'common/json_pref_store.cc',
         'common/json_pref_store.h',

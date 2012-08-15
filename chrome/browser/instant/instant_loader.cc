@@ -74,8 +74,7 @@ class InstantLoader::WebContentsDelegateImpl
  private:
   // Message from renderer indicating the page has suggestions.
   void OnSetSuggestions(int page_id,
-                        const std::vector<string16>& suggestions,
-                        InstantCompleteBehavior behavior);
+                        const std::vector<InstantSuggestion>& suggestions);
 
   // Message from the renderer determining whether it supports the Instant API.
   void OnInstantSupportDetermined(int page_id, bool result);
@@ -198,8 +197,7 @@ bool InstantLoader::WebContentsDelegateImpl::OnMessageReceived(
 
 void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
     int page_id,
-    const std::vector<string16>& suggestions,
-    InstantCompleteBehavior behavior) {
+    const std::vector<InstantSuggestion>& suggestions) {
   DCHECK(loader_->preview_contents() &&
          loader_->preview_contents_->web_contents());
   // TODO(sreeram): Remove this 'if' bandaid once bug 141875 is confirmed fixed.
@@ -211,7 +209,7 @@ void InstantLoader::WebContentsDelegateImpl::OnSetSuggestions(
                                         GetController().GetActiveEntry();
   if (entry && page_id == entry->GetPageID()) {
     MaybeSetAndNotifyInstantSupportDetermined(true);
-    loader_->loader_delegate_->SetSuggestions(loader_, suggestions, behavior);
+    loader_->loader_delegate_->SetSuggestions(loader_, suggestions);
   }
 }
 

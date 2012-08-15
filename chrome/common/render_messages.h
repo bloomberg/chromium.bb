@@ -115,6 +115,8 @@ struct ParamTraits<ContentSettingsPattern> {
 
 IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
+IPC_ENUM_TRAITS(InstantSizeUnits)
+IPC_ENUM_TRAITS(InstantSuggestionType)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
@@ -141,6 +143,20 @@ IPC_STRUCT_TRAITS_BEGIN(ContentSettingPatternSource)
   IPC_STRUCT_TRAITS_MEMBER(setting)
   IPC_STRUCT_TRAITS_MEMBER(source)
   IPC_STRUCT_TRAITS_MEMBER(incognito)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(InstantAutocompleteResult)
+  IPC_STRUCT_TRAITS_MEMBER(provider)
+  IPC_STRUCT_TRAITS_MEMBER(is_search)
+  IPC_STRUCT_TRAITS_MEMBER(contents)
+  IPC_STRUCT_TRAITS_MEMBER(destination_url)
+  IPC_STRUCT_TRAITS_MEMBER(relevance)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(InstantSuggestion)
+  IPC_STRUCT_TRAITS_MEMBER(text)
+  IPC_STRUCT_TRAITS_MEMBER(behavior)
+  IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(RendererContentSettingRules)
@@ -271,13 +287,24 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_SearchBoxChange,
                     bool /* verbatim */,
                     size_t /* selection_start */,
                     size_t /* selection_end */)
+
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxSubmit,
                     string16 /* value */)
+
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxCancel,
                     string16 /* value */)
+
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxResize,
                     gfx::Rect /* search_box_bounds */)
+
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DetermineIfPageSupportsInstant)
+
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxAutocompleteResults,
+                    std::vector<InstantAutocompleteResult>
+                        /* native_suggestions */)
+
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SearchBoxKeyPress,
+                    int /* keycode */)
 
 // Toggles visual muting of the render view area. This is on when a constrained
 // window is showing.
@@ -601,16 +628,21 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_FocusedEditableNodeTouched)
 // Suggest results -----------------------------------------------------------
 
 // Sent by the Instant preview to populate the omnibox with query suggestions.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SetSuggestions,
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SetSuggestions,
                     int /* page_id */,
-                    std::vector<string16> /* suggestions */,
-                    InstantCompleteBehavior /* behavior */)
+                    std::vector<InstantSuggestion> /* suggestions */)
 
 // Sent by the Instant preview indicating whether the page supports the Instant
 // API or not (http://dev.chromium.org/searchbox).
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int /* page_id */,
                     bool /* result */)
+
+// Sent by the Instant preview asking to resize itself to the given height.
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SetInstantPreviewHeight,
+                    int /* page_id */,
+                    int /* height */,
+                    InstantSizeUnits /* units */)
 
 // The currently displayed PDF has an unsupported feature.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_PDFHasUnsupportedFeature)

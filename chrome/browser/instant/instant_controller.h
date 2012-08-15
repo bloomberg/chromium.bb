@@ -128,9 +128,9 @@ class InstantController : public InstantLoaderDelegate {
   }
 
   // InstantLoaderDelegate:
-  virtual void SetSuggestions(InstantLoader* loader,
-                              const std::vector<string16>& suggestions,
-                              InstantCompleteBehavior behavior) OVERRIDE;
+  virtual void SetSuggestions(
+      InstantLoader* loader,
+      const std::vector<InstantSuggestion>& suggestions) OVERRIDE;
   virtual void CommitInstantLoader(InstantLoader* loader) OVERRIDE;
   virtual void InstantLoaderPreviewLoaded(InstantLoader* loader) OVERRIDE;
   virtual void InstantSupportDetermined(InstantLoader* loader,
@@ -196,10 +196,7 @@ class InstantController : public InstantLoaderDelegate {
 
   // The most recent suggestion received from the page, minus any prefix that
   // the user has typed.
-  string16 last_suggestion_;
-
-  // The most recent autocomplete behavior for |last_suggestion_|.
-  InstantCompleteBehavior last_complete_behavior_;
+  InstantSuggestion last_suggestion_;
 
   // See comments on the getter above.
   content::PageTransition last_transition_type_;
