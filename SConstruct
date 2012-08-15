@@ -101,12 +101,13 @@ def PrintFinalReport():
   print '*' * 70
   print
   for f in failures:
-    test_name = GetTestName(f.node)
-    raw_name = str(f.node.path)
-    # If this wasn't a test, "GetTestName" will return raw_name.
-    if test_name != raw_name:
-      test_name = '%s (%s)' % (test_name, raw_name)
-    print "%s failed: %s\n" % (test_name, f.errstr)
+    for node in Flatten(f.node):
+      test_name = GetTestName(node)
+      raw_name = str(node.path)
+      # If this wasn't a test, "GetTestName" will return raw_name.
+      if test_name != raw_name:
+        test_name = '%s (%s)' % (test_name, raw_name)
+      print "%s failed: %s\n" % (test_name, f.errstr)
 
 atexit.register(PrintFinalReport)
 
