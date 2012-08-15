@@ -396,6 +396,9 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
   XRRScreenResources* screen = XRRGetScreenResources(display, window);
   CHECK(screen != NULL);
 
+  // We are about to act on the cached output data but it could be stale so
+  // force the outputs to be recached.
+  ForceRecacheOutputs(display, screen);
   UpdateCacheAndXrandrToState(display,
                               screen,
                               window,
@@ -465,9 +468,15 @@ bool OutputConfigurator::TryRecacheOutputs(Display* display,
     }
   }
 
-  if (!outputs_did_change)
-    return false;
-  // We now know that we need to recache so free and re-alloc the buffer.
+  if (outputs_did_change) {
+    // We now know that we need to recache so free and re-alloc the buffer.
+    ForceRecacheOutputs(display, screen);
+  }
+  return outputs_did_change;
+}
+
+void OutputConfigurator::ForceRecacheOutputs(Display* display,
+                                             XRRScreenResources* screen) {
   output_count_ = screen->noutput;
   if (output_count_ == 0) {
     output_cache_.reset(NULL);
@@ -572,7 +581,6 @@ bool OutputConfigurator::TryRecacheOutputs(Display* display,
             << " primary " << primary_mode
             << " secondary " << second_mode;
   }
-  return outputs_did_change;
 }
 
 void OutputConfigurator::UpdateCacheAndXrandrToState(

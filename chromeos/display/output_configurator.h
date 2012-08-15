@@ -104,6 +104,11 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // Note that |output_state_| is not updated by this call.
   bool TryRecacheOutputs(Display* display, XRRScreenResources* screen);
 
+  // Updates |output_count_|, |output_cache_|, |mirror_supported_|,
+  // |primary_output_index_|, and |secondary_output_index_| with new data.
+  // Note that |output_state_| is not updated by this call.
+  void ForceRecacheOutputs(Display* display, XRRScreenResources* screen);
+
   // Uses the data stored in |output_cache_| and the given |new_state| to
   // configure the Xrandr interface and then updates |output_state_| to reflect
   // the new state.
