@@ -49,8 +49,6 @@ bool BuildMediaStreamCollection(const WebKit::WebURL& url,
     return false;
 
   // Remove all other decoders and just use the MediaStream one.
-  // Remove any "traditional" decoders (e.g. GpuVideoDecoder) from the
-  // collection.
   // NOTE: http://crbug.com/110800 is about replacing this ad-hockery with
   // something more designed.
   filter_collection->GetVideoDecoders()->clear();
