@@ -22,11 +22,28 @@
  */
 
 /*--- These should all be less than two eight bytes. ---*/
-typedef struct { int32_t x; } I32;
 typedef struct { char x; int32_t y; } CHAR_I32;
 typedef struct { int32_t x; int32_t y; } I32_I32;
 typedef struct { char x; int64_t y; } CHAR_I64;
 typedef struct { int64_t x; int64_t y; } I64_I64;
+
+/* On ARM, returning a 64-bit fundamental type can be done in r0 + r1.
+ * However, returning a composite type containing only a single
+ * 64-bit fundamental type cannot be done that way and must be done
+ * on the stack.  Composite types not larger than 4 bytes can be returned
+ * in r0, however.
+ * See ARM aapcs document, section 5.4.
+ */
+typedef struct { int64_t x; } I64_STRUCT;
+typedef int64_t I64_NON_STRUCT;
+typedef struct { int32_t x; } I32_STRUCT;
+typedef int32_t I32_NON_STRUCT;
+typedef struct { int16_t x; } I16_STRUCT;
+typedef int16_t I16_NON_STRUCT;
+typedef struct { double x; } DOUBLE_STRUCT;
+typedef double DOUBLE_NON_STRUCT;
+typedef struct { float x; } FLOAT_STRUCT;
+typedef float FLOAT_NON_STRUCT;
 
 /* Test sharing an eight-byte between an I32 and a FLOAT. */
 typedef struct { int32_t x; float y; } I32_FLOAT;
@@ -299,10 +316,6 @@ typedef int64_t __m256i __attribute__((__vector_size__(32)));
  * format for initialization and checking.
  */
 
-static const I32 kI32 = { KI321 };
-#define CHECK_I32(s)                            \
-  ASSERT_EQ(s.x, KI321, "(CHECK_I32)")
-
 static const CHAR_I32 kCHAR_I32 = { KCHAR1, KI321 };
 #define CHECK_CHAR_I32(s)                       \
   ASSERT_EQ(s.x, KCHAR1, "(CHECK_CHAR_I32, x)") \
@@ -322,6 +335,46 @@ static const I64_I64 kI64_I64 = { KI642, KI641 };
 #define CHECK_I64_I64(s)                        \
   ASSERT_EQ(s.x, KI642, "(CHECK_I64_I64, x)")   \
   ASSERT_EQ(s.y, KI641, "(CHECK_I64_I64, y)")
+
+static const I64_STRUCT kI64_STRUCT = { KI641 };
+#define CHECK_I64_STRUCT(s)                     \
+  ASSERT_EQ(s.x, KI641, "(CHECK_I64_STRUCT)")
+
+static const I64_NON_STRUCT kI64_NON_STRUCT = KI641;
+#define CHECK_I64_NON_STRUCT(x)                 \
+  ASSERT_EQ(x, KI641, "(CHECK_I64_NON_STRUCT)")
+
+static const I32_STRUCT kI32_STRUCT = { KI321 };
+#define CHECK_I32_STRUCT(s)                     \
+  ASSERT_EQ(s.x, KI321, "(CHECK_I32_STRUCT)")
+
+static const I32_NON_STRUCT kI32_NON_STRUCT = KI321;
+#define CHECK_I32_NON_STRUCT(x)                 \
+  ASSERT_EQ(x, KI321, "(CHECK_I32_NON_STRUCT)")
+
+static const I16_STRUCT kI16_STRUCT = { KI161 };
+#define CHECK_I16_STRUCT(s)                     \
+  ASSERT_EQ(s.x, KI161, "(CHECK_I16_STRUCT)")
+
+static const I16_NON_STRUCT kI16_NON_STRUCT = KI161;
+#define CHECK_I16_NON_STRUCT(x)                 \
+  ASSERT_EQ(x, KI161, "(CHECK_I16_NON_STRUCT)")
+
+static const DOUBLE_STRUCT kDOUBLE_STRUCT = { KDOUBLE1 };
+#define CHECK_DOUBLE_STRUCT(s)                     \
+  ASSERT_EQ(s.x, KDOUBLE1, "(CHECK_DOUBLE_STRUCT)")
+
+static const DOUBLE_NON_STRUCT kDOUBLE_NON_STRUCT = KDOUBLE1;
+#define CHECK_DOUBLE_NON_STRUCT(x)                 \
+  ASSERT_EQ(x, KDOUBLE1, "(CHECK_DOUBLE_NON_STRUCT)")
+
+static const FLOAT_STRUCT kFLOAT_STRUCT = { KFLOAT1 };
+#define CHECK_FLOAT_STRUCT(s)                     \
+  ASSERT_EQ(s.x, KFLOAT1, "(CHECK_FLOAT_STRUCT)")
+
+static const FLOAT_NON_STRUCT kFLOAT_NON_STRUCT = KFLOAT1;
+#define CHECK_FLOAT_NON_STRUCT(x)                 \
+  ASSERT_EQ(x, KFLOAT1, "(CHECK_FLOAT_NON_STRUCT)")
 
 static const I32_FLOAT kI32_FLOAT = { KI321, KFLOAT1 };
 #define CHECK_I32_FLOAT(s)                          \
