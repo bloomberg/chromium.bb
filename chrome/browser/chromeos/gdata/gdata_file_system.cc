@@ -2775,7 +2775,7 @@ void GDataFileSystem::NotifyAndRunFileMoveCallback(
     OnDirectoryChanged(moved_file_path.DirName());
 
   if (!callback.is_null())
-  callback.Run(error, moved_file_path);
+    callback.Run(error, moved_file_path);
 }
 
 void GDataFileSystem::NotifyAndRunFileOperationCallback(
