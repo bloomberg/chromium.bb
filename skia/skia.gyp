@@ -44,6 +44,7 @@
         '../third_party/skia/src/effects/SkLayerDrawLooper.cpp',
         '../third_party/skia/src/effects/SkLayerRasterizer.cpp',
         '../third_party/skia/src/effects/SkLightingImageFilter.cpp',
+        '../third_party/skia/src/effects/SkMagnifierImageFilter.cpp',
         '../third_party/skia/src/effects/SkMorphologyImageFilter.cpp',
         '../third_party/skia/src/effects/SkPaintFlagsDrawFilter.cpp',
         '../third_party/skia/src/effects/SkPorterDuff.cpp',
@@ -308,6 +309,7 @@
         '../third_party/skia/include/effects/SkLayerRasterizer.h',
         '../third_party/skia/include/effects/SkLightingImageFilter.h',
         '../third_party/skia/include/effects/SkMorphologyImageFilter.h',
+        '../third_party/skia/include/effects/SkMagnifierImageFilter.h',
         '../third_party/skia/include/effects/SkPaintFlagsDrawFilter.h',
         '../third_party/skia/include/effects/SkPixelXorXfermode.h',
         '../third_party/skia/include/effects/SkPorterDuff.h',
@@ -873,6 +875,7 @@
           'sources': [
             '../third_party/skia/src/opts/memset16_neon.S',
             '../third_party/skia/src/opts/memset32_neon.S',
+            '../third_party/skia/src/opts/SkBitmapProcState_arm_neon.cpp',
             '../third_party/skia/src/opts/SkBitmapProcState_matrixProcs_neon.cpp',
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_clamp_neon.h',
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
