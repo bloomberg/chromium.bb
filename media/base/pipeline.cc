@@ -110,7 +110,10 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& start_cb) {
   base::AutoLock auto_lock(lock_);
-  CHECK(!running_) << "Media pipeline is already running";
+  if (running_) {
+    NOTREACHED() << "Media pipeline is already running";
+    return;
+  }
 
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -126,7 +129,10 @@ void Pipeline::Stop(const base::Closure& stop_cb) {
 
 void Pipeline::Seek(TimeDelta time, const PipelineStatusCB& seek_cb) {
   base::AutoLock auto_lock(lock_);
-  CHECK(running_) << "Media pipeline isn't running";
+  if (!running_) {
+    NOTREACHED() << "Media pipeline isn't running";
+    return;
+  }
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::SeekTask, this, time, seek_cb));
