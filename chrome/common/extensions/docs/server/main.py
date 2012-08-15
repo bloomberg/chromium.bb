@@ -172,14 +172,19 @@ class MainPage(webapp.RequestHandler):
 
 
   def redirectDomain(self):
-    if (self.request.url.startswith('http://code.google.com')):
+    if (self.request.url.startswith(('http://code.google.com',
+                                     'https://code.google.com'))):
+      newUrl = CHROME_DOMAIN_URL
+      # switch to https if necessary
+      if (self.request.url.startswith('https')):
+        newUrl = newUrl.replace('http', 'https', 1)
       self.path.pop(0)  # 'chrome'
       for channel in ['dev', 'beta', 'stable', 'trunk']:
         if channel in self.path:
           position = self.path.index(channel)
           self.path.pop(position)
           self.path.insert(0, channel)
-      self.redirect(CHROME_DOMAIN_URL + '/' + '/'.join(self.path), True)
+      self.redirect(newUrl + '/' + '/'.join(self.path), True)
       return False
     else:
       return True

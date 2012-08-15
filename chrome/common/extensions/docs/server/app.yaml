@@ -1,5 +1,5 @@
 application: chrome-apps-doc
-version: 1-2-6
+version: 1-2-7
 runtime: python
 api_version: 1
 
