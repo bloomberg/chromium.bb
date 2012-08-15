@@ -63,6 +63,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   static void AllowAccessToAllFiles();
 
  private:
+  friend class ChromeNetworkDelegateTest;
+
   // NetworkDelegate implementation.
   virtual int OnBeforeURLRequest(net::URLRequest* request,
                                  const net::CompletionCallback& callback,

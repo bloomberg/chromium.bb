@@ -1372,6 +1372,7 @@
         'browser/nacl_host/pnacl_file_host_unittest.cc',
         'browser/net/chrome_fraudulent_certificate_reporter_unittest.cc',
         'browser/net/chrome_net_log_unittest.cc',
+        'browser/net/chrome_network_delegate_unittest.cc',
         'browser/net/clear_on_exit_policy_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
         'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
