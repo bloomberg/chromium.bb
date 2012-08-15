@@ -53,20 +53,6 @@ void IndexedDBCallbacks<WebKit::WebIDBDatabase>::onUpgradeNeeded(
           old_version));
 }
 
-// TODO(jsbell): Remove this after WK92278 rolls.
-void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
-    WebKit::WebIDBCursor* idb_object) {
-  int32 object_id = dispatcher_host()->Add(idb_object);
-  IndexedDBMsg_CallbacksSuccessIDBCursor_Params params;
-  params.thread_id = thread_id();
-  params.response_id = response_id();
-  params.cursor_id = object_id;
-  params.key = IndexedDBKey(idb_object->key());
-  params.primary_key = IndexedDBKey(idb_object->primaryKey());
-  params.serialized_value = SerializedScriptValue(idb_object->value());
-  dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessIDBCursor(params));
-}
-
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
     WebKit::WebIDBCursor* idb_object,
     const WebKit::WebIDBKey& key,
@@ -88,26 +74,6 @@ void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
           thread_id(), response_id(), SerializedScriptValue(value)));
-}
-
-// TODO(jsbell): Remove this after WK92278 rolls.
-void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccessWithContinuation() {
-  DCHECK(cursor_id_ != -1);
-  WebKit::WebIDBCursor* idb_cursor = dispatcher_host()->GetCursorFromId(
-      cursor_id_);
-
-  DCHECK(idb_cursor);
-  if (!idb_cursor)
-    return;
-  IndexedDBMsg_CallbacksSuccessCursorContinue_Params params;
-  params.thread_id = thread_id();
-  params.response_id = response_id();
-  params.cursor_id = cursor_id_;
-  params.key = IndexedDBKey(idb_cursor->key());
-  params.primary_key = IndexedDBKey(idb_cursor->primaryKey());
-  params.serialized_value = SerializedScriptValue(idb_cursor->value());
-  dispatcher_host()->Send(
-      new IndexedDBMsg_CallbacksSuccessCursorContinue(params));
 }
 
 void IndexedDBCallbacks<WebKit::WebIDBCursor>::onSuccess(

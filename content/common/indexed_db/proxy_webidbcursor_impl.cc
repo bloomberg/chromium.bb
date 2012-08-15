@@ -37,21 +37,6 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   dispatcher->CursorDestroyed(idb_cursor_id_);
 }
 
-// TODO(jsbell): Remove the following method after WK92278 rolls.
-WebIDBKey RendererWebIDBCursorImpl::key() const {
-  return key_;
-}
-
-// TODO(jsbell): Remove the following method after WK92278 rolls.
-WebIDBKey RendererWebIDBCursorImpl::primaryKey() const {
-  return primary_key_;
-}
-
-// TODO(jsbell): Remove the following method after WK92278 rolls.
-WebSerializedScriptValue RendererWebIDBCursorImpl::value() const {
-  return value_;
-}
-
 void RendererWebIDBCursorImpl::advance(unsigned long count,
                                        WebIDBCallbacks* callbacks_ptr,
                                        WebExceptionCode& ec) {
@@ -123,16 +108,6 @@ void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
     ResetPrefetchCache();
 }
 
-// TODO(jsbell): Remove the following method after WK92278 rolls.
-void RendererWebIDBCursorImpl::SetKeyAndValue(
-    const IndexedDBKey& key,
-    const IndexedDBKey& primary_key,
-    const SerializedScriptValue& value) {
-  key_ = key;
-  primary_key_ = primary_key;
-  value_ = value;
-}
-
 void RendererWebIDBCursorImpl::SetPrefetchData(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
@@ -151,10 +126,9 @@ void RendererWebIDBCursorImpl::CachedContinue(
   DCHECK(prefetch_primary_keys_.size() == prefetch_keys_.size());
   DCHECK(prefetch_values_.size() == prefetch_keys_.size());
 
-  // TODO(jsbell): Turn these three variables into locals after WK92278 rolls.
-  key_ = prefetch_keys_.front();
-  primary_key_ = prefetch_primary_keys_.front();
-  value_ = prefetch_values_.front();
+  IndexedDBKey key = prefetch_keys_.front();
+  IndexedDBKey primary_key = prefetch_primary_keys_.front();
+  SerializedScriptValue value = prefetch_values_.front();
 
   prefetch_keys_.pop_front();
   prefetch_primary_keys_.pop_front();
@@ -163,9 +137,7 @@ void RendererWebIDBCursorImpl::CachedContinue(
 
   pending_onsuccess_callbacks_++;
 
-  // TODO(jsbell): Remove the ...WithContinuation call after WK92278 rolls.
-  callbacks->onSuccessWithContinuation();
-  callbacks->onSuccess(key_, primary_key_, value_);
+  callbacks->onSuccess(key, primary_key, value);
 }
 
 void RendererWebIDBCursorImpl::ResetPrefetchCache() {

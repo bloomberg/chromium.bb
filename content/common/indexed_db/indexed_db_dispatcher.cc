@@ -637,9 +637,6 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(
 
   RendererWebIDBCursorImpl* cursor = new RendererWebIDBCursorImpl(object_id);
   cursors_[object_id] = cursor;
-  // TODO(jsbell): Remove the next two calls after WK92278 rolls.
-  cursor->SetKeyAndValue(key, primary_key, value);
-  callbacks->onSuccess(cursor);
   callbacks->onSuccess(cursor, key, primary_key, value);
 
   pending_callbacks_.Remove(response_id);
@@ -656,15 +653,11 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
 
   RendererWebIDBCursorImpl* cursor = cursors_[cursor_id];
   DCHECK(cursor);
-  // TODO(jsbell): Remove the next call after WK92278·rolls.
-  cursor->SetKeyAndValue(key, primary_key, value);
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   if (!callbacks)
     return;
 
-  // TODO(jsbell): Remove the ...WithContinuation call after WK92278 rolls.
-  callbacks->onSuccessWithContinuation();
   callbacks->onSuccess(key, primary_key, value);
 
   pending_callbacks_.Remove(response_id);
