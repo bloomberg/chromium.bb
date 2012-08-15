@@ -15,6 +15,7 @@ namespace internal {
 
 class StatusAreaWidget;
 class TrayBackground;
+class TrayLayerAnimationObserver;
 
 // Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray.
 // This class handles setting and animating the background when the Launcher
@@ -58,10 +59,15 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   explicit TrayBackgroundView(internal::StatusAreaWidget* status_area_widget);
   virtual ~TrayBackgroundView();
 
+  // Called after the tray has been added to the widget containing it.
+  virtual void Initialize();
+
   // Overridden from views::View.
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
@@ -72,6 +78,9 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   // Called whenever the shelf alignment changes.
   virtual void SetShelfAlignment(ShelfAlignment alignment);
 
+  // Called when the anchor (tray or bubble) may have moved or changed.
+  virtual void AnchorUpdated() {}
+
   // Sets |contents| as a child and sets its background to |background_|.
   void SetContents(views::View* contents);
 
@@ -81,10 +90,6 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
 
-  // Called after all status area trays have been created. Sets the border
-  // based on the position of the view.
-  void SetBorder();
-
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;
   }
@@ -92,6 +97,12 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
 
  private:
+  friend class TrayLayerAnimationObserver;
+
+  // Called from Initialize after all status area trays have been created.
+  // Sets the border based on the position of the view.
+  void SetBorder();
+
   // Unowned pointer to parent widget.
   StatusAreaWidget* status_area_widget_;
 
@@ -106,6 +117,8 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
 
   internal::BackgroundAnimator hide_background_animator_;
   internal::BackgroundAnimator hover_background_animator_;
+  scoped_ptr<internal::TrayLayerAnimationObserver>
+      layer_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBackgroundView);
 };
