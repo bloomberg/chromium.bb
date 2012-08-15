@@ -141,7 +141,6 @@ class BuilderStage(object):
     builders = []
     build_type = self._build_config['build_type']
     branch_config = self._build_config['branch']
-    overlay_config = self._build_config['overlays']
     assert not self._build_config['unified_manifest_version']
     assert self._build_config['manifest_version']
     assert self._build_config['master']
@@ -150,7 +149,6 @@ class BuilderStage(object):
           not config['unified_manifest_version'] and
           config['build_type'] == build_type and
           config['chrome_rev'] == self._chrome_rev and
-          config['overlays'] == overlay_config and
           config['branch'] == branch_config):
         builders.append(build_name)
 
