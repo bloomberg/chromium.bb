@@ -28,8 +28,11 @@ class WindowlessPluginTest : public PluginTest {
   NPError ExecuteScript(NPNetscapeFuncs* browser, NPP id,
       const std::string& script, NPVariant* result);
   void ExecuteScriptDeleteInPaint(NPNetscapeFuncs* browser);
+  void ExecuteScriptResizeInPaint(NPNetscapeFuncs* browser);
   void MultipleInstanceSyncCalls(NPNetscapeFuncs* browser);
   void ConvertPoint(NPNetscapeFuncs* browser);
+
+  int paint_counter_;
 };
 
 }  // namespace NPAPIClient

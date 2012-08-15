@@ -19,6 +19,7 @@
 #include "base/timer.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 #endif
@@ -199,6 +200,17 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 #endif
 
  private:
+  class SharedTransportDIB : public base::RefCounted<SharedTransportDIB> {
+   public:
+    explicit SharedTransportDIB(TransportDIB* dib);
+    TransportDIB* dib() { return dib_.get(); }
+   private:
+    friend class base::RefCounted<SharedTransportDIB>;
+    ~SharedTransportDIB();
+
+    scoped_ptr<TransportDIB> dib_;
+  };
+
   bool Send(IPC::Message* msg);
 
   // Handler for sending over the paint event to the plugin.
@@ -207,7 +219,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 #if defined(OS_WIN)
   void CreateCanvasFromHandle(const TransportDIB::Handle& dib_handle,
                               const gfx::Rect& window_rect,
-                              scoped_ptr<skia::PlatformCanvas>* canvas_out);
+                              SkAutoTUnref<skia::PlatformCanvas>* canvas);
 #elif defined(OS_MACOSX)
   static void CreateDIBAndCGContextFromHandle(
       const TransportDIB::Handle& dib_handle,
@@ -218,8 +230,8 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   static void CreateDIBAndCanvasFromHandle(
       const TransportDIB::Handle& dib_handle,
       const gfx::Rect& window_rect,
-      scoped_ptr<TransportDIB>* dib_out,
-      scoped_ptr<skia::PlatformCanvas>* canvas_out);
+      scoped_refptr<SharedTransportDIB>* dib_out,
+      SkAutoTUnref<skia::PlatformCanvas>* canvas);
 
   static void CreateShmPixmapFromDIB(
       TransportDIB* dib,
@@ -279,12 +291,12 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   base::mac::ScopedCFTypeRef<CGContextRef> background_context_;
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
-  scoped_ptr<skia::PlatformCanvas> windowless_canvases_[2];
-  scoped_ptr<skia::PlatformCanvas> background_canvas_;
+  SkAutoTUnref<skia::PlatformCanvas> windowless_canvases_[2];
+  SkAutoTUnref<skia::PlatformCanvas> background_canvas_;
 
 #if defined(USE_X11)
-  scoped_ptr<TransportDIB> windowless_dibs_[2];
-  scoped_ptr<TransportDIB> background_dib_;
+  scoped_refptr<SharedTransportDIB> windowless_dibs_[2];
+  scoped_refptr<SharedTransportDIB> background_dib_;
   // If we can use SHM pixmaps for windowless plugin painting or not.
   bool use_shm_pixmap_;
   // The SHM pixmaps for windowless plugin painting.

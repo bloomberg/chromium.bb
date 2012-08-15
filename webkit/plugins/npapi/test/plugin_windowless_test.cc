@@ -11,6 +11,8 @@
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
 #include <Carbon/Carbon.h>
+#elif defined(TOOLKIT_GTK)
+#include <gdk/gdkx.h>
 #endif
 
 namespace NPAPIClient {
@@ -18,9 +20,14 @@ namespace NPAPIClient {
 // Remember the first plugin instance for tests involving multiple instances
 WindowlessPluginTest* g_other_instance = NULL;
 
+void OnFinishTest(void* data) {
+  static_cast<WindowlessPluginTest*>(data)->SignalTestCompleted();
+}
+
 WindowlessPluginTest::WindowlessPluginTest(NPP id,
                                            NPNetscapeFuncs *host_functions)
-    : PluginTest(id, host_functions) {
+    : PluginTest(id, host_functions),
+      paint_counter_(0) {
   if (!g_other_instance)
     g_other_instance = this;
 }
@@ -30,6 +37,8 @@ static bool IsPaintEvent(NPEvent* np_event) {
   return WM_PAINT == np_event->event;
 #elif defined(OS_MACOSX)
   return np_event->what == updateEvt;
+#elif defined(TOOLKIT_GTK)
+  return np_event->type == GraphicsExpose;
 #else
   NOTIMPLEMENTED();
   return false;
@@ -72,7 +81,6 @@ NPError WindowlessPluginTest::New(uint16 mode, int16 argc,
 }
 
 int16 WindowlessPluginTest::HandleEvent(void* event) {
-
   NPNetscapeFuncs* browser = NPAPIClient::PluginClient::HostFunctions();
 
   NPBool supports_windowless = 0;
@@ -86,6 +94,7 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
 
   NPEvent* np_event = reinterpret_cast<NPEvent*>(event);
   if (IsPaintEvent(np_event)) {
+    paint_counter_++;
 #if defined(OS_WIN)
     HDC paint_dc = reinterpret_cast<HDC>(np_event->wParam);
     if (paint_dc == NULL) {
@@ -109,6 +118,21 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
       ExecuteScriptDeleteInPaint(browser);
     } else if (test_name() == "multiple_instances_sync_calls") {
       MultipleInstanceSyncCalls(browser);
+    } else if (test_name() == "resize_during_paint") {
+      if (paint_counter_ == 1) {
+        // So that we get another paint later.
+        browser->invalidaterect(id(), NULL);
+      } else if (paint_counter_ == 2) {
+        // Do this in the second paint since that's asynchronous. The first
+        // paint will always be synchronous (since the renderer process doesn't
+        // have a cache of the plugin yet). If we try calling NPN_Evaluate while
+        // WebKit is painting, it will assert since style recalc is happening
+        // during painting.
+        ExecuteScriptResizeInPaint(browser);
+
+        // So that we can exit the test after the message loop is unrolled.
+        browser->pluginthreadasynccall(id(), OnFinishTest, this);
+      }
     }
 #if defined(OS_MACOSX)
   } else if (IsWindowActivationEvent(np_event) &&
@@ -157,6 +181,11 @@ void WindowlessPluginTest::ExecuteScriptDeleteInPaint(
   const NPUTF8* targetString = NULL;
   browser->geturl(id(), urlString, targetString);
   SignalTestCompleted();
+}
+
+void WindowlessPluginTest::ExecuteScriptResizeInPaint(
+    NPNetscapeFuncs* browser) {
+  ExecuteScript(browser, id(), "ResizePluginWithinScript();", NULL);
 }
 
 void WindowlessPluginTest::MultipleInstanceSyncCalls(NPNetscapeFuncs* browser) {

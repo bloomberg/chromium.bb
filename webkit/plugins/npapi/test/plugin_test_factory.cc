@@ -43,7 +43,8 @@ PluginTest* CreatePluginTest(const std::string& test_name,
     new_test = new NPObjectIdentityTest(instance, host_functions);
   } else if (test_name == "npobject_proxy") {
     new_test = new NPObjectProxyTest(instance, host_functions);
-  } else if (test_name == "invoke_js_function_on_create"
+  } else if (test_name == "invoke_js_function_on_create" ||
+             test_name == "resize_during_paint"
 #if defined(OS_WIN) || defined(OS_MACOSX)
           // TODO(port): plugin_windowless_test.*.
           || test_name == "execute_script_delete_in_paint" ||

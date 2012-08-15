@@ -250,6 +250,13 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeInSynchronousPaint) {
 }
 #endif
 
+// Tests that if a plugin executes a self resizing script in the context of a
+// synchronous paint, the plugin doesn't use deallocated memory.
+// http://crbug.com/139462
+IN_PROC_BROWSER_TEST_F(PluginTest, ResizeDuringPaint) {
+  LoadAndWait(GetURL("resize_during_paint.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInNewStream) {
   LoadAndWait(GetURL("self_delete_plugin_stream.html"));
 }

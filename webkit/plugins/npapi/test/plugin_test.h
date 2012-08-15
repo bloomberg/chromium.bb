@@ -64,7 +64,6 @@ class PluginTest {
   // appropriate error about it.
   void ExpectIntegerEqual(int val1, int val2);
 
- protected:
   // Signals to the Test that invoked us that the test is
   // completed.  This is done by forcing the plugin to
   // set a cookie in the browser window, which the test program
@@ -75,6 +74,7 @@ class PluginTest {
   // received the SetWindow() callback from the browser.
   void SignalTestCompleted();
 
+ protected:
   // Helper function to lookup names in the input array.
   // If the name is found, returns the value, otherwise
   // returns NULL.
