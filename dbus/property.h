@@ -38,7 +38,7 @@
 //       dbus::Property<std::vector<std::string> > children;
 //
 //       Properties(dbus::ObjectProxy* object_proxy,
-//                  PropertyChangedCallback callback)
+//                  const PropertyChangedCallback callback)
 //           : dbus::PropertySet(object_proxy, "com.example.DBus", callback) {
 //         RegisterProperty("Name", &name);
 //         RegisterProperty("Version", &version);
@@ -164,6 +164,11 @@ class PropertyBase {
   // Implementation provided by specialization.
   virtual void AppendSetValueToWriter(MessageWriter* writer) = 0;
 
+  // Method used by test and stub implementations of dbus::PropertySet::Set
+  // to replace the property value with the set value without using a
+  // dbus::MessageReader.
+  virtual void ReplaceValueWithSetValue() = 0;
+
  protected:
   // Retrieves the associated property set.
   PropertySet* property_set() { return property_set_; }
@@ -203,7 +208,7 @@ class PropertySet {
   // |property_changed_callback| specifies the callback for when properties
   // are changed, this may be a NULL callback.
   PropertySet(ObjectProxy* object_proxy, const std::string& interface,
-              PropertyChangedCallback property_changed_callback);
+              const PropertyChangedCallback& property_changed_callback);
 
   // Destructor; we don't hold on to any references or memory that needs
   // explicit clean-up, but clang thinks we might.
@@ -376,6 +381,15 @@ class Property : public PropertyBase {
   // no knowledge of the contained type is required.
   // Implementation provided by specialization.
   virtual void AppendSetValueToWriter(MessageWriter* writer);
+
+  // Method used by test and stub implementations of dbus::PropertySet::Set
+  // to replace the property value with the set value without using a
+  // dbus::MessageReader.
+  virtual void ReplaceValueWithSetValue() { value_ = set_value_; }
+
+  // Method used by test and stub implementations to directly set the
+  // value of a property.
+  void ReplaceValue(const T& value) { value_ = value; }
 
  private:
   // Current cached value of the property.

@@ -91,7 +91,7 @@ class CHROMEOS_EXPORT BluetoothDeviceClient {
     dbus::Property<bool> legacy_pairing;
 
     Properties(dbus::ObjectProxy* object_proxy,
-               PropertyChangedCallback callback);
+               const PropertyChangedCallback& callback);
     virtual ~Properties();
   };
 

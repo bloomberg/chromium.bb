@@ -20,8 +20,9 @@
 
 namespace chromeos {
 
-BluetoothDeviceClient::Properties::Properties(dbus::ObjectProxy* object_proxy,
-                                              PropertyChangedCallback callback)
+BluetoothDeviceClient::Properties::Properties(
+    dbus::ObjectProxy* object_proxy,
+    const PropertyChangedCallback& callback)
     : BluetoothPropertySet(object_proxy,
                            bluetooth_device::kBluetoothDeviceInterface,
                            callback) {
@@ -464,18 +465,68 @@ class BluetoothDeviceClientImpl: public BluetoothDeviceClient,
 // nothing.
 class BluetoothDeviceClientStubImpl : public BluetoothDeviceClient {
  public:
+  struct Properties : public BluetoothDeviceClient::Properties {
+    explicit Properties(const PropertyChangedCallback& callback)
+        : BluetoothDeviceClient::Properties(NULL, callback) {
+    }
+
+    virtual ~Properties() {
+    }
+
+    virtual void Get(dbus::PropertyBase* property,
+                     dbus::PropertySet::GetCallback callback) OVERRIDE {
+      VLOG(1) << "Get " << property->name();
+      callback.Run(false);
+    }
+
+    virtual void GetAll() OVERRIDE {
+      VLOG(1) << "GetAll";
+    }
+
+    virtual void Set(dbus::PropertyBase *property,
+                     dbus::PropertySet::SetCallback callback) OVERRIDE {
+      VLOG(1) << "Set " << property->name();
+      callback.Run(false);
+    }
+  };
+
+  BluetoothDeviceClientStubImpl() {
+    dbus::ObjectPath dev0("/fake/hci0/dev0");
+
+    Properties* properties = new Properties(base::Bind(
+        &BluetoothDeviceClientStubImpl::OnPropertyChanged,
+        base::Unretained(this),
+        dev0));
+    properties->address.ReplaceValue("00:11:22:33:44:55");
+    properties->name.ReplaceValue("Fake Device");
+    properties->paired.ReplaceValue(true);
+    properties->trusted.ReplaceValue(true);
+
+    properties_map_[dev0] = properties;
+  }
+
+  virtual ~BluetoothDeviceClientStubImpl() {
+    // Clean up Properties structures
+    STLDeleteValues(&properties_map_);
+  }
+
   // BluetoothDeviceClient override.
   virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
   }
 
   // BluetoothDeviceClient override.
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
   }
 
   // BluetoothDeviceClient override.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
       OVERRIDE {
     VLOG(1) << "GetProperties: " << object_path.value();
+    PropertiesMap::iterator iter = properties_map_.find(object_path);
+    if (iter != properties_map_.end())
+      return iter->second;
     return NULL;
   }
 
@@ -519,6 +570,20 @@ class BluetoothDeviceClientStubImpl : public BluetoothDeviceClient {
             << " " << node_path.value();
     callback.Run(object_path, false);
   }
+
+ private:
+  void OnPropertyChanged(dbus::ObjectPath object_path,
+                         const std::string& property_name) {
+    FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                      DevicePropertyChanged(object_path, property_name));
+  }
+
+  // List of observers interested in event notifications from us.
+  ObserverList<Observer> observers_;
+
+  // Static properties we typedef.
+  typedef std::map<const dbus::ObjectPath, Properties *> PropertiesMap;
+  PropertiesMap properties_map_;
 };
 
 BluetoothDeviceClient::BluetoothDeviceClient() {

@@ -20,8 +20,9 @@
 
 namespace chromeos {
 
-BluetoothNodeClient::Properties::Properties(dbus::ObjectProxy* object_proxy,
-                                            PropertyChangedCallback callback)
+BluetoothNodeClient::Properties::Properties(
+    dbus::ObjectProxy* object_proxy,
+    const PropertyChangedCallback& callback)
     : BluetoothPropertySet(object_proxy,
                            bluetooth_node::kBluetoothNodeInterface,
                            callback) {

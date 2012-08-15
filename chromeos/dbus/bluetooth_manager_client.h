@@ -31,7 +31,7 @@ class CHROMEOS_EXPORT BluetoothManagerClient {
     dbus::Property<std::vector<dbus::ObjectPath> > adapters;
 
     Properties(dbus::ObjectProxy* object_proxy,
-               PropertyChangedCallback callback);
+               const PropertyChangedCallback& callback);
     virtual ~Properties();
   };
 

@@ -37,7 +37,7 @@ class CHROMEOS_EXPORT BluetoothNodeClient {
     dbus::Property<dbus::ObjectPath> device;
 
     Properties(dbus::ObjectProxy* object_proxy,
-               PropertyChangedCallback callback);
+               const PropertyChangedCallback& callback);
     virtual ~Properties();
   };
 

@@ -29,9 +29,10 @@ void PropertyBase::Init(PropertySet* property_set, const std::string& name) {
 // PropertySet implementation.
 //
 
-PropertySet::PropertySet(ObjectProxy* object_proxy,
-                         const std::string& interface,
-                         PropertyChangedCallback property_changed_callback)
+PropertySet::PropertySet(
+    ObjectProxy* object_proxy,
+    const std::string& interface,
+    const PropertyChangedCallback& property_changed_callback)
     : object_proxy_(object_proxy),
       interface_(interface),
       property_changed_callback_(property_changed_callback),

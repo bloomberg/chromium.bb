@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_manager_client.h"
@@ -26,8 +27,9 @@ const char BluetoothAdapterClient::kNoResponseError[] =
 const char BluetoothAdapterClient::kBadResponseError[] =
     "org.chromium.Error.BadResponse";
 
-BluetoothAdapterClient::Properties::Properties(dbus::ObjectProxy* object_proxy,
-                                               PropertyChangedCallback callback)
+BluetoothAdapterClient::Properties::Properties(
+    dbus::ObjectProxy* object_proxy,
+    const PropertyChangedCallback& callback)
     : BluetoothPropertySet(object_proxy,
                            bluetooth_adapter::kBluetoothAdapterInterface,
                            callback) {
@@ -729,19 +731,69 @@ class BluetoothAdapterClientImpl: public BluetoothAdapterClient,
 // nothing.
 class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
  public:
+  struct Properties : public BluetoothAdapterClient::Properties {
+    explicit Properties(const PropertyChangedCallback& callback)
+        : BluetoothAdapterClient::Properties(NULL, callback) {
+    }
+
+    virtual ~Properties() {
+    }
+
+    virtual void Get(dbus::PropertyBase* property,
+                     dbus::PropertySet::GetCallback callback) OVERRIDE {
+      VLOG(1) << "Get " << property->name();
+      callback.Run(false);
+    }
+
+    virtual void GetAll() OVERRIDE {
+      VLOG(1) << "GetAll";
+    }
+
+    virtual void Set(dbus::PropertyBase *property,
+                     dbus::PropertySet::SetCallback callback) OVERRIDE {
+      VLOG(1) << "Set " << property->name();
+      if (property->name() == "Powered") {
+        property->ReplaceValueWithSetValue();
+        NotifyPropertyChanged(property->name());
+        callback.Run(true);
+      } else {
+        callback.Run(false);
+      }
+    }
+  };
+
+  BluetoothAdapterClientStubImpl() {
+    properties_.reset(new Properties(base::Bind(
+        &BluetoothAdapterClientStubImpl::OnPropertyChanged,
+        base::Unretained(this))));
+
+    properties_->address.ReplaceValue("hci0");
+    properties_->name.ReplaceValue("Fake Adapter");
+    properties_->pairable.ReplaceValue(true);
+
+    std::vector<dbus::ObjectPath> devices;
+    devices.push_back(dbus::ObjectPath("/fake/hci0/dev0"));
+    properties_->devices.ReplaceValue(devices);
+  }
+
   // BluetoothAdapterClient override.
   virtual void AddObserver(Observer* observer) OVERRIDE {
+    observers_.AddObserver(observer);
   }
 
   // BluetoothAdapterClient override.
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
+    observers_.RemoveObserver(observer);
   }
 
   // BluetoothAdapterClient override.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
       OVERRIDE {
     VLOG(1) << "GetProperties: " << object_path.value();
-    return NULL;
+    if (object_path.value() == "/fake/hci0")
+      return properties_.get();
+    else
+      return NULL;
   }
 
   // BluetoothAdapterClient override.
@@ -837,6 +889,19 @@ class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
             << " " << agent_path.value();
     callback.Run(object_path, false);
   }
+
+ private:
+  void OnPropertyChanged(const std::string& property_name) {
+    FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
+                      AdapterPropertyChanged(dbus::ObjectPath("/fake/hci0"),
+                                             property_name));
+  }
+
+  // List of observers interested in event notifications from us.
+  ObserverList<Observer> observers_;
+
+  // Static properties we return.
+  scoped_ptr<Properties> properties_;
 };
 
 BluetoothAdapterClient::BluetoothAdapterClient() {

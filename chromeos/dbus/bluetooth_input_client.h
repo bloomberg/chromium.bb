@@ -35,7 +35,7 @@ class CHROMEOS_EXPORT BluetoothInputClient {
     dbus::Property<bool> connected;
 
     Properties(dbus::ObjectProxy* object_proxy,
-               PropertyChangedCallback callback);
+               const PropertyChangedCallback& callback);
     virtual ~Properties();
   };
 

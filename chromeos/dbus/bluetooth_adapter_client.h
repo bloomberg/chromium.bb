@@ -79,7 +79,7 @@ class CHROMEOS_EXPORT BluetoothAdapterClient {
     dbus::Property<std::vector<std::string> > uuids;
 
     Properties(dbus::ObjectProxy* object_proxy,
-               PropertyChangedCallback callback);
+               const PropertyChangedCallback& callback);
     virtual ~Properties();
   };
 

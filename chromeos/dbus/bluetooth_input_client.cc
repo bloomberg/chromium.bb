@@ -23,8 +23,9 @@ namespace chromeos {
 const char BluetoothInputClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 
-BluetoothInputClient::Properties::Properties(dbus::ObjectProxy* object_proxy,
-                                             PropertyChangedCallback callback)
+BluetoothInputClient::Properties::Properties(
+    dbus::ObjectProxy* object_proxy,
+    const PropertyChangedCallback& callback)
     : BluetoothPropertySet(object_proxy,
                            bluetooth_input::kBluetoothInputInterface,
                            callback) {
