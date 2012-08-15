@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
 #include "chrome/browser/ui/ash/keyboard_brightness_controller_chromeos.h"
+#include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #endif
 
 

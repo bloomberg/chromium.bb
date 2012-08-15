@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 
 #include "base/file_path.h"
-#include "ui/base/dialogs/selected_file_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/dialogs/selected_file_info.h"
 
 class SelectFileDialogExtensionTest : public testing::Test {
  public:
