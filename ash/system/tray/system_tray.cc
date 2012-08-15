@@ -51,39 +51,9 @@
 
 namespace ash {
 
-namespace internal {
-
-// Observe the tray layer animation and update the anchor when it changes.
-// TODO(stevenjb): Observe or mirror the actual animation, not just the start
-// and end points.
-class SystemTrayLayerAnimationObserver : public ui::LayerAnimationObserver {
- public:
-  explicit SystemTrayLayerAnimationObserver(SystemTray* host) : host_(host) {}
-
-  virtual void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) {
-    host_->UpdateNotificationAnchor();
-  }
-
-  virtual void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) {
-    host_->UpdateNotificationAnchor();
-  }
-
-  virtual void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) {
-    host_->UpdateNotificationAnchor();
-  }
-
- private:
-  SystemTray* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayLayerAnimationObserver);
-};
-
-}  // namespace internal
-
 // SystemTray
 
 using internal::SystemTrayBubble;
-using internal::SystemTrayLayerAnimationObserver;
 using internal::TrayBubbleView;
 
 SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
@@ -113,14 +83,6 @@ SystemTray::~SystemTray() {
        ++it) {
     (*it)->DestroyTrayView();
   }
-  GetWidget()->GetNativeView()->layer()->GetAnimator()->RemoveObserver(
-      layer_animation_observer_.get());
-}
-
-void SystemTray::Initialize() {
-  layer_animation_observer_.reset(new SystemTrayLayerAnimationObserver(this));
-  GetWidget()->GetNativeView()->layer()->GetAnimator()->AddObserver(
-      layer_animation_observer_.get());
 }
 
 void SystemTray::CreateItems() {
@@ -181,8 +143,7 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
 
   SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
   views::View* tray_item = item->CreateTrayView(delegate->GetUserLoginStatus());
-  item->UpdateAfterShelfAlignmentChange(
-      ash::Shell::GetInstance()->system_tray()->shelf_alignment());
+  item->UpdateAfterShelfAlignmentChange(shelf_alignment());
 
   if (tray_item) {
     tray_container()->AddChildViewAt(tray_item, 0);
@@ -435,12 +396,9 @@ void SystemTray::UpdateNotificationBubble() {
     status_area_widget()->HideNonSystemNotifications();
 }
 
-void SystemTray::UpdateNotificationAnchor() {
-  if (!notification_bubble_.get())
-    return;
-  notification_bubble_->bubble_view()->UpdateBubble();
-  // Ensure that the notification buble is above the launcher/status area.
-  notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
+void SystemTray::Initialize() {
+  internal::TrayBackgroundView::Initialize();
+  CreateItems();
 }
 
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -455,6 +413,16 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
     notification_bubble_.reset();
     UpdateNotificationBubble();
   }
+}
+
+void SystemTray::AnchorUpdated() {
+  if (notification_bubble_.get()) {
+    notification_bubble_->bubble_view()->UpdateBubble();
+    // Ensure that the notification buble is above the launcher/status area.
+    notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
+  }
+  if (bubble_.get())
+    bubble_->bubble_view()->UpdateBubble();
 }
 
 bool SystemTray::PerformAction(const ui::Event& event) {
@@ -491,24 +459,10 @@ void SystemTray::OnMouseExited(const ui::MouseEvent& event) {
     should_show_launcher_ = false;
 }
 
-void SystemTray::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  views::View* v = GetNextFocusableView();
-  if (v)
-    v->AboutToRequestFocusFromTabTraversal(reverse);
-}
-
 void SystemTray::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = l10n_util::GetStringUTF16(
       IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
-}
-
-void SystemTray::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  // The tray itself expands to the right and bottom edge of the screen to make
-  // sure clicking on the edges brings up the popup. However, the focus border
-  // should be only around the container.
-  if (GetWidget() && GetWidget()->IsActive())
-    DrawBorder(canvas, GetContentsBounds());
 }
 
 }  // namespace ash

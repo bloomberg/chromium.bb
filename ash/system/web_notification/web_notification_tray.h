@@ -118,6 +118,7 @@ class ASH_EXPORT WebNotificationTray : public internal::TrayBackgroundView {
 
   // Overridden from TrayBackgroundView.
   virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
+  virtual void AnchorUpdated() OVERRIDE;
 
   // Overridden from internal::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;

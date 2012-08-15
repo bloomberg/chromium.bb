@@ -324,9 +324,12 @@ StatusAreaWidget::~StatusAreaWidget() {
 void StatusAreaWidget::CreateTrayViews(ShellDelegate* shell_delegate) {
   AddWebNotificationTray();
   AddSystemTray(shell_delegate);
-  // SetBorder() must be called after all trays have been created.
-  web_notification_tray_->SetBorder();
-  system_tray_->SetBorder();
+  // Initialize() must be called after all trays have been created.
+  if (system_tray_)
+    system_tray_->Initialize();
+  if (web_notification_tray_)
+    web_notification_tray_->Initialize();
+  UpdateAfterLoginStatusChange(system_tray_delegate_->GetUserLoginStatus());
 }
 
 void StatusAreaWidget::Shutdown() {
@@ -343,7 +346,6 @@ void StatusAreaWidget::Shutdown() {
 void StatusAreaWidget::AddSystemTray(ShellDelegate* shell_delegate) {
   system_tray_ = new SystemTray(this);
   status_area_widget_delegate_->AddTray(system_tray_);
-  system_tray_->Initialize();  // Called after added to widget.
 
   if (shell_delegate) {
     system_tray_delegate_.reset(
@@ -351,9 +353,6 @@ void StatusAreaWidget::AddSystemTray(ShellDelegate* shell_delegate) {
   }
   if (!system_tray_delegate_.get())
     system_tray_delegate_.reset(new DummySystemTrayDelegate());
-
-  system_tray_->CreateItems();  // Called after delegate is created.
-  UpdateAfterLoginStatusChange(system_tray_delegate_->GetUserLoginStatus());
 }
 
 void StatusAreaWidget::AddWebNotificationTray() {

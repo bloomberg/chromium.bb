@@ -762,6 +762,7 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
   }
 
   views::Widget* bubble_widget() const { return bubble_widget_; }
+  TrayBubbleView* bubble_view() const { return bubble_view_; }
 
   // Overridden from TrayBubbleView::Host.
   virtual void BubbleViewDestroyed() OVERRIDE {
@@ -966,6 +967,16 @@ void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   HideNotificationBubble();
 }
 
+void WebNotificationTray::AnchorUpdated() {
+  if (notification_bubble_.get()) {
+    notification_bubble_->bubble_view()->UpdateBubble();
+    // Ensure that the notification buble is above the launcher/status area.
+    notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
+  }
+  if (message_center_bubble_.get())
+    message_center_bubble_->bubble_view()->UpdateBubble();
+}
+
 // Protected methods (invoked only from Bubble and its child classes)
 
 void WebNotificationTray::SendRemoveNotification(const std::string& id) {
@@ -1041,7 +1052,10 @@ void WebNotificationTray::UpdateTray() {
   count_label_->SetEnabledColor(
       (notification_list()->notifications().size() == 0) ?
       kMessageCountDimmedColor : kMessageCountColor);
-  SetVisible((status_area_widget()->login_status() != user::LOGGED_IN_NONE));
+  bool is_visible =
+      (status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
+      (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED);
+  SetVisible(is_visible);
   Layout();
   SchedulePaint();
 }
