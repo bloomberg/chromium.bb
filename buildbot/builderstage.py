@@ -140,22 +140,13 @@ class BuilderStage(object):
     Given that we are a master builder, find all corresponding slaves that
     are important to me.  These are those builders that share the same
     build_type and manifest_version url.
-    """
-    builders = []
-    build_type = self._build_config['build_type']
-    branch_config = self._build_config['branch']
-    assert not self._build_config['unified_manifest_version']
-    assert self._build_config['manifest_version']
-    assert self._build_config['master']
-    for build_name, config in configs.iteritems():
-      if (config['important'] and config['manifest_version'] and
-          not config['unified_manifest_version'] and
-          config['build_type'] == build_type and
-          config['chrome_rev'] == self._chrome_rev and
-          config['branch'] == branch_config):
-        builders.append(build_name)
 
-    return builders
+    If we have overridden our chrome_rev type, do not presume to be the
+    master of either our set of builders or the other's.
+    """
+    if self._chrome_rev !=  self._build_config['chrome_rev']:
+      return []
+    return cbuildbot_config.GetSlavesForMaster(self._build_config, configs)
 
   # pylint: disable=W0102
   def _GetSlavesForUnifiedMaster(self, configs=cbuildbot_config.config):

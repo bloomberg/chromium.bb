@@ -116,6 +116,31 @@ def IsCQType(b_type):
 # List of usable cbuildbot configs; see add_config method.
 config = {}
 
+def GetSlavesForMaster(master_config, configs=config):
+  """Gets the important builds corresponding to a master builder.
+
+  Given a master builder, find all corresponding slaves that
+  are important to me.  These are those builders that share the same
+  build_type and manifest_version url.
+  """
+  assert not master_config['unified_manifest_version']
+  assert master_config['manifest_version']
+  assert master_config['master']
+  builders = []
+  build_type = master_config['build_type']
+  manifest_version = master_config['manifest_version']
+  branch_config = master_config['branch']
+  overlay_config = master_config['overlays']
+  chrome_rev = master_config['chrome_rev']
+  for build_name, config in configs.iteritems():
+    if (config['important'] and config['manifest_version'] and
+        not config['unified_manifest_version'] and
+        config['build_type'] == build_type and
+        config['chrome_rev'] == chrome_rev and
+        config['branch'] == branch_config):
+      builders.append(build_name)
+
+  return builders
 
 # Enumeration of valid settings; any/all config settings must be in this.
 # All settings must be documented.

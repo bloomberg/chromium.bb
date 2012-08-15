@@ -351,6 +351,15 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           '%s did not match any types in %s' %
           (config_name, 'cbuildbot_config.CONFIG_TYPE_DUMP_ORDER'))
 
+  def testGetSlaves(self):
+    """Make sure every master has a sane list of slaves"""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['master'] and not config['unified_manifest_version']:
+        slaves = cbuildbot_config.GetSlavesForMaster(config)
+        self.assertEqual(
+            len(slaves), len(set(slaves)),
+            'Duplicate board in slaves of %s will cause upload prebuilts'
+            ' failures' % build_name)
 
 if __name__ == '__main__':
   cros_test_lib.main()
