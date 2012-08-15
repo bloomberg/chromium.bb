@@ -133,6 +133,35 @@ def PopenDebugStub(test):
   return subprocess.Popen(SEL_LDR_COMMAND + ['-c', '-c', '-g', test])
 
 
+def KillProcess(process):
+  try:
+    process.kill()
+  except OSError:
+    if sys.platform == 'win32':
+      # If process is already terminated, kill() throws
+      # "WindowsError: [Error 5] Access is denied" on Windows.
+      pass
+    else:
+      raise
+  process.wait()
+
+
+class LaunchDebugStub(object):
+
+  def __init__(self, test):
+    self._proc = PopenDebugStub(test)
+
+  def __enter__(self):
+    try:
+      return gdb_rsp.GdbRspConnection()
+    except:
+      KillProcess(self._proc)
+      raise
+
+  def __exit__(self, exc_type, exc_value, traceback):
+    KillProcess(self._proc)
+
+
 def GetSymbols():
   assert '-f' in SEL_LDR_COMMAND
   nexe_filename = SEL_LDR_COMMAND[SEL_LDR_COMMAND.index('-f') + 1]
@@ -177,9 +206,7 @@ class DebugStubTest(unittest.TestCase):
   def test_initial_breakpoint(self):
     # Any arguments to the nexe would work here because we are only
     # testing that we get a breakpoint at the _start entry point.
-    proc = PopenDebugStub('test_getting_registers')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
+    with LaunchDebugStub('test_getting_registers') as connection:
       reply = connection.RspRequest('?')
       if sys.platform == 'darwin':
         # TODO(mseaborn): Fix the debug stub on Mac OS X to report
@@ -187,9 +214,6 @@ class DebugStubTest(unittest.TestCase):
         self.assertEqual(reply, 'T00')
       else:
         AssertReplySignal(reply, NACL_SIGTRAP)
-    finally:
-      proc.kill()
-      proc.wait()
 
   # Test that we can fetch register values.
   # This check corresponds to the last instruction of debugger_test.c
@@ -304,9 +328,7 @@ class DebugStubTest(unittest.TestCase):
 
   # Run tests on debugger_test.c binary.
   def test_debugger_test(self):
-    proc = PopenDebugStub('test_getting_registers')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
+    with LaunchDebugStub('test_getting_registers') as connection:
       # Tell the process to continue, because it starts at the
       # breakpoint set at its start address.
       reply = connection.RspRequest('c')
@@ -323,15 +345,8 @@ class DebugStubTest(unittest.TestCase):
       self.CheckReadMemory(connection)
       self.CheckReadMemoryAtInvalidAddr(connection)
 
-    finally:
-      proc.kill()
-      proc.wait()
-
   def test_breakpoint(self):
-    proc = PopenDebugStub('test_breakpoint')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
-
+    with LaunchDebugStub('test_breakpoint') as connection:
       # Continue until breakpoint.
       reply = connection.RspRequest('c')
       AssertReplySignal(reply, NACL_SIGTRAP)
@@ -354,19 +369,11 @@ class DebugStubTest(unittest.TestCase):
         self.assertEquals(reply, breakpoint_instruction)
       else:
         raise AssertionError('Unknown architecture')
-    finally:
-      proc.kill()
-      proc.wait()
 
   def test_exit_code(self):
-    proc = PopenDebugStub('test_exit_code')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
+    with LaunchDebugStub('test_exit_code') as connection:
       reply = connection.RspRequest('c')
       self.assertEquals(reply, 'W02')
-    finally:
-      proc.kill()
-      proc.wait()
 
   # Single-step and check IP corresponds to debugger_test:test_single_step
   def CheckSingleStep(self, connection, step_command, stop_reply):
@@ -392,18 +399,12 @@ class DebugStubTest(unittest.TestCase):
       # TODO(eaeltsin):
       #   http://code.google.com/p/nativeclient/issues/detail?id=2911
       return
-    proc = PopenDebugStub('test_single_step')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
-
+    with LaunchDebugStub('test_single_step') as connection:
       # Continue, test we stopped on int3.
       reply = connection.RspRequest('c')
       AssertReplySignal(reply, NACL_SIGTRAP)
 
       self.CheckSingleStep(connection, 's', reply)
-    finally:
-      proc.kill()
-      proc.wait()
 
   def test_vCont(self):
     # Basically repeat test_single_step, but using vCont commands.
@@ -412,10 +413,7 @@ class DebugStubTest(unittest.TestCase):
       # TODO(eaeltsin):
       #   http://code.google.com/p/nativeclient/issues/detail?id=2911
       return
-    proc = PopenDebugStub('test_single_step')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
-
+    with LaunchDebugStub('test_single_step') as connection:
       # Test if vCont is supported.
       reply = connection.RspRequest('vCont?')
       self.assertEqual(reply, 'vCont;s;S;c;C')
@@ -445,9 +443,6 @@ class DebugStubTest(unittest.TestCase):
       # Try to single-step all threads.
       reply = connection.RspRequest('vCont;s')
       self.assertTrue(reply.startswith('E'))
-    finally:
-      proc.kill()
-      proc.wait()
 
   def test_interrupt(self):
     if ARCH == 'arm':
@@ -455,10 +450,7 @@ class DebugStubTest(unittest.TestCase):
       # TODO(eaeltsin):
       #   http://code.google.com/p/nativeclient/issues/detail?id=2911
       return
-    proc = PopenDebugStub('test_interrupt')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
-
+    with LaunchDebugStub('test_interrupt') as connection:
       # Continue (program will spin forever), then interrupt.
       connection.RspSendOnly('c')
       reply = connection.RspInterrupt()
@@ -467,19 +459,13 @@ class DebugStubTest(unittest.TestCase):
       # Single-step.
       reply = connection.RspRequest('s')
       AssertReplySignal(reply, NACL_SIGTRAP)
-    finally:
-      proc.kill()
-      proc.wait()
 
   def test_software_single_step(self):
     # We want this test to work on ARM. As we can't skip past trap instruction
     # on ARM, we'll step from initial breakpoint to the first trap instruction.
     # We can use any test that has initial breakpoint and trap instruction on
     # the same thread.
-    proc = PopenDebugStub('test_breakpoint')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
-
+    with LaunchDebugStub('test_breakpoint') as connection:
       # We stopped on initial breakpoint. Ask for stop reply.
       reply = connection.RspRequest('?')
       AssertReplySignal(reply, NACL_SIGTRAP)
@@ -489,9 +475,6 @@ class DebugStubTest(unittest.TestCase):
       # Check we stopped on the same thread.
       reply = connection.RspRequest('vCont;c:%x' % tid)
       self.assertEqual(reply, 'T05thread:%x;' % tid)
-    finally:
-      proc.kill()
-      proc.wait()
 
 
 class DebugStubThreadSuspensionTest(unittest.TestCase):
@@ -521,9 +504,7 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
     return child_thread_id
 
   def test_continuing_thread_with_others_suspended(self):
-    proc = PopenDebugStub('test_suspending_threads')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
+    with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
 
@@ -547,14 +528,9 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
         self.assertNotEquals(
             ReadUint32(connection, symbols['g_child_thread_var']),
             child_thread_val)
-    finally:
-      proc.kill()
-      proc.wait()
 
   def test_single_stepping_thread_with_others_suspended(self):
-    proc = PopenDebugStub('test_suspending_threads')
-    try:
-      connection = gdb_rsp.GdbRspConnection()
+    with LaunchDebugStub('test_suspending_threads') as connection:
       symbols = GetSymbols()
       child_thread_id = self.WaitForTestThreadsToStart(connection, symbols)
 
@@ -578,9 +554,6 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
           if (ReadUint32(connection, symbols['g_child_thread_var'])
               != child_thread_val):
             break
-    finally:
-      proc.kill()
-      proc.wait()
 
 
 def Main():
