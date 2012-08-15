@@ -57,7 +57,7 @@ class ComponentWrapper {
  public:
   explicit ComponentWrapper(
       DesktopBackgroundWidgetController* component);
-  ~ComponentWrapper() {}
+  ~ComponentWrapper();
 
   // Gets the wrapped DesktopBackgroundWidgetController pointer. Caller should
   // take ownership of the pointer if |pass_ownership| is true.

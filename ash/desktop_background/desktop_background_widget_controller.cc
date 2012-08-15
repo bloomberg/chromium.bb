@@ -59,6 +59,9 @@ ComponentWrapper::ComponentWrapper(
   component_.reset(component);
 }
 
+ComponentWrapper::~ComponentWrapper() {
+}
+
 DesktopBackgroundWidgetController* ComponentWrapper::GetComponent(
     bool pass_ownership) {
   if (pass_ownership)
