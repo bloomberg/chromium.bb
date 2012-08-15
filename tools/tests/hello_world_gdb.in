@@ -1,5 +1,0 @@
-set confirm off
-break hello_world
-run
-bt
-quit

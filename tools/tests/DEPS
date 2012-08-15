@@ -1,3 +1,0 @@
-include_rules = [
-  "+native_client/src/shared",
-]

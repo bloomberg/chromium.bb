@@ -2021,27 +2021,6 @@ def DemoSelLdrNacl(env,
 pre_base_env.AddMethod(DemoSelLdrNacl)
 
 
-def CommandGdbTestNacl(env, name, command,
-                       gdb_flags=[],
-                       input=None,
-                       **extra):
-  """Runs a test under NaCl GDB."""
-
-
-  sel_ldr = GetSelLdr(env)
-  if not sel_ldr:
-    print 'WARNING: no sel_ldr found. Skipping test %s' % name
-    return []
-
-  gdb = nacl_env['GDB']
-  command = ([gdb, '-q', '-batch', '-x', input, '--loader', sel_ldr] +
-             gdb_flags + command)
-
-  return CommandTest(env, name, command, 'large', **extra)
-
-pre_base_env.AddMethod(CommandGdbTestNacl)
-
-
 def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
   # The dynamic linker's ability to receive arguments over IPC at
   # startup currently requires it to reject the plugin's first
