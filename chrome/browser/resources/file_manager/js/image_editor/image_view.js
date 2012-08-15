@@ -495,6 +495,9 @@ ImageView.prototype.prefetch = function(id, url) {
 ImageView.prototype.replaceContent_ = function(
     content, opt_reuseScreenCanvas, opt_width, opt_height, opt_preview) {
 
+  if (this.contentCanvas_ && this.contentCanvas_.parentNode == this.container_)
+    this.container_.removeChild(this.contentCanvas_);
+
   if (content.constructor.name == 'HTMLVideoElement') {
     this.contentCanvas_ = null;
     this.videoElement_ = content;
@@ -526,6 +529,10 @@ ImageView.prototype.replaceContent_ = function(
   this.preview_ = opt_preview;
   // If this is not a thumbnail, cache the content and the screen-scale image.
   if (this.hasValidImage()) {
+    // Insert the full resolution canvas into DOM so that it can be printed.
+    this.container_.appendChild(this.contentCanvas_);
+    this.contentCanvas_.classList.add('fullres');
+
     this.contentCache_.putItem(this.contentID_, this.contentCanvas_, true);
     this.screenCache_.putItem(this.contentID_, this.screenImage_);
 

@@ -111,6 +111,43 @@ body {
   opacity: 0;
 }
 
+/* Full resolution image is invisible unless printing. */
+.gallery > .image-container > canvas.fullres {
+  display: none;
+}
+
+@media print {
+  /* Do not print anything but the image. */
+  .gallery > :not(.image-container) {
+    display: none !important;
+  }
+
+  /* Center the printed image. */
+  .gallery > .image-container {
+    -webkit-box-align: center;
+    -webkit-box-orient: horizontal;
+    -webkit-box-pack: center;
+    display: -webkit-box;
+  }
+
+  /* Do not print the screen resolution image. */
+  .gallery > .image-container > canvas.image {
+    display: none !important;
+  }
+
+  /* Print the full resolution image instead. */
+  .gallery > .image-container > canvas.fullres {
+    display: block !important;
+    max-height: 100%;
+    max-width: 100%;
+  }
+
+  /* Print video at the center of the page */
+  .gallery > .image-container > video.image {
+    position: auto !important;
+  }
+}
+
 /* Toolbar */
 
 .gallery > .toolbar {
