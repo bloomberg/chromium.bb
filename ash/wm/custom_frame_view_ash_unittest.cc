@@ -12,6 +12,7 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
+#include "ui/aura/focus_manager.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/button/image_button.h"
@@ -369,6 +370,31 @@ TEST_F(CustomFrameViewAshTest, MaximizeLeftByButton) {
   internal::SnapSizer sizer(window, button_pos,
       internal::SnapSizer::LEFT_EDGE, kGridSize);
   EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
+}
+
+// Test that the activation focus does not change when the bubble gets shown.
+TEST_F(CustomFrameViewAshTest, MaximizeKeepFocus) {
+  views::Widget* widget = CreateWidget();
+  aura::Window* window = widget->GetNativeWindow();
+  CustomFrameViewAsh* frame = custom_frame_view_ash(widget);
+  CustomFrameViewAsh::TestApi test(frame);
+  ash::FrameMaximizeButton* maximize_button = test.maximize_button();
+  maximize_button->set_bubble_appearance_delay_ms(0);
+  gfx::Point button_pos = maximize_button->GetBoundsInScreen().CenterPoint();
+  gfx::Point off_pos(button_pos.x() + 100, button_pos.y() + 100);
+
+  aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
+  EXPECT_FALSE(maximize_button->maximizer());
+  EXPECT_TRUE(ash::wm::IsWindowNormal(window));
+
+  aura::Window* active = window->GetFocusManager()->GetFocusedWindow();
+
+  // Move the mouse cursor over the button to bring up the maximizer bubble.
+  generator.MoveMouseTo(button_pos);
+  EXPECT_TRUE(maximize_button->maximizer());
+
+  // Check that the focused window is still the same.
+  EXPECT_EQ(active, window->GetFocusManager()->GetFocusedWindow());
 }
 
 }  // namespace internal

@@ -223,6 +223,7 @@ class MaximizeBubbleController::Bubble : public views::BubbleDelegateView,
   // Overridden from views::BubbleDelegateView.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual bool CanActivate() const OVERRIDE { return false; }
 
   // Overridden from views::WidgetDelegateView.
   virtual bool HasHitTestMask() const OVERRIDE;
@@ -410,6 +411,7 @@ MaximizeBubbleController::Bubble::Bubble(
   // Note that the returned widget has an observer which points to our
   // functions.
   bubble_widget_ = views::BubbleDelegateView::CreateBubble(this);
+  bubble_widget_->set_focus_on_creation(false);
 
   SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
