@@ -24,10 +24,9 @@ struct GetDocumentsParams {
                      int64 root_feed_changestamp,
                      std::vector<DocumentFeed*>* feed_list,
                      bool should_fetch_multiple_feeds,
-                     const FilePath& search_file_path,
                      const std::string& search_query,
                      const std::string& directory_resource_id,
-                     const FindEntryCallback& callback,
+                     const FileOperationCallback& callback,
                      GetDocumentsUiState* ui_state);
   ~GetDocumentsParams();
 
@@ -41,29 +40,26 @@ struct GetDocumentsParams {
   // Should we stop after getting first feed chunk, even if there is more
   // data.
   bool should_fetch_multiple_feeds;
-  FilePath search_file_path;
   std::string search_query;
   std::string directory_resource_id;
-  FindEntryCallback callback;
+  FileOperationCallback callback;
   scoped_ptr<GetDocumentsUiState> ui_state;
 };
 
 // Defines set of parameters sent to callback OnProtoLoaded().
 struct LoadRootFeedParams {
   LoadRootFeedParams(
-        FilePath search_file_path,
         bool should_load_from_server,
-        const FindEntryCallback& callback);
+        const FileOperationCallback& callback);
   ~LoadRootFeedParams();
 
-  FilePath search_file_path;
   bool should_load_from_server;
   std::string proto;
   GDataFileError load_error;
   base::Time last_modified;
   // Time when filesystem began to be loaded from disk.
   base::Time load_start_time;
-  const FindEntryCallback callback;
+  const FileOperationCallback callback;
 };
 
 // Callback run as a response to LoadFromServer.
@@ -107,39 +103,46 @@ class GDataWapiFeedLoader {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Starts root feed load from the cache. If successful, it will try to find
-  // the file upon retrieval completion. In addition to that, it will
-  // initiate retrieval of the root feed from the server unless
+  // Starts root feed load from the cache. If successful, runs |callback| to
+  // tell the caller that the loading was successful.
+  //
+  // Then, it will initiate retrieval of the root feed from the server unless
   // |should_load_from_server| is set to false. |should_load_from_server| is
-  // false only for testing.
+  // false only for testing. If loading from the server is successful, runs
+  // |callback| if it was not previously run (i.e. loading from the cache was
+  // successful).
+  //
+  // |callback| may be null.
   void LoadFromCache(bool should_load_from_server,
-                     const FilePath& search_file_path,
-                     const FindEntryCallback& callback);
+                     const FileOperationCallback& callback);
 
   // Starts root feed load from the server. Value of |start_changestamp|
   // determines the type of feed to load - 0 means root feed, every other
   // value would trigger delta feed.
   // In the case of loading the root feed we use |root_feed_changestamp| as its
   // initial changestamp value since it does not come with that info.
-  // When done |load_feed_callback| is invoked.
-  // |entry_found_callback| is used only when this is invoked while searching
-  // for file info, and is used in |load_feed_callback|. If successful, it will
-  // try to find the file upon retrieval completion.
+  //
+  // When all feeds are loaded, |feed_load_callback| is invoked with the
+  // retrieved feeds. Then |load_finished_callback| is invoked with the error
+  // code.
+  //
   // |should_fetch_multiple_feeds| is true iff don't want to stop feed loading
   // after we retrieve first feed chunk.
   // If invoked as a part of content search, query will be set in
   // |search_query|.
   // If |feed_to_load| is set, this is feed url that will be used to load feed.
+  //
+  // |load_finished_callback| may be null.
+  // |feed_load_callback| must not be null.
   void LoadFromServer(
       ContentOrigin initial_origin,
       int64 start_changestamp,
       int64 root_feed_changestamp,
       bool should_fetch_multiple_feeds,
-      const FilePath& search_file_path,
       const std::string& search_query,
       const GURL& feed_to_load,
       const std::string& directory_resource_id,
-      const FindEntryCallback& entry_found_callback,
+      const FileOperationCallback& load_finished_callback,
       const LoadDocumentFeedCallback& feed_load_callback);
 
   // Retrieves account metadata and determines from the last change timestamp
@@ -147,8 +150,7 @@ class GDataWapiFeedLoader {
   void ReloadFromServerIfNeeded(
       ContentOrigin initial_origin,
       int64 local_changestamp,
-      const FilePath& search_file_path,
-      const FindEntryCallback& callback);
+      const FileOperationCallback& callback);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
@@ -176,8 +178,7 @@ class GDataWapiFeedLoader {
   void OnGetAccountMetadata(
       ContentOrigin initial_origin,
       int64 local_changestamp,
-      const FilePath& search_file_path,
-      const FindEntryCallback& callback,
+      const FileOperationCallback& callback,
       GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
 
@@ -188,8 +189,7 @@ class GDataWapiFeedLoader {
   void OnGetAboutResource(
       ContentOrigin initial_origin,
       int64 local_changestamp,
-      const FilePath& search_file_path,
-      const FindEntryCallback& callback,
+      const FileOperationCallback& callback,
       GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
 
@@ -203,6 +203,7 @@ class GDataWapiFeedLoader {
 
   // Callback for handling response from |GDataDocumentsService::GetDocuments|.
   // Invokes |callback| when done.
+  // |callback| must not be null.
   void OnGetDocuments(
       ContentOrigin initial_origin,
       const LoadDocumentFeedCallback& callback,
@@ -213,6 +214,7 @@ class GDataWapiFeedLoader {
 
   // Callback for handling response from |GDataDocumentsService::GetChanglist|.
   // Invokes |callback| when done.
+  // |callback| must not be null.
   void OnGetChangelist(ContentOrigin initial_origin,
                        const LoadDocumentFeedCallback& callback,
                        GetDocumentsParams* params,

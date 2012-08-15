@@ -556,14 +556,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // reloaded, and in case of failure, restores the content origin of the root
   // directory.
   void OnUpdateChecked(ContentOrigin initial_origin,
-                       GDataFileError error,
-                       GDataEntry* entry);
+                       GDataFileError error);
 
-  // Runs the callback and notifies that the initial load is finished.
+  // Finds the entry for |search_file_path| synchronously and runs the
+  // callback, then notifies that the initial load is finished.
   // |callback| must not be null.
-  void RunAndNotifyInitialLoadFinished(const FindEntryCallback& callback,
-                                       GDataFileError error,
-                                       GDataEntry* entry);
+  void FindAndNotifyInitialLoadFinished(const FilePath& search_file_path,
+                                        const FindEntryCallback& callback,
+                                        GDataFileError error);
 
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.
@@ -739,7 +739,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       const ReadDirectoryWithSettingCallback& callback);
   void RequestDirectoryRefreshOnUIThread(const FilePath& file_path);
-  void OnRequestDirectoryRefresh(GetDocumentsParams* params,
+  void OnRequestDirectoryRefresh(const FilePath& directory_path,
+                                 GetDocumentsParams* params,
                                  GDataFileError error);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void AddUploadedFileOnUIThread(UploadMode upload_mode,
