@@ -130,7 +130,8 @@ class RegisterPageHandler : public WebUIMessageHandler,
   void HandleGetUserInfo(const ListValue* args);
 
   // Callback from chromeos::VersionLoader giving the version.
-  void OnVersion(chromeos::VersionLoader::Handle handle, std::string version);
+  void OnVersion(chromeos::VersionLoader::Handle handle,
+                 const std::string& version);
 
   // Skips registration logging |error_msg| with log type ERROR.
   void SkipRegistration(const std::string& error_msg);
@@ -230,7 +231,7 @@ void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
 }
 
 void RegisterPageHandler::OnVersion(chromeos::VersionLoader::Handle handle,
-                                    std::string version) {
+                                    const std::string& version) {
   version_ = version;
   SendUserInfo();
 }

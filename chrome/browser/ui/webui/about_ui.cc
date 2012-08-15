@@ -162,7 +162,7 @@ class ChromeOSAboutVersionHandler {
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(chromeos::VersionLoader::Handle handle,
-                 std::string version);
+                 const std::string& version);
 
  private:
   // Where the results are fed to.
@@ -1276,7 +1276,7 @@ ChromeOSAboutVersionHandler::ChromeOSAboutVersionHandler(
 
 void ChromeOSAboutVersionHandler::OnVersion(
     chromeos::VersionLoader::Handle handle,
-    std::string version) {
+    const std::string& version) {
   DictionaryValue localized_strings;
   localized_strings.SetString("os_version", version);
   source_->FinishDataRequest(AboutVersionStrings(

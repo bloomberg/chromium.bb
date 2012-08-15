@@ -30,9 +30,16 @@
 namespace {
 
 #if defined(USE_LINUX_BREAKPAD)
+#if defined(OS_CHROMEOS)
+void ChromeOSVersionCallback(chromeos::VersionLoader::Handle,
+                             const std::string& version) {
+  base::SetLinuxDistro(std::string("CrOS ") + version);
+}
+#else
 void GetLinuxDistroCallback() {
   base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
 }
+#endif
 
 bool IsCrashReportingEnabled(const PrefService* local_state) {
   // Check whether we should initialize the crash reporter. It may be disabled
@@ -79,11 +86,17 @@ ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
 #if defined(USE_LINUX_BREAKPAD)
+#if defined(OS_CHROMEOS)
+  cros_version_loader_.GetVersion(&cros_consumer_,
+                                  base::Bind(&ChromeOSVersionCallback),
+                                  chromeos::VersionLoader::VERSION_FULL);
+#else
   // Needs to be called after we have chrome::DIR_USER_DATA and
   // g_browser_process.  This happens in PreCreateThreads.
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
                                    FROM_HERE,
                                    base::Bind(&GetLinuxDistroCallback));
+#endif
 
   if (IsCrashReportingEnabled(local_state()))
     InitCrashReporter();

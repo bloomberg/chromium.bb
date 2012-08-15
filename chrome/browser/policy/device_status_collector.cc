@@ -368,12 +368,12 @@ void DeviceStatusCollector::GetStatus(em::DeviceStatusReportRequest* request) {
 }
 
 void DeviceStatusCollector::OnOSVersion(VersionLoader::Handle handle,
-                                        std::string version) {
+                                        const std::string& version) {
   os_version_ = version;
 }
 
 void DeviceStatusCollector::OnOSFirmware(VersionLoader::Handle handle,
-                                         std::string version) {
+                                         const std::string& version) {
   firmware_version_ = version;
 }
 

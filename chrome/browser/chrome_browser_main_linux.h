@@ -9,7 +9,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/version_loader.h"
+#endif
 
 #if !defined(OS_CHROMEOS)
 namespace chrome {
@@ -31,6 +36,11 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
 #if !defined(OS_CHROMEOS)
   scoped_refptr<chrome::MediaDeviceNotificationsLinux>
       media_device_notifications_linux_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  chromeos::VersionLoader cros_version_loader_;
+  CancelableRequestConsumer cros_consumer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);

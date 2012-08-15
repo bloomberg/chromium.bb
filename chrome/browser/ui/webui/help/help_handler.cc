@@ -393,14 +393,14 @@ void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
 
 #if defined(OS_CHROMEOS)
 void HelpHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
-                              std::string version) {
+                              const std::string& version) {
   scoped_ptr<Value> version_string(Value::CreateStringValue(version));
   web_ui()->CallJavascriptFunction("help.HelpPage.setOSVersion",
                                    *version_string);
 }
 
 void HelpHandler::OnOSFirmware(chromeos::VersionLoader::Handle handle,
-                               std::string firmware) {
+                               const std::string& firmware) {
   scoped_ptr<Value> firmware_string(Value::CreateStringValue(firmware));
   web_ui()->CallJavascriptFunction("help.HelpPage.setOSFirmware",
                                    *firmware_string);

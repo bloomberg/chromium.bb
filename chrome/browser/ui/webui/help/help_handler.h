@@ -70,9 +70,10 @@ class HelpHandler : public content::WebUIMessageHandler,
 
 #if defined(OS_CHROMEOS)
   // Callbacks from VersionLoader.
-  void OnOSVersion(chromeos::VersionLoader::Handle handle, std::string version);
+  void OnOSVersion(chromeos::VersionLoader::Handle handle,
+                   const std::string& version);
   void OnOSFirmware(chromeos::VersionLoader::Handle handle,
-                    std::string firmware);
+                    const std::string& firmware);
   void OnReleaseChannel(const std::string& channel);
 
   void ProcessLsbFileInfo(

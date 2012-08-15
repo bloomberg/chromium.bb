@@ -191,8 +191,8 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
 }
 
 void VersionInfoUpdater::OnVersion(
-    VersionLoader::Handle handle, std::string version) {
-  version_text_.swap(version);
+    VersionLoader::Handle handle, const std::string& version) {
+  version_text_ = version;
   UpdateVersionLabel();
 }
 

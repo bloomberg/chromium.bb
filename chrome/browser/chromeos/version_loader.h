@@ -23,7 +23,7 @@ namespace chromeos {
 //   CancelableRequestConsumerBase.
 // . Define the callback method, something like:
 //   void OnGetChromeOSVersion(chromeos::VersionLoader::Handle,
-//                             std::string version);
+//                             const std::string& version);
 // . When you want the version invoke:  loader.GetVersion(&consumer, callback);
 //
 // This class also provides the ability to load the bios firmware using
@@ -40,10 +40,10 @@ class VersionLoader : public CancelableRequestProvider {
   };
 
   // Signature
-  typedef base::Callback<void(Handle, std::string)> GetVersionCallback;
+  typedef base::Callback<void(Handle, const std::string&)> GetVersionCallback;
   typedef CancelableRequest<GetVersionCallback> GetVersionRequest;
 
-  typedef base::Callback<void(Handle, std::string)> GetFirmwareCallback;
+  typedef base::Callback<void(Handle, const std::string&)> GetFirmwareCallback;
   typedef CancelableRequest<GetFirmwareCallback> GetFirmwareRequest;
 
   // Asynchronously requests the version.
