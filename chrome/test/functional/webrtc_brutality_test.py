@@ -57,18 +57,16 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
     self.NavigateToURL(url)
 
-    tab = self.GetBrowserWindow(0).GetTab(0)
     self._GetUserMediaWithoutTakingAction(tab_index=0)
-    tab.Close()
+    self.CloseTab(tab_index=0)
 
   def testSuccessfulGetUserMediaAndThenClose(self):
     """Waits for WebRTC to respond, and closes the tab."""
     url = self.GetFileURLForDataPath('webrtc', 'webrtc_jsep_test.html')
     self.NavigateToURL(url)
 
-    tab = self.GetBrowserWindow(0).GetTab(0)
     self.GetUserMedia(tab_index=0, action='allow')
-    tab.Close()
+    self.CloseTab(tab_index=0)
 
   def _GetUserMediaWithoutTakingAction(self, tab_index):
     self.assertEquals('ok-requested', self.ExecuteJavascript(
