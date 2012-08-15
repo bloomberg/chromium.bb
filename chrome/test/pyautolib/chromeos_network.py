@@ -131,13 +131,13 @@ class PyNetworkUITest(pyauto.PyUITest):
   _FLIMFLAM_PATH = 'org.chromium.flimflam'
 
   def setUp(self):
+    self.CleanupFlimflamDirsOnChromeOS()
     # Move ethernet to the end of the flimflam priority list,
     # effectively hiding any ssh connections that the
     # test harness might be using and putting wifi ahead.
     self._PushServiceOrder('wifi,ethernet')
     self._ParseDefaultRoutingTable()
     pyauto.PyUITest.setUp(self)
-    self.CleanupFlimflamDirsOnChromeOS()
     self.ForgetAllRememberedNetworks()
     self._wifi_power_strip = None
 
