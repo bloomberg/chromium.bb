@@ -75,6 +75,13 @@ bool CallGetSaveFileName(OPENFILENAME* ofn) {
   }
 }
 
+// Distinguish directories from regular files.
+bool IsDirectory(const FilePath& path) {
+  base::PlatformFileInfo file_info;
+  return file_util::GetFileInfo(path, &file_info) ?
+      file_info.is_directory : file_util::EndsWithSeparator(path);
+}
+
 // Get the file type description from the registry. This will be "Text Document"
 // for .txt files, "JPEG Image" for .jpg files, etc. If the registry doesn't
 // have an entry for the file type, we return false, true if the description was
@@ -286,8 +293,14 @@ bool SaveFileAsWithFilter(HWND owner,
 
   // Set up the initial directory for the dialog.
   std::wstring directory;
-  if (!suggested_name.empty())
-     directory = suggested_path.DirName().value();
+  if (!suggested_name.empty()) {
+    if (IsDirectory(suggested_path)) {
+      directory = suggested_path.value();
+      file_part.clear();
+    } else {
+      directory = suggested_path.DirName().value();
+    }
+  }
 
   save_as.lpstrInitialDir = directory.c_str();
   save_as.lpstrTitle = NULL;
@@ -715,13 +728,7 @@ bool SelectFileDialogImpl::RunOpenFileDialog(
   FilePath dir;
   // Use lpstrInitialDir to specify the initial directory
   if (!path->empty()) {
-    bool is_dir;
-    base::PlatformFileInfo file_info;
-    if (file_util::GetFileInfo(*path, &file_info))
-      is_dir = file_info.is_directory;
-    else
-      is_dir = file_util::EndsWithSeparator(*path);
-    if (is_dir) {
+    if (IsDirectory(*path)) {
       ofn.lpstrInitialDir = path->value().c_str();
     } else {
       dir = path->DirName();

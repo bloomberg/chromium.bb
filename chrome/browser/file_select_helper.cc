@@ -401,9 +401,10 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       dialog_type_ = ui::SelectFileDialog::SELECT_OPEN_FILE;
       NOTREACHED();
   }
-  FilePath default_file_name = params.default_file_name;
-  if (default_file_name.empty())
-    default_file_name = profile_->last_selected_directory();
+
+  FilePath default_file_name = params.default_file_name.IsAbsolute() ?
+      params.default_file_name :
+      profile_->last_selected_directory().Append(params.default_file_name);
 
   gfx::NativeWindow owning_window =
       platform_util::GetTopLevel(render_view_host_->GetView()->GetNativeView());
