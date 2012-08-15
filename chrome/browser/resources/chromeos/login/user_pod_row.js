@@ -36,6 +36,14 @@ cr.define('login', function() {
   var WALLPAPER_BOOT_LOAD_DELAY_MS = 500;
 
   /**
+   * Maximum time for which the pod row remains hidden until all user images
+   * have been loaded.
+   * @type {number}
+   * @const
+   */
+  var POD_ROW_IMAGES_LOAD_TIMEOUT_MS = 3000;
+
+  /**
    * Oauth token status. These must match UserManager::OAuthTokenStatus.
    * @enum {number}
    * @const
@@ -631,6 +639,11 @@ cr.define('login', function() {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         this.podsWithPendingImages_.push(pod);
       }
+      // Make sure we eventually show the pod row, even if some image is stuck.
+      setTimeout(function() {
+        $('pod-row').classList.remove('images-loading');
+      }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
+
       this.focusPod(this.preselectedPod);
     },
 
@@ -889,7 +902,7 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = UserPodTabOrder.HEADER_BAR;
-      $('pod-row').updateTitles();
+      this.updateTitles();
     },
 
     /**
@@ -901,7 +914,7 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = 0;
-      $('pod-row').hideTitles();
+      this.hideTitles();
     },
 
     /**
@@ -915,6 +928,7 @@ cr.define('login', function() {
 
       this.podsWithPendingImages_.splice(index, 1);
       if (this.podsWithPendingImages_.length == 0) {
+        this.classList.remove('images-loading');
         chrome.send('userImagesLoaded');
         // Report back user pods being painted.
         window.webkitRequestAnimationFrame(function() {

@@ -12,6 +12,11 @@ podrow {
   position: relative;
 }
 
+/* Hide the pod row while images are loading. */
+podrow.images-loading {
+  visibility: hidden;
+}
+
 html[oobe=old] podrow {
   height: 230px;
 }
