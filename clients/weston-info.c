@@ -41,6 +41,14 @@ struct global_info {
 	print_info_t print;
 };
 
+struct output_mode {
+	struct wl_list link;
+
+	uint32_t flags;
+	int32_t width, height;
+	int32_t refresh;
+};
+
 struct output_info {
 	struct global_info global;
 
@@ -55,11 +63,7 @@ struct output_info {
 		char *model;
 	} geometry;
 
-	struct {
-		uint32_t flags;
-		int32_t width, height;
-		int32_t refresh;
-	} mode;
+	struct wl_list modes;
 };
 
 struct shm_format {
@@ -114,6 +118,7 @@ static void
 print_output_info(void *data)
 {
 	struct output_info *output = data;
+	struct output_mode *mode;
 	const char *subpixel_orientation;
 	const char *transform;
 
@@ -177,23 +182,30 @@ print_output_info(void *data)
 		break;
 	}
 
-	printf("\tx: %d, y: %d, width: %d px, height %d px,\n",
-	       output->geometry.x, output->geometry.y,
-	       output->mode.width, output->mode.height);
-	printf("\tphysical_width: %d mm, physical_height: %d mm, refresh: %.f Hz,\n",
+	printf("\tx: %d, y: %d,\n",
+	       output->geometry.x, output->geometry.y);
+	printf("\tphysical_width: %d mm, physical_height: %d mm,\n",
 	       output->geometry.physical_width,
-	       output->geometry.physical_height,
-	       (float) output->mode.refresh / 1000);
+	       output->geometry.physical_height);
 	printf("\tmake: '%s', model: '%s',\n",
 	       output->geometry.make, output->geometry.model);
 	printf("\tsubpixel_orientation: %s, output_tranform: %s,\n",
 	       subpixel_orientation, transform);
-	printf("\tflags:");
-	if (output->mode.flags & WL_OUTPUT_MODE_CURRENT)
-		printf(" current");
-	if (output->mode.flags & WL_OUTPUT_MODE_PREFERRED)
-		printf(" preferred");
-	printf("\n");
+
+	wl_list_for_each(mode, &output->modes, link) {
+		printf("\tmode:\n");
+
+		printf("\t\twidth: %d px, height: %d px, refresh: %.f Hz,\n",
+		       mode->width, mode->height,
+		       (float) mode->refresh / 1000);
+
+		printf("\t\tflags:");
+		if (mode->flags & WL_OUTPUT_MODE_CURRENT)
+			printf(" current");
+		if (mode->flags & WL_OUTPUT_MODE_PREFERRED)
+			printf(" preferred");
+		printf("\n");
+	}
 }
 
 static void
@@ -313,11 +325,14 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 		   int32_t refresh)
 {
 	struct output_info *output = data;
+	struct output_mode *mode = malloc(sizeof *mode);
 
-	output->mode.flags = flags;
-	output->mode.width = width;
-	output->mode.height = height;
-	output->mode.refresh = refresh;
+	mode->flags = flags;
+	mode->width = width;
+	mode->height = height;
+	mode->refresh = refresh;
+
+	wl_list_insert(output->modes.prev, &mode->link);
 }
 
 static const struct wl_output_listener output_listener = {
@@ -332,6 +347,8 @@ add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 
 	init_global_info(info, &output->global, id, "wl_output", version);
 	output->global.print = print_output_info;
+
+	wl_list_init(&output->modes);
 
 	output->output = wl_display_bind(info->display, id,
 					 &wl_output_interface);
