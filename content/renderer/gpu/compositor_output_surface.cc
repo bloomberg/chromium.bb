@@ -82,6 +82,8 @@ void CompositorOutputSurface::sendFrameToParentCompositor(
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
+  if (!client_)
+    return;
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters, OnUpdateVSyncParameters);
   IPC_END_MESSAGE_MAP()
