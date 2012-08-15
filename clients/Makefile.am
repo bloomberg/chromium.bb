@@ -54,6 +54,7 @@ clients_programs =				\
 	clickdot				\
 	editor					\
 	keyboard				\
+	weston-info				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
@@ -113,6 +114,12 @@ keyboard_SOURCES = 				\
 	text-client-protocol.h			\
 	text-protocol.c
 keyboard_LDADD = $(toolkit_libs)
+
+weston_info_SOURCES =				\
+	weston-info.c				\
+	../shared/os-compatibility.c		\
+	../shared/os-compatibility.h
+weston_info_LDADD = $(WESTON_INFO_LIBS)
 
 weston_desktop_shell_SOURCES =			\
 	desktop-shell.c				\
