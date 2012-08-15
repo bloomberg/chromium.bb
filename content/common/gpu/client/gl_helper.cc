@@ -412,7 +412,7 @@ WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
   WebGLId dst_texture = context_->createTexture();
   {
     ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
-    ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
+    ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
         context_, dst_framebuffer);
     {
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
@@ -426,7 +426,7 @@ WebGLId GLHelper::CopyTextureToImpl::ScaleTexture(
                            GL_RGBA,
                            GL_UNSIGNED_BYTE,
                            NULL);
-      context_->framebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+      context_->framebufferTexture2D(GL_FRAMEBUFFER,
                                      GL_COLOR_ATTACHMENT0,
                                      GL_TEXTURE_2D,
                                      dst_texture,
@@ -547,11 +547,11 @@ void GLHelper::CopyTextureToImpl::ReadBackFramebuffer(
     size = request->size;
     {
       ScopedFlush flush(context);
-      ScopedFramebufferBinder<GL_READ_FRAMEBUFFER> framebuffer_binder(
+      ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
           context, dst_framebuffer);
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(
           context, request->texture);
-      context->framebufferTexture2D(GL_READ_FRAMEBUFFER,
+      context->framebufferTexture2D(GL_FRAMEBUFFER,
                                     GL_COLOR_ATTACHMENT0,
                                     GL_TEXTURE_2D,
                                     request->texture,

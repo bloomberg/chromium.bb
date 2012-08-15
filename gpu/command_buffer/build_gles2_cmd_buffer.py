@@ -76,6 +76,7 @@ _ENUM_LISTS = {
       'GL_FRAMEBUFFER',
     ],
     'invalid': [
+      'GL_DRAW_FRAMEBUFFER' ,
       'GL_READ_FRAMEBUFFER' ,
     ],
   },
