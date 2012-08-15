@@ -13,6 +13,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/download_controller.h"
+#include "content/browser/android/load_url_params.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
@@ -30,6 +31,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "DownloadController",
     content::DownloadController::RegisterDownloadController },
   { "JavaBoundObject", JavaBoundObject::RegisterJavaBoundObject },
+  { "LoadUrlParams", content::RegisterLoadUrlParams },
   { "SandboxedProcessLauncher", content::RegisterSandboxedProcessLauncher },
   { "TouchPoint", content::RegisterTouchPoint },
   { "WebViewStatics", content::RegisterWebViewStatics },

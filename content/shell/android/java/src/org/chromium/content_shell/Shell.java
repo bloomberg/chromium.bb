@@ -22,6 +22,7 @@ import android.widget.TextView.OnEditorActionListener;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.LoadUrlParams;
 
 /**
  * Container for the various UI components that make up a shell window.
@@ -116,7 +117,7 @@ public class Shell extends LinearLayout {
         if (TextUtils.equals(url, mContentView.getUrl())) {
             mContentView.reload();
         } else {
-            mContentView.loadUrlWithoutUrlSanitization(sanitizeUrl(url));
+            mContentView.loadUrl(new LoadUrlParams(sanitizeUrl(url)));
         }
         mUrlTextView.clearFocus();
     }

@@ -47,16 +47,16 @@ class ContentViewCoreImpl : public ContentViewCore,
   // showing select popup.
   void SelectPopupMenuItems(JNIEnv* env, jobject obj, jintArray indices);
 
-  void LoadUrlWithoutUrlSanitization(JNIEnv* env,
-                                     jobject,
-                                     jstring jurl,
-                                     int page_transition);
-  void LoadUrlWithoutUrlSanitizationWithUserAgentOverride(
-      JNIEnv* env,
-      jobject,
-      jstring jurl,
-      int page_transition,
-      jstring user_agent_override);
+  void LoadUrl(
+      JNIEnv* env, jobject obj,
+      jstring url,
+      jint load_url_type,
+      jint transition_type,
+      jint ua_override_option,
+      jstring extra_headers,
+      jbyteArray post_data,
+      jstring base_url_for_data_url,
+      jstring virtual_url_for_data_url);
   base::android::ScopedJavaLocalRef<jstring> GetURL(JNIEnv* env, jobject) const;
   base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env, jobject obj) const;
@@ -158,11 +158,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   gfx::Rect GetBounds() const;
 
   WebContents* web_contents() const { return web_contents_; }
-  void LoadUrl(const GURL& url, int page_transition);
-  void LoadUrlWithUserAgentOverride(
-      const GURL& url,
-      int page_transition,
-      const std::string& user_agent_override);
+
+  virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
 
  private:
   // NotificationObserver implementation.

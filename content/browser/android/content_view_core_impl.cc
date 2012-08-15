@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/json/json_writer.h"
 #include "content/browser/android/content_view_client.h"
+#include "content/browser/android/load_url_params.h"
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_transition_types.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -35,10 +37,12 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
 using base::android::HasField;
+using base::android::JavaByteArrayToByteVector;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using WebKit::WebInputEvent;
@@ -179,27 +183,48 @@ jint ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env, jobject obj,
                                                        script_utf16);
 }
 
-void ContentViewCoreImpl::LoadUrlWithoutUrlSanitization(JNIEnv* env,
-                                                        jobject,
-                                                        jstring jurl,
-                                                        int page_transition) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+void ContentViewCoreImpl::LoadUrl(
+    JNIEnv* env, jobject obj,
+    jstring url,
+    jint load_url_type,
+    jint transition_type,
+    jint ua_override_option,
+    jstring extra_headers,
+    jbyteArray post_data,
+    jstring base_url_for_data_url,
+    jstring virtual_url_for_data_url) {
+  DCHECK(url);
+  NavigationController::LoadURLParams params(
+      GURL(ConvertJavaStringToUTF8(env, url)));
 
-  LoadUrl(url, page_transition);
-}
+  params.load_type = static_cast<NavigationController::LoadURLType>(
+      load_url_type);
+  params.transition_type = PageTransitionFromInt(transition_type);
+  params.override_user_agent =
+      static_cast<NavigationController::UserAgentOverrideOption>(
+          ua_override_option);
 
-void ContentViewCoreImpl::LoadUrlWithoutUrlSanitizationWithUserAgentOverride(
-    JNIEnv* env,
-    jobject,
-    jstring jurl,
-    int page_transition,
-    jstring user_agent_override) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  if (extra_headers)
+    params.extra_headers = ConvertJavaStringToUTF8(env, extra_headers);
 
-  LoadUrlWithUserAgentOverride(
-      url,
-      page_transition,
-      base::android::ConvertJavaStringToUTF8(env, user_agent_override));
+  if (post_data) {
+    std::vector<uint8> http_body_vector;
+    JavaByteArrayToByteVector(env, post_data, &http_body_vector);
+    params.browser_initiated_post_data =
+        base::RefCountedBytes::TakeVector(&http_body_vector);
+  }
+
+  if (base_url_for_data_url) {
+    params.base_url_for_data_url =
+        GURL(ConvertJavaStringToUTF8(env, base_url_for_data_url));
+  }
+
+  if (virtual_url_for_data_url) {
+    params.virtual_url_for_data_url =
+        GURL(ConvertJavaStringToUTF8(env, virtual_url_for_data_url));
+  }
+
+  LoadUrl(params);
 }
 
 ScopedJavaLocalRef<jstring> ContentViewCoreImpl::GetURL(
@@ -436,32 +461,10 @@ int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
 // Methods called from native code
 // --------------------------------------------------------------------------
 
-void ContentViewCoreImpl::LoadUrl(const GURL& url, int page_transition) {
-  content::Referrer referer;
-
-  web_contents()->GetController().LoadURL(
-      url, referer, content::PageTransitionFromInt(page_transition),
-      std::string());
-  PostLoadUrl(url);
-}
-
-void ContentViewCoreImpl::LoadUrlWithUserAgentOverride(
-    const GURL& url,
-    int page_transition,
-    const std::string& user_agent_override) {
-  web_contents()->SetUserAgentOverride(user_agent_override);
-  bool is_overriding_user_agent(!user_agent_override.empty());
-
-  content::NavigationController::LoadURLParams load_url_params(url);
-  load_url_params.transition_type =
-      content::PageTransitionFromInt(page_transition);
-  load_url_params.override_user_agent = is_overriding_user_agent ?
-      content::NavigationController::UA_OVERRIDE_TRUE :
-      content::NavigationController::UA_OVERRIDE_FALSE;
-
-  web_contents()->GetController().LoadURLWithParams(load_url_params);
-
-  PostLoadUrl(url);
+void ContentViewCoreImpl::LoadUrl(
+    NavigationController::LoadURLParams& params) {
+  web_contents()->GetController().LoadURLWithParams(params);
+  PostLoadUrl(params.url);
 }
 
 void ContentViewCoreImpl::PostLoadUrl(const GURL& url) {

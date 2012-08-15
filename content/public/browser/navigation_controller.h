@@ -63,6 +63,8 @@ class NavigationController {
     // navigations, since it shows arbitrary content as if it comes from
     // |virtual_url_for_data_url|.
     LOAD_TYPE_DATA
+
+    // Adding new LoadURLType? Also update LoadUrlParams.java static constants.
   };
 
   // User agent override type used in LoadURLParams.
@@ -76,6 +78,9 @@ class NavigationController {
 
     // Use the user agent override, if it's available.
     UA_OVERRIDE_TRUE
+
+    // Adding new UserAgentOverrideOption? Also update LoadUrlParams.java
+    // static constants.
   };
 
   // Creates a navigation entry and translates the virtual url to a real one.

@@ -374,40 +374,19 @@ public class ContentViewCore implements MotionEventDelegate {
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
      * off during user input).
      *
-     * @param url The url to load.
+     * @param pararms Parameters for this load.
      */
-    public void loadUrlWithoutUrlSanitization(String url) {
-        loadUrlWithoutUrlSanitization(url, PAGE_TRANSITION_TYPED);
-    }
-
-    /**
-     * Load url without fixing up the url string. Consumers of ContentView are responsible for
-     * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
-     * off during user input).
-     *
-     * @param url The url to load.
-     * @param pageTransition Page transition id that describes the action that led to this
-     *                       navigation. It is important for ranking URLs in the history so the
-     *                       omnibox can report suggestions correctly.
-     */
-    public void loadUrlWithoutUrlSanitization(String url, int pageTransition) {
-        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        if (mNativeContentViewCore != 0) {
-            if (isPersonalityView()) {
-                nativeLoadUrlWithoutUrlSanitizationWithUserAgentOverride(
-                        mNativeContentViewCore,
-                        url,
-                        pageTransition,
-                        mContentSettings.getUserAgentString());
-            } else {
-                // Chrome stores overridden UA strings in navigation history
-                // items, so they stay the same on going back / forward.
-                nativeLoadUrlWithoutUrlSanitization(
-                        mNativeContentViewCore,
-                        url,
-                        pageTransition);
-            }
-        }
+    public void loadUrl(LoadUrlParams params) {
+        if (mNativeContentViewCore == 0) return;
+        nativeLoadUrl(mNativeContentViewCore,
+                params.mUrl,
+                params.mLoadUrlType,
+                params.mTransitionType,
+                params.mUaOverrideOption,
+                params.mExtraHeaders,
+                params.mPostData,
+                params.mBaseUrlForDataUrl,
+                params.mVirtualUrlForDataUrl);
     }
 
     void setAllUserAgentOverridesInHistory() {
@@ -1154,11 +1133,16 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private static native void nativeDestroy(int nativeContentViewCoreImpl);
 
-    private native void nativeLoadUrlWithoutUrlSanitization(int nativeContentViewCoreImpl,
-            String url, int pageTransition);
-    private native void nativeLoadUrlWithoutUrlSanitizationWithUserAgentOverride(
-            int nativeContentViewCoreImpl, String url, int pageTransition,
-            String userAgentOverride);
+    private native void nativeLoadUrl(
+            int nativeContentViewCoreImpl,
+            String url,
+            int loadUrlType,
+            int transitionType,
+            int uaOverrideOption,
+            String extraHeaders,
+            byte[] postData,
+            String baseUrlForDataUrl,
+            String virtualUrlForDataUrl);
 
     private native String nativeGetURL(int nativeContentViewCoreImpl);
 

@@ -219,6 +219,8 @@
     'browser/android/graphics_context.cc',
     'browser/android/ime_utils.cc',
     'browser/android/ime_utils.h',
+    'browser/android/load_url_params.cc',
+    'browser/android/load_url_params.h',
     'browser/android/sandboxed_process_launcher.cc',
     'browser/android/sandboxed_process_launcher.h',
     'browser/android/touch_point.cc',

@@ -212,24 +212,10 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
      * off during user input).
      *
-     * @param url The url to load.
+     * @param pararms Parameters for this load.
      */
-    public void loadUrlWithoutUrlSanitization(String url) {
-        loadUrlWithoutUrlSanitization(url, PAGE_TRANSITION_TYPED);
-    }
-
-    /**
-     * Load url without fixing up the url string. Consumers of ContentView are responsible for
-     * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
-     * off during user input).
-     *
-     * @param url The url to load.
-     * @param pageTransition Page transition id that describes the action that led to this
-     *                       navigation. It is important for ranking URLs in the history so the
-     *                       omnibox can report suggestions correctly.
-     */
-    public void loadUrlWithoutUrlSanitization(String url, int pageTransition) {
-        mContentViewCore.loadUrlWithoutUrlSanitization(url, pageTransition);
+    public void loadUrl(LoadUrlParams params) {
+        mContentViewCore.loadUrl(params);
     }
 
     void setAllUserAgentOverridesInHistory() {
