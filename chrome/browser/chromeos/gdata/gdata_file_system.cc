@@ -3083,8 +3083,11 @@ void GDataFileSystem::AddUploadedFileToCache(
                                             params->callback));
   } else {
     NOTREACHED() << "Unexpected upload mode: " << params->upload_mode;
+    // Shouldn't reach here, so the line below should not make much sense, but
+    // since calling |callback| exactly once is our obligation, we'd better call
+    // it for not to clutter further more.
+    params->callback.Run();
   }
-  params->callback.Run();
 }
 
 void GDataFileSystem::Observe(int type,
