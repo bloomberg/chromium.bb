@@ -125,6 +125,8 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
     return false;
   }
 
+  gles2_impl_->PushGroupMarkerEXT(0, "PPAPIContext");
+
   return true;
 }
 
