@@ -51,6 +51,10 @@ class AURA_EXPORT Env {
   void SetLastMouseLocation(const Window& window,
                             const gfx::Point& location_in_root);
 
+  // If |cursor_shown| is false, sets the last_mouse_position to an invalid
+  // location. If |cursor_shown| is true, restores the last_mouse_position.
+  void SetCursorShown(bool cursor_shown);
+
   // Whether any touch device is currently down.
   bool is_touch_down() const { return is_touch_down_; }
   void set_touch_down(bool value) { is_touch_down_ = value; }
@@ -100,6 +104,9 @@ class AURA_EXPORT Env {
   int mouse_button_flags_;
   // Location of last mouse event, in screen coordinates.
   gfx::Point last_mouse_location_;
+  // If the cursor is hidden, saves the previous last_mouse_position.
+  gfx::Point hidden_cursor_location_;
+  bool is_cursor_hidden_;
   bool is_touch_down_;
   bool render_white_bg_;
   client::StackingClient* stacking_client_;

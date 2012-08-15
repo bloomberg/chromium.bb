@@ -59,6 +59,7 @@ void AshTestBase::SetUp() {
   ash::Shell::CreateInstance(delegate);
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
+  Shell::GetInstance()->cursor_manager()->ShowCursor(true);
 
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);

@@ -28,6 +28,7 @@ Env* Env::instance_ = NULL;
 
 Env::Env()
     : mouse_button_flags_(0),
+      is_cursor_hidden_(false),
       is_touch_down_(false),
       render_white_bg_(true),
       stacking_client_(NULL) {
@@ -67,6 +68,19 @@ void Env::SetLastMouseLocation(const Window& window,
       client::GetScreenPositionClient(window.GetRootWindow());
   if (client)
     client->ConvertPointToScreen(&window, &last_mouse_location_);
+}
+
+void Env::SetCursorShown(bool cursor_shown) {
+  if (cursor_shown) {
+    // Protect against restoring a position that hadn't been saved.
+    if (is_cursor_hidden_)
+      last_mouse_location_ = hidden_cursor_location_;
+    is_cursor_hidden_ = false;
+  } else {
+    hidden_cursor_location_ = last_mouse_location_;
+    last_mouse_location_ = gfx::Point(-10000, -10000);
+    is_cursor_hidden_ = true;
+  }
 }
 
 void Env::SetDisplayManager(DisplayManager* display_manager) {
