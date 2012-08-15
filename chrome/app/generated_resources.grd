@@ -6339,6 +6339,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       About Flash
       </message>
 
+      <!-- chrome://nacl strings -->
+      <message name="IDS_NACL_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+        Loading...
+      </message>
+      <message name="IDS_NACL_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
+        About NaCl
+      </message>
+
       <!-- about:version strings -->
       <message name="IDS_ABOUT_VERSION_TITLE" desc="Title on the about:version page">
         About Version

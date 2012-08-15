@@ -38,6 +38,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIInspectHost,
   chrome::kChromeUIMediaInternalsHost,
   chrome::kChromeUIMemoryHost,
+  chrome::kChromeUINaClHost,
   chrome::kChromeUINetInternalsHost,
   chrome::kChromeUINetworkViewCacheHost,
   chrome::kChromeUINewTabHost,
