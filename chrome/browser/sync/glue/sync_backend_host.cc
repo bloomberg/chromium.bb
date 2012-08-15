@@ -415,6 +415,21 @@ void SyncBackendHost::Initialize(
   registrar_->GetModelSafeRoutingInfo(&routing_info);
   registrar_->GetWorkers(&workers);
 
+  InternalComponentsFactory::Switches factory_switches = {
+      InternalComponentsFactory::ENCRYPTION_LEGACY,
+      InternalComponentsFactory::BACKOFF_NORMAL
+  };
+
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(switches::kSyncKeystoreEncryption)) {
+    factory_switches.encryption_method =
+        InternalComponentsFactoryImpl::ENCRYPTION_KEYSTORE;
+  }
+  if (cl->HasSwitch(switches::kSyncShortInitialRetryOverride)) {
+    factory_switches.backoff_override =
+        InternalComponentsFactoryImpl::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
+  }
+
   initialization_state_ = CREATING_SYNC_MANAGER;
   InitCore(DoInitializeOptions(
       sync_thread_.message_loop(),
@@ -433,7 +448,7 @@ void SyncBackendHost::Initialize(
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
-      new InternalComponentsFactoryImpl(),
+      new InternalComponentsFactoryImpl(factory_switches),
       unrecoverable_error_handler,
       report_unrecoverable_error_function));
 }
@@ -1079,8 +1094,6 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
           options.sync_notifier_factory->CreateSyncNotifier())),
       options.restored_key_for_bootstrapping,
       options.restored_keystore_key_for_bootstrapping,
-      CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kSyncKeystoreEncryption),
       scoped_ptr<InternalComponentsFactory>(
           options.internal_components_factory),
       &encryptor_,

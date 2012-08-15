@@ -239,18 +239,13 @@ std::set<ModelSafeGroup>
 }
 
 namespace {
-// Return true if the command in question was attempted and did not complete
-// successfully.
-bool IsError(SyncerError error) {
-  return error != UNSET && error != SYNCER_OK;
-}
 
 // Returns false iff one of the command results had an error.
 bool HadErrors(const ModelNeutralState& state) {
-  const bool get_key_error = IsError(state.last_get_key_result);
+  const bool get_key_error = SyncerErrorIsError(state.last_get_key_result);
   const bool download_updates_error =
-      IsError(state.last_download_updates_result);
-  const bool commit_error = IsError(state.commit_result);
+      SyncerErrorIsError(state.last_download_updates_result);
+  const bool commit_error = SyncerErrorIsError(state.commit_result);
   return get_key_error || download_updates_error || commit_error;
 }
 }  // namespace

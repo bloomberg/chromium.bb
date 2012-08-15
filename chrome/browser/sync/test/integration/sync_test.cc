@@ -170,9 +170,6 @@ void SyncTest::SetUp() {
   Encryptor::UseMockKeychain(true);
 #endif
 
-  // TODO(tim): Use command line flag.
-  syncer::SyncSchedulerImpl::ForceShortInitialBackoffRetry();
-
   // Yield control back to the InProcessBrowserTest framework.
   InProcessBrowserTest::SetUp();
 }
@@ -206,6 +203,9 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
   // TODO(sync): remove this once keystore encryption is enabled by default.
   if (!cl->HasSwitch(switches::kSyncKeystoreEncryption))
     cl->AppendSwitch(switches::kSyncKeystoreEncryption);
+
+  if (!cl->HasSwitch(switches::kSyncShortInitialRetryOverride))
+    cl->AppendSwitch(switches::kSyncShortInitialRetryOverride);
 }
 
 void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {}

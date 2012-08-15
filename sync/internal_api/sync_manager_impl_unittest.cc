@@ -725,7 +725,10 @@ class SyncManagerTest : public testing::Test,
 
   SyncManagerTest()
       : sync_notifier_mock_(NULL),
-        sync_manager_("Test sync manager") {}
+        sync_manager_("Test sync manager") {
+    switches_.encryption_method =
+        InternalComponentsFactory::ENCRYPTION_KEYSTORE;
+  }
 
   virtual ~SyncManagerTest() {
     EXPECT_FALSE(sync_notifier_mock_);
@@ -770,7 +773,6 @@ class SyncManagerTest : public testing::Test,
                        credentials,
                        scoped_ptr<SyncNotifier>(sync_notifier_mock_),
                        "", "",  // bootstrap tokens
-                       true,  // enable keystore encryption
                        scoped_ptr<InternalComponentsFactory>(GetFactory()),
                        &encryptor_,
                        &handler_,
@@ -888,7 +890,7 @@ class SyncManagerTest : public testing::Test,
   }
 
   virtual InternalComponentsFactory* GetFactory() {
-    return new TestInternalComponentsFactory(STORAGE_IN_MEMORY);
+    return new TestInternalComponentsFactory(GetSwitches(), STORAGE_IN_MEMORY);
   }
 
   // Returns true if we are currently encrypting all sync data.  May
@@ -941,6 +943,10 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.directory()->set_initial_sync_ended_for_type(type, value);
   }
 
+  InternalComponentsFactory::Switches GetSwitches() const {
+    return switches_;
+  }
+
  private:
   // Needed by |sync_manager_|.
   MessageLoop message_loop_;
@@ -957,6 +963,7 @@ class SyncManagerTest : public testing::Test,
   SyncManagerImpl sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> observer_;
+  InternalComponentsFactory::Switches switches_;
 };
 
 TEST_F(SyncManagerTest, UpdateEnabledTypes) {
@@ -2541,10 +2548,10 @@ class MockSyncScheduler : public FakeSyncScheduler {
 
 class ComponentsFactory : public TestInternalComponentsFactory {
  public:
-  ComponentsFactory(SyncScheduler* scheduler_to_use,
+  ComponentsFactory(const Switches& switches,
+                    SyncScheduler* scheduler_to_use,
                     sessions::SyncSessionContext** session_context)
-      : TestInternalComponentsFactory(
-            syncer::STORAGE_IN_MEMORY),
+      : TestInternalComponentsFactory(switches, syncer::STORAGE_IN_MEMORY),
         scheduler_to_use_(scheduler_to_use),
         session_context_(session_context) {}
   virtual ~ComponentsFactory() {}
@@ -2566,7 +2573,7 @@ class SyncManagerTestWithMockScheduler : public SyncManagerTest {
   SyncManagerTestWithMockScheduler() : scheduler_(NULL) {}
   virtual InternalComponentsFactory* GetFactory() OVERRIDE {
     scheduler_ = new MockSyncScheduler();
-    return new ComponentsFactory(scheduler_, &session_context_);
+    return new ComponentsFactory(GetSwitches(), scheduler_, &session_context_);
   }
 
   MockSyncScheduler* scheduler() { return scheduler_; }

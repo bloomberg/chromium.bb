@@ -32,4 +32,8 @@ const char* GetSyncerErrorString(SyncerError value) {
 }
 #undef ENUM_CASE
 
+bool SyncerErrorIsError(SyncerError error) {
+  return error != UNSET && error != SYNCER_OK;
+}
+
 }  // namespace syncer

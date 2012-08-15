@@ -28,12 +28,16 @@
 
 namespace syncer {
 
+class BackoffDelayProvider;
+
 class SyncSchedulerImpl : public SyncScheduler {
  public:
   // |name| is a display string to identify the syncer thread.  Takes
-  // |ownership of |syncer|.
+  // |ownership of |syncer| and |delay_provider|.
   SyncSchedulerImpl(const std::string& name,
-                    sessions::SyncSessionContext* context, Syncer* syncer);
+                    BackoffDelayProvider* delay_provider,
+                    sessions::SyncSessionContext* context,
+                    Syncer* syncer);
 
   // Calls Stop().
   virtual ~SyncSchedulerImpl();
@@ -71,16 +75,6 @@ class SyncSchedulerImpl : public SyncScheduler {
   virtual void OnShouldStopSyncingPermanently() OVERRIDE;
   virtual void OnSyncProtocolError(
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
-
-  // DDOS avoidance function.  Calculates how long we should wait before trying
-  // again after a failed sync attempt, where the last delay was |base_delay|.
-  // TODO(tim): Look at URLRequestThrottlerEntryInterface.
-  static base::TimeDelta GetRecommendedDelay(const base::TimeDelta& base_delay);
-
-  // For integration tests only.  Override initial backoff value.
-  // TODO(tim): Remove this, use command line flag and plumb through. Done
-  // this way to reduce diffs in hotfix.
-  static void ForceShortInitialBackoffRetry();
 
  private:
   enum JobProcessDecision {
@@ -149,17 +143,6 @@ class SyncSchedulerImpl : public SyncScheduler {
       ContinueNudgeWhileExponentialBackOff);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, TransientPollFailure);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, GetInitialBackoffDelay);
-
-  // A component used to get time delays associated with exponential backoff.
-  // Encapsulated into a class to facilitate testing.
-  class DelayProvider {
-   public:
-    DelayProvider();
-    virtual base::TimeDelta GetDelay(const base::TimeDelta& last_delay);
-    virtual ~DelayProvider();
-   private:
-    DISALLOW_COPY_AND_ASSIGN(DelayProvider);
-  };
 
   struct WaitInterval {
     enum Mode {
@@ -233,11 +216,6 @@ class SyncSchedulerImpl : public SyncScheduler {
 
   // Helper to ScheduleNextSync in case of consecutive sync errors.
   void HandleContinuationError(const SyncSessionJob& old_job);
-
-  // Helper to calculate the initial value for exponential backoff.
-  // See possible values and comments in polling_constants.h.
-  base::TimeDelta GetInitialBackoffDelay(
-      const sessions::ModelNeutralState& state) const;
 
   // Determines if it is legal to run |job| by checking current
   // operational mode, backoff or throttling, freshness
@@ -348,7 +326,7 @@ class SyncSchedulerImpl : public SyncScheduler {
   // Current wait state.  Null if we're not in backoff and not throttled.
   scoped_ptr<WaitInterval> wait_interval_;
 
-  scoped_ptr<DelayProvider> delay_provider_;
+  scoped_ptr<BackoffDelayProvider> delay_provider_;
 
   // Invoked to run through the sync cycle.
   scoped_ptr<Syncer> syncer_;

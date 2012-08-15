@@ -13,8 +13,10 @@
 namespace syncer {
 
 TestInternalComponentsFactory::TestInternalComponentsFactory(
+    const Switches& switches,
     StorageOption option)
-    : storage_option_(option) {
+    : switches_(switches),
+      storage_option_(option) {
 }
 
 TestInternalComponentsFactory::~TestInternalComponentsFactory() { }
@@ -33,8 +35,7 @@ TestInternalComponentsFactory::BuildContext(
     ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
-    TrafficRecorder* traffic_recorder,
-    bool keystore_encryption_enabled) {
+    TrafficRecorder* traffic_recorder) {
 
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
@@ -43,7 +44,7 @@ TestInternalComponentsFactory::BuildContext(
           connection_manager, directory, workers, monitor,
           throttled_data_type_tracker, empty_listeners, debug_info_getter,
           traffic_recorder,
-          keystore_encryption_enabled));
+          switches_.encryption_method == ENCRYPTION_KEYSTORE));
 
 }
 
@@ -64,6 +65,11 @@ TestInternalComponentsFactory::BuildDirectoryBackingStore(
   }
   NOTREACHED();
   return scoped_ptr<syncable::DirectoryBackingStore>();
+}
+
+InternalComponentsFactory::Switches
+TestInternalComponentsFactory::GetSwitches() const {
+  return switches_;
 }
 
 }  // namespace syncer

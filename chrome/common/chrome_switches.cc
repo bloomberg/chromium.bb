@@ -1264,6 +1264,11 @@ const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
 // Enable support for keystore key based encryption.
 const char kSyncKeystoreEncryption[] = "sync-keystore-encryption";
 
+// This flag causes sync to retry very quickly (see polling_constants.h) the
+// when it encounters an error, as the first step towards exponential backoff.
+const char kSyncShortInitialRetryOverride[] =
+    "sync-short-initial-retry-override";
+
 // Overrides the default notification method for sync.
 const char kSyncNotificationMethod[]        = "sync-notification-method";
 

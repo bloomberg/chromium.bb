@@ -377,7 +377,6 @@ void SyncManagerImpl::Init(
     scoped_ptr<SyncNotifier> sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
-    bool keystore_encryption_enabled,
     scoped_ptr<InternalComponentsFactory> internal_components_factory,
     Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
@@ -468,8 +467,7 @@ void SyncManagerImpl::Init(
       &throttled_data_type_tracker_,
       listeners,
       &debug_info_event_listener_,
-      &traffic_recorder_,
-      keystore_encryption_enabled).Pass();
+      &traffic_recorder_).Pass();
   session_context_->set_account_name(credentials.email);
   scheduler_ = internal_components_factory->BuildScheduler(
       name_, session_context_.get()).Pass();

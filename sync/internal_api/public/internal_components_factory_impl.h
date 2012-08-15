@@ -14,7 +14,7 @@ namespace syncer {
 
 class InternalComponentsFactoryImpl : public InternalComponentsFactory {
  public:
-  InternalComponentsFactoryImpl();
+  InternalComponentsFactoryImpl(const Switches& switches);
   virtual ~InternalComponentsFactoryImpl();
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
@@ -29,15 +29,17 @@ class InternalComponentsFactoryImpl : public InternalComponentsFactory {
       ThrottledDataTypeTracker* throttled_data_type_tracker,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
-      TrafficRecorder* traffic_recorder,
-      bool keystore_encryption_enabled) OVERRIDE;
+      TrafficRecorder* traffic_recorder) OVERRIDE;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(
       const std::string& dir_name,
       const FilePath& backing_filepath) OVERRIDE;
 
+  virtual Switches GetSwitches() const OVERRIDE;
+
  private:
+  const Switches switches_;
   DISALLOW_COPY_AND_ASSIGN(InternalComponentsFactoryImpl);
 };
 

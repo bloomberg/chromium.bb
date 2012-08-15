@@ -21,7 +21,8 @@ enum StorageOption {
 
 class TestInternalComponentsFactory : public InternalComponentsFactory {
  public:
-  explicit TestInternalComponentsFactory(StorageOption option);
+  explicit TestInternalComponentsFactory(const Switches& switches,
+                                         StorageOption option);
   virtual ~TestInternalComponentsFactory();
 
   virtual scoped_ptr<SyncScheduler> BuildScheduler(
@@ -36,15 +37,17 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
       ThrottledDataTypeTracker* throttled_data_type_tracker,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
-      TrafficRecorder* traffic_recorder,
-      bool keystore_encryption_enabled) OVERRIDE;
+      TrafficRecorder* traffic_recorder) OVERRIDE;
 
   virtual scoped_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(
       const std::string& dir_name,
       const FilePath& backing_filepath) OVERRIDE;
 
+  virtual Switches GetSwitches() const OVERRIDE;
+
  private:
+  const Switches switches_;
   const StorageOption storage_option_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInternalComponentsFactory);

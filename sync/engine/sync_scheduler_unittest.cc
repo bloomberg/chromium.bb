@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
+#include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/throttled_data_type_tracker.h"
@@ -88,8 +89,13 @@ class SyncSchedulerTest : public testing::Test {
         syncer_(NULL),
         delay_(NULL) {}
 
-  class MockDelayProvider : public SyncSchedulerImpl::DelayProvider {
+  class MockDelayProvider : public BackoffDelayProvider {
    public:
+    MockDelayProvider() : BackoffDelayProvider(
+        TimeDelta::FromSeconds(kInitialBackoffRetrySeconds),
+        TimeDelta::FromSeconds(kInitialBackoffShortRetrySeconds)) {
+    }
+
     MOCK_METHOD1(GetDelay, TimeDelta(const TimeDelta&));
   };
 
@@ -126,7 +132,10 @@ class SyncSchedulerTest : public testing::Test {
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
-        new SyncSchedulerImpl("TestSyncScheduler", context(), syncer_));
+        new SyncSchedulerImpl("TestSyncScheduler",
+            BackoffDelayProvider::FromDefaults(),
+            context(),
+            syncer_));
   }
 
   SyncSchedulerImpl* scheduler() { return scheduler_.get(); }
@@ -959,38 +968,6 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
   EXPECT_GE(r.times[4] - r.times[3], fifth);
 }
 
-TEST_F(SyncSchedulerTest, GetInitialBackoffDelay) {
-  sessions::ModelNeutralState state;
-  state.last_get_key_result = SYNC_SERVER_ERROR;
-  EXPECT_EQ(kInitialBackoffRetrySeconds,
-            scheduler()->GetInitialBackoffDelay(state).InSeconds());
-
-  state.last_get_key_result = UNSET;
-  state.last_download_updates_result = SERVER_RETURN_MIGRATION_DONE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
-            scheduler()->GetInitialBackoffDelay(state).InSeconds());
-
-  state.last_download_updates_result = SERVER_RETURN_TRANSIENT_ERROR;
-  EXPECT_EQ(kInitialBackoffRetrySeconds,
-            scheduler()->GetInitialBackoffDelay(state).InSeconds());
-
-  state.last_download_updates_result = SERVER_RESPONSE_VALIDATION_FAILED;
-  EXPECT_EQ(kInitialBackoffRetrySeconds,
-            scheduler()->GetInitialBackoffDelay(state).InSeconds());
-
-  state.last_download_updates_result = SYNCER_OK;
-  // Note that updating credentials triggers a canary job, trumping
-  // the initial delay, but in theory we still expect this function to treat
-  // it like any other error in the system (except migration).
-  state.commit_result = SERVER_RETURN_INVALID_CREDENTIAL;
-  EXPECT_EQ(kInitialBackoffRetrySeconds,
-            scheduler()->GetInitialBackoffDelay(state).InSeconds());
-
-  state.commit_result = SERVER_RETURN_MIGRATION_DONE;
-  EXPECT_EQ(kInitialBackoffShortRetrySeconds,
-            scheduler()->GetInitialBackoffDelay(state).InSeconds());
-}
-
 // Test that things go back to normal once a retry makes forward progress.
 TEST_F(SyncSchedulerTest, BackoffRelief) {
   SyncShareRecords r;
@@ -1064,25 +1041,6 @@ TEST_F(SyncSchedulerTest, TransientPollFailure) {
   // Run the successful poll.
   RunLoop();
   EXPECT_FALSE(scheduler()->IsBackingOff());
-}
-
-TEST_F(SyncSchedulerTest, GetRecommendedDelay) {
-  EXPECT_LE(TimeDelta::FromSeconds(0),
-            SyncSchedulerImpl::GetRecommendedDelay(TimeDelta::FromSeconds(0)));
-  EXPECT_LE(TimeDelta::FromSeconds(1),
-            SyncSchedulerImpl::GetRecommendedDelay(TimeDelta::FromSeconds(1)));
-  EXPECT_LE(TimeDelta::FromSeconds(50),
-            SyncSchedulerImpl::GetRecommendedDelay(
-                TimeDelta::FromSeconds(50)));
-  EXPECT_LE(TimeDelta::FromSeconds(10),
-            SyncSchedulerImpl::GetRecommendedDelay(
-                TimeDelta::FromSeconds(10)));
-  EXPECT_EQ(TimeDelta::FromSeconds(kMaxBackoffSeconds),
-            SyncSchedulerImpl::GetRecommendedDelay(
-                TimeDelta::FromSeconds(kMaxBackoffSeconds)));
-  EXPECT_EQ(TimeDelta::FromSeconds(kMaxBackoffSeconds),
-            SyncSchedulerImpl::GetRecommendedDelay(
-                TimeDelta::FromSeconds(kMaxBackoffSeconds + 1)));
 }
 
 // Test that appropriate syncer steps are requested for each job type.

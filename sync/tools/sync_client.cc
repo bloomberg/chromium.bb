@@ -351,6 +351,11 @@ int SyncClientMain(int argc, char* argv[]) {
   const char kRestoredKeystoreKeyForBootstrapping[] = "";
   NullEncryptor null_encryptor;
   LoggingUnrecoverableErrorHandler unrecoverable_error_handler;
+  InternalComponentsFactoryImpl::Switches factory_switches = {
+      InternalComponentsFactory::ENCRYPTION_KEYSTORE,
+      InternalComponentsFactory::BACKOFF_NORMAL
+  };
+
   sync_manager->Init(database_dir.path(),
                     WeakHandle<JsEventHandler>(
                         js_event_handler.AsWeakPtr()),
@@ -367,9 +372,8 @@ int SyncClientMain(int argc, char* argv[]) {
                         sync_notifier_factory.CreateSyncNotifier()),
                     kRestoredKeyForBootstrapping,
                     kRestoredKeystoreKeyForBootstrapping,
-                    true,  // enable keystore encryption
                     scoped_ptr<InternalComponentsFactory>(
-                        new InternalComponentsFactoryImpl()),
+                        new InternalComponentsFactoryImpl(factory_switches)),
                     &null_encryptor,
                     &unrecoverable_error_handler,
                     &LogUnrecoverableErrorContext);

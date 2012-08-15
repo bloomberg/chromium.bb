@@ -4,8 +4,10 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "sync/engine/backoff_delay_provider.h"
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/throttled_data_type_tracker.h"
+#include "sync/internal_api/public/engine/polling_constants.h"
 #include "sync/sessions/sync_session_context.h"
 #include "sync/sessions/test_util.h"
 #include "sync/test/engine/fake_model_worker.h"
@@ -55,7 +57,10 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
     scheduler_.reset(
-        new SyncSchedulerImpl("TestSyncSchedulerWhitebox", context(), syncer));
+        new SyncSchedulerImpl("TestSyncSchedulerWhitebox",
+            BackoffDelayProvider::FromDefaults(),
+            context(),
+            syncer));
   }
 
   virtual void TearDown() {

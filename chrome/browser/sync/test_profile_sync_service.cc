@@ -17,6 +17,7 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/syncable/directory.h"
 
+using syncer::InternalComponentsFactory;
 using syncer::ModelSafeRoutingInfo;
 using syncer::TestInternalComponentsFactory;
 using syncer::sessions::ModelNeutralState;
@@ -69,10 +70,14 @@ void SyncBackendHostForProfileSyncTest::InitCore(
 
   // It'd be nice if we avoided creating the InternalComponentsFactory in the
   // first place, but SyncBackendHost will have created one by now so we must
-  // free it.
+  // free it. Grab the switches to pass on first.
+  InternalComponentsFactory::Switches factory_switches =
+      test_options.internal_components_factory->GetSwitches();
   delete test_options.internal_components_factory;
+
   test_options.internal_components_factory =
-      new TestInternalComponentsFactory(storage);
+      new TestInternalComponentsFactory(factory_switches, storage);
+
   SyncBackendHost::InitCore(test_options);
   if (synchronous_init_) {
     // The SyncBackend posts a task to the current loop when

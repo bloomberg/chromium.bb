@@ -40,6 +40,10 @@ enum SyncerError {
 
 const char * GetSyncerErrorString(SyncerError);
 
+// Helper to check that |error| is set to something (not UNSET) and is not
+// SYNCER_OK.
+bool SyncerErrorIsError(SyncerError error);
+
 }  // namespace syncer
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_UTIL_SYNCER_ERROR_H_
