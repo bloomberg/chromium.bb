@@ -113,6 +113,8 @@ SystemTray::~SystemTray() {
        ++it) {
     (*it)->DestroyTrayView();
   }
+  GetWidget()->GetNativeView()->layer()->GetAnimator()->RemoveObserver(
+      layer_animation_observer_.get());
 }
 
 void SystemTray::Initialize() {
