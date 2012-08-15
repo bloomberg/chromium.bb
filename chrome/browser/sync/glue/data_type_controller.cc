@@ -17,10 +17,7 @@ syncer::SyncError DataTypeController::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message,
     syncer::ModelType type) {
-  // TODO(sync): remove this once search engines triggers less errors, such as
-  // due to crbug.com/130448.
-  if (type != syncer::SEARCH_ENGINES)
-    ChromeReportUnrecoverableError();
+  ChromeReportUnrecoverableError();
   return syncer::SyncError(location, message, type);
 }
 
