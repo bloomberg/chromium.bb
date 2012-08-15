@@ -103,8 +103,7 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   bool AllocateInputBuffers();
   bool AllocateFakeOutputBuffers();
   bool AllocateOutputBuffers();
-  void FreeInputBuffers();
-  void FreeOutputBuffers();
+  void FreeOMXBuffers();
 
   // Methods to handle OMX state transitions.  See section 3.1.1.2 of the spec.
   // Request transitioning OMX component to some other state.

@@ -605,12 +605,7 @@ void OmxVideoDecodeAccelerator::OnReachedIdleInDestroying() {
 
   BeginTransitionToState(OMX_StateLoaded);
 
-  // TODO(fischman): evaluate what these conditionals are doing.  What happens
-  // if they're false??
-  if (!input_buffers_at_component_)
-    FreeInputBuffers();
-  if (!output_buffers_at_component_)
-    FreeOutputBuffers();
+  FreeOMXBuffers();
 }
 
 void OmxVideoDecodeAccelerator::OnReachedLoadedInDestroying() {
@@ -622,6 +617,7 @@ void OmxVideoDecodeAccelerator::OnReachedLoadedInDestroying() {
 
 void OmxVideoDecodeAccelerator::OnReachedInvalidInErroring() {
   client_state_ = OMX_StateInvalid;
+  FreeOMXBuffers();
   ShutdownComponent();
 }
 
@@ -715,37 +711,38 @@ bool OmxVideoDecodeAccelerator::AllocateOutputBuffers() {
   return true;
 }
 
-void OmxVideoDecodeAccelerator::FreeInputBuffers() {
+void OmxVideoDecodeAccelerator::FreeOMXBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  // Calls to OMX to free buffers.
-  OMX_ERRORTYPE result;
-  OMX_BUFFERHEADERTYPE* omx_buffer;
+  bool failure_seen = false;
   while (!free_input_buffers_.empty()) {
-    omx_buffer = free_input_buffers_.front();
+    OMX_BUFFERHEADERTYPE* omx_buffer = free_input_buffers_.front();
     free_input_buffers_.pop();
-    result = OMX_FreeBuffer(component_handle_, input_port_, omx_buffer);
-    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer", PLATFORM_FAILURE,);
+    OMX_ERRORTYPE result =
+        OMX_FreeBuffer(component_handle_, input_port_, omx_buffer);
+    if (result != OMX_ErrorNone) {
+      DLOG(ERROR) << "OMX_FreeBuffer failed: 0x" << std::hex << result;
+      failure_seen = true;
+    }
   }
-}
-
-void OmxVideoDecodeAccelerator::FreeOutputBuffers() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  // Calls to OMX to free buffers.
-  OMX_ERRORTYPE result;
-
   for (OutputPictureById::iterator it = pictures_.begin();
        it != pictures_.end(); ++it) {
     OMX_BUFFERHEADERTYPE* omx_buffer = it->second.omx_buffer_header;
     DCHECK(omx_buffer);
     delete reinterpret_cast<media::Picture*>(omx_buffer->pAppPrivate);
-    result = OMX_FreeBuffer(component_handle_, output_port_, omx_buffer);
-    RETURN_ON_OMX_FAILURE(result, "OMX_FreeBuffer", PLATFORM_FAILURE,);
+    OMX_ERRORTYPE result =
+        OMX_FreeBuffer(component_handle_, output_port_, omx_buffer);
+    if (result != OMX_ErrorNone) {
+      DLOG(ERROR) << "OMX_FreeBuffer failed: 0x" << std::hex << result;
+      failure_seen = true;
+    }
     texture_to_egl_image_translator_->DestroyEglImage(egl_display_,
                                                       it->second.egl_image);
     if (client_)
       client_->DismissPictureBuffer(it->first);
   }
   pictures_.clear();
+
+  RETURN_ON_FAILURE(!failure_seen, "OMX_FreeBuffer", PLATFORM_FAILURE,);
 }
 
 void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
