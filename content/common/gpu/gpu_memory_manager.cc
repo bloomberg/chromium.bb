@@ -86,7 +86,7 @@ GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
 #if defined(OS_ANDROID)
     bytes_available_gpu_memory_ = 64 * 1024 * 1024;
 #else
-    bytes_available_gpu_memory_ = 448 * 1024 * 1024;
+    bytes_available_gpu_memory_ = 256 * 1024 * 1024;
 #endif
   }
 }
@@ -262,6 +262,10 @@ void GpuMemoryManager::Manage() {
     bonus_allocation = CalculateBonusMemoryAllocationBasedOnSize(
         stubs_with_surface_foreground[0]->GetSurfaceSize());
 #endif
+  size_t stubs_with_surface_foreground_allocation = GetMinimumTabAllocation() +
+                                                    bonus_allocation;
+  if (stubs_with_surface_foreground_allocation >= GetMaximumTabAllocation())
+    stubs_with_surface_foreground_allocation = GetMaximumTabAllocation();
 
   stub_memory_stats_for_last_manage_.clear();
 
@@ -269,7 +273,7 @@ void GpuMemoryManager::Manage() {
   AssignMemoryAllocations(
       &stub_memory_stats_for_last_manage_,
       stubs_with_surface_foreground,
-      GpuMemoryAllocation(GetMinimumTabAllocation() + bonus_allocation,
+      GpuMemoryAllocation(stubs_with_surface_foreground_allocation,
           GpuMemoryAllocation::kHasFrontbuffer |
           GpuMemoryAllocation::kHasBackbuffer),
       true);

@@ -87,6 +87,11 @@ class CONTENT_EXPORT GpuMemoryManager :
     return bytes_available_gpu_memory_;
   }
 
+  // The maximum amount of memory that a tab may be assigned
+  size_t GetMaximumTabAllocation() const {
+    return 128 * 1024 * 1024;
+  }
+
   // The minimum non-zero amount of memory that a tab may be assigned
   size_t GetMinimumTabAllocation() const {
 #if defined(OS_ANDROID)

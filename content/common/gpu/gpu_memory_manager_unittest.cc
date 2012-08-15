@@ -159,6 +159,10 @@ class GpuMemoryManagerTest : public testing::Test {
     return memory_manager_.GetAvailableGpuMemory();
   }
 
+  size_t GetMaximumTabAllocation() {
+    return memory_manager_.GetMaximumTabAllocation();
+  }
+
   size_t GetMinimumTabAllocation() {
     return memory_manager_.GetMinimumTabAllocation();
   }
@@ -639,7 +643,8 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_TRUE(stats[&stub2].visible);
   EXPECT_GT(stub1allocation2, 0ul);
   EXPECT_GT(stub2allocation2, 0ul);
-  if (compositors_get_bonus_allocation)
+  if (compositors_get_bonus_allocation &&
+      stub1allocation2 != GetMaximumTabAllocation())
     EXPECT_LT(stub1allocation2, stub1allocation1);
 
   FakeCommandBufferStub stub3(GenerateUniqueSurfaceId(), true, older_);
@@ -647,7 +652,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   Manage();
   stats = memory_manager_.stub_memory_stats_for_last_manage();
   size_t stub1allocation3 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
-  size_t stub2allocation3 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
+  size_t stub2allocation3 = stats[&stub2].allocation.gpu_resource_size_in_bytes;
   size_t stub3allocation3 = stats[&stub3].allocation.gpu_resource_size_in_bytes;
 
   EXPECT_EQ(stats.size(), 3ul);
@@ -657,7 +662,8 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_GT(stub1allocation3, 0ul);
   EXPECT_GT(stub2allocation3, 0ul);
   EXPECT_GT(stub3allocation3, 0ul);
-  if (compositors_get_bonus_allocation)
+  if (compositors_get_bonus_allocation &&
+      stub1allocation3 != GetMaximumTabAllocation())
     EXPECT_LT(stub1allocation3, stub1allocation2);
 
   stub1.surface_state_.visible = false;
@@ -674,6 +680,7 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   EXPECT_EQ(stub1allocation4, 0ul);
   EXPECT_GE(stub2allocation4, 0ul);
   EXPECT_GT(stub3allocation4, 0ul);
-  if (compositors_get_bonus_allocation)
+  if (compositors_get_bonus_allocation &&
+      stub3allocation3 != GetMaximumTabAllocation())
     EXPECT_GT(stub3allocation4, stub3allocation3);
 }
