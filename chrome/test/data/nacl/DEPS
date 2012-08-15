@@ -1,0 +1,4 @@
+include_rules = [
+  # NaCl modules include PPAPI headers.
+  "+ppapi",
+]

@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -313,6 +314,48 @@ FilePath GetTestFilePath(const FilePath& dir, const FilePath& file) {
 
 GURL GetTestUrl(const FilePath& dir, const FilePath& file) {
   return net::FilePathToFileURL(GetTestFilePath(dir, file));
+}
+
+bool GetRelativeBuildDirectory(FilePath* build_dir) {
+  // This function is used to find the build directory so TestServer can serve
+  // built files (nexes, etc).  TestServer expects a path relative to the source
+  // root.
+  FilePath exe_dir = CommandLine::ForCurrentProcess()->GetProgram().DirName();
+  FilePath src_dir;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &src_dir))
+    return false;
+
+  // We must first generate absolute paths to SRC and EXE and from there
+  // generate a relative path.
+  if (!exe_dir.IsAbsolute())
+    file_util::AbsolutePath(&exe_dir);
+  if (!src_dir.IsAbsolute())
+    file_util::AbsolutePath(&src_dir);
+  if (!exe_dir.IsAbsolute())
+    return false;
+  if (!src_dir.IsAbsolute())
+    return false;
+
+  size_t match, exe_size, src_size;
+  std::vector<FilePath::StringType> src_parts, exe_parts;
+
+  // Determine point at which src and exe diverge.
+  exe_dir.GetComponents(&exe_parts);
+  src_dir.GetComponents(&src_parts);
+  exe_size = exe_parts.size();
+  src_size = src_parts.size();
+  for (match = 0; match < exe_size && match < src_size; ++match) {
+    if (exe_parts[match] != src_parts[match])
+      break;
+  }
+
+  // Create a relative path.
+  *build_dir = FilePath();
+  for (size_t tmp_itr = match; tmp_itr < src_size; ++tmp_itr)
+    *build_dir = build_dir->Append(FILE_PATH_LITERAL(".."));
+  for (; match < exe_size; ++match)
+    *build_dir = build_dir->Append(exe_parts[match]);
+  return true;
 }
 
 AppModalDialog* WaitForAppModalDialog() {
