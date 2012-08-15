@@ -832,6 +832,22 @@ void GDataCache::Store(const std::string& resource_id,
   AssertOnSequencedWorkerPool();
   DCHECK(error);
 
+  if (file_operation_type == FILE_OPERATION_COPY) {
+    int64 file_size;
+    if (!file_util::GetFileSize(source_path, &file_size)) {
+      LOG(WARNING) << "Couldn't get file size for: " << source_path.value();
+      *error = GDATA_FILE_ERROR_FAILED;
+      return;
+    }
+
+    bool enough_space = false;
+    FreeDiskSpaceIfNeededFor(file_size, &enough_space);
+    if (!enough_space) {
+      *error = GDATA_FILE_ERROR_NO_SPACE;
+      return;
+    }
+  }
+
   FilePath dest_path;
   FilePath symlink_path;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;

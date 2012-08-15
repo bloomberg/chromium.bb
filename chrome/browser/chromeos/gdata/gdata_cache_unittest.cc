@@ -809,6 +809,9 @@ TEST_F(GDataCacheTest, GetCacheFilePath) {
 }
 
 TEST_F(GDataCacheTest, StoreToCacheSimple) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -841,6 +844,9 @@ TEST_F(GDataCacheTest, StoreToCacheSimple) {
 }
 
 TEST_F(GDataCacheTest, GetFromCacheSimple) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
@@ -871,6 +877,9 @@ TEST_F(GDataCacheTest, GetFromCacheSimple) {
 }
 
 TEST_F(GDataCacheTest, RemoveFromCacheSimple) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   // Use alphanumeric characters for resource id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -970,6 +979,9 @@ TEST_F(GDataCacheTest, PinAndUnpin) {
 }
 
 TEST_F(GDataCacheTest, StoreToCachePinned) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -1001,6 +1013,9 @@ TEST_F(GDataCacheTest, StoreToCachePinned) {
 }
 
 TEST_F(GDataCacheTest, GetFromCachePinned) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -1032,6 +1047,9 @@ TEST_F(GDataCacheTest, GetFromCachePinned) {
 }
 
 TEST_F(GDataCacheTest, RemoveFromCachePinned) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1072,6 +1090,9 @@ TEST_F(GDataCacheTest, RemoveFromCachePinned) {
 }
 
 TEST_F(GDataCacheTest, DirtyCacheSimple) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
@@ -1108,6 +1129,9 @@ TEST_F(GDataCacheTest, DirtyCacheSimple) {
 }
 
 TEST_F(GDataCacheTest, DirtyCachePinned) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -1205,6 +1229,9 @@ TEST_F(GDataCacheTest, PinAndUnpinDirtyCache) {
 }
 
 TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(3);
@@ -1285,6 +1312,9 @@ TEST_F(GDataCacheTest, DirtyCacheRepetitive) {
 }
 
 TEST_F(GDataCacheTest, DirtyCacheInvalid) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1347,6 +1377,9 @@ TEST_F(GDataCacheTest, DirtyCacheInvalid) {
 }
 
 TEST_F(GDataCacheTest, RemoveFromDirtyCache) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
@@ -1382,6 +1415,9 @@ TEST_F(GDataCacheTest, RemoveFromDirtyCache) {
 }
 
 TEST_F(GDataCacheTest, MountUnmount) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   FilePath file_path;
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
@@ -1479,6 +1515,9 @@ TEST_F(GDataCacheTest, GetResourceIdsOfAllFilesOnUIThread) {
 TEST_F(GDataCacheTest, ClearAllOnUIThread) {
   PrepareForInitCacheTest();
 
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
 
@@ -1504,5 +1543,24 @@ TEST_F(GDataCacheTest, ClearAllOnUIThread) {
   VerifyRemoveFromCache(error, resource_id, md5);
   EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
 }
+
+TEST_F(GDataCacheTest, StoreToCacheNoSpace) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(0));
+
+  std::string resource_id("pdf:1a2b");
+  std::string md5("abcdef0123456789");
+
+  // Try to store an existing file.
+  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+                   GDATA_FILE_ERROR_NO_SPACE,
+                   test_util::TEST_CACHE_STATE_NONE,
+                   GDataCache::CACHE_TYPE_TMP);
+  EXPECT_EQ(1, num_callback_invocations_);
+
+  // Verify that there's no files added.
+  EXPECT_EQ(0U, CountCacheFiles(resource_id, md5));
+}
+
 
 }   // namespace gdata

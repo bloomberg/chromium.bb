@@ -1242,6 +1242,9 @@ TEST_F(GDataFileSystemTest, CachedFeadLoadingThenServerFeedLoading) {
 }
 
 TEST_F(GDataFileSystemTest, TransferFileFromLocalToRemote_RegularFile) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   LoadRootFeedDocument("root_feed.json");
 
   // We'll add a file to the Drive root directory.
@@ -2046,6 +2049,7 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   // but then start reporting we have space. This is to emulate that
   // the disk space was freed up by removing temporary files.
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .WillOnce(Return(file_size + kMinFreeSpace))
       .WillOnce(Return(0))
       .WillOnce(Return(file_size + kMinFreeSpace))
       .WillOnce(Return(file_size + kMinFreeSpace));
@@ -2134,6 +2138,9 @@ TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -2239,6 +2246,9 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId) {
 }
 
 TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   LoadRootFeedDocument("root_feed.json");
 
   GetFileCallback callback =
@@ -2275,6 +2285,9 @@ TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
 }
 
 TEST_F(GDataFileSystemTest, UpdateFileByResourceId_PersistentFile) {
+  EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
+      .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
+
   LoadRootFeedDocument("root_feed.json");
 
   // This is a file defined in root_feed.json.
