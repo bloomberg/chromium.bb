@@ -64,8 +64,12 @@ const char kPrefOrphanAcknowledged[] = "ack_orphan";
 // Indicates whether to show an install warning when the user enables.
 const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
 
+// DO NOT USE, use kPrefDisableReasons instead.
 // Indicates whether the extension was updated while it was disabled.
-const char kPrefDisableReason[] = "disable_reason";
+const char kDeprecatedPrefDisableReason[] = "disable_reason";
+
+// A bitmask of all the reasons an extension is disabled.
+const char kPrefDisableReasons[] = "disable_reasons";
 
 // A preference that tracks browser action toolbar configuration. This is a list
 // object stored in the Preferences file. The extensions are stored by ID.
@@ -706,25 +710,38 @@ void ExtensionPrefs::SetDidExtensionEscalatePermissions(
                       Value::CreateBooleanValue(did_escalate));
 }
 
-Extension::DisableReason ExtensionPrefs::GetDisableReason(
-    const std::string& extension_id) {
+int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) {
   int value = -1;
-  if (ReadExtensionPrefInteger(extension_id, kPrefDisableReason, &value) &&
-      value >= 0 && value < Extension::DISABLE_LAST) {
-    return static_cast<Extension::DisableReason>(value);
+  if (ReadExtensionPrefInteger(extension_id, kPrefDisableReasons, &value) &&
+      value >= 0) {
+    return value;
   }
-  return Extension::DISABLE_UNKNOWN;
+  return Extension::DISABLE_NONE;
 }
 
-void ExtensionPrefs::SetDisableReason(const std::string& extension_id,
+void ExtensionPrefs::AddDisableReason(const std::string& extension_id,
                                       Extension::DisableReason disable_reason) {
-  UpdateExtensionPref(
-      extension_id, kPrefDisableReason,
-      Value::CreateIntegerValue(static_cast<int>(disable_reason)));
+  int new_value = GetDisableReasons(extension_id) |
+      static_cast<int>(disable_reason);
+  UpdateExtensionPref(extension_id, kPrefDisableReasons,
+                      Value::CreateIntegerValue(new_value));
 }
 
-void ExtensionPrefs::RemoveDisableReason(const std::string& extension_id) {
-  UpdateExtensionPref(extension_id, kPrefDisableReason, NULL);
+void ExtensionPrefs::RemoveDisableReason(
+    const std::string& extension_id,
+    Extension::DisableReason disable_reason) {
+  int new_value = GetDisableReasons(extension_id) &
+      ~static_cast<int>(disable_reason);
+  if (new_value == Extension::DISABLE_NONE) {
+    UpdateExtensionPref(extension_id, kPrefDisableReasons, NULL);
+  } else {
+    UpdateExtensionPref(extension_id, kPrefDisableReasons,
+                        Value::CreateIntegerValue(new_value));
+  }
+}
+
+void ExtensionPrefs::ClearDisableReasons(const std::string& extension_id) {
+  UpdateExtensionPref(extension_id, kPrefDisableReasons, NULL);
 }
 
 void ExtensionPrefs::UpdateBlacklist(
@@ -908,6 +925,34 @@ void ExtensionPrefs::MigratePermissions(const ExtensionIdSet& extension_ids) {
 
       // We can get rid of the old one by setting it to an empty list.
       UpdateExtensionPref(*ext_id, kPrefOldGrantedHosts, new ListValue());
+    }
+  }
+}
+
+void ExtensionPrefs::MigrateDisableReasons(
+    const ExtensionIdSet& extension_ids) {
+  for (ExtensionIdSet::const_iterator ext_id =
+       extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
+    int value = -1;
+    if (ReadExtensionPrefInteger(*ext_id, kDeprecatedPrefDisableReason,
+                                 &value)) {
+      int new_value = Extension::DISABLE_NONE;
+      switch (value) {
+        case Extension::DEPRECATED_DISABLE_USER_ACTION:
+          new_value = Extension::DISABLE_USER_ACTION;
+          break;
+        case Extension::DEPRECATED_DISABLE_PERMISSIONS_INCREASE:
+          new_value = Extension::DISABLE_PERMISSIONS_INCREASE;
+          break;
+        case Extension::DEPRECATED_DISABLE_RELOAD:
+          new_value = Extension::DISABLE_RELOAD;
+          break;
+      }
+
+      UpdateExtensionPref(*ext_id, kPrefDisableReasons,
+                          Value::CreateIntegerValue(new_value));
+      // Remove the old disable reason.
+      UpdateExtensionPref(*ext_id, kDeprecatedPrefDisableReason, NULL);
     }
   }
 }
@@ -1892,6 +1937,7 @@ void ExtensionPrefs::InitPrefStore(bool extensions_disabled) {
 
   FixMissingPrefs(extension_ids);
   MigratePermissions(extension_ids);
+  MigrateDisableReasons(extension_ids);
   extension_sorting_->Initialize(extension_ids);
 
   // Store extension controlled preference values in the

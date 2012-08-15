@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   const Extension* extension = InstallIncreasingPermissionExtensionV1();
   DisableExtension(extension->id());
   // Clear disable reason to simulate legacy disables.
-  service_->extension_prefs()->RemoveDisableReason(extension->id());
+  service_->extension_prefs()->ClearDisableReasons(extension->id());
   // Upgrade to version 2. Infer from version 1 having the same permissions
   // granted by the user that it was disabled by the user.
   extension = UpdateIncreasingPermissionExtension(extension, path_v2_, 0);
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
                        UnknownReasonHigherPermissions) {
   const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
   // Clear disable reason to simulate legacy disables.
-  service_->extension_prefs()->RemoveDisableReason(extension->id());
+  service_->extension_prefs()->ClearDisableReasons(extension->id());
   // We now have version 2 but only accepted permissions for version 1.
   GlobalError* error = GetExtensionDisabledGlobalError();
   ASSERT_TRUE(error);

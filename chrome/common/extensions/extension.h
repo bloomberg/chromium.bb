@@ -98,12 +98,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   };
 
   // Used to record the reason an extension was disabled.
+  enum DeprecatedDisableReason {
+    DEPRECATED_DISABLE_UNKNOWN,
+    DEPRECATED_DISABLE_USER_ACTION,
+    DEPRECATED_DISABLE_PERMISSIONS_INCREASE,
+    DEPRECATED_DISABLE_RELOAD,
+    DEPRECATED_DISABLE_LAST,  // Not used.
+  };
+
   enum DisableReason {
-    DISABLE_UNKNOWN,
-    DISABLE_USER_ACTION,
-    DISABLE_PERMISSIONS_INCREASE,
-    DISABLE_RELOAD,
-    DISABLE_LAST,  // Not used.
+    DISABLE_NONE = 0,
+    DISABLE_USER_ACTION = 1 << 0,
+    DISABLE_PERMISSIONS_INCREASE = 1 << 1,
+    DISABLE_RELOAD = 1 << 2,
   };
 
   enum InstallType {

@@ -152,11 +152,12 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
       bool did_escalate);
 
   // Getter and setters for disabled reason.
-  Extension::DisableReason GetDisableReason(
-      const std::string& extension_id);
-  void SetDisableReason(const std::string& extension_id,
+  int GetDisableReasons(const std::string& extension_id);
+  void AddDisableReason(const std::string& extension_id,
                         Extension::DisableReason disable_reason);
-  void RemoveDisableReason(const std::string& extension_id);
+  void RemoveDisableReason(const std::string& extension_id,
+                           Extension::DisableReason disable_reason);
+  void ClearDisableReasons(const std::string& extension_id);
 
   // Returns the version string for the currently installed extension, or
   // the empty string if not found.
@@ -553,6 +554,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Migrates the permissions data in the pref store.
   void MigratePermissions(const ExtensionIdSet& extension_ids);
+
+  // Migrates the disable reasons from a single enum to a bit mask.
+  void MigrateDisableReasons(const ExtensionIdSet& extension_ids);
 
   // Checks whether there is a state pref for the extension and if so, whether
   // it matches |check_state|.
