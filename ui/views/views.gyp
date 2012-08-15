@@ -443,15 +443,15 @@
         }],
         ['use_aura==0 or OS!="win"', {
           'sources!': [
-            'widget/hwnd_message_handler.cc',
-            'widget/hwnd_message_handler.h',
-            'widget/hwnd_message_handler_delegate.h',
             'widget/widget_message_filter.cc',
             'widget/widget_message_filter.h',
           ],
         }],
         ['OS!="win"', {
           'sources!': [
+            'widget/hwnd_message_handler.cc',
+            'widget/hwnd_message_handler.h',
+            'widget/hwnd_message_handler_delegate.h',
             'widget/widget_hwnd_utils.cc',
             'widget/widget_hwnd_utils.h',
           ],
