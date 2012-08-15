@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/content_description.h"
+#include "remoting/protocol/name_value_map.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using buzz::QName;
@@ -27,32 +28,6 @@ const char kXmlNamespace[] = "http://www.w3.org/XML/1998/namespace";
 
 const int kPortMin = 1000;
 const int kPortMax = 65535;
-
-template <typename T>
-struct NameMapElement {
-  const T value;
-  const char* const name;
-};
-
-template <typename T>
-const char* ValueToName(const NameMapElement<T> map[], size_t map_size,
-                              T value) {
-  for (size_t i = 0; i < map_size; ++i) {
-    if (map[i].value == value)
-      return map[i].name;
-  }
-  return NULL;
-}
-
-template <typename T>
-T NameToValue(const NameMapElement<T> map[], size_t map_size,
-                    const std::string& name, T default_value) {
-  for (size_t i = 0; i < map_size; ++i) {
-    if (map[i].name == name)
-      return map[i].value;
-  }
-  return default_value;
-}
 
 const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
   { JingleMessage::SESSION_INITIATE, "session-initiate" },
@@ -157,7 +132,7 @@ bool JingleMessage::IsJingleMessage(const buzz::XmlElement* stanza) {
 
 // static
 std::string JingleMessage::GetActionName(ActionType action) {
-  return ValueToName(kActionTypes, arraysize(kActionTypes), action);
+  return ValueToName(kActionTypes, action);
 }
 
 JingleMessage::JingleMessage()
@@ -187,7 +162,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
 
   const XmlElement* jingle_tag =
       stanza->FirstNamed(QName(kJingleNamespace, "jingle"));
-  if (jingle_tag == NULL) {
+  if (!jingle_tag) {
     *error = "Not a jingle message";
     return false;
   }
@@ -200,9 +175,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     *error = "action attribute is missing";
     return false;
   }
-  action = NameToValue(
-      kActionTypes, arraysize(kActionTypes), action_str, UNKNOWN_ACTION);
-  if (action == UNKNOWN_ACTION) {
+  if (!NameToValue(kActionTypes, action_str, &action)) {
     *error = "Unknown action " + action_str;
     return false;
   }
@@ -229,9 +202,10 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
   const XmlElement* reason_tag =
       jingle_tag->FirstNamed(QName(kJingleNamespace, "reason"));
   if (reason_tag && reason_tag->FirstElement()) {
-    reason = NameToValue(
-        kReasons, arraysize(kReasons),
-        reason_tag->FirstElement()->Name().LocalPart(), UNKNOWN_REASON);
+    if (!NameToValue(kReasons, reason_tag->FirstElement()->Name().LocalPart(),
+                     &reason)) {
+      reason = UNKNOWN_REASON;
+    }
   }
 
   if (action == SESSION_TERMINATE)
@@ -302,8 +276,7 @@ scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
   root->AddElement(jingle_tag);
   jingle_tag->AddAttr(QName(kEmptyNamespace, "sid"), sid);
 
-  const char* action_attr = ValueToName(
-      kActionTypes, arraysize(kActionTypes), action);
+  const char* action_attr = ValueToName(kActionTypes, action);
   if (!action_attr)
     LOG(FATAL) << "Invalid action value " << action;
   jingle_tag->AddAttr(QName(kEmptyNamespace, "action"), action_attr);
@@ -321,8 +294,8 @@ scoped_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
     XmlElement* reason_tag = new XmlElement(QName(kJingleNamespace, "reason"));
     jingle_tag->AddElement(reason_tag);
     const char* reason_string =
-        ValueToName(kReasons, arraysize(kReasons), reason);
-    if (reason_string == NULL)
+        ValueToName(kReasons, reason);
+    if (!reason_string)
       LOG(FATAL) << "Invalid reason: " << reason;
     reason_tag->AddElement(new XmlElement(
         QName(kJingleNamespace, reason_string)));

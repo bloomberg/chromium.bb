@@ -22,6 +22,7 @@ extern const int kDefaultStreamVersion;
 struct ChannelConfig {
   enum TransportType {
     TRANSPORT_STREAM,
+    TRANSPORT_MUX_STREAM,
     TRANSPORT_DATAGRAM,
     TRANSPORT_NONE,
   };

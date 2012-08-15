@@ -1658,6 +1658,7 @@
         'protocol/message_reader.h',
         'protocol/mouse_input_filter.cc',
         'protocol/mouse_input_filter.h',
+        'protocol/name_value_map.h',
         'protocol/negotiating_authenticator.cc',
         'protocol/negotiating_authenticator.h',
         'protocol/protobuf_video_reader.cc',
