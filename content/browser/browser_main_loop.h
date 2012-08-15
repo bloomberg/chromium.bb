@@ -50,6 +50,8 @@ struct MainFunctionParams;
 
 #if defined(OS_LINUX)
 class DeviceMonitorLinux;
+#elif defined(OS_MACOSX)
+class DeviceMonitorMac;
 #endif
 
 // Implements the main browser loop stages called from BrowserMainRunner.
@@ -111,6 +113,8 @@ class BrowserMainLoop {
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
 #elif defined(OS_LINUX)
   scoped_ptr<DeviceMonitorLinux> device_monitor_linux_;
+#elif defined(OS_MACOSX)
+  scoped_ptr<DeviceMonitorMac> device_monitor_mac_;
 #endif
 
   // Destroy parts_ before main_message_loop_ (required) and before other

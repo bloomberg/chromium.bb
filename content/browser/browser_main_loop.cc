@@ -68,6 +68,8 @@
 
 #if defined(OS_LINUX)
 #include "content/browser/device_monitor_linux.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/device_monitor_mac.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -505,6 +507,17 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 
   GamepadService::GetInstance()->Terminate();
 
+  // The device monitors are using |system_monitor_| as dependency, so delete
+  // them before |system_monitor_| goes away.
+  // On Mac and windows, the monitor needs to be destroyed on the same thread
+  // as they were created. On Linux, the monitor will be deleted when IO thread
+  // goes away.
+#if defined(OS_WIN)
+  system_message_window_.reset();
+#elif defined(OS_MACOSX)
+  device_monitor_mac_.reset();
+#endif
+
   // Must be size_t so we can subtract from it.
   for (size_t thread_id = BrowserThread::ID_COUNT - 1;
        thread_id >= (BrowserThread::UI + 1);
@@ -619,6 +632,8 @@ void BrowserMainLoop::BrowserThreadsStarted() {
 
 #if defined(OS_LINUX)
   device_monitor_linux_.reset(new DeviceMonitorLinux());
+#elif defined(OS_MACOSX)
+  device_monitor_mac_.reset(new DeviceMonitorMac());
 #endif
 
   // RDH needs the IO thread to be created.
