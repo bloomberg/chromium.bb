@@ -2226,6 +2226,9 @@ def CommandSelLdrTestNacl(env, name, nexe,
   # Avoid problems with [] as default arguments
   if sel_ldr_flags is None:
     sel_ldr_flags = []
+  else:
+    # Avoid modifying original list
+    sel_ldr_flags = list(sel_ldr_flags)
 
   # Disable the validator if running a GLibC test under Valgrind.
   # http://code.google.com/p/nativeclient/issues/detail?id=1799
