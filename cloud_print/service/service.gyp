@@ -26,6 +26,8 @@
         'service_switches.h',
         'win/chrome_launcher.cc',
         'win/chrome_launcher.h',
+        'win/local_security_policy.cc',
+        'win/local_security_policy.h',
       ],
       'conditions': [
         ['OS=="win"', {

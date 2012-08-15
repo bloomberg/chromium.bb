@@ -19,13 +19,12 @@
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
+#include "cloud_print/service/win/local_security_policy.h"
 #include "cloud_print/service/win/resource.h"
 
 namespace {
 
 const wchar_t kServiceStateFileName[] = L"Service State";
-
-const wchar_t kUserToRunService[] = L"NT AUTHORITY\\LocalService";
 
 // The traits class for Windows Service.
 class ServiceHandleTraits {
@@ -71,6 +70,8 @@ void InvalidUsage() {
       std::cout << "[";
         std::cout << " -" << kInstallSwitch;
         std::cout << " -" << kUserDataDirSwitch << "=DIRECTORY";
+        std::cout << " -" << kRunAsUser << "=USERNAME";
+        std::cout << " -" << kRunAsPassword << "=PASSWORD";
         std::cout << " [ -" << kQuietSwitch << " ]";
       std::cout << "]";
     std::cout << "]";
@@ -90,6 +91,9 @@ void InvalidUsage() {
     { kUninstallSwitch, "Uninstalls service." },
     { kStartSwitch, "Starts service. May be combined with installation." },
     { kStopSwitch, "Stops service." },
+    { kRunAsUser, "Windows user to run the service in form DOMAIN\\USERNAME. "
+                  "Make sure user has access to printers." },
+    { kRunAsPassword, "Password for windows user to run the service" },
   };
 
   for (size_t i = 0; i < arraysize(kSwitchHelp); ++i) {
@@ -128,36 +132,37 @@ std::string GetOption(const std::string& name, const std::string& default,
   return tmp;
 }
 
-HRESULT WriteFileAsUser(const FilePath& path, const wchar_t* user,
+HRESULT WriteFileAsUser(const FilePath& path, const string16& user,
                         const char* data, int size) {
-    ATL::CAccessToken thread_token;
-    if (!thread_token.OpenThreadToken(TOKEN_DUPLICATE | TOKEN_IMPERSONATE)) {
-      LOG(ERROR) << "Failed to open thread token.";
-      return HResultFromLastError();
-    }
-
-    ATL::CSid local_service;
-    if (!local_service.LoadAccount(user)) {
-      LOG(ERROR) << "Failed create SID.";
-      return HResultFromLastError();
-    }
-
     ATL::CAccessToken token;
-    ATL::CTokenGroups group;
-    group.Add(local_service, 0);
-
-    const ATL::CTokenGroups empty_group;
-    if (!thread_token.CreateRestrictedToken(&token, empty_group, group)) {
-      LOG(ERROR) << "Failed to create restricted token for " << user << ".";
-      return HResultFromLastError();
-    }
-
-    if (!token.Impersonate()) {
-      LOG(ERROR) << "Failed to impersonate " << user << ".";
-      return HResultFromLastError();
-    }
-
     ATL::CAutoRevertImpersonation auto_revert(&token);
+    if (!user.empty()) {
+      ATL::CAccessToken thread_token;
+      if (!thread_token.OpenThreadToken(TOKEN_DUPLICATE | TOKEN_IMPERSONATE)) {
+        LOG(ERROR) << "Failed to open thread token.";
+        return HResultFromLastError();
+      }
+
+      ATL::CSid local_service;
+      if (!local_service.LoadAccount(user.c_str())) {
+        LOG(ERROR) << "Failed create SID.";
+        return HResultFromLastError();
+      }
+
+      ATL::CTokenGroups group;
+      group.Add(local_service, 0);
+
+      const ATL::CTokenGroups empty_group;
+      if (!thread_token.CreateRestrictedToken(&token, empty_group, group)) {
+        LOG(ERROR) << "Failed to create restricted token for " << user << ".";
+        return HResultFromLastError();
+      }
+
+      if (!token.Impersonate()) {
+        LOG(ERROR) << "Failed to impersonate " << user << ".";
+        return HResultFromLastError();
+      }
+    }
     if (file_util::WriteFile(path, data, size) != size) {
       LOG(ERROR) << "Failed to write file " << path.value() << ".";
       return HResultFromLastError();
@@ -182,7 +187,7 @@ class CloudPrintServiceModule
     return S_OK;
   }
 
-  HRESULT InstallService() {
+  HRESULT InstallService(const string16& user, const string16& password) {
     using namespace chrome_launcher_support;
 
     // TODO(vitalybuka): consider "lite" version if we don't want unregister
@@ -192,8 +197,7 @@ class CloudPrintServiceModule
       return hr;
 
     if (GetChromePathForInstallationLevel(SYSTEM_LEVEL_INSTALLATION).empty()) {
-      LOG(ERROR) << "Found no Chrome installed for all users.";
-      return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+      LOG(WARNING) << "Found no Chrome installed for all users.";
     }
 
     hr = UpdateRegistryAppId(true);
@@ -206,6 +210,19 @@ class CloudPrintServiceModule
     command_line.AppendSwitch(kServiceSwitch);
     command_line.AppendSwitchPath(kUserDataDirSwitch, user_data_dir_);
 
+    LocalSecurityPolicy local_security_policy;
+    if (local_security_policy.Open()) {
+      if (!local_security_policy.IsPrivilegeSet(user, kSeServiceLogonRight)) {
+        LOG(WARNING) << "Setting " << kSeServiceLogonRight << " for " << user;
+        if (!local_security_policy.SetPrivilege(user, kSeServiceLogonRight)) {
+          LOG(ERROR) << "Failed to set" << kSeServiceLogonRight;
+          LOG(ERROR) << "Make sure you can run the service with this user.";
+        }
+      }
+    } else {
+      LOG(ERROR) << "Failed to open security policy.";
+    }
+
     ServiceHandle scm;
     hr = OpenServiceManager(&scm);
     if (FAILED(hr))
@@ -216,7 +233,8 @@ class CloudPrintServiceModule
             scm, m_szServiceName, m_szServiceName, SERVICE_ALL_ACCESS,
             SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
             command_line.GetCommandLineString().c_str(), NULL, NULL, NULL,
-            kUserToRunService, NULL));
+            user.empty() ? NULL : user.c_str(),
+            password.empty() ? NULL : password.c_str()));
 
     if (!service.IsValid())
       return HResultFromLastError();
@@ -277,20 +295,25 @@ class CloudPrintServiceModule
       return UninstallService();
 
     if (command_line.HasSwitch(kInstallSwitch)) {
-      if (!command_line.HasSwitch(kUserDataDirSwitch)) {
+      if (!command_line.HasSwitch(kUserDataDirSwitch) ||
+          !command_line.HasSwitch(kRunAsUser) ||
+          !command_line.HasSwitch(kRunAsPassword)) {
         InvalidUsage();
         return S_FALSE;
       }
 
-      HRESULT hr = ValidateUserDataDir();
+      HRESULT hr = ProcessServiceState(command_line.HasSwitch(kQuietSwitch));
       if (FAILED(hr))
         return hr;
 
-      hr = ProcessServiceState(command_line.HasSwitch(kQuietSwitch));
-      if (FAILED(hr))
-        return hr;
+      CommandLine::StringType run_as_user =
+          command_line.GetSwitchValueNative(kRunAsUser);
+      CommandLine::StringType run_as_password =
+          command_line.GetSwitchValueNative(kRunAsPassword);
 
-      hr = InstallService();
+      hr = ValidateUserDataDir(run_as_user.c_str());
+
+      hr = InstallService(run_as_user.c_str(), run_as_password.c_str());
       if (SUCCEEDED(hr) && command_line.HasSwitch(kStartSwitch))
         return StartService();
 
@@ -316,16 +339,16 @@ class CloudPrintServiceModule
     return S_FALSE;
   }
 
-  HRESULT ValidateUserDataDir() {
+  HRESULT ValidateUserDataDir(const string16& user) {
     FilePath temp_file;
     const char some_data[] = "1234";
     if (!file_util::CreateTemporaryFileInDir(user_data_dir_, &temp_file))
       return E_FAIL;
-    HRESULT hr = WriteFileAsUser(temp_file, kUserToRunService, some_data,
+    HRESULT hr = WriteFileAsUser(temp_file, user, some_data,
                                  sizeof(some_data));
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to write user data. Make sure that account \'" <<
-          kUserToRunService << "\'has full access to \'" <<
+          user << "\' has full access to \'" <<
           user_data_dir_.value() << "\'.";
     }
     file_util::Delete(temp_file, false);
@@ -343,6 +366,7 @@ class CloudPrintServiceModule
                       service_state.FromString(contents);
 
       if (!quiet) {
+        std::cout << "\n";
         std::cout << file.value() << ":\n";
         std::cout << contents << "\n";
       }
@@ -377,11 +401,12 @@ class CloudPrintServiceModule
         if (is_valid) {
           std::string new_contents = service_state.ToString();
           if (new_contents != contents) {
-            HRESULT hr = WriteFileAsUser(file, kUserToRunService,
-                                         new_contents.c_str(),
-                                         new_contents.size());
-            if (FAILED(hr))
-              return hr;
+            size_t  written = file_util::WriteFile(file, new_contents.c_str(),
+                                                   new_contents.size());
+            if (written != new_contents.size()) {
+              LOG(ERROR) << "Failed to write file " << file.value() << ".";
+              return HResultFromLastError();
+            }
           }
         }
       }
