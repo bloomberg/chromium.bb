@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'mouselock',

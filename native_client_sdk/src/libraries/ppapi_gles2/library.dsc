@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['win'],
+  'TOOLS': ['win', 'linux'],
   'SEARCH' : ['../../../../ppapi/lib/gl/gles2'],
   'TARGETS': [
     {

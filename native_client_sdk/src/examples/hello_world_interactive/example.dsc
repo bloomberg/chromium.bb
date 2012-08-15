@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl', 'win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'hello_world_interactive',

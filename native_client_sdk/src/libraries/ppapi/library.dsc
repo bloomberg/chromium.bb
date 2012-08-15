@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['win'],
+  'TOOLS': ['win', 'linux'],
   'TARGETS': [
     {
       'NAME' : 'ppapi',

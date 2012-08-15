@@ -42,6 +42,14 @@ PNACL_LDFLAGS?=-pthread
 TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
 
+LINUX_DEFAULTS = """
+LINUX_CC?=gcc -c
+LINUX_CXX?=g++ -c -std=gnu++98
+LINUX_LINK?=g++ -shared -Wl,-as-needed
+LINUX_LIB?=ar r
+LINUX_CCFLAGS=-I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
+"""
+
 WIN_DEFAULTS = """
 WIN_CC?=cl.exe /nologo
 WIN_CXX?=cl.exe /nologo
@@ -53,20 +61,19 @@ WIN_CCFLAGS=/I$(NACL_SDK_ROOT)/include /I$(NACL_SDK_ROOT)/include/win -D WIN32 -
 #
 # Compile rules for various platforms.
 #
-CC_RULE = '<tc>/<config>/<name>_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>/<config>'
 NACL_CC_RULES = {
   'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
   'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
 }
 
 SO_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -fPIC -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
-  'Release': '<TAB>$(<CC>) -o $@ $< -02 <MACH> -fPIC -DTCNAME=<tc> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>'
+  'Debug': '<TAB>$(<CC>) -o $@ $< -g -O0 <MACH> -fPIC -DTCNAME=<tcname> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) -o $@ $< -O2 <MACH> -fPIC -DTCNAME=<tcname> $(<TC>_CCFLAGS) $(<PROJ>_<EXT>FLAGS) <DEFLIST> <INCLIST>'
 }
 
 WIN_CC_RULES = {
-  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /Zi /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
-  'Release': '<TAB>$(<CC>) /O2 /Fo$@ /MT /c $< -DTCNAME=host $(WIN_CCFLAGS) <DEFLIST> <INCLIST>'
+  'Debug': '<TAB>$(<CC>) /Od /Fo$@ /MTd /Zi /c $< -DTCNAME=<tcname> $(WIN_CCFLAGS) <DEFLIST> <INCLIST>',
+  'Release': '<TAB>$(<CC>) /O2 /Fo$@ /MT /c $< -DTCNAME=<tcname> $(WIN_CCFLAGS) <DEFLIST> <INCLIST>'
 }
 
 #
@@ -78,8 +85,8 @@ NEXE_LINK_RULES = {
 }
 
 SO_LINK_RULES = {
-  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>',
-  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tc>/<config> <LIBLIST>',
+  'Debug': '<TAB>$(<LINK>) -o $@ $^ -g <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config> <LIBLIST>',
+  'Release': '<TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS) -L$(NACL_SDK_ROOT)/lib/$(OSNAME)_<ARCH>_<tcname>/<config> <LIBLIST>',
 }
 
 PEXE_TRANSLATE_RULE = """
@@ -159,6 +166,16 @@ WIN_TOOL = {
   'LIB': '$(NACL_SDK_ROOT)/lib/win_<ARCH>_host/<config>/<proj>.lib',
 }
 
+LINUX_TOOL = {
+  'DEFINE': '-D%s',
+  'INCLUDE': '-I%s',
+  'LIBRARY': '-l%s',
+  'MAIN': '<tc>/<config>/lib<proj>_<ARCH>.so',
+  'NMFMAIN': '<tc>/<config>/lib<proj>_<ARCH>.so',
+  'SO': '<tc>/<config>/lib<proj>_<ARCH>.so',
+  'LIB': '$(NACL_SDK_ROOT)/lib/linux_<ARCH>_host/<config>/lib<proj>.a',
+}
+
 NACL_TOOL = {
   'DEFINE': '-D%s',
   'INCLUDE': '-I%s',
@@ -186,6 +203,16 @@ PNACL_TOOL = {
 #
 # Various Architectures
 #
+LINUX_32 = {
+  '<arch>': '32',
+  '<ARCH>': 'x86_32',
+  '<MACH>': '-m32',
+}
+LINUX_64 = {
+  '<arch>': '64',
+  '<ARCH>': 'x86_64',
+  '<MACH>': '-m64',
+}
 NACL_X86_32 = {
   '<arch>': '32',
   '<ARCH>': 'x86_32',
@@ -252,6 +279,17 @@ BUILD_RULES = {
     'LIB': WIN_LIB_RULES,
     'SO': None,
     'TOOL': WIN_TOOL
+  },
+  'linux' : {
+    'ARCHES': [LINUX_32, LINUX_64],
+    'DEFS': LINUX_DEFAULTS,
+    'CC': SO_CC_RULES,
+    'CXX': SO_CC_RULES,
+    'NMF' : NMF_EMPTY,
+    'MAIN': SO_LINK_RULES,
+    'LIB': POSIX_LIB_RULES,
+    'SO': None,
+    'TOOL': LINUX_TOOL
   }
 }
 
@@ -366,12 +404,17 @@ class MakeRules(object):
 
   def SetToolchain(self, tc):
     TC = tc.upper()
+    if tc in ('linux', 'win'):
+      tcname = 'host'
+    else:
+      tcname = tc
     self.vars['<CC>'] = '%s_CC' % TC
     self.vars['<CXX>'] = '%s_CXX' % TC
     self.vars['<DUMP>'] = '%s_DUMP' % TC
     self.vars['<LIB>'] = '%s_LIB' % TC
     self.vars['<LINK>'] = '%s_LINK' % TC
     self.vars['<tc>'] = tc
+    self.vars['<tcname>'] = tcname
     self.vars['<TC>'] = TC
     self.SetDefines(self.defines)
     self.SetIncludes(self.includes)

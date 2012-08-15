@@ -204,7 +204,7 @@ def GenerateReplacements(desc, tools):
 
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
-    'TOOLS' : (list, ['newlib', 'glibc', 'pnacl', 'win'], True),
+    'TOOLS' : (list, ['newlib', 'glibc', 'pnacl', 'win', 'linux'], True),
     'CONFIGS' : (list, ['Debug', 'Release'], False),
     'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
