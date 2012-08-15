@@ -177,6 +177,10 @@
             '../../native_client/src/shared/gio/gio.gyp:gio_lib',
           ],
         },
+      ],
+    }],
+    ['disable_nacl==0 and disable_nacl_untrusted==0 and target_arch!="arm"', {
+      'targets': [
         {
           'target_name': 'nacl_ipc_irt',
           'type': 'none',
