@@ -56,21 +56,6 @@ void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers);
 void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
 
 /*
- * NaClUntrustedThreadsSuspendAllButOne() is used by the debug stub to suspend
- * all untrusted threads except one that received a trap.
- */
-void NaClUntrustedThreadsSuspendAllButOne(struct NaClApp *nap,
-                                          struct NaClAppThread *natp_to_skip,
-                                          int save_registers);
-
-/*
- * Used by the debug stub to resume threads suspended by
- * NaClUntrustedThreadsSuspendAllButOne().
- */
-void NaClUntrustedThreadsResumeAllButOne(struct NaClApp *nap,
-                                         struct NaClAppThread *natp_to_skip);
-
-/*
  * Get or modify the untrusted register state of a thread.  Calling
  * these functions is only valid if the thread is currently suspended
  * and was suspended with save_registers=1.
