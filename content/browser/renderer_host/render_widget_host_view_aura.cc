@@ -618,9 +618,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   surface_route_id_ = params_in_pixel.route_id;
   // If protection state changed, then this swap is stale. We must still ACK but
   // do not update current_surface_ since it may have been discarded.
-  if (host_->is_hidden() ||
-      (params_in_pixel.protection_state_id &&
-          params_in_pixel.protection_state_id != protection_state_id_)) {
+  if (params_in_pixel.protection_state_id &&
+      params_in_pixel.protection_state_id != protection_state_id_) {
     DCHECK(!current_surface_);
     if (!params_in_pixel.skip_ack)
       InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id, NULL);
@@ -689,9 +688,8 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
   surface_route_id_ = params_in_pixel.route_id;
   // If visible state changed, then this PSB is stale. We must still ACK but
   // do not update current_surface_.
-  if (host_->is_hidden() ||
-      (params_in_pixel.protection_state_id &&
-          params_in_pixel.protection_state_id != protection_state_id_)) {
+  if (params_in_pixel.protection_state_id &&
+      params_in_pixel.protection_state_id != protection_state_id_) {
     DCHECK(!current_surface_);
     InsertSyncPointAndACK(params_in_pixel.route_id, gpu_host_id, NULL);
     return;
