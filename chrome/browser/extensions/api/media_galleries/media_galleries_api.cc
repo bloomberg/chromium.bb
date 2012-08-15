@@ -23,7 +23,7 @@
 #include "base/sys_string_conversions.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
+#if !defined(OS_MACOSX)
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
 #endif
 
@@ -112,7 +112,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
     return;
   }
 
-#if defined(TOOLKIT_GTK)
+#if !defined(OS_MACOSX)
   // Controller will delete itself.
   new chrome::MediaGalleriesDialogController(
       tab_contents, *GetExtension(),

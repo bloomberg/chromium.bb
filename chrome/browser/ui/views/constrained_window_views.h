@@ -51,7 +51,8 @@ class NativeConstrainedWindow {
 // ConstrainedWindowViews
 //
 //  A ConstrainedWindow implementation that implements a Constrained Window as
-//  a child HWND with a custom window frame.
+//  a child HWND with a custom window frame. The ConstrainedWindowViews owns
+//  itself and will be deleted soon after being closed.
 //
 class ConstrainedWindowViews : public views::Widget,
                                public ConstrainedWindow,

@@ -144,8 +144,6 @@ MediaGalleryPrefInfo::~MediaGalleryPrefInfo() {}
 
 MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
     : profile_(profile) {
-  DCHECK(UserInteractionIsEnabled());
-
   // Populate the default galleries if this is a fresh profile.
   MediaGalleryPrefId current_id =
       profile_->GetPrefs()->GetUint64(prefs::kMediaGalleriesUniqueId);
@@ -399,9 +397,6 @@ string16 MediaGalleriesPreferences::ComputeDisplayName(const FilePath& path) {
 
 // static
 void MediaGalleriesPreferences::RegisterUserPrefs(PrefService* prefs) {
-  if (!UserInteractionIsEnabled())
-    return;
-
   prefs->RegisterListPref(prefs::kMediaGalleriesRememberedGalleries,
                           PrefService::UNSYNCABLE_PREF);
   prefs->RegisterUint64Pref(prefs::kMediaGalleriesUniqueId,

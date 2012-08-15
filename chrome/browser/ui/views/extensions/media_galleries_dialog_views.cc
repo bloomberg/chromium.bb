@@ -1,0 +1,206 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/extensions/media_galleries_dialog_views.h"
+
+#include "chrome/browser/ui/views/constrained_window_views.h"
+#include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
+#include "ui/views/view.h"
+
+namespace chrome {
+
+typedef MediaGalleriesDialogController::KnownGalleryPermissions
+    GalleryPermissions;
+
+namespace {
+
+// Heading font size correction.
+#if defined(CROS_FONTS_USING_BCI)
+const int kHeadingFontSizeDelta = 0;
+#else
+const int kHeadingFontSizeDelta = 1;
+#endif
+
+const int kContentWidth = 450;
+
+}  // namespace
+
+MediaGalleriesDialogViews::MediaGalleriesDialogViews(
+    MediaGalleriesDialogController* controller)
+    : controller_(controller),
+      window_(NULL),
+      contents_(new views::View()),
+      checkbox_container_(NULL),
+      add_gallery_(NULL),
+      confirm_available_(false),
+      accepted_(false) {
+  InitChildViews();
+
+  // Ownership of |contents_| is handed off by this call. |window_| will take
+  // care of deleting itself after calling DeleteDelegate().
+  window_ = new ConstrainedWindowViews(controller->tab_contents(), this);
+}
+
+MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}
+
+void MediaGalleriesDialogViews::InitChildViews() {
+  // Layout.
+  views::GridLayout* layout = new views::GridLayout(contents_);
+  layout->SetInsets(views::kPanelVertMargin, views::kPanelHorizMargin,
+                    0, views::kPanelHorizMargin);
+  int column_set_id = 0;
+  views::ColumnSet* columns = layout->AddColumnSet(column_set_id);
+  columns->AddColumn(views::GridLayout::LEADING,
+                     views::GridLayout::LEADING,
+                     1,
+                     views::GridLayout::FIXED,
+                     kContentWidth,
+                     0);
+  contents_->SetLayoutManager(layout);
+
+  // Header text.
+  views::Label* header = new views::Label(controller_->GetHeader());
+  header->SetFont(header->font().DeriveFont(kHeadingFontSizeDelta,
+                                            gfx::Font::BOLD));
+  header->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->StartRow(0, column_set_id);
+  layout->AddView(header);
+
+  // Message text.
+  views::Label* subtext = new views::Label(controller_->GetSubtext());
+  subtext->SetMultiLine(true);
+  subtext->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->StartRowWithPadding(0, column_set_id,
+                              0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(subtext);
+
+  // Checkboxes.
+  checkbox_container_ = new views::View();
+  checkbox_container_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           views::kPanelHorizIndentation,
+                           0,
+                           views::kRelatedControlSmallVerticalSpacing));
+  layout->StartRowWithPadding(0, column_set_id,
+                              0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(checkbox_container_);
+
+  const GalleryPermissions& permissions = controller_->permissions();
+  for (GalleryPermissions::const_iterator iter = permissions.begin();
+       iter != permissions.end(); ++iter) {
+    AddOrUpdateGallery(&iter->second.pref_info, iter->second.allowed);
+    if (iter->second.allowed)
+      confirm_available_ = true;
+  }
+
+  // Add Gallery button.
+  add_gallery_ = new views::NativeTextButton(
+      this, l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY));
+  layout->StartRowWithPadding(0, column_set_id,
+                              0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(add_gallery_);
+}
+
+void MediaGalleriesDialogViews::UpdateGallery(
+    const MediaGalleryPrefInfo* gallery,
+    bool permitted) {
+  // After adding a new checkbox, we have to update the size of the dialog.
+  if (AddOrUpdateGallery(gallery, permitted))
+    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+}
+
+bool MediaGalleriesDialogViews::AddOrUpdateGallery(
+    const MediaGalleryPrefInfo* gallery,
+    bool permitted) {
+  CheckboxMap::iterator iter = checkbox_map_.find(gallery);
+  if (iter != checkbox_map_.end()) {
+    iter->second->SetChecked(permitted);
+    return false;
+  }
+
+  views::Checkbox* checkbox = new views::Checkbox(gallery->display_name);
+  checkbox->set_listener(this);
+  checkbox->SetTooltipText(gallery->path.LossyDisplayName());
+  checkbox_container_->AddChildView(checkbox);
+  checkbox->SetChecked(permitted);
+  checkbox_map_[gallery] = checkbox;
+
+  return true;
+}
+
+void MediaGalleriesDialogViews::DeleteDelegate() {
+  controller_->DialogFinished(accepted_);
+}
+
+views::Widget* MediaGalleriesDialogViews::GetWidget() {
+  return contents_->GetWidget();
+}
+
+const views::Widget* MediaGalleriesDialogViews::GetWidget() const {
+  return contents_->GetWidget();
+}
+
+views::View* MediaGalleriesDialogViews::GetContentsView() {
+  return contents_;
+}
+
+string16 MediaGalleriesDialogViews::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
+      IDS_MEDIA_GALLERIES_DIALOG_CONFIRM :
+      IDS_MEDIA_GALLERIES_DIALOG_CANCEL);
+}
+
+bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  return button != ui::DIALOG_BUTTON_OK || confirm_available_;
+}
+
+bool MediaGalleriesDialogViews::Cancel() {
+  return true;
+}
+
+bool MediaGalleriesDialogViews::Accept() {
+  accepted_ = true;
+  return true;
+}
+
+void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
+                                              const ui::Event& event) {
+  confirm_available_ = true;
+  GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
+
+  if (sender == add_gallery_) {
+    controller_->OnAddFolderClicked();
+    return;
+  }
+
+  for (CheckboxMap::iterator iter = checkbox_map_.begin();
+       iter != checkbox_map_.end(); ++iter) {
+    if (sender == iter->second) {
+      controller_->GalleryToggled(
+          iter->first, static_cast<views::Checkbox*>(sender)->checked());
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+// MediaGalleriesDialogViewsController -----------------------------------------
+
+// static
+MediaGalleriesDialog* MediaGalleriesDialog::Create(
+    MediaGalleriesDialogController* controller) {
+  return new MediaGalleriesDialogViews(controller);
+}
+
+}  // namespace chrome

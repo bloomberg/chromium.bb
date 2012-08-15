@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -56,8 +55,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableMediaGalleryUI);
     extensions_dir_ = profile_->GetPath().AppendASCII("Extensions");
     ASSERT_TRUE(file_util::CreateDirectory(extensions_dir_));
 
@@ -67,7 +64,6 @@ class MediaGalleriesPreferencesTest : public testing::Test {
     extension_service_ = extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), extensions_dir_, false);
 
-    MediaGalleriesPreferences::RegisterUserPrefs(profile_->GetPrefs());
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
 
     // Load the default galleries into the expectations.
