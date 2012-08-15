@@ -38,7 +38,8 @@ class UserPolicySigninServiceTest : public testing::Test {
   UserPolicySigninServiceTest()
       : loop_(MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_) {}
+        file_thread_(content::BrowserThread::FILE, &loop_),
+        io_thread_(content::BrowserThread::IO, &loop_) {}
 
   virtual void SetUp() OVERRIDE {
     g_browser_process->browser_policy_connector()->Init();
@@ -84,11 +85,12 @@ class UserPolicySigninServiceTest : public testing::Test {
   // UserCloudPolicyManager.
   MockCloudPolicyStore* mock_store_;
 
-  // BrowserPolicyConnector wants to initialize various components
-  // asynchronously via tasks, so create a fake thread here.
+  // BrowserPolicyConnector and UrlFetcherFactory want to initialize and free
+  // various components asynchronously via tasks, so create fake threads here.
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+  content::TestBrowserThread io_thread_;
 
   scoped_ptr<TestingPrefService> local_state_;
 };
