@@ -80,7 +80,8 @@ remoting.HostController.prototype.getConsent = function(callback) {
 remoting.HostController.prototype.updateDom = function() {
   var match = '';
   var state = this.state();
-  var enabled = (state == remoting.HostController.State.STARTED);
+  var enabled = (state == remoting.HostController.State.STARTING) ||
+      (state == remoting.HostController.State.STARTED);
   var supported = (state != remoting.HostController.State.NOT_IMPLEMENTED);
   remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
   document.getElementById('daemon-control').hidden = !supported;
