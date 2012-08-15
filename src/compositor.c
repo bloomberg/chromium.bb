@@ -930,6 +930,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
 
+	pixman_region32_subtract(&ec->primary_plane.damage,
+				 &ec->primary_plane.damage, &repaint);
+
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	if (es->blend || es->alpha < 1.0)
 		glEnable(GL_BLEND);
@@ -1124,8 +1127,7 @@ surface_accumulate_damage(struct weston_surface *surface,
 			      &surface->plane->damage, &surface->damage);
 	empty_region(&surface->damage);
 	pixman_region32_copy(&surface->clip, opaque);
-	if (surface->plane == &surface->compositor->primary_plane)
-		pixman_region32_union(opaque, opaque, &surface->transform.opaque);
+	pixman_region32_union(opaque, opaque, &surface->transform.opaque);
 }
 
 static void
@@ -1137,7 +1139,7 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	struct wl_list frame_callback_list;
-	pixman_region32_t opaque, output_damage;
+	pixman_region32_t opaque, output_damage, new_damage;
 	int32_t width, height;
 
 	weston_compositor_update_drag_surfaces(ec);
@@ -1169,23 +1171,29 @@ weston_output_repaint(struct weston_output *output, uint32_t msecs)
 		wl_list_for_each(es, &ec->surface_list, link)
 			weston_surface_move_to_plane(es, &ec->primary_plane);
 
-
 	pixman_region32_init(&opaque);
 
 	wl_list_for_each(es, &ec->surface_list, link)
 		surface_accumulate_damage(es, &opaque);
 
-	pixman_region32_init(&output_damage);
-	pixman_region32_union(&output_damage, &ec->primary_plane.damage,
-			      &output->previous_damage);
-	pixman_region32_copy(&output->previous_damage,
-			     &ec->primary_plane.damage);
-	pixman_region32_intersect(&output_damage,
-				  &output_damage, &output->region);
-	pixman_region32_subtract(&ec->primary_plane.damage,
-				 &ec->primary_plane.damage, &output->region);
-
 	pixman_region32_fini(&opaque);
+
+	pixman_region32_init(&output_damage);
+
+	pixman_region32_init(&new_damage);
+	pixman_region32_copy(&new_damage, &ec->primary_plane.damage);
+
+	pixman_region32_union(&ec->primary_plane.damage,
+			      &ec->primary_plane.damage,
+			      &output->previous_damage);
+
+	pixman_region32_intersect(&output->previous_damage,
+				  &new_damage, &output->region);
+
+	pixman_region32_intersect(&output_damage,
+				  &ec->primary_plane.damage, &output->region);
+
+	pixman_region32_fini(&new_damage);
 
 	if (output->dirty)
 		weston_output_update_matrix(output);
