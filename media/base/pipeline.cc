@@ -110,10 +110,7 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const PipelineStatusCB& error_cb,
                      const PipelineStatusCB& start_cb) {
   base::AutoLock auto_lock(lock_);
-  if (running_) {
-    NOTREACHED() << "Media pipeline is already running";
-    return;
-  }
+  CHECK(!running_) << "Media pipeline is already running";
 
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -556,7 +553,9 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
                          const PipelineStatusCB& error_cb,
                          const PipelineStatusCB& start_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK_EQ(kCreated, state_);
+  CHECK_EQ(kCreated, state_)
+      << "Media pipeline cannot be started more than once";
+
   filter_collection_ = filter_collection.Pass();
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
