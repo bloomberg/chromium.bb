@@ -1343,6 +1343,8 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
 
   /* [0, length) */
   if (length > 0) {
+    enum NaClVmmapEntryType vmmap_type;
+
     if (NULL == ndp) {
       NaClLog(4,
               ("NaClSysMmap: NaClDescIoDescMap(,,0x%08"NACL_PRIxPTR","
@@ -1388,25 +1390,19 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     if (map_result != sysaddr) {
       NaClLog(LOG_FATAL, "system mmap did not honor NACL_ABI_MAP_FIXED\n");
     }
-    if (ndp == NULL || prot == NACL_ABI_PROT_NONE) {
-      /*
-       * windows nacl_host_desc implementation requires that PROT_NONE
-       * memory be freed using VirtualFree rather than
-       * UnmapViewOfFile.  TODO(bsy): remove this ugliness.
-       */
-      NaClVmmapAddWithOverwrite(&nap->mem_map,
-                                NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
-                                length >> NACL_PAGESHIFT,
-                                PROT_NONE,
-                                NACL_VMMAP_ENTRY_ANONYMOUS);
-    } else {
-      /* record change for file-backed memory */
-      NaClVmmapAddWithOverwrite(&nap->mem_map,
-                                NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
-                                length >> NACL_PAGESHIFT,
-                                NaClProtMap(prot),
-                                NACL_VMMAP_ENTRY_MAPPED);
-    }
+    /*
+     * windows nacl_host_desc implementation requires that PROT_NONE
+     * memory be freed using VirtualFree rather than
+     * UnmapViewOfFile.  TODO(bsy): remove this ugliness.
+     */
+    vmmap_type = (NULL == ndp || NACL_ABI_PROT_NONE == prot) ?
+                 NACL_VMMAP_ENTRY_ANONYMOUS :
+                 NACL_VMMAP_ENTRY_MAPPED;
+    NaClVmmapAddWithOverwrite(&nap->mem_map,
+                              NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
+                              length >> NACL_PAGESHIFT,
+                              NaClProtMap(prot),
+                              vmmap_type);
   } else {
     map_result = sysaddr;
   }
