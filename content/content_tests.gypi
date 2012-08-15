@@ -800,21 +800,20 @@
           'dependencies': [
             'content_shell_apk',
             'content_javatests',
+            '../net/net.gyp:net_javatests',
             '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/content_shell_test/java/libs',
+              'files': [
+                '<(PRODUCT_DIR)/lib.java/chromium_base_javatests.jar',
+                '<(PRODUCT_DIR)/lib.java/chromium_net_javatests.jar',
+                '<(PRODUCT_DIR)/lib.java/chromium_content_javatests.jar',
+              ],
+            },
+          ],
           'actions': [
-            {
-              'action_name': 'copy_base_javatests_jar',
-              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_base_javatests.jar'],
-              'outputs': ['<(PRODUCT_DIR)/content_shell_test/java/libs/chromium_base_javatests.jar'],
-              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
-            },
-            {
-              'action_name': 'copy_content_javatests_jar',
-              'inputs': ['<(PRODUCT_DIR)/lib.java/chromium_content_javatests.jar'],
-              'outputs': ['<(PRODUCT_DIR)/content_shell_test/java/libs/chromium_content_javatests.jar'],
-              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
-            },
             {
               'action_name': 'content_shell_test_generate_apk',
               'inputs': [

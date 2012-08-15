@@ -64,6 +64,9 @@
       <zipfileset
          includes="**/*.class"
          src="${PRODUCT_DIR}/content_shell_test/java/libs/chromium_content_javatests.jar"/>
+      <zipfileset
+         includes="**/*.class"
+         src="${PRODUCT_DIR}/content_shell_test/java/libs/chromium_net_javatests.jar"/>
     </jar>
 
   </target>
