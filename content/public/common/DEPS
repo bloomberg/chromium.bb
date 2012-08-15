@@ -1,4 +1,6 @@
-include_rules = [
-  "+content/common/savable_url_schemes.h",
-  "+content/common/ssl_status_serialization.h",
-]
+specific_include_rules = {
+  ".*\.cc": [
+    "+content/common/savable_url_schemes.h",
+    "+content/common/ssl_status_serialization.h",
+  ]
+}

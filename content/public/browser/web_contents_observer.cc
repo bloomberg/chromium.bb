@@ -4,9 +4,9 @@
 
 #include "content/public/browser/web_contents_observer.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/render_view_host.h"
 
 namespace content {
 
@@ -47,8 +47,7 @@ bool WebContentsObserver::Send(IPC::Message* message) {
     return false;
   }
 
-  return static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost())->Send(message);
+  return web_contents_->GetRenderViewHost()->Send(message);
 }
 
 int WebContentsObserver::routing_id() const {
