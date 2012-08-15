@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -180,6 +181,9 @@ int RendererMain(const content::MainFunctionParams& parameters) {
 
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
   platform.InitSandboxTests(no_sandbox);
+
+  // Initialize histogram statistics gathering system.
+  base::StatisticsRecorder::Initialize();
 
   // Initialize statistical testing infrastructure.  We set client_id to the
   // empty string to disallow the renderer process from creating its own
