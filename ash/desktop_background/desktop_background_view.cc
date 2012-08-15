@@ -51,7 +51,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
     // animation.
     if (root_window_->GetProperty(kComponentWrapper)) {
       internal::DesktopBackgroundWidgetController* component =
-          root_window_->GetProperty(kComponentWrapper)->component();
+          root_window_->GetProperty(kComponentWrapper)->GetComponent(true);
       root_window_->SetProperty(kWindowDesktopComponent, component);
     }
 

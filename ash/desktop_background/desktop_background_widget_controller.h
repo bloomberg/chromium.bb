@@ -58,10 +58,13 @@ class ComponentWrapper {
   explicit ComponentWrapper(
       DesktopBackgroundWidgetController* component);
   ~ComponentWrapper() {}
-  DesktopBackgroundWidgetController* component() { return component_; }
+
+  // Gets the wrapped DesktopBackgroundWidgetController pointer. Caller should
+  // take ownership of the pointer if |pass_ownership| is true.
+  DesktopBackgroundWidgetController* GetComponent(bool pass_ownership);
 
  private:
-  DesktopBackgroundWidgetController* component_;
+  scoped_ptr<DesktopBackgroundWidgetController> component_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentWrapper);
 };

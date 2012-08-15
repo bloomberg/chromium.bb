@@ -239,10 +239,10 @@ void DesktopBackgroundController::MoveDesktopToUnlockedContainer() {
 }
 
 void DesktopBackgroundController::OnWindowDestroying(aura::Window* window) {
-   window->SetProperty(internal::kWindowDesktopComponent,
-       static_cast<internal::DesktopBackgroundWidgetController*>(NULL));
-   window->SetProperty(internal::kComponentWrapper,
-       static_cast<internal::ComponentWrapper*>(NULL));
+  window->SetProperty(internal::kWindowDesktopComponent,
+      static_cast<internal::DesktopBackgroundWidgetController*>(NULL));
+  window->SetProperty(internal::kComponentWrapper,
+      static_cast<internal::ComponentWrapper*>(NULL));
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImageMode() {
@@ -319,7 +319,13 @@ void DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
     aura::RootWindow* root_window = *iter;
     if (root_window->GetProperty(internal::kComponentWrapper)) {
       internal::DesktopBackgroundWidgetController* component = root_window->
-          GetProperty(internal::kComponentWrapper)->component();
+          GetProperty(internal::kWindowDesktopComponent);
+      // Wallpaper animation may not finish at this point. Try to get component
+      // from kComponentWrapper instead.
+      if (!component) {
+        component = root_window->GetProperty(internal::kComponentWrapper)->
+            GetComponent(false);
+      }
       DCHECK(component);
       component->Reparent(root_window,
                           src_container,
