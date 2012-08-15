@@ -77,6 +77,14 @@ var tests = [
 // Make large batches of random writes into a store with many indices, triggered
 // by periodic setTimeout calls.
   [testSporadicWrites, 500, 10],
+// Make a small bunch of batches of reads of the same keys from an object store.
+  [testReadCache, 10, kDontUseIndex],
+// Make a bunch of batches of reads of the same keys from an index.
+  [testReadCache, 50, kUseIndex],
+// Make a small bunch of batches of reads of the same keys from an object store.
+  [testReadCache, 10, kDontUseIndex],
+// Make a bunch of batches of reads of the same keys from an index.
+  [testReadCache, 50, kUseIndex],
 // Create and delete an index on a store that already contains data [produces
 // a timing result for each of creation and deletion].
   [testCreateAndDeleteIndex, 5000]
@@ -185,9 +193,7 @@ function testRandomReadsAndWrites(
   if (useIndexForReads)
     indexName = "index";
   var testName = getDisplayName(arguments);
-  var numTransactionsLeft = numTransactions;
   var objectStoreNames = ["store"];
-  var numTransactionsRunning;
 
   automation.setStatus("Creating database.");
   var options;
@@ -206,6 +212,60 @@ function testRandomReadsAndWrites(
     var transaction = getTransaction(db, objectStoreNames, "readwrite",
         function() { onSetupComplete(db); });
     putLinearValues(transaction, objectStoreNames, numKeys, null,
+        function() { return "test value"; });
+  }
+
+  function onSetupComplete(db) {
+    automation.setStatus("Setup complete.");
+    var completionFunc =
+        getCompletionFunc(db, testName, Date.now(), onTestComplete);
+    var mode = "readonly";
+    if (numWritesPerTransaction)
+      mode = "readwrite";
+    runTransactionBatch(db, numTransactions, batchFunc, objectStoreNames, mode,
+        completionFunc);
+  }
+
+  function batchFunc(transaction) {
+    getRandomValues(transaction, objectStoreNames, numReadsPerTransaction,
+        numKeys, indexName);
+    putRandomValues(transaction, objectStoreNames, numWritesPerTransaction,
+        numKeys);
+  }
+}
+
+function testReadCache(numTransactions, useIndexForReads, onTestComplete) {
+  var numKeys = 10000;
+  var numReadsPerTransaction = 50;
+  var numTransactionsLeft = numTransactions;
+  var indexName;
+  if (useIndexForReads)
+    indexName = "index";
+  var testName = getDisplayName(arguments);
+  var objectStoreNames = ["store"];
+  var keys = [];
+
+  for (var i=0; i < numReadsPerTransaction; ++i) {
+    keys.push(getSimpleKey(Math.floor(Math.random() * numKeys)));
+  }
+
+  automation.setStatus("Creating database.");
+  var options;
+  if (useIndexForReads) {
+    options = [{
+      indexName: indexName,
+      indexKeyPath: "",
+      indexIsUnique: false,
+      indexIsMultiEntry: false,
+    }];
+  }
+  createDatabase(testName, objectStoreNames, onCreated, onError, options);
+
+  function onCreated(db) {
+    automation.setStatus("Setting up test database.");
+    var transaction = getTransaction(db, objectStoreNames, "readwrite",
+        function() { onSetupComplete(db); });
+    putLinearValues(transaction, objectStoreNames, numKeys, getSimpleKey,
         function () { return "test value"; });
   }
 
@@ -214,32 +274,12 @@ function testRandomReadsAndWrites(
     automation.setStatus("Setup complete.");
     completionFunc =
         getCompletionFunc(db, testName, Date.now(), onTestComplete);
-    runOneBatch(db);
+    runTransactionBatch(db, numTransactions, batchFunc, objectStoreNames,
+        "readonly", completionFunc);
   }
 
-  function runOneBatch(db) {
-    if (numTransactionsLeft <= 0) {
-      return;
-    }
-    --numTransactionsLeft;
-    ++numTransactionsRunning;
-    var mode = "readonly";
-    if (numWritesPerTransaction)
-      mode = "readwrite";
-    var transaction = getTransaction(db, objectStoreNames, mode,
-        function() {
-          assert(!--numTransactionsRunning);
-          if (numTransactionsLeft <= 0) {
-            completionFunc();
-          } else {
-            runOneBatch(db);
-          }
-        });
-
-    getRandomValues(transaction, objectStoreNames, numReadsPerTransaction,
-        numKeys, indexName);
-    putRandomValues(transaction, objectStoreNames, numWritesPerTransaction,
-        numKeys);
+  function batchFunc(transaction) {
+    getSpecificValues(transaction, objectStoreNames, indexName, keys);
   }
 }
 

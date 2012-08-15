@@ -278,6 +278,10 @@ function putLinearValues(
   }
 }
 
+function verifyResultNonNull(result) {
+  assert(result != null);
+}
+
 function getRandomValues(
     transaction, objectStoreNames, numReads, numKeys, indexName, getKey) {
   if (!getKey)
@@ -291,6 +295,7 @@ function getRandomValues(
       var rand = Math.floor(Math.random() * numKeys);
       var request = source.get(getKey(rand));
       request.onerror = onError;
+      request.onsuccess = verifyResultNonNull;
     }
   }
 }
@@ -307,6 +312,20 @@ function putRandomValues(
       var rand = Math.floor(Math.random() * numKeys);
       var request = os.put(getValue(rand), getKey(rand));
       request.onerror = onError;
+    }
+  }
+}
+
+function getSpecificValues(transaction, objectStoreNames, indexName, keys) {
+  for (var i in objectStoreNames) {
+    var os = transaction.objectStore(objectStoreNames[i]);
+    var source = os;
+    if (indexName)
+      source = source.index(indexName);
+    for (var j = 0; j < keys.length; ++j) {
+      var request = source.get(keys[j]);
+      request.onerror = onError;
+      request.onsuccess = verifyResultNonNull;
     }
   }
 }
@@ -360,3 +379,30 @@ function getValuesFromCursor(
   }
   request.onerror = onError;
 }
+
+function runTransactionBatch(db, count, batchFunc, objectStoreNames, mode,
+    onComplete) {
+  var numTransactionsRunning = 0;
+
+  runOneBatch(db);
+
+  function runOneBatch(db) {
+    if (count <= 0) {
+      return;
+    }
+    --count;
+    ++numTransactionsRunning;
+    var transaction = getTransaction(db, objectStoreNames, mode,
+        function() {
+          assert(!--numTransactionsRunning);
+          if (count <= 0) {
+            onComplete();
+          } else {
+            runOneBatch(db);
+          }
+        });
+
+    batchFunc(transaction);
+  }
+}
+
