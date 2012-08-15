@@ -792,16 +792,17 @@ bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
 bool NativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(window_->IsVisible());
   if (event->type() == ui::ET_MOUSEWHEEL) {
-    ui::MouseWheelEvent wheel_event(event);
-    return delegate_->OnMouseEvent(wheel_event);
+    ui::MouseWheelEvent mwe(*event);
+    return delegate_->OnMouseEvent(mwe);
   }
+
   if (event->type() == ui::ET_SCROLL) {
     if (delegate_->OnMouseEvent(*event))
       return true;
 
     // Convert unprocessed scroll events into wheel events.
-    ui::MouseWheelEvent wheel_event(*static_cast<ui::ScrollEvent*>(event));
-    return delegate_->OnMouseEvent(wheel_event);
+    ui::MouseWheelEvent mwe(*static_cast<ui::ScrollEvent*>(event));
+    return delegate_->OnMouseEvent(mwe);
   }
   if (tooltip_manager_.get())
     tooltip_manager_->UpdateTooltip();

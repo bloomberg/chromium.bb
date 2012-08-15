@@ -758,10 +758,6 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
 }
 
 base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
-  // Synthetic events don't have native events.
-  if (!native_event)
-    return base::TimeDelta();
-
   switch(native_event->type) {
     case KeyPress:
     case KeyRelease:

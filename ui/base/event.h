@@ -20,12 +20,6 @@
 namespace ui {
 class Transform;
 
-#if defined(USE_AURA)
-typedef Event* NativeEvent;
-#else
-typedef base::NativeEvent NativeEvent;
-#endif
-
 class UI_EXPORT Event {
  public:
   virtual ~Event();
@@ -45,7 +39,6 @@ class UI_EXPORT Event {
   };
 
   const base::NativeEvent& native_event() const { return native_event_; }
-  const NativeEvent& ui_native_event() const { return ui_native_event_; }
   EventType type() const { return type_; }
   // time_stamp represents time since machine was booted.
   const base::TimeDelta& time_stamp() const { return time_stamp_; }
@@ -112,8 +105,6 @@ class UI_EXPORT Event {
   void InitWithNativeEvent(const base::NativeEvent& native_event);
 
   base::NativeEvent native_event_;
-  // TODO(beng): check to see if this is necessary.
-  NativeEvent ui_native_event_;
   EventType type_;
   base::TimeDelta time_stamp_;
   int flags_;
@@ -170,7 +161,8 @@ class UI_EXPORT LocatedEvent : public Event {
                const gfx::Point& root_location,
                int flags);
 
-  LocatedEvent(const LocatedEvent& model);
+  // Called from MouseEvent's copy ctor.
+  explicit LocatedEvent(const LocatedEvent& model);
 
   gfx::Point location_;
 
@@ -257,6 +249,7 @@ class UI_EXPORT MouseEvent : public LocatedEvent {
   int changed_button_flags() const { return changed_button_flags_; }
 
  protected:
+  // Called from MouseWheelEvent's ctor.
   explicit MouseEvent(const MouseEvent& model);
 
  private:
@@ -279,7 +272,8 @@ class UI_EXPORT MouseWheelEvent : public MouseEvent {
   // See |offset| for details.
   static const int kWheelDelta;
 
-  explicit MouseWheelEvent(const NativeEvent& native_event);
+  explicit MouseWheelEvent(const base::NativeEvent& native_event);
+  explicit MouseWheelEvent(const MouseEvent& mouse_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
 
   // The amount to scroll. This is in multiples of kWheelDelta.
@@ -420,6 +414,8 @@ class UI_EXPORT KeyEvent : public Event {
 
   uint16 character_;
   uint16 unmodified_character_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyEvent);
 };
 
 // A key event which is translated by an input method (IME).
@@ -438,6 +434,9 @@ class UI_EXPORT TranslatedKeyEvent : public KeyEvent {
   // Changes the type() of the object from ET_TRANSLATED_KEY_* to ET_KEY_* so
   // that RenderWidgetHostViewAura and NativeWidgetAura could handle the event.
   void ConvertToKeyEvent();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TranslatedKeyEvent);
 };
 
 class UI_EXPORT DropTargetEvent : public LocatedEvent {

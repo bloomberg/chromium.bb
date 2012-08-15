@@ -39,6 +39,9 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
 
 namespace ui {
 
+////////////////////////////////////////////////////////////////////////////////
+// Event
+
 Event::~Event() {
 #if defined(USE_X11)
   if (delete_native_event_)
@@ -72,7 +75,6 @@ Event::Event(const base::NativeEvent& native_event,
 
 Event::Event(const Event& copy)
     : native_event_(copy.native_event_),
-      ui_native_event_(copy.ui_native_event_),
       type_(copy.type_),
       time_stamp_(copy.time_stamp_),
       flags_(copy.flags_),
@@ -81,13 +83,14 @@ Event::Event(const Event& copy)
 
 void Event::Init() {
   std::memset(&native_event_, 0, sizeof(native_event_));
-  std::memset(&ui_native_event_, 0, sizeof(ui_native_event_));
 }
 
 void Event::InitWithNativeEvent(const base::NativeEvent& native_event) {
   native_event_ = native_event;
-  std::memset(&ui_native_event_, 0, sizeof(ui_native_event_));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// LocatedEvent
 
 LocatedEvent::~LocatedEvent() {
 }
@@ -123,6 +126,9 @@ void LocatedEvent::UpdateForRootTransform(const Transform& root_transform) {
   root_transform.TransformPointReverse(p);
   root_location_ = location_ = p.AsPoint();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// MouseEvent
 
 MouseEvent::MouseEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
@@ -230,14 +236,17 @@ void MouseEvent::SetClickCount(int click_count) {
 MouseEvent::MouseEvent(const MouseEvent& model) : LocatedEvent(model) {
 }
 
-MouseWheelEvent::MouseWheelEvent(const NativeEvent& native_event)
-#if defined(USE_AURA)
-    : MouseEvent(static_cast<const MouseEvent&>(*native_event)),
-      offset_(GetMouseWheelOffset(native_event->native_event())) {
-#else
+////////////////////////////////////////////////////////////////////////////////
+// MouseWheelEvent
+
+MouseWheelEvent::MouseWheelEvent(const base::NativeEvent& native_event)
     : MouseEvent(native_event),
       offset_(GetMouseWheelOffset(native_event)) {
-#endif
+}
+
+MouseWheelEvent::MouseWheelEvent(const MouseEvent& mouse_event)
+    : MouseEvent(mouse_event),
+      offset_(GetMouseWheelOffset(mouse_event.native_event())) {
 }
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
@@ -254,6 +263,9 @@ const int MouseWheelEvent::kWheelDelta = 120;
 // This value matches GTK+ wheel scroll amount.
 const int MouseWheelEvent::kWheelDelta = 53;
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+// TouchEvent
 
 TouchEvent::TouchEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
@@ -290,6 +302,9 @@ void TouchEvent::UpdateForRootTransform(const Transform& root_transform) {
     radius_y_ /= scale.y();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// TestTouchEvent
+
 TestTouchEvent::TestTouchEvent(EventType type,
                                int x,
                                int y,
@@ -305,6 +320,9 @@ TestTouchEvent::TestTouchEvent(EventType type,
   set_rotation_angle(angle);
   set_force(force);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// KeyEvent
 
 KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
     : Event(native_event,
@@ -388,6 +406,9 @@ KeyEvent* KeyEvent::Copy() {
   return copy;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// TranslatedKeyEvent
+
 TranslatedKeyEvent::TranslatedKeyEvent(const base::NativeEvent& native_event,
                                        bool is_char)
     : KeyEvent(native_event, is_char) {
@@ -408,6 +429,9 @@ void TranslatedKeyEvent::ConvertToKeyEvent() {
            ET_KEY_PRESSED : ET_KEY_RELEASED);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ScrollEvent
+
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
     : MouseEvent(native_event) {
   if (type() == ET_SCROLL) {
@@ -419,6 +443,9 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
     GetFlingData(native_event, &x_offset_, &y_offset_, &is_cancel);
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// GestureEvent
 
 GestureEvent::GestureEvent(EventType type,
                            int x,
