@@ -412,13 +412,19 @@ hg-assert-no-outgoing() {
 # Git repository tools
 ######################################################################
 
-git-assert-no-changes() {
+git-has-changes() {
   local dir=$1
   spushd "${dir}"
   local status=$(${GIT} status --porcelain --untracked-files=no)
-  if [[ ${#status} > 0 ]]; then
+  spopd
+  [[ ${#status} > 0 ]]
+  return $?
+}
+
+git-assert-no-changes() {
+  local dir=$1
+  if git-has-changes "${dir}"; then
     Banner "ERROR: Repository ${dir} has local changes"
-    echo "Changes: ${status}"
     exit -1
   fi
 }
