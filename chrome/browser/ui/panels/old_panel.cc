@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/panels/old_panel.h"
 
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/panels/panel_browser_window.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "ui/gfx/image/image.h"
 
 OldPanel::OldPanel(Browser* browser,
                    const gfx::Size& min_size, const gfx::Size& max_size)
@@ -58,6 +61,9 @@ void OldPanel::ExecuteCommandWithDisposition(
   chrome::ExecuteCommandWithDisposition(browser_, id, disposition);
 }
 
-SkBitmap OldPanel::GetCurrentPageIcon() const {
-  return browser_->GetCurrentPageIcon();
+gfx::Image OldPanel::GetCurrentPageIcon() const {
+  // Browser has not been changed to return SkBitmap yet so we get the favicon
+  // directly rather than use browser_->GetCurrentPageIcon().
+  TabContents* contents = chrome::GetActiveTabContents(browser_);
+  return contents ? contents->favicon_tab_helper()->GetFavicon() : gfx::Image();
 }

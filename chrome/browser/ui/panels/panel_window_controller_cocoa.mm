@@ -38,7 +38,6 @@
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "grit/ui_resources.h"
-#include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "webkit/glue/webcursor.h"
@@ -562,12 +561,10 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
     icon = [ThrobberView filmstripThrobberViewWithFrame:iconFrame
                                                   image:iconImage];
   } else {
-    SkBitmap bitmap = windowShim_->panel()->GetCurrentPageIcon();
+    gfx::Image page_icon = windowShim_->panel()->GetCurrentPageIcon();
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    NSImage* iconImage = bitmap.isNull() ?
-        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) :
-        gfx::SkBitmapToNSImageWithColorSpace(bitmap,
-                                             base::mac::GetSystemColorSpace());
+    NSImage* iconImage = page_icon.IsEmpty() ?
+        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) : page_icon.ToNSImage();
     NSImageView* iconView =
         [[[NSImageView alloc] initWithFrame:iconFrame] autorelease];
     [iconView setImage:iconImage];

@@ -31,7 +31,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 using content::RenderViewHost;
@@ -750,7 +750,7 @@ void Panel::FormatTitleForDisplay(string16* title) {
   }
 }
 
-SkBitmap Panel::GetCurrentPageIcon() const {
+gfx::Image Panel::GetCurrentPageIcon() const {
   return panel_host_->GetPageIcon();
 }
 

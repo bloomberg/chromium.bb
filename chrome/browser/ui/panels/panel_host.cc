@@ -27,7 +27,7 @@
 #include "ui/gfx/image/image.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 using content::UserMetricsAction;
@@ -66,10 +66,9 @@ void PanelHost::DestroyWebContents() {
   web_contents_.reset();
 }
 
-SkBitmap PanelHost::GetPageIcon() const {
-  // TODO: Make this function return gfx::Image.
+gfx::Image PanelHost::GetPageIcon() const {
   return favicon_tab_helper_.get() ?
-      favicon_tab_helper_->GetFavicon().AsBitmap() : SkBitmap();
+      favicon_tab_helper_->GetFavicon() : gfx::Image();
 }
 
 void PanelHost::NavigationStateChanged(const content::WebContents* source,

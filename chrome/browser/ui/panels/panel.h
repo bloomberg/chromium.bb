@@ -26,7 +26,6 @@ class PanelHost;
 class PanelManager;
 class PanelStrip;
 class Profile;
-class SkBitmap;
 
 namespace content {
 class WebContents;
@@ -35,6 +34,10 @@ struct NativeWebKeyboardEvent;
 
 namespace extensions {
 class WindowController;
+}
+
+namespace gfx {
+class Image;
 }
 
 // A platform independent implementation of BaseWindow for Panels.
@@ -291,7 +294,7 @@ class Panel : public BaseWindow,
   string16 GetWindowTitle() const;
 
   // Gets the Favicon of the web contents.
-  virtual SkBitmap GetCurrentPageIcon() const;
+  virtual gfx::Image GetCurrentPageIcon() const;
 
   // Updates the title bar to display the current title and icon.
   void UpdateTitleBar();

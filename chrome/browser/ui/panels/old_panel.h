@@ -30,7 +30,7 @@ class OldPanel : public Panel {
   virtual void ExecuteCommandWithDisposition(
       int id,
       WindowOpenDisposition disposition) OVERRIDE;
-  virtual SkBitmap GetCurrentPageIcon() const OVERRIDE;
+  virtual gfx::Image GetCurrentPageIcon() const OVERRIDE;
 
  private:
   Browser* browser_;  // Weak pointer. Owned by native panel.

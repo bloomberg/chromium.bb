@@ -27,6 +27,7 @@ class WindowController;
 }
 
 namespace gfx {
+class Image;
 class Rect;
 }
 
@@ -44,7 +45,7 @@ class PanelHost : public content::WebContentsDelegate,
   void DestroyWebContents();
 
   // Returns the icon for the current page.
-  SkBitmap GetPageIcon() const;
+  gfx::Image GetPageIcon() const;
 
   // content::WebContentsDelegate overrides.
   virtual void NavigationStateChanged(const content::WebContents* source,

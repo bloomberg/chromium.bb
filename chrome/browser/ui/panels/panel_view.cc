@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/image_button.h"
@@ -504,7 +505,8 @@ string16 PanelView::GetWindowTitle() const {
 }
 
 gfx::ImageSkia PanelView::GetWindowIcon() {
-  return panel_->GetCurrentPageIcon();
+  gfx::Image icon = panel_->GetCurrentPageIcon();
+  return icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia();
 }
 
 void PanelView::DeleteDelegate() {

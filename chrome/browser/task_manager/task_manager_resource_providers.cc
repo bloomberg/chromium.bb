@@ -570,7 +570,8 @@ string16 TaskManagerPanelResource::GetProfileName() const {
 }
 
 gfx::ImageSkia TaskManagerPanelResource::GetIcon() const {
-  return panel_->GetCurrentPageIcon();
+  gfx::Image icon = panel_->GetCurrentPageIcon();
+  return icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia();
 }
 
 WebContents* TaskManagerPanelResource::GetWebContents() const {

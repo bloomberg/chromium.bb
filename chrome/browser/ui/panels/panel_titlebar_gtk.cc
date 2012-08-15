@@ -13,10 +13,10 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
@@ -216,15 +216,13 @@ void PanelTitlebarGtk::UpdateThrobber(
   } else {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-    SkBitmap icon = panel_gtk_->panel()->GetCurrentPageIcon();
-    if (icon.empty()) {
+    gfx::Image icon = panel_gtk_->panel()->GetCurrentPageIcon();
+    if (icon.IsEmpty()) {
       // Fallback to the Chromium icon if the page has no icon.
       gtk_image_set_from_pixbuf(GTK_IMAGE(icon_),
           rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
     } else {
-      GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
-      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), icon_pixbuf);
-      g_object_unref(icon_pixbuf);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), icon.ToGdkPixbuf());
     }
 
     throbber_.Reset();
