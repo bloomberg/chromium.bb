@@ -44,10 +44,10 @@
       <!-- TODO(jamescook): Update all Chrome platforms to use the new art and metrics
            from Ash, crbug.com/118228 -->
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_BACK" file="ash/browser_back_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_BACK_D" file="ash/browser_back_disabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_BACK_H" file="ash/browser_back_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_BACK_P" file="ash/browser_back_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK" file="common/browser_back_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_D" file="common/browser_back_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_H" file="common/browser_back_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_P" file="common/browser_back_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BALLOON_CLOSE" file="balloon_close.png" />
       <structure type="chrome_scaled_image" name="IDR_BALLOON_CLOSE_HOVER" file="balloon_close_hover.png" />
@@ -88,12 +88,12 @@
         <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_P" file="browser_action_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION" file="ash/browser_action_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW" file="ash/browser_actions_overflow_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="ash/browser_actions_overflow_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="ash/browser_actions_overflow_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_H" file="ash/browser_action_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_P" file="ash/browser_action_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION" file="common/browser_action_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW" file="common/browser_actions_overflow_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="common/browser_actions_overflow_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="common/browser_actions_overflow_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_H" file="common/browser_action_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_P" file="common/browser_action_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" />
       <if expr="is_win">
@@ -245,10 +245,10 @@
         <structure type="chrome_scaled_image" name="IDR_FORWARD_P" file="forward_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_FORWARD" file="ash/browser_forward_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_FORWARD_D" file="ash/browser_forward_disabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_FORWARD_H" file="ash/browser_forward_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_FORWARD_P" file="ash/browser_forward_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD" file="common/browser_forward_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_D" file="common/browser_forward_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_H" file="common/browser_forward_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_P" file="common/browser_forward_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" />
@@ -264,7 +264,7 @@
         <structure type="chrome_scaled_image" name="IDR_HOME" file="home.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_HOME" file="ash/browser_home_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_HOME" file="common/browser_home_normal.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_HOMEPAGE_CHANGE_ALERT" file="protector_home_alert.png" />
       <structure type="chrome_scaled_image" name="IDR_HOMEPAGE_CHANGE_BADGE" file="protector_home_badge.png" />
@@ -274,8 +274,8 @@
         <structure type="chrome_scaled_image" name="IDR_HOME_P" file="home_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_HOME_H" file="ash/browser_home_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_HOME_P" file="ash/browser_home_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_HOME_H" file="common/browser_home_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_HOME_P" file="common/browser_home_pressed.png" />
       </if>
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER24" file="icon_add_user24.png" />
@@ -348,8 +348,8 @@
         <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="omnibox_l.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="ash/browser_omnibox_middle.png" />
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="ash/browser_omnibox_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="common/browser_omnibox_middle.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="common/browser_omnibox_left.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" />
       <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_POPUPMODE_EDGE" file="omnibox_popup_edge.png" />
@@ -358,7 +358,7 @@
         <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="omnibox_border.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="ash/browser_omnibox_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="common/browser_omnibox_right.png" />
         <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="ash/browser_omnibox_border.png" />
       </if>
       <if expr="is_macosx">
@@ -437,9 +437,9 @@
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="ash/newtab.png" />
-        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="ash/newtab_button_mask.png" />
-        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="ash/newtab_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="common/newtab_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="common/newtab_button_mask.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="common/newtab_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_PLUS" file="ash/newtab_plus.png" />
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P_PLUS" file="ash/newtab_plus_pressed.png" />
       </if>
@@ -491,7 +491,17 @@
         <structure type="chrome_scaled_image" name="IDR_OOBE_PROGRESS_LINE_LEFT" file="oobe_progress_line_left.png" />
         <structure type="chrome_scaled_image" name="IDR_OOBE_PROGRESS_LINE_RIGHT" file="oobe_progress_line_right.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="otr_icon.png" />
+      <if expr="not pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="otr_icon.png" />
+      </if>
+      <if expr="pp_ifdef('toolkit_views')">
+        <if expr="not pp_ifdef('use_ash')">
+          <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="common/otr_icon.png" />
+        </if>
+        <if expr="pp_ifdef('use_ash')">
+          <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="cros/otr_icon.png" />
+        </if>
+      </if>
       <if expr="context.startswith('default_')">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon.png" />
       </if>
@@ -600,10 +610,10 @@
         <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="reload_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_RELOAD" file="ash/browser_reload_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_RELOAD_D" file="ash/browser_reload_disabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="ash/browser_reload_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="ash/browser_reload_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD" file="common/browser_reload_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_D" file="common/browser_reload_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="common/browser_reload_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="common/browser_reload_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_RESTORE_BUTTON_MASK" file="restore_button_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="sadfavicon.png" />
@@ -681,11 +691,11 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_STOP" file="ash/browser_stop_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_STOP_D" file="ash/browser_stop_disabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_STOP_H" file="ash/browser_stop_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_STOP_P" file="ash/browser_stop_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="ash/tab_active_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP" file="common/browser_stop_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_D" file="common/browser_stop_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_H" file="common/browser_stop_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_P" file="common/browser_stop_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="common/tab_active_center.png" />
       </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_SWIPE_BACK" file="back_large.png" />
@@ -698,14 +708,14 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="ash/tab_active_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="common/tab_active_left.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT_SEARCH" file="tab_active_left_search.png" />
       <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="ash/tab_active_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="common/tab_active_right.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT_SEARCH" file="tab_active_right_search.png" />
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
@@ -720,12 +730,12 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="tab_close_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="ash/tab_alpha_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="ash/tab_alpha_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="ash/tab_close_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="ash/tab_close_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="ash/tab_close_mask.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="ash/tab_close_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="common/tab_alpha_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="common/tab_alpha_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="common/tab_close_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="common/tab_close_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="common/tab_close_mask.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="common/tab_close_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
@@ -735,9 +745,9 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_CENTER" file="ash/tab_inactive_center.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_LEFT" file="ash/tab_inactive_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="ash/tab_inactive_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_CENTER" file="common/tab_inactive_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_LEFT" file="common/tab_inactive_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="common/tab_inactive_right.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_BUTTON_BACKGROUND" file="notused.png" />
       <if expr="not pp_ifdef('use_ash')">
@@ -748,10 +758,10 @@
       </if>
       <if expr="pp_ifdef('use_ash')">
         <!-- Ash has a gray frame, Windows uses blue. -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="ash/theme_frame_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_frame_inactive.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_frame_incognito_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_frame_incognito_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="cros/theme_frame_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="cros/theme_frame_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="cros/theme_frame_incognito_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="cros/theme_frame_incognito_inactive.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY" file="notused.png" />
       <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_OVERLAY_INACTIVE" file="notused.png" />
@@ -763,8 +773,8 @@
       </if>
       <if expr="pp_ifdef('use_ash')">
         <!-- Ash has gray tab backgrounds, Windows uses blue. -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="ash/theme_tab_background.png" />
-        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="ash/theme_tab_background_incognito.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="cros/theme_default_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_INCOGNITO" file="cros/theme_default_inactive.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND_V" file="theme_tab_background_glass.png" />
       <if expr="not pp_ifdef('use_ash') and is_macosx">
@@ -776,7 +786,7 @@
       </if>
       <if expr="pp_ifdef('use_ash')">
         <!-- Ash has a dark gray toolbar background, Windows has light gray. -->
-        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="ash/theme_toolbar_default.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="cros/theme_default_active.png" />
       </if>
       <if expr="is_macosx">
         <!-- TODO(jamescook): Is this right? -->
@@ -789,10 +799,10 @@
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="throbber_waiting.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" />
       <if expr="pp_ifdef('use_ash')">
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_BOTTOM" file="ash/toolbar_shade_bottom.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="ash/toolbar_shade_left.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_RIGHT" file="ash/toolbar_shade_right.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="ash/toolbar_shade_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_BOTTOM" file="common/toolbar_shade_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_LEFT" file="common/toolbar_shade_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_RIGHT" file="common/toolbar_shade_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP" file="common/toolbar_shade_top.png" />
         <structure type="chrome_scaled_image" name="IDR_TOOLBAR_SHADE_TOP_SEARCH" file="ash/toolbar_shade_top_search.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
@@ -801,9 +811,9 @@
         <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="tools_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <structure type="chrome_scaled_image" name="IDR_TOOLS" file="ash/browser_tools_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLS_H" file="ash/browser_tools_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="ash/browser_tools_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS" file="common/browser_tools_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS_H" file="common/browser_tools_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="common/browser_tools_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_UPDATE_AVAILABLE" file="update_available.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE" file="update_badge.png" />
