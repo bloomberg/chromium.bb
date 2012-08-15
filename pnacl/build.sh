@@ -41,9 +41,6 @@ SetLogDirectory "${PNACL_ROOT}/build/log"
 
 # For different levels of make parallelism change this in your env
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
-# If true, we are in the middle of a merge.  Do not update the llvm branch
-# (except for clang, which has no local mods).
-readonly PNACL_MERGE_TESTING=${PNACL_MERGE_TESTING:-false}
 PNACL_PRUNE=${PNACL_PRUNE:-false}
 PNACL_BUILD_ARM=true
 
@@ -677,21 +674,21 @@ libs() {
 
 #@ everything            - Build and install untrusted SDK. no translator
 everything() {
-  everything-hg
+  sync-sources
 
-  everything-post-hg
+  build-all
 }
 
-#@ everything-hg         - Checkout everything from the repositories
-everything-hg() {
+#@ sync-sources         - Checkout everything from the repositories
+sync-sources() {
   mkdir -p "${INSTALL_ROOT}"
   checkout-all
   StepBanner "Updating repositories"
   update-all
 }
 
-#@ everything-post-hg does everything AFTER hg setup
-everything-post-hg() {
+#@ build-all does everything AFTER getting the sources
+build-all() {
   mkdir -p "${INSTALL_ROOT}"
   # This is needed to build misc-tools and run ARM tests.
   # We check this early so that there are no surprises later, and we can

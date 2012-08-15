@@ -164,20 +164,6 @@ PosixToSysPath() {
 }
 
 ######################################################################
-# Git repository tools
-######################################################################
-
-git-has-changes() {
-  local dir=$1
-  spushd "${dir}"
-  local PLUS=$(${GIT} diff --name-only | cmp -s - /dev/null)
-  spopd
-
-  [ "${PLUS}" != "" ]
-  return $?
-}
-
-######################################################################
 # Mercurial repository tools
 ######################################################################
 
@@ -418,6 +404,21 @@ hg-assert-no-outgoing() {
     local REPONAME=$(basename "${dir}")
     msg="ERROR: Repository ${REPONAME} has outgoing commits. Clean first."
     Banner "${msg}"
+    exit -1
+  fi
+}
+
+######################################################################
+# Git repository tools
+######################################################################
+
+git-assert-no-changes() {
+  local dir=$1
+  spushd "${dir}"
+  local status=$(${GIT} status --porcelain --untracked-files=no)
+  if [[ ${#status} > 0 ]]; then
+    Banner "ERROR: Repository ${dir} has local changes"
+    echo "Changes: ${status}"
     exit -1
   fi
 }
