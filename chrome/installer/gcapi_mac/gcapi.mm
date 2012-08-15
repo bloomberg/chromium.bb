@@ -31,7 +31,8 @@ NSString* const kUserKsadminPath =
 NSString* const kSystemMasterPrefsPath =
     @"/Library/Google/Google Chrome Master Preferences";
 NSString* const kUserMasterPrefsPath =
-    @"~~/Library/Application Support/Google/Google Chrome Master Preferences";
+    @"~~/Library/Application Support/Google/Chrome/"
+     "Google Chrome Master Preferences";
 
 NSString* const kChannelKey = @"KSChannelID";
 NSString* const kVersionKey = @"KSVersion";
