@@ -84,7 +84,7 @@ class ExtensionInstallDialog {
  public:
   ExtensionInstallDialog(gfx::NativeWindow parent,
                          content::PageNavigator* navigator,
-                         ExtensionInstallPrompt::Delegate *delegate,
+                         ExtensionInstallPrompt::Delegate* delegate,
                          const ExtensionInstallPrompt::Prompt& prompt);
  private:
   ~ExtensionInstallDialog();

@@ -343,7 +343,10 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
   manifest_.reset(manifest);
   icon_ = icon;
 
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents()->GetBrowserContext());
   ExtensionInstallPrompt::Prompt prompt(
+      profile,
       ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
   prompt.SetInlineInstallWebstoreData(localized_user_count_,
                                       average_rating_,

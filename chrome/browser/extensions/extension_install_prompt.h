@@ -61,7 +61,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // that logic.
   class Prompt {
    public:
-    explicit Prompt(PromptType type);
+    Prompt(Profile* profile, PromptType type);
     ~Prompt();
 
     void SetPermissions(const std::vector<string16>& permissions);
@@ -137,6 +137,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
     // Range is kMinExtensionRating to kMaxExtensionRating
     double average_rating_;
     int rating_count_;
+
+    Profile* profile_;
   };
 
   static const int kMinExtensionRating = 0;

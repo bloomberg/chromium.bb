@@ -109,7 +109,9 @@ class MockExtensionInstallPromptDelegate
 TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
   MockExtensionInstallPromptDelegate delegate;
 
-  ExtensionInstallPrompt::Prompt prompt(ExtensionInstallPrompt::INSTALL_PROMPT);
+  ExtensionInstallPrompt::Prompt prompt(
+      NULL, ExtensionInstallPrompt::INSTALL_PROMPT);
+
   std::vector<string16> permissions;
   permissions.push_back(UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
@@ -165,7 +167,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
   MockExtensionInstallPromptDelegate delegate;
 
   ExtensionInstallPrompt::Prompt prompt(
-      ExtensionInstallPrompt::INSTALL_PROMPT);
+      NULL, ExtensionInstallPrompt::INSTALL_PROMPT);
   std::vector<string16> permissions;
   permissions.push_back(UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
@@ -193,7 +195,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   MockExtensionInstallPromptDelegate delegate2;
 
   ExtensionInstallPrompt::Prompt one_warning_prompt(
-      ExtensionInstallPrompt::INSTALL_PROMPT);
+      NULL, ExtensionInstallPrompt::INSTALL_PROMPT);
   std::vector<string16> permissions;
   permissions.push_back(UTF8ToUTF16("warning 1"));
   one_warning_prompt.SetPermissions(permissions);
@@ -201,7 +203,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   one_warning_prompt.set_icon(icon_);
 
   ExtensionInstallPrompt::Prompt two_warnings_prompt(
-      ExtensionInstallPrompt::INSTALL_PROMPT);
+      NULL, ExtensionInstallPrompt::INSTALL_PROMPT);
   permissions.push_back(UTF8ToUTF16("warning 2"));
   two_warnings_prompt.SetPermissions(permissions);
   two_warnings_prompt.set_extension(extension_.get());
@@ -245,7 +247,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
 
   // No warnings should trigger skinny prompt.
   ExtensionInstallPrompt::Prompt no_warnings_prompt(
-      ExtensionInstallPrompt::INSTALL_PROMPT);
+      NULL, ExtensionInstallPrompt::INSTALL_PROMPT);
   no_warnings_prompt.set_extension(extension_.get());
   no_warnings_prompt.set_icon(icon_);
 
@@ -289,7 +291,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsInline) {
 
   // No warnings should trigger skinny prompt.
   ExtensionInstallPrompt::Prompt inline_prompt(
-      ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
+      NULL, ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
   inline_prompt.SetInlineInstallWebstoreData("1,000", 3.5, 200);
   inline_prompt.set_extension(extension_.get());
   inline_prompt.set_icon(icon_);
@@ -342,7 +344,7 @@ TEST_F(ExtensionInstallDialogControllerTest, OAuthIssues) {
   MockExtensionInstallPromptDelegate delegate;
 
   ExtensionInstallPrompt::Prompt prompt(
-      ExtensionInstallPrompt::INSTALL_PROMPT);
+      NULL, ExtensionInstallPrompt::INSTALL_PROMPT);
   std::vector<string16> permissions;
   permissions.push_back(UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);

@@ -240,8 +240,9 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
 
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  int left_column_width = prompt.GetPermissionCount() > 0 ?
-      kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
+  int left_column_width =
+      prompt.GetPermissionCount() + prompt.GetOAuthIssueCount() > 0 ?
+          kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
   if (is_bundle_install())
     left_column_width = kBundleLeftColumnWidth;
 

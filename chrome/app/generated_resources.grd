@@ -4395,8 +4395,14 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PROMPT_STORE_LINK" desc="Anchor text for link to Chrome Web Store in app or extension installation dialog">
         View details
       </message>
-      <message name="IDS_EXTENSION_PROMPT_SCOPES_HEADING" desc="Heading above the OAuth2 scopes permissions.">
-        The app wants these scopes:
+      <message name="IDS_EXTENSION_PROMPT_OAUTH_HEADER" desc="A line of explanatory text that precedes all GAIA account permissions that an extension requests. This is shown during installation.">
+        On your <ph name="ACCOUNT_EMAIL">$1<ex>user@example.com</ex></ph> account, it can:
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_OAUTH_REENABLE_HEADER" desc="A line of explanatory text that precedes all GAIA account permissions that an extension requests. This is shown when an app is being re-enabled after new permissions have been requested.">
+        On your <ph name="ACCOUNT_EMAIL">$1<ex>user@example.com</ex></ph> account, it can now:
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER" desc="A line of explanatory text that precedes all GAIA account permissions that an extension might request. This is shown when an app requests permissions which are optional.">
+        On your <ph name="ACCOUNT_EMAIL">$1<ex>user@example.com</ex></ph> account, it could:
       </message>
 
       <if expr="pp_ifdef('android')">
