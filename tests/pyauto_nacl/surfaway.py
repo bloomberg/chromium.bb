@@ -24,7 +24,7 @@ class NaClTest(pyauto.PyUITest):
       nacl_utils.VerifyAllTestsPassed(self)
       page_title = self.GetActiveTabTitle()
       self.assertNotEqual(page_title.upper().find(title_word.upper()), -1)
-      self.TabGoBack()
+      self.GetBrowserWindow(0).GetTab(0).GoBack()
       self.assertEqual(version_title, self.GetActiveTabTitle())
 
   def surfAway(self, page, title_word):
