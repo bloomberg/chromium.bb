@@ -4,6 +4,7 @@
 
 #include "rlz/mac/lib/rlz_value_store_mac.h"
 
+#include "base/eintr_wrapper.h"
 #include "base/mac/foundation_util.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -235,12 +236,14 @@ struct RecursiveCrossProcessLock {
   pthread_mutex_t recursive_lock_;
   pthread_t locking_thread_;
 
-  NSDistributedLock* file_lock_;
+  int file_lock_;
 } g_recursive_lock = {
   // PTHREAD_RECURSIVE_MUTEX_INITIALIZER doesn't exist before 10.7 and is buggy
   // on 10.7 (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=51906#c34), so emulate
   // recursive locking with a normal non-recursive mutex.
-  PTHREAD_MUTEX_INITIALIZER
+  PTHREAD_MUTEX_INITIALIZER,
+  0,
+  -1
 };
 
 bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
@@ -266,33 +269,37 @@ bool RecursiveCrossProcessLock::TryGetCrossProcessLock(
     const int kMaxTimeoutMS = 5000;  // Matches windows.
     const int kSleepPerTryMS = 200;
 
-    CHECK(!file_lock_);
-    file_lock_ = [[NSDistributedLock alloc] initWithPath:lock_filename];
+    CHECK(file_lock_ == -1);
+    file_lock_ = open([lock_filename fileSystemRepresentation], O_CREAT, 0666);
+    if (file_lock_ == -1)
+      return false;
 
-    BOOL got_file_lock = NO;
-    int elapsedMS = 0;
-    while (!(got_file_lock = [file_lock_ tryLock]) &&
-           elapsedMS < kMaxTimeoutMS) {
+    int flock_result = -1;
+    int elapsed_ms = 0;
+    while ((flock_result =
+               HANDLE_EINTR(flock(file_lock_, LOCK_EX | LOCK_NB))) == -1 &&
+           errno == EWOULDBLOCK &&
+           elapsed_ms < kMaxTimeoutMS) {
       usleep(kSleepPerTryMS * 1000);
-      elapsedMS += kSleepPerTryMS;
+      elapsed_ms += kSleepPerTryMS;
     }
 
-    if (!got_file_lock) {
-      [file_lock_ release];
-      file_lock_ = nil;
+    if (flock_result == -1) {
+      ignore_result(HANDLE_EINTR(close(file_lock_)));
+      file_lock_ = -1;
       return false;
     }
     return true;
   } else {
-    return file_lock_ != nil;
+    return file_lock_ != -1;
   }
 }
 
 void RecursiveCrossProcessLock::ReleaseLock() {
   if (file_lock_) {
-    [file_lock_ unlock];
-    [file_lock_ release];
-    file_lock_ = nil;
+    ignore_result(HANDLE_EINTR(flock(file_lock_, LOCK_UN)));
+    ignore_result(HANDLE_EINTR(close(file_lock_)));
+    file_lock_ = -1;
   }
 
   locking_thread_ = 0;
@@ -347,7 +354,7 @@ NSString* RlzPlistFilename() {
 // Returns the path of the rlz lock file, also creates the parent directory
 // path if it doesn't exist.
 NSString* RlzLockFilename() {
-  NSString* const kRlzFile = @"lockfile";
+  NSString* const kRlzFile = @"flockfile";
   return [CreateRlzDirectory() stringByAppendingPathComponent:kRlzFile];
 }
 
@@ -416,8 +423,8 @@ ScopedRlzValueStoreLock::~ScopedRlzValueStoreLock() {
   // Check that "store_ set" => "file_lock acquired". The converse isn't true,
   // for example if the rlz data file can't be read.
   if (store_.get())
-    CHECK(g_recursive_lock.file_lock_);
-  if (!g_recursive_lock.file_lock_)
+    CHECK(g_recursive_lock.file_lock_ != -1);
+  if (g_recursive_lock.file_lock_ == -1)
     CHECK(!store_.get());
 
   g_recursive_lock.ReleaseLock();

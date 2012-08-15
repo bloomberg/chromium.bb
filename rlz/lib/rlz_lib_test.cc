@@ -13,6 +13,7 @@
 // The "GGLA" brand is used to test the normal code flow of the code, and the
 // "TEST" brand is used to test the supplementary brand code code flow.
 
+#include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -795,7 +796,9 @@ class ReadonlyRlzDirectoryTest : public RlzLibTestNoMachineState {
 void ReadonlyRlzDirectoryTest::SetUp() {
   RlzLibTestNoMachineState::SetUp();
   // Make the rlz directory non-writeable.
-  chmod(temp_dir_.path().value().c_str(), 0500);
+  int chmod_result = chmod(temp_dir_.path().value().c_str(), 0500);
+  ASSERT_EQ(0, chmod_result);
+
 }
 
 TEST_F(ReadonlyRlzDirectoryTest, WriteFails) {
@@ -819,6 +822,53 @@ TEST_F(ReadonlyRlzDirectoryTest, SupplementaryBrandingDoesNotCrash) {
 
   rlz_lib::SupplementaryBranding branding("TEST");
   EXPECT_FALSE(rlz_lib::RecordProductEvent(rlz_lib::TOOLBAR_NOTIFIER,
+      rlz_lib::IE_DEFAULT_SEARCH, rlz_lib::INSTALL));
+}
+
+// Regression test for http://crbug.com/141108
+TEST_F(RlzLibTest, ConcurrentStoreAccessWithProcessExitsWhileLockHeld) {
+  // See the comment at the top of WriteFails.
+  if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
+    return;
+
+  std::vector<pid_t> pids;
+  for (int i = 0; i < 10; ++i) {
+    pid_t pid = fork();
+    ASSERT_NE(-1, pid);
+    if (pid == 0) {
+      // Child.
+      {
+        // SupplementaryBranding is a RAII object for the rlz lock.
+        rlz_lib::SupplementaryBranding branding("TEST");
+
+        // Simulate a crash while holding the lock in some of the children.
+        if (i > 0 && i % 3 == 0)
+          _exit(0);
+
+        // Note: Since this is in a forked child, a failing expectation won't
+        // make the test fail. It does however cause lots of "check failed"
+        // error output. The parent process will then check the exit code
+        // below to make the test fail.
+        bool success = rlz_lib::RecordProductEvent(rlz_lib::TOOLBAR_NOTIFIER,
+            rlz_lib::IE_DEFAULT_SEARCH, rlz_lib::INSTALL);
+        EXPECT_TRUE(success);
+        _exit(success ? 0 : 1);
+      }
+      _exit(0);
+    } else {
+      // Parent.
+      pids.push_back(pid);
+    }
+  }
+
+  int status;
+  for (size_t i = 0; i < pids.size(); ++i) {
+    if (HANDLE_EINTR(waitpid(pids[i], &status, 0)) != -1)
+      EXPECT_TRUE(WIFEXITED(status) && WEXITSTATUS(status) == 0);
+  }
+
+  // No child should have the lock at this point, not even the crashed ones.
+  EXPECT_TRUE(rlz_lib::RecordProductEvent(rlz_lib::TOOLBAR_NOTIFIER,
       rlz_lib::IE_DEFAULT_SEARCH, rlz_lib::INSTALL));
 }
 #endif
