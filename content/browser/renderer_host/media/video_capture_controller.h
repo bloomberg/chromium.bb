@@ -88,7 +88,7 @@ class CONTENT_EXPORT VideoCaptureController
 
   // Worker functions on IO thread.
   void DoIncomingCapturedFrameOnIOThread(int buffer_id, base::Time timestamp);
-  void DoFrameInfoOnIOThread(const media::VideoCaptureCapability& info);
+  void DoFrameInfoOnIOThread();
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();
 
@@ -132,6 +132,10 @@ class CONTENT_EXPORT VideoCaptureController
   // It's modified on caller thread, assuming there is only one OnFrameInfo()
   // call per StartCapture().
   media::VideoCaptureCapability frame_info_;
+  // Chopped pixels in width/height in case video capture device has odd numbers
+  // for width/height.
+  int chopped_width_;
+  int chopped_height_;
 
   // It's accessed only on IO thread.
   bool frame_info_available_;
