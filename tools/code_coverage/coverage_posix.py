@@ -137,21 +137,90 @@ gChildPIDs = []
      StartupBrowserCreatorTest.OpenAppShortcutPanel: Fails on coverage bot.
      FilePathWatcherTest.Callback: Fails with error 'Unable to terminate
      process group' in process_util_posix.cc.
+     WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib: Fails
+     with timeout (45000 ms) exceeded error.
+     WebGLConformanceTests.conformance_attribs_gl_disabled_vertex_attrib:
+     ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertex_attrib_zero_issues:
+     ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertex_attrib: ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertexattribpointer_offsets:
+     ditto.
+     WebGLConformanceTests.conformance_attribs_gl_vertexattribpointer: ditto.
+     WebGLConformanceTests.conformance_buffers_buffer_bind_test: After
+     disabling WebGLConformanceTests specified above, this test fails when run
+     on local machine.
+     WebGLConformanceTests.conformance_buffers_buffer_data_array_buffer: ditto.
+     WebGLConformanceTests.conformance_buffers_index_validation_copies_indices:
+     ditto.
+     WebGLConformanceTests.
+     conformance_buffers_index_validation_crash_with_buffer_sub_data: ditto.
+     WebGLConformanceTests.
+     conformance_buffers_index_validation_verifies_too_many_indices: ditto.
+     WebGLConformanceTests.
+     conformance_buffers_index_validation_with_resized_buffer: ditto.
+     PageCycler*.*: Fails on coverage bot with "Missing test directory
+     /....../slave/coverage-dbg-linux/build/src/data/page_cycler/moz" error.
+     *FrameRateCompositingTest.*: Fails with
+     "FATAL:chrome_content_browser_client.cc(893)] Check failed:
+     command_line->HasSwitch(switches::kEnableStatsTable)."
+     *FrameRateNoVsyncCanvasInternalTest.*: ditto.
+     *FrameRateGpuCanvasInternalTest.*: ditto.
+     TwoClientPasswordsSyncTest.DeleteAll: Fails on coverage bot.
+     MigrationTwoClientTest.MigrationHellWithoutNigori: Fails with timeout
+     (45000 ms) exceeded error.
+     TwoClientSessionsSyncTest.DeleteActiveSession: ditto.
+     MultipleClientSessionsSyncTest.EncryptedAndChanged: ditto.
+     MigrationSingleClientTest.AllTypesIndividuallyTriggerNotification: ditto.
 
 """
 gTestExclusions = {
   'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',),
                'ipc_tests': ('IPCFuzzingTest.MsgBadPayloadArgs',), },
-  'linux2': { 'browser_tests':
-                  ('*FullscreenControllerTest.*',
-                   '*PageCyclerCachedBrowserTest.*',
-                   '*FullscreenControllerBrowserTest.*',
-                   'PPAPITest.Fullscreen',
-                   'OutOfProcessPPAPITest.Fullscreen',
-                   'IndexedDBLayoutTest.RegressionTests',
-                   'PanelBrowserNavigatorTest.NavigateFromCrashedPanel',
-                   'StartupBrowserCreatorTest.OpenAppShortcutPanel',
-                   'FilePathWatcherTest.Callback',), },
+  'linux2': {
+    'browser_tests':
+        ('*FullscreenControllerTest.*',
+         '*PageCyclerCachedBrowserTest.*',
+         '*FullscreenControllerBrowserTest.*',
+         'PPAPITest.Fullscreen',
+         'OutOfProcessPPAPITest.Fullscreen',
+         'IndexedDBLayoutTest.RegressionTests',
+         'PanelBrowserNavigatorTest.NavigateFromCrashedPanel',
+         'StartupBrowserCreatorTest.OpenAppShortcutPanel',
+         'FilePathWatcherTest.Callback',),
+    'gpu_tests':
+        ('WebGLConformanceTests.conformance_attribs_gl_enable_vertex_attrib',
+         'WebGLConformanceTests.'
+             'conformance_attribs_gl_disabled_vertex_attrib',
+         'WebGLConformanceTests.'
+             'conformance_attribs_gl_vertex_attrib_zero_issues',
+         'WebGLConformanceTests.conformance_attribs_gl_vertex_attrib',
+         'WebGLConformanceTests.'
+             'conformance_attribs_gl_vertexattribpointer_offsets',
+         'WebGLConformanceTests.conformance_attribs_gl_vertexattribpointer',
+         'WebGLConformanceTests.conformance_buffers_buffer_bind_test',
+         'WebGLConformanceTests.'
+             'conformance_buffers_buffer_data_array_buffer',
+         'WebGLConformanceTests.'
+             'conformance_buffers_index_validation_copies_indices',
+         'WebGLConformanceTests.'
+             'conformance_buffers_index_validation_crash_with_buffer_sub_data',
+         'WebGLConformanceTests.'
+             'conformance_buffers_index_validation_verifies_too_many_indices',
+         'WebGLConformanceTests.'
+             'conformance_buffers_index_validation_with_resized_buffer',),
+    'performance_ui_tests':
+        ('*PageCycler*.*',
+         '*FrameRateCompositingTest.*',
+         '*FrameRateNoVsyncCanvasInternalTest.*',
+         '*FrameRateGpuCanvasInternalTest.*',),
+    'sync_integration_tests':
+        ('TwoClientPasswordsSyncTest.DeleteAll',
+         'MigrationTwoClientTest.MigrationHellWithoutNigori',
+         'TwoClientSessionsSyncTest.DeleteActiveSession',
+         'MultipleClientSessionsSyncTest.EncryptedAndChanged',
+         'MigrationSingleClientTest.'
+         'AllTypesIndividuallyTriggerNotification',), },
 }
 
 
