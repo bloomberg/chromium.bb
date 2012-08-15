@@ -76,13 +76,6 @@ static const ULONG kPipeIOThreadFlags = WT_EXECUTEINWAITTHREAD;
 static const ULONG kDumpRequestThreadFlags = WT_EXECUTEINWAITTHREAD |
                                              WT_EXECUTELONGFUNCTION;
 
-// Maximum delay during server shutdown if some work items
-// are still executing.
-static const int kShutdownDelayMs = 10000;
-
-// Interval for each sleep during server shutdown.
-static const int kShutdownSleepIntervalMs = 5;
-
 static bool IsClientRequestValid(const ProtocolMessage& msg) {
   return msg.tag == MESSAGE_TAG_UPLOAD_REQUEST ||
          (msg.tag == MESSAGE_TAG_REGISTRATION_REQUEST &&
@@ -123,8 +116,7 @@ CrashGenerationServer::CrashGenerationServer(
       server_state_(IPC_SERVER_STATE_UNINITIALIZED),
       shutting_down_(false),
       overlapped_(),
-      client_info_(NULL),
-      cleanup_item_count_(0) {
+      client_info_(NULL) {
   InitializeCriticalSection(&sync_);
 
   if (dump_path) {
@@ -132,91 +124,85 @@ CrashGenerationServer::CrashGenerationServer(
   }
 }
 
+// This should never be called from the OnPipeConnected callback.
+// Otherwise the UnregisterWaitEx call below will cause a deadlock.
 CrashGenerationServer::~CrashGenerationServer() {
   // New scope to release the lock automatically.
   {
+    // Make sure no clients are added or removed beyond this point.
+    // Before adding or removing any clients, the critical section
+    // must be entered and the shutting_down_ flag checked. The
+    // critical section is then exited only after the clients_ list
+    // modifications are done and the list is in a consistent state.
     AutoCriticalSection lock(&sync_);
 
     // Indicate to existing threads that server is shutting down.
     shutting_down_ = true;
+  }
+  // No one will modify the clients_ list beyond this point -
+  // not even from another thread.
 
-    // Even if there are no current worker threads running, it is possible that
-    // an I/O request is pending on the pipe right now but not yet done.
-    // In fact, it's very likely this is the case unless we are in an ERROR
-    // state. If we don't wait for the pending I/O to be done, then when the I/O
-    // completes, it may write to invalid memory. AppVerifier will flag this
-    // problem too. So we disconnect from the pipe and then wait for the server
-    // to get into error state so that the pending I/O will fail and get
-    // cleared.
-    DisconnectNamedPipe(pipe_);
-    int num_tries = 100;
-    while (num_tries-- && server_state_ != IPC_SERVER_STATE_ERROR) {
-      lock.Release();
-      Sleep(10);
-      lock.Acquire();
-    }
-
-    // Unregister wait on the pipe.
-    if (pipe_wait_handle_) {
-      // Wait for already executing callbacks to finish.
-      UnregisterWaitEx(pipe_wait_handle_, INVALID_HANDLE_VALUE);
-    }
-
-    // Close the pipe to avoid further client connections.
-    if (pipe_) {
-      CloseHandle(pipe_);
-    }
-
-    // Request all ClientInfo objects to unregister all waits.
-    std::list<ClientInfo*>::iterator iter;
-    for (iter = clients_.begin(); iter != clients_.end(); ++iter) {
-      ClientInfo* client_info = *iter;
-      client_info->UnregisterWaits();
-    }
+  // Even if there are no current worker threads running, it is possible that
+  // an I/O request is pending on the pipe right now but not yet done.
+  // In fact, it's very likely this is the case unless we are in an ERROR
+  // state. If we don't wait for the pending I/O to be done, then when the I/O
+  // completes, it may write to invalid memory. AppVerifier will flag this
+  // problem too. So we disconnect from the pipe and then wait for the server
+  // to get into error state so that the pending I/O will fail and get
+  // cleared.
+  DisconnectNamedPipe(pipe_);
+  int num_tries = 100;
+  while (num_tries-- && server_state_ != IPC_SERVER_STATE_ERROR) {
+    Sleep(10);
   }
 
-  // Now that all waits have been unregistered, wait for some time
-  // for all pending work items to finish.
-  int total_wait = 0;
-  while (cleanup_item_count_ > 0) {
-    Sleep(kShutdownSleepIntervalMs);
-
-    total_wait += kShutdownSleepIntervalMs;
-
-    if (total_wait >= kShutdownDelayMs) {
-      break;
-    }
+  // Unregister wait on the pipe.
+  if (pipe_wait_handle_) {
+    // Wait for already executing callbacks to finish.
+    UnregisterWaitEx(pipe_wait_handle_, INVALID_HANDLE_VALUE);
   }
 
-  // New scope to hold the lock for the shortest time.
-  {
-    AutoCriticalSection lock(&sync_);
-
-    // Clean up all the ClientInfo objects.
-    std::list<ClientInfo*>::iterator iter;
-    for (iter = clients_.begin(); iter != clients_.end(); ++iter) {
-      ClientInfo* client_info = *iter;
-      delete client_info;
-    }
-
-    if (server_alive_handle_) {
-      // Release the mutex before closing the handle so that clients requesting
-      // dumps wait for a long time for the server to generate a dump.
-      ReleaseMutex(server_alive_handle_);
-      CloseHandle(server_alive_handle_);
-    }
-
-    if (overlapped_.hEvent) {
-      CloseHandle(overlapped_.hEvent);
-    }
+  // Close the pipe to avoid further client connections.
+  if (pipe_) {
+    CloseHandle(pipe_);
   }
 
+  // Request all ClientInfo objects to unregister all waits.
+  // No need to enter the critical section because no one is allowed to modify
+  // the clients_ list once the shutting_down_ flag is set.
+  std::list<ClientInfo*>::iterator iter;
+  for (iter = clients_.begin(); iter != clients_.end(); ++iter) {
+    ClientInfo* client_info = *iter;
+    // Unregister waits. Wait for already executing callbacks to finish.
+    // Unregister the client process exit wait first and only then unregister
+    // the dump request wait.  The reason is that the OnClientExit callback
+    // also unregisters the dump request wait and such a race (doing the same
+    // unregistration from two threads) is undesirable.
+    client_info->UnregisterProcessExitWait(true);
+    client_info->UnregisterDumpRequestWaitAndBlockUntilNoPending();
+
+    // Destroying the ClientInfo here is safe because all wait operations for
+    // this ClientInfo were unregistered and no pending or running callbacks
+    // for this ClientInfo can possible exist (block_until_no_pending option
+    // was used).
+    delete client_info;
+  }
+
+  if (server_alive_handle_) {
+    // Release the mutex before closing the handle so that clients requesting
+    // dumps wait for a long time for the server to generate a dump.
+    ReleaseMutex(server_alive_handle_);
+    CloseHandle(server_alive_handle_);
+  }
+
+  if (overlapped_.hEvent) {
+    CloseHandle(overlapped_.hEvent);
+  }
+  
   DeleteCriticalSection(&sync_);
 }
 
 bool CrashGenerationServer::Start() {
-  AutoCriticalSection lock(&sync_);
-
   if (server_state_ != IPC_SERVER_STATE_UNINITIALIZED) {
     return false;
   }
@@ -455,6 +441,7 @@ void CrashGenerationServer::HandleReadDoneState() {
     return;
   }
 
+  // This is only valid as long as it can be found in the clients_ list
   client_info_ = client_info.release();
 
   // Note that the asynchronous write issued by RespondToClient function
@@ -532,7 +519,32 @@ void CrashGenerationServer::HandleReadingAckState() {
     // The connection handshake with the client is now complete; perform
     // the callback.
     if (connect_callback_) {
-      connect_callback_(connect_context_, client_info_);
+      // Note that there is only a single copy of the ClientInfo of the
+      // currently connected client.  However it is being referenced from
+      // two different places:
+      //  - the client_info_ member
+      //  - the clients_ list
+      // The lifetime of this ClientInfo depends on the lifetime of the
+      // client process - basically it can go away at any time.
+      // However, as long as it is referenced by the clients_ list it
+      // is guaranteed to be valid. Enter the critical section and check
+      // to see whether the client_info_ can be found in the list.
+      // If found, execute the callback and only then leave the critical
+      // section.
+      AutoCriticalSection lock(&sync_);
+
+      bool client_is_still_alive = false;
+      std::list<ClientInfo*>::iterator iter;
+      for (iter = clients_.begin(); iter != clients_.end(); ++iter) {
+        if (client_info_ == *iter) {
+          client_is_still_alive = true;
+          break;
+        }
+      }
+
+      if (client_is_still_alive) {
+        connect_callback_(connect_context_, client_info_);
+      }
     }
   } else {
     // We should never get an I/O incomplete since we should not execute this
@@ -605,16 +617,39 @@ bool CrashGenerationServer::PrepareReply(const ClientInfo& client_info,
     return true;
   }
 
+  // Closing of remote handles (belonging to a different process) can
+  // only be done through DuplicateHandle.
   if (reply->dump_request_handle) {
-    CloseHandle(reply->dump_request_handle);
+    DuplicateHandle(client_info.process_handle(),  // hSourceProcessHandle
+                    reply->dump_request_handle,    // hSourceHandle
+                    NULL,                          // hTargetProcessHandle
+                    0,                             // lpTargetHandle
+                    0,                             // dwDesiredAccess
+                    FALSE,                         // bInheritHandle
+                    DUPLICATE_CLOSE_SOURCE);       // dwOptions
+    reply->dump_request_handle = NULL;
   }
 
   if (reply->dump_generated_handle) {
-    CloseHandle(reply->dump_generated_handle);
+    DuplicateHandle(client_info.process_handle(),  // hSourceProcessHandle
+                    reply->dump_generated_handle,  // hSourceHandle
+                    NULL,                          // hTargetProcessHandle
+                    0,                             // lpTargetHandle
+                    0,                             // dwDesiredAccess
+                    FALSE,                         // bInheritHandle
+                    DUPLICATE_CLOSE_SOURCE);       // dwOptions
+    reply->dump_generated_handle = NULL;
   }
 
   if (reply->server_alive_handle) {
-    CloseHandle(reply->server_alive_handle);
+    DuplicateHandle(client_info.process_handle(),  // hSourceProcessHandle
+                    reply->server_alive_handle,    // hSourceHandle
+                    NULL,                          // hTargetProcessHandle
+                    0,                             // lpTargetHandle
+                    0,                             // dwDesiredAccess
+                    FALSE,                         // bInheritHandle
+                    DUPLICATE_CLOSE_SOURCE);       // dwOptions
+    reply->server_alive_handle = NULL;
   }
 
   return false;
@@ -676,21 +711,15 @@ bool CrashGenerationServer::RespondToClient(ClientInfo* client_info) {
 
   // Takes over ownership of client_info. We MUST return true if AddClient
   // succeeds.
-  if (!AddClient(client_info)) {
-    return false;
-  }
-
-  return true;
+  return AddClient(client_info);
 }
 
 // The server thread servicing the clients runs this method. The method
 // implements the state machine described in ReadMe.txt along with the
 // helper methods HandleXXXState.
 void CrashGenerationServer::HandleConnectionRequest() {
-  AutoCriticalSection lock(&sync_);
-
-  // If we are shutting doen then get into ERROR state, reset the event so more
-  // workers don't run and return immediately.
+  // If the server is shutting down, get into ERROR state, reset the event so
+  // more workers don't run and return immediately.
   if (shutting_down_) {
     server_state_ = IPC_SERVER_STATE_ERROR;
     ResetEvent(overlapped_.hEvent);
@@ -776,6 +805,10 @@ bool CrashGenerationServer::AddClient(ClientInfo* client_info) {
   // New scope to hold the lock for the shortest time.
   {
     AutoCriticalSection lock(&sync_);
+    if (shutting_down_) {
+      // If server is shutting down, don't add new clients
+      return false;
+    }
     clients_.push_back(client_info);
   }
 
@@ -812,56 +845,55 @@ void CALLBACK CrashGenerationServer::OnClientEnd(void* context, BOOLEAN) {
   CrashGenerationServer* crash_server = client_info->crash_server();
   assert(crash_server);
 
-  client_info->UnregisterWaits();
-  InterlockedIncrement(&crash_server->cleanup_item_count_);
-
-  if (!QueueUserWorkItem(CleanupClient, context, WT_EXECUTEDEFAULT)) {
-    InterlockedDecrement(&crash_server->cleanup_item_count_);
-  }
+  crash_server->HandleClientProcessExit(client_info);
 }
 
-// static
-DWORD WINAPI CrashGenerationServer::CleanupClient(void* context) {
-  assert(context);
-  ClientInfo* client_info = reinterpret_cast<ClientInfo*>(context);
-
-  CrashGenerationServer* crash_server = client_info->crash_server();
-  assert(crash_server);
-
-  if (crash_server->exit_callback_) {
-    crash_server->exit_callback_(crash_server->exit_context_, client_info);
-  }
-
-  crash_server->DoCleanup(client_info);
-
-  InterlockedDecrement(&crash_server->cleanup_item_count_);
-  return 0;
-}
-
-void CrashGenerationServer::DoCleanup(ClientInfo* client_info) {
+void CrashGenerationServer::HandleClientProcessExit(ClientInfo* client_info) {
   assert(client_info);
+
+  // Must unregister the dump request wait operation and wait for any
+  // dump requests that might be pending to finish before proceeding
+  // with the client_info cleanup.
+  client_info->UnregisterDumpRequestWaitAndBlockUntilNoPending();
+
+  if (exit_callback_) {
+    exit_callback_(exit_context_, client_info);
+  }
 
   // Start a new scope to release lock automatically.
   {
     AutoCriticalSection lock(&sync_);
+    if (shutting_down_) {
+      // The crash generation server is shutting down and as part of the
+      // shutdown process it will delete all clients from the clients_ list.
+      return;
+    }
     clients_.remove(client_info);
   }
+
+  // Explicitly unregister the process exit wait using the non-blocking method.
+  // Otherwise, the destructor will attempt to unregister it using the blocking
+  // method which will lead to a deadlock because it is being called from the
+  // callback of the same wait operation
+  client_info->UnregisterProcessExitWait(false);
 
   delete client_info;
 }
 
 void CrashGenerationServer::HandleDumpRequest(const ClientInfo& client_info) {
+  bool execute_callback = true;
   // Generate the dump only if it's explicitly requested by the
   // server application; otherwise the server might want to generate
   // dump in the callback.
   std::wstring dump_path;
   if (generate_dumps_) {
     if (!GenerateDump(client_info, &dump_path)) {
-      return;
+      // client proccess terminated or some other error
+      execute_callback = false;
     }
   }
 
-  if (dump_callback_) {
+  if (dump_callback_ && execute_callback) {
     std::wstring* ptr_dump_path = (dump_path == L"") ? NULL : &dump_path;
     dump_callback_(dump_context_, &client_info, ptr_dump_path);
   }

@@ -189,11 +189,8 @@ class CrashGenerationServer {
   // Callback for client process exit event.
   static void CALLBACK OnClientEnd(void* context, BOOLEAN timer_or_wait);
 
-  // Releases resources for a client.
-  static DWORD WINAPI CleanupClient(void* context);
-
-  // Cleans up for the given client.
-  void DoCleanup(ClientInfo* client_info);
+  // Handles client process exit.
+  void HandleClientProcessExit(ClientInfo* client_info);
 
   // Adds the given client to the list of registered clients.
   bool AddClient(ClientInfo* client_info);
@@ -216,8 +213,7 @@ class CrashGenerationServer {
   // asynchronous IO operation.
   void EnterStateWhenSignaled(IPCServerState state);
 
-  // Sync object for thread-safe access to the shared list of clients and
-  // the server's state.
+  // Sync object for thread-safe access to the shared list of clients.
   CRITICAL_SECTION sync_;
 
   // List of clients.
@@ -285,10 +281,6 @@ class CrashGenerationServer {
 
   // Client Info for the client that's connecting to the server.
   ClientInfo* client_info_;
-
-  // Count of clean-up work items that are currently running or are
-  // already queued to run.
-  volatile LONG cleanup_item_count_;
 
   // Disable copy ctor and operator=.
   CrashGenerationServer(const CrashGenerationServer& crash_server);
