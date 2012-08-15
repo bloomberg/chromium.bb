@@ -11,7 +11,7 @@ namespace switch_utils {
 
 bool IsEasyOffStoreInstallEnabled();
 
-bool IsActionBoxEnabled();
+bool IsExtensionsInActionBoxEnabled();
 
 bool AreScriptBadgesEnabled();
 

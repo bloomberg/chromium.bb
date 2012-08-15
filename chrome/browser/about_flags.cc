@@ -367,6 +367,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableActionBox),
   },
   {
+    "extensions-in-action-box",
+    IDS_FLAGS_EXTENSIONS_IN_ACTION_BOX_NAME,
+    IDS_FLAGS_EXTENSIONS_IN_ACTION_BOX_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableExtensionsInActionBox),
+  },
+  {
     "script-badges",
     IDS_FLAGS_SCRIPT_BADGES_NAME,
     IDS_FLAGS_SCRIPT_BADGES_DESCRIPTION,

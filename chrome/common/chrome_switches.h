@@ -148,6 +148,7 @@ extern const char kEnableEasyOffStoreExtensionInstall[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityUI[];
+extern const char kEnableExtensionsInActionBox[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFramelessConstrainedDialogs[];
 extern const char kEnableFileCookies[];

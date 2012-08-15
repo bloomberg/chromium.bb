@@ -51,6 +51,7 @@
 #import "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -119,7 +120,7 @@ LocationBarViewMac::LocationBarViewMac(
         RequestMobileListUpdate();
   }
 
-  if (extensions::switch_utils::IsActionBoxEnabled()) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox)) {
     plus_decoration_.reset(new PlusDecoration(this, command_updater, browser_));
   }
 

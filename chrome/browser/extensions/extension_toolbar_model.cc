@@ -167,7 +167,7 @@ void ExtensionToolbarModel::Observe(
     // hides the browser action and then disables and enables the extension.
     if (list_with_extension)
       return;
-    if (extensions::switch_utils::IsActionBoxEnabled())
+    if (extensions::switch_utils::IsExtensionsInActionBoxEnabled())
       AddExtension(extension, &action_box_menu_items_);
     else if (service_->extension_prefs()->GetBrowserActionVisibility(extension))
       AddExtension(extension, &toolbar_items_);
@@ -176,7 +176,7 @@ void ExtensionToolbarModel::Observe(
       RemoveExtension(extension, list_with_extension);
   } else if (type ==
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {
-    if (extensions::switch_utils::IsActionBoxEnabled()) {
+    if (extensions::switch_utils::IsExtensionsInActionBoxEnabled()) {
       // TODO(yefim): Implement this when implementing drag & drop
       // for action box menu.
     } else if (
@@ -250,7 +250,7 @@ extensions::ExtensionList* ExtensionToolbarModel::FindListWithExtension(
 void ExtensionToolbarModel::InitializeExtensionLists() {
   DCHECK(service_->is_ready());
 
-  if (extensions::switch_utils::IsActionBoxEnabled())
+  if (extensions::switch_utils::IsExtensionsInActionBoxEnabled())
     PopulateForActionBoxMode();
   else
     PopulateForNonActionBoxMode();

@@ -275,7 +275,8 @@ void LocationBarView::Init(views::View* popup_parent_view) {
   zoom_view_ = new ZoomView(model_, delegate_);
   AddChildView(zoom_view_);
 
-  if (extensions::switch_utils::IsActionBoxEnabled() && browser_) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableActionBox) &&
+      browser_) {
     action_box_button_view_ = new ActionBoxButtonView(browser_, profile_);
     AddChildView(action_box_button_view_);
   } else if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {

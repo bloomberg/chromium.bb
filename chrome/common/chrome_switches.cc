@@ -522,6 +522,9 @@ const char kEnableExtensionActivityLogging[] =
 // Enables the extension activity UI.
 const char kEnableExtensionActivityUI[]     = "enable-extension-activity-ui";
 
+// Enables to show extensions in an action box.
+const char kEnableExtensionsInActionBox[] = "extensions-in-action-box";
+
 // Enables experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 
