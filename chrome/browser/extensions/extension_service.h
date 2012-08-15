@@ -669,13 +669,18 @@ class ExtensionService
       const extensions::ExtensionSyncData& extension_sync_data,
       syncer::ModelType type);
 
+  enum IncludeFlag {
+    INCLUDE_NONE = 0,
+    INCLUDE_ENABLED = 1 << 0,
+    INCLUDE_DISABLED = 1 << 1,
+    INCLUDE_TERMINATED = 1 << 2
+  };
+
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
   const extensions::Extension* GetExtensionByIdInternal(
       const std::string& id,
-      bool include_enabled,
-      bool include_disabled,
-      bool include_terminated) const;
+      int include_mask) const;
 
   // Adds the given extension to the list of terminated extensions if
   // it is not already there and unloads it.

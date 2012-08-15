@@ -525,7 +525,11 @@ void ExtensionService::InitEventRouters() {
 
 const Extension* ExtensionService::GetExtensionById(
     const std::string& id, bool include_disabled) const {
-  return GetExtensionByIdInternal(id, true, include_disabled, false);
+  int include_mask = INCLUDE_ENABLED;
+  if (include_disabled) {
+    include_mask |= INCLUDE_DISABLED;
+  }
+  return GetExtensionByIdInternal(id, include_mask);
 }
 
 void ExtensionService::Init() {
@@ -568,8 +572,10 @@ bool ExtensionService::UpdateExtension(
   const extensions::PendingExtensionInfo* pending_extension_info =
       pending_extension_manager()->GetById(id);
 
+  int include_mask = INCLUDE_ENABLED;
+  include_mask |= INCLUDE_DISABLED;
   const Extension* extension =
-      GetExtensionByIdInternal(id, true, true, false);
+      GetExtensionByIdInternal(id, include_mask);
   if (!pending_extension_info && !extension) {
     LOG(WARNING) << "Will not update extension " << id
                  << " because it is not installed or pending";
@@ -829,8 +835,8 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   extension_prefs_->SetExtensionState(extension_id, Extension::ENABLED);
   extension_prefs_->RemoveDisableReason(extension_id);
 
-  const Extension* extension =
-      GetExtensionByIdInternal(extension_id, false, true, false);
+  const Extension* extension = GetExtensionByIdInternal(extension_id,
+      INCLUDE_DISABLED);
   // This can happen if sync enables an extension that is not
   // installed yet.
   if (!extension)
@@ -874,7 +880,9 @@ void ExtensionService::DisableExtension(
   extension_prefs_->SetExtensionState(extension_id, Extension::DISABLED);
   extension_prefs_->SetDisableReason(extension_id, disable_reason);
 
-  extension = GetExtensionByIdInternal(extension_id, true, false, true);
+  int include_mask = INCLUDE_ENABLED;
+  include_mask |= INCLUDE_TERMINATED;
+  extension = GetExtensionByIdInternal(extension_id, include_mask);
   if (!extension)
     return;
 
@@ -1795,8 +1803,10 @@ void ExtensionService::UnloadExtension(
     const std::string& extension_id,
     extension_misc::UnloadedExtensionReason reason) {
   // Make sure the extension gets deleted after we return from this function.
+  int include_mask = INCLUDE_ENABLED;
+  include_mask |= INCLUDE_DISABLED;
   scoped_refptr<const Extension> extension(
-      GetExtensionByIdInternal(extension_id, true, true, false));
+      GetExtensionByIdInternal(extension_id, include_mask));
 
   // This method can be called via PostTask, so the extension may have been
   // unloaded by the time this runs.
@@ -2013,8 +2023,10 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   // still remember that "omnibox" had been granted, so that if the
   // extension once again includes "omnibox" in an upgrade, the extension
   // can upgrade without requiring this user's approval.
-  const Extension* old = GetExtensionByIdInternal(extension->id(),
-                                                  true, true, false);
+  int include_mask = INCLUDE_ENABLED;
+  include_mask |= INCLUDE_DISABLED;
+  const Extension* old =
+      GetExtensionByIdInternal(extension->id(), include_mask);
   bool is_extension_upgrade = old != NULL;
   bool is_privilege_increase = false;
   bool previously_disabled = false;
@@ -2151,8 +2163,10 @@ void ExtensionService::OnExtensionInstalled(
     }
   }
 
+  int include_mask = INCLUDE_ENABLED;
+  include_mask |= INCLUDE_DISABLED;
   // Do not record the install histograms for upgrades.
-  if (!GetExtensionByIdInternal(extension->id(), true, true, false)) {
+  if (!GetExtensionByIdInternal(extension->id(), include_mask)) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
                               extension->GetType(), 100);
     RecordPermissionMessagesHistogram(
@@ -2188,20 +2202,19 @@ void ExtensionService::OnExtensionInstalled(
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(
-    const std::string& id, bool include_enabled, bool include_disabled,
-    bool include_terminated) const {
+    const std::string& id, int include_mask) const {
   std::string lowercase_id = StringToLowerASCII(id);
-  if (include_enabled) {
+  if (include_mask & INCLUDE_ENABLED) {
     const Extension* extension = extensions_.GetByID(lowercase_id);
     if (extension)
       return extension;
   }
-  if (include_disabled) {
+  if (include_mask & INCLUDE_DISABLED) {
     const Extension* extension = disabled_extensions_.GetByID(lowercase_id);
     if (extension)
       return extension;
   }
-  if (include_terminated) {
+  if (include_mask & INCLUDE_TERMINATED) {
     const Extension* extension = terminated_extensions_.GetByID(lowercase_id);
     if (extension)
       return extension;
@@ -2223,12 +2236,15 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
 
 const Extension* ExtensionService::GetTerminatedExtension(
     const std::string& id) const {
-  return GetExtensionByIdInternal(id, false, false, true);
+  return GetExtensionByIdInternal(id, INCLUDE_TERMINATED);
 }
 
 const Extension* ExtensionService::GetInstalledExtension(
     const std::string& id) const {
-  return GetExtensionByIdInternal(id, true, true, true);
+  int include_mask = INCLUDE_ENABLED;
+  include_mask |= INCLUDE_DISABLED;
+  include_mask |= INCLUDE_TERMINATED;
+  return GetExtensionByIdInternal(id, include_mask);
 }
 
 bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
