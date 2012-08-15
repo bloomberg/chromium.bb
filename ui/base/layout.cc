@@ -19,10 +19,6 @@
 #include "ui/compositor/compositor.h"
 #endif  // defined(USE_AURA) && !defined(OS_WIN)
 
-#if defined(USE_AURA) && defined(USE_X11)
-#include "ui/base/touch/touch_factory.h"
-#endif // defined(USE_AURA) && defined(USE_X11)
-
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
@@ -59,22 +55,6 @@ bool UseTouchOptimizedUI() {
   // On Windows, we use the touch layout only when we are running in
   // Metro mode.
   return base::win::IsMetroProcess() && base::win::IsTouchEnabled();
-#elif defined(USE_AURA) && defined(USE_X11)
-  // Determine whether touch-screen hardware is currently available.
-  // For now we must ensure this won't change over the life of the process,
-  // since we don't yet support updating the UI.  crbug.com/124399
-  static bool has_touch_device =
-      ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
-
-  // Work-around for late device detection in some cases.  If we've asked for
-  // touch calibration then we're certainly expecting a touch screen, it must
-  // just not be ready yet.  Force-enable touch-ui mode in this case.
-  static bool enable_touch_calibration = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableTouchCalibration);
-  if (!has_touch_device && enable_touch_calibration)
-    has_touch_device = true;
-
-  return has_touch_device;
 #else
   return false;
 #endif

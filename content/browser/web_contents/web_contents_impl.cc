@@ -83,6 +83,10 @@
 #include "ui/surface/io_surface_support_mac.h"
 #endif
 
+#if defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/touch/touch_factory.h"
+#endif // defined (USE_AURA) && defined(USE_X11)
+
 // Cross-Site Navigations
 //
 // If a WebContentsImpl is told to navigate to a different web site (as
@@ -523,6 +527,10 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       command_line.HasSwitch(switches::kEnableCssVariables);
   prefs.device_supports_touch =
       ui::GetDisplayLayout() == ui::LAYOUT_TOUCH;
+#if defined(USE_AURA) && defined(USE_X11)
+  prefs.device_supports_touch |=
+      ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
+#endif
 #if defined(OS_ANDROID)
   prefs.device_supports_mouse = false;
 #endif
