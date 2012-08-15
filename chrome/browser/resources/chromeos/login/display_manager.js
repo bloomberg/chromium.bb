@@ -217,16 +217,17 @@ cr.define('cr.ui.login', function() {
       // Adjust inner container height based on new step's height.
       this.updateInnerContainerSize_(newStep);
 
+      var innerContainer = $('inner-container');
       if (this.currentStep_ != nextStepIndex &&
           !oldStep.classList.contains('hidden')) {
         if (oldStep.classList.contains('animated') || !this.isNewOobe()) {
-          oldStep.classList.add('animation');
+          innerContainer.classList.add('animation');
           oldStep.addEventListener('webkitTransitionEnd', function f(e) {
             oldStep.removeEventListener('webkitTransitionEnd', f);
             if (oldStep.classList.contains('faded') ||
                 oldStep.classList.contains('left') ||
                 oldStep.classList.contains('right')) {
-              oldStep.classList.remove('animation');
+              innerContainer.classList.remove('animation');
               oldStep.classList.add('hidden');
             }
           });
@@ -235,7 +236,6 @@ cr.define('cr.ui.login', function() {
         }
       } else {
         // First screen on OOBE launch.
-        var innerContainer = $('inner-container');
         innerContainer.classList.remove('down');
         innerContainer.addEventListener(
             'webkitTransitionEnd', function f(e) {

@@ -103,8 +103,11 @@ html[oobe=old] #inner-container {
 
 html[oobe=new] #inner-container {
   border-radius: 2px;
-  overflow: hidden;
   padding: 0;
+}
+
+html[oobe=new] #inner-container.animation {
+  overflow: hidden;
 }
 
 /* Screens that have a border and background. */
@@ -244,9 +247,8 @@ html[oobe=old] #step-logo {
 }
 
 html[oobe=new] #connect .step-contents {
-  -webkit-margin-after: 82px;
-  -webkit-margin-before: 33px;
-  -webkit-margin-start: 145px;
+  margin: 33px auto 82px;
+  width: 435px;
 }
 
 html[oobe=new] #eula .step-contents {
@@ -778,7 +780,6 @@ html[oobe=old] .step-controls {
   color: #444;
   font-size: 16px;
   margin-bottom: 30px;
-  width: 435px;
 }
 
 #connect table {
