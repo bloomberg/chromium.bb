@@ -296,6 +296,10 @@ enum PrefixSetEvent {
   // Recorded once per update if the impossible occurs.
   PREFIX_SET_BLOOM_MISS_PREFIX_HIT,
 
+  // Corresponding CHECKSUM failed, but on retry it succeeded.
+  PREFIX_SET_CREATE_PREFIX_SET_CHECKSUM_SUCCEEDED,
+  PREFIX_SET_CREATE_BLOOM_FILTER_CHECKSUM_SUCCEEDED,
+
   // Memory space for histograms is determined by the max.  ALWAYS ADD
   // NEW VALUES BEFORE THIS ONE.
   PREFIX_SET_EVENT_MAX
@@ -431,6 +435,12 @@ void FiltersFromAddPrefixes(
   // TODO(shess): Need a barrier to prevent ordering checks above here
   // or construction below here?
 
+  // NOTE(shess): So far, the fallout is:
+  // 605 PREFIX_SET_CHECKSUM (failed prefix_set->CheckChecksum()).
+  //  32 BLOOM_FILTER_CHECKSUM (failed bloom_filter->CheckChecksum()).
+  //   1 ADD_PREFIXES_CHECKSUM (contents of add_prefixes changed).
+  //   7 PREFIXES_CHECKSUM (contents of prefixes changed).
+
   bool get_prefixes_broken =
       (unique_prefixes_checksum != prefix_set->get()->GetPrefixesChecksum());
   bool prefix_set_broken = !prefix_set->get()->CheckChecksum();
@@ -446,14 +456,40 @@ void FiltersFromAddPrefixes(
     RecordPrefixSetInfo(PREFIX_SET_CREATE_PREFIXES_CHECKSUM);
   }
 
-  if (prefix_set_broken)
+  if (prefix_set_broken) {
     RecordPrefixSetInfo(PREFIX_SET_CREATE_PREFIX_SET_CHECKSUM);
+
+    // Failing PrefixSet::CheckChecksum() implies that the set's
+    // internal data changed during construction.  If the retry
+    // consistently succeeds, that implies memory corruption.  If the
+    // retry consistently fails, that implies PrefixSet is broken.
+    scoped_ptr<safe_browsing::PrefixSet> retry_set(
+        new safe_browsing::PrefixSet(prefixes));
+    if (retry_set->CheckChecksum())
+      RecordPrefixSetInfo(PREFIX_SET_CREATE_PREFIX_SET_CHECKSUM_SUCCEEDED);
+
+    // TODO(shess): In case of double failure, consider pinning the
+    // data and calling NOTREACHED().  But it's a lot of data.  Could
+    // also implement a binary search to constrain the amount of input
+    // to consider, but that's a lot of complexity.
+  }
 
   // TODO(shess): Obviously this is a problem for operation of the
   // bloom filter!  But for purposes of checking prefix set operation,
   // all that matters is not messing up the histograms recorded later.
-  if (bloom_filter_broken)
+  if (bloom_filter_broken) {
     RecordPrefixSetInfo(PREFIX_SET_CREATE_BLOOM_FILTER_CHECKSUM);
+
+    // As for PrefixSet, failing BloomFilter::CheckChecksum() implies
+    // that the filter's internal data was changed.
+    scoped_refptr<BloomFilter> retry_filter(new BloomFilter(filter_size));
+    for (std::vector<SBPrefix>::const_iterator iter = prefixes.begin();
+         iter != prefixes.end(); ++iter) {
+      retry_filter->Insert(*iter);
+    }
+    if (retry_filter->CheckChecksum())
+      RecordPrefixSetInfo(PREFIX_SET_CREATE_BLOOM_FILTER_CHECKSUM_SUCCEEDED);
+  }
 
   // Attempt to isolate the case where the output of GetPrefixes()
   // would differ from the input presented.  This case implies that
