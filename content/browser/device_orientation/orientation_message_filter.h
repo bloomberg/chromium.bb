@@ -9,7 +9,7 @@
 
 #include "content/browser/device_orientation/message_filter.h"
 
-namespace device_orientation {
+namespace content {
 
 class OrientationMessageFilter : public MessageFilter {
  public:
@@ -25,6 +25,6 @@ class OrientationMessageFilter : public MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(OrientationMessageFilter);
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_MESSAGE_FILTER_H_

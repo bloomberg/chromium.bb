@@ -10,7 +10,7 @@
 
 using content::BrowserThread;
 
-namespace device_orientation {
+namespace content {
 
 OrientationMessageFilter::OrientationMessageFilter()
     :  MessageFilter(DeviceData::kTypeOrientation) {
@@ -31,4 +31,4 @@ bool OrientationMessageFilter::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-}  // namespace device_orientation
+}  // namespace content

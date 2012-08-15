@@ -9,7 +9,7 @@
 #include "content/browser/device_orientation/orientation.h"
 #include "ipc/ipc_sender.h"
 
-namespace device_orientation {
+namespace content {
 
 ObserverDelegate::ObserverDelegate(DeviceData::Type device_data_type,
                                    Provider* provider, int render_view_id,
@@ -39,4 +39,4 @@ DeviceData* ObserverDelegate::EmptyDeviceData(DeviceData::Type type) {
   return new Orientation();
 }
 
-}  // namespace device_orientation
+}  // namespace content

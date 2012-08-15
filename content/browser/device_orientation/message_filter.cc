@@ -10,7 +10,7 @@
 
 using content::BrowserThread;
 
-namespace device_orientation {
+namespace content {
 
 MessageFilter::MessageFilter(DeviceData::Type device_data_type)
     : provider_(NULL),
@@ -36,4 +36,4 @@ void MessageFilter::OnStopUpdating(int render_view_id) {
   observers_map_.erase(render_view_id);
 }
 
-}  // namespace device_orientation
+}  // namespace content

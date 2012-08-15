@@ -7,7 +7,7 @@
 
 #include "content/browser/device_orientation/device_data.h"
 
-namespace device_orientation {
+namespace content {
 
 class DataFetcher {
  public:
@@ -19,6 +19,6 @@ class DataFetcher {
   virtual const DeviceData* GetDeviceData(DeviceData::Type type) = 0;
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_DATA_FETCHER_H_

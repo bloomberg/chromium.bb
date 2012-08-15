@@ -12,7 +12,7 @@ namespace IPC {
 class Sender;
 }
 
-namespace device_orientation {
+namespace content {
 
 class ObserverDelegate
     : public base::RefCounted<ObserverDelegate>, public Provider::Observer {
@@ -40,6 +40,6 @@ class ObserverDelegate
   DISALLOW_COPY_AND_ASSIGN(ObserverDelegate);
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_OBSERVER_DELEGATE_H_

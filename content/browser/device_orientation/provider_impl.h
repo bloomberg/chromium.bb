@@ -19,7 +19,7 @@
 
 class MessageLoop;
 
-namespace device_orientation {
+namespace content {
 
 class ProviderImpl : public Provider {
  public:
@@ -75,6 +75,6 @@ class ProviderImpl : public Provider {
   PollingThread* polling_thread_;
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_IMPL_H_

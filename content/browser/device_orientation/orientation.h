@@ -9,7 +9,7 @@
 #include "content/browser/device_orientation/device_data.h"
 #include "content/common/content_export.h"
 
-namespace device_orientation {
+namespace content {
 
 class Orientation : public DeviceData {
  public:
@@ -68,6 +68,6 @@ class Orientation : public DeviceData {
   bool can_provide_absolute_;
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_H_

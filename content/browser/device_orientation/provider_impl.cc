@@ -22,7 +22,7 @@ void DeleteThread(base::Thread* thread) {
 
 }
 
-namespace device_orientation {
+namespace content {
 
 class ProviderImpl::PollingThread : public base::Thread {
  public:
@@ -291,4 +291,4 @@ void ProviderImpl::DoNotify(const DeviceData* device_data,
 }
 
 
-}  // namespace device_orientation
+}  // namespace content

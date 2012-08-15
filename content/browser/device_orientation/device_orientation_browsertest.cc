@@ -15,7 +15,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 
-namespace device_orientation {
+namespace content {
 
 class MockProvider : public Provider {
  public:
@@ -76,4 +76,4 @@ IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
   EXPECT_TRUE(provider->removed_observer_);
 }
 
-} //  namespace device_orientation
+} //  namespace content

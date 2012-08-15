@@ -12,7 +12,7 @@ namespace IPC {
 class Message;
 }
 
-namespace device_orientation {
+namespace content {
 
 class CONTENT_EXPORT DeviceData :
     public base::RefCountedThreadSafe<DeviceData> {
@@ -35,6 +35,6 @@ class CONTENT_EXPORT DeviceData :
   DISALLOW_COPY_AND_ASSIGN(DeviceData);
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_DEVICE_DATA_H_

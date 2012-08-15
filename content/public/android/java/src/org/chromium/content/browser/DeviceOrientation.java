@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Android implementation of the DeviceOrientation API.
  */
-@JNINamespace("device_orientation")
+@JNINamespace("content")
 class DeviceOrientation implements SensorEventListener {
 
     // These fields are lazily initialized by getHandler().

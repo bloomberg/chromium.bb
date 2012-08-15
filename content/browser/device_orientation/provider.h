@@ -9,7 +9,7 @@
 #include "content/browser/device_orientation/device_data.h"
 #include "content/common/content_export.h"
 
-namespace device_orientation {
+namespace content {
 
 class CONTENT_EXPORT Provider : public base::RefCountedThreadSafe<Provider> {
  public:
@@ -62,6 +62,6 @@ class CONTENT_EXPORT Provider : public base::RefCountedThreadSafe<Provider> {
   DISALLOW_COPY_AND_ASSIGN(Provider);
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_PROVIDER_H_

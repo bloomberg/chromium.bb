@@ -17,7 +17,7 @@
 
 using content::BrowserThread;
 
-namespace device_orientation {
+namespace content {
 
 Provider* Provider::GetInstance() {
   if (!instance_) {
@@ -54,4 +54,4 @@ Provider::~Provider() {
 
 Provider* Provider::instance_ = NULL;
 
-} //  namespace device_orientation
+} //  namespace content

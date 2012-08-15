@@ -8,7 +8,7 @@
 
 #include "content/common/device_orientation_messages.h"
 
-namespace device_orientation {
+namespace content {
 
 Orientation::Orientation()
     : can_provide_alpha_(false),
@@ -67,4 +67,4 @@ bool Orientation::IsElementSignificantlyDifferent(bool can_provide_element1,
   return false;
 }
 
-}  // namespace device_orientation
+}  // namespace content

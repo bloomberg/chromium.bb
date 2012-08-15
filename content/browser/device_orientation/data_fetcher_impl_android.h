@@ -12,7 +12,7 @@
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/device_data.h"
 
-namespace device_orientation {
+namespace content {
 
 class Orientation;
 
@@ -60,6 +60,6 @@ class DataFetcherImplAndroid : public DataFetcher {
   DISALLOW_COPY_AND_ASSIGN(DataFetcherImplAndroid);
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CHROME_BROWSER_DEVICE_ORIENTATION_DATA_FETCHER_IMPL_ANDROID_H_

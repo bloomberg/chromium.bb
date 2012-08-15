@@ -14,7 +14,7 @@
 #include "content/browser/device_orientation/provider_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace device_orientation {
+namespace content {
 namespace {
 
 // Class for testing multiple types of device data.
@@ -585,4 +585,4 @@ TEST_F(DeviceOrientationProviderTest, OrientationSignificantlyDifferent) {
 
 }  // namespace
 
-}  // namespace device_orientation
+}  // namespace content

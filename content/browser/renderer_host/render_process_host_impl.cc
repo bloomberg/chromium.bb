@@ -566,7 +566,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetRequestContext(),
       BrowserContext::GetFileSystemContext(browser_context),
       ChromeBlobStorageContext::GetFor(browser_context)));
-  channel_->AddFilter(new device_orientation::OrientationMessageFilter());
+  channel_->AddFilter(new OrientationMessageFilter());
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(

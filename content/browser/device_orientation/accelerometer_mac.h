@@ -14,7 +14,7 @@
 
 class SuddenMotionSensor;
 
-namespace device_orientation {
+namespace content {
 
 class Orientation;
 
@@ -35,6 +35,6 @@ class AccelerometerMac : public DataFetcher {
   scoped_ptr<SuddenMotionSensor> sudden_motion_sensor_;
 };
 
-}  // namespace device_orientation
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_ACCELEROMETER_MAC_H_
