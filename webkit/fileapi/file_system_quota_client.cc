@@ -31,9 +31,10 @@ namespace fileapi {
 
 namespace {
 
-void GetOriginsForTypeOnFileThread(FileSystemContext* context,
-                                   StorageType storage_type,
-                                   std::set<GURL>* origins_ptr) {
+void GetOriginsForTypeOnFileThread(
+    FileSystemContext* context,
+    StorageType storage_type,
+    std::set<GURL>* origins_ptr) {
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
 
@@ -43,10 +44,11 @@ void GetOriginsForTypeOnFileThread(FileSystemContext* context,
   quota_util->GetOriginsForTypeOnFileThread(type, origins_ptr);
 }
 
-void GetOriginsForHostOnFileThread(FileSystemContext* context,
-                                   StorageType storage_type,
-                                   const std::string& host,
-                                   std::set<GURL>* origins_ptr) {
+void GetOriginsForHostOnFileThread(
+    FileSystemContext* context,
+    StorageType storage_type,
+    const std::string& host,
+    std::set<GURL>* origins_ptr) {
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
 
@@ -57,13 +59,13 @@ void GetOriginsForHostOnFileThread(FileSystemContext* context,
 }
 
 void DidGetOrigins(
-    const base::Callback<void(const std::set<GURL>&, StorageType)>& callback,
+    const quota::QuotaClient::GetOriginsCallback& callback,
     std::set<GURL>* origins_ptr,
     StorageType storage_type) {
   callback.Run(*origins_ptr, storage_type);
 }
 
-quota::QuotaStatusCode DeleteOriginOnTargetThread(
+quota::QuotaStatusCode DeleteOriginOnFileThread(
     FileSystemContext* context,
     const GURL& origin,
     FileSystemType type) {
@@ -179,16 +181,17 @@ void FileSystemQuotaClient::GetOriginsForHost(
                  storage_type));
 }
 
-void FileSystemQuotaClient::DeleteOriginData(const GURL& origin,
-                                             StorageType type,
-                                             const DeletionCallback& callback) {
+void FileSystemQuotaClient::DeleteOriginData(
+    const GURL& origin,
+    StorageType type,
+    const DeletionCallback& callback) {
   FileSystemType fs_type = QuotaStorageTypeToFileSystemType(type);
   DCHECK(fs_type != kFileSystemTypeUnknown);
 
   base::PostTaskAndReplyWithResult(
       file_task_runner(),
       FROM_HERE,
-      base::Bind(&DeleteOriginOnTargetThread,
+      base::Bind(&DeleteOriginOnFileThread,
                  file_system_context_,
                  origin,
                  fs_type),
