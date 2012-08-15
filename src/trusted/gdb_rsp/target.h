@@ -28,7 +28,6 @@
 
 #include "native_client/src/trusted/gdb_rsp/util.h"
 
-#include "native_client/src/trusted/port/event.h"
 #include "native_client/src/trusted/port/platform.h"
 #include "native_client/src/trusted/port/mutex.h"
 #include "native_client/src/trusted/port/thread.h"

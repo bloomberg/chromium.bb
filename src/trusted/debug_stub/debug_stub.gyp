@@ -11,7 +11,6 @@
     'common_sources': [
       'debug_stub.h',
       'debug_stub.cc',
-      'event_common.cc',
       'nacl_debug.cc',
       'thread_common.cc',
       'transport_common.cc',

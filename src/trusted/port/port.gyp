@@ -34,7 +34,6 @@
   ],
   'variables': {
     'common_sources': [
-        'event.h',
         'mutex.h',
         'platform.h',
         'thread.h',

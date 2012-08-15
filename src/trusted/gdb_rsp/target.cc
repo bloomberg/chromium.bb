@@ -30,7 +30,6 @@
 
 using std::string;
 
-using port::IEvent;
 using port::IMutex;
 using port::IPlatform;
 using port::IThread;

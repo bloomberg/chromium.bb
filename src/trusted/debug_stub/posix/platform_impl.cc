@@ -20,7 +20,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/gdb_rsp/abi.h"
 #include "native_client/src/trusted/gdb_rsp/util.h"
-#include "native_client/src/trusted/port/event.h"
 #include "native_client/src/trusted/port/platform.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"

@@ -10,7 +10,6 @@ Import('env')
 
 debug_sources = [
   'debug_stub.cc',
-  'event_common.cc',
   'thread_common.cc',
   'transport_common.cc',
   ]
