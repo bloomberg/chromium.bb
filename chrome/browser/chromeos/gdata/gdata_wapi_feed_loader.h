@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/observer_list.h"
+#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
 
 namespace gdata {
 

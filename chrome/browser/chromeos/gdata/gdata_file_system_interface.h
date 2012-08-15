@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_operations.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 

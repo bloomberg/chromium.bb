@@ -573,6 +573,8 @@
         'browser/chromeos/gdata/gdata_cache_metadata.h',
         'browser/chromeos/gdata/gdata_contacts_service.cc',
         'browser/chromeos/gdata/gdata_contacts_service.h',
+        'browser/chromeos/gdata/gdata_directory_service.cc',
+        'browser/chromeos/gdata/gdata_directory_service.h',
         'browser/chromeos/gdata/gdata_documents_service.cc',
         'browser/chromeos/gdata/gdata_documents_service.h',
         'browser/chromeos/gdata/gdata_download_observer.cc',

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_TEST_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
 
 class FilePath;
 
