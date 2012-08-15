@@ -197,6 +197,7 @@ def _failed(self, status = 0):
     except TypeError:
         # status wasn't an iterable
         return _status(self) != status
+
 def _status(self):
     return self.status
 

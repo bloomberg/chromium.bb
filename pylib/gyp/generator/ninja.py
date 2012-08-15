@@ -3,18 +3,19 @@
 # found in the LICENSE file.
 
 import copy
+import hashlib
+import os.path
+import re
+import subprocess
+import sys
 import gyp
 import gyp.common
 import gyp.msvs_emulation
 import gyp.MSVSVersion
 import gyp.system_test
 import gyp.xcode_emulation
-import hashlib
-import os.path
-import re
-import subprocess
-import sys
 
+from gyp.common import GetEnvironFallback
 import gyp.ninja_syntax as ninja_syntax
 
 generator_default_variables = {
@@ -1201,7 +1202,6 @@ def CalculateVariables(default_variables, params):
   """Calculate additional variables for use in the build (called by gyp)."""
   global generator_additional_non_configuration_keys
   global generator_additional_path_sections
-  cc_target = os.environ.get('CC.target', os.environ.get('CC', 'cc'))
   flavor = gyp.common.GetFlavor(params)
   if flavor == 'mac':
     default_variables.setdefault('OS', 'mac')
@@ -1272,13 +1272,6 @@ def OpenOutput(path, mode='w'):
   return open(path, mode)
 
 
-def GetEnvironFallback(var_list, default):
-  for var in var_list:
-    if var in os.environ:
-      return os.environ[var]
-  return default
-
-
 def GenerateOutputForConfig(target_list, target_dicts, data, params,
                             config_name):
   options = params['options']
@@ -1307,11 +1300,18 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   #   'CC_host'/'CXX_host' enviroment variable, cc_host/cxx_host should be set
   #   to cc/cxx.
   if flavor == 'win':
-    cc = cxx = 'cl.exe'
+    cc = 'cl.exe'
+    cxx = 'cl.exe'
+    ld = 'link.exe'
     gyp.msvs_emulation.GenerateEnvironmentFiles(
         toplevel_build, generator_flags, OpenOutput)
+    ld_host = '$ld'
   else:
-    cc, cxx = 'gcc', 'g++'
+    cc = 'gcc'
+    cxx = 'g++'
+    ld = '$cxx'
+    ld_host = '$cxx_host'
+
   cc_host = None
   cxx_host = None
   cc_host_global_setting = None
@@ -1321,12 +1321,20 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   make_global_settings = data[build_file].get('make_global_settings', [])
   build_to_root = InvertRelativePath(build_dir)
   for key, value in make_global_settings:
-    if key == 'CC': cc = os.path.join(build_to_root, value)
-    if key == 'CXX': cxx = os.path.join(build_to_root, value)
-    if key == 'CC.host': cc_host = os.path.join(build_to_root, value)
-    if key == 'CXX.host': cxx_host = os.path.join(build_to_root, value)
-    if key == 'CC.host': cc_host_global_setting = value
-    if key == 'CXX.host': cxx_host_global_setting = value
+    if key == 'CC':
+      cc = os.path.join(build_to_root, value)
+    if key == 'CXX':
+      cxx = os.path.join(build_to_root, value)
+    if key == 'LD':
+      ld = os.path.join(build_to_root, value)
+    if key == 'CC.host':
+      cc_host = os.path.join(build_to_root, value)
+      cc_host_global_setting = value
+    if key == 'CXX.host':
+      cxx_host = os.path.join(build_to_root, value)
+      cxx_host_global_setting = value
+    if key == 'LD.host':
+      ld_host = os.path.join(build_to_root, value)
 
   flock = 'flock'
   if flavor == 'mac':
@@ -1335,12 +1343,15 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja.variable('cc', cc)
   cxx = GetEnvironFallback(['CXX_target', 'CXX'], cxx)
   master_ninja.variable('cxx', cxx)
+  ld = GetEnvironFallback(['LD_target', 'LD'], ld)
 
-  if not cc_host: cc_host = cc
-  if not cxx_host: cxx_host = cxx
+  if not cc_host:
+    cc_host = cc
+  if not cxx_host:
+    cxx_host = cxx
 
   if flavor == 'win':
-    master_ninja.variable('ld', 'link.exe')
+    master_ninja.variable('ld', ld)
     master_ninja.variable('idl', 'midl.exe')
     master_ninja.variable('ar', 'lib.exe')
     master_ninja.variable('rc', 'rc.exe')
@@ -1348,24 +1359,26 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     master_ninja.variable('mt', 'mt.exe')
     master_ninja.variable('use_dep_database', '1')
   else:
-    master_ninja.variable('ld', flock + ' linker.lock $cxx')
+    master_ninja.variable('ld', flock + ' linker.lock ' + ld)
     master_ninja.variable('ar', GetEnvironFallback(['AR_target', 'AR'], 'ar'))
 
   master_ninja.variable('ar_host', GetEnvironFallback(['AR_host'], 'ar'))
   cc_host = GetEnvironFallback(['CC_host'], cc_host)
   cxx_host = GetEnvironFallback(['CXX_host'], cxx_host)
+  ld_host = GetEnvironFallback(['LD_host'], ld_host)
+
   # The environment variable could be used in 'make_global_settings', like
   # ['CC.host', '$(CC)'] or ['CXX.host', '$(CXX)'], transform them here.
-  if cc_host.find('$(CC)') != -1 and cc_host_global_setting:
+  if '$(CC)' in cc_host and cc_host_global_setting:
     cc_host = cc_host_global_setting.replace('$(CC)', cc)
-  if cxx_host.find('$(CXX)') != -1 and cxx_host_global_setting:
+  if '$(CXX)' in cxx_host and cxx_host_global_setting:
     cxx_host = cxx_host_global_setting.replace('$(CXX)', cxx)
   master_ninja.variable('cc_host', cc_host)
   master_ninja.variable('cxx_host', cxx_host)
   if flavor == 'win':
-    master_ninja.variable('ld_host', os.environ.get('LD_host', '$ld'))
+    master_ninja.variable('ld_host', ld_host)
   else:
-    master_ninja.variable('ld_host', flock + ' linker.lock $cxx_host')
+    master_ninja.variable('ld_host', flock + ' linker.lock ' + ld_host)
 
   if flavor == 'mac':
     master_ninja.variable('mac_tool', os.path.join('.', 'gyp-mac-tool'))
