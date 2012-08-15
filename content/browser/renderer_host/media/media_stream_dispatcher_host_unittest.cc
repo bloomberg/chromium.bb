@@ -372,13 +372,13 @@ TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
   size_t generated_streams = 3;
   for (size_t i = 0; i < generated_streams; ++i) {
     EXPECT_CALL(*host_, OnStreamGenerated(kRenderId, kPageRequestId + i, 0, 1));
+    EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesOpened(_, _, _));
     host_->OnGenerateStream(kPageRequestId + i, options);
+
+    // Wait until the stream is generated.
+    WaitForResult();
   }
   EXPECT_EQ(host_->NumberOfStreams(), generated_streams);
-  EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesOpened(_, _, _))
-      .Times(3);
-  // Wait until the streams are all generated.
-  WaitForResult();
 
   // Calling OnChannelClosing() to cancel all the pending/generated streams.
   EXPECT_CALL(*media_observer_.get(), OnCaptureDevicesClosed(_, _, _))
