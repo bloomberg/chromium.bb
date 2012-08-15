@@ -321,9 +321,6 @@
         'widget/drop_helper.h',
         'widget/drop_target_win.cc',
         'widget/drop_target_win.h',
-        'widget/hwnd_message_handler.cc',
-        'widget/hwnd_message_handler.h',
-        'widget/hwnd_message_handler_delegate.h',
         'widget/root_view.cc',
         'widget/root_view.h',
         'widget/tooltip_manager_aura.cc',
@@ -449,9 +446,6 @@
         }],
         ['OS!="win"', {
           'sources!': [
-            'widget/hwnd_message_handler.cc',
-            'widget/hwnd_message_handler.h',
-            'widget/hwnd_message_handler_delegate.h',
             'widget/widget_hwnd_utils.cc',
             'widget/widget_hwnd_utils.h',
           ],

@@ -45,7 +45,6 @@
 #include "ui/views/widget/aero_tooltip_manager.h"
 #include "ui/views/widget/child_window_message_processor.h"
 #include "ui/views/widget/drop_target_win.h"
-#include "ui/views/widget/hwnd_message_handler.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
@@ -430,9 +429,7 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       is_right_mouse_pressed_on_caption_(false),
       restored_enabled_(false),
       destroyed_(NULL),
-      has_non_client_view_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-        message_handler_(new HWNDMessageHandler(this))) {
+      has_non_client_view_(false) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {
@@ -1260,36 +1257,58 @@ LRESULT NativeWidgetWin::OnWndProc(UINT message,
 // Message handlers ------------------------------------------------------------
 
 void NativeWidgetWin::OnActivate(UINT action, BOOL minimized, HWND window) {
-  message_handler_->OnActivate(action, minimized, window);
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnActivateApp(BOOL active, DWORD thread_id) {
-  message_handler_->OnActivateApp(active, thread_id);
+  if (GetWidget()->non_client_view() && !active &&
+      thread_id != GetCurrentThreadId()) {
+    // Another application was activated, we should reset any state that
+    // disables inactive rendering now.
+    delegate_->EnableInactiveRendering();
+    // Also update the native frame if it is rendering the non-client area.
+    if (!remove_standard_frame_ && GetWidget()->ShouldUseNativeFrame())
+      DefWindowProcWithRedrawLock(WM_NCACTIVATE, FALSE, 0);
+  }
 }
 
 LRESULT NativeWidgetWin::OnAppCommand(HWND window,
                                       short app_command,
                                       WORD device,
                                       int keystate) {
-  return message_handler_->OnAppCommand(window, app_command, device, keystate);
+  // We treat APPCOMMAND ids as an extension of our command namespace, and just
+  // let the delegate figure out what to do...
+  BOOL is_handled = (GetWidget()->widget_delegate() &&
+      GetWidget()->widget_delegate()->ExecuteWindowsCommand(app_command)) ?
+      TRUE : FALSE;
+  SetMsgHandled(is_handled);
+  // Make sure to return TRUE if the event was handled or in some cases the
+  // system will execute the default handler which can cause bugs like going
+  // forward or back two pages instead of one.
+  return is_handled;
 }
 
 void NativeWidgetWin::OnCancelMode() {
-  message_handler_->OnCancelMode();
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnCaptureChanged(HWND hwnd) {
-  message_handler_->OnCaptureChanged(hwnd);
+  delegate_->OnMouseCaptureLost();
 }
 
 void NativeWidgetWin::OnClose() {
-  message_handler_->OnClose();
+  GetWidget()->Close();
 }
 
 void NativeWidgetWin::OnCommand(UINT notification_code,
                                 int command_id,
                                 HWND window) {
-  message_handler_->OnCommand(notification_code, command_id, window);
+  // If the notification code is > 1 it means it is control specific and we
+  // should ignore it.
+  if (notification_code > 1 ||
+      GetWidget()->widget_delegate()->ExecuteWindowsCommand(command_id)) {
+    SetMsgHandled(FALSE);
+  }
 }
 
 LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
@@ -1338,7 +1357,7 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
   // We should attach IMEs only when we need to input CJK strings.
   ImmAssociateContextEx(hwnd(), NULL, 0);
 
-  if (message_handler_->remove_standard_frame()) {
+  if (remove_standard_frame_) {
     SetWindowLong(GWL_STYLE, GetWindowLong(GWL_STYLE) & ~WS_CAPTION);
     SendFrameChanged(GetNativeView());
   }
@@ -1360,38 +1379,56 @@ LRESULT NativeWidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 }
 
 void NativeWidgetWin::OnDestroy() {
-  message_handler_->OnDestroy();
+  delegate_->OnNativeWidgetDestroying();
+  if (drop_target_.get()) {
+    RevokeDragDrop(hwnd());
+    drop_target_ = NULL;
+  }
 }
 
 void NativeWidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {
-  message_handler_->OnDisplayChange(bits_per_pixel, screen_size);
+  GetWidget()->widget_delegate()->OnDisplayChanged();
 }
 
 LRESULT NativeWidgetWin::OnDwmCompositionChanged(UINT msg,
                                                  WPARAM w_param,
                                                  LPARAM l_param) {
-  message_handler_->OnDwmCompositionChanged(msg, w_param, l_param);
+  if (!GetWidget()->non_client_view()) {
+    SetMsgHandled(FALSE);
+    return 0;
+  }
+
+  // For some reason, we need to hide the window while we're changing the frame
+  // type only when we're changing it in response to WM_DWMCOMPOSITIONCHANGED.
+  // If we don't, the client area will be filled with black. I'm suspecting
+  // something skia-ey.
+  // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
+  // to have this requirement.
+  FrameTypeChanged();
   return 0;
 }
 
 void NativeWidgetWin::OnEndSession(BOOL ending, UINT logoff) {
-  message_handler_->OnEndSession(ending, logoff);
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnEnterSizeMove() {
-  message_handler_->OnEnterSizeMove();
+  delegate_->OnNativeWidgetBeginUserBoundsChange();
+  SetMsgHandled(FALSE);
 }
 
 LRESULT NativeWidgetWin::OnEraseBkgnd(HDC dc) {
-  return message_handler_->OnEraseBkgnd(dc);
+  // This is needed for magical win32 flicker ju-ju.
+  return 1;
 }
 
 void NativeWidgetWin::OnExitMenuLoop(BOOL is_track_popup_menu) {
-  message_handler_->OnExitMenuLoop(is_track_popup_menu);
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnExitSizeMove() {
-  message_handler_->OnExitSizeMove();
+  delegate_->OnNativeWidgetEndUserBoundsChange();
+  SetMsgHandled(FALSE);
 }
 
 LRESULT NativeWidgetWin::OnGetObject(UINT uMsg,
@@ -1695,7 +1732,7 @@ LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   // requests it, we want a custom width of 0.
   gfx::Insets insets = GetClientAreaInsets();
   if (insets.empty() && !IsFullscreen() &&
-      !(mode && message_handler_->remove_standard_frame())) {
+      !(mode && remove_standard_frame_)) {
     SetMsgHandled(FALSE);
     return 0;
   }
@@ -1780,8 +1817,7 @@ LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& point) {
 
   // If the DWM is rendering the window controls, we need to give the DWM's
   // default window procedure first chance to handle hit testing.
-  if (!message_handler_->remove_standard_frame() &&
-      GetWidget()->ShouldUseNativeFrame()) {
+  if (!remove_standard_frame_ && GetWidget()->ShouldUseNativeFrame()) {
     LRESULT result;
     if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
                          MAKELPARAM(point.x, point.y), &result)) {
@@ -2175,11 +2211,9 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
 void NativeWidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
-  if (message_handler_->remove_standard_frame() &&
-      window_pos->flags & SWP_FRAMECHANGED &&
-      IsAeroGlassEnabled()) {
+  if (remove_standard_frame_ && window_pos->flags & SWP_FRAMECHANGED &&
+      IsAeroGlassEnabled())
     UpdateDWMFrame();
-  }
   if (window_pos->flags & SWP_SHOWWINDOW)
     delegate_->OnNativeWidgetVisibilityChanged(true);
   else if (window_pos->flags & SWP_HIDEWINDOW)
@@ -2207,8 +2241,7 @@ gfx::Insets NativeWidgetWin::GetClientAreaInsets() const {
   // Returning an empty Insets object causes the default handling in
   // NativeWidgetWin::OnNCCalcSize() to be invoked.
   if (!has_non_client_view_ ||
-      (GetWidget()->ShouldUseNativeFrame() &&
-       !message_handler_->remove_standard_frame()))
+      (GetWidget()->ShouldUseNativeFrame() && !remove_standard_frame_))
     return gfx::Insets();
 
   if (IsMaximized()) {
@@ -2221,7 +2254,7 @@ gfx::Insets NativeWidgetWin::GetClientAreaInsets() const {
 
   // The hack below doesn't seem to be necessary when the standard frame is
   // removed.
-  if (message_handler_->remove_standard_frame())
+  if (remove_standard_frame_)
     return gfx::Insets();
   // This is weird, but highly essential. If we don't offset the bottom edge
   // of the client rect, the window client area and window area will match,
@@ -2277,76 +2310,6 @@ void NativeWidgetWin::SetInitialFocus() {
 void NativeWidgetWin::ExecuteSystemMenuCommand(int command) {
   if (command)
     SendMessage(GetNativeView(), WM_SYSCOMMAND, command, 0);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetWin, HWNDMessageHandlerDelegate implementation:
-
-bool NativeWidgetWin::IsWidgetWindow() const {
-  return !!GetWidget()->non_client_view();
-}
-
-bool NativeWidgetWin::IsUsingCustomFrame() const {
-  return GetWidget()->ShouldUseNativeFrame();
-}
-
-void NativeWidgetWin::HandleAppDeactivated() {
-  // Another application was activated, we should reset any state that
-  // disables inactive rendering now.
-  delegate_->EnableInactiveRendering();
-}
-
-bool NativeWidgetWin::HandleAppCommand(short command) {
-  // We treat APPCOMMAND ids as an extension of our command namespace, and just
-  // let the delegate figure out what to do...
-  return GetWidget()->widget_delegate() &&
-      GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
-}
-
-void NativeWidgetWin::HandleCaptureLost() {
-  delegate_->OnMouseCaptureLost();
-}
-
-void NativeWidgetWin::HandleClose() {
-  GetWidget()->Close();
-}
-
-bool NativeWidgetWin::HandleCommand(int command) {
-  return GetWidget()->widget_delegate()->ExecuteWindowsCommand(command);
-}
-
-void NativeWidgetWin::HandleDestroy() {
-  delegate_->OnNativeWidgetDestroying();
-  if (drop_target_.get()) {
-    RevokeDragDrop(hwnd());
-    drop_target_ = NULL;
-  }
-}
-
-void NativeWidgetWin::HandleDisplayChange() {
-  GetWidget()->widget_delegate()->OnDisplayChanged();
-}
-
-void NativeWidgetWin::HandleGlassModeChange() {
-  // For some reason, we need to hide the window while we're changing the frame
-  // type only when we're changing it in response to WM_DWMCOMPOSITIONCHANGED.
-  // If we don't, the client area will be filled with black. I'm suspecting
-  // something skia-ey.
-  // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
-  // to have this requirement.
-  FrameTypeChanged();
-}
-
-void NativeWidgetWin::HandleBeginWMSizeMove() {
-  delegate_->OnNativeWidgetBeginUserBoundsChange();
-}
-
-void NativeWidgetWin::HandleEndWMSizeMove() {
-  delegate_->OnNativeWidgetEndUserBoundsChange();
-}
-
-NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {
-  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2478,7 +2441,7 @@ void NativeWidgetWin::SetInitParams(const Widget::InitParams& params) {
   set_window_ex_style(window_ex_style() | ex_style);
 
   has_non_client_view_ = Widget::RequiresNonClientView(params.type);
-  message_handler_->set_remove_standard_frame(params.remove_standard_frame);
+  remove_standard_frame_ = params.remove_standard_frame;
 }
 
 void NativeWidgetWin::RedrawInvalidRect() {
