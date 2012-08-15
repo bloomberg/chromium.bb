@@ -108,7 +108,6 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
   HPTPROVIDER provider = NULL;
   std::wstring printer_name_wide = UTF8ToWide(printer_name);
   HRESULT hr = XPSModule::OpenProvider(printer_name_wide, 1, &provider);
-  DCHECK(SUCCEEDED(hr));
   if (provider) {
     base::win::ScopedComPtr<IStream> print_capabilities_stream;
     hr = CreateStreamOnHGlobal(NULL, TRUE,
