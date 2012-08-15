@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PTHREAD_EXT_H_
-#define PTHREAD_EXT_H_
+#ifndef GTEST_PPAPI_PTHREAD_EXT_H_
+#define GTEST_PPAPI_PTHREAD_EXT_H_
 
 // Include wrapper on pthread.h, with a few handy constants.
 
@@ -11,5 +11,4 @@
 
 #define PTHREAD_MUTEX_SUCCESS 0
 
-#endif  // PTHREAD_EXT_H_
-
+#endif  // GTEST_PPAPI_PTHREAD_EXT_H_

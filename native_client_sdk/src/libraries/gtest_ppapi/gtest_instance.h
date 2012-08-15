@@ -1,12 +1,10 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef C_SALT_TEST_GTEST_INSTANCE_H_
-#define C_SALT_TEST_GTEST_INSTANCE_H_
+#ifndef GTEST_PPAPI_GTEST_INSTANCE_H_
+#define GTEST_PPAPI_GTEST_INSTANCE_H_
 
 #include "ppapi/cpp/instance.h"
-
-namespace c_salt {
 
 // GTestInstance is a NaCl instance specifically dedicated to running
 // gtest-based unit tests. It creates a GTestRunner thread/singleton pair as
@@ -28,7 +26,4 @@ class GTestInstance : public pp::Instance {
   virtual void HandleMessage(const pp::Var& var_message);
 };
 
-}  // namespace c_salt
-
-#endif  // C_SALT_TEST_GTEST_INSTANCE_H_
-
+#endif  // GTEST_PPAPI_GTEST_INSTANCE_H_

@@ -1,13 +1,11 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "c_salt/test/gtest_event_listener.h"
+#include "gtest_ppapi/gtest_event_listener.h"
 
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
-
-namespace c_salt {
 
 GTestEventListener::GTestEventListener(pp::Instance* instance)
   : instance_(instance),
@@ -95,6 +93,3 @@ void GTestEventListener::PostMessageCallback(int32_t result,
                                              const std::string& str) {
   instance_->PostMessage(str);
 }
-
-}  // namespace c_salt
-

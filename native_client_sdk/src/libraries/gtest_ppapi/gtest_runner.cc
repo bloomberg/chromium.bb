@@ -1,15 +1,13 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "c_salt/test/gtest_runner.h"
+#include "gtest_ppapi/gtest_runner.h"
 
 #include <cassert>
 
-#include "c_salt/test/gtest_event_listener.h"
-#include "c_salt/test/gtest_nacl_environment.h"
 #include "gtest/gtest.h"
-
-namespace c_salt {
+#include "gtest_ppapi/gtest_event_listener.h"
+#include "gtest_ppapi/gtest_nacl_environment.h"
 
 pthread_t GTestRunner::g_test_runner_thread_ = NACL_PTHREAD_ILLEGAL_THREAD_ID;
 GTestRunner* GTestRunner::gtest_runner_ = NULL;
@@ -51,11 +49,11 @@ void GTestRunner::Init(pp::Instance* instance, int argc, char** argv) {
   ::testing::TestEventListeners& listeners =
       ::testing::UnitTest::GetInstance()->listeners();
   delete listeners.Release(listeners.default_result_printer());
-  listeners.Append(new c_salt::GTestEventListener(instance));
+  listeners.Append(new GTestEventListener(instance));
 
   // We use our own gtest environment, mainly to make the nacl instance
   // available to the individual unit tests.
-  c_salt::GTestNaclEnvironment* test_env = new c_salt::GTestNaclEnvironment();
+  GTestNaclEnvironment* test_env = new GTestNaclEnvironment();
   test_env->set_global_instance(instance);
   ::testing::AddGlobalTestEnvironment(test_env);
 }
@@ -69,8 +67,6 @@ void GTestRunner::RunLoop() {
 
   assert(status_ == kRunTests);
   status_signal_.Unlock();
-  RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
+  (void)result;
 }
-
-}  // namespace c_salt
-

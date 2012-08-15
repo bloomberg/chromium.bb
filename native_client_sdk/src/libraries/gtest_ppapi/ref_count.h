@@ -1,12 +1,10 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef REF_COUNT_H_
-#define REF_COUNT_H_
+#ifndef GTEST_PPAPI_REF_COUNT_H_
+#define GTEST_PPAPI_REF_COUNT_H_
 
-#include "c_salt/threading/pthread_ext.h"
-
-namespace threading {
+#include "gtest_ppapi/pthread_ext.h"
 
 // A thread-safe reference counter for class CompletionCallbackFactory.
 class RefCount {
@@ -41,6 +39,4 @@ class RefCount {
   pthread_mutex_t mutex_;
 };
 
-}  // namespace threading
-#endif  // REF_COUNT_H_
-
+#endif  // GTEST_PPAPI_REF_COUNT_H_

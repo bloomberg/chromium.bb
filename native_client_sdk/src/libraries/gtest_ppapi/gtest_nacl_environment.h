@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef C_SALT_TEST_GTEST_NACL_ENVIRONMENT_H_
-#define C_SALT_TEST_GTEST_NACL_ENVIRONMENT_H_
+#ifndef GTEST_PPAPI_GTEST_NACL_ENVIRONMENT_H_
+#define GTEST_PPAPI_GTEST_NACL_ENVIRONMENT_H_
 
 #include <cassert>
 #include "gtest/gtest.h"
@@ -11,8 +11,6 @@
 namespace pp {
 class Instance;
 }  // namespace pp
-
-namespace c_salt {
 
 // A custom environment for NaCl gtest.
 class GTestNaclEnvironment : public ::testing::Environment {
@@ -33,7 +31,4 @@ class GTestNaclEnvironment : public ::testing::Environment {
   static pp::Instance* global_instance_;
 };
 
-}  // namespace c_salt
-
-#endif  // C_SALT_TEST_GTEST_NACL_ENVIRONMENT_H_
-
+#endif  // GTEST_PPAPI_GTEST_NACL_ENVIRONMENT_H_

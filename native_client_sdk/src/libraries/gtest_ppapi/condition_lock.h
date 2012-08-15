@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONDITION_LOCK_H_
-#define CONDITION_LOCK_H_
+#ifndef GTEST_PPAPI_CONDITION_LOCK_H_
+#define GTEST_PPAPI_CONDITION_LOCK_H_
 
 #include <pthread.h>
 
-namespace threading {
 // Class to manage a lock associated with a specific value.  The calling thread
 // can ask to acquire the lock only when the lock is in a certain condition.
 class ConditionLock {
@@ -83,7 +82,5 @@ class ConditionLock {
   pthread_cond_t condition_condition_;
   int32_t condition_value_;
 };
-}  // namespace threading
 
 #endif  // CONDITION_LOCK_H_
-

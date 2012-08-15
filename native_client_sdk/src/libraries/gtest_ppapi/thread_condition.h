@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THREAD_CONDITION_H_
-#define THREAD_CONDITION_H_
+#ifndef GTEST_PPAPI_THREAD_CONDITION_H_
+#define GTEST_PPAPI_THREAD_CONDITION_H_
 
-#include "c_salt/threading/pthread_ext.h"
+#include "gtest_ppapi/pthread_ext.h"
 
 struct timespec;
 
-namespace c_salt {
-namespace threading {
 // A wrapper class for condition signaling.  Contains a mutex and condition
 // pair.
 class ThreadCondition {
@@ -69,8 +67,5 @@ class ThreadCondition {
   pthread_mutex_t cond_mutex_;
   pthread_cond_t condition_;
 };
-}  // namespace threading
-}  // namespace c_salt
 
-#endif  // THREAD_CONDITION_H_
-
+#endif  // GTEST_PPAPI_THREAD_CONDITION_H_

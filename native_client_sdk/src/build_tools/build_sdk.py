@@ -634,6 +634,7 @@ TEST_EXAMPLE_LIST = [
 
 TEST_LIBRARY_LIST = [
   'gtest',
+  'gtest_ppapi',
 ]
 
 def BuildStepCopyTests(pepperdir, toolchains, build_experimental):

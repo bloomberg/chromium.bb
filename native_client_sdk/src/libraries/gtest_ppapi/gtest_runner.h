@@ -1,17 +1,15 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef C_SALT_TEST_GTEST_RUNNER_H_
-#define C_SALT_TEST_GTEST_RUNNER_H_
+#ifndef GTEST_PPAPI_GTEST_RUNNER_H_
+#define GTEST_PPAPI_GTEST_RUNNER_H_
 
-#include "c_salt/threading/pthread_ext.h"
-#include "c_salt/threading/thread_condition.h"
+#include "gtest_ppapi/pthread_ext.h"
+#include "gtest_ppapi/thread_condition.h"
 
 namespace pp {
 class Instance;
 }  // namespace pp
-
-namespace c_salt {
 
 // GTestRunner is a threaded singleton for running gtest-based unit tests.
 class GTestRunner {
@@ -49,14 +47,11 @@ class GTestRunner {
   // The status and associated status signal are used to control the state of
   // the thread run loop.
   enum Status { kIdle, kRunTests };
-  c_salt::threading::ThreadCondition status_signal_;
+  ThreadCondition status_signal_;
   Status status_;
 
   static pthread_t g_test_runner_thread_;
   static GTestRunner* gtest_runner_;
 };
 
-}  // namespace c_salt
-
-#endif  // C_SALT_TEST_GTEST_RUNNER_H_
-
+#endif  // GTEST_PPAPI_GTEST_RUNNER_H_

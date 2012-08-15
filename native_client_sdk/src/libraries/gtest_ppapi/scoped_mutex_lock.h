@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SCOPED_MUTEX_LOCK_H_
-#define SCOPED_MUTEX_LOCK_H_
+#ifndef GTEST_PPAPI_SCOPED_MUTEX_LOCK_H_
+#define GTEST_PPAPI_SCOPED_MUTEX_LOCK_H_
 
-#include "c_salt/threading/pthread_ext.h"
+#include "gtest_ppapi/pthread_ext.h"
 
-namespace threading {
 // A small helper RAII class that implements a scoped pthread_mutex lock.
 class ScopedMutexLock {
  public:
@@ -26,7 +25,5 @@ class ScopedMutexLock {
  private:
   pthread_mutex_t* mutex_;  // Weak reference.
 };
-}  // namespace threading
 
-#endif  // SCOPED_MUTEX_LOCK_H_
-
+#endif  // GTEST_PPAPI_SCOPED_MUTEX_LOCK_H_

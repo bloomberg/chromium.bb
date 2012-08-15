@@ -1,19 +1,18 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef C_SALT_TEST_GTEST_EVENT_LISTENER_H_
-#define C_SALT_TEST_GTEST_EVENT_LISTENER_H_
+#ifndef GTEST_PPAPI_GTEST_EVENT_LISTENER_H_
+#define GTEST_PPAPI_GTEST_EVENT_LISTENER_H_
 
 #include <string>
-#include "c_salt/threading/ref_count.h"
+
 #include "gtest/gtest.h"
-#include "ppapi/cpp/completion_callback.h"
+#include "gtest_ppapi/ref_count.h"
+#include "ppapi/utility/completion_callback_factory.h"
 
 namespace pp {
 class Instance;
 }  // namespace pp
-
-namespace c_salt {
 
 // GTestEventListener is a gtest event listener that performs two functions:
 // 1. It redirects output to PostMessage rather than printf, so that test events
@@ -42,10 +41,7 @@ class GTestEventListener : public ::testing::EmptyTestEventListener {
   void PostMessageCallback(int32_t result, const std::string& str);
 
   pp::Instance* instance_;
-  pp::CompletionCallbackFactory<GTestEventListener,
-                                ::threading::RefCount> factory_;
+  pp::CompletionCallbackFactory<GTestEventListener> factory_;
 };
 
-}  // namespace c_salt
-#endif  // C_SALT_TEST_GTEST_EVENT_LISTENER_H_
-
+#endif  // GTEST_PPAPI_GTEST_EVENT_LISTENER_H_
