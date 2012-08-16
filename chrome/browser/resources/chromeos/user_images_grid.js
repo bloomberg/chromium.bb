@@ -64,7 +64,11 @@ cr.define('options', function() {
     decorate: function() {
       GridItem.prototype.decorate.call(this);
       var imageEl = cr.doc.createElement('img');
-      imageEl.src = this.dataItem.url;
+      var scheme = 'chrome://';
+      if (this.dataItem.url.slice(0, scheme.length) == scheme)
+        imageEl.src = this.dataItem.url + '@' + window.devicePixelRatio + 'x';
+      else
+        imageEl.src = this.dataItem.url;
       imageEl.title = this.dataItem.title || '';
       if (typeof this.dataItem.clickHandler == 'function')
         imageEl.addEventListener('mousedown', this.dataItem.clickHandler);
