@@ -37,22 +37,32 @@ function update_range(event, ui) {
                      '0 ~ ' + (finger_view_controller.getNumFTS() - 1) + '): ');
 }
 
-function loadLogObj(obj) {
+function loadLogObj(obj, isNew) {
+  if (!isNew) {
+    var values = $("#slider").slider("option", "values");
+    var beginTime = finger_view_controller.getGETimestamp(values[0]);
+    var endTime = finger_view_controller.getLETimestamp(values[1]);
+  }
   finger_view_controller.setEntriesLog(obj, current_layer);
   finger_view_controller.initFTS();
   var MAX_SIZE = 10000;
   var min = Math.max(0, finger_view_controller.entries.length - MAX_SIZE);
   var max = finger_view_controller.entries.length - 1;
-  finger_view_controller.setRange(min, max);
+  if (isNew) {
+    var values = [min, max];
+  } else {
+    values[0] = finger_view_controller.getHardwareStateGETimestamp(beginTime);
+    values[1] = finger_view_controller.getHardwareStateLETimestamp(endTime);
+  }
   $("#slider").slider({
     min: min,
     max: max,
-    values: [min, max],
+    values: values,
     range: true,
     slide: update_range,
     change: update_range
   });
-  update_range(null, { values: [min, max] });
+  update_range(null, { values: values });
   finger_view_controller.resetZooms();
 }
 
@@ -71,7 +81,7 @@ function handleFileSelect(evt) {
     json_obj = obj;
     generateRadioButtons(obj);
     current_layer = 0;
-    loadLogObj(obj);
+    loadLogObj(obj, true);
   };
   reader.readAsText(file);
 }
@@ -222,7 +232,7 @@ function shrink() {
   var values = $("#slider").slider("option", "values");
   var snippet = finger_view_controller.getSnippet(values[0], values[1]);
   $('#text_box').val(JSON.stringify(snippet, null, 2));
-  loadLogObj(snippet);
+  loadLogObj(snippet, true);
 }
 
 function generateRadioButtons(obj) {
@@ -253,7 +263,7 @@ function generateUnittest() {
 function radioChange(e) {
   if (e.target.value != current_layer) {
     current_layer = e.target.value;
-    loadLogObj(json_obj);
+    loadLogObj(json_obj, false);
   }
 }
 
@@ -371,7 +381,7 @@ $(document).ready(function() {
   });
 
   generateRadioButtons(secret_obj);
-  loadLogObj(secret_obj);
+  loadLogObj(secret_obj, true);
 });
 
 </script>
