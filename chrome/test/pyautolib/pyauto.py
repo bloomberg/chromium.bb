@@ -84,6 +84,7 @@ import history_info
 import omnibox_info
 import plugins_info
 import prefs_info
+from pyauto_errors import AutomationCommandFail
 from pyauto_errors import JavascriptRuntimeError
 from pyauto_errors import JSONInterfaceError
 from pyauto_errors import NTPThumbnailNotShownError
@@ -1103,7 +1104,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                                additional_info))
     ret_dict = json.loads(result)
     if ret_dict.has_key('error'):
-      raise JSONInterfaceError(ret_dict['error'])
+      if ret_dict.get('is_interface_error'):
+        raise JSONInterfaceError(ret_dict['error'])
+      else:
+        raise AutomationCommandFail(ret_dict['error'])
     return ret_dict
 
   def NavigateToURL(self, url, windex=0, tab_index=None, navigation_count=1):

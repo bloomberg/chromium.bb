@@ -60,7 +60,7 @@ class TabTracker(object):
       tab_uuid: the uuid of the tab to close
     """
     idx = self.GetTabIndex(tab_uuid)
-    self._browser.GetBrowserWindow(self._window_idx).GetTab(idx).Close()
+    self._browser.CloseTab(tab_index=idx, windex=self._window_idx)
     del self._uuids[idx]
 
   def GetTabIndex(self, tab_uuid):

@@ -10,7 +10,15 @@ class JavascriptRuntimeError(RuntimeError):
 
 
 class JSONInterfaceError(RuntimeError):
-  """Represent an error in the JSON ipc interface."""
+  """Represent an error in the JSON IPC interface."""
+  pass
+
+
+class AutomationCommandFail(JSONInterfaceError):
+  """Represent an automation command failure.
+
+  These failures are passed back from the Chrome side of the IPC.
+  """
   pass
 
 

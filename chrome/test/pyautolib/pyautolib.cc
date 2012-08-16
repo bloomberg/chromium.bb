@@ -104,20 +104,19 @@ AutomationProxy* PyUITestBase::automation() const {
   return automation_proxy;
 }
 
-scoped_refptr<BrowserProxy> PyUITestBase::GetBrowserWindow(int window_index) {
-  return automation()->GetBrowserWindow(window_index);
-}
-
 std::string PyUITestBase::_SendJSONRequest(int window_index,
                                            const std::string& request,
                                            int timeout) {
   std::string response;
   bool success;
-  AutomationMessageSender* automation_sender = automation();
+  AutomationProxy* automation_sender = automation();
   base::TimeTicks time = base::TimeTicks::Now();
 
   if (!automation_sender) {
-    ErrorResponse("The automation proxy does not exist", request, &response);
+    ErrorResponse("Automation proxy does not exist", request, &response);
+  } else if (!automation_sender->channel()) {
+    ErrorResponse("Chrome automation IPC channel was found already broken",
+                  request, &response);
   } else if (!automation_sender->Send(
       new AutomationMsg_SendJSONRequest(window_index, request, &response,
                                         &success),
@@ -138,6 +137,7 @@ void PyUITestBase::ErrorResponse(
                                        request.c_str());
   LOG(ERROR) << "Error during automation: " << error_msg;
   error_dict.SetString("error", error_msg);
+  error_dict.SetBoolean("is_interface_error", true);
   base::JSONWriter::Write(&error_dict, response);
 }
 
@@ -149,11 +149,13 @@ void PyUITestBase::RequestFailureResponse(
   // TODO(craigdh): Determine timeout directly from IPC's Send().
   if (duration >= timeout) {
     ErrorResponse(
-        StringPrintf("Request timed out after %d seconds",
+        StringPrintf("Chrome automation timed out after %d seconds",
                      static_cast<int>(duration.InSeconds())),
         request, response);
   } else {
     // TODO(craigdh): Determine specific cause.
-    ErrorResponse("Chrome failed to respond", request, response);
+    ErrorResponse(
+        "Chrome automation failed prior to timing out, did chrome crash?",
+        request, response);
   }
 }

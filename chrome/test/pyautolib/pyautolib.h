@@ -71,9 +71,6 @@ class PyUITestBase : public UITestBase {
 
   // AutomationProxy methods
 
-  // Get a handle to browser window at the given index, or NULL on failure.
-  scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);
-
   // Meta-methods.  Generic pattern of passing args and response as
   // JSON dict to avoid future use of the SWIG interface and
   // automation proxy additions.  Returns response as JSON dict.
