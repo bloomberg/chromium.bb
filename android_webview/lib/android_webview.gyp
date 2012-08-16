@@ -7,25 +7,12 @@
   },
   'targets': [
     {
-      # TODO(torne): This is vaguely based on the downstream android target
-      # "chromeview_core" and once that target has been upstreamed we should
-      # just depend on it instead.
-      'target_name': 'webview_core',
-      'type': 'static_library',
+      'target_name': 'libwebview',
+      'type': 'shared_library',
       'dependencies': [
         '../../chrome/chrome.gyp:browser',
         '../../chrome/chrome.gyp:renderer',
         '../../content/content.gyp:content',
-      ],
-      'include_dirs': [
-        '../..',
-      ],
-    },
-    {
-      'target_name': 'libwebview',
-      'type': 'shared_library',
-      'dependencies': [
-        'webview_core',
       ],
       'include_dirs': [
         '../..',
