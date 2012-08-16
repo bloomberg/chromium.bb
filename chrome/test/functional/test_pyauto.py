@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import time
 import unittest
 
 import pyauto_functional  # Must be imported before pyauto
@@ -50,6 +51,21 @@ class PyAutoTest(pyauto.PyUITest):
         pyauto_errors.JSONInterfaceError,
         lambda: self.GetNextEvent(timeout=2000))  # event queue is empty
 
+  def testActionTimeoutChanger(self):
+    """Verify that ActionTimeoutChanger works."""
+    new_timeout = 1000  # 1 sec
+    changer = pyauto.PyUITest.ActionTimeoutChanger(self, new_timeout)
+    self.assertEqual(self.action_timeout_ms(), new_timeout)
+
+    # Verify the amount of time taken for automation timeout
+    then = time.time()
+    self.assertRaises(
+        pyauto_errors.JSONInterfaceError,
+        lambda: self.ExecuteJavascript('invalid js should timeout'))
+    elapsed = time.time() - then
+    self.assertTrue(elapsed < new_timeout / 1000.0 + 2,  # margin of 2 secs
+        msg='ActionTimeoutChanger did not work. '
+            'Automation timeout took %f secs' % elapsed)
 
 
 if __name__ == '__main__':
