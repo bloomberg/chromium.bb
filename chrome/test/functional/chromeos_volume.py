@@ -6,9 +6,14 @@
 import logging
 import os
 import subprocess
+import sys
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+
+sys.path.append('/usr/local')  # To make autotest libs importable.
+from autotest.cros import cros_ui
+from autotest.cros import cryptohome
 
 
 class ChromeosVolume(pyauto.PyUITest):
@@ -20,10 +25,10 @@ class ChromeosVolume(pyauto.PyUITest):
 
   def setUp(self):
     # We want a clean session_manager instance for every run,
-    # so restart session_manager now.
-    assert self.WaitForSessionManagerRestart(
-        lambda: subprocess.call(['pkill', 'session_manager'])), \
-        'Timed out waiting for session_manager to start.'
+    # so restart ui now.
+    cros_ui.stop(allow_fail=True)
+    cryptohome.remove_all_vaults()
+    cros_ui.start(wait_for_login_prompt=False)
     pyauto.PyUITest.setUp(self)
     self._initial_volume_info = self.GetVolumeInfo()
 
@@ -31,6 +36,9 @@ class ChromeosVolume(pyauto.PyUITest):
     self.SetVolume(self._initial_volume_info['volume'])
     self.SetMute(self._initial_volume_info['is_mute'])
     pyauto.PyUITest.tearDown(self)
+
+  def ShouldAutoLogin(self):
+    return False
 
   def _Login(self):
     """Perform login"""
