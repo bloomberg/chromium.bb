@@ -97,9 +97,14 @@ function test() {
 }
 
 function runNextTest() {
-  if (currentTest < tests.length) {
+  var filter = window.location.hash.slice(1);
+  do {
     var test = tests[currentTest++].slice();
     var f = test.shift();
+  } while (currentTest < tests.length &&
+           filter && f.name != filter)
+
+  if (currentTest < tests.length) {
     test.push(runNextTest);
     f.apply(null, test);
   } else {
