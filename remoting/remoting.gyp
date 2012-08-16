@@ -8,7 +8,7 @@
     # duplicated from chrome.gyp
     'chromium_code': 1,
 
-    'remoting_audio': 0,
+    'remoting_audio%': 0,
     'remoting_multi_process%': 0,
 
     # Use consistent strings across all platforms. Note that the plugin name
