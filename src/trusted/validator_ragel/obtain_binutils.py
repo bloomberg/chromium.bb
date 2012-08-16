@@ -20,7 +20,7 @@ import sys
 CHECKOUT_DIR = '/dev/shm/binutils'
 
 BINUTILS_REPO = 'http://git.chromium.org/native_client/nacl-binutils.git'
-BINUTILS_REVISION = '6993545d5650fa77e75e9ae4b52c5703a53c53cc'
+BINUTILS_REVISION = '8c8125b61c560e6ae47d4f3e48786121f944e364'
 
 # We need specific revision of binutils, and it have to include the
 # following patches:
