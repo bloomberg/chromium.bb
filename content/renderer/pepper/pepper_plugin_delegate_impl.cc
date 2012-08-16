@@ -1363,9 +1363,7 @@ gfx::Size PepperPluginDelegateImpl::GetScreenSize() {
 }
 
 std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
-  // TODO(brettw) bug 56615: Somehow get the preference for the default
-  // encoding here rather than using the global default for the UI language.
-  return GetContentClient()->renderer()->GetDefaultEncoding();
+  return render_view_->webkit_preferences().default_encoding;
 }
 
 void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
