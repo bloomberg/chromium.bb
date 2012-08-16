@@ -10,40 +10,21 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "base/synchronization/lock.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace gdata {
 
-struct CreateDBParams;
 class GDataFile;
 class GDataDirectory;
 class GDataDirectoryService;
-class ResourceMetadataDB;
 
 class GDataEntryProto;
 class GDataDirectoryProto;
 class GDataRootDirectoryProto;
 class PlatformFileInfoProto;
-
-// File type on the gdata file system can be either a regular file or
-// a hosted document.
-enum GDataFileType {
-  REGULAR_FILE,
-  HOSTED_DOCUMENT,
-};
 
 // Used to read a directory from the file system.
 // If |error| is not GDATA_FILE_OK, |entries| is set to NULL.
