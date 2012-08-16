@@ -57,7 +57,7 @@ void ActionBoxMenu::RunMenu(views::MenuButton* menu_button) {
 }
 
 void ActionBoxMenu::ExecuteCommand(int id) {
-};
+}
 
 views::Border* ActionBoxMenu::CreateMenuBorder() {
   // TODO(yefim): Use correct theme color on non-Windows.

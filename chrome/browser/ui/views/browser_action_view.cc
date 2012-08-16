@@ -64,6 +64,10 @@ gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
 }
 
 void BrowserActionView::Layout() {
+  // |button_| is NULL if Layout() is invoked before we have a valid widget.
+  if (!button_)
+    return;
+
   // We can't rely on button_->GetPreferredSize() here because that's not set
   // correctly until the first call to
   // BrowserActionsContainer::RefreshBrowserActionViews(), whereas this can be
