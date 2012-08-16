@@ -60,6 +60,18 @@
                 '../../build/linux/system.gyp:freetype2',
               ],
             }],
+            ['OS == "android" and clang == 0', {
+              # The Android NDK compilers in the GCC 4.2 and 4.6 toolchains will
+              # show a warning about incompatible pointer signedness, but this
+              # warning cannot be disabled through an individual flag. To stop
+              # showing it, disable all warnings. Coverage is provided through
+              # clang builders, as well as Linux non-clang builders.
+              # TODO(beverloo): Re-enable warnings once the toolchains provide a
+              # way of disabling the specific warning.
+              'cflags': [
+                '-w',
+              ],
+            }],
             ['clang == 1', {
               'xcode_settings': {
                 'WARNING_CFLAGS': [
