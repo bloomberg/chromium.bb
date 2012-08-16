@@ -669,6 +669,7 @@ void LocationBarViewGtk::Update(const WebContents* contents) {
   } else {
     gtk_widget_queue_draw(widget());
   }
+  ZoomBubbleGtk::Close();
 }
 
 void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
