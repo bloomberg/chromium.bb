@@ -356,8 +356,9 @@ var TimelineGraphView = (function() {
 
       // Make space at the bottom of the graph for the time labels, and then
       // draw the labels.
+      var textHeight = height;
       height -= fontHeight + LABEL_VERTICAL_SPACING;
-      this.drawTimeLabels(context, width, height, visibleStartTime);
+      this.drawTimeLabels(context, width, height, textHeight, visibleStartTime);
 
       // Draw outline of the main graph area.
       context.strokeStyle = GRID_COLOR;
@@ -385,9 +386,7 @@ var TimelineGraphView = (function() {
      * since it may not be |startTime_|, when we're displaying the entire
      * time range.
      */
-    drawTimeLabels: function(context, width, height, startTime) {
-      var textHeight = height + LABEL_VERTICAL_SPACING;
-
+    drawTimeLabels: function(context, width, height, textHeight, startTime) {
       // Text for a time string to use in determining how far apart
       // to place text labels.
       var sampleText = (new Date(startTime)).toLocaleTimeString();
@@ -428,7 +427,7 @@ var TimelineGraphView = (function() {
       // timeStep because of how UTC times work.
       var time = Math.ceil(startTime / timeStep) * timeStep;
 
-      context.textBaseline = 'top';
+      context.textBaseline = 'bottom';
       context.textAlign = 'center';
       context.fillStyle = TEXT_COLOR;
       context.strokeStyle = GRID_COLOR;

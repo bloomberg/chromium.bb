@@ -44,10 +44,22 @@ var ResizableVerticalSplitView = (function() {
     this.rightView_ = rightView;
     this.sizerView_ = sizerView;
 
+    this.mouseDragging_ = false;
+    this.touchDragging_ = false;
+
     // Setup the "sizer" so it can be dragged left/right to reposition the
-    // vertical split.
-    sizerView.getNode().addEventListener(
-        'mousedown', this.onDragSizerStart_.bind(this), true);
+    // vertical split.  The start event must occur within the sizer's node,
+    // but subsequent events may occur anywhere.
+    var node = sizerView.getNode();
+    node.addEventListener('mousedown', this.onMouseDragSizerStart_.bind(this));
+    window.addEventListener('mousemove', this.onMouseDragSizer_.bind(this));
+    window.addEventListener('mouseup', this.onMouseDragSizerEnd_.bind(this));
+
+    node.addEventListener('touchstart', this.onTouchDragSizerStart_.bind(this));
+    window.addEventListener('touchmove', this.onTouchDragSizer_.bind(this));
+    window.addEventListener('touchend', this.onTouchDragSizerEnd_.bind(this));
+    window.addEventListener('touchcancel',
+                            this.onTouchDragSizerEnd_.bind(this));
   }
 
   ResizableVerticalSplitView.prototype = {
@@ -99,25 +111,73 @@ var ResizableVerticalSplitView = (function() {
     },
 
     /**
-     * Called once we have clicked into the sizer. Starts capturing the mouse
-     * position to implement dragging.
+     * Called once the sizer is clicked on. Starts moving the sizer in response
+     * to future mouse movement.
      */
-    onDragSizerStart_: function(event) {
-      this.sizerMouseMoveListener_ = this.onDragSizer_.bind(this);
-      this.sizerMouseUpListener_ = this.onDragSizerEnd_.bind(this);
+    onMouseDragSizerStart_: function(event) {
+      this.mouseDragging_ = true;
+      event.preventDefault();
+    },
 
-      window.addEventListener('mousemove', this.sizerMouseMoveListener_, true);
-      window.addEventListener('mouseup', this.sizerMouseUpListener_, true);
+    /**
+     * Called when the mouse has moved.
+     */
+    onMouseDragSizer_: function(event) {
+      if (!this.mouseDragging_)
+        return;
+      // If dragging has started, move the sizer.
+      this.onDragSizer_(event.pageX);
+      event.preventDefault();
+    },
 
+    /**
+     * Called once the mouse has been released.
+     */
+    onMouseDragSizerEnd_: function(event) {
+      if (!this.mouseDragging_)
+        return;
+      // Dragging is over.
+      this.mouseDragging_ = false;
+      event.preventDefault();
+    },
+
+    /**
+     * Called when the user touches the sizer.  Starts moving the sizer in
+     * response to future touch events.
+     */
+    onTouchDragSizerStart_: function(event) {
+      this.touchDragging_ = true;
       event.preventDefault();
     },
 
     /**
      * Called when the mouse has moved after dragging started.
      */
-    onDragSizer_: function(event) {
+    onTouchDragSizer_: function(event) {
+      if (!this.touchDragging_)
+        return;
+      // If dragging has started, move the sizer.
+      this.onDragSizer_(event.touches[0].pageX);
+      event.preventDefault();
+    },
+
+    /**
+     * Called once the user stops touching the screen.
+     */
+    onTouchDragSizerEnd_: function(event) {
+      if (!this.touchDragging_)
+        return;
+      // Dragging is over.
+      this.touchDragging_ = false;
+      event.preventDefault();
+    },
+
+    /**
+     * Common code used for both mouse and touch dragging.
+     */
+    onDragSizer_: function(pageX) {
       // Convert from page coordinates, to view coordinates.
-      this.leftSplit_ = (event.pageX - this.getLeft());
+      this.leftSplit_ = (pageX - this.getLeft());
 
       // Avoid shrinking the left box too much.
       this.leftSplit_ = Math.max(this.leftSplit_, MIN_PANEL_WIDTH);
@@ -129,20 +189,6 @@ var ResizableVerticalSplitView = (function() {
       this.setGeometry(
           this.getLeft(), this.getTop(), this.getWidth(), this.getHeight());
     },
-
-    /**
-     * Called once the mouse has been released, and the dragging is over.
-     */
-    onDragSizerEnd_: function(event) {
-      window.removeEventListener(
-          'mousemove', this.sizerMouseMoveListener_, true);
-      window.removeEventListener('mouseup', this.sizerMouseUpListener_, true);
-
-      this.sizerMouseMoveListener_ = null;
-      this.sizerMouseUpListener_ = null;
-
-      event.preventDefault();
-    }
   };
 
   return ResizableVerticalSplitView;

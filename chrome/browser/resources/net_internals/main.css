@@ -9,9 +9,6 @@
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-body {
-  font-family: sans-serif;
-}
 
 /* This class is used to create the splitter widget in
    ResizbleVerticalSplitView */
@@ -25,17 +22,22 @@ body {
   width: 8px;
 }
 
+/* Needs to be wider on touch devices. */
+.touch .vertical-splitter {
+  width: 5mm;
+}
+
 .log-source-entry {
   margin: 5px;
 }
 
 .log-source-entry * p {
-  font-size: 12px;
+  font-size: 75%;
   font-weight: bold;
 }
 
 .log-source-entry * td {
-  font-size: 10px;
+  font-size: 62%;
 }
 
 /*

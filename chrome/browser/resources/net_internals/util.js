@@ -169,3 +169,7 @@ function assertFirstConstructorCall(ctor) {
   }
   ctor.hasCreateFirstInstance_ = true;
 }
+
+function hasTouchScreen() {
+  return 'ontouchstart' in window;
+}

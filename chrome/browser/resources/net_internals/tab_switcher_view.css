@@ -6,7 +6,6 @@
 .tab-switcher-view {
   border-right: 1px solid #aaa;
   display: inline-block;
-  font-family: sans-serif;
 }
 
 .tab-switcher-view {
@@ -17,8 +16,8 @@
 
 .tab-switcher-view a {
   display: block;
-  margin-top: 2px;
-  padding: 5px 10px 3px 10px;
+  margin-top: 0.15em;
+  padding: 0.25em 0.5em 0.25em 0.5em;
   text-decoration: none;
 }
 

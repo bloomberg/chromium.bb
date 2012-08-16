@@ -47,6 +47,9 @@ var MainView = (function() {
   function MainView() {
     assertFirstConstructorCall(MainView);
 
+    if (hasTouchScreen())
+      document.body.classList.add('touch');
+
     // This must be initialized before the tabs, so they can register as
     // observers.
     g_browser = BrowserBridge.getInstance();
