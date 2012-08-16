@@ -25,7 +25,7 @@
 #include "chrome/browser/media_gallery/media_device_notifications_window_win.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_shortcut_manager_win.h"
+#include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_constants.h"
@@ -132,11 +132,7 @@ int DoUninstallTasks(bool chrome_still_running) {
             dist, ShellUtil::CURRENT_USER, ShellUtil::SHORTCUT_NO_OPTIONS)) {
       VLOG(1) << "Failed to delete desktop shortcut.";
     }
-    if (!ShellUtil::RemoveChromeDesktopShortcutsWithAppendedNames(
-        ProfileShortcutManagerWin::GenerateShortcutsFromProfiles(
-            ProfileInfoCache::GetProfileNames()))) {
-      VLOG(1) << "Failed to delete desktop profiles shortcuts.";
-    }
+    // TODO(hallielaine): Cleanup profiles shortcuts.
     if (!ShellUtil::RemoveChromeQuickLaunchShortcut(dist,
                                                     ShellUtil::CURRENT_USER)) {
       VLOG(1) << "Failed to delete quick launch shortcut.";

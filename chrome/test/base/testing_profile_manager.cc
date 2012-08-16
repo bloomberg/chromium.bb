@@ -24,13 +24,6 @@ class ProfileManager : public ::ProfileManager {
   virtual Profile* CreateProfileHelper(const FilePath& file_path) OVERRIDE {
     return new TestingProfile(file_path);
   }
-
-#if defined(OS_WIN)
-  virtual ProfileShortcutManagerWin* CreateShortcutManager() OVERRIDE {
-    // We should avoid creating shortcuts in these tests.
-    return NULL;
-  }
-#endif
 };
 
 }  // namespace testing

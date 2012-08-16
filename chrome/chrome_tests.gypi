@@ -1505,6 +1505,7 @@
         'browser/profiles/profile_info_cache_unittest.h',
         'browser/profiles/profile_info_util_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
+        'browser/profiles/profile_shortcut_manager_unittest_win.cc',
         'browser/protector/composite_settings_change_unittest.cc',
         'browser/protector/homepage_change_unittest.cc',
         'browser/protector/prefs_backup_invalid_change_unittest.cc',

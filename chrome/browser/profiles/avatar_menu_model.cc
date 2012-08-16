@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -102,7 +103,21 @@ void AvatarMenuModel::EditProfile(size_t index) {
 }
 
 void AvatarMenuModel::AddNewProfile() {
-  ProfileManager::CreateMultiProfileAsync(string16(), string16());
+  // Temporarily generate a random icon/name pair to create the profile with
+  // instead of opening a dialog for creating a profile.
+  // Remove on completion of BUG 134904.
+  if (ProfileShortcutManager::IsFeatureEnabled()) {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+    size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
+
+    g_browser_process->profile_manager()->CreateMultiProfileAsync(
+        cache.ChooseNameForNewProfile(icon_index),
+        ASCIIToUTF16(cache.GetDefaultAvatarIconUrl(icon_index)));
+  } else {
+    ProfileManager::CreateMultiProfileAsync(string16(), string16());
+  }
+
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 

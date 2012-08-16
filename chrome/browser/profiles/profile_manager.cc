@@ -239,6 +239,7 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
     : user_data_dir_(user_data_dir),
       logged_in_(false),
       will_import_(false),
+      profile_shortcut_manager_(NULL),
 #if !defined(OS_ANDROID)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           browser_list_observer_(this)),
@@ -266,13 +267,12 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
       this,
       chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
       content::NotificationService::AllSources());
+
+  if (ProfileShortcutManager::IsFeatureEnabled())
+    profile_shortcut_manager_.reset(ProfileShortcutManager::Create());
 }
 
 ProfileManager::~ProfileManager() {
-#if defined(OS_WIN)
-  if (profile_shortcut_manager_.get())
-    profile_info_cache_->RemoveObserver(profile_shortcut_manager_.get());
-#endif
 }
 
 FilePath ProfileManager::GetDefaultProfileDir(
@@ -454,6 +454,15 @@ void ProfileManager::CreateProfileAsync(const FilePath& profile_path,
       cache.AddProfileToCache(profile_path, name, string16(), icon_index);
     }
     info->callbacks.push_back(callback);
+    if (profile_shortcut_manager_.get() && !name.empty() &&
+        !icon_url.empty()) {
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&ProfileShortcutManager::CreateChromeDesktopShortcut,
+          base::Unretained(profile_shortcut_manager_.get()), profile_path, name,
+          ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+              cache.GetDefaultAvatarIconResourceIDAtIndex(icon_index))));
+    }
   }
 }
 
@@ -680,9 +689,6 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   InitProfileUserPrefs(profile);
   AddProfileToCache(profile);
   DoFinalInitLogging(profile);
-#if defined(OS_WIN)
-  CreateDesktopShortcut(profile);
-#endif
 
   ProfileMetrics::LogNumberOfProfiles(this, ProfileMetrics::ADD_PROFILE_EVENT);
   content::NotificationService::current()->Notify(
@@ -731,12 +737,6 @@ Profile* ProfileManager::CreateProfileAsyncHelper(const FilePath& path,
                                 delegate,
                                 Profile::CREATE_MODE_ASYNCHRONOUS);
 }
-
-#if defined(OS_WIN)
-ProfileShortcutManagerWin* ProfileManager::CreateShortcutManager() {
-  return new ProfileShortcutManagerWin();
-}
-#endif
 
 void ProfileManager::OnProfileCreated(Profile* profile,
                                       bool success,
@@ -838,16 +838,6 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
   if (!profile_info_cache_.get()) {
     profile_info_cache_.reset(new ProfileInfoCache(
         g_browser_process->local_state(), user_data_dir_));
-#if defined(OS_WIN)
-    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    ProfileShortcutManagerWin* shortcut_manager = CreateShortcutManager();
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (dist && dist->CanCreateDesktopShortcuts() && shortcut_manager &&
-        !command_line.HasSwitch(switches::kDisableDesktopShortcuts)) {
-      profile_shortcut_manager_.reset(shortcut_manager);
-      profile_info_cache_->AddObserver(profile_shortcut_manager_.get());
-    }
-#endif
   }
   return *profile_info_cache_.get();
 }
@@ -876,28 +866,6 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
                           username,
                           icon_index);
 }
-
-#if defined(OS_WIN)
-void ProfileManager::CreateDesktopShortcut(Profile* profile) {
-  // TODO(sail): Disable creating new shortcuts for now.
-  return;
-
-  // Some distributions and tests cannot create desktop shortcuts, in which case
-  // profile_shortcut_manager_ will not be set.
-  if (!profile_shortcut_manager_.get())
-    return;
-
-  bool shortcut_created =
-      profile->GetPrefs()->GetBoolean(prefs::kProfileShortcutCreated);
-  if (!shortcut_created && GetNumberOfProfiles() > 1) {
-    profile_shortcut_manager_->AddProfileShortcut(profile->GetPath());
-
-    // We only ever create the shortcut for a profile once, so set a pref
-    // reminding us to skip this in the future.
-    profile->GetPrefs()->SetBoolean(prefs::kProfileShortcutCreated, true);
-  }
-}
-#endif
 
 void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   ProfileInfoCache& cache = GetProfileInfoCache();
@@ -988,6 +956,10 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
 
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
+
+  // Delete possible shortcuts for this profile
+  if (profile_shortcut_manager_.get())
+    profile_shortcut_manager_->DeleteChromeDesktopShortcut(profile_dir);
 
   ProfileMetrics::LogNumberOfProfiles(this,
                                       ProfileMetrics::DELETE_PROFILE_EVENT);
