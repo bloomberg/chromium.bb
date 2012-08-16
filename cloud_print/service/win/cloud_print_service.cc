@@ -98,7 +98,7 @@ void InvalidUsage() {
 
   for (size_t i = 0; i < arraysize(kSwitchHelp); ++i) {
     std::cout << std::setiosflags(std::ios::left);
-    std::cout << "  -" << std::setw(15) << kSwitchHelp[i].name;
+    std::cout << "  -" << std::setw(16) << kSwitchHelp[i].name;
     std::cout << kSwitchHelp[i].description << "\n";
   }
   std::cout << "\n";
