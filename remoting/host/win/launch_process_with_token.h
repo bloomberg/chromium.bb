@@ -23,7 +23,9 @@ bool CreateSessionToken(uint32 session_id, base::win::ScopedHandle* token_out);
 bool LaunchProcessWithToken(const FilePath& binary,
                             const CommandLine::StringType& command_line,
                             HANDLE user_token,
-                            base::win::ScopedHandle* process_out);
+                            DWORD creation_flags,
+                            base::win::ScopedHandle* process_out,
+                            base::win::ScopedHandle* thread_out);
 
 } // namespace remoting
 

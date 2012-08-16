@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/process.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -35,7 +36,8 @@ class SasInjector;
 class WtsConsoleMonitor;
 
 class WtsSessionProcessLauncher
-    : public Stoppable,
+    : public base::MessagePumpForIO::IOHandler,
+      public Stoppable,
       public WorkerProcessLauncher::Delegate,
       public WtsConsoleObserver {
  public:
@@ -50,6 +52,11 @@ class WtsSessionProcessLauncher
       scoped_refptr<base::SingleThreadTaskRunner> ipc_message_loop);
 
   virtual ~WtsSessionProcessLauncher();
+
+  // base::MessagePumpForIO::IOHandler implementation.
+  virtual void OnIOCompleted(base::MessagePumpForIO::IOContext* context,
+                             DWORD bytes_transferred,
+                             DWORD error) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate implementation.
   virtual bool DoLaunchProcess(
@@ -68,6 +75,22 @@ class WtsSessionProcessLauncher
   virtual void DoStop() OVERRIDE;
 
  private:
+  // Drains the completion port queue to make sure that all job object
+  // notifications has been received.
+  void DrainJobNotifications();
+
+  // Notifies that the completion port queue has been drained.
+  void DrainJobNotificationsCompleted();
+
+  // Creates and initializes the job object that will sandbox the launched child
+  // processes.
+  void InitializeJob();
+
+  // Notifies that the job object initialization is complete.
+  void InitializeJobCompleted(scoped_ptr<base::win::ScopedHandle> job);
+
+  void OnJobNotification(DWORD message, DWORD pid);
+
   // Attempts to launch the host process in the current console session.
   // Schedules next launch attempt if creation of the process fails for any
   // reason.
@@ -102,6 +125,22 @@ class WtsSessionProcessLauncher
   WtsConsoleMonitor* monitor_;
 
   scoped_ptr<WorkerProcessLauncher> launcher_;
+
+  // The job object used to control the lifetime of child processes.
+  base::win::ScopedHandle job_;
+
+  // A waiting handle that becomes signalled once all process associated with
+  // the job have been terminated.
+  base::win::ScopedHandle process_exit_event_;
+
+  enum JobState {
+    kJobUninitialized,
+    kJobRunning,
+    kJobStopping,
+    kJobStopped
+  };
+
+  JobState job_state_;
 
   base::win::ScopedHandle worker_process_;
 

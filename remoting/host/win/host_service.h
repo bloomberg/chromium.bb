@@ -61,6 +61,9 @@ class HostService : public WtsConsoleMonitor {
   // RunAsService() and RunInConsole().
   void RunMessageLoop(MessageLoop* message_loop);
 
+  // Runs the binary specified by the command line, elevated.
+  int Elevate();
+
   // This function handshakes with the service control manager and starts
   // the service.
   int RunAsService();

@@ -8,11 +8,12 @@
 #include "remoting/host/win/host_service.h"
 
 #include <windows.h>
+#include <shellapi.h>
 #include <wtsapi32.h>
-#include <stdio.h>
 
 #include "base/at_exit.h"
 #include "base/base_paths.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -53,35 +54,42 @@ const char kIoThreadName[] = "I/O thread";
 const wchar_t kSessionNotificationWindowClass[] =
   L"Chromoting_SessionNotificationWindow";
 
-// Command line actions and switches:
-// "run" sumply runs the service as usual.
-const wchar_t kRunActionName[] = L"run";
+// Command line switches:
 
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
+
+// "--elevate=<binary>" requests <binary> to be launched elevated, presenting
+// a UAC prompt if necessary.
+const char kElevateSwitchName[] = "elevate";
 
 // "--help" or "--?" prints the usage message.
 const char kHelpSwitchName[] = "help";
 const char kQuestionSwitchName[] = "?";
 
-const char kUsageMessage[] =
-  "\n"
-  "Usage: %s [action] [options]\n"
-  "\n"
-  "Actions:\n"
-  "  run           - Run the service (default if no action was specified).\n"
-  "\n"
-  "Options:\n"
-  "  --console     - Run the service interactively for debugging purposes.\n"
-  "  --help, --?   - Print this message.\n";
+const wchar_t kUsageMessage[] =
+  L"\n"
+  L"Usage: %ls [options]\n"
+  L"\n"
+  L"Options:\n"
+  L"  --console       - Run the service interactively for debugging purposes.\n"
+  L"  --elevate=<...> - Run <...> elevated.\n"
+  L"  --help, --?     - Print this message.\n";
+
+// The command line parameters that should be copied from the service's command
+// line when launching an elevated child.
+const char* kCopiedSwitchNames[] = {
+    "auth-config", "host-config", "chromoting-ipc", switches::kV,
+    switches::kVModule };
 
 // Exit codes:
 const int kSuccessExitCode = 0;
 const int kUsageExitCode = 1;
 const int kErrorExitCode = 2;
 
-void usage(const char* program_name) {
-  fprintf(stderr, kUsageMessage, program_name);
+void usage(const FilePath& program_name) {
+  LOG(INFO) << StringPrintf(kUsageMessage,
+                            UTF16ToWide(program_name.value()).c_str());
 }
 
 }  // namespace
@@ -164,17 +172,15 @@ HostService* HostService::GetInstance() {
 bool HostService::InitWithCommandLine(const CommandLine* command_line) {
   CommandLine::StringVector args = command_line->GetArgs();
 
-  // Choose the action to perform.
+  // Check if launch with elevation was requested.
+  if (command_line->HasSwitch(kElevateSwitchName)) {
+    run_routine_ = &HostService::Elevate;
+    return true;
+  }
+
   if (!args.empty()) {
-    if (args.size() > 1) {
-      LOG(ERROR) << "Invalid command line: more than one action requested.";
-      return false;
-    }
-    if (args[0] != kRunActionName) {
-      LOG(ERROR) << "Invalid command line: invalid action specified: "
-                 << args[0];
-      return false;
-    }
+    LOG(ERROR) << "No positional parameters expected.";
+    return false;
   }
 
   // Run interactively if needed.
@@ -223,6 +229,35 @@ void HostService::RunMessageLoop(MessageLoop* message_loop) {
 
   // Release the control handler.
   stopped_event_.Signal();
+}
+
+int HostService::Elevate() {
+  // Get the name of the binary to launch.
+  FilePath binary =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(kElevateSwitchName);
+
+  // Create the child process command line by copying known switches from our
+  // command line.
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                                kCopiedSwitchNames,
+                                _countof(kCopiedSwitchNames));
+  CommandLine::StringType parameters = command_line.GetCommandLineString();
+
+  // Launch the child process requesting elevation.
+  SHELLEXECUTEINFO info;
+  memset(&info, 0, sizeof(info));
+  info.cbSize = sizeof(info);
+  info.lpVerb = L"runas";
+  info.lpFile = binary.value().c_str();
+  info.lpParameters = parameters.c_str();
+  info.nShow = SW_SHOWNORMAL;
+
+  if (!ShellExecuteEx(&info)) {
+    return GetLastError();
+  }
+
+  return kSuccessExitCode;
 }
 
 int HostService::RunAsService() {
@@ -409,14 +444,19 @@ LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
 
 } // namespace remoting
 
-int main(int argc, char** argv) {
+int CALLBACK WinMain(HINSTANCE instance,
+                     HINSTANCE previous_instance,
+                     LPSTR raw_command_line,
+                     int show_command) {
 #ifdef OFFICIAL_BUILD
   if (remoting::IsUsageStatsAllowed()) {
     remoting::InitializeCrashReporting();
   }
 #endif  // OFFICIAL_BUILD
 
-  CommandLine::Init(argc, argv);
+  // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
+  // the command line from GetCommandLineW(), so we can safely pass NULL here.
+  CommandLine::Init(0, NULL);
 
   // This object instance is required by Chrome code (for example,
   // FilePath, LazyInstance, MessageLoop).
@@ -432,16 +472,15 @@ int main(int argc, char** argv) {
               logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-
   if (command_line->HasSwitch(kHelpSwitchName) ||
       command_line->HasSwitch(kQuestionSwitchName)) {
-    usage(argv[0]);
+    usage(command_line->GetProgram());
     return kSuccessExitCode;
   }
 
   remoting::HostService* service = remoting::HostService::GetInstance();
   if (!service->InitWithCommandLine(command_line)) {
-    usage(argv[0]);
+    usage(command_line->GetProgram());
     return kUsageExitCode;
   }
 

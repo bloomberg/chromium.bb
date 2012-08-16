@@ -18,7 +18,7 @@ Stoppable::Stoppable(
 }
 
 Stoppable::~Stoppable() {
-  DCHECK_EQ(state_, kStopped);
+  CHECK_EQ(state_, kStopped);
 }
 
 void Stoppable::Stop() {

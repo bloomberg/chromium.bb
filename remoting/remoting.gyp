@@ -632,6 +632,8 @@
               'AdditionalDependencies': [
                 'wtsapi32.lib',
               ],
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
             },
           },
         },  # end of target 'remoting_service'
@@ -1518,6 +1520,7 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'AdditionalOptions': [
+                "\"/MANIFESTUAC:level='requireAdministrator' uiAccess='true'\"",
                 "\"/manifestdependency:type='win32' "
                     "name='Microsoft.Windows.Common-Controls' "
                     "version='6.0.0.0' "

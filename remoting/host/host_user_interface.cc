@@ -32,7 +32,6 @@ void HostUserInterface::Start(ChromotingHost* host,
                               const base::Closure& disconnect_callback) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
   DCHECK(host_ == NULL);
-  DCHECK(disconnect_callback_.is_null());
 
   host_ = host;
   disconnect_callback_ = disconnect_callback;
@@ -91,7 +90,6 @@ base::SingleThreadTaskRunner* HostUserInterface::ui_task_runner() const {
 
 void HostUserInterface::DisconnectSession() const {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());
-  DCHECK(!disconnect_callback_.is_null());
 
   disconnect_callback_.Run();
 }
@@ -118,7 +116,6 @@ void HostUserInterface::StartForTest(
     scoped_ptr<LocalInputMonitor> local_input_monitor) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
   DCHECK(host_ == NULL);
-  DCHECK(disconnect_callback_.is_null());
 
   host_ = host;
   disconnect_callback_ = disconnect_callback;

@@ -103,6 +103,7 @@ bool CreateRemoteSessionProcess(
     uint32 session_id,
     const FilePath::StringType& application_name,
     const CommandLine::StringType& command_line,
+    DWORD creation_flags,
     PROCESS_INFORMATION* process_information_out)
 {
   DCHECK(base::win::GetVersion() == base::win::VERSION_XP);
@@ -203,8 +204,9 @@ bool CreateRemoteSessionProcess(
   CreateProcessRequest* request =
       reinterpret_cast<CreateProcessRequest*>(buffer.get());
   request->size = size;
-  request->use_default_token = TRUE;
   request->process_id = GetCurrentProcessId();
+  request->use_default_token = TRUE;
+  request->creation_flags = creation_flags;
   request->startup_info.cb = sizeof(request->startup_info);
 
   size_t buffer_offset = sizeof(CreateProcessRequest);
@@ -345,7 +347,9 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
 bool LaunchProcessWithToken(const FilePath& binary,
                             const CommandLine::StringType& command_line,
                             HANDLE user_token,
-                            ScopedHandle* process_out) {
+                            DWORD creation_flags,
+                            ScopedHandle* process_out,
+                            ScopedHandle* thread_out) {
   FilePath::StringType application_name = binary.value();
 
   base::win::ScopedProcessInformation process_info;
@@ -363,7 +367,7 @@ bool LaunchProcessWithToken(const FilePath& binary,
                                     NULL,
                                     NULL,
                                     FALSE,
-                                    0,
+                                    creation_flags,
                                     NULL,
                                     NULL,
                                     &startup_info,
@@ -389,6 +393,7 @@ bool LaunchProcessWithToken(const FilePath& binary,
       result = CreateRemoteSessionProcess(session_id,
                                           application_name,
                                           command_line,
+                                          creation_flags,
                                           process_info.Receive());
     } else {
       // Restore the error status returned by CreateProcessAsUser().
@@ -405,6 +410,7 @@ bool LaunchProcessWithToken(const FilePath& binary,
 
   CHECK(process_info.IsValid());
   process_out->Set(process_info.TakeProcessHandle());
+  thread_out->Set(process_info.TakeThreadHandle());
   return true;
 }
 
