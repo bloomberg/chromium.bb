@@ -41,13 +41,8 @@ const SkColor kKillColor = SkColorSetRGB(57, 48, 88);
 const char kCategoryTagCrash[] = "Crash";
 
 // Font size correction.
-#if defined(CROS_FONTS_USING_BCI)
-const int kTitleFontSizeDelta = 1;
-const int kMessageFontSizeDelta = 0;
-#else
 const int kTitleFontSizeDelta = 2;
 const int kMessageFontSizeDelta = 1;
-#endif
 
 // Name of the experiment to run.
 const char kExperiment[] = "LowMemoryMargin";

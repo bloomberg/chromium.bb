@@ -35,15 +35,9 @@ namespace ui {
 namespace {
 
 // Font sizes relative to base font.
-#if defined(OS_CHROMEOS) && defined(CROS_FONTS_USING_BCI)
-const int kSmallFontSizeDelta = -3;
-const int kMediumFontSizeDelta = 2;
-const int kLargeFontSizeDelta = 7;
-#else
 const int kSmallFontSizeDelta = -2;
 const int kMediumFontSizeDelta = 3;
 const int kLargeFontSizeDelta = 8;
-#endif
 
 // Returns the actual scale factor of |bitmap| given the image representations
 // which have already been added to |image|.

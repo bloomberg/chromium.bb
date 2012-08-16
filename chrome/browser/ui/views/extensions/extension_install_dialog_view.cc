@@ -57,11 +57,7 @@ const int kNoPermissionsLeftColumnWidth = 200;
 const int kBundleLeftColumnWidth = 300;
 
 // Heading font size correction.
-#if defined(CROS_FONTS_USING_BCI)
-const int kHeadingFontSizeDelta = 0;
-#else
 const int kHeadingFontSizeDelta = 1;
-#endif
 
 const int kRatingFontSizeDelta = -1;
 

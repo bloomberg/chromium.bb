@@ -61,11 +61,7 @@ const SkColor kInfolistTitleBackgroundColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
 // We'll use a bigger font size, so Chinese characters are more readable
 // in the candidate window.
-#if defined(CROS_FONTS_USING_BCI)
-const int kFontSizeDelta = 1;
-#else
 const int kFontSizeDelta = 2;
-#endif
 
 // Currently the infolist window only supports Japanese font.
 #if defined(GOOGLE_CHROME_BUILD)

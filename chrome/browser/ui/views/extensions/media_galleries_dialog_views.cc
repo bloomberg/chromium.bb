@@ -23,11 +23,7 @@ typedef MediaGalleriesDialogController::KnownGalleryPermissions
 namespace {
 
 // Heading font size correction.
-#if defined(CROS_FONTS_USING_BCI)
-const int kHeadingFontSizeDelta = 0;
-#else
 const int kHeadingFontSizeDelta = 1;
-#endif
 
 const int kContentWidth = 450;
 
