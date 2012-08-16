@@ -24,6 +24,7 @@
 #include "ui/base/win/window_impl.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/widget/hwnd_message_handler_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace ui {
@@ -40,6 +41,7 @@ class Rect;
 namespace views {
 
 class DropTargetWin;
+class HWNDMessageHandler;
 class RootView;
 class TooltipManagerWin;
 
@@ -69,7 +71,8 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
                                      public MessageLoopForUI::Observer,
-                                     public internal::NativeWidgetPrivate {
+                                     public internal::NativeWidgetPrivate,
+                                     public HWNDMessageHandlerDelegate {
  public:
   explicit NativeWidgetWin(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetWin();
@@ -483,6 +486,25 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   typedef ScopedVector<ui::ViewProp> ViewProps;
   typedef std::set<DWORD> TouchIDs;
 
+  // TODO(beng): This friendship can be removed once all methods relating to
+  //             this object being a WindowImpl are moved to HWNDMessageHandler.
+  friend HWNDMessageHandler;
+
+  // Overridden from HWNDMessageHandlerDelegate:
+  virtual bool IsWidgetWindow() const OVERRIDE;
+  virtual bool IsUsingCustomFrame() const OVERRIDE;
+  virtual void HandleAppDeactivated() OVERRIDE;
+  virtual bool HandleAppCommand(short command) OVERRIDE;
+  virtual void HandleCaptureLost() OVERRIDE;
+  virtual void HandleClose() OVERRIDE;
+  virtual bool HandleCommand(int command) OVERRIDE;
+  virtual void HandleDestroy() OVERRIDE;
+  virtual void HandleDisplayChange() OVERRIDE;
+  virtual void HandleGlassModeChange() OVERRIDE;
+  virtual void HandleBeginWMSizeMove() OVERRIDE;
+  virtual void HandleEndWMSizeMove() OVERRIDE;
+  virtual NativeWidgetWin* AsNativeWidgetWin() OVERRIDE;
+
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.
   static void PostProcessActivateMessage(NativeWidgetWin* widget,
@@ -677,10 +699,10 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Init time, before the Widget has created the NonClientView.
   bool has_non_client_view_;
 
-  bool remove_standard_frame_;
-
   // The set of touch devices currently down.
   TouchIDs touch_ids_;
+
+  scoped_ptr<HWNDMessageHandler> message_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetWin);
 };
