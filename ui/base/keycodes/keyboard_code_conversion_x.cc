@@ -386,6 +386,8 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XF86XK_LaunchB:  // F4 on an Apple keyboard.
     case XF86XK_Calculator:
       return VKEY_MEDIA_LAUNCH_APP2;
+    case XF86XK_WLAN:
+      return VKEY_WLAN;
     case XF86XK_MonBrightnessDown:
       return VKEY_BRIGHTNESS_DOWN;
     case XF86XK_MonBrightnessUp:
@@ -740,6 +742,8 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
       return XF86XK_LaunchA;
     case VKEY_MEDIA_LAUNCH_APP2:
       return XF86XK_LaunchB;
+    case VKEY_WLAN:
+      return XF86XK_WLAN;
     case VKEY_BRIGHTNESS_DOWN:
       return XF86XK_MonBrightnessDown;
     case VKEY_BRIGHTNESS_UP:
