@@ -62,7 +62,8 @@ std::string GetChannelName(VersionInfo::Channel channel) {
   return "unknown";
 }
 
-VersionInfo::Channel g_current_channel = VersionInfo::CHANNEL_STABLE;
+const VersionInfo::Channel kDefaultChannel = VersionInfo::CHANNEL_STABLE;
+VersionInfo::Channel g_current_channel = kDefaultChannel;
 
 // TODO(aa): Can we replace all this manual parsing with JSON schema stuff?
 
@@ -332,6 +333,11 @@ chrome::VersionInfo::Channel Feature::GetCurrentChannel() {
 // static
 void Feature::SetCurrentChannel(VersionInfo::Channel channel) {
   g_current_channel = channel;
+}
+
+// static
+chrome::VersionInfo::Channel Feature::GetDefaultChannel() {
+  return kDefaultChannel;
 }
 
 }  // namespace

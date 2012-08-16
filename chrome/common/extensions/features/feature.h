@@ -69,13 +69,15 @@ class Feature {
   virtual ~Feature();
 
   // Gets the current channel as seen by the Feature system.
-  // Defaults to CHANNEL_STABLE.
   static chrome::VersionInfo::Channel GetCurrentChannel();
 
   // Sets the current channel as seen by the Feature system. In the browser
   // process this should be chrome::VersionInfo::GetChannel(), and in the
   // renderer this will need to come from an IPC.
   static void SetCurrentChannel(chrome::VersionInfo::Channel channel);
+
+  // Gets the default channel as seen by the Feature system.
+  static chrome::VersionInfo::Channel GetDefaultChannel();
 
   // Scoped channel setter. Use for tests.
   class ScopedCurrentChannel {

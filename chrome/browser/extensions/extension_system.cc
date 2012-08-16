@@ -51,7 +51,9 @@ namespace extensions {
 //
 
 ExtensionSystem::ExtensionSystem() {
-  Feature::SetCurrentChannel(chrome::VersionInfo::GetChannel());
+  // Only set if it hasn't already been set (e.g. by a test).
+  if (Feature::GetCurrentChannel() == Feature::GetDefaultChannel())
+    Feature::SetCurrentChannel(chrome::VersionInfo::GetChannel());
 }
 
 ExtensionSystem::~ExtensionSystem() {
