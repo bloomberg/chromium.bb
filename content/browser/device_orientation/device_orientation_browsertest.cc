@@ -43,7 +43,7 @@ class MockProvider : public Provider {
   virtual ~MockProvider() {}
 };
 
-class DeviceOrientationBrowserTest : public content::ContentBrowserTest {
+class DeviceOrientationBrowserTest : public ContentBrowserTest {
  public:
   // From ContentBrowserTest.
   virtual void SetUpCommandLine(CommandLine* command_line) {
@@ -65,9 +65,9 @@ IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
   // The test page will register an event handler for orientation events,
   // expects to get an event with kTestOrientation orientation,
   // then removes the event handler and navigates to #pass.
-  GURL test_url = content::GetTestUrl(
+  GURL test_url = GetTestUrl(
       "device_orientation", "device_orientation_test.html");
-  content::NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   // Check that the page got the event it expected and that the provider
   // saw requests for adding and removing an observer.

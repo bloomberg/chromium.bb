@@ -8,8 +8,6 @@
 #include "content/common/device_orientation_messages.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
-
 namespace content {
 
 OrientationMessageFilter::OrientationMessageFilter()

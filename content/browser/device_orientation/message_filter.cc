@@ -8,8 +8,6 @@
 #include "content/browser/device_orientation/provider.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
-
 namespace content {
 
 MessageFilter::MessageFilter(DeviceData::Type device_data_type)

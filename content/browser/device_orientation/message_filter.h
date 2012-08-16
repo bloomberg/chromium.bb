@@ -17,9 +17,9 @@ class ObserverDelegate;
 
 class Provider;
 
-class MessageFilter : public content::BrowserMessageFilter {
+class MessageFilter : public BrowserMessageFilter {
  public:
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE = 0;
 

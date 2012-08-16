@@ -15,8 +15,6 @@
 #include "content/browser/device_orientation/data_fetcher_impl_android.h"
 #endif
 
-using content::BrowserThread;
-
 namespace content {
 
 Provider* Provider::GetInstance() {
