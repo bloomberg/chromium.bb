@@ -18,6 +18,7 @@ class CONTENT_EXPORT DeviceData :
     public base::RefCountedThreadSafe<DeviceData> {
  public:
   enum Type {
+    kTypeMotion,
     kTypeOrientation,
     kTypeTest
   };

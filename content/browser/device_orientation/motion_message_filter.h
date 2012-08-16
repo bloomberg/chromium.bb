@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_MESSAGE_FILTER_H_
-#define CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_DEVICE_ORIENTATION_MOTION_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_DEVICE_ORIENTATION_MOTION_MESSAGE_FILTER_H_
 
 #include <map>
 
@@ -11,20 +11,20 @@
 
 namespace content {
 
-class OrientationMessageFilter : public MessageFilter {
+class MotionMessageFilter : public MessageFilter {
  public:
-  OrientationMessageFilter();
+  MotionMessageFilter();
 
   // MessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
  private:
-  virtual ~OrientationMessageFilter();
+  virtual ~MotionMessageFilter();
 
-  DISALLOW_COPY_AND_ASSIGN(OrientationMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(MotionMessageFilter);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_ORIENTATION_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_DEVICE_ORIENTATION_MOTION_MESSAGE_FILTER_H_

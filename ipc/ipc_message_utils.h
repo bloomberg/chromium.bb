@@ -78,6 +78,7 @@ enum IPCMessageStart {
   ClipboardMsgStart,
   BlobMsgStart,
   AppCacheMsgStart,
+  DeviceMotionMsgStart,
   DeviceOrientationMsgStart,
   DesktopNotificationMsgStart,
   GeolocationMsgStart,

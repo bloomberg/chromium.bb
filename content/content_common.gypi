@@ -156,6 +156,7 @@
     'common/debug_flags.cc',
     'common/debug_flags.h',
     'common/desktop_notification_messages.h',
+    'common/device_motion_messages.h',
     'common/device_orientation_messages.h',
     'common/devtools_messages.h',
     'common/dom_storage_messages.h',

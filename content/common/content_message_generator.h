@@ -12,6 +12,7 @@
 #include "content/common/clipboard_messages.h"
 #include "content/common/database_messages.h"
 #include "content/common/desktop_notification_messages.h"
+#include "content/common/device_motion_messages.h"
 #include "content/common/device_orientation_messages.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/dom_storage_messages.h"

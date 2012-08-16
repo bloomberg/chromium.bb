@@ -9,6 +9,7 @@
 #include "base/synchronization/lock.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 #include "content/browser/device_orientation/device_data.h"
+#include "content/browser/device_orientation/motion.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
 #include "content/browser/device_orientation/provider_impl.h"
@@ -68,6 +69,90 @@ class UpdateChecker : public Provider::Observer {
   // message_loop_.
   int* expectations_count_ptr_;
   std::queue<scoped_refptr<const DeviceData> > expectations_queue_;
+};
+
+// Class for checking expectations on motion updates from the Provider.
+class MotionUpdateChecker : public UpdateChecker {
+ public:
+  explicit MotionUpdateChecker(int* expectations_count_ptr)
+      : UpdateChecker(DeviceData::kTypeMotion, expectations_count_ptr) {
+  }
+
+  virtual ~MotionUpdateChecker() {}
+
+  // From UpdateChecker.
+  virtual void OnDeviceDataUpdate(const DeviceData* device_data,
+      DeviceData::Type device_data_type) OVERRIDE {
+    ASSERT_FALSE(expectations_queue_.empty());
+    ASSERT_EQ(DeviceData::kTypeMotion, device_data_type);
+
+    scoped_refptr<const Motion> motion(static_cast<const Motion*>(device_data));
+    if (motion == NULL)
+      motion = new Motion();
+
+    scoped_refptr<const Motion> expected(static_cast<const Motion*>(
+        (expectations_queue_.front().get())));
+    expectations_queue_.pop();
+
+    EXPECT_EQ(expected->can_provide_acceleration_x(),
+              motion->can_provide_acceleration_x());
+    EXPECT_EQ(expected->can_provide_acceleration_y(),
+              motion->can_provide_acceleration_y());
+    EXPECT_EQ(expected->can_provide_acceleration_z(),
+              motion->can_provide_acceleration_z());
+
+    EXPECT_EQ(expected->can_provide_acceleration_including_gravity_x(),
+              motion->can_provide_acceleration_including_gravity_x());
+    EXPECT_EQ(expected->can_provide_acceleration_including_gravity_y(),
+              motion->can_provide_acceleration_including_gravity_y());
+    EXPECT_EQ(expected->can_provide_acceleration_including_gravity_z(),
+              motion->can_provide_acceleration_including_gravity_z());
+
+    EXPECT_EQ(expected->can_provide_rotation_rate_alpha(),
+              motion->can_provide_rotation_rate_alpha());
+    EXPECT_EQ(expected->can_provide_rotation_rate_beta(),
+              motion->can_provide_rotation_rate_beta());
+    EXPECT_EQ(expected->can_provide_rotation_rate_gamma(),
+              motion->can_provide_rotation_rate_gamma());
+
+    EXPECT_EQ(expected->can_provide_interval(), motion->can_provide_interval());
+
+    if (expected->can_provide_acceleration_x())
+      EXPECT_EQ(expected->acceleration_x(), motion->acceleration_x());
+    if (expected->can_provide_acceleration_y())
+      EXPECT_EQ(expected->acceleration_y(), motion->acceleration_y());
+    if (expected->can_provide_acceleration_z())
+      EXPECT_EQ(expected->acceleration_z(), motion->acceleration_z());
+
+    if (expected->can_provide_acceleration_including_gravity_x())
+      EXPECT_EQ(expected->acceleration_including_gravity_x(),
+                motion->acceleration_including_gravity_x());
+    if (expected->can_provide_acceleration_including_gravity_y())
+      EXPECT_EQ(expected->acceleration_including_gravity_y(),
+                motion->acceleration_including_gravity_y());
+    if (expected->can_provide_acceleration_including_gravity_z())
+      EXPECT_EQ(expected->acceleration_including_gravity_z(),
+                motion->acceleration_including_gravity_z());
+
+    if (expected->can_provide_rotation_rate_alpha())
+      EXPECT_EQ(expected->rotation_rate_alpha(),
+                motion->rotation_rate_alpha());
+    if (expected->can_provide_rotation_rate_beta())
+      EXPECT_EQ(expected->rotation_rate_beta(),
+                motion->rotation_rate_beta());
+    if (expected->can_provide_rotation_rate_gamma())
+      EXPECT_EQ(expected->rotation_rate_gamma(),
+                motion->rotation_rate_gamma());
+
+    if (expected->can_provide_interval())
+      EXPECT_EQ(expected->interval(), motion->interval());
+
+    --(*expectations_count_ptr_);
+
+    if (*expectations_count_ptr_ == 0) {
+      MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    }
+  }
 };
 
 // Class for checking expectations on orientation updates from the Provider.
@@ -523,7 +608,43 @@ TEST_F(DeviceOrientationProviderTest, StartStopStart) {
   MockDeviceDataFactory::SetCurInstance(NULL);
 }
 
-// Tests that Orientation events only fire if the change is significant
+// Tests that Motion events always fire, even if the motion is unchanged.
+TEST_F(DeviceOrientationProviderTest, MotionAlwaysFires) {
+  scoped_refptr<MockDeviceDataFactory> device_data_factory(
+      new MockDeviceDataFactory());
+  MockDeviceDataFactory::SetCurInstance(device_data_factory.get());
+  Init(MockDeviceDataFactory::CreateDataFetcher);
+
+  scoped_refptr<Motion> test_motion(new Motion());
+  test_motion->set_acceleration_x(1);
+  test_motion->set_acceleration_y(2);
+  test_motion->set_acceleration_z(3);
+  test_motion->set_acceleration_including_gravity_x(4);
+  test_motion->set_acceleration_including_gravity_y(5);
+  test_motion->set_acceleration_including_gravity_z(6);
+  test_motion->set_rotation_rate_alpha(7);
+  test_motion->set_rotation_rate_beta(8);
+  test_motion->set_rotation_rate_gamma(9);
+  test_motion->set_interval(10);
+
+  scoped_ptr<MotionUpdateChecker> checker(new MotionUpdateChecker(
+      &pending_expectations_));
+
+  device_data_factory->SetDeviceData(test_motion, DeviceData::kTypeMotion);
+  checker->AddExpectation(test_motion);
+  provider_->AddObserver(checker.get());
+  MessageLoop::current()->Run();
+
+  // The observer should receive the same motion again.
+  device_data_factory->SetDeviceData(test_motion, DeviceData::kTypeMotion);
+  checker->AddExpectation(test_motion);
+  MessageLoop::current()->Run();
+
+  provider_->RemoveObserver(checker.get());
+  MockDeviceDataFactory::SetCurInstance(NULL);
+}
+
+// Tests that Orientation events only fire if the change is significant.
 TEST_F(DeviceOrientationProviderTest, OrientationSignificantlyDifferent) {
   scoped_refptr<MockDeviceDataFactory> device_data_factory(
       new MockDeviceDataFactory());

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/device_orientation/device_data.h"
+#include "content/browser/device_orientation/motion.h"
 #include "content/browser/device_orientation/orientation.h"
 #include "ipc/ipc_sender.h"
 
@@ -35,8 +36,16 @@ void ObserverDelegate::OnDeviceDataUpdate(
 }
 
 DeviceData* ObserverDelegate::EmptyDeviceData(DeviceData::Type type) {
-  DCHECK(type == DeviceData::kTypeOrientation);
-  return new Orientation();
+  switch (type) {
+    case DeviceData::kTypeMotion:
+      return new Motion();
+    case DeviceData::kTypeOrientation:
+      return new Orientation();
+    case DeviceData::kTypeTest:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return NULL;
 }
 
 }  // namespace content
