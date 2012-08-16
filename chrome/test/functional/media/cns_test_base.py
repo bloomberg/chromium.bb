@@ -15,7 +15,6 @@ import urllib2
 import pyauto
 import pyauto_paths
 
-WINDOWS = 'win32' in sys.platform
 
 # List of commonly used network constraints settings.
 # Each setting is a tuppe of the form:
@@ -43,11 +42,19 @@ _CNS_PATH = os.path.join(
 # Port to start the CNS on.
 _CNS_PORT = 9000
 
+# A flag to determine whether to launch a local CNS instance or to connect
+# to the external CNS server.  Default to False since all current bots use an
+# external instance.
+# If not on Windows, set USE_LOCAL_CNS=1 env variable to switch the flag.
+USE_LOCAL_CNS = ('win' not in sys.platform and 'USE_LOCAL_CNS' in os.environ and
+                 os.environ['USE_LOCAL_CNS'] == '1')
+
 # Base CNS URL, only requires & separated parameter names appended.
-if WINDOWS:
-  CNS_BASE_URL = 'http://chromeperf34:%d/ServeConstrained?' % _CNS_PORT
-else:
+if USE_LOCAL_CNS:
   CNS_BASE_URL = 'http://127.0.0.1:%d/ServeConstrained?' % _CNS_PORT
+else:
+  CNS_BASE_URL = 'http://chromeperf34:%d/ServeConstrained?' % _CNS_PORT
+  CNS_CLEANUP_URL = 'http://chromeperf34:%d/Cleanup' % _CNS_PORT
 
 # Used for server sanity check.
 _TEST_VIDEO = 'roller.webm'
@@ -75,12 +82,12 @@ class CNSTestBase(pyauto.PyUITest):
 
   def setUp(self):
     """Ensures the Constrained Network Server (CNS) server is up and running."""
-    if WINDOWS:
-      self._SetUpWin()
+    if USE_LOCAL_CNS:
+      self._SetUpLocal()
     else:
-      self._SetUpLinux()
+      self._SetUpExternal()
 
-  def _SetUpWin(self):
+  def _SetUpExternal(self):
     """Ensures the test can connect to the external CNS server."""
     if self.WaitUntil(self._CanAccessServer, retry_sleep=3, timeout=30,
                       debug=False):
@@ -88,7 +95,7 @@ class CNSTestBase(pyauto.PyUITest):
     else:
       self.fail('Failed to connect to CNS.')
 
-  def _SetUpLinux(self):
+  def _SetUpLocal(self):
     """Starts the CNS server locally."""
     cmd = [sys.executable, os.path.join(pyauto_paths.GetSourceDir(), _CNS_PATH),
            '--port', str(self._port),
@@ -122,8 +129,7 @@ class CNSTestBase(pyauto.PyUITest):
 
   def tearDown(self):
     """Stops the Constrained Network Server (CNS)."""
-    pyauto.PyUITest.tearDown(self)
-    if not WINDOWS:
+    if USE_LOCAL_CNS:
       logging.debug('Stopping CNS server.')
       # Do not use process.kill(), it will not clean up cns.
       self.Kill(self._cns_process.pid)
@@ -131,6 +137,10 @@ class CNSTestBase(pyauto.PyUITest):
       self._cns_process.wait()
       self.assertFalse(self._cns_process.returncode is None)
       logging.debug('CNS server stopped.')
+    else:
+      # Call CNS Cleanup to remove all ports created by this client.
+      self.NavigateToURL(CNS_CLEANUP_URL)
+    pyauto.PyUITest.tearDown(self)
 
 
 class ProcessLogger(threading.Thread):
