@@ -128,7 +128,8 @@ void ScriptBadgeController::OnExecuteScriptFinished(
         extension_id.c_str());
     char buf[1024];
     base::snprintf(buf, arraysize(buf), "%s", message.c_str());
-    CHECK(false) << message;
+    LOG(ERROR) << message;
+    return;
   }
 }
 
@@ -204,7 +205,8 @@ void ScriptBadgeController::OnContentScriptsExecuting(
         JoinExtensionIDs(extension_ids).c_str());
     char buf[1024];
     base::snprintf(buf, arraysize(buf), "%s", message.c_str());
-    CHECK(false) << message;
+    LOG(ERROR) << message;
+    return;
   }
 
   bool changed = false;
