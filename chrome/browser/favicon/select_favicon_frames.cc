@@ -60,7 +60,8 @@ SkBitmap SampleNearestNeighbor(SkBitmap contents, int desired_size) {
 
 SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
                          int desired_size,
-                         ui::ScaleFactor scale_factor) {
+                         ui::ScaleFactor scale_factor,
+                         float* score) {
   float scale = GetScaleFactorScale(scale_factor);
   desired_size = static_cast<int>(desired_size * scale + 0.5f);
 
@@ -68,6 +69,7 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
   for (size_t i = 0; i < bitmaps.size(); ++i) {
     if (bitmaps[i].width() == desired_size &&
         bitmaps[i].height() == desired_size) {
+      *score = 1;
       return bitmaps[i];
     }
   }
@@ -80,6 +82,7 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
     for (size_t i = 0; i < bitmaps.size(); ++i) {
       if (bitmaps[i].width() == source_size &&
           bitmaps[i].height() == source_size) {
+        *score = 0.2;
         return PadWithBorder(bitmaps[i], desired_size, source_size);
       }
     }
@@ -87,6 +90,7 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
     for (size_t i = 0; i < bitmaps.size(); ++i) {
       if (bitmaps[i].width() * scale == source_size &&
           bitmaps[i].height() * scale == source_size) {
+        *score = 0.15;
         return PadWithBorder(bitmaps[i], desired_size, source_size);
       }
     }
@@ -106,9 +110,12 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
       min_area = area;
     }
   }
+  *score = 0.1;
   //    c) Else, from the biggest smaller variant.
-  if (candidate == -1)
+  if (candidate == -1) {
+    *score = 0;
     candidate = BiggestCandidate(bitmaps);
+  }
 
   const SkBitmap& bitmap = bitmaps[candidate];
   bool is_integer_multiple = desired_size % bitmap.width() == 0 &&
@@ -125,7 +132,8 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
 gfx::ImageSkia SelectFaviconFrames(
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<ui::ScaleFactor>& scale_factors,
-    int desired_size) {
+    int desired_size,
+    float* match_score) {
   gfx::ImageSkia multi_image;
   if (bitmaps.empty())
     return multi_image;
@@ -135,14 +143,21 @@ gfx::ImageSkia SelectFaviconFrames(
     size_t max_index = BiggestCandidate(bitmaps);
     multi_image.AddRepresentation(
         gfx::ImageSkiaRep(bitmaps[max_index], ui::SCALE_FACTOR_100P));
+    if (match_score)
+      *match_score = 0.8;
     return multi_image;
   }
 
+  float total_score = 0;
   for (size_t i = 0; i < scale_factors.size(); ++i) {
+    float score;
     multi_image.AddRepresentation(gfx::ImageSkiaRep(
-          SelectCandidate(bitmaps, desired_size, scale_factors[i]),
+          SelectCandidate(bitmaps, desired_size, scale_factors[i], &score),
           scale_factors[i]));
+    total_score += score;
   }
 
+  if (match_score)
+    *match_score = total_score / scale_factors.size();
   return multi_image;
 }

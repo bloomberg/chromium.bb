@@ -301,7 +301,8 @@ void DownloadHandler::InvokeCallback() {
   FillDataToBitmap(bitmap_size, bitmap_size, &bitmap);
   gfx::Image image(bitmap);
   favicon_helper_->OnDidDownloadFavicon(
-      download_->download_id, download_->image_url, failed_, image);
+      download_->download_id, download_->image_url, failed_, image,
+      download_->image_size == gfx::kFaviconSize);
 }
 
 class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {

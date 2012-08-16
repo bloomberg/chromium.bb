@@ -85,7 +85,7 @@ FaviconHandler::DownloadRequest::DownloadRequest(
 ////////////////////////////////////////////////////////////////////////////////
 
 FaviconHandler::FaviconCandidate::FaviconCandidate()
-    : bitmap_size(0),
+    : score(0),
       icon_type(history::INVALID_ICON) {
 }
 
@@ -96,12 +96,12 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
     const GURL& url,
     const GURL& image_url,
     const gfx::Image& image,
-    int bitmap_size,
+    float score,
     history::IconType icon_type)
     : url(url),
       image_url(image_url),
       image(image),
-      bitmap_size(bitmap_size),
+      score(score),
       icon_type(icon_type) {
 }
 
@@ -163,11 +163,11 @@ FaviconService* FaviconHandler::GetFaviconService() {
 bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
                                             const GURL& image_url,
                                             const gfx::Image& image,
+                                            float score,
                                             history::IconType icon_type) {
   bool update_candidate = false;
   SkBitmap bitmap = *(image.ToSkBitmap());
-  int bitmap_size = std::max(bitmap.width(), bitmap.height());
-  bool exact_match = (bitmap_size == preferred_icon_size());
+  bool exact_match = score == 1;
   if (preferred_icon_size() == 0) {
     // No preferred size, use this icon.
     update_candidate = true;
@@ -176,21 +176,18 @@ bool FaviconHandler::UpdateFaviconCandidate(const GURL& url,
     // No current candidate, use this.
     update_candidate = true;
   } else {
-    if (bitmap_size == preferred_icon_size()) {
+    if (exact_match) {
       // Exact match, use this.
       update_candidate = true;
     } else {
       // Compare against current candidate.
-      int cur_size = favicon_candidate_.bitmap_size;
-      if ((bitmap_size >= preferred_icon_size() && bitmap_size < cur_size) ||
-          (cur_size < preferred_icon_size() && bitmap_size > cur_size)) {
+      if (score > favicon_candidate_.score)
         update_candidate = true;
-      }
     }
   }
   if (update_candidate) {
     favicon_candidate_ = FaviconCandidate(
-        url, image_url, image, bitmap_size, icon_type);
+        url, image_url, image, score, icon_type);
   }
   return exact_match;
 }
@@ -294,7 +291,8 @@ void FaviconHandler::ProcessCurrentUrl() {
 void FaviconHandler::OnDidDownloadFavicon(int id,
                                           const GURL& image_url,
                                           bool errored,
-                                          const gfx::Image& image) {
+                                          const gfx::Image& image,
+                                          float score) {
   DownloadRequests::iterator i = download_requests_.find(id);
   if (i == download_requests_.end()) {
     // Currently WebContents notifies us of ANY downloads so that it is
@@ -312,7 +310,7 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
     bool request_next_icon = true;
     if (!errored) {
       request_next_icon = !UpdateFaviconCandidate(
-          i->second.url, image_url, image, i->second.icon_type);
+          i->second.url, image_url, image, score, i->second.icon_type);
     }
     if (request_next_icon && GetEntry() && image_urls_.size() > 1) {
       // Remove the first member of image_urls_ and process the remaining.

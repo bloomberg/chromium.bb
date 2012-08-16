@@ -195,6 +195,7 @@ void FaviconTabHelper::OnDidDownloadFavicon(
     bool errored,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
+  float score = 0;
   // TODO: Possibly do bitmap selection in FaviconHandler, so that it can score
   // favicons better.
   std::vector<ui::ScaleFactor> scale_factors;
@@ -203,9 +204,12 @@ void FaviconTabHelper::OnDidDownloadFavicon(
 #else
   scale_factors.push_back(ui::SCALE_FACTOR_100P);  // TODO: Aura?
 #endif
-  gfx::Image favicon(
-      SelectFaviconFrames(bitmaps, scale_factors, requested_size));
-  favicon_handler_->OnDidDownloadFavicon(id, image_url, errored, favicon);
-  if (touch_icon_handler_.get())
-    touch_icon_handler_->OnDidDownloadFavicon(id, image_url, errored, favicon);
+  gfx::Image favicon(SelectFaviconFrames(
+      bitmaps, scale_factors, requested_size, &score));
+  favicon_handler_->OnDidDownloadFavicon(
+      id, image_url, errored, favicon, score);
+  if (touch_icon_handler_.get()) {
+    touch_icon_handler_->OnDidDownloadFavicon(
+        id, image_url, errored, favicon, score);
+  }
 }
