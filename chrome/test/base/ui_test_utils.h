@@ -130,6 +130,9 @@ FilePath GetTestFilePath(const FilePath& dir, const FilePath& file);
 // The returned path is GURL format.
 GURL GetTestUrl(const FilePath& dir, const FilePath& file);
 
+// Generate the path of the build directory, relative to the source root.
+bool GetRelativeBuildDirectory(FilePath *build_dir);
+
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();
 
