@@ -857,7 +857,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     if (GetPresentationStats(&timebase, &numerator, &denominator) &&
         numerator > 0 && denominator > 0) {
       int64 interval_micros =
-          1000000 * static_cast<int64>(numerator) / denominator;
+          static_cast<int64>(1000000 * numerator) / denominator;
       interval = base::TimeDelta::FromMicroseconds(interval_micros);
     }
     scoped_completion_runner.Release();

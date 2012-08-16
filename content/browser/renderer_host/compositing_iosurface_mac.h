@@ -74,8 +74,6 @@ class CompositingIOSurfaceMac {
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
 
   // Get vsync scheduling parameters.
-  // |interval_numerator/interval_denominator| equates to fractional number of
-  // seconds between vsyncs.
   void GetVSyncParameters(base::TimeTicks* timebase,
                           uint32* interval_numerator,
                           uint32* interval_denominator);
@@ -160,7 +158,7 @@ class CompositingIOSurfaceMac {
 
   // Called on display-link thread.
   void DisplayLinkTick(CVDisplayLinkRef display_link,
-                       const CVTimeStamp* time);
+                       const CVTimeStamp* output_time);
 
   void CalculateVsyncParametersLockHeld(const CVTimeStamp* time);
 

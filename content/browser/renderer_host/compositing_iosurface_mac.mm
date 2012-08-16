@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/threading/platform_thread.h"
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gfx/rect.h"
@@ -260,7 +261,6 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
 void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
                                                  uint32* interval_numerator,
                                                  uint32* interval_denominator) {
-  base::AutoLock lock(lock_);
   *timebase = vsync_timebase_;
   *interval_numerator = vsync_interval_numerator_;
   *interval_denominator = vsync_interval_denominator_;
@@ -552,18 +552,16 @@ void CompositingIOSurfaceMac::ClearDrawable() {
 }
 
 void CompositingIOSurfaceMac::DisplayLinkTick(CVDisplayLinkRef display_link,
-                                              const CVTimeStamp* time) {
-  TRACE_EVENT0("gpu", "CompositingIOSurfaceMac::DisplayLinkTick");
+                                              const CVTimeStamp* output_time) {
   base::AutoLock lock(lock_);
   // Increment vsync_count but don't let it get ahead of swap_count.
   vsync_count_ = std::min(vsync_count_ + 1, swap_count_);
 
-  CalculateVsyncParametersLockHeld(time);
+  CalculateVsyncParametersLockHeld(output_time);
 }
 
 void CompositingIOSurfaceMac::CalculateVsyncParametersLockHeld(
     const CVTimeStamp* time) {
-  lock_.AssertAcquired();
   vsync_interval_numerator_ = static_cast<uint32>(time->videoRefreshPeriod);
   vsync_interval_denominator_ = time->videoTimeScale;
   // Verify that videoRefreshPeriod is 32 bits.
