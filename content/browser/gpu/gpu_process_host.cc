@@ -354,12 +354,20 @@ GpuProcessHost::~GpuProcessHost() {
   // options).
   if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
     if (software_rendering_) {
+      UMA_HISTOGRAM_ENUMERATION("GPU.SoftwareRendererLifetimeEvents",
+                                DIED_FIRST_TIME + g_gpu_software_crash_count,
+                                GPU_PROCESS_LIFETIME_EVENT_MAX);
+
       if (++g_gpu_software_crash_count >= kGpuMaxCrashCount) {
         // The software renderer is too unstable to use. Disable it for current
         // session.
         gpu_enabled_ = false;
       }
     } else {
+      UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
+                                DIED_FIRST_TIME + g_gpu_crash_count,
+                                GPU_PROCESS_LIFETIME_EVENT_MAX);
+
       if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
 #if !defined(OS_CHROMEOS)
         // The gpu process is too unstable to use. Disable it for current
@@ -370,9 +378,6 @@ GpuProcessHost::~GpuProcessHost() {
       }
     }
   }
-  UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                            DIED_FIRST_TIME + g_gpu_crash_count,
-                            GPU_PROCESS_LIFETIME_EVENT_MAX);
 
   int exit_code;
   base::TerminationStatus status = process_->GetTerminationStatus(&exit_code);
