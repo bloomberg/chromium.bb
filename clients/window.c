@@ -2691,9 +2691,6 @@ handle_configure(void *data, struct wl_shell_surface *shell_surface,
 {
 	struct window *window = data;
 
-	if (width <= 0 || height <= 0)
-		return;
-
 	window->resize_edges = edges;
 	window_schedule_resize(window, width, height);
 }
