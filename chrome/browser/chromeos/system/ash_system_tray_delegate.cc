@@ -208,6 +208,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     registrar_.Add(this,
                    chrome::NOTIFICATION_PROFILE_CREATED,
                    content::NotificationService::AllSources());
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources());
 
     accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled,
                                 g_browser_process->local_state(), this);
@@ -237,14 +240,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     bluetooth_adapter_->RemoveObserver(this);
 
     // Stop observing gdata operations.
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (gdata::util::IsGDataAvailable(profile)) {
-      GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
-      if (system_service) {
-        system_service->docs_service()->operation_registry()->
-            RemoveObserver(this);
-      }
+    GDataSystemService* system_service = FindGDataSystemService();
+    if (system_service) {
+      system_service->docs_service()->operation_registry()->
+          RemoveObserver(this);
     }
   }
 
@@ -453,12 +452,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void CancelDriveOperation(const FilePath& file_path) OVERRIDE {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsGDataAvailable(profile))
-      return;
-
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+    GDataSystemService* system_service = FindGDataSystemService();
     if (!system_service)
       return;
 
@@ -468,12 +462,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void GetDriveOperationStatusList(
       ash::DriveOperationStatusList* list) OVERRIDE {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsGDataAvailable(profile))
-      return;
-
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+    GDataSystemService* system_service = FindGDataSystemService();
     if (!system_service)
       return;
 
@@ -736,15 +725,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     UpdateClockType(profile->GetPrefs());
     search_key_mapped_to_ =
         profile->GetPrefs()->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
+  }
 
-    if (gdata::util::IsGDataAvailable(profile)) {
-      GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
-      if (!system_service)
-        return;
+  void ObserveGDataUpdates() {
+    GDataSystemService* system_service = FindGDataSystemService();
+    if (!system_service)
+      return;
 
-      system_service->docs_service()->operation_registry()->AddObserver(this);
-    }
+    system_service->docs_service()->operation_registry()->AddObserver(this);
   }
 
   void UpdateClockType(PrefService* service) {
@@ -1039,6 +1027,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         }
         break;
       }
+      case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
+        // GData system service exists by the time if enabled.
+        ObserveGDataUpdates();
+        break;
+      }
       case chrome::NOTIFICATION_PREF_CHANGED: {
         std::string pref = *content::Details<std::string>(details).ptr();
         PrefService* service = content::Source<PrefService>(source).ptr();
@@ -1130,17 +1123,19 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // status in UI in cases when there are no new changes coming (i.e. when the
   // last set of transfer operations completed).
   void RecheckGDataOperations() {
-    Profile* profile = ProfileManager::GetDefaultProfile();
-    if (!gdata::util::IsGDataAvailable(profile))
-      return;
-
-    GDataSystemService* system_service =
-          GDataSystemServiceFactory::FindForProfile(profile);
+    GDataSystemService* system_service = FindGDataSystemService();
     if (!system_service)
       return;
 
     OnProgressUpdate(system_service->docs_service()->operation_registry()->
         GetProgressStatusList());
+  }
+
+  GDataSystemService* FindGDataSystemService() {
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    if (!gdata::util::IsGDataAvailable(profile))
+      return NULL;
+    return GDataSystemServiceFactory::FindForProfile(profile);
   }
 
   // Overridden from system::TimezoneSettings::Observer.
