@@ -351,10 +351,6 @@ struct weston_compositor {
 	struct weston_xkb_info xkb_info;
 };
 
-enum weston_output_flags {
-	WL_OUTPUT_FLIPPED = 0x01
-};
-
 struct weston_region {
 	struct wl_resource resource;
 	pixman_region32_t region;
