@@ -131,7 +131,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     caps_lock_enabled_ = enabled;
   }
 
-  virtual void ShutDown() OVERRIDE {}
+  virtual void ShutDown() OVERRIDE {
+    MessageLoop::current()->Quit();
+  }
 
   virtual void SignOut() OVERRIDE {
     MessageLoop::current()->Quit();

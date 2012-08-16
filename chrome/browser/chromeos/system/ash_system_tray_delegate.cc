@@ -355,6 +355,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ShutDown() OVERRIDE {
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
+    if (!base::chromeos::IsRunningOnChromeOS())
+      browser::AttemptUserExit();
   }
 
   virtual void SignOut() OVERRIDE {

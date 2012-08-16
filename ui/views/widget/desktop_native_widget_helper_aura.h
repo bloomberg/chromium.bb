@@ -62,7 +62,8 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   // Overridden from aura::RootWindowObserver:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& old_size) OVERRIDE;
-  virtual void OnRootWindowHostClosed(const aura::RootWindow* root) OVERRIDE;
+  virtual void OnRootWindowHostCloseRequested(
+                                   const aura::RootWindow* root) OVERRIDE;
 
  private:
   // A weak pointer back to our owning widget.

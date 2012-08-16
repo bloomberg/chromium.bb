@@ -23,7 +23,7 @@ class AURA_EXPORT RootWindowObserver {
 
   // Invoked when the native windowing system sends us a request to close our
   // window.
-  virtual void OnRootWindowHostClosed(const RootWindow* root) {}
+  virtual void OnRootWindowHostCloseRequested(const RootWindow* root) {}
 
   // Invoked when the keyboard mapping has changed.
   virtual void OnKeyboardMappingChanged(const RootWindow* root) {}

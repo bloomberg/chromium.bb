@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/cursor_manager.h"
 #include "base/command_line.h"
@@ -470,6 +471,12 @@ void PowerButtonController::OnRootWindowResized(const aura::RootWindow* root,
                                                 const gfx::Size& new_size) {
   if (background_layer_.get())
     background_layer_->SetBounds(gfx::Rect(root->bounds().size()));
+}
+
+void PowerButtonController::OnRootWindowHostCloseRequested(
+                                                const aura::RootWindow*) {
+  if(Shell::GetInstance() && Shell::GetInstance()->delegate())
+    Shell::GetInstance()->delegate()->Exit();
 }
 
 bool PowerButtonController::LoggedInAsNonGuest() const {

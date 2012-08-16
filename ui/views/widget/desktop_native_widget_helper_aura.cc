@@ -242,7 +242,7 @@ void DesktopNativeWidgetHelperAura::OnRootWindowResized(
                                root->GetHostSize()));
 }
 
-void DesktopNativeWidgetHelperAura::OnRootWindowHostClosed(
+void DesktopNativeWidgetHelperAura::OnRootWindowHostCloseRequested(
     const aura::RootWindow* root) {
   DCHECK_EQ(root, root_window_.get());
   widget_->GetWidget()->Close();
