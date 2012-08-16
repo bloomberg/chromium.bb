@@ -740,6 +740,8 @@ def GetPlatformString(env):
   # Build the test platform string
   return build + '-' + subarch
 
+pre_base_env.AddMethod(GetPlatformString)
+
 
 tests_to_disable_qemu = set([
     # These tests do not work under QEMU but do work on hardware. They should
@@ -807,7 +809,7 @@ def ShouldSkipTest(env, node_name):
       return True
 
   # Retrieve list of tests to skip on this platform
-  skiplist = bad_build_lists.get(GetPlatformString(env), [])
+  skiplist = bad_build_lists.get(env.GetPlatformString(), [])
   if node_name in skiplist:
     return True
 
@@ -815,6 +817,8 @@ def ShouldSkipTest(env, node_name):
     return True
 
   return False
+
+pre_base_env.AddMethod(ShouldSkipTest)
 
 
 def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
@@ -840,8 +844,8 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
       print '*** BROKEN ', display_name
     BROKEN_TEST_COUNT += 1
     env.Alias('broken_tests', node)
-  elif ShouldSkipTest(env, node_name):
-    print '*** SKIPPING ', GetPlatformString(env), ':', display_name
+  elif env.ShouldSkipTest(node_name):
+    print '*** SKIPPING ', env.GetPlatformString(), ':', display_name
     env.Alias('broken_tests', node)
   else:
     env.Alias('all_tests', node)
@@ -861,7 +865,6 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
       test_name = test_name[:-4]
     test_name = test_name.replace('.', '_')
   SetTestName(node, test_name)
-
 
 pre_base_env.AddMethod(AddNodeToTestSuite)
 
@@ -1150,8 +1153,10 @@ def GetEmulator(env):
     emulator = env['TRUSTED_ENV'].get('EMULATOR')
   return emulator
 
+pre_base_env.AddMethod(GetEmulator)
+
 def UsingEmulator(env):
-  return bool(GetEmulator(env))
+  return bool(env.GetEmulator())
 
 pre_base_env.AddMethod(UsingEmulator)
 
@@ -1172,6 +1177,8 @@ def GetValidator(env, validator):
   trusted_env = env['TRUSTED_ENV']
   return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
                     validator)
+
+pre_base_env.AddMethod(GetValidator)
 
 
 # Perform os.path.abspath rooted at the directory SConstruct resides in.
@@ -1232,7 +1239,7 @@ def CommandValidatorTestNacl(env, name, image,
                              validator=None,
                              size='medium',
                              **extra):
-  validator = GetValidator(env, validator)
+  validator = env.GetValidator(validator)
   if validator is None:
     print 'WARNING: no validator found. Skipping test %s' % name
     return []
@@ -1244,7 +1251,7 @@ def CommandValidatorTestNacl(env, name, image,
     return []
 
   command = [validator] + validator_flags + [image]
-  return CommandTest(env, name, command, size, **extra)
+  return env.CommandTest(name, command, size, **extra)
 
 pre_base_env.AddMethod(CommandValidatorTestNacl)
 
@@ -1265,6 +1272,8 @@ def SetupBrowserEnv(env):
     if var_name in os.environ:
       env['ENV'][var_name] = os.environ[var_name]
 
+pre_base_env.AddMethod(SetupBrowserEnv)
+
 
 def GetHeadlessPrefix(env):
   if env.Bit('browser_headless') and env.Bit('host_linux'):
@@ -1272,6 +1281,8 @@ def GetHeadlessPrefix(env):
   else:
     # Mac and Windows do not seem to have an equivalent.
     return []
+
+pre_base_env.AddMethod(GetHeadlessPrefix)
 
 
 pre_base_env['CHROME_DOWNLOAD_DIR'] = \
@@ -1506,7 +1517,7 @@ def GenerateManifestDynamicLink(env, dest_file, lib_list_file,
   # Run sel_ldr on the nexe to trace the NEEDED libraries.
   lib_list_node = env.Command(
       lib_list_file,
-      [GetSelLdr(env),
+      [env.GetSelLdr(),
        '${NACL_SDK_LIB}/runnable-ld.so',
        exe_file,
        '${SCONSTRUCT_DIR}/DEPS'],
@@ -1562,6 +1573,8 @@ def GenerateSimpleManifest(env, dest_file, exe_name):
     return GenerateManifestDynamicLink(
         env, dest_file, '%s.tmp_lib_list' % dest_file, static_manifest,
         '${STAGING_DIR}/%s.nexe' % env.ProgramNameForNmf(exe_name))
+
+pre_base_env.AddMethod(GenerateSimpleManifest)
 
 
 # Returns a pair (main program, is_portable), based on the program
@@ -1716,7 +1729,7 @@ def PPAPIBrowserTester(env,
                       (target, arg_name))
 
   env = env.Clone()
-  SetupBrowserEnv(env)
+  env.SetupBrowserEnv()
 
   if 'scale_timeout' in ARGUMENTS:
     timeout = timeout * int(ARGUMENTS['scale_timeout'])
@@ -1724,16 +1737,16 @@ def PPAPIBrowserTester(env,
   if python_tester_script is None:
     python_tester_script = env.File('${SCONSTRUCT_DIR}/tools/browser_tester'
                              '/browser_tester.py')
-  command = GetHeadlessPrefix(env) + [
+  command = env.GetHeadlessPrefix() + [
       '${PYTHON}', python_tester_script,
       '--browser_path', env.ChromeBinary(),
       '--url', url,
       # Fail if there is no response for X seconds.
       '--timeout', str(timeout)]
   if not env.Bit('disable_dynamic_plugin_loading'):
-    command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
-    command.extend(['--sel_ldr', GetSelLdr(env)])
-    bootstrap, _ = GetBootstrap(env)
+    command.extend(['--ppapi_plugin', env['TRUSTED_ENV'].GetPPAPIPluginPath()])
+    command.extend(['--sel_ldr', env.GetSelLdr()])
+    bootstrap, _ = env.GetBootstrap()
     if bootstrap is not None:
       command.extend(['--sel_ldr_bootstrap', bootstrap])
   if (not env.Bit('disable_dynamic_plugin_loading') or
@@ -1772,7 +1785,7 @@ def PPAPIBrowserTester(env,
   for nmf_name in nmf_names:
     tmp_manifest = '%s.tmp/%s.nmf' % (target, nmf_name)
     command.extend(['--map_file', '%s.nmf' % nmf_name,
-                    GenerateSimpleManifest(env, tmp_manifest, nmf_name)])
+                    env.GenerateSimpleManifest(tmp_manifest, nmf_name)])
   if 'browser_test_tool' in ARGUMENTS:
     command.extend(['--tool', ARGUMENTS['browser_test_tool']])
 
@@ -1815,7 +1828,7 @@ def PPAPIBrowserTester(env,
               env, stream_file, golden_file,
               filter_regex, filter_inverse, filter_group_only))
 
-  if ShouldUseVerboseOptions(extra):
+  if env.ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(target, log_verbosity, extra)
   # Heuristic for when to capture output...
   capture_output = (extra.pop('capture_output', False)
@@ -1868,14 +1881,14 @@ def PyAutoTester(env, target, test, files=[], nmf_names=[], log_verbosity=2,
     return []
 
   env = env.Clone()
-  SetupBrowserEnv(env)
+  env.SetupBrowserEnv()
   extra_deps = [env.ChromeBinary()]
   files_subdir = '${STAGING_DIR}/%s.files' % target
   for dep_file in files:
     extra_deps.append(env.Replicate(files_subdir, dep_file))
   for nmf_name in nmf_names:
     dest_nmf = '%s/%s.nmf' % (files_subdir, nmf_name)
-    extra_deps.append(GenerateSimpleManifest(env, dest_nmf, nmf_name))
+    extra_deps.append(env.GenerateSimpleManifest(dest_nmf, nmf_name))
 
   if env.Bit('host_mac'):
     # On Mac, remove 'Chromium.app/Contents/MacOS/Chromium' from the path.
@@ -1899,8 +1912,8 @@ def PyAutoTester(env, target, test, files=[], nmf_names=[], log_verbosity=2,
   chrome_flags = []
   if not env.Bit('disable_dynamic_plugin_loading'):
     chrome_flags.append('--register-pepper-plugins=%s;application/x-nacl' %
-                        GetPPAPIPluginPath(env['TRUSTED_ENV']))
-    extra_deps.append(GetPPAPIPluginPath(env['TRUSTED_ENV']))
+                        env['TRUSTED_ENV'].GetPPAPIPluginPath())
+    extra_deps.append(env['TRUSTED_ENV'].GetPPAPIPluginPath())
     chrome_flags.append('--no-sandbox')
   else:
     chrome_flags.append('--enable-nacl')
@@ -1918,10 +1931,10 @@ def PyAutoTester(env, target, test, files=[], nmf_names=[], log_verbosity=2,
   osenv = []
   if not env.Bit('disable_dynamic_plugin_loading'):
     # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
-    sel_ldr = GetSelLdr(env)
+    sel_ldr = env.GetSelLdr()
     osenv.append('NACL_SEL_LDR=%s' % sel_ldr)
     extra_deps.append(sel_ldr)
-    bootstrap, _ = GetBootstrap(env)
+    bootstrap, _ = env.GetBootstrap()
     if bootstrap is not None:
       osenv.append('NACL_SEL_LDR_BOOTSTRAP=%s' % bootstrap)
       extra_deps.append(bootstrap)
@@ -1948,7 +1961,7 @@ def PyAutoTester(env, target, test, files=[], nmf_names=[], log_verbosity=2,
   http_data_dir = ('native_client' +
                    RemovePrefix(env.subst(files_subdir), main_dir))
 
-  command = (GetHeadlessPrefix(env) + pyauto_python +
+  command = (env.GetHeadlessPrefix() + pyauto_python +
              ['-u', test, pyautolib_dir,
               '--http-data-dir=%s' % http_data_dir,
               '--chrome-flags="%s"' %' '.join(chrome_flags)])
@@ -1972,7 +1985,7 @@ pre_base_env.AddMethod(PyAutoTester)
 # is compiled against a specific version of Python, and cannot be imported in
 # any other version.
 def PyAutoTesterIsBroken(env):
-  return (PPAPIBrowserTesterIsBroken(env)
+  return (env.PPAPIBrowserTesterIsBroken()
           or env.Bit('nacl_glibc')
           or sys.version_info[0] != 2
           or sys.version_info[1] != 6)
@@ -1996,7 +2009,7 @@ def DemoSelLdrNacl(env,
                    sel_ldr_flags=['-d'],
                    args=[]):
 
-  sel_ldr = GetSelLdr(env);
+  sel_ldr = env.GetSelLdr()
   if not sel_ldr:
     print 'WARNING: no sel_ldr found. Skipping test %s' % target
     return []
@@ -2038,7 +2051,7 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
   # call that spawns sel_ldr.
   if env.UsingEmulator():
     sel_universal_flags.append('--command_prefix')
-    sel_universal_flags.append(GetEmulator(env))
+    sel_universal_flags.append(env.GetEmulator())
 
   if 'TRUSTED_ENV' not in env:
     return []
@@ -2046,12 +2059,12 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
       '${STAGING_DIR}/${PROGPREFIX}sel_universal${PROGSUFFIX}')
 
   # Point to sel_ldr using an environment variable.
-  sel_ldr = GetSelLdr(env)
+  sel_ldr = env.GetSelLdr()
   if sel_ldr is None:
     print 'WARNING: no sel_ldr found. Skipping test %s' % name
     return []
   kwargs.setdefault('osenv', []).append('NACL_SEL_LDR=' + sel_ldr.abspath)
-  bootstrap, _ = GetBootstrap(env)
+  bootstrap, _ = env.GetBootstrap()
   if bootstrap is not None:
     kwargs['osenv'].append('NACL_SEL_LDR_BOOTSTRAP=%s' % bootstrap.abspath)
 
@@ -2092,10 +2105,12 @@ def MakeVerboseExtraOptions(env, target, log_verbosity, extra):
 
 pre_base_env.AddMethod(MakeVerboseExtraOptions)
 
-def ShouldUseVerboseOptions(extra):
+def ShouldUseVerboseOptions(env, extra):
   """ Heuristic for setting up Verbose NACLLOG options. """
   return ('process_output_single' in extra or
           'log_golden' in extra)
+
+pre_base_env.AddMethod(ShouldUseVerboseOptions)
 
 
 DeclareBit('tests_use_irt', 'Non-browser tests also load the IRT image', False)
@@ -2135,6 +2150,8 @@ def ShouldTranslateToNexe(env, pexe):
   return (
     env.Bit('translate_in_build_step') or not env.Bit('do_not_run_tests'))
 
+pre_base_env.AddMethod(ShouldTranslateToNexe)
+
 
 def CommandTestFileDumpCheck(env,
                              name,
@@ -2151,20 +2168,20 @@ def CommandTestFileDumpCheck(env,
   # ARM objdump though... a TODO(jvoung) for when there is time.
   if env.Bit('built_elsewhere'):
     return []
-  if ShouldTranslateToNexe(env, target):
-    target_obj = GetTranslatedNexe(env, target)
+  if env.ShouldTranslateToNexe(target):
+    target_obj = env.GetTranslatedNexe(target)
   else:
     target_obj = target
-  return CommandTest(env,
-                     name,
-                     ['${PYTHON}',
-                      env.File('${SCONSTRUCT_DIR}/tools/file_check.py'),
-                      '${OBJDUMP}',
-                      objdump_flags,
-                      target_obj,
-                      check_file],
-                     # don't run ${PYTHON} under the emulator.
-                     direct_emulation=False)
+  return env.CommandTest(
+      name,
+      ['${PYTHON}',
+       env.File('${SCONSTRUCT_DIR}/tools/file_check.py'),
+       '${OBJDUMP}',
+       objdump_flags,
+       target_obj,
+       check_file],
+      # don't run ${PYTHON} under the emulator.
+      direct_emulation=False)
 
 pre_base_env.AddMethod(CommandTestFileDumpCheck)
 
@@ -2190,15 +2207,15 @@ def CommandSelLdrTestNacl(env, name, nexe,
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
-  if ShouldTranslateToNexe(env, nexe):
+  if env.ShouldTranslateToNexe(nexe):
     # The nexe is actually a pexe.  Translate it before we run it.
-    nexe = GetTranslatedNexe(env, nexe)
+    nexe = env.GetTranslatedNexe(nexe)
   command = [nexe]
   if args is not None:
     command += args
 
   if loader is None:
-    loader = GetSelLdr(env)
+    loader = env.GetSelLdr()
     if loader is None:
       print 'WARNING: no sel_ldr found. Skipping test %s' % name
       return []
@@ -2216,7 +2233,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
     sel_ldr_flags += ['-cc']
 
   # Skip platform qualification checks on configurations with known issues.
-  if GetEmulator(env) or env.IsRunningUnderValgrind() or env.Bit('asan'):
+  if env.GetEmulator() or env.IsRunningUnderValgrind() or env.Bit('asan'):
     sel_ldr_flags += ['-Q']
 
   # Skip validation if we are using the x86-64 zero-based sandbox.
@@ -2244,15 +2261,15 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if skip_bootstrap:
     loader_cmd = [loader]
   else:
-    loader_cmd = AddBootstrap(env, loader, [])
+    loader_cmd = env.AddBootstrap(loader, [])
 
   command = loader_cmd + sel_ldr_flags + ['--'] + command
 
-  if ShouldUseVerboseOptions(extra):
+  if env.ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)
 
-  node = CommandTest(env, name, command, size, posix_path=True,
-                     wrapper_program_prefix=wrapper_program_prefix, **extra)
+  node = env.CommandTest(name, command, size, posix_path=True,
+                         wrapper_program_prefix=wrapper_program_prefix, **extra)
   if env.Bit('tests_use_irt'):
     env.Alias('irt_tests', node)
   return node
@@ -2376,7 +2393,7 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     script_flags.append('--run_under');
     script_flags.append(run_under);
 
-  emulator = GetEmulator(env)
+  emulator = env.GetEmulator()
   if emulator and direct_emulation:
     command = [emulator] + command
 
@@ -2415,9 +2432,9 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
 
   test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
   command = ['${PYTHON}', test_script] + script_flags + command
-  return AutoDepsCommand(env, name, command,
-                         extra_deps=extra_deps, posix_path=posix_path,
-                         disabled=env.Bit('do_not_run_tests'))
+  return env.AutoDepsCommand(name, command,
+                             extra_deps=extra_deps, posix_path=posix_path,
+                             disabled=env.Bit('do_not_run_tests'))
 
 pre_base_env.AddMethod(CommandTest)
 
@@ -2538,12 +2555,14 @@ def GetPrintableEnvironmentName(env):
   # use file name part of a obj root path as env name
   return env.subst('${TARGET_ROOT}').split('/')[-1]
 
+pre_base_env.AddMethod(GetPrintableEnvironmentName)
+
 
 def CustomCommandPrinter(cmd, targets, source, env):
   # Abuse the print hook to count the commands that are executed
   if env.Bit('target_stats'):
     cmd_name = GetPrintableCommandName(cmd)
-    env_name = GetPrintableEnvironmentName(env)
+    env_name = env.GetPrintableEnvironmentName()
     CMD_COUNTER[cmd_name] = CMD_COUNTER.get(cmd_name, 0) + 1
     ENV_COUNTER[env_name] = ENV_COUNTER.get(env_name, 0) + 1
 
@@ -2551,7 +2570,7 @@ def CustomCommandPrinter(cmd, targets, source, env):
     # Our pretty printer
     if targets:
       cmd_name = GetPrintableCommandName(cmd)
-      env_name = GetPrintableEnvironmentName(env)
+      env_name = env.GetPrintableEnvironmentName()
       sys.stdout.write('[%s] [%s] %s\n' % (cmd_name, env_name,
                                            targets[0].get_path()))
   else:
@@ -3587,7 +3606,7 @@ def NaClSdkLibrary(env, lib_name, *args, **kwargs):
     del kwargs['no_shared_lib']
   n = [env.ComponentLibrary(lib_name, *args, **kwargs)]
   if gen_shared:
-    n.append(NaClSharedLibrary(env, lib_name, *args, **kwargs))
+    n.append(env.NaClSharedLibrary(lib_name, *args, **kwargs))
   return n
 
 nacl_env.AddMethod(NaClSdkLibrary)
@@ -3847,6 +3866,8 @@ def IrtTestAddNodeToTestSuite(env, node, suite_name, node_name=None,
     if node_name is not None:
       node_name += '_irt'
     suite_name = [name + '_irt' for name in suite_name]
+  # NOTE: This needs to be called directly to as we're overriding the
+  #       prior version.
   return AddNodeToTestSuite(env, node, suite_name, node_name,
                             is_broken, is_flaky)
 nacl_irt_test_env.AddMethod(IrtTestAddNodeToTestSuite, 'AddNodeToTestSuite')
