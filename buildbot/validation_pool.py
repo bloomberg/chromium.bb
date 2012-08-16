@@ -966,7 +966,8 @@ class ValidationPool(object):
     # doing this here we can reduce the number of builder cycles.
     end_time = time.time() + cls.MAX_TIMEOUT
     while True:
-      if not dryrun and not cls._IsTreeOpen(max_timeout=cls.MAX_TIMEOUT):
+      time_left = end_time - time.time()
+      if not dryrun and not cls._IsTreeOpen(max_timeout=time_left):
         raise TreeIsClosedException()
 
       # Only master configurations should call this method.
@@ -982,11 +983,10 @@ class ValidationPool(object):
         pool.changes.extend(changes)
         pool.non_manifest_changes.extend(non_manifest_changes)
 
-      time_left = (end_time - time.time()) / 60
       if pool.changes or pool.non_manifest_changes or dryrun or time_left < 0:
         break
 
-      logging.info('Waiting for new CLs (%d minutes left)...', time_left)
+      logging.info('Waiting for new CLs (%d minutes left)...', time_left / 60)
       time.sleep(cls.SLEEP_TIMEOUT)
 
     return pool
