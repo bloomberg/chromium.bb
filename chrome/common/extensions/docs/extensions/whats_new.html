@@ -201,6 +201,7 @@ This page lists the API and manifest changes
 made in recent releases.
 </p>
 <ul>
+  <li> <a href="#21">Google Chrome 21</a> </li>
   <li> <a href="#20">Google Chrome 20</a> </li>
   <li> <a href="#19">Google Chrome 19</a> </li>
   <li> <a href="#18">Google Chrome 18</a> </li>
@@ -217,17 +218,39 @@ made in recent releases.
   <li> <a href="#7">Google Chrome 7</a> </li>
   <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
-<p class="note">
-  <strong>New version of packaged apps:</strong><br>
-  There's a new version of
-  <a href="http://developer.chrome.com/trunk/apps/about_apps.html">packaged apps</a>
-  in the <a href="http://dev.chromium.org/getting-involved/dev-channel?">dev channel</a>.
-</p>
-<p>
-In addition to the changes listed below,
-check out the
-<a href="experimental.html">experimental APIs</a>.
-</p>
+<h2 id="21"> Google Chrome 21 </h2>
+<h4> New Features </h4>
+  <ul>
+    <li>The <a href="manifest.html#sandbox">sandbox manifest entry</a> allows
+      you to define some pages within your extension that are automatically run
+      in a low-privilege sandbox. This sandbox is not bound by the
+      <a href="manifest.html#content_security_policy">content_security_policy</a>.
+    </li><li>The <a href="input.ime.html">IME</a> API allows extensions to implement
+      <a href="http://en.wikipedia.org/wiki/Input_method">input method
+      editors</a> on Chrome OS.
+  </li></ul>
+<h4> Additions to Existing Features </h4>
+  <ul>
+    <li>The <a href="types.html#method-types.ChromeSetting-set">ChromeSetting.set()</a> method now has a
+      <code>regular_only</code> scope.
+    </li><li>The <a href="browsingData.html#type-browsingData.RemovalOptions">browsingData.RemovalOptions</a> now has an <code>originTypes</code>
+      property.
+    </li><li>The <a href="management.html#method-uninstall">management.uninstall()</a> method now has a <code>showConfirmDialog</code> parameter.
+    </li><li>The <a href="contextMenus.html#method-create">contextMenus.create()</a> method now allows you to specify unique
+      IDs for each item. This is intended to be used with the new
+      <a href="contextMenus.html#event-onClicked">contextMenus.onClicked</a> event, to distinguish the clicked item.
+    </li><li>The a href="browserAction.html#method-setIcon"
+      &gt;browserAction.setIcon() and
+      <a href="pageAction.html#method-setIcon">pageAction.setIcon()</a> methods now accept optional callbacks.
+    </li><li>The <a href="privacy.html#property-websites">privacy.website</a> namespace now has a <code>protectedContentEnabled</code> property.
+    </li><li>The <code>index</code> parameter to the <a href="tabs.html#method-move">tabs.move()</a> method now accepts <code>-1</code> to indicate
+      that the tab should be placed at the end.
+    </li><li>The <code>windowId</code> parameter to the
+      <a href="tabs.html#method-highlight">tabs.highlight()</a>&lt;
+      method is now optional.
+    </li><li><a href="manifest.html#intents">Web intents</a> can now be used to
+      register content-type viewers.
+  </li></ul>
 <h2 id="20"> Google Chrome 20 </h2>
 <h4> New APIs </h4>
   <ul>
@@ -312,10 +335,6 @@ check out the
       The inspected window API lets you interact with the inspected window.
       The network API lets you retrive information about network requests.
       The panels API lets you add panels and sidebars.
-    </li><li>The <a href="input.ime.html">input method editor API</a>
-      lets you add custom input methods
-      such as complex language characters
-      directly to the system's input device.
     </li><li>The <a href="pageCapture.html">page capture API</a>
       lets you save a tab as MHTML.
     </li><li> The <a href="privacy.html">privacy API</a>
