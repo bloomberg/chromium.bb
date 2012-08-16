@@ -1506,6 +1506,8 @@ bool VaapiH264Decoder::OutputPic(H264Picture* pic) {
   // No longer need to keep POC->surface mapping, since for decoder this POC
   // is finished with. When the client returns this surface via
   // ReusePictureBuffer(), it will be marked back as available for use.
+  DCHECK(!pic->outputted);
+  pic->outputted = true;
   DecodeSurface* dec_surface = UnassignSurfaceFromPoC(pic->pic_order_cnt);
   if (!dec_surface)
     return false;
