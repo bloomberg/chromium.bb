@@ -255,6 +255,47 @@ wl_display_init_shm(struct wl_display *display)
 	return 0;
 }
 
+WL_EXPORT struct wl_buffer *
+wl_shm_buffer_create(struct wl_client *client,
+		     uint32_t id, int32_t width, int32_t height,
+		     int32_t stride, uint32_t format)
+{
+	struct wl_shm_buffer *buffer;
+			     
+	switch (format) {
+	case WL_SHM_FORMAT_ARGB8888:
+	case WL_SHM_FORMAT_XRGB8888:
+		break;
+	default:
+		return NULL;
+	}
+
+	buffer = malloc(sizeof *buffer + stride * height);
+	if (buffer == NULL)
+		return NULL;
+
+	buffer->buffer.width = width;
+	buffer->buffer.height = height;
+	buffer->buffer.busy_count = 0;
+	buffer->format = format;
+	buffer->stride = stride;
+	buffer->offset = 0;
+	buffer->pool = NULL;
+
+	buffer->buffer.resource.object.id = id;
+	buffer->buffer.resource.object.interface = &wl_buffer_interface;
+	buffer->buffer.resource.object.implementation = (void (**)(void))
+		&shm_buffer_interface;
+
+	buffer->buffer.resource.data = buffer;
+	buffer->buffer.resource.client = client;
+	buffer->buffer.resource.destroy = destroy_buffer;
+
+	wl_client_add_resource(client, &buffer->buffer.resource);
+
+	return &buffer->buffer;
+}
+
 WL_EXPORT int
 wl_buffer_is_shm(struct wl_buffer *buffer)
 {
@@ -281,7 +322,10 @@ wl_shm_buffer_get_data(struct wl_buffer *buffer_base)
 	if (!wl_buffer_is_shm(buffer_base))
 		return NULL;
 
-	return buffer->pool->data + buffer->offset;
+	if (buffer->pool)
+		return buffer->pool->data + buffer->offset;
+	else
+		return buffer + 1;
 }
 
 WL_EXPORT uint32_t
