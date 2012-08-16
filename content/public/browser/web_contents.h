@@ -14,6 +14,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_ui.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -45,7 +46,7 @@ class WebContentsView;
 struct RendererPreferences;
 
 // Describes what goes in the main content area of a tab.
-class WebContents : public PageNavigator {
+class WebContents : public PageNavigator, public IPC::Sender {
  public:
   // |base_web_contents| is used if we want to size the new WebContents's view
   // based on the view of an existing WebContents.  This can be NULL if not
@@ -109,6 +110,10 @@ class WebContents : public PageNavigator {
 
   // Gets the current RenderViewHost for this tab.
   virtual RenderViewHost* GetRenderViewHost() const = 0;
+
+  // Gets the current RenderViewHost's routing id. Returns
+  // MSG_ROUTING_NONE when there is no RenderViewHost.
+  virtual int GetRoutingID() const = 0;
 
   // Returns the currently active RenderWidgetHostView. This may change over
   // time and can be NULL (during setup and teardown).

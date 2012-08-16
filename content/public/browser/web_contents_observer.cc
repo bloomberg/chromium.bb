@@ -42,19 +42,19 @@ bool WebContentsObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool WebContentsObserver::Send(IPC::Message* message) {
-  if (!web_contents_ || !web_contents_->GetRenderViewHost()) {
+  if (!web_contents_) {
     delete message;
     return false;
   }
 
-  return web_contents_->GetRenderViewHost()->Send(message);
+  return web_contents_->Send(message);
 }
 
 int WebContentsObserver::routing_id() const {
-  if (!web_contents_ || !web_contents_->GetRenderViewHost())
+  if (!web_contents_)
     return MSG_ROUTING_NONE;
 
-  return web_contents_->GetRenderViewHost()->GetRoutingID();
+  return web_contents_->GetRoutingID();
 }
 
 void WebContentsObserver::WebContentsImplDestroyed() {

@@ -751,6 +751,13 @@ RenderViewHost* WebContentsImpl::GetRenderViewHost() const {
   return render_manager_.current_host();
 }
 
+int WebContentsImpl::GetRoutingID() const {
+  if (!GetRenderViewHost())
+    return MSG_ROUTING_NONE;
+
+  return GetRenderViewHost()->GetRoutingID();
+}
+
 RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() const {
   return render_manager_.GetRenderWidgetHostView();
 }
@@ -1449,6 +1456,15 @@ WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   return new_contents;
 }
 
+bool WebContentsImpl::Send(IPC::Message* message) {
+  if (!GetRenderViewHost()) {
+    delete message;
+    return false;
+  }
+
+  return GetRenderViewHost()->Send(message);
+}
+
 bool WebContentsImpl::NavigateToPendingEntry(
     NavigationController::ReloadType reload_type) {
   return NavigateToEntry(
@@ -1559,9 +1575,9 @@ void WebContentsImpl::SetHistoryLengthAndPrune(
     NOTREACHED();
     return;
   }
-  rvh->Send(new ViewMsg_SetHistoryLengthAndPrune(rvh->GetRoutingID(),
-                                                 history_length,
-                                                 minimum_page_id));
+  Send(new ViewMsg_SetHistoryLengthAndPrune(GetRoutingID(),
+                                            history_length,
+                                            minimum_page_id));
 }
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
@@ -1646,14 +1662,12 @@ bool WebContentsImpl::WillNotifyDisconnection() const {
 
 void WebContentsImpl::SetOverrideEncoding(const std::string& encoding) {
   SetEncoding(encoding);
-  GetRenderViewHostImpl()->Send(new ViewMsg_SetPageEncoding(
-      GetRenderViewHost()->GetRoutingID(), encoding));
+  Send(new ViewMsg_SetPageEncoding(GetRoutingID(), encoding));
 }
 
 void WebContentsImpl::ResetOverrideEncoding() {
   encoding_.clear();
-  GetRenderViewHostImpl()->Send(new ViewMsg_ResetPageEncodingToDefault(
-      GetRenderViewHost()->GetRoutingID()));
+  Send(new ViewMsg_ResetPageEncodingToDefault(GetRoutingID()));
 }
 
 content::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
@@ -1835,13 +1849,12 @@ bool WebContentsImpl::HasOpener() const {
 
 void WebContentsImpl::DidChooseColorInColorChooser(int color_chooser_id,
                                                    SkColor color) {
-  GetRenderViewHost()->Send(new ViewMsg_DidChooseColorResponse(
-      GetRenderViewHost()->GetRoutingID(), color_chooser_id, color));
+  Send(new ViewMsg_DidChooseColorResponse(
+      GetRoutingID(), color_chooser_id, color));
 }
 
 void WebContentsImpl::DidEndColorChooser(int color_chooser_id) {
-  GetRenderViewHost()->Send(new ViewMsg_DidEndColorChooser(
-      GetRenderViewHost()->GetRoutingID(), color_chooser_id));
+  Send(new ViewMsg_DidEndColorChooser(GetRoutingID(), color_chooser_id));
   if (delegate_)
     delegate_->DidEndColorChooser();
   color_chooser_ = NULL;
@@ -2452,7 +2465,7 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
 
   if (entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
-    static_cast<RenderViewHostImpl*>(render_view_host)->Send(
+    render_view_host->Send(
         new ViewMsg_EnableViewSourceMode(render_view_host->GetRoutingID()));
   }
 
@@ -2846,8 +2859,7 @@ void WebContentsImpl::RouteMessageEvent(
   // In most cases, we receive this from a swapped out RenderViewHost.
   // It is possible to receive it from one that has just been swapped in,
   // in which case we might as well deliver the message anyway.
-  GetRenderViewHost()->Send(new ViewMsg_PostMessageEvent(
-      GetRenderViewHost()->GetRoutingID(), new_params));
+  Send(new ViewMsg_PostMessageEvent(GetRoutingID(), new_params));
 }
 
 void WebContentsImpl::RunJavaScriptMessage(

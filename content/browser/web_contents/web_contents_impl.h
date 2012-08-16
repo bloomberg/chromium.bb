@@ -172,6 +172,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual int GetRoutingID() const OVERRIDE;
   virtual content::RenderWidgetHostView*
       GetRenderWidgetHostView() const OVERRIDE;
   virtual content::WebContentsView* GetView() const OVERRIDE;
@@ -263,6 +264,9 @@ class CONTENT_EXPORT WebContentsImpl
   // Implementation of PageNavigator.
   virtual content::WebContents* OpenURL(
       const content::OpenURLParams& params) OVERRIDE;
+
+  // Implementation of IPC::Sender.
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
 
