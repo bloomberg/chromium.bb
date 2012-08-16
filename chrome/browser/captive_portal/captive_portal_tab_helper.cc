@@ -14,9 +14,13 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
 namespace captive_portal {
@@ -34,13 +38,16 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
       login_detector_(new CaptivePortalLoginDetector(profile)),
       profile_(profile),
       pending_error_code_(net::OK),
-      provisional_main_frame_id_(-1) {
+      provisional_render_view_host_(NULL) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
                  content::Source<Profile>(profile_));
   registrar_.Add(this,
                  content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                  content::Source<content::WebContents>(web_contents));
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
+                 content::NotificationService::AllSources());
 }
 
 CaptivePortalTabHelper::~CaptivePortalTabHelper() {
@@ -58,18 +65,17 @@ void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
   if (!is_main_frame)
     return;
 
-  provisional_main_frame_id_ = frame_id;
+  if (provisional_render_view_host_) {
+    // If loading an error page for a previous failure, treat this as part of
+    // the previous load.  Link Doctor pages act like two error page loads in a
+    // row.  The second time, provisional_render_view_host_ will be NULL.
+    if (is_error_page && provisional_render_view_host_ == render_view_host)
+      return;
+    // Otherwise, abort the old load.
+    OnLoadAborted();
+  }
 
-  // If loading an error page for a previous failure, treat this as part of
-  // the previous load.  The second check is needed because Link Doctor pages
-  // result in two error page provisional loads in a row.  Currently, the
-  // second load is treated as a normal load, rather than reusing old error
-  // codes.
-  if (is_error_page && pending_error_code_ != net::OK)
-    return;
-
-  // Makes the second load for Link Doctor pages act as a normal load.
-  // TODO(mmenke):  Figure out if this affects any other cases.
+  provisional_render_view_host_ = render_view_host;
   pending_error_code_ = net::OK;
 
   tab_reloader_->OnLoadStart(validated_url.SchemeIsSecure());
@@ -87,9 +93,20 @@ void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
   if (!is_main_frame)
     return;
 
-  provisional_main_frame_id_ = -1;
+  if (provisional_render_view_host_ == render_view_host) {
+    tab_reloader_->OnLoadCommitted(pending_error_code_);
+  } else {
+    // This may happen if the active RenderView commits a page before a cross
+    // process navigation cancels the old load.  In this case, the commit of the
+    // old navigation will cancel the newer one.
+    OnLoadAborted();
 
-  tab_reloader_->OnLoadCommitted(pending_error_code_);
+    // Send information about the new load.
+    tab_reloader_->OnLoadStart(url.SchemeIsSecure());
+    tab_reloader_->OnLoadCommitted(net::OK);
+  }
+
+  provisional_render_view_host_ = NULL;
   pending_error_code_ = net::OK;
 }
 
@@ -102,19 +119,14 @@ void CaptivePortalTabHelper::DidFailProvisionalLoad(
     content::RenderViewHost* render_view_host) {
   DCHECK(CalledOnValidThread());
 
-  // Ignore subframes.
-  if (!is_main_frame)
+  // Ignore subframes and unexpected RenderViewHosts.
+  if (!is_main_frame || render_view_host != provisional_render_view_host_)
     return;
-
-  provisional_main_frame_id_ = -1;
 
   // Aborts generally aren't followed by loading an error page, so go ahead and
   // reset the state now, to prevent any captive portal checks from triggering.
   if (error_code == net::ERR_ABORTED) {
-    // May have been aborting the load of an error page.
-    pending_error_code_ = net::OK;
-
-    tab_reloader_->OnAbort();
+    OnLoadAborted();
     return;
   }
 
@@ -133,33 +145,54 @@ void CaptivePortalTabHelper::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(CalledOnValidThread());
-  if (type == content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT) {
-    DCHECK_EQ(web_contents(),
-              content::Source<content::WebContents>(source).ptr());
+  switch (type) {
+    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
+      DCHECK_EQ(web_contents(),
+                content::Source<content::WebContents>(source).ptr());
 
-    const content::ResourceRedirectDetails* redirect_details =
-        content::Details<content::ResourceRedirectDetails>(details).ptr();
+      const content::ResourceRedirectDetails* redirect_details =
+          content::Details<content::ResourceRedirectDetails>(details).ptr();
 
-    if (redirect_details->resource_type == ResourceType::MAIN_FRAME)
-      OnRedirect(redirect_details->frame_id, redirect_details->new_url);
-  } else if (type == chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT) {
-    DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
+      OnRedirect(redirect_details->origin_child_id,
+                 redirect_details->resource_type,
+                 redirect_details->new_url);
+      break;
+    }
+    case chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT: {
+      DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
 
-    const CaptivePortalService::Results* results =
-        content::Details<CaptivePortalService::Results>(details).ptr();
+      const CaptivePortalService::Results* results =
+          content::Details<CaptivePortalService::Results>(details).ptr();
 
-    OnCaptivePortalResults(results->previous_result, results->result);
-  } else {
-    NOTREACHED();
+      OnCaptivePortalResults(results->previous_result, results->result);
+      break;
+    }
+    case content::NOTIFICATION_RENDER_VIEW_HOST_DELETED: {
+      content::RenderViewHost* render_view_host =
+          content::Source<content::RenderViewHost>(source).ptr();
+      // This can happen when a cross-process navigation is aborted, either by
+      // pressing stop or by starting a new cross-process navigation that can't
+      // re-use |provisional_render_view_host_|.  May also happen on a crash.
+      if (render_view_host == provisional_render_view_host_)
+        OnLoadAborted();
+      break;
+    }
+    default:
+      NOTREACHED();
   }
 }
 
-void CaptivePortalTabHelper::OnRedirect(int64 frame_id, const GURL& new_url) {
-  // If the main frame's not currently loading, or the redirect is for some
-  // other frame, ignore the redirect.  It's unclear if |frame_id| can ever be
-  // -1 ("invalid/unknown"), but best to be careful.
-  if (provisional_main_frame_id_ == -1 ||
-      provisional_main_frame_id_ != frame_id) {
+bool CaptivePortalTabHelper::IsLoginTab() const {
+  return login_detector_->is_login_tab();
+}
+
+void CaptivePortalTabHelper::OnRedirect(int child_id,
+                                        ResourceType::Type resource_type,
+                                        const GURL& new_url) {
+  // Only main frame redirects for the provisional RenderViewHost matter.
+  if (resource_type != ResourceType::MAIN_FRAME ||
+      !provisional_render_view_host_ ||
+      provisional_render_view_host_->GetProcess()->GetID() != child_id) {
     return;
   }
 
@@ -172,8 +205,13 @@ void CaptivePortalTabHelper::OnCaptivePortalResults(Result previous_result,
   login_detector_->OnCaptivePortalResults(previous_result, result);
 }
 
-bool CaptivePortalTabHelper::IsLoginTab() const {
-  return login_detector_->is_login_tab();
+void CaptivePortalTabHelper::OnLoadAborted() {
+  // No further messages for the cancelled navigation will occur.
+  provisional_render_view_host_ = NULL;
+  // May have been aborting the load of an error page.
+  pending_error_code_ = net::OK;
+
+  tab_reloader_->OnAbort();
 }
 
 void CaptivePortalTabHelper::SetIsLoginTab() {

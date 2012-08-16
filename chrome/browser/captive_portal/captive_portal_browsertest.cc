@@ -88,6 +88,11 @@ const char* const kMockCaptivePortalTestUrl =
 const char* const kMockHttpsUrl =
     "https://mock.captive.portal.long.timeout/title2.html";
 
+// Same as above, but different domain, so can be used to trigger cross-site
+// navigations.
+const char* const kMockHttpsUrl2 =
+    "https://mock.captive.portal.long.timeout2/title2.html";
+
 // Same as kMockHttpsUrl, except the timeout happens instantly.
 const char* const kMockHttpsQuickTimeoutUrl =
     "https://mock.captive.portal.quick.timeout/title2.html";
@@ -377,6 +382,8 @@ void URLRequestMockCaptivePortalJobFactory::AddUrlHandlersOnIOThread() {
                         URLRequestMockCaptivePortalJobFactory::Factory);
   filter->AddUrlHandler(GURL(kMockHttpsUrl),
                         URLRequestMockCaptivePortalJobFactory::Factory);
+  filter->AddUrlHandler(GURL(kMockHttpsUrl2),
+                        URLRequestMockCaptivePortalJobFactory::Factory);
   filter->AddUrlHandler(GURL(kMockHttpsQuickTimeoutUrl),
                         URLRequestMockCaptivePortalJobFactory::Factory);
 }
@@ -398,7 +405,8 @@ net::URLRequestJob* URLRequestMockCaptivePortalJobFactory::Factory(
   FilePath root_http;
   PathService::Get(chrome::DIR_TEST_DATA, &root_http);
 
-  if (request->url() == GURL(kMockHttpsUrl)) {
+  if (request->url() == GURL(kMockHttpsUrl) ||
+      request->url() == GURL(kMockHttpsUrl2)) {
     if (behind_captive_portal_)
       return new URLRequestTimeoutOnDemandJob(request);
     // Once logged in to the portal, HTTPS requests return the page that was
@@ -875,6 +883,24 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // them to finish displaying their error pages.  The login tab should be the
   // active tab.  There should be no timed out tabs when this is called.
   void FailLoadsWithoutLogin(Browser* browser, int num_loading_tabs);
+
+  // Navigates |browser|'s active tab to |starting_url| while not behind a
+  // captive portal.  Then navigates to |interrupted_url|, which should create
+  // a URLRequestTimeoutOnDemandJob, which is then abandoned.  The load should
+  // trigger a captive portal check, which finds a captive portal and opens a
+  // tab.
+  //
+  // Then the navigation is interrupted by a navigation to |timeout_url|, which
+  // should trigger a captive portal check, and finally the test simulates
+  // logging in.
+  //
+  // The purpose of this test is to make sure the TabHelper triggers a captive
+  // portal check when a load is interrupted by another load, particularly in
+  // the case of cross-process navigations.
+  void RunNavigateLoadingTabToTimeoutTest(Browser* browser,
+                                          const GURL& starting_url,
+                                          const GURL& interrupted_url,
+                                          const GURL& timeout_url);
 
   // Sets the timeout used by a CaptivePortalTabReloader on slow SSL loads
   // before a captive portal check.
@@ -1405,6 +1431,68 @@ void CaptivePortalBrowserTest::FailLoadsWithoutLogin(Browser* browser,
                    chrome::GetWebContentsAt(browser, login_tab)));
 }
 
+void CaptivePortalBrowserTest::RunNavigateLoadingTabToTimeoutTest(
+    Browser* browser,
+    const GURL& starting_url,
+    const GURL& hanging_url,
+    const GURL& timeout_url) {
+  // Temporarily disable the captive portal and navigate to the starting
+  // URL, which may be a URL that will hang when behind a captive portal.
+  URLRequestMockCaptivePortalJobFactory::SetBehindCaptivePortal(false);
+  NavigateToPageExpectNoTest(browser, starting_url, 1);
+  URLRequestMockCaptivePortalJobFactory::SetBehindCaptivePortal(true);
+
+  // Go to the first hanging url.
+  SlowLoadBehindCaptivePortal(browser, true, hanging_url);
+
+  // Abandon the request.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+  URLRequestTimeoutOnDemandJob::AbandonJobs(1);
+
+  CaptivePortalTabReloader* tab_reloader =
+      GetTabReloader(chrome::GetTabContentsAt(browser, 0));
+  ASSERT_TRUE(tab_reloader);
+
+  // A non-zero delay makes it more likely that CaptivePortalTabHelper will
+  // be confused by events relating to canceling the old navigation.
+  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromSeconds(2));
+  CaptivePortalObserver portal_observer(browser->profile());
+
+  // Navigate the error tab to another slow loading page.  Can't have
+  // ui_test_utils do the navigation because it will wait for loading tabs to
+  // stop loading before navigating.
+  //
+  // This may result in either 0 or 1 DidStopLoading events.  If there is one,
+  // it must happen before the CaptivePortalService sends out its test request,
+  // so waiting for PortalObserver to see that request prevents it from
+  // confusing the MultiNavigationObservers used later.
+  chrome::ActivateTabAt(browser, 0, true);
+  browser->OpenURL(content::OpenURLParams(timeout_url,
+                                          content::Referrer(),
+                                          CURRENT_TAB,
+                                          content::PAGE_TRANSITION_TYPED,
+                                          false));
+  portal_observer.WaitForResults(1);
+  EXPECT_FALSE(CheckPending(browser));
+  EXPECT_EQ(1, NumLoadingTabs());
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
+            GetStateOfTabReloaderAt(browser, 0));
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
+            GetStateOfTabReloader(chrome::GetTabContentsAt(browser, 1)));
+  ASSERT_TRUE(IsLoginTab(chrome::GetTabContentsAt(browser, 1)));
+
+  // Need to make sure the request has been issued before logging in.
+  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
+
+  // Simulate logging in.
+  chrome::ActivateTabAt(browser, 1, true);
+  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
+  Login(browser, 1, 0);
+
+  // Timeout occurs, and page is automatically reloaded.
+  FailLoadsAfterLogin(browser, 1);
+}
+
 void CaptivePortalBrowserTest::SetSlowSSLLoadTime(
     CaptivePortalTabReloader* tab_reloader,
     base::TimeDelta slow_ssl_load_time) {
@@ -1685,54 +1773,38 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, NavigateBrokenTab) {
   Login(browser(), 0, 0);
 }
 
-// Navigates a broken, but still loading, tab to another such page before
-// logging in.
+// Checks that captive portal detection triggers correctly when a same-site
+// navigation is cancelled by a navigation to the same site.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
-                       NavigateBrokenToTimeoutTabWhileLoading) {
-  // Go to the error page.
-  SlowLoadBehindCaptivePortal(browser(), true);
+                       NavigateLoadingTabToTimeoutSingleSite) {
+  RunNavigateLoadingTabToTimeoutTest(
+      browser(),
+      GURL(kMockHttpsUrl),
+      GURL(kMockHttpsUrl),
+      GURL(kMockHttpsUrl));
+}
 
-  // Abandon the request.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
-  URLRequestTimeoutOnDemandJob::AbandonJobs(1);
+// Checks that captive portal detection triggers correctly when a same-site
+// navigation is cancelled by a navigation to another site.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
+                       NavigateLoadingTabToTimeoutTwoSites) {
+  RunNavigateLoadingTabToTimeoutTest(
+      browser(),
+      GURL(kMockHttpsUrl),
+      GURL(kMockHttpsUrl),
+      GURL(kMockHttpsUrl2));
+}
 
-  CaptivePortalTabReloader* tab_reloader =
-      GetTabReloader(chrome::GetTabContentsAt(browser(), 0));
-  ASSERT_TRUE(tab_reloader);
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta());
-
-  CaptivePortalObserver portal_observer(browser()->profile());
-  MultiNavigationObserver navigation_observer;
-
-  // Navigate the error tab to another slow loading page.  Can't have
-  // ui_test_utils do the navigation because it will wait for loading tabs to
-  // stop loading before navigating.
-  chrome::ActivateTabAt(browser(), 0, true);
-  browser()->OpenURL(content::OpenURLParams(GURL(kMockHttpsUrl),
-                                            content::Referrer(),
-                                            CURRENT_TAB,
-                                            content::PAGE_TRANSITION_TYPED,
-                                            false));
-  navigation_observer.WaitForNavigations(1);
-  portal_observer.WaitForResults(1);
-  EXPECT_FALSE(CheckPending(browser()));
-  EXPECT_EQ(1, NumLoadingTabs());
-  EXPECT_EQ(CaptivePortalTabReloader::STATE_BROKEN_BY_PORTAL,
-            GetStateOfTabReloaderAt(browser(), 0));
-  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
-            GetStateOfTabReloader(chrome::GetTabContentsAt(browser(), 1)));
-  ASSERT_TRUE(IsLoginTab(chrome::GetTabContentsAt(browser(), 1)));
-
-  // Need to make sure the request has been issued before logging in.
-  URLRequestTimeoutOnDemandJob::WaitForJobs(1);
-
-  // Simulate logging in.
-  chrome::ActivateTabAt(browser(), 1, true);
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
-  Login(browser(), 1, 0);
-
-  // Timeout occurs, and page is automatically reloaded.
-  FailLoadsAfterLogin(browser(), 1);
+// Checks that captive portal detection triggers correctly when a cross-site
+// navigation is cancelled by a navigation to yet another site.
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
+                       NavigateLoadingTabToTimeoutThreeSites) {
+  RunNavigateLoadingTabToTimeoutTest(
+      browser(),
+      URLRequestMockHTTPJob::GetMockUrl(
+          FilePath(FILE_PATH_LITERAL("title.html"))),
+      GURL(kMockHttpsUrl),
+      GURL(kMockHttpsUrl2));
 }
 
 // Checks that navigating a timed out tab back clears its state.
