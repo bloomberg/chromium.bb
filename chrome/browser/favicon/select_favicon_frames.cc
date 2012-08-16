@@ -82,7 +82,7 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
     for (size_t i = 0; i < bitmaps.size(); ++i) {
       if (bitmaps[i].width() == source_size &&
           bitmaps[i].height() == source_size) {
-        *score = 0.2;
+        *score = 0.2f;
         return PadWithBorder(bitmaps[i], desired_size, source_size);
       }
     }
@@ -90,7 +90,7 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
     for (size_t i = 0; i < bitmaps.size(); ++i) {
       if (bitmaps[i].width() * scale == source_size &&
           bitmaps[i].height() * scale == source_size) {
-        *score = 0.15;
+        *score = 0.15f;
         return PadWithBorder(bitmaps[i], desired_size, source_size);
       }
     }
@@ -110,7 +110,7 @@ SkBitmap SelectCandidate(const std::vector<SkBitmap>& bitmaps,
       min_area = area;
     }
   }
-  *score = 0.1;
+  *score = 0.1f;
   //    c) Else, from the biggest smaller variant.
   if (candidate == -1) {
     *score = 0;
@@ -144,7 +144,7 @@ gfx::ImageSkia SelectFaviconFrames(
     multi_image.AddRepresentation(
         gfx::ImageSkiaRep(bitmaps[max_index], ui::SCALE_FACTOR_100P));
     if (match_score)
-      *match_score = 0.8;
+      *match_score = 0.8f;
     return multi_image;
   }
 
