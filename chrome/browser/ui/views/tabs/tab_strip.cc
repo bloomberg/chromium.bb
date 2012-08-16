@@ -1414,7 +1414,7 @@ ui::GestureStatus TabStrip::OnGestureEvent(
   switch (event.type()) {
     case ui::ET_GESTURE_END:
       EndDrag(false);
-      if (adjust_layout_ && ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+      if (adjust_layout_) {
         SetLayoutType(TAB_STRIP_LAYOUT_STACKED, true);
         controller_->LayoutTypeMaybeChanged();
       }
@@ -1799,8 +1799,13 @@ void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
 
 void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
                                               const ui::MouseEvent& event) {
-  if (!adjust_layout_ || ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
+  if (!adjust_layout_)
     return;
+
+#if !defined(OS_CHROMEOS)
+  if (ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
+    return;
+#endif
 
   // The following code attempts to switch to TAB_STRIP_LAYOUT_SHRINK when the
   // mouse is used, and TAB_STRIP_LAYOUT_STACKED when a touch device is

@@ -282,7 +282,9 @@ class DetachToBrowserTabDragControllerTest
 };
 
 // Creates a browser with two tabs, drags the second to the first.
-IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
+// TODO(sky): this won't work with touch as it requires a long press.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       DISABLED_DragInSameWindow) {
   AddTabAndResetBrowser(browser());
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -732,6 +734,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Create another browser.
   Browser* browser2 = CreateAnotherWindowBrowserAndRelayout();
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
+
+  // Move the tabstrip down enough so that we can detach.
+  gfx::Rect bounds(browser2->window()->GetBounds());
+  bounds.Offset(0, 100);
+  browser2->window()->SetBounds(bounds);
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.

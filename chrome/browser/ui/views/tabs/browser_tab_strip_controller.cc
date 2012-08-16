@@ -59,8 +59,11 @@ TabStripLayoutType DetermineTabStripLayout(PrefService* prefs,
           switches::kEnableStackedTabStrip)) {
     return TAB_STRIP_LAYOUT_STACKED;
   }
+  // For chromeos always allow entering stacked mode.
+#if !defined(OS_CHROMEOS)
   if (ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
     return TAB_STRIP_LAYOUT_SHRINK;
+#endif
   *adjust_layout = true;
   switch (prefs->GetInteger(prefs::kTabStripLayoutType)) {
     case TAB_STRIP_LAYOUT_STACKED:
