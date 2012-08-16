@@ -79,12 +79,16 @@ WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
 
 }
 
-ui::ScaleFactor ParseScaleFactor(const base::StringPiece& identifier) {
+bool ParseScaleFactor(const base::StringPiece& identifier,
+                      ui::ScaleFactor* scale_factor) {
+  *scale_factor = ui::SCALE_FACTOR_NONE;
   for (size_t i = 0; i < arraysize(kScaleFactorMap); i++) {
-    if (identifier == kScaleFactorMap[i].name)
-      return kScaleFactorMap[i].scale_factor;
+    if (identifier == kScaleFactorMap[i].name) {
+      *scale_factor = kScaleFactorMap[i].scale_factor;
+      return true;
+    }
   }
-  return ui::SCALE_FACTOR_NONE;
+  return false;
 }
 
 void ParsePathAndScale(const GURL& url,
@@ -100,13 +104,16 @@ void ParsePathAndScale(const GURL& url,
   std::size_t pos = path->rfind('@');
   if (pos != std::string::npos) {
     base::StringPiece stripped_path(*path);
-    if (scale_factor) {
-      *scale_factor = ParseScaleFactor(stripped_path.substr(
-          pos + 1, stripped_path.length() - pos - 1));
+    ui::ScaleFactor factor;
+
+    if (ParseScaleFactor(stripped_path.substr(
+            pos + 1, stripped_path.length() - pos - 1), &factor)) {
+      // Strip scale factor specification from path.
+      stripped_path.remove_suffix(stripped_path.length() - pos);
+      stripped_path.CopyToString(path);
     }
-    // Strip scale factor specification from path.
-    stripped_path.remove_suffix(stripped_path.length() - pos);
-    stripped_path.CopyToString(path);
+    if (scale_factor)
+      *scale_factor = factor;
   }
 }
 

@@ -38,9 +38,12 @@ std::string GetImageDataUrlFromResource(int resource_id);
 WindowOpenDisposition GetDispositionFromClick(const ListValue* args,
                                               int start_index);
 
-// Given a scale factor such as "1x" or "2x" returns the ScaleFactor enum
-// value for this scale factor.
-ui::ScaleFactor ParseScaleFactor(const base::StringPiece& identifier);
+// Given a scale factor such as "1x" or "2x", sets |scale_factor| to the
+// ScaleFactor enum value for this scale factor. If the scale factor could not
+// be determined correctly from the string, then |scale_factor| is set to
+// SCALE_FACTOR_NONE, and false is returned.
+bool ParseScaleFactor(const base::StringPiece& identifier,
+                      ui::ScaleFactor* scale_factor);
 
 // Parses a URL containing some path @{scale}x. If it does not contain a scale
 // factor then the default scale factor is returned.

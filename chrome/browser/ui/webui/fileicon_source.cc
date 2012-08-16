@@ -82,7 +82,7 @@ void ParseQueryParams(const std::string& query,
     if (icon_size && iter->first == kIconSize)
       *icon_size = SizeStringToIconSize(iter->second);
     else if (scale_factor && iter->first == kScaleFactor)
-      *scale_factor = web_ui_util::ParseScaleFactor(iter->second);
+      web_ui_util::ParseScaleFactor(iter->second, scale_factor);
   }
 }
 
