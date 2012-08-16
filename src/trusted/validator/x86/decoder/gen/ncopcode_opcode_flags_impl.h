@@ -53,6 +53,7 @@ static const char* const g_NaClIFlagName[NaClIFlagEnumSize + 1] = {
   "Opcode64Only",
   "JumpInstruction",
   "ConditionalJump",
+  "BranchHints",
   "PartialInstruction",
   "NaClIFlagEnumSize"
 };

@@ -270,7 +270,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
 000000000040046a: 74 02                                        jz 0x40046e
-  74                          386 OpcodeHasImmed OperandSize_b ConditionalJump
+  74                          386 OpcodeHasImmed OperandSize_b ConditionalJump BranchHints
     Jz {%rip}, $Jb
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
@@ -3004,18 +3004,21 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000001000: 40 e0 00                                     loopne 0x1003
-  e0                          386 OpcodeHasImmed OperandSize_b ConditionalJump
-    Loopne {%rip}, $Jb
+  e0                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump
+    Loopne {%rip}, {%rcx}, $Jb
       RegRIP                  OpSet OpImplicit
+      RegRCX                  OpUse OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
-NaClExpVector[4] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { ExprRegister[0] , %rcx, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x1003, ExprUsed | ExprSize8 | ExprSignedHex | ExprJumpTarget },
 };
 0000000000000000: 40 e3 00                                     jrcxz 0x3
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump BranchHints
     Jrcxz {%rip}, {%rcx}, $Jb
       RegRIP                  OpSet OpImplicit
       RegRCX                  OpUse OpImplicit
@@ -3029,7 +3032,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x3, ExprUsed | ExprSize8 | ExprSignedHex | ExprJumpTarget },
 };
 0000000000000000: 67 40 e3 00                                  jecxz 0x4
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump BranchHints
     Jecxz {%rip}, {%ecx}, $Jb
       RegRIP                  OpSet OpImplicit
       RegECX                  OpUse OpImplicit

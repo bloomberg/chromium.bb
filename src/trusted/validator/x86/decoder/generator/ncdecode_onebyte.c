@@ -20,9 +20,13 @@
 #endif
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/trusted/validator/x86/decoder/generator/ncdecode_forms.h"
 #include "native_client/src/trusted/validator/x86/decoder/generator/ncdecode_st.h"
 #include "native_client/src/trusted/validator/x86/decoder/generator/ncdecode_tablegen.h"
+
+/* Defines the buffer size to use to generate strings */
+#define BUFFER_SIZE 256
 
 /* Define a symbol table size that can hold a small number of
  * symbols (i.e. limit to at most 5 definitions).
@@ -183,37 +187,109 @@ static void NaClDefJump8Opcode(uint8_t opcode, NaClMnemonic name,
   NaClDefine("@opcode: @name {%@ip}, $Jb", NACLi_386, st, Jump);
 }
 
-/* Generates a jXXz instruction, based on the use of register XX
- * (XX in cx, ecx, rcx).
+/* Defines a conditional jump instruction that is dependent on address size. */
+typedef struct {
+  /* The platform(s) the instruction is defined on. */
+  const NaClTargetPlatform platform;
+  /* The register XX the instruction conditionalizes the jump on. */
+  const char* reg;
+  /* The address size held in register XX. */
+  const NaClIFlag addr_size;
+  /* Flags to add to register XX. */
+  const NaClOpFlags xx_flags;
+  /* The mnemonic name of the instruction. */
+  const char* name;
+} CondJumpInst;
+
+/* Generates conditiona jump instructions, based on the set of specified
+ * instructions.
  *
  * Parameters are:
- *   platform - Which platform(s) the jump instruction is defined on.
+ *   context_st - Symbol table defining other values if needed.
+ *   opcode - The opcode value that defines the address jump instruction.
+ *   address_insts - The address jump instructions to define.
+ */
+static void NaClDefCondJump(struct NaClSymbolTable* context_st,
+                            uint8_t opcode,
+                            CondJumpInst address_insts[],
+                            size_t address_insts_size) {
+  size_t i;
+  int num_32_insts = 0;
+  int num_64_insts = 0;
+  char buffer[BUFFER_SIZE];
+  struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
+  SNPRINTF(buffer, BUFFER_SIZE, "%02x", opcode);
+
+  /* Count the number of forms for each type of instruction, and record. */
+  for (i = 0; i < address_insts_size; i++) {
+    switch (address_insts[i].platform) {
+      case T32:
+        num_32_insts++;
+        break;
+      case T64:
+        num_64_insts++;
+        break;
+      case Tall:
+        num_32_insts++;
+        num_64_insts++;
+        break;
+    }
+  }
+  NaClDefPrefixInstChoices_32_64(NoPrefix, opcode, num_32_insts, num_64_insts);
+
+  /* Generate each form of the instruction. */
+  for (i = 0; i < address_insts_size; ++i) {
+    NaClSymbolTablePutText("opcode", buffer, st);
+    NaClSymbolTablePutText("name", address_insts[i].name, st);
+    NaClSymbolTablePutText("reg",  address_insts[i].reg, st);
+    NaClBegDefPlatform(address_insts[i].platform,
+                       "@opcode: @name {%@ip}, {%@reg}, $Jb",
+                       NACLi_386, st);
+    NaClAddIFlags(NACL_IFLAG(address_insts[i].addr_size));
+    NaClAddOpFlags(1, address_insts[i].xx_flags);
+    NaClEndDef(Jump);
+  }
+}
+
+/* Generates a jXXz instruction, based on the use of register XX
+ * (XX in cx, ecx, rcx).
  */
 static void NaClDefJumpRegZero(struct NaClSymbolTable* context_st) {
-  struct {
-    /* The platform(s) the instruction is defined on. */
-    const NaClTargetPlatform platform;
-    /* The register XX the instruction conditionalizes the jump on. */
-    const char* reg;
-    /* The address size held in register XX. */
-    const NaClIFlag addr_size;
-    /* The mnemonic name of the instruction. */
-    const char* name;
-  } inst[3] = {
-    { T32,  "cx",  AddressSize_w, "Jcxz" },
-    { Tall, "ecx", AddressSize_v, "Jecxz" },
-    { T64,  "rcx", AddressSize_o, "Jrcxz" }
+  CondJumpInst inst[3] = {
+    { T32,  "cx",  AddressSize_w, NACL_EMPTY_OPFLAGS, "Jcxz" },
+    { Tall, "ecx", AddressSize_v, NACL_EMPTY_OPFLAGS, "Jecxz" },
+    { T64,  "rcx", AddressSize_o, NACL_EMPTY_OPFLAGS, "Jrcxz" }
   };
-  int i;
-  struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
-  NaClDefPrefixInstChoices(NoPrefix, 0xe3, 2);
-  for (i = 0; i < 3; ++i) {
-    NaClSymbolTablePutText("name", inst[i].name, st);
-    NaClSymbolTablePutText("reg",  inst[i].reg, st);
-    NaClBegDefPlatform(inst[i].platform, "e3: @name {%@ip}, {%@reg}, $Jb",
-                       NACLi_386, st);
-    NaClAddIFlags(NACL_IFLAG(inst[i].addr_size));
-    NaClEndDef(Jump);
+  NaClDefCondJump(context_st, 0xe3, inst, NACL_ARRAY_SIZE(inst));
+}
+
+/* Generates the loop, loopne, and loope instructions. */
+static void NaClDefLoop(struct NaClSymbolTable* context_st) {
+  /* The forms each loop instruction can have. */
+  CondJumpInst inst_forms[3] = {
+    { T32,  "cx",  AddressSize_w, NACL_OPFLAG(OpSet), "???" },
+    { Tall, "ecx", AddressSize_v, NACL_OPFLAG(OpSet), "???" },
+    { T64,  "rcx", AddressSize_o, NACL_OPFLAG(OpSet), "???" }
+  };
+  /* The opcode/name of each loop instruction. */
+  struct {
+    uint8_t opcode;
+    const char* name;
+  } loop_inst[3] = {
+    {0xe0, "Loopne"},
+    {0xe1, "Loope"},
+    {0xe2, "Loop"},
+  };
+
+  /* Generate all combinations of the loop instruction. */
+  size_t i;
+  for (i = 0; i < NACL_ARRAY_SIZE(loop_inst); i++) {
+    size_t j;
+    for (j = 0; j < NACL_ARRAY_SIZE(inst_forms); j++) {
+      inst_forms[j].name = loop_inst[i].name;
+    }
+    NaClDefCondJump(context_st, loop_inst[i].opcode,
+                    inst_forms, NACL_ARRAY_SIZE(inst_forms));
   }
 }
 
@@ -484,9 +560,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDef_64("d6: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("d7: Xlat {%al}, {%DS_EBX}", NACLi_386, st, Binary);
   /* Note: 0xd8 through 0xdf is defined in ncdecodeX87.c */
-  NaClDefJump8Opcode(0xe0, InstLoopne, st);
-  NaClDefJump8Opcode(0xe1, InstLoope, st);
-  NaClDefJump8Opcode(0xe2, InstLoop, st);
+  NaClDefLoop(st); /* opcodes e0, e1, and e2 */
   /* 0xe3 - jXXz */
   NaClDefJumpRegZero(st);
   NaClDefine("e4: In %al, $Ib", NACLi_386, st, Move);

@@ -264,7 +264,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
 000000000040046a: 74 02                                        [P] dontcarecondjump %rip (s), 0x40046e (u)
-  74                          386 OpcodeHasImmed OperandSize_b ConditionalJump PartialInstruction
+  74                          386 OpcodeHasImmed OperandSize_b ConditionalJump BranchHints PartialInstruction
     DontCareCondJump %rip, $Jb
       RegRIP                  OpSet
       J_Operand               OpUse OperandNear OperandRelative
@@ -2648,19 +2648,22 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
-0000000000001000: 40 e0 00                                     [P] dontcarecondjump %rip (s), 0x1003 (u)
-  e0                          386 OpcodeHasImmed OperandSize_b ConditionalJump PartialInstruction
-    DontCareCondJump %rip, $Jb
+0000000000001000: 40 e0 00                                     [P] dontcarecondjump %rip (s), %rcx (su), 0x1003 (u)
+  e0                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump PartialInstruction
+    DontCareCondJump %rip, %rcx, $Jb
       RegRIP                  OpSet
+      RegRCX                  OpUse OpSet
       J_Operand               OpUse OperandNear OperandRelative
-NaClExpVector[4] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
+  { ExprRegister[0] , %rcx, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x1003, ExprUsed | ExprSize8 | ExprSignedHex | ExprJumpTarget },
 };
 0000000000000000: 40 e3 00                                     [P] dontcarecondjump %rip (s), %rcx (u), 0x3 (u)
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump PartialInstruction
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_o ConditionalJump BranchHints PartialInstruction
     DontCareCondJump %rip, %rcx, $Jb
       RegRIP                  OpSet
       RegRCX                  OpUse
@@ -2674,7 +2677,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x3, ExprUsed | ExprSize8 | ExprSignedHex | ExprJumpTarget },
 };
 0000000000000000: 67 40 e3 00                                  [P] dontcarecondjump %rip (s), %ecx (u), 0x4 (u)
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump PartialInstruction
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump BranchHints PartialInstruction
     DontCareCondJump %rip, %ecx, $Jb
       RegRIP                  OpSet
       RegECX                  OpUse

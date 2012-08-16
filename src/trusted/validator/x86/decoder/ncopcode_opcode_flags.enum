@@ -171,6 +171,9 @@ JumpInstruction
 # validator to quickly categorize unconditional jumps.
 ConditionalJump
 
+# Mark instruction as allowing branch hints 2e and 3e.
+BranchHints
+
 # Mark the instruction as partial. This communicates to the print routines
 # that the matched instruction is NOT a valid x86 instruction. Hence, it should
 # use different print rules to better communicate what was partially matched.

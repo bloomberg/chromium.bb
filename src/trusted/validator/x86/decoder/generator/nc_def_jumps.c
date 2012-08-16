@@ -21,12 +21,11 @@
 /* List of instructions that do unconditional jumps. */
 static const NaClMnemonic kDefinesUnconditionalJump[] = {
   InstJmp,
-  InstLoop,
   InstCall,
 };
 
-/* List of instructions that do conditional jumps. */
-static const NaClMnemonic kDefinesConditionalJump[] = {
+/* List of instructions that do conditional jumps with branch hints. */
+static const NaClMnemonic kDefinesConditionalJumpWithHints[] = {
   InstJb,
   InstJbe,
   InstJcxz,
@@ -46,6 +45,11 @@ static const NaClMnemonic kDefinesConditionalJump[] = {
   InstJp,
   InstJs,
   InstJz,
+};
+
+/* List of instructions that do conditional jumps without branch hints. */
+static const NaClMnemonic kDefinesConditionalJumpWithoutHints[] = {
+  InstLoop,
   InstLoope,
   InstLoopne,
 };
@@ -61,6 +65,10 @@ static void NaClAddJumpFlags(NaClIFlag flag, const NaClMnemonic* name,
 void NaClAddJumpFlagsIfApplicable() {
   NaClAddJumpFlags(JumpInstruction, kDefinesUnconditionalJump,
                    NACL_ARRAY_SIZE(kDefinesUnconditionalJump));
-  NaClAddJumpFlags(ConditionalJump, kDefinesConditionalJump,
-                   NACL_ARRAY_SIZE(kDefinesConditionalJump));
+  NaClAddJumpFlags(ConditionalJump, kDefinesConditionalJumpWithHints,
+                   NACL_ARRAY_SIZE(kDefinesConditionalJumpWithHints));
+  NaClAddJumpFlags(BranchHints, kDefinesConditionalJumpWithHints,
+                   NACL_ARRAY_SIZE(kDefinesConditionalJumpWithHints));
+  NaClAddJumpFlags(ConditionalJump, kDefinesConditionalJumpWithoutHints,
+                   NACL_ARRAY_SIZE(kDefinesConditionalJumpWithoutHints));
 }

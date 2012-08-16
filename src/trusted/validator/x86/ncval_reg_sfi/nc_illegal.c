@@ -106,9 +106,9 @@ static const uint32_t kNaClUnsafeJumpPrefixes =
 
 /*
  * A mask for prefixes that can only appear with conditional jump
- * instructions.
+ * instructions with branch hints.
  */
-static const uint32_t kNaClUnsafeUnconditionalJumpPrefixes =
+static const uint32_t kNaClBranchHintJumpPrefixes =
     kPrefixSEGCS | kPrefixSEGDS;
 
 /* This function checks properties about segment registers on an
@@ -127,8 +127,8 @@ static void NaClCheckSegmentPrefixes(NaClValidatorState* state,
     if (inst_state->prefix_mask & kNaClUnsafeJumpPrefixes) {
       segment_prefixes_ok = FALSE;
     }
-    if ((state->cur_inst->flags & NACL_IFLAG(JumpInstruction)) &&
-        (inst_state->prefix_mask & kNaClUnsafeUnconditionalJumpPrefixes)) {
+    if (NaClExcludesBit(state->cur_inst->flags, NACL_IFLAG(BranchHints)) &&
+        NaClHasBit(inst_state->prefix_mask, kNaClBranchHintJumpPrefixes)) {
       segment_prefixes_ok = FALSE;
     }
   } else {

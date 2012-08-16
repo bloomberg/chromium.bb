@@ -268,7 +268,7 @@
 -i=660f3a150000                          #0000000000000000: 66 0f 3a 15 00 00                            [P] dontcare [%rax] (s), 0x0 (u)
 -i=0fec00                                #0000000000000000: 0f ec 00                                     [P] dontcare [%rax] (u)
 -i=0ff400                                #0000000000000000: 0f f4 00                                     [P] dontcare [%rax] (u)
--i=40e000 --pc=1000                      #0000000000001000: 40 e0 00                                     [P] dontcarecondjump %rip (s), 0x1003 (u)
+-i=40e000 --pc=1000                      #0000000000001000: 40 e0 00                                     [P] dontcarecondjump %rip (s), %rcx (su), 0x1003 (u)
 -i=40e300                                #0000000000000000: 40 e3 00                                     [P] dontcarecondjump %rip (s), %rcx (u), 0x3 (u)
 -i=6740e300                              #0000000000000000: 67 40 e3 00                                  [P] dontcarecondjump %rip (s), %ecx (u), 0x4 (u)
 -i=41d9f0                                #0000000000000000: 41 d9 f0                                     [P] dontcare

@@ -265,7 +265,7 @@ NaClExpVector[0] = {
 NaClExpVector[0] = {
 };
 00000000: e3 00                                        jecxz 0x2
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_v ConditionalJump BranchHints
     Jecxz {%eip}, {%ecx}, $Jb
       RegEIP                  OpSet OpImplicit
       RegECX                  OpUse OpImplicit
@@ -279,7 +279,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x2, ExprUsed | ExprSize8 | ExprSignedHex | ExprJumpTarget },
 };
 00000000: 67 e3 00                                     jcxz 0x3
-  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_w ConditionalJump
+  e3                          386 OpcodeHasImmed OperandSize_b AddressSize_w ConditionalJump BranchHints
     Jcxz {%eip}, {%cx}, $Jb
       RegEIP                  OpSet OpImplicit
       RegCX                   OpUse OpImplicit
