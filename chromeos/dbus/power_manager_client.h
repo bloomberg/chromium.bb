@@ -181,6 +181,11 @@ class CHROMEOS_EXPORT PowerManagerClient {
       int overrides,
       const PowerStateRequestIdCallback& callback) = 0;
 
+  // Tells powerd whether or not we are in a projecting mode.  This is used to
+  // adjust idleness thresholds and derived, on this side, from the number of
+  // video outputs attached.
+  virtual void SetIsProjecting(bool is_projecting) = 0;
+
   // Creates the instance.
   static PowerManagerClient* Create(DBusClientImplementationType type,
                                     dbus::Bus* bus);

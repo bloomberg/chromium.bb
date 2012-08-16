@@ -40,6 +40,7 @@ class MockPowerManagerClient : public PowerManagerClient {
                     uint32,
                     int,
                     const PowerStateRequestIdCallback&));
+  MOCK_METHOD1(SetIsProjecting, void(bool));
   MOCK_METHOD0(NotifyScreenLockCompleted, void(void));
   MOCK_METHOD0(NotifyScreenUnlockCompleted, void(void));
 };

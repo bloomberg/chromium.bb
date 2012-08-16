@@ -23,12 +23,7 @@
 #include "base/metrics/histogram.h"
 #include "base/perftimer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "dbus/bus.h"
-#include "dbus/exported_object.h"
-#include "dbus/message.h"
-#include "dbus/object_path.h"
-#include "dbus/object_proxy.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
 
@@ -235,19 +230,6 @@ OutputConfigurator::OutputConfigurator(bool is_extended_display_enabled)
       output_state_(STATE_INVALID) {
   if (!is_running_on_chrome_os_)
     return;
-  // Send the signal to powerd to tell it that we will take over output
-  // control.
-  // Note that this can be removed once the legacy powerd support is removed.
-  chromeos::DBusThreadManager* manager = chromeos::DBusThreadManager::Get();
-  dbus::Bus* bus = manager->GetSystemBus();
-  if (bus) {
-    dbus::ExportedObject* remote_object = bus->GetExportedObject(
-        dbus::ObjectPath(power_manager::kPowerManagerServicePath));
-    dbus::Signal signal(power_manager::kPowerManagerInterface,
-                        power_manager::kUseNewMonitorConfigSignal);
-    CHECK(signal.raw_message() != NULL);
-    remote_object->SendSignal(&signal);
-  }
 
   // Cache the initial output state.
   Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
@@ -851,22 +833,8 @@ void OutputConfigurator::CheckIsProjectingAndNotify() {
   // "Projecting" is defined as having more than 1 output connected while at
   // least one of them is an internal output.
   bool is_projecting = has_internal_output && (connected_output_count > 1);
-  chromeos::DBusThreadManager* manager = chromeos::DBusThreadManager::Get();
-  dbus::Bus* bus = manager->GetSystemBus();
-  if (bus) {
-    dbus::ObjectProxy* power_manager_proxy = bus->GetObjectProxy(
-        power_manager::kPowerManagerServiceName,
-        dbus::ObjectPath(power_manager::kPowerManagerServicePath));
-    dbus::MethodCall method_call(
-        power_manager::kPowerManagerInterface,
-        power_manager::kSetIsProjectingMethod);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendBool(is_projecting);
-    power_manager_proxy->CallMethod(
-        &method_call,
-        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback());
-  }
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
+      ->SetIsProjecting(is_projecting);
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {

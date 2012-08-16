@@ -273,6 +273,18 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  virtual void SetIsProjecting(bool is_projecting) OVERRIDE {
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kSetIsProjectingMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(is_projecting);
+    power_manager_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
   virtual void NotifyScreenLockCompleted() OVERRIDE {
     SimpleMethodCallToPowerManager(power_manager::kScreenIsLockedMethod);
   }
@@ -610,6 +622,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
       uint32 duration,
       int overrides,
       const PowerStateRequestIdCallback& callback) OVERRIDE {}
+  virtual void SetIsProjecting(bool is_projecting) OVERRIDE {}
 
   virtual void NotifyScreenLockCompleted() OVERRIDE {}
   virtual void NotifyScreenUnlockCompleted() OVERRIDE {}
