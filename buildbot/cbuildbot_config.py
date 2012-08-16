@@ -54,6 +54,7 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
     my_config['upload_symbols'] = False
     my_config['push_image'] = False
     my_config['hw_tests_pool'] = constants.HWTEST_TRYBOT_POOL
+    my_config['hw_tests_num'] = constants.HWTEST_TRYBOT_NUM
 
     # Default to starting with a fresh chroot on remote trybot runs.
     if remote_trybot:

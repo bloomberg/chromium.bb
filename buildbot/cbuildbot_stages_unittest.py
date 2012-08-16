@@ -667,7 +667,7 @@ class HWTestStageTest(AbstractStageTest):
                             self.suite,
                             self._current_board,
                             constants.HWTEST_TRYBOT_POOL,
-                            constants.HWTEST_DEFAULT_NUM,
+                            constants.HWTEST_TRYBOT_NUM,
                             False)
 
     self.mox.ReplayAll()
@@ -692,7 +692,7 @@ class HWTestStageTest(AbstractStageTest):
                             self.suite,
                             self._current_board,
                             constants.HWTEST_TRYBOT_POOL,
-                            constants.HWTEST_DEFAULT_NUM,
+                            constants.HWTEST_TRYBOT_NUM,
                             True)
 
     self.mox.ReplayAll()
