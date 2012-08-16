@@ -5,6 +5,7 @@
 #include "ipc/ipc_sync_channel.h"
 
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -307,9 +308,9 @@ bool SyncChannel::SyncContext::TryToUnblockListener(const Message* msg) {
     bool send_result = deserializers_.back().deserializer->
         SerializeOutputParameters(*msg);
     deserializers_.back().send_result = send_result;
-    LOG_IF(ERROR, !send_result) << "Couldn't deserialize reply message";
+    VLOG_IF(1, !send_result) << "Couldn't deserialize reply message";
   } else {
-    LOG(ERROR) << "Received error reply";
+    VLOG(1) << "Received error reply";
   }
   deserializers_.back().done_event->Signal();
 
@@ -363,7 +364,7 @@ void SyncChannel::SyncContext::OnChannelClosed() {
 void SyncChannel::SyncContext::OnSendTimeout(int message_id) {
   base::AutoLock auto_lock(deserializers_lock_);
   PendingSyncMessageQueue::iterator iter;
-  LOG(ERROR) << "Send timeout";
+  VLOG(1) << "Send timeout";
   for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++) {
     if (iter->id == message_id) {
       iter->done_event->Signal();
@@ -375,7 +376,14 @@ void SyncChannel::SyncContext::OnSendTimeout(int message_id) {
 void SyncChannel::SyncContext::CancelPendingSends() {
   base::AutoLock auto_lock(deserializers_lock_);
   PendingSyncMessageQueue::iterator iter;
-  LOG(ERROR) << "Canceling pending sends";
+#if !defined(OS_ANDROID) && !defined(OS_NACL)
+  // TODO(bauerb): Remove once http://crbug/141055 is fixed.
+  if (VLOG_IS_ON(1)) {
+    VLOG(1) << "Canceling pending sends";
+    base::debug::StackTrace trace;
+    trace.PrintBacktrace();
+  }
+#endif
   for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++)
     iter->done_event->Signal();
 }
@@ -435,7 +443,7 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
   // *this* might get deleted in WaitForReply.
   scoped_refptr<SyncContext> context(sync_context());
   if (context->shutdown_event()->IsSignaled()) {
-    LOG(ERROR) << "shutdown event is signaled";
+    VLOG(1) << "shutdown event is signaled";
     delete message;
     return false;
   }
