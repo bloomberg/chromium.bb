@@ -27,9 +27,6 @@
       },
     }],
     ['OS=="win"', {
-      'defines': [
-        'WIN32',
-      ],
       'sources': [
         'win/sel_ldr_launcher_win.cc',
       ],

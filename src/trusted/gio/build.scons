@@ -14,9 +14,6 @@ Import('env')
 # TODO(robertm): consider adding this to the top level scons files
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 
-if env.Bit('windows'):
-  env.Append(CPPDEFINES=['WIN32'])
-
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
 crt = []

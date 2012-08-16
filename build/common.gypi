@@ -690,6 +690,7 @@
         'defines': [
           '_WIN32_WINNT=0x0600',
           'WINVER=0x0600',
+          # WIN32 is used by ppapi
           'WIN32',
           'NOMINMAX',
           '_CRT_RAND_S',

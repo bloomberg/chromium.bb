@@ -45,9 +45,6 @@
       ],
     }],
     ['OS=="win"', {
-      'defines': [
-        'WIN32',
-      ],
       'targets': [
         {
           'target_name': 'weak_ref64',

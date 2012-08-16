@@ -29,9 +29,6 @@
   },
   'conditions': [
     ['OS=="win"', {
-      'defines': [
-        'WIN32',
-      ],
       'targets': [
         {
           'target_name': 'nacl_fault_inject64',

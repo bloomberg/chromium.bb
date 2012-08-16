@@ -15,9 +15,6 @@ env.Append(CPPPATH=['${TARGET_ROOT}/gen'])
 # TODO(eaeltsin): refactor to avoid circular dependencies.
 DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub', 'sel']
 
-if env.Bit('windows'):
-  env.Append(CPPDEFINES=['WIN32'])
-
 # normally comment out -- uncomment out to test the pedantic removal
 # check below.
 #if env.Bit('linux') or env.Bit('mac'):

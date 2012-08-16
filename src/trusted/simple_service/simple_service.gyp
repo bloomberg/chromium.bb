@@ -31,9 +31,6 @@
   },
   'conditions': [
     ['OS=="win"', {
-      'defines': [
-        'WIN32',
-      ],
       'targets': [
         {
           'target_name': 'simple_service64',

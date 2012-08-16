@@ -8,9 +8,6 @@
 
 Import('env')
 
-if env.Bit('windows'):
-  env.Append(CPPDEFINES=['WIN32'])
-
 rsp_sources = [
     'abi.cc',
     'packet.cc',

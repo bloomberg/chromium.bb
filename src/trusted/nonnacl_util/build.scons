@@ -13,11 +13,6 @@ if env.Bit('mac'):
     # TODO(sehr): this should Clone an env specifically for the mm file.
     env.FilterOut(CCFLAGS=['-pedantic'])
 
-if env.Bit('windows'):
-    env.Append(
-        CPPDEFINES = ['WIN32'],
-    )
-
 nonnacl_util_inputs = [
   'sel_ldr_launcher_base.cc',
   'sel_ldr_launcher_standalone.cc',

@@ -187,9 +187,6 @@
   },
   'conditions': [
     ['OS=="win"', {
-      'defines': [
-        'WIN32',
-      ],
       'targets': [
         {
           'target_name': 'nrd_xfer64',

@@ -26,9 +26,6 @@
   },
   'conditions': [
     ['OS=="win"', {
-      'defines': [
-        'WIN32',
-      ],
       'targets': [
         {
           'target_name': 'thread_interface64',
