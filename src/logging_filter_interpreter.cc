@@ -17,10 +17,12 @@
 namespace gestures {
 
 LoggingFilterInterpreter::LoggingFilterInterpreter(PropRegistry* prop_reg,
-                                                   Interpreter* next)
-    : FilterInterpreter(prop_reg, next),
+                                                   Interpreter* next,
+                                                   Tracer* tracer)
+    : FilterInterpreter(prop_reg, next, tracer),
       logging_notify_(prop_reg, "Logging Notify", 0, this),
       logging_reset_(prop_reg, "Logging Reset", 0, this) {
+  InitName();
   logging_enabled_ = true;
   if (prop_reg)
     prop_reg->set_activity_log(&log_);

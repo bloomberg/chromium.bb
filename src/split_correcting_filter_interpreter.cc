@@ -6,18 +6,21 @@
 
 #include <math.h>
 
+#include "gestures/include/tracer.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
 
 // Takes ownership of |next|:
 SplitCorrectingFilterInterpreter::SplitCorrectingFilterInterpreter(
-    PropRegistry* prop_reg, Interpreter* next)
-    : FilterInterpreter(next),
+    PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       enabled_(true),
       merge_max_separation_(prop_reg, "Split Merge Max Separation", 17.0),
       merge_max_movement_(prop_reg, "Split Merge Max Movement", 3.0),
-      merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(19.0))) {}
+      merge_max_ratio_(prop_reg, "Merge Max Ratio", sinf(DegToRad(19.0))) {
+  InitName();
+}
 
 Gesture* SplitCorrectingFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate,

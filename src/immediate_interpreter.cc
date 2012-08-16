@@ -271,8 +271,10 @@ const ScrollEvent& ScrollEventBuffer::Get(size_t offset) const {
 }
 
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
-                                           FingerMetrics* finger_metrics)
-    : button_type_(0),
+                                           FingerMetrics* finger_metrics,
+                                           Tracer* tracer)
+    : Interpreter(tracer),
+      button_type_(0),
       sent_button_down_(false),
       button_down_timeout_(0.0),
       started_moving_time_(-1.0),
@@ -360,6 +362,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
                                   "Pinch Certain Minimal Movement", 8.0),
       pinch_enable_(prop_reg, "Pinch Enable", 1.0),
       fling_buffer_depth_(prop_reg, "Fling Buffer Depth", 3) {
+  InitName();
   memset(&prev_state_, 0, sizeof(prev_state_));
   if (!finger_metrics_) {
     test_finger_metrics_.reset(new FingerMetrics(prop_reg));

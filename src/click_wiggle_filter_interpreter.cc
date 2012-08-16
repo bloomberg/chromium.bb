@@ -7,13 +7,14 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/tracer.h"
 
 namespace gestures {
 
 // Takes ownership of |next|:
 ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
-    PropRegistry* prop_reg, Interpreter* next)
-    : FilterInterpreter(next),
+    PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       button_edge_occurred_(0.0),
       prev_buttons_(0),
       wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 5.5),
@@ -23,7 +24,9 @@ ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
                                   0.75),
       one_finger_click_wiggle_timeout_(prop_reg,
                                        "One Finger Click Wiggle Timeout",
-                                       0.2) {}
+                                       0.2) {
+  InitName();
+}
 
 Gesture* ClickWiggleFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                      stime_t* timeout) {

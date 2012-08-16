@@ -80,7 +80,7 @@ class Cr48ProfileSensorFilterInterpreterTestInterpreter : public Interpreter {
 TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrIDm, flags
@@ -129,7 +129,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -183,7 +183,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     { 0, 0, 0, 0, 60, 0, 4000, 3300, 5, 0 },
@@ -232,7 +232,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
     { 0, 0, 0, 0, 60, 0, 2969, 3088, 1481, 0},
@@ -332,7 +332,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     { 0, 0, 0, 0, 60, 0, 1240, 3088, 1481, 0},
@@ -370,7 +370,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, MovingFingerTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   // Test one, second finger arrives below the first finger, then move the first
   // finger. Expect moving finger will be the first finger(Y=1942) as the
@@ -513,7 +513,7 @@ const struct FingerState* kNullFingers = NULL;
 TEST(Cr48ProfileSensorFilterInterpreterTest, HistoryTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -565,7 +565,7 @@ const unsigned kWarpFlags = GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y;
 TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -616,7 +616,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, OneToTwoJumpTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -666,7 +666,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, OneToTwoJumpTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -721,7 +721,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, SensorJumpTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -771,7 +771,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, SensorJumpTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
@@ -849,7 +849,7 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
 TEST(Cr48ProfileSensorFilterInterpreterTest, FastMoveTest) {
   Cr48ProfileSensorFilterInterpreterTestInterpreter* base_interpreter =
       new Cr48ProfileSensorFilterInterpreterTestInterpreter;
-  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter);
+  Cr48ProfileSensorFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags

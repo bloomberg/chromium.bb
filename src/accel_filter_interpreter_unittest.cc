@@ -49,7 +49,7 @@ class AccelFilterInterpreterTestInterpreter : public Interpreter {
 TEST(AccelFilterInterpreterTest, SimpleTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   interpreter.scroll_x_out_scale_.val_ =
       interpreter.scroll_y_out_scale_.val_ = 1.0;
 
@@ -132,7 +132,7 @@ TEST(AccelFilterInterpreterTest, SimpleTest) {
 TEST(AccelFilterInterpreterTest, TinyMoveTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   interpreter.scroll_x_out_scale_.val_ =
       interpreter.scroll_y_out_scale_.val_ = 1.0;
 
@@ -172,7 +172,7 @@ TEST(AccelFilterInterpreterTest, TinyMoveTest) {
 TEST(AccelFilterInterpreterTest, TimingTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   interpreter.scroll_x_out_scale_.val_ =
       interpreter.scroll_y_out_scale_.val_ = 1.0;
 
@@ -234,7 +234,7 @@ TEST(AccelFilterInterpreterTest, TimingTest) {
 TEST(AccelFilterInterpreterTest, CustomAccelTest) {
   AccelFilterInterpreterTestInterpreter* base_interpreter =
       new AccelFilterInterpreterTestInterpreter;
-  AccelFilterInterpreter interpreter(NULL, base_interpreter);
+  AccelFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   interpreter.scroll_x_out_scale_.val_ =
       interpreter.scroll_y_out_scale_.val_ = 1.0;
 

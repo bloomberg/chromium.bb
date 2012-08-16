@@ -7,6 +7,7 @@
 
 #include "gestures/include/interpreter.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_FILTER_INTERPRETER_H__
 #define GESTURES_FILTER_INTERPRETER_H__
@@ -17,16 +18,13 @@ namespace gestures {
 
 class FilterInterpreter : public Interpreter {
  public:
-  FilterInterpreter(PropRegistry* prop_reg, Interpreter* next)
-      : Interpreter(prop_reg) { next_.reset(next); }
-  explicit FilterInterpreter(Interpreter* next) : Interpreter() {
-    next_.reset(next);
-  }
-
+  FilterInterpreter(PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
+      : Interpreter(prop_reg, tracer) { next_.reset(next); }
+  FilterInterpreter(Interpreter* next, Tracer* tracer)
+      : Interpreter(tracer) { next_.reset(next); }
   virtual ~FilterInterpreter() {}
 
   DictionaryValue* EncodeCommonInfo();
-
   void Clear();
 
  protected:

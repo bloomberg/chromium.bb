@@ -6,14 +6,18 @@
 
 #include <base/memory/scoped_ptr.h>
 
+#include "gestures/include/tracer.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
 
 BoxFilterInterpreter::BoxFilterInterpreter(PropRegistry* prop_reg,
-                                           Interpreter* next)
-    : FilterInterpreter(next),
-      box_width_(prop_reg, "Box Width", 0.0) {}
+                                           Interpreter* next,
+                                           Tracer* tracer)
+    : FilterInterpreter(next, tracer),
+      box_width_(prop_reg, "Box Width", 0.0) {
+  InitName();
+}
 
 Gesture* BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {

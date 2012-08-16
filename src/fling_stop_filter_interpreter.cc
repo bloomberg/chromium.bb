@@ -9,12 +9,15 @@
 namespace gestures {
 
 FlingStopFilterInterpreter::FlingStopFilterInterpreter(PropRegistry* prop_reg,
-                                                       Interpreter* next)
-    : FilterInterpreter(next),
+                                                       Interpreter* next,
+                                                       Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       prev_touch_cnt_(0),
       fling_stop_deadline_(0.0),
       next_timer_deadline_(0.0),
-      fling_stop_timeout_(prop_reg, "Fling Stop Timeout", 0.08) {}
+      fling_stop_timeout_(prop_reg, "Fling Stop Timeout", 0.08) {
+  InitName();
+}
 
 Gesture* FlingStopFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                        stime_t* timeout) {

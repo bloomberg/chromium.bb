@@ -123,7 +123,7 @@ TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
       base_interpreter =
           new T5R2CorrectingFilterInterpreterTestInterpreter;
       interpreter.reset(
-          new T5R2CorrectingFilterInterpreter(NULL, base_interpreter));
+          new T5R2CorrectingFilterInterpreter(NULL, base_interpreter, NULL));
       base_interpreter->expected_hwprops_ = hwprops;
       interpreter->SetHardwareProperties(hwprops);
       EXPECT_TRUE(base_interpreter->set_hwprops_called_);

@@ -10,6 +10,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/set.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_SPLIT_CORRECTING_FILTER_INTERPRETER_H_
 #define GESTURES_SPLIT_CORRECTING_FILTER_INTERPRETER_H_
@@ -48,7 +49,8 @@ class SplitCorrectingFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(SplitCorrectingFilterInterpreterTest, DistFromPointToLineTest);
  public:
   // Takes ownership of |next|:
-  SplitCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  SplitCorrectingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
+                                   Tracer* tracer);
   virtual ~SplitCorrectingFilterInterpreter() {}
 
  protected:

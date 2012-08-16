@@ -57,7 +57,7 @@ struct SimpleTestInputs {
 TEST(FlingStopFilterInterpreterTest, SimpleTest) {
   FlingStopFilterInterpreterTestInterpreter* base_interpreter =
       new FlingStopFilterInterpreterTestInterpreter;
-  FlingStopFilterInterpreter interpreter(NULL, base_interpreter);
+  FlingStopFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   const stime_t kTO = interpreter.fling_stop_timeout_.val_ = 0.08;
 

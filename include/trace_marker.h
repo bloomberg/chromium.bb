@@ -6,8 +6,8 @@
 
 #include <base/basictypes.h>
 
-#ifndef TRACE_MARKER_H__
-#define TRACE_MARKER_H__
+#ifndef GESTURES_TRACE_MARKER_H__
+#define GESTURES_TRACE_MARKER_H__
 
 #define TRACE_WRITE(x) TraceMarker::StaticTraceWrite(x)
 
@@ -40,4 +40,4 @@ class TraceMarker {
   bool OpenTraceMarker();
 };
 }  // namespace gestures
-#endif  // TRACE_MARKER_H__
+#endif  // GESTURES_TRACE_MARKER_H__

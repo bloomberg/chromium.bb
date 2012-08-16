@@ -10,6 +10,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/map.h"
 #include "gestures/include/set.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_PALM_CLASSIFYING_FILTER_INTERPRETER_H_
 #define GESTURES_PALM_CLASSIFYING_FILTER_INTERPRETER_H_
@@ -28,7 +29,8 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
   PalmClassifyingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
-                                   FingerMetrics* finger_metrics);
+                                   FingerMetrics* finger_metrics,
+                                   Tracer* tracer);
   virtual ~PalmClassifyingFilterInterpreter() {}
 
  protected:

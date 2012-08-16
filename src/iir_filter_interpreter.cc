@@ -29,8 +29,9 @@ bool IirFilterInterpreter::IoHistory::operator==(
 // The default filter is a low-pass 2nd order Butterworth IIR filter with a
 // normalized cutoff frequency of 0.2.
 IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
-                                           Interpreter* next)
-    : FilterInterpreter(next),
+                                           Interpreter* next,
+                                           Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       b0_(prop_reg, "IIR b0", 0.0674552738890719, this),
       b1_(prop_reg, "IIR b1", 0.134910547778144, this),
       b2_(prop_reg, "IIR b2", 0.0674552738890719, this),
@@ -39,7 +40,9 @@ IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
       a2_(prop_reg, "IIR a2", 0.412801598096189, this),
       iir_dist_thresh_(prop_reg, "IIR Distance Threshold", 10, this),
       using_iir_(true),
-      is_semi_mt_device_(false) {}
+      is_semi_mt_device_(false) {
+  InitName();
+}
 
 Gesture* IirFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                              stime_t* timeout) {

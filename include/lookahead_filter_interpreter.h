@@ -13,6 +13,7 @@
 #include "gestures/include/list.h"
 #include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_LOOKAHEAD_FILTER_INTERPRETER_H_
 #define GESTURES_LOOKAHEAD_FILTER_INTERPRETER_H_
@@ -33,7 +34,8 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, VariableDelayTest);
  public:
-  LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
+                             Tracer* tracer);
   virtual ~LookaheadFilterInterpreter();
 
  protected:

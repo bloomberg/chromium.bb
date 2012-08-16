@@ -67,7 +67,7 @@ namespace {
 void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
   SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
       = new SplitCorrectingFilterInterpreterTestInterpreter;
-  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -157,7 +157,7 @@ TEST(SplitCorrectingFilterInterpreterTest, FalseMergeTest) {
 
   SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
       = new SplitCorrectingFilterInterpreterTestInterpreter;
-  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -301,7 +301,7 @@ struct LumpyThumbSplitTestInputs {
 TEST(SplitCorrectingFilterInterpreterTest, LumpyThumbSplitTest) {
   SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
       = new SplitCorrectingFilterInterpreterTestInterpreter;
-  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+  SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   base_interpreter->expected_ids_.insert(2);
   base_interpreter->expect_finger_ids_ = true;

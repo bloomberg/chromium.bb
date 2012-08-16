@@ -102,7 +102,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
 TEST(ScalingFilterInterpreterTest, SimpleTest) {
   ScalingFilterInterpreterTestInterpreter* base_interpreter =
       new ScalingFilterInterpreterTestInterpreter;
-  ScalingFilterInterpreter interpreter(NULL, base_interpreter);
+  ScalingFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   HardwareProperties initial_hwprops = {
     133, 728, 10279, 5822,  // left, top, right, bottom

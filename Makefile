@@ -30,6 +30,7 @@ SO_OBJECTS=\
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter.o \
 	$(OBJDIR)/t5r2_correcting_filter_interpreter.o \
 	$(OBJDIR)/trace_marker.o \
+	$(OBJDIR)/tracer.o \
 	$(OBJDIR)/util.o
 
 # Objects for unittests
@@ -59,6 +60,7 @@ TEST_OBJECTS=\
 	$(OBJDIR)/split_correcting_filter_interpreter_unittest.o \
 	$(OBJDIR)/stuck_button_inhibitor_filter_interpreter_unittest.o \
 	$(OBJDIR)/t5r2_correcting_filter_interpreter_unittest.o \
+	$(OBJDIR)/tracer_unittest.o \
 	$(OBJDIR)/util_unittest.o
 
 # Objects that are neither unittests nor SO objects

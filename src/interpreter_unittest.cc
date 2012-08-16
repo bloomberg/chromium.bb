@@ -21,7 +21,7 @@ class InterpreterTest : public ::testing::Test {};
 class InterpreterTestInterpreter : public Interpreter {
  public:
   explicit InterpreterTestInterpreter(PropRegistry* prop_reg)
-      : Interpreter(prop_reg),
+      : Interpreter(prop_reg, NULL),
         expected_hwstate_(NULL),
         set_hwprops_call_count_(0),
         interpret_call_count_(0),
@@ -31,6 +31,7 @@ class InterpreterTestInterpreter : public Interpreter {
         int_prop_(prop_reg, "IntProp", 0),
         short_prop_(prop_reg, "ShortProp", 0),
         string_prop_(prop_reg, "StringProp", "") {
+    InitName();
     logging_enabled_ = true;
   }
 
@@ -50,7 +51,7 @@ class InterpreterTestInterpreter : public Interpreter {
  protected:
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout) {
     interpret_call_count_++;
-    EXPECT_STREQ(expected_interpreter_name_, GetName().c_str());
+    EXPECT_STREQ(expected_interpreter_name_, name());
     EXPECT_NE(0, bool_prop_.val_);
     EXPECT_NE(0, double_prop_.val_);
     EXPECT_NE(0, int_prop_.val_);

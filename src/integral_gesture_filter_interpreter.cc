@@ -8,17 +8,20 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/tracer.h"
 
 namespace gestures {
 
 // Takes ownership of |next|:
 IntegralGestureFilterInterpreter::IntegralGestureFilterInterpreter(
-    Interpreter* next)
-    : FilterInterpreter(next),
+    Interpreter* next, Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       x_move_remainder_(0.0),
       y_move_remainder_(0.0),
       hscroll_remainder_(0.0),
-      vscroll_remainder_(0.0) {}
+      vscroll_remainder_(0.0) {
+  InitName();
+}
 
 IntegralGestureFilterInterpreter::~IntegralGestureFilterInterpreter() {}
 

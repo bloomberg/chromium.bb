@@ -10,6 +10,7 @@
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/map.h"
 #include "gestures/include/set.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_IMMEDIATE_INTERPRETER_H_
 #define GESTURES_IMMEDIATE_INTERPRETER_H_
@@ -144,7 +145,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
     kTtcDragRetouch
   };
 
-  ImmediateInterpreter(PropRegistry* prop_reg, FingerMetrics* finger_metrics);
+  ImmediateInterpreter(PropRegistry* prop_reg, FingerMetrics* finger_metrics,
+                       Tracer* tracer);
   virtual ~ImmediateInterpreter();
 
  protected:

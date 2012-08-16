@@ -61,7 +61,7 @@ struct InputAndExpectedWarp {
 TEST(SensorJumpFilterInterpreterTest, SimpleTest) {
   SensorJumpFilterInterpreterTestInterpreter* base_interpreter =
       new SensorJumpFilterInterpreterTestInterpreter;
-  SensorJumpFilterInterpreter interpreter(NULL, base_interpreter);
+  SensorJumpFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   base_interpreter->expected_finger_cnt_ = 1;
   interpreter.enabled_.val_ = 1;
@@ -119,7 +119,7 @@ struct ActualLogInputs {
 TEST(SensorJumpFilterInterpreterTest, ActualLogTest) {
   SensorJumpFilterInterpreterTestInterpreter* base_interpreter =
       new SensorJumpFilterInterpreterTestInterpreter;
-  SensorJumpFilterInterpreter interpreter(NULL, base_interpreter);
+  SensorJumpFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   interpreter.enabled_.val_ = 1;
 

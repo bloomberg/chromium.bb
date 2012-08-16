@@ -14,8 +14,8 @@
 namespace gestures {
 
 Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
-    PropRegistry* prop_reg, Interpreter* next)
-    : FilterInterpreter(next),
+    PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       last_id_(0),
       interpreter_enabled_(prop_reg, "SemiMT Correcting Filter Enable", 0),
       pressure_threshold_(prop_reg, "SemiMT Pressure Threshold", 30),
@@ -30,6 +30,7 @@ Cr48ProfileSensorFilterInterpreter::Cr48ProfileSensorFilterInterpreter(
       move_threshold_(prop_reg, "SemiMT Finger Move Threshold", 130.0),
       jump_threshold_(prop_reg, "SemiMT Finger Jump Distance", 260.0),
       bounding_box_(prop_reg, "SemiMT Bounding Box Input", 0) {
+  InitName();
   ClearHistory();
 }
 

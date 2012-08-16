@@ -39,7 +39,7 @@ class IirFilterInterpreterTestInterpreter : public Interpreter {
 TEST(IirFilterInterpreterTest, SimpleTest) {
   IirFilterInterpreterTestInterpreter* base_interpreter =
       new IirFilterInterpreterTestInterpreter;
-  IirFilterInterpreter interpreter(NULL, base_interpreter);
+  IirFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -66,7 +66,7 @@ TEST(IirFilterInterpreterTest, SimpleTest) {
 TEST(IirFilterInterpreterTest, DisableIIRTest) {
   IirFilterInterpreterTestInterpreter* base_interpreter =
       new IirFilterInterpreterTestInterpreter;
-  IirFilterInterpreter interpreter(NULL, base_interpreter);
+  IirFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   FingerState fs[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
@@ -103,7 +103,7 @@ TEST(IirFilterInterpreterTest, DisableIIRTest) {
 TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
   IirFilterInterpreterTestInterpreter* base_interpreter =
       new IirFilterInterpreterTestInterpreter;
-  IirFilterInterpreter interpreter(NULL, base_interpreter);
+  IirFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   HardwareProperties hwprops = {
     0, 0, 100, 60,  // left, top, right, bottom

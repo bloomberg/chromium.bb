@@ -7,6 +7,7 @@
 
 #include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_STUCK_BUTTON_INHIBITOR_FILTER_INTERPRETER_H_
 #define GESTURES_STUCK_BUTTON_INHIBITOR_FILTER_INTERPRETER_H_
@@ -23,7 +24,8 @@ namespace gestures {
 class StuckButtonInhibitorFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
-  explicit StuckButtonInhibitorFilterInterpreter(Interpreter* next);
+  explicit StuckButtonInhibitorFilterInterpreter(Interpreter* next,
+                                                 Tracer* tracer);
   virtual ~StuckButtonInhibitorFilterInterpreter() {}
 
  protected:

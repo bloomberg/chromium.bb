@@ -5,15 +5,18 @@
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
 
 #include "gestures/include/logging.h"
+#include "gestures/include/tracer.h"
 
 namespace gestures {
 
 StuckButtonInhibitorFilterInterpreter::StuckButtonInhibitorFilterInterpreter(
-    Interpreter* next)
-    : FilterInterpreter(next),
+    Interpreter* next, Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       incoming_button_must_be_up_(true),
       sent_buttons_down_(0),
-      next_expects_timer_(false) {}
+      next_expects_timer_(false) {
+  InitName();
+}
 
 Gesture* StuckButtonInhibitorFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {

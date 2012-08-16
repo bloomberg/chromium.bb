@@ -29,6 +29,7 @@
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
 #include "gestures/include/t5r2_correcting_filter_interpreter.h"
 #include "gestures/include/trace_marker.h"
+#include "gestures/include/tracer.h"
 #include "gestures/include/util.h"
 
 using std::string;
@@ -263,26 +264,34 @@ GestureInterpreter::GestureInterpreter(int version)
       prop_provider_(NULL),
       prop_provider_data_(NULL) {
   prop_reg_.reset(new PropRegistry);
+  tracer_.reset(new Tracer(prop_reg_.get(), TraceMarker::StaticTraceWrite));
   finger_metrics_.reset(new FingerMetrics(prop_reg_.get()));
   Interpreter* temp = new ImmediateInterpreter(prop_reg_.get(),
-                                               finger_metrics_.get());
-  temp = new FlingStopFilterInterpreter(prop_reg_.get(), temp);
-  temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp);
+                                               finger_metrics_.get(),
+                                               tracer_.get());
+  temp = new FlingStopFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new ClickWiggleFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
   temp = new PalmClassifyingFilterInterpreter(prop_reg_.get(), temp,
-                                              finger_metrics_.get());
-  temp = new IirFilterInterpreter(prop_reg_.get(), temp);
-  temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp);
-  temp = new BoxFilterInterpreter(prop_reg_.get(), temp);
-  temp = new SensorJumpFilterInterpreter(prop_reg_.get(), temp);
-  temp = new AccelFilterInterpreter(prop_reg_.get(), temp);
-  temp = new SplitCorrectingFilterInterpreter(prop_reg_.get(), temp);
-  temp = new ScalingFilterInterpreter(prop_reg_.get(), temp);
-  temp = new IntegralGestureFilterInterpreter(temp);
-  temp = new StuckButtonInhibitorFilterInterpreter(temp);
-  temp = new T5R2CorrectingFilterInterpreter(prop_reg_.get(), temp);
-  temp = new Cr48ProfileSensorFilterInterpreter(prop_reg_.get(), temp);
-  temp = new AppleTrackpadFilterInterpreter(prop_reg_.get(), temp);
-  temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp);
+                                              finger_metrics_.get(),
+                                              tracer_.get());
+  temp = new IirFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new LookaheadFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new BoxFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new SensorJumpFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new AccelFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new SplitCorrectingFilterInterpreter(prop_reg_.get(), temp,
+                                              tracer_.get());
+  temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
+  temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
+  temp = new StuckButtonInhibitorFilterInterpreter(temp, tracer_.get());
+  temp = new T5R2CorrectingFilterInterpreter(prop_reg_.get(), temp,
+                                             tracer_.get());
+  temp = new Cr48ProfileSensorFilterInterpreter(prop_reg_.get(), temp,
+                                                tracer_.get());
+  temp = new AppleTrackpadFilterInterpreter(prop_reg_.get(), temp,
+                                            tracer_.get());
+  temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
+                                                       tracer_.get());
   interpreter_.reset(temp);
   temp = NULL;
   TraceMarker::CreateTraceMarker();

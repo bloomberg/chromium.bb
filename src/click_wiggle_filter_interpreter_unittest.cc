@@ -49,7 +49,7 @@ class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
 TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
   ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
       new ClickWiggleFilterInterpreterTestInterpreter;
-  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -122,7 +122,7 @@ TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
 TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
   ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
       new ClickWiggleFilterInterpreterTestInterpreter;
-  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -188,7 +188,7 @@ struct ThumbClickTestInput {
 TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
   ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
       new ClickWiggleFilterInterpreterTestInterpreter;
-  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -238,7 +238,7 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
 TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
   ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
       new ClickWiggleFilterInterpreterTestInterpreter;
-  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -299,7 +299,7 @@ struct ThumbClickWiggleWithPalmTestInputs {
 TEST(ClickWiggleFilterInterpreter, ThumbClickWiggleWithPalmTest) {
   ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
       new ClickWiggleFilterInterpreterTestInterpreter;
-  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   HardwareProperties hwprops = {
     0.000000,  // left edge
     0.000000,  // top edge

@@ -10,13 +10,15 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/tracer.h"
 
 namespace gestures {
 
 // Takes ownership of |next|:
 AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
-                                               Interpreter* next)
-    : FilterInterpreter(next),
+                                               Interpreter* next,
+                                               Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       sensitivity_(prop_reg, "Sensitivity", 3),
       custom_point_str_(prop_reg, "Pointer Accel Curve", ""),
       custom_scroll_str_(prop_reg, "Scroll Accel Curve", ""),
@@ -24,6 +26,7 @@ AccelFilterInterpreter::AccelFilterInterpreter(PropRegistry* prop_reg,
       point_y_out_scale_(prop_reg, "Point Y Out Scale", 1.0),
       scroll_x_out_scale_(prop_reg, "Scroll X Out Scale", 3.0),
       scroll_y_out_scale_(prop_reg, "Scroll Y Out Scale", 3.0) {
+  InitName();
   // Set up default curves.
 
   // Our pointing curves are the following.

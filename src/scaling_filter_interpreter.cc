@@ -9,13 +9,15 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/tracer.h"
 
 namespace gestures {
 
 // Takes ownership of |next|:
 ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
-                                                   Interpreter* next)
-    : FilterInterpreter(next),
+                                                   Interpreter* next,
+                                                   Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       tp_x_scale_(1.0),
       tp_y_scale_(1.0),
       tp_x_translate_(0.0),
@@ -26,7 +28,9 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
       pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
       touch_major_scale_(prop_reg, "Touch Major Calibration Slope", 1.0),
-      touch_major_translate_(prop_reg, "Touch Major Calibration Offset", 0.0) {}
+      touch_major_translate_(prop_reg, "Touch Major Calibration Offset", 0.0) {
+  InitName();
+}
 
 Gesture* ScalingFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                      stime_t* timeout) {

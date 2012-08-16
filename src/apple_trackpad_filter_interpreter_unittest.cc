@@ -28,7 +28,7 @@ class AppleTrackpadFilterInterpreterTestInterpreter : public Interpreter {
 TEST(AppleTrackpadFilterInterpreterTest, SimpleTest) {
   AppleTrackpadFilterInterpreterTestInterpreter* base_interpreter =
       new AppleTrackpadFilterInterpreterTestInterpreter;
-  AppleTrackpadFilterInterpreter interpreter(NULL, base_interpreter);
+  AppleTrackpadFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   HardwareProperties hwprops = {
     0,  // left edge

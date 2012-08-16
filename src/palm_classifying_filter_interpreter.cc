@@ -8,13 +8,15 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
+#include "gestures/include/tracer.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
 
 PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
-    PropRegistry* prop_reg, Interpreter* next, FingerMetrics* finger_metrics)
-    : FilterInterpreter(next),
+    PropRegistry* prop_reg, Interpreter* next, FingerMetrics* finger_metrics,
+    Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       finger_metrics_(finger_metrics),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_width_(prop_reg, "Palm Width", 21.2),
@@ -24,6 +26,7 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
       palm_eval_timeout_(prop_reg, "Palm Eval Timeout", 0.1),
       palm_stationary_time_(prop_reg, "Palm Stationary Time", 2.0),
       palm_stationary_distance_(prop_reg, "Palm Stationary Distance", 4.0) {
+  InitName();
   if (!finger_metrics_) {
     test_finger_metrics_.reset(new FingerMetrics(prop_reg));
     finger_metrics_ = test_finger_metrics_.get();

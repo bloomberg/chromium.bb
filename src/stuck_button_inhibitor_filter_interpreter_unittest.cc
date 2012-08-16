@@ -79,7 +79,7 @@ bool GestureEq(const Gesture& a, const Gesture& b) {
 TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
   StuckButtonInhibitorFilterInterpreterTestInterpreter* base_interpreter =
       new StuckButtonInhibitorFilterInterpreterTestInterpreter;
-  StuckButtonInhibitorFilterInterpreter interpreter(base_interpreter);
+  StuckButtonInhibitorFilterInterpreter interpreter(base_interpreter, NULL);
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom

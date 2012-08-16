@@ -10,6 +10,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/filter_interpreter.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_LOGGING_FILTER_INTERPRETER_H_
 #define GESTURES_LOGGING_FILTER_INTERPRETER_H_
@@ -24,7 +25,8 @@ class LoggingFilterInterpreter : public FilterInterpreter,
   FRIEND_TEST(LoggingFilterInterpreterTest, LogResetHandlerTest);
  public:
   // Takes ownership of |next|:
-  LoggingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  LoggingFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
+                           Tracer* tracer);
   virtual ~LoggingFilterInterpreter();
 
   virtual void IntWasWritten(IntProperty* prop);
@@ -35,11 +37,9 @@ class LoggingFilterInterpreter : public FilterInterpreter,
   void Dump(const char* filename);
 
   IntProperty logging_notify_;
-
   // Reset the log by setting the property value.
   IntProperty logging_reset_;
 };
-
 }  // namespace gestures
 
 #endif  // GESTURES_LOGGING_FILTER_INTERPRETER_H_

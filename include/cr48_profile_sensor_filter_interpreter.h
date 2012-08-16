@@ -8,6 +8,7 @@
 #include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_CR48_PROFILE_SENSOR_FILTER_INTERPRETER_H_
 #define GESTURES_CR48_PROFILE_SENSOR_FILTER_INTERPRETER_H_
@@ -75,7 +76,8 @@ class Cr48ProfileSensorFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest);
 
  public:
-  Cr48ProfileSensorFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  Cr48ProfileSensorFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
+                                     Tracer* tracer);
   virtual ~Cr48ProfileSensorFilterInterpreter() {}
 
  protected:

@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 
 #include "gestures/include/apple_trackpad_filter_interpreter.h"
+#include "gestures/include/tracer.h"
 
 #include <base/memory/scoped_ptr.h>
 
 namespace gestures {
 
 AppleTrackpadFilterInterpreter::AppleTrackpadFilterInterpreter(
-    PropRegistry* prop_reg, Interpreter* next)
-    : FilterInterpreter(next),
-      enabled_(prop_reg, "Apple TP Filter Enable", 0) {}
+    PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
+    : FilterInterpreter(next, tracer),
+      enabled_(prop_reg, "Apple TP Filter Enable", 0) {
+  InitName();
+}
 
 Gesture* AppleTrackpadFilterInterpreter::SyncInterpretImpl(
     HardwareState* hwstate, stime_t* timeout) {

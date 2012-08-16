@@ -10,6 +10,7 @@
 #include "gestures/include/activity_log.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_INTERPRETER_H__
 #define GESTURES_INTERPRETER_H__
@@ -29,9 +30,10 @@ class Interpreter {
   FRIEND_TEST(InterpreterTest, ResetLogTest);
   FRIEND_TEST(LoggingFilterInterpreterTest, LogResetHandlerTest);
  public:
-  Interpreter(PropRegistry* prop_reg);
-  Interpreter();
-  virtual ~Interpreter() {}
+  Interpreter(PropRegistry* prop_reg, Tracer* tracer);
+  explicit Interpreter(Tracer* tracer);
+  Interpreter();  //For unittest
+  virtual ~Interpreter();
 
   // Called to interpret the current state and optionally produce 1
   // resulting gesture. The passed |hwstate| may be modified.
@@ -54,18 +56,19 @@ class Interpreter {
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
   virtual DictionaryValue* EncodeCommonInfo();
-
   std::string Encode();
 
   virtual void Clear() {
     log_.Clear();
   }
 
-  std::string GetName();
+  const char* name() const { return name_; }
 
  protected:
   bool logging_enabled_;
   ActivityLog log_;
+  void InitName();
+  void Trace(const char* message, const char* name);
 
   virtual Gesture* SyncInterpretImpl(HardwareState* hwstate,
                                  stime_t* timeout) {
@@ -77,7 +80,8 @@ class Interpreter {
   virtual void SetHardwarePropertiesImpl(const HardwareProperties& hwprops) {}
 
  private:
-  std::string name_;
+  const char* name_;
+  Tracer* tracer_;
   void LogOutputs(Gesture* result, stime_t* timeout);
 };
 }  // namespace gestures

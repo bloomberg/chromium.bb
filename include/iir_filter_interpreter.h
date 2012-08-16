@@ -10,6 +10,7 @@
 #include "gestures/include/gestures.h"
 #include "gestures/include/map.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_IIR_FILTER_INTERPRETER_H_
 #define GESTURES_IIR_FILTER_INTERPRETER_H_
@@ -65,7 +66,8 @@ class IirFilterInterpreter : public FilterInterpreter, public PropertyDelegate {
   };
 
   // Takes ownership of |next|:
-  IirFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  IirFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
+                       Tracer* tracer);
   virtual ~IirFilterInterpreter() {}
 
  protected:

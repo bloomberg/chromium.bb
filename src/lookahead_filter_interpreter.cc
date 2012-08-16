@@ -8,6 +8,7 @@
 #include <math.h>
 #include <values.h>
 
+#include "gestures/include/tracer.h"
 #include "gestures/include/util.h"
 
 using std::max;
@@ -20,8 +21,8 @@ static const stime_t kMaxDelay = 0.09;  // 90ms
 }
 
 LookaheadFilterInterpreter::LookaheadFilterInterpreter(
-    PropRegistry* prop_reg, Interpreter* next)
-    : FilterInterpreter(next),
+    PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
+    : FilterInterpreter(next, tracer),
       last_id_(0), max_fingers_per_hwstate_(0), interpreter_due_(-1.0),
       last_interpreted_time_(0.0),
       min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
@@ -35,7 +36,9 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
                                 15.0),
       quick_move_thresh_(prop_reg, "Quick Move Distance Thresh", 3.0),
       co_move_ratio_(prop_reg, "Drumroll Co Move Ratio", 1.2),
-      suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1) {}
+      suppress_immediate_tapdown_(prop_reg, "Suppress Immediate Tapdown", 1) {
+  InitName();
+}
 
 LookaheadFilterInterpreter::~LookaheadFilterInterpreter() {}
 

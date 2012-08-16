@@ -155,7 +155,8 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
         base_interpreter->return_values_.push_back(expected_movement);
       }
 
-      interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+      interpreter.reset(new LookaheadFilterInterpreter(
+          NULL, base_interpreter, NULL));
       interpreter->SetHardwareProperties(initial_hwprops);
       interpreter->min_delay_.val_ = 0.05;
       EXPECT_TRUE(base_interpreter->set_hwprops_called_);
@@ -235,7 +236,7 @@ class LookaheadFilterInterpreterVariableDelayTestInterpreter
 TEST(LookaheadFilterInterpreterTest, VariableDelayTest) {
   LookaheadFilterInterpreterVariableDelayTestInterpreter* base_interpreter =
       new LookaheadFilterInterpreterVariableDelayTestInterpreter;
-  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -310,7 +311,7 @@ class LookaheadFilterInterpreterNoTapSetTestInterpreter
 TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
   LookaheadFilterInterpreterNoTapSetTestInterpreter* base_interpreter =
       new LookaheadFilterInterpreterNoTapSetTestInterpreter;
-  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   interpreter.min_delay_.val_ = 0.0;
 
   HardwareProperties initial_hwprops = {
@@ -374,7 +375,8 @@ TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest) {
 
   base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
   base_interpreter->timer_return_ = 1.0;
-  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter.reset(new LookaheadFilterInterpreter(
+      NULL, base_interpreter, NULL));
   interpreter->SetHardwareProperties(initial_hwprops);
   interpreter->min_delay_.val_ = 0.05;
   EXPECT_TRUE(base_interpreter->set_hwprops_called_);
@@ -407,7 +409,7 @@ TEST(LookaheadFilterInterpreterTest, TimeGoesBackwardsTest) {
                                       1.0);  // dy
   base_interpreter->return_values_.push_back(expected_movement);
   base_interpreter->return_values_.push_back(expected_movement);
-  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -540,7 +542,8 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
                 3,  // end time
                 0,  // dx
                 3));  // dy
-    interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+    interpreter.reset(new LookaheadFilterInterpreter(
+        NULL, base_interpreter, NULL));
     interpreter->SetHardwareProperties(initial_hwprops);
     interpreter->min_delay_.val_ = 0.05;
 
@@ -606,7 +609,8 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
               2,  // end time
               0,  // dx
               2));  // dy
-  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter.reset(new LookaheadFilterInterpreter(
+      NULL, base_interpreter, NULL));
   interpreter->SetHardwareProperties(initial_hwprops);
 
   stime_t timeout = -1.0;
@@ -689,7 +693,8 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
               1,  // end time
               0,  // dx
               1));  // dy
-  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter.reset(new LookaheadFilterInterpreter(
+      NULL, base_interpreter, NULL));
   interpreter->SetHardwareProperties(initial_hwprops);
 
   for (size_t i = 0; i < arraysize(hsid); i++) {
@@ -741,7 +746,8 @@ TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
   };
 
   base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
-  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter.reset(new LookaheadFilterInterpreter(
+      NULL, base_interpreter, NULL));
   interpreter->SetHardwareProperties(initial_hwprops);
 
   stime_t timeout = -1.0;
@@ -828,7 +834,8 @@ TEST(LookaheadFilterInterpreterTest, QuickSwipeTest) {
   };
 
   base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
-  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter.reset(new LookaheadFilterInterpreter(
+      NULL, base_interpreter, NULL));
   interpreter->SetHardwareProperties(initial_hwprops);
 
   interpreter->min_delay_.val_ = 0.017;
@@ -1047,7 +1054,8 @@ TEST(LookaheadFilterInterpreterTest, CyapaDrumrollTest) {
       }
       base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
       base_interpreter->expected_id_ = 1;
-      interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+      interpreter.reset(new LookaheadFilterInterpreter(
+          NULL, base_interpreter, NULL));
       interpreter->SetHardwareProperties(initial_hwprops);
     }
     if (input.jump_here_) {
@@ -1086,7 +1094,7 @@ struct CyapaQuickTwoFingerMoveTestInputs {
 TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter =
       new LookaheadFilterInterpreterTestInterpreter;
-  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter, NULL);
   interpreter.min_delay_.val_ = 0.0;
 
   HardwareProperties initial_hwprops = {
@@ -1187,7 +1195,8 @@ TEST(LookaheadFilterInterpreterTest, SemiMtNoTrackingIdAssignmentTest) {
   };
 
   base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
-  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter.reset(new LookaheadFilterInterpreter(
+      NULL, base_interpreter, NULL));
   interpreter->SetHardwareProperties(hwprops);
 
   stime_t timeout = -1.0;

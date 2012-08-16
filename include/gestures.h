@@ -13,6 +13,7 @@
 
 #include <base/basictypes.h>
 #include <base/memory/scoped_ptr.h>
+
 extern "C" {
 #endif
 
@@ -352,6 +353,7 @@ class FingerMetrics;
 class Interpreter;
 class PropRegistry;
 class LoggingFilterInterpreter;
+class Tracer;
 
 struct GestureInterpreter {
  public:
@@ -380,6 +382,7 @@ struct GestureInterpreter {
   void* callback_data_;
 
   scoped_ptr<PropRegistry> prop_reg_;
+  scoped_ptr<Tracer> tracer_;
   scoped_ptr<FingerMetrics> finger_metrics_;
   scoped_ptr<Interpreter> interpreter_;
 

@@ -6,6 +6,7 @@
 
 #include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_INTEGRAL_GESTURE_FILTER_INTERPRETER_H_
 #define GESTURES_INTEGRAL_GESTURE_FILTER_INTERPRETER_H_
@@ -21,7 +22,7 @@ namespace gestures {
 class IntegralGestureFilterInterpreter : public FilterInterpreter {
  public:
   // Takes ownership of |next|:
-  explicit IntegralGestureFilterInterpreter(Interpreter* next);
+  explicit IntegralGestureFilterInterpreter(Interpreter* next, Tracer* tracer);
   virtual ~IntegralGestureFilterInterpreter();
 
  private:

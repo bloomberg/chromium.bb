@@ -8,6 +8,7 @@
 #include "gestures/include/filter_interpreter.h"
 #include "gestures/include/gestures.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/tracer.h"
 
 #ifndef GESTURES_APPLE_TRACKPAD_FILTER_INTERPRETER_H_
 #define GESTURES_APPLE_TRACKPAD_FILTER_INTERPRETER_H_
@@ -22,7 +23,8 @@ class AppleTrackpadFilterInterpreter : public FilterInterpreter,
   FRIEND_TEST(AppleTrackpadFilterInterpreterTest, SimpleTest);
  public:
   // Takes ownership of |next|:
-  AppleTrackpadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
+  AppleTrackpadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next,
+                                 Tracer* tracer);
   virtual ~AppleTrackpadFilterInterpreter() {}
 
  protected:

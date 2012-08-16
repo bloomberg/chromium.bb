@@ -56,7 +56,7 @@ struct InputAndExpectedOutput {
 TEST(BoxFilterInterpreterTest, SimpleTest) {
   BoxFilterInterpreterTestInterpreter* base_interpreter =
       new BoxFilterInterpreterTestInterpreter;
-  BoxFilterInterpreter interpreter(NULL, base_interpreter);
+  BoxFilterInterpreter interpreter(NULL, base_interpreter, NULL);
 
   interpreter.box_width_.val_ = 1.0;
 

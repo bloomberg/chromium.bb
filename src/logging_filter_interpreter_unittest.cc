@@ -38,7 +38,7 @@ TEST(LoggingFilterInterpreterTest, LogResetHandlerTest) {
   PropRegistry prop_reg;
   LoggingFilterInterpreterResetLogTestInterpreter* base_interpreter =
       new LoggingFilterInterpreterResetLogTestInterpreter();
-  LoggingFilterInterpreter interpreter(&prop_reg, base_interpreter);
+  LoggingFilterInterpreter interpreter(&prop_reg, base_interpreter, NULL);
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom

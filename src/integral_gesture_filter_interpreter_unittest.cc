@@ -56,7 +56,7 @@ class IntegralGestureFilterInterpreterTestInterpreter : public Interpreter {
 TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
-  IntegralGestureFilterInterpreter interpreter(base_interpreter);
+  IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
 
   // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
   base_interpreter->return_values_.push_back(
@@ -132,7 +132,7 @@ TEST(IntegralGestureFilterInterpreterTestInterpreter, OverflowTest) {
 TEST(IntegralGestureFilterInterpreterTest, ResetTest) {
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
-  IntegralGestureFilterInterpreter interpreter(base_interpreter);
+  IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
 
   // causing finger, dx, dy, fingers, buttons down, buttons mask, hwstate:
   base_interpreter->return_values_.push_back(
@@ -169,7 +169,7 @@ TEST(IntegralGestureFilterInterpreterTest, SetHwpropsTest) {
   };
   IntegralGestureFilterInterpreterTestInterpreter* base_interpreter =
       new IntegralGestureFilterInterpreterTestInterpreter;
-  IntegralGestureFilterInterpreter interpreter(base_interpreter);
+  IntegralGestureFilterInterpreter interpreter(base_interpreter, NULL);
   interpreter.SetHardwareProperties(hwprops);
   EXPECT_TRUE(base_interpreter->set_hwprops_called_);
 }
