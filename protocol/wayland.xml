@@ -1006,7 +1006,7 @@
 	output device.
 
 	The flipped values correspond to an initial flip around a
-	vertical axis followed by rotaion.
+	vertical axis followed by rotation.
 
 	The purpose is mainly to allow clients render accordingly and
 	tell the compositor, so that for fullscreen surfaces, the
