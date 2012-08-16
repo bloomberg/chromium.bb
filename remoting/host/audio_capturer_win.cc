@@ -53,7 +53,7 @@ class AudioCapturerWin : public AudioCapturer {
   // to the network.
   void DoCapture();
 
-  static bool IsPacketOfSilence(const AudioPacket* packet);
+  static bool IsPacketOfSilence(const int16* samples, int number_of_samples);
 
   PacketCapturedCallback callback_;
 
@@ -274,15 +274,19 @@ void AudioCapturerWin::DoCapture() {
       return;
     }
 
-    scoped_ptr<AudioPacket> packet = scoped_ptr<AudioPacket>(new AudioPacket());
-    packet->set_data(data, frames * wave_format_ex_->nBlockAlign);
-    packet->set_sampling_rate(sampling_rate_);
-    packet->set_bytes_per_sample(
-        static_cast<AudioPacket::BytesPerSample>(sizeof(int16)));
-    packet->set_encoding(AudioPacket::ENCODING_RAW);
+    if (!IsPacketOfSilence(
+          reinterpret_cast<const int16*>(data),
+          frames * kChannels)) {
+      scoped_ptr<AudioPacket> packet =
+          scoped_ptr<AudioPacket>(new AudioPacket());
+      packet->add_data(data, frames * wave_format_ex_->nBlockAlign);
+      packet->set_sampling_rate(sampling_rate_);
+      packet->set_bytes_per_sample(
+          static_cast<AudioPacket::BytesPerSample>(sizeof(int16)));
+      packet->set_encoding(AudioPacket::ENCODING_RAW);
 
-    if (!IsPacketOfSilence(packet.get()))
       callback_.Run(packet.Pass());
+    }
 
     hr = audio_capture_client_->ReleaseBuffer(frames);
     if (FAILED(hr)) {
@@ -295,14 +299,10 @@ void AudioCapturerWin::DoCapture() {
 // Detects whether there is audio playing in a packet of samples.
 // Windows can give nonzero samples, even when there is no audio playing, so
 // extremely low amplitude samples are counted as silence.
-bool AudioCapturerWin::IsPacketOfSilence(const AudioPacket* packet) {
-  DCHECK_EQ(static_cast<AudioPacket::BytesPerSample>(sizeof(int16)),
-            packet->bytes_per_sample());
-  const int16* data = reinterpret_cast<const int16*>(packet->data().data());
-  int number_of_samples = packet->data().size() * kBitsPerByte / kBitsPerSample;
-
+bool AudioCapturerWin::IsPacketOfSilence(
+    const int16* samples, int number_of_samples) {
   for (int i = 0; i < number_of_samples; i++) {
-    if (abs(data[i]) > kSilenceThreshold)
+    if (abs(samples[i]) > kSilenceThreshold)
       return false;
   }
   return true;

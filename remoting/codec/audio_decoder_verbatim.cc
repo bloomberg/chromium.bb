@@ -17,7 +17,13 @@ AudioDecoderVerbatim::~AudioDecoderVerbatim() {
 
 scoped_ptr<AudioPacket> AudioDecoderVerbatim::Decode(
     scoped_ptr<AudioPacket> packet) {
-  DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
+  // Return a null scoped_ptr if we get a corrupted packet.
+  if ((packet->encoding() != AudioPacket::ENCODING_RAW) ||
+      (packet->data_size() != 1) ||
+      (packet->sampling_rate() == AudioPacket::SAMPLING_RATE_INVALID) ||
+      (packet->bytes_per_sample() == AudioPacket::BYTES_PER_SAMPLE_INVALID)) {
+    return scoped_ptr<AudioPacket>();
+  }
   return packet.Pass();
 }
 

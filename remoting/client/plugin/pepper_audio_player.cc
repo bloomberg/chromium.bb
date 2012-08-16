@@ -74,7 +74,14 @@ bool PepperAudioPlayer::ResetAudioPlayer(
 void PepperAudioPlayer::ProcessAudioPacket(scoped_ptr<AudioPacket> packet) {
   // TODO(kxing): Limit the size of the queue so that latency doesn't grow
   // too large.
-  if (packet->data().size() % (kChannels * kSampleSizeBytes) != 0) {
+
+  // Drop null packets.
+  if (!packet.get())
+    return;
+
+  CHECK_EQ(1, packet->data_size());
+  DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
+  if (packet->data(0).size() % (kChannels * kSampleSizeBytes) != 0) {
     LOG(WARNING) << "Received corrupted packet.";
     return;
   }
@@ -129,14 +136,14 @@ void PepperAudioPlayer::FillWithSamples(void* samples, uint32_t buffer_size) {
     }
 
     // Pop off the packet if we've already consumed all its bytes.
-    if (queued_packets_.front()->data().size() == bytes_consumed_) {
+    if (queued_packets_.front()->data(0).size() == bytes_consumed_) {
       delete queued_packets_.front();
       queued_packets_.pop_front();
       bytes_consumed_ = 0;
       continue;
     }
 
-    const std::string& packet_data = queued_packets_.front()->data();
+    const std::string& packet_data = queued_packets_.front()->data(0);
     size_t bytes_to_copy = std::min(
         packet_data.size() - bytes_consumed_,
         bytes_needed - bytes_extracted);

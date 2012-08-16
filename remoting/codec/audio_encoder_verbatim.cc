@@ -16,6 +16,7 @@ AudioEncoderVerbatim::~AudioEncoderVerbatim() {}
 scoped_ptr<AudioPacket> AudioEncoderVerbatim::Encode(
     scoped_ptr<AudioPacket> packet) {
   DCHECK_EQ(AudioPacket::ENCODING_RAW, packet->encoding());
+  DCHECK_EQ(1, packet->data_size());
   return packet.Pass();
 }
 
