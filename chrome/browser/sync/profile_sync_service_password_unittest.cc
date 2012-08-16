@@ -99,7 +99,17 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
 
   virtual ~PasswordTestProfileSyncService() {}
 
-  virtual void OnPassphraseAccepted() {
+  virtual void OnPassphraseRequired(
+      syncer::PassphraseRequiredReason reason,
+      const sync_pb::EncryptedData& pending_keys) OVERRIDE {
+    // We purposely don't let passphrase_required_reason_ get set here, in order
+    // to let the datatype manager get blocked later (at which point we then
+    // set the encryption passphrase).
+    // On a normal client, we would have initialized the cryptographer with the
+    // login credentials.
+  }
+
+  virtual void OnPassphraseAccepted() OVERRIDE {
     if (!callback_.is_null())
       callback_.Run();
 

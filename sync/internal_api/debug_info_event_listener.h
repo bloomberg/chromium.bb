@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_backend.h"
@@ -24,6 +25,7 @@ const unsigned int kMaxEntries = 6;
 // Listens to events and records them in a queue. And passes the events to
 // syncer when requested.
 class DebugInfoEventListener : public SyncManager::Observer,
+                               public SyncEncryptionHandler::Observer,
                                public sessions::DebugInfoGetter {
  public:
   DebugInfoEventListener();
@@ -37,20 +39,24 @@ class DebugInfoEventListener : public SyncManager::Observer,
       bool success, ModelTypeSet restored_types) OVERRIDE;
   virtual void OnConnectionStatusChange(
       ConnectionStatus connection_status) OVERRIDE;
+  virtual void OnStopSyncingPermanently() OVERRIDE;
+  virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
+  virtual void OnActionableError(
+      const SyncProtocolError& sync_error) OVERRIDE;
+
+  // SyncEncryptionHandler::Observer implementation.
   virtual void OnPassphraseRequired(
       PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
   virtual void OnPassphraseAccepted() OVERRIDE;
   virtual void OnBootstrapTokenUpdated(
       const std::string& bootstrap_token) OVERRIDE;
-  virtual void OnStopSyncingPermanently() OVERRIDE;
-  virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnEncryptedTypesChanged(
       ModelTypeSet encrypted_types,
       bool encrypt_everything) OVERRIDE;
   virtual void OnEncryptionComplete() OVERRIDE;
-  virtual void OnActionableError(
-      const SyncProtocolError& sync_error) OVERRIDE;
+  virtual void OnCryptographerStateChanged(
+      Cryptographer* cryptographer) OVERRIDE;
 
   // Sync manager events.
   void OnNudgeFromDatatype(ModelType datatype);
@@ -58,10 +64,6 @@ class DebugInfoEventListener : public SyncManager::Observer,
 
   // DebugInfoGetter Implementation.
   virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
-
-  // Functions to set cryptographer state.
-  void SetCrytographerHasPendingKeys(bool pending_keys);
-  void SetCryptographerReady(bool ready);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyEventsAdded);

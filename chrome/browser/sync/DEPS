@@ -13,5 +13,7 @@ include_rules = [
   "+sync/syncable",
   # Used by autofill tests, which should use the public sync API instead.
   "+sync/test/engine/test_id_factory.h",
-
+  # Bug 142476. Used by profile sync service bookmark test, which should rely on
+  # TestProfileSyncService instead.
+  "+sync/test/fake_sync_encryption_handler.h",
 ]

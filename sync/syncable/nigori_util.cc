@@ -246,5 +246,70 @@ bool UpdateEntryWithEncryption(
   return true;
 }
 
+void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
+                                    bool encrypt_everything,
+                                    sync_pb::NigoriSpecifics* nigori) {
+  nigori->set_encrypt_everything(encrypt_everything);
+  COMPILE_ASSERT(17, MODEL_TYPE_COUNT);
+  nigori->set_encrypt_bookmarks(
+      encrypted_types.Has(BOOKMARKS));
+  nigori->set_encrypt_preferences(
+      encrypted_types.Has(PREFERENCES));
+  nigori->set_encrypt_autofill_profile(
+      encrypted_types.Has(AUTOFILL_PROFILE));
+  nigori->set_encrypt_autofill(encrypted_types.Has(AUTOFILL));
+  nigori->set_encrypt_themes(encrypted_types.Has(THEMES));
+  nigori->set_encrypt_typed_urls(
+      encrypted_types.Has(TYPED_URLS));
+  nigori->set_encrypt_extension_settings(
+      encrypted_types.Has(EXTENSION_SETTINGS));
+  nigori->set_encrypt_extensions(
+      encrypted_types.Has(EXTENSIONS));
+  nigori->set_encrypt_search_engines(
+      encrypted_types.Has(SEARCH_ENGINES));
+  nigori->set_encrypt_sessions(encrypted_types.Has(SESSIONS));
+  nigori->set_encrypt_app_settings(
+      encrypted_types.Has(APP_SETTINGS));
+  nigori->set_encrypt_apps(encrypted_types.Has(APPS));
+  nigori->set_encrypt_app_notifications(
+      encrypted_types.Has(APP_NOTIFICATIONS));
+}
+
+ModelTypeSet GetEncryptedTypesFromNigori(
+    const sync_pb::NigoriSpecifics& nigori) {
+  if (nigori.encrypt_everything())
+    return ModelTypeSet::All();
+
+  ModelTypeSet encrypted_types;
+  COMPILE_ASSERT(17, MODEL_TYPE_COUNT);
+  if (nigori.encrypt_bookmarks())
+    encrypted_types.Put(BOOKMARKS);
+  if (nigori.encrypt_preferences())
+    encrypted_types.Put(PREFERENCES);
+  if (nigori.encrypt_autofill_profile())
+    encrypted_types.Put(AUTOFILL_PROFILE);
+  if (nigori.encrypt_autofill())
+    encrypted_types.Put(AUTOFILL);
+  if (nigori.encrypt_themes())
+    encrypted_types.Put(THEMES);
+  if (nigori.encrypt_typed_urls())
+    encrypted_types.Put(TYPED_URLS);
+  if (nigori.encrypt_extension_settings())
+    encrypted_types.Put(EXTENSION_SETTINGS);
+  if (nigori.encrypt_extensions())
+    encrypted_types.Put(EXTENSIONS);
+  if (nigori.encrypt_search_engines())
+    encrypted_types.Put(SEARCH_ENGINES);
+  if (nigori.encrypt_sessions())
+    encrypted_types.Put(SESSIONS);
+  if (nigori.encrypt_app_settings())
+    encrypted_types.Put(APP_SETTINGS);
+  if (nigori.encrypt_apps())
+    encrypted_types.Put(APPS);
+  if (nigori.encrypt_app_notifications())
+    encrypted_types.Put(APP_NOTIFICATIONS);
+  return encrypted_types;
+}
+
 }  // namespace syncable
 }  // namespace syncer

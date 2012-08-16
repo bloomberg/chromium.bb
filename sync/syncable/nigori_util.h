@@ -68,6 +68,16 @@ bool UpdateEntryWithEncryption(
     const sync_pb::EntitySpecifics& new_specifics,
     MutableEntry* entry);
 
+// Updates |nigori| to match the encryption state specified by |encrypted_types|
+// and |encrypt_everything|.
+void UpdateNigoriFromEncryptedTypes(ModelTypeSet encrypted_types,
+                                    bool encrypt_everything,
+                                    sync_pb::NigoriSpecifics* nigori);
+
+// Extracts the set of encrypted types from a nigori node.
+ModelTypeSet GetEncryptedTypesFromNigori(
+    const sync_pb::NigoriSpecifics& nigori);
+
 }  // namespace syncable
 }  // namespace syncer
 

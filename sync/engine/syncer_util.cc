@@ -217,7 +217,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
   // the nigori node (e.g. on restart), they will commit without issue.
   if (specifics.has_nigori()) {
     const sync_pb::NigoriSpecifics& nigori = specifics.nigori();
-    cryptographer->Update(nigori);
+    cryptographer->ApplyNigoriUpdate(nigori, trans);
 
     // Make sure any unsynced changes are properly encrypted as necessary.
     // We only perform this if the cryptographer is ready. If not, these are

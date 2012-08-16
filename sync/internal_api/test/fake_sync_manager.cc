@@ -19,6 +19,7 @@
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/object_id_payload_map.h"
 #include "sync/notifier/sync_notifier.h"
+#include "sync/test/fake_sync_encryption_handler.h"
 
 namespace syncer {
 
@@ -27,7 +28,9 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
                                  ModelTypeSet configure_fail_types) :
     initial_sync_ended_types_(initial_sync_ended_types),
     progress_marker_types_(progress_marker_types),
-    configure_fail_types_(configure_fail_types) {}
+    configure_fail_types_(configure_fail_types) {
+  fake_encryption_handler_.reset(new FakeSyncEncryptionHandler());
+}
 
 FakeSyncManager::~FakeSyncManager() {}
 
@@ -180,15 +183,6 @@ void FakeSyncManager::StartSyncingNormally(
   // Do nothing.
 }
 
-void FakeSyncManager::SetEncryptionPassphrase(const std::string& passphrase,
-                                              bool is_explicit) {
-  NOTIMPLEMENTED();
-}
-
-void FakeSyncManager::SetDecryptionPassphrase(const std::string& passphrase) {
-  NOTIMPLEMENTED();
-}
-
 void FakeSyncManager::ConfigureSyncer(
     ConfigureReason reason,
     const ModelTypeSet& types_to_config,
@@ -235,11 +229,6 @@ SyncStatus FakeSyncManager::GetDetailedStatus() const {
   return SyncStatus();
 }
 
-bool FakeSyncManager::IsUsingExplicitPassphrase() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool FakeSyncManager::GetKeystoreKeyBootstrapToken(std::string* token) {
   return false;
 }
@@ -259,17 +248,7 @@ void FakeSyncManager::ShutdownOnSyncThread() {
 }
 
 UserShare* FakeSyncManager::GetUserShare() {
-  NOTIMPLEMENTED();
   return NULL;
-}
-
-void FakeSyncManager::RefreshNigori(const std::string& chrome_version,
-                                    const base::Closure& done_callback) {
-  done_callback.Run();
-}
-
-void FakeSyncManager::EnableEncryptEverything() {
-  NOTIMPLEMENTED();
 }
 
 bool FakeSyncManager::ReceivedExperiment(Experiments* experiments) {
@@ -279,6 +258,10 @@ bool FakeSyncManager::ReceivedExperiment(Experiments* experiments) {
 bool FakeSyncManager::HasUnsyncedItems() {
   NOTIMPLEMENTED();
   return false;
+}
+
+SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
+  return fake_encryption_handler_.get();
 }
 
 void FakeSyncManager::InvalidateOnSyncThread(

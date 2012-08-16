@@ -8,6 +8,8 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "sync/protocol/nigori_specifics.pb.h"
+#include "sync/syncable/nigori_handler.h"
 #include "sync/util/encryptor.h"
 
 namespace syncer {
@@ -20,26 +22,36 @@ const char kNigoriTag[] = "google_chrome_nigori";
 // assign the same name to a particular triplet.
 const char kNigoriKeyName[] = "nigori-key";
 
-Cryptographer::Observer::~Observer() {}
-
 Cryptographer::Cryptographer(Encryptor* encryptor)
     : encryptor_(encryptor),
       default_nigori_(NULL),
       keystore_nigori_(NULL),
-      encrypted_types_(SensitiveTypes()),
-      encrypt_everything_(false) {
+      nigori_node_handler_(NULL) {
   DCHECK(encryptor);
 }
 
 Cryptographer::~Cryptographer() {}
 
-void Cryptographer::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
+void Cryptographer::SetNigoriHandler(syncable::NigoriHandler* delegate) {
+  nigori_node_handler_ = delegate;
 }
 
-void Cryptographer::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
+void Cryptographer::ApplyNigoriUpdate(
+    const sync_pb::NigoriSpecifics& nigori,
+    syncable::BaseTransaction* const trans) {
+  nigori_node_handler_->ApplyNigoriUpdate(nigori, trans);
 }
+
+ModelTypeSet Cryptographer::GetEncryptedTypes() const {
+  return nigori_node_handler_->GetEncryptedTypes();
+}
+
+void Cryptographer::UpdateNigoriFromEncryptedTypes(
+    sync_pb::NigoriSpecifics* nigori,
+    syncable::BaseTransaction* const trans) const {
+  nigori_node_handler_->UpdateNigoriFromEncryptedTypes(nigori, trans);
+}
+
 
 void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
   if (is_initialized()) {
@@ -194,6 +206,11 @@ void Cryptographer::InstallKeys(const sync_pb::EncryptedData& encrypted) {
   InstallKeyBag(bag);
 }
 
+void Cryptographer::SetDefaultKey(const std::string& key_name) {
+  DCHECK(nigoris_.end() != nigoris_.find(key_name));
+  default_nigori_ = &*nigoris_.find(key_name);
+}
+
 void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
   DCHECK(!CanDecrypt(encrypted));
   pending_keys_.reset(new sync_pb::EncryptedData(encrypted));
@@ -311,29 +328,6 @@ Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
   return nigori.release();
 }
 
-Cryptographer::UpdateResult Cryptographer::Update(
-    const sync_pb::NigoriSpecifics& nigori) {
-  UpdateEncryptedTypesFromNigori(nigori);
-  if (!nigori.encrypted().blob().empty()) {
-    if (CanDecrypt(nigori.encrypted())) {
-      InstallKeys(nigori.encrypted());
-      // We only update the default passphrase if this was a new explicit
-      // passphrase. Else, since it was decryptable, it must not have been a new
-      // key.
-      if (nigori.using_explicit_passphrase()) {
-        std::string new_default_key_name = nigori.encrypted().key_name();
-        DCHECK(nigoris_.end() != nigoris_.find(new_default_key_name));
-        default_nigori_ = &*nigoris_.find(new_default_key_name);
-      }
-      return Cryptographer::SUCCESS;
-    } else {
-      SetPendingKeys(nigori.encrypted());
-      return Cryptographer::NEEDS_PASSPHRASE;
-    }
-  }
-  return Cryptographer::SUCCESS;
-}
-
 bool Cryptographer::SetKeystoreKey(const std::string& keystore_key) {
   if (keystore_key.empty())
     return false;
@@ -353,128 +347,6 @@ bool Cryptographer::SetKeystoreKey(const std::string& keystore_key) {
 
 bool Cryptographer::HasKeystoreKey() const {
   return keystore_nigori_ != NULL;
-}
-
-// Static
-ModelTypeSet Cryptographer::SensitiveTypes() {
-  // Both of these have their own encryption schemes, but we include them
-  // anyways.
-  ModelTypeSet types;
-  types.Put(PASSWORDS);
-  types.Put(NIGORI);
-  return types;
-}
-
-void Cryptographer::UpdateEncryptedTypesFromNigori(
-    const sync_pb::NigoriSpecifics& nigori) {
-  if (nigori.encrypt_everything()) {
-    set_encrypt_everything();
-    return;
-  }
-
-  ModelTypeSet encrypted_types(SensitiveTypes());
-  if (nigori.encrypt_bookmarks())
-    encrypted_types.Put(BOOKMARKS);
-  if (nigori.encrypt_preferences())
-    encrypted_types.Put(PREFERENCES);
-  if (nigori.encrypt_autofill_profile())
-    encrypted_types.Put(AUTOFILL_PROFILE);
-  if (nigori.encrypt_autofill())
-    encrypted_types.Put(AUTOFILL);
-  if (nigori.encrypt_themes())
-    encrypted_types.Put(THEMES);
-  if (nigori.encrypt_typed_urls())
-    encrypted_types.Put(TYPED_URLS);
-  if (nigori.encrypt_extension_settings())
-    encrypted_types.Put(EXTENSION_SETTINGS);
-  if (nigori.encrypt_extensions())
-    encrypted_types.Put(EXTENSIONS);
-  if (nigori.encrypt_search_engines())
-    encrypted_types.Put(SEARCH_ENGINES);
-  if (nigori.encrypt_sessions())
-    encrypted_types.Put(SESSIONS);
-  if (nigori.encrypt_app_settings())
-    encrypted_types.Put(APP_SETTINGS);
-  if (nigori.encrypt_apps())
-    encrypted_types.Put(APPS);
-  if (nigori.encrypt_app_notifications())
-    encrypted_types.Put(APP_NOTIFICATIONS);
-
-  // Note: the initial version with encryption did not support the
-  // encrypt_everything field. If anything more than the sensitive types were
-  // encrypted, it meant we were encrypting everything.
-  if (!nigori.has_encrypt_everything() &&
-      !Difference(encrypted_types, SensitiveTypes()).Empty()) {
-    set_encrypt_everything();
-    return;
-  }
-
-  MergeEncryptedTypes(encrypted_types);
-}
-
-void Cryptographer::UpdateNigoriFromEncryptedTypes(
-    sync_pb::NigoriSpecifics* nigori) const {
-  nigori->set_encrypt_everything(encrypt_everything_);
-  nigori->set_encrypt_bookmarks(
-      encrypted_types_.Has(BOOKMARKS));
-  nigori->set_encrypt_preferences(
-      encrypted_types_.Has(PREFERENCES));
-  nigori->set_encrypt_autofill_profile(
-      encrypted_types_.Has(AUTOFILL_PROFILE));
-  nigori->set_encrypt_autofill(encrypted_types_.Has(AUTOFILL));
-  nigori->set_encrypt_themes(encrypted_types_.Has(THEMES));
-  nigori->set_encrypt_typed_urls(
-      encrypted_types_.Has(TYPED_URLS));
-  nigori->set_encrypt_extension_settings(
-      encrypted_types_.Has(EXTENSION_SETTINGS));
-  nigori->set_encrypt_extensions(
-      encrypted_types_.Has(EXTENSIONS));
-  nigori->set_encrypt_search_engines(
-      encrypted_types_.Has(SEARCH_ENGINES));
-  nigori->set_encrypt_sessions(encrypted_types_.Has(SESSIONS));
-  nigori->set_encrypt_app_settings(
-      encrypted_types_.Has(APP_SETTINGS));
-  nigori->set_encrypt_apps(encrypted_types_.Has(APPS));
-  nigori->set_encrypt_app_notifications(
-      encrypted_types_.Has(APP_NOTIFICATIONS));
-}
-
-void Cryptographer::set_encrypt_everything() {
-  if (encrypt_everything_) {
-    DCHECK(encrypted_types_.Equals(ModelTypeSet::All()));
-    return;
-  }
-  encrypt_everything_ = true;
-  // Change |encrypted_types_| directly to avoid sending more than one
-  // notification.
-  encrypted_types_ = ModelTypeSet::All();
-  EmitEncryptedTypesChangedNotification();
-}
-
-bool Cryptographer::encrypt_everything() const {
-  return encrypt_everything_;
-}
-
-ModelTypeSet Cryptographer::GetEncryptedTypes() const {
-  return encrypted_types_;
-}
-
-void Cryptographer::MergeEncryptedTypesForTest(ModelTypeSet encrypted_types) {
-  MergeEncryptedTypes(encrypted_types);
-}
-
-void Cryptographer::MergeEncryptedTypes(ModelTypeSet encrypted_types) {
-  if (encrypted_types_.HasAll(encrypted_types)) {
-    return;
-  }
-  encrypted_types_ = encrypted_types;
-  EmitEncryptedTypesChangedNotification();
-}
-
-void Cryptographer::EmitEncryptedTypesChangedNotification() {
-  FOR_EACH_OBSERVER(
-      Observer, observers_,
-      OnEncryptedTypesChanged(encrypted_types_, encrypt_everything_));
 }
 
 void Cryptographer::InstallKeyBag(const sync_pb::NigoriKeyBag& bag) {

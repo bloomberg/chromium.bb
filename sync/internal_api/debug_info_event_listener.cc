@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/debug_info_event_listener.h"
 
+#include "sync/util/cryptographer.h"
+
 namespace syncer {
 
 using sessions::SyncSessionSnapshot;
@@ -88,17 +90,15 @@ void DebugInfoEventListener::OnEncryptionComplete() {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
 }
 
+void DebugInfoEventListener::OnCryptographerStateChanged(
+    Cryptographer* cryptographer) {
+  cryptographer_has_pending_keys_ = cryptographer->has_pending_keys();
+  cryptographer_ready_ = cryptographer->is_ready();
+}
+
 void DebugInfoEventListener::OnActionableError(
     const SyncProtocolError& sync_error) {
   CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);
-}
-
-void DebugInfoEventListener::SetCrytographerHasPendingKeys(bool pending_keys) {
-  cryptographer_has_pending_keys_ = pending_keys;
-}
-
-void DebugInfoEventListener::SetCryptographerReady(bool ready) {
-  cryptographer_ready_ = ready;
 }
 
 void DebugInfoEventListener::OnNudgeFromDatatype(ModelType datatype) {

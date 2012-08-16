@@ -17,8 +17,10 @@
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/debug_info_event_listener.h"
 #include "sync/internal_api/js_mutation_event_observer.h"
+#include "sync/internal_api/js_sync_encryption_handler_observer.h"
 #include "sync/internal_api/js_sync_manager_observer.h"
 #include "sync/internal_api/public/sync_manager.h"
+#include "sync/internal_api/sync_encryption_handler_impl.h"
 #include "sync/js/js_backend.h"
 #include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/sync_notifier_observer.h"
@@ -46,12 +48,12 @@ class SyncSessionContext;
 // same thread.
 class SyncManagerImpl : public SyncManager,
                         public net::NetworkChangeNotifier::IPAddressObserver,
-                        public Cryptographer::Observer,
                         public SyncNotifierObserver,
                         public JsBackend,
                         public SyncEngineEventListener,
                         public ServerConnectionEventListener,
-                        public syncable::DirectoryChangeDelegate {
+                        public syncable::DirectoryChangeDelegate,
+                        public SyncEncryptionHandler::Observer {
  public:
   // Create an uninitialized SyncManager.  Callers must Init() before using.
   explicit SyncManagerImpl(const std::string& name);
@@ -95,9 +97,6 @@ class SyncManagerImpl : public SyncManager,
       SyncNotifierObserver* handler) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
-  virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       bool is_explicit) OVERRIDE;
-  virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
   virtual void ConfigureSyncer(
       ConfigureReason reason,
       const ModelTypeSet& types_to_config,
@@ -107,27 +106,28 @@ class SyncManagerImpl : public SyncManager,
   virtual void AddObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(SyncManager::Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
-  virtual bool IsUsingExplicitPassphrase() OVERRIDE;
   virtual bool GetKeystoreKeyBootstrapToken(std::string* token) OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
   virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
-
-  // Update the Cryptographer from the current nigori node and write back any
-  // necessary changes to the nigori node. We also detect missing encryption
-  // keys and write them into the nigori node.
-  // Also updates or adds the device information into the nigori node.
-  // Note: opens a transaction and can trigger an ON_PASSPHRASE_REQUIRED, so
-  // should only be called after syncapi is fully initialized.
-  // Calls the callback argument with true if cryptographer is ready, false
-  // otherwise.
-  virtual void RefreshNigori(const std::string& chrome_version,
-                             const base::Closure& done_callback) OVERRIDE;
-
-  virtual void EnableEncryptEverything() OVERRIDE;
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
+  virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
+
+  // SyncEncryptionHandler::Observer implementation.
+  virtual void OnPassphraseRequired(
+      PassphraseRequiredReason reason,
+      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
+  virtual void OnPassphraseAccepted() OVERRIDE;
+  virtual void OnBootstrapTokenUpdated(
+      const std::string& bootstrap_token) OVERRIDE;
+  virtual void OnEncryptedTypesChanged(
+      ModelTypeSet encrypted_types,
+      bool encrypt_everything) OVERRIDE;
+  virtual void OnEncryptionComplete() OVERRIDE;
+  virtual void OnCryptographerStateChanged(
+      Cryptographer* cryptographer) OVERRIDE;
 
   // Return the currently active (validated) username for use with syncable
   // types.
@@ -165,11 +165,6 @@ class SyncManagerImpl : public SyncManager,
   virtual void HandleCalculateChangesChangeEventFromSyncer(
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       syncable::BaseTransaction* trans) OVERRIDE;
-
-  // Cryptographer::Observer implementation.
-  virtual void OnEncryptedTypesChanged(
-      ModelTypeSet encrypted_types,
-      bool encrypt_everything) OVERRIDE;
 
   // SyncNotifierObserver implementation.
   virtual void OnNotificationsEnabled() OVERRIDE;
@@ -240,8 +235,6 @@ class SyncManagerImpl : public SyncManager,
       const tracked_objects::Location& nudge_location,
       ModelTypeSet type);
 
-  void NotifyCryptographerState(Cryptographer* cryptographer);
-
   // If this is a deletion for a password, sets the legacy
   // ExtraPasswordChangeRecordData field of |buffer|. Otherwise sets
   // |buffer|'s specifics field to contain the unencrypted data.
@@ -253,42 +246,11 @@ class SyncManagerImpl : public SyncManager,
                                 bool existed_before,
                                 bool exists_now);
 
-  // Stores the current set of encryption keys (if the cryptographer is ready)
-  // and encrypted types into the nigori node.
-  void UpdateNigoriEncryptionState(Cryptographer* cryptographer,
-                                   WriteNode* nigori_node);
-
-  // Internal callback of UpdateCryptographerAndNigoriCallback.
-  void UpdateCryptographerAndNigoriCallback(
-      const std::string& chrome_version,
-      const base::Closure& done_callback,
-      const std::string& session_name);
-
-  // Updates the nigori node with any new encrypted types and then
-  // encrypts the nodes for those new data types as well as other
-  // nodes that should be encrypted but aren't.  Triggers
-  // OnPassphraseRequired if the cryptographer isn't ready.
-  void RefreshEncryption();
-
-  void ReEncryptEverything(WriteTransaction* trans);
-
-  // The final step of SetEncryptionPassphrase and SetDecryptionPassphrase that
-  // notifies observers of the result of the set passphrase operation, updates
-  // the nigori node, and does re-encryption.
-  // |success|: true if the operation was successful and false otherwise. If
-  //            success == false, we send an OnPassphraseRequired notification.
-  // |bootstrap_token|: used to inform observers if the cryptographer's
-  //                    bootstrap token was updated.
-  // |is_explicit|: used to differentiate between a custom passphrase (true) and
-  //                a GAIA passphrase that is implicitly used for encryption
-  //                (false).
-  // |trans| and |nigori_node|: used to access data in the cryptographer.
-  void FinishSetPassphrase(
-      bool success,
-      const std::string& bootstrap_token,
-      bool is_explicit,
-      WriteTransaction* trans,
-      WriteNode* nigori_node);
+  // Internal callback used by GetSessionName.
+  // TODO(rlarocque): not currently called from anywhere. This should be
+  // hooked up to something once we start preserving device information again.
+  void UpdateSessionNameCallback(const std::string& chrome_version,
+                                 const std::string& session_name);
 
   // Called for every notification. This updates the notification statistics
   // to be displayed in about:sync.
@@ -402,6 +364,7 @@ class SyncManagerImpl : public SyncManager,
   WeakHandle<JsEventHandler> js_event_handler_;
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
+  JsSyncEncryptionHandlerObserver js_sync_encryption_handler_observer_;
 
   ThrottledDataTypeTracker throttled_data_type_tracker_;
 
@@ -414,10 +377,10 @@ class SyncManagerImpl : public SyncManager,
   UnrecoverableErrorHandler* unrecoverable_error_handler_;
   ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
 
-  // The number of times we've automatically (i.e. not via SetPassphrase or
-  // conflict resolver) updated the nigori's encryption keys in this chrome
-  // instantiation.
-  int nigori_overwrite_count_;
+  // Sync's encryption handler. It tracks the set of encrypted types, manages
+  // changing passphrases, and in general handles sync-specific interactions
+  // with the cryptographer.
+  scoped_ptr<SyncEncryptionHandlerImpl> sync_encryption_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncManagerImpl);
 };

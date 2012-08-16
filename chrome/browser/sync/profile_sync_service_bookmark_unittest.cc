@@ -41,6 +41,7 @@
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "sync/test/fake_sync_encryption_handler.h"
 
 namespace browser_sync {
 
@@ -345,10 +346,17 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   virtual void SetUp() {
     test_user_share_.SetUp();
+    SetUpEncryption();
   }
 
   virtual void TearDown() {
     test_user_share_.TearDown();
+  }
+
+  void SetUpEncryption() {
+    syncer::ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
+    fake_encryption_handler_.set_cryptographer(trans.GetCryptographer());
+    trans.GetCryptographer()->SetNigoriHandler(&fake_encryption_handler_);
   }
 
   // Load (or re-load) the bookmark model.  |load| controls use of the
@@ -565,6 +573,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   syncer::TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
   StrictMock<DataTypeErrorHandlerMock> mock_error_handler_;
+  syncer::FakeSyncEncryptionHandler fake_encryption_handler_;
 };
 
 TEST_F(ProfileSyncServiceBookmarkTest, InitialState) {
@@ -1473,8 +1482,8 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData,
   StopSync();
 
   // Nuke the sync DB and reload.
-  test_user_share_.TearDown();
-  test_user_share_.SetUp();
+  TearDown();
+  SetUp();
 
   StartSync();
 

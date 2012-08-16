@@ -50,12 +50,8 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onStopSyncingPermanently",
                             HasDetails(JsEventDetails())));
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onEncryptionComplete",
-                            HasDetails(JsEventDetails())));
 
   js_sync_manager_observer_.OnStopSyncingPermanently();
-  js_sync_manager_observer_.OnEncryptionComplete();
   PumpLoop();
 }
 
@@ -133,44 +129,6 @@ TEST_F(JsSyncManagerObserverTest, OnConnectionStatusChange) {
   PumpLoop();
 }
 
-TEST_F(JsSyncManagerObserverTest, OnPassphraseRequired) {
-  InSequence dummy;
-
-  DictionaryValue reason_passphrase_not_required_details;
-  DictionaryValue reason_encryption_details;
-  DictionaryValue reason_decryption_details;
-
-  reason_passphrase_not_required_details.SetString(
-      "reason",
-      PassphraseRequiredReasonToString(REASON_PASSPHRASE_NOT_REQUIRED));
-  reason_encryption_details.SetString(
-      "reason",
-      PassphraseRequiredReasonToString(REASON_ENCRYPTION));
-  reason_decryption_details.SetString(
-      "reason",
-      PassphraseRequiredReasonToString(REASON_DECRYPTION));
-
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onPassphraseRequired",
-                           HasDetailsAsDictionary(
-                               reason_passphrase_not_required_details)));
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onPassphraseRequired",
-                           HasDetailsAsDictionary(reason_encryption_details)));
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onPassphraseRequired",
-                           HasDetailsAsDictionary(reason_decryption_details)));
-
-  js_sync_manager_observer_.OnPassphraseRequired(
-      REASON_PASSPHRASE_NOT_REQUIRED,
-      sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(REASON_ENCRYPTION,
-                                                 sync_pb::EncryptedData());
-  js_sync_manager_observer_.OnPassphraseRequired(REASON_DECRYPTION,
-                                                 sync_pb::EncryptedData());
-  PumpLoop();
-}
-
 TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
   DictionaryValue redacted_token_details;
   redacted_token_details.SetString("token", "<redacted>");
@@ -180,37 +138,8 @@ TEST_F(JsSyncManagerObserverTest, SensitiveNotifiations) {
   EXPECT_CALL(mock_js_event_handler_,
               HandleJsEvent("onUpdatedToken",
                            HasDetailsAsDictionary(redacted_token_details)));
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent(
-                  "OnBootstrapTokenUpdated",
-                  HasDetailsAsDictionary(redacted_bootstrap_token_details)));
 
   js_sync_manager_observer_.OnUpdatedToken("sensitive_token");
-  js_sync_manager_observer_.OnBootstrapTokenUpdated("sensitive_token");
-  PumpLoop();
-}
-
-TEST_F(JsSyncManagerObserverTest, OnEncryptedTypesChanged) {
-  DictionaryValue expected_details;
-  ListValue* encrypted_type_values = new ListValue();
-  const bool encrypt_everything = false;
-  expected_details.Set("encryptedTypes", encrypted_type_values);
-  expected_details.SetBoolean("encryptEverything", encrypt_everything);
-  ModelTypeSet encrypted_types;
-
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType type = ModelTypeFromInt(i);
-    encrypted_types.Put(type);
-    encrypted_type_values->Append(Value::CreateStringValue(
-        ModelTypeToString(type)));
-  }
-
-  EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onEncryptedTypesChanged",
-                            HasDetailsAsDictionary(expected_details)));
-
-  js_sync_manager_observer_.OnEncryptedTypesChanged(
-      encrypted_types, encrypt_everything);
   PumpLoop();
 }
 

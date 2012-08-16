@@ -24,6 +24,7 @@
 #include "sync/test/engine/syncer_command_test.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "sync/test/fake_encryptor.h"
+#include "sync/test/fake_sync_encryption_handler.h"
 #include "sync/util/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,14 +65,22 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     SyncerCommandTest::SetUp();
     entry_factory_.reset(new TestEntryFactory(directory()));
     ExpectNoGroupsToChange(apply_updates_command_);
+
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    directory()->GetCryptographer(&trans)->SetNigoriHandler(
+        &fake_encryption_handler_);
+    fake_encryption_handler_.set_cryptographer(
+        directory()->GetCryptographer(&trans));
   }
+
+ protected:
+  DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommandTest);
 
   ApplyUpdatesCommand apply_updates_command_;
   FakeEncryptor encryptor_;
   TestIdFactory id_factory_;
   scoped_ptr<TestEntryFactory> entry_factory_;
- private:
-  DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommandTest);
+  FakeSyncEncryptionHandler fake_encryption_handler_;
 };
 
 TEST_F(ApplyUpdatesCommandTest, Simple) {
@@ -534,8 +543,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
-  nigori->set_encrypt_bookmarks(true);
-  encrypted_types.Put(BOOKMARKS);
+  nigori->set_encrypt_everything(true);
   entry_factory_->CreateUnappliedNewItem(
       ModelTypeToRootTag(NIGORI), specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
@@ -556,8 +564,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
-  EXPECT_TRUE(
-      cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
+  EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
 }
 
 TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
@@ -581,10 +588,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
-  nigori->set_encrypt_sessions(true);
-  nigori->set_encrypt_themes(true);
-  encrypted_types.Put(SESSIONS);
-  encrypted_types.Put(THEMES);
+  nigori->set_encrypt_everything(true);
   entry_factory_->CreateUnappliedNewItem(
       ModelTypeToRootTag(NIGORI), specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
@@ -605,8 +609,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
 
   EXPECT_FALSE(cryptographer->is_ready());
   EXPECT_TRUE(cryptographer->has_pending_keys());
-  EXPECT_TRUE(
-      cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
+  EXPECT_TRUE(cryptographer->GetEncryptedTypes().Equals(ModelTypeSet::All()));
 }
 
 // Create some local unsynced and unencrypted data. Apply a nigori update that
@@ -660,7 +663,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   cryptographer->GetKeys(nigori->mutable_encrypted());
-  nigori->set_encrypt_bookmarks(true);
+  nigori->set_encrypt_everything(true);
   encrypted_types.Put(BOOKMARKS);
   entry_factory_->CreateUnappliedNewItem(
       ModelTypeToRootTag(NIGORI), specifics, true);
@@ -801,7 +804,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
-  nigori->set_encrypt_bookmarks(true);
+  nigori->set_encrypt_everything(true);
   encrypted_types.Put(BOOKMARKS);
   entry_factory_->CreateUnappliedNewItem(
       ModelTypeToRootTag(NIGORI), specifics, true);

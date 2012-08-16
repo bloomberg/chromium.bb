@@ -5,6 +5,7 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_UTIL_SYNC_STRING_CONVERSIONS_H_
 #define SYNC_INTERNAL_API_PUBLIC_UTIL_SYNC_STRING_CONVERSIONS_H_
 
+#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/sync_manager.h"
 
 namespace syncer {

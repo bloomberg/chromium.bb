@@ -11,15 +11,23 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/encryption.pb.h"
-#include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/util/nigori.h"
+
+namespace sync_pb {
+class NigoriKeyBag;
+class NigoriSpecifics;
+}
 
 namespace syncer {
 
 class Encryptor;
+
+namespace syncable {
+class BaseTransaction;
+class NigoriHandler;
+}
 
 extern const char kNigoriTag[];
 
@@ -46,46 +54,22 @@ struct KeyParams {
 // delayed until after it can be decrypted.
 class Cryptographer {
  public:
-  // All Observer methods are done synchronously, so they're called
-  // under a transaction (since all Cryptographer operations are done
-  // under a transaction).
-  class Observer {
-   public:
-    // Called when the set of encrypted types or the encrypt
-    // everything flag has been changed.  Note that this doesn't
-    // necessarily mean that encryption has completed for the given
-    // types.
-    //
-    // |encrypted_types| will always be a superset of
-    // SensitiveTypes().  If |encrypt_everything| is true,
-    // |encrypted_types| will be the set of all known types.
-    //
-    // Until this function is called, observers can assume that the
-    // set of encrypted types is SensitiveTypes() and that the encrypt
-    // everything flag is false.
-    virtual void OnEncryptedTypesChanged(
-        ModelTypeSet encrypted_types,
-        bool encrypt_everything) = 0;
-
-   protected:
-    virtual ~Observer();
-  };
-
   // Does not take ownership of |encryptor|.
   explicit Cryptographer(Encryptor* encryptor);
   ~Cryptographer();
 
-  // When update on cryptographer is called this enum tells if the
-  // cryptographer was succesfully able to update using the nigori node or if
-  // it needs a key to decrypt the nigori node.
-  enum UpdateResult {
-    SUCCESS,
-    NEEDS_PASSPHRASE
-  };
+  // Set the sync nigori node handler.
+  // TODO(zea): refactor so that Cryptographer doesn't need any connection
+  // to a NigoriHandler. crbug.com/139848
+  void SetNigoriHandler(syncable::NigoriHandler* delegate);
 
-  // Manage observers.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  // NigoriHandler delegator methods (passes through to delegate).
+  void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
+                         syncable::BaseTransaction* const trans);
+  void UpdateNigoriFromEncryptedTypes(
+      sync_pb::NigoriSpecifics* nigori,
+      syncable::BaseTransaction* const trans) const;
+  ModelTypeSet GetEncryptedTypes() const;
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).
@@ -142,6 +126,13 @@ class Cryptographer {
   // with a cryptographer that has already been initialized.
   bool AddKeyFromBootstrapToken(const std::string restored_bootstrap_token);
 
+  // Decrypts |encrypted| and uses its contents to initialize Nigori instances.
+  // Returns true unless decryption of |encrypted| fails. The caller is
+  // responsible for checking that CanDecrypt(encrypted) == true.
+  // Does not update the default nigori.
+  void InstallKeys(const sync_pb::EncryptedData& encrypted);
+
+
   // Makes a local copy of |encrypted| to later be decrypted by
   // DecryptPendingKeys. This should only be used if CanDecrypt(encrypted) ==
   // false.
@@ -158,6 +149,10 @@ class Cryptographer {
   // successfully decrypted and installed. If successful, the default key
   // is updated.
   bool DecryptPendingKeys(const KeyParams& params);
+
+  // Sets the default key to the nigori with name |key_name|. |key_name| must
+  // correspond to a nigori that has already been installed into the keybag.
+  void SetDefaultKey(const std::string& key_name);
 
   bool is_initialized() const { return !nigoris_.empty() && default_nigori_; }
 
@@ -176,16 +171,6 @@ class Cryptographer {
   // Obtain the bootstrap token based on the keystore encryption key.
   bool GetKeystoreKeyBootstrapToken(std::string* token) const;
 
-  // Update the cryptographer based on the contents of the nigori specifics.
-  // This updates both the encryption keys and the set of encrypted types.
-  // Returns NEEDS_PASSPHRASE if was unable to decrypt the pending keys,
-  // SUCCESS otherwise.
-  // Note: will not change the default key. If the nigori's keybag
-  // is decryptable, all keys are added to the local keybag and the current
-  // default is preserved. If the nigori's keybag is not decryptable, it is
-  // stored in the |pending_keys_|.
-  UpdateResult Update(const sync_pb::NigoriSpecifics& nigori);
-
   // Set the keystore-derived nigori from the provided key.
   // Returns true if we succesfully create the keystore derived nigori from the
   // provided key, false otherwise.
@@ -195,44 +180,12 @@ class Cryptographer {
   // otherwise.
   bool HasKeystoreKey() const;
 
-  // The set of types that are always encrypted.
-  static ModelTypeSet SensitiveTypes();
-
-  // Reset our set of encrypted types based on the contents of the nigori
-  // specifics.
-  void UpdateEncryptedTypesFromNigori(const sync_pb::NigoriSpecifics& nigori);
-
-  // Update the nigori to reflect the current set of encrypted types.
-  void UpdateNigoriFromEncryptedTypes(sync_pb::NigoriSpecifics* nigori) const;
-
-  // Setter/getter for whether all current and future datatypes should
-  // be encrypted. Once set you cannot unset without reading from a
-  // new nigori node.  set_encrypt_everything() emits a notification
-  // the first time it's called.
-  void set_encrypt_everything();
-  bool encrypt_everything() const;
-
-  // Return the set of encrypted types.
-  ModelTypeSet GetEncryptedTypes() const;
-
-  // Forwards to MergeEncryptedTypes.
-  void MergeEncryptedTypesForTest(ModelTypeSet encrypted_types);
+  Encryptor* encryptor() const { return encryptor_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncCryptographerTest, PackUnpack);
+
   typedef std::map<std::string, linked_ptr<const Nigori> > NigoriMap;
-
-  // Merges the given set of encrypted types with the existing set and emits a
-  // notification if necessary.
-  void MergeEncryptedTypes(ModelTypeSet encrypted_types);
-
-  void EmitEncryptedTypesChangedNotification();
-
-  // Decrypts |encrypted| and uses its contents to initialize Nigori instances.
-  // Returns true unless decryption of |encrypted| fails. The caller is
-  // responsible for checking that CanDecrypt(encrypted) == true.
-  // Does not update the default nigori.
-  void InstallKeys(const sync_pb::EncryptedData& encrypted);
 
   // Helper method to instantiate Nigori instances for each set of key
   // parameters in |bag|.
@@ -250,16 +203,15 @@ class Cryptographer {
 
   Encryptor* const encryptor_;
 
-  ObserverList<Observer> observers_;
-
   NigoriMap nigoris_;  // The Nigoris we know about, mapped by key name.
   NigoriMap::value_type* default_nigori_;  // The Nigori used for encryption.
   NigoriMap::value_type* keystore_nigori_; // Nigori generated from keystore.
 
   scoped_ptr<sync_pb::EncryptedData> pending_keys_;
 
-  ModelTypeSet encrypted_types_;
-  bool encrypt_everything_;
+  // The sync nigori node handler. Necessary until we decouple the encrypted
+  // types from the cryptographer.
+  syncable::NigoriHandler* nigori_node_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(Cryptographer);
 };

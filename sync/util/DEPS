@@ -8,4 +8,8 @@ include_rules = [
   # TODO(kochi): Remove this hack after "Chromebox" hack in get_session_name.cc
   # is gone.
   "+chrome/browser/chromeos/system",
+
+  # TODO(zea): remove this once we don't need the cryptographer to get the set
+  # of encrypted types.
+  "+sync/syncable/nigori_handler.h"
 ]

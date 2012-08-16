@@ -229,7 +229,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       sync_pb::NigoriSpecifics* server_nigori = specifics.mutable_nigori();
       // Store the merged set of encrypted types (cryptographer->Update(..) will
       // have merged the local types already).
-      cryptographer->UpdateNigoriFromEncryptedTypes(server_nigori);
+      cryptographer->UpdateNigoriFromEncryptedTypes(server_nigori, trans);
       // The cryptographer has the both the local and remote encryption keys
       // (added at cryptographer->Update(..) time).
       // If the cryptographer is ready, then it already merged both sets of keys

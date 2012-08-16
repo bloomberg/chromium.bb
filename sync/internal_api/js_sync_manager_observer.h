@@ -35,16 +35,6 @@ class JsSyncManagerObserver : public SyncManager::Observer {
       const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnConnectionStatusChange(ConnectionStatus status) OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
-  virtual void OnPassphraseRequired(
-      PassphraseRequiredReason reason,
-      const sync_pb::EncryptedData& pending_keys) OVERRIDE;
-  virtual void OnPassphraseAccepted() OVERRIDE;
-  virtual void OnBootstrapTokenUpdated(
-      const std::string& bootstrap_token) OVERRIDE;
-  virtual void OnEncryptedTypesChanged(
-      ModelTypeSet encrypted_types,
-      bool encrypt_everything) OVERRIDE;
-  virtual void OnEncryptionComplete() OVERRIDE;
   virtual void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend, bool success,
       syncer::ModelTypeSet restored_types) OVERRIDE;

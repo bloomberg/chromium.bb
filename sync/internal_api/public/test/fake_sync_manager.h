@@ -18,6 +18,8 @@ class SequencedTaskRunner;
 
 namespace syncer {
 
+class FakeSyncEncryptionHandler;
+
 class FakeSyncManager : public SyncManager {
  public:
   // |initial_sync_ended_types|: The set of types that have initial_sync_ended
@@ -103,9 +105,6 @@ class FakeSyncManager : public SyncManager {
       SyncNotifierObserver* handler) OVERRIDE;
   virtual void StartSyncingNormally(
       const ModelSafeRoutingInfo& routing_info) OVERRIDE;
-  virtual void SetEncryptionPassphrase(const std::string& passphrase,
-                                       bool is_explicit) OVERRIDE;
-  virtual void SetDecryptionPassphrase(const std::string& passphrase) OVERRIDE;
   virtual void ConfigureSyncer(
       ConfigureReason reason,
       const ModelTypeSet& types_to_config,
@@ -115,17 +114,14 @@ class FakeSyncManager : public SyncManager {
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual SyncStatus GetDetailedStatus() const OVERRIDE;
-  virtual bool IsUsingExplicitPassphrase() OVERRIDE;
   virtual bool GetKeystoreKeyBootstrapToken(std::string* token) OVERRIDE;
   virtual void SaveChanges() OVERRIDE;
   virtual void StopSyncingForShutdown(const base::Closure& callback) OVERRIDE;
   virtual void ShutdownOnSyncThread() OVERRIDE;
   virtual UserShare* GetUserShare() OVERRIDE;
-  virtual void RefreshNigori(const std::string& chrome_version,
-                             const base::Closure& done_callback) OVERRIDE;
-  virtual void EnableEncryptEverything() OVERRIDE;
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
+  virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
 
  private:
   void InvalidateOnSyncThread(
@@ -155,6 +151,8 @@ class FakeSyncManager : public SyncManager {
 
   // Faked notifier state.
   SyncNotifierRegistrar registrar_;
+
+  scoped_ptr<FakeSyncEncryptionHandler> fake_encryption_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };

@@ -58,6 +58,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/configure_reason.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
 #include "sync/js/js_arg_list.h"
@@ -133,7 +134,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
-      encrypted_types_(syncer::Cryptographer::SensitiveTypes()),
+      encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
       encrypt_everything_(false),
       encryption_pending_(false),
       auto_start_enabled_(start_behavior == AUTO_START),
@@ -532,7 +533,7 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
   cached_passphrase_.clear();
   encryption_pending_ = false;
   encrypt_everything_ = false;
-  encrypted_types_ = syncer::Cryptographer::SensitiveTypes();
+  encrypted_types_ = syncer::SyncEncryptionHandler::SensitiveTypes();
   passphrase_required_reason_ = syncer::REASON_PASSPHRASE_NOT_REQUIRED;
   last_auth_error_ = GoogleServiceAuthError::None();
 

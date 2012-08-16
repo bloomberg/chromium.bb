@@ -59,58 +59,6 @@ void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {
   HandleJsEvent(FROM_HERE, "onUpdatedToken", JsEventDetails(&details));
 }
 
-void JsSyncManagerObserver::OnPassphraseRequired(
-    PassphraseRequiredReason reason,
-    const sync_pb::EncryptedData& pending_keys) {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  details.SetString("reason",
-                     PassphraseRequiredReasonToString(reason));
-  HandleJsEvent(FROM_HERE, "onPassphraseRequired", JsEventDetails(&details));
-}
-
-void JsSyncManagerObserver::OnPassphraseAccepted() {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  HandleJsEvent(FROM_HERE, "onPassphraseAccepted", JsEventDetails(&details));
-}
-
-void JsSyncManagerObserver::OnBootstrapTokenUpdated(
-    const std::string& boostrap_token) {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  details.SetString("bootstrapToken", "<redacted>");
-  HandleJsEvent(FROM_HERE, "OnBootstrapTokenUpdated", JsEventDetails(&details));
-}
-
-void JsSyncManagerObserver::OnEncryptedTypesChanged(
-    ModelTypeSet encrypted_types,
-    bool encrypt_everything) {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  details.Set("encryptedTypes",
-              ModelTypeSetToValue(encrypted_types));
-  details.SetBoolean("encryptEverything", encrypt_everything);
-  HandleJsEvent(FROM_HERE,
-                "onEncryptedTypesChanged", JsEventDetails(&details));
-}
-
-void JsSyncManagerObserver::OnEncryptionComplete() {
-  if (!event_handler_.IsInitialized()) {
-    return;
-  }
-  DictionaryValue details;
-  HandleJsEvent(FROM_HERE, "onEncryptionComplete", JsEventDetails());
-}
-
 void JsSyncManagerObserver::OnActionableError(
     const SyncProtocolError& sync_error) {
   if (!event_handler_.IsInitialized()) {

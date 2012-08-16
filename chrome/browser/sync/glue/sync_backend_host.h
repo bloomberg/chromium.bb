@@ -22,6 +22,7 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
@@ -351,7 +352,8 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // Called when the SyncManager has been constructed and initialized.
   virtual void HandleSyncManagerInitializationOnFrontendLoop(
-      const syncer::WeakHandle<syncer::JsBackend>& js_backend, bool success,
+      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+      bool success,
       syncer::ModelTypeSet restored_types);
 
   SyncFrontend* frontend() { return frontend_; }
@@ -369,11 +371,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
     NOT_INITIALIZED,        // Initialization hasn't completed, but we've
                             // constructed a SyncManager.
     DOWNLOADING_NIGORI,     // The SyncManager is initialized, but
-                            // we're fetching encryption information.
-    REFRESHING_NIGORI,      // The SyncManager is initialized, and we
-                            // have the encryption information, but we
-                            // still need to refresh encryption. Also, we need
-                            // to update the device information in the nigori.
+                            // we're fetching sync encryption information.
+    ASSOCIATING_NIGORI,     // The SyncManager is initialized, and we
+                            // have the sync encryption information, but we
+                            // have to update the local encryption state.
     INITIALIZED,            // Initialization is complete.
   };
 
@@ -395,7 +396,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // on to |frontend_|, and so that tests can intercept here if they need to
   // set up initial conditions.
   void HandleInitializationCompletedOnFrontendLoop(
-      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       bool success);
 
   // Called from Core::OnSyncCycleCompleted to handle updating frontend
@@ -464,7 +464,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called when configuration of the Nigori node has completed as
   // part of the initialization process.
   void HandleNigoriConfigurationCompletedOnFrontendLoop(
-      const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       syncer::ModelTypeSet failed_configuration_types);
 
   // syncer::SyncNotifierObserver-like functions.
@@ -474,10 +473,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void HandleIncomingNotificationOnFrontendLoop(
       const syncer::ObjectIdPayloadMap& id_payloads,
       syncer::IncomingNotificationSource source);
-
-  // Must be called on |frontend_loop_|.  |done_callback| is called on
-  // |frontend_loop_|.
-  void RefreshNigori(const base::Closure& done_callback);
 
   // Handles stopping the core's SyncManager, accounting for whether
   // initialization is done yet.
@@ -529,6 +524,12 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   syncer::sessions::SyncSessionSnapshot last_snapshot_;
+
+  // Temporary holder for the javascript backend. Set by
+  // HandleSyncManagerInitializationOnFrontendLoop, and consumed when we pass
+  // it via OnBackendInitialized in the final state of
+  // HandleInitializationCompletedOnFrontendLoop.
+  syncer::WeakHandle<syncer::JsBackend> js_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };
