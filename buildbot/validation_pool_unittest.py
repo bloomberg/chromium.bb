@@ -348,17 +348,41 @@ class TestPatchSeries(base_mixin, mox.MoxTestBase):
     """Test that we apply a change with dependency already committed."""
     series = self.GetPatchSeries()
 
-    patch1 = self.MockPatch(1, is_merged=True)
-    patch2 = self.MockPatch(2)
+    # Use for basic commit check.
+    patch1 = self.GetPatches(1, is_merged=True)
+    patch2 = self.GetPatches(1)
 
     self.SetPatchDeps(patch2, [patch1.id])
     self._SetQuery(series, patch1, is_parent=True).AndReturn(patch1)
-
     self.SetPatchApply(patch2)
 
+    # Used to ensure that an uncommitted change put in the lookup cache
+    # isn't invalidly pulled into the graph...
+    patch3, patch4, patch5 = self.GetPatches(3)
+
+    self._SetQuery(series, patch3, is_parent=True).AndReturn(patch3)
+    self.SetPatchDeps(patch4, [patch3.id])
+    self.SetPatchDeps(patch5, [patch3.id])
+
     self.mox.ReplayAll()
-    self.assertResults(series, [patch2], [patch2])
+    self.assertResults(series, [patch2, patch4, patch5], [patch2],
+                       [patch4, patch5])
     self.mox.VerifyAll()
+
+  def testCyclicalDeps(self):
+    """Verify that the machinery handles cycles correctly."""
+    series = self.GetPatchSeries()
+
+    patch1, patch2 = patches = self.GetPatches(2)
+
+    self.SetPatchDeps(patch1, [patch1.id])
+    self.SetPatchDeps(patch2, cq=[patch1.id])
+
+    self.SetPatchApply(patch2)
+    self.SetPatchApply(patch1)
+
+    self.mox.ReplayAll()
+    self.assertResults(series, patches, [patch2, patch1])
 
   def testApplyPartialFailures(self):
     """Test that can apply changes correctly when one change fails to apply.

@@ -253,26 +253,25 @@ class RawPatchSeries(object):
           query_text)
     change = helper.QuerySingleRecord(query_text, must_match=True)
     self.InjectLookupCache([change])
+    if change.IsAlreadyMerged():
+      self.InjectCommittedPatches([change])
     return change
 
   @_PatchWrapException
-  def _LookupAndFilterChanges(self, parent, merged, deps, parent_lookup=False,
-                              frozen=False):
+  def _LookupUncommittedChanges(self, parent, deps, parent_lookup=False,
+                                limit_to=None):
     """Given a set of deps (changes), return unsatisfied dependencies.
 
     Args:
       parent: The change we're resolving for.
-      merged: A container of changes we should consider as merged already.
       deps: A sequence of dependencies for the parent that we need to identify
         as either merged, or needing resolving.
       parent_lookup: If True, this means we're trying to trace out the git
         parentage of a change, thus limit the lookup to the parents project
         and branch.
-      frozen: If True, then raise an DependencyNotReady exception if any
-        new dependencies are required by this change that weren't already
-        supplied up front. This is used by the Commit Queue to notify users
-        when a change they have marked as 'Commit Ready' requires a change that
-        has not yet been marked as 'Commit Ready'.
+      limit_to: If non-None, then this must be a mapping (preferably a
+        cros_patch.PatchCache for translation reasons) of which non-committed
+        changes are allowed to be used for a transaction.
     Returns:
       A sequence of cros_patch.GitRepoPatch instances (or derivatives) that
       need to be resolved for this change to be mergable.
@@ -293,16 +292,13 @@ class RawPatchSeries(object):
           # ignored either way.
           dep_change = None
 
-      if dep_change is not None:
-        if dep_change not in merged and dep_change not in unsatisfied:
-          unsatisfied.append(dep_change)
-        continue
+      if dep_change is None:
+        dep_change = self._GetGerritPatch(parent, dep,
+                                          parent_lookup=parent_lookup)
 
-      dep_change = self._GetGerritPatch(parent, dep,
-                                        parent_lookup=parent_lookup)
-      if dep_change.IsAlreadyMerged():
-        self.InjectCommittedPatches([dep_change])
-      elif frozen:
+      if getattr(dep_change, 'IsAlreadyMerged', lambda: False)():
+        continue
+      elif limit_to is not None and dep_change not in limit_to:
         raise DependencyNotReadyForCommit(parent, dep)
 
       # Note the startswith; that is to handle short form ChangeIds
@@ -315,7 +311,7 @@ class RawPatchSeries(object):
       unsatisfied.append(dep_change)
     return unsatisfied
 
-  def CreateTransaction(self, change, frozen=False):
+  def CreateTransaction(self, change, limit_to=None):
     """Given a change, resolve it into a transaction.
 
     In this case, a transaction is defined as a group of commits that
@@ -325,19 +321,17 @@ class RawPatchSeries(object):
     Args:
       change: A cros_patch.GitRepoPatch instance to generate a transaction
         for.
-      frozen: If True, then resolution is limited purely to what is in
-        the set of allowed changes; essentially, CQ mode.  If False,
-        arbitrary resolution is allowed, pulling changes as necessary
-        to create the transaction.
+      limit_to: If non-None, limit the allowed uncommitted patches to
+        what's in that container/mapping.
     Returns:
       A sequency of the necessary cros_patch.GitRepoPatch objects for
       this transaction.
     """
     plan, stack = [], cros_patch.PatchCache()
-    self._ResolveChange(change, plan, stack, frozen=frozen)
+    self._ResolveChange(change, plan, stack, limit_to=limit_to)
     return plan
 
-  def _ResolveChange(self, change, plan, stack, frozen=False):
+  def _ResolveChange(self, change, plan, stack, limit_to=None):
     """Helper for resolving a node and its dependencies into the plan.
 
     No external code should call this; all internal code should invoke this
@@ -361,8 +355,7 @@ class RawPatchSeries(object):
       return
     stack.Inject(change)
     try:
-      self._PerformResolveChange(change, plan,
-                                 stack, frozen=frozen)
+      self._PerformResolveChange(change, plan, stack, limit_to=limit_to)
     finally:
       stack.Remove(change)
 
@@ -388,21 +381,21 @@ class RawPatchSeries(object):
           change.PaladinDependencies(git_repo))
     return val
 
-  def _PerformResolveChange(self, change, plan, stack, frozen=False):
+  def _PerformResolveChange(self, change, plan, stack, limit_to=None):
     """Resolve and ultimately add a change into the plan."""
     # Pull all deps up front, then process them.  Simplifies flow, and
     # localizes the error closer to the cause.
     gdeps, pdeps = self._GetDepsForChange(change)
-    gdeps = self._LookupAndFilterChanges(change, plan, gdeps, frozen=frozen,
-                                         parent_lookup=True)
-    pdeps = self._LookupAndFilterChanges(change, plan, pdeps, frozen=frozen)
+    gdeps = self._LookupUncommittedChanges(change, gdeps, limit_to=limit_to,
+                                           parent_lookup=True)
+    pdeps = self._LookupUncommittedChanges(change, pdeps, limit_to=limit_to)
 
     def _ProcessDeps(deps):
       for dep in deps:
         if dep in plan:
           continue
         try:
-          self._ResolveChange(dep, plan, stack, frozen=frozen)
+          self._ResolveChange(dep, plan, stack, limit_to=limit_to)
         except cros_patch.PatchException, e:
           raise cros_patch.DependencyError, \
                 cros_patch.DependencyError(change, e), \
@@ -479,11 +472,12 @@ class RawPatchSeries(object):
       changes = changes_filter(self, changes)
 
     self.InjectLookupCache(changes)
+    allowed_changes = cros_patch.PatchCache(changes) if frozen else None
     resolved, applied, failed = [], [], []
     for change in changes:
       try:
-        resolved.append((change,
-                         self.CreateTransaction(change, frozen=frozen)))
+        resolved.append(
+            (change, self.CreateTransaction(change, limit_to=allowed_changes)))
       except cros_patch.PatchException, e:
         logging.info("Failed creating transaction for %s: %s", change, e)
         failed.append(e)

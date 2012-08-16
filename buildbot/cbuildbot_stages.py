@@ -291,8 +291,8 @@ class BootstrapStage(PatchChangesStage):
     cros_build_lib.RunGitCommand(chromite_dir, ['checkout', filter_branch])
 
     class FilteringSeries(validation_pool.RawPatchSeries):
-      def _LookupAndFilterChanges(self, *args, **kwargs):
-        changes = validation_pool.RawPatchSeries._LookupAndFilterChanges(
+      def _LookupUncommittedChanges(self, *args, **kwargs):
+        changes = validation_pool.RawPatchSeries._LookupUncommittedChanges(
             self, *args, **kwargs)
         return [x for x in changes if x.project == constants.CHROMITE_PROJECT
                 and x.tracking_branch == filter_branch]
