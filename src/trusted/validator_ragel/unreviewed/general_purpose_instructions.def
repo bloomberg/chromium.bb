@@ -499,9 +499,24 @@ llwpcb Ry, 0x8f RXB.09 W.1111.0.00 0x12 /0, CPUFeature_LWP
 ######## LODS/LODSB/LODSW/LODSD/LODSQ ##########################################
 lods X a, 0xac, rep nacl-amd64-forbidden
 ######## LOOP/LOOPE/LOOPNE/LOOPNZ/LOOPZ ########################################
-loop Jb, 0xe2, branch_hint nacl-ia32-forbidden
-loope Jb, 0xe1, branch_hint nacl-ia32-forbidden
-loopne Jb, 0xe0, branch_hint nacl-ia32-forbidden
+# Manual is quite vague WRT usability of branch prediction prefixes combined
+# with “loop/loope/loopne” instructions. Old optimization manual (from P4) says
+# about them the following: “These hints take the form of prefixes to any type
+# of branch instruction.  Branch hints are not guaranteed to have any effect,
+# and their function may vary across implementations. On the Pentium 4
+# processor, branch hints are active only for relative conditional branches.”
+# And today's manual says:
+#   — Branch hints:
+#     • 2EH—Branch not taken (used only with Jcc instructions)
+#     • 3EH—Branch taken (used only with Jcc instructions)
+# Since they never had any effect on the code execution their usability is
+# quite limited.  We disable them for now.
+loop Jb, 0xe2, nacl-ia32-forbidden
+loop Jb, 0xe2, branch_hint nacl-forbidden
+loope Jb, 0xe1, nacl-ia32-forbidden
+loope Jb, 0xe1, branch_hint nacl-forbidden
+loopne Jb, 0xe0, nacl-ia32-forbidden
+loopne Jb, 0xe0, branch_hint nacl-forbidden
 ######## LWPINS ################################################################
 lwpins Id Ed By, 0x8f RXB.0A W.src1.0.00 0x12 /0, CPUFeature_LWP
 ######## LWPVAL ################################################################

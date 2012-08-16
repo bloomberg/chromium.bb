@@ -8417,16 +8417,15 @@ st77:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof77;
 case 77:
-	if ( (*( current_position)) == 15u )
-		goto st78;
-	if ( (*( current_position)) < 112u ) {
-		if ( 64u <= (*( current_position)) && (*( current_position)) <= 79u )
-			goto tr195;
-	} else if ( (*( current_position)) > 127u ) {
-		if ( 224u <= (*( current_position)) && (*( current_position)) <= 227u )
+	switch( (*( current_position)) ) {
+		case 15u: goto st78;
+		case 227u: goto st80;
+	}
+	if ( (*( current_position)) > 79u ) {
+		if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
 			goto st80;
-	} else
-		goto st80;
+	} else if ( (*( current_position)) >= 64u )
+		goto tr195;
 	goto tr39;
 st78:
 	if ( ++( current_position) == ( end_of_bundle) )
@@ -8444,12 +8443,11 @@ st79:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof79;
 case 79:
-	if ( (*( current_position)) == 15u )
-		goto st78;
-	if ( (*( current_position)) > 127u ) {
-		if ( 224u <= (*( current_position)) && (*( current_position)) <= 227u )
-			goto st80;
-	} else if ( (*( current_position)) >= 112u )
+	switch( (*( current_position)) ) {
+		case 15u: goto st78;
+		case 227u: goto st80;
+	}
+	if ( 112u <= (*( current_position)) && (*( current_position)) <= 127u )
 		goto st80;
 	goto tr39;
 tr1409:
@@ -9945,9 +9943,9 @@ st157:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof157;
 case 157:
-	if ( 128u <= (*( current_position)) )
-		goto tr372;
-	goto tr38;
+	if ( (*( current_position)) <= 127u )
+		goto tr38;
+	goto tr372;
 st158:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof158;
