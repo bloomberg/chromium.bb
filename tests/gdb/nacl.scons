@@ -10,9 +10,7 @@ if 'TRUSTED_ENV' not in env:
 
 # PNaCl and ARM bots don't have GDB.
 # TODO(halyavin) : check debugger with PNaCl and enable test if possible.
-if (env.Bit('host_mac') or
-    (env.Bit('host_windows') and env.Bit('build_x86_32')) or
-    env.Bit('bitcode') or env.Bit('target_arm')):
+if env.Bit('host_mac') or env.Bit('bitcode') or env.Bit('target_arm'):
   Return()
 
 # We need -O0 to make stepping predictable and read local variables/function
