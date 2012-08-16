@@ -454,18 +454,20 @@ def UpdateCrossdevTargets(targets, usepkg, config_only=False):
     targets - the list of targets to initialize using crossdev
     usepkg - copies the commandline opts
   """
-  for target in targets:
-    cmd = ['crossdev', '--show-fail-log', '-t', target]
-    cmd.extend(['--env', 'FEATURES=splitdebug'])
-    # Pick stable by default, and override as necessary.
-    cmd.extend(['-P', '--oneshot'])
-    if usepkg:
-      cmd.extend(['-P', '--getbinpkg',
-                  '-P', '--usepkgonly',
-                  '--without-headers'])
+  cmdbase = ['crossdev', '--show-fail-log']
+  cmdbase.extend(['--env', 'FEATURES=splitdebug'])
+  # Pick stable by default, and override as necessary.
+  cmdbase.extend(['-P', '--oneshot'])
+  if usepkg:
+    cmdbase.extend(['-P', '--getbinpkg',
+                    '-P', '--usepkgonly',
+                    '--without-headers'])
 
-    cmd.extend(['--overlays', '%s %s' % (CHROMIUMOS_OVERLAY, STABLE_OVERLAY)])
-    cmd.extend(['--ov-output', CROSSDEV_OVERLAY])
+  cmdbase.extend(['--overlays', '%s %s' % (CHROMIUMOS_OVERLAY, STABLE_OVERLAY)])
+  cmdbase.extend(['--ov-output', CROSSDEV_OVERLAY])
+
+  for target in targets:
+    cmd = cmdbase + ['-t', target]
 
     for pkg in GetTargetPackages(target):
       if pkg == 'gdb':

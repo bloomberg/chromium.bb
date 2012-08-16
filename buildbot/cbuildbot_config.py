@@ -682,7 +682,7 @@ _toolchain_minor = \
     full.derive(latest_toolchain=True, prebuilts=False,
                 gcc_githash='gcc.gnu.org/branches/google/gcc-4_7',
                 trybot_list=False,
-                use_sdk=True,
+                use_sdk=False,
                 description='Toolchain',)
 
 _toolchain_minor.add_config('x86-generic-toolchain_minor',
