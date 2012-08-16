@@ -1137,6 +1137,7 @@ const char kSystraceStop[] = "SystraceStop";
 const char kSystraceStatus[] = "SystraceStatus";
 const char kGetLog[] = "GetLog";
 const char kGetAllLogs[] = "GetAllLogs";
+const char kTestICMP[] = "TestICMP";
 }  // namespace debugd
 
 #endif  // DBUS_SERVICE_CONSTANTS_H_
