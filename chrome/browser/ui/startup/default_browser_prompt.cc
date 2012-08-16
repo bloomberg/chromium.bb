@@ -44,9 +44,6 @@ void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
       // it likely means the user simply selected another browser from the
       // panel. We will respect this choice and write it down as 'no, thanks'.
       UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.DontSetAsDefault", 1);
-      // User clicked "Don't ask me again", remember that.
-      if (prefs)
-        prefs->SetBoolean(prefs::kCheckDefaultBrowser, false);
     }
   } else {
     UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
