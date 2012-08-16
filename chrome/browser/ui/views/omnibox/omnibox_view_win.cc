@@ -1338,10 +1338,8 @@ void OmniboxViewWin::OnCopy() {
   ui::ScopedClipboardWriter scw(g_browser_process->clipboard(),
                                 ui::Clipboard::BUFFER_STANDARD);
   scw.WriteText(text);
-  if (write_url) {
+  if (write_url)
     scw.WriteBookmark(text, url.spec());
-    scw.WriteHyperlink(net::EscapeForHTML(text), url.spec());
-  }
 }
 
 void OmniboxViewWin::OnCut() {
