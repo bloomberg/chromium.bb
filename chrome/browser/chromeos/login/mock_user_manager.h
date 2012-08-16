@@ -59,7 +59,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(AddObserver, void(UserManager::Observer*));
   MOCK_METHOD1(RemoveObserver, void(UserManager::Observer*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
-  MOCK_CONST_METHOD0(DownloadedProfileImage, const SkBitmap& (void));
+  MOCK_CONST_METHOD0(DownloadedProfileImage, const gfx::ImageSkia& (void));
 
   // You can't mock this function easily because nobody can create User objects
   // but the UserManagerImpl and us.

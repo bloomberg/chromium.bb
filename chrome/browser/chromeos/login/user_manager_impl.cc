@@ -684,7 +684,7 @@ void UserManagerImpl::RemoveObserver(Observer* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-const SkBitmap& UserManagerImpl::DownloadedProfileImage() const {
+const gfx::ImageSkia& UserManagerImpl::DownloadedProfileImage() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return downloaded_profile_image_;
 }
@@ -1110,7 +1110,7 @@ void UserManagerImpl::InitDownloadedProfileImage() {
     VLOG(1) << "Profile image initialized";
     downloaded_profile_image_ = logged_in_user_->image();
     downloaded_profile_image_data_url_ =
-        web_ui_util::GetImageDataUrl(gfx::ImageSkia(downloaded_profile_image_));
+        web_ui_util::GetImageDataUrl(downloaded_profile_image_);
     profile_image_url_ = logged_in_user_->image_url();
   }
 }
@@ -1255,7 +1255,7 @@ void UserManagerImpl::OnProfileDownloadSuccess(ProfileDownloader* downloader) {
     return;
 
   downloaded_profile_image_data_url_ = new_image_data_url;
-  downloaded_profile_image_ = downloader->GetProfilePicture();
+  downloaded_profile_image_ = gfx::ImageSkia(downloader->GetProfilePicture());
   profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
   if (GetLoggedInUser().image_index() == User::kProfileImageIndex) {
@@ -1267,13 +1267,10 @@ void UserManagerImpl::OnProfileDownloadSuccess(ProfileDownloader* downloader) {
     SaveUserImageFromProfileImage(GetLoggedInUser().email());
   }
 
-  // TODO(ivankr): temporary measure until UserManager is fully migrated
-  // to use ImageSkia instead of SkBitmap.
-  gfx::ImageSkia profile_image(downloaded_profile_image_);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
       content::Source<UserManagerImpl>(this),
-      content::Details<const gfx::ImageSkia>(&profile_image));
+      content::Details<const gfx::ImageSkia>(&downloaded_profile_image_));
 }
 
 void UserManagerImpl::OnProfileDownloadFailure(ProfileDownloader* downloader) {

@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/gfx/image/image_skia.h"
 
 class SkBitmap;
 class FilePath;
@@ -94,7 +95,7 @@ class UserManagerImpl : public UserManager,
   virtual void AddObserver(Observer* obs) OVERRIDE;
   virtual void RemoveObserver(Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
-  virtual const SkBitmap& DownloadedProfileImage() const OVERRIDE;
+  virtual const gfx::ImageSkia& DownloadedProfileImage() const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -300,7 +301,7 @@ class UserManagerImpl : public UserManager,
   bool last_image_set_async_;
 
   // Result of the last successful profile image download, if any.
-  SkBitmap downloaded_profile_image_;
+  gfx::ImageSkia downloaded_profile_image_;
 
   // Data URL for |downloaded_profile_image_|.
   std::string downloaded_profile_image_data_url_;

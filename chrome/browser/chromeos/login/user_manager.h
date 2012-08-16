@@ -13,9 +13,12 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler.h"
 
-class SkBitmap;
 class FilePath;
 class PrefService;
+
+namespace gfx {
+class ImageSkia;
+}
 
 namespace chromeos {
 
@@ -237,7 +240,7 @@ class UserManager {
 
   // Returns the result of the last successful profile image download, if any.
   // Otherwise, returns an empty bitmap.
-  virtual const SkBitmap& DownloadedProfileImage() const = 0;
+  virtual const gfx::ImageSkia& DownloadedProfileImage() const = 0;
 };
 
 }  // namespace chromeos
