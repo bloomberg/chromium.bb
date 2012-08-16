@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/search/toolbar_search_animator.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_skia.h"
 
 // Wraps the state needed by the renderers.
 struct TabRendererData {
@@ -35,11 +35,10 @@ struct TabRendererData {
             crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION);
   }
 
-  // Returns true if the TabRendererData is same as given |data|. Two favicons
-  // are considered equals if two SkBitmaps point to the same SkPixelRef object.
+  // Returns true if the TabRendererData is same as given |data|.
   bool Equals(const TabRendererData& data);
 
-  SkBitmap favicon;
+  gfx::ImageSkia favicon;
   NetworkState network_state;
   string16 title;
   GURL url;

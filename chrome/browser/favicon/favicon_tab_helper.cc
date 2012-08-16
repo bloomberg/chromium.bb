@@ -199,11 +199,7 @@ void FaviconTabHelper::OnDidDownloadFavicon(
   // TODO: Possibly do bitmap selection in FaviconHandler, so that it can score
   // favicons better.
   std::vector<ui::ScaleFactor> scale_factors;
-#if defined(OS_MACOSX)
   scale_factors = ui::GetSupportedScaleFactors();
-#else
-  scale_factors.push_back(ui::SCALE_FACTOR_100P);  // TODO: Aura?
-#endif
   gfx::Image favicon(SelectFaviconFrames(
       bitmaps, scale_factors, requested_size, &score));
   favicon_handler_->OnDidDownloadFavicon(

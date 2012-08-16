@@ -196,4 +196,22 @@ TEST(ImageSkiaTest, OperatorBitmapFromSource) {
   EXPECT_FALSE(bitmap.isNull());
 }
 
+TEST(ImageSkiaTest, BackedBySameObjectAs) {
+  // Null images should all be backed by the same object (NULL).
+  ImageSkia image;
+  ImageSkia unrelated;
+  EXPECT_TRUE(image.BackedBySameObjectAs(unrelated));
+
+  image.AddRepresentation(gfx::ImageSkiaRep(gfx::Size(10, 10),
+                                            ui::SCALE_FACTOR_100P));
+  ImageSkia copy = image;
+  copy.AddRepresentation(gfx::ImageSkiaRep(gfx::Size(10, 10),
+                                           ui::SCALE_FACTOR_200P));
+  unrelated.AddRepresentation(gfx::ImageSkiaRep(gfx::Size(10, 10),
+                                                ui::SCALE_FACTOR_100P));
+  EXPECT_TRUE(image.BackedBySameObjectAs(copy));
+  EXPECT_FALSE(image.BackedBySameObjectAs(unrelated));
+  EXPECT_FALSE(copy.BackedBySameObjectAs(unrelated));
+}
+
 }  // namespace gfx

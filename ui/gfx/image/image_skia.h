@@ -67,6 +67,10 @@ class UI_EXPORT ImageSkia {
 
   ~ImageSkia();
 
+  // Returns true if this object is backed by the same ImageSkiaStorage as
+  // |other|. Will also return true if both images are isNull().
+  bool BackedBySameObjectAs(const gfx::ImageSkia& other) const;
+
   // Adds |image_rep| to the image reps contained by this object.
   void AddRepresentation(const gfx::ImageSkiaRep& image_rep);
 

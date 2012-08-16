@@ -9,8 +9,6 @@
 #include "base/compiler_specific.h"
 #include "ui/views/view.h"
 
-class SkBitmap;
-
 namespace chrome {
 class TabIconViewModel;
 }
@@ -39,7 +37,7 @@ class TabIconView : public views::View {
 
  private:
   void PaintThrobber(gfx::Canvas* canvas);
-  void PaintFavicon(gfx::Canvas* canvas, const SkBitmap& bitmap);
+  void PaintFavicon(gfx::Canvas* canvas, const gfx::ImageSkia& image);
   void PaintIcon(gfx::Canvas* canvas,
                  const gfx::ImageSkia& image,
                  int src_x,

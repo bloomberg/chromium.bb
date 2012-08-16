@@ -21,9 +21,7 @@ TabRendererData::~TabRendererData() {}
 
 bool TabRendererData::Equals(const TabRendererData& data) {
   return
-      favicon.pixelRef() &&
-      favicon.pixelRef() == data.favicon.pixelRef() &&
-      favicon.pixelRefOffset() == data.favicon.pixelRefOffset() &&
+      favicon.BackedBySameObjectAs(data.favicon) &&
       network_state == data.network_state &&
       title == data.title &&
       url == data.url &&

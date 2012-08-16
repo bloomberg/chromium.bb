@@ -168,6 +168,10 @@ ImageSkia& ImageSkia::operator=(const SkBitmap& other) {
 ImageSkia::~ImageSkia() {
 }
 
+bool ImageSkia::BackedBySameObjectAs(const gfx::ImageSkia& other) const {
+  return storage_.get() == other.storage_.get();
+}
+
 void ImageSkia::AddRepresentation(const ImageSkiaRep& image_rep) {
   DCHECK(!image_rep.is_null());
 
