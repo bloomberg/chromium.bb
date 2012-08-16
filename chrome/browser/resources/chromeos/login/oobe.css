@@ -336,9 +336,9 @@ html[oobe=old] .right {
   opacity: 0;
 }
 
-html[oobe=new] .step.faded,
-html[oobe=new] .step.left,
-html[oobe=new] .step.right {
+html[oobe=new] .faded,
+html[oobe=new] .left,
+html[oobe=new] .right {
   opacity: 0;
 }
 
