@@ -519,6 +519,10 @@ class RenderViewImpl : public RenderWidget,
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame* frame,
       WebKit::WebMediaPlayerClient* client);
+  virtual WebKit::WebMediaPlayer* createMediaPlayer(
+      WebKit::WebFrame* frame,
+      const WebKit::WebURL& url,
+      WebKit::WebMediaPlayerClient* client);
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebFrame* frame,
       WebKit::WebApplicationCacheHostClient* client);
