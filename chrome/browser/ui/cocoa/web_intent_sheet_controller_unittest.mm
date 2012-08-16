@@ -111,8 +111,10 @@ TEST_F(WebIntentPickerSheetControllerTest, PopulatedRows) {
 
 TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
   WebIntentPickerModel model;
-
-  model.AddSuggestedExtension(string16(), string16(), 2.5);
+  std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
+  suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
+      string16(), string16(), 2.5));
+  model.AddSuggestedExtensions(suggestions);
   [controller_ performLayoutWithModel:&model];
 
   // Get subviews.

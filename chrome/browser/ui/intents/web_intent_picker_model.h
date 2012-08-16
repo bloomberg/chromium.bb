@@ -108,14 +108,9 @@ class WebIntentPickerModel {
   // Update the favicon for the intent service at |index| to |image|.
   void UpdateFaviconAt(size_t index, const gfx::Image& image);
 
-  // Add a new suggested extension with |id|, |title| and |average_rating| to
-  // the picker.
-  void AddSuggestedExtension(const string16& title,
-                             const string16& id,
-                             double average_rating);
-
-  // Remove a suggested extension from the picker at |index|.
-  void RemoveSuggestedExtensionAt(size_t index);
+  // Add a list of suggested extensions to the model.
+  void AddSuggestedExtensions(
+      const std::vector<SuggestedExtension>& suggestions);
 
   // Return the suggested extension at |index|.
   const SuggestedExtension& GetSuggestedExtensionAt(size_t index) const;
@@ -156,9 +151,8 @@ class WebIntentPickerModel {
   // is owned by this model.
   std::vector<InstalledService*> installed_services_;
 
-  // A vector of all suggested extensions in the picker. Each element is owned
-  // by this model.
-  std::vector<SuggestedExtension*> suggested_extensions_;
+  // A vector of all suggested extensions in the picker.
+  std::vector<SuggestedExtension> suggested_extensions_;
 
   // The observer to send notifications to, or NULL if none. Not owned.
   WebIntentPickerModelObserver* observer_;

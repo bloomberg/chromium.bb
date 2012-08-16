@@ -614,17 +614,19 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
     const CWSIntentsRegistry::IntentExtensionList& extensions) {
   ExtensionServiceInterface* extension_service =
       tab_contents_->profile()->GetExtensionService();
+
+  std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
   for (size_t i = 0; i < extensions.size(); ++i) {
     const CWSIntentsRegistry::IntentExtensionInfo& info = extensions[i];
+
+    // Do not include suggestions for already installed extensions.
     if (extension_service->GetExtensionById(UTF16ToUTF8(info.id),
-                                            true)) {  // Include disabled.
+                                            true)) {
       continue;
     }
 
-    picker_model_->AddSuggestedExtension(
-        info.name,
-        info.id,
-        info.average_rating);
+    suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
+        info.name, info.id, info.average_rating));
 
     pending_async_count_++;
     net::URLFetcher* icon_url_fetcher = net::URLFetcher::Create(
@@ -642,6 +644,8 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
         tab_contents_->profile()->GetRequestContext());
     icon_url_fetcher->Start();
   }
+
+  picker_model_->AddSuggestedExtensions(suggestions);
 
   AsyncOperationFinished();
   pending_cws_request_ = false;

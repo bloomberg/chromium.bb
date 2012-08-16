@@ -47,6 +47,7 @@ class WebIntentPickerModelObserverMock : public WebIntentPickerModelObserver {
 
 class WebIntentPickerModelTest : public testing::Test {
  public:
+  typedef WebIntentPickerModel::SuggestedExtension SuggestedExtension;
   WebIntentPickerModelTest() {}
 
   virtual void SetUp() {
@@ -147,13 +148,17 @@ TEST_F(WebIntentPickerModelTest, UpdateFaviconAt) {
       image, model_.GetInstalledServiceAt(1).favicon));
 }
 
-TEST_F(WebIntentPickerModelTest, AddSuggestedExtension) {
-  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
+TEST_F(WebIntentPickerModelTest, AddSuggestedExtensions) {
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(1);
 
   EXPECT_EQ(0U, model_.GetSuggestedExtensionCount());
 
-  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
-  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
+  std::vector<WebIntentPickerModel::SuggestedExtension> suggestions;
+  suggestions.push_back(
+      WebIntentPickerModel::SuggestedExtension(kTitle1, kId1, 3.0));
+  suggestions.push_back(
+      WebIntentPickerModel::SuggestedExtension(kTitle2, kId2, 4.0));
+  model_.AddSuggestedExtensions(suggestions);
 
   EXPECT_EQ(2U, model_.GetSuggestedExtensionCount());
   EXPECT_EQ(kId1, model_.GetSuggestedExtensionAt(0).id);
@@ -163,42 +168,30 @@ TEST_F(WebIntentPickerModelTest, AddSuggestedExtension) {
 }
 
 TEST_F(WebIntentPickerModelTest, MaxSuggestedExtensions) {
-  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(6);
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(1);
 
-  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
-  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
-  model_.AddSuggestedExtension(kTitle3, kId3, 4.4);
-  model_.AddSuggestedExtension(kTitle4, kId4, 4.5);
-  model_.AddSuggestedExtension(kTitle5, kId5, 4.6);
-  model_.AddSuggestedExtension(kTitle6, kId6, 4.7);
+  std::vector<SuggestedExtension> suggestions;
+  suggestions.push_back(SuggestedExtension(kTitle1, kId1, 3.0));
+  suggestions.push_back(SuggestedExtension(kTitle2, kId2, 4.3));
+  suggestions.push_back(SuggestedExtension(kTitle3, kId3, 4.4));
+  suggestions.push_back(SuggestedExtension(kTitle4, kId4, 4.5));
+  suggestions.push_back(SuggestedExtension(kTitle5, kId5, 4.6));
+  suggestions.push_back(SuggestedExtension(kTitle6, kId6, 4.7));
+  model_.AddSuggestedExtensions(suggestions);
 
   // Max to show currently set to 5.
   EXPECT_EQ(5U, model_.GetSuggestedExtensionCount());
   EXPECT_NE(string16(), model_.GetSuggestionsLinkText());
 }
 
-TEST_F(WebIntentPickerModelTest, RemoveSuggestedExtensionAt) {
-  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(4);
-
-  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
-  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
-  model_.AddSuggestedExtension(kTitle3, kId3, 1.6);
-
-  EXPECT_EQ(3U, model_.GetSuggestedExtensionCount());
-
-  model_.RemoveSuggestedExtensionAt(1);
-
-  EXPECT_EQ(2U, model_.GetSuggestedExtensionCount());
-  EXPECT_EQ(kId1, model_.GetSuggestedExtensionAt(0).id);
-  EXPECT_EQ(kId3, model_.GetSuggestedExtensionAt(1).id);
-}
-
 TEST_F(WebIntentPickerModelTest, SetSuggestedExtensionIconWithId) {
-  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(2);
+  EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(1);
   EXPECT_CALL(observer_, OnExtensionIconChanged(&model_, kId2)).Times(1);
 
-  model_.AddSuggestedExtension(kTitle1, kId1, 3.0);
-  model_.AddSuggestedExtension(kTitle2, kId2, 4.3);
+  std::vector<SuggestedExtension> suggestions;
+  suggestions.push_back(SuggestedExtension(kTitle1, kId1, 3.0));
+  suggestions.push_back(SuggestedExtension(kTitle2, kId2, 4.3));
+  model_.AddSuggestedExtensions(suggestions);
 
   gfx::Image image(gfx::test::CreateImage());
   model_.SetSuggestedExtensionIconWithId(kId2, image);

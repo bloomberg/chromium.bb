@@ -92,20 +92,11 @@ void WebIntentPickerModel::UpdateFaviconAt(size_t index,
     observer_->OnFaviconChanged(this, index);
 }
 
-void WebIntentPickerModel::AddSuggestedExtension(const string16& title,
-                                                 const string16& id,
-                                                 double average_rating) {
-  suggested_extensions_.push_back(
-      new SuggestedExtension(title, id, average_rating));
-  if (observer_)
-    observer_->OnModelChanged(this);
-}
-
-void WebIntentPickerModel::RemoveSuggestedExtensionAt(size_t index) {
-  DCHECK_LT(index, suggested_extensions_.size());
-  SuggestedExtension* extension = suggested_extensions_[index];
-  suggested_extensions_.erase(suggested_extensions_.begin() + index);
-  delete extension;
+void WebIntentPickerModel::AddSuggestedExtensions(
+    const std::vector<SuggestedExtension>& suggestions) {
+  suggested_extensions_.insert(suggested_extensions_.end(),
+                               suggestions.begin(),
+                               suggestions.end());
   if (observer_)
     observer_->OnModelChanged(this);
 }
@@ -113,7 +104,7 @@ void WebIntentPickerModel::RemoveSuggestedExtensionAt(size_t index) {
 const WebIntentPickerModel::SuggestedExtension&
     WebIntentPickerModel::GetSuggestedExtensionAt(size_t index) const {
   DCHECK_LT(index, suggested_extensions_.size());
-  return *suggested_extensions_[index];
+  return suggested_extensions_[index];
 }
 
 size_t WebIntentPickerModel::GetSuggestedExtensionCount() const {
@@ -133,12 +124,12 @@ void WebIntentPickerModel::SetSuggestedExtensionIconWithId(
     const string16& id,
     const gfx::Image& image) {
   for (size_t i = 0; i < suggested_extensions_.size(); ++i) {
-    SuggestedExtension* extension = suggested_extensions_[i];
-    if (extension->id == id) {
-      extension->icon = image;
+    SuggestedExtension& extension = suggested_extensions_[i];
+    if (extension.id == id) {
+      extension.icon = image;
 
       if (observer_)
-        observer_->OnExtensionIconChanged(this, extension->id);
+        observer_->OnExtensionIconChanged(this, extension.id);
       break;
     }
   }
@@ -169,7 +160,6 @@ void WebIntentPickerModel::SetWaitingForSuggestions(bool waiting) {
 
 void WebIntentPickerModel::DestroyAll() {
   STLDeleteElements(&installed_services_);
-  STLDeleteElements(&suggested_extensions_);
 }
 
 WebIntentPickerModel::InstalledService::InstalledService(
