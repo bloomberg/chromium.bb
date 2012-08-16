@@ -53,6 +53,27 @@ using base::TimeDelta;
 
 namespace {
 
+// We keep track in a histogram how many suggest requests we send, how
+// many suggest requests we invalidate (e.g., due to a user typing
+// another character), and how many replies we receive.
+// *** ADD NEW ENUMS AFTER ALL PREVIOUSLY DEFINED ONES! ***
+//     (excluding the end-of-list enum value)
+// We do not want values of existing enums to change or else it screws
+// up the statistics.
+enum SuggestRequestsHistogramValue {
+  REQUEST_SENT = 1,
+  REQUEST_INVALIDATED,
+  REPLY_RECEIVED,
+  MAX_SUGGEST_REQUEST_HISTOGRAM_VALUE
+};
+
+// Increments the appropriate value in the histogram by one.
+void LogOmniboxSuggestRequest(
+    SuggestRequestsHistogramValue request_value) {
+  UMA_HISTOGRAM_ENUMERATION("Omnibox.SuggestRequests", request_value,
+                            MAX_SUGGEST_REQUEST_HISTOGRAM_VALUE);
+}
+
 bool HasMultipleWords(const string16& text) {
   base::i18n::BreakIterator i(text, base::i18n::BreakIterator::BREAK_WORD);
   bool found_word = false;
@@ -293,12 +314,14 @@ void SearchProvider::Run() {
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (default_url && !default_url->suggestions_url().empty()) {
     suggest_results_pending_++;
+    LogOmniboxSuggestRequest(REQUEST_SENT);
     default_fetcher_.reset(CreateSuggestFetcher(kDefaultProviderURLFetcherID,
         default_url->suggestions_url_ref(), input_.text()));
   }
   const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
   if (keyword_url && !keyword_url->suggestions_url().empty()) {
     suggest_results_pending_++;
+    LogOmniboxSuggestRequest(REQUEST_SENT);
     keyword_fetcher_.reset(CreateSuggestFetcher(kKeywordProviderURLFetcherID,
         keyword_url->suggestions_url_ref(), keyword_input_text_));
   }
@@ -332,6 +355,7 @@ void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(!done_);
   suggest_results_pending_--;
+  LogOmniboxSuggestRequest(REPLY_RECEIVED);
   DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
   const net::HttpResponseHeaders* const response_headers =
       source->GetResponseHeaders();
@@ -549,6 +573,10 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
 }
 
 void SearchProvider::StopSuggest() {
+  // Increment the appropriate field in the histogram by the number of
+  // pending requests that were invalidated.
+  for (int i = 0; i < suggest_results_pending_; i++)
+    LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
   suggest_results_pending_ = 0;
   timer_.Stop();
   // Stop any in-progress URL fetches.
