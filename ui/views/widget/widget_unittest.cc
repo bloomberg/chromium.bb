@@ -71,13 +71,44 @@ typedef NativeWidgetWin NativeWidgetPlatformForTest;
 // A view that always processes all mouse events.
 class MouseView : public View {
  public:
-  MouseView() : View() {
+  MouseView()
+      : View(),
+        entered_(0),
+        exited_(0) {
   }
   virtual ~MouseView() {}
 
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
     return true;
   }
+
+  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
+    entered_++;
+  }
+
+  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE {
+    exited_++;
+  }
+
+  // Return the number of OnMouseEntered calls and reset the counter.
+  int EnteredCalls() {
+    int i = entered_;
+    entered_ = 0;
+    return i;
+  }
+
+  // Return the number of OnMouseExited calls and reset the counter.
+  int ExitedCalls() {
+    int i = exited_;
+    exited_ = 0;
+    return i;
+  }
+
+ private:
+  int entered_;
+  int exited_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseView);
 };
 
 typedef ViewsTestBase WidgetTest;
@@ -247,6 +278,51 @@ TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   EXPECT_FALSE(WidgetHasMouseCapture(toplevel));
   EXPECT_FALSE(WidgetHasMouseCapture(child1));
   EXPECT_FALSE(WidgetHasMouseCapture(child2));
+
+  toplevel->CloseNow();
+}
+
+// Tests mouse move outside of the window into the "resize controller" and back
+// will still generate an OnMouseEntered and OnMouseExited event..
+TEST_F(WidgetTest, CheckResizeControllerEvents) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+
+  toplevel->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  MouseView* view = new MouseView();
+  view->SetBounds(90, 90, 10, 10);
+  toplevel->GetRootView()->AddChildView(view);
+
+  toplevel->Show();
+  RunPendingMessages();
+
+  // Move to an outside position.
+  gfx::Point p1(200, 200);
+  ui::MouseEvent moved_out(ui::ET_MOUSE_MOVED, p1, p1, ui::EF_NONE);
+  toplevel->OnMouseEvent(moved_out);
+  EXPECT_EQ(0, view->EnteredCalls());
+  EXPECT_EQ(0, view->ExitedCalls());
+
+  // Move onto the active view.
+  gfx::Point p2(95, 95);
+  ui::MouseEvent moved_over(ui::ET_MOUSE_MOVED, p2, p2, ui::EF_NONE);
+  toplevel->OnMouseEvent(moved_over);
+  EXPECT_EQ(1, view->EnteredCalls());
+  EXPECT_EQ(0, view->ExitedCalls());
+
+  // Move onto the outer resizing border.
+  gfx::Point p3(102, 95);
+  ui::MouseEvent moved_resizer(ui::ET_MOUSE_MOVED, p3, p3, ui::EF_NONE);
+  toplevel->OnMouseEvent(moved_resizer);
+  EXPECT_EQ(0, view->EnteredCalls());
+  EXPECT_EQ(1, view->ExitedCalls());
+
+  // Move onto the view again.
+  toplevel->OnMouseEvent(moved_over);
+  EXPECT_EQ(1, view->EnteredCalls());
+  EXPECT_EQ(0, view->ExitedCalls());
+
+  RunPendingMessages();
 
   toplevel->CloseNow();
 }
