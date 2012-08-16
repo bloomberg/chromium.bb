@@ -66,7 +66,7 @@ class ASH_EXPORT WorkspaceManager {
 
   // Sets the size of the grid. Newly added windows are forced to align to the
   // size of the grid.
-  void set_grid_size(int size) { grid_size_ = size; }
+  void SetGridSize(int grid_size);
   int grid_size() const { return grid_size_; }
 
   void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }

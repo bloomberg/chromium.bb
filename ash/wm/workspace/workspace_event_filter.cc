@@ -8,7 +8,6 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_frame.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -69,10 +68,13 @@ namespace internal {
 
 WorkspaceEventFilter::WorkspaceEventFilter(aura::Window* owner)
     : ToplevelWindowEventFilter(owner),
-      hovered_window_(NULL) {
+      hovered_window_(NULL),
+      destroyed_(NULL) {
 }
 
 WorkspaceEventFilter::~WorkspaceEventFilter() {
+  if (destroyed_)
+    *destroyed_ = true;
   if (hovered_window_)
     hovered_window_->RemoveObserver(this);
 }
@@ -95,14 +97,21 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
     case ui::ET_MOUSE_EXITED:
       UpdateHoveredWindow(NULL);
       break;
-    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_PRESSED: {
       if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
           target->delegate()->GetNonClientComponent(event->location()) ==
-          HTCAPTION)
+          HTCAPTION) {
+        bool destroyed = false;
+        destroyed_ = &destroyed;
         ToggleMaximizedState(target);
+        if (destroyed)
+          return false;
+        destroyed_ = NULL;
+      }
       multi_window_resize_controller_.Hide();
       HandleVerticalResizeDoubleClick(target, event);
       break;
+    }
     default:
       break;
   }

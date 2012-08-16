@@ -85,7 +85,8 @@ void TestCreateWindow(views::Widget::InitParams::Type type,
   views::Widget* widget = CreateTestWindow(widget_params);
   widget->Show();
 
-  EXPECT_EQ(expected_container, widget->GetNativeWindow()->parent()) <<
+  EXPECT_TRUE(expected_container->Contains(
+                  widget->GetNativeWindow()->parent())) <<
       "TestCreateWindow: type=" << type << ", always_on_top=" << always_on_top;
 
   widget->Close();
@@ -145,7 +146,8 @@ TEST_F(ShellTest, ChangeAlwaysOnTop) {
   widget->Show();
 
   // It should be in default container.
-  EXPECT_EQ(GetDefaultContainer(), widget->GetNativeWindow()->parent());
+  EXPECT_TRUE(GetDefaultContainer()->Contains(
+                  widget->GetNativeWindow()->parent()));
 
   // Flip always-on-top flag.
   widget->SetAlwaysOnTop(true);
@@ -155,12 +157,14 @@ TEST_F(ShellTest, ChangeAlwaysOnTop) {
   // Flip always-on-top flag.
   widget->SetAlwaysOnTop(false);
   // It should go back to default container.
-  EXPECT_EQ(GetDefaultContainer(), widget->GetNativeWindow()->parent());
+  EXPECT_TRUE(GetDefaultContainer()->Contains(
+                  widget->GetNativeWindow()->parent()));
 
   // Set the same always-on-top flag again.
   widget->SetAlwaysOnTop(false);
   // Should have no effect and we are still in the default container.
-  EXPECT_EQ(GetDefaultContainer(), widget->GetNativeWindow()->parent());
+  EXPECT_TRUE(GetDefaultContainer()->Contains(
+                  widget->GetNativeWindow()->parent()));
 
   widget->Close();
 }
@@ -174,7 +178,8 @@ TEST_F(ShellTest, CreateModalWindow) {
   widget->Show();
 
   // It should be in default container.
-  EXPECT_EQ(GetDefaultContainer(), widget->GetNativeWindow()->parent());
+  EXPECT_TRUE(GetDefaultContainer()->Contains(
+                  widget->GetNativeWindow()->parent()));
 
   // Create a modal window.
   views::Widget* modal_widget = views::Widget::CreateWindowWithParent(
@@ -200,7 +205,8 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   widget->Show();
 
   // It should be in default container.
-  EXPECT_EQ(GetDefaultContainer(), widget->GetNativeWindow()->parent());
+  EXPECT_TRUE(GetDefaultContainer()->Contains(
+                  widget->GetNativeWindow()->parent()));
 
   // Create a LockScreen window.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
@@ -264,8 +270,6 @@ TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
 
   // We start with the usual window containers.
   ExpectAllContainers();
-  // We have a default container event filter (for window drags).
-  EXPECT_TRUE(GetDefaultContainer()->event_filter());
   // Launcher is visible.
   views::Widget* launcher_widget = shell->launcher()->widget();
   EXPECT_TRUE(launcher_widget->IsVisible());
@@ -289,6 +293,9 @@ TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
   views::Widget* widget = CreateTestWindow(widget_params);
   widget->Show();
   EXPECT_FALSE(widget->IsMaximized());
+
+  // We have a default container event filter (for window drags).
+  EXPECT_TRUE(widget->GetNativeWindow()->parent()->event_filter());
 
   // Clean up.
   widget->Close();

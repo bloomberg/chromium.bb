@@ -19,19 +19,11 @@ using views::ImageButton;
 
 namespace {
 
-aura::Window* GetDefaultContainer() {
-  return ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(),
-      ash::internal::kShellWindowId_DefaultContainer);
-}
-
 // Creates a test widget that owns its native widget.
 Widget* CreateTestWidget() {
   Widget* widget = new Widget;
   Widget::InitParams params;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = GetDefaultContainer();
-  params.child = true;
   widget->Init(params);
   return widget;
 }
@@ -40,8 +32,6 @@ Widget* CreateAlwaysOnTopWidget() {
   Widget* widget = new Widget;
   Widget::InitParams params;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = GetDefaultContainer();
-  params.child = true;
   params.keep_on_top = true;
   widget->Init(params);
   return widget;

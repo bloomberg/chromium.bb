@@ -22,6 +22,8 @@ class AURA_EXPORT StackingClient {
 
   // Called by the Window when its parent is set to NULL, returns the window
   // that |window| should be added to instead.
+  // NOTE: this may have side effects. It should only be used when |window| is
+  // going to be immediately added.
   virtual Window* GetDefaultParent(Window* window, const gfx::Rect& bounds) = 0;
 };
 

@@ -22,12 +22,8 @@ namespace internal {
 typedef ash::test::AshTestBase WindowAnimationsTest;
 
 TEST_F(WindowAnimationsTest, HideShow) {
-  aura::Window* default_container =
-      ash::Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, default_container));
+      aura::test::CreateTestWindowWithId(0, NULL));
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
   // Hiding.
@@ -60,12 +56,8 @@ TEST_F(WindowAnimationsTest, HideShow) {
 }
 
 TEST_F(WindowAnimationsTest, ShowHide) {
-  aura::Window* default_container =
-      ash::Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, default_container));
+      aura::test::CreateTestWindowWithId(0, NULL));
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
   // Showing -- should be a no-op.
@@ -98,12 +90,8 @@ TEST_F(WindowAnimationsTest, ShowHide) {
 }
 
 TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
-  aura::Window* default_container =
-      ash::Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, default_container));
+      aura::test::CreateTestWindowWithId(0, NULL));
   window->Show();
   EXPECT_TRUE(window->layer()->visible());
 
@@ -139,12 +127,8 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
 }
 
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
-  aura::Window* default_container =
-      ash::Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, default_container));
+      aura::test::CreateTestWindowWithId(0, NULL));
 
   // Layer target visibility changes according to Show/Hide.
   window->Show();
@@ -158,12 +142,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   internal::SetDelayedOldLayerDeletionInCrossFadeForTest(true);
 
-  Window* default_container =
-      ash::Shell::GetContainer(
-          Shell::GetPrimaryRootWindow(),
-          internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window(
-      aura::test::CreateTestWindowWithId(0, default_container));
+      aura::test::CreateTestWindowWithId(0, NULL));
   window->SetBounds(gfx::Rect(5, 10, 320, 240));
   window->Show();
 

@@ -6,6 +6,7 @@
 
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_event_filter_test_helper.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace internal {
@@ -18,9 +19,13 @@ WorkspaceControllerTestHelper::WorkspaceControllerTestHelper(
 WorkspaceControllerTestHelper::~WorkspaceControllerTestHelper() {
 }
 
+WorkspaceEventFilter* WorkspaceControllerTestHelper::GetFilter() {
+  return controller_->event_filter_;
+}
+
 MultiWindowResizeController*
 WorkspaceControllerTestHelper::GetMultiWindowResizeController() {
-  return WorkspaceEventFilterTestHelper(filter()).resize_controller();
+  return WorkspaceEventFilterTestHelper(GetFilter()).resize_controller();
 }
 
 }  // namespace internal

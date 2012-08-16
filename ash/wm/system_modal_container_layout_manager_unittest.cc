@@ -29,12 +29,6 @@ aura::Window* GetModalContainer() {
       ash::internal::kShellWindowId_SystemModalContainer);
 }
 
-aura::Window* GetDefaultContainer() {
-  return Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      ash::internal::kShellWindowId_DefaultContainer);
-}
-
 class TestWindow : public views::WidgetDelegateView {
  public:
   explicit TestWindow(bool modal) : modal_(modal) {}
@@ -121,7 +115,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
   transient->AddObserver(&destruction_observer);
 
   EXPECT_EQ(parent.get(), transient->transient_parent());
-  EXPECT_EQ(GetDefaultContainer(), transient->parent());
+  EXPECT_EQ(parent->parent(), transient->parent());
 
   // The transient should be destroyed with its parent.
   parent.reset();

@@ -57,6 +57,9 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
 
   MultiWindowResizeController multi_window_resize_controller_;
 
+  // If non-NULL, set to true in the destructor.
+  bool* destroyed_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkspaceEventFilter);
 };
 

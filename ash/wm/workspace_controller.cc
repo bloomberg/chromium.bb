@@ -51,7 +51,7 @@ bool WorkspaceController::IsInMaximizedMode() const {
 }
 
 void WorkspaceController::SetGridSize(int grid_size) {
-  workspace_manager_->set_grid_size(grid_size);
+  workspace_manager_->SetGridSize(grid_size);
   event_filter_->set_grid_size(grid_size);
 }
 

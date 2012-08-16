@@ -12,6 +12,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/display_manager.h"
@@ -64,10 +65,7 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
-    aura::Window* parent = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        internal::kShellWindowId_DefaultContainer);
-    window->SetParent(parent);
+    window->SetParent(NULL);
     return window;
   }
 
@@ -440,6 +438,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   window->Show();
+  wm::ActivateWindow(window);
 
   EXPECT_FALSE(shell->GetAppListTargetVisibility());
   EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE, shelf->visibility_state());
@@ -473,6 +472,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window->Show();
+  wm::ActivateWindow(window);
 
   // App list and shelf is not shown.
   EXPECT_FALSE(shell->GetAppListTargetVisibility());

@@ -27,7 +27,7 @@
 namespace {
 
 // Containers used for the tests.
-const int c1 = ash::internal::kShellWindowId_DefaultContainer;
+const int kDefaultContainerID = -1;  // Used to identify the default container.
 const int c2 = ash::internal::kShellWindowId_AlwaysOnTopContainer;
 const int c3 = ash::internal::kShellWindowId_LockScreenContainer;
 
@@ -72,10 +72,10 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
   void CreateWindows() {
     // Create four windows, the first and third are not activatable, the second
     // and fourth are.
-    w1_.reset(CreateWindow(1, &ad_1_, c1));
-    w2_.reset(CreateWindow(2, &ad_2_, c1));
-    w3_.reset(CreateWindow(3, &ad_3_, c1));
-    w4_.reset(CreateWindow(4, &ad_4_, c1));
+    w1_.reset(CreateWindow(1, &ad_1_, kDefaultContainerID));
+    w2_.reset(CreateWindow(2, &ad_2_, kDefaultContainerID));
+    w3_.reset(CreateWindow(3, &ad_3_, kDefaultContainerID));
+    w4_.reset(CreateWindow(4, &ad_4_, kDefaultContainerID));
     w5_.reset(CreateWindow(5, &ad_5_, c2));
     w6_.reset(CreateWindow(6, &ad_6_, c2));
     w7_.reset(CreateWindow(7, &ad_7_, c3));
@@ -84,11 +84,13 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
   aura::Window* CreateWindow(int id,
                              TestActivationDelegate* delegate,
                              int container_id) {
+    aura::Window* parent = container_id == kDefaultContainerID ? NULL :
+        Shell::GetContainer(Shell::GetPrimaryRootWindow(), container_id);
     aura::Window* window = aura::test::CreateTestWindowWithDelegate(
         &delegate_,
         id,
         gfx::Rect(),
-        Shell::GetContainer(Shell::GetPrimaryRootWindow(), container_id));
+        parent);
     delegate->SetWindow(window);
     return window;
   }

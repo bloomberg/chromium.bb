@@ -592,6 +592,9 @@ int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
 
 // static
 bool FramePainter::UseSoloWindowHeader() {
+  if (!instances_)
+    return false;  // Return value shouldn't matter.
+
   int window_count = 0;
   for (std::set<FramePainter*>::const_iterator it = instances_->begin();
        it != instances_->end();
@@ -610,6 +613,9 @@ bool FramePainter::UseSoloWindowHeader() {
 
 // static
 void FramePainter::SchedulePaintForSoloWindow() {
+  if (!instances_)
+    return;
+
   for (std::set<FramePainter*>::const_iterator it = instances_->begin();
        it != instances_->end();
        ++it) {

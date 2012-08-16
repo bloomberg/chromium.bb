@@ -41,16 +41,15 @@ class WorkspaceEventFilterTest : public test::AshTestBase {
 };
 
 TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
-  WorkspaceControllerTestHelper workspace_helper(
-      Shell::TestApi(Shell::GetInstance()).workspace_controller());
-  WorkspaceManager* manager = workspace_helper.workspace_manager();
-  manager->set_grid_size(0);
+  Shell::TestApi(Shell::GetInstance()).workspace_controller()->SetGridSize(0);
 
   // Double clicking the vertical resize edge of a window should maximize it
   // vertically.
   gfx::Rect restored_bounds(10, 10, 50, 50);
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, restored_bounds));
+
+  wm::ActivateWindow(window.get());
 
   gfx::Rect work_area =
       gfx::Screen::GetDisplayNearestWindow(window.get()).work_area();

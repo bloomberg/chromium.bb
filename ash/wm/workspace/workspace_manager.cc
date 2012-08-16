@@ -134,6 +134,10 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
     workspace->Activate();
 }
 
+void WorkspaceManager::SetGridSize(int grid_size) {
+  grid_size_ = grid_size;
+}
+
 void WorkspaceManager::UpdateShelfVisibility() {
   if (shelf_)
     shelf_->UpdateVisibilityState();

@@ -26,6 +26,7 @@ TEST_F(LauncherContextMenuTest, ToggleAutoHide) {
   window->Init(ui::LAYER_TEXTURED);
   window->SetParent(NULL);
   window->Show();
+  wm::ActivateWindow(window.get());
 
   Shell* shell = Shell::GetInstance();
   // If the auto-hide behavior isn't DEFAULT, the rest of the tests don't make
