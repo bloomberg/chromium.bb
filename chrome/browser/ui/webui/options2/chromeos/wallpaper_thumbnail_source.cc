@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/ui_resources.h"
@@ -35,9 +36,11 @@ class WallpaperThumbnailSource::ThumbnailEncodingOperation
  public:
   ThumbnailEncodingOperation(int request_id,
                              const chromeos::User* user,
+                             ui::ScaleFactor scale_factor,
                              scoped_refptr<base::RefCountedBytes> data)
       : request_id_(request_id),
         user_(user),
+        scale_factor_(scale_factor),
         data_(data) {
   }
 
@@ -52,8 +55,10 @@ class WallpaperThumbnailSource::ThumbnailEncodingOperation
   void EncodeThumbnail() {
     if (cancel_flag_.IsSet())
       return;
+    gfx::ImageSkia image =
+        WallpaperManager::Get()->GetCustomWallpaperThumbnail(user_->email());
     gfx::PNGCodec::EncodeBGRASkBitmap(
-        WallpaperManager::Get()->GetCustomWallpaperThumbnail(user_->email()),
+        image.GetRepresentation(scale_factor_).sk_bitmap(),
         false, &data_->data());
   }
 
@@ -72,6 +77,8 @@ class WallpaperThumbnailSource::ThumbnailEncodingOperation
   int request_id_;
 
   const chromeos::User* user_;
+
+  ui::ScaleFactor scale_factor_;
 
   scoped_refptr<base::RefCountedBytes> data_;
 
@@ -144,16 +151,21 @@ std::string WallpaperThumbnailSource::GetMimeType(const std::string&) const {
   return "images/png";
 }
 
-void WallpaperThumbnailSource::StartDataRequest(const std::string& path,
+void WallpaperThumbnailSource::StartDataRequest(const std::string& full_path,
                                                 bool is_incognito,
                                                 int request_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  GURL url(chrome::kChromeUIWallpaperThumbnailURL + full_path);
+  std::string path;
+  ui::ScaleFactor scale_factor;
+  web_ui_util::ParsePathAndScale(url, &path, &scale_factor);
+
   CancelPendingCustomThumbnailEncodingOperation();
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WallpaperThumbnailSource::GetCurrentUserThumbnail,
-                 this, path, request_id));
+                 this, path, scale_factor, request_id));
 }
 
 WallpaperThumbnailSource::~WallpaperThumbnailSource() {
@@ -161,6 +173,7 @@ WallpaperThumbnailSource::~WallpaperThumbnailSource() {
 
 void WallpaperThumbnailSource::GetCurrentUserThumbnail(
     const std::string& path,
+    ui::ScaleFactor scale_factor,
     int request_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::string email;
@@ -179,24 +192,26 @@ void WallpaperThumbnailSource::GetCurrentUserThumbnail(
         FROM_HERE,
         base::Bind(
             &WallpaperThumbnailSource::StartCustomThumbnailEncodingOperation,
-            this, user, request_id));
+            this, user, scale_factor, request_id));
     return;
   }
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&WallpaperThumbnailSource::SendCurrentUserDefaultThumbnail,
-                 this, path, request_id));
+                 this, path, scale_factor, request_id));
 }
 
 void WallpaperThumbnailSource::StartCustomThumbnailEncodingOperation(
     const chromeos::User* user,
+    ui::ScaleFactor scale_factor,
     int request_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   CancelPendingCustomThumbnailEncodingOperation();
   scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   thumbnail_encoding_op_ = new ThumbnailEncodingOperation(request_id,
                                                           user,
+                                                          scale_factor,
                                                           data);
   base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
@@ -229,6 +244,7 @@ void WallpaperThumbnailSource::SendCurrentUserCustomThumbnail(
 
 void WallpaperThumbnailSource::SendCurrentUserDefaultThumbnail(
   const std::string& path,
+  ui::ScaleFactor scale_factor,
   int request_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   int idr = PathToIDR(path);
@@ -238,7 +254,7 @@ void WallpaperThumbnailSource::SendCurrentUserDefaultThumbnail(
   }
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SendResponse(request_id,
-               rb.LoadDataResourceBytes(idr, ui::SCALE_FACTOR_100P));
+               rb.LoadDataResourceBytes(idr, scale_factor));
 }
 
 }  // namespace options2

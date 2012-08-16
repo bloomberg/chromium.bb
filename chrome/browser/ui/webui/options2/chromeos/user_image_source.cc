@@ -9,7 +9,7 @@
 #include "base/string_split.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/ui/webui/web_ui_util.cc"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_parse.h"
 #include "grit/theme_resources.h"

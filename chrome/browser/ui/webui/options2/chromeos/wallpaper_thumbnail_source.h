@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "ui/base/layout.h"
 
 namespace base {
 class RefCountedBytes;
@@ -50,9 +51,11 @@ class WallpaperThumbnailSource : public ChromeURLDataManager::DataSource {
   virtual ~WallpaperThumbnailSource();
 
   void GetCurrentUserThumbnail(const std::string& path,
+                               ui::ScaleFactor scale_factor,
                                int request_id);
 
   void StartCustomThumbnailEncodingOperation(const chromeos::User* user,
+                                             ui::ScaleFactor scale_factor,
                                              int request_id);
 
   void CancelPendingCustomThumbnailEncodingOperation();
@@ -64,6 +67,7 @@ class WallpaperThumbnailSource : public ChromeURLDataManager::DataSource {
       int request_id);
 
   void SendCurrentUserDefaultThumbnail(const std::string& path,
+                                       ui::ScaleFactor scale_factor,
                                        int request_id);
 
   scoped_refptr<ThumbnailEncodingOperation> thumbnail_encoding_op_;
