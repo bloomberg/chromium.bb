@@ -308,8 +308,10 @@ class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
 class ResizeSource : public ImageSkiaSource {
  public:
   ResizeSource(const ImageSkia& source,
+               skia::ImageOperations::ResizeMethod method,
                const Size& target_dip_size)
       : source_(source),
+        resize_method_(method),
         target_dip_size_(target_dip_size) {
   }
   virtual ~ResizeSource() {}
@@ -325,7 +327,7 @@ class ResizeSource : public ImageSkiaSource {
     const Size target_pixel_size(target_dip_size_.Scale(scale));
     const SkBitmap resized = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(),
-        skia::ImageOperations::RESIZE_BEST,
+        resize_method_,
         target_pixel_size.width(),
         target_pixel_size.height());
     return ImageSkiaRep(resized, scale_factor);
@@ -333,6 +335,7 @@ class ResizeSource : public ImageSkiaSource {
 
  private:
   const ImageSkia source_;
+  skia::ImageOperations::ResizeMethod resize_method_;
   const Size target_dip_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeSource);
@@ -434,9 +437,12 @@ ImageSkia ImageSkiaOperations::ExtractSubset(const ImageSkia& image,
 }
 
 // static
-ImageSkia ImageSkiaOperations::CreateResizedImage(const ImageSkia& source,
-                                                  const Size& target_dip_size) {
-  return ImageSkia(new ResizeSource(source, target_dip_size), target_dip_size);
+ImageSkia ImageSkiaOperations::CreateResizedImage(
+    const ImageSkia& source,
+    skia::ImageOperations::ResizeMethod method,
+    const Size& target_dip_size) {
+  return ImageSkia(new ResizeSource(source, method, target_dip_size),
+                   target_dip_size);
 }
 
 // static

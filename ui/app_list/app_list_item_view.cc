@@ -100,8 +100,8 @@ class AppListItemView::IconOperation
     if (cancel_flag_.IsSet())
       return;
 
-    gfx::ImageSkia resized(
-        gfx::ImageSkiaOperations::CreateResizedImage(image_, size_));
+    gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(image_,
+        skia::ImageOperations::RESIZE_BEST, size_));
     gfx::ImageSkia shadow(
         gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized, shadows_));
 

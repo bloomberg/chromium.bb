@@ -59,7 +59,8 @@ class RoundedImageView : public views::View {
     image_size_ = size;
 
     // Try to get the best image quality for the avatar.
-    resized_ = gfx::ImageSkiaOperations::CreateResizedImage(image_, size);
+    resized_ = gfx::ImageSkiaOperations::CreateResizedImage(image_,
+        skia::ImageOperations::RESIZE_BEST, size);
     if (GetWidget() && visible()) {
       PreferredSizeChanged();
       SchedulePaint();

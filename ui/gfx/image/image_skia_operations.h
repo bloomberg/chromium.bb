@@ -6,6 +6,7 @@
 #define UI_GFX_IMAGE_SKIA_OPERATIONS_H_
 
 #include "base/gtest_prod_util.h"
+#include "skia/ext/image_operations.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/shadow_value.h"
@@ -79,6 +80,7 @@ class UI_EXPORT ImageSkiaOperations {
 
   // Creates an image by resizing |source| to given |target_dip_size|.
   static ImageSkia CreateResizedImage(const ImageSkia& source,
+                                      skia::ImageOperations::ResizeMethod methd,
                                       const Size& target_dip_size);
 
   // Creates an image with drop shadow defined in |shadows| for |source|.

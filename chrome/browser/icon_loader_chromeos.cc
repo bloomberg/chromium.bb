@@ -157,7 +157,7 @@ gfx::ImageSkia ResizeImage(const gfx::ImageSkia& source, int dip_size) {
     return source;
 
   return gfx::ImageSkiaOperations::CreateResizedImage(source,
-      gfx::Size(dip_size, dip_size));
+      skia::ImageOperations::RESIZE_BEST, gfx::Size(dip_size, dip_size));
 }
 
 int IconSizeToDIPSize(IconLoader::IconSize size) {

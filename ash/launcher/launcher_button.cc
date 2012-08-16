@@ -274,8 +274,8 @@ void LauncherButton::SetImage(const gfx::ImageSkia& image) {
     return;
   }
 
-  SetShadowedImage(gfx::ImageSkiaOperations::CreateResizedImage(
-      image, gfx::Size(width, height)));
+  SetShadowedImage(gfx::ImageSkiaOperations::CreateResizedImage(image,
+      skia::ImageOperations::RESIZE_BEST, gfx::Size(width, height)));
 }
 
 void LauncherButton::AddState(State state) {
