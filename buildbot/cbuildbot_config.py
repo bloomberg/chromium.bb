@@ -526,6 +526,7 @@ paladin.add_config('arm-tegra2-paladin',
   arm,
   boards=['tegra2'],
   paladin_builder_name='tegra2 paladin',
+  important=False,
 )
 
 paladin.add_config('amd64-generic-paladin',
@@ -556,6 +557,7 @@ internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
 internal_chromium_pfq.add_config('tegra2-chromium-pfq',
   arm,
   boards=['tegra2'],
+  important=False,
 )
 
 internal_chromium_pfq.add_config('daisy-chromium-pfq',
@@ -733,13 +735,13 @@ internal_paladin.add_config('mario-paladin',
 
 internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
-  important=True,
   paladin_builder_name='daisy paladin',
 )
 
 internal_arm_paladin.add_config('kaen-paladin',
   boards=['tegra2_kaen'],
   paladin_builder_name='tegra2 kaen paladin',
+  important=False,
 )
 
 internal_paladin.add_config('zgb-paladin',
