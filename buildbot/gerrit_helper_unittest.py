@@ -141,10 +141,10 @@ class GerritHelperTest(mox.MoxTestBase):
     Runs the command and prints out the changes.  Should not throw an exception.
     """
     helper = gerrit_helper.GerritHelper(False)
-    change = helper.QuerySingleRecord('1')
-    self.assertEqual(change.gerrit_number, '1')
+    change = helper.QuerySingleRecord('2')
+    self.assertEqual(change.gerrit_number, '2')
     self.assertEqual(change.change_id,
-                     'I924d7614af81bf50631529a0c804475dc321d8fe')
+                     'Ie787aca962560d8df2fcbfc3ec0a0c5b963235b1')
     self.assertEqual(change.project, 'playground/bar')
 
   def testInternalCommandWorks(self):
