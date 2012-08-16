@@ -34,7 +34,7 @@
       </if>
     </includes>
     <structures fallback_to_low_resolution="true">
-      <structure type="chrome_scaled_image" name="IDR_BROKENIMAGE" file="broken-image.gif" />
+      <structure type="chrome_scaled_image" name="IDR_BROKENIMAGE" file="broken_image.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH" file="input_speech.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH_RECORDING" file="input_speech_recording.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_SPEECH_WAITING" file="input_speech_waiting.png" />
