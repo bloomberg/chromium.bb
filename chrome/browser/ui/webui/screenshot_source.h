@@ -13,15 +13,24 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
+#endif
+
 typedef std::vector<unsigned char> ScreenshotData;
 typedef linked_ptr<ScreenshotData> ScreenshotDataPtr;
+
+class FilePath;
+class Profile;
 
 // ScreenshotSource is the data source that serves screenshots (saved
 // or current) to the bug report html ui.
 class ScreenshotSource : public ChromeURLDataManager::DataSource {
  public:
   explicit ScreenshotSource(
-      std::vector<unsigned char>* current_screenshot);
+      std::vector<unsigned char>* current_screenshot,
+      Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -47,7 +56,18 @@ class ScreenshotSource : public ChromeURLDataManager::DataSource {
 #if defined(OS_CHROMEOS)
   // Send a saved screenshot image file specified by the given screenshot path
   // to the requestor.
-  void SendSavedScreenshot(const std::string& screenshot_path, int request_id);
+  void SendSavedScreenshot(const std::string& screenshot_path,
+                           int request_id,
+                           const FilePath& file);
+
+  // The callback for GData's getting file method.
+  void GetSavedScreenshotCallback(const std::string& screenshot_path,
+                                  int request_id,
+                                  gdata::GDataFileError error,
+                                  const FilePath& file,
+                                  const std::string& unused_mime_type,
+                                  gdata::GDataFileType file_type);
+
 #endif
   // Sends the screenshot data to the requestor while caching it locally to the
   // class instance, indexed by path.
@@ -57,6 +77,8 @@ class ScreenshotSource : public ChromeURLDataManager::DataSource {
 
   // Pointer to the screenshot data for the current screenshot.
   ScreenshotDataPtr current_screenshot_;
+
+  Profile* profile_;
 
   // Key: Relative path to the screenshot (including filename)
   // Value: Pointer to the screenshot data associated with the path.

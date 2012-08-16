@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/feedback_ui.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -58,6 +59,10 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "ui/aura/root_window.h"
@@ -82,7 +87,8 @@ const char kCustomPageUrlParameter[] = "customPageUrl=";
 
 #if defined(OS_CHROMEOS)
 const char kSavedScreenshotsUrl[] = "chrome://screenshots/saved/";
-const char kScreenshotPattern[] = "Screenshot *.png";
+const char kScreenshotPrefix[] = "Screenshot ";
+const char kScreenshotSuffix[] = ".png";
 
 const char kTimestampParameter[] = "timestamp=";
 
@@ -90,6 +96,7 @@ const size_t kMaxSavedScreenshots = 2;
 #endif
 
 #if defined(OS_CHROMEOS)
+size_t kMaxNumScanFiles = 1000;
 
 // Compare two screenshot filepaths, which include the screenshot timestamp
 // in the format of screenshot-yyyymmdd-hhmmss.png. Return true if |filepath1|
@@ -99,23 +106,52 @@ bool ScreenshotTimestampComp(const std::string& filepath1,
   return filepath1 > filepath2;
 }
 
-void GetSavedScreenshots(std::vector<std::string>* saved_screenshots) {
-  saved_screenshots->clear();
-
-  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-      ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
-  FeedbackUI::GetMostRecentScreenshots(
-      download_prefs->DownloadPath(),
-      saved_screenshots,
-      kMaxSavedScreenshots);
-}
-
 std::string GetUserEmail() {
   chromeos::UserManager* manager = chromeos::UserManager::Get();
   if (!manager)
     return std::string();
   else
     return manager->GetLoggedInUser().display_email();
+}
+
+bool ScreenshotGDataTimestampComp(const gdata::GDataEntryProto& entry1,
+                                  const gdata::GDataEntryProto& entry2) {
+  return entry1.file_info().last_modified() >
+      entry2.file_info().last_modified();
+}
+
+void ReadDirectoryCallback(size_t max_saved,
+                           std::vector<std::string>* saved_screenshots,
+                           base::Closure callback,
+                           gdata::GDataFileError error,
+                           bool hide_hosted_documents,
+                           scoped_ptr<gdata::GDataEntryProtoVector> entries) {
+  if (error != gdata::GDATA_FILE_OK) {
+    callback.Run();
+    return;
+  }
+
+  size_t max_scan = std::min(kMaxNumScanFiles, entries->size());
+  std::vector<gdata::GDataEntryProto> screenshot_entries;
+  for (size_t i = 0; i < max_scan; ++i) {
+    const gdata::GDataEntryProto& entry = (*entries)[i];
+    if (StartsWithASCII(entry.base_name(), kScreenshotPrefix, true) &&
+        EndsWith(entry.base_name(), kScreenshotSuffix, true)) {
+      screenshot_entries.push_back(entry);
+    }
+  }
+
+  size_t sort_size = std::min(max_saved, screenshot_entries.size());
+  std::partial_sort(screenshot_entries.begin(),
+                    screenshot_entries.begin() + sort_size,
+                    screenshot_entries.end(),
+                    ScreenshotGDataTimestampComp);
+  for (size_t i = 0; i < sort_size; ++i) {
+    const gdata::GDataEntryProto& entry = screenshot_entries[i];
+    saved_screenshots->push_back(
+        std::string(kSavedScreenshotsUrl) + entry.resource_id());
+  }
+  callback.Run();
 }
 
 #else
@@ -229,6 +265,9 @@ class FeedbackHandler : public WebUIMessageHandler,
   void HandleRefreshSavedScreenshots(const ListValue* args);
   void RefreshSavedScreenshotsCallback(
       std::vector<std::string>* saved_screenshots);
+  void GetMostRecentScreenshotsGData(
+      const FilePath& filepath, std::vector<std::string>* saved_screenshots,
+      size_t max_saved, base::Closure callback);
 #endif
   void HandleSendReport(const ListValue* args);
   void HandleCancel(const ListValue* args);
@@ -337,19 +376,20 @@ void FeedbackHandler::ClobberScreenshotsSource() {
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
   Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
-  ChromeURLDataManager::AddDataSource(profile, new ScreenshotSource(NULL));
+  ChromeURLDataManager::AddDataSource(profile,
+                                      new ScreenshotSource(NULL, profile));
 
   FeedbackUtil::ClearScreenshotPng();
 }
 
 void FeedbackHandler::SetupScreenshotsSource() {
+  Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
   // If we don't already have a screenshot source object created, create one.
   if (!screenshot_source_) {
     screenshot_source_ =
-        new ScreenshotSource(FeedbackUtil::GetScreenshotPng());
+        new ScreenshotSource(FeedbackUtil::GetScreenshotPng(), profile);
   }
   // Add the source to the data manager.
-  Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
   ChromeURLDataManager::AddDataSource(profile, screenshot_source_);
 }
 
@@ -516,11 +556,21 @@ void FeedbackHandler::HandleRefreshCurrentScreenshot(const ListValue*) {
 #if defined(OS_CHROMEOS)
 void FeedbackHandler::HandleRefreshSavedScreenshots(const ListValue*) {
   std::vector<std::string>* saved_screenshots = new std::vector<std::string>;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetSavedScreenshots, base::Unretained(saved_screenshots)),
-      base::Bind(&FeedbackHandler::RefreshSavedScreenshotsCallback,
-                 base::Unretained(this), base::Owned(saved_screenshots)));
+  FilePath filepath = DownloadPrefs::FromBrowserContext(
+      tab_->GetBrowserContext())->DownloadPath();
+  base::Closure refresh_callback = base::Bind(
+      &FeedbackHandler::RefreshSavedScreenshotsCallback,
+      AsWeakPtr(), base::Owned(saved_screenshots));
+  if (gdata::util::IsUnderGDataMountPoint(filepath)) {
+    GetMostRecentScreenshotsGData(
+        filepath, saved_screenshots, kMaxSavedScreenshots, refresh_callback);
+  } else {
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&FeedbackUI::GetMostRecentScreenshots, filepath,
+                   base::Unretained(saved_screenshots), kMaxSavedScreenshots),
+        refresh_callback);
+  }
 }
 
 void FeedbackHandler::RefreshSavedScreenshotsCallback(
@@ -531,6 +581,17 @@ void FeedbackHandler::RefreshSavedScreenshotsCallback(
   web_ui()->CallJavascriptFunction("setupSavedScreenshots", screenshots_list);
 }
 
+void FeedbackHandler::GetMostRecentScreenshotsGData(
+    const FilePath& filepath, std::vector<std::string>* saved_screenshots,
+    size_t max_saved, base::Closure callback) {
+  gdata::GDataFileSystemInterface* file_system =
+      gdata::GDataSystemServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()))->file_system();
+  file_system->ReadDirectoryByPath(
+      gdata::util::ExtractGDataPath(filepath),
+      base::Bind(&ReadDirectoryCallback, max_saved, saved_screenshots,
+                 callback));
+}
 #endif
 
 
@@ -670,9 +731,11 @@ void FeedbackUI::GetMostRecentScreenshots(
     const FilePath& filepath,
     std::vector<std::string>* saved_screenshots,
     size_t max_saved) {
+  std::string pattern =
+      std::string(kScreenshotPrefix) + "*" + kScreenshotSuffix;
   file_util::FileEnumerator screenshots(filepath, false,
                                         file_util::FileEnumerator::FILES,
-                                        std::string(kScreenshotPattern));
+                                        pattern);
   FilePath screenshot = screenshots.Next();
 
   std::vector<std::string> screenshot_filepaths;

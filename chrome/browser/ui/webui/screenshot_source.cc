@@ -21,6 +21,9 @@
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system_interface.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 #endif
 
@@ -30,8 +33,10 @@ static const char kSavedScreenshotsBasePath[] = "saved/";
 #endif
 
 ScreenshotSource::ScreenshotSource(
-    std::vector<unsigned char>* current_screenshot)
-    : DataSource(chrome::kChromeUIScreenshotPath, MessageLoop::current()) {
+    std::vector<unsigned char>* current_screenshot,
+    Profile* profile)
+    : DataSource(chrome::kChromeUIScreenshotPath, MessageLoop::current()),
+      profile_(profile) {
   // Setup the last screenshot taken.
   if (current_screenshot)
     current_screenshot_.reset(new ScreenshotData(*current_screenshot));
@@ -76,10 +81,36 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
   } else if (path.compare(0, strlen(kSavedScreenshotsBasePath),
                           kSavedScreenshotsBasePath) == 0) {
     using content::BrowserThread;
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&ScreenshotSource::SendSavedScreenshot,
-                                       base::Unretained(this), path,
-                                       request_id));
+
+    std::string filename = path.substr(strlen(kSavedScreenshotsBasePath));
+
+    url_canon::RawCanonOutputT<char16> decoded;
+    url_util::DecodeURLEscapeSequences(
+        filename.data(), filename.size(), &decoded);
+    // Screenshot filenames don't use non-ascii characters.
+    std::string decoded_filename = UTF16ToASCII(string16(
+        decoded.data(), decoded.length()));
+
+    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+        ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
+    FilePath download_path = download_prefs->DownloadPath();
+    if (gdata::util::IsUnderGDataMountPoint(download_path)) {
+      gdata::GDataFileSystemInterface* file_system =
+          gdata::GDataSystemServiceFactory::GetForProfile(
+              profile_)->file_system();
+      file_system->GetFileByResourceId(
+          decoded_filename,
+          base::Bind(&ScreenshotSource::GetSavedScreenshotCallback,
+                     base::Unretained(this), screenshot_path, request_id),
+          gdata::GetContentCallback());
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&ScreenshotSource::SendSavedScreenshot,
+                     base::Unretained(this),
+                     screenshot_path,
+                     request_id, download_path.Append(decoded_filename)));
+    }
 #endif
   } else {
     CacheAndSendScreenshot(
@@ -88,23 +119,13 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
 }
 
 #if defined(OS_CHROMEOS)
-void ScreenshotSource::SendSavedScreenshot(const std::string& screenshot_path,
-                                           int request_id) {
+void ScreenshotSource::SendSavedScreenshot(
+    const std::string& screenshot_path,
+    int request_id,
+    const FilePath& file) {
   ScreenshotDataPtr read_bytes(new ScreenshotData);
-  std::string filename = screenshot_path.substr(
-      strlen(kSavedScreenshotsBasePath));
-
-  url_canon::RawCanonOutputT<char16> decoded;
-  url_util::DecodeURLEscapeSequences(
-      filename.data(), filename.size(), &decoded);
-  // Screenshot filenames don't use non-ascii characters.
-  std::string decoded_filename = UTF16ToASCII(string16(
-      decoded.data(), decoded.length()));
-
   int64 file_size = 0;
-  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-      ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
-  FilePath file = download_prefs->DownloadPath().Append(decoded_filename);
+
   if (!file_util::GetFileSize(file, &file_size)) {
     CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
     return;
@@ -116,6 +137,25 @@ void ScreenshotSource::SendSavedScreenshot(const std::string& screenshot_path,
     read_bytes->clear();
 
   CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+}
+
+void ScreenshotSource::GetSavedScreenshotCallback(
+    const std::string& screenshot_path,
+    int request_id,
+    gdata::GDataFileError error,
+    const FilePath& file,
+    const std::string& unused_mime_type,
+    gdata::GDataFileType file_type) {
+  if (error != gdata::GDATA_FILE_OK || file_type != gdata::REGULAR_FILE) {
+    ScreenshotDataPtr read_bytes(new ScreenshotData);
+    CacheAndSendScreenshot(screenshot_path, request_id, read_bytes);
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ScreenshotSource::SendSavedScreenshot,
+                 base::Unretained(this), screenshot_path, request_id, file));
 }
 #endif
 
