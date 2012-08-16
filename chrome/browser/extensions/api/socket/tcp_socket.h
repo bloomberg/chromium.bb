@@ -42,9 +42,9 @@ class TCPSocket : public Socket {
                       const CompletionCallback& callback) OVERRIDE;
   virtual bool SetKeepAlive(bool enable, int delay) OVERRIDE;
   virtual bool SetNoDelay(bool no_delay) OVERRIDE;
-  virtual bool IsTCPSocket() OVERRIDE;
   virtual bool GetPeerAddress(net::IPEndPoint* address) OVERRIDE;
   virtual bool GetLocalAddress(net::IPEndPoint* address) OVERRIDE;
+  virtual Socket::SocketType GetSocketType() const OVERRIDE;
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,

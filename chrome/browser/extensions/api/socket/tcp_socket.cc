@@ -140,10 +140,6 @@ bool TCPSocket::SetNoDelay(bool no_delay) {
   return socket_->SetNoDelay(no_delay);
 }
 
-bool TCPSocket::IsTCPSocket() {
-  return true;
-}
-
 bool TCPSocket::GetPeerAddress(net::IPEndPoint* address) {
   if (!socket_.get())
     return false;
@@ -156,6 +152,9 @@ bool TCPSocket::GetLocalAddress(net::IPEndPoint* address) {
   return !socket_->GetLocalAddress(address);
 }
 
+Socket::SocketType TCPSocket::GetSocketType() const {
+  return Socket::TYPE_TCP;
+}
 
 int TCPSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,

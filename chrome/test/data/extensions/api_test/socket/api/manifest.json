@@ -9,6 +9,10 @@
     }
   },
   "permissions": [
-    "socket"
+    {"socket": [
+      "tcp-connect",
+      "udp-send-to",
+      "udp-bind"
+    ]}
   ]
 }

@@ -55,7 +55,6 @@ TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
   const char* kPlatformAppExperimentalApis[] = {
     "dns",
     "serial",
-    "socket",
   };
   // TODO(miket): When the first platform-app API leaves experimental, write
   // similar code that tests without the experimental flag.

@@ -1611,7 +1611,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
 
   ListValue* api_permissions = new ListValue();
   api_permissions->Append(
-      Value::CreateIntegerValue(APIPermission::kTab));
+      Value::CreateStringValue("tabs"));
   SetPref(extension_id, "granted_permissions.api",
           api_permissions, "granted_permissions.api");
   SetPrefStringSet(

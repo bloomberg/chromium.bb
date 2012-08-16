@@ -7,11 +7,16 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "content/public/common/common_param_traits.h"
 
 using extensions::APIPermission;
+using extensions::APIPermissionDetail;
+using extensions::APIPermissionMap;
+using extensions::APIPermissionSet;
 using extensions::Extension;
 using extensions::PermissionSet;
+using extensions::SocketPermissionData;
 
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params()
     : location(Extension::INVALID),
@@ -138,6 +143,82 @@ bool ParamTraits<APIPermission::ID>::Read(
 void ParamTraits<APIPermission::ID>::Log(
     const param_type& p, std::string* l) {
   LogParam(static_cast<int>(p), l);
+}
+
+void ParamTraits<scoped_refptr<APIPermissionDetail> >::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p->id());
+  p->Write(m);
+}
+
+bool ParamTraits<scoped_refptr<APIPermissionDetail> >::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  APIPermission::ID id;
+  if (!ReadParam(m, iter, &id))
+    return false;
+  APIPermission* permission =
+    extensions::PermissionsInfo::GetInstance()->GetByID(id);
+  if (!permission)
+    return false;
+  *r = permission->CreateDetail();
+  if (!(*r)->Read(m, iter)) {
+    *r = NULL;
+    return false;
+  }
+  return true;
+}
+
+void ParamTraits<scoped_refptr<APIPermissionDetail> >::Log(
+    const param_type& p, std::string* l) {
+  p->Log(l);
+}
+
+void ParamTraits<APIPermissionSet>::Write(
+    Message* m, const param_type& p) {
+  APIPermissionSet::const_iterator it = p.begin();
+  APIPermissionSet::const_iterator end = p.end();
+  WriteParam(m, p.size());
+  for (; it != end; ++it) {
+    WriteParam(m, *it);
+  }
+}
+
+bool ParamTraits<APIPermissionSet>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  size_t size;
+  if (!ReadParam(m, iter, &size))
+    return false;
+  for (size_t i = 0; i < size; ++i) {
+    scoped_refptr<APIPermissionDetail> p;
+    if (!ReadParam(m, iter, &p))
+      return false;
+    r->insert(p);
+  }
+  return true;
+}
+
+void ParamTraits<APIPermissionSet>::Log(
+    const param_type& p, std::string* l) {
+  LogParam(p.map(), l);
+}
+
+void ParamTraits<SocketPermissionData>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.GetAsString());
+}
+
+bool ParamTraits<SocketPermissionData>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  std::string spec;
+  if (!ReadParam(m, iter, &spec))
+    return false;
+
+  return r->Parse(spec);
+}
+
+void ParamTraits<SocketPermissionData>::Log(
+    const param_type& p, std::string* l) {
+  LogParam(std::string("<SocketPermissionData>"), l);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,

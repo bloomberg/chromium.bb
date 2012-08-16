@@ -128,10 +128,7 @@ PermissionSet* PermissionSet::CreateDifference(
   const PermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
 
   APIPermissionSet apis;
-  std::set_difference(set1_safe->apis().begin(), set1_safe->apis().end(),
-                      set2_safe->apis().begin(), set2_safe->apis().end(),
-                      std::insert_iterator<APIPermissionSet>(
-                          apis, apis.begin()));
+  APIPermissionSet::Difference(set1_safe->apis(), set2_safe->apis(), &apis);
 
   URLPatternSet explicit_hosts;
   URLPatternSet::CreateDifference(set1_safe->explicit_hosts(),
@@ -155,10 +152,8 @@ PermissionSet* PermissionSet::CreateIntersection(
   const PermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
 
   APIPermissionSet apis;
-  std::set_intersection(set1_safe->apis().begin(), set1_safe->apis().end(),
-                        set2_safe->apis().begin(), set2_safe->apis().end(),
-                        std::insert_iterator<APIPermissionSet>(
-                            apis, apis.begin()));
+  APIPermissionSet::Intersection(set1_safe->apis(), set2_safe->apis(), &apis);
+
   URLPatternSet explicit_hosts;
   URLPatternSet::CreateIntersection(set1_safe->explicit_hosts(),
                                     set2_safe->explicit_hosts(),
@@ -181,10 +176,7 @@ PermissionSet* PermissionSet::CreateUnion(
   const PermissionSet* set2_safe = (set2 == NULL) ? empty : set2;
 
   APIPermissionSet apis;
-  std::set_union(set1_safe->apis().begin(), set1_safe->apis().end(),
-                 set2_safe->apis().begin(), set2_safe->apis().end(),
-                 std::insert_iterator<APIPermissionSet>(
-                     apis, apis.begin()));
+  APIPermissionSet::Union(set1_safe->apis(), set2_safe->apis(), &apis);
 
   URLPatternSet explicit_hosts;
   URLPatternSet::CreateUnion(set1_safe->explicit_hosts(),
@@ -211,9 +203,8 @@ bool PermissionSet::Contains(const PermissionSet& set) const {
   if (set.IsEmpty())
     return true;
 
-  if (!std::includes(apis_.begin(), apis_.end(),
-                     set.apis().begin(), set.apis().end()))
-    return false;
+  if (!apis_.Contains(set.apis()))
+      return false;
 
   if (!explicit_hosts().Contains(set.explicit_hosts()))
     return false;
@@ -225,13 +216,10 @@ bool PermissionSet::Contains(const PermissionSet& set) const {
 }
 
 std::set<std::string> PermissionSet::GetAPIsAsStrings() const {
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
   std::set<std::string> apis_str;
   for (APIPermissionSet::const_iterator i = apis_.begin();
        i != apis_.end(); ++i) {
-    APIPermission* permission = info->GetByID(*i);
-    if (permission)
-      apis_str.insert(permission->name());
+    apis_str.insert(i->name());
   }
   return apis_str;
 }
@@ -340,8 +328,21 @@ bool PermissionSet::IsEmpty() const {
 }
 
 bool PermissionSet::HasAPIPermission(
-    APIPermission::ID permission) const {
-  return apis().find(permission) != apis().end();
+    APIPermission::ID id) const {
+  return apis().find(id) != apis().end();
+}
+
+bool PermissionSet::CheckAPIPermission(APIPermission::ID permission) const {
+  return CheckAPIPermissionWithDetail(permission, NULL);
+}
+
+bool PermissionSet::CheckAPIPermissionWithDetail(
+    APIPermission::ID permission,
+    const APIPermissionDetail::CheckParam* param) const {
+  APIPermissionSet::const_iterator iter = apis().find(permission);
+  if (iter == apis().end())
+    return false;
+  return iter->Check(param);
 }
 
 bool PermissionSet::HasAccessToFunction(
@@ -394,11 +395,9 @@ bool PermissionSet::HasEffectiveAccessToAllHosts() const {
       return true;
   }
 
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
   for (APIPermissionSet::const_iterator i = apis().begin();
        i != apis().end(); ++i) {
-    APIPermission* permission = info->GetByID(*i);
-    if (permission->implies_full_url_access())
+    if (i->permission()->implies_full_url_access())
       return true;
   }
   return false;
@@ -410,11 +409,9 @@ bool PermissionSet::HasEffectiveAccessToURL(
 }
 
 bool PermissionSet::HasEffectiveFullAccess() const {
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
   for (APIPermissionSet::const_iterator i = apis().begin();
        i != apis().end(); ++i) {
-    APIPermission* permission = info->GetByID(*i);
-    if (permission->implies_full_access())
+    if (i->permission()->implies_full_access())
       return true;
   }
   return false;
@@ -544,7 +541,7 @@ std::set<PermissionMessage>
        i != apis_.end(); ++i) {
     DCHECK_GT(PermissionMessage::kNone,
               PermissionMessage::kUnknown);
-    APIPermission* perm = info->GetByID(*i);
+    APIPermission* perm = info->GetByID(i->id());
     if (perm && perm->message_id() > PermissionMessage::kNone)
       messages.insert(perm->GetMessage_());
   }

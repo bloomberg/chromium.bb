@@ -35,6 +35,11 @@ typedef base::Callback<
 // we need to manage it in the context of an extension.
 class Socket : public ApiResource {
  public:
+  enum SocketType {
+    TYPE_TCP,
+    TYPE_UDP,
+  };
+
   virtual ~Socket();
   virtual void Connect(const std::string& address,
                        int port,
@@ -65,10 +70,11 @@ class Socket : public ApiResource {
   virtual bool SetNoDelay(bool no_delay);
 
   bool IsConnected();
-  virtual bool IsTCPSocket() = 0;
 
   virtual bool GetPeerAddress(net::IPEndPoint* address) = 0;
   virtual bool GetLocalAddress(net::IPEndPoint* address) = 0;
+
+  virtual SocketType GetSocketType() const = 0;
 
   static bool StringAndPortToAddressList(const std::string& ip_address_str,
                                          int port,

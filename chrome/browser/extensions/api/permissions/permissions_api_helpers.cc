@@ -35,10 +35,9 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
   Permissions* permissions(new Permissions());
 
   permissions->permissions.reset(new std::vector<std::string>());
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
   for (APIPermissionSet::const_iterator i = set->apis().begin();
        i != set->apis().end(); ++i) {
-    permissions->permissions->push_back(info->GetByID(*i)->name());
+    permissions->permissions->push_back(i->name());
   }
 
   permissions->origins.reset(new std::vector<std::string>());

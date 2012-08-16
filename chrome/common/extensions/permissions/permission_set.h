@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
@@ -93,6 +94,14 @@ class PermissionSet
   // Returns true if the set has the specified API permission.
   bool HasAPIPermission(APIPermission::ID permission) const;
 
+  // Returns true if the set allows the given permission with the default
+  // permission detal.
+  bool CheckAPIPermission(APIPermission::ID permission) const;
+
+  // Returns true if the set allows the given permission and permission detail.
+  bool CheckAPIPermissionWithDetail(APIPermission::ID permission,
+      const APIPermissionDetail::CheckParam* detail) const;
+
   // Returns true if the permissions in this set grant access to the specified
   // |function_name|.
   bool HasAccessToFunction(const std::string& function_name) const;
@@ -141,6 +150,8 @@ class PermissionSet
   friend class base::RefCountedThreadSafe<PermissionSet>;
 
   ~PermissionSet();
+
+  void AddAPIPermission(APIPermission::ID id);
 
   static std::set<std::string> GetDistinctHosts(
       const URLPatternSet& host_patterns,

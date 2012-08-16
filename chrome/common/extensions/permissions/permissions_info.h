@@ -9,8 +9,10 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/singleton.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 
 namespace extensions {
@@ -54,7 +56,8 @@ class PermissionsInfo {
       const char* name,
       int l10n_message_id,
       PermissionMessage::ID message_id,
-      int flags);
+      int flags,
+      const APIPermission::DetailConstructor detail_constructor);
 
   // Maps permission ids to permissions.
   typedef std::map<APIPermission::ID, APIPermission*> IDMap;

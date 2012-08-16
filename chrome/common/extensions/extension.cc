@@ -3337,10 +3337,18 @@ bool Extension::ParsePermissions(const char* key,
 
     for (size_t i = 0; i < permissions->GetSize(); ++i) {
       std::string permission_str;
+      const base::Value* permission_detail = NULL;
       if (!permissions->GetString(i, &permission_str)) {
-        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidPermission, base::IntToString(i));
-        return false;
+        const base::DictionaryValue *dict = NULL;
+        // permission should be a string or a single key dict.
+        if (!permissions->GetDictionary(i, &dict) || dict->size() != 1) {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidPermission, base::IntToString(i));
+          return false;
+        }
+        base::DictionaryValue::Iterator it(*dict);
+        permission_str = it.key();
+        permission_detail = &it.value();
       }
 
       // NOTE: We need to get the APIPermission before the Feature
@@ -3381,7 +3389,14 @@ bool Extension::ParsePermissions(const char* key,
           }
         }
 
-        api_permissions->insert(permission->id());
+        scoped_refptr<APIPermissionDetail> detail = permission->CreateDetail();
+        if (!detail->FromValue(permission_detail)) {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidPermission, base::IntToString(i));
+          return false;
+        }
+
+        api_permissions->insert(detail);
         continue;
       }
 
@@ -3476,6 +3491,13 @@ bool Extension::HasAPIPermissionForTab(int tab_id,
       runtime_data_.GetTabSpecificPermissions(tab_id);
   return tab_specific_permissions.get() &&
          tab_specific_permissions->HasAPIPermission(permission);
+}
+
+bool Extension::CheckAPIPermissionWithDetail(APIPermission::ID permission,
+    const APIPermissionDetail::CheckParam* param) const {
+  base::AutoLock auto_lock(runtime_data_lock_);
+  return runtime_data_.GetActivePermissions()->
+      CheckAPIPermissionWithDetail(permission, param);
 }
 
 const URLPatternSet& Extension::GetEffectiveHostPermissions() const {

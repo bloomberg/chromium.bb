@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -448,6 +449,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool HasAPIPermission(APIPermission::ID permission) const;
   bool HasAPIPermission(const std::string& function_name) const;
   bool HasAPIPermissionForTab(int tab_id, APIPermission::ID permission) const;
+
+  bool CheckAPIPermissionWithDetail(APIPermission::ID permission,
+      const APIPermissionDetail::CheckParam* param) const;
 
   const URLPatternSet& GetEffectiveHostPermissions() const;
 

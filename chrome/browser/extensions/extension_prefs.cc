@@ -509,19 +509,45 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
   if (!GetExtensionPref(extension_id))
     return NULL;
 
-  // Retrieve the API permissions.
+  // Retrieve the API permissions. Please refer SetExtensionPrefPermissionSet()
+  // for api_values format.
   APIPermissionSet apis;
   const ListValue* api_values = NULL;
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
   if (ReadExtensionPrefList(extension_id, api_pref, &api_values)) {
     PermissionsInfo* info = PermissionsInfo::GetInstance();
     for (size_t i = 0; i < api_values->GetSize(); ++i) {
+      const DictionaryValue* permission_dict = NULL;
       std::string permission_name;
-      if (api_values->GetString(i, &permission_name)) {
-        APIPermission *permission = info->GetByName(permission_name);
-        if (permission)
-          apis.insert(permission->id());
+      if (!api_values->GetString(i, &permission_name) &&
+          !api_values->GetDictionary(i, &permission_dict)) {
+        NOTREACHED() << "Permission is not a string or dict. ";
+        continue;
       }
+
+      const base::Value *permission_detail = NULL;
+      if (permission_dict) {
+        if (permission_dict->size() != 1u) {
+          NOTREACHED() << "Permission is not a single key dict.";
+          continue;
+        }
+        base::DictionaryValue::Iterator it(*permission_dict);
+        permission_name = it.key();
+        permission_detail = &it.value();
+      }
+
+      APIPermission *permission = info->GetByName(permission_name);
+      if (!permission) {
+        NOTREACHED() << "Unknown permission[" << permission_name << "].";
+        continue;
+      }
+
+      scoped_refptr<APIPermissionDetail> detail = permission->CreateDetail();
+      if (!detail->FromValue(permission_detail)) {
+        NOTREACHED() << "Parse permission detail failed.";
+        continue;
+      }
+      apis.insert(detail);
     }
   }
 
@@ -545,15 +571,27 @@ void ExtensionPrefs::SetExtensionPrefPermissionSet(
     const std::string& pref_key,
     const PermissionSet* new_value) {
   // Set the API permissions.
+  // The format of api_values is:
+  // [ "permission_name1",   // permissions do not support detail.
+  //   "permission_name2",
+  //   {"permission_name3": value },
+  //   // permission supports detail, permission detail will be stored in value.
+  //   ...
+  // ]
   ListValue* api_values = new ListValue();
   APIPermissionSet apis = new_value->apis();
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    APIPermission* perm = info->GetByID(*i);
-    if (perm)
-      api_values->Append(Value::CreateStringValue(perm->name()));
+    Value* detail = NULL;
+    i->ToValue(&detail);
+    if (detail) {
+      DictionaryValue* tmp = new DictionaryValue();
+      tmp->Set(i->name(), detail);
+      api_values->Append(tmp);
+    } else {
+      api_values->Append(Value::CreateStringValue(i->name()));
+    }
   }
   UpdateExtensionPref(extension_id, api_pref, api_values);
 

@@ -68,12 +68,13 @@ APIPermission* PermissionsInfo::RegisterPermission(
     const char* name,
     int l10n_message_id,
     PermissionMessage::ID message_id,
-    int flags) {
+    int flags,
+    const APIPermission::DetailConstructor detail_constructor) {
   DCHECK(id_map_.find(id) == id_map_.end());
   DCHECK(name_map_.find(name) == name_map_.end());
 
   APIPermission* permission = new APIPermission(
-      id, name, l10n_message_id, message_id, flags);
+      id, name, l10n_message_id, message_id, flags, detail_constructor);
 
   id_map_[id] = permission;
   name_map_[name] = permission;

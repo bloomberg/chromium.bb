@@ -33,9 +33,9 @@ class UDPSocket : public Socket {
                       const std::string& address,
                       int port,
                       const CompletionCallback& callback) OVERRIDE;
-  virtual bool IsTCPSocket() OVERRIDE;
   virtual bool GetPeerAddress(net::IPEndPoint* address) OVERRIDE;
   virtual bool GetLocalAddress(net::IPEndPoint* address) OVERRIDE;
+  virtual Socket::SocketType GetSocketType() const OVERRIDE;
 
  protected:
   virtual int WriteImpl(net::IOBuffer* io_buffer,

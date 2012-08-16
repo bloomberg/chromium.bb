@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
@@ -31,6 +32,7 @@
 // operations to produce a repeatable sequence.
 #define RANDOM_SEED (0x33F7A7A7)
 
+using extensions::APIPermission;
 using extensions::Extension;
 
 // For ExtensionService interface when it requires a path that is not used.
@@ -97,7 +99,7 @@ void AddBackgroundPermission(ExtensionService* service,
     return;
   }
 
-  static scoped_refptr<Extension> temporary =
+  scoped_refptr<Extension> temporary =
       CreateExtension(GenerateUniqueExtensionName(), true);
   scoped_refptr<const extensions::PermissionSet> permissions =
       temporary->GetActivePermissions();
@@ -196,7 +198,9 @@ TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
   ASSERT_EQ(0U, model->size());
 
   scoped_refptr<Extension> ext = CreateExtension("extension", false);
+  ASSERT_FALSE(ext->HasAPIPermission(APIPermission::kBackground));
   scoped_refptr<Extension> bgapp = CreateExtension("application", true);
+  ASSERT_TRUE(bgapp->HasAPIPermission(APIPermission::kBackground));
   ASSERT_TRUE(service->extensions() != NULL);
   ASSERT_EQ(0U, service->extensions()->size());
   ASSERT_EQ(0U, model->size());
@@ -213,15 +217,19 @@ TEST_F(BackgroundApplicationListModelTest, AddRemovePermissionsTest) {
 
   // Change permissions back and forth
   AddBackgroundPermission(service, ext.get());
+  ASSERT_TRUE(ext->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(2U, model->size());
   RemoveBackgroundPermission(service, bgapp.get());
+  ASSERT_FALSE(bgapp->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(1U, model->size());
   RemoveBackgroundPermission(service, ext.get());
+  ASSERT_FALSE(ext->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(0U, model->size());
   AddBackgroundPermission(service, bgapp.get());
+  ASSERT_TRUE(bgapp->HasAPIPermission(APIPermission::kBackground));
   ASSERT_EQ(2U, service->extensions()->size());
   ASSERT_EQ(1U, model->size());
 }

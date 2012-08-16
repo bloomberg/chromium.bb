@@ -19,8 +19,10 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_sniffer.h"
@@ -30,9 +32,13 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using extensions::APIPermission;
 using extensions::APIPermissionSet;
 using extensions::Extension;
+using extensions::Feature;
 using extensions::PermissionSet;
+using extensions::SocketPermission;
+using extensions::SocketPermissionData;
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
@@ -442,6 +448,48 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_TRUE(hosts.MatchesURL(GURL("https://test/")));
   EXPECT_TRUE(hosts.MatchesURL(GURL("http://www.google.com")));
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
+}
+
+static bool CheckSocketPermission(scoped_refptr<Extension> extension,
+    SocketPermissionData::OperationType type,
+    const char* host,
+    int port) {
+  SocketPermission::CheckParam param(type, host, port);
+  return extension->CheckAPIPermissionWithDetail(
+      APIPermission::kSocket, &param);
+}
+
+TEST(ExtensionTest, SocketPermissions) {
+  // Set feature current channel to appropriate value.
+  Feature::ScopedCurrentChannel scoped_channel(
+      chrome::VersionInfo::GetChannel());
+  scoped_refptr<Extension> extension;
+  std::string error;
+
+  extension = LoadManifest("socket_permissions", "empty.json");
+  EXPECT_FALSE(CheckSocketPermission(
+        extension, SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+
+  extension = LoadManifestUnchecked("socket_permissions",
+                                    "socket1.json",
+                                    Extension::INTERNAL, Extension::NO_FLAGS,
+                                    &error);
+  EXPECT_TRUE(extension == NULL);
+  ASSERT_EQ(ExtensionErrorUtils::FormatErrorMessage(
+        errors::kInvalidPermission, base::IntToString(0)), error);
+
+  extension = LoadManifest("socket_permissions", "socket2.json");
+  EXPECT_TRUE(CheckSocketPermission(
+        extension, SocketPermissionData::TCP_CONNECT, "www.example.com", 80));
+  EXPECT_FALSE(CheckSocketPermission(
+        extension, SocketPermissionData::UDP_BIND, "", 80));
+  EXPECT_TRUE(CheckSocketPermission(
+        extension, SocketPermissionData::UDP_BIND, "", 8888));
+
+  EXPECT_FALSE(CheckSocketPermission(
+        extension, SocketPermissionData::UDP_SEND_TO, "example.com", 1900));
+  EXPECT_TRUE(CheckSocketPermission(
+        extension, SocketPermissionData::UDP_SEND_TO, "239.255.255.250", 1900));
 }
 
 // Returns a copy of |source| resized to |size| x |size|.

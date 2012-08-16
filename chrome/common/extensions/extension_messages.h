@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
+#include "chrome/common/extensions/permissions/socket_permission_data.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/view_type.h"
@@ -165,6 +166,30 @@ struct ParamTraits<extensions::APIPermission::ID> {
   typedef extensions::APIPermission::ID param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<scoped_refptr<extensions::APIPermissionDetail> > {
+  typedef scoped_refptr<extensions::APIPermissionDetail> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<extensions::APIPermissionSet> {
+  typedef extensions::APIPermissionSet param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<extensions::SocketPermissionData> {
+  typedef extensions::SocketPermissionData param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

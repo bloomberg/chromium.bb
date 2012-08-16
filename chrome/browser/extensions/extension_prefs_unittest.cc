@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/string_ordinal.h"
 #include "content/public/browser/notification_details.h"
@@ -262,10 +263,24 @@ TEST_F(ExtensionPrefsEscalatePermissions, EscalatePermissions) {}
 class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
+    scoped_refptr<APIPermissionDetail> detail;
+    APIPermission* permission =
+      PermissionsInfo::GetInstance()->GetByID(APIPermission::kSocket);
+
     extension_id_ = prefs_.AddExtensionAndReturnId("test");
 
     api_perm_set1_.insert(APIPermission::kTab);
     api_perm_set1_.insert(APIPermission::kBookmark);
+    detail = permission->CreateDetail();
+    {
+      scoped_ptr<ListValue> value(new ListValue());
+      value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
+      value->Append(Value::CreateStringValue("udp-bind::8080"));
+      value->Append(Value::CreateStringValue("udp-send-to::8888"));
+      if (!detail->FromValue(value.get()))
+        NOTREACHED();
+    }
+    api_perm_set1_.insert(detail);
 
     api_perm_set2_.insert(APIPermission::kHistory);
 
@@ -350,9 +365,7 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     permissions = new PermissionSet(
         api_perm_set2_, ehost_perm_set2_, shost_perm_set2_);
 
-    std::set_union(expected_apis.begin(), expected_apis.end(),
-                   api_perm_set2_.begin(), api_perm_set2_.end(),
-                   std::inserter(api_permissions_, api_permissions_.begin()));
+    APIPermissionSet::Union(expected_apis, api_perm_set2_, &api_permissions_);
 
     prefs()->AddGrantedPermissions(extension_id_, permissions.get());
     granted_permissions = prefs()->GetGrantedPermissions(extension_id_);

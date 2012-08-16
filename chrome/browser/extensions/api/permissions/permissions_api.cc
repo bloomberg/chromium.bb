@@ -81,16 +81,14 @@ bool RemovePermissionsFunction::RunImpl() {
     return false;
 
   const extensions::Extension* extension = GetExtension();
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
 
   // Make sure they're only trying to remove permissions supported by this API.
   APIPermissionSet apis = permissions->apis();
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    const APIPermission* api = info->GetByID(*i);
-    if (!api->supports_optional()) {
+    if (!i->permission()->supports_optional()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
-          kNotWhitelistedError, api->name());
+          kNotWhitelistedError, i->name());
       return false;
     }
   }
@@ -156,7 +154,6 @@ bool RequestPermissionsFunction::RunImpl() {
   if (!requested_permissions_.get())
     return false;
 
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
   extensions::ExtensionPrefs* prefs =
       profile()->GetExtensionService()->extension_prefs();
 
@@ -164,10 +161,9 @@ bool RequestPermissionsFunction::RunImpl() {
   APIPermissionSet apis = requested_permissions_->apis();
   for (APIPermissionSet::const_iterator i = apis.begin();
        i != apis.end(); ++i) {
-    const APIPermission* api = info->GetByID(*i);
-    if (!api->supports_optional()) {
+    if (!i->permission()->supports_optional()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(
-          kNotWhitelistedError, api->name());
+          kNotWhitelistedError, i->name());
       return false;
     }
   }
@@ -202,7 +198,7 @@ bool RequestPermissionsFunction::RunImpl() {
   // we're skipping the confirmation UI. All extension types but INTERNAL
   // are allowed to silently increase their permission level.
   bool has_no_warnings = requested_permissions_->GetWarningMessages(
-      GetExtension()->GetType()).size() == 0;
+      GetExtension()->GetType()).empty();
   if (auto_confirm_for_tests == PROCEED || has_no_warnings) {
     InstallUIProceed();
   } else if (auto_confirm_for_tests == ABORT) {

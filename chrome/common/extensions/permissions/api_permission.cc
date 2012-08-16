@@ -5,13 +5,89 @@
 #include "chrome/common/extensions/permissions/api_permission.h"
 
 #include "chrome/common/extensions/permissions/permissions_info.h"
+#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
+using extensions::APIPermission;
+using extensions::APIPermissionDetail;
+
 const char kOldUnlimitedStoragePermission[] = "unlimited_storage";
 const char kWindowsPermission[] = "windows";
+
+class SimpleDetail : public APIPermissionDetail {
+ public:
+  explicit SimpleDetail(const APIPermission* permission)
+    : APIPermissionDetail(permission) { }
+
+  virtual bool FromValue(const base::Value* value) OVERRIDE {
+    if (value)
+      return false;
+    return true;
+  }
+
+  virtual void ToValue(base::Value** value) const OVERRIDE {
+    *value = NULL;
+  }
+
+  virtual bool Check(
+      const APIPermissionDetail::CheckParam* param) const OVERRIDE {
+    return !param;
+  }
+
+  virtual bool Equal(const APIPermissionDetail* detail) const OVERRIDE {
+    if (this == detail)
+      return true;
+    CHECK(permission() == detail->permission());
+    return true;
+  }
+
+  virtual APIPermissionDetail* Clone() const OVERRIDE {
+    return new SimpleDetail(permission());
+  }
+
+  virtual APIPermissionDetail* Diff(
+      const APIPermissionDetail* detail) const OVERRIDE {
+    CHECK(permission() == detail->permission());
+    return NULL;
+  }
+
+  virtual APIPermissionDetail* Union(
+      const APIPermissionDetail* detail) const OVERRIDE {
+    CHECK(permission() == detail->permission());
+    return new SimpleDetail(permission());
+  }
+
+  virtual APIPermissionDetail* Intersect(
+      const APIPermissionDetail* detail) const OVERRIDE {
+    CHECK(permission() == detail->permission());
+    return new SimpleDetail(permission());
+  }
+
+  virtual bool Contains(const APIPermissionDetail* detail) const OVERRIDE {
+    CHECK(permission() == detail->permission());
+    return true;
+  }
+
+  virtual void Write(IPC::Message* m) const OVERRIDE { }
+
+  virtual bool Read(const IPC::Message* m, PickleIterator* iter) OVERRIDE {
+    return true;
+  }
+
+  virtual void Log(std::string* log) const OVERRIDE { }
+
+ protected:
+  friend class extensions::APIPermissionDetail;
+  virtual ~SimpleDetail() { }
+};
+
+template<typename T>
+APIPermissionDetail* CreatePermissionDetail(const APIPermission* permission) {
+  return new T(permission);
+}
 
 }  // namespace
 
@@ -23,6 +99,15 @@ namespace extensions {
 
 APIPermission::~APIPermission() {}
 
+scoped_refptr<APIPermissionDetail> APIPermission::CreateDetail() const {
+  scoped_refptr<APIPermissionDetail> p;
+  if (detail_constructor_)
+    p = detail_constructor_(this);
+  if (!p.get())
+    p = new SimpleDetail(this);
+  return p;
+}
+
 PermissionMessage APIPermission::GetMessage_() const {
   return PermissionMessage(
       message_id_, l10n_util::GetStringUTF16(l10n_message_id_));
@@ -33,12 +118,14 @@ APIPermission::APIPermission(
     const char* name,
     int l10n_message_id,
     PermissionMessage::ID message_id,
-    int flags)
+    int flags,
+    DetailConstructor detail_constructor)
     : id_(id),
       name_(name),
       flags_(flags),
       l10n_message_id_(l10n_message_id),
-      message_id_(message_id) {}
+      message_id_(message_id),
+      detail_constructor_(detail_constructor) { }
 
 // static
 void APIPermission::RegisterAllPermissions(
@@ -50,6 +137,7 @@ void APIPermission::RegisterAllPermissions(
     int flags;
     int l10n_message_id;
     PermissionMessage::ID message_id;
+    DetailConstructor detail_constructor;
   } PermissionsToRegister[] = {
     // Register permissions for all extension types.
     { kBackground, "background" },
@@ -154,7 +242,8 @@ void APIPermission::RegisterAllPermissions(
 
     // Platform-app permissions.
     { kSerial, "serial", kFlagCannotBeOptional },
-    { kSocket, "socket", kFlagCannotBeOptional },
+    { kSocket, "socket", kFlagCannotBeOptional, 0, PermissionMessage::kNone,
+      &CreatePermissionDetail<SocketPermission> },
     { kAppRuntime, "app.runtime" },
     { kAppWindow, "app.window" },
     { kAudioCapture, "audioCapture", kFlagNone,
@@ -181,12 +270,16 @@ void APIPermission::RegisterAllPermissions(
     info->RegisterPermission(
         pr.id, pr.name, pr.l10n_message_id,
         pr.message_id ? pr.message_id : PermissionMessage::kNone,
-        pr.flags);
+        pr.flags,
+        pr.detail_constructor);
   }
 
   // Register aliases.
   info->RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
   info->RegisterAlias("tabs", kWindowsPermission);
+}
+
+APIPermissionDetail::~APIPermissionDetail() {
 }
 
 }  // namespace extensions

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 
 #include "base/bind.h"
+#include "chrome/common/extensions/permissions/socket_permission.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
@@ -28,10 +29,12 @@ const char kResultCodeKey[] = "resultCode";
 const char kSocketIdKey[] = "socketId";
 const char kTCPOption[] = "tcp";
 const char kUDPOption[] = "udp";
+const char kUnknown[] = "unknown";
 
 const char kSocketNotFoundError[] = "Socket not found";
 const char kSocketTypeInvalidError[] = "Socket type is not supported";
 const char kDnsLookupFailedError[] = "DNS resolution failed";
+const char kPermissionError[] = "Caller does not have permission";
 
 SocketAsyncApiFunction::SocketAsyncApiFunction()
     : manager_(NULL) {
@@ -163,6 +166,37 @@ bool SocketConnectFunction::Prepare() {
 }
 
 void SocketConnectFunction::AsyncWorkStart() {
+  socket_ = manager_->Get(socket_id_);
+  if (!socket_) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  SocketPermissionData::OperationType operation_type;
+  switch (socket_->GetSocketType()) {
+    case Socket::TYPE_TCP:
+      operation_type = SocketPermissionData::TCP_CONNECT;
+      break;
+    case Socket::TYPE_UDP:
+      operation_type = SocketPermissionData::UDP_SEND_TO;
+      break;
+    default:
+      NOTREACHED() << "Unknown socket type.";
+      operation_type = SocketPermissionData::NONE;
+      break;
+  }
+
+  SocketPermission::CheckParam param(operation_type, hostname_, port_);
+  if (!GetExtension()->CheckAPIPermissionWithDetail(APIPermission::kSocket,
+        &param)) {
+    error_ = kPermissionError;
+    SetResult(Value::CreateIntegerValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
   StartDnsLookup(hostname_);
 }
 
@@ -176,15 +210,8 @@ void SocketConnectFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketConnectFunction::StartConnect() {
-  Socket* socket = manager_->Get(socket_id_);
-  if (!socket) {
-    error_ = kSocketNotFoundError;
-    OnConnect(-1);
-    return;
-  }
-
-  socket->Connect(resolved_address_, port_,
-                  base::Bind(&SocketConnectFunction::OnConnect, this));
+  socket_->Connect(resolved_address_, port_,
+                   base::Bind(&SocketConnectFunction::OnConnect, this));
 }
 
 void SocketConnectFunction::OnConnect(int result) {
@@ -216,11 +243,25 @@ bool SocketBindFunction::Prepare() {
 void SocketBindFunction::Work() {
   int result = -1;
   Socket* socket = manager_->Get(socket_id_);
-  if (socket)
-    result = socket->Bind(address_, port_);
-  else
-    error_ = kSocketNotFoundError;
 
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(result));
+    return;
+  }
+
+  if (socket->GetSocketType() == Socket::TYPE_UDP) {
+    SocketPermission::CheckParam param(
+        SocketPermissionData::UDP_BIND, address_, port_);
+    if (!GetExtension()->CheckAPIPermissionWithDetail(APIPermission::kSocket,
+          &param)) {
+      error_ = kPermissionError;
+      SetResult(Value::CreateIntegerValue(result));
+      return;
+    }
+  }
+
+  result = socket->Bind(address_, port_);
   SetResult(Value::CreateIntegerValue(result));
 }
 
@@ -373,6 +414,26 @@ bool SocketSendToFunction::Prepare() {
 }
 
 void SocketSendToFunction::AsyncWorkStart() {
+  socket_ = manager_->Get(socket_id_);
+  if (!socket_) {
+    error_ = kSocketNotFoundError;
+    SetResult(Value::CreateIntegerValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  if (socket_->GetSocketType() == Socket::TYPE_UDP) {
+    SocketPermission::CheckParam param(SocketPermissionData::UDP_SEND_TO,
+        hostname_, port_);
+    if (!GetExtension()->CheckAPIPermissionWithDetail(APIPermission::kSocket,
+          &param)) {
+      error_ = kPermissionError;
+      SetResult(Value::CreateIntegerValue(-1));
+      AsyncWorkCompleted();
+      return;
+    }
+  }
+
   StartDnsLookup(hostname_);
 }
 
@@ -386,15 +447,8 @@ void SocketSendToFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketSendToFunction::StartSendTo() {
-  Socket* socket = manager_->Get(socket_id_);
-  if (!socket) {
-    error_ = kSocketNotFoundError;
-    OnCompleted(-1);
-    return;
-  }
-
-  socket->SendTo(io_buffer_, io_buffer_size_, resolved_address_, port_,
-                 base::Bind(&SocketSendToFunction::OnCompleted, this));
+  socket_->SendTo(io_buffer_, io_buffer_size_, resolved_address_, port_,
+                  base::Bind(&SocketSendToFunction::OnCompleted, this));
 }
 
 void SocketSendToFunction::OnCompleted(int bytes_written) {
@@ -470,7 +524,18 @@ void SocketGetInfoFunction::Work() {
   if (socket) {
     // This represents what we know about the socket, and does not call through
     // to the system.
-    info.socket_type = (socket->IsTCPSocket() ? kTCPOption : kUDPOption);
+    switch (socket->GetSocketType()) {
+      case Socket::TYPE_TCP:
+        info.socket_type = kTCPOption;
+        break;
+      case Socket::TYPE_UDP:
+        info.socket_type = kUDPOption;
+        break;
+      default:
+        NOTREACHED() << "Unknown socket type.";
+        info.socket_type = kUnknown;
+        break;
+    }
     info.connected = socket->IsConnected();
 
     // Grab the peer address as known by the OS. This and the call below will
