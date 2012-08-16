@@ -10,33 +10,19 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
+#include "base/platform_file.h"
+#include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
+#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
+#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 namespace gdata {
-
-struct CreateDBParams;
-class DocumentEntry;
-class GDataEntry;
-class GDataEntryProto;
-class GDataFile;
-class GDataDirectory;
-class ResourceMetadataDB;
-
-typedef std::vector<GDataEntryProto> GDataEntryProtoVector;
-
-// File type on the gdata file system can be either a regular file or
-// a hosted document.
-enum GDataFileType {
-  REGULAR_FILE,
-  HOSTED_DOCUMENT,
-};
 
 // The root directory content origin.
 enum ContentOrigin {

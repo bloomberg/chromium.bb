@@ -4,7 +4,6 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
-#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_feed_processor.h"
 #include "content/public/browser/browser_thread.h"
 

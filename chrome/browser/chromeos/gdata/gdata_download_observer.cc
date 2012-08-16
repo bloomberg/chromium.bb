@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
 #include "chrome/browser/download/download_completion_blocker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "net/base/net_util.h"

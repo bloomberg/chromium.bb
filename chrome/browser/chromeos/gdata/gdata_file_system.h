@@ -25,14 +25,15 @@
 #include "content/public/browser/notification_observer.h"
 
 namespace base {
+
 class SequencedTaskRunner;
-}
+
+}  // namespace base
 
 namespace gdata {
 
 class DocumentsServiceInterface;
 class DriveWebAppsRegistryInterface;
-class GDataUploaderInterface;
 class GDataWapiFeedLoader;
 struct UploadFileInfo;
 

@@ -4,14 +4,22 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/sequenced_task_runner.h"
+#include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_wapi_parser.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
+
+using content::BrowserThread;
 
 namespace gdata {
 namespace {
