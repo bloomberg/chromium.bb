@@ -10,13 +10,21 @@ input.common[type='radio'] {
   -webkit-appearance: none;
   -webkit-border-radius: 1px;
   -webkit-box-sizing: border-box;
-  border: 1px solid #c6c6c6;
+  border: 1px solid #555;
   border-radius: 1px;
   box-sizing: border-box;
   cursor: default;
   height: 13px;
   margin: 0;
+  opacity: 0.4;
   width: 13px;
+}
+
+input.common[type='checkbox']:hover,
+input.common[type='checkbox']:checked,
+input.common[type='radio']:hover,
+input.common[type='radio']:checked {
+  opacity: 1;
 }
 
 input.common[type='checkbox'] {

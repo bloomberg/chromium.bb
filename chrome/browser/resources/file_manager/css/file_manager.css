@@ -1042,11 +1042,6 @@ input.rename {
   z-index: 2;
 }
 
-.file-checkbox,
-.pin {
-  opacity: 0.3;
-}
-
 #select-all-checkbox {
   -webkit-margin-end: 11px;
   -webkit-margin-start: 1px;
@@ -1060,16 +1055,13 @@ input.rename {
 #list-container li.table-row:hover .file-checkbox,
 #list-container li.table-row:hover .pin,
 #list-container li.thumbnail-item:hover .file-checkbox {
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
-.file-checkbox:hover,
-.pin:hover,
 #list-container li.table-row[selected] .file-checkbox,
 #list-container li.table-row[selected] .pin,
-#list-container li.table-row .pin:checked,
 #list-container li.thumbnail-item[selected] .file-checkbox {
-  opacity: 0.8 !important;
+  opacity: 1.0 !important;
 }
 
 #list-container li.table-row,
