@@ -763,8 +763,11 @@ cr.define('options.internet', function() {
     configureAddressField($('ip-netmask'), inetNetmask);
     configureAddressField($('ip-gateway'), inetGateway);
 
-    if (data.ipconfig.value && data.ipconfig.value.nameServers)
-      $('automatic-dns-display').textContent = data.ipconfig.value.nameServers;
+    var inetNameServers = '';
+    if (data.ipconfig.value && data.ipconfig.value.nameServers) {
+      inetNameServers = data.ipconfig.value.nameServers;
+      $('automatic-dns-display').textContent = inetNameServers;
+    }
 
     if (data.savedIP && data.savedIP.nameServers)
       $('automatic-dns-display').textContent = data.savedIP.nameServers;
@@ -812,9 +815,9 @@ cr.define('options.internet', function() {
       } else {
         $('wifi-bssid-entry').hidden = true;
       }
-      $('wifi-ip-address').textContent = inetAddress;
-      $('wifi-netmask').textContent = inetNetmask;
-      $('wifi-gateway').textContent = inetGateway;
+      $('wifi-ip-address').textContent = inetAddress.value;
+      $('wifi-netmask').textContent = inetNetmask.value;
+      $('wifi-gateway').textContent = inetGateway.value;
       $('wifi-name-servers').textContent = inetNameServers;
       if (data.encryption && data.encryption.length > 0) {
         $('wifi-security').textContent = data.encryption;
