@@ -11,9 +11,16 @@
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 
+class GURL;
+
+namespace base {
+class Value;
+}
+
 namespace gdata {
 
 class DriveWebAppsRegistryInterface;
+class DocumentFeed;
 class DocumentsServiceInterface;
 class GDataCache;
 struct GetDocumentsUiState;
