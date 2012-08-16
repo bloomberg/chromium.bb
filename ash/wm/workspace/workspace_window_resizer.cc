@@ -72,6 +72,14 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   Shell* shell = Shell::GetInstance();
   shell->display_controller()->set_dont_warp_mouse(false);
   shell->cursor_manager()->UnlockCursor();
+
+  // Delete phantom controllers first so that they will never see the deleted
+  // |layer_|.
+  snap_phantom_window_controller_.reset();
+  drag_phantom_window_controller_.reset();
+
+  if (layer_)
+    wm::DeepDeleteLayers(layer_);
 }
 
 // static
@@ -224,7 +232,8 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       total_min_(0),
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
-      num_mouse_moves_since_bounds_change_(0) {
+      num_mouse_moves_since_bounds_change_(0),
+      layer_(NULL) {
   DCHECK(details_.is_resizable);
 
   Shell* shell = Shell::GetInstance();
@@ -473,10 +482,13 @@ void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds,
       drag_phantom_window_controller_.reset(
           new PhantomWindowController(window()));
       drag_phantom_window_controller_->set_style(
-          PhantomWindowController::STYLE_WINDOW);
+          PhantomWindowController::STYLE_NONE);
       // Always show the drag phantom on the |another_root| window.
       drag_phantom_window_controller_->SetDestinationDisplay(
           gfx::Screen::GetDisplayMatching(another_root->GetBoundsInScreen()));
+      if (!layer_)
+        RecreateWindowLayers();
+      drag_phantom_window_controller_->set_layer(layer_);
       drag_phantom_window_controller_->Show(bounds_in_screen);
     } else {
       // No animation.
@@ -567,6 +579,19 @@ bool WorkspaceWindowResizer::ShouldAllowMouseWarp() const {
   return (details_.window_component == HTCAPTION) &&
       (window()->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE) &&
       (window()->type() == aura::client::WINDOW_TYPE_NORMAL);
+}
+
+void WorkspaceWindowResizer::RecreateWindowLayers() {
+  DCHECK(!layer_);
+  layer_ = wm::RecreateWindowLayers(window());
+  layer_->set_delegate(window()->layer()->delegate());
+  // Place the layer at (0, 0) of the PhantomWindowController's window.
+  gfx::Rect layer_bounds = layer_->bounds();
+  layer_bounds.set_origin(gfx::Point(0, 0));
+  layer_->SetBounds(layer_bounds);
+  layer_->SetVisible(false);
+  // Detach it from the current container.
+  layer_->parent()->Remove(layer_);
 }
 
 }  // namespace internal

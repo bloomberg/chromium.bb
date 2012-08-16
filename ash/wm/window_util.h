@@ -12,6 +12,10 @@ class RootWindow;
 class Window;
 }
 
+namespace ui {
+class Layer;
+}
+
 namespace ash {
 namespace internal {
 class RootWindowController;
@@ -55,6 +59,14 @@ ASH_EXPORT void RestoreWindow(aura::Window* window);
 
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
+
+// Recreates a fresh layer for |window| and all its child windows. Does not
+// recreate shadows or other non-window layers. Returns the old layer and its
+// children, maintaining the hierarchy.
+ASH_EXPORT ui::Layer* RecreateWindowLayers(aura::Window* window);
+
+// Deletes |layer| and all its child layers.
+ASH_EXPORT void DeepDeleteLayers(ui::Layer* layer);
 
 }  // namespace wm
 }  // namespace ash

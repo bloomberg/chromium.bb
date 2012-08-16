@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -616,35 +617,6 @@ bool AnimateHideWindow(aura::Window* window) {
   }
 }
 
-// Recreates a fresh layer for |window| and all its child windows. Does not
-// recreate shadows or other non-window layers. Returns the old layer and its
-// children, maintaining the hierarchy.
-Layer* RecreateWindowLayers(Window* window) {
-  Layer* old_layer = window->RecreateLayer();
-  DCHECK(old_layer);
-  for (Window::Windows::const_iterator it = window->children().begin();
-       it != window->children().end();
-       ++it) {
-    aura::Window* child = *it;
-    Layer* old_child_layer = RecreateWindowLayers(child);
-    // Maintain the hierarchy of the detached layers.
-    old_layer->Add(old_child_layer);
-  }
-  return old_layer;
-}
-
-// Deletes |layer| and all its child layers.
-void DeepDelete(Layer* layer) {
-  std::vector<Layer*> children = layer->children();
-  for (std::vector<Layer*>::const_iterator it = children.begin();
-       it != children.end();
-       ++it) {
-    Layer* child = *it;
-    DeepDelete(child);
-  }
-  delete layer;
-}
-
 // Observer for a window cross-fade animation. If either the window closes or
 // the layer's animation completes or compositing is aborted due to GPU crash,
 // it deletes the layer and removes itself as an observer.
@@ -710,7 +682,7 @@ class CrossFadeObserver : public ui::CompositorObserver,
     }
     if (layer_) {
       layer_->GetCompositor()->RemoveObserver(this);
-      DeepDelete(layer_);
+      wm::DeepDeleteLayers(layer_);
       layer_ = NULL;
     }
   }
@@ -768,7 +740,7 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   // Create fresh layers for the window and all its children to paint into.
   // Takes ownership of the old layer and all its children, which will be
   // cleaned up after the animation completes.
-  ui::Layer* old_layer = internal::RecreateWindowLayers(window);
+  ui::Layer* old_layer = wm::RecreateWindowLayers(window);
   ui::Layer* new_layer = window->layer();
 
   // Ensure the higher-resolution layer is on top.

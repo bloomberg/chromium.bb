@@ -16,6 +16,10 @@ namespace aura {
 class RootWindow;
 }  // namespace aura
 
+namespace ui {
+class Layer;
+}  // namespace ui
+
 namespace ash {
 namespace internal {
 
@@ -132,6 +136,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Returns true if we should allow the mouse pointer to warp.
   bool ShouldAllowMouseWarp() const;
 
+  // Recreates a fresh layer for window() and all its child windows.
+  void RecreateWindowLayers();
+
   aura::Window* window() const { return details_.window; }
 
   const Details details_;
@@ -185,6 +192,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // The mouse location passed to Drag().
   gfx::Point last_mouse_location_;
+
+  // The copy of window()->layer() and its children. This object is the owner of
+  // the layer.
+  ui::Layer* layer_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

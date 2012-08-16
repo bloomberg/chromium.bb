@@ -4,6 +4,8 @@
 
 #include "ash/wm/window_util.h"
 
+#include <vector>
+
 #include "ash/shell.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_properties.h"
@@ -12,6 +14,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
@@ -97,6 +100,36 @@ void CenterWindow(aura::Window* window) {
   const gfx::Display display = gfx::Screen::GetDisplayNearestWindow(window);
   gfx::Rect center = display.work_area().Center(window->bounds().size());
   window->SetBounds(center);
+}
+
+ui::Layer* RecreateWindowLayers(aura::Window* window) {
+  const gfx::Rect bounds = window->bounds();
+  ui::Layer* old_layer = window->RecreateLayer();
+  DCHECK(old_layer);
+  // Resize the window to the new size, which will force a layout and paint.
+  window->SetBounds(bounds);
+  for (aura::Window::Windows::const_iterator it = window->children().begin();
+       it != window->children().end();
+       ++it) {
+    aura::Window* child = *it;
+    const gfx::Rect child_bounds = child->bounds();
+    ui::Layer* old_child_layer = RecreateWindowLayers(child);
+    // Maintain the hierarchy of the detached layers.
+    old_layer->Add(old_child_layer);
+    child->SetBounds(child_bounds);  // Resize the child window too.
+  }
+  return old_layer;
+}
+
+void DeepDeleteLayers(ui::Layer* layer) {
+  std::vector<ui::Layer*> children = layer->children();
+  for (std::vector<ui::Layer*>::const_iterator it = children.begin();
+       it != children.end();
+       ++it) {
+    ui::Layer* child = *it;
+    DeepDeleteLayers(child);
+  }
+  delete layer;
 }
 
 }  // namespace wm

@@ -74,47 +74,14 @@ class EdgePainter : public views::Painter {
   DISALLOW_COPY_AND_ASSIGN(EdgePainter);
 };
 
-// Paints the background of the phantom window for window dragging.
-class WindowPainter : public views::Painter,
-                      public aura::WindowObserver {
- public:
-  explicit WindowPainter(aura::Window* window)
-      : window_(window) {
-    window_->AddObserver(this);
-  }
-
-  virtual ~WindowPainter() {
-    if (window_)
-      window_->RemoveObserver(this);
-  }
-
-  // views::Painter overrides:
-  virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
-    // TODO(yusukes): Paint child windows of the |window_| correctly. Current
-    // code does not paint e.g. web content area in the window. crbug.com/141766
-    if (window_ && window_->delegate())
-      window_->delegate()->OnPaint(canvas);
-  }
-
- private:
-  // aura::WindowObserver overrides:
-  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
-    DCHECK_EQ(window_, window);
-    window_ = NULL;
-  }
-
-  aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowPainter);
-};
-
 }  // namespace
 
 PhantomWindowController::PhantomWindowController(aura::Window* window)
     : window_(window),
       phantom_below_window_(NULL),
       phantom_widget_(NULL),
-      style_(STYLE_SHADOW) {
+      style_(STYLE_SHADOW),
+      layer_(NULL) {
 }
 
 PhantomWindowController::~PhantomWindowController() {
@@ -126,7 +93,15 @@ void PhantomWindowController::SetDestinationDisplay(
   dst_display_ = dst_display;
 }
 
+void PhantomWindowController::set_layer(ui::Layer* layer) {
+  // Cannot set a layer after the widget is initialized.
+  DCHECK(!phantom_widget_);
+  layer_ = layer;
+}
+
 void PhantomWindowController::Show(const gfx::Rect& bounds) {
+  if (layer_)
+    layer_->SetVisible(true);
   if (bounds == bounds_)
     return;
   bounds_ = bounds;
@@ -144,6 +119,8 @@ void PhantomWindowController::Show(const gfx::Rect& bounds) {
 
 void PhantomWindowController::SetBounds(const gfx::Rect& bounds) {
   DCHECK(IsShowing());
+  if (layer_)
+    layer_->SetVisible(true);
   animation_.reset();
   bounds_ = bounds;
   SetBoundsInternal(bounds);
@@ -153,6 +130,8 @@ void PhantomWindowController::Hide() {
   if (phantom_widget_)
     phantom_widget_->Close();
   phantom_widget_ = NULL;
+  if (layer_)
+    layer_->SetVisible(false);
 }
 
 bool PhantomWindowController::IsShowing() const {
@@ -198,24 +177,25 @@ void PhantomWindowController::CreatePhantomWidget(const gfx::Rect& bounds) {
   phantom_widget_->Init(params);
   phantom_widget_->SetVisibilityChangedAnimationsEnabled(false);
   phantom_widget_->GetNativeWindow()->SetName("PhantomWindow");
-  views::View* content_view = new views::View;
-  switch (style_) {
-    case STYLE_SHADOW:
-      content_view->set_background(
-          views::Background::CreateBackgroundPainter(true, new EdgePainter));
-      break;
-    case STYLE_WINDOW:
-      content_view->set_background(views::Background::CreateBackgroundPainter(
-          true, new WindowPainter(window_)));
-      break;
+  if (style_ == STYLE_SHADOW) {
+    views::View* content_view = new views::View;
+    content_view->set_background(
+        views::Background::CreateBackgroundPainter(true, new EdgePainter));
+    phantom_widget_->SetContentsView(content_view);
   }
-  phantom_widget_->SetContentsView(content_view);
   SetBoundsInternal(bounds);
   if (phantom_below_window_)
     phantom_widget_->StackBelow(phantom_below_window_);
   else
     phantom_widget_->StackAbove(window_);
   phantom_widget_->Show();
+
+  if (layer_) {
+    aura::Window* window = phantom_widget_->GetNativeWindow();
+    window->layer()->Add(layer_);
+    window->layer()->StackAtTop(layer_);
+  }
+
   // Fade the window in.
   ui::Layer* layer = phantom_widget_->GetNativeWindow()->layer();
   layer->SetOpacity(0);

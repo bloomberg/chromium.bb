@@ -13,11 +13,12 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
-class Window;
 class RootWindow;
+class Window;
 }
 
 namespace ui {
+class Layer;
 class SlideAnimation;
 }
 
@@ -34,7 +35,7 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
  public:
   enum Style {
     STYLE_SHADOW,  // for window snapping.
-    STYLE_WINDOW,  // for window dragging.
+    STYLE_NONE,  // for window dragging.
   };
 
   explicit PhantomWindowController(aura::Window* window);
@@ -65,6 +66,11 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   void set_phantom_below_window(aura::Window* phantom_below_window) {
     phantom_below_window_ = phantom_below_window;
   }
+
+  // Sets/gets the |layer| which is shown on top of the |phantom_widget_|.
+  // PhantomWindowController does not own the |layer|.
+  void set_layer(ui::Layer* layer);
+  ui::Layer* layer() const { return layer_; }
 
   // Sets/gets the style of the phantom window.
   void set_style(Style style);
@@ -110,6 +116,10 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
 
   // The style of the phantom window.
   Style style_;
+
+  // The layer which should be shown on top of the |phantom_widget_|. NULL when
+  // no layer needs to be shown. This object does not own the layer.
+  ui::Layer* layer_;
 
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };

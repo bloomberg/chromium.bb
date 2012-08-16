@@ -607,7 +607,8 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
     PhantomWindowController* controller =
         resizer->drag_phantom_window_controller_.get();
     ASSERT_TRUE(controller);
-    EXPECT_EQ(PhantomWindowController::STYLE_WINDOW, controller->style());
+    EXPECT_EQ(PhantomWindowController::STYLE_NONE, controller->style());
+    EXPECT_EQ(resizer->layer_, controller->layer());
     // |window_| should be opaque since the pointer is still on the primary
     // root window. The phantom should be semi-transparent.
     EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
@@ -618,7 +619,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_PhantomStyle) {
     EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
     controller = resizer->drag_phantom_window_controller_.get();
     ASSERT_TRUE(controller);
-    EXPECT_EQ(PhantomWindowController::STYLE_WINDOW, controller->style());
+    EXPECT_EQ(PhantomWindowController::STYLE_NONE, controller->style());
     // |window_| should be transparent, and the phantom should be opaque.
     EXPECT_GT(1.0f, window_->layer()->opacity());
     EXPECT_FLOAT_EQ(1.0f, controller->GetOpacity());
