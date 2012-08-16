@@ -112,7 +112,15 @@ __PROJECT_PRERUN__
 RUN: all
 	python ../httpd.py
 
-LAUNCH_NEXE: CHECK_FOR_CHROME all
-	$(CHROME_PATH) $(NEXE_ARGS) "localhost:5103/index.html"
+CONFIG?=Debug
+PAGE?=index_$(TOOLCHAIN)_$(CONFIG).html
+
+ifeq (,$(wildcard $(PAGE)))
+	$(warning No valid HTML page found at $(PAGE))
+	$(error Make sure TOOLCHAIN and CONFIG are properly set)
+endif
+
+LAUNCH: CHECK_FOR_CHROME all
+	$(CHROME_PATH) $(NEXE_ARGS) --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)" localhost:5103/$(PAGE)
 
 __PROJECT_POSTLAUNCH__

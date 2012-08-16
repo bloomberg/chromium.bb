@@ -109,11 +109,6 @@ WIN_LINK_RULES = {
   'Release': '<TAB>$(<LINK>) /DLL /OUT:$@ $(<PROJ>_LDFLAGS) /LIBPATH:$(NACL_SDK_ROOT)/lib/win_x86_32_host/Release $^ <LIBLIST> $(WIN_LDFLAGS)'
 }
 
-WIN_LAUNCH_RULES = """
-HOST_ARGS:=--register-pepper-plugins=$(abspath win/<proj>.dll);application/x-nacl
-LAUNCH_HOST: CHECK_FOR_CHROME all
-<TAB>$(CHROME_PATH) $(HOST_ARGS) "localhost:5103/index_win.html"
-"""
 
 #
 # Lib rules for various platforms.
@@ -170,9 +165,9 @@ LINUX_TOOL = {
   'DEFINE': '-D%s',
   'INCLUDE': '-I%s',
   'LIBRARY': '-l%s',
-  'MAIN': '<tc>/<config>/lib<proj>_<ARCH>.so',
-  'NMFMAIN': '<tc>/<config>/lib<proj>_<ARCH>.so',
-  'SO': '<tc>/<config>/lib<proj>_<ARCH>.so',
+  'MAIN': '<tc>/<config>/lib<proj>.so',
+  'NMFMAIN': '<tc>/<config>/lib<proj>.so',
+  'SO': '<tc>/<config>/lib<proj>.so',
   'LIB': '$(NACL_SDK_ROOT)/lib/linux_<ARCH>_host/<config>/lib<proj>.a',
 }
 
@@ -203,15 +198,10 @@ PNACL_TOOL = {
 #
 # Various Architectures
 #
-LINUX_32 = {
-  '<arch>': '32',
-  '<ARCH>': 'x86_32',
-  '<MACH>': '-m32',
-}
-LINUX_64 = {
-  '<arch>': '64',
-  '<ARCH>': 'x86_64',
-  '<MACH>': '-m64',
+LINUX = {
+  '<arch>': '',
+  '<ARCH>': '',
+  '<MACH>': '',
 }
 NACL_X86_32 = {
   '<arch>': '32',
@@ -281,7 +271,7 @@ BUILD_RULES = {
     'TOOL': WIN_TOOL
   },
   'linux' : {
-    'ARCHES': [LINUX_32, LINUX_64],
+    'ARCHES': [LINUX],
     'DEFS': LINUX_DEFAULTS,
     'CC': SO_CC_RULES,
     'CXX': SO_CC_RULES,
@@ -366,6 +356,13 @@ class MakeRules(object):
   def GetObjectList(self):
     return '%s_%s_%s_%s_O' % (self.project.upper(), self.tc.upper(),
                               self.cfg.upper(), self.arch['<ARCH>'])
+
+  def GetPepperPlugin(self):
+    plugin = self.Replace(BUILD_RULES[self.tc]['TOOL']['MAIN'])
+    text = 'PPAPI_<CONFIG>:=$(abspath %s)' % plugin
+    text += ';application/x-ppapi-%s\n' % self.vars['<config>'].lower()
+    return self.Replace(text)
+
 
   def SetArch(self, arch):
     self.arch = arch

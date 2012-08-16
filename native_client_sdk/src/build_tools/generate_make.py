@@ -159,6 +159,8 @@ def GenerateRules(desc, tools):
         lpaths = target.get('LIBPATHS', [])
         ipaths = target.get('INCPATHS', [])
         makeobj.SetProject(project, ptype, defs=defs, incs=incs, libs=libs)
+	if ptype == 'main':
+	  rules += makeobj.GetPepperPlugin()
         for arch in arches:
           makeobj.SetArch(arch)
           for src in srcs.get('.c', []):
@@ -173,6 +175,7 @@ def GenerateRules(desc, tools):
 
   rules += GenerateCleanRules(tools, configs)
   rules += '\nall: $(ALL_TARGETS)\n'
+
   return '', rules
 
 

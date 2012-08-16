@@ -16,6 +16,7 @@ var common = (function () {
    *
    * @param {string} name The name of the example.
    * @param {string} tool The name of the toolchain, e.g. "glibc", "newlib" etc.
+   * @param {string} config The name of the configruation, "Debug" or "Release"
    * @param {number} width The width to create the plugin.
    * @param {number} height The height to create the plugin.
    */
@@ -27,6 +28,10 @@ var common = (function () {
     moduleEl.setAttribute('height',height);
     moduleEl.setAttribute('src', tool + '/' + config + '/' + name + '.nmf');
     moduleEl.setAttribute('type', 'application/x-nacl');
+    if (tool == 'win' || tool == 'linux' || tool == 'mac') {
+      mimetype = 'application/x-ppapi-' + config.toLowerCase();
+      moduleEl.setAttribute('type', mimetype);
+    }
 
     // The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
     // and a 'message' event listener attached.  This wrapping method is used
