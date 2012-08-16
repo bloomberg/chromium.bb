@@ -374,8 +374,6 @@
         'network_list_observer.h',
         'npruntime_util.cc',
         'npruntime_util.h',
-        'p2p_transport.cc',
-        'p2p_transport.h',
         'resource_fetcher.cc',
         'resource_fetcher.h',
         'resource_loader_bridge.cc',

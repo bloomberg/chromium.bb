@@ -34,7 +34,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       LOG(ERROR) << "WebFrame is NULL.";
       return NULL;
     }
-    webkit_glue::P2PTransport::Config config;
+    content::P2PPortAllocator::Config config;
     if (stun_servers.size() > 0) {
       config.stun_server = stun_servers[0].server.hostname();
       config.stun_server_port = stun_servers[0].server.port();

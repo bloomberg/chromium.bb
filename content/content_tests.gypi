@@ -445,7 +445,6 @@
             'renderer/media/peer_connection_handler_jsep_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
-            'renderer/p2p/p2p_transport_impl_unittest.cc',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_peerconnection',

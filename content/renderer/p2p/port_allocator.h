@@ -10,7 +10,6 @@
 #include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/p2p/client/basicportallocator.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
-#include "webkit/glue/p2p_transport.h"
 
 namespace WebKit {
 class WebFrame;
@@ -23,15 +22,41 @@ class P2PHostAddressRequest;
 class P2PPortAllocatorSession;
 class P2PSocketDispatcher;
 
-// TODO(sergeyu): There is overlap between this class and
-// HttpPortAllocator. Refactor HttpPortAllocator
+// TODO(sergeyu): There is overlap between this class and HttpPortAllocator.
+// Refactor this class to inherit from HttpPortAllocator to avoid code
+// duplication.
 class P2PPortAllocator : public cricket::BasicPortAllocator {
  public:
+  struct Config {
+    Config();
+    ~Config();
+
+    // STUN server address and port.
+    std::string stun_server;
+    int stun_server_port;
+
+    // Relay server address and port.
+    std::string relay_server;
+    int relay_server_port;
+
+    // Relay server username.
+    std::string relay_username;
+
+    // Relay server password.
+    std::string relay_password;
+
+    // When set to true relay is a legacy Google relay (not TURN compliant).
+    bool legacy_relay;
+
+    // Disable TCP-based transport when set to true.
+    bool disable_tcp_transport;
+  };
+
   P2PPortAllocator(WebKit::WebFrame* web_frame,
                    P2PSocketDispatcher* socket_dispatcher,
                    talk_base::NetworkManager* network_manager,
                    talk_base::PacketSocketFactory* socket_factory,
-                   const webkit_glue::P2PTransport::Config& config);
+                   const Config& config);
   virtual ~P2PPortAllocator();
 
   virtual cricket::PortAllocatorSession* CreateSessionInternal(
@@ -45,7 +70,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
 
   WebKit::WebFrame* web_frame_;
   P2PSocketDispatcher* socket_dispatcher_;
-  webkit_glue::P2PTransport::Config config_;
+  Config config_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PPortAllocator);
 };

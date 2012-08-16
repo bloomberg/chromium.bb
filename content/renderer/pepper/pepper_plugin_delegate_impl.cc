@@ -40,7 +40,6 @@
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
-#include "content/renderer/p2p/p2p_transport_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/content_renderer_pepper_host_factory.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
@@ -1400,14 +1399,6 @@ void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
                              frame->document().referrerPolicy());
   render_view_->Send(new ViewHostMsg_SaveURLAs(
       render_view_->routing_id(), url, referrer));
-}
-
-webkit_glue::P2PTransport* PepperPluginDelegateImpl::CreateP2PTransport() {
-#if defined(ENABLE_P2P_APIS)
-  return new P2PTransportImpl(render_view_->p2p_socket_dispatcher());
-#else
-  return NULL;
-#endif
 }
 
 double PepperPluginDelegateImpl::GetLocalTimeZoneOffset(base::Time t) {
