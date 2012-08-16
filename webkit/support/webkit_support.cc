@@ -804,6 +804,13 @@ void OpenFileSystem(WebFrame* frame, WebFileSystem::Type type,
   fileSystem->OpenFileSystem(frame, type, size, create, callbacks);
 }
 
+void DeleteFileSystem(WebFrame* frame, WebFileSystem::Type type,
+                      WebFileSystemCallbacks* callbacks) {
+  SimpleFileSystem* fileSystem = static_cast<SimpleFileSystem*>(
+      test_environment->webkit_platform_support()->fileSystem());
+  fileSystem->DeleteFileSystem(frame, type, callbacks);
+}
+
 WebKit::WebString RegisterIsolatedFileSystem(
     const WebKit::WebVector<WebKit::WebString>& filenames) {
   fileapi::IsolatedContext::FileInfoSet files;

@@ -233,8 +233,14 @@ WebKit::WebThemeEngine* GetThemeEngine();
 WebKit::WebURL GetDevToolsPathAsURL();
 
 // - FileSystem
-void OpenFileSystem(WebKit::WebFrame* frame, WebKit::WebFileSystem::Type type,
-    long long size, bool create, WebKit::WebFileSystemCallbacks* callbacks);
+void OpenFileSystem(WebKit::WebFrame* frame,
+                    WebKit::WebFileSystem::Type type,
+                    long long size,
+                    bool create,
+                    WebKit::WebFileSystemCallbacks* callbacks);
+void DeleteFileSystem(WebKit::WebFrame* frame,
+                      WebKit::WebFileSystem::Type type,
+                      WebKit::WebFileSystemCallbacks* callbacks);
 
 // Returns a filesystem ID for the newly created isolated filesystem.
 WebKit::WebString RegisterIsolatedFileSystem(
