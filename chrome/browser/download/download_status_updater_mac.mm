@@ -75,6 +75,14 @@ NSString* ProgressString(NSString* string) {
     }
   }
 
+  if (!result) {
+    // Huh. At least return a local copy of the expected string.
+    result = string;
+    NSString* const kKeySuffix = @"Key";
+    if ([result hasSuffix:kKeySuffix])
+      result = [result substringToIndex:[result length] - [kKeySuffix length]];
+  }
+
   return result;
 }
 
@@ -175,7 +183,7 @@ void UpdateAppIcon(int download_count,
 
 void CreateNSProgress(content::DownloadItem* download) {
   NSURL* source_url = [NSURL URLWithString:
-      base::SysUTF8ToNSString(download->GetURL().spec())];
+      base::SysUTF8ToNSString(download->GetURL().possibly_invalid_spec())];
   FilePath destination_path = download->GetFullPath();
   NSURL* destination_url = [NSURL fileURLWithPath:
       base::mac::FilePathToNSString(destination_path)];
@@ -186,18 +194,23 @@ void CreateNSProgress(content::DownloadItem* download) {
   // - kNSProgressFileIconOriginalRectKey : NSValue of NSRect in global coords
 
   NSDictionary* user_info = @{
-    ProgressString(kNSProgressFileDownloadingSourceURLKey) : source_url,
     ProgressString(kNSProgressFileLocationCanChangeKey) : @true,
     ProgressString(kNSProgressFileOperationKindKey) :
-      ProgressString(kNSProgressFileOperationKindDownloading),
+        ProgressString(kNSProgressFileOperationKindDownloading),
     ProgressString(kNSProgressFileURLKey) : destination_url
   };
+
   Class progress_class = NSClassFromString(@"NSProgress");
   NSProgress* progress = [progress_class performSelector:@selector(alloc)];
   progress = [progress performSelector:@selector(initWithParent:userInfo:)
                             withObject:nil
                             withObject:user_info];
   progress.kind = ProgressString(kNSProgressKindFile);
+
+  if (source_url) {
+    [progress setUserInfoObject:source_url forKey:
+        ProgressString(kNSProgressFileDownloadingSourceURLKey)];
+  }
 
   progress.pausable = NO;
   progress.cancellable = YES;
