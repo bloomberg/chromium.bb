@@ -177,10 +177,6 @@ class TokenService : public GaiaAuthConsumer,
   void IssueAuthTokenForTest(const std::string& service,
                              const std::string& auth_token);
 
-  const GaiaAuthConsumer::ClientLoginResult& credentials() const {
-    return credentials_;
-  }
-
   // GaiaAuthConsumer implementation.
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token) OVERRIDE;

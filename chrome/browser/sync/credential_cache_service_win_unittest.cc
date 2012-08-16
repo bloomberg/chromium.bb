@@ -39,6 +39,9 @@ class CredentialCacheServiceTest : public CredentialCacheService,
     file_message_loop_.RunAllPending();
   }
 
+  // PrefStore::Observer implementation.
+  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE {}
+
  private:
   ScopedTempDir temp_dir_;
   MessageLoop file_message_loop_;
