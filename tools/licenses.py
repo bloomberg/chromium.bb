@@ -198,7 +198,7 @@ SPECIAL_CASES = {
         "License": "BSD",
     },
     os.path.join('v8'): {
-        "Name": "gyp",
+        "Name": "V8 JavaScript Engine",
         "URL": "http://code.google.com/p/v8",
         "License": "BSD",
     },
