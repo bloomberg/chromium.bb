@@ -2014,7 +2014,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for key, value in make_global_settings_array:
     if value[0] != '$':
       value = '$(abspath %s)' % value
-    if key in ('LINK', 'LINK.host'):
+    if key == 'LINK':
       make_global_settings += ('%s ?= %s $(builddir)/linker.lock %s\n' %
                                (key, flock_command, value))
     elif key in ('CC', 'CC.host', 'CXX', 'CXX.host'):
