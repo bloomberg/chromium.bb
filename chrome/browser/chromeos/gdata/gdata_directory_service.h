@@ -146,7 +146,7 @@ class GDataDirectoryService {
   void set_origin(ContentOrigin value) { origin_ = value; }
 
   // Creates a GDataEntry from a DocumentEntry.
-  GDataEntry* FromDocumentEntry(DocumentEntry* doc);
+  GDataEntry* FromDocumentEntry(const DocumentEntry& doc);
 
   // Creates a GDataFile instance.
   GDataFile* CreateGDataFile();
@@ -312,4 +312,3 @@ class GDataDirectoryService {
 }  // namespace gdata
 
 #endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_DIRECTORY_SERVICE_H_
-

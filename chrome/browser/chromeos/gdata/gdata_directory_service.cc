@@ -203,12 +203,11 @@ GDataDirectoryService::~GDataDirectoryService() {
                                       directory_service_db_.release());
 }
 
-GDataEntry* GDataDirectoryService::FromDocumentEntry(DocumentEntry* doc) {
-  DCHECK(doc);
+GDataEntry* GDataDirectoryService::FromDocumentEntry(const DocumentEntry& doc) {
   GDataEntry* entry = NULL;
-  if (doc->is_folder())
+  if (doc.is_folder())
     entry = CreateGDataDirectory();
-  else if (doc->is_hosted_document() || doc->is_file())
+  else if (doc.is_hosted_document() || doc.is_file())
     entry = CreateGDataFile();
 
   if (entry)

@@ -286,7 +286,7 @@ GDataFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
              feed->entries().begin();
          iter != feed->entries().end(); ++iter) {
       DocumentEntry* doc = *iter;
-      GDataEntry* entry = directory_service_->FromDocumentEntry(doc);
+      GDataEntry* entry = directory_service_->FromDocumentEntry(*doc);
       // Some document entries don't map into files (i.e. sites).
       if (!entry)
         continue;

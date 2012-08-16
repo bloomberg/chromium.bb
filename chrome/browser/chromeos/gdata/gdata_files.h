@@ -41,7 +41,7 @@ class GDataEntry {
   virtual GDataDirectory* AsGDataDirectory();
 
   // Initializes from DocumentEntry.
-  virtual void InitFromDocumentEntry(DocumentEntry* doc);
+  virtual void InitFromDocumentEntry(const DocumentEntry& doc);
 
   // const versions of AsGDataFile and AsGDataDirectory.
   const GDataFile* AsGDataFileConst() const;
@@ -201,7 +201,7 @@ class GDataFile : public GDataEntry {
 
   explicit GDataFile(GDataDirectoryService* directory_service);
   // Initializes from DocumentEntry.
-  virtual void InitFromDocumentEntry(DocumentEntry* doc) OVERRIDE;
+  virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
 
   virtual GDataFile* AsGDataFile() OVERRIDE;
 
@@ -243,7 +243,7 @@ class GDataDirectory : public GDataEntry {
   explicit GDataDirectory(GDataDirectoryService* directory_service);
 
   // Initializes from DocumentEntry.
-  virtual void InitFromDocumentEntry(DocumentEntry* doc) OVERRIDE;
+  virtual void InitFromDocumentEntry(const DocumentEntry& doc) OVERRIDE;
 
   virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
 

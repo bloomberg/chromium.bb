@@ -46,28 +46,28 @@ GDataDirectory* GDataEntry::AsGDataDirectory() {
   return NULL;
 }
 
-void GDataEntry::InitFromDocumentEntry(DocumentEntry* doc) {
+void GDataEntry::InitFromDocumentEntry(const DocumentEntry& doc) {
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
   // interface and other client to use the 'title' attribute, instead of
   // 'filename', as the file name in the local snapshot.
-  title_ = UTF16ToUTF8(doc->title());
+  title_ = UTF16ToUTF8(doc.title());
   // SetBaseNameFromTitle() must be called after |title_| is set.
   SetBaseNameFromTitle();
 
-  file_info_.last_modified = doc->updated_time();
-  file_info_.last_accessed = doc->updated_time();
-  file_info_.creation_time = doc->published_time();
+  file_info_.last_modified = doc.updated_time();
+  file_info_.last_accessed = doc.updated_time();
+  file_info_.creation_time = doc.published_time();
 
-  resource_id_ = doc->resource_id();
-  content_url_ = doc->content_url();
-  deleted_ = doc->deleted();
+  resource_id_ = doc.resource_id();
+  content_url_ = doc.content_url();
+  deleted_ = doc.deleted();
 
-  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
+  const Link* edit_link = doc.GetLinkByType(Link::EDIT);
   if (edit_link)
     edit_url_ = edit_link->href();
 
-  const Link* parent_link = doc->GetLinkByType(Link::PARENT);
+  const Link* parent_link = doc.GetLinkByType(Link::PARENT);
   if (parent_link)
     parent_resource_id_ = ExtractResourceId(parent_link->href());
 }
@@ -139,17 +139,17 @@ void GDataFile::SetBaseNameFromTitle() {
   }
 }
 
-void GDataFile::InitFromDocumentEntry(DocumentEntry* doc) {
+void GDataFile::InitFromDocumentEntry(const DocumentEntry& doc) {
   GDataEntry::InitFromDocumentEntry(doc);
 
   // Check if this entry is a true file, or...
-  if (doc->is_file()) {
-    file_info_.size = doc->file_size();
-    file_md5_ = doc->file_md5();
+  if (doc.is_file()) {
+    file_info_.size = doc.file_size();
+    file_md5_ = doc.file_md5();
 
     // The resumable-edit-media link should only be present for regular
     // files as hosted documents are not uploadable.
-    const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_EDIT_MEDIA);
+    const Link* upload_link = doc.GetLinkByType(Link::RESUMABLE_EDIT_MEDIA);
     if (upload_link)
       upload_url_ = upload_link->href();
   } else {
@@ -158,23 +158,23 @@ void GDataFile::InitFromDocumentEntry(DocumentEntry* doc) {
     // case their handling in UI.
     // TODO(zelidrag): Figure out better way how to pass entry info like kind
     // to UI through the File API stack.
-    document_extension_ = doc->GetHostedDocumentExtension();
+    document_extension_ = doc.GetHostedDocumentExtension();
     // We don't know the size of hosted docs and it does not matter since
     // is has no effect on the quota.
     file_info_.size = 0;
   }
-  kind_ = doc->kind();
-  content_mime_type_ = doc->content_mime_type();
-  is_hosted_document_ = doc->is_hosted_document();
+  kind_ = doc.kind();
+  content_mime_type_ = doc.content_mime_type();
+  is_hosted_document_ = doc.is_hosted_document();
   // SetBaseNameFromTitle() must be called after |title_|,
   // |is_hosted_document_| and |document_extension_| are set.
   SetBaseNameFromTitle();
 
-  const Link* thumbnail_link = doc->GetLinkByType(Link::THUMBNAIL);
+  const Link* thumbnail_link = doc.GetLinkByType(Link::THUMBNAIL);
   if (thumbnail_link)
     thumbnail_url_ = thumbnail_link->href();
 
-  const Link* alternate_link = doc->GetLinkByType(Link::ALTERNATE);
+  const Link* alternate_link = doc.GetLinkByType(Link::ALTERNATE);
   if (alternate_link)
     alternate_url_ = alternate_link->href();
 }
@@ -194,10 +194,10 @@ GDataDirectory* GDataDirectory::AsGDataDirectory() {
   return this;
 }
 
-void GDataDirectory::InitFromDocumentEntry(DocumentEntry* doc) {
+void GDataDirectory::InitFromDocumentEntry(const DocumentEntry& doc) {
   GDataEntry::InitFromDocumentEntry(doc);
 
-  const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
+  const Link* upload_link = doc.GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
   if (upload_link)
     upload_url_ = upload_link->href();
 }
