@@ -47,8 +47,7 @@ Target::Target(struct NaClApp *nap, const Abi* abi)
     cur_signal_(0),
     sig_thread_(0),
     reg_thread_(0),
-    step_over_breakpoint_thread_(0),
-    mem_base_(0) {
+    step_over_breakpoint_thread_(0) {
   if (NULL == abi_) abi_ = Abi::Get();
 }
 
@@ -157,7 +156,7 @@ bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
       } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
                  NACL_BUILD_SUBARCH == 32) {
         // - eip contains untrusted address
-        if (addr == new_ip + mem_base_) {
+        if (addr == NaClUserToSysAddr(nap_, (uintptr_t) new_ip)) {
           thread->SetRegister(ip_def->index_, &new_ip, ip_def->bytes_);
         }
       } else {
@@ -329,6 +328,20 @@ bool Target::GetNextThreadId(uint32_t *id) {
 }
 
 
+uint64_t Target::UserToSysAddr(uint64_t addr) {
+  // On x86-64, GDB sometimes uses memory addresses with the %r15
+  // sandbox base included, so we must accept these addresses.
+  // TODO(eaeltsin): Fix GDB to not use addresses with %r15 added.
+  if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64 &&
+      NaClIsUserAddr(nap_, (uintptr_t) addr)) {
+    return addr;
+  }
+  // Otherwise, we expect an untrusted address.
+  if (addr != (uint32_t) addr) {
+    return kNaClBadAddress;
+  }
+  return NaClUserToSysAddr(nap_, (uintptr_t) addr);
+}
 
 bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
   char cmd;
@@ -448,24 +461,29 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     // IN : $maaaa,llll
     // OUT: $xx..xx
     case 'm': {
-        uint64_t addr;
+        uint64_t user_addr;
         uint64_t wlen;
         uint32_t len;
-        if (!pktIn->GetNumberSep(&addr, 0)) {
+        if (!pktIn->GetNumberSep(&user_addr, 0)) {
           err = BAD_FORMAT;
           break;
-        }
-        if (addr < mem_base_) {
-          addr += mem_base_;
         }
         if (!pktIn->GetNumberSep(&wlen, 0)) {
           err = BAD_FORMAT;
           break;
         }
+        uint64_t sys_addr = UserToSysAddr(user_addr);
+        if (sys_addr == kNaClBadAddress) {
+          err = FAILED;
+          break;
+        }
 
         len = static_cast<uint32_t>(wlen);
         uint8_t *block = new uint8_t[len];
-        if (!port::IPlatform::GetMemory(addr, len, block)) err = FAILED;
+        if (!port::IPlatform::GetMemory(sys_addr, len, block)) {
+          err = FAILED;
+          break;
+        }
 
         pktOut->AddBlock(block, len);
         break;
@@ -474,20 +492,21 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     // IN : $Maaaa,llll:xx..xx
     // OUT: $OK
     case 'M':  {
-        uint64_t addr;
+        uint64_t user_addr;
         uint64_t wlen;
         uint32_t len;
 
-        if (!pktIn->GetNumberSep(&addr, 0)) {
+        if (!pktIn->GetNumberSep(&user_addr, 0)) {
           err = BAD_FORMAT;
           break;
         }
-        if (addr < mem_base_) {
-          addr += mem_base_;
-        }
-
         if (!pktIn->GetNumberSep(&wlen, 0)) {
           err = BAD_FORMAT;
+          break;
+        }
+        uint64_t sys_addr = UserToSysAddr(user_addr);
+        if (sys_addr == kNaClBadAddress) {
+          err = FAILED;
           break;
         }
 
@@ -495,7 +514,10 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
         uint8_t *block = new uint8_t[len];
         pktIn->GetBlock(block, len);
 
-        if (!port::IPlatform::SetMemory(addr, len, block)) err = FAILED;
+        if (!port::IPlatform::SetMemory(sys_addr, len, block)) {
+          err = FAILED;
+          break;
+        }
 
         pktOut->AddString("OK");
         break;

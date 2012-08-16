@@ -69,8 +69,6 @@ class Target {
   // build the Target internal structures.
   bool Init();
 
-  void SetMemoryBase(uint64_t mem_base) { mem_base_ = mem_base; }
-
   // Add and remove temporary breakpoints.  These breakpoints
   // must be added just before we start running, and removed
   // just before we stop running to prevent the debugger from
@@ -97,6 +95,8 @@ class Target {
   void Exit(int err_code);
 
  protected:
+  uint64_t UserToSysAddr(uint64_t addr);
+
   // This function always succeedes, since all errors
   // are reported as an error string of "E<##>" where
   // the two digit number.  The error codes are not
@@ -149,9 +149,6 @@ class Target {
   // Thread that is stepping over a breakpoint while other threads remain
   // suspended.
   uint32_t step_over_breakpoint_thread_;
-
-  // TODO(mseaborn): Remove this, because we can get mem_start from nap_.
-  uint64_t mem_base_;
 };
 
 

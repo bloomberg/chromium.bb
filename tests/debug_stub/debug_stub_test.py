@@ -320,6 +320,17 @@ class DebugStubTest(unittest.TestCase):
     stack_val = ReadUint32(connection, stack_addr)
     self.assertEquals(stack_val, 0x4bb00ccc)
 
+    # On x86-64, for reading/writing memory, the debug stub accepts
+    # untrusted addresses with or without the %r15 sandbox base
+    # address added, because GDB uses both.
+    # TODO(eaeltsin): Fix GDB to not use addresses with %r15 added,
+    # and only test this memory access with stack_addr masked as
+    # below.
+    if ARCH == 'x86-64':
+      stack_addr &= 0xffffffff
+      stack_val = ReadUint32(connection, stack_addr)
+      self.assertEquals(stack_val, 0x4bb00ccc)
+
   # Test that reading from an unreadable address gives a sensible error.
   def CheckReadMemoryAtInvalidAddr(self, connection):
     mem_addr = 0

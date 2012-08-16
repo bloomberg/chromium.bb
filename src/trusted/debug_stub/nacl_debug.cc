@@ -105,7 +105,6 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) throw() {
 
   uint32_t id = IPlatform::GetCurrentThread();
   IThread* thread = IThread::Create(id, natp);
-  g_target->SetMemoryBase(natp->nap->mem_start);
   g_target->TrackThread(thread);
 }
 
