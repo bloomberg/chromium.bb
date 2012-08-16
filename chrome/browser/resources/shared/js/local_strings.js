@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(arv): Namespace
-
 /**
+ * NOTE: The use of this file is deprecated. Use load_time_data.js instead.
+ *
  * The local strings get injected into the page using a variable named
  * {@code templateData}. This class provides a simpler interface to access those
  * strings.

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 /**
+ * NOTE: The use of this file is deprecated. Use i18n_template2.js instead.
+ *
  * @fileoverview This is a simple template engine inspired by JsTemplates
  * optimized for i18n.
  *
