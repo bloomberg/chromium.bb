@@ -96,13 +96,10 @@
     "message": "Dauer"
   },
   "error_authentication_failed": {
-    "message": "Fehler bei der Authentifizierung. Melden Sie sich von Chrome Remote Desktop ab und versuchen Sie es erneut."
+    "message": "Fehler bei der Authentifizierung. Melden Sie sich erneut in Chrome Remote Desktop an."
   },
   "error_bad_plugin_version": {
     "message": "Es fehlen einige Komponenten, die f\u00fcr Chrome Remote Desktop erforderlich sind. \u00dcberpr\u00fcfen Sie, ob die neueste Version installiert ist, und versuchen Sie es erneut."
-  },
-  "error_generic": {
-    "message": "Ein unbekannter Fehler ist aufgetreten. Melden Sie sich von Chrome Remote Desktop ab und versuchen Sie es erneut."
   },
   "error_host_is_offline": {
     "message": "Der Remote-Computer reagiert nicht auf Verbindungsanfragen. \u00dcberpr\u00fcfen Sie, ob er online ist, und versuchen Sie es erneut."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Der Server reagiert nicht auf die Netzwerkanfrage."
+  },
+  "error_not_authenticated": {
+    "message": "Sie sind nicht in Chrome Remote Desktop angemeldet. Melden Sie sich an und versuchen Sie es erneut."
   },
   "error_service_unavailable": {
     "message": "Der Service ist vor\u00fcbergehend nicht verf\u00fcgbar. Bitte versuchen Sie es sp\u00e4ter erneut."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen."
+  },
   "host_setup_dialog_description": {
-    "message": "Sch\u00fctzen Sie den Zugriff auf diesen Computer mit einer PIN. Diese wird abgefragt, wenn von einem anderen Standort auf den Computer zugegriffen werden soll."
+    "message": "Um den Zugriff auf diesen Computer zu sch\u00fctzen, w\u00e4hlen Sie eine PIN mit $1mindestens 6 Ziffern$2 aus. Die Eingabe dieser PIN ist erforderlich, wenn eine Verbindung von einem anderen Ort aus hergestellt wird.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Fehler beim Starten des Remote-Zugriffsdienstes"
@@ -244,7 +255,7 @@
     "message": "Sobald der Nutzer den Code eingibt, beginnt die Freigabesitzung."
   },
   "invalid_pin": {
-    "message": "Die PIN muss aus mindestens 4 Ziffern bestehen."
+    "message": "Die PIN muss aus mindestens 6 Ziffern bestehen."
   },
   "it2me_first_run": {
     "message": "Die Bildschirmfreigabe f\u00fcr Nutzer eignet sich besonders f\u00fcr technischen Support per Remote-Zugriff."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Gr\u00f6\u00dfe anpassen"
+  },
+  "sign_in_button": {
+    "message": "Anmelden"
   },
   "sign_out_button": {
     "message": "Abmelden"

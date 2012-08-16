@@ -96,13 +96,10 @@
     "message": "Durata"
   },
   "error_authentication_failed": {
-    "message": "Autenticazione non riuscita. Esci da Chrome Remote Desktop e riprova."
+    "message": "Autenticazione non riuscita. Accedi nuovamente a Chrome Remote Desktop."
   },
   "error_bad_plugin_version": {
     "message": "Mancano alcuni componenti necessari per Chrome Remote Desktop. Assicurati che sia installata la versione pi\u00f9 recente e riprova."
-  },
-  "error_generic": {
-    "message": "Si \u00e8 verificato un errore sconosciuto. Esci da Chrome Remote Desktop e riprova."
   },
   "error_host_is_offline": {
     "message": "Il computer remoto non sta rispondendo alle richieste di connessione. Verifica che sia online e riprova."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Risposta del server alla richiesta di rete non riuscita."
+  },
+  "error_not_authenticated": {
+    "message": "Non hai eseguito l'accesso a Chrome Remote Desktop. Accedi e riprova."
   },
   "error_service_unavailable": {
     "message": "Il servizio non \u00e8 al momento disponibile. Riprova pi\u00f9 tardi."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Aiutaci a migliorare Chrome Remote Desktop consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali."
+  },
   "host_setup_dialog_description": {
-    "message": "Per proteggere l'accesso al computer, scegli un PIN. Il PIN verr\u00e0 richiesto per il collegamento da un'altra posizione."
+    "message": "Per proteggere l'accesso al computer, scegli un PIN di $1almeno sei cifre$2. Il PIN verr\u00e0 richiesto per il collegamento da un'altra posizione.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Impossibile avviare il servizio di accesso remoto."
@@ -244,7 +255,7 @@
     "message": "Una volta inserito il codice, la sessione di condivisione avr\u00e0 inizio."
   },
   "invalid_pin": {
-    "message": "Inserisci un PIN formato da almeno quattro cifre."
+    "message": "Inserisci un PIN formato da almeno sei cifre."
   },
   "it2me_first_run": {
     "message": "Condivisione dello schermo tra utenti, perfetta per l'assistenza tecnica da remoto."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Riduci e adatta"
+  },
+  "sign_in_button": {
+    "message": "Accedi"
   },
   "sign_out_button": {
     "message": "Esci"

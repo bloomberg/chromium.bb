@@ -96,13 +96,10 @@
     "message": "Ilgums"
   },
   "error_authentication_failed": {
-    "message": "Autentifik\u0101cija neizdev\u0101s. Izrakstieties no Chrome att\u0101l\u0101s darbvirsmas un m\u0113\u0123iniet v\u0113lreiz."
+    "message": "Autentific\u0113\u0161ana neizdev\u0101s. L\u016bdzu, v\u0113lreiz pierakstieties Chrome att\u0101laj\u0101 darbvirsm\u0101."
   },
   "error_bad_plugin_version": {
     "message": "Tr\u016bkst da\u017eu Chrome att\u0101lajai darbvirsmai nepiecie\u0161amo komponentu. P\u0101rbaudiet, vai esat instal\u0113jis jaun\u0101ko versiju un m\u0113\u0123iniet v\u0113lreiz."
-  },
-  "error_generic": {
-    "message": "Radusies nezin\u0101ma k\u013c\u016bda. Izrakstieties no Chrome att\u0101l\u0101s darbvirsmas un m\u0113\u0123iniet v\u0113lreiz."
   },
   "error_host_is_offline": {
     "message": "Att\u0101lais dators nerea\u0123\u0113 uz savienojuma piepras\u012bjumiem. P\u0101rbaudiet, vai tam ir savienojums ar internetu un m\u0113\u0123iniet v\u0113lreiz."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Serverim neizdev\u0101s atbild\u0113t uz t\u012bkla piepras\u012bjumu."
+  },
+  "error_not_authenticated": {
+    "message": "J\u016bs neesat pierakst\u012bjies Chrome att\u0101laj\u0101 darbvirsm\u0101. L\u016bdzu, pierakstieties un m\u0113\u0123iniet v\u0113lreiz."
   },
   "error_service_unavailable": {
     "message": "\u0160obr\u012bd pakalpojums nav pieejams. V\u0113l\u0101k m\u0113\u0123iniet v\u0113lreiz."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Pal\u012bdziet mums uzlabot Chrome att\u0101lo darbvirsmu, \u013caujot mums apkopot lietojuma statistiku un av\u0101riju p\u0101rskatus."
+  },
   "host_setup_dialog_description": {
-    "message": "Lai aizsarg\u0101tu piek\u013cuvi \u0161im datoram, l\u016bdzu, izv\u0113lieties\u00a0PIN. \u0160is\u00a0PIN ir nepiecie\u0161ams, lai izveidotu savienojumu, atrodoties cit\u0101 viet\u0101."
+    "message": "Lai aizsarg\u0101tu piek\u013cuvi \u0161im datoram, l\u016bdzu, izv\u0113lieties\u00a0PIN, kas sast\u0101v no $1vismaz se\u0161iem cipariem$2. \u0160is\u00a0PIN b\u016bs nepiecie\u0161ams, veidojot savienojumu no citas atra\u0161an\u0101s vietas.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Neizdev\u0101s s\u0101kt att\u0101l\u0101s piek\u013cuves pakalpojumu."
@@ -244,7 +255,7 @@
     "message": "Tikl\u012bdz kods ir ievad\u012bts, tiek s\u0101kta kop\u012bgo\u0161anas sesija."
   },
   "invalid_pin": {
-    "message": "L\u016bdzu, ievadiet\u00a0PIN, ko veido vismaz \u010detri cipari."
+    "message": "L\u016bdzu, ievadiet\u00a0PIN, kas sast\u0101v no vismaz se\u0161iem cipariem."
   },
   "it2me_first_run": {
     "message": "Ekr\u0101na kop\u012bgo\u0161ana\u00a0\u2014 ide\u0101li piem\u0113rota, lai sa\u0146emtu att\u0101lo tehnisko atbalstu."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Samazin\u0101t, lai ietilptu"
+  },
+  "sign_in_button": {
+    "message": "Pierakst\u012bties"
   },
   "sign_out_button": {
     "message": "Izrakst\u012bties"

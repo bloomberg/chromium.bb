@@ -96,13 +96,10 @@
     "message": "Duration"
   },
   "error_authentication_failed": {
-    "message": "Authentication failed. Please sign out of Chrome Remote Desktop and try again."
+    "message": "Authentication failed. Please sign in to Chrome Remote Desktop again."
   },
   "error_bad_plugin_version": {
     "message": "Some components required for Chrome Remote Desktop are missing. Please make sure that you have installed the latest version and try again."
-  },
-  "error_generic": {
-    "message": "An unknown error occurred. Please sign out of Chrome Remote Desktop and try again."
   },
   "error_host_is_offline": {
     "message": "The remote computer is not responding to connection requests. Please verify that it is online and try again."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "The server failed to respond to the network request."
+  },
+  "error_not_authenticated": {
+    "message": "You are not signed in to Chrome Remote Desktop. Please sign in and try again."
   },
   "error_service_unavailable": {
     "message": "Our service is temporarily unavailable. Please try again later."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Help us improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports."
+  },
   "host_setup_dialog_description": {
-    "message": "To protect access to this computer, please choose a PIN. This PIN will be required when connecting from another location."
+    "message": "To protect access to this computer, please choose a PIN of $1at least six digits$2. This PIN will be required when connecting from another location.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Failed to start remote access service."
@@ -244,7 +255,7 @@
     "message": "Once they have entered the code your sharing session will begin."
   },
   "invalid_pin": {
-    "message": "Please enter a PIN consisting of four or more digits."
+    "message": "Please enter a PIN consisting of six or more digits."
   },
   "it2me_first_run": {
     "message": "User-to-user screen sharing, perfect for remote technical support."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Shrink to fit"
+  },
+  "sign_in_button": {
+    "message": "Sign in"
   },
   "sign_out_button": {
     "message": "Sign out"

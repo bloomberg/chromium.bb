@@ -96,13 +96,10 @@
     "message": "Varighed"
   },
   "error_authentication_failed": {
-    "message": "Godkendelsen mislykkedes. Log ud af Chrome Fjernskrivebord, og pr\u00f8v igen."
+    "message": "Godkendelse mislykkedes. Log ind p\u00e5 Chrome Fjernskrivebord igen."
   },
   "error_bad_plugin_version": {
     "message": "Nogle komponenter, der kr\u00e6ves til Chrome Fjernskrivebord, mangler. Kontroller, at du har den nyeste version af Google Chrome, og pr\u00f8v igen."
-  },
-  "error_generic": {
-    "message": "Der opstod en ukendt fejl. Log ud af Chrome Fjernskrivebord, og pr\u00f8v igen."
   },
   "error_host_is_offline": {
     "message": "Fjerncomputeren svarer ikke p\u00e5 anmodninger om oprettelse af forbindelse. Kontroller, at den er online, og pr\u00f8v igen."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Serveren svarede ikke p\u00e5 netv\u00e6rksanmodningen"
+  },
+  "error_not_authenticated": {
+    "message": "Du er ikke logget ind p\u00e5 Chrome Fjernskrivebord. Log ind, og pr\u00f8v igen."
   },
   "error_service_unavailable": {
     "message": "Tjenesten er midlertidigt utilg\u00e6ngelig. Pr\u00f8v igen senere."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Hj\u00e6lp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud."
+  },
   "host_setup_dialog_description": {
-    "message": "V\u00e6lg en pinkode for at beskytte adgangen til denne computer. Du skal bruge denne pinkode, n\u00e5r du opretter forbindelse fra en anden placering."
+    "message": "For at beskytte adgangen til denne computer skal du v\u00e6lge en pinkode p\u00e5 $1mindst seks cifre$2. Denne pinkode skal indtastes, n\u00e5r du opretter forbindelse fra et andet sted.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Tjenesten til fjernadgang kunne ikke starte."
@@ -244,7 +255,7 @@
     "message": "N\u00e5r personen indtaster koden, startes delingssessionen."
   },
   "invalid_pin": {
-    "message": "Indtast en pinkode, som best\u00e5r af fire eller flere cifre."
+    "message": "Indtast en pinkode, der best\u00e5r af seks eller flere cifre."
   },
   "it2me_first_run": {
     "message": "Sk\u00e6rmdeling med funktionen bruger-til-bruger \u2013 perfekt til ekstern teknisk support."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Tilpas til vinduet"
+  },
+  "sign_in_button": {
+    "message": "Log ind"
   },
   "sign_out_button": {
     "message": "Log ud"

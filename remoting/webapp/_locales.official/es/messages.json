@@ -29,7 +29,7 @@
     "message": "Cerrar"
   },
   "close_prompt": {
-    "message": "Si abandonas esta p\u00e1gina, finalizar\u00e1 tu sesi\u00f3n en Chrome Remote Desktop."
+    "message": "Si abandonas esta p\u00e1gina, finalizar\u00e1 tu sesi\u00f3n en Escritorio remoto de Chrome."
   },
   "confirm_host_delete": {
     "message": "\u00bfSeguro que quieres inhabilitar las conexiones remotas con $1? Si cambias de opini\u00f3n, tendr\u00e1s que volver a habilitar las conexiones desde ese ordenador.",
@@ -61,13 +61,13 @@
     "message": "Actualmente est\u00e1s compartiendo este ordenador con otro usuario. \u00bfQuieres seguir comparti\u00e9ndolo?"
   },
   "description_authorize": {
-    "message": "Para poder utilizar Chrome Remote Desktop, debes conceder permisos de acceso ampliados a tu ordenador. Solo tienes que realizar esta acci\u00f3n una vez."
+    "message": "Para poder utilizar Escritorio remoto de Chrome, debes conceder permisos de acceso ampliados a tu ordenador. Solo tienes que realizar esta acci\u00f3n una vez."
   },
   "description_connect": {
     "message": "Pide al propietario del ordenador al que quieras acceder que haga clic en la opci\u00f3n Compartir ahora y que te facilite el c\u00f3digo de acceso."
   },
   "description_home": {
-    "message": "Chrome Remote Desktop permite compartir de forma segura tu ordenador a trav\u00e9s de Internet. Ambos usuarios deben estar ejecutando la aplicaci\u00f3n Chrome Remote Desktop, que est\u00e1 disponible en la p\u00e1gina $1.",
+    "message": "Escritorio remoto de Chrome permite compartir de forma segura tu ordenador a trav\u00e9s de Internet. Ambos usuarios deben estar ejecutando la aplicaci\u00f3n Escritorio remoto de Chrome, que est\u00e1 disponible en la p\u00e1gina $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -96,13 +96,10 @@
     "message": "Duraci\u00f3n"
   },
   "error_authentication_failed": {
-    "message": "Se ha producido un error de autenticaci\u00f3n. Sal de Chrome Remote Desktop y vuelve a intentarlo."
+    "message": "Se ha producido un error de autenticaci\u00f3n. Vuelve a iniciar sesi\u00f3n en Escritorio remoto de Chrome."
   },
   "error_bad_plugin_version": {
-    "message": "Faltan algunos de los componentes necesarios para Chrome Remote Desktop. Aseg\u00farate de haber instalado la \u00faltima versi\u00f3n y vuelve a intentarlo."
-  },
-  "error_generic": {
-    "message": "Se ha producido un error desconocido. Sal de Chrome Remote Desktop y vuelve a intentarlo."
+    "message": "Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Aseg\u00farate de haber instalado la \u00faltima versi\u00f3n y vuelve a intentarlo."
   },
   "error_host_is_offline": {
     "message": "El ordenador remoto no responde a las solicitudes de conexi\u00f3n. Comprueba que est\u00e9 conectado y vuelve a intentarlo."
@@ -111,19 +108,22 @@
     "message": "Las conexiones con el ordenador remoto se han bloqueado temporalmente porque alguien ha intentado establecer conexi\u00f3n con \u00e9l con un PIN que no es v\u00e1lido. Vuelve a intentarlo m\u00e1s tarde."
   },
   "error_incompatible_protocol": {
-    "message": "Hemos detectado que tu versi\u00f3n de Chrome Remote Desktop no es compatible. Aseg\u00farate de haber instalado en ambos ordenadores la \u00faltima versi\u00f3n de Google Chrome y de Chrome Remote Desktop."
+    "message": "Hemos detectado que tu versi\u00f3n de Escritorio remoto de Chrome no es compatible. Aseg\u00farate de haber instalado en ambos ordenadores la \u00faltima versi\u00f3n de Google Chrome y de Escritorio remoto de Chrome."
   },
   "error_invalid_access_code": {
     "message": "El c\u00f3digo de acceso no es v\u00e1lido. Vuelve a intentarlo."
   },
   "error_missing_plugin": {
-    "message": "Faltan algunos de los componentes necesarios para Chrome Remote Desktop. Aseg\u00farate de estar ejecutando la \u00faltima versi\u00f3n de Google Chrome y vuelve a intentarlo."
+    "message": "Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Aseg\u00farate de estar ejecutando la \u00faltima versi\u00f3n de Google Chrome y vuelve a intentarlo."
   },
   "error_network_failure": {
     "message": "No se puede establecer conexi\u00f3n con el host. Es probable que el error se deba a la configuraci\u00f3n de la red que se est\u00e1 utilizando."
   },
   "error_no_response": {
     "message": "El servidor no ha respondido a la solicitud de red."
+  },
+  "error_not_authenticated": {
+    "message": "No has iniciado sesi\u00f3n en Escritorio remoto de Chrome. Inicia sesi\u00f3n y vuelve a intentarlo."
   },
   "error_service_unavailable": {
     "message": "El servicio no est\u00e1 disponible temporalmente. Vuelve a intentarlo m\u00e1s tarde."
@@ -153,7 +153,7 @@
     "message": "Permite ver y controlar un ordenador compartido."
   },
   "home_daemon_active_message": {
-    "message": "Puedes acceder de forma segura a este ordenador con Chrome Remote Desktop."
+    "message": "Puedes acceder de forma segura a este ordenador con Escritorio remoto de Chrome."
   },
   "home_daemon_change_pin_link": {
     "message": "Cambiar PIN"
@@ -162,7 +162,7 @@
     "message": "Habilitar conexiones remotas"
   },
   "home_daemon_start_message": {
-    "message": "Si quieres utilizar Chrome Remote Desktop para acceder a este ordenador, debes habilitar las conexiones remotas."
+    "message": "Si quieres utilizar Escritorio remoto de Chrome para acceder a este ordenador, debes habilitar las conexiones remotas."
   },
   "home_daemon_stop_button": {
     "message": "Inhabilitar conexiones remotas"
@@ -177,7 +177,7 @@
     "message": "(esta funci\u00f3n a\u00fan no est\u00e1 disponible para los Chromebook\u2026, sigue atento a las novedades)"
   },
   "host_list_empty_hosting_supported": {
-    "message": "Para habilitar conexiones remotas con otro ordenador, instala Chrome Remote Desktop en \u00e9l y haz clic en $1.",
+    "message": "Para habilitar conexiones remotas con otro ordenador, instala Escritorio remoto de Chrome en \u00e9l y haz clic en $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -185,21 +185,32 @@
     }
   },
   "host_list_empty_hosting_unsupported": {
-    "message": "No tienes ning\u00fan ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Chrome Remote Desktop en \u00e9l y haz clic en $1.",
+    "message": "No tienes ning\u00fan ordenador registrado. Para habilitar conexiones remotas con un ordenador, instala Escritorio remoto de Chrome en \u00e9l y haz clic en $1.",
     "placeholders": {
       "1": {
         "content": "$1"
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Ay\u00fadanos a mejorar la aplicaci\u00f3n Escritorio remoto de Chrome autorizando la recopilaci\u00f3n de estad\u00edsticas de uso e informes sobre fallos."
+  },
   "host_setup_dialog_description": {
-    "message": "Debes elegir un PIN para proteger el acceso a este ordenador. Se solicitar\u00e1 ese PIN cada vez que se establezca conexi\u00f3n con ese ordenador desde otra ubicaci\u00f3n."
+    "message": "Debes elegir un PIN de $1al menos seis d\u00edgitos$2 para proteger el acceso a este ordenador. Se solicitar\u00e1 ese PIN cada vez que se establezca conexi\u00f3n con ese ordenador desde otra ubicaci\u00f3n.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "No se ha podido iniciar el servicio de acceso remoto."
   },
   "host_setup_install": {
-    "message": "Chrome est\u00e1 descargando el archivo de instalaci\u00f3n del host de Chrome Remote Desktop. Cuando se haya completado la descarga, ejecuta el archivo de instalaci\u00f3n antes de continuar."
+    "message": "Chrome est\u00e1 descargando el archivo de instalaci\u00f3n del host de Escritorio remoto de Chrome. Cuando se haya completado la descarga, ejecuta el archivo de instalaci\u00f3n antes de continuar."
   },
   "host_setup_install_pending": {
     "message": "Ejecuta el archivo de instalaci\u00f3n antes de continuar."
@@ -244,7 +255,7 @@
     "message": "Cuando el usuario introduzca el c\u00f3digo de acceso, empezar\u00e1 la sesi\u00f3n compartida."
   },
   "invalid_pin": {
-    "message": "Introduce un PIN formado por cuatro o m\u00e1s d\u00edgitos."
+    "message": "Introduce un PIN que tenga como m\u00ednimo seis d\u00edgitos."
   },
   "it2me_first_run": {
     "message": "Pantalla compartida entre usuarios, opci\u00f3n perfecta para la asistencia t\u00e9cnica remota"
@@ -259,7 +270,7 @@
     "message": "Generando c\u00f3digo de acceso..."
   },
   "message_session_finished": {
-    "message": "Ha finalizado tu sesi\u00f3n en Chrome Remote Desktop."
+    "message": "Ha finalizado tu sesi\u00f3n en Escritorio remoto de Chrome."
   },
   "message_shared": {
     "message": "Actualmente est\u00e1s compartiendo tu escritorio con $1.",
@@ -313,7 +324,7 @@
     "message": "Accede a otros ordenadores o permite que otro usuario acceda a tu ordenador de forma segura a trav\u00e9s de Internet."
   },
   "product_name": {
-    "message": "Chrome Remote Desktop BETA"
+    "message": "Escritorio remoto de Chrome BETA"
   },
   "reconnect": {
     "message": "Volver a conectar"
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Ajustar tama\u00f1o"
+  },
+  "sign_in_button": {
+    "message": "Iniciar sesi\u00f3n"
   },
   "sign_out_button": {
     "message": "Cerrar sesi\u00f3n"

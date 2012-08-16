@@ -96,13 +96,10 @@
     "message": "Duraci\u00f3n"
   },
   "error_authentication_failed": {
-    "message": "No se pudo realizar la autenticaci\u00f3n. Sal de Chrome Remote Desktop y vuelve a intentarlo."
+    "message": "Se produjo un error al realizar la autenticaci\u00f3n. Vuelve a acceder a Escritorio remoto de Chrome."
   },
   "error_bad_plugin_version": {
     "message": "Faltan algunos de los componentes necesarios para Chrome Remote Desktop. Aseg\u00farate de haber instalado la \u00faltima versi\u00f3n y vuelve a intentarlo."
-  },
-  "error_generic": {
-    "message": "Se produjo un error desconocido. Sal de Chrome Remote Desktop y vuelve a intentarlo."
   },
   "error_host_is_offline": {
     "message": "La computadora remota no responde a las solicitudes de conexi\u00f3n. Verifica que esta se encuentre en l\u00ednea y vuelve a intentarlo."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "El servidor no pudo responder a la solicitud de red."
+  },
+  "error_not_authenticated": {
+    "message": "No accediste a Escritorio remoto de Chrome. Accede y vuelve a intentarlo."
   },
   "error_service_unavailable": {
     "message": "El servicio no est\u00e1 disponible temporalmente. Vuelve a intentarlo m\u00e1s adelante."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Ay\u00fadanos a mejorar Escritorio remoto de Chrome permiti\u00e9ndonos recopilar estad\u00edsticas de uso e informes sobre fallos."
+  },
   "host_setup_dialog_description": {
-    "message": "Para proteger el acceso a esta computadora, elige un PIN. Se solicitar\u00e1 este PIN cada vez que se establezca conexi\u00f3n con esta computadora desde una ubicaci\u00f3n diferente."
+    "message": "Para proteger el acceso a esta computadora, elige un PIN de $1al menos seis d\u00edgitos$2. Se solicitar\u00e1 este PIN cuando se establezca conexi\u00f3n desde otra ubicaci\u00f3n.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "No se pudo iniciar el servicio de acceso remoto."
@@ -244,7 +255,7 @@
     "message": "Una vez que se haya ingresado el c\u00f3digo, se iniciar\u00e1 la sesi\u00f3n compartida."
   },
   "invalid_pin": {
-    "message": "Ingresa un PIN que tenga al menos cuatro d\u00edgitos."
+    "message": "Ingresa un PIN de al menos seis d\u00edgitos."
   },
   "it2me_first_run": {
     "message": "Uso de la pantalla compartido entre usuarios, ideal para recibir asistencia t\u00e9cnica remota"
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Ajustar tama\u00f1o a ventana de navegador"
+  },
+  "sign_in_button": {
+    "message": "Acceder"
   },
   "sign_out_button": {
     "message": "Salir"

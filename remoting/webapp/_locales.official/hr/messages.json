@@ -96,13 +96,10 @@
     "message": "Trajanje"
   },
   "error_authentication_failed": {
-    "message": "Autentifikacija nije uspjela. Odjavite se iz aplikacije Chrome Remote Desktop i poku\u0161ajte ponovo."
+    "message": "Autentifikacija nije uspjela. Ponovo se prijavite na Udaljenu radnu povr\u0161inu Chrome."
   },
   "error_bad_plugin_version": {
     "message": "Nedostaju neke komponente potrebne za aplikaciju Chrome Remote Desktop. Provjerite jeste li instalirali najnoviju verziju i poku\u0161ajte ponovno."
-  },
-  "error_generic": {
-    "message": "Do\u0161lo je do nepoznate pogre\u0161ke. Odjavite se iz aplikacije Chrome Remote Desktop i poku\u0161ajte ponovo."
   },
   "error_host_is_offline": {
     "message": "Udaljeno ra\u010dunalo ne odgovara na zahtjev za povezivanje. Provjerite je li na mre\u017ei i poku\u0161ajte ponovo."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Poslu\u017eitelj nije uspio odgovoriti na zahtjev mre\u017ee."
+  },
+  "error_not_authenticated": {
+    "message": "Niste prijavljeni na Udaljenu radnu povr\u0161inu Chrome. Prijavite se i poku\u0161ajte ponovo."
   },
   "error_service_unavailable": {
     "message": "Usluga je privremeno nedostupna. Poku\u0161ajte ponovo kasnije."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Pomognite nam pobolj\u0161ati Udaljenu radnu povr\u0161inu Chrome, dopustite nam prikupljanje statistike upotrebe i izvje\u0161\u0107a o padu programa."
+  },
   "host_setup_dialog_description": {
-    "message": "Da biste za\u0161titili pristup ovom ra\u010dunalu, odaberite PIN. Taj \u0107e PIN biti potreban prilikom povezivanja s druge lokacije."
+    "message": "Da biste za\u0161titili pristup ovom ra\u010dunalu, odaberite PIN od $1najmanje \u0161est znamenaka$2. Taj PIN bit \u0107e potreban kada se budete prijavljivali s neke druge lokacije.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Nisam uspio pokrenuti uslugu daljinskog pristupa."
@@ -244,7 +255,7 @@
     "message": "Nakon \u0161to se unese k\u00f4d, po\u010det \u0107e sesija dijeljenja."
   },
   "invalid_pin": {
-    "message": "Unesite PIN koji se sastoji od \u010detiri ili vi\u0161e znamenki."
+    "message": "Unesite PIN koji se sastoji od \u0161est ili vi\u0161e znamenaka."
   },
   "it2me_first_run": {
     "message": "Dijeljenje zaslona izme\u0111u korisnika savr\u0161eno je za daljinsku tehni\u010dku podr\u0161ku"
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Smanji da stane u prozor"
+  },
+  "sign_in_button": {
+    "message": "Prijava"
   },
   "sign_out_button": {
     "message": "Odjava"

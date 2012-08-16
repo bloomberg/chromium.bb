@@ -96,13 +96,10 @@
     "message": "Kesto"
   },
   "error_authentication_failed": {
-    "message": "Todennus ep\u00e4onnistui. Kirjaudu ulos Chrome-et\u00e4k\u00e4yt\u00f6st\u00e4 ja yrit\u00e4 uudelleen."
+    "message": "Todennus ep\u00e4onnistui. Kirjaudu uudelleen sis\u00e4\u00e4n Chrome-et\u00e4k\u00e4ytt\u00f6\u00f6n."
   },
   "error_bad_plugin_version": {
     "message": "Jotkin Chrome-et\u00e4k\u00e4ytt\u00f6\u00f6n vaadittavat komponentit puuttuvat. Varmista, ett\u00e4 olet asentanut uusimman Google Chrome -version, ja yrit\u00e4 uudelleen."
-  },
-  "error_generic": {
-    "message": "Tuntematon virhe. Kirjaudu ulos Chrome-et\u00e4k\u00e4yt\u00f6st\u00e4 ja yrit\u00e4 uudelleen."
   },
   "error_host_is_offline": {
     "message": "Et\u00e4tietokone ei vastaa yhteyspyynt\u00f6ihin. Vahvista, ett\u00e4 se on online-tilassa, ja yrit\u00e4 uudelleen."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Palvelin ei pystynyt vastaamaan verkkopyynt\u00f6\u00f6n."
+  },
+  "error_not_authenticated": {
+    "message": "Et ole kirjautunut Chrome-et\u00e4k\u00e4ytt\u00f6\u00f6n. Kirjaudu sis\u00e4\u00e4n ja yrit\u00e4 uudelleen."
   },
   "error_service_unavailable": {
     "message": "Palvelu ei ole t\u00e4ll\u00e4 hetkell\u00e4 k\u00e4ytett\u00e4viss\u00e4. Yrit\u00e4 my\u00f6hemmin uudelleen."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Auta meit\u00e4 parantamaan Chrome-et\u00e4k\u00e4ytt\u00f6\u00e4 antamalla meid\u00e4n ker\u00e4t\u00e4 k\u00e4ytt\u00f6tilastoja ja virheraportteja."
+  },
   "host_setup_dialog_description": {
-    "message": "Suojaa tietokone valitsemalla k\u00e4ytt\u00f6\u00f6n tarvittava PIN-koodi. Koodi vaaditaan et\u00e4yhteytt\u00e4 luotaessa."
+    "message": "Suojaa tietokonettasi valitsemalla $1v\u00e4hint\u00e4\u00e4n kuusinumeroinen$2 PIN-koodi. PIN-koodia pyydet\u00e4\u00e4n, kun muodostat yhteyden toisesta sijainnista.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Et\u00e4k\u00e4ytt\u00f6palvelun k\u00e4ynnist\u00e4minen ep\u00e4onnistui."
@@ -244,7 +255,7 @@
     "message": "Tietokoneen jakaminen aloitetaan k\u00e4ytt\u00e4j\u00e4n annettua k\u00e4ytt\u00f6koodin."
   },
   "invalid_pin": {
-    "message": "Anna PIN-koodi, jossa on v\u00e4hint\u00e4\u00e4n 4 numeroa."
+    "message": "Anna PIN-koodi, jossa on v\u00e4hint\u00e4\u00e4n kuusi numeroa."
   },
   "it2me_first_run": {
     "message": "N\u00e4yt\u00f6n jakaminen k\u00e4ytt\u00e4jien v\u00e4lill\u00e4, sopii t\u00e4ydellisesti teknisen et\u00e4tuen tarpeisiin."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Sovita ikkunaan"
+  },
+  "sign_in_button": {
+    "message": "Kirjaudu sis\u00e4\u00e4n"
   },
   "sign_out_button": {
     "message": "Kirjaudu ulos"

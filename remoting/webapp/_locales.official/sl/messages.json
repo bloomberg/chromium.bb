@@ -96,13 +96,10 @@
     "message": "Trajanje"
   },
   "error_authentication_failed": {
-    "message": "Preverjanje pristnosti ni uspelo. Odjavite se iz oddaljenega namizja Chrome in poskusite znova."
+    "message": "Preverjanje pristnosti ni uspelo. \u0160e enkrat se prijavite v oddaljeno namizje Chrome."
   },
   "error_bad_plugin_version": {
     "message": "Ni nekaterih delov, ki so zahtevani za oddaljeno namizje Chrome. Preverite, ali imate najnovej\u0161o razli\u010dico Google Chroma in poskusite znova."
-  },
-  "error_generic": {
-    "message": "Neznana napaka. Odjavite se iz oddaljenega namizja Chrome in poskusite znova."
   },
   "error_host_is_offline": {
     "message": "Oddaljeni ra\u010dunalnik se ne odziva na zahteve za povezavo. Preverite, ali ima vzpostavljeno povezavo, in poskusite znova."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Stre\u017enik se ni odzval na zahtevo omre\u017eja."
+  },
+  "error_not_authenticated": {
+    "message": "Niste prijavljeni v oddaljeno namizje Chrome. Prijavite se in poskusite znova."
   },
   "error_service_unavailable": {
     "message": "Ta storitev za\u010dasno ni na voljo. Poskusite znova pozneje."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Pomagajte nam izbolj\u0161ati oddaljeno namizje Chrome, tako da nam dovolite zbiranje statisti\u010dnih podatkov o uporabi in poro\u010dil o zru\u0161itvah."
+  },
   "host_setup_dialog_description": {
-    "message": "\u010ce \u017eelite za\u0161\u010dititi dostop do ra\u010dunalnika, izberite kodo PIN, ki jo boste morali vnesti ob vzpostavljanju povezave z druge lokacije."
+    "message": "Za za\u0161\u010dito dostopa do tega ra\u010dunalnika izberite $1vsaj \u0161estmestno$2 kodo PIN. Ta koda boste potrebovali pri povezovanju z drugega mesta.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Storitve oddaljenega dostopa ni bilo mogo\u010de zagnati."
@@ -244,7 +255,7 @@
     "message": "Ko je koda vnesena, se seja skupne rabe za\u010dne."
   },
   "invalid_pin": {
-    "message": "Vnesite kodo PIN, ki mora imeti vsaj \u0161tiri \u0161tevke."
+    "message": "Vnesite kodo PIN, ki mora biti vsaj \u0161estmestna."
   },
   "it2me_first_run": {
     "message": "Skupna raba zaslona je odli\u010dna re\u0161itev za oddaljeno tehni\u010dno pomo\u010d."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Skr\u010di na ustrezno velikost"
+  },
+  "sign_in_button": {
+    "message": "Prijava"
   },
   "sign_out_button": {
     "message": "Odjava"

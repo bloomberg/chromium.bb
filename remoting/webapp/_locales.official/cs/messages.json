@@ -96,13 +96,10 @@
     "message": "Doba trv\u00e1n\u00ed"
   },
   "error_authentication_failed": {
-    "message": "Ov\u011b\u0159en\u00ed se nezda\u0159ilo. Odhlaste se pros\u00edm od Vzd\u00e1len\u00e9 plochy Chrome a zkuste to znovu."
+    "message": "Ov\u011b\u0159en\u00ed selhalo. P\u0159ihlaste se pros\u00edm ke Vzd\u00e1len\u00e9 plo\u0161e Chrome znovu."
   },
   "error_bad_plugin_version": {
     "message": "N\u011bkter\u00e9 sou\u010d\u00e1sti pot\u0159ebn\u00e9 pro Vzd\u00e1lenou plochu Chrome chyb\u00ed. Zkontrolujte, zda je nainstalov\u00e1na nejnov\u011bj\u0161\u00ed verze, a zkuste to znovu."
-  },
-  "error_generic": {
-    "message": "Do\u0161lo k nezn\u00e1m\u00e9 chyb\u011b. Odhlaste se pros\u00edm od Vzd\u00e1len\u00e9 plochy Chrome a zkuste to znovu."
   },
   "error_host_is_offline": {
     "message": "Vzd\u00e1len\u00fd po\u010d\u00edta\u010d nereaguje na \u017e\u00e1dosti o p\u0159ipojen\u00ed. Zkontrolujte, zda je online, a zkuste to znovu."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Serveru se nepoda\u0159ilo odpov\u011bd\u011bt na po\u017eadavek s\u00edt\u011b."
+  },
+  "error_not_authenticated": {
+    "message": "Nejste p\u0159ihl\u00e1\u0161eni ke Vzd\u00e1len\u00e9 plo\u0161e Chrome. P\u0159ihlaste se pros\u00edm a zkuste to znovu."
   },
   "error_service_unavailable": {
     "message": "Slu\u017eba je do\u010dasn\u011b nedostupn\u00e1. Zkuste to pros\u00edm znovu pozd\u011bji."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Pomozte n\u00e1m Vzd\u00e1lenou plochu Chrome vylep\u0161it t\u00edm, \u017ee n\u00e1m povol\u00edte shroma\u017e\u010fovat statistiky vyu\u017eit\u00ed a zpr\u00e1vy o selh\u00e1n\u00ed."
+  },
   "host_setup_dialog_description": {
-    "message": "Zvolte k\u00f3d PIN, kter\u00fdm bude p\u0159\u00edstup k tomuto po\u010d\u00edta\u010di chr\u00e1n\u011bn. Tento k\u00f3d bude vy\u017eadov\u00e1n p\u0159i p\u0159ipojen\u00ed z jin\u00e9ho m\u00edsta."
+    "message": "Za \u00fa\u010delem ochrany tohoto po\u010d\u00edta\u010de pros\u00edm vyberte k\u00f3d PIN, kter\u00fd bude m\u00edt $1alespo\u0148 6 \u010d\u00edslic$2. Tento k\u00f3d PIN bude vy\u017eadov\u00e1n p\u0159i p\u0159ipojov\u00e1n\u00ed z jin\u00e9ho m\u00edsta.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Spu\u0161t\u011bn\u00ed slu\u017eby pro vzd\u00e1len\u00fd p\u0159\u00edstup se nezda\u0159ilo."
@@ -244,7 +255,7 @@
     "message": "Po zad\u00e1n\u00ed k\u00f3du bude spu\u0161t\u011bna relace sd\u00edlen\u00ed."
   },
   "invalid_pin": {
-    "message": "Zadejte k\u00f3d PIN obsahuj\u00edc\u00ed 4 nebo v\u00edce \u010d\u00edslic."
+    "message": "Zadejte k\u00f3d PIN obsahuj\u00edc\u00ed 6 nebo v\u00edce \u010d\u00edslic."
   },
   "it2me_first_run": {
     "message": "Sd\u00edlen\u00ed obrazovky mezi u\u017eivateli je ide\u00e1ln\u00ed pro vzd\u00e1lenou technickou podporu."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Zmen\u0161it dle m\u00edsta"
+  },
+  "sign_in_button": {
+    "message": "P\u0159ihl\u00e1sit se"
   },
   "sign_out_button": {
     "message": "Odhl\u00e1sit se"

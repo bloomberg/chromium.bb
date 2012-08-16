@@ -96,13 +96,10 @@
     "message": "Dura\u00e7\u00e3o"
   },
   "error_authentication_failed": {
-    "message": "Falha na autentica\u00e7\u00e3o. Saia da \u00c1rea de trabalho remota do Chrome e tente novamente."
+    "message": "Falha na autentica\u00e7\u00e3o. Fa\u00e7a login na \u00c1rea de trabalho remota do Google Chrome."
   },
   "error_bad_plugin_version": {
     "message": "Alguns componentes necess\u00e1rios \u00e0 \u00c1rea de trabalho remota do Chrome est\u00e3o faltando. Certifique-se de que esteja executando a \u00faltima vers\u00e3o do Google Chrome e tente novamente."
-  },
-  "error_generic": {
-    "message": "Ocorreu um erro desconhecido. Saia da \u00c1rea de trabalho remota do Chrome e tente novamente."
   },
   "error_host_is_offline": {
     "message": "O computador remoto n\u00e3o est\u00e1 respondendo \u00e0s solicita\u00e7\u00f5es de conex\u00e3o. Certifique-se de que ele esteja on-line e tente novamente."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "O servidor falhou ao responder ao pedido de rede."
+  },
+  "error_not_authenticated": {
+    "message": "Voc\u00ea n\u00e3o est\u00e1 conectado \u00e0 \u00c0rea de trabalho remota do Google Chrome. Fa\u00e7a login e tente novamente."
   },
   "error_service_unavailable": {
     "message": "O servi\u00e7o est\u00e1 temporariamente indispon\u00edvel. Tente novamente mais tarde."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Ajude-nos a melhorar a \u00c1rea de trabalho remota do Google Chrome por meio da coleta de estat\u00edsticas de uso e de relat\u00f3rios de falhas."
+  },
   "host_setup_dialog_description": {
-    "message": "Para proteger o acesso a este computador, escolha um PIN, o qual ser\u00e1 exigido quando voc\u00ea se conectar de outro local."
+    "message": "Para proteger o acesso a este computador, escolha um PIN de $1pelo menos seis d\u00edgitos$2. Este PIN ser\u00e1 exigido quando voc\u00ea se conectar de outro local.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Falha ao iniciar o servi\u00e7o de acesso remoto."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Reduzir para ajustar"
+  },
+  "sign_in_button": {
+    "message": "Fazer login"
   },
   "sign_out_button": {
     "message": "Sair"

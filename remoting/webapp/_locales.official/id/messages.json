@@ -96,13 +96,10 @@
     "message": "Durasi"
   },
   "error_authentication_failed": {
-    "message": "Autentikasi gagal. Keluarlah dari Chrome Desktop Jarak Jauh lalu coba lagi."
+    "message": "Autentikasi gagal. Masuk ke Chrome Desktop Jarak Jauh lagi."
   },
   "error_bad_plugin_version": {
     "message": "Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda telah memasang versi teranyar dan coba lagi."
-  },
-  "error_generic": {
-    "message": "Terjadi kesalahan tak dikenal. Keluarlah dari Chrome Desktop Jarak Jauh lalu coba lagi."
   },
   "error_host_is_offline": {
     "message": "Komputer jarak jauh tidak menanggapi permintaan sambungan. Verifikasikan bahwa komputer jarak jauh sedang online dan coba lagi."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Server gagal menanggapi permintaan jaringan."
+  },
+  "error_not_authenticated": {
+    "message": "Anda tidak masuk ke Chrome Desktop Jarak Jauh. Masuk dan coba lagi."
   },
   "error_service_unavailable": {
     "message": "Layanan kami tidak tersedia untuk sementara. Coba lagi nanti."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Bantu kami meningkatkan Chrome Desktop Jarak Jauh dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan."
+  },
   "host_setup_dialog_description": {
-    "message": "Untuk melindungi akses ke komputer ini, pilih PIN. PIN ini akan dibutuhkan saat menyambungkan dari lokasi lain."
+    "message": "Untuk melindungi akses ke komputer ini, pilih PIN dengan $1setidaknya enam digit$2. PIN ini akan dibutuhkan saat menyambung dari lokasi lain.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Gagal memulai layanan akses jarak jauh."
@@ -244,7 +255,7 @@
     "message": "Setelah mereka memasukkan kode, sesi berbagi Anda akan dimulai."
   },
   "invalid_pin": {
-    "message": "Masukkan PIN, minimal empat digit."
+    "message": "Masukkan PIN, minimal enam digit."
   },
   "it2me_first_run": {
     "message": "Berbagi layar pengguna ke pengguna, cocok untuk dukungan teknis jarak jauh."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Susutkan agar sesuai"
+  },
+  "sign_in_button": {
+    "message": "Masuk"
   },
   "sign_out_button": {
     "message": "Keluar"

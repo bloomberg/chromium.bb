@@ -96,13 +96,10 @@
     "message": "Durat\u0103"
   },
   "error_authentication_failed": {
-    "message": "Autentificarea a e\u015fuat. Deconecta\u0163i-v\u0103 de la Desktop la distan\u0163\u0103 Chrome \u015fi \u00eencerca\u0163i din nou."
+    "message": "Autentificarea a e\u015fuat. Conecta\u0163i-v\u0103 din nou la Desktop la distan\u0163\u0103 Chrome."
   },
   "error_bad_plugin_version": {
     "message": "Unele componente necesare pentru Desktop la distan\u0163\u0103 Chrome lipsesc. Asigura\u0163i-v\u0103 c\u0103 a\u0163i instalat cea mai recent\u0103 versiune a aplica\u0163iei \u015fi \u00eencerca\u0163i din nou."
-  },
-  "error_generic": {
-    "message": "A ap\u0103rut o eroare necunoscut\u0103. Deconecta\u0163i-v\u0103 de la Desktop la distan\u0163\u0103 Chrome \u015fi \u00eencerca\u0163i din nou."
   },
   "error_host_is_offline": {
     "message": "Computerul la distan\u0163\u0103 nu r\u0103spunde la solicit\u0103rile de conectare. Verifica\u0163i dac\u0103 respectivul computer este online \u015fi \u00eencerca\u0163i din nou."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Serverul nu a putut r\u0103spunde la solicitarea din re\u0163ea."
+  },
+  "error_not_authenticated": {
+    "message": "Nu sunte\u0163i conectat(\u0103) la Desktop la distan\u0163\u0103 Chrome. Conecta\u0163i-v\u0103 \u015fi \u00eencerca\u0163i din nou."
   },
   "error_service_unavailable": {
     "message": "Serviciul este temporar indisponibil. \u00cencerca\u0163i din nou mai t\u00e2rziu."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Ajuta\u0163i-ne s\u0103 \u00eembun\u0103t\u0103\u0163im Desktop la distan\u0163\u0103 Chrome, permi\u0163\u00e2ndu-ne s\u0103 colect\u0103m statistici de utilizare \u015fi rapoarte de blocare."
+  },
   "host_setup_dialog_description": {
-    "message": "Pentru a proteja accesul la acest computer, alege\u0163i un cod PIN. Acest cod PIN va fi solicitat c\u00e2nd v\u0103 conecta\u0163i din alt\u0103 loca\u0163ie."
+    "message": "Pentru a proteja accesul la acest computer, alege\u0163i un cod PIN format din $1cel pu\u0163in \u015fase cifre$2. Acest cod PIN va fi solicitat c\u00e2nd v\u0103 conecta\u0163i din alt\u0103 loca\u0163ie.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Pornirea serviciului de acces la distan\u0163\u0103 a e\u015fuat."
@@ -244,7 +255,7 @@
     "message": "Dup\u0103 ce persoana respectiv\u0103 introduce codul, sesiunea de permitere a accesului va \u00eencepe."
   },
   "invalid_pin": {
-    "message": "Introduce\u0163i un cod PIN format din patru sau mai multe cifre."
+    "message": "Introduce\u0163i un cod PIN format din \u015fase sau mai multe cifre."
   },
   "it2me_first_run": {
     "message": "Permiterea accesului la ecran de tip utilizator-la-utilizator, perfect\u0103 pentru asisten\u0163a tehnic\u0103 la distan\u0163\u0103."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Potrivi\u0163i prin mic\u015forare"
+  },
+  "sign_in_button": {
+    "message": "Conecta\u0163i-v\u0103"
   },
   "sign_out_button": {
     "message": "Deconecta\u0163i-v\u0103"

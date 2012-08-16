@@ -96,13 +96,10 @@
     "message": "S\u00fcre"
   },
   "error_authentication_failed": {
-    "message": "Kimlik do\u011frulama ba\u015far\u0131s\u0131z oldu. L\u00fctfen Chrome Uzaktan Masa\u00fcst\u00fc uygulamas\u0131ndan \u00e7\u0131k\u0131\u015f yap\u0131n ve tekrar deneyin."
+    "message": "Kimlik do\u011frulama ba\u015far\u0131s\u0131z oldu. L\u00fctfen Chrome Uzaktan Masa\u00fcst\u00fc'nde tekrar oturum a\u00e7\u0131n."
   },
   "error_bad_plugin_version": {
     "message": "Chrome Uzaktan Masa\u00fcst\u00fc i\u00e7in gereken baz\u0131 bile\u015fenler eksik. L\u00fctfen son s\u00fcr\u00fcm\u00fc y\u00fckledi\u011finizden emin olun ve tekrar deneyin."
-  },
-  "error_generic": {
-    "message": "Bilinmeyen bir hata olu\u015ftu. L\u00fctfen Chrome Uzaktan Masa\u00fcst\u00fc uygulamas\u0131ndan \u00e7\u0131k\u0131\u015f yap\u0131n ve tekrar deneyin."
   },
   "error_host_is_offline": {
     "message": "Uzaktan ba\u011flanaca\u011f\u0131n\u0131z bilgisayar, ba\u011flant\u0131 isteklerine yan\u0131t vermiyor. L\u00fctfen bu bilgisayar\u0131n \u00e7evrimi\u00e7i oldu\u011funu do\u011frulay\u0131n ve tekrar deneyin."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Sunucu, a\u011f iste\u011fine yan\u0131t veremedi."
+  },
+  "error_not_authenticated": {
+    "message": "Chrome Uzaktan Masa\u00fcst\u00fc'nde oturum a\u00e7mad\u0131n\u0131z. L\u00fctfen oturum a\u00e7\u0131n ve tekrar deneyin."
   },
   "error_service_unavailable": {
     "message": "Hizmet ge\u00e7ici olarak kullan\u0131lam\u0131yor. L\u00fctfen daha sonra tekrar deneyin."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Kullan\u0131m istatistiklerini ve kilitlenme raporlar\u0131n\u0131 toplamam\u0131za izin vererek Chrome Uzaktan Masa\u00fcst\u00fc'n\u00fc daha iyi hale getirmemize yard\u0131mc\u0131 olun."
+  },
   "host_setup_dialog_description": {
-    "message": "Bu bilgisayara eri\u015fimi korumak i\u00e7in l\u00fctfen bir PIN se\u00e7in. Se\u00e7ti\u011finiz PIN daha sonra ba\u015fka bir konumdan ba\u011flan\u0131rken gerekecektir."
+    "message": "Bu bilgisayara eri\u015fimi korumak i\u00e7in, l\u00fctfen $1en az alt\u0131 basamakl\u0131$2 bir PIN kodu se\u00e7in. Bu PIN kodu ba\u015fka bir konumdan ba\u011flan\u0131rken gerekecektir.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Uzaktan eri\u015fim hizmeti ba\u015flat\u0131lamad\u0131."
@@ -244,7 +255,7 @@
     "message": "Kullan\u0131c\u0131, kodu girdi\u011finde payla\u015f\u0131m oturumunuz ba\u015flar."
   },
   "invalid_pin": {
-    "message": "L\u00fctfen d\u00f6rt veya daha fazla basamakl\u0131 bir PIN girin."
+    "message": "L\u00fctfen alt\u0131 veya daha fazla basamakl\u0131 bir PIN kodu girin."
   },
   "it2me_first_run": {
     "message": "Kullan\u0131c\u0131lar aras\u0131 ekran payla\u015f\u0131m\u0131, uzaktan teknik destek i\u00e7in m\u00fckemmeldir."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "S\u0131\u011facak \u015fekilde k\u00fc\u00e7\u00fclt"
+  },
+  "sign_in_button": {
+    "message": "Oturum a\u00e7"
   },
   "sign_out_button": {
     "message": "\u00c7\u0131k\u0131\u015f yap"

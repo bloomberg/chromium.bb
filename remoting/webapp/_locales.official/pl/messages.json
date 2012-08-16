@@ -96,13 +96,10 @@
     "message": "Czas trwania"
   },
   "error_authentication_failed": {
-    "message": "Uwierzytelnianie nie powiod\u0142o si\u0119. Wyloguj si\u0119 z Pulpitu zdalnego Chrome i spr\u00f3buj ponownie."
+    "message": "Uwierzytelnianie nie powiod\u0142o si\u0119. Zaloguj si\u0119 ponownie do Pulpitu zdalnego Chrome."
   },
   "error_bad_plugin_version": {
     "message": "Brak niekt\u00f3rych element\u00f3w wymaganych dla Pulpitu zdalnego Chrome. Upewnij si\u0119, \u017ce masz zainstalowan\u0105 najnowsz\u0105 wersj\u0119 i spr\u00f3buj ponownie."
-  },
-  "error_generic": {
-    "message": "Wyst\u0105pi\u0142 nieznany b\u0142\u0105d. Wyloguj si\u0119 z Pulpitu zdalnego Chrome i spr\u00f3buj ponownie."
   },
   "error_host_is_offline": {
     "message": "Komputer zdalny nie odpowiada na \u017c\u0105dania po\u0142\u0105czenia. Sprawd\u017a, czy dzia\u0142a on w trybie online i spr\u00f3buj ponownie."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Serwer nie odpowiada na \u017c\u0105danie sieciowe."
+  },
+  "error_not_authenticated": {
+    "message": "Nie jeste\u015b zalogowany do Pulpitu zdalnego Chrome. Zaloguj si\u0119 i spr\u00f3buj ponownie."
   },
   "error_service_unavailable": {
     "message": "Us\u0142uga jest tymczasowo niedost\u0119pna. Spr\u00f3buj ponownie p\u00f3\u017aniej."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Pom\u00f3\u017c nam udoskonali\u0107 Pulpit zdalny Chrome, zezwalaj\u0105c na gromadzenie przez nas statystyk u\u017cytkowania i raport\u00f3w o awariach."
+  },
   "host_setup_dialog_description": {
-    "message": "Wybierz PIN, by zabezpieczy\u0107 dost\u0119p do tego komputera. PIN b\u0119dzie wymagany podczas \u0142\u0105czenia si\u0119 z innego miejsca."
+    "message": "Aby chroni\u0107 dost\u0119p do tego komputera, wybierz PIN z\u0142o\u017cony $1z co najmniej sze\u015bciu cyfr$2. B\u0119dzie on wymagany podczas nawi\u0105zywania po\u0142\u0105czenia z innej lokalizacji.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Nie uda\u0142o si\u0119 uruchomi\u0107 us\u0142ugi dost\u0119pu zdalnego."
@@ -244,7 +255,7 @@
     "message": "Po wprowadzeniu kodu przez drug\u0105 stron\u0119 rozpocznie si\u0119 sesja udost\u0119pniania."
   },
   "invalid_pin": {
-    "message": "Wpisz PIN z\u0142o\u017cony z co najmniej 4 cyfr."
+    "message": "Wpisz PIN z\u0142o\u017cony z co najmniej sze\u015bciu cyfr."
   },
   "it2me_first_run": {
     "message": "Dzielenie si\u0119 ekranem z innym u\u017cytkownikiem \u2013 doskona\u0142e do zdalnej pomocy technicznej."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Zmniejsz, by dopasowa\u0107"
+  },
+  "sign_in_button": {
+    "message": "Zaloguj si\u0119"
   },
   "sign_out_button": {
     "message": "Wyloguj si\u0119"

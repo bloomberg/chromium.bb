@@ -96,13 +96,10 @@
     "message": "Kestus"
   },
   "error_authentication_failed": {
-    "message": "Autentimine eba\u00f5nnestus. Logige Chrome Remote Desktopist v\u00e4lja ja proovige uuesti."
+    "message": "Autentimine eba\u00f5nnestus. Logige uuesti sisse Chrome Remote Desktopi."
   },
   "error_bad_plugin_version": {
     "message": "M\u00f5ned Chrome Remote Desktopi jaoks vajalikud komponendid on puudu. Veenduge, et olete installinud uusima versiooni ja proovige uuesti."
-  },
-  "error_generic": {
-    "message": "Ilmnes tundmatu viga. Logige Chrome Remote Desktopist v\u00e4lja ja proovige uuesti."
   },
   "error_host_is_offline": {
     "message": "Kaugarvuti ei reageeri \u00fchenduse taotlusele. Kontrollige, et arvutil oleks v\u00f5rgu\u00fchendus ja proovige uuesti."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Server ei vastanud v\u00f5rgup\u00e4ringule."
+  },
+  "error_not_authenticated": {
+    "message": "Te pole Chrome Remote Desktopi sisse logitud. Logige sisse ja proovige uuesti."
   },
   "error_service_unavailable": {
     "message": "Teenus on ajutiselt k\u00e4ttesaamatu. Proovige hiljem uuesti."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Aidake meil Chrome Remote Desktopi t\u00e4iustada, lubades meil koguda kasutusstatistikat ja krahiaruandeid."
+  },
   "host_setup_dialog_description": {
-    "message": "Valige PIN-kood arvuti juurdep\u00e4\u00e4su kaitsmiseks. PIN-koodi k\u00fcsitakse, kui arvutiga luuakse \u00fchendus teisest asukohast."
+    "message": "Kaitske juurdep\u00e4\u00e4su arvutile ja valige PIN-kood, mis koosneb $1v\u00e4hemalt kuuest numbrist$2. PIN-koodi k\u00fcsitakse siis, kui loote \u00fchenduse teisest asukohast.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Kaug\u00fchenduse teenuse k\u00e4ivitamine eba\u00f5nnestus."
@@ -244,7 +255,7 @@
     "message": "Kui ta on koodi sisestanud, algab teie jagamisseanss."
   },
   "invalid_pin": {
-    "message": "Sisestage v\u00e4hemalt 4 numbrist koosnev PIN-kood."
+    "message": "Sisestage v\u00e4hemalt kuuest numbrist koosnev PIN-kood."
   },
   "it2me_first_run": {
     "message": "Ekraani jagamine kasutajalt kasutajale, sobib t\u00e4iuslikult kaug\u00fchenduse abil tehnilise toe pakkumiseks."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "V\u00e4henda parajaks"
+  },
+  "sign_in_button": {
+    "message": "Logi sisse"
   },
   "sign_out_button": {
     "message": "Logi v\u00e4lja"

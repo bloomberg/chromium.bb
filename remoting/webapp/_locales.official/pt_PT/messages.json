@@ -96,13 +96,10 @@
     "message": "Dura\u00e7\u00e3o"
   },
   "error_authentication_failed": {
-    "message": "Falha na autentica\u00e7\u00e3o. Termine a sess\u00e3o do Ambiente de Trabalho Remoto do Chrome e tente novamente."
+    "message": "Falha na autentica\u00e7\u00e3o. Inicie sess\u00e3o em Chrome Remote Desktop de novo."
   },
   "error_bad_plugin_version": {
     "message": "Faltam alguns componentes necess\u00e1rios ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que instalou a vers\u00e3o mais recente e tente novamente."
-  },
-  "error_generic": {
-    "message": "Ocorreu um erro desconhecido. Termine sess\u00e3o do Ambiente de Trabalho Remoto do Chrome e tente novamente."
   },
   "error_host_is_offline": {
     "message": "O computador remoto n\u00e3o est\u00e1 a responder aos pedidos de liga\u00e7\u00e3o. Verifique se est\u00e1 on-line e tente novamente."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "O servidor n\u00e3o conseguiu responder ao pedido de rede."
+  },
+  "error_not_authenticated": {
+    "message": "N\u00e3o tem sess\u00e3o iniciada no Chrome Remote Desktop. Inicie sess\u00e3o e tente de novo."
   },
   "error_service_unavailable": {
     "message": "O servi\u00e7o est\u00e1 temporariamente indispon\u00edvel. Tente novamente mais tarde."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Ajude-nos a melhorar o Chrome Remote Desktop, permitindo-nos recolher estat\u00edsticas de utiliza\u00e7\u00e3o e relat\u00f3rios de falhas."
+  },
   "host_setup_dialog_description": {
-    "message": "Para proteger o acesso ao computador, escolha um PIN. Esse PIN ser\u00e1 necess\u00e1rio quando estabelecer liga\u00e7\u00e3o a partir de outra localiza\u00e7\u00e3o."
+    "message": "Para proteger o acesso a este computador, escolha um PIN $1com pelo menos seis d\u00edgitos$2 . Este PIN ser\u00e1 necess\u00e1rio quando se ligar a partir de outro local.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Falha ao iniciar o servi\u00e7o de acesso remoto."
@@ -244,7 +255,7 @@
     "message": "A sess\u00e3o de partilha come\u00e7a assim que introduzirem o c\u00f3digo."
   },
   "invalid_pin": {
-    "message": "Introduza um PIN com quatro ou mais d\u00edgitos."
+    "message": "Introduza um PIN com seis ou mais d\u00edgitos."
   },
   "it2me_first_run": {
     "message": "Partilha de ecr\u00e3 entre utilizadores, ideal para suporte t\u00e9cnico remoto."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Ajustar texto"
+  },
+  "sign_in_button": {
+    "message": "Iniciar sess\u00e3o"
   },
   "sign_out_button": {
     "message": "Terminar sess\u00e3o"

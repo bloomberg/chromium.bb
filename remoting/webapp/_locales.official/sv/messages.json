@@ -96,13 +96,10 @@
     "message": "Varaktighet"
   },
   "error_authentication_failed": {
-    "message": "Det gick inte att autentisera. Logga ut fr\u00e5n Chrome Remote Desktop och f\u00f6rs\u00f6k igen."
+    "message": "Autentiseringen misslyckades. Logga in p\u00e5 Chrome Remote Desktop igen."
   },
   "error_bad_plugin_version": {
     "message": "Vissa komponenter som kr\u00e4vs f\u00f6r Chrome Remote Desktop saknas. Kontrollera att du har installerat den senaste versionen och f\u00f6rs\u00f6k igen."
-  },
-  "error_generic": {
-    "message": "Ett ok\u00e4nt fel uppstod. Logga ut fr\u00e5n Chrome Remote Desktop och f\u00f6rs\u00f6k igen."
   },
   "error_host_is_offline": {
     "message": "Fj\u00e4rrdatorn svarar inte p\u00e5 anslutningsbeg\u00e4ran. Kontrollera att den \u00e4r ansluten till Internet och f\u00f6rs\u00f6k igen."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Servern kunde inte svara p\u00e5 n\u00e4tverkets beg\u00e4ran."
+  },
+  "error_not_authenticated": {
+    "message": "Du \u00e4r inte inloggad p\u00e5 Chrome Remote Desktop. Logga in och f\u00f6rs\u00f6k igen."
   },
   "error_service_unavailable": {
     "message": "Tj\u00e4nsten \u00e4r inte tillg\u00e4nglig f\u00f6r n\u00e4rvarande. F\u00f6rs\u00f6k igen senare."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Hj\u00e4lp oss att f\u00f6rb\u00e4ttra Chrome Remote Desktop genom att l\u00e5ta oss samla in anv\u00e4ndningsstatistik och felrapporter."
+  },
   "host_setup_dialog_description": {
-    "message": "V\u00e4lj en PIN-kod f\u00f6r att skydda \u00e5tkomsten till den h\u00e4r datorn. Du beh\u00f6ver PIN-koden n\u00e4r du ansluter till datorn fr\u00e5n en annan plats."
+    "message": "V\u00e4lj en PIN-kod med $1minst sex siffror$2 om du vill skydda den h\u00e4r datorn fr\u00e5n obeh\u00f6rig \u00e5tkomst. PIN-koden kr\u00e4vs vid anslutning fr\u00e5n en annan plats.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Det gick inte att starta fj\u00e4rr\u00e5tkomst."
@@ -244,7 +255,7 @@
     "message": "N\u00e4r koden anges startar delningssessionen."
   },
   "invalid_pin": {
-    "message": "Ange en PIN-kod som best\u00e5r av minst fyra siffror."
+    "message": "Ange en PIN-kod som best\u00e5r av minst sex siffror."
   },
   "it2me_first_run": {
     "message": "Sk\u00e4rmdelning mellan anv\u00e4ndare \u00e4r perfekt f\u00f6r fj\u00e4rrstyrd teknisk support."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Krymp den s\u00e5 att den passar in"
+  },
+  "sign_in_button": {
+    "message": "Logga in"
   },
   "sign_out_button": {
     "message": "Logga ut"

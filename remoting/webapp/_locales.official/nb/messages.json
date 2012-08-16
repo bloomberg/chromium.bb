@@ -96,13 +96,10 @@
     "message": "Varighet"
   },
   "error_authentication_failed": {
-    "message": "Autentiseringen mislyktes. Logg deg av Chrome Eksternt skrivebord og pr\u00f8v p\u00e5 nytt."
+    "message": "Autentiseringen mislyktes. Logg deg p\u00e5 Chrome Eksternt skrivebord p\u00e5 nytt."
   },
   "error_bad_plugin_version": {
     "message": "Du mangler noen komponenter som kreves for Chrome Eksternt skrivebord. Kontroller at du har installert den nyeste versjonen, og pr\u00f8v p\u00e5 nytt."
-  },
-  "error_generic": {
-    "message": "Det oppsto en ukjent feil. Logg deg av Chrome Eksternt skrivebord, og pr\u00f8v p\u00e5 nytt."
   },
   "error_host_is_offline": {
     "message": "Den eksterne datamaskinen svarer ikke p\u00e5 tilkoblingsforesp\u00f8rsler. Kontroller at datamaskinen er koblet til Internett, og pr\u00f8v p\u00e5 nytt."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Tjeneren svarte ikke p\u00e5 nettverksforesp\u00f8rselen."
+  },
+  "error_not_authenticated": {
+    "message": "Du er ikke logget p\u00e5 Chrome Eksternt skrivebord. Logg deg p\u00e5 og pr\u00f8v p\u00e5 nytt."
   },
   "error_service_unavailable": {
     "message": "Tjenesten er ikke tilgjengelig for \u00f8yeblikket. Pr\u00f8v p\u00e5 nytt senere."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Hjelp oss med \u00e5 forbedre Chrome Eksternt skrivebord ved \u00e5 la oss \u00e5 samle bruksstatistikk og programstopprapporter."
+  },
   "host_setup_dialog_description": {
-    "message": "For \u00e5 beskytte tilgangen til denne datamaskinen, m\u00e5 du angi en PIN-kode. Denne koden m\u00e5 skrives inn n\u00e5r du kobler til fra et annet sted."
+    "message": "For \u00e5 beskytte bruken av denne datamaskinen, m\u00e5 du velge en PIN-kode p\u00e5 $1minst seks siffer$2. Denne PIN-koden er n\u00f8dvendig ved tilkobling.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Kunne ikke starte tjenesten for ekstern tilgang."
@@ -244,7 +255,7 @@
     "message": "N\u00e5r brukeren har skrevet inn koden, starter delings\u00f8kten."
   },
   "invalid_pin": {
-    "message": "Skriv inn en PIN-kode p\u00e5 fire sifre eller fler."
+    "message": "Skriv inn en PIN-kode p\u00e5 seks sifre eller fler."
   },
   "it2me_first_run": {
     "message": "Skjermdeling bruker-til-bruker, perfekt for ekstern teknisk brukerst\u00f8tte."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Minsk til den passer"
+  },
+  "sign_in_button": {
+    "message": "Logg p\u00e5"
   },
   "sign_out_button": {
     "message": "Logg av"

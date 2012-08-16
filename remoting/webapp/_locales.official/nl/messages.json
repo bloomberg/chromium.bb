@@ -96,13 +96,10 @@
     "message": "Duur"
   },
   "error_authentication_failed": {
-    "message": "Authenticatie mislukt. Meld u af bij Chrome Remote Desktop en probeer het opnieuw."
+    "message": "Authenticatie mislukt. Meld u opnieuw aan bij Chrome Remote Desktop."
   },
   "error_bad_plugin_version": {
     "message": "Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of u de nieuwste versie heeft ge\u00efnstalleerd en probeer het opnieuw."
-  },
-  "error_generic": {
-    "message": "Er is een onbekende fout opgetreden. Meld u af bij Chrome Remote Desktop en probeer het opnieuw."
   },
   "error_host_is_offline": {
     "message": "De externe computer reageert niet op verbindingsverzoeken. Controleer of deze online is en probeer het opnieuw."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "De server heeft niet gereageerd op het netwerkverzoek."
+  },
+  "error_not_authenticated": {
+    "message": "U bent niet aangemeld bij Chrome Remote Desktop. Meld u aan en probeer het opnieuw."
   },
   "error_service_unavailable": {
     "message": "De service is tijdelijk niet beschikbaar. Probeer het later opnieuw."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Help ons Chrome Remote Desktop te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen."
+  },
   "host_setup_dialog_description": {
-    "message": "Om de toegang tot deze computer te beschermen, kiest u een pincode. Deze pincode is vereist wanneer er verbinding wordt gemaakt vanaf een andere locatie."
+    "message": "Om de toegang tot deze computer te beschermen, kiest u een pincode van $1ten minste zes cijfers$2. U moet deze pincode opgeven wanneer u verbinding maakt vanaf een andere locatie.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Kan de service voor externe toegang niet starten."
@@ -244,7 +255,7 @@
     "message": "Zodra ze de code opgeven, wordt uw deelsessie gestart."
   },
   "invalid_pin": {
-    "message": "Geef een pincode van vier of meer cijfers op."
+    "message": "Geef een pincode van zes of meer cijfers op."
   },
   "it2me_first_run": {
     "message": "Schermen delen tussen gebruikers, perfect voor externe ondersteuning."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Aanpassen aan venster"
+  },
+  "sign_in_button": {
+    "message": "Aanmelden"
   },
   "sign_out_button": {
     "message": "Afmelden"

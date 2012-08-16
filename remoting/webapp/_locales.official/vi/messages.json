@@ -96,13 +96,10 @@
     "message": "Th\u1eddi l\u01b0\u1ee3ng"
   },
   "error_authentication_failed": {
-    "message": "X\u00e1c th\u1ef1c kh\u00f4ng th\u00e0nh c\u00f4ng. Vui l\u00f2ng \u0111\u0103ng xu\u1ea5t kh\u1ecfi Chrome Remote Desktop v\u00e0 th\u1eed l\u1ea1i."
+    "message": "X\u00e1c th\u1ef1c kh\u00f4ng th\u00e0nh c\u00f4ng. Vui l\u00f2ng \u0111\u0103ng nh\u1eadp l\u1ea1i Chrome Remote Desktop."
   },
   "error_bad_plugin_version": {
     "message": "Thi\u1ebfu m\u1ed9t s\u1ed1 th\u00e0nh ph\u1ea7n c\u1ea7n thi\u1ebft cho Chrome Remote Desktop. Vui l\u00f2ng \u0111\u1ea3m b\u1ea3o r\u1eb1ng b\u1ea1n \u0111\u00e3 c\u00e0i \u0111\u1eb7t phi\u00ean b\u1ea3n m\u1edbi nh\u1ea5t v\u00e0 th\u1eed l\u1ea1i."
-  },
-  "error_generic": {
-    "message": "\u0110\u00e3 x\u1ea3y ra l\u1ed7i kh\u00f4ng x\u00e1c \u0111\u1ecbnh. Vui l\u00f2ng \u0111\u0103ng xu\u1ea5t kh\u1ecfi Chrome Remote Desktop v\u00e0 th\u1eed l\u1ea1i."
   },
   "error_host_is_offline": {
     "message": "M\u00e1y t\u00ednh t\u1eeb xa kh\u00f4ng ph\u1ea3n h\u1ed3i y\u00eau c\u1ea7u k\u1ebft n\u1ed1i. Vui l\u00f2ng x\u00e1c minh r\u1eb1ng m\u00e1y t\u00ednh \u0111ang tr\u1ef1c tuy\u1ebfn v\u00e0 th\u1eed l\u1ea1i."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "M\u00e1y ch\u1ee7 kh\u00f4ng ph\u1ea3n h\u1ed3i y\u00eau c\u1ea7u m\u1ea1ng."
+  },
+  "error_not_authenticated": {
+    "message": "B\u1ea1n ch\u01b0a \u0111\u0103ng nh\u1eadp Chrome Remote Desktop. Vui l\u00f2ng \u0111\u0103ng nh\u1eadp v\u00e0 th\u1eed l\u1ea1i."
   },
   "error_service_unavailable": {
     "message": "D\u1ecbch v\u1ee5 t\u1ea1m th\u1eddi kh\u00f4ng kh\u1ea3 d\u1ee5ng. Vui l\u00f2ng th\u1eed l\u1ea1i sau."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Gi\u00fap ch\u00fang t\u00f4i c\u1ea3i ti\u1ebfn Chrome Remote Desktop b\u1eb1ng c\u00e1ch cho ph\u00e9p ch\u00fang t\u00f4i thu th\u1eadp s\u1ed1 li\u1ec7u th\u1ed1ng k\u00ea s\u1eed d\u1ee5ng v\u00e0 b\u00e1o c\u00e1o s\u1ef1 c\u1ed1."
+  },
   "host_setup_dialog_description": {
-    "message": "\u0110\u1ec3 b\u1ea3o v\u1ec7 quy\u1ec1n truy c\u1eadp v\u00e0o m\u00e1y t\u00ednh n\u00e0y, vui l\u00f2ng ch\u1ecdn m\u00e3 PIN. M\u00e3 PIN n\u00e0y s\u1ebd \u0111\u01b0\u1ee3c y\u00eau c\u1ea7u khi k\u1ebft n\u1ed1i t\u1eeb v\u1ecb tr\u00ed kh\u00e1c."
+    "message": "\u0110\u1ec3 b\u1ea3o v\u1ec7 quy\u1ec1n truy c\u1eadp v\u00e0o m\u00e1y t\u00ednh n\u00e0y, vui l\u00f2ng ch\u1ecdn m\u1ed9t m\u00e3 PIN c\u00f3 $1\u00edt nh\u1ea5t s\u00e1u ch\u1eef s\u1ed1$2. M\u00e3 PIN n\u00e0y s\u1ebd \u0111\u01b0\u1ee3c y\u00eau c\u1ea7u khi k\u1ebft n\u1ed1i t\u1eeb m\u1ed9t v\u1ecb tr\u00ed kh\u00e1c.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Kh\u00f4ng th\u1ec3 b\u1eaft \u0111\u1ea7u d\u1ecbch v\u1ee5 truy c\u1eadp t\u1eeb xa."
@@ -244,7 +255,7 @@
     "message": "Sau khi h\u1ecd nh\u1eadp m\u00e3, phi\u00ean chia s\u1ebb c\u1ee7a b\u1ea1n s\u1ebd b\u1eaft \u0111\u1ea7u."
   },
   "invalid_pin": {
-    "message": "Vui l\u00f2ng nh\u1eadp m\u00e3 PIN c\u00f3 t\u1eeb 4 s\u1ed1 tr\u1edf l\u00ean."
+    "message": "Vui l\u00f2ng nh\u1eadp m\u00e3 PIN c\u00f3 t\u1eeb s\u00e1u ch\u1eef s\u1ed1 tr\u1edf l\u00ean."
   },
   "it2me_first_run": {
     "message": "Chia s\u1ebb m\u00e0n h\u00ecnh gi\u1eefa ng\u01b0\u1eddi d\u00f9ng, ho\u00e0n h\u1ea3o \u0111\u1ec3 h\u1ed7 tr\u1ee3 k\u1ef9 thu\u1eadt t\u1eeb xa."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Co la\u0323i cho v\u01b0\u0300a"
+  },
+  "sign_in_button": {
+    "message": "\u0110\u0103ng nh\u1eadp"
   },
   "sign_out_button": {
     "message": "\u0110\u0103ng xu\u1ea5t"

@@ -96,13 +96,10 @@
     "message": "Durada"
   },
   "error_authentication_failed": {
-    "message": "L'autenticaci\u00f3 ha fallat. Tanqueu la sessi\u00f3 de Chrome Remote Desktop i torneu-ho a provar."
+    "message": "Ha fallat l'autenticaci\u00f3. Torneu a iniciar la sessi\u00f3 a l'escriptori remot de Chrome."
   },
   "error_bad_plugin_version": {
     "message": "Falten alguns components que es requereixen per a Chrome Remote Desktop. Assegureu-vos que h\u00e0giu instal\u00b7lat la versi\u00f3 m\u00e9s recent de Google Chrome i torneu-ho a provar."
-  },
-  "error_generic": {
-    "message": "S'ha produ\u00eft un error desconegut. Tanqueu la sessi\u00f3 de Chrome Remote Desktop i torneu-ho a provar."
   },
   "error_host_is_offline": {
     "message": "L'equip remot no respon a les sol\u00b7licituds de connexi\u00f3. Verifiqueu que estigui en l\u00ednia i torneu-ho a provar."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "El servidor no ha pogut respondre a la sol\u00b7licitud de xarxa."
+  },
+  "error_not_authenticated": {
+    "message": "No heu iniciat la sessi\u00f3 a l'escriptori remot de Chrome. Inicieu-hi la sessi\u00f3 i torneu-ho a provar."
   },
   "error_service_unavailable": {
     "message": "El servei no est\u00e0 disponible temporalment. Torneu-ho a provar m\u00e9s tard."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estad\u00edstiques d'\u00fas i informes d'error."
+  },
   "host_setup_dialog_description": {
-    "message": "Per protegir l'acc\u00e9s a aquest equip, trieu un PIN. Aquest PIN ser\u00e0 necessari en connectar-se des d'una altra ubicaci\u00f3."
+    "message": "Per protegir l'acc\u00e9s a aquest equip, trieu un PIN de $1com a m\u00ednim sis d\u00edgits$2. Aquest PIN es necessitar\u00e0 quan us connecteu des d'una altra ubicaci\u00f3.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "No s'ha pogut iniciar el servei d'acc\u00e9s remot."
@@ -244,7 +255,7 @@
     "message": "Quan hagin introdu\u00eft el codi, la sessi\u00f3 d'\u00fas compartit comen\u00e7ar\u00e0."
   },
   "invalid_pin": {
-    "message": "Introdu\u00efu un PIN que tingui quatre d\u00edgits o m\u00e9s."
+    "message": "Introdu\u00efu un PIN que tingui sis d\u00edgits o m\u00e9s."
   },
   "it2me_first_run": {
     "message": "\u00das compartit de pantalla d'usuari a usuari, perfecte per a l'assist\u00e8ncia t\u00e8cnica remota."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Redueix per ajustar"
+  },
+  "sign_in_button": {
+    "message": "Inicia la sessi\u00f3"
   },
   "sign_out_button": {
     "message": "Tanca la sessi\u00f3"

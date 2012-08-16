@@ -96,13 +96,10 @@
     "message": "Dur\u00e9e"
   },
   "error_authentication_failed": {
-    "message": "\u00c9chec de l'authentification. Veuillez vous d\u00e9connecter du bureau \u00e0 distance Chrome, puis r\u00e9essayer."
+    "message": "\u00c9chec de l'authentification. Veuillez vous connecter au bureau \u00e0 distance Google\u00a0Chrome, puis r\u00e9essayer."
   },
   "error_bad_plugin_version": {
     "message": "Certains composants n\u00e9cessaires \u00e0 l'utilisation du bureau \u00e0 distance Chrome sont introuvables. Veuillez vous assurer que vous utilisez la derni\u00e8re version de Google\u00a0Chrome, puis r\u00e9essayer."
-  },
-  "error_generic": {
-    "message": "Une erreur inconnue s'est produite. Veuillez vous d\u00e9connecter du bureau \u00e0 distance\u00a0Chrome, puis r\u00e9essayer."
   },
   "error_host_is_offline": {
     "message": "L'ordinateur distant ne r\u00e9pond pas aux demandes de connexion. Veuillez v\u00e9rifier qu'il est connect\u00e9, puis r\u00e9essayer."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "\u00c9chec de la r\u00e9ponse du serveur \u00e0 la demande du r\u00e9seau."
+  },
+  "error_not_authenticated": {
+    "message": "Vous n'\u00eates pas connect\u00e9 au bureau \u00e0 distance Google\u00a0Chrome. Veuillez vous connecter, puis r\u00e9essayer."
   },
   "error_service_unavailable": {
     "message": "Le service est momentan\u00e9ment indisponible. Veuillez r\u00e9essayer ult\u00e9rieurement."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Aidez-nous \u00e0 am\u00e9liorer le bureau \u00e0 distance Google\u00a0Chrome en nous autorisant \u00e0 recueillir des statistiques d'utilisation et des rapports d'erreur."
+  },
   "host_setup_dialog_description": {
-    "message": "Pour s\u00e9curiser l'acc\u00e8s \u00e0 cet ordinateur, veuillez d\u00e9finir un code d'acc\u00e8s. Ce code vous sera demand\u00e9 lorsque vous vous connecterez depuis un autre lieu."
+    "message": "Pour prot\u00e9ger l'acc\u00e8s \u00e0 cet ordinateur, veuillez choisir un code d'acc\u00e8s $1compos\u00e9 d'au moins six\u00a0chiffres$2. Ce code sera n\u00e9cessaire lorsque vous vous connecterez depuis un autre emplacement.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "\u00c9chec du d\u00e9marrage du service d'acc\u00e8s \u00e0 distance."
@@ -244,7 +255,7 @@
     "message": "Votre session de partage d\u00e9butera une fois le code saisi."
   },
   "invalid_pin": {
-    "message": "Veuillez saisir un code d'acc\u00e8s compos\u00e9 d'au moins quatre\u00a0chiffres."
+    "message": "Veuillez saisir un code d'acc\u00e8s compos\u00e9 d'au moins six\u00a0chiffres."
   },
   "it2me_first_run": {
     "message": "Partagez des \u00e9crans avec d'autres utilisateurs\u00a0: id\u00e9al pour l'assistance technique \u00e0 distance."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Ajuster \u00e0 la page"
+  },
+  "sign_in_button": {
+    "message": "Connexion"
   },
   "sign_out_button": {
     "message": "D\u00e9connexion"

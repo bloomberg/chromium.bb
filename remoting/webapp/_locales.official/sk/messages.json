@@ -96,13 +96,10 @@
     "message": "Trvanie"
   },
   "error_authentication_failed": {
-    "message": "Overenie toto\u017enosti zlyhalo. Odhl\u00e1ste sa zo slu\u017eby Vzdialen\u00e1 plocha Chrome a sk\u00faste to znova."
+    "message": "Overenie toto\u017enosti zlyhalo. Prihl\u00e1ste sa do slu\u017eby Vzdialen\u00e1 plocha Chrome znova."
   },
   "error_bad_plugin_version": {
     "message": "Niektor\u00e9 s\u00fa\u010dasti potrebn\u00e9 pre Vzdialen\u00fa plochu Chrome ch\u00fdbaj\u00fa. Uistite sa, \u017ee ste nain\u0161talovali najnov\u0161iu verziu a sk\u00faste to znova."
-  },
-  "error_generic": {
-    "message": "Vyskytla sa nezn\u00e1ma chyba. Odhl\u00e1ste sa zo slu\u017eby Vzdialen\u00e1 plocha Chrome a sk\u00faste to znova."
   },
   "error_host_is_offline": {
     "message": "Vzdialen\u00fd po\u010d\u00edta\u010d nereaguje na \u017eiadosti o pripojenie. Skontrolujte, \u010di je online a sk\u00faste to znova."
@@ -124,6 +121,9 @@
   },
   "error_no_response": {
     "message": "Serveru sa nepodarilo odpoveda\u0165 na po\u017eiadavku siete."
+  },
+  "error_not_authenticated": {
+    "message": "Nie ste prihl\u00e1sen\u00ed do slu\u017eby Vzdialen\u00e1 plocha Chrome. Prihl\u00e1ste sa a sk\u00faste to znova."
   },
   "error_service_unavailable": {
     "message": "Slu\u017eba je do\u010dasne nedostupn\u00e1. Sk\u00faste to znova nesk\u00f4r."
@@ -192,8 +192,19 @@
       }
     }
   },
+  "host_setup_crash_reporting_message": {
+    "message": "Pom\u00f4\u017ete n\u00e1m zlep\u0161i\u0165 slu\u017ebu Vzdialen\u00e1 plocha Chrome tak, \u017ee n\u00e1m umo\u017en\u00edte zhroma\u017e\u010fova\u0165 \u0161tatistky pou\u017e\u00edvania a spr\u00e1vy o zlyhan\u00ed."
+  },
   "host_setup_dialog_description": {
-    "message": "Ak chcete chr\u00e1ni\u0165 pr\u00edstup k tomuto po\u010d\u00edta\u010du, zvo\u013ete si k\u00f3d PIN. Tento k\u00f3d sa bude vy\u017eadova\u0165 pri pripojen\u00ed z in\u00e9ho miesta."
+    "message": "Ak chcete chr\u00e1ni\u0165 pr\u00edstup k tomuto po\u010d\u00edta\u010du, zvo\u013ete k\u00f3d PIN s $1najmenej 6 \u010d\u00edslicami$2. Tento k\u00f3d PIN sa bude vy\u017eadova\u0165 pri pripojen\u00ed z in\u00e9ho miesta.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
   },
   "host_setup_host_failed": {
     "message": "Spustenie slu\u017eby vzdialen\u00e9ho pr\u00edstupu zlyhalo."
@@ -244,7 +255,7 @@
     "message": "Va\u0161a rel\u00e1cia zdie\u013eania za\u010dne okam\u017eite po zadan\u00ed k\u00f3du."
   },
   "invalid_pin": {
-    "message": "Zadajte k\u00f3d PIN obsahuj\u00faci 4 alebo viac \u010d\u00edslic."
+    "message": "Zadajte k\u00f3d PIN obsahuj\u00faci 6 alebo viac \u010d\u00edslic."
   },
   "it2me_first_run": {
     "message": "Zdie\u013eanie obrazovky medzi pou\u017e\u00edvate\u013emi \u2013 ide\u00e1lne pre vzdialen\u00fa technick\u00fa podporu."
@@ -332,6 +343,9 @@
   },
   "shrink_to_fit": {
     "message": "Zmen\u0161i\u0165 a prisp\u00f4sobi\u0165"
+  },
+  "sign_in_button": {
+    "message": "Prihl\u00e1si\u0165 sa"
   },
   "sign_out_button": {
     "message": "Odhl\u00e1si\u0165 sa"
