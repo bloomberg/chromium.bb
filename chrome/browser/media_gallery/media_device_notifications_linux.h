@@ -25,6 +25,12 @@
 
 class FilePath;
 
+// Gets the media device information given a |device_path|. On success,
+// returns true and fills in |device_name| and |device_id|.
+typedef bool (*GetDeviceInfoFunc)(const std::string& device_path,
+                                  std::string* device_name,
+                                  string16* device_id);
+
 namespace chrome {
 
 class MediaDeviceNotificationsLinux
@@ -37,6 +43,10 @@ class MediaDeviceNotificationsLinux
   void Init();
 
  protected:
+  // Only for use in unit tests.
+  MediaDeviceNotificationsLinux(const FilePath& path,
+                                GetDeviceInfoFunc getDeviceInfo);
+
   // Avoids code deleting the object while there are references to it.
   // Aside from the base::RefCountedThreadSafe friend class, and derived
   // classes, any attempts to call this dtor will result in a compile-time
@@ -51,26 +61,33 @@ class MediaDeviceNotificationsLinux
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::FILE>;
 
-  // (mount device, device id)
-  typedef std::pair<std::string, std::string> MountDeviceAndId;
+  // Structure to save mounted device information such as device path and unique
+  // identifier.
+  struct MountDeviceAndId {
+    std::string mount_device;
+    std::string device_id;
+  };
+
   // Mapping of mount points to MountDeviceAndId.
   typedef std::map<std::string, MountDeviceAndId> MountMap;
 
+  // (mount point, mount device)
+  // Helper Map to get new entries from mtab file.
+  typedef std::map<std::string, std::string> MountPointDeviceMap;
+
   void InitOnFileThread();
 
-  // Parse the mtab file and find all changes.
+  // Parses mtab file and find all changes.
   void UpdateMtab();
 
-  // Read the mtab file entries into |mtab|.
-  void ReadMtab(MountMap* mtab);
+  // Reads mtab file entries into |mtab|.
+  void ReadMtab(MountPointDeviceMap* mtab);
 
-  // Add a media device with a given device and mount device. Assign it a device
-  // id as well.
-  void AddNewDevice(const std::string& mount_device,
-                    const std::string& mount_point,
-                    std::string* device_id);
+  // Checks and adds |mount_device| as media device given the |mount_point|.
+  void CheckAndAddMediaDevice(const std::string& mount_device,
+                              const std::string& mount_point);
 
-  // Remove a media device with a given device id.
+  // Removes media device with a given device id.
   void RemoveOldDevice(const std::string& device_id);
 
   // Whether Init() has been called or not.
@@ -85,14 +102,14 @@ class MediaDeviceNotificationsLinux
   // Mapping of relevant mount points and their corresponding mount devices.
   // Keep in mind on Linux, a device can be mounted at multiple mount points,
   // and multiple devices can be mounted at a mount point.
-  MountMap mtab_;
-
-  // The lowest available device id number.
-  // TODO(thestig) Remove this and use a real per-device unique id instead.
-  int current_device_id_;
+  MountMap mount_info_map_;
 
   // Set of known file systems that we care about.
   std::set<std::string> known_file_systems_;
+
+  // Function handler to get device information. This is useful to set a mock
+  // handler for unit testing.
+  GetDeviceInfoFunc get_device_info_func_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsLinux);
 };

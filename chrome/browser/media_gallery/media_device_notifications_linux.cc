@@ -6,6 +6,7 @@
 
 #include "chrome/browser/media_gallery/media_device_notifications_linux.h"
 
+#include <libudev.h>
 #include <mntent.h>
 #include <stdio.h>
 
@@ -13,8 +14,11 @@
 
 #include "base/bind.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_generic_obj.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_device_notifications_utils.h"
@@ -35,6 +39,125 @@ const char* const kKnownFileSystems[] = {
   "vfat",
 };
 
+// udev device property constants.
+const char kDevName[] = "DEVNAME";
+const char kFsUUID[] = "ID_FS_UUID";
+const char kLabel[] = "ID_FS_LABEL";
+const char kModel[] = "ID_MODEL";
+const char kModelID[] = "ID_MODEL_ID";
+const char kSerial[] = "ID_SERIAL";
+const char kSerialShort[] = "ID_SERIAL_SHORT";
+const char kVendor[] = "ID_VENDOR";
+const char kVendorID[] = "ID_VENDOR_ID";
+
+// Delimiter constants.
+const char kNonSpaceDelim[] = ":";
+const char kSpaceDelim[] = " ";
+
+// Unique id prefix constants.
+const char kFSUniqueIdPrefix[] = "UUID:";
+const char kVendorModelSerialPrefix[] = "VendorModelSerial:";
+
+// Device mount point details.
+struct MountPointEntryInfo {
+  std::string mount_point;
+  int entry_pos;
+};
+
+// ScopedGenericObj functor for UdevObjectRelease().
+class ScopedReleaseUdevObject {
+ public:
+  void operator()(struct udev* udev) const {
+    udev_unref(udev);
+  }
+};
+
+// ScopedGenericObj functor for UdevDeviceObjectRelease().
+class ScopedReleaseUdevDeviceObject {
+ public:
+  void operator()(struct udev_device* device) const {
+    udev_device_unref(device);
+  }
+};
+
+// Get the device information using udev library.
+// On success, returns true and fill in |id| and |name|.
+bool GetDeviceInfo(const std::string& device_path,
+                   std::string* id,
+                   string16* name) {
+  DCHECK(!device_path.empty());
+
+  ScopedGenericObj<struct udev*, ScopedReleaseUdevObject> udev_obj(udev_new());
+  if (!udev_obj.get())
+    return false;
+
+  struct stat device_stat;
+  if (stat(device_path.c_str(), &device_stat) < 0)
+    return false;
+
+  char device_type;
+  if (S_ISCHR(device_stat.st_mode))
+    device_type = 'c';
+  else if (S_ISBLK(device_stat.st_mode))
+    device_type = 'b';
+  else
+    return false;  // Not a supported type.
+
+  ScopedGenericObj<struct udev_device*, ScopedReleaseUdevDeviceObject>
+      device(udev_device_new_from_devnum(udev_obj, device_type,
+                                         device_stat.st_rdev));
+  if (!device.get())
+    return false;
+
+  // Construct a device name using label or manufacturer(vendor and model)
+  // details.
+  std::string device_label;
+  const char* device_name = NULL;
+  if ((device_name = udev_device_get_property_value(device, kLabel)) ||
+      (device_name = udev_device_get_property_value(device, kSerial))) {
+    device_label = device_name;
+  } else {
+    // Format: VendorInfo ModelInfo
+    // E.g.: KnCompany Model2010
+    const char* vendor_name = NULL;
+    if ((vendor_name = udev_device_get_property_value(device, kVendor)))
+      device_label = vendor_name;
+
+    const char* model_name = NULL;
+    if ((model_name = udev_device_get_property_value(device, kModel))) {
+      if (!device_label.empty())
+        device_label += kSpaceDelim;
+      device_label += model_name;
+    }
+  }
+
+  if (IsStringUTF8(device_label))
+    *name = UTF8ToUTF16(device_label);
+
+  const char* uuid  = NULL;
+  if ((uuid = udev_device_get_property_value(device, kFsUUID))) {
+    *id = std::string(kFSUniqueIdPrefix) + uuid;
+  } else {
+    // If one of the vendor, model, serial information is missing, its value in
+    // the string is empty.
+    // Format: VendorModelSerial:VendorInfo:ModelInfo:SerialShortInfo
+    // E.g.: VendorModelSerial:Kn:DataTravel_12.10:8000000000006CB02CDB
+    const char* vendor = udev_device_get_property_value(device, kVendorID);
+    const char* model = udev_device_get_property_value(device, kModelID);
+    const char* serial_short = udev_device_get_property_value(device,
+                                                              kSerialShort);
+    if (!vendor && !model && !serial_short)
+      return false;
+
+    *id = std::string(kVendorModelSerialPrefix) +
+          (vendor ? vendor : "") + kNonSpaceDelim +
+          (model ? model : "") + kNonSpaceDelim +
+          (serial_short ? serial_short : "");
+  }
+
+  return true;
+}
+
 }  // namespace
 
 namespace chrome {
@@ -46,13 +169,15 @@ MediaDeviceNotificationsLinux::MediaDeviceNotificationsLinux(
     const FilePath& path)
     : initialized_(false),
       mtab_path_(path),
-      current_device_id_(0U) {
-  CHECK(!path.empty());
+      get_device_info_func_(&GetDeviceInfo) {
+}
 
-  // Put |kKnownFileSystems| in std::set to get O(log N) access time.
-  for (size_t i = 0; i < arraysize(kKnownFileSystems); ++i) {
-    known_file_systems_.insert(kKnownFileSystems[i]);
-  }
+MediaDeviceNotificationsLinux::MediaDeviceNotificationsLinux(
+    const FilePath& path,
+    GetDeviceInfoFunc get_device_info_func)
+    : initialized_(false),
+      mtab_path_(path),
+      get_device_info_func_(get_device_info_func) {
 }
 
 MediaDeviceNotificationsLinux::~MediaDeviceNotificationsLinux() {
@@ -60,6 +185,12 @@ MediaDeviceNotificationsLinux::~MediaDeviceNotificationsLinux() {
 }
 
 void MediaDeviceNotificationsLinux::Init() {
+  DCHECK(!mtab_path_.empty());
+
+  // Put |kKnownFileSystems| in std::set to get O(log N) access time.
+  for (size_t i = 0; i < arraysize(kKnownFileSystems); ++i)
+    known_file_systems_.insert(kKnownFileSystems[i]);
+
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&MediaDeviceNotificationsLinux::InitOnFileThread, this));
@@ -104,125 +235,139 @@ void MediaDeviceNotificationsLinux::InitOnFileThread() {
 void MediaDeviceNotificationsLinux::UpdateMtab() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  MountMap new_mtab;
+  MountPointDeviceMap new_mtab;
   ReadMtab(&new_mtab);
 
   // Check existing mtab entries for unaccounted mount points.
   // These mount points must have been removed in the new mtab.
   std::vector<std::string> mount_points_to_erase;
-  for (MountMap::const_iterator it = mtab_.begin(); it != mtab_.end(); ++it) {
-    const std::string& mount_point = it->first;
-    // |mount_point| not in |new_mtab|.
-    if (!ContainsKey(new_mtab, mount_point)) {
-      const std::string& device_id = it->second.second;
-      RemoveOldDevice(device_id);
+  for (MountMap::const_iterator old_iter = mount_info_map_.begin();
+       old_iter != mount_info_map_.end(); ++old_iter) {
+    const std::string& mount_point = old_iter->first;
+    const std::string& mount_device = old_iter->second.mount_device;
+    MountPointDeviceMap::iterator new_iter = new_mtab.find(mount_point);
+    // |mount_point| not in |new_mtab| or |mount_device| is no longer mounted at
+    // |mount_point|.
+    if (new_iter == new_mtab.end() || (new_iter->second != mount_device)) {
+      RemoveOldDevice(old_iter->second.device_id);
       mount_points_to_erase.push_back(mount_point);
     }
   }
-  // Erase the |mtab_| entries afterwards. Erasing in the loop above using the
-  // iterator is slightly more efficient, but more tricky, since calling
-  // std::map::erase() on an iterator invalidates it.
+  // Erase the |mount_info_map_| entries afterwards. Erasing in the loop above
+  // using the iterator is slightly more efficient, but more tricky, since
+  // calling std::map::erase() on an iterator invalidates it.
   for (size_t i = 0; i < mount_points_to_erase.size(); ++i)
-    mtab_.erase(mount_points_to_erase[i]);
+    mount_info_map_.erase(mount_points_to_erase[i]);
 
   // Check new mtab entries against existing ones.
-  for (MountMap::iterator newiter = new_mtab.begin();
-       newiter != new_mtab.end();
-       ++newiter) {
-    const std::string& mount_point = newiter->first;
-    const MountDeviceAndId& mount_device_and_id = newiter->second;
-    const std::string& mount_device = mount_device_and_id.first;
-    std::string& id = newiter->second.second;
-    MountMap::iterator olditer = mtab_.find(mount_point);
-    // Check to see if it is a new mount point.
-    if (olditer == mtab_.end()) {
-      if (IsMediaDevice(mount_point)) {
-        AddNewDevice(mount_device, mount_point, &id);
-        mtab_.insert(std::make_pair(mount_point, mount_device_and_id));
-      }
-      continue;
-    }
-
-    // Existing mount point. Check to see if a new device is mounted there.
-    const MountDeviceAndId& old_mount_device_and_id = olditer->second;
-    if (mount_device == old_mount_device_and_id.first)
-      continue;
-
-    // New device mounted.
-    RemoveOldDevice(old_mount_device_and_id.second);
-    if (IsMediaDevice(mount_point)) {
-      AddNewDevice(mount_device, mount_point, &id);
-      olditer->second = mount_device_and_id;
+  for (MountPointDeviceMap::iterator new_iter = new_mtab.begin();
+       new_iter != new_mtab.end(); ++new_iter) {
+    const std::string& mount_point = new_iter->first;
+    const std::string& mount_device = new_iter->second;
+    MountMap::iterator old_iter = mount_info_map_.find(mount_point);
+    if (old_iter == mount_info_map_.end() ||
+        old_iter->second.mount_device != mount_device) {
+      // New mount point found or an existing mount point found with a new
+      // device.
+      CheckAndAddMediaDevice(mount_device, mount_point);
     }
   }
 }
 
-void MediaDeviceNotificationsLinux::ReadMtab(MountMap* mtab) {
+void MediaDeviceNotificationsLinux::ReadMtab(MountPointDeviceMap* mtab) {
   FILE* fp = setmntent(mtab_path_.value().c_str(), "r");
   if (!fp)
     return;
 
-  MountMap& new_mtab = *mtab;
   mntent entry;
   char buf[512];
-  int mount_position = 0;
-  typedef std::pair<std::string, std::string> MountPointAndId;
-  typedef std::map<std::string, MountPointAndId> DeviceMap;
+
+  // Keep track of mount point entry positions in mtab file.
+  int entry_pos = 0;
+
+  // Helper map to store the device mount point details.
+  // (mount device, MountPointEntryInfo)
+  typedef std::map<std::string, MountPointEntryInfo> DeviceMap;
   DeviceMap device_map;
   while (getmntent_r(fp, &entry, buf, sizeof(buf))) {
     // We only care about real file systems.
     if (!ContainsKey(known_file_systems_, entry.mnt_type))
       continue;
+
     // Add entries, but overwrite entries for the same mount device. Keep track
-    // of the entry positions in the device id field and use that below to
-    // resolve multiple devices mounted at the same mount point.
-    MountPointAndId mount_point_and_id =
-        std::make_pair(entry.mnt_dir, base::IntToString(mount_position++));
-    DeviceMap::iterator it = device_map.find(entry.mnt_fsname);
-    if (it == device_map.end()) {
-      device_map.insert(std::make_pair(entry.mnt_fsname, mount_point_and_id));
-    } else {
-      it->second = mount_point_and_id;
-    }
+    // of the entry positions in |entry_info| and use that below to resolve
+    // multiple devices mounted at the same mount point.
+    MountPointEntryInfo entry_info;
+    entry_info.mount_point = entry.mnt_dir;
+    entry_info.entry_pos = entry_pos++;
+    device_map[entry.mnt_fsname] = entry_info;
   }
   endmntent(fp);
 
+  // Helper map to store mount point entries.
+  // (mount point, entry position in mtab file)
+  typedef std::map<std::string, int> MountPointsInfoMap;
+  MountPointsInfoMap mount_points_info_map;
+  MountPointDeviceMap& new_mtab = *mtab;
   for (DeviceMap::const_iterator device_it = device_map.begin();
        device_it != device_map.end();
        ++device_it) {
-    const std::string& device = device_it->first;
-    const std::string& mount_point = device_it->second.first;
-    const std::string& position = device_it->second.second;
+    // Add entries, but overwrite entries for the same mount point. Keep track
+    // of the entry positions and use that information to resolve multiple
+    // devices mounted at the same mount point.
+    const std::string& mount_device = device_it->first;
+    const std::string& mount_point = device_it->second.mount_point;
+    const int entry_pos = device_it->second.entry_pos;
+    MountPointDeviceMap::iterator new_it = new_mtab.find(mount_point);
+    MountPointsInfoMap::iterator mount_point_info_map_it =
+        mount_points_info_map.find(mount_point);
 
-    // No device at |mount_point|, save |device| to it.
-    MountMap::iterator mount_it = new_mtab.find(mount_point);
-    if (mount_it == new_mtab.end()) {
-      new_mtab.insert(std::make_pair(mount_point,
-                                     std::make_pair(device, position)));
-      continue;
+    // New mount point entry found or there is already a device mounted at
+    // |mount_point| and the existing mount entry is older than the current one.
+    if (new_it == new_mtab.end() ||
+        (mount_point_info_map_it != mount_points_info_map.end() &&
+         mount_point_info_map_it->second < entry_pos)) {
+      new_mtab[mount_point] = mount_device;
+      mount_points_info_map[mount_point] = entry_pos;
     }
-
-    // There is already a device mounted at |mount_point|. Check to see if
-    // the existing mount entry is newer than the current one.
-    std::string& existing_device = mount_it->second.first;
-    std::string& existing_position = mount_it->second.second;
-    if (existing_position > position)
-      continue;
-
-    // The current entry is newer, update the mount point entry.
-    existing_device = device;
-    existing_position = position;
   }
 }
 
-void MediaDeviceNotificationsLinux::AddNewDevice(
+void MediaDeviceNotificationsLinux::CheckAndAddMediaDevice(
     const std::string& mount_device,
-    const std::string& mount_point,
-    std::string* device_id) {
-  *device_id = base::IntToString(current_device_id_++);
+    const std::string& mount_point) {
+  if (!IsMediaDevice(mount_point))
+    return;
+
+  std::string device_id;
+  string16 device_name;
+  bool result = (*get_device_info_func_)(mount_device, &device_id,
+                                         &device_name);
+
+  // Keep track of GetDeviceInfo result, to see how often we fail to get device
+  // details.
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_info_available",
+                        result);
+  if (!result)
+    return;
+
+  // Keep track of device uuid, to see how often we receive empty values.
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_uuid_available",
+                        !device_id.empty());
+  UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.device_name_available",
+                        !device_name.empty());
+
+  if (device_id.empty() || device_name.empty())
+    return;
+
+  MountDeviceAndId mount_device_and_id;
+  mount_device_and_id.mount_device = mount_device;
+  mount_device_and_id.device_id = device_id;
+  mount_info_map_[mount_point] = mount_device_and_id;
+
   base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  system_monitor->ProcessMediaDeviceAttached(*device_id,
-                                             UTF8ToUTF16(mount_device),
+  system_monitor->ProcessMediaDeviceAttached(device_id,
+                                             device_name,
                                              SystemMonitor::TYPE_PATH,
                                              mount_point);
 }

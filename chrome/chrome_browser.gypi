@@ -4544,6 +4544,11 @@
             'browser/ui/tabs/tab_strip_layout_type_prefs.h',
           ],
         }],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:udev',
+          ],
+        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
