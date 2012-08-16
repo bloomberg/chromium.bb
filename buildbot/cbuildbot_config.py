@@ -48,7 +48,7 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
 
     # Most users don't have access to the pdf repository so disable pdf.
     useflags = my_config['useflags']
-    if useflags and 'chrome_pdf' in useflags:
+    if not remote_trybot and useflags and 'chrome_pdf' in useflags:
       useflags.remove('chrome_pdf')
 
     my_config['upload_symbols'] = False
