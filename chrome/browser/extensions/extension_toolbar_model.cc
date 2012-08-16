@@ -200,12 +200,18 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension,
       last_extension_removed_index_ < list->size()) {
     list->insert(list->begin() + last_extension_removed_index_,
                  make_scoped_refptr(extension));
-    FOR_EACH_OBSERVER(Observer, observers_,
-        BrowserActionAdded(extension, last_extension_removed_index_));
+    // TODO: figure out the right long term solution.
+    if (list == &toolbar_items_) {
+      FOR_EACH_OBSERVER(Observer, observers_,
+          BrowserActionAdded(extension, last_extension_removed_index_));
+    }
   } else {
     list->push_back(make_scoped_refptr(extension));
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      BrowserActionAdded(extension, list->size() - 1));
+    // TODO: figure out the right long term solution.
+    if (list == &toolbar_items_) {
+      FOR_EACH_OBSERVER(Observer, observers_,
+                        BrowserActionAdded(extension, list->size() - 1));
+    }
   }
 
   last_extension_removed_ = "";
@@ -225,8 +231,11 @@ void ExtensionToolbarModel::RemoveExtension(const Extension* extension,
   last_extension_removed_index_ = pos - list->begin();
 
   list->erase(pos);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    BrowserActionRemoved(extension));
+  // TODO: figure out the right long term solution.
+  if (list == &toolbar_items_) {
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      BrowserActionRemoved(extension));
+  }
 
   UpdatePrefs();
 }
