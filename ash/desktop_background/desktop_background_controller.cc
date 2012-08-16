@@ -124,9 +124,9 @@ WallpaperLayout DesktopBackgroundController::GetWallpaperLayout() const {
   return CENTER_CROPPED;
 }
 
-SkBitmap DesktopBackgroundController::GetCurrentWallpaperImage() {
+gfx::ImageSkia DesktopBackgroundController::GetCurrentWallpaperImage() {
   if (desktop_background_mode_ != BACKGROUND_IMAGE)
-    return SkBitmap();
+    return gfx::ImageSkia();
   return GetWallpaper();
 }
 

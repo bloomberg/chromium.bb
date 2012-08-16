@@ -11,12 +11,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia.h"
+
+typedef unsigned int SkColor;
 
 namespace aura {
 class RootWindow;
@@ -69,9 +69,9 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
 
   WallpaperLayout GetWallpaperLayout() const;
 
-  // Provides current image on the background, or empty SkBitmap if there is
-  // no image, e.g. background is solid color.
-  SkBitmap GetCurrentWallpaperImage();
+  // Provides current image on the background, or empty gfx::ImageSkia if there
+  // is no image, e.g. background is solid color.
+  gfx::ImageSkia GetCurrentWallpaperImage();
 
   // Initialize root window's background.
   void OnRootWindowAdded(aura::RootWindow* root_window);

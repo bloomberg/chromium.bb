@@ -128,9 +128,13 @@ void WallpaperImageSource::GetCurrentUserWallpaper(int request_id) {
   SkBitmap image;
   TRACE_EVENT0("LOCK_SCREEN", "GetCurrentUserWallpaper");
   if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
-      SkBitmap wallpaper = ash::Shell::GetInstance()->
-          desktop_background_controller()->
-              GetCurrentWallpaperImage();
+    // TODO(sad|bshe): It maybe necessary to include the scale factor in the
+    // request (as is done for user-image and wallpaper-thumbnails).
+    SkBitmap wallpaper;
+    gfx::ImageSkia wallpaper_skia = ash::Shell::GetInstance()->
+        desktop_background_controller()->GetCurrentWallpaperImage();
+    if (!wallpaper_skia.empty())
+      wallpaper = *wallpaper_skia.bitmap();
     SkBitmap copy;
     if (wallpaper.deepCopyTo(&copy, wallpaper.config()))
       image = copy;

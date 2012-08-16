@@ -57,7 +57,7 @@ void TabbedLauncherButton::IconView::AnimationProgressed(
     SchedulePaint();
 }
 
-void TabbedLauncherButton::IconView::SetTabImage(const SkBitmap& image) {
+void TabbedLauncherButton::IconView::SetTabImage(const gfx::ImageSkia& image) {
   if (image.empty()) {
     if (!image_.empty()) {
       // Pause for 500ms, then ease out for 200ms.
@@ -127,7 +127,7 @@ TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
 TabbedLauncherButton::~TabbedLauncherButton() {
 }
 
-void TabbedLauncherButton::SetTabImage(const SkBitmap& image) {
+void TabbedLauncherButton::SetTabImage(const gfx::ImageSkia& image) {
   tabbed_icon_view()->SetTabImage(image);
 }
 

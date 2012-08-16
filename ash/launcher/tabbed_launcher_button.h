@@ -37,7 +37,7 @@ class TabbedLauncherButton : public LauncherButton {
   virtual ~TabbedLauncherButton();
 
   // Sets the images to display for this entry.
-  void SetTabImage(const SkBitmap& image);
+  void SetTabImage(const gfx::ImageSkia& image);
 
   // This only defines how the icon is drawn. Do not use it for other purposes.
   IncognitoState is_incognito() const { return is_incognito_; }
@@ -65,7 +65,7 @@ class TabbedLauncherButton : public LauncherButton {
     virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
     // Sets the image to display for this entry.
-    void SetTabImage(const SkBitmap& image);
+    void SetTabImage(const gfx::ImageSkia& image);
 
    protected:
     // View override.
@@ -73,8 +73,8 @@ class TabbedLauncherButton : public LauncherButton {
 
    private:
     TabbedLauncherButton* host_;
-    SkBitmap image_;
-    SkBitmap animating_image_;
+    gfx::ImageSkia image_;
+    gfx::ImageSkia animating_image_;
 
     // Used to animate image.
     scoped_ptr<ui::MultiAnimation> animation_;
