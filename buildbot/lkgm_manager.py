@@ -104,7 +104,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Max timeout before assuming other builders have failed for Chrome PFQ.
   # Longer as there is little to lose for Chrome PFQ waiting and arm
   # has been slower often.
-  CHROME_LONG_MAX_TIMEOUT_SECONDS = 3600
+  CHROME_LONG_MAX_TIMEOUT_SECONDS = 3 * 60 * 60
   # Max timeout before assuming other builders have failed.
   MAX_TIMEOUT_SECONDS = 300
   # Polling timeout for checking git repo for other build statuses.
