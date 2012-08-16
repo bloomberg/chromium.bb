@@ -34,11 +34,9 @@ const int kBarSize = 3;
 const int kBarSpacing = 5;
 const int kIconSize = 32;
 const int kHopSpacing = 2;
-const int kActiveBarColor = 0xe6ffffff;
-const int kInactiveBarColor = 0x80ffffff;
-const int kHopUpMS = 200;
+const int kHopUpMS = 0;
 const int kHopDownMS = 200;
-const int kAttentionThrobDurationMS = 2000;
+const int kAttentionThrobDurationMS = 1000;
 
 bool ShouldHop(int state) {
   return state & ash::internal::LauncherButton::STATE_HOVERED ||
@@ -466,22 +464,26 @@ void LauncherButton::UpdateState() {
   if (state_ == STATE_NORMAL || state_ & STATE_PENDING) {
     bar_->SetVisible(false);
   } else {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     int bar_id;
-    bar_->SetVisible(true);
-
-    if (state_ & STATE_ACTIVE || state_ & STATE_ATTENTION) {
-      bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE :
-          IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_ACTIVE;
-    } else if (state_ & STATE_HOVERED || state_ & STATE_FOCUSED) {
-      bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_HOVER :
-          IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_HOVER;
+    if (IsShelfHorizontal()) {
+      if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION))
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
+      else if (state_ & STATE_ACTIVE)
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+      else
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
     } else {
-      bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_RUNNING :
-          IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_RUNNING;
+      if (state_ & (STATE_HOVERED | STATE_FOCUSED | STATE_ATTENTION))
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_HOVER;
+      else if (state_ & STATE_ACTIVE)
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_ACTIVE;
+      else
+        bar_id = IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_RUNNING;
     }
 
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     bar_->SetImage(rb.GetImageNamed(bar_id).ToImageSkia());
+    bar_->SetVisible(true);
   }
 
   switch (host_->GetShelfAlignment()) {
