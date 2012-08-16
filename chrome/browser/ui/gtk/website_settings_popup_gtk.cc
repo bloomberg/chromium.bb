@@ -177,8 +177,10 @@ WebsiteSettingsPopupGtk::~WebsiteSettingsPopupGtk() {
 
 void WebsiteSettingsPopupGtk::BubbleClosing(BubbleGtk* bubble,
                                             bool closed_by_escape) {
-  if (presenter_.get())
+  if (presenter_.get()) {
+    presenter_->OnUIClosing();
     presenter_.reset();
+  }
   delete this;
 }
 
