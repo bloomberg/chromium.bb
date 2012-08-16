@@ -51,14 +51,22 @@ struct NaClThreadContext {
   /*          0x88 */
   nacl_reg_t  sysret;
   /*          0x90 */
-  uint32_t    tls_idx;
+  /*
+   * TODO(mseaborn): We would like to remove the following unused
+   * field, but the incremental Window Gyp build does not know to
+   * rebuild the .S files when this header file changes.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=2969
+   */
+  void        *unused_padding;
   /*          0x98 */
-  uint16_t    fcw;
-  /*          0x9c */
-  uint16_t    sys_fcw;
-  /*          0x9e */
-  uint64_t    trusted_stack_ptr;
+  uint32_t    tls_idx;
   /*          0xa0 */
+  uint16_t    fcw;
+  /*          0xa4 */
+  uint16_t    sys_fcw;
+  /*          0xa6 */
+  uint64_t    trusted_stack_ptr;
+  /*          0xa8 */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -82,10 +90,11 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR      0x80
 #define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR  0x88
 #define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x90
-#define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX       0x98
-#define NACL_THREAD_CONTEXT_OFFSET_FCW           0x9c
-#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0x9e
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0xa0
+#define NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING 0x98
+#define NACL_THREAD_CONTEXT_OFFSET_TLS_IDX       0xa0
+#define NACL_THREAD_CONTEXT_OFFSET_FCW           0xa4
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0xa6
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0xa8
 
 #if !defined(__ASSEMBLER__)
 
@@ -121,6 +130,7 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_PROG_CTR, prog_ctr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR, new_prog_ctr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING, unused_padding);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TLS_IDX, tls_idx);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
