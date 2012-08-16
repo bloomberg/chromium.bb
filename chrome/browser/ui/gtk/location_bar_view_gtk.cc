@@ -505,8 +505,10 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     }
   }
 
-  CreateZoomButton();
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
+  // TODO(khorimoto): Uncomment the following 2 lines when zoom icon/bubble
+  // implementation is complete for M23.
+  // CreateZoomButton();
+  // gtk_box_pack_end(GTK_BOX(hbox_.get()), zoom_.get(), FALSE, FALSE, 0);
 
   content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding + 1));
   gtk_widget_set_name(content_setting_hbox_.get(),
