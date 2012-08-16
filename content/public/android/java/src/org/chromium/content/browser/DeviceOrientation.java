@@ -131,7 +131,7 @@ class DeviceOrientation implements SensorEventListener {
         float[] rotationAngles = new float[3];
         SensorManager.getOrientation(deviceRotationMatrix, rotationAngles);
 
-        double alpha = Math.toDegrees(-rotationAngles[0]) - 90.0;
+        double alpha = Math.toDegrees(-rotationAngles[0]);
         while (alpha < 0.0) {
             alpha += 360.0; // [0, 360)
         }
