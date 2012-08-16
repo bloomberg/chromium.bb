@@ -34,6 +34,8 @@ class InMemoryHostConfig : public MutableHostConfig,
                          const std::string& in_value) OVERRIDE;
   virtual void SetBoolean(const std::string& path, bool in_value) OVERRIDE;
 
+  virtual bool CopyFrom(const base::DictionaryValue* dictionary) OVERRIDE;
+
   virtual bool Save() OVERRIDE;
 
  protected:

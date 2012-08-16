@@ -44,4 +44,23 @@ void InMemoryHostConfig::SetBoolean(const std::string& path, bool in_value) {
   values_->SetBoolean(path, in_value);
 }
 
+bool InMemoryHostConfig::CopyFrom(const base::DictionaryValue* dictionary) {
+  bool result = true;
+
+  for (DictionaryValue::key_iterator key(dictionary->begin_keys());
+       key != dictionary->end_keys(); ++key) {
+    std::string str_value;
+    bool bool_value;
+    if (dictionary->GetString(*key, &str_value)) {
+      SetString(*key, str_value);
+    } else if (dictionary->GetBoolean(*key, &bool_value)) {
+      SetBoolean(*key, bool_value);
+    } else {
+      result = false;
+    }
+  }
+
+  return result;
+}
+
 }  // namespace remoting

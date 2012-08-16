@@ -118,6 +118,7 @@ class Config:
     del self.data["xmpp_login"]
     del self.data["chromoting_auth_token"]
     del self.data["xmpp_auth_token"]
+    del self.data["oauth_refresh_token"]
 
   def clear_host_info(self):
     del self.data["host_id"]
@@ -129,7 +130,10 @@ class Authentication:
   """Manage authentication tokens for Chromoting/xmpp"""
 
   def __init__(self):
-    pass
+    self.login = None
+    self.chromoting_auth_token = None
+    self.xmpp_auth_token = None
+    self.oauth_refresh_token = None
 
   def generate_tokens(self):
     """Prompt for username/password and use them to generate new authentication
@@ -150,19 +154,41 @@ class Authentication:
     self.xmpp_auth_token = xmpp_authenticator.authenticate(self.login,
                                                            password)
 
+  def has_chromoting_credentials(self):
+    """Returns True if we have credentials for the directory"""
+    return self.chromoting_auth_token != None
+
+  def has_xmpp_credentials(self):
+    """Returns True if we have credentials to authenticate XMPP connection"""
+    # XMPP connection can be authenticated using either OAuth or XMPP token.
+    return self.oauth_refresh_token != None or self.xmpp_auth_token != None
+
   def load_config(self, config):
+    """Loads the config and returns false if the config is invalid. After
+    config is loaded caller must use has_xmpp_credentials() and
+    has_chromoting_credentials() to check that the credentials it needs are
+    present in the config."""
+
+    # Host can use different types of auth tokens depending on how the config
+    # was generated. E.g. if the config was created by the webapp it will have
+    # only oauth token. We still consider config to be valid in this case.
+    self.chromoting_auth_token = config.get("chromoting_auth_token")
+    self.oauth_refresh_token = config.get("oauth_refresh_token")
+    self.xmpp_auth_token = config.get("xmpp_auth_token")
+
     try:
       self.login = config["xmpp_login"]
-      self.chromoting_auth_token = config["chromoting_auth_token"]
-      self.xmpp_auth_token = config["xmpp_auth_token"]
     except KeyError:
       return False
     return True
 
   def save_config(self, config):
     config["xmpp_login"] = self.login
-    config["chromoting_auth_token"] = self.chromoting_auth_token
-    config["xmpp_auth_token"] = self.xmpp_auth_token
+    if self.chromoting_auth_token:
+      config["chromoting_auth_token"] = self.chromoting_auth_token
+    if self.xmpp_auth_token:
+      config["xmpp_auth_token"] = self.xmpp_auth_token
+
 
 class Host:
   """This manages the configuration for a host.
@@ -661,6 +687,9 @@ def main():
   parser.add_option("", "--silent", dest="silent", default=False,
                     action="store_true",
                     help="Start the host without trying to configure it.")
+  parser.add_option("", "--reload", dest="reload", default=False,
+                    action="store_true",
+                    help="Signal currently running host to reload the config.")
   (options, args) = parser.parse_args()
 
   host_hash = hashlib.md5(socket.gethostname()).hexdigest()
@@ -677,6 +706,13 @@ def main():
     else:
       print "Killing process %s" % pid
       os.kill(pid, signal.SIGTERM)
+    return 0
+
+  if options.reload:
+    running, pid = PidFile(pid_filename).check()
+    if not running:
+      return 1
+    os.kill(pid, signal.SIGUSR1)
     return 0
 
   if not options.size:
@@ -743,11 +779,16 @@ def main():
   host_config_loaded = host.load_config(host_config)
 
   if options.silent:
+    # Just validate the config when run with --silent.
     if not host_config_loaded or not auth_config_loaded:
       logging.error("Failed to load host configuration.")
       return 1
+    if not auth.has_xmpp_credentials():
+      logging.error("Auth tokens are not configured.")
+      return 1
   else:
-    need_auth_tokens = not auth_config_loaded
+    need_auth_tokens = (
+        not auth_config_loaded or not auth.has_chromoting_credentials())
     need_register_host = not host_config_loaded
     # Outside the loop so user doesn't get asked twice.
     if need_register_host:

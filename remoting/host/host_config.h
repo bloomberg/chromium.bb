@@ -9,6 +9,10 @@
 
 #include "base/basictypes.h"
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace remoting {
 
 // Following constants define names for configuration parameters.
@@ -59,6 +63,11 @@ class MutableHostConfig : public HostConfig {
   virtual void SetString(const std::string& path,
                          const std::string& in_value) = 0;
   virtual void SetBoolean(const std::string& path, bool in_value) = 0;
+
+  // Copy configuration from specified |dictionary|. Returns false if the
+  // |dictionary| contains some values that cannot be saved in the config. In
+  // that case, all other values are still copied.
+  virtual bool CopyFrom(const base::DictionaryValue* dictionary) = 0;
 
   // Saves changes.
   virtual bool Save() = 0;

@@ -43,15 +43,6 @@ std::string GetMd5(const std::string& value) {
   return StringToLowerASCII(base::HexEncode(digest.a, sizeof(digest.a)));
 }
 
-// TODO(sergeyu): This is a very hacky implementation of
-// DaemonController interface for linux. Current version works, but
-// there are sevaral problems with it:
-//   * All calls are executed synchronously, even though this API is
-//     supposed to be asynchronous.
-//   * The host is configured by passing configuration data as CL
-//     argument - this is obviously not secure.
-// Rewrite this code to solve these two problems.
-// http://crbug.com/120950 .
 class DaemonControllerLinux : public remoting::DaemonController {
  public:
   DaemonControllerLinux();
@@ -235,19 +226,9 @@ void DaemonControllerLinux::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
   JsonHostConfig config_file(GetConfigPath());
-  for (DictionaryValue::key_iterator key(config->begin_keys());
-       key != config->end_keys(); ++key) {
-    std::string value;
-    if (!config->GetString(*key, &value)) {
-      LOG(ERROR) << *key << " is not a string.";
-      done_callback.Run(RESULT_FAILED);
-      return;
-    }
-    config_file.SetString(*key, value);
-  }
-
-  bool success = config_file.Save();
-  if (!success) {
+  if (!config_file.CopyFrom(config.get()) ||
+      !config_file.Save()) {
+    LOG(ERROR) << "Failed to update config file.";
     done_callback.Run(RESULT_FAILED);
     return;
   }
@@ -268,23 +249,25 @@ void DaemonControllerLinux::DoUpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
   JsonHostConfig config_file(GetConfigPath());
-  if (!config_file.Read()) {
+  if (!config_file.Read() ||
+      !config_file.CopyFrom(config.get()) ||
+      !config_file.Save()) {
+    LOG(ERROR) << "Failed to update config file.";
     done_callback.Run(RESULT_FAILED);
+    return;
   }
 
-  for (DictionaryValue::key_iterator key(config->begin_keys());
-       key != config->end_keys(); ++key) {
-    std::string value;
-    if (!config->GetString(*key, &value)) {
-      LOG(ERROR) << *key << " is not a string.";
-      done_callback.Run(RESULT_FAILED);
-      return;
-    }
-    config_file.SetString(*key, value);
+  std::vector<std::string> args;
+  args.push_back("--reload");
+  AsyncResult result;
+  int exit_code;
+  if (RunScript(args, &exit_code)) {
+    result = (exit_code == 0) ? RESULT_OK : RESULT_FAILED;
+  } else {
+    result = RESULT_FAILED;
   }
-  bool success = config_file.Save();
-  done_callback.Run(success ? RESULT_OK : RESULT_FAILED);
-  // TODO(sergeyu): Send signal to the daemon to restart the host.
+
+  done_callback.Run(result);
 }
 
 void DaemonControllerLinux::DoStop(const CompletionCallback& done_callback) {

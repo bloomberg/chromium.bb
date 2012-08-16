@@ -228,15 +228,10 @@ void DaemonControllerMac::DoUpdateConfig(
     done_callback.Run(RESULT_FAILED);
     return;
   }
-  for (DictionaryValue::key_iterator key(config->begin_keys());
-       key != config->end_keys(); ++key) {
-    std::string value;
-    if (!config->GetString(*key, &value)) {
-      LOG(ERROR) << *key << " is not a string.";
-      done_callback.Run(RESULT_FAILED);
-      return;
-    }
-    config_file.SetString(*key, value);
+  if (!config_file.CopyFrom(config.get())) {
+    LOG(ERROR) << "Failed to update configuration.";
+    done_callback.Run(RESULT_FAILED);
+    return;
   }
 
   std::string config_data = config_file.GetSerializedData();
