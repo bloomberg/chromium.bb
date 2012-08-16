@@ -94,21 +94,24 @@ static bool WriteToFile(FILE* file,
 // is used because file may still not be opened by the time of scheduling
 // the task for execution.
 void AsyncWrite(FILE** file, int32 offset, const std::string& data) {
-  WriteToFile(*file, offset, data.data(), data.size());
+  if (*file)
+    WriteToFile(*file, offset, data.data(), data.size());
 }
 
 // Truncates the file to the current position asynchronously on a background
 // thread. Double pointer to FILE is used because file may still not be opened
 // by the time of scheduling the task for execution.
 void AsyncTruncate(FILE** file) {
-  base::IgnoreResult(TruncateFile(*file));
+  if (*file)
+    base::IgnoreResult(TruncateFile(*file));
 }
 
 // Closes the file on a background thread and releases memory used for storage
 // of FILE* value. Double pointer to FILE is used because file may still not
 // be opened by the time of scheduling the task for execution.
 void AsyncClose(FILE** file) {
-  base::IgnoreResult(fclose(*file));
+  if (*file)
+    base::IgnoreResult(fclose(*file));
   free(file);
 }
 
