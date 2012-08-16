@@ -141,8 +141,7 @@ aura::Window* StackingController::GetSystemModalContainer(
 
 // TODO(oshima): Remove this once extended desktop is on by default.
 internal::AlwaysOnTopController*
-StackingController::GetAlwaysOnTopController(
-    aura::RootWindow* root_window) {
+StackingController::GetAlwaysOnTopController(aura::RootWindow* root_window) {
   internal::AlwaysOnTopController* controller =
       root_window->GetProperty(internal::kAlwaysOnTopControllerKey);
   if (!controller) {

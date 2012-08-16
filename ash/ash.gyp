@@ -330,6 +330,7 @@
         'wm/window_util.h',
         'wm/workspace_controller.cc',
         'wm/workspace_controller.h',
+        'wm/workspace/base_workspace_manager.h',
         'wm/workspace/frame_maximize_button.cc',
         'wm/workspace/frame_maximize_button.h',
         'wm/workspace/managed_workspace.cc',

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_WORKSPACE_MANAGER_H_
-#define ASH_WM_WORKSPACE_MANAGER_H_
+#ifndef ASH_WM_WORKSPACE_WORKSPACE_MANAGER_H_
+#define ASH_WM_WORKSPACE_WORKSPACE_MANAGER_H_
 
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/workspace/base_workspace_manager.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
@@ -31,7 +32,7 @@ class ShelfLayoutManager;
 class WorkspaceManagerTest;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
-class ASH_EXPORT WorkspaceManager {
+class ASH_EXPORT WorkspaceManager : public BaseWorkspaceManager {
  public:
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
@@ -43,42 +44,27 @@ class ASH_EXPORT WorkspaceManager {
   // Returns true if |window| has been added to this WorkspaceManager.
   bool Contains(aura::Window* window) const;
 
-  // Returns true if in maximized or fullscreen mode.
-  bool IsInMaximizedMode() const;
-
   // Adds/removes a window creating/destroying workspace as necessary.
   void AddWindow(aura::Window* window);
   void RemoveWindow(aura::Window* window);
 
-  // Activates the workspace containing |window|. Does nothing if |window| is
-  // NULL or not contained in a workspace.
-  void SetActiveWorkspaceByWindow(aura::Window* window);
-
   // Returns the Window this WorkspaceManager controls.
   aura::Window* contents_view() { return contents_view_; }
-
-  // Returns the window for rotate operation based on the |location|.
-  // TODO: this isn't currently used; remove if we do away with overview.
-  aura::Window* FindRotateWindowForLocation(const gfx::Point& location);
-
-  // Returns the bounds in which a window can be moved/resized.
-  gfx::Rect GetDragAreaBounds();
-
-  // Sets the size of the grid. Newly added windows are forced to align to the
-  // size of the grid.
-  void SetGridSize(int grid_size);
-  int grid_size() const { return grid_size_; }
-
-  void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
 
   // Updates the visibility and whether any windows overlap the shelf.
   void UpdateShelfVisibility();
 
-  // Returns the current window state.
-  WorkspaceWindowState GetWindowState() const;
-
   // Invoked when the show state of the specified window changes.
   void ShowStateChanged(aura::Window* window);
+
+  // BaseWorkspaceManager overrides:
+  virtual bool IsInMaximizedMode() const OVERRIDE;
+  virtual void SetGridSize(int size) OVERRIDE;
+  virtual int GetGridSize() const OVERRIDE;
+  virtual WorkspaceWindowState GetWindowState() const OVERRIDE;
+  virtual void SetShelf(ShelfLayoutManager* shelf) OVERRIDE;
+  virtual void SetActiveWorkspaceByWindow(aura::Window* window) OVERRIDE;
+  virtual aura::Window* GetParentForNewWindow(aura::Window* window) OVERRIDE;
 
  private:
   // Enumeration of whether windows should animate or not.
@@ -157,4 +143,4 @@ class ASH_EXPORT WorkspaceManager {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_WORKSPACE_MANAGER_H_
+#endif  // ASH_WM_WORKSPACE_WORKSPACE_MANAGER_H_

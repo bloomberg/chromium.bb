@@ -79,11 +79,6 @@ bool WorkspaceManager::Contains(aura::Window* window) const {
   return FindBy(window) != NULL;
 }
 
-bool WorkspaceManager::IsInMaximizedMode() const {
-  return active_workspace_ &&
-      active_workspace_->type() == Workspace::TYPE_MAXIMIZED;
-}
-
 void WorkspaceManager::AddWindow(aura::Window* window) {
   DCHECK(ShouldManageWindow(window));
 
@@ -128,19 +123,37 @@ void WorkspaceManager::RemoveWindow(aura::Window* window) {
   CleanupWorkspace(workspace);
 }
 
-void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
-  Workspace* workspace = FindBy(window);
-  if (workspace)
-    workspace->Activate();
-}
-
-void WorkspaceManager::SetGridSize(int grid_size) {
-  grid_size_ = grid_size;
-}
-
 void WorkspaceManager::UpdateShelfVisibility() {
   if (shelf_)
     shelf_->UpdateVisibilityState();
+}
+
+void WorkspaceManager::ShowStateChanged(aura::Window* window) {
+  Workspace* workspace = FindBy(window);
+  if (!workspace)
+    return;
+  if (!ShouldManageWindow(window)) {
+    RemoveWindow(window);
+  } else {
+    Workspace::Type old_type = workspace->type();
+    Workspace::Type new_type = Workspace::TypeForWindow(window);
+    if (new_type != old_type)
+      OnTypeOfWorkspacedNeededChanged(window);
+  }
+  UpdateShelfVisibility();
+}
+
+bool WorkspaceManager::IsInMaximizedMode() const {
+  return active_workspace_ &&
+      active_workspace_->type() == Workspace::TYPE_MAXIMIZED;
+}
+
+void WorkspaceManager::SetGridSize(int size) {
+  grid_size_ = size;
+}
+
+int WorkspaceManager::GetGridSize() const {
+  return grid_size_;
 }
 
 WorkspaceWindowState WorkspaceManager::GetWindowState() const {
@@ -175,19 +188,18 @@ WorkspaceWindowState WorkspaceManager::GetWindowState() const {
       WORKSPACE_WINDOW_STATE_DEFAULT;
 }
 
-void WorkspaceManager::ShowStateChanged(aura::Window* window) {
+void WorkspaceManager::SetShelf(ShelfLayoutManager* shelf) {
+  shelf_ = shelf;
+}
+
+void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
   Workspace* workspace = FindBy(window);
-  if (!workspace)
-    return;
-  if (!ShouldManageWindow(window)) {
-    RemoveWindow(window);
-  } else {
-    Workspace::Type old_type = workspace->type();
-    Workspace::Type new_type = Workspace::TypeForWindow(window);
-    if (new_type != old_type)
-      OnTypeOfWorkspacedNeededChanged(window);
-  }
-  UpdateShelfVisibility();
+  if (workspace)
+    workspace->Activate();
+}
+
+aura::Window* WorkspaceManager::GetParentForNewWindow(aura::Window* window) {
+  return contents_view_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

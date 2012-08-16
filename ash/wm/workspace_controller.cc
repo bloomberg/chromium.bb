@@ -25,14 +25,14 @@ const int kGridSize = 16;
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
     : viewport_(viewport),
-      workspace_manager_(new WorkspaceManager(viewport)),
       layout_manager_(NULL),
       event_filter_(NULL) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
   event_filter_ = new WorkspaceEventFilter(viewport);
   viewport->SetEventFilter(event_filter_);
-  layout_manager_ = new WorkspaceLayoutManager(
-      root_window, workspace_manager_.get());
+  WorkspaceManager* workspace_manager = new WorkspaceManager(viewport);
+  workspace_manager_.reset(workspace_manager);
+  layout_manager_ = new WorkspaceLayoutManager(root_window, workspace_manager);
   viewport->SetLayoutManager(layout_manager_);
   aura::client::GetActivationClient(root_window)->AddObserver(this);
   SetGridSize(kGridSize);
@@ -52,11 +52,12 @@ bool WorkspaceController::IsInMaximizedMode() const {
 
 void WorkspaceController::SetGridSize(int grid_size) {
   workspace_manager_->SetGridSize(grid_size);
-  event_filter_->set_grid_size(grid_size);
+  if (event_filter_)
+    event_filter_->set_grid_size(grid_size);
 }
 
 int WorkspaceController::GetGridSize() const {
-  return workspace_manager_->grid_size();
+  return workspace_manager_->GetGridSize();
 }
 
 WorkspaceWindowState WorkspaceController::GetWindowState() const {
@@ -64,12 +65,22 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
 }
 
 void WorkspaceController::SetShelf(ShelfLayoutManager* shelf) {
-  workspace_manager_->set_shelf(shelf);
+  workspace_manager_->SetShelf(shelf);
 }
+
+void WorkspaceController::SetActiveWorkspaceByWindow(aura::Window* window) {
+  return workspace_manager_->SetActiveWorkspaceByWindow(window);
+}
+
+aura::Window* WorkspaceController::GetParentForNewWindow(aura::Window* window) {
+  return workspace_manager_->GetParentForNewWindow(window);
+}
+
 
 void WorkspaceController::OnWindowActivated(aura::Window* window,
                                             aura::Window* old_active) {
-  workspace_manager_->SetActiveWorkspaceByWindow(window);
+  if (!window || window->GetRootWindow() == viewport_->GetRootWindow())
+    workspace_manager_->SetActiveWorkspaceByWindow(window);
 }
 
 }  // namespace internal

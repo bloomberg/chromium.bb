@@ -18,11 +18,11 @@ class Window;
 namespace ash {
 namespace internal {
 
+class BaseWorkspaceManager;
 class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventFilter;
 class WorkspaceLayoutManager;
-class WorkspaceManager;
 
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces: WorkspaceManager, WorkspaceLayoutManager and
@@ -45,6 +45,12 @@ class ASH_EXPORT WorkspaceController
 
   void SetShelf(ShelfLayoutManager* shelf);
 
+  // Sets the active workspace based on |window|.
+  void SetActiveWorkspaceByWindow(aura::Window* window);
+
+  // See description in BaseWorkspaceManager::GetParentForNewWindow().
+  aura::Window* GetParentForNewWindow(aura::Window* window);
+
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* window,
                                  aura::Window* old_active) OVERRIDE;
@@ -54,7 +60,7 @@ class ASH_EXPORT WorkspaceController
 
   aura::Window* viewport_;
 
-  scoped_ptr<WorkspaceManager> workspace_manager_;
+  scoped_ptr<BaseWorkspaceManager> workspace_manager_;
 
   // Owned by the window its attached to.
   WorkspaceLayoutManager* layout_manager_;
