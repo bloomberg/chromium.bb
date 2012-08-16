@@ -16,7 +16,7 @@
           'inputs': ['<(PRODUCT_DIR)/fake_dns_symbols'],
           'outputs': ['<(PRODUCT_DIR)/fake_dns'],
           'action': [
-            '<!(/bin/echo -n $STRIP)',
+            '<(android_strip)',
             '--strip-unneeded',
             '<@(_inputs)',
             '-o',

@@ -16,7 +16,7 @@
           'inputs': ['<(PRODUCT_DIR)/forwarder_symbols'],
           'outputs': ['<(PRODUCT_DIR)/forwarder'],
           'action': [
-            '<!(/bin/echo -n $STRIP)',
+            '<(android_strip)',
             '--strip-unneeded',
             '<@(_inputs)',
             '-o',

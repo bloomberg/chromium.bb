@@ -615,7 +615,7 @@
               'inputs': ['<(SHARED_LIB_DIR)/libcontent_shell_content_view.so'],
               'outputs': ['<(PRODUCT_DIR)/content_shell/libs/<(android_app_abi)/libcontent_shell_content_view.so'],
               'action': [
-                '<!(/bin/echo -n $STRIP)',
+                '<(android_strip)',
                 '--strip-unneeded',  # All symbols not needed for relocation.
                 '<@(_inputs)',
                 '-o',

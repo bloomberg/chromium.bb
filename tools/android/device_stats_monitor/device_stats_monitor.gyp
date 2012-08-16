@@ -16,7 +16,7 @@
           'inputs': ['<(PRODUCT_DIR)/device_stats_monitor_symbols'],
           'outputs': ['<(PRODUCT_DIR)/device_stats_monitor'],
           'action': [
-            '<!(/bin/echo -n $STRIP)',
+            '<(android_strip)',
             '--strip-unneeded',
             '<@(_inputs)',
             '-o',
