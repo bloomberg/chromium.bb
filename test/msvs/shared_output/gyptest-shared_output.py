@@ -30,4 +30,12 @@ test.build('hello.gyp', test.ALL)
 test.must_exist(os.path.join(test.workdir, 'foo', 'hello.exe'))
 test.must_exist(os.path.join(test.workdir, 'foo', 'bar', 'hello.obj'))
 
+if test.format == 'msvs':
+  if test.uses_msbuild:
+    test.must_contain('pull_in_there.vcxproj',
+      '<IntDir>$(OutDir)bar\\</IntDir>')
+  else:
+    test.must_contain('pull_in_there.vcproj',
+      'IntermediateDirectory="$(OutDir)bar\\"')
+
 test.pass_test()

@@ -1261,6 +1261,10 @@ def _GetMSVSAttributes(spec, config, config_type):
   if 'IntermediateDirectory' not in prepared_attrs:
     intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
     prepared_attrs['IntermediateDirectory'] = _FixPath(intermediate) + '\\'
+  else:
+    intermediate = _FixPath(prepared_attrs['IntermediateDirectory']) + '\\'
+    intermediate = MSVSSettings.FixVCMacroSlashes(intermediate)
+    prepared_attrs['IntermediateDirectory'] = intermediate
   return prepared_attrs
 
 
