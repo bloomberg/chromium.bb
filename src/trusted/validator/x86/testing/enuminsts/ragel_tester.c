@@ -101,8 +101,11 @@ void RagelDecodeError (const uint8_t *ptr, void *userdata) {
   return;
 }
 
-void RagelValidateError (const uint8_t *ptr, uint32_t error, void *userdata) {
-  UNREFERENCED_PARAMETER(ptr);
+Bool RagelValidateError(const uint8_t *begin, const uint8_t *end,
+                        uint32_t error, void *callback_data) {
+  UNREFERENCED_PARAMETER(begin);
+  UNREFERENCED_PARAMETER(end);
+  UNREFERENCED_PARAMETER(callback_data);
   if (error & (UNRECOGNIZED_INSTRUCTION |
                CPUID_UNSUPPORTED_INSTRUCTION |
                FORBIDDEN_BASE_REGISTER |
@@ -111,9 +114,10 @@ void RagelValidateError (const uint8_t *ptr, uint32_t error, void *userdata) {
                RSI_UNSANDBOXDED | RDI_UNSANDBOXDED |
                UNRESTRICTED_RBP_PROCESSED | UNRESTRICTED_RSP_PROCESSED |
                RESTRICTED_RSP_UNPROCESSED | RESTRICTED_RBP_UNPROCESSED)) {
-    ((struct RagelDecodeState*)userdata)->inst_is_legal = 0;
+    return FALSE;
+  } else {
+    return TRUE;
   }
-  return;
 }
 
 void RagelInstruction(const uint8_t *begin, const uint8_t *end,
@@ -170,7 +174,7 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
     /* Decode again, this time specifying length of first instruction. */
     res = DecodeChunkArch(enumerator->_itext, tempstate.inst_num_bytes,
                           RagelInstruction, RagelDecodeError, &RState);
-    RState.inst_is_legal = !res;
+    RState.inst_is_legal = res;
   }
 
   if (RState.inst_is_legal) {
@@ -182,8 +186,9 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
     /* Fill the rest with HLTs.  */
     memset(chunk + tempstate.inst_num_bytes, 0xf4,
            sizeof(chunk) - tempstate.inst_num_bytes);
-    ValidateChunkArch(chunk, sizeof(chunk), 0 /*options*/,
-                      &old_validator_features, RagelValidateError, &RState);
+    res = ValidateChunkArch(chunk, sizeof(chunk), 0 /*options*/,
+                            &old_validator_features, RagelValidateError, NULL);
+    RState.inst_is_legal = res;
   }
 
 #undef DecodeChunkArch

@@ -1,4 +1,4 @@
-/* native_client//usr/local/google/home/shcherbina/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_32.c
+/* native_client//home/khim/work/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_32.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for ia32 mode.
  */
@@ -30,21 +30,21 @@ static const int x86_32_validator_en_main = 246;
 
 
 
-int ValidateChunkIA32(const uint8_t *data, size_t size,
-                      enum validation_options options,
-                      const NaClCPUFeaturesX86 *cpu_features,
-                      process_validation_error_func process_error,
-                      void *userdata) {
+Bool ValidateChunkIA32(const uint8_t *data, size_t size,
+                       enum validation_options options,
+                       const NaClCPUFeaturesX86 *cpu_features,
+                       validation_callback_func user_callback,
+                       void *callback_data) {
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
-  int result = 0;
+  int result = TRUE;
 
-  assert(size % kBundleSize == 0);
+  CHECK(size % kBundleSize == 0);
 
   if (!valid_targets || !jump_dests) {
-    result = 1;
+    result = FALSE;
     goto error_detected;
   }
 
@@ -59,7 +59,7 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
        end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
-    uint32_t errors_detected = 0;
+    uint32_t instruction_info_collected = 0;
     int current_state;
 
     
@@ -75,17 +75,16 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
 	{
 tr0:
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr9:
@@ -94,17 +93,16 @@ tr9:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr10:
@@ -113,49 +111,46 @@ tr10:
     SET_DISP_PTR(current_position);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr11:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr15:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_32BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr19:
@@ -163,17 +158,16 @@ tr19:
     SET_CPU_FEATURE(CPUFeature_3DNOW);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr27:
@@ -181,17 +175,16 @@ tr27:
     SET_CPU_FEATURE(CPUFeature_TSC);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr36:
@@ -199,17 +192,16 @@ tr36:
     SET_CPU_FEATURE(CPUFeature_MMX);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr50:
@@ -217,17 +209,16 @@ tr50:
     SET_CPU_FEATURE(CPUFeature_MON);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr51:
@@ -235,17 +226,16 @@ tr51:
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr52:
@@ -253,17 +243,16 @@ tr52:
     SET_CPU_FEATURE(CPUFeature_3DPRFTCH);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr64:
@@ -271,17 +260,16 @@ tr64:
     SET_CPU_FEATURE(CPUFeature_E3DNOW);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr70:
@@ -289,36 +277,35 @@ tr70:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr94:
 	{
+    instruction_info_collected |= RELATIVE_32BIT;
     rel32_operand(current_position + 1, data, jump_dests, size,
-                  &errors_detected);
+                  &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr97:
@@ -326,17 +313,16 @@ tr97:
     SET_CPU_FEATURE(CPUFeature_CLFLUSH);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr106:
@@ -344,17 +330,16 @@ tr106:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr107:
@@ -362,17 +347,16 @@ tr107:
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr114:
@@ -380,52 +364,50 @@ tr114:
     SET_CPU_FEATURE(CPUFeature_CX8);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr122:
 	{
+    instruction_info_collected |= RELATIVE_8BIT;
     rel8_operand(current_position + 1, data, jump_dests, size,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr143:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_16BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr160:
@@ -433,17 +415,16 @@ tr160:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr262:
@@ -451,17 +432,16 @@ tr262:
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr269:
@@ -469,17 +449,16 @@ tr269:
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr303:
@@ -487,17 +466,16 @@ tr303:
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr330:
@@ -505,33 +483,31 @@ tr330:
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr356:
-	{ }
+	{ instruction_info_collected |= IMMEDIATE_2BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr382:
@@ -539,17 +515,16 @@ tr382:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr388:
@@ -557,17 +532,16 @@ tr388:
     SET_CPU_FEATURE(CPUFeature_CMOVx87);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr408:
@@ -575,17 +549,16 @@ tr408:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr416:
@@ -593,17 +566,16 @@ tr416:
       BitmapClearBit(valid_targets, (current_position - data) - 1);
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr430:
@@ -611,17 +583,16 @@ tr430:
        BitmapSetBit(valid_targets, current_position - data);
      }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 tr439:
@@ -632,17 +603,16 @@ tr439:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st246;
 st246:
@@ -1383,10 +1353,10 @@ tr311:
   }
 	goto st10;
 tr381:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_16BIT; }
 	goto st10;
 tr405:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	goto st10;
 tr425:
 	{
@@ -1442,8 +1412,8 @@ case 14:
 	goto tr15;
 tr16:
 	{
-        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
-        result = 1;
+        result &= user_callback(instruction_start, current_position,
+                                UNRECOGNIZED_INSTRUCTION, callback_data);
         continue;
     }
 	goto st0;
@@ -4061,19 +4031,18 @@ case 122:
 		goto tr234;
 	goto tr11;
 tr234:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st247;
 st247:
@@ -6206,21 +6175,13 @@ st197:
 case 197:
 	switch( (*( current_position)) ) {
 		case 4u: goto st35;
-		case 5u: goto st36;
 		case 12u: goto st35;
-		case 13u: goto st36;
 		case 20u: goto st35;
-		case 21u: goto st36;
 		case 28u: goto st35;
-		case 29u: goto st36;
 		case 36u: goto st35;
-		case 37u: goto st36;
 		case 44u: goto st35;
-		case 45u: goto st36;
 		case 52u: goto st35;
-		case 53u: goto st36;
 		case 60u: goto st35;
-		case 61u: goto st36;
 		case 68u: goto st41;
 		case 76u: goto st41;
 		case 84u: goto st41;
@@ -6238,15 +6199,39 @@ case 197:
 		case 180u: goto st42;
 		case 188u: goto st42;
 	}
-	if ( (*( current_position)) < 64u ) {
-		if ( (*( current_position)) <= 63u )
+	if ( (*( current_position)) < 38u ) {
+		if ( (*( current_position)) < 14u ) {
+			if ( (*( current_position)) > 3u ) {
+				if ( 6u <= (*( current_position)) && (*( current_position)) <= 11u )
+					goto st10;
+			} else
+				goto st10;
+		} else if ( (*( current_position)) > 19u ) {
+			if ( (*( current_position)) > 27u ) {
+				if ( 30u <= (*( current_position)) && (*( current_position)) <= 35u )
+					goto st10;
+			} else if ( (*( current_position)) >= 22u )
+				goto st10;
+		} else
 			goto st10;
-	} else if ( (*( current_position)) > 127u ) {
-		if ( 128u <= (*( current_position)) && (*( current_position)) <= 191u )
-			goto st36;
+	} else if ( (*( current_position)) > 43u ) {
+		if ( (*( current_position)) < 62u ) {
+			if ( (*( current_position)) > 51u ) {
+				if ( 54u <= (*( current_position)) && (*( current_position)) <= 59u )
+					goto st10;
+			} else if ( (*( current_position)) >= 46u )
+				goto st10;
+		} else if ( (*( current_position)) > 63u ) {
+			if ( (*( current_position)) > 127u ) {
+				if ( 192u <= (*( current_position)) )
+					goto tr16;
+			} else if ( (*( current_position)) >= 64u )
+				goto st40;
+		} else
+			goto st10;
 	} else
-		goto st40;
-	goto tr16;
+		goto st10;
+	goto st36;
 tr342:
 	{
     SET_VEX_PREFIX3(*current_position);
@@ -7556,19 +7541,18 @@ case 232:
 		goto tr417;
 	goto tr11;
 tr417:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st248;
 st248:
@@ -7773,19 +7757,18 @@ case 234:
 		goto tr418;
 	goto tr11;
 tr418:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st249;
 st249:
@@ -7990,19 +7973,18 @@ case 236:
 		goto tr419;
 	goto tr11;
 tr419:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st250;
 st250:
@@ -8207,19 +8189,18 @@ case 238:
 		goto tr420;
 	goto tr11;
 tr420:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st251;
 st251:
@@ -8424,19 +8405,18 @@ case 240:
 		goto tr421;
 	goto tr11;
 tr421:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st252;
 st252:
@@ -8641,19 +8621,18 @@ case 242:
 		goto tr422;
 	goto tr11;
 tr422:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st253;
 st253:
@@ -8858,19 +8837,18 @@ case 244:
 		goto tr423;
 	goto tr11;
 tr423:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      }
 	goto st254;
 st254:
@@ -9573,8 +9551,8 @@ case 245:
 	case 244: 
 	case 245: 
 	{
-        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
-        result = 1;
+        result &= user_callback(instruction_start, current_position,
+                                UNRECOGNIZED_INSTRUCTION, callback_data);
         continue;
     }
 	break;
@@ -9586,12 +9564,8 @@ case 245:
 
   }
 
-  if (ProcessInvalidJumpTargets(
-      data, size,
-      valid_targets,
-      jump_dests,
-      process_error, userdata))
-    result = 1;
+  result &= ProcessInvalidJumpTargets(data, size, valid_targets, jump_dests,
+                                      user_callback, callback_data);
 
 error_detected:
   free(jump_dests);

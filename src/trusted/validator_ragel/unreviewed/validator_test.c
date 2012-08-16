@@ -155,68 +155,51 @@ struct ValidateState {
   const uint8_t *offset;
 };
 
-void ProcessError(const uint8_t *ptr, uint32_t validation_error,
-                  void *userdata) {
-  if (validation_error & UNRECOGNIZED_INSTRUCTION) {
-    printf("offset 0x%"NACL_PRIxS": DFA error in validator\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & DIRECT_JUMP_OUT_OF_RANGE) {
-    printf("offset 0x%"NACL_PRIxS": direct jump out of range\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & CPUID_UNSUPPORTED_INSTRUCTION) {
-    printf("offset 0x%"NACL_PRIxS": required CPU feature not found\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & FORBIDDEN_BASE_REGISTER) {
+Bool ProcessError(const uint8_t *begin, const uint8_t *end,
+                  uint32_t validation_error, void *userdata) {
+  size_t offset = begin - (((struct ValidateState *)userdata)->offset);
+  UNREFERENCED_PARAMETER(end);
+
+  if (validation_error & UNRECOGNIZED_INSTRUCTION)
+    printf("offset 0x%"NACL_PRIxS": DFA error in validator\n", offset);
+  if (validation_error & DIRECT_JUMP_OUT_OF_RANGE)
+    printf("offset 0x%"NACL_PRIxS": direct jump out of range\n", offset);
+  if (validation_error & CPUID_UNSUPPORTED_INSTRUCTION)
+    printf("offset 0x%"NACL_PRIxS": required CPU feature not found\n", offset);
+  if (validation_error & FORBIDDEN_BASE_REGISTER)
     printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & UNRESTRICTED_INDEX_REGISTER) {
+                                                                        offset);
+  if (validation_error & UNRESTRICTED_INDEX_REGISTER)
     printf("offset 0x%"NACL_PRIxS": improper memory address - bad base\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & RESTRICTED_RBP_UNPROCESSED) {
-    printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & UNRESTRICTED_RBP_PROCESSED) {
-    printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & RESTRICTED_RSP_UNPROCESSED) {
-    printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & UNRESTRICTED_RSP_PROCESSED) {
-    printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & R15_MODIFIED) {
-    printf("offset 0x%"NACL_PRIxS": error - %%r15 is changed\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & BPL_MODIFIED) {
+                                                                        offset);
+  if (validation_error & RESTRICTED_RBP_UNPROCESSED)
+    printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n", offset);
+  if (validation_error & UNRESTRICTED_RBP_PROCESSED)
+    printf("offset 0x%"NACL_PRIxS": improper %%rbp sandboxing\n", offset);
+  if (validation_error & RESTRICTED_RSP_UNPROCESSED)
+    printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n", offset);
+  if (validation_error & UNRESTRICTED_RSP_PROCESSED)
+    printf("offset 0x%"NACL_PRIxS": improper %%rsp sandboxing\n", offset);
+  if (validation_error & R15_MODIFIED)
+    printf("offset 0x%"NACL_PRIxS": error - %%r15 is changed\n", offset);
+  if (validation_error & BPL_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%bpl or %%bp is changed\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & SPL_MODIFIED) {
+                                                                        offset);
+  if (validation_error & SPL_MODIFIED)
     printf("offset 0x%"NACL_PRIxS": error - %%spl or %%sp is changed\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & RSI_UNSANDBOXDED) {
+                                                                        offset);
+  if (validation_error & RSI_UNSANDBOXDED)
     printf("offset 0x%"NACL_PRIxS": error - improper %%rsi sandboxing\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & RDI_UNSANDBOXDED) {
+                                                                        offset);
+  if (validation_error & RDI_UNSANDBOXDED)
     printf("offset 0x%"NACL_PRIxS": error - improper %%rdi sandboxing\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
-  if (validation_error & BAD_JUMP_TARGET) {
-    printf("bad jump to around 0x%"NACL_PRIxS"\n",
-                  (size_t)(ptr - (((struct ValidateState *)userdata)->offset)));
-  }
+                                                                        offset);
+  if (validation_error & BAD_JUMP_TARGET)
+    printf("bad jump to around 0x%"NACL_PRIxS"\n", offset);
+  if (validation_error & (VALIDATION_ERRORS | BAD_JUMP_TARGET))
+    return FALSE;
+  else
+    return TRUE;
 }
 
 int ValidateFile(const char *filename, int repeat_count,
@@ -298,9 +281,7 @@ int ValidateFile(const char *filename, int repeat_count,
                                    (size_t)section->sh_size,
                                    0 /*options*/,
                                    cpu_features, ProcessError, &state);
-          if (res != 0) {
-            return res;
-          }
+          return res;
         }
       }
     }
@@ -338,7 +319,7 @@ int main(int argc, char **argv) {
     int rc = ValidateFile(filename, repeat_count,
                           use_old_features ? &old_validator_features :
                                              &full_validator_features);
-    if (rc != 0) {
+    if (!rc) {
       printf("file '%s' can not be fully validated\n", filename);
       return 1;
     }

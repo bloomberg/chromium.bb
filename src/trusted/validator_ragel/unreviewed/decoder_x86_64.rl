@@ -91,7 +91,7 @@
         SET_VEX_PREFIX3(0x00);
     })*
     $!{ process_error(current_position, userdata);
-        result = 1;
+        result = FALSE;
         goto error_detected;
     };
 
@@ -158,7 +158,7 @@ int DecodeChunkAMD64(const uint8_t *data, size_t size,
   enum imm_mode imm_operand = IMMNONE;
   enum imm_mode imm2_operand = IMMNONE;
   struct instruction instruction;
-  int result = 0;
+  int result = TRUE;
 
   int current_state;
 

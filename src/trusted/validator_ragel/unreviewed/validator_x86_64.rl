@@ -24,42 +24,44 @@
 
   action check_access {
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 
   action rel8_operand {
+    instruction_info_collected |= RELATIVE_8BIT;
     rel8_operand(current_position + 1, data, jump_dests, size,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
   action rel16_operand {
     #error rel16_operand should never be used in nacl
   }
   action rel32_operand {
+    instruction_info_collected |= RELATIVE_32BIT;
     rel32_operand(current_position + 1, data, jump_dests, size,
-                  &errors_detected);
+                  &instruction_info_collected);
   }
 
-  # Do nothing when IMM operand is detected for now.  Will be used later for
-  # dynamic code modification support.
-  action imm2_operand { }
-  action imm8_operand { }
-  action imm16_operand { }
-  action imm32_operand { }
-  action imm64_operand { }
-  action imm8_second_operand { }
-  action imm16_second_operand { }
-  action imm32_second_operand { }
-  action imm64_second_operand { }
+  action imm2_operand { instruction_info_collected |= IMMEDIATE_2BIT; }
+  # Note: we use += below instead of |=. This means two immediate fields will
+  # be treated as one.  It's not important for safety.  */
+  action imm8_operand { instruction_info_collected += IMMEDIATE_8BIT; }
+  action imm16_operand { instruction_info_collected += IMMEDIATE_16BIT; }
+  action imm32_operand { instruction_info_collected += IMMEDIATE_32BIT; }
+  action imm64_operand { instruction_info_collected += IMMEDIATE_64BIT; }
+  action imm8_second_operand { instruction_info_collected += IMMEDIATE_8BIT; }
+  action imm16_second_operand { instruction_info_collected += IMMEDIATE_16BIT; }
+  action imm32_second_operand { instruction_info_collected += IMMEDIATE_32BIT; }
+  action imm64_second_operand { instruction_info_collected += IMMEDIATE_64BIT; }
 
   action process_0_operands {
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
   action process_1_operands {
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
   action process_2_operands {
-    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_2_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 
@@ -82,7 +84,7 @@
      0x49 0x8d 0x2c 0x2f       | # lea (%r15,%rbp,1),%rbp
      0x4a 0x8d 0x6c 0x3d 0x00)   # lea 0x0(%rbp,%r15,1),%rbp
     @{ if (restricted_register != REG_RBP) {
-         errors_detected |= UNRESTRICTED_RBP_PROCESSED;
+         instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        }
        restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
@@ -101,7 +103,7 @@
     (0x4c 0x01 0xfc       | # add %r15,%rsp
      0x4a 0x8d 0x24 0x3c)   # lea (%rsp,%r15,1),%rsp
     @{ if (restricted_register != REG_RSP) {
-         errors_detected |= UNRESTRICTED_RSP_PROCESSED;
+         instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        }
        restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
@@ -279,25 +281,24 @@
        BitmapSetBit(valid_targets, current_position - data);
      }
      @{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
        operand_states = 0;
      })*
     $err{
-        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
-        result = 1;
+        result &= user_callback(instruction_start, current_position,
+                                UNRECOGNIZED_INSTRUCTION, callback_data);
         continue;
     };
 
@@ -305,21 +306,21 @@
 
 %% write data;
 
-int ValidateChunkAMD64(const uint8_t *data, size_t size,
-                       enum validation_options options,
-                       const NaClCPUFeaturesX86 *cpu_features,
-                       process_validation_error_func process_error,
-                       void *userdata) {
+Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
+                        enum validation_options options,
+                        const NaClCPUFeaturesX86 *cpu_features,
+                        validation_callback_func user_callback,
+                        void *callback_data) {
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
-  int result = 0;
+  int result = TRUE;
 
-  assert(size % kBundleSize == 0);
+  CHECK(size % kBundleSize == 0);
 
   if (!valid_targets || !jump_dests) {
-    result = 1;
+    result = FALSE;
     goto error_detected;
   }
 
@@ -335,7 +336,7 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
     int current_state;
-    uint32_t errors_detected = 0;
+    uint32_t instruction_info_collected = 0;
     /* Keeps one byte of information per operand in the current instruction:
      *  2 bits for register kinds,
      *  5 bits for register numbers (16 regs plus RIZ). */
@@ -351,20 +352,16 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     %% write exec;
 
     if (restricted_register == REG_RBP) {
-      process_error(instruction_start, RESTRICTED_RBP_UNPROCESSED, userdata);
-      result = 1;
+      result &= user_callback(end_of_bundle, end_of_bundle,
+                              RESTRICTED_RBP_UNPROCESSED, callback_data);
     } else if (restricted_register == REG_RSP) {
-      process_error(instruction_start, RESTRICTED_RSP_UNPROCESSED, userdata);
-      result = 1;
+      result &= user_callback(end_of_bundle, end_of_bundle,
+                              RESTRICTED_RSP_UNPROCESSED, callback_data);
     }
   }
 
-  if (ProcessInvalidJumpTargets(
-      data, size,
-      valid_targets,
-      jump_dests,
-      process_error, userdata))
-    result = 1;
+  result &= ProcessInvalidJumpTargets(data, size, valid_targets, jump_dests,
+                                      user_callback, callback_data);
 
 error_detected:
   free(jump_dests);

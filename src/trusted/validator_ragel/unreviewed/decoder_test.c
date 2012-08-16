@@ -180,32 +180,14 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
     ((struct DecodeState *)userdata)->fwait = FALSE;
   }
-  /* Bug-to-bug compatibility, heh...  Sometims %fs becomes %mm4 and %gs
-   * becomes %mm5, ugh.  */
-  if (!strcmp(instruction_name, "pushq  %fs")) {
-    if (rex_prefix == 0x41) instruction_name = "pushq  %mm4", rex_prefix = 0;
-    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "pushq %mm4";
-    else if (rex_prefix) instruction_name = "pushq %fs";
-    if (rex_prefix & 0x01) ++maybe_rex_bits;
-  }
-  if (!strcmp(instruction_name, "pushq  %gs")) {
-    if (rex_prefix == 0x41) instruction_name = "pushq  %mm5", rex_prefix = 0;
-    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "pushq %mm5";
-    else if (rex_prefix) instruction_name = "pushq %gs";
-    if (rex_prefix & 0x01) ++maybe_rex_bits;
-  }
-  if (!strcmp(instruction_name, "popq   %fs")) {
-    if (rex_prefix == 0x41) instruction_name = "popq   %mm4", rex_prefix = 0;
-    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "popq %mm4";
-    else if (rex_prefix) instruction_name = "popq %fs";
-    if (rex_prefix & 0x01) ++maybe_rex_bits;
-  }
-  if (!strcmp(instruction_name, "popq   %gs")) {
-    if (rex_prefix == 0x41) instruction_name = "popq   %mm5", rex_prefix = 0;
-    else if ((rex_prefix & 0x01) == 0x01) instruction_name = "popq %mm5";
-    else if (rex_prefix) instruction_name = "popq %gs";
-    if (rex_prefix & 0x01) ++maybe_rex_bits;
-  }
+  if (rex_prefix && !strcmp(instruction_name, "popq   %fs"))
+    instruction_name = "popq %fs";
+  if (rex_prefix && !strcmp(instruction_name, "popq   %gs"))
+    instruction_name = "popq %gs";
+  if (rex_prefix && !strcmp(instruction_name, "pushq  %fs"))
+    instruction_name = "pushq %fs";
+  if (rex_prefix && !strcmp(instruction_name, "pushq  %gs"))
+    instruction_name = "pushq %gs";
   if ((data16_prefix) && (begin[0] == 0x66) && (!(rex_prefix & 0x08)) &&
       (!strcmp(instruction_name, "fbld") ||
        !strcmp(instruction_name, "fbstp") ||
@@ -811,18 +793,7 @@ void ProcessInstruction(const uint8_t *begin, const uint8_t *end,
     }
     if ((!strcmp(instruction_name, "pop")) ||
         (!strcmp(instruction_name, "push"))) {
-      if (data16_prefix)
-        ++rex_bits;
-      else
-        rex_bits = -1;
-    }
-    if ((!strcmp(instruction_name, "callq")) ||
-        (!strcmp(instruction_name, "jmpq")) ||
-        (!strcmp(instruction_name, "lcallq")) ||
-        (!strcmp(instruction_name, "ljmpq")) ||
-        (!strcmp(instruction_name, "popfq")) ||
-        (!strcmp(instruction_name, "pushfq"))) {
-      if (data16_prefix) ++rex_bits;
+      rex_bits = -1;
     }
   }
   if (show_name_suffix == 'b') {
@@ -1703,14 +1674,15 @@ int DecodeFile(const char *filename, int repeat_count) {
                       data + section->sh_offset, section->sh_size);
           res = DecodeChunkIA32(data + section->sh_offset, section->sh_size,
                                       ProcessInstruction, ProcessError, &state);
-          if (res != 0) {
-            return res;
+          if (!res) {
+            return FALSE;
           } else if (state.fwait) {
             while (state.fwait < data + section->sh_offset + section->sh_size) {
               printf("%*lx:\t9b                   \tfwait\n",
                              state.width, (long)(state.fwait++ - state.offset));
             }
           }
+          return TRUE;
         }
       }
     }
@@ -1749,14 +1721,15 @@ int DecodeFile(const char *filename, int repeat_count) {
           res = DecodeChunkAMD64(data + section->sh_offset,
                                  (size_t)section->sh_size,
                                  ProcessInstruction, ProcessError, &state);
-          if (res != 0) {
-            return res;
+          if (!res) {
+            return FALSE;
           } else if (state.fwait) {
             while (state.fwait < data + section->sh_offset + section->sh_size) {
               printf("%*lx:\t9b                   \tfwait\n",
                              state.width, (long)(state.fwait++ - state.offset));
             }
           }
+          return TRUE;
         }
       }
     }
@@ -1779,7 +1752,7 @@ int main(int argc, char **argv) {
   for (index = initial_index; index < argc; ++index) {
     const char *filename = argv[index];
     int rc = DecodeFile(filename, repeat_count);
-    if (rc != 0) {
+    if (!rc) {
       printf("file '%s' can not be fully decoded\n", filename);
       return 1;
     }

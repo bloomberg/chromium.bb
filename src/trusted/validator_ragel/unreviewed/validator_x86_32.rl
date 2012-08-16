@@ -27,28 +27,30 @@
   variable cs current_state;
 
   action rel8_operand {
+    instruction_info_collected |= RELATIVE_8BIT;
     rel8_operand(current_position + 1, data, jump_dests, size,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
   action rel16_operand {
     #error rel16_operand should never be used in nacl
   }
   action rel32_operand {
+    instruction_info_collected |= RELATIVE_32BIT;
     rel32_operand(current_position + 1, data, jump_dests, size,
-                  &errors_detected);
+                  &instruction_info_collected);
   }
 
-  # Do nothing when IMM operand is detected for now.  Will be used later for
-  # dynamic code modification support.
-  action imm2_operand { }
-  action imm8_operand { }
-  action imm16_operand { }
-  action imm32_operand { }
-  action imm64_operand { }
-  action imm8_second_operand { }
-  action imm16_second_operand { }
-  action imm32_second_operand { }
-  action imm64_second_operand { }
+  action imm2_operand { instruction_info_collected |= IMMEDIATE_2BIT; }
+  # Note: we use += below instead of |=. This means two immediate fields will
+  # be treated as one.  It's not important for safety.  */
+  action imm8_operand { instruction_info_collected += IMMEDIATE_8BIT; }
+  action imm16_operand { instruction_info_collected += IMMEDIATE_16BIT; }
+  action imm32_operand { instruction_info_collected += IMMEDIATE_32BIT; }
+  action imm64_operand { instruction_info_collected += IMMEDIATE_64BIT; }
+  action imm8_second_operand { instruction_info_collected += IMMEDIATE_8BIT; }
+  action imm16_second_operand { instruction_info_collected += IMMEDIATE_16BIT; }
+  action imm32_second_operand { instruction_info_collected += IMMEDIATE_32BIT; }
+  action imm64_second_operand { instruction_info_collected += IMMEDIATE_64BIT; }
 
   include decode_x86_32 "validator_x86_32_instruction.rl";
 
@@ -73,21 +75,20 @@
        BitmapSetBit(valid_targets, current_position - data);
      }
      @{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
      })*
     $err{
-        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
-        result = 1;
+        result &= user_callback(instruction_start, current_position,
+                                UNRECOGNIZED_INSTRUCTION, callback_data);
         continue;
     };
 
@@ -96,21 +97,21 @@
 %% write data;
 
 
-int ValidateChunkIA32(const uint8_t *data, size_t size,
-                      enum validation_options options,
-                      const NaClCPUFeaturesX86 *cpu_features,
-                      process_validation_error_func process_error,
-                      void *userdata) {
+Bool ValidateChunkIA32(const uint8_t *data, size_t size,
+                       enum validation_options options,
+                       const NaClCPUFeaturesX86 *cpu_features,
+                       validation_callback_func user_callback,
+                       void *callback_data) {
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
-  int result = 0;
+  int result = TRUE;
 
-  assert(size % kBundleSize == 0);
+  CHECK(size % kBundleSize == 0);
 
   if (!valid_targets || !jump_dests) {
-    result = 1;
+    result = FALSE;
     goto error_detected;
   }
 
@@ -125,19 +126,15 @@ int ValidateChunkIA32(const uint8_t *data, size_t size,
        end_of_bundle = current_position + kBundleSize) {
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
-    uint32_t errors_detected = 0;
+    uint32_t instruction_info_collected = 0;
     int current_state;
 
     %% write init;
     %% write exec;
   }
 
-  if (ProcessInvalidJumpTargets(
-      data, size,
-      valid_targets,
-      jump_dests,
-      process_error, userdata))
-    result = 1;
+  result &= ProcessInvalidJumpTargets(data, size, valid_targets, jump_dests,
+                                      user_callback, callback_data);
 
 error_detected:
   free(jump_dests);

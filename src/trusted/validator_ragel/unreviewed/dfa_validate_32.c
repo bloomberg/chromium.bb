@@ -21,10 +21,13 @@
 #endif
 
 
-static void ProcessError(const uint8_t *ptr, uint32_t error, void *userdata) {
-  UNREFERENCED_PARAMETER(ptr);
-  UNREFERENCED_PARAMETER(error);
-  UNREFERENCED_PARAMETER(userdata);
+static Bool ProcessError(const uint8_t *begin, const uint8_t *end,
+                         uint32_t info, void *callback_data) {
+  UNREFERENCED_PARAMETER(begin);
+  UNREFERENCED_PARAMETER(end);
+  UNREFERENCED_PARAMETER(info);
+  UNREFERENCED_PARAMETER(callback_data);
+  return FALSE;
 }
 
 NaClValidationStatus ApplyDfaValidator_x86_32(
@@ -45,7 +48,7 @@ NaClValidationStatus ApplyDfaValidator_x86_32(
     return NaClValidationFailedCpuNotSupported;
   }
   if (ValidateChunkIA32(data, size, 0 /*options*/, cpu_features,
-                        ProcessError, NULL) == 0) {
+                        ProcessError, NULL)) {
     return NaClValidationSucceeded;
   }
   return NaClValidationFailed;

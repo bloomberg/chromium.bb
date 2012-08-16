@@ -1,4 +1,4 @@
-/* native_client//usr/local/google/home/shcherbina/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_64.c
+/* native_client//home/khim/work/nacl/native_client/src/trusted/validator_ragel/gen/validator_x86_64.c
  * THIS FILE IS AUTO-GENERATED. DO NOT EDIT.
  * Compiled for x86-64 mode.
  */
@@ -25,21 +25,21 @@ static const int x86_64_validator_en_main = 907;
 
 
 
-int ValidateChunkAMD64(const uint8_t *data, size_t size,
-                       enum validation_options options,
-                       const NaClCPUFeaturesX86 *cpu_features,
-                       process_validation_error_func process_error,
-                       void *userdata) {
+Bool ValidateChunkAMD64(const uint8_t *data, size_t size,
+                        enum validation_options options,
+                        const NaClCPUFeaturesX86 *cpu_features,
+                        validation_callback_func user_callback,
+                        void *callback_data) {
   uint8_t *valid_targets = BitmapAllocate(size);
   uint8_t *jump_dests = BitmapAllocate(size);
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
-  int result = 0;
+  int result = TRUE;
 
-  assert(size % kBundleSize == 0);
+  CHECK(size % kBundleSize == 0);
 
   if (!valid_targets || !jump_dests) {
-    result = 1;
+    result = FALSE;
     goto error_detected;
   }
 
@@ -55,7 +55,7 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     /* Start of the instruction being processed.  */
     const uint8_t *instruction_start = current_position;
     int current_state;
-    uint32_t errors_detected = 0;
+    uint32_t instruction_info_collected = 0;
     /* Keeps one byte of information per operand in the current instruction:
      *  2 bits for register kinds,
      *  5 bits for register numbers (16 regs plus RIZ). */
@@ -2305,23 +2305,22 @@ tr0:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2335,21 +2334,20 @@ tr7:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2369,23 +2367,22 @@ tr8:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2399,23 +2396,22 @@ tr13:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2429,23 +2425,22 @@ tr14:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2468,24 +2463,23 @@ tr17:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2499,21 +2493,20 @@ tr24:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2533,24 +2526,23 @@ tr25:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2564,24 +2556,23 @@ tr30:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2595,24 +2586,23 @@ tr31:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2620,23 +2610,22 @@ tr31:
      }
 	goto st907;
 tr34:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2644,23 +2633,22 @@ tr34:
      }
 	goto st907;
 tr38:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_32BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2669,20 +2657,19 @@ tr38:
 	goto st907;
 tr41:
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2694,20 +2681,19 @@ tr43:
     SET_CPU_FEATURE(CPUFeature_3DNOW);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2719,20 +2705,19 @@ tr51:
     SET_CPU_FEATURE(CPUFeature_TSC);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2744,20 +2729,19 @@ tr60:
     SET_CPU_FEATURE(CPUFeature_MMX);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2774,21 +2758,20 @@ tr76:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2806,21 +2789,20 @@ tr80:
     SET_OPERAND_NAME(0, REG_RDX);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2838,21 +2820,20 @@ tr81:
     SET_OPERAND_NAME(0, REG_RCX);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2864,20 +2845,19 @@ tr82:
     SET_CPU_FEATURE(CPUFeature_FXSR);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2897,20 +2877,19 @@ tr83:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2929,20 +2908,19 @@ tr90:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2955,20 +2933,19 @@ tr95:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -2981,20 +2958,19 @@ tr96:
     SET_DISP_PTR(current_position);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3006,20 +2982,19 @@ tr107:
     SET_CPU_FEATURE(CPUFeature_E3DNOW);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3040,23 +3015,22 @@ tr117:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3068,20 +3042,19 @@ tr124:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3098,20 +3071,19 @@ tr125:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3119,22 +3091,21 @@ tr125:
      }
 	goto st907;
 tr144:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3143,24 +3114,24 @@ tr144:
 	goto st907;
 tr158:
 	{
+    instruction_info_collected |= RELATIVE_32BIT;
     rel32_operand(current_position + 1, data, jump_dests, size,
-                  &errors_detected);
+                  &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3181,23 +3152,22 @@ tr160:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3218,23 +3188,22 @@ tr163:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3246,20 +3215,19 @@ tr174:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3271,20 +3239,19 @@ tr175:
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3303,21 +3270,20 @@ tr176:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	{
-    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_2_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3338,23 +3304,22 @@ tr187:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3363,24 +3328,24 @@ tr187:
 	goto st907;
 tr197:
 	{
+    instruction_info_collected |= RELATIVE_8BIT;
     rel8_operand(current_position + 1, data, jump_dests, size,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3388,22 +3353,21 @@ tr197:
      }
 	goto st907;
 tr201:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_32BIT; }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3417,20 +3381,19 @@ tr209:
                             (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3447,21 +3410,20 @@ tr210:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3470,7 +3432,7 @@ tr210:
 	goto st907;
 tr218:
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
     SET_OPERAND_NAME(0, ((*current_position) & 0x7) |
@@ -3487,21 +3449,20 @@ tr218:
     SET_OPERAND_NAME(1, REG_RAX);
   }
 	{
-    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_2_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3524,21 +3485,20 @@ tr219:
     SET_OPERAND_NAME(1, REG_RAX);
   }
 	{
-    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_2_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3550,20 +3510,19 @@ tr220:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3585,21 +3544,20 @@ tr292:
     SET_MODRM_SCALE(0);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3618,21 +3576,20 @@ tr299:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3645,21 +3602,20 @@ tr304:
     SET_DISP_PTR(current_position - 3);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3672,21 +3628,20 @@ tr305:
     SET_DISP_PTR(current_position);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3703,21 +3658,20 @@ tr308:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3734,21 +3688,20 @@ tr309:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3765,21 +3718,20 @@ tr310:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3800,23 +3752,22 @@ tr311:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3828,20 +3779,19 @@ tr318:
     SET_CPU_FEATURE(CPUFeature_CMOVx87);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3859,21 +3809,20 @@ tr319:
     SET_OPERAND_NAME(0, REG_RAX);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3896,21 +3845,20 @@ tr341:
     SET_OPERAND_NAME(1, REG_RAX);
   }
 	{
-    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_2_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3927,21 +3875,20 @@ tr356:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3962,23 +3909,22 @@ tr360:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -3987,17 +3933,16 @@ tr360:
 	goto st907;
 tr372:
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4005,23 +3950,22 @@ tr372:
      }
 	goto st907;
 tr381:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_64BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4038,21 +3982,20 @@ tr382:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4061,23 +4004,22 @@ tr382:
 	goto st907;
 tr395:
 	{ if (restricted_register != REG_RBP) {
-         errors_detected |= UNRESTRICTED_RBP_PROCESSED;
+         instruction_info_collected |= UNRESTRICTED_RBP_PROCESSED;
        }
        restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4086,23 +4028,22 @@ tr395:
 	goto st907;
 tr399:
 	{ if (restricted_register != REG_RSP) {
-         errors_detected |= UNRESTRICTED_RSP_PROCESSED;
+         instruction_info_collected |= UNRESTRICTED_RSP_PROCESSED;
        }
        restricted_register = NO_REG;
        BitmapClearBit(valid_targets, (instruction_start - data));
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4119,21 +4060,20 @@ tr410:
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4156,21 +4096,20 @@ tr419:
     SET_OPERAND_NAME(1, REG_RAX);
   }
 	{
-    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_2_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4178,23 +4117,22 @@ tr419:
      }
 	goto st907;
 tr430:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_16BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4206,20 +4144,19 @@ tr451:
     SET_DATA16_PREFIX(FALSE);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4227,22 +4164,21 @@ tr451:
      }
 	goto st907;
 tr490:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_16BIT; }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4259,21 +4195,20 @@ tr526:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4287,17 +4222,16 @@ tr574:
        restricted_register = NO_REG;
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4313,17 +4247,16 @@ tr580:
        restricted_register = NO_REG;
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4337,17 +4270,16 @@ tr581:
        restricted_register = NO_REG;
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4365,21 +4297,20 @@ tr696:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4397,21 +4328,20 @@ tr702:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4438,24 +4368,23 @@ tr740:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4475,21 +4404,20 @@ tr744:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4516,24 +4444,23 @@ tr747:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4553,21 +4480,20 @@ tr751:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4575,22 +4501,21 @@ tr751:
      }
 	goto st907;
 tr868:
-	{ }
+	{ instruction_info_collected |= IMMEDIATE_2BIT; }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4611,23 +4536,22 @@ tr964:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4639,20 +4563,19 @@ tr967:
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4670,21 +4593,20 @@ tr1083:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4702,21 +4624,20 @@ tr1088:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4743,24 +4664,23 @@ tr1106:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4787,24 +4707,23 @@ tr1110:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4816,20 +4735,19 @@ tr1178:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4843,17 +4761,16 @@ tr1206:
        restricted_register = NO_REG;
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4867,17 +4784,16 @@ tr1217:
        restricted_register = NO_REG;
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4891,17 +4807,16 @@ tr1239:
        restricted_register = NO_REG;
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4915,17 +4830,16 @@ tr1329:
        restricted_register = NO_REG;
     }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4942,20 +4856,19 @@ tr1404:
                             (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -4975,21 +4888,20 @@ tr1405:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -5001,20 +4913,19 @@ tr1419:
        BitmapSetBit(valid_targets, current_position - data);
      }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -5040,21 +4951,20 @@ tr1420:
     SET_OPERAND_NAME(1, REG_RAX);
   }
 	{
-    process_2_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_2_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -6388,7 +6298,7 @@ tr265:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st19;
 tr270:
@@ -6398,7 +6308,7 @@ tr270:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st19;
 tr271:
@@ -6408,7 +6318,7 @@ tr271:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st19;
 tr159:
@@ -6462,7 +6372,7 @@ tr258:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st19;
 tr274:
@@ -6589,7 +6499,7 @@ tr249:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st20;
 tr254:
@@ -6599,7 +6509,7 @@ tr254:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st20;
 tr255:
@@ -6609,7 +6519,7 @@ tr255:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st20;
 tr282:
@@ -6656,7 +6566,7 @@ tr241:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st20;
 tr331:
@@ -6719,7 +6629,7 @@ tr757:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st20;
 tr761:
@@ -6742,7 +6652,7 @@ tr761:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st20;
 tr1389:
@@ -6791,8 +6701,8 @@ case 23:
 	goto tr38;
 tr39:
 	{
-        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
-        result = 1;
+        result &= user_callback(instruction_start, current_position,
+                                UNRECOGNIZED_INSTRUCTION, callback_data);
         continue;
     }
 	goto st0;
@@ -7004,7 +6914,7 @@ tr99:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st36;
 tr108:
@@ -7020,7 +6930,7 @@ tr108:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st36;
 tr113:
@@ -7030,7 +6940,7 @@ tr113:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st36;
 tr114:
@@ -7040,7 +6950,7 @@ tr114:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st36;
 st36:
@@ -7656,7 +7566,7 @@ tr136:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr145:
@@ -7672,7 +7582,7 @@ tr145:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr150:
@@ -7682,7 +7592,7 @@ tr150:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr151:
@@ -7692,7 +7602,7 @@ tr151:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr178:
@@ -7709,7 +7619,7 @@ tr178:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr477:
@@ -7745,7 +7655,7 @@ tr468:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr479:
@@ -7765,7 +7675,7 @@ tr479:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr486:
@@ -7795,11 +7705,11 @@ tr972:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st54;
 tr1169:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	goto st54;
 tr1393:
 	{
@@ -8563,7 +8473,7 @@ tr275:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st81;
 tr283:
@@ -8579,7 +8489,7 @@ tr283:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st81;
 tr288:
@@ -8589,7 +8499,7 @@ tr288:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st81;
 tr289:
@@ -8599,7 +8509,7 @@ tr289:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st81;
 tr1394:
@@ -9864,23 +9774,22 @@ case 146:
 		goto tr328;
 	goto tr34;
 tr328:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -10036,9 +9945,9 @@ st157:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof157;
 case 157:
-	if ( (*( current_position)) <= 127u )
-		goto tr38;
-	goto tr372;
+	if ( 128u <= (*( current_position)) )
+		goto tr372;
+	goto tr38;
 st158:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof158;
@@ -10062,9 +9971,9 @@ st159:
 	if ( ++( current_position) == ( end_of_bundle) )
 		goto _test_eof159;
 case 159:
-	if ( 128u <= (*( current_position)) )
-		goto tr41;
-	goto tr34;
+	if ( (*( current_position)) <= 127u )
+		goto tr34;
+	goto tr41;
 tr338:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
@@ -10278,21 +10187,20 @@ tr393:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -10552,7 +10460,7 @@ tr500:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st192;
 tr505:
@@ -10562,7 +10470,7 @@ tr505:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st192;
 tr506:
@@ -10572,7 +10480,7 @@ tr506:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st192;
 tr492:
@@ -10591,7 +10499,7 @@ tr492:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st192;
 tr404:
@@ -10857,7 +10765,7 @@ tr509:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st213;
 tr517:
@@ -10873,7 +10781,7 @@ tr517:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st213;
 tr522:
@@ -10883,7 +10791,7 @@ tr522:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st213;
 tr523:
@@ -10893,7 +10801,7 @@ tr523:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st213;
 st213:
@@ -11654,23 +11562,22 @@ case 270:
 		goto tr566;
 	goto tr34;
 tr566:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -11724,21 +11631,20 @@ tr568:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -11778,21 +11684,20 @@ tr569:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -11806,21 +11711,20 @@ tr584:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -11895,21 +11799,20 @@ tr573:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -12004,21 +11907,20 @@ tr576:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -12032,21 +11934,20 @@ tr1203:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -12121,21 +12022,20 @@ tr579:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -12258,21 +12158,20 @@ tr570:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -12286,21 +12185,20 @@ tr585:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -12375,21 +12273,20 @@ tr588:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -12591,7 +12488,7 @@ tr662:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st301;
 tr621:
@@ -12607,7 +12504,7 @@ tr621:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st301;
 tr628:
@@ -12617,7 +12514,7 @@ tr628:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st301;
 tr623:
@@ -12627,7 +12524,7 @@ tr623:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st301;
 st301:
@@ -14839,20 +14736,19 @@ tr1421:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	{
-    process_0_operands(&restricted_register, &errors_detected);
+    process_0_operands(&restricted_register, &instruction_info_collected);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -15564,7 +15460,7 @@ tr1005:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st476;
 tr867:
@@ -15580,7 +15476,7 @@ tr867:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st476;
 tr875:
@@ -15590,7 +15486,7 @@ tr875:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st476;
 tr870:
@@ -15600,7 +15496,7 @@ tr870:
   }
 	{
     check_access(instruction_start - data, base, index, restricted_register, valid_targets,
-                 &errors_detected);
+                 &instruction_info_collected);
   }
 	goto st476;
 st476:
@@ -19608,21 +19504,20 @@ tr1215:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -19692,21 +19587,20 @@ tr1218:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -19776,21 +19670,20 @@ tr1220:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -19860,21 +19753,20 @@ tr1222:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -19944,21 +19836,20 @@ tr1224:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20028,21 +19919,20 @@ tr1226:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20112,21 +20002,20 @@ tr1228:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20186,23 +20075,22 @@ case 725:
 		goto tr1230;
 	goto tr34;
 tr1230:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20293,21 +20181,20 @@ tr1238:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20365,21 +20252,20 @@ tr1240:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20437,21 +20323,20 @@ tr1241:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20509,21 +20394,20 @@ tr1242:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20581,21 +20465,20 @@ tr1243:
     SET_MODRM_SCALE(((*current_position) & 0xc0) >> 6);
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20663,21 +20546,20 @@ tr1245:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -20868,23 +20750,22 @@ case 751:
 		goto tr1254;
 	goto tr34;
 tr1254:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -21065,21 +20946,20 @@ tr1263:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -21270,23 +21150,22 @@ case 772:
 		goto tr1272;
 	goto tr34;
 tr1272:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -21467,21 +21346,20 @@ tr1281:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -21672,23 +21550,22 @@ case 793:
 		goto tr1290;
 	goto tr34;
 tr1290:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -21869,21 +21746,20 @@ tr1299:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22074,23 +21950,22 @@ case 814:
 		goto tr1308;
 	goto tr34;
 tr1308:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22271,21 +22146,20 @@ tr1317:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22590,21 +22464,20 @@ tr1327:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22664,23 +22537,22 @@ case 845:
 		goto tr1330;
 	goto tr34;
 tr1330:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22734,21 +22606,20 @@ tr1332:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22808,23 +22679,22 @@ case 850:
 		goto tr1334;
 	goto tr34;
 tr1334:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22878,21 +22748,20 @@ tr1336:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -22952,23 +22821,22 @@ case 855:
 		goto tr1338;
 	goto tr34;
 tr1338:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -23022,21 +22890,20 @@ tr1340:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -23096,23 +22963,22 @@ case 860:
 		goto tr1342;
 	goto tr34;
 tr1342:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -23293,21 +23159,20 @@ tr1352:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -23493,23 +23358,22 @@ case 881:
 		goto tr1361;
 	goto tr34;
 tr1361:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -23690,21 +23554,20 @@ tr1371:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -23890,23 +23753,22 @@ case 902:
 		goto tr1380;
 	goto tr34;
 tr1380:
-	{ }
+	{ instruction_info_collected += IMMEDIATE_8BIT; }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -23960,21 +23822,20 @@ tr1382:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	{
-    process_1_operands(&restricted_register, &errors_detected, rex_prefix,
+    process_1_operands(&restricted_register, &instruction_info_collected, rex_prefix,
                        operand_states);
   }
 	{
-       if (errors_detected) {
-         process_error(instruction_start, errors_detected, userdata);
-         result = 1;
-       } else if (options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
-         process_error(instruction_start, errors_detected, userdata);
+       if (instruction_info_collected & VALIDATION_ERRORS ||
+           options & CALL_USER_FUNCTION_ON_EACH_INSTRUCTION) {
+         result &= user_callback(instruction_start, current_position,
+                                 instruction_info_collected, callback_data);
        }
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
         * causing error.  */
        instruction_start = current_position + 1;
-       errors_detected = 0;
+       instruction_info_collected = 0;
        SET_REX_PREFIX(FALSE);
        SET_VEX_PREFIX2(0xe0);
        SET_VEX_PREFIX3(0x00);
@@ -25882,8 +25743,8 @@ case 906:
 	case 905: 
 	case 906: 
 	{
-        process_error(instruction_start, UNRECOGNIZED_INSTRUCTION, userdata);
-        result = 1;
+        result &= user_callback(instruction_start, current_position,
+                                UNRECOGNIZED_INSTRUCTION, callback_data);
         continue;
     }
 	break;
@@ -25895,20 +25756,16 @@ case 906:
 
 
     if (restricted_register == REG_RBP) {
-      process_error(instruction_start, RESTRICTED_RBP_UNPROCESSED, userdata);
-      result = 1;
+      result &= user_callback(end_of_bundle, end_of_bundle,
+                              RESTRICTED_RBP_UNPROCESSED, callback_data);
     } else if (restricted_register == REG_RSP) {
-      process_error(instruction_start, RESTRICTED_RSP_UNPROCESSED, userdata);
-      result = 1;
+      result &= user_callback(end_of_bundle, end_of_bundle,
+                              RESTRICTED_RSP_UNPROCESSED, callback_data);
     }
   }
 
-  if (ProcessInvalidJumpTargets(
-      data, size,
-      valid_targets,
-      jump_dests,
-      process_error, userdata))
-    result = 1;
+  result &= ProcessInvalidJumpTargets(data, size, valid_targets, jump_dests,
+                                      user_callback, callback_data);
 
 error_detected:
   free(jump_dests);
