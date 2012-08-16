@@ -136,7 +136,7 @@ void SpeechRecognitionTrayIconController::SetVUMeterVolume(float volume) {
   SkCanvas canvas(*mic_image_);
 
   // Draw the empty volume image first and the current volume image on top.
-  canvas.drawBitmap(*g_images.Get().mic_empty(), 0, 0);
+  canvas.drawBitmap(*g_images.Get().mic_empty()->bitmap(), 0, 0);
   DrawVolume(&canvas, *g_images.Get().mic_full(), volume);
 
   tray_icon_->SetImage(*mic_image_.get());
@@ -179,7 +179,7 @@ void SpeechRecognitionTrayIconController::DrawVolume(
       kVolumeSteps;
   buffer_canvas.clipRect(SkRect::MakeLTRB(0, clip_top,
       SkIntToScalar(width), SkIntToScalar(height)));
-  buffer_canvas.drawBitmap(image, 0, 0);
+  buffer_canvas.drawBitmap(*image.bitmap(), 0, 0);
 
   canvas->drawBitmap(*buffer_image_.get(), 0, 0);
 }
@@ -193,5 +193,6 @@ void SpeechRecognitionTrayIconController::ShowNotificationBalloon(
           IDS_SPEECH_INPUT_TRAY_BALLOON_BODY,
           text);
 
-  tray_icon_->DisplayBalloon(*g_images.Get().balloon_icon(), title, message);
+  tray_icon_->DisplayBalloon(*g_images.Get().balloon_icon()->bitmap(), title,
+      message);
 }

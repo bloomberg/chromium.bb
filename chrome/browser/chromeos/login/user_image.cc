@@ -21,12 +21,21 @@ bool IsAnimatedImage(const UserImage::RawImage& data) {
   return false;
 }
 
+bool EncodeBGRAImageSkia(const gfx::ImageSkia& image,
+                         bool discard_transparency,
+                         std::vector<unsigned char>* output) {
+  if (image.empty() || image.bitmap())
+    return false;
+  return gfx::PNGCodec::EncodeBGRASkBitmap(*image.bitmap(),
+      discard_transparency, output);
+}
+
 }  // namespace
 
 // static
 UserImage UserImage::CreateAndEncode(const gfx::ImageSkia& image) {
   RawImage raw_image;
-  return gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &raw_image) ?
+  return EncodeBGRAImageSkia(image, false, &raw_image) ?
       UserImage(image, raw_image) : UserImage(image);
 }
 
@@ -49,7 +58,7 @@ UserImage::UserImage(const gfx::ImageSkia& image,
   if (IsAnimatedImage(raw_image)) {
     has_animated_image_ = true;
     animated_image_ = raw_image;
-    if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_))
+    if (EncodeBGRAImageSkia(image_, false, &raw_image_))
       has_raw_image_ = true;
   } else {
     has_raw_image_ = true;
