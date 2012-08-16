@@ -368,9 +368,6 @@ void SetCookieFunction::SetCookieOnIOThread() {
         base::Time::FromDoubleT(*parsed_args_->details.expiration_date);
   }
 
-  if (parsed_args_->details.name.get())
-    LOG(INFO) << "Cookie name: " << *parsed_args_->details.name;
-
   cookie_monster->SetCookieWithDetailsAsync(
       url_,
       parsed_args_->details.name.get() ? *parsed_args_->details.name : "",
