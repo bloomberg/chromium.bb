@@ -1339,7 +1339,6 @@
               '-lXdamage',
               '-lXfixes',
               '-lXtst',
-              '-lpam',
               '-lXext'
             ],
           },
