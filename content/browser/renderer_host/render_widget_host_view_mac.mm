@@ -1029,8 +1029,24 @@ void RenderWidgetHostViewMac::AckPendingSwapBuffers() {
           pending_swap_buffers_acks_.front().first,
           pending_swap_buffers_acks_.front().second,
           0);
-      if (render_widget_host_)
+      if (render_widget_host_) {
         render_widget_host_->AcknowledgeSwapBuffersToRenderer();
+
+        // Send VSync parameters to compositor thread.
+        if (compositing_iosurface_.get()) {
+          base::TimeTicks timebase;
+          uint32 numerator = 0, denominator = 0;
+          compositing_iosurface_->GetVSyncParameters(&timebase,
+                                                     &numerator,
+                                                     &denominator);
+          if (numerator > 0 && denominator > 0) {
+            int64 interval_micros =
+                1000000 * static_cast<int64>(numerator) / denominator;
+            render_widget_host_->UpdateVSyncParameters(
+                timebase, base::TimeDelta::FromMicroseconds(interval_micros));
+          }
+        }
+      }
     }
     pending_swap_buffers_acks_.erase(pending_swap_buffers_acks_.begin());
   }
