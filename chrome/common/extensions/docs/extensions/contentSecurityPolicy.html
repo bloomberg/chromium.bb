@@ -253,7 +253,9 @@
   For full details regarding CSP's syntax, please take a look at
   <a href="http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#syntax">
     the Content Security Policy specification
-  </a>.
+  </a>, and the <a href="http://www.html5rocks.com/en/tutorials/security/content-security-policy/">
+    "An Introduction to Content Security Policy"
+  </a> article on HTML5Rocks.
 </p>
 <a name="H2-0"></a><h2>Default Policy Restrictions</h2>
 <p>
@@ -402,7 +404,10 @@ popup.html:
 <p>
   There is no mechanism for relaxing the restriction against executing inline
   JavaScript. In particular, setting a script policy that includes
-  <code>unsafe-inline</code> will have no effect. This is intentional.
+  <code>unsafe-inline</code> will have no effect. Likewise, there is no
+  mechanism for enabling <code>eval</code>-like constructs. Setting a script
+  policy that includes <code>unsafe-eval</code> will have no effect. This is
+  intentional.
 </p>
 <p>
   If, on the other hand, you have a need for some external JavaScript or object
@@ -421,6 +426,13 @@ popup.html:
   over HTTP from servers on your local machine. You may whitelist script and
   object sources on any port of either <code>http://127.0.0.1</code> or
   <code>http://localhost</code>.
+</p>
+<p class="note">
+  The restriction against resources loaded over HTTP applies only to those
+  resources which are directly executed. You're still free, for example, to
+  make XMLHTTPRequest connections to any origin you like; the default policy
+  doesn't restrict <code>connect-src</code> or any of the other CSP directives
+  in any way.
 </p>
 <p>
   A relaxed policy definition which allows script resources to be loaded from
