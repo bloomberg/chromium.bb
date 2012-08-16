@@ -9,8 +9,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/common/chrome_switches.h"
+
+namespace {
+
+void PrintPackExtensionMessage(const std::string& message) {
+  base::StringPrintf("%s\n", message.c_str());
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -19,16 +26,15 @@ StartupHelper::StartupHelper() : pack_job_succeeded_(false) {}
 void StartupHelper::OnPackSuccess(const FilePath& crx_path,
                                   const FilePath& output_private_key_path) {
   pack_job_succeeded_ = true;
-  chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Success"),
-      PackExtensionJob::StandardSuccessMessage(crx_path,
-                                               output_private_key_path),
-      chrome::MESSAGE_BOX_TYPE_INFORMATION);
+  PrintPackExtensionMessage(
+      UTF16ToUTF8(
+          PackExtensionJob::StandardSuccessMessage(crx_path,
+                                                   output_private_key_path)));
 }
 
 void StartupHelper::OnPackFailure(const std::string& error_message,
                                   ExtensionCreator::ErrorType type) {
-  chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension Packaging Error"),
-      UTF8ToUTF16(error_message), chrome::MESSAGE_BOX_TYPE_WARNING);
+  PrintPackExtensionMessage(error_message);
 }
 
 bool StartupHelper::PackExtension(const CommandLine& cmd_line) {
