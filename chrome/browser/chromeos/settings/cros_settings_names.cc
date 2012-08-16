@@ -23,7 +23,12 @@ const char kSettingProxyEverywhere[] = "cros.proxy.everywhere";
 // All cros.signed.* settings are stored in SignedSettings.
 const char kSignedDataRoamingEnabled[] = "cros.signed.data_roaming_enabled";
 
+// The first constant refers to the user setting editable in the UI. The second
+// refers to the timezone policy. This seperation is necessary to allow the user
+// to temporarily change the timezone for the current session and reset it to
+// the policy's value on logout.
 const char kSystemTimezone[] = "cros.system.timezone";
+const char kSystemTimezonePolicy[] = "cros.system.timezone_policy";
 
 const char kDeviceOwner[] = "cros.device.owner";
 

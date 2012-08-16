@@ -187,6 +187,38 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
     self._WaitForPodVisibility(username=self._usernames[0], visible=True)
     self._WaitForPodVisibility(username=self._usernames[1], visible=True)
 
+  _timezones = ['America/Barbados', 'Europe/Helsinki']
+
+  def testTimezoneSettingWithoutPolicy(self):
+    """Without timezone policy, timezone changes by user are persistent."""
+    self.SetDevicePolicy(refresh=False)
+
+    for timezone in self._timezones:
+      self.Login(user_index=1, expect_success=True)
+      self.SetTimezone(timezone)
+      self.assertEqual(timezone, self.GetTimeInfo()['timezone'])
+
+      self.Logout()
+      self.assertEqual(timezone, self.GetTimeInfo()['timezone'])
+
+  def testTimezoneSettingWithPolicy(self):
+    """With timezone policy, timezone changes by user are reset on logout."""
+    self.SetDevicePolicy({'timezone': self._timezones[0]}, refresh=True)
+
+    # Timezones are set on startup, i.e. everytime when loading the login
+    # screen. Something like a browser restart may work, too.
+    self.Login(user_index=1, expect_success=True)
+    self.Logout()
+
+    self.assertEqual(self._timezones[0], self.GetTimeInfo()['timezone'])
+
+    self.Login(user_index=1, expect_success=True)
+    self.SetTimezone(self._timezones[1])
+    self.assertEqual(self._timezones[1], self.GetTimeInfo()['timezone'])
+
+    self.Logout()
+    self.assertEqual(self._timezones[0], self.GetTimeInfo()['timezone'])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()

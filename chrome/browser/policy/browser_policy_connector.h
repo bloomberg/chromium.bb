@@ -174,6 +174,9 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // local_state is initialized.
   void CompleteInitialization();
 
+  // Set the timezone as soon as the policies are available.
+  void SetTimezoneIfPolicyAvailable();
+
   static ConfigurationPolicyProvider* CreatePlatformProvider();
 
   // Used to convert policies to preferences. The providers declared below

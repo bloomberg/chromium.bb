@@ -206,6 +206,14 @@ message StartUpUrlsProto {
   repeated string start_up_urls = 1;
 }
 
+message SystemTimezoneProto {
+  // Specifies the timezone which is applied if this value is provided. Valid
+  // values are listed in "timezone_settings.cc". Additionally, timezones from
+  // the "IANA Time Zone Database" (e.g. listed on wikipedia) that are
+  // equivalent to one of the timezones in "timezone_settings.cc" are valid.
+  optional string timezone = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -226,4 +234,5 @@ message ChromeDeviceSettingsProto {
   optional AutoUpdateSettingsProto auto_update_settings = 17;
   optional StartUpUrlsProto start_up_urls = 18;
   optional PinnedAppsProto pinned_apps = 19;
+  optional SystemTimezoneProto system_timezone = 20;
 }

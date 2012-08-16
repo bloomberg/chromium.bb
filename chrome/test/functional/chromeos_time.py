@@ -68,6 +68,28 @@ class ChromeosTime(pyauto.PyUITest):
     editable = self._IsTimezoneEditable()
     self.assertTrue(editable, msg='Timezone is not editable when not owner.')
 
+  def _SetTimezoneInUI(self, timezone):
+    self.NavigateToURL('chrome://settings-frame/settings')
+    self.ExecuteJavascript("""
+        var selectElement = document.getElementById('timezone-select');
+        selectElement.value = "%s";
+        var event = document.createEvent("HTMLEvents");
+        event.initEvent("change", true, true);
+        selectElement.dispatchEvent(event);
+        domAutomationController.send("");
+    """ % timezone)
+
+  def testSetTimezoneUI(self):
+    """Test that the timezone UI changes internal settings.
+
+    Set the Timezone on the settings page. Check the internal timezone
+    afterwards. Timezones should be always editable."""
+
+    for timezone in ['America/Barbados', 'Europe/Helsinki']:
+      self._SetTimezoneInUI(timezone)
+      self.assertTrue(self.WaitUntil(lambda: self.GetTimeInfo()['timezone'],
+                                     expect_retval=timezone),
+                      'Timezone not changed as expected.');
 
 if __name__ == '__main__':
   pyauto_functional.Main()

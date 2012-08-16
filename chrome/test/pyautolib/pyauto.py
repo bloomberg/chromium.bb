@@ -6036,11 +6036,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Sets the timezone on ChromeOS. A user must be logged in.
 
     The timezone is the relative path to the timezone file in
-    /usr/share/zoneinfo. For example, /usr/share/zoneinfo/America/Los_Angeles
-    is 'America/Los_Angeles'.
+    /usr/share/zoneinfo. For example, /usr/share/zoneinfo/America/Los_Angeles is
+    'America/Los_Angeles'. For a list of valid timezones see
+    'chrome/browser/chromeos/system/timezone_settings.cc'.
 
     This method does not return indication of success or failure.
-    If the timezone is invalid, it falls back to UTC/GMT.
+    If the timezone is it falls back to a valid timezone.
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
