@@ -109,16 +109,15 @@ void WorkerProcessLauncher::OnChannelConnected(int32 peer_pid) {
   DCHECK(pipe_.IsValid());
   DCHECK(process_exit_event_.IsValid());
 
-  // Get the actual peer's PID (i.e. reported by the OS) instead of the PID
-  // reported by the peer itself (|peer_pid|).
-  DWORD actual_peer_pid;
-  if (!GetNamedPipeClientProcessId(pipe_, &actual_peer_pid)) {
-    LOG_GETLASTERROR(ERROR) << "Failed to query the peer's PID";
-    Stop();
-    return;
-  }
-
-  delegate_->OnChannelConnected(actual_peer_pid);
+  // |peer_pid| is send by the client and cannot be trusted.
+  // GetNamedPipeClientProcessId() is not available on XP. The pipe's security
+  // descriptor is the only protection we currently have against malicious
+  // clients.
+  //
+  // If we'd like to be able to launch low-privileged workers and let them
+  // connect back, the pipe handle should be passed to the worker instead of
+  // the pipe name.
+  delegate_->OnChannelConnected();
 }
 
 void WorkerProcessLauncher::OnChannelError() {

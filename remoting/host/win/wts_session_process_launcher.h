@@ -56,7 +56,7 @@ class WtsSessionProcessLauncher
       const std::string& channel_name,
       base::win::ScopedHandle* process_exit_event_out) OVERRIDE;
   virtual void DoKillProcess(DWORD exit_code) OVERRIDE;
-  virtual void OnChannelConnected(DWORD peer_pid) OVERRIDE;
+  virtual void OnChannelConnected() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WtsConsoleObserver implementation.

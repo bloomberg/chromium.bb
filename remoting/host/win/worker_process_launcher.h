@@ -53,12 +53,8 @@ class WorkerProcessLauncher
     // Terminates the worker process with the given exit code.
     virtual void DoKillProcess(DWORD exit_code) = 0;
 
-    // Notifies that a client has been connected to the channel. |peer_pid|
-    // is the peer process's ID that the delegate can use to verify identity of
-    // the client. The verification code has to make sure that the client
-    // process's PID will not be assigned to another process (for instance by
-    // keeping an opened handle of the client process).
-    virtual void OnChannelConnected(DWORD peer_pid) = 0;
+    // Notifies that a client has been connected to the channel.
+    virtual void OnChannelConnected() = 0;
 
     // Processes messages sent by the client.
     virtual bool OnMessageReceived(const IPC::Message& message) = 0;

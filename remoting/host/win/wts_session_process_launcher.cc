@@ -205,16 +205,8 @@ void WtsSessionProcessLauncher::DoKillProcess(DWORD exit_code) {
   }
 }
 
-void WtsSessionProcessLauncher::OnChannelConnected(DWORD peer_pid) {
+void WtsSessionProcessLauncher::OnChannelConnected() {
   DCHECK(main_message_loop_->BelongsToCurrentThread());
-
-  DWORD expected_pid = GetProcessId(worker_process_);
-  if (peer_pid != expected_pid) {
-    LOG(ERROR)
-        << "Unexpected client connected: expected=" << expected_pid
-        << ", actual=" << peer_pid;
-    Stop();
-  }
 }
 
 bool WtsSessionProcessLauncher::OnMessageReceived(const IPC::Message& message) {
