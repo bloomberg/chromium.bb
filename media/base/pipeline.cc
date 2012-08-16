@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/message_loop.h"
 #include "base/stl_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/synchronization/condition_variable.h"
 #include "media/base/audio_decoder.h"
@@ -390,8 +391,9 @@ void Pipeline::SetDuration(TimeDelta duration) {
 void Pipeline::SetTotalBytes(int64 total_bytes) {
   DCHECK(IsRunning());
   media_log_->AddEvent(
-      media_log_->CreateIntegerEvent(
-          MediaLogEvent::TOTAL_BYTES_SET, "total_bytes", total_bytes));
+      media_log_->CreateStringEvent(
+          MediaLogEvent::TOTAL_BYTES_SET, "total_bytes",
+          base::Int64ToString(total_bytes)));
   int64 total_mbytes = total_bytes >> 20;
   if (total_mbytes > kint32max)
     total_mbytes = kint32max;
