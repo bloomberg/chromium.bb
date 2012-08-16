@@ -48,18 +48,11 @@ using content::WebContents;
 
 namespace {
 
-// The width in pixels of the area between the icon on the left and the close
-// button on the right.
-const int kMainContentWidth = 400;
-
 // The pixel size of the header label when using a non-native theme.
 const int kHeaderLabelPixelSize = 15;
 
 // The pixel size of the font of the main content of the dialog.
 const int kMainContentPixelSize = 13;
-
-// The maximum width in pixels of a suggested extension's title link.
-const int kTitleLinkMaxWidth = 130;
 
 // Indices of the extension row widgets.
 enum {
@@ -416,7 +409,7 @@ void WebIntentPickerGtk::OnPendingAsyncCompleted() {
   // Set the label width to the size of |sub_contents|, which we don't have
   // access to yet, by calculating the main content width minus borders.
   gtk_util::SetLabelWidth(no_service_label,
-                          kMainContentWidth - 2 * ui::kContentAreaBorder);
+                          kWindowWidth - 2 * ui::kContentAreaBorder);
   gtk_box_pack_start(GTK_BOX(hbox), no_service_label, TRUE, TRUE, 0);
 
   gtk_widget_show_all(contents_);
@@ -537,7 +530,7 @@ void WebIntentPickerGtk::InitContents() {
     g_signal_connect(contents_, "destroy", G_CALLBACK(&OnDestroyThunk), this);
   }
 
-  gtk_widget_set_size_request(contents_, kMainContentWidth, -1);
+  gtk_widget_set_size_request(contents_, kWindowWidth, -1);
 
   if (model_ && model_->IsWaitingForSuggestions()) {
     gtk_util::RemoveAllChildren(contents_);
@@ -581,7 +574,7 @@ void WebIntentPickerGtk::InitMainContents() {
   // Set the label width to the size of |sub_contents|, which we don't have
   // access to yet, by calculating the main content width minus borders.
   gtk_util::SetLabelWidth(cws_label_,
-                          kMainContentWidth - 2 * ui::kContentAreaBorder);
+                          kWindowWidth - 2 * ui::kContentAreaBorder);
   gtk_util::ForceFontSizePixels(cws_label_, kMainContentPixelSize);
 
   // Suggested extensions vbox.

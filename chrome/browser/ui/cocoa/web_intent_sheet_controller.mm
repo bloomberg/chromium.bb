@@ -35,18 +35,8 @@ using content::Referrer;
 
 namespace {
 
-// The width of the window, in view coordinates. The height will be
-// determined by the content.
-const CGFloat kWindowWidth = 400;
-
-// The maximum width in view units of a suggested extension's title link.
-const int kTitleLinkMaxWidth = 130;
-
 // The width of a service button, in view coordinates.
 const CGFloat kServiceButtonWidth = 300;
-
-// Padding along on the X-axis between the window frame and content.
-const CGFloat kFramePadding = 10;
 
 // Spacing in between sections.
 const CGFloat kVerticalSpacing = 10;
@@ -58,8 +48,8 @@ const CGFloat kCloseButtonSize = 16;
 const CGFloat kHeaderFontSize = 14.5;
 
 // Width of the text fields.
-const CGFloat kTextWidth = kWindowWidth -
-    (kFramePadding * 2 + kCloseButtonSize);
+const CGFloat kTextWidth = WebIntentPicker::kWindowWidth -
+    (WebIntentPicker::kContentAreaBorder * 2.0 + kCloseButtonSize);
 
 // Sets properties on the given |field| to act as title or description labels.
 void ConfigureTextFieldAsLabel(NSTextField* field) {
@@ -196,7 +186,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   const CGFloat kAddButtonWidth = 128.0;
 
   // Build the main view
-  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, kMaxHeight);
+  NSRect contentFrame = NSMakeRect(
+      0, 0, WebIntentPicker::kWindowWidth, kMaxHeight);
   if (self = [super initWithFrame:contentFrame]) {
     NSMutableArray* subviews = [NSMutableArray array];
 
@@ -220,7 +211,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     NSRect frame = NSMakeRect(kTitleX, 0, 0, 0);
 
     const string16 elidedTitle = ui::ElideText(
-        extension->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
+        extension->title, gfx::Font(), WebIntentPicker::kTitleLinkMaxWidth,
+        ui::ELIDE_AT_END);
     NSString* string = base::SysUTF16ToNSString(elidedTitle);
     cwsButton_.reset(CreateHyperlinkButton(string, frame));
     [cwsButton_ setAlignment:NSLeftTextAlignment];
@@ -237,7 +229,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     [subviews addObject:cwsButton_];
 
     // Add the star rating
-    CGFloat offsetX = frame.origin.x + NSWidth(frame) + kFramePadding;
+    CGFloat offsetX = frame.origin.x + NSWidth(frame) +
+        WebIntentPicker::kContentAreaBorder;
     ratingsWidget_.reset(
         [SingleSuggestionView
             createStarWidgetWithRating:extension->average_rating]);
@@ -384,7 +377,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 
   offset += kYMargin;
 
-  NSRect contentFrame = NSMakeRect(kFramePadding, 0, kWindowWidth, offset);
+  NSRect contentFrame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
+                                   WebIntentPicker::kWindowWidth, offset);
   if(self =  [super initWithFrame:contentFrame])
     [self setSubviews: subviews];
 
@@ -454,7 +448,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 
 - (id)initWithPicker:(WebIntentPickerCocoa*)picker {
   // Use an arbitrary height because it will reflect the size of the content.
-  NSRect contentRect = NSMakeRect(0, 0, kWindowWidth, kVerticalSpacing);
+  NSRect contentRect = NSMakeRect(
+      0, 0, WebIntentPicker::kWindowWidth, kVerticalSpacing);
 
   // |window| is retained by the ConstrainedWindowMacDelegateCustomSheet when
   // the sheet is initialized.
@@ -522,18 +517,21 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 
   // Compute container size to fit all elements, including padding.
   NSSize containerSize = inlineContentSize;
-  containerSize.height += [webContentView frame].origin.y + kFramePadding;
-  containerSize.width += 2 * kFramePadding;
+  containerSize.height +=
+      [webContentView frame].origin.y + WebIntentPicker::kContentAreaBorder;
+  containerSize.width += 2 * WebIntentPicker::kContentAreaBorder;
 
   // Ensure minimum container width.
-  containerSize.width = std::max(kWindowWidth, containerSize.width);
+  containerSize.width =
+      std::max(CGFloat(WebIntentPicker::kWindowWidth), containerSize.width);
 
   // Resize web contents.
   [webContentView setFrameSize:inlineContentSize];
 
   // Position close button.
   NSRect buttonFrame = [closeButton_ frame];
-  buttonFrame.origin.x = containerSize.width - kFramePadding - kCloseButtonSize;
+  buttonFrame.origin.x = containerSize.width -
+      WebIntentPicker::kContentAreaBorder - kCloseButtonSize;
   [closeButton_ setFrame:buttonFrame];
 
   [self setContainerSize:containerSize];
@@ -617,7 +615,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 // Returns the y position delta for the next offset.
 - (CGFloat)addCwsButtonToSubviews:(NSMutableArray*)subviews
                          atOffset:(CGFloat)offset {
-  NSRect frame = NSMakeRect(kFramePadding, offset, 100, 10);
+  NSRect frame =
+      NSMakeRect(WebIntentPicker::kContentAreaBorder, offset, 100, 10);
   NSString* string =
       l10n_util::GetNSStringWithFixup(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE);
   scoped_nsobject<NSButton> button(CreateHyperlinkButton(string,frame));
@@ -634,7 +633,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 - (void)addCloseButtonToSubviews:(NSMutableArray*)subviews  {
   if (!closeButton_.get()) {
     NSRect buttonFrame = NSMakeRect(
-        kFramePadding + kTextWidth, kFramePadding,
+        WebIntentPicker::kContentAreaBorder + kTextWidth,
+        WebIntentPicker::kContentAreaBorder,
         kCloseButtonSize, kCloseButtonSize);
     closeButton_.reset(
         [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
@@ -673,7 +673,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 
   // Determine a good size for the inline disposition window.
   gfx::Size size = WebIntentPicker::GetMinInlineDispositionSize();
-  NSRect frame = NSMakeRect(kFramePadding, offset, size.width(), size.height());
+  NSRect frame = NSMakeRect(
+      WebIntentPicker::kContentAreaBorder, offset, size.width(), size.height());
 
   [contents_->web_contents()->GetNativeView() setFrame:frame];
   [subviews addObject:contents_->web_contents()->GetNativeView()];
@@ -684,7 +685,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 - (CGFloat)addAnotherServiceLinkToSubviews:(NSMutableArray*)subviews
                                   atOffset:(CGFloat)offset {
 
-  NSRect textFrame = NSMakeRect(kFramePadding, offset, kTextWidth, 1);
+  NSRect textFrame =
+      NSMakeRect(WebIntentPicker::kContentAreaBorder, offset, kTextWidth, 1);
   [inlineDispositionTitleField_ setFrame:textFrame];
   [subviews addObject:inlineDispositionTitleField_];
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:inlineDispositionTitleField_];
@@ -695,8 +697,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   if (model_->GetInstalledServiceCount() > 1 ||
     model_->GetSuggestedExtensionCount()) {
     NSRect frame = NSMakeRect(
-        NSMaxX(textFrame) + kFramePadding, offset,
-        kTitleLinkMaxWidth, 1);
+        NSMaxX(textFrame) + WebIntentPicker::kContentAreaBorder, offset,
+        WebIntentPicker::kTitleLinkMaxWidth, 1);
     NSString* string = l10n_util::GetNSStringWithFixup(
         IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE);
     scoped_nsobject<NSButton> button(CreateHyperlinkButton(string, frame));
@@ -729,7 +731,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
                 toSubviews:(NSMutableArray*)subviews
                   atOffset:(CGFloat)offset {
   // Buttons are displayed centered.
-  CGFloat offsetX = (kWindowWidth - kServiceButtonWidth) / 2.0;
+  CGFloat offsetX = (WebIntentPicker::kWindowWidth - kServiceButtonWidth) / 2.0;
   NSRect frame = NSMakeRect(offsetX, offset, kServiceButtonWidth, 45);
   scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:frame]);
 
@@ -761,7 +763,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
 - (NSView*)createEmptyView {
   NSMutableArray* subviews = [NSMutableArray array];
 
-  NSRect titleFrame = NSMakeRect(kFramePadding, kFramePadding,
+  NSRect titleFrame = NSMakeRect(WebIntentPicker::kContentAreaBorder,
+                                 WebIntentPicker::kContentAreaBorder,
                                  kTextWidth, 1);
   scoped_nsobject<NSTextField> title(
       [[NSTextField alloc] initWithFrame:titleFrame]);
@@ -773,7 +776,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title];
 
   NSRect bodyFrame = titleFrame;
-  bodyFrame.origin.y += NSHeight(titleFrame) + kFramePadding;
+  bodyFrame.origin.y +=
+      NSHeight(titleFrame) + WebIntentPicker::kContentAreaBorder;
 
   scoped_nsobject<NSTextField> body(
       [[NSTextField alloc] initWithFrame:bodyFrame]);
@@ -784,8 +788,9 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:body];
   NSRect viewFrame = NSMakeRect(
       0,
-      kFramePadding,
-      std::max(NSWidth(bodyFrame), NSWidth(titleFrame)) + 2 * kFramePadding,
+      WebIntentPicker::kContentAreaBorder,
+      std::max(NSWidth(bodyFrame), NSWidth(titleFrame)) +
+          2 * WebIntentPicker::kContentAreaBorder,
       NSHeight(titleFrame) + NSHeight(bodyFrame) + kVerticalSpacing);
 
   titleFrame.origin.y = NSHeight(viewFrame) - NSHeight(titleFrame);
@@ -808,7 +813,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   model_ = model;
 
   // |offset| is the Y position that should be drawn at next.
-  CGFloat offset = kFramePadding;
+  CGFloat offset = WebIntentPicker::kContentAreaBorder;
 
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
@@ -820,7 +825,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   } else if (contents_) {
     offset += [self addAnotherServiceLinkToSubviews:subviews
                                            atOffset:offset];
-    offset += kFramePadding;
+    offset += WebIntentPicker::kContentAreaBorder;
     offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
   } else {
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
@@ -860,13 +865,13 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
   [flipView_ setSubviews:subviews];
 
   // And resize to fit.
-  [self setContainerSize:NSMakeSize(kWindowWidth, offset)];
+  [self setContainerSize:NSMakeSize(WebIntentPicker::kWindowWidth, offset)];
 }
 
 - (void)setActionString:(NSString*)actionString {
   NSRect textFrame;
   if (!actionTextField_.get()) {
-    textFrame = NSMakeRect(kFramePadding, 0,
+    textFrame = NSMakeRect(WebIntentPicker::kContentAreaBorder, 0,
                            kTextWidth, 1);
 
     actionTextField_.reset([[NSTextField alloc] initWithFrame:textFrame]);
@@ -889,7 +894,7 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
       base::SysNSStringToUTF8([nsfont fontName]), [nsfont pointSize]);
   NSString* elidedTitle = base::SysUTF16ToNSString(ui::ElideText(
         base::SysNSStringToUTF16(title),
-        font, kTitleLinkMaxWidth, ui::ELIDE_AT_END));
+        font, WebIntentPicker::kTitleLinkMaxWidth, ui::ELIDE_AT_END));
   [inlineDispositionTitleField_ setStringValue:elidedTitle];
 }
 

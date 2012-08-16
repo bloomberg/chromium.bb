@@ -62,15 +62,6 @@ using views::GridLayout;
 
 namespace {
 
-// The space in pixels between the top-level groups and the dialog border.
-const int kContentAreaBorder = 12;
-
-// The minimum size to display the constrained dialog.
-const int kDialogMinWidth = 400;
-
-// The maximum width in pixels of a suggested extension's title link.
-const int kTitleLinkMaxWidth = 130;
-
 // The color used to dim disabled elements.
 const SkColor kHalfOpacityWhite = SkColorSetARGB(128, 255, 255, 255);
 
@@ -507,8 +498,9 @@ SuggestedExtensionsRowView::SuggestedExtensionsRowView(
   icon_->SetImage(extension_->icon.ToImageSkia());
   AddChildView(icon_);
 
-  string16 elided_title = ui::ElideText(
-      extension_->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
+  string16 elided_title = ui::ElideText(extension_->title, gfx::Font(),
+                                        WebIntentPicker::kTitleLinkMaxWidth,
+                                        ui::ELIDE_AT_END);
   title_link_ = new views::Link(elided_title);
   title_link_->set_listener(this);
   AddChildView(title_link_);
@@ -1107,7 +1099,7 @@ void WebIntentPickerViews::InitContents() {
   views::GridLayout* grid_layout = new views::GridLayout(contents_);
   contents_->SetLayoutManager(grid_layout);
 
-  grid_layout->set_minimum_size(gfx::Size(kDialogMinWidth, 0));
+  grid_layout->set_minimum_size(gfx::Size(kWindowWidth, 0));
   grid_layout->SetInsets(kContentAreaBorder, kContentAreaBorder,
                          kContentAreaBorder, kContentAreaBorder);
   views::ColumnSet* header_cs = grid_layout->AddColumnSet(kHeaderRowColumnSet);

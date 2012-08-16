@@ -23,6 +23,16 @@ class WebContents;
 // Base class for the web intent picker dialog.
 class WebIntentPicker {
  public:
+  // The width of the window, in view coordinates. The height will be
+  // determined by the content.
+  static const int kWindowWidth = 400;
+
+  // The maximum width in view units of a suggested extension's title link.
+  static const int kTitleLinkMaxWidth = 130;
+
+  // The space in pixels between the top-level groups and the dialog border.
+  static const int kContentAreaBorder = 10;
+
   // Platform specific factory function. This function will automatically show
   // the picker.
   static WebIntentPicker* Create(TabContents* tab_contents,
