@@ -10,8 +10,11 @@
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -69,6 +72,30 @@ void PanelHost::DestroyWebContents() {
 gfx::Image PanelHost::GetPageIcon() const {
   return favicon_tab_helper_.get() ?
       favicon_tab_helper_->GetFavicon() : gfx::Image();
+}
+
+content::WebContents* PanelHost::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
+  // These dispositions aren't really navigations.
+  if (params.disposition == SUPPRESS_OPEN ||
+      params.disposition == SAVE_TO_DISK ||
+      params.disposition == IGNORE_ACTION)
+    return NULL;
+
+  // Only allow clicks on links.
+  if (params.transition != content::PAGE_TRANSITION_LINK)
+    return NULL;
+
+  // Force all links to open in a new tab.
+  chrome::NavigateParams navigate_params(
+      browser::FindOrCreateTabbedBrowser(profile_),
+      params.url, params.transition);
+  navigate_params.disposition = params.disposition == NEW_BACKGROUND_TAB ?
+      params.disposition : NEW_FOREGROUND_TAB;
+  chrome::Navigate(&navigate_params);
+  return navigate_params.target_contents ?
+      navigate_params.target_contents->web_contents() : NULL;
 }
 
 void PanelHost::NavigationStateChanged(const content::WebContents* source,

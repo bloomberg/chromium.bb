@@ -48,6 +48,9 @@ class PanelHost : public content::WebContentsDelegate,
   gfx::Image GetPageIcon() const;
 
   // content::WebContentsDelegate overrides.
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
