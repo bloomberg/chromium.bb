@@ -148,13 +148,8 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm) {
   PlayAudio("bear_pcm.wav", GetParam());
 }
 
-#if defined(OS_MACOSX)
-// Flaking on Mac 10.6. http://crbug.com/143151
-#define MAYBE_VideoTulipWebm FLAKY_VideoTulipWebm
-#else
-#define MAYBE_VideoTulipWebm VideoTulipWebm
-#endif
-IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoTulipWebm) {
+// Flaky. http://crbug.com/143151
+IN_PROC_BROWSER_TEST_P(MediaTest, FLAKY_VideoTulipWebm) {
   PlayVideo("tulip2.webm", GetParam());
 }
 
