@@ -1638,10 +1638,10 @@ void ImmediateInterpreter::FillResultGesture(
       }
       prev_result_high_pressure_change_ = false;
       float dx = current->position_x - prev->position_x;
-      if (current->flags & GESTURES_FINGER_WARP_X)
+      if (current->flags & GESTURES_FINGER_WARP_X_MOVE)
         dx = 0.0;
       float dy = current->position_y - prev->position_y;
-      if (current->flags & GESTURES_FINGER_WARP_Y)
+      if (current->flags & GESTURES_FINGER_WARP_Y_MOVE)
         dy = 0.0;
       result_ = Gesture(kGestureMove,
                         prev_state_.timestamp,
@@ -1665,10 +1665,10 @@ void ImmediateInterpreter::FillResultGesture(
         high_pressure_change = high_pressure_change ||
             PressureChangingSignificantly(hwstate, *fs, *prev);
         float local_dx = fs->position_x - prev->position_x;
-        if (fs->flags & GESTURES_FINGER_WARP_X)
+        if (fs->flags & GESTURES_FINGER_WARP_X_NON_MOVE)
           local_dx = 0.0;
         float local_dy = fs->position_y - prev->position_y;
-        if (fs->flags & GESTURES_FINGER_WARP_Y)
+        if (fs->flags & GESTURES_FINGER_WARP_Y_NON_MOVE)
           local_dy = 0.0;
         float local_max_mag_sq = local_dx * local_dx + local_dy * local_dy;
         if (local_max_mag_sq > max_mag_sq) {

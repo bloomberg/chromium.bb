@@ -14,9 +14,17 @@ SensorJumpFilterInterpreter::SensorJumpFilterInterpreter(PropRegistry* prop_reg,
                                                          Interpreter* next)
     : FilterInterpreter(next),
       enabled_(prop_reg, "Sensor Jump Filter Enable", 0),
-      min_warp_dist_(prop_reg, "Sensor Jump Min Dist", 0.9),
-      max_warp_dist_(prop_reg, "Sensor Jump Max Dist", 7.5),
-      similar_multiplier_(prop_reg, "Sensor Jump Similar Multiplier", 0.9) {}
+      min_warp_dist_non_move_(prop_reg, "Sensor Jump Min Dist Non-Move", 0.9),
+      max_warp_dist_non_move_(prop_reg, "Sensor Jump Max Dist Non-Move", 7.5),
+      similar_multiplier_non_move_(prop_reg,
+                                   "Sensor Jump Similar Multiplier Non-Move",
+                                   0.9),
+      min_warp_dist_move_(prop_reg, "Sensor Jump Min Dist Move", 0.9),
+      max_warp_dist_move_(prop_reg, "Sensor Jump Max Dist Move", 7.5),
+      similar_multiplier_move_(prop_reg,
+                               "Sensor Jump Similar Multiplier Move",
+                               0.9)
+ {}
 
 Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
                                                         stime_t* timeout) {
@@ -26,6 +34,8 @@ Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   RemoveMissingIdsFromMap(&previous_input_[1], *hwstate);
   RemoveMissingIdsFromSet(&first_flag_[0], *hwstate);
   RemoveMissingIdsFromSet(&first_flag_[1], *hwstate);
+  RemoveMissingIdsFromSet(&first_flag_[2], *hwstate);
+  RemoveMissingIdsFromSet(&first_flag_[3], *hwstate);
 
   map<short, FingerState, kMaxFingers> current_input;
 
@@ -43,8 +53,15 @@ Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
       &previous_input_[1][tracking_id],  // oldest
     };
     float FingerState::* const fields[] = { &FingerState::position_x,
+                                            &FingerState::position_y,
+                                            &FingerState::position_x,
                                             &FingerState::position_y };
-    unsigned warp[] = { GESTURES_FINGER_WARP_X, GESTURES_FINGER_WARP_Y };
+
+    unsigned warp[] = { GESTURES_FINGER_WARP_X_NON_MOVE,
+                        GESTURES_FINGER_WARP_Y_NON_MOVE,
+                        GESTURES_FINGER_WARP_X_MOVE,
+                        GESTURES_FINGER_WARP_Y_MOVE };
+
     for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++) {
       float FingerState::* const field = fields[f_idx];
       const float val[] = {
@@ -56,14 +73,25 @@ Gesture* SensorJumpFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
         val[0] - val[1],  // newer
         val[1] - val[2],  // older
       };
-      const float kAllowableChange = fabsf(delta[1] * similar_multiplier_.val_);
+
+      bool warp_move = (warp[f_idx] == GESTURES_FINGER_WARP_X_MOVE ||
+                        warp[f_idx] == GESTURES_FINGER_WARP_Y_MOVE);
+      float min_warp_dist = warp_move ? min_warp_dist_move_.val_ :
+          min_warp_dist_non_move_.val_;
+      float max_warp_dist = warp_move ? max_warp_dist_move_.val_ :
+          max_warp_dist_non_move_.val_;
+      float similar_multiplier = warp_move ? similar_multiplier_move_.val_ :
+          similar_multiplier_non_move_.val_;
+
+      const float kAllowableChange = fabsf(delta[1] * similar_multiplier);
+
       bool should_warp = false;
       bool should_store_flag = false;
       if (delta[0] * delta[1] < 0.0) {
         // switched direction
         should_store_flag = should_warp = true;
-      } else if (fabsf(delta[0]) < min_warp_dist_.val_ ||
-                 fabsf(delta[0]) > max_warp_dist_.val_) {
+      } else if (fabsf(delta[0]) < min_warp_dist ||
+                 fabsf(delta[0]) > max_warp_dist) {
         // acceptable movement
       } else if (fabsf(delta[0] - delta[1]) <= kAllowableChange) {
         if (SetContainsValue(first_flag_[f_idx], tracking_id)) {

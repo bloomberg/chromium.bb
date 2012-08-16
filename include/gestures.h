@@ -59,12 +59,22 @@ struct HardwareProperties {
 // the finger may have moved, it should not cause any motion in that direction.
 // This may occur is some situations where we thought a finger was in one place,
 // but then we realized later it was actually in another place.
-#define GESTURES_FINGER_WARP_X        (1 << 0)
-#define GESTURES_FINGER_WARP_Y        (1 << 1)
+// The *_WARP_X/Y_MOVE version is an indication for suppressing unwanted
+// cursor movement, while the *_WARP_X/Y_NON_MOVE version is for unwanted
+// non-cursor movement (e.g. scrolling)
+#define GESTURES_FINGER_WARP_X_NON_MOVE        (1 << 0)
+#define GESTURES_FINGER_WARP_Y_NON_MOVE        (1 << 1)
 // If a finger has notap set, it shouldn't begin a tap gesture.
 #define GESTURES_FINGER_NO_TAP        (1 << 2)
 #define GESTURES_FINGER_POSSIBLE_PALM (1 << 3)
 #define GESTURES_FINGER_PALM          (1 << 4)
+#define GESTURES_FINGER_WARP_X_MOVE   (1 << 5)
+#define GESTURES_FINGER_WARP_Y_MOVE   (1 << 6)
+
+#define GESTURES_FINGER_WARP_X    (GESTURES_FINGER_WARP_X_NON_MOVE | \
+                                   GESTURES_FINGER_WARP_X_MOVE)
+#define GESTURES_FINGER_WARP_Y    (GESTURES_FINGER_WARP_Y_NON_MOVE | \
+                                   GESTURES_FINGER_WARP_Y_MOVE)
 
 struct FingerState {
   float touch_major, touch_minor;

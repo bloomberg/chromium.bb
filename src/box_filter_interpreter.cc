@@ -31,7 +31,8 @@ Gesture* BoxFilterInterpreter::SyncInterpretImpl(HardwareState* hwstate,
     const FingerState& prev_out = previous_output_[fs.tracking_id];
     float FingerState::*fields[] = { &FingerState::position_x,
                                      &FingerState::position_y };
-    unsigned warp[] = { GESTURES_FINGER_WARP_X, GESTURES_FINGER_WARP_Y };
+    unsigned warp[] = { GESTURES_FINGER_WARP_X_MOVE,
+                        GESTURES_FINGER_WARP_Y_MOVE };
     for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++) {
       if (fs.flags & warp[f_idx])  // If warping, just move to the new point
         continue;

@@ -40,21 +40,33 @@ class SensorJumpFilterInterpreter : public FilterInterpreter,
   // Whether or not this filter is enabled. If disabled, it behaves as a
   // simple passthrough.
   BoolProperty enabled_;
-  // The smallest distance that may be considered for warp.
-  DoubleProperty min_warp_dist_;
-  // The largest distance that may be considered for warp.
-  DoubleProperty max_warp_dist_;
+  // The smallest distance that may be considered for warp for non-cursor
+  // movement.
+  DoubleProperty min_warp_dist_non_move_;
+  // The largest distance that may be considered for warp for non-cursor
+  // movement.
+  DoubleProperty max_warp_dist_non_move_;
   // A suspiciously sized jump may be tolerated if it's length falls within
-  // similar_multiplier_ * the previous frame's movement.
-  DoubleProperty similar_multiplier_;
+  // similar_multiplier_ * the previous frame's movement, for non-cursor
+  // movement.
+  DoubleProperty similar_multiplier_non_move_;
+
+  // Similar set of parameters to the above ones but for cursor movement.
+  DoubleProperty min_warp_dist_move_;
+  DoubleProperty max_warp_dist_move_;
+  DoubleProperty similar_multiplier_move_;
 
   // Fingers from the previous two SyncInterpret calls. previous_input_[0]
   // is the more recent.
   map<short, FingerState, kMaxFingers> previous_input_[2];
 
   // When a finger is flagged with a warp flag for the first time, we note it
-  // here. first_flag_[0] is the X axis; first_flag_[1] is Y.
-  set<short, kMaxFingers> first_flag_[2];
+  // here.
+  // first_flag_[0] for WARP_X_NON_MOVE;
+  // first_flag_[1] for WARP_Y_NON_MOVE;
+  // first_flag_[2] for WARP_X_MOVE;
+  // first_flag_[3] for WARP_Y_MOVE.
+  set<short, kMaxFingers> first_flag_[4];
 };
 
 }  // namespace gestures
