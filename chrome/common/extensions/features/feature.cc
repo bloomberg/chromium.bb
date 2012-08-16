@@ -247,9 +247,11 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
           name().c_str());
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
-          "'%s' requires Google Chrome %s channel or newer.",
+          "'%s' requires Google Chrome %s channel or newer, and we're running "
+              "on the %s channel.",
           name().c_str(),
-          GetChannelName(channel_).c_str());
+          GetChannelName(channel_).c_str(),
+          GetChannelName(GetCurrentChannel()).c_str());
   }
 
   return "";
