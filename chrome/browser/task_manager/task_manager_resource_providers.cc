@@ -85,12 +85,16 @@ int GetMessagePrefixID(bool is_app,
                        bool is_extension,
                        bool is_incognito,
                        bool is_prerender,
-                       bool is_instant_preview) {
+                       bool is_instant_preview,
+                       bool is_background) {
   if (is_app) {
-    if (is_incognito)
+    if (is_background) {
+      return IDS_TASK_MANAGER_BACKGROUND_PREFIX;
+    } else if (is_incognito) {
       return IDS_TASK_MANAGER_APP_INCOGNITO_PREFIX;
-    else
+    } else {
       return IDS_TASK_MANAGER_APP_PREFIX;
+    }
   } else if (is_extension) {
     if (is_incognito)
       return IDS_TASK_MANAGER_EXTENSION_INCOGNITO_PREFIX;
@@ -323,7 +327,8 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
       HostsExtension(),
       tab_contents_->profile()->IsOffTheRecord(),
       IsPrerendering(),
-      is_instant_preview_);
+      is_instant_preview_,
+      false);
   return l10n_util::GetStringFUTF16(message_id, tab_title);
 }
 
@@ -540,7 +545,7 @@ TaskManagerPanelResource::TaskManagerPanelResource(Panel* panel)
       panel_(panel) {
   message_prefix_id_ = GetMessagePrefixID(
       GetExtension()->is_app(), true, panel->profile()->IsOffTheRecord(),
-      false, false);
+      false, false, false);
 }
 
 TaskManagerPanelResource::~TaskManagerPanelResource() {
@@ -1326,7 +1331,7 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   Profile* profile = Profile::FromBrowserContext(
       render_view_host->GetProcess()->GetBrowserContext());
   int message_id = GetMessagePrefixID(GetExtension()->is_app(), true,
-      profile->IsOffTheRecord(), false, false);
+      profile->IsOffTheRecord(), false, false, IsBackground());
   title_ = l10n_util::GetStringFUTF16(message_id, extension_name);
 }
 
