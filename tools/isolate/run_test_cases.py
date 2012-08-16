@@ -454,13 +454,13 @@ def list_test_cases(executable, index, shards, disabled, fails, flaky):
 
 
 class Runner(object):
-  def __init__(self, executable, cwd_dir, timeout, progress):
+  def __init__(self, executable, cwd_dir, timeout, progress, retry_count=3):
     # Constants
     self.executable = executable
     self.cwd_dir = cwd_dir
     self.timeout = timeout
     self.progress = progress
-    self.retry_count = 3
+    self.retry_count = retry_count
     # It is important to remove the shard environment variables since it could
     # conflict with --gtest_filter.
     self.env = os.environ.copy()
@@ -546,6 +546,14 @@ def get_test_cases(executable, whitelist, blacklist, index, shards):
   return tests
 
 
+def LogResults(result_file, results):
+  """Write the results out to a file if one is given."""
+  if not result_file:
+    return
+  with open(result_file, 'wb') as f:
+    json.dump(results, f, sort_keys=True, indent=2)
+
+
 def run_test_cases(executable, test_cases, jobs, timeout, result_file):
   """Traces test cases one by one."""
   progress = Progress(len(test_cases))
@@ -556,9 +564,7 @@ def run_test_cases(executable, test_cases, jobs, timeout, result_file):
     results = pool.join(progress, 0.1)
     duration = time.time() - progress.start
   results = dict((item[0]['test_case'], item) for item in results)
-  if result_file:
-    with open(result_file, 'wb') as f:
-      json.dump(results, f, sort_keys=True, indent=2)
+  LogResults(result_file, results)
   sys.stdout.write('\n')
   total = len(results)
   if not total:
@@ -581,9 +587,33 @@ def run_test_cases(executable, test_cases, jobs, timeout, result_file):
     else:
       assert False, items
 
+  # Retry all the failures serially to see if they are just flaky when
+  # run at the same time.
+  if fail:
+    print 'Retrying failed tests serially.'
+    progress = Progress(len(fail))
+    function = Runner(
+        executable, os.getcwd(), timeout, progress, retry_count=1).map
+    test_cases_retry = fail[:]
+
+    for test_case in test_cases_retry:
+      output = function(test_case)
+      progress.print_update()
+      results[output[0]['test_case']].append(output)
+      if not output[0]['returncode']:
+        fail.remove(test_case)
+        flaky.append(test_case)
+
+    LogResults(result_file, results)
+    sys.stdout.write('\n')
+
+  print 'Summary:'
   for test_case in sorted(flaky):
     items = results[test_case]
     print '%s is flaky (tried %d times)' % (test_case, len(items))
+
+  for test_case in sorted(fail):
+    print '%s failed' % (test_case)
 
   print 'Success: %4d %5.2f%%' % (len(success), len(success) * 100. / total)
   print 'Flaky:   %4d %5.2f%%' % (len(flaky), len(flaky) * 100. / total)
