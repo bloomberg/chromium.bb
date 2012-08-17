@@ -1,2 +1,3 @@
-# rdsmith@chromium.org for download related code
+# rdsmith@chromium.org only for download* files.  All other reviews
+# must use OWNERS from parent directories.  
 rdsmith@chromium.org
