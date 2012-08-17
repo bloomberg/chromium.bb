@@ -457,8 +457,8 @@ void Widget::SetVisibilityChangedAnimationsEnabled(bool value) {
   native_widget_->SetVisibilityChangedAnimationsEnabled(value);
 }
 
-Widget::MoveLoopResult Widget::RunMoveLoop() {
-  return native_widget_->RunMoveLoop();
+Widget::MoveLoopResult Widget::RunMoveLoop(const gfx::Point& drag_offset) {
+  return native_widget_->RunMoveLoop(drag_offset);
 }
 
 void Widget::EndMoveLoop() {

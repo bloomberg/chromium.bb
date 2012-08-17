@@ -180,6 +180,10 @@ void RootWindow::ShowRootWindow() {
   host_->Show();
 }
 
+void RootWindow::HideRootWindow() {
+  host_->Hide();
+}
+
 RootWindowHostDelegate* RootWindow::AsRootWindowHostDelegate() {
   return this;
 }
@@ -528,6 +532,7 @@ void RootWindow::UpdateCapture(Window* old_capture,
     // Send a capture changed event with bogus location data.
     ui::MouseEvent event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                          gfx::Point(), 0);
+
     ProcessMouseEvent(old_capture, &event);
 
     old_capture->delegate()->OnCaptureLost();
@@ -921,6 +926,11 @@ void RootWindow::OnHostPaint() {
   Draw();
 }
 
+void RootWindow::OnHostMoved(const gfx::Point& origin) {
+  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
+                    OnRootWindowMoved(this, origin));
+}
+
 void RootWindow::OnHostResized(const gfx::Size& size) {
   DispatchHeldMouseMove();
   // The compositor should have the same size as the native root window host.
@@ -1039,6 +1049,7 @@ void RootWindow::SynthesizeMouseMoveEvent() {
                        orig_mouse_location,
                        orig_mouse_location,
                        ui::EF_IS_SYNTHESIZED);
+  event.set_system_location(Env::GetInstance()->last_mouse_location());
   OnHostMouseEvent(&event);
 #endif
 }

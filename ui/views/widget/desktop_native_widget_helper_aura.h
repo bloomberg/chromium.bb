@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_DESKTOP_NATIVE_WIDGET_HELPER_AURA_H_
 
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/native_widget_helper_aura.h"
@@ -14,6 +15,7 @@
 namespace aura {
 class RootWindow;
 class DesktopCursorClient;
+class DesktopWindowMoveClient;
 namespace client {
 class ScreenPositionClient;
 }
@@ -34,6 +36,7 @@ namespace views {
 class NativeWidgetAura;
 class WidgetMessageFilter;
 #if defined(USE_X11)
+class X11DesktopWindowMoveClient;
 class X11WindowEventFilter;
 #endif
 
@@ -41,6 +44,7 @@ class X11WindowEventFilter;
 // NativeWidgetAuras to work in a traditional desktop environment.
 class VIEWS_EXPORT DesktopNativeWidgetHelperAura
     : public NativeWidgetHelperAura,
+      public aura::WindowObserver,
       public aura::RootWindowObserver {
  public:
   explicit DesktopNativeWidgetHelperAura(NativeWidgetAura* widget);
@@ -55,19 +59,26 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   virtual void PreInitialize(aura::Window* window,
                              const Widget::InitParams& params) OVERRIDE;
   virtual void PostInitialize() OVERRIDE;
-  virtual void ShowRootWindow() OVERRIDE;
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::Rect ModifyAndSetBounds(const gfx::Rect& bounds) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& old_size) OVERRIDE;
+  virtual void OnRootWindowMoved(const aura::RootWindow* root,
+                                 const gfx::Point& new_origin) OVERRIDE;
+  virtual void OnWindowVisibilityChanged(aura::Window* window,
+                                         bool visible) OVERRIDE;
   virtual void OnRootWindowHostCloseRequested(
                                    const aura::RootWindow* root) OVERRIDE;
 
  private:
   // A weak pointer back to our owning widget.
   NativeWidgetAura* widget_;
+
+  // The window from the NativeWidgetAura. We observe events on it, and proxy
+  // visibility stuff to it.
+  aura::Window* window_;
 
   // Optionally, a RootWindow that we attach ourselves to.
   scoped_ptr<aura::RootWindow> root_window_;
@@ -94,10 +105,13 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   // A simple cursor client which just forwards events to the RootWindow.
   scoped_ptr<aura::DesktopCursorClient> cursor_client_;
 
+  // Handles spinning up the nested run loop for tab dragging.
+
 #if defined(OS_WIN)
   scoped_ptr<ui::HWNDMessageFilter> hwnd_message_filter_;
 #elif defined(USE_X11)
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
+  scoped_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetHelperAura);

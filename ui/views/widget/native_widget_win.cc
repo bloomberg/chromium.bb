@@ -1177,7 +1177,8 @@ gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
 void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {
 }
 
-Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop() {
+Widget::MoveLoopResult NativeWidgetWin::RunMoveLoop(
+    const gfx::Point& drag_offset) {
   ReleaseCapture();
   MoveLoopMouseWatcher watcher(this);
   SendMessage(hwnd(), WM_SYSCOMMAND, SC_MOVE | 0x0002, GetMessagePos());

@@ -353,6 +353,8 @@
         'widget/widget_observer.h',
         'widget/x11_desktop_handler.cc',
         'widget/x11_desktop_handler.h',
+        'widget/x11_desktop_window_move_client.cc',
+        'widget/x11_desktop_window_move_client.h',
         'widget/x11_window_event_filter.cc',
         'widget/x11_window_event_filter.h',
         'window/client_view.cc',

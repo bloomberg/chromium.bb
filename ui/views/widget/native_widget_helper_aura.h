@@ -25,9 +25,6 @@ class VIEWS_EXPORT NativeWidgetHelperAura {
   // aura::Window has been initialized.
   virtual void PostInitialize() = 0;
 
-  // Passes through a message to show the RootWindow, if it exists.
-  virtual void ShowRootWindow() = 0;
-
   // If we own a RootWindow, return it. Otherwise NULL.
   virtual aura::RootWindow* GetRootWindow() = 0;
 

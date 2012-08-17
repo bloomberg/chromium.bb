@@ -7,6 +7,10 @@
 
 #include "ui/aura/aura_export.h"
 
+namespace gfx {
+class Point;
+}
+
 namespace aura {
 class Window;
 namespace client {
@@ -15,8 +19,9 @@ namespace client {
 // window moving.
 class AURA_EXPORT WindowMoveClient {
  public:
-  // Starts a nested message loop for moving the window.
-  virtual void RunMoveLoop(Window* window) = 0;
+  // Starts a nested message loop for moving the window. |drag_offset| is the
+  // offset from the window origin to the cursor when the drag was started.
+  virtual void RunMoveLoop(Window* window, const gfx::Point& drag_offset) = 0;
 
   // Ends a previously started move loop.
   virtual void EndMoveLoop() = 0;

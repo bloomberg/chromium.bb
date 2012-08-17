@@ -54,7 +54,8 @@ class ASH_EXPORT ToplevelWindowEventFilter :
       ui::GestureEvent* event) OVERRIDE;
 
   // Overridden form aura::client::WindowMoveClient:
-  virtual void RunMoveLoop(aura::Window* source) OVERRIDE;
+  virtual void RunMoveLoop(aura::Window* source,
+                           const gfx::Point& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
 
  protected:

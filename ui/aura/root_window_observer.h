@@ -8,6 +8,7 @@
 #include "ui/aura/aura_export.h"
 
 namespace gfx {
+class Point;
 class Size;
 }
 
@@ -20,6 +21,10 @@ class AURA_EXPORT RootWindowObserver {
   // Invoked after the RootWindow is resized.
   virtual void OnRootWindowResized(const RootWindow* root,
                                    const gfx::Size& old_size) {}
+
+  // Invoked after the RootWindow has been moved on screen.
+  virtual void OnRootWindowMoved(const RootWindow* root,
+                                 const gfx::Point& new_origin) {}
 
   // Invoked when the native windowing system sends us a request to close our
   // window.

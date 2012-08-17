@@ -100,7 +100,9 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
             EventTypeFromNative(native_event),
             EventFlagsFromNative(native_event)),
       location_(EventLocationFromNative(native_event)),
-      root_location_(location_) {
+      root_location_(location_),
+      valid_system_location_(true),
+      system_location_(ui::EventSystemLocationFromNative(native_event)) {
 }
 
 LocatedEvent::LocatedEvent(EventType type,
@@ -109,13 +111,17 @@ LocatedEvent::LocatedEvent(EventType type,
                            int flags)
     : Event(type, flags),
       location_(location),
-      root_location_(root_location) {
+      root_location_(root_location),
+      valid_system_location_(false),
+      system_location_(0, 0) {
 }
 
 LocatedEvent::LocatedEvent(const LocatedEvent& model)
     : Event(model),
       location_(model.location_),
-      root_location_(model.root_location_) {
+      root_location_(model.root_location_),
+      valid_system_location_(model.valid_system_location_),
+      system_location_(model.system_location_) {
 }
 
 void LocatedEvent::UpdateForRootTransform(const Transform& root_transform) {

@@ -106,26 +106,7 @@ bool X11WindowEventFilter::PreHandleMouseEvent(aura::Window* target,
     return false;
 
   // Get the |x_root_window_| location out of the native event.
-  gfx::Point root_location;
-  const base::NativeEvent& native_event = event->native_event();
-  switch (native_event->type) {
-    case ButtonPress: {
-      root_location.SetPoint(native_event->xbutton.x_root,
-                             native_event->xbutton.y_root);
-      break;
-    }
-    case GenericEvent: {
-      XIDeviceEvent* xievent =
-          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-      root_location.SetPoint(xievent->root_x, xievent->root_y);
-      break;
-    }
-    default: {
-      NOTREACHED();
-      return false;
-    }
-  }
-
+  gfx::Point root_location = event->system_location();
   return DispatchHostWindowDragMovement(component, root_location);
 }
 

@@ -473,6 +473,7 @@ RootWindowHostLinux::RootWindowHostLinux(RootWindowHostDelegate* delegate,
       xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(ui::kCursorNull),
+      window_mapped_(false),
       cursor_shown_(true),
       bounds_(bounds),
       focus_when_shown_(false),
@@ -619,6 +620,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       gfx::Rect bounds(xev->xconfigure.x, xev->xconfigure.y,
                        xev->xconfigure.width, xev->xconfigure.height);
       bool size_changed = bounds_.size() != bounds.size();
+      bool origin_changed = bounds_.origin() != bounds.origin();
       bounds_ = bounds;
       // Update barrier and mouse location when the root window has
       // moved/resized.
@@ -630,6 +632,8 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       }
       if (size_changed)
         delegate_->OnHostResized(bounds.size());
+      if (origin_changed)
+        delegate_->OnHostMoved(bounds_.origin());
       break;
     }
     case GenericEvent: {
@@ -781,15 +785,30 @@ void RootWindowHostLinux::Show() {
   // The device scale factor is now accessible, so load cursors now.
   image_cursors_->Reload(delegate_->GetDeviceScaleFactor());
 
-  // Before we map the window, set size hints. Otherwise, some window managers
-  // will ignore toplevel XMoveWindow commands.
-  XSizeHints size_hints;
-  size_hints.flags = PPosition;
-  size_hints.x = bounds_.x();
-  size_hints.y = bounds_.y();
-  XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
+  if (!window_mapped_) {
+    // Before we map the window, set size hints. Otherwise, some window managers
+    // will ignore toplevel XMoveWindow commands.
+    XSizeHints size_hints;
+    size_hints.flags = PPosition;
+    size_hints.x = bounds_.x();
+    size_hints.y = bounds_.y();
+    XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 
-  XMapWindow(xdisplay_, xwindow_);
+    XMapWindow(xdisplay_, xwindow_);
+
+    // We now block until our window is mapped. Some X11 APIs will crash and
+    // burn if passed |xwindow_| before the window is mapped, and XMapWindow is
+    // asynchronous.
+    base::MessagePumpAuraX11::Current()->BlockUntilWindowMapped(xwindow_);
+    window_mapped_ = true;
+  }
+}
+
+void RootWindowHostLinux::Hide() {
+  if (window_mapped_) {
+    XWithdrawWindow(xdisplay_, xwindow_, 0);
+    window_mapped_ = false;
+  }
 }
 
 void RootWindowHostLinux::ToggleFullScreen() {

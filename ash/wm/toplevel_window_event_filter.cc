@@ -202,7 +202,8 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
   return ui::GESTURE_STATUS_CONSUMED;
 }
 
-void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
+void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source,
+                                            const gfx::Point& drag_offset) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
   aura::RootWindow* root_window = source->GetRootWindow();

@@ -215,6 +215,13 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   return gfx::Point(native_point);
 }
 
+gfx::Point EventSystemLocationFromNative(
+    const base::NativeEvent& native_event) {
+  // TODO(ben): Needs to always return screen position here. Returning normal
+  // origin for now since that's obviously wrong.
+  return gfx::Point(0, 0);
+}
+
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeForWindowsKeyCode(native_event.wParam);
 }

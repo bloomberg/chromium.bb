@@ -128,6 +128,13 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
   return gfx::Point(NSPointToCGPoint(location));
 }
 
+gfx::Point EventSystemLocationFromNative(
+    const base::NativeEvent& native_event) {
+  // TODO(port): Needs to always return screen position here. Returning normal
+  // origin for now since that's obviously wrong.
+  return gfx::Point(0, 0);
+}
+
 KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return ui::KeyboardCodeFromNSEvent(native_event);
 }

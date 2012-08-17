@@ -483,7 +483,8 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     Attach(source_tabstrip_, gfx::Point());
     if (detach_into_browser_ && static_cast<int>(drag_data_.size()) ==
         GetModel(source_tabstrip_)->count()) {
-      RunMoveLoop();  // Runs a nested loop, returning when done.
+      gfx::Point dragged_view_point = GetWindowOffset(point_in_screen);
+      RunMoveLoop(dragged_view_point);
       return;
     }
   }
@@ -1265,7 +1266,8 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     // All the tabs in a browser are being dragged but all the tabs weren't
     // initially being dragged. For this to happen the user would have to
     // start dragging a set of tabs, the other tabs close, then detach.
-    RunMoveLoop();
+    gfx::Point dragged_view_point = GetWindowOffset(point_in_screen);
+    RunMoveLoop(dragged_view_point);
     return;
   }
 
@@ -1279,8 +1281,9 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   std::vector<gfx::Rect> drag_bounds =
       CalculateBoundsForDraggedTabs(attached_point.x());
 
+  gfx::Point drag_offset;
   Browser* browser = CreateBrowserForDrag(
-      attached_tabstrip_, point_in_screen, &drag_bounds);
+      attached_tabstrip_, point_in_screen, &drag_offset, &drag_bounds);
   Detach(DONT_RELEASE_CAPTURE);
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
@@ -1294,10 +1297,10 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   browser->window()->Activate();
   dragged_browser_view->GetWidget()->SetVisibilityChangedAnimationsEnabled(
       true);
-  RunMoveLoop();
+  RunMoveLoop(drag_offset);
 }
 
-void TabDragController::RunMoveLoop() {
+void TabDragController::RunMoveLoop(const gfx::Point& drag_offset) {
   // If the user drags the whole window we'll assume they are going to attach to
   // another window and therefor want to reorder.
   move_behavior_ = REORDER;
@@ -1316,7 +1319,8 @@ void TabDragController::RunMoveLoop() {
   attached_tabstrip_->GetWidget()->ReleaseCapture();
   attached_tabstrip_->OwnDragController(this);
 #endif
-  views::Widget::MoveLoopResult result = move_loop_widget_->RunMoveLoop();
+  views::Widget::MoveLoopResult result =
+      move_loop_widget_->RunMoveLoop(drag_offset);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE,
       content::NotificationService::AllBrowserContextsAndSources(),
@@ -1914,6 +1918,7 @@ bool TabDragController::AreTabsConsecutive() {
 Browser* TabDragController::CreateBrowserForDrag(
     TabStrip* source,
     const gfx::Point& point_in_screen,
+    gfx::Point* drag_offset,
     std::vector<gfx::Rect>* drag_bounds) {
   Browser* browser = new Browser(
       Browser::CreateParams(drag_data_[0].contents->profile()));
@@ -1942,6 +1947,8 @@ Browser* TabDragController::CreateBrowserForDrag(
       break; // Nothing to do for DETACH_ABOVE_OR_BELOW.
   }
 
+  *drag_offset = point_in_screen.Subtract(new_bounds.origin());
+
   SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);
   browser->window()->SetBounds(new_bounds);
   return browser;
@@ -1963,4 +1970,15 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
   }
 #endif
   return gfx::Screen::GetCursorScreenPoint();
+}
+
+gfx::Point TabDragController::GetWindowOffset(
+    const gfx::Point& point_in_screen) {
+  TabStrip* owning_tabstrip = (attached_tabstrip_ && detach_into_browser_) ?
+      attached_tabstrip_ : source_tabstrip_;
+  views::View* toplevel_view = owning_tabstrip->GetWidget()->GetContentsView();
+
+  gfx::Point offset = point_in_screen;
+  views::View::ConvertPointFromScreen(toplevel_view, &offset);
+  return offset;
 }

@@ -233,11 +233,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   aura::client::SetActivationDelegate(window_, this);
 
-  if (desktop_helper_.get()) {
+  if (desktop_helper_.get())
     desktop_helper_->PostInitialize();
-    // TODO(erg): Move this somewhere else?
-    desktop_helper_->ShowRootWindow();
-  }
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
@@ -664,11 +661,13 @@ void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
     active_window_observer_.reset(new ActiveWindowObserver(this));
 }
 
-Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop() {
+Widget::MoveLoopResult NativeWidgetAura::RunMoveLoop(
+    const gfx::Point& drag_offset) {
   if (window_->parent() &&
       aura::client::GetWindowMoveClient(window_->parent())) {
     SetCapture();
-    aura::client::GetWindowMoveClient(window_->parent())->RunMoveLoop(window_);
+    aura::client::GetWindowMoveClient(window_->parent())->RunMoveLoop(
+        window_, drag_offset);
     return Widget::MOVE_LOOP_SUCCESSFUL;
   }
   return Widget::MOVE_LOOP_CANCELED;

@@ -198,12 +198,7 @@ TEST_F(MultiDisplayManagerTest, MAYBE_EmulatorTest) {
   internal::MultiDisplayManager::AddRemoveDisplay();
   // Update primary and add seconary.
   EXPECT_EQ(2U, display_manager()->GetNumDisplays());
-#if defined(OS_WIN)
-  // TODO(oshima): Windows receives resize event for some reason.
   EXPECT_EQ("1 1 0", GetCountSummary());
-#else
-  EXPECT_EQ("0 1 0", GetCountSummary());
-#endif
   reset();
 
   internal::MultiDisplayManager::CycleDisplay();

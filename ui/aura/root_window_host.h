@@ -50,6 +50,9 @@ class RootWindowHost {
   // Shows the RootWindowHost.
   virtual void Show() = 0;
 
+  // Hides the RootWindowHost.
+  virtual void Hide() = 0;
+
   // Toggles the host's full screen state.
   virtual void ToggleFullScreen() = 0;
 

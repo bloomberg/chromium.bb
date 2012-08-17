@@ -6,6 +6,7 @@
 #define UI_AURA_ROOT_WINDOW_HOST_DELEGATE_H_
 
 namespace gfx {
+class Point;
 class Size;
 }
 
@@ -33,6 +34,7 @@ class AURA_EXPORT RootWindowHostDelegate {
 
   virtual void OnHostPaint() = 0;
 
+  virtual void OnHostMoved(const gfx::Point& origin) = 0;
   virtual void OnHostResized(const gfx::Size& size) = 0;
 
   virtual float GetDeviceScaleFactor() = 0;

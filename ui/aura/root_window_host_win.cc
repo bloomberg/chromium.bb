@@ -153,6 +153,10 @@ void RootWindowHostWin::Show() {
   ShowWindow(hwnd(), SW_SHOWNORMAL);
 }
 
+void RootWindowHostWin::Hide() {
+  NOTIMPLEMENTED();
+}
+
 void RootWindowHostWin::ToggleFullScreen() {
   gfx::Rect target_rect;
   if (!fullscreen_) {

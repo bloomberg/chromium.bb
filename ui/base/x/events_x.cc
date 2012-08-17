@@ -684,12 +684,13 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           bool is_cancel;
           if (GetFlingData(native_event, &vx, &vy, &is_cancel)) {
             return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
-          } else if (GetScrollOffsets(native_event, NULL, NULL))
+          } else if (GetScrollOffsets(native_event, NULL, NULL)) {
             return ET_SCROLL;
-          else if (GetButtonMaskForX2Event(xievent)) {
+          } else if (GetButtonMaskForX2Event(xievent)) {
             return ET_MOUSE_DRAGGED;
-          } else
+          } else {
             return ET_MOUSE_MOVED;
+          }
         }
       }
     }
@@ -827,6 +828,28 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
       return gfx::Point(static_cast<int>(x), static_cast<int>(y));
     }
   }
+  return gfx::Point();
+}
+
+gfx::Point EventSystemLocationFromNative(
+    const base::NativeEvent& native_event) {
+  switch (native_event->type) {
+    case ButtonPress:
+    case ButtonRelease: {
+      return gfx::Point(native_event->xbutton.x_root,
+                        native_event->xbutton.y_root);
+    }
+    case MotionNotify: {
+      return gfx::Point(native_event->xmotion.x_root,
+                        native_event->xmotion.y_root);
+    }
+    case GenericEvent: {
+      XIDeviceEvent* xievent =
+          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+      return gfx::Point(xievent->root_x, xievent->root_y);
+    }
+  }
+
   return gfx::Point();
 }
 

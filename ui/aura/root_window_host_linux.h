@@ -37,6 +37,7 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
   virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -76,6 +77,9 @@ class RootWindowHostLinux : public RootWindowHost,
 
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
+
+  // Is the window mapped to the screen?
+  bool window_mapped_;
 
   // Is the cursor currently shown?
   bool cursor_shown_;

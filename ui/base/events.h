@@ -141,6 +141,10 @@ UI_EXPORT base::TimeDelta EventTimeFromNative(
 UI_EXPORT gfx::Point EventLocationFromNative(
     const base::NativeEvent& native_event);
 
+// Gets the location in native system coordinate space.
+UI_EXPORT gfx::Point EventSystemLocationFromNative(
+    const base::NativeEvent& native_event);
+
 #if defined(USE_X11)
 // Returns the 'real' button for an event. The button reported in slave events
 // does not take into account any remapping (e.g. using xmodmap), while the

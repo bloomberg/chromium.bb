@@ -261,7 +261,8 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void FocusNativeView(gfx::NativeView native_view) OVERRIDE;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const OVERRIDE;
   virtual void SetInactiveRenderingDisabled(bool value) OVERRIDE;
-  virtual Widget::MoveLoopResult RunMoveLoop() OVERRIDE;
+  virtual Widget::MoveLoopResult RunMoveLoop(
+      const gfx::Point& drag_offset) OVERRIDE;
   virtual void EndMoveLoop() OVERRIDE;
   virtual void SetVisibilityChangedAnimationsEnabled(bool value) OVERRIDE;
 
