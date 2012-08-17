@@ -191,7 +191,6 @@ void AppListView::QueryChanged(SearchBoxView* sender) {
 void AppListView::OpenResult(const SearchResult& result, int event_flags) {
   if (delegate_.get())
     delegate_->OpenSearchResult(result, event_flags);
-  Close();
 }
 
 }  // namespace app_list

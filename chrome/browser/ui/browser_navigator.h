@@ -15,6 +15,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class Browser;
+class Profile;
 class TabContents;
 
 namespace chrome {
@@ -46,6 +47,9 @@ struct NavigateParams {
                  const GURL& a_url,
                  content::PageTransition a_transition);
   NavigateParams(Browser* browser, TabContents* a_target_contents);
+  NavigateParams(Profile* profile,
+                 const GURL& a_url,
+                 content::PageTransition a_transition);
   ~NavigateParams();
 
   // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
@@ -96,7 +100,8 @@ struct NavigateParams {
   // constructor.
   content::PageTransition transition;
 
-  // Whether this navigation was initiated by the renderer process.
+  // Whether this navigation was initiated by the renderer process. Default is
+  // false.
   bool is_renderer_initiated;
 
   // The index the caller would like the tab to be positioned at in the
@@ -166,7 +171,8 @@ struct NavigateParams {
 
   // [in]  Specifies a Browser object where the navigation could occur or the
   //       tab could be added. Navigate() is not obliged to use this Browser if
-  //       it is not compatible with the operation being performed.
+  //       it is not compatible with the operation being performed. This can be
+  //       NULL, in which case |initiating_profile| must be provided.
   // [out] Specifies the Browser object where the navigation occurred or the
   //       tab was added. Guaranteed non-NULL unless the disposition did not
   //       require a navigation, in which case this is set to NULL
@@ -176,6 +182,10 @@ struct NavigateParams {
   //       window can assume responsibility for the Browser's lifetime (Browser
   //       objects are deleted when the user closes a visible browser window).
   Browser* browser;
+
+  // The profile that is initiating the navigation. If there is a non-NULL
+  // browser passed in via |browser|, it's profile will be used instead.
+  Profile* initiating_profile;
 
   // Refers to a navigation that was parked in the browser in order to be
   // transferred to another RVH. Only used in case of a redirection of a request

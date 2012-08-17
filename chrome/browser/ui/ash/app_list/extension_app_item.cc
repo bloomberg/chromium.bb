@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/ash/extension_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
@@ -168,16 +168,10 @@ void ExtensionAppItem::ShowExtensionOptions() {
   if (!extension)
     return;
 
-  // TODO(beng): use Navigate()!
-  Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  if (!browser) {
-    browser = new Browser(Browser::CreateParams(profile_));
-    browser->window()->Show();
-  }
-
-  chrome::AddSelectedTabWithURL(browser, extension->options_url(),
+  chrome::NavigateParams params(profile_,
+                                extension->options_url(),
                                 content::PAGE_TRANSITION_LINK);
-  browser->window()->Activate();
+  chrome::Navigate(&params);
 }
 
 void ExtensionAppItem::StartExtensionUninstall() {

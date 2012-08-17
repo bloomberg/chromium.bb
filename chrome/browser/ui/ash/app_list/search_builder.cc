@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/extension_utils.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -246,27 +246,12 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
       extension_utils::OpenExtension(profile_, extension, event_flags);
     }
   } else {
-    WindowOpenDisposition disposition =
-        chrome::DispositionFromEventFlags(event_flags);
-    Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
-
-    if (disposition == CURRENT_TAB) {
-      // If current tab is not NTP, change disposition to NEW_FOREGROUND_TAB.
-      const GURL& url = chrome::GetActiveWebContents(browser) ?
-          chrome::GetActiveWebContents(browser)->GetURL() : GURL();
-      if (!url.SchemeIs(chrome::kChromeUIScheme) ||
-          url.host() != chrome::kChromeUINewTabHost) {
-        disposition = NEW_FOREGROUND_TAB;
-      }
-    }
-
     // TODO(xiyuan): What should we do for alternate url case?
-    browser->OpenURL(
-        content::OpenURLParams(match.destination_url,
-                               content::Referrer(),
-                               disposition,
-                               match.transition,
-                               false));
+    chrome::NavigateParams params(profile_,
+                                  match.destination_url,
+                                  match.transition);
+    params.disposition = chrome::DispositionFromEventFlags(event_flags);
+    chrome::Navigate(&params);
   }
 }
 

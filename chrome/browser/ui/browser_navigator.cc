@@ -74,7 +74,7 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
     return true;
   }
 
-  Profile* profile = params->browser->profile();
+  Profile* profile = params->initiating_profile;
 
   if (profile->IsOffTheRecord() || params->disposition == OFF_THE_RECORD) {
     profile = profile->GetOriginalProfile();
@@ -102,19 +102,23 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
   // the target browser. This must happen first, before
   // GetBrowserForDisposition() has a chance to replace |params->browser| with
   // another one.
-  if (!params->source_contents)
+  if (!params->source_contents && params->browser)
     params->source_contents = chrome::GetActiveTabContents(params->browser);
 
-  Profile* profile = params->browser->profile();
+  Profile* profile = params->initiating_profile;
 
   switch (params->disposition) {
     case CURRENT_TAB:
-      return params->browser;
+      if (params->browser)
+        return params->browser;
+      // Find a compatible window and re-execute this command in it. Otherwise
+      // re-run with NEW_WINDOW.
+      return GetOrCreateBrowser(profile);
     case SINGLETON_TAB:
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB:
       // See if we can open the tab in the window this navigator is bound to.
-      if (WindowCanOpenTabs(params->browser))
+      if (params->browser && WindowCanOpenTabs(params->browser))
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
@@ -204,14 +208,11 @@ void NormalizeDisposition(chrome::NavigateParams* params) {
 }
 
 // Obtain the profile used by the code that originated the Navigate() request.
-// |source_browser| represents the Browser that was supplied in |params| before
-// it was modified.
-Profile* GetSourceProfile(chrome::NavigateParams* params,
-                          Browser* source_browser) {
+Profile* GetSourceProfile(chrome::NavigateParams* params) {
   if (params->source_contents)
     return params->source_contents->profile();
 
-  return source_browser->profile();
+  return params->initiating_profile;
 }
 
 void LoadURLInContents(WebContents* target_contents,
@@ -344,8 +345,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       user_gesture(true),
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
-      browser(a_browser) {
-}
+      browser(a_browser),
+      initiating_profile(NULL) {}
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                TabContents* a_target_contents)
@@ -360,20 +361,42 @@ NavigateParams::NavigateParams(Browser* a_browser,
       user_gesture(true),
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),
-      browser(a_browser) {
-}
+      browser(a_browser),
+      initiating_profile(NULL) {}
 
-NavigateParams::~NavigateParams() {
-}
+NavigateParams::NavigateParams(Profile* a_profile,
+                               const GURL& a_url,
+                               content::PageTransition a_transition)
+    : url(a_url),
+      target_contents(NULL),
+      source_contents(NULL),
+      disposition(NEW_FOREGROUND_TAB),
+      transition(a_transition),
+      is_renderer_initiated(false),
+      tabstrip_index(-1),
+      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
+      window_action(SHOW_WINDOW),
+      user_gesture(true),
+      path_behavior(RESPECT),
+      ref_behavior(IGNORE_REF),
+      browser(NULL),
+      initiating_profile(a_profile) {}
+
+NavigateParams::~NavigateParams() {}
 
 void Navigate(NavigateParams* params) {
   Browser* source_browser = params->browser;
+  if (source_browser)
+    params->initiating_profile = source_browser->profile();
+  DCHECK(params->initiating_profile);
 
   if (!AdjustNavigateParamsForURL(params))
     return;
 
   // The browser window may want to adjust the disposition.
-  if (params->disposition == NEW_POPUP && source_browser->window()) {
+  if (params->disposition == NEW_POPUP &&
+      source_browser &&
+      source_browser->window()) {
     params->disposition =
         source_browser->window()->GetDispositionForPopupBounds(
             params->window_bounds);
@@ -384,6 +407,7 @@ void Navigate(NavigateParams* params) {
   if (params->source_contents &&
       params->source_contents->web_contents()->IsCrashed() &&
       params->disposition == CURRENT_TAB &&
+      params->browser &&
       params->browser->is_type_panel()) {
     params->disposition = NEW_FOREGROUND_TAB;
   }
@@ -395,7 +419,7 @@ void Navigate(NavigateParams* params) {
 
   // Navigate() must not return early after this point.
 
-  if (GetSourceProfile(params, source_browser) != params->browser->profile()) {
+  if (GetSourceProfile(params) != params->browser->profile()) {
     // A tab is being opened from a link from a different profile, we must reset
     // source information that may cause state to be shared.
     params->source_contents = NULL;

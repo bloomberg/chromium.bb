@@ -1227,6 +1227,24 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             chrome::GetActiveWebContents(browser())->GetURL());
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       NavigateWithoutBrowser) {
+  // First navigate using the profile of the existing browser window, and
+  // check that the window is reused.
+  chrome::NavigateParams params(browser()->profile(), GetGoogleURL(),
+                                content::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params);
+  EXPECT_EQ(1u, BrowserList::size());
+
+  // Now navigate using the incognito profile and check that a new window
+  // is created.
+  chrome::NavigateParams params_incognito(
+      browser()->profile()->GetOffTheRecordProfile(),
+      GetGoogleURL(), content::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&params_incognito);
+  EXPECT_EQ(2u, BrowserList::size());
+}
+
 // This test makes sure any link in a crashed panel page navigates to a tabbed
 // window.
 class PanelBrowserNavigatorTest : public BrowserNavigatorTest {
