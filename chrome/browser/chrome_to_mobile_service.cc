@@ -140,10 +140,12 @@ typedef base::Callback<void(const FilePath& path, bool success)>
 // Create a temp file and post the callback on the UI thread with the results.
 // Call this as a BlockingPoolTask to avoid the FILE thread.
 void CreateSnapshotFile(CreateSnapshotFileCallback callback) {
-  FilePath snapshot;
-  bool success = file_util::CreateTemporaryFile(&snapshot);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback, snapshot, success));
+  FilePath file;
+  bool success = file_util::CreateTemporaryFile(&file);
+  if (!content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                        base::Bind(callback, file, success))) {
+    NOTREACHED();
+  }
 }
 
 // Delete the snapshot file; DCHECK, but really ignore the result of the delete.
@@ -187,14 +189,14 @@ ChromeToMobileService::ChromeToMobileService(Profile* profile)
       profile_(profile),
       cloud_print_url_(new CloudPrintURL(profile)),
       cloud_print_accessible_(false) {
-  // Skip initialization if constructed without a profile.
+  // TODO(msw): Fix GMock tests, which lack profiles (http://crbug.com/122183).
   if (profile_) {
     // Get an access token as soon as the Gaia login refresh token is available.
     TokenService* service = TokenServiceFactory::GetForProfile(profile_);
     registrar_.Add(this, chrome::NOTIFICATION_TOKEN_AVAILABLE,
                    content::Source<TokenService>(service));
     if (service->HasOAuthLoginToken())
-      RefreshAccessToken();
+      RequestAccessToken();
   }
 }
 
@@ -203,7 +205,7 @@ ChromeToMobileService::~ChromeToMobileService() {
     DeleteSnapshot(*snapshots_.begin());
 }
 
-bool ChromeToMobileService::HasMobiles() {
+bool ChromeToMobileService::HasMobiles() const {
   return !GetMobiles()->empty();
 }
 
@@ -213,9 +215,9 @@ const base::ListValue* ChromeToMobileService::GetMobiles() const {
 
 void ChromeToMobileService::RequestMobileListUpdate() {
   if (access_token_.empty())
-    RefreshAccessToken();
+    RequestAccessToken();
   else if (cloud_print_accessible_)
-    RequestSearch();
+    RequestDeviceSearch();
 }
 
 void ChromeToMobileService::GenerateSnapshot(Browser* browser,
@@ -226,8 +228,10 @@ void ChromeToMobileService::GenerateSnapshot(Browser* browser,
                  weak_ptr_factory_.GetWeakPtr(), observer,
                  browser->session_id().id());
   // Create a temporary file via the blocking pool for snapshot storage.
-  content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&CreateSnapshotFile, callback));
+  if (!content::BrowserThread::PostBlockingPoolTask(FROM_HERE,
+          base::Bind(&CreateSnapshotFile, callback))) {
+    NOTREACHED();
+  }
 }
 
 void ChromeToMobileService::SendToMobile(const base::DictionaryValue& mobile,
@@ -236,7 +240,6 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue& mobile,
                                          base::WeakPtr<Observer> observer) {
   LogMetric(SENDING_URL);
 
-  DCHECK(!access_token_.empty());
   JobData data;
   std::string mobile_os;
   if (!mobile.GetString("type", &mobile_os))
@@ -262,20 +265,26 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue& mobile,
     data.type = SNAPSHOT;
     net::URLFetcher* submit_snapshot = CreateRequest(data);
     request_observer_map_[submit_snapshot] = observer;
-    content::BrowserThread::PostBlockingPoolSequencedTask(
-        data.snapshot.AsUTF8Unsafe(), FROM_HERE,
-        base::Bind(&ChromeToMobileService::SendRequest,
-                   weak_ptr_factory_.GetWeakPtr(), submit_snapshot, data));
+    if (!content::BrowserThread::PostBlockingPoolSequencedTask(
+            data.snapshot.AsUTF8Unsafe(), FROM_HERE,
+            base::Bind(&ChromeToMobileService::SendRequest,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       submit_snapshot, data))) {
+      NOTREACHED();
+    }
   }
 }
 
 void ChromeToMobileService::DeleteSnapshot(const FilePath& snapshot) {
   DCHECK(snapshot.empty() || snapshots_.find(snapshot) != snapshots_.end());
   if (snapshots_.find(snapshot) != snapshots_.end()) {
-    if (!snapshot.empty())
-      content::BrowserThread::PostBlockingPoolSequencedTask(
-          snapshot.AsUTF8Unsafe(), FROM_HERE,
-          base::Bind(&DeleteSnapshotFile, snapshot));
+    if (!snapshot.empty()) {
+      if (!content::BrowserThread::PostBlockingPoolSequencedTask(
+              snapshot.AsUTF8Unsafe(), FROM_HERE,
+              base::Bind(&DeleteSnapshotFile, snapshot))) {
+        NOTREACHED();
+      }
+    }
     snapshots_.erase(snapshot);
   }
 }
@@ -310,7 +319,7 @@ void ChromeToMobileService::Observe(
   TokenService::TokenAvailableDetails* token_details =
       content::Details<TokenService::TokenAvailableDetails>(details).ptr();
   if (token_details->service() == GaiaConstants::kGaiaOAuth2LoginRefreshToken)
-    RefreshAccessToken();
+    RequestAccessToken();
 }
 
 void ChromeToMobileService::OnGetTokenSuccess(
@@ -329,7 +338,19 @@ void ChromeToMobileService::OnGetTokenFailure(
   auth_retry_timer_.Stop();
   auth_retry_timer_.Start(
       FROM_HERE, base::TimeDelta::FromHours(kAuthRetryDelayHours),
-      this, &ChromeToMobileService::RefreshAccessToken);
+      this, &ChromeToMobileService::RequestAccessToken);
+}
+
+void ChromeToMobileService::UpdateCommandState() const {
+  // Ensure the feature is not disabled by commandline options.
+  DCHECK(IsChromeToMobileEnabled());
+  const bool has_mobiles = HasMobiles();
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    Browser* browser = *i;
+    if (browser->profile() == profile_)
+      browser->command_controller()->SendToMobileStateChanged(has_mobiles);
+  }
 }
 
 void ChromeToMobileService::SnapshotFileCreated(
@@ -363,6 +384,7 @@ net::URLFetcher* ChromeToMobileService::CreateRequest(const JobData& data) {
 void ChromeToMobileService::InitRequest(net::URLFetcher* request) {
   request->SetRequestContext(profile_->GetRequestContext());
   request->SetMaxRetries(kMaxRetries);
+  DCHECK(!access_token_.empty());
   request->SetExtraRequestHeaders("Authorization: OAuth " +
       access_token_ + "\r\n" + cloud_print::kChromeCloudPrintProxyHeader);
   request->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
@@ -412,22 +434,20 @@ void ChromeToMobileService::SendRequest(net::URLFetcher* request,
   request->Start();
 }
 
-void ChromeToMobileService::RefreshAccessToken() {
-  if (access_token_fetcher_.get())
-    return;
-
-  std::string token = TokenServiceFactory::GetForProfile(profile_)->
-                          GetOAuth2LoginRefreshToken();
-  if (token.empty())
+void ChromeToMobileService::RequestAccessToken() {
+  // Deny concurrent requests and bail without a valid Gaia login refresh token.
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  if (access_token_fetcher_.get() || !token_service->HasOAuthLoginToken())
     return;
 
   auth_retry_timer_.Stop();
   access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcher(this, profile_->GetRequestContext()));
-  std::vector<std::string> scopes(1, kCloudPrintAuth);
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   access_token_fetcher_->Start(gaia_urls->oauth2_chrome_client_id(),
-      gaia_urls->oauth2_chrome_client_secret(), token, scopes);
+                               gaia_urls->oauth2_chrome_client_secret(),
+                               token_service->GetOAuth2LoginRefreshToken(),
+                               std::vector<std::string>(1, kCloudPrintAuth));
 }
 
 void ChromeToMobileService::RequestAccountInfo() {
@@ -458,9 +478,7 @@ void ChromeToMobileService::RequestAccountInfo() {
   account_info_request_->Start();
 }
 
-void ChromeToMobileService::RequestSearch() {
-  DCHECK(!access_token_.empty());
-
+void ChromeToMobileService::RequestDeviceSearch() {
   // Deny requests if cloud print is inaccessible, and deny concurrent requests.
   if (!cloud_print_accessible_ || search_request_.get())
     return;
@@ -524,7 +542,7 @@ void ChromeToMobileService::HandleSearchResponse() {
           printer->GetString("type", &type) &&
           (type.compare(kTypeAndroid) == 0 || type.compare(kTypeIOS) == 0)) {
         // Copy just the requisite values from the full |printer| definition.
-        if (printer->GetString("name", &name) &&
+        if (printer->GetString("displayName", &name) &&
             printer->GetString("id", &id)) {
           mobile = new DictionaryValue();
           mobile->SetString("type", type);
@@ -543,16 +561,9 @@ void ChromeToMobileService::HandleSearchResponse() {
     prefs->SetInt64(prefs::kChromeToMobileTimestamp,
                     base::TimeTicks::Now().ToInternalValue());
 
-    const bool has_mobiles = HasMobiles();
-    if (has_mobiles)
+    if (HasMobiles())
       LogMetric(DEVICES_AVAILABLE);
-
-    for (BrowserList::const_iterator i = BrowserList::begin();
-         i != BrowserList::end(); ++i) {
-      Browser* browser = *i;
-      if (browser->profile() == profile_)
-        browser->command_controller()->SendToMobileStateChanged(has_mobiles);
-    }
+    UpdateCommandState();
   }
 }
 

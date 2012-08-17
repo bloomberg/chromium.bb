@@ -17,13 +17,13 @@ const char kDummyString[] = "dummy";
 
 class DummyNotificationSource {};
 
-// A mock ChromeToMobileService with a mocked out RefreshAccessToken method.
+// A mock ChromeToMobileService with a mocked out RequestAccessToken method.
 class MockChromeToMobileService : public ChromeToMobileService {
  public:
   MockChromeToMobileService();
   ~MockChromeToMobileService();
 
-  MOCK_METHOD0(RefreshAccessToken, void());
+  MOCK_METHOD0(RequestAccessToken, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockChromeToMobileService);
@@ -50,9 +50,9 @@ ChromeToMobileServiceTest::ChromeToMobileServiceTest() {}
 
 ChromeToMobileServiceTest::~ChromeToMobileServiceTest() {}
 
-// Ensure that RefreshAccessToken is not called for irrelevant notifications.
+// Ensure that RequestAccessToken is not called for irrelevant notifications.
 TEST_F(ChromeToMobileServiceTest, IgnoreIrrelevantNotifications) {
-  EXPECT_CALL(service_, RefreshAccessToken()).Times(0);
+  EXPECT_CALL(service_, RequestAccessToken()).Times(0);
 
   // Send dummy service/token details (should not refresh token).
   DummyNotificationSource dummy_source;
@@ -62,9 +62,9 @@ TEST_F(ChromeToMobileServiceTest, IgnoreIrrelevantNotifications) {
       content::Details<TokenService::TokenAvailableDetails>(&dummy_details));
 }
 
-// Ensure that RefreshAccessToken is called on the proper notification.
+// Ensure that RequestAccessToken is called on the proper notification.
 TEST_F(ChromeToMobileServiceTest, AuthenticateOnTokenAvailable) {
-  EXPECT_CALL(service_, RefreshAccessToken()).Times(1);
+  EXPECT_CALL(service_, RequestAccessToken()).Times(1);
 
   // Send a Gaia OAuth2 Login service dummy token (should refresh token).
   DummyNotificationSource dummy_source;

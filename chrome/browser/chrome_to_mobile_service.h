@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -105,7 +104,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   virtual ~ChromeToMobileService();
 
   // Returns true if the service has found any registered mobile devices.
-  bool HasMobiles();
+  bool HasMobiles() const;
 
   // Get the non-NULL ListValue of mobile devices from the cloud print service.
   // The list is owned by PrefService, which outlives ChromeToMobileService.
@@ -156,6 +155,10 @@ class ChromeToMobileService : public ProfileKeyedService,
  private:
   friend class MockChromeToMobileService;
 
+  // Enable or disable Chrome To Mobile with the browsers' command controllers.
+  // The feature state is automatically derived from internal conditions.
+  void UpdateCommandState() const;
+
   // Handle the attempted creation of a temporary file for snapshot generation.
   // Alert the observer of failure or generate MHTML with an observer callback.
   void SnapshotFileCreated(base::WeakPtr<Observer> observer,
@@ -166,7 +169,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Create a cloud print job submission request for a URL or snapshot.
   net::URLFetcher* CreateRequest(const JobData& data);
 
-  // Initialize URLFetcher requests (search and jobs submit).
+  // Initialize cloud print URLFetcher requests.
   void InitRequest(net::URLFetcher* request);
 
   // Submit a cloud print job request with the requisite data.
@@ -174,13 +177,13 @@ class ChromeToMobileService : public ProfileKeyedService,
 
   // Send the OAuth2AccessTokenFetcher request.
   // Virtual for unit test mocking.
-  virtual void RefreshAccessToken();
+  virtual void RequestAccessToken();
 
   // Request account information to limit cloud print access to existing users.
   void RequestAccountInfo();
 
-  // Send the cloud print URLFetcher search request.
-  void RequestSearch();
+  // Send the cloud print URLFetcher device search request.
+  void RequestDeviceSearch();
 
   void HandleAccountInfoResponse();
   void HandleSearchResponse();
