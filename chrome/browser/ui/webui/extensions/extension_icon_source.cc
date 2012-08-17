@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -261,7 +262,7 @@ void ExtensionIconSource::LoadIconFailed(int request_id) {
   ExtensionResource icon =
       request->extension->GetIconResource(request->size, request->match);
 
-  if (request->size == ExtensionIconSet::EXTENSION_ICON_BITTY)
+  if (request->size == extension_misc::EXTENSION_ICON_BITTY)
     LoadFaviconImage(request_id);
   else
     LoadDefaultImage(request_id);

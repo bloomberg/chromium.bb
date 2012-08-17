@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -435,7 +436,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 
   // Load the image asynchronously. For the response, check OnImageLoaded.
   ExtensionResource image =
-      extension_->GetIconResource(ExtensionIconSet::EXTENSION_ICON_LARGE,
+      extension_->GetIconResource(extension_misc::EXTENSION_ICON_LARGE,
                                   ExtensionIconSet::MATCH_BIGGER);
   tracker_.LoadImage(extension_, image,
                      gfx::Size(kIconSize, kIconSize),

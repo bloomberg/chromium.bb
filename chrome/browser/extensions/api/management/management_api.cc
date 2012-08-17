@@ -140,7 +140,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   const ExtensionIconSet::IconMap& icons = extension.icons().map();
   if (!icons.empty()) {
     info->icons.reset(new IconInfoList());
-    std::map<ExtensionIconSet::Icons, std::string>::const_iterator icon_iter;
+    ExtensionIconSet::IconMap::const_iterator icon_iter;
     for (icon_iter = icons.begin(); icon_iter != icons.end(); ++icon_iter) {
       management::IconInfo* icon_info = new management::IconInfo();
       icon_info->size = icon_iter->first;

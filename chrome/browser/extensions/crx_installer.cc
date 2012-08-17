@@ -379,7 +379,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
 
   if (client_) {
     Extension::DecodeIcon(extension_.get(),
-                          ExtensionIconSet::EXTENSION_ICON_LARGE,
+                          extension_misc::EXTENSION_ICON_LARGE,
                           ExtensionIconSet::MATCH_BIGGER,
                           &install_icon_);
   }

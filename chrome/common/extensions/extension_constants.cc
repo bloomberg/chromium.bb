@@ -145,4 +145,17 @@ const char kAppNotificationsIncognitoError[] =
     "This API is not accessible by 'split' mode "
     "extensions in incognito windows.";
 
+const int kExtensionIconSizes[] = {
+  EXTENSION_ICON_GIGANTOR,  // 512
+  EXTENSION_ICON_EXTRA_LARGE,  // 256
+  EXTENSION_ICON_LARGE,  // 128
+  EXTENSION_ICON_MEDIUM,  // 48
+  EXTENSION_ICON_SMALL,  // 32
+  EXTENSION_ICON_SMALLISH,  // 24
+  EXTENSION_ICON_BITTY  // 16
+};
+
+const size_t kNumExtensionIconSizes =
+    arraysize(kExtensionIconSizes);
+
 }  // namespace extension_misc

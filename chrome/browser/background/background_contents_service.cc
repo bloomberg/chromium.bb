@@ -115,7 +115,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
       extension->is_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
       IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
-  GURL icon_url(extension->GetIconURL(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+  GURL icon_url(extension->GetIconURL(extension_misc::EXTENSION_ICON_SMALLISH,
                                       ExtensionIconSet::MATCH_BIGGER));
   DesktopNotificationService::AddNotification(
       extension->url(), title, message, icon_url, string16(),

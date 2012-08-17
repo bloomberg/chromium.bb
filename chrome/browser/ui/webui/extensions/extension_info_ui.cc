@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -64,7 +65,7 @@ void ExtensionInfoUI::AddExtensionDataToSource(
   // Set the icon URL.
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
-                                      ExtensionIconSet::EXTENSION_ICON_MEDIUM,
+                                      extension_misc::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       false, NULL);
   source_->AddString("icon", UTF8ToUTF16(icon.spec()));

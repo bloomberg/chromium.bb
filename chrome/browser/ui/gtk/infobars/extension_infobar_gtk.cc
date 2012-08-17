@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/render_view_host.h"
@@ -80,7 +81,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image,
 
   SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
-  int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
+  int image_size = extension_misc::EXTENSION_ICON_BITTY;
   // The margin between the extension icon and the drop-down arrow bitmap.
   static const int kDropArrowLeftMargin = 3;
   scoped_ptr<gfx::Canvas> canvas(new gfx::Canvas(
@@ -112,11 +113,11 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   const extensions::Extension* extension =
       delegate_->extension_host()->extension();
   ExtensionResource icon_resource = extension->GetIconResource(
-      ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
+      extension_misc::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
   // Create a tracker to load the image. It will report back on OnImageLoaded.
   tracker_.LoadImage(extension, icon_resource,
-                     gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
-                               ExtensionIconSet::EXTENSION_ICON_BITTY),
+                     gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
+                               extension_misc::EXTENSION_ICON_BITTY),
                      ImageLoadingTracker::DONT_CACHE);
 
   // Pad the bottom of the infobar by one pixel for the border.

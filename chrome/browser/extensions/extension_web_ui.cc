@@ -97,7 +97,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
   void Init() {
     if (extension_) {
       ExtensionResource icon_resource =
-          extension_->GetIconResource(ExtensionIconSet::EXTENSION_ICON_BITTY,
+          extension_->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
                                       ExtensionIconSet::MATCH_EXACTLY);
 
       tracker_.LoadImage(extension_, icon_resource,

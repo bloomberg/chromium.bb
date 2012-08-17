@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
@@ -128,10 +129,10 @@ class SearchBuilderResult : public app_list::SearchResult,
     // TODO(xiyuan): Fix this for HD.
     tracker_->LoadImage(extension,
                         extension->GetIconResource(
-                            ExtensionIconSet::EXTENSION_ICON_SMALL,
+                            extension_misc::EXTENSION_ICON_SMALL,
                             ExtensionIconSet::MATCH_BIGGER),
-                        gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALL,
-                                  ExtensionIconSet::EXTENSION_ICON_SMALL),
+                        gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                                  extension_misc::EXTENSION_ICON_SMALL),
                         ImageLoadingTracker::DONT_CACHE);
   }
 

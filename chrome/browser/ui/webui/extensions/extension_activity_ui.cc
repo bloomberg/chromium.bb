@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
@@ -70,7 +71,7 @@ void ExtensionActivityUI::HandleRequestExtensionData(
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension_,
-                                      ExtensionIconSet::EXTENSION_ICON_MEDIUM,
+                                      extension_misc::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       false, NULL);
 

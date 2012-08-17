@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/favicon_url.h"
@@ -129,7 +130,7 @@ void AppLauncherHandler::CreateAppInfo(
   // Instead of setting grayscale here, we do it in apps_page.js.
   GURL icon_big =
       ExtensionIconSource::GetIconURL(extension,
-                                      ExtensionIconSet::EXTENSION_ICON_LARGE,
+                                      extension_misc::EXTENSION_ICON_LARGE,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       false, &icon_big_exists);
   value->SetString("icon_big", icon_big.spec());
@@ -137,7 +138,7 @@ void AppLauncherHandler::CreateAppInfo(
   bool icon_small_exists = true;
   GURL icon_small =
       ExtensionIconSource::GetIconURL(extension,
-                                      ExtensionIconSet::EXTENSION_ICON_BITTY,
+                                      extension_misc::EXTENSION_ICON_BITTY,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       false, &icon_small_exists);
   value->SetString("icon_small", icon_small.spec());

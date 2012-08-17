@@ -244,6 +244,24 @@ namespace extension_misc {
   // Error indicating that the app notifications API is not accessible by split
   // mode extensions in incognito windows.
   extern const char kAppNotificationsIncognitoError[];
+
+  // NOTE: If you change this list, you should also change kExtensionIconSizes
+  // in cc file.
+  enum ExtensionIcons {
+    EXTENSION_ICON_GIGANTOR = 512,
+    EXTENSION_ICON_EXTRA_LARGE = 256,
+    EXTENSION_ICON_LARGE = 128,
+    EXTENSION_ICON_MEDIUM = 48,
+    EXTENSION_ICON_SMALL = 32,
+    EXTENSION_ICON_SMALLISH = 24,
+    EXTENSION_ICON_BITTY = 16,
+    EXTENSION_ICON_INVALID = 0,
+  };
+
+  // List of sizes for extension icons that can be defined in the manifest.
+  extern const int kExtensionIconSizes[];
+  extern const size_t kNumExtensionIconSizes;
+
 }  // extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

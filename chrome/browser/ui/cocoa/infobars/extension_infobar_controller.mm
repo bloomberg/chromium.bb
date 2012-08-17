@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/web_contents.h"
@@ -73,11 +74,11 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     const extensions::Extension* extension = delegate_->extension_host()->
         extension();
     ExtensionResource icon_resource =
-        extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_BITTY,
+        extension->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
                                    ExtensionIconSet::MATCH_EXACTLY);
     tracker_.LoadImage(extension, icon_resource,
-                       gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
-                                 ExtensionIconSet::EXTENSION_ICON_BITTY),
+                       gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
+                                 extension_misc::EXTENSION_ICON_BITTY),
                        ImageLoadingTracker::DONT_CACHE);
   }
 
@@ -101,7 +102,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
 
     SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
-    const int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
+    const int image_size = extension_misc::EXTENSION_ICON_BITTY;
     scoped_ptr<gfx::Canvas> canvas(
         new gfx::Canvas(
             gfx::Size(image_size + kDropArrowLeftMarginPx + drop_image->width(),

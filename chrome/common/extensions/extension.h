@@ -408,7 +408,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // called on the file thread. To easily load extension images on the UI
   // thread, see ImageLoadingTracker.
   static void DecodeIcon(const Extension* extension,
-                         ExtensionIconSet::Icons icon_size,
+                         int icon_size,
                          ExtensionIconSet::MatchType match_type,
                          scoped_ptr<SkBitmap>* result);
 
@@ -417,7 +417,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // file thread. To easily load extension images on the UI thread, see
   // ImageLoadingTracker.
   static void DecodeIcon(const Extension* extension,
-                         ExtensionIconSet::Icons icon_size,
+                         int icon_size,
                          scoped_ptr<SkBitmap>* result);
 
   // Given an icon_path and icon size, read it if present and decode it into
@@ -425,7 +425,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // file thread. To easily load extension images on the UI thread, see
   // ImageLoadingTracker.
   static void DecodeIconFromPath(const FilePath& icon_path,
-                                 ExtensionIconSet::Icons icon_size,
+                                 int icon_size,
                                  scoped_ptr<SkBitmap>* result);
 
   // Returns the default extension/app icon (for extensions or apps that don't

@@ -10,6 +10,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "grit/theme_resources.h"
@@ -47,7 +48,7 @@ class MenuImageSource: public gfx::CanvasImageSource {
 
   // Overridden from gfx::CanvasImageSource
   void Draw(gfx::Canvas* canvas) OVERRIDE {
-    int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
+    int image_size = extension_misc::EXTENSION_ICON_BITTY;
     canvas->DrawImageInt(icon_, 0, 0, icon_.width(), icon_.height(), 0, 0,
                          image_size, image_size, false);
     canvas->DrawImageInt(drop_image_, image_size + kDropArrowLeftMargin,
@@ -56,7 +57,7 @@ class MenuImageSource: public gfx::CanvasImageSource {
 
  private:
   gfx::Size ComputeSize(const gfx::ImageSkia& drop_image) const {
-    int image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
+    int image_size = extension_misc::EXTENSION_ICON_BITTY;
     return gfx::Size(image_size + kDropArrowLeftMargin + drop_image.width(),
                      image_size);
   }
@@ -129,7 +130,8 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   // which assumes that particular children (e.g. the close button) have already
   // been added.
   const extensions::Extension* extension = extension_host->extension();
-  ExtensionIconSet::Icons image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
+  extension_misc::ExtensionIcons image_size =
+      extension_misc::EXTENSION_ICON_BITTY;
   ExtensionResource icon_resource = extension->GetIconResource(
       image_size, ExtensionIconSet::MATCH_EXACTLY);
   tracker_.LoadImage(extension, icon_resource,

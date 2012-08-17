@@ -1421,8 +1421,9 @@ bool Extension::LoadIcons(string16* error) {
     return false;
   }
 
-  for (size_t i = 0; i < ExtensionIconSet::kNumIconSizes; ++i) {
-    std::string key = base::IntToString(ExtensionIconSet::kIconSizes[i]);
+  for (size_t i = 0; i < extension_misc::kNumExtensionIconSizes; ++i) {
+    std::string key =
+        base::IntToString(extension_misc::kExtensionIconSizes[i]);
     if (icons_value->HasKey(key)) {
       std::string icon_path;
       if (!icons_value->GetString(key, &icon_path)) {
@@ -1439,7 +1440,7 @@ bool Extension::LoadIcons(string16* error) {
             errors::kInvalidIconPath, key);
         return false;
       }
-      icons_.Add(ExtensionIconSet::kIconSizes[i], icon_path);
+      icons_.Add(extension_misc::kExtensionIconSizes[i], icon_path);
     }
   }
   return true;
@@ -2371,7 +2372,7 @@ bool Extension::LoadScriptBadge(string16* error) {
         InstallWarning(InstallWarning::FORMAT_TEXT,
                        errors::kScriptBadgeIconIgnored));
   }
-  std::string icon16_path = icons().Get(ExtensionIconSet::EXTENSION_ICON_BITTY,
+  std::string icon16_path = icons().Get(extension_misc::EXTENSION_ICON_BITTY,
                                         ExtensionIconSet::MATCH_EXACTLY);
   if (!icon16_path.empty()) {
     script_badge_->set_default_icon_path(icon16_path);
@@ -3014,25 +3015,25 @@ bool Extension::FormatPEMForFileOutput(const std::string& input,
 
 // static
 void Extension::DecodeIcon(const Extension* extension,
-                           ExtensionIconSet::Icons preferred_icon_size,
+                           int preferred_icon_size,
                            ExtensionIconSet::MatchType match_type,
                            scoped_ptr<SkBitmap>* result) {
   std::string path = extension->icons().Get(preferred_icon_size, match_type);
-  ExtensionIconSet::Icons size = extension->icons().GetIconSizeFromPath(path);
+  int size = extension->icons().GetIconSizeFromPath(path);
   ExtensionResource icon_resource = extension->GetResource(path);
   DecodeIconFromPath(icon_resource.GetFilePath(), size, result);
 }
 
 // static
 void Extension::DecodeIcon(const Extension* extension,
-                           ExtensionIconSet::Icons icon_size,
+                           int icon_size,
                            scoped_ptr<SkBitmap>* result) {
   DecodeIcon(extension, icon_size, ExtensionIconSet::MATCH_EXACTLY, result);
 }
 
 // static
 void Extension::DecodeIconFromPath(const FilePath& icon_path,
-                                   ExtensionIconSet::Icons icon_size,
+                                   int icon_size,
                                    scoped_ptr<SkBitmap>* result) {
   if (icon_path.empty())
     return;

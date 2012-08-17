@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_service.h"
@@ -106,10 +107,10 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALLISH,
                                  ExtensionIconSet::MATCH_EXACTLY);
-  gfx::Size max_size(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
-                     ExtensionIconSet::EXTENSION_ICON_SMALLISH);
+  gfx::Size max_size(extension_misc::EXTENSION_ICON_SMALLISH,
+                     extension_misc::EXTENSION_ICON_SMALLISH);
   ImageLoadingTracker loader(this);
   loader.LoadImage(extension.get(),
                    image_resource,
@@ -125,14 +126,14 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             image_.ToSkBitmap()->width());
 
   // The image should be cached in the Extension.
   EXPECT_TRUE(extension->HasCachedImage(image_resource, max_size));
 
   // Make sure the image is in the extension.
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             extension->GetCachedImage(image_resource, max_size).width());
 
   // Ask the tracker for the image again, this should call us back immediately.
@@ -144,7 +145,7 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             image_.ToSkBitmap()->width());
 }
 
@@ -156,13 +157,13 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
-      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALLISH,
                                  ExtensionIconSet::MATCH_EXACTLY);
   ImageLoadingTracker loader(this);
   loader.LoadImage(extension.get(),
                    image_resource,
-                   gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
-                             ExtensionIconSet::EXTENSION_ICON_SMALLISH),
+                   gfx::Size(extension_misc::EXTENSION_ICON_SMALLISH,
+                             extension_misc::EXTENSION_ICON_SMALLISH),
                    ImageLoadingTracker::CACHE);
 
   // The image isn't cached, so we should not have received notification.
@@ -187,7 +188,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             image_.ToSkBitmap()->width());
 }
 
@@ -198,8 +199,8 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
   ASSERT_TRUE(extension.get() != NULL);
 
   std::vector<ImageLoadingTracker::ImageInfo> info_list;
-  int sizes[] = {ExtensionIconSet::EXTENSION_ICON_SMALLISH,
-                 ExtensionIconSet::EXTENSION_ICON_BITTY};
+  int sizes[] = {extension_misc::EXTENSION_ICON_SMALLISH,
+                 extension_misc::EXTENSION_ICON_BITTY};
   for (size_t i = 0; i < arraysize(sizes); ++i) {
     ExtensionResource resource =
         extension->GetIconResource(sizes[i], ExtensionIconSet::MATCH_EXACTLY);
@@ -227,9 +228,9 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
   if (img_rep1->pixel_width() > img_rep2->pixel_width()) {
     std::swap(img_rep1, img_rep2);
   }
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_BITTY,
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_BITTY,
             img_rep1->pixel_width());
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             img_rep2->pixel_width());
 }
 
@@ -240,7 +241,7 @@ TEST_F(ImageLoadingTrackerTest, IsComponentExtensionResource) {
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource resource =
-      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_BITTY,
+      extension->GetIconResource(extension_misc::EXTENSION_ICON_BITTY,
                                  ExtensionIconSet::MATCH_EXACTLY);
 
 #if defined(FILE_MANAGER_EXTENSION)

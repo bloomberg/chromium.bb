@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 
 namespace {
 
@@ -47,10 +48,10 @@ void LauncherAppIconLoader::FetchImage(const std::string& id) {
   map_[image_loader_->next_id()] = id;
   image_loader_->LoadImage(
       extension,
-      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALL,
+      extension->GetIconResource(extension_misc::EXTENSION_ICON_SMALL,
                                  ExtensionIconSet::MATCH_BIGGER),
-      gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALL,
-                ExtensionIconSet::EXTENSION_ICON_SMALL),
+      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                extension_misc::EXTENSION_ICON_SMALL),
       ImageLoadingTracker::CACHE);
 }
 

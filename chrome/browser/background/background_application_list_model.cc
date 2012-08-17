@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
@@ -73,7 +74,7 @@ class BackgroundApplicationListModel::Application
 
   // Uses the FILE thread to request this extension's icon, sized
   // appropriately.
-  void RequestIcon(ExtensionIconSet::Icons size);
+  void RequestIcon(extension_misc::ExtensionIcons size);
 
   const Extension* extension_;
   scoped_ptr<gfx::ImageSkia> icon_;
@@ -155,7 +156,7 @@ void BackgroundApplicationListModel::Application::OnImageLoaded(
 }
 
 void BackgroundApplicationListModel::Application::RequestIcon(
-    ExtensionIconSet::Icons size) {
+    extension_misc::ExtensionIcons size) {
   ExtensionResource resource = extension_->GetIconResource(
       size, ExtensionIconSet::MATCH_BIGGER);
   tracker_.LoadImage(extension_, resource, gfx::Size(size, size),
@@ -209,7 +210,7 @@ void BackgroundApplicationListModel::AssociateApplicationData(
     application = new Application(this, extension);
     applications_[extension->id()] = application;
     Update();
-    application->RequestIcon(ExtensionIconSet::EXTENSION_ICON_BITTY);
+    application->RequestIcon(extension_misc::EXTENSION_ICON_BITTY);
   }
 }
 

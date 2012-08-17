@@ -37,6 +37,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
@@ -115,7 +116,7 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
-                                      ExtensionIconSet::EXTENSION_ICON_MEDIUM,
+                                      extension_misc::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       !enabled, NULL);
   if (extension->location() == Extension::LOAD)

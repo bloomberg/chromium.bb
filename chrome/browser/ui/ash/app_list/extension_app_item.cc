@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -155,10 +156,10 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
   tracker_.reset(new ImageLoadingTracker(this));
   tracker_->LoadImage(extension,
                       extension->GetIconResource(
-                          ExtensionIconSet::EXTENSION_ICON_LARGE,
+                          extension_misc::EXTENSION_ICON_LARGE,
                           ExtensionIconSet::MATCH_BIGGER),
-                      gfx::Size(ExtensionIconSet::EXTENSION_ICON_LARGE,
-                                ExtensionIconSet::EXTENSION_ICON_LARGE),
+                      gfx::Size(extension_misc::EXTENSION_ICON_LARGE,
+                                extension_misc::EXTENSION_ICON_LARGE),
                       ImageLoadingTracker::DONT_CACHE);
 }
 

@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_service.h"
@@ -43,7 +44,7 @@ void ExtensionUninstallDialog::ConfirmUninstall(
   extension_ = extension;
 
   ExtensionResource image =
-      extension_->GetIconResource(ExtensionIconSet::EXTENSION_ICON_LARGE,
+      extension_->GetIconResource(extension_misc::EXTENSION_ICON_LARGE,
                                   ExtensionIconSet::MATCH_BIGGER);
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
   tracker_.reset(new ImageLoadingTracker(this));

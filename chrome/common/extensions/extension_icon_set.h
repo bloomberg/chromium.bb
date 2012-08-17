@@ -11,19 +11,6 @@
 // Represents the set of icons for an extension.
 class ExtensionIconSet {
  public:
-  // NOTE: If you change this list, you should also change kIconSizes in the cc
-  // file.
-  enum Icons {
-    EXTENSION_ICON_GIGANTOR = 512,
-    EXTENSION_ICON_EXTRA_LARGE = 256,
-    EXTENSION_ICON_LARGE = 128,
-    EXTENSION_ICON_MEDIUM = 48,
-    EXTENSION_ICON_SMALL = 32,
-    EXTENSION_ICON_SMALLISH = 24,
-    EXTENSION_ICON_BITTY = 16,
-    EXTENSION_ICON_INVALID = 0,
-  };
-
   // Get an icon from the set, optionally falling back to a smaller or bigger
   // size. MatchType is exclusive (do not OR them together).
   enum MatchType {
@@ -32,12 +19,8 @@ class ExtensionIconSet {
     MATCH_SMALLER
   };
 
-  // Access to the underlying map from icon size->path.
-  typedef std::map<Icons, std::string> IconMap;
-
-  // Icon sizes used by the extension system.
-  static const Icons kIconSizes[];
-  static const size_t kNumIconSizes;
+  // Access to the underlying map from icon size->{path, bitmap}.
+  typedef std::map<int, std::string> IconMap;
 
   ExtensionIconSet();
   ~ExtensionIconSet();
@@ -47,17 +30,19 @@ class ExtensionIconSet {
   // Remove all icons from the set.
   void Clear();
 
-  // Add an icon to the set. If the specified size is already present, it is
-  // overwritten.
-  void Add(Icons size, const std::string& path);
+  // Add an icon path to the set. If a path for the specified size is already
+  // present, it is overwritten.
+  void Add(int size, const std::string& path);
 
+  // Gets path value of the icon found when searching for |size| using
+  // |mathc_type|.
   std::string Get(int size, MatchType match_type) const;
 
-  // Returns true if the set contains the specified path.
+  // Returns true iff the set contains the specified path.
   bool ContainsPath(const std::string& path) const;
 
   // Returns icon size if the set contains the specified path or 0 if not found.
-  Icons GetIconSizeFromPath(const std::string& path) const;
+  int GetIconSizeFromPath(const std::string& path) const;
 
  private:
   IconMap map_;

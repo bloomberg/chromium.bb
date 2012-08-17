@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "googleurl/src/gurl.h"
@@ -721,7 +722,7 @@ void LocalizedError::GetAppErrorStrings(
 
   error_strings->SetString("title", app->name());
   error_strings->SetString("icon",
-      app->GetIconURL(ExtensionIconSet::EXTENSION_ICON_GIGANTOR,
+      app->GetIconURL(extension_misc::EXTENSION_ICON_GIGANTOR,
                       ExtensionIconSet::MATCH_SMALLER).spec());
   error_strings->SetString("name", app->name());
   error_strings->SetString("msg",
