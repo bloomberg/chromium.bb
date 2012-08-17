@@ -44,6 +44,7 @@ int EvdevClose(EvdevPtr evdev) {
 
 int EvdevRead(EvdevPtr evdev) {
   struct input_event ev[NUM_EVENTS];
+  EventStatePtr evstate = evdev->evstate;
   int i;
   int len;
   bool sync_evdev_state = false;
@@ -52,6 +53,16 @@ int EvdevRead(EvdevPtr evdev) {
     len = read(evdev->fd, &ev, sizeof(ev));
     if (len <= 0)
       return errno;
+
+    /* Read as many whole struct input_event objects as we can into the
+       circular buffer */
+    if (evstate->debug_buf) {
+      for (i = 0; i < len / sizeof(*ev); i++) {
+        evstate->debug_buf[evstate->debug_buf_tail] = ev[i];
+        evstate->debug_buf_tail =
+            (evstate->debug_buf_tail + 1) % DEBUG_BUF_SIZE;
+      }
+    }
 
     /* kernel always delivers complete events, so len must be sizeof *ev */
     if (len % sizeof(*ev))

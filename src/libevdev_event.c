@@ -422,14 +422,7 @@ Event_Print(EvdevPtr device, struct input_event* ev)
 bool
 Event_Process(EvdevPtr device, struct input_event* ev)
 {
-    EventStatePtr evstate = device->evstate;
-
     Event_Print(device, ev);
-    if (evstate->debug_buf) {
-        evstate->debug_buf[evstate->debug_buf_tail] = *ev;
-        evstate->debug_buf_tail =
-            (evstate->debug_buf_tail + 1) % DEBUG_BUF_SIZE;
-    }
 
     switch (ev->type) {
     case EV_SYN:
