@@ -181,7 +181,7 @@ class GDataDirectoryService {
   void AddEntryToResourceMap(GDataEntry* entry);
 
   // Removes the entry from resource map.
-  void RemoveEntryFromResourceMap(GDataEntry* entry);
+  void RemoveEntryFromResourceMap(const std::string& resource_id);
 
   // Searches for |file_path| synchronously.
   // TODO(satorux): Replace this with an async version crbug.com/137160

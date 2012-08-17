@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
@@ -11,26 +13,6 @@
 using content::BrowserThread;
 
 namespace gdata {
-
-namespace {
-
-// Recursively extracts the paths set of all sub-directories of |entry|.
-void GetChildDirectoryPaths(GDataEntry* entry,
-                            std::set<FilePath>* changed_dirs) {
-  GDataDirectory* dir = entry->AsGDataDirectory();
-  if (!dir)
-    return;
-
-  for (GDataDirectoryCollection::const_iterator it =
-       dir->child_directories().begin();
-       it != dir->child_directories().end(); ++it) {
-    GDataDirectory* child_dir = it->second;
-    changed_dirs->insert(child_dir->GetFilePath());
-    GetChildDirectoryPaths(child_dir, changed_dirs);
-  }
-}
-
-}  // namespace
 
 FeedToFileResourceMapUmaStats::FeedToFileResourceMapUmaStats()
     : num_regular_files(0),
@@ -218,7 +200,9 @@ RemoveEntryFromDirectoryAndCollectChangedDirectories(
     std::set<FilePath>* changed_dirs) {
   // Get the list of all sub-directory paths, so we can notify their listeners
   // that they are smoked.
-  GetChildDirectoryPaths(entry, changed_dirs);
+  GDataDirectory* dir = entry->AsGDataDirectory();
+  if (dir)
+    dir->GetChildDirectoryPaths(changed_dirs);
   directory->RemoveEntry(entry);
 }
 

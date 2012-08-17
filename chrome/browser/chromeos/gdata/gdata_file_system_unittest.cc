@@ -675,6 +675,7 @@ class GDataFileSystemTest : public testing::Test {
     // drive/File1
     GDataEntryProto* file = root_dir->add_child_files();
     file->set_title("File1");
+    file->set_resource_id("resource_id:File1");
     file->set_upload_url("http://resumable-edit-media/1");
     file->mutable_file_specific_info()->set_file_md5("md5");
     platform_info = file->mutable_file_info();
@@ -685,6 +686,7 @@ class GDataFileSystemTest : public testing::Test {
     GDataDirectoryProto* dir1 = root_dir->add_child_directories();
     dir_base = dir1->mutable_gdata_entry();
     dir_base->set_title("Dir1");
+    dir_base->set_resource_id("resource_id:Dir1");
     dir_base->set_upload_url("http://resumable-create-media/2");
     platform_info = dir_base->mutable_file_info();
     platform_info->set_is_directory(true);
@@ -692,6 +694,7 @@ class GDataFileSystemTest : public testing::Test {
     // drive/Dir1/File2
     file = dir1->add_child_files();
     file->set_title("File2");
+    file->set_resource_id("resource_id:File2");
     file->set_upload_url("http://resumable-edit-media/2");
     file->mutable_file_specific_info()->set_file_md5("md5");
     platform_info = file->mutable_file_info();
@@ -702,6 +705,7 @@ class GDataFileSystemTest : public testing::Test {
     GDataDirectoryProto* dir2 = dir1->add_child_directories();
     dir_base = dir2->mutable_gdata_entry();
     dir_base->set_title("SubDir2");
+    dir_base->set_resource_id("resource_id:SubDir2");
     dir_base->set_upload_url("http://resumable-create-media/3");
     platform_info = dir_base->mutable_file_info();
     platform_info->set_is_directory(true);
@@ -709,6 +713,7 @@ class GDataFileSystemTest : public testing::Test {
     // drive/Dir1/SubDir2/File3
     file = dir2->add_child_files();
     file->set_title("File3");
+    file->set_resource_id("resource_id:File3");
     file->set_upload_url("http://resumable-edit-media/3");
     file->mutable_file_specific_info()->set_file_md5("md5");
     platform_info = file->mutable_file_info();
@@ -1869,10 +1874,10 @@ TEST_F(GDataFileSystemTest, CreateDirectory) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("drive/New Folder 1"))))).Times(1);
 
-  // Create directory in a sub dirrectory.
+  // Create directory in a sub directory.
   FilePath subdir_path(FILE_PATH_LITERAL("drive/New Folder 1/New Folder 2"));
   EXPECT_FALSE(EntryExists(subdir_path));
-  AddDirectoryFromFile(subdir_path, "directory_entry_atom.json");
+  AddDirectoryFromFile(subdir_path, "directory_entry_atom2.json");
   EXPECT_TRUE(EntryExists(subdir_path));
 }
 

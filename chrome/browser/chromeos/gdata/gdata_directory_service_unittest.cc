@@ -190,6 +190,15 @@ void InitFromDBCallback(GDataFileError expected_error,
   EXPECT_EQ(expected_error, actual_error);
 }
 
+// Callback for GDataDirectoryService::ReadDirectoryByPath.
+void ReadDirectoryByPathCallback(
+    scoped_ptr<GDataEntryProtoVector>* result,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProtoVector> entries) {
+  EXPECT_EQ(GDATA_FILE_OK, error);
+  *result = entries.Pass();
+}
+
 }  // namespace
 
 TEST(GDataDirectoryServiceTest, VersionCheck) {
@@ -299,6 +308,12 @@ TEST(GDataDirectoryServiceTest, ParseFromString_DetectBadResourceID) {
 // is to ensure that an error in GDataFile::FromProto() is properly
 // propagated to GDataRootDirectory::ParseFromString().
 TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
+  // Need to run on UI thread to call
+  // GDataDirectoryService::ReadDirectoryByPath.
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+
   // Set up the root directory properly.
   GDataRootDirectoryProto root_directory_proto;
   root_directory_proto.set_version(kProtoVersion);
@@ -317,6 +332,7 @@ TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
   sub_directory_proto->mutable_gdata_entry()->mutable_file_info()->
       set_is_directory(true);
   sub_directory_proto->mutable_gdata_entry()->set_title("empty");
+  sub_directory_proto->mutable_gdata_entry()->set_resource_id("res:empty");
   sub_directory_proto->mutable_gdata_entry()->set_upload_url(
       kResumableCreateMediaUrl);
 
@@ -326,6 +342,7 @@ TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
   sub_directory_proto->mutable_gdata_entry()->mutable_file_info()->
       set_is_directory(true);
   sub_directory_proto->mutable_gdata_entry()->set_title("dir");
+  sub_directory_proto->mutable_gdata_entry()->set_resource_id("res:dir");
   sub_directory_proto->mutable_gdata_entry()->set_upload_url(
       kResumableCreateMediaUrl);
 
@@ -333,10 +350,10 @@ TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
   GDataEntryProto* entry_proto =
       sub_directory_proto->add_child_files();
   entry_proto->set_title("test.txt");
+  entry_proto->set_resource_id("res:file");
   entry_proto->mutable_file_specific_info()->set_file_md5("md5");
 
   GDataDirectoryService directory_service;
-  GDataDirectory* root(directory_service.root());
   // The origin is set to UNINITIALIZED by default.
   ASSERT_EQ(UNINITIALIZED, directory_service.origin());
   std::string serialized_proto;
@@ -344,9 +361,14 @@ TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
   // This should fail as the upload URL is not set for |entry_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
   ASSERT_FALSE(directory_service.ParseFromString(serialized_proto));
+
   // Nothing should be added to the root directory if the parse failed.
-  ASSERT_TRUE(root->child_files().empty());
-  ASSERT_TRUE(root->child_directories().empty());
+  scoped_ptr<GDataEntryProtoVector> result;
+  directory_service.ReadDirectoryByPath(FilePath(kGDataRootDirectory),
+      base::Bind(&ReadDirectoryByPathCallback, &result));
+  test_util::RunBlockingPoolTask();
+  EXPECT_TRUE(result->empty());
+
   // The origin should remain UNINITIALIZED because the loading failed.
   ASSERT_EQ(UNINITIALIZED, directory_service.origin());
 
@@ -357,10 +379,11 @@ TEST(GDataDirectoryServiceTest, ParseFromString_DetectNoUploadUrl) {
   // This should succeed as the upload URL is set for |entry_proto|.
   ASSERT_TRUE(root_directory_proto.SerializeToString(&serialized_proto));
   ASSERT_TRUE(directory_service.ParseFromString(serialized_proto));
-  // No file should be added to the root directory.
-  ASSERT_TRUE(root->child_files().empty());
+  directory_service.ReadDirectoryByPath(FilePath(kGDataRootDirectory),
+      base::Bind(&ReadDirectoryByPathCallback, &result));
+  test_util::RunBlockingPoolTask();
   // Two directories ("empty", "dir") should be added to the root directory.
-  ASSERT_EQ(2U, root->child_directories().size());
+  EXPECT_EQ(2U, result->size());
   // The origin should change to FROM_CACHE because we loaded from the cache.
   ASSERT_EQ(FROM_CACHE, directory_service.origin());
 }

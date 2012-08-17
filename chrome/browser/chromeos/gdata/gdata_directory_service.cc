@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_directory_service.h"
 
 #include <leveldb/db.h>
+#include <utility>
 
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
@@ -235,7 +236,7 @@ void GDataDirectoryService::ClearRoot() {
   // Note that children have a reference to root_,
   // so we need to delete them here.
   root_->RemoveChildren();
-  RemoveEntryFromResourceMap(root_.get());
+  RemoveEntryFromResourceMap(root_->resource_id());
   DCHECK(resource_map_.empty());
   resource_map_.clear();
   root_.reset();
@@ -297,14 +298,19 @@ void GDataDirectoryService::RemoveEntryFromParent(
 }
 
 void GDataDirectoryService::AddEntryToResourceMap(GDataEntry* entry) {
-  // GDataFileSystem has already locked.
   DVLOG(1) << "AddEntryToResourceMap " << entry->resource_id();
-  resource_map_.insert(std::make_pair(entry->resource_id(), entry));
+  DCHECK(!entry->resource_id().empty());
+  std::pair<ResourceMap::iterator, bool> ret =
+      resource_map_.insert(std::make_pair(entry->resource_id(), entry));
+  DCHECK(ret.second);  // resource_id did not previously exist in the map.
 }
 
-void GDataDirectoryService::RemoveEntryFromResourceMap(GDataEntry* entry) {
-  // GDataFileSystem has already locked.
-  resource_map_.erase(entry->resource_id());
+void GDataDirectoryService::RemoveEntryFromResourceMap(
+    const std::string& resource_id) {
+  DVLOG(1) << "RemoveEntryFromResourceMap " << resource_id;
+  DCHECK(!resource_id.empty());
+  size_t ret = resource_map_.erase(resource_id);
+  DCHECK_EQ(1u, ret);  // resource_id was found in the map.
 }
 
 GDataEntry* GDataDirectoryService::FindEntryByPathSync(
@@ -469,6 +475,7 @@ void GDataDirectoryService::RefreshDirectoryInternal(
     return;
   }
 
+  DVLOG(1) << "RefreshDirectoryInternal";
   directory->RemoveChildFiles();
   // Add files from file_map.
   for (ResourceMap::const_iterator it = file_map.begin();

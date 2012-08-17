@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILES_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -63,6 +64,7 @@ class GDataEntry {
   // Converts to/from proto. Only handles the common part (i.e. does not
   // touch |file_specific_info|).
   bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
+  // TODO(achuith,satorux): Should this be virtual?
   void ToProto(GDataEntryProto* proto) const;
 
   // Similar to ToProto() but this fills in |file_specific_info| and
@@ -167,10 +169,6 @@ class GDataEntry {
   DISALLOW_COPY_AND_ASSIGN(GDataEntry);
 };
 
-typedef std::map<FilePath::StringType, GDataFile*> GDataFileCollection;
-typedef std::map<FilePath::StringType, GDataDirectory*>
-    GDataDirectoryCollection;
-
 // Represents "file" in in a GData virtual file system. On gdata feed side,
 // this could be either a regular file or a server side document.
 class GDataFile : public GDataEntry {
@@ -229,12 +227,6 @@ class GDataDirectory : public GDataEntry {
   // Converts the children as a vector of GDataEntryProto.
   scoped_ptr<GDataEntryProtoVector> ToProtoVector() const;
 
-  // Collection of children files/directories.
-  const GDataFileCollection& child_files() const { return child_files_; }
-  const GDataDirectoryCollection& child_directories() const {
-    return child_directories_;
-  }
-
  private:
   // TODO(satorux): Remove the friend statements. crbug.com/139649
   friend class GDataDirectoryService;
@@ -278,7 +270,14 @@ class GDataDirectory : public GDataEntry {
   void RemoveChildFiles();
   void RemoveChildDirectories();
 
-  // Collection of children GDataEntry items.
+  // Recursively extracts the paths set of all sub-directories.
+  void GetChildDirectoryPaths(std::set<FilePath>* child_dirs);
+
+  // Maps between base_name and resource_id of files and directories.
+  typedef std::map<FilePath::StringType, GDataFile*> GDataFileCollection;
+  typedef std::map<FilePath::StringType, GDataDirectory*>
+      GDataDirectoryCollection;
+  // Collection of children.
   GDataFileCollection child_files_;
   GDataDirectoryCollection child_directories_;
 
