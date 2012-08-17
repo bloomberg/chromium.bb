@@ -331,12 +331,12 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
   bool video = false;
   int command_id = IDC_MEDIA_CONTEXT_MEDIA_STREAM_CAPTURE_LIST_FIRST;
   for (CaptureDeviceTabs::iterator iter = tabs_.begin();
-       iter != tabs_.end();  ++iter) {
+       iter != tabs_.end();) {
     string16 tab_title = GetTitle(iter->render_process_id,
                                   iter->render_view_id);
     if (tab_title.empty()) {
       // Delete the entry since the tab has gone away.
-      tabs_.erase(iter);
+      iter = tabs_.erase(iter);
       continue;
     }
 
@@ -353,6 +353,7 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
       break;
 
     ++command_id;
+    ++iter;
   }
 
   if (!audio && !video) {
