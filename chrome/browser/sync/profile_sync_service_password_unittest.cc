@@ -116,6 +116,10 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
     TestProfileSyncService::OnPassphraseAccepted();
   }
 
+  virtual void OnConfigureBlocked() OVERRIDE {
+    QuitMessageLoop();
+  }
+
  private:
   base::Closure callback_;
 };
@@ -149,13 +153,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     password_store_ = static_cast<MockPasswordStore*>(
         PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, MockPasswordStore::Build).get());
-
-    registrar_.Add(&observer_,
-        chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-        content::NotificationService::AllSources());
-    registrar_.Add(&observer_,
-        chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
-        content::NotificationService::AllSources());
   }
 
   virtual void TearDown() {
@@ -203,21 +200,12 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
           WillRepeatedly(MakePasswordSyncComponents(service_.get(),
                                                     password_store_.get(),
                                                     data_type_controller));
-      EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
+      EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).
           WillOnce(ReturnNewDataTypeManager());
 
       // We need tokens to get the tests going
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
-
-      EXPECT_CALL(observer_,
-          Observe(
-              int(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE),_,_));
-      EXPECT_CALL(observer_,
-          Observe(
-              int(
-              chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED),_,_))
-          .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
 
       service_->RegisterDataTypeController(data_type_controller);
       service_->Initialize();

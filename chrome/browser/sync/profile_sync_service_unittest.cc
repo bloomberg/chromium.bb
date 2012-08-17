@@ -116,7 +116,7 @@ class ProfileSyncServiceTest : public testing::Test {
         profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
       // Register the bookmark data type.
-      ON_CALL(*factory, CreateDataTypeManager(_, _)).
+      ON_CALL(*factory, CreateDataTypeManager(_, _, _)).
           WillByDefault(ReturnNewDataTypeManager());
 
       if (issue_auth_token) {
@@ -192,7 +192,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
       ProfileSyncService::AUTO_START,
       true,
       base::Closure()));
-  EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).Times(0);
   EXPECT_CALL(*factory, CreateBookmarkSyncComponents(_, _)).
       Times(0);
   service_->RegisterDataTypeController(
@@ -217,7 +217,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
       true,
       base::Closure()));
   // Register the bookmark data type.
-  EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
+  EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).
       WillRepeatedly(ReturnNewDataTypeManager());
 
   IssueTestTokens();

@@ -133,7 +133,7 @@ class ProfileSyncServicePreferenceTest
     EXPECT_CALL(*factory, GetSyncableServiceForType(syncer::PREFERENCES)).
         WillOnce(Return(pref_sync_service_->AsWeakPtr()));
 
-    EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
+    EXPECT_CALL(*factory, CreateDataTypeManager(_, _, _)).
         WillOnce(ReturnNewDataTypeManager());
     dtc_ = new UIDataTypeController(syncer::PREFERENCES,
                                     factory,

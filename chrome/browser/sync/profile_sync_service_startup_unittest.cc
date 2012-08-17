@@ -35,6 +35,18 @@ using testing::InvokeArgument;
 using testing::Mock;
 using testing::Return;
 
+ACTION_P(InvokeOnConfigureStart, pss) {
+  TestProfileSyncService* service = static_cast<TestProfileSyncService*>(pss);
+  service->OnConfigureStart();
+}
+
+ACTION_P2(InvokeOnConfigureDone, pss, result) {
+  TestProfileSyncService* service = static_cast<TestProfileSyncService*>(pss);
+  DataTypeManager::ConfigureResult configure_result =
+      static_cast<DataTypeManager::ConfigureResult>(result);
+  service->OnConfigureDone(configure_result);
+}
+
 // TODO(chron): Test not using cros_user flag and use signin_
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
@@ -88,7 +100,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   DataTypeManagerMock* SetUpDataTypeManager() {
     DataTypeManagerMock* data_type_manager = new DataTypeManagerMock();
-    EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).
+    EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).
         WillOnce(Return(data_type_manager));
     return data_type_manager;
   }
@@ -205,7 +217,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
 }
 
 TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
-  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
@@ -259,7 +271,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   // Disable sync through policy.
   profile_->GetPrefs()->SetBoolean(prefs::kSyncManaged, true);
 
-  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Service should not be started by Initialize() since it's managed.
@@ -290,7 +302,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   // When switching back to unmanaged, the state should change, but the service
   // should not start up automatically (kSyncSetupCompleted will be false).
   Mock::VerifyAndClearExpectations(data_type_manager);
-  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _)).Times(0);
+  EXPECT_CALL(*factory_mock(), CreateDataTypeManager(_, _, _)).Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   profile_->GetPrefs()->ClearPref(prefs::kSyncManaged);
 }
@@ -302,19 +314,15 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
       FROM_HERE, "Association failed.", syncer::BOOKMARKS);
   std::list<syncer::SyncError> errors;
   errors.push_back(error);
-  browser_sync::DataTypeManager::ConfigureResult result(
+  DataTypeManager::ConfigureResult result(
       status,
       syncer::ModelTypeSet(),
       errors,
       syncer::ModelTypeSet());
   EXPECT_CALL(*data_type_manager, Configure(_, _)).
       WillRepeatedly(
-          DoAll(
-              NotifyFromDataTypeManager(data_type_manager,
-                  static_cast<int>(chrome::NOTIFICATION_SYNC_CONFIGURE_START)),
-              NotifyFromDataTypeManagerWithResult(data_type_manager,
-                  static_cast<int>(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE),
-                  &result)));
+          DoAll(InvokeOnConfigureStart(service_.get()),
+                InvokeOnConfigureDone(service_.get(), result)));
   EXPECT_CALL(*data_type_manager, state()).
       WillOnce(Return(DataTypeManager::STOPPED));
 

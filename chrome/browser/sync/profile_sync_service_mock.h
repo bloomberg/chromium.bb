@@ -89,6 +89,13 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(OnActionableError, void(
       const syncer::SyncProtocolError&));
 
+  // DataTypeManagerObserver mocks.
+  MOCK_METHOD0(OnConfigureBlocked, void());
+  MOCK_METHOD1(OnConfigureDone,
+               void(const browser_sync::DataTypeManager::ConfigureResult&));
+  MOCK_METHOD0(OnConfigureRetry, void());
+  MOCK_METHOD0(OnConfigureStart, void());
+
   MOCK_METHOD0(IsSyncEnabledAndLoggedIn, bool());
   MOCK_METHOD0(IsSyncTokenAvailable, bool());
 

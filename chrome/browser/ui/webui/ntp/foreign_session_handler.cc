@@ -74,12 +74,11 @@ void ForeignSessionHandler::RegisterMessages() {
 }
 
 void ForeignSessionHandler::Init() {
-  // TODO(dubroy): Change this to only observe this notification on the current
-  // profile, rather than all sources (crbug.com/124717).
-  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 content::NotificationService::AllSources());
-
   Profile* profile = Profile::FromWebUI(web_ui());
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+                 content::Source<ProfileSyncService>(service));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,

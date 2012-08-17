@@ -29,7 +29,8 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
       browser_sync::SyncBackendHost* backend,
-      const browser_sync::DataTypeController::TypeMap* controllers) OVERRIDE;
+      const browser_sync::DataTypeController::TypeMap* controllers,
+      browser_sync::DataTypeManagerObserver* observer) OVERRIDE;
 
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
       ProfileSyncService* profile_sync_service,

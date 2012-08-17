@@ -8,12 +8,9 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/glue/backend_data_type_configurer.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/data_type_manager_observer.h"
 #include "chrome/browser/sync/glue/fake_data_type_controller.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/test/mock_notification_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
@@ -62,13 +59,23 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
   base::Callback<void(ModelTypeSet)> last_ready_task_;
 };
 
+// Mock DataTypeManagerObserver implementation.
+class DataTypeManagerObserverMock : public DataTypeManagerObserver {
+ public:
+  DataTypeManagerObserverMock() {}
+  virtual ~DataTypeManagerObserverMock() {}
+
+  MOCK_METHOD0(OnConfigureBlocked, void());
+  MOCK_METHOD1(OnConfigureDone,
+               void(const browser_sync::DataTypeManager::ConfigureResult&));
+  MOCK_METHOD0(OnConfigureRetry, void());
+  MOCK_METHOD0(OnConfigureStart, void());
+};
+
 // Used by SetConfigureDoneExpectation.
 DataTypeManager::ConfigureStatus GetStatus(
-    const content::NotificationDetails& details) {
-  const DataTypeManager::ConfigureResult* result =
-      content::Details<const DataTypeManager::ConfigureResult>(
-      details).ptr();
-  return result->status;
+    const DataTypeManager::ConfigureResult& result) {
+  return result.status;
 }
 
 // The actual test harness class, parametrized on nigori state (i.e., tests are
@@ -84,12 +91,6 @@ class SyncDataTypeManagerImplTest
 
  protected:
   virtual void SetUp() {
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-                   content::NotificationService::AllSources());
-    registrar_.Add(&observer_,
-                   chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                   content::NotificationService::AllSources());
   }
 
   // A clearer name for the param accessor.
@@ -98,17 +99,15 @@ class SyncDataTypeManagerImplTest
   }
 
   void SetConfigureStartExpectation() {
-    EXPECT_CALL(
-        observer_,
-        Observe(int(chrome::NOTIFICATION_SYNC_CONFIGURE_START),
-                _, _));
+    EXPECT_CALL(observer_, OnConfigureStart());
+  }
+
+  void SetConfigureBlockedExpectation() {
+    EXPECT_CALL(observer_, OnConfigureBlocked());
   }
 
   void SetConfigureDoneExpectation(DataTypeManager::ConfigureStatus status) {
-    EXPECT_CALL(
-        observer_,
-        Observe(int(chrome::NOTIFICATION_SYNC_CONFIGURE_DONE), _,
-        ResultOf(&GetStatus, status)));
+    EXPECT_CALL(observer_, OnConfigureDone(ResultOf(&GetStatus, status)));
   }
 
   // Configure the given DTM with the given desired types.
@@ -155,14 +154,13 @@ class SyncDataTypeManagerImplTest
   content::TestBrowserThread ui_thread_;
   DataTypeController::TypeMap controllers_;
   FakeBackendDataTypeConfigurer configurer_;
-  content::MockNotificationObserver observer_;
-  content::NotificationRegistrar registrar_;
+  DataTypeManagerObserverMock observer_;
 };
 
 // Set up a DTM with no controllers, configure it, finish downloading,
 // and then stop it.
 TEST_P(SyncDataTypeManagerImplTest, NoControllers) {
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
 
@@ -181,7 +179,7 @@ TEST_P(SyncDataTypeManagerImplTest, NoControllers) {
 TEST_P(SyncDataTypeManagerImplTest, ConfigureOne) {
   AddController(BOOKMARKS);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
 
@@ -206,7 +204,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureSlowLoadingType) {
 
   GetController(BOOKMARKS)->SetDelayModelLoad();
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::PARTIAL_SUCCESS);
 
@@ -251,7 +249,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
   AddController(BOOKMARKS);
 
   {
-    DataTypeManagerImpl dtm(&configurer_, &controllers_);
+    DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
     SetConfigureStartExpectation();
     SetConfigureDoneExpectation(DataTypeManager::ABORTED);
 
@@ -273,7 +271,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
   AddController(BOOKMARKS);
 
   {
-    DataTypeManagerImpl dtm(&configurer_, &controllers_);
+    DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
     SetConfigureStartExpectation();
     SetConfigureDoneExpectation(DataTypeManager::ABORTED);
 
@@ -298,7 +296,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
 TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
   AddController(BOOKMARKS);
   {
-    DataTypeManagerImpl dtm(&configurer_, &controllers_);
+    DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
     SetConfigureStartExpectation();
     SetConfigureDoneExpectation(DataTypeManager::ABORTED);
 
@@ -327,8 +325,9 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneStopWhileAssociating) {
 TEST_P(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   AddController(PASSWORDS);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
+  SetConfigureBlockedExpectation();
 
   const ModelTypeSet types(PASSWORDS);
 
@@ -377,7 +376,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
 
@@ -427,7 +426,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
 
@@ -477,8 +476,9 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
+  SetConfigureBlockedExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
 
   // Step 1.
@@ -521,7 +521,7 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileOneInFlight) {
 TEST_P(SyncDataTypeManagerImplTest, OneFailingController) {
   AddController(BOOKMARKS);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::UNRECOVERABLE_ERROR);
 
@@ -548,7 +548,7 @@ TEST_P(SyncDataTypeManagerImplTest, SecondControllerFails) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::UNRECOVERABLE_ERROR);
 
@@ -586,7 +586,7 @@ TEST_P(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::PARTIAL_SUCCESS);
 
@@ -624,8 +624,9 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
+  SetConfigureBlockedExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
 
   // Step 1.
@@ -675,8 +676,9 @@ TEST_P(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
-  DataTypeManagerImpl dtm(&configurer_, &controllers_);
+  DataTypeManagerImpl dtm(&configurer_, &controllers_, &observer_);
   SetConfigureStartExpectation();
+  SetConfigureBlockedExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK);
 
   // Step 1.

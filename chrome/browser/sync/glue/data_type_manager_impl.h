@@ -21,12 +21,14 @@
 namespace browser_sync {
 
 class DataTypeController;
+class DataTypeManagerObserver;
 
 class DataTypeManagerImpl : public DataTypeManager,
                             public ModelAssociationResultProcessor {
  public:
   DataTypeManagerImpl(BackendDataTypeConfigurer* configurer,
-                      const DataTypeController::TypeMap* controllers);
+                      const DataTypeController::TypeMap* controllers,
+                      DataTypeManagerObserver* observer);
   virtual ~DataTypeManagerImpl();
 
   // DataTypeManager interface.
@@ -90,7 +92,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // The |last_requested_types_| will reflect the newest set of requested types.
   bool needs_reconfigure_;
 
-  // The reason for the last reconfigure attempt. Not this will be set to a
+  // The reason for the last reconfigure attempt. Note: this will be set to a
   // valid value only when |needs_reconfigure_| is set.
   syncer::ConfigureReason last_configure_reason_;
 
@@ -108,6 +110,10 @@ class DataTypeManagerImpl : public DataTypeManager,
   // been given a chance to start.
   std::list<syncer::SyncError> failed_datatypes_info_;
   ModelAssociationManager model_association_manager_;
+
+  // DataTypeManager must have only one observer -- the ProfileSyncService that
+  // created it and manages its lifetime.
+  DataTypeManagerObserver* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };

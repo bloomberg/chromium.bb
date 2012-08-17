@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/failed_datatypes_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
+#include "chrome/browser/sync/glue/data_type_manager_observer.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/invalidations/invalidator_storage.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -149,6 +150,7 @@ class EncryptedData;
 //
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
+                           public browser_sync::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
                            public ProfileKeyedService {
@@ -285,6 +287,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const syncer::Experiments& experiments) OVERRIDE;
   virtual void OnActionableError(
       const syncer::SyncProtocolError& error) OVERRIDE;
+
+  // DataTypeManagerObserver implementation.
+  virtual void OnConfigureBlocked() OVERRIDE;
+  virtual void OnConfigureDone(
+      const browser_sync::DataTypeManager::ConfigureResult& result) OVERRIDE;
+  virtual void OnConfigureRetry() OVERRIDE;
+  virtual void OnConfigureStart() OVERRIDE;
 
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
@@ -781,9 +790,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // called.
   base::Time start_up_time_;
 
-  // The time that NOTIFICATION_SYNC_CONFIGURE_START is received.  This member
-  // is zero if NOTIFICATION_SYNC_CONFIGURE_START has not been fired yet, and
-  // is reset to zero once NOTIFICATION_SYNC_CONFIGURE_DONE is received.
+  // The time that OnConfigureStart is called. This member is zero if
+  // OnConfigureStart has not yet been called, and is reset to zero once
+  // OnConfigureDone is called.
   base::Time sync_configure_start_time_;
 
   // Indicates if this is the first time sync is being configured.  This value

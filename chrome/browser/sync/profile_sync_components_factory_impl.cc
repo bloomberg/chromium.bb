@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "chrome/browser/sync/glue/data_type_manager_observer.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
@@ -62,6 +63,7 @@ using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::DataTypeManagerImpl;
+using browser_sync::DataTypeManagerObserver;
 using browser_sync::ExtensionDataTypeController;
 using browser_sync::ExtensionSettingDataTypeController;
 using browser_sync::GenericChangeProcessor;
@@ -213,8 +215,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
 DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     SyncBackendHost* backend,
-    const DataTypeController::TypeMap* controllers) {
-  return new DataTypeManagerImpl(backend, controllers);
+    const DataTypeController::TypeMap* controllers,
+    DataTypeManagerObserver* observer) {
+  return new DataTypeManagerImpl(backend, controllers, observer);
 }
 
 browser_sync::GenericChangeProcessor*

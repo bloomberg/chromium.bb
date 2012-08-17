@@ -7,43 +7,8 @@
 
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "sync/api/sync_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-ACTION_P2(InvokeCallback, datatype, callback_result) {
-  if (callback_result != browser_sync::DataTypeController::OK) {
-    syncer::SyncError error(FROM_HERE, "Error message", datatype);
-    arg0.Run(callback_result, error);
-  } else {
-    arg0.Run(callback_result, syncer::SyncError());
-  }
-}
-
-ACTION_P3(InvokeCallbackPointer, callback, datatype, callback_result) {
-  if (callback_result != browser_sync::DataTypeController::OK) {
-    syncer::SyncError error(FROM_HERE, "Error message", datatype);
-    callback.Run(callback_result, error);
-  } else {
-    callback.Run(callback_result, syncer::SyncError());
-  }
-}
-
-ACTION_P3(NotifyFromDataTypeManagerWithResult, dtm, type, result) {
-  content::NotificationService::current()->Notify(
-      type,
-      content::Source<browser_sync::DataTypeManager>(dtm),
-      content::Details<const browser_sync::DataTypeManager::ConfigureResult>(
-          result));
-}
-
-ACTION_P2(NotifyFromDataTypeManager, dtm, type) {
-  content::NotificationService::current()->Notify(type,
-      content::Source<browser_sync::DataTypeManager>(dtm),
-      content::NotificationService::NoDetails());
-}
 
 namespace browser_sync {
 

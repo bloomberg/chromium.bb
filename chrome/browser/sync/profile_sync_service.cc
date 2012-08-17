@@ -53,6 +53,7 @@
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/cookie_monster.h"
@@ -492,19 +493,6 @@ void ProfileSyncService::ShutdownImpl(bool sync_disabled) {
       expect_sync_configuration_aborted_ = true;
       data_type_manager_->Stop();
     }
-
-    registrar_.Remove(
-        this,
-        chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-        content::Source<DataTypeManager>(data_type_manager_.get()));
-    registrar_.Remove(
-        this,
-        chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-        content::Source<DataTypeManager>(data_type_manager_.get()));
-    registrar_.Remove(
-        this,
-        chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
-        content::Source<DataTypeManager>(data_type_manager_.get()));
     data_type_manager_.reset();
   }
 
@@ -1000,6 +988,122 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
   NotifyObservers();
 }
 
+void ProfileSyncService::OnConfigureBlocked() {
+  NotifyObservers();
+}
+
+void ProfileSyncService::OnConfigureDone(
+    const browser_sync::DataTypeManager::ConfigureResult& result) {
+  // We should have cleared our cached passphrase before we get here (in
+  // OnBackendInitialized()).
+  DCHECK(cached_passphrase_.empty());
+
+  if (!sync_configure_start_time_.is_null()) {
+    if (result.status == DataTypeManager::OK ||
+        result.status == DataTypeManager::PARTIAL_SUCCESS) {
+      base::Time sync_configure_stop_time = base::Time::Now();
+      base::TimeDelta delta = sync_configure_stop_time -
+          sync_configure_start_time_;
+      if (is_first_time_sync_configure_) {
+        UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceInitialConfigureTime", delta);
+      } else {
+        UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceSubsequentConfigureTime",
+                                  delta);
+      }
+    }
+    sync_configure_start_time_ = base::Time();
+  }
+
+  // Notify listeners that configuration is done.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
+      content::Source<ProfileSyncService>(this),
+      content::NotificationService::NoDetails());
+
+  configure_status_ = result.status;
+  DVLOG(1) << "PSS OnConfigureDone called with status: " << configure_status_;
+  // The possible status values:
+  //    ABORT - Configuration was aborted. This is not an error, if
+  //            initiated by user.
+  //    OK - Everything succeeded.
+  //    PARTIAL_SUCCESS - Some datatypes failed to start.
+  //    Everything else is an UnrecoverableError. So treat it as such.
+
+  // First handle the abort case.
+  if (configure_status_ == DataTypeManager::ABORTED &&
+      expect_sync_configuration_aborted_) {
+    DVLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
+    expect_sync_configuration_aborted_ = false;
+    return;
+  }
+
+  // Handle unrecoverable error.
+  if (configure_status_ != DataTypeManager::OK &&
+      configure_status_ != DataTypeManager::PARTIAL_SUCCESS) {
+    // Something catastrophic had happened. We should only have one
+    // error representing it.
+    DCHECK_EQ(result.failed_data_types.size(),
+              static_cast<unsigned int>(1));
+    syncer::SyncError error = result.failed_data_types.front();
+    DCHECK(error.IsSet());
+    std::string message =
+        "Sync configuration failed with status " +
+        DataTypeManager::ConfigureStatusToString(configure_status_) +
+        " during " + syncer::ModelTypeToString(error.type()) +
+        ": " + error.message();
+    LOG(ERROR) << "ProfileSyncService error: "
+               << message;
+    OnInternalUnrecoverableError(error.location(),
+                                 message,
+                                 true,
+                                 ERROR_REASON_CONFIGURATION_FAILURE);
+    return;
+  }
+
+  // Now handle partial success and full success.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&ProfileSyncService::OnSyncConfigureDone,
+                 weak_factory_.GetWeakPtr(), result));
+
+  // We should never get in a state where we have no encrypted datatypes
+  // enabled, and yet we still think we require a passphrase for decryption.
+  DCHECK(!(IsPassphraseRequiredForDecryption() &&
+           !IsEncryptedDatatypeEnabled()));
+
+  // This must be done before we start syncing with the server to avoid
+  // sending unencrypted data up on a first time sync.
+  if (encryption_pending_)
+    backend_->EnableEncryptEverything();
+  NotifyObservers();
+
+  if (migrator_.get() &&
+      migrator_->state() != browser_sync::BackendMigrator::IDLE) {
+    // Migration in progress.  Let the migrator know we just finished
+    // configuring something.  It will be up to the migrator to call
+    // StartSyncingWithServer() if migration is now finished.
+    migrator_->OnConfigureDone(result);
+  } else {
+    StartSyncingWithServer();
+  }
+}
+
+void ProfileSyncService::OnConfigureRetry() {
+  // We should have cleared our cached passphrase before we get here (in
+  // OnBackendInitialized()).
+  DCHECK(cached_passphrase_.empty());
+
+  OnSyncConfigureRetry();
+}
+
+void ProfileSyncService::OnConfigureStart() {
+  sync_configure_start_time_ = base::Time::Now();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SYNC_CONFIGURE_START,
+      content::Source<ProfileSyncService>(this),
+      content::NotificationService::NoDetails());
+  NotifyObservers();
+}
+
 std::string ProfileSyncService::QuerySyncStatusSummary() {
   if (HasUnrecoverableError()) {
     return "Unrecoverable error detected";
@@ -1232,16 +1336,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     restart = true;
     data_type_manager_.reset(
         factory_->CreateDataTypeManager(backend_.get(),
-                                        &data_type_controllers_));
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-                   content::Source<DataTypeManager>(data_type_manager_.get()));
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                   content::Source<DataTypeManager>(data_type_manager_.get()));
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
-                   content::Source<DataTypeManager>(data_type_manager_.get()));
+                                        &data_type_controllers_,
+                                        this));
 
     // We create the migrator at the same time.
     migrator_.reset(
@@ -1513,114 +1609,6 @@ void ProfileSyncService::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_SYNC_CONFIGURE_START:
-      sync_configure_start_time_ = base::Time::Now();
-      // no break
-    case chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED:
-      NotifyObservers();
-      break;
-    case chrome::NOTIFICATION_SYNC_CONFIGURE_DONE: {
-      // We should have cleared our cached passphrase before we get here (in
-      // OnBackendInitialized()).
-      DCHECK(cached_passphrase_.empty());
-
-      DataTypeManager::ConfigureResult* result =
-          content::Details<DataTypeManager::ConfigureResult>(details).ptr();
-
-      if (!sync_configure_start_time_.is_null()) {
-        if (result->status == DataTypeManager::OK ||
-            result->status == DataTypeManager::PARTIAL_SUCCESS) {
-          base::Time sync_configure_stop_time = base::Time::Now();
-          base::TimeDelta delta = sync_configure_stop_time -
-              sync_configure_start_time_;
-          if (is_first_time_sync_configure_) {
-            UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceInitialConfigureTime", delta);
-          } else {
-            UMA_HISTOGRAM_LONG_TIMES("Sync.ServiceSubsequentConfigureTime",
-                                     delta);
-          }
-        }
-
-        sync_configure_start_time_ = base::Time();
-      }
-
-      configure_status_ = result->status;
-      DVLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: "
-               << configure_status_;
-
-      // The possible status values:
-      //    ABORT - Configuration was aborted. This is not an error, if
-      //            initiated by user.
-      //    RETRY - Configure failed but we are retrying.
-      //    OK - Everything succeeded.
-      //    PARTIAL_SUCCESS - Some datatypes failed to start.
-      //    Everything else is an UnrecoverableError. So treat it as such.
-
-      // First handle the abort case.
-      if (configure_status_ == DataTypeManager::ABORTED &&
-          expect_sync_configuration_aborted_) {
-        DVLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
-        expect_sync_configuration_aborted_ = false;
-        return;
-      }
-
-      // Handle retry case.
-      if (configure_status_ == DataTypeManager::RETRY) {
-        OnSyncConfigureRetry();
-        return;
-      }
-
-      // Handle unrecoverable error.
-      if (configure_status_ != DataTypeManager::OK &&
-          configure_status_ != DataTypeManager::PARTIAL_SUCCESS) {
-        // Something catastrophic had happened. We should only have one
-        // error representing it.
-        DCHECK_EQ(result->failed_data_types.size(),
-                  static_cast<unsigned int>(1));
-        syncer::SyncError error = result->failed_data_types.front();
-        DCHECK(error.IsSet());
-        std::string message =
-          "Sync configuration failed with status " +
-          DataTypeManager::ConfigureStatusToString(configure_status_) +
-          " during " + syncer::ModelTypeToString(error.type()) +
-          ": " + error.message();
-        LOG(ERROR) << "ProfileSyncService error: "
-                   << message;
-        OnInternalUnrecoverableError(error.location(),
-                                     message,
-                                     true,
-                                     ERROR_REASON_CONFIGURATION_FAILURE);
-        return;
-      }
-
-      // Now handle partial success and full success.
-      MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&ProfileSyncService::OnSyncConfigureDone,
-                     weak_factory_.GetWeakPtr(), *result));
-
-      // We should never get in a state where we have no encrypted datatypes
-      // enabled, and yet we still think we require a passphrase for decryption.
-      DCHECK(!(IsPassphraseRequiredForDecryption() &&
-               !IsEncryptedDatatypeEnabled()));
-
-      // This must be done before we start syncing with the server to avoid
-      // sending unencrypted data up on a first time sync.
-      if (encryption_pending_)
-        backend_->EnableEncryptEverything();
-      NotifyObservers();
-
-      if (migrator_.get() &&
-          migrator_->state() != browser_sync::BackendMigrator::IDLE) {
-        // Migration in progress.  Let the migrator know we just finished
-        // configuring something.  It will be up to the migrator to call
-        // StartSyncingWithServer() if migration is now finished.
-        migrator_->OnConfigureDone(*result);
-      } else {
-        StartSyncingWithServer();
-      }
-
-      break;
-    }
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
       const GoogleServiceSigninSuccessDetails* successful =
           content::Details<const GoogleServiceSigninSuccessDetails>(

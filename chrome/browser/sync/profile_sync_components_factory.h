@@ -20,6 +20,7 @@ namespace browser_sync {
 class AssociatorInterface;
 class ChangeProcessor;
 class DataTypeManager;
+class DataTypeManagerObserver;
 class GenericChangeProcessor;
 class SharedChangeProcessor;
 class SyncBackendHost;
@@ -64,12 +65,13 @@ class ProfileSyncComponentsFactory {
   // ProfileSyncService.
   virtual void RegisterDataTypes(ProfileSyncService* pss) = 0;
 
-  // Instantiates a new DataTypeManager with a SyncBackendHost and a
-  // list of data type controllers.  The return pointer is owned by
-  // the caller.
+  // Instantiates a new DataTypeManager with a SyncBackendHost, a list of data
+  // type controllers and a DataTypeManagerObserver.  The return pointer is
+  // owned by the caller.
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
       browser_sync::SyncBackendHost* backend,
-      const browser_sync::DataTypeController::TypeMap* controllers) = 0;
+      const browser_sync::DataTypeController::TypeMap* controllers,
+      browser_sync::DataTypeManagerObserver* observer) = 0;
 
   // Creating this in the factory helps us mock it out in testing.
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(

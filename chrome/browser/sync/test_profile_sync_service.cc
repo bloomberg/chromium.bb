@@ -208,15 +208,11 @@ void TestProfileSyncService::OnBackendInitialized(
   }
 }
 
-void TestProfileSyncService::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  ProfileSyncService::Observe(type, source, details);
-  if (type == chrome::NOTIFICATION_SYNC_CONFIGURE_DONE &&
-      !synchronous_sync_configuration_) {
+void TestProfileSyncService::OnConfigureDone(
+    const browser_sync::DataTypeManager::ConfigureResult& result) {
+  ProfileSyncService::OnConfigureDone(result);
+  if (!synchronous_sync_configuration_)
     MessageLoop::current()->Quit();
-  }
 }
 
 UserShare* TestProfileSyncService::GetUserShare() const {

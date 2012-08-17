@@ -423,7 +423,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                             web_data_service_.get(),
                             data_type_controller);
 
-    EXPECT_CALL(*components_factory, CreateDataTypeManager(_, _)).
+    EXPECT_CALL(*components_factory, CreateDataTypeManager(_, _, _)).
         WillOnce(ReturnNewDataTypeManager());
 
     EXPECT_CALL(*personal_data_manager_, IsDataLoaded()).

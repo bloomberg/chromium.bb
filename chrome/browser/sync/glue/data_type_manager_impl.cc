@@ -18,11 +18,8 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/common/chrome_notification_types.h"
+#include "chrome/browser/sync/glue/data_type_manager_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 
 using content::BrowserThread;
 
@@ -30,7 +27,8 @@ namespace browser_sync {
 
 DataTypeManagerImpl::DataTypeManagerImpl(
     BackendDataTypeConfigurer* configurer,
-    const DataTypeController::TypeMap* controllers)
+    const DataTypeController::TypeMap* controllers,
+    DataTypeManagerObserver* observer)
     : configurer_(configurer),
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
@@ -38,8 +36,10 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       last_configure_reason_(syncer::CONFIGURE_REASON_UNKNOWN),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       model_association_manager_(controllers,
-                                 ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+                                 ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      observer_(observer) {
   DCHECK(configurer_);
+  DCHECK(observer_);
 }
 
 DataTypeManagerImpl::~DataTypeManagerImpl() {}
@@ -162,17 +162,7 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
 
 void DataTypeManagerImpl::OnDownloadRetry() {
   DCHECK_EQ(state_, DOWNLOAD_PENDING);
-
-  // Inform the listeners we are waiting.
-  ConfigureResult result;
-  result.status = DataTypeManager::RETRY;
-
-  // TODO(lipalani): Add a new  NOTIFICATION_SYNC_CONFIGURE_RETRY.
-  // crbug.com/111676.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-      content::Source<DataTypeManager>(this),
-      content::Details<const ConfigureResult>(&result));
+  observer_->OnConfigureRetry();
 }
 
 void DataTypeManagerImpl::DownloadReady(
@@ -299,10 +289,7 @@ void DataTypeManagerImpl::Abort(ConfigureStatus status,
 }
 
 void DataTypeManagerImpl::NotifyStart() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_CONFIGURE_START,
-      content::Source<DataTypeManager>(this),
-      content::NotificationService::NoDetails());
+  observer_->OnConfigureStart();
 }
 
 void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
@@ -335,10 +322,7 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
       NOTREACHED();
       break;
   }
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-      content::Source<DataTypeManager>(this),
-      content::Details<const ConfigureResult>(&result));
+  observer_->OnConfigureDone(result);
 }
 
 DataTypeManager::State DataTypeManagerImpl::state() const {
@@ -350,10 +334,7 @@ void DataTypeManagerImpl::SetBlockedAndNotify() {
   AddToConfigureTime();
   DVLOG(1) << "Accumulated spent configuring: "
            << configure_time_delta_.InSecondsF() << "s";
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
-      content::Source<DataTypeManager>(this),
-      content::NotificationService::NoDetails());
+  observer_->OnConfigureBlocked();
 }
 
 void DataTypeManagerImpl::AddToConfigureTime() {

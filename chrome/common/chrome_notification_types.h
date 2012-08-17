@@ -826,14 +826,14 @@ enum NotificationType {
 
   // Sync --------------------------------------------------------------------
 
-  // Sent when the syncer is blocked configuring.
-  NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
-
-  // The sync service has started the configuration process.
-  NOTIFICATION_SYNC_CONFIGURE_START,
-
-  // The sync service is finished the configuration process.
+  // The sync service has finished the datatype configuration process. The
+  // source is the ProfileSyncService object of the Profile. There are no
+  // details.
   NOTIFICATION_SYNC_CONFIGURE_DONE,
+
+  // The sync service has started the datatype configuration process. The source
+  // is the ProfileSyncService object of the Profile. There are no details.
+  NOTIFICATION_SYNC_CONFIGURE_START,
 
   // A service is requesting a sync datatype refresh for the current profile.
   // The details value is a const syncer::ModelTypePayloadMap.

@@ -2275,6 +2275,7 @@
         'browser/sync/glue/data_type_manager.h',
         'browser/sync/glue/data_type_manager_impl.cc',
         'browser/sync/glue/data_type_manager_impl.h',
+        'browser/sync/glue/data_type_manager_observer.h',
         'browser/sync/glue/extension_data_type_controller.cc',
         'browser/sync/glue/extension_data_type_controller.h',
         'browser/sync/glue/extension_setting_data_type_controller.cc',
