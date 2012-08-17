@@ -42,7 +42,7 @@ LazyBackgroundTaskQueue::~LazyBackgroundTaskQueue() {
 bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     Profile* profile, const Extension* extension) {
   DCHECK(extension);
-  if (extension->has_background_page()) {
+  if (extension->has_lazy_background_page()) {
     ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
@@ -66,17 +66,16 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     tasks_list = new PendingTasksList();
     pending_tasks_[key] = linked_ptr<PendingTasksList>(tasks_list);
 
+    // If this is the first enqueued task, ensure the background page
+    // is loaded.
     const Extension* extension =
         ExtensionSystem::Get(profile)->extension_service()->
             extensions()->GetByID(extension_id);
-    if (extension && extension->has_lazy_background_page()) {
-      // If this is the first enqueued task, and we're not waiting for the
-      // background page to unload, ensure the background page is loaded.
-      ExtensionProcessManager* pm =
-          ExtensionSystem::Get(profile)->process_manager();
-      pm->IncrementLazyKeepaliveCount(extension);
-      pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
-    }
+    DCHECK(extension->has_lazy_background_page());
+    ExtensionProcessManager* pm =
+        ExtensionSystem::Get(profile)->process_manager();
+    pm->IncrementLazyKeepaliveCount(extension);
+    pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
   } else {
     tasks_list = it->second.get();
   }
@@ -88,14 +87,14 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
     ExtensionHost* host,
     Profile* profile,
     const Extension* extension) {
-  if (!profile->IsSameProfile(profile_))
+  if (!profile->IsSameProfile(profile_) ||
+      !extension->has_lazy_background_page())
     return;
 
   PendingTasksKey key(profile, extension->id());
   PendingTasksMap::iterator map_it = pending_tasks_.find(key);
   if (map_it == pending_tasks_.end()) {
-    if (extension->has_lazy_background_page())
-      CHECK(!host);  // lazy page should not load without any pending tasks
+    CHECK(!host);  // lazy page should not load without any pending tasks
     return;
   }
 
@@ -112,7 +111,7 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
 
   // Balance the keepalive in AddPendingTask. Note we don't do this on a
   // failure to load, because the keepalive count is reset in that case.
-  if (host && extension->has_lazy_background_page()) {
+  if (host) {
     ExtensionSystem::Get(profile)->process_manager()->
         DecrementLazyKeepaliveCount(extension);
   }

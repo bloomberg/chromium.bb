@@ -15,10 +15,6 @@ class ExtensionHost;
 
 class RuntimeEventRouter {
  public:
-  // Dispatches the onStartup event to all currently-loaded extensions.
-  static void DispatchOnStartupEvent(Profile* profile,
-                                     const std::string& extension_id);
-
   // Dispatches the onInstalled event to the given extension.
   static void DispatchOnInstalledEvent(Profile* profile,
                                        const std::string& extension_id);
