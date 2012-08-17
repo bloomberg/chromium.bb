@@ -80,7 +80,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     ui_test_utils::NavigateToURL(browser(), url);
   }
 
-  void VerifySnapshot(const std::string& expected_filename) {
+  bool VerifySnapshot(const std::string& expected_filename) {
     snapshot_different_ = true;
     expected_filename_ = expected_filename;
     TabContents* tab_contents =  chrome::GetActiveTabContents(browser());
@@ -89,8 +89,11 @@ class PDFBrowserTest : public InProcessBrowserTest,
         this,
         chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
         content::Source<WebContents>(tab_contents->web_contents()));
-    ASSERT_FALSE(snapshot_different_) << "Rendering didn't match, see result "
-        "at " << snapshot_filename_.value().c_str();
+    if (snapshot_different_) {
+      LOG(INFO) << "Rendering didn't match, see result " <<
+          snapshot_filename_.value().c_str();
+    }
+    return !snapshot_different_;
   }
 
   void WaitForResponse() {
@@ -200,9 +203,6 @@ class PDFBrowserTest : public InProcessBrowserTest,
 #if defined(OS_CHROMEOS)
 // TODO(sanjeevr): http://crbug.com/79837
 #define MAYBE_Basic DISABLED_Basic
-#elif defined(OS_MACOSX)
-// Fails on release builder for Mac: http://crbug.com/142531
-#define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
 #endif
@@ -214,13 +214,14 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
   // OS X uses CoreText, and FreeType renders slightly different on Linux and
   // Win.
 #if defined(OS_MACOSX)
-  std::string expectation_file = "pdf_browsertest_mac.png";
+  // The bots render differently than locally, see http://crbug.com/142531.
+  ASSERT_TRUE(VerifySnapshot("pdf_browsertest_mac.png") ||
+              VerifySnapshot("pdf_browsertest_mac2.png"));
 #elif defined(OS_LINUX)
-  std::string expectation_file = "pdf_browsertest_linux.png";
+  ASSERT_TRUE(VerifySnapshot("pdf_browsertest_linux.png"));
 #else
-  std::string expectation_file = "pdf_browsertest.png";
+  ASSERT_TRUE(VerifySnapshot("pdf_browsertest.png"));
 #endif
-  ASSERT_NO_FATAL_FAILURE(VerifySnapshot(expectation_file));
 }
 
 #if defined(OS_CHROMEOS)
