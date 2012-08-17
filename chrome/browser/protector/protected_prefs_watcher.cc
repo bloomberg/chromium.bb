@@ -209,7 +209,7 @@ bool ProtectedPrefsWatcher::UpdateCachedPrefs() {
       !extension_prefs_value->GetAsDictionary(&extension_prefs)) {
     return false;
   }
-  ExtensionPrefs::ExtensionIdSet extension_ids =
+  ExtensionPrefs::ExtensionIds extension_ids =
       ExtensionPrefs::GetExtensionsFrom(extension_prefs);
   if (extension_ids == cached_extension_ids_)
     return false;
@@ -236,7 +236,7 @@ void ProtectedPrefsWatcher::InitBackup() {
   ListPrefUpdate extension_ids_update(prefs, kBackupExtensionsIDs);
   base::ListValue* extension_ids = extension_ids_update.Get();
   extension_ids->Clear();
-  for (ExtensionPrefs::ExtensionIdSet::const_iterator it =
+  for (ExtensionPrefs::ExtensionIds::const_iterator it =
            cached_extension_ids_.begin();
        it != cached_extension_ids_.end(); ++it) {
     extension_ids->Append(base::Value::CreateStringValue(*it));
@@ -297,7 +297,7 @@ bool ProtectedPrefsWatcher::UpdateBackupEntry(const std::string& path) {
     ListPrefUpdate extension_ids_update(prefs, kBackupExtensionsIDs);
     base::ListValue* extension_ids = extension_ids_update.Get();
     extension_ids->Clear();
-    for (ExtensionPrefs::ExtensionIdSet::const_iterator it =
+    for (ExtensionPrefs::ExtensionIds::const_iterator it =
              cached_extension_ids_.begin();
          it != cached_extension_ids_.end(); ++it) {
       extension_ids->Append(base::Value::CreateStringValue(*it));

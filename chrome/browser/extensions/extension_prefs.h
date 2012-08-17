@@ -60,8 +60,7 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   typedef std::set<std::string> PrefKeySet;
 
   // Vector containing identifiers for extensions.
-  // TODO(yefim): rename to ExtensionIds.
-  typedef std::vector<std::string> ExtensionIdSet;
+  typedef std::vector<std::string> ExtensionIds;
 
   // This enum is used for the launch type the user wants to use for an
   // application.
@@ -105,12 +104,12 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   bool IsExtensionDisabled(const std::string& id) const;
 
   // Get/Set the order that the browser actions appear in the toolbar.
-  ExtensionIdSet GetToolbarOrder();
-  void SetToolbarOrder(const ExtensionIdSet& extension_ids);
+  ExtensionIds GetToolbarOrder();
+  void SetToolbarOrder(const ExtensionIds& extension_ids);
 
   // Get/Set the order that the browser actions appear in the action box.
-  ExtensionIdSet GetActionBoxOrder();
-  void SetActionBoxOrder(const ExtensionIdSet& extension_ids);
+  ExtensionIds GetActionBoxOrder();
+  void SetActionBoxOrder(const ExtensionIds& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is an invalid ordinal, then a page will be found
@@ -129,12 +128,12 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   void SetExtensionState(const std::string& extension_id, Extension::State);
 
   // Returns all installed extensions
-  void GetExtensions(ExtensionIdSet* out);
+  void GetExtensions(ExtensionIds* out);
 
   // Returns all installed extensions from |extension_prefs|. This is exposed
   // for ProtectedPrefsWatcher because it needs access to the extension ID list
   // before the ExtensionService is initialized.
-  static ExtensionIdSet GetExtensionsFrom(
+  static ExtensionIds GetExtensionsFrom(
       const base::DictionaryValue* extension_prefs);
 
   // Getter and setter for browser action visibility.
@@ -546,17 +545,17 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
 
   // Fix missing preference entries in the extensions that are were introduced
   // in a later Chrome version.
-  void FixMissingPrefs(const ExtensionIdSet& extension_ids);
+  void FixMissingPrefs(const ExtensionIds& extension_ids);
 
   // Installs the persistent extension preferences into |prefs_|'s extension
   // pref store. Does nothing if |extensions_disabled| is true.
   void InitPrefStore(bool extensions_disabled);
 
   // Migrates the permissions data in the pref store.
-  void MigratePermissions(const ExtensionIdSet& extension_ids);
+  void MigratePermissions(const ExtensionIds& extension_ids);
 
   // Migrates the disable reasons from a single enum to a bit mask.
-  void MigrateDisableReasons(const ExtensionIdSet& extension_ids);
+  void MigrateDisableReasons(const ExtensionIds& extension_ids);
 
   // Checks whether there is a state pref for the extension and if so, whether
   // it matches |check_state|.
@@ -564,9 +563,9 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
                               Extension::State check_state) const;
 
   // Helper function to Get/Set array of strings from/to prefs.
-  ExtensionIdSet GetExtensionPrefAsVector(const char* pref);
+  ExtensionIds GetExtensionPrefAsVector(const char* pref);
   void SetExtensionPrefFromVector(const char* pref,
-                                  const ExtensionIdSet& extension_ids);
+                                  const ExtensionIds& extension_ids);
 
   // The pref service specific to this set of extension prefs. Owned by profile.
   PrefService* prefs_;

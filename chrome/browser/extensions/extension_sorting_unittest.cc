@@ -171,7 +171,7 @@ class ExtensionSortingInitialize
 
     // We insert the ids in reserve order so that we have to deal with the
     // element on the 2nd page before the 1st page is seen.
-    extensions::ExtensionPrefs::ExtensionIdSet ids;
+    extensions::ExtensionPrefs::ExtensionIds ids;
     ids.push_back(ext3_->id());
     ids.push_back(ext2_->id());
     ids.push_back(ext1_->id());
@@ -217,7 +217,7 @@ class ExtensionSortingInitializeWithNoApps
     extension_sorting->SetAppLaunchOrdinal(extension_misc::kWebStoreAppId,
                                            initial_ordinal);
 
-    extensions::ExtensionPrefs::ExtensionIdSet ids;
+    extensions::ExtensionPrefs::ExtensionIds ids;
     extension_sorting->Initialize(ids);
   }
   virtual void Verify() OVERRIDE {
@@ -269,7 +269,7 @@ class ExtensionSortingMigrateAppIndexInvalid
                                       kPrefPageIndexDeprecated,
                                       Value::CreateIntegerValue(-1));
 
-    extensions::ExtensionPrefs::ExtensionIdSet ids;
+    extensions::ExtensionPrefs::ExtensionIds ids;
     ids.push_back(ext1_->id());
 
     prefs()->extension_sorting()->Initialize(ids);

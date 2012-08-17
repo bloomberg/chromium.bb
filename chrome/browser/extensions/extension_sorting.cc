@@ -44,7 +44,7 @@ void ExtensionSorting::SetExtensionService(
 }
 
 void ExtensionSorting::Initialize(
-    const ExtensionPrefs::ExtensionIdSet& extension_ids) {
+    const ExtensionPrefs::ExtensionIds& extension_ids) {
   InitializePageOrdinalMap(extension_ids);
 
   MigrateAppIndex(extension_ids);
@@ -64,7 +64,7 @@ void ExtensionSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
 }
 
 void ExtensionSorting::MigrateAppIndex(
-    const ExtensionPrefs::ExtensionIdSet& extension_ids) {
+    const ExtensionPrefs::ExtensionIds& extension_ids) {
   if (extension_ids.empty())
     return;
 
@@ -74,7 +74,7 @@ void ExtensionSorting::MigrateAppIndex(
   typedef std::map<StringOrdinal, std::map<int, const std::string*>,
       StringOrdinalLessThan> AppPositionToIdMapping;
   AppPositionToIdMapping app_launches_to_convert;
-  for (ExtensionPrefs::ExtensionIdSet::const_iterator ext_id =
+  for (ExtensionPrefs::ExtensionIds::const_iterator ext_id =
            extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
     int old_page_index = 0;
     StringOrdinal page = GetPageOrdinal(*ext_id);
@@ -441,8 +441,8 @@ StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
 }
 
 void ExtensionSorting::InitializePageOrdinalMap(
-    const ExtensionPrefs::ExtensionIdSet& extension_ids) {
-  for (ExtensionPrefs::ExtensionIdSet::const_iterator ext_it =
+    const ExtensionPrefs::ExtensionIds& extension_ids) {
+  for (ExtensionPrefs::ExtensionIds::const_iterator ext_it =
            extension_ids.begin(); ext_it != extension_ids.end(); ++ext_it) {
     AddOrdinalMapping(*ext_it,
                       GetPageOrdinal(*ext_it),

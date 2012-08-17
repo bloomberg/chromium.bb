@@ -101,7 +101,7 @@ class ExtensionToolbarModel : public content::NotificationObserver {
 
   // Fills |list| with extensions based on provided |order|.
   void FillExtensionList(
-      const extensions::ExtensionPrefs::ExtensionIdSet& order,
+      const extensions::ExtensionPrefs::ExtensionIds& order,
       extensions::ExtensionList* list);
 
   // Save the model to prefs.
