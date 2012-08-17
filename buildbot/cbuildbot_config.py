@@ -510,6 +510,11 @@ incremental.add_config('arm-tegra2-incremental',
   boards=['tegra2'],
 )
 
+incremental.add_config('daisy-incremental',
+  arm,
+  boards=['daisy'],
+)
+
 incremental.add_config('amd64-generic-incremental',
   amd64,
   boards=['amd64-generic'],
@@ -637,6 +642,10 @@ arm_generic_full.add_config('arm-tegra2-full',
 
 arm_generic_full.add_config('arm-tegra2-seaboard-full',
   boards=['tegra2_seaboard'],
+)
+
+arm_generic_full.add_config('daisy-full',
+  boards=['daisy'],
 )
 
 x86_generic_full = \
