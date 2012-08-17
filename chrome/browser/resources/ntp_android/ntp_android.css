@@ -1,0 +1,68 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  -webkit-user-select: none;
+  background: #fff;
+  font-family: Droid Sans;
+  margin: 0;
+  padding: 0;
+  padding-bottom: 44px;
+  width: 100%;
+}
+
+.welcome-to-chrome {
+  background: url(images/welcome_thumb.png);
+}
+
+.center-empty-container {
+  -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.center-empty-content {
+  font-size: 14pt;
+  width: 275px;
+}
+
+.promo-message {
+  font-family: Arial, sans-serif;
+  font-size: 14pt;
+  margin-bottom: 16px;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.promo-sync-graphic {
+  background-image: url(images/syncfographic_mdpi.png);
+  background-repeat: no-repeat;
+  height: 130px;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 1.5) {
+  .promo-sync-graphic {
+    background-image: url(images/syncfographic_hdpi.png);
+    height: 195px;
+    zoom: 0.66;
+  }
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 2.0) {
+  .promo-sync-graphic {
+    background-image: url(images/syncfographic_xhdpi.png);
+    height: 260px;
+    zoom: 0.5;
+  }
+}

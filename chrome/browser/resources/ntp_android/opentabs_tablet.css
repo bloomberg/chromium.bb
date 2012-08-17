@@ -1,0 +1,61 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+body[device='tablet'] #open_tabs_container {
+  padding-bottom: 40px;
+}
+
+body[device='tablet'] #open_tabs_container .page-list>div {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.16);
+  margin: 40px auto 0 auto;
+  max-width: 550px;
+  min-width: 500px;
+}
+
+@media only screen and (min-device-width: 700px) {
+  body[device='tablet'] #open_tabs_container .page-list>div {
+    max-width: 650px;
+  }
+}
+
+body[device='tablet'] .session-children-container>div:last-child {
+  border-bottom: none;
+}
+
+body[device='tablet'] #open_tabs_container .session-header .list-item {
+  background: #F2F2F2;
+  border-bottom: 1px solid #E7E7E7;
+  color: #777;
+  font-size: 0.8em;
+  padding: 20px 0 20px 0;
+}
+
+body[device='tablet'] #open_tabs_container .list-item {
+  background: #FAFAFA;
+  border: 1px solid #E0E0E0;
+  border-bottom: none;
+}
+
+body[device='tablet'] #open_tabs_container .list-item-active,
+body[device='tablet'] #open_tabs_container .session-header
+    .list-item.list-item-active {
+  -webkit-tap-highlight-color: transparent;
+  background: rgba(51, 181, 229, 0.4);
+}
+
+body[device='tablet'] .session-name {
+  color: #333;
+  font-size: 1.1em;
+  font-weight: bold;
+  line-height: 1.8em;
+}
+
+body[device='tablet'] .session-last-synced {
+  font-weight: normal;
+}
+
+body[device='tablet'] #open_tabs_container .session-children-container
+    .list-item:first-child {
+  border-top: none;
+}

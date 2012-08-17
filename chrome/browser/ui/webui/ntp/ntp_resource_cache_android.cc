@@ -70,13 +70,40 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED));
   localized_strings.SetString("recentlyclosed",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED));
+  localized_strings.SetString("opentabslastsynced",
+      l10n_util::GetStringUTF16(IDS_SYNC_NTP_OPEN_TABS_LAST_SYNCED));
+  localized_strings.SetString("elementopeninnewtab",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_NEW_TAB));
+  localized_strings.SetString("elementopeninincognitotab",
+      l10n_util::GetStringUTF16(
+          IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_INCOGNITO_TAB));
+  localized_strings.SetString("elementremove",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_REMOVE));
+  localized_strings.SetString("bookmarkedit",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_EDIT_BOOKMARK));
+  localized_strings.SetString("bookmarkdelete",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_DELETE_BOOKMARK));
+  localized_strings.SetString("bookmarkshortcut",
+        l10n_util::GetStringUTF16(IDS_NEW_TAB_CONTEXT_MENU_BOOKMARK_SHORTCUT));
+  localized_strings.SetString("editfolder",
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_EDIT_FOLDER));
+  localized_strings.SetString("deletefolder",
+        l10n_util::GetStringUTF16(IDS_BOOKMARK_REMOVE_FOLDER));
+  localized_strings.SetString("receivedDocuments",
+      l10n_util::GetStringUTF16(IDS_RECEIVED_DOCUMENTS));
+  localized_strings.SetString("syncPromo",
+      l10n_util::GetStringUTF16(IDS_SYNC_PROMO_DESKTOP_INSTRUCTIONS));
+  localized_strings.SetString("syncEnableSync",
+      l10n_util::GetStringUTF16(IDS_SYNC_ENABLE_SYNC));
+  localized_strings.SetString("bookmarkstitle",
+      l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS));
 
   NewTabPageHandler::GetLocalizedValues(profile_, &localized_strings);
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_NEW_TAB_4_HTML,
+      GetRawDataResource(IDR_NEW_TAB_ANDROID_HTML,
                          ui::SCALE_FACTOR_NONE));
   localized_strings.SetString(
       "device",
