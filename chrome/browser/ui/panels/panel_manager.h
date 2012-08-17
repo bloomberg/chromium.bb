@@ -34,6 +34,10 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // Returns true if panels should be used for the extension.
   static bool ShouldUsePanels(const std::string& extension_id);
 
+  // Returns true if using browserless panels. False if using old panels.
+  // TODO(jennb): Delete after refactor.
+  static bool UseBrowserlessPanels();
+
   // Creates a panel and returns it. The panel might be queued for display
   // later.
   // |app_name| is the default title for Panels when the page content does not

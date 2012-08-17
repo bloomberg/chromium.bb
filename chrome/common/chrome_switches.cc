@@ -129,11 +129,6 @@ const char kAutomationClientChannelID[]     = "automation-channel";
 const char kAutomationReinitializeOnChannelError[] =
     "automation-reinitialize-on-channel-error";
 
-// Use the (in-progress) refactor of desktop Panel windows which does not
-// require a Browser. Flag will be removed after refactor is ready to replace
-// existing BrowserWindow Panels.
-const char kBrowserlessPanels[] = "browserless-panels";
-
 // How often (in seconds) to check for updates. Should only be used for testing
 // purposes.
 const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
@@ -950,6 +945,11 @@ const char kNotifyCloudPrintTokenExpired[]  = "notify-cp-token-expired";
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
+
+// Refactored (browserless) Panels are on by default in dev/canary/trunk.
+// Use this flag to revert to using the old-style (pre-refactor) Panels.
+// Flag will be removed after refactor is complete.
+const char kOldPanels[] = "old-panels";
 
 // Controls whether to use the fancy new scoring (takes into account
 // word breaks, does better balancing of topicality, recency, etc.) for

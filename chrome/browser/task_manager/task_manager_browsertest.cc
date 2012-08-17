@@ -70,10 +70,6 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
     // up in task manager but whether it appears before or after the new tab
     // renderer process is not well defined.
     command_line->AppendSwitch(switches::kDisableGpuProcessPrelaunch);
-#if !defined(USE_AURA) && (defined(OS_MACOSX) || defined(OS_WIN))
-    // Browserless panels refactor not completed for Linux yet.
-    command_line->AppendSwitch(switches::kBrowserlessPanels);
-#endif
   }
 };
 
@@ -119,9 +115,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 }
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticePanelChanges) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBrowserlessPanels))
+#if defined(USE_ASH)
+// This test fails on Ash because task manager treats view type
+// Panels differently for Ash.
+#define MAYBE_NoticePanelChanges FAILS_NoticePanelChanges
+#else
+#define MAYBE_NoticePanelChanges NoticePanelChanges
+#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticePanelChanges) {
+  if (!PanelManager::UseBrowserlessPanels())
     return;
 
   EXPECT_EQ(0, model()->ResourceCount());

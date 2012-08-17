@@ -627,8 +627,7 @@ TaskManager::Resource* TaskManagerPanelResourceProvider::GetResource(
 }
 
 void TaskManagerPanelResourceProvider::StartUpdating() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBrowserlessPanels))
+  if (!PanelManager::UseBrowserlessPanels())
     return;
 
   DCHECK(!updating_);
@@ -647,8 +646,7 @@ void TaskManagerPanelResourceProvider::StartUpdating() {
 }
 
 void TaskManagerPanelResourceProvider::StopUpdating() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBrowserlessPanels))
+  if (!PanelManager::UseBrowserlessPanels())
     return;
 
   DCHECK(updating_);

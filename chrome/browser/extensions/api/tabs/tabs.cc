@@ -575,8 +575,7 @@ bool CreateWindowFunction::RunImpl() {
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
 #if !defined(USE_ASH)
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kBrowserlessPanels)) {
+    if (PanelManager::UseBrowserlessPanels()) {
       // Note: Panels ignore all but the first url provided.
       Panel* panel = PanelManager::GetInstance()->CreatePanel(
           title, window_profile, urls[0], panel_bounds.size());

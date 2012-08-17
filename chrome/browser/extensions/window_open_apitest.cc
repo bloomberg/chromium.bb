@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -43,13 +44,14 @@ void WaitForTabsAndPopups(Browser* browser,
                    num_tabs, num_popups, num_panels));
   // We start with one tab and one browser already open.
   ++num_tabs;
-  size_t num_browsers = static_cast<size_t>(num_popups + num_panels) + 1;
+  size_t num_browsers = static_cast<size_t>(num_popups) + 1;
 
   const base::TimeDelta kWaitTime = base::TimeDelta::FromSeconds(15);
   base::TimeTicks end_time = base::TimeTicks::Now() + kWaitTime;
   while (base::TimeTicks::Now() < end_time) {
     if (browser::GetBrowserCount(browser->profile()) == num_browsers &&
-        browser->tab_count() == num_tabs)
+        browser->tab_count() == num_tabs &&
+        PanelManager::GetInstance()->num_panels() == num_panels)
       break;
 
     content::RunAllPendingInMessageLoop();
@@ -57,23 +59,19 @@ void WaitForTabsAndPopups(Browser* browser,
 
   EXPECT_EQ(num_browsers, browser::GetBrowserCount(browser->profile()));
   EXPECT_EQ(num_tabs, browser->tab_count());
+  EXPECT_EQ(num_panels, PanelManager::GetInstance()->num_panels());
 
   int num_popups_seen = 0;
-  int num_panels_seen = 0;
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end(); ++iter) {
     if (*iter == browser)
       continue;
 
-    // Check for TYPE_POPUP or TYPE_PANEL.
-    EXPECT_TRUE((*iter)->is_type_popup() || (*iter)->is_type_panel());
-    if ((*iter)->is_type_popup())
-      ++num_popups_seen;
-    else
-      ++num_panels_seen;
+    // Check for TYPE_POPUP.
+    EXPECT_TRUE((*iter)->is_type_popup());
+    ++num_popups_seen;
   }
   EXPECT_EQ(num_popups, num_popups_seen);
-  EXPECT_EQ(num_panels, num_panels_seen);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BrowserIsApp) {
@@ -204,18 +202,24 @@ class WindowOpenPanelTest : public ExtensionApiTest {
 #define MAYBE_WindowOpenPanel WindowOpenPanel
 #endif
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
+  if (!PanelManager::UseBrowserlessPanels())
+    return;
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // Focus test fails if there is no window manager on Linux.
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, WindowOpenFocus) {
+  if (!PanelManager::UseBrowserlessPanels())
+    return;
   ASSERT_TRUE(RunExtensionTest("window_open/focus")) << message_;
 }
 #endif
 
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
                        CloseNonExtensionPanelsOnUninstall) {
+  if (!PanelManager::UseBrowserlessPanels())
+    return;
 #if defined(USE_ASH)
   int num_popups = 4;
   int num_panels = 0;

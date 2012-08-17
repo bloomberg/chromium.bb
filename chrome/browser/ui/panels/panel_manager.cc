@@ -88,6 +88,14 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
   return true;
 }
 
+// static
+bool PanelManager::UseBrowserlessPanels() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kOldPanels))
+    return false;
+
+  return chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV;
+}
+
 PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
       auto_sizing_enabled_(true) {
