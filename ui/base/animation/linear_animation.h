@@ -32,6 +32,9 @@ class UI_EXPORT LinearAnimation : public Animation {
   // can override this to provide others.
   virtual double GetCurrentValue() const OVERRIDE;
 
+  // Change the current state of the animation to |new_value|.
+  void SetCurrentValue(double new_value);
+
   // Skip to the end of the current animation.
   void End();
 
@@ -42,12 +45,15 @@ class UI_EXPORT LinearAnimation : public Animation {
  protected:
   // Called when the animation progresses. Subclasses override this to
   // efficiently update their state.
-  virtual void AnimateToState(double state) = 0;
+  virtual void AnimateToState(double state) {}
 
   // Invoked by the AnimationContainer when the animation is running to advance
   // the animation. Use |time_now| rather than Time::Now to avoid multiple
   // animations running at the same time diverging.
   virtual void Step(base::TimeTicks time_now) OVERRIDE;
+
+  // Overriden to initialize state.
+  virtual void AnimationStarted() OVERRIDE;
 
   // Overriden to advance to the end (if End was invoked).
   virtual void AnimationStopped() OVERRIDE;

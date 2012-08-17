@@ -24,6 +24,7 @@ class SkBitmap;
 class TranslateHelper;
 struct ThumbnailScore;
 class WebViewColorOverlay;
+class WebViewAnimatingOverlay;
 
 namespace extensions {
 class Dispatcher;
@@ -232,6 +233,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // A color page overlay when visually de-emaphasized.
   scoped_ptr<WebViewColorOverlay> dimmed_color_overlay_;
+
+  // A animating page overlay when visually de-emaphasized.
+  scoped_ptr<WebViewAnimatingOverlay> dimmed_animating_overlay_;
 
   // Used to delay calling CapturePageInfo.
   base::Timer capture_timer_;

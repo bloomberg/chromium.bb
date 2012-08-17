@@ -143,4 +143,16 @@ TEST_F(AnimationTest, ShouldRenderRichAnimation) {
 #endif
 }
 
+// Test that current value is always 0 after Start() is called.
+TEST_F(AnimationTest, StartState) {
+  LinearAnimation animation(100, 60, NULL);
+  EXPECT_EQ(0.0, animation.GetCurrentValue());
+  animation.Start();
+  EXPECT_EQ(0.0, animation.GetCurrentValue());
+  animation.End();
+  EXPECT_EQ(1.0, animation.GetCurrentValue());
+  animation.Start();
+  EXPECT_EQ(0.0, animation.GetCurrentValue());
+}
+
 }  // namespace ui
