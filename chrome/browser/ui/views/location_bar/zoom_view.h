@@ -8,14 +8,13 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "ui/views/controls/image_view.h"
 
 namespace views {
 class KeyEvent;
 class MouseEvent;
 }
-
-class ZoomController;
 
 // View for the zoom icon in the Omnibox.
 class ZoomView : public views::ImageView {
@@ -29,9 +28,12 @@ class ZoomView : public views::ImageView {
            LocationBarView::Delegate* location_bar_delegate);
   virtual ~ZoomView();
 
+  void SetZoomIconState(ZoomController::ZoomIconState zoom_icon_state);
+  void SetZoomIconTooltipPercent(int zoom_percent);
+
   // Updates the image and its tooltip appropriately, hiding or showing the icon
   // as needed.
-  void Update(ZoomController* zoom_controller);
+  void Update();
 
  private:
   // views::ImageView:
@@ -47,6 +49,12 @@ class ZoomView : public views::ImageView {
 
   // The delegate used to get the currently visible TabContents.
   LocationBarView::Delegate* location_bar_delegate_;
+
+  // The current icon state.
+  ZoomController::ZoomIconState zoom_icon_state_;
+
+  // The current zoom percentage.
+  int zoom_percent_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomView);
 };

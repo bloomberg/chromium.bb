@@ -400,7 +400,7 @@ void LocationBarView::ModeChanged(const chrome::search::Mode& old_mode,
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   RefreshContentSettingViews();
   ZoomBubbleView::CloseBubble();
-  RefreshZoomView();
+  zoom_view_->Update();
   RefreshPageActionViews();
 
   bool star_enabled = star_view_ && !model_->input_in_progress() &&
@@ -512,23 +512,20 @@ void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
   chrome::ShowBookmarkBubbleView(star_view_, profile_, url, newly_bookmarked);
 }
 
-void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  DCHECK(zoom_view_);
-  RefreshZoomView();
+void LocationBarView::SetZoomIconTooltipPercent(int zoom_percent) {
+  zoom_view_->SetZoomIconTooltipPercent(zoom_percent);
+}
+
+void LocationBarView::SetZoomIconState(
+    ZoomController::ZoomIconState zoom_icon_state) {
+  zoom_view_->SetZoomIconState(zoom_icon_state);
 
   Layout();
   SchedulePaint();
-
-  // TODO(dbeam): don't show a bubble when the wrench menu is showing.
-  if (can_show_bubble && zoom_view_->visible())
-    ZoomBubbleView::ShowBubble(zoom_view_, GetTabContents(), true);
 }
 
-void LocationBarView::RefreshZoomView() {
-  DCHECK(zoom_view_);
-  TabContents* tab_contents = GetTabContents();
-  if (tab_contents)
-    zoom_view_->Update(tab_contents->zoom_controller());
+void LocationBarView::ShowZoomBubble(int zoom_percent) {
+  ZoomBubbleView::ShowBubble(zoom_view_, GetTabContents(), true);
 }
 
 void LocationBarView::ShowChromeToMobileBubble() {

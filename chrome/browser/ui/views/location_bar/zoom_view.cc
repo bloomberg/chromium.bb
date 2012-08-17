@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -19,27 +18,44 @@
 ZoomView::ZoomView(ToolbarModel* toolbar_model,
                    LocationBarView::Delegate* location_bar_delegate)
     : toolbar_model_(toolbar_model),
-      location_bar_delegate_(location_bar_delegate) {
+      location_bar_delegate_(location_bar_delegate),
+      zoom_icon_state_(ZoomController::NONE),
+      zoom_percent_(100) {
   set_accessibility_focusable(true);
-  Update(NULL);
 }
 
 ZoomView::~ZoomView() {
 }
 
-void ZoomView::Update(ZoomController* zoom_controller) {
-  if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
-      toolbar_model_->input_in_progress()) {
+void ZoomView::SetZoomIconState(ZoomController::ZoomIconState zoom_icon_state) {
+  if (zoom_icon_state == zoom_icon_state_)
+    return;
+
+  zoom_icon_state_ = zoom_icon_state;
+  Update();
+}
+
+void ZoomView::SetZoomIconTooltipPercent(int zoom_percent) {
+  if (zoom_percent == zoom_percent_)
+    return;
+
+  zoom_percent_ = zoom_percent;
+  Update();
+}
+
+void ZoomView::Update() {
+  if (toolbar_model_->input_in_progress() ||
+      zoom_icon_state_ == ZoomController::NONE) {
     SetVisible(false);
     ZoomBubbleView::CloseBubble();
-    return;
+  } else {
+    SetVisible(true);
+    SetTooltipText(
+        l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent_));
+    SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        zoom_icon_state_ == ZoomController::ZOOM_PLUS_ICON ?
+        IDR_ZOOM_PLUS : IDR_ZOOM_MINUS));
   }
-
-  SetTooltipText(l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM,
-      zoom_controller->zoom_percent()));
-  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      zoom_controller->GetResourceForZoomLevel()));
-  SetVisible(true);
 }
 
 void ZoomView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -66,9 +82,8 @@ void ZoomView::OnMouseReleased(const ui::MouseEvent& event) {
 
 bool ZoomView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_SPACE &&
-      event.key_code() != ui::VKEY_RETURN) {
+      event.key_code() != ui::VKEY_RETURN)
     return false;
-  }
 
   ZoomBubbleView::ShowBubble(
       this, location_bar_delegate_->GetTabContents(), false);

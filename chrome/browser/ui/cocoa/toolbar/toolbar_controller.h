@@ -126,11 +126,6 @@ class NotificationBridge;
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;
 
-// Happens when the zoom for the active tab changes, the active tab switches, or
-// a new tab or browser window is created. |canShowBubble| indicates if it is
-// appropriate to show a zoom bubble for the change.
-- (void)zoomChangedForActiveTab:(BOOL)canShowBubble;
-
 // Called to update the loading state. Handles updating the go/stop
 // button state.  |force| is set if the update is due to changing
 // tabs, as opposed to the page-load finishing.  See comment in

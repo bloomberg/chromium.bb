@@ -154,9 +154,17 @@ void PanelBrowserWindow::SetStarredState(bool is_starred) {
   // have starred state.
 }
 
-void PanelBrowserWindow::ZoomChangedForActiveTab(bool can_show_bubble) {
+void PanelBrowserWindow::SetZoomIconState(ZoomController::ZoomIconState state) {
+  // Since panels don't have an Omnibox, they don't have a zoom icon.
+}
+
+void PanelBrowserWindow::SetZoomIconTooltipPercent(int zoom_percent) {
+  // Since panels don't have an Omnibox, they don't have a zoom icon.
+}
+
+void PanelBrowserWindow::ShowZoomBubble(int zoom_percent) {
   // Since panels don't have an Omnibox, they don't have a zoom icon, so no
-  // view icon nor bubble will appear for this action.
+  // bubble will appear from it.
 }
 
 void PanelBrowserWindow::EnterFullscreen(

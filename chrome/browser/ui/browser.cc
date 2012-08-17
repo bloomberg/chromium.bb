@@ -143,7 +143,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -1766,10 +1765,21 @@ void Browser::URLStarredChanged(TabContents* source, bool starred) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, ZoomObserver implementation:
 
-void Browser::OnZoomChanged(TabContents* source, bool can_show_bubble) {
+void Browser::OnZoomIconChanged(TabContents* source,
+                                ZoomController::ZoomIconState state) {
+  if (source == chrome::GetActiveTabContents(this))
+    window_->SetZoomIconState(state);
+}
+
+void Browser::OnZoomChanged(TabContents* source,
+                            int zoom_percent,
+                            bool can_show_bubble) {
   if (source == chrome::GetActiveTabContents(this)) {
+    window_->SetZoomIconTooltipPercent(zoom_percent);
+
     // Only show the zoom bubble for zoom changes in the active window.
-    window_->ZoomChangedForActiveTab(can_show_bubble && window_->IsActive());
+    if (can_show_bubble && window_->IsActive())
+      window_->ShowZoomBubble(zoom_percent);
   }
 }
 

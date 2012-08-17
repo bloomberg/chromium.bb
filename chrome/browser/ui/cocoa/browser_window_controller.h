@@ -223,11 +223,6 @@ class WebContents;
 // Sets whether or not the current page in the frontmost tab is bookmarked.
 - (void)setStarredState:(BOOL)isStarred;
 
-// Happens when the zoom level is changed in the active tab, the active tab is
-// changed, or a new browser window or tab is created. |canShowBubble| denotes
-// whether it would be appropriate to show a zoom bubble or not.
-- (void)zoomChangedForActiveTab:(BOOL)canShowBubble;
-
 // Return the rect, in WebKit coordinates (flipped), of the window's grow box
 // in the coordinate system of the content area of the currently selected tab.
 - (NSRect)selectedTabGrowBoxRect;

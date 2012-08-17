@@ -899,7 +899,10 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   // Page-related commands
   window()->SetStarredState(
       current_tab_contents->bookmark_tab_helper()->is_starred());
-  window()->ZoomChangedForActiveTab(false);
+  window()->SetZoomIconState(
+      current_tab_contents->zoom_controller()->zoom_icon_state());
+  window()->SetZoomIconTooltipPercent(
+      current_tab_contents->zoom_controller()->zoom_percent());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
                                         CanViewSource(browser_));
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
