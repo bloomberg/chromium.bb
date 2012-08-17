@@ -45,8 +45,6 @@ const char kPnaclManifestName[] = "PNaCl";
 
 // Name of the Pnacl architecture in the component manifest.
 // NOTE: this is independent of the Omaha query parameter.
-// TODO(jvoung): Will the Omaha query do the right thing for windows
-// on x86-64?  If it doesn't, will we need two separate Omaha queries (ouch)?
 const char* PnaclArch() {
 #if defined(ARCH_CPU_X86_FAMILY)
 #if defined(ARCH_CPU_X86_64)

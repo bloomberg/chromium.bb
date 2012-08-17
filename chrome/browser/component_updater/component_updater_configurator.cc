@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
+#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -143,6 +144,11 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
   // Make the extra request params, they are necessary so omaha does
   // not deliver components that are going to be rejected at install time.
   extra_info_ += chrome::VersionInfo().Version();
+#if defined(OS_WIN)
+  if (base::win::OSInfo::GetInstance()->wow64_status() ==
+      base::win::OSInfo::WOW64_ENABLED)
+    extra_info_ += "&wow64=1";
+#endif
   if (HasDebugValue(debug_values, kDebugRequestParam))
     extra_info_ += "&testrequest=1";
 }
