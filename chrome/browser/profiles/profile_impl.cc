@@ -315,11 +315,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
   } else {
     NOTREACHED();
   }
-
-  if (command_line->HasSwitch(switches::kEnableRestoreSessionState)) {
-    content::BrowserContext::GetDefaultDOMStorageContext(this)->
-        SetSaveSessionStorageOnDisk();
-  }
 }
 
 void ProfileImpl::DoFinalInit(bool is_new_profile) {
@@ -426,6 +421,12 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&EnsureReadmeFile, GetPath()),
         base::TimeDelta::FromMilliseconds(create_readme_delay_ms));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRestoreSessionState)) {
+    content::BrowserContext::GetDefaultDOMStorageContext(this)->
+        SetSaveSessionStorageOnDisk();
+  }
 
   // Creation has been finished.
   if (delegate_)
