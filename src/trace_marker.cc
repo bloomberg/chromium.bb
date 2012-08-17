@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <base/eintr_wrapper.h>  // for HANDLE_EINTR
 
