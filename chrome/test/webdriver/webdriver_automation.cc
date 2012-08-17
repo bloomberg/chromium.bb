@@ -364,8 +364,13 @@ void Automation::Init(
   command.AppendSwitch(switches::kFullMemoryCrashReport);
   command.AppendSwitch(switches::kNoDefaultBrowserCheck);
   command.AppendSwitch(switches::kNoFirstRun);
+  command.AppendSwitch(switches::kDisableBackgroundNetworking);
+  command.AppendSwitch(switches::kDisableSync);
+  command.AppendSwitch(switches::kDisableTranslate);
   command.AppendSwitch(switches::kDisableWebResources);
   command.AppendSwitch(switches::kSbDisableAutoUpdate);
+  command.AppendSwitch(switches::kSbDisableDownloadProtection);
+  command.AppendSwitch(switches::kDisableClientSidePhishingDetection);
   command.AppendSwitch(switches::kDisableComponentUpdate);
   command.AppendSwitch(switches::kDisableDefaultApps);
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -379,7 +384,7 @@ void Automation::Init(
   if (options.ignore_certificate_errors)
     command.AppendSwitch(switches::kIgnoreCertificateErrors);
   if (options.user_data_dir.empty())
-    command.AppendSwitchASCII(switches::kHomePage, chrome::kAboutBlankURL);
+    command.AppendArg(chrome::kAboutBlankURL);
 
   command.AppendArguments(options.command, true /* include_program */);
 
