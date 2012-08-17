@@ -5800,6 +5800,15 @@
    ...
    fun:_ZN10extensions*Permission*Test*
 }
+{
+   bug_143431
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ManagedModeC2Ev
+   fun:_ZN12_GLOBAL__N_115FakeManagedModeC1Ev
+   fun:_ZN15ManagedModeTestC2Ev
+   fun:_ZN*ManagedModeTest_*
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
