@@ -404,8 +404,7 @@ void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 void TrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
   if (params_.can_activate) {
     state->role = ui::AccessibilityTypes::ROLE_WINDOW;
-    state->name = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
+    state->name = host_->GetAccessibleName();
   }
 }
 

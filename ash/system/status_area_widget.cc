@@ -327,8 +327,8 @@ StatusAreaWidget::~StatusAreaWidget() {
 }
 
 void StatusAreaWidget::CreateTrayViews(ShellDelegate* shell_delegate) {
-  AddWebNotificationTray();
   AddSystemTray(shell_delegate);
+  AddWebNotificationTray();
   // Initialize() must be called after all trays have been created.
   if (system_tray_)
     system_tray_->Initialize();
