@@ -17396,6 +17396,52 @@ Battery full
       Add Media Gallery by Directory
     </message>
 
+    <!-- chrome://diagnostics strings -->
+    <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_DIAGNOSTICS_DIAGNOSTICS_TITLE" desc="Title for the diagnostics page.">
+        Diagnostics
+      </message>
+      <message name="IDS_DIAGNOSTICS_CONNECTIVITY_TITLE" desc="Title for the connectivity tab.">
+        Connectivity
+      </message>
+      <message name="IDS_DIAGNOSTICS_LOADING" desc="Shown while loading the diagnostics page.">
+        Loading...
+      </message>
+      <message name="IDS_DIAGNOSTICS_ADAPTER_WLAN0" desc="Adapter name for wlan0 interface.">
+        Wi-Fi
+      </message>
+      <message name="IDS_DIAGNOSTICS_ADAPTER_ETH0" desc="Adapter name for eth0 interface.">
+        Ethernet 1
+      </message>
+      <message name="IDS_DIAGNOSTICS_ADAPTER_ETH1" desc="Adapter name for eth1 interface.">
+        Ethernet 2
+      </message>
+      <message name="IDS_DIAGNOSTICS_ADAPTER_WWAN0" desc="Adapter name for wwan0 interface.">
+        3G
+      </message>
+      <message name="IDS_DIAGNOSTICS_TESTING_HARDWARE" desc="Indicates testing network hardware.">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>1. <ph name="END_BOLD">&lt;/b&gt;</ph>Testing <ph name="ADAPTER_NAME">$2<ex>Wi-Fi</ex></ph> hardware...
+      </message>
+      <message name="IDS_DIAGNOSTICS_TESTING_CONNECTION_TO_ROUTER" desc="Indicates testing connection to router.">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>2. <ph name="END_BOLD">&lt;/b&gt;</ph>Testing connection to router...
+      </message>
+      <message name="IDS_DIAGNOSTICS_TESTING_CONNECTION_TO_INTERNET" desc="Indicates testing connection to internet.">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>3. <ph name="END_BOLD">&lt;/b&gt;</ph>Testing connection to internet...
+      </message>
+      <message name="IDS_DIAGNOSTICS_ADAPTER_DISABLED" desc="Indicates adapter is disabled.">
+        The <ph name="ADAPTER_NAME">$1<ex>Wi-Fi</ex></ph> adapter was not enabled.
+      </message>
+      <message name="IDS_DIAGNOSTICS_ADAPTER_NO_IP" desc="Indicates adapter does not have an IP address.">
+        The <ph name="ADAPTER_NAME">$1<ex>Wi-Fi</ex></ph> adapter does not have an IP address and cannot connect to the internet.
+      </message>
+      <message name="IDS_DIAGNOSTICS_ENABLE_ADAPTER" desc="Recommendation for enabling adapter.">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Recommendation: <ph name="END_BOLD">&lt;/b&gt;</ph>Enable the <ph name="ADAPTER_NAME">$1<ex>Wi-Fi</ex></ph> adapter.
+      </message>
+      <message name="IDS_DIAGNOSTICS_FIX_CONNECTION_TO_ROUTER" desc="Recommendation for fixing connection to the router.">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Recommendation: <ph name="END_BOLD">&lt;/b&gt;</ph><ph name="BEGIN_ITALIC">&lt;i&gt;</ph>Please ensure that<ph name="END_ITALIC">&lt;/i&gt;</ph><ph name="BR">&lt;br /&gt;</ph>1) you are trying to connect to the right network<ph name="BR2">&lt;br /&gt;</ph>2) you are using the right authentication method<ph name="BR3">&lt;br /&gt;</ph>3) your router is configured correctly<ph name="BR4">&lt;br /&gt;</ph><ph name="BEGIN2_ITALIC">&lt;i&gt;</ph>Try to<ph name="END2_ITALIC">&lt;/i&gt;</ph><ph name="BR5">&lt;br /&gt;</ph>1) connect to a different netowrk<ph name="BR6">&lt;br /&gt;</ph>2) reboot your router
+      </message>
+    </if>
+
     </messages>
 
     <structures fallback_to_english="true">

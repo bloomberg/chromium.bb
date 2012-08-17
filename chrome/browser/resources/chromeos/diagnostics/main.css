@@ -4,8 +4,6 @@
  */
 
 body {
-  font-family: 'Chrome Droid Sans', 'Droid Sans Fallback', sans-serif;
-  font-size: 75%;
   padding: 0;
 }
 
@@ -52,10 +50,41 @@ body {
  * to the end of the header, such as the managed prefs banner). */
 .page header > h1::after {
   -webkit-margin-end: 20px;
-  background-color: #eee;
+  background-color: rgb(238, 238, 238);
   content: '';
   display: block;
   height: 1px;
   position: relative;
   top: 13px;
+}
+
+.page div {
+  line-height: 29px;
+}
+
+#connectivity-status div {
+  clear: both;
+  float: left;
+  position: relative;
+}
+
+.test-performed {
+  color: rgb(70, 78, 90);
+}
+
+.test-pending {
+  color: rgb(153, 153, 153);
+}
+
+.test-error {
+  color: rgb(206, 57, 38);
+}
+
+div.recommendation {
+  background: -webkit-gradient(linear, left top, left bottom,
+                               from(rgb(171, 253, 182)),
+                               to(rgb(94, 191, 107)));
+  border: 1px solid rgb(17, 102, 27);
+  line-height: 16px;
+  padding: 2px;
 }

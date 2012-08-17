@@ -16,13 +16,14 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
 
 namespace chromeos {
 
 namespace {
 
 // JS API callback names.
-const char kJsApiUpdateConnStatus[] = "updateConnectivityStatus";
+const char kJsApiSetNetifStatus[] = "diag.DiagPage.setNetifStatus";
 
 ////////////////////////////////////////////////////////////////////////////////
 // DiagnosticsHandler
@@ -77,7 +78,7 @@ void DiagnosticsWebUIHandler::OnGetNetworkInterfaces(
   if (parsed_value.get() && parsed_value->IsType(Value::TYPE_DICTIONARY)) {
     base::DictionaryValue* result =
         static_cast<DictionaryValue*>(parsed_value.get());
-    web_ui()->CallJavascriptFunction(kJsApiUpdateConnStatus, *result);
+    web_ui()->CallJavascriptFunction(kJsApiSetNetifStatus, *result);
   }
 }
 
@@ -92,8 +93,34 @@ DiagnosticsUI::DiagnosticsUI(content::WebUI* web_ui)
 
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIDiagnosticsHost);
+  source->set_json_path("strings.js");
   source->add_resource_path("main.css", IDR_DIAGNOSTICS_MAIN_CSS);
   source->add_resource_path("main.js", IDR_DIAGNOSTICS_MAIN_JS);
+  source->add_resource_path("fail.png", IDR_DIAGNOSTICS_IMAGES_FAIL);
+  source->add_resource_path("tick.png", IDR_DIAGNOSTICS_IMAGES_TICK);
+  source->add_resource_path("warning.png", IDR_DIAGNOSTICS_IMAGES_WARNING);
+  source->AddLocalizedString("diagnostics", IDS_DIAGNOSTICS_DIAGNOSTICS_TITLE);
+  source->AddLocalizedString("connectivity",
+                             IDS_DIAGNOSTICS_CONNECTIVITY_TITLE);
+  source->AddLocalizedString("loading", IDS_DIAGNOSTICS_LOADING);
+  source->AddLocalizedString("wlan0", IDS_DIAGNOSTICS_ADAPTER_WLAN0);
+  source->AddLocalizedString("eth0", IDS_DIAGNOSTICS_ADAPTER_ETH0);
+  source->AddLocalizedString("eth1", IDS_DIAGNOSTICS_ADAPTER_ETH1);
+  source->AddLocalizedString("wwan0", IDS_DIAGNOSTICS_ADAPTER_WWAN0);
+  source->AddLocalizedString("testing-hardware",
+                             IDS_DIAGNOSTICS_TESTING_HARDWARE);
+  source->AddLocalizedString("testing-connection-to-router",
+                             IDS_DIAGNOSTICS_TESTING_CONNECTION_TO_ROUTER);
+  source->AddLocalizedString("testing-connection-to-internet",
+                             IDS_DIAGNOSTICS_TESTING_CONNECTION_TO_INTERNET);
+  source->AddLocalizedString("adapter-disabled",
+                             IDS_DIAGNOSTICS_ADAPTER_DISABLED);
+  source->AddLocalizedString("adapter-no-ip",
+                             IDS_DIAGNOSTICS_ADAPTER_NO_IP);
+  source->AddLocalizedString("enable-adapter",
+                             IDS_DIAGNOSTICS_ENABLE_ADAPTER);
+  source->AddLocalizedString("fix-connection-to-router",
+                             IDS_DIAGNOSTICS_FIX_CONNECTION_TO_ROUTER);
   source->set_default_resource(IDR_DIAGNOSTICS_MAIN_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
