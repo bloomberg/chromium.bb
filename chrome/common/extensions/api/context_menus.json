@@ -302,7 +302,8 @@
           {
             "name": "tab",
             "$ref": "tabs.Tab",
-            "description": "The details of the tab where the click took place."
+            "description": "The details of the tab where the click took place. If the click did not take place in a tab, this parameter will be missing.",
+            "optional": true
           }
         ]
       }

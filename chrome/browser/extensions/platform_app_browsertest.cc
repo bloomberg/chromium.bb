@@ -104,6 +104,33 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  LoadAndLaunchPlatformApp("context_menu_click");
+
+  // Wait for the extension to tell us it's initialized its context menus and
+  // launched a window.
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+  // Test that the menu item shows up
+  WebContents* web_contents = GetFirstShellWindowWebContents();
+  ASSERT_TRUE(web_contents);
+  WebKit::WebContextMenuData data;
+  content::ContextMenuParams params(data);
+  params.page_url = GURL("http://foo.bar");
+  PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
+      params);
+  menu->Init();
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+
+  // Execute the menu item
+  ExtensionTestMessageListener onclicked_listener("onClicked fired for id1",
+                                                  false);
+  menu->ExecuteCommand(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST);
+
+  ASSERT_TRUE(onclicked_listener.WaitUntilSatisfied());
+}
+
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;

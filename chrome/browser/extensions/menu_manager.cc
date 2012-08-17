@@ -640,11 +640,14 @@ void MenuManager::ExecuteCommand(Profile* profile,
   args->Append(properties);
 
   // Add the tab info to the argument list.
-  // Note: web_contents only NULL in unit tests :(
-  if (web_contents)
-    args->Append(ExtensionTabUtil::CreateTabValue(web_contents));
-  else
-    args->Append(new DictionaryValue());
+  // No tab info in a platform app.
+  if (!extension || !extension->is_platform_app()) {
+    // Note: web_contents only NULL in unit tests :(
+    if (web_contents)
+      args->Append(ExtensionTabUtil::CreateTabValue(web_contents));
+    else
+      args->Append(new DictionaryValue());
+  }
 
   if (item->type() == MenuItem::CHECKBOX ||
       item->type() == MenuItem::RADIO) {
