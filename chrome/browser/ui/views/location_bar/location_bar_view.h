@@ -321,6 +321,7 @@ class LocationBarView : public LocationBar,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
+  virtual void UpdateWebIntentsButton() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
   virtual const OmniboxView* GetLocationEntry() const OVERRIDE;

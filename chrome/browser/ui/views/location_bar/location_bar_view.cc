@@ -453,6 +453,10 @@ void LocationBarView::InvalidatePageActions() {
   }
 }
 
+void LocationBarView::UpdateWebIntentsButton() {
+  // TODO(gbillock): implement this for views
+}
+
 void LocationBarView::OnFocus() {
   // Focus the view widget first which implements accessibility for
   // Chrome OS.  It is noop on Win. This should be removed once

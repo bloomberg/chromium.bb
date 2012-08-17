@@ -236,6 +236,10 @@ void LocationBarViewMac::InvalidatePageActions() {
   }
 }
 
+void LocationBarViewMac::UpdateWebIntentsButton() {
+  // TODO(gbillock): Implement web intents tool for mac
+}
+
 void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
   // TODO(shess): Why SaveStateToContents vs SaveStateToTab?
   omnibox_view_->SaveStateToTab(contents);

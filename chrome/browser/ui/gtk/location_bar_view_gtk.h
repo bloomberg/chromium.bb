@@ -145,6 +145,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual void UpdateContentSettingsIcons() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
+  virtual void UpdateWebIntentsButton() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
   virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
@@ -461,6 +462,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Extension page action icons.
   ui::OwnedWidgetGtk page_action_hbox_;
   ScopedVector<PageActionViewGtk> page_action_views_;
+
+  // Control for web intents window disposition picker control.
+  ui::OwnedWidgetGtk web_intents_hbox_;
+  scoped_ptr<PageToolViewGtk> web_intents_button_view_;
 
   // The widget that contains our tab hints and the location bar.
   GtkWidget* entry_box_;
