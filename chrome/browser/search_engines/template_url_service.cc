@@ -1165,6 +1165,15 @@ syncer::SyncError TemplateURLService::MergeDataAndStartSyncing(
     }
   }
 
+  // If there is a pending synced default search provider that was processed
+  // above, set it now.
+  TemplateURL* pending_default = GetPendingSyncedDefaultSearchProvider();
+  if (pending_default) {
+    AutoReset<DefaultSearchChangeOrigin> change_origin(
+        &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
+    SetDefaultSearchProvider(pending_default);
+  }
+
   // The remaining SyncData in local_data_map should be everything that needs to
   // be pushed as ADDs to sync.
   for (SyncDataMap::const_iterator iter = local_data_map.begin();
@@ -2425,9 +2434,6 @@ void TemplateURLService::MergeInSyncTemplateURL(
     TemplateURLData data(sync_turl->data());
     data.id = kInvalidTemplateURLID;
     Add(new TemplateURL(profile_, data));
-
-    // Possibly set the newly added |turl| as the default search provider.
-    SetDefaultSearchProviderIfNewlySynced(guid);
   }
 }
 
