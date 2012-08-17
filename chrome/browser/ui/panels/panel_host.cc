@@ -88,9 +88,9 @@ content::WebContents* PanelHost::OpenURLFromTab(
     return NULL;
 
   // Force all links to open in a new tab.
-  chrome::NavigateParams navigate_params(
-      browser::FindOrCreateTabbedBrowser(profile_),
-      params.url, params.transition);
+  chrome::NavigateParams navigate_params(profile_,
+                                         params.url,
+                                         params.transition);
   navigate_params.disposition = params.disposition == NEW_BACKGROUND_TAB ?
       params.disposition : NEW_FOREGROUND_TAB;
   chrome::Navigate(&navigate_params);
