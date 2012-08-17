@@ -15,10 +15,10 @@ class MediaGalleriesDialogTest : public testing::Test,
   virtual ~MediaGalleriesDialogTest() {}
 
   virtual void DialogFinished(bool accepted) OVERRIDE {}
-  virtual void GalleryToggled(const MediaGalleryPrefInfo* pref_info,
-                              bool enabled) OVERRIDE {
+  virtual void DidToggleGallery(const MediaGalleryPrefInfo* pref_info,
+                                bool enabled) OVERRIDE {
     toggles_++;
-    MediaGalleriesDialogController::GalleryToggled(pref_info, enabled);
+    MediaGalleriesDialogController::DidToggleGallery(pref_info, enabled);
   }
 
  protected:

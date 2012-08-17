@@ -93,9 +93,8 @@ void MediaGalleriesDialogViews::InitChildViews() {
   for (GalleryPermissions::const_iterator iter = permissions.begin();
        iter != permissions.end(); ++iter) {
     AddOrUpdateGallery(&iter->second.pref_info, iter->second.allowed);
-    if (iter->second.allowed)
-      confirm_available_ = true;
   }
+  confirm_available_ = controller_->HasPermittedGalleries();
 
   // Add Gallery button.
   add_gallery_ = new views::NativeTextButton(
@@ -182,7 +181,7 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   for (CheckboxMap::iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
     if (sender == iter->second) {
-      controller_->GalleryToggled(
+      controller_->DidToggleGallery(
           iter->first, static_cast<views::Checkbox*>(sender)->checked());
       return;
     }

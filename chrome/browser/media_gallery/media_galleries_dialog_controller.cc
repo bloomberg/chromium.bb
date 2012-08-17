@@ -44,13 +44,13 @@ MediaGalleriesDialogController::~MediaGalleriesDialogController() {
     select_folder_dialog_->ListenerDestroyed();
 }
 
-string16 MediaGalleriesDialogController::GetHeader() {
+string16 MediaGalleriesDialogController::GetHeader() const {
   std::string extension_name(extension_ ? extension_->name() : "");
   return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_HEADER,
                                     UTF8ToUTF16(extension_name));
 }
 
-string16 MediaGalleriesDialogController::GetSubtext() {
+string16 MediaGalleriesDialogController::GetSubtext() const {
   if (extension_ && extension_->HasAPIPermission(
           extensions::APIPermission::kMediaGalleriesRead)) {
     return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_READ_SUBTEXT,
@@ -58,6 +58,15 @@ string16 MediaGalleriesDialogController::GetSubtext() {
   }
   // TODO(estade): handle write et al.
   return string16();
+}
+
+bool MediaGalleriesDialogController::HasPermittedGalleries() const {
+  for (KnownGalleryPermissions::const_iterator iter = permissions().begin();
+       iter != permissions().end(); iter++) {
+    if (iter->second.allowed)
+      return true;
+  }
+  return false;
 }
 
 void MediaGalleriesDialogController::OnAddFolderClicked() {
@@ -75,7 +84,7 @@ void MediaGalleriesDialogController::OnAddFolderClicked() {
       NULL);
 }
 
-void MediaGalleriesDialogController::GalleryToggled(
+void MediaGalleriesDialogController::DidToggleGallery(
     const MediaGalleryPrefInfo* gallery,
     bool enabled) {
   // Check known galleries.

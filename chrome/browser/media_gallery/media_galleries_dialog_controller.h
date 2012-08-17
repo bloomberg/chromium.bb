@@ -66,11 +66,12 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
                                  const base::Callback<void(void)>& on_finish);
 
   // Called by the view.
-  string16 GetHeader();
-  string16 GetSubtext();
+  string16 GetHeader() const;
+  string16 GetSubtext() const;
+  bool HasPermittedGalleries() const;
   void OnAddFolderClicked();
-  virtual void GalleryToggled(const MediaGalleryPrefInfo* pref_info,
-                              bool enabled);
+  virtual void DidToggleGallery(const MediaGalleryPrefInfo* pref_info,
+                                bool enabled);
   virtual void DialogFinished(bool accepted);
 
   // SelectFileDialog::Listener implementation:

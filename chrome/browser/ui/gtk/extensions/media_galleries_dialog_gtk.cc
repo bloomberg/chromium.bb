@@ -52,14 +52,9 @@ void MediaGalleriesDialogGtk::InitWidgets() {
   gtk_box_pack_start(GTK_BOX(contents_.get()), checkbox_container_,
                      FALSE, FALSE, 0);
 
-  // As a safeguard against the user skipping reading over the dialog and just
-  // confirming, the button will be unavailable for dialogs without any checks
-  // until the user toggles something.
-  bool confirm_available = false;
   const GalleryPermissions& permissions = controller_->permissions();
   for (GalleryPermissions::const_iterator iter = permissions.begin();
        iter != permissions.end(); iter++) {
-    confirm_available = confirm_available || iter->second.allowed;
     UpdateGallery(&iter->second.pref_info, iter->second.allowed);
   }
 
@@ -90,7 +85,10 @@ void MediaGalleriesDialogGtk::InitWidgets() {
   g_signal_connect(cancel, "clicked", G_CALLBACK(OnCancelThunk), this);
   gtk_box_pack_end(GTK_BOX(bottom_area), cancel, FALSE, FALSE, 0);
 
-  gtk_widget_set_sensitive(confirm_, confirm_available);
+  // As a safeguard against the user skipping reading over the dialog and just
+  // confirming, the button will be unavailable for dialogs without any checks
+  // until the user toggles something.
+  gtk_widget_set_sensitive(confirm_, controller_->HasPermittedGalleries());
 }
 
 void MediaGalleriesDialogGtk::UpdateGallery(
@@ -136,7 +134,7 @@ void MediaGalleriesDialogGtk::OnToggled(GtkWidget* widget) {
   for (CheckboxMap::iterator iter = checkbox_map_.begin();
        iter != checkbox_map_.end(); ++iter) {
     if (iter->second == widget) {
-      controller_->GalleryToggled(
+      controller_->DidToggleGallery(
           iter->first, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
       return;
     }
