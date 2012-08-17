@@ -109,16 +109,10 @@ bool TraceControllerImpl::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {
   // message. So to get known categories, just begin and end tracing immediately
   // afterwards. This will ping all the child processes for categories.
   is_get_categories_ = true;
-  bool success = BeginTracing(subscriber) && EndTracingAsync(subscriber);
+  bool success = BeginTracing(subscriber, "*") &&
+                 EndTracingAsync(subscriber);
   is_get_categories_ = success;
   return success;
-}
-
-bool TraceControllerImpl::BeginTracing(TraceSubscriber* subscriber) {
-  std::vector<std::string> include, exclude;
-  // By default, exclude all categories that begin with test_
-  exclude.push_back("test_*");
-  return BeginTracing(subscriber, include, exclude);
 }
 
 bool TraceControllerImpl::BeginTracing(

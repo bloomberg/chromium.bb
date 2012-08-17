@@ -62,7 +62,7 @@ deps = {
     (Var("googlecode_url") % "angleproject") + "/trunk@1250",
 
   "src/third_party/trace-viewer":
-    (Var("googlecode_url") % "trace-viewer") + "/trunk@116",
+    (Var("googlecode_url") % "trace-viewer") + "/trunk@118",
 
   # Note that this is *not* where we check out WebKit -- this just
   # puts some extra files into place for the real WebKit checkout to

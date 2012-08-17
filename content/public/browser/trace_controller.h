@@ -24,14 +24,12 @@ class TraceController {
   // Currently only one subscriber is allowed at a time.
   // Tracing begins immediately locally, and asynchronously on child processes
   // as soon as they receive the BeginTracing request.
-  // By default, all categories are traced except those matching "test_*".
   //
   // If BeginTracing was already called previously,
   //   or if an EndTracingAsync is pending,
   //   or if another subscriber is tracing,
   //   BeginTracing will return false meaning it failed.
-  virtual bool BeginTracing(TraceSubscriber* subscriber) = 0;
-
+  //
   // |categories| is a comma-delimited list of category wildcards.
   // A category can have an optional '-' prefix to make it an excluded category.
   // All the same rules apply above, so for example, having both included and

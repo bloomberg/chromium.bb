@@ -28,7 +28,7 @@ class TraceControllerImpl : public TraceController {
 
   // Get set of known categories. This can change as new code paths are reached.
   // If true is returned, subscriber->OnKnownCategoriesCollected will be called
-  // when once the categories are retrieved from child processes.
+  // once the categories are retrieved from child processes.
   bool GetKnownCategoriesAsync(TraceSubscriber* subscriber);
 
   // Same as above, but specifies which categories to trace.
@@ -41,7 +41,6 @@ class TraceControllerImpl : public TraceController {
                     const std::vector<std::string>& excluded_categories);
 
   // TraceController implementation:
-  virtual bool BeginTracing(TraceSubscriber* subscriber) OVERRIDE;
   virtual bool BeginTracing(TraceSubscriber* subscriber,
                             const std::string& categories) OVERRIDE;
   virtual  bool EndTracingAsync(TraceSubscriber* subscriber) OVERRIDE;
