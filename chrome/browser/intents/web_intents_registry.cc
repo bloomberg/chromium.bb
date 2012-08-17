@@ -49,9 +49,13 @@ bool MimeTypesAreEqual(const string16& type1, const string16& type2) {
   // We don't have a MIME matcher that allows patterns on both sides
   // Instead, we do two comparisons, treating each type in turn as a
   // pattern. If either one matches, we consider this a MIME match.
-  if (net::MatchesMimeType(UTF16ToUTF8(type1), UTF16ToUTF8(type2)))
+  std::string t1 = UTF16ToUTF8(type1);
+  std::string t2 = UTF16ToUTF8(type2);
+  StringToLowerASCII(&t1);
+  StringToLowerASCII(&t2);
+  if (net::MatchesMimeType(t1, t2))
     return true;
-  return net::MatchesMimeType(UTF16ToUTF8(type2), UTF16ToUTF8(type1));
+  return net::MatchesMimeType(t2, t1);
 }
 
 // Returns true if the passed string is a MIME type. Works by comparing string

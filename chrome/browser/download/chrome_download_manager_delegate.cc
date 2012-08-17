@@ -392,6 +392,27 @@ bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
   }
 #endif  // defined(OS_CHROMEOS)
 
+  // If QuickOffice extension is installed, use web intents to handle the
+  // downloaded file.
+  const char* kQuickOfficeExtensionId = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
+  ExtensionServiceInterface* extension_service =
+      profile_->GetExtensionService();
+  if (extension_service &&
+      extension_service->GetInstalledExtension(kQuickOfficeExtensionId) &&
+      extension_service->IsExtensionEnabled(kQuickOfficeExtensionId)) {
+    if (mime_type == "application/msword" ||
+        mime_type == "application/vnd.ms-powerpoint" ||
+        mime_type == "application/vnd.ms-excel" ||
+        mime_type == "application/vnd.openxmlformats-officedocument."
+                     "wordprocessingml.document" ||
+        mime_type == "application/vnd.openxmlformats-officedocument."
+                     "presentationml.presentation" ||
+        mime_type == "application/vnd.openxmlformats-officedocument."
+                     "spreadsheetml.sheet") {
+      return true;
+    }
+  }
+
   return false;
 }
 
