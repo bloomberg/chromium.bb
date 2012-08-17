@@ -187,11 +187,6 @@ class GDataDirectoryService {
   // TODO(satorux): Replace this with an async version crbug.com/137160
   GDataEntry* FindEntryByPathSync(const FilePath& file_path);
 
-  // Searches for |file_path| synchronously, and runs |callback|.
-  // TODO(satorux): Replace this with an async version crbug.com/137160
-  void FindEntryByPathAndRunSync(const FilePath& file_path,
-                                 const FindEntryCallback& callback);
-
   // Returns the GDataEntry* with the corresponding |resource_id|.
   // TODO(achuith): Get rid of this in favor of async version crbug.com/13957.
   GDataEntry* GetEntryByResourceId(const std::string& resource_id);

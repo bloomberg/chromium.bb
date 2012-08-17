@@ -688,9 +688,7 @@ void GDataFileSystem::GetEntryInfoByEntryOnUIThread(
   }
 }
 
-void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
-    const FilePath& search_file_path,
-    const FindEntryCallback& callback) {
+void GDataFileSystem::LoadFeedIfNeeded(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -698,12 +696,8 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     // If root feed is not initialized but the initialization process has
     // already started, add an observer to execute the remaining task after
     // the end of the initialization.
-    AddObserver(new InitialLoadObserver(
-        this,
-        base::Bind(&GDataFileSystem::FindEntryByPathSyncOnUIThread,
-                   ui_weak_ptr_,
-                   search_file_path,
-                   callback)));
+    AddObserver(new InitialLoadObserver(this,
+                                        base::Bind(callback, GDATA_FILE_OK)));
     return;
   } else if (directory_service_->origin() == UNINITIALIZED) {
     // Load root feed from this disk cache. Upon completion, kick off server
@@ -711,31 +705,18 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     directory_service_->set_origin(INITIALIZING);
     feed_loader_->LoadFromCache(
         true,  // should_load_from_server
-        // This is the initial load, hence we'll notify when it's done.
-        base::Bind(&GDataFileSystem::FindAndNotifyInitialLoadFinished,
+        base::Bind(&GDataFileSystem::NotifyInitialLoadFinishedAndRun,
                    ui_weak_ptr_,
-                   search_file_path,
                    callback));
     return;
   }
 
-  // Post a task to the same thread, rather than calling it here, as
-  // FindEntryByPath() is asynchronous.
+  // The feed has already been loaded, so we have nothing to do, but post a
+  // task to the same thread, rather than calling it here, as
+  // LoadFeedIfNeeded() is asynchronous.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::FindEntryByPathSyncOnUIThread,
-                 ui_weak_ptr_,
-                 search_file_path,
-                 callback));
-}
-
-void GDataFileSystem::FindEntryByPathSyncOnUIThread(
-    const FilePath& search_file_path,
-    const FindEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  directory_service_->FindEntryByPathAndRunSync(search_file_path, callback);
+      base::Bind(callback, GDATA_FILE_OK));
 }
 
 void GDataFileSystem::TransferFileFromRemoteToLocal(
@@ -1898,28 +1879,29 @@ void GDataFileSystem::GetEntryInfoByPath(const FilePath& file_path,
   DCHECK(!callback.is_null());
 
   RunTaskOnUIThread(
-      base::Bind(&GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread,
+      base::Bind(&GDataFileSystem::GetEntryInfoByPathOnUIThread,
                  ui_weak_ptr_,
                  file_path,
                  CreateRelayCallback(callback)));
 }
 
-void GDataFileSystem::GetEntryInfoByPathAsyncOnUIThread(
+void GDataFileSystem::GetEntryInfoByPathOnUIThread(
     const FilePath& file_path,
     const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FindEntryByPathAsyncOnUIThread(
-      file_path,
-      base::Bind(&GDataFileSystem::OnGetEntryInfo,
+  LoadFeedIfNeeded(
+      base::Bind(&GDataFileSystem::GetEntryInfoByPathOnUIThreadAfterLoad,
                  ui_weak_ptr_,
+                 file_path,
                  callback));
 }
 
-void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
-                                    GDataFileError error,
-                                    GDataEntry* entry) {
+void GDataFileSystem::GetEntryInfoByPathOnUIThreadAfterLoad(
+    const FilePath& file_path,
+    const GetEntryInfoCallback& callback,
+    GDataFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -1927,10 +1909,26 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
     callback.Run(error, scoped_ptr<GDataEntryProto>());
     return;
   }
-  DCHECK(entry);
 
-  scoped_ptr<GDataEntryProto> entry_proto(new GDataEntryProto);
-  entry->ToProtoFull(entry_proto.get());
+  directory_service_->GetEntryInfoByPath(
+      file_path,
+      base::Bind(&GDataFileSystem::GetEntryInfoByPathOnUIThreadAfterGetEntry,
+                 ui_weak_ptr_,
+                 callback));
+}
+
+void GDataFileSystem::GetEntryInfoByPathOnUIThreadAfterGetEntry(
+    const GetEntryInfoCallback& callback,
+    GDataFileError error,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != GDATA_FILE_OK) {
+    callback.Run(error, scoped_ptr<GDataEntryProto>());
+    return;
+  }
+  DCHECK(entry_proto.get());
 
   CheckLocalModificationAndRun(entry_proto.Pass(), callback);
 }
@@ -1943,53 +1941,62 @@ void GDataFileSystem::ReadDirectoryByPath(
   DCHECK(!callback.is_null());
 
   RunTaskOnUIThread(
-      base::Bind(&GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread,
+      base::Bind(&GDataFileSystem::ReadDirectoryByPathOnUIThread,
                  ui_weak_ptr_,
                  file_path,
                  CreateRelayCallback(callback)));
 }
 
-void GDataFileSystem::ReadDirectoryByPathAsyncOnUIThread(
+void GDataFileSystem::ReadDirectoryByPathOnUIThread(
     const FilePath& file_path,
     const ReadDirectoryWithSettingCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FindEntryByPathAsyncOnUIThread(
+  LoadFeedIfNeeded(
+      base::Bind(&GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad,
+                 ui_weak_ptr_,
+                 file_path,
+                 callback));
+}
+
+void GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterLoad(
+    const FilePath& file_path,
+    const ReadDirectoryWithSettingCallback& callback,
+    GDataFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != GDATA_FILE_OK) {
+    callback.Run(error,
+                 hide_hosted_docs_,
+                 scoped_ptr<GDataEntryProtoVector>());
+    return;
+  }
+
+  directory_service_->ReadDirectoryByPath(
       file_path,
-      base::Bind(&GDataFileSystem::OnReadDirectory,
+      base::Bind(&GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterRead,
                  ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::OnReadDirectory(
+void GDataFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
     const ReadDirectoryWithSettingCallback& callback,
     GDataFileError error,
-    GDataEntry* entry) {
+    scoped_ptr<GDataEntryProtoVector> entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (error != GDATA_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error,
-                   hide_hosted_docs_,
-                   scoped_ptr<GDataEntryProtoVector>());
+    callback.Run(error,
+                 hide_hosted_docs_,
+                 scoped_ptr<GDataEntryProtoVector>());
     return;
   }
-  DCHECK(entry);
+  DCHECK(entries.get());  // This is valid for emptry directories too.
 
-  GDataDirectory* directory = entry->AsGDataDirectory();
-  if (!directory) {
-    if (!callback.is_null())
-      callback.Run(GDATA_FILE_ERROR_NOT_FOUND,
-                   hide_hosted_docs_,
-                   scoped_ptr<GDataEntryProtoVector>());
-    return;
-  }
-
-  scoped_ptr<GDataEntryProtoVector> entries(directory->ToProtoVector());
-
-  if (!callback.is_null())
-    callback.Run(GDATA_FILE_OK, hide_hosted_docs_, entries.Pass());
+  callback.Run(GDATA_FILE_OK, hide_hosted_docs_, entries.Pass());
 }
 
 void GDataFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
@@ -2842,21 +2849,17 @@ void GDataFileSystem::NotifyFileSystemToBeUnmounted() {
                     OnFileSystemBeingUnmounted());
 }
 
-void GDataFileSystem::FindAndNotifyInitialLoadFinished(
-    const FilePath& search_file_path,
-    const FindEntryCallback& callback,
+void GDataFileSystem::NotifyInitialLoadFinishedAndRun(
+    const FileOperationCallback& callback,
     GDataFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(satorux): Remove this: crbug.com/141196.
-  directory_service_->FindEntryByPathAndRunSync(search_file_path, callback);
-
-  DVLOG(1) << "RunAndNotifyInitialLoadFinished";
-
   // Notify the observers that root directory has been initialized.
   FOR_EACH_OBSERVER(GDataFileSystemInterface::Observer, observers_,
                     OnInitialLoadFinished());
+
+  callback.Run(error);
 }
 
 GDataFileError GDataFileSystem::AddNewDirectory(
