@@ -24,5 +24,9 @@
 #define __NR_process_vm_writev (__NR_SYSCALL_BASE+377)
 #endif
 
+#ifndef __ARM_NR_cmpxchg
+#define __ARM_NR_cmpxchg  (__ARM_NR_BASE+0x00fff0)
+#endif
+
 #endif  // SANDBOX_LINUX_SERVICES_ARM_LINUX_SYSCALLS_H_
 

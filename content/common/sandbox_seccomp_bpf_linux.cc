@@ -25,7 +25,8 @@
 #include "content/public/common/content_switches.h"
 
 // These are the only architectures supported for now.
-#if defined(__i386__) || defined(__x86_64__) || defined(__arm__)
+#if defined(__i386__) || defined(__x86_64__) || \
+    (defined(__arm__) && (defined(__thumb__) || defined(__ARM_EABI__)))
 #define SECCOMP_BPF_SANDBOX
 #endif
 
@@ -153,9 +154,8 @@ intptr_t GpuOpenSIGSYS_Handler(const struct arch_seccomp_data& args,
   }
 }
 
-#if defined(__i386__) || defined(__x86_64__)
-
-// The functions below cover all existing x86_64 and i386 system calls.
+// The functions below cover all existing i386, x86_64, and ARM system calls;
+// excluding syscalls made obsolete in ARM EABI.
 // The implicitly defined sets form a partition of the sets of
 // system calls.
 
@@ -175,7 +175,9 @@ bool IsAllowedGettime(int sysno) {
   switch (sysno) {
     case __NR_clock_gettime:
     case __NR_gettimeofday:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_time:
+#endif
       return true;
     case __NR_adjtimex:         // Privileged.
     case __NR_clock_adjtime:    // Privileged.
@@ -279,7 +281,9 @@ bool IsFileSystem(int sysno) {
     case __NR_unlinkat:
     case __NR_uselib:          // Neither EPERM, nor ENOENT are valid errno.
     case __NR_ustat:           // Same as above. Deprecated.
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_utime:
+#endif
     case __NR_utimensat:       // New.
     case __NR_utimes:
       return true;
@@ -296,9 +300,14 @@ bool IsAllowedFileSystemAccessViaFd(int sysno) {
 #endif
       return true;
     // TODO(jln): these should be denied gracefully as well (moved below).
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_fadvise64:        // EPERM not a valid errno.
+#endif
 #if defined(__i386__)
     case __NR_fadvise64_64:
+#endif
+#if defined(__arm__)
+    case __NR_arm_fadvise64_64:
 #endif
     case __NR_fdatasync:        // EPERM not a valid errno.
     case __NR_flock:            // EPERM not a valid errno.
@@ -310,7 +319,11 @@ bool IsAllowedFileSystemAccessViaFd(int sysno) {
 #if defined(__i386__)
     case __NR_oldfstat:
 #endif
-    case __NR_sync_file_range:  // EPERM not a valid errno.
+#if defined(__i386__) || defined(__x86_64__)
+    case __NR_sync_file_range:      // EPERM not a valid errno.
+#elif defined(__arm__)
+    case __NR_arm_sync_file_range:  // EPERM not a valid errno.
+#endif
     default:
       return false;
   }
@@ -384,8 +397,10 @@ bool IsGetSimpleId(int sysno) {
 bool IsProcessPrivilegeChange(int sysno) {
   switch (sysno) {
     case __NR_capset:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_ioperm:  // Intel privilege.
     case __NR_iopl:    // Intel privilege.
+#endif
     case __NR_setfsgid:
     case __NR_setfsuid:
     case __NR_setgid:
@@ -474,9 +489,12 @@ bool IsOperationOnFd(int sysno) {
   }
 }
 
-bool IsKernelInteralApi(int sysno) {
+bool IsKernelInternalApi(int sysno) {
   switch (sysno) {
     case __NR_restart_syscall:
+#if defined(__arm__)
+    case __ARM_NR_cmpxchg:
+#endif
       return true;
     default:
       return false;
@@ -497,8 +515,10 @@ bool IsAllowedProcessStartOrDeath(int sysno) {
       return true;
     case __NR_setns:  // Privileged.
     case __NR_fork:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_get_thread_area:
     case __NR_set_thread_area:
+#endif
     case __NR_set_tid_address:
     case __NR_unshare:
     case __NR_vfork:
@@ -590,8 +610,10 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
     case __NR_brk:
     case __NR_madvise:
     case __NR_mlock:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_mmap:   // TODO(jln): to restrict flags.
-#if defined(__i386__)
+#endif
+#if defined(__i386__) || defined(__arm__)
     case __NR_mmap2:
 #endif
     case __NR_mprotect:
@@ -600,7 +622,9 @@ bool IsAllowedAddressSpaceAccess(int sysno) {
       return true;
     case __NR_mincore:
     case __NR_mlockall:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_modify_ldt:
+#endif
     case __NR_mremap:
     case __NR_msync:
     case __NR_munlockall:
@@ -626,13 +650,21 @@ bool IsAllowedGeneralIo(int sysno) {
     case __NR_pselect6:
     case __NR_read:
     case __NR_readv:
+#if defined(__arm__)
+    case __NR_recv:
+#endif
 #if defined(__x86_64__)
     case __NR_recvfrom:  // Could specify source.
     case __NR_recvmsg:   // Could specify source.
 #endif
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_select:
-#if defined(__i386__)
+#endif
+#if defined(__i386__) || defined(__arm__)
     case __NR__newselect:
+#endif
+#if defined(__arm__)
+    case __NR_send:
 #endif
 #if defined(__x86_64__)
     case __NR_sendmsg:   // Could specify destination.
@@ -706,11 +738,13 @@ bool IsAdminOperation(int sysno) {
 
 bool IsKernelModule(int sysno) {
   switch (sysno) {
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_create_module:
-    case __NR_delete_module:
     case __NR_get_kernel_syms:  // Should ENOSYS.
-    case __NR_init_module:
     case __NR_query_module:
+#endif
+    case __NR_delete_module:
+    case __NR_init_module:
       return true;
     default:
       return false;
@@ -750,7 +784,9 @@ bool IsNuma(int sysno) {
     case __NR_get_mempolicy:
     case __NR_getcpu:
     case __NR_mbind:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_migrate_pages:
+#endif
     case __NR_move_pages:
     case __NR_set_mempolicy:
       return true;
@@ -776,9 +812,12 @@ bool IsMessageQueue(int sysno) {
 bool IsGlobalProcessEnvironment(int sysno) {
   switch (sysno) {
     case __NR_acct:         // Privileged.
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_getrlimit:
-#if defined(__i386__)
+#endif
+#if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
+#elif defined(__i386__)
     case __NR_ulimit:
 #endif
     case __NR_getrusage:
@@ -797,7 +836,9 @@ bool IsDebug(int sysno) {
     case __NR_ptrace:
     case __NR_process_vm_readv:
     case __NR_process_vm_writev:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_kcmp:
+#endif
       return true;
     default:
       return false;
@@ -954,7 +995,9 @@ bool IsFaNotify(int sysno) {
 bool IsTimer(int sysno) {
   switch (sysno) {
     case __NR_getitimer:
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_alarm:
+#endif
     case __NR_setitimer:
       return true;
     default:
@@ -1008,11 +1051,15 @@ bool IsMisc(int sysno) {
     case __NR_syncfs:
     case __NR_vhangup:
     // The system calls below are not implemented.
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_afs_syscall:
+#endif
 #if defined(__i386__)
     case __NR_break:
 #endif
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_getpmsg:
+#endif
 #if defined(__i386__)
     case __NR_gtty:
     case __NR_idle:
@@ -1021,7 +1068,9 @@ bool IsMisc(int sysno) {
     case __NR_prof:
     case __NR_profil:
 #endif
+#if defined(__i386__) || defined(__x86_64__)
     case __NR_putpmsg:
+#endif
 #if defined(__x86_64__)
     case __NR_security:
 #endif
@@ -1038,6 +1087,32 @@ bool IsMisc(int sysno) {
   }
 }
 
+#if defined(__arm__)
+bool IsArmPciConfig(int sysno) {
+  switch (sysno) {
+    case __NR_pciconfig_iobase:
+    case __NR_pciconfig_read:
+    case __NR_pciconfig_write:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsArmPrivate(int sysno) {
+  switch (sysno) {
+    case __ARM_NR_breakpoint:
+    case __ARM_NR_cacheflush:
+    case __ARM_NR_set_tls:
+    case __ARM_NR_usr26:
+    case __ARM_NR_usr32:
+      return true;
+    default:
+      return false;
+  }
+}
+#endif  // defined(__arm__)
+
 // End of the system call sets section.
 
 bool IsBaselinePolicyAllowed_x86_64(int sysno) {
@@ -1053,7 +1128,10 @@ bool IsBaselinePolicyAllowed_x86_64(int sysno) {
       IsAllowedSignalHandling(sysno) ||
       IsFutex(sysno) ||
       IsGetSimpleId(sysno) ||
-      IsKernelInteralApi(sysno) ||
+      IsKernelInternalApi(sysno) ||
+#if defined(__arm__)
+      IsArmPrivate(sysno) ||
+#endif
       IsKill(sysno) ||
       IsOperationOnFd(sysno)) {
     return true;
@@ -1099,6 +1177,9 @@ bool IsBaselinePolicyWatched_x86_64(int sysno) {
       IsSystemVSemaphores(sysno) ||
 #elif defined(__i386__)
       IsSystemVIpc(sysno) ||
+#endif
+#if defined(__arm__)
+      IsArmPciConfig(sysno) ||
 #endif
       IsTimer(sysno)) {
     return true;
@@ -1189,7 +1270,6 @@ playground2::Sandbox::ErrorCode FlashProcessPolicy_x86_64(int sysno) {
       return  BaselinePolicy_x86_64(sysno);
   }
 }
-#endif  // defined(__i386__) || defined(__x86_64__)
 
 playground2::Sandbox::ErrorCode BlacklistPtracePolicy(int sysno) {
   if (sysno < static_cast<int>(MIN_SYSCALL) ||
