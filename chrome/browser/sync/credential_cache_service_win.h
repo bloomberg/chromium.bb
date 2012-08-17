@@ -39,8 +39,7 @@ namespace syncer {
 // sync using credentials that were cached due to signing in on the other
 // (alternate) mode.
 class CredentialCacheService : public ProfileKeyedService,
-                               public content::NotificationObserver,
-                               public PrefStore::Observer {
+                               public content::NotificationObserver {
  public:
   explicit CredentialCacheService(Profile* profile);
   virtual ~CredentialCacheService();
@@ -48,14 +47,25 @@ class CredentialCacheService : public ProfileKeyedService,
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
-  // PrefStore::Observer implementation.
-  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
-  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Loads cached sync credentials from the alternate profile and applies them
+  // to the local profile if the load was successful.
+  void ReadCachedCredentialsFromAlternateProfile();
+
+  // Populates a new local credential cache file if the user is already signed
+  // in to the local profile, and there is no existing local credential cache.
+  // Used in scenarios where a user upgraded from an older version of Chrome
+  // that didn't support credential caching. This method is a no-op if local
+  // sync prefs have already been written to the local cache.
+  void WriteExistingSyncPrefsToLocalCache();
+
+  // Resets |alternate_store_| and schedules the next read from the alternate
+  // credential cache.
+  void ScheduleNextReadFromAlternateCredentialCache();
 
  protected:
   // Returns true if the credential cache represented by |store| contains a
@@ -111,6 +121,50 @@ class CredentialCacheService : public ProfileKeyedService,
   }
 
  private:
+  // Used to track the initialization of the local credential cache.
+  class LocalStoreObserver
+      : public base::RefCounted<LocalStoreObserver>,
+        public PrefStore::Observer {
+   public:
+    LocalStoreObserver(CredentialCacheService* service,
+                       scoped_refptr<JsonPrefStore> local_store);
+    virtual ~LocalStoreObserver();
+
+    // PrefStore::Observer implementation.
+    virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+    virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
+
+   protected:
+    friend class base::RefCounted<LocalStoreObserver>;
+
+   private:
+    CredentialCacheService* service_;
+    scoped_refptr<JsonPrefStore> local_store_;
+    DISALLOW_COPY_AND_ASSIGN(LocalStoreObserver);
+  };
+
+  // Used to track the initialization of the alternate credential cache.
+  class AlternateStoreObserver
+      : public base::RefCounted<AlternateStoreObserver>,
+        public PrefStore::Observer  {
+   public:
+    AlternateStoreObserver(CredentialCacheService* service,
+                           scoped_refptr<JsonPrefStore> alternate_store);
+    virtual ~AlternateStoreObserver();
+
+    // PrefStore::Observer implementation.
+    virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+    virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
+
+   protected:
+    friend class base::RefCounted<AlternateStoreObserver>;
+
+   private:
+    CredentialCacheService* service_;
+    scoped_refptr<JsonPrefStore> alternate_store_;
+    DISALLOW_COPY_AND_ASSIGN(AlternateStoreObserver);
+  };
+
   // Returns the path to the sync credentials file in the current profile
   // directory.
   FilePath GetCredentialPathInCurrentProfile() const;
@@ -124,19 +178,8 @@ class CredentialCacheService : public ProfileKeyedService,
   // writer must be initialized, and false if not.
   bool ShouldInitializeLocalCredentialCacheWriter() const;
 
-  // Determines if we must look for credentials in the alternate profile, based
-  // on relevant sync preferences, in addition the to conditions in
-  // ShouldInitializeLocalCredentialCacheWriter(). Returns true if we must look
-  // for cached credentials, and false if not.
-  bool ShouldLookForCachedCredentialsInAlternateProfile() const;
-
   // Initializes the JsonPrefStore object for the local profile directory.
   void InitializeLocalCredentialCacheWriter();
-
-  // Initializes the JsonPrefStore object for the alternate profile directory
-  // if |should_initialize| is true. We take a bool* instead of a bool since
-  // this is a callback, and base::Owned needs to clean up the flag.
-  void InitializeAlternateCredentialCacheReader(bool* should_initialize);
 
   // Returns true if there is an empty value for kGoogleServicesUsername in the
   // credential cache for the local profile (indicating that the user first
@@ -150,10 +193,6 @@ class CredentialCacheService : public ProfileKeyedService,
   // Called by ProfileSyncService when it tries to start up on Windows 8 and
   // cannot auto-start.
   void LookForCachedCredentialsInAlternateProfile();
-
-  // Loads cached sync credentials from the alternate profile and calls
-  // ApplyCachedCredentials if the load was successful.
-  void ReadCachedCredentialsFromAlternateProfile();
 
   // Initiates sync sign in using credentials read from the alternate profile by
   // persisting |google_services_username|, |encryption_bootstrap_token|,
@@ -211,10 +250,6 @@ class CredentialCacheService : public ProfileKeyedService,
                           const std::string& sid,
                           const std::string& encryption_bootstrap_token);
 
-  // Resets |alternate_store_| and schedules the next read from the alternate
-  // credential cache.
-  void ScheduleNextReadFromAlternateCredentialCache();
-
   // Profile for which credentials are being cached.
   Profile* profile_;
 
@@ -226,9 +261,15 @@ class CredentialCacheService : public ProfileKeyedService,
   // it can be accessed by unit tests.
   scoped_refptr<JsonPrefStore> local_store_;
 
+  // Used to respond to the initialization of |local_store_|.
+  scoped_refptr<LocalStoreObserver> local_store_observer_;
+
   // Used for read operations on the credential cache file in the alternate
   // profile directory. This is separate from the chrome pref store.
   scoped_refptr<JsonPrefStore> alternate_store_;
+
+  // Used to respond to the initialization of |alternate_store_|.
+  scoped_refptr<AlternateStoreObserver> alternate_store_observer_;
 
   // Registrar for notifications from the PrefService.
   PrefChangeRegistrar pref_registrar_;
