@@ -173,8 +173,18 @@ _cl_args = {}
 CLASS = '%(DECODER)s_%(rule)s'
 NAMED_CLASS = 'Named%(DECODER)s_%(rule)s'
 INSTANCE = '%(DECODER_class)s_instance_'
-BASE_TESTER='%(decoder_base)sTester%(constraints)s'
-DECODER_TESTER='%(baseline)sTester_%(rule)s_%(constraints)s'
+BASE_TESTER='%(decoder_base)sTester%(safety)s%(restrictions)s'
+BASE_BASE_TESTER='%(decoder_base)sTester%(safety)s'
+DECODER_TESTER='%(baseline)sTester_%(rule)s_%(safety)s%(restrictions)s'
+
+def _constraint_name(c):
+  if c[0] == '~':
+    return 'Not' + c[1:]
+  else:
+    return c
+
+def _constraints_name(restrictions):
+  return ''.join([ _constraint_name(c) for c in restrictions ])
 
 def _install_action(decoder, action, values):
   # Installs common names needed from the given decoder action. This
@@ -186,13 +196,20 @@ def _install_action(decoder, action, values):
   values['actual'] = action.actual
   values['decoder_base'] = decoder.base_class(values['baseline'])
   values['rule'] = action.rule
-  values['constraints'] = action.constraints if action.constraints else ''
+  if action.constraints:
+    values['safety'] = (action.constraints.safety
+                        if action.constraints.safety else '')
+    values['restrictions'] = _constraints_name(action.constraints.restrictions)
+  else:
+    values['safety'] = ''
+    values['restrictions'] = ''
   values['pattern'] = action.pattern
   values['baseline_class'] =  _decoder_replace(CLASS, 'baseline') % values
   values['actual_class'] = _decoder_replace(CLASS, 'actual') % values
   _install_baseline_and_actuals('named_DECODER_class', NAMED_CLASS, values)
   _install_baseline_and_actuals('DECODER_instance', INSTANCE, values)
   values['base_tester'] = BASE_TESTER % values
+  values['base_base_tester'] = BASE_BASE_TESTER % values
   values['decoder_tester'] = DECODER_TESTER % values
 
 def _decoder_replace(string, basis):
@@ -606,6 +623,31 @@ namespace nacl_arm_test {
 // constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 """
+CONSTRAINT_TESTER_CLASS_HEADER="""
+class %(base_tester)s
+    : public %(base_base_tester)s {
+ public:
+  %(base_tester)s(const NamedClassDecoder& decoder)
+    : %(base_base_tester)s(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool %(base_tester)s
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {"""
+
+CONSTRAINT_CHECK="""
+  if (%s) return false;"""
+
+CONSTRAINT_TESTER_CLASS_FOOTER="""
+  return %(base_base_tester)s::
+      PassesParsePreconditions(inst, decoder);
+}
+"""
 
 TESTER_CLASS="""
 class %(decoder_tester)s
@@ -666,16 +708,45 @@ def generate_tests_cc(decoder, decoder_name, out, cl_args, tables):
       'decoder_name': decoder_name,
       }
   out.write(TEST_CC_HEADER % values)
+  _generate_constraint_testers(decoder, values, out)
   _generate_rule_testers(decoder, values, out)
   out.write(TEST_HARNESS % values)
   _generate_test_patterns(_decoder_restricted_to_tables(decoder, tables),
                           values, out)
   out.write(TEST_CC_FOOTER % values)
 
+def _generate_constraint_testers(decoder, values, out):
+  generated_names = set()
+  for d in decoder.action_filter(
+      ['baseline', 'rule', 'constraints']).decoders():
+    if d.constraints.restrictions:
+      _install_action(decoder, d, values)
+      constraint_tester = values['base_tester']
+      if constraint_tester not in generated_names:
+        generated_names.add(constraint_tester)
+        constraints = [dgen_core.BitPattern.parse(_negated_constraint(c),
+                                                  ('constraint', 31, 0))
+                       for c in d.constraints.restrictions]
+        out.write(CONSTRAINT_TESTER_CLASS_HEADER % values)
+        out.write(CONSTRAINT_CHECK % constraints[0].to_c_expr('inst.Bits()'))
+        for c in constraints[1:]:
+          out.write(CONSTRAINT_CHECK % c.to_c_expr('inst'))
+        out.write(CONSTRAINT_TESTER_CLASS_FOOTER % values)
+
+def _negated_constraint(constraint):
+  if constraint[0] == '~':
+    return constraint[1:]
+  else:
+    return '~' + constraint
+
 def _generate_rule_testers(decoder, values, out):
+  generated_names = set()
   for d in decoder.action_filter(['baseline', 'rule', 'constraints']).rules():
     _install_action(decoder, d, values)
-    out.write(TESTER_CLASS % values)
+    rule_tester = values['decoder_tester']
+    if rule_tester not in generated_names:
+      out.write(TESTER_CLASS % values)
+      generated_names.add(rule_tester)
 
 def _decoder_restricted_to_tables(decoder, tables):
   if not tables:

@@ -323,6 +323,27 @@ class BitPattern(object):
           rep = '~' + rep
         return rep
 
+class RuleRestrictions(object):
+  """A rule restriction defines zero or more (anded) bit patterns, and
+     an optional safety restriction to be used when testing.
+     """
+
+  def __init__(self, restrictions, safety):
+    self.restrictions = restrictions
+    self.safety = safety
+
+  def __hash__(self):
+    return sum([hash(r) for r in self.restrictions]) + hash(self.safety)
+
+  def __repr__(self):
+    """ Returns the printable string for the restrictions. """
+    rep = ''
+    if self.restrictions:
+      for r in self.restrictions:
+        rep += '& ' + r
+      rep += ' '
+    return rep + ("%s" % self.safety)
+
 class Table(object):
     """A table in the instruction set definition.  Each table contains 1+
     columns, and 1+ rows.  Each row contains a bit pattern for each column, plus

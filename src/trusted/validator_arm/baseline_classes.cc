@@ -483,6 +483,14 @@ RegisterList Store2RegisterImm12Op::defs(Instruction i) const {
   return immediate_addressing_defs(i);
 }
 
+// Store2RegisterImm12OpRnNotRtOnWriteback
+SafetyLevel Store2RegisterImm12OpRnNotRtOnWriteback::
+safety(Instruction i) const {
+  if (HasWriteBack(i) && (n.reg(i).Equals(t.reg(i))))
+    return UNPREDICTABLE;
+  return Store2RegisterImm12Op::safety(i);
+}
+
 // LoadStoreRegisterList
 SafetyLevel LoadStoreRegisterList::safety(const Instruction i) const {
   if (n.reg(i).Equals(kRegisterPc) || (register_list.value(i) == 0)) {

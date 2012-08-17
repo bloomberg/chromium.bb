@@ -50,6 +50,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , MoveVfpRegisterOp_instance_()
   , MoveVfpRegisterOpWithTypeSel_instance_()
   , Roadblock_instance_()
+  , Store2RegisterImm12OpRnNotRtOnWriteback_instance_()
   , StoreBasedImmedMemory_instance_()
   , StoreBasedImmedMemoryDouble_instance_()
   , StoreBasedMemoryDoubleRtBits0To3_instance_()
@@ -614,11 +615,10 @@ const ClassDecoder& Arm32DecoderState::decode_half_mult(
 const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
      const Instruction insn) const
 {
-  UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
       (insn.Bits() & 0x00500000) == 0x00000000 /* op1(24:20) == xx0x0 */ &&
       (insn.Bits() & 0x01700000) != 0x00200000 /* op1_repeated(24:20) == ~0x010 */) {
-    return StoreBasedImmedMemory_instance_;
+    return decode_load_store_word_byte_str_or_push(insn);
   }
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
@@ -694,6 +694,26 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
       (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */) {
     return Forbidden_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: load_store_word_byte_str_or_push.
+// Specified by: See Section a5.3
+const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte_str_or_push(
+     const Instruction insn) const
+{
+  UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x01E00000) == 0x01200000 /* Flags(24:21) == 1001 */ &&
+      (insn.Bits() & 0x000F0000) == 0x000D0000 /* Rn(19:16) == 1101 */ &&
+      (insn.Bits() & 0x00000FFF) == 0x00000004 /* Imm12(11:0) == 000000000100 */) {
+    return Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
+  }
+
+  if (true) {
+    return StoreBasedImmedMemory_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -1965,17 +1985,13 @@ const ClassDecoder& Arm32DecoderState::decode_sync(
     return LoadBasedMemoryDouble_instance_;
   }
 
-  if ((insn.Bits() & 0x00F00000) == 0x00C00000 /* op(23:20) == 1100 */ &&
-      (insn.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
-    return StoreBasedMemoryRtBits0To3_instance_;
-  }
-
-  if ((insn.Bits() & 0x00F00000) == 0x00E00000 /* op(23:20) == 1110 */) {
-    return StoreBasedMemoryRtBits0To3_instance_;
-  }
-
   if ((insn.Bits() & 0x00B00000) == 0x00000000 /* op(23:20) == 0x00 */) {
     return Deprecated_instance_;
+  }
+
+  if ((insn.Bits() & 0x00D00000) == 0x00C00000 /* op(23:20) == 11x0 */ &&
+      (insn.Bits() & 0x00000F00) == 0x00000F00 /* $pattern(31:0) == xxxxxxxxxxxxxxxxxxxx1111xxxxxxxx */) {
+    return StoreBasedMemoryRtBits0To3_instance_;
   }
 
   if ((insn.Bits() & 0x00D00000) == 0x00D00000 /* op(23:20) == 11x1 */ &&

@@ -78,7 +78,7 @@ def _generate_source(filename):
                       ],
               action=['${SOURCES[1].abspath} ${SOURCES[0].abspath} '
                       '${TARGET.abspath} Arm32DecoderState ' +
-                       GEN_CL_ARGS + GEN_TABLES])
+                       GEN_CL_ARGS + " " + GEN_TABLES])
 
 for f in GEN_LIST:
   _generate_source(f)

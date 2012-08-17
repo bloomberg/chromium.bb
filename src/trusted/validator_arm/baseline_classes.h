@@ -724,13 +724,15 @@ class Store2RegisterImm8DoubleOp
 // decoders) behave the same as instances of this. This simplifies
 // what we need to model in actual classes.
 //
+// Note: Currently, on stores, we don't check case: wback && Rn=Rt,
+// since many of the compilers generate this variant. However, for
+// push, we enforce this using class Store2RegisterImm12OpRnNotRtOnWriteback.
+//
 // For store register immediate (Str rule 194, A1 on page 384):
 // if Rn=Sp && P=1 && U=0 && W=1 && imm12=4, then PUSH (A8.6.123, A2 on A8-248).
-//    Note: This is just a special case instruction that behaves like a
-//    Store2RegisterImm12Op instruction. That is, the push saves the
-//    value of Rt at Sp-4, and then decrements sp by 4. Since this doesn't
-//    effect the NaCl constraints we need for such stores, we do not model
-//    it as a special instruction.
+//    Note: We use Store2RegisterImm12OpRnNotRtOnWriteback in this case, to
+//    deal with the relaxation noted above. See test CheckPushSpUnpredictable
+//    in validator_tests.cc to see that we do handle "push {sp}" correctly.
 //
 // For load register immediate (Ldr rule 59, A1 on page 122):
 // If Rn=Sp && P=0 && U=1 && W=0 && imm12=4, then POP ().
@@ -786,8 +788,20 @@ class Store2RegisterImm12Op : public LoadStore2RegisterImm12Op {
   }
   virtual RegisterList defs(Instruction i) const;
 
- protected:
+ private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12Op);
+};
+
+// Defines virtual for a store immediate instruction with the following
+// constraint:
+//     if wback && Rn=Rt then unpredictable.
+class Store2RegisterImm12OpRnNotRtOnWriteback : public Store2RegisterImm12Op {
+ public:
+  Store2RegisterImm12OpRnNotRtOnWriteback() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Store2RegisterImm12OpRnNotRtOnWriteback);
 };
 
 // Models a load/store of  multiple registers into/out of memory.

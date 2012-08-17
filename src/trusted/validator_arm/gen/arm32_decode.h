@@ -70,6 +70,9 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_load_store_word_byte(
       const Instruction insn) const;
 
+  inline const ClassDecoder& decode_load_store_word_byte_str_or_push(
+      const Instruction insn) const;
+
   inline const ClassDecoder& decode_media(
       const Instruction insn) const;
 
@@ -188,6 +191,7 @@ class Arm32DecoderState : DecoderState {
   const MoveVfpRegisterOp MoveVfpRegisterOp_instance_;
   const MoveVfpRegisterOpWithTypeSel MoveVfpRegisterOpWithTypeSel_instance_;
   const Roadblock Roadblock_instance_;
+  const Store2RegisterImm12OpRnNotRtOnWriteback Store2RegisterImm12OpRnNotRtOnWriteback_instance_;
   const StoreBasedImmedMemory StoreBasedImmedMemory_instance_;
   const StoreBasedImmedMemoryDouble StoreBasedImmedMemoryDouble_instance_;
   const StoreBasedMemoryDoubleRtBits0To3 StoreBasedMemoryDoubleRtBits0To3_instance_;

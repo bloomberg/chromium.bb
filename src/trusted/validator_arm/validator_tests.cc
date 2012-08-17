@@ -274,37 +274,50 @@ class ValidatorTests : public ::testing::Test {
                 uint32_t start_addr,
                 ProblemSink *sink);
 
-  /*
-   * Tests an arbitrary-size instruction fragment that is expected to pass.
-   * Does not modulate or rewrite the pattern in any way.
-   */
+  // Tests an arbitrary-size instruction fragment that is expected to pass.
+  // Does not modulate or rewrite the pattern in any way.
   void validation_should_pass(const arm_inst *pattern,
                               size_t inst_count,
                               uint32_t base_addr,
                               const string &msg);
 
-  /*
-   * Tests a two-instruction pattern that's expected to pass, at each possible
-   * bundle alignment. This also tries the pattern across bundle boundaries,
-   * and makes sure it fails.
-   */
+  // Tests a two-instruction pattern that's expected to pass, at each possible
+  // bundle alignment. This also tries the pattern across bundle boundaries,
+  // and makes sure it fails.
   void validation_should_pass2(const arm_inst *pattern,
                                size_t inst_count,
                                uint32_t base_addr,
                                const string &msg);
 
-  /*
-   * Tests a pattern that is forbidden in the SFI model.
-   *
-   * Note that the 'msg1' and 'msg2' parameters are merely concatentated in the
-   * output.
-   */
+  // Tests a pattern that is forbidden in the SFI model.
+  //
+  // Note that the 'msg1' and 'msg2' parameters are merely concatentated in the
+  // output.
   vector<ProblemRecord> validation_should_fail(const arm_inst *pattern,
                                                size_t inst_count,
                                                uint32_t base_addr,
                                                const string &msg);
 
+  // Tests an instruction with all possible conditions (i.e. all except 1111),
+  // verifying all cases are safe.
+  void all_cond_values_pass(const arm_inst prototype,
+                            uint32_t base_addr,
+                            const string &msg);
+
+  // Tests an instruction with all possible conditions (i.e. all except 1111),
+  // verifying all cases are unsafe.
+  void all_cond_values_fail(const arm_inst prototype,
+                            uint32_t base_addr,
+                            const string &msg);
+
   SfiValidator _validator;
+
+ private:
+  // Returns the given instruction, after modifying the instruction condition
+  // to the given value.
+  arm_inst ChangeCond(arm_inst inst, Instruction::Condition c) {
+    return (inst & 0x0fffffff) | (static_cast<arm_inst>(c) << 28);
+  }
 };
 
 
@@ -948,6 +961,22 @@ TEST_F(ValidatorTests, CheckVectorLoadPcRelative) {
                          "Load vector register using pc relative address");
 }
 
+TEST_F(ValidatorTests, CheckPushSpUnpredictable) {
+  // Run test to verify that "Push {sp}", encoding A2 on a8-248 of ARM manual,
+  // is unpredictable (i.e. unsafe).
+  all_cond_values_fail(0xe52dd004,  // push {sp}
+                       kDefaultBaseAddr,
+                       "push {sp} (A2 a8-248) should be unpredictable");
+}
+
+TEST_F(ValidatorTests, CheckPushPcUnpredictable) {
+  // Run test to verify that "Push {pc}", encoding A2 on a8-248 of ARM manual,
+  // is unsafe.
+  all_cond_values_fail(0xe52dF004,  // push {pc}
+                       kDefaultBaseAddr,
+                       "push {pc} (A2 A8-248) should be unpredictable");
+}
+
 // Implementation of the ValidatorTests utility methods.  These are documented
 // toward the top of this file.
 
@@ -1051,6 +1080,32 @@ vector<ProblemRecord> ValidatorTests::validation_should_fail(
 
   // The rest of the checking is done in the caller.
   return problems;
+}
+
+void ValidatorTests::all_cond_values_pass(const arm_inst prototype,
+                                          uint32_t base_addr,
+                                          const string &message) {
+  ProblemSpy spy;
+  arm_inst test_inst = prototype;
+  for (int cond = Instruction::EQ; cond < Instruction::UNCONDITIONAL; ++cond) {
+    test_inst = ChangeCond(test_inst,
+                           static_cast<Instruction::Condition>(cond));
+    EXPECT_TRUE(validate(&test_inst, 1, base_addr, &spy))
+        << "Fails on cond " << cond << ": " << message;
+  }
+}
+
+void ValidatorTests::all_cond_values_fail(const arm_inst prototype,
+                                          uint32_t base_addr,
+                                          const string &message) {
+  ProblemSpy spy;
+  arm_inst test_inst = prototype;
+  for (int cond = Instruction::EQ; cond < Instruction::UNCONDITIONAL; ++cond) {
+    test_inst = ChangeCond(test_inst,
+                           static_cast<Instruction::Condition>(cond));
+    EXPECT_FALSE(validate(&test_inst, 1, base_addr, &spy))
+        << "Passes on cond " << cond << ": " << message;
+  }
 }
 
 };  // anonymous namespace

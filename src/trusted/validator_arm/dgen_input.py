@@ -15,10 +15,11 @@ table_file ::= classdef* table+ eof ;
 
 action         ::= decoder_action arch | decoder_method | '"'
 arch           ::= '(' word+ ')'
+bitpattern     ::= 'word' | negated_word
 citation       ::= '(' word+ ')'
 classdef       ::= 'class' word ':' word
 decoder        ::= id ('=>' id)?
-decoder_action ::= '=' decoder (id (word (id)?)?)?
+decoder_action ::= '=' decoder (id (word (rule_restrict)?)?)?
 decoder_method ::= '->' id
 default_row    ::= 'else' ':' action
 footer         ::= '+' '-' '-'
@@ -27,16 +28,18 @@ int            ::= word     (where word is a sequence of digits)
 id             ::= word     (where word is sequence of letters, digits and _)
 parenthesized_exp ::= '(' (word | punctuation)+ ')'
 pat_row        ::= pattern+ action
-pattern        ::= 'word' | '-' | '"'
+pattern        ::= bitpattern | '-' | '"'
 row            ::= '|' (pat_row | default_row)
+rule_restrict  ::= ('&' bitpattern)* id
 table          ::= table_desc header row+ footer
 table_desc     ::= '+' '-' '-' id citation?
+negated_word   ::= '~' 'word'
 
 If a decoder_action has more than one element, the interpretation is as follows:
    id[0] = action (plus optional architecture) to apply.
    id[1] = Arm rule action corresponds to.
    word = Bit pattern of rule.
-   id[3] = Name defining additional constraints for match.
+   rule_restrict = Name defining additional constraints for match.
 """
 
 import re
@@ -85,7 +88,7 @@ class Parser(object):
     # p1 != p2 are in the list, and p1.startswith(p2), then
     # p1 must appear before p2.
     self._punctuation = ['class', 'else', '=>', '->', '-', '+', '(', ')',
-                         '=', ':', '"', '|']
+                         '=', ':', '"', '|', '~', '&']
 
   def _action(self, last_action, last_arch):
     """ action ::= decoder_action arch | decoder_method | '"' """
@@ -107,6 +110,21 @@ class Parser(object):
     """ arch ::= '(' word+ ')' """
     return ' '.join(self._parenthesized_exp())
 
+  def _bitpattern(self):
+    """ bitpattern     ::= 'word' | negated_word """
+    return (self._negated_word() if self._next_token().kind == '~'
+            else self._read_token('word').value)
+
+  def _bitpattern32(self):
+    """Returns a bit pattern with 32 bits."""
+    pattern = self._bitpattern()
+    if pattern[0] == '~':
+      if len(pattern) != 33:
+        self._unexpected("Bit pattern  %s length != 32" % pattern)
+    elif len(pattern) != 32:
+      self._unexpected("Bit pattern  %s length != 32" % pattern)
+    return pattern
+
   def _citation(self):
     """ citation ::= '(' word+ ')' """
     return ' '.join(self._parenthesized_exp())
@@ -118,13 +136,13 @@ class Parser(object):
     self._read_token(':');
     class_superclass = self._read_token('word').value
     if not decoder.add_class_def(class_name, class_superclass):
-      unexpected('Inconsistent definitions for class %s' % class_name)
+      self._unexpected('Inconsistent definitions for class %s' % class_name)
 
   def _read_id_or_none(self, read_id):
     if self._next_token().kind in ['|', '+', '(']:
       return None
-    id = self._id() if read_id else self._read_token('word').value
-    return None if id and id == 'None' else id
+    name = self._id() if read_id else self._read_token('word').value
+    return None if name and name == 'None' else name
 
   def _decoder(self):
     """ decoder        ::= id ('=>' id)? """
@@ -141,7 +159,7 @@ class Parser(object):
     (baseline, actual) = self._decoder()
     rule = self._read_id_or_none(True)
     pattern = self._read_id_or_none(False)
-    constraints = self._read_id_or_none(True)
+    constraints = self._rule_restrict()
     return dgen_core.DecoderAction(baseline, actual, rule, pattern, constraints)
 
   def _decoder_method(self):
@@ -203,6 +221,11 @@ class Parser(object):
       self._unexpected('"%s" is not a valid identifier' % ident)
     return ident
 
+  def _negated_word(self):
+    """ negated_word ::= '~' 'word' """
+    self._read_token('~')
+    return '~' + self._read_token('word').value
+
   def _parenthesized_exp(self, minlength=1):
     """ parenthesized_exp ::= '(' (word | punctuation)+ ')'
 
@@ -244,20 +267,17 @@ class Parser(object):
     return (patterns, action, arch)
 
   def _pattern(self, last_pattern):
-    """ pattern ::= 'word' | '-' | '"'
+    """ pattern        ::= bitpattern | '-' | '"'
 
     Arguments are:
-      col_no - The current column entry being read.
-      last_patterns - The list of patterns defined on the last row.
-      last_action - The action defined on the last row.
-      last_arch - The architecture defined on the last row..
+      last_pattern: The pattern for this column from the previous line.
     """
     if self._next_token().kind == '"':
       self._read_token('"')
       return last_pattern
     if self._next_token().kind in ['-', 'word']:
       return self._read_token().value
-    self._unexpected('Malformed pattern')
+    return self._bitpattern()
 
   def _row(self, table, last_patterns=None,
            last_action=None, last_arch= None):
@@ -271,6 +291,14 @@ class Parser(object):
       return self._default_row(table, last_action, last_arch)
     else:
       return self._pat_row(table, last_patterns, last_action, last_arch)
+
+  def _rule_restrict(self):
+    """ rule_restrict  ::= ('&' bitpattern)* id """
+    restrictions = []
+    while self._next_token().kind == '&':
+      self._read_token('&')
+      restrictions.append(self._bitpattern32())
+    return dgen_core.RuleRestrictions(restrictions, self._read_id_or_none(True))
 
   def _table(self, decoder):
     """ table ::= table_desc header row+ footer """

@@ -56,10 +56,12 @@
 #   'ssss' - Bits defining register Rs.
 #   'tttt' - Bits defining register Rt.
 #   'tt'   - Bits defining the shift type (for register operations).
-#   'u'    - Bit(20) defining whether register flags is updated.
+#   'u'    - Bit(20) defining whether register flags is updated (deprecated)
+#   's'    - Bit(20) defining whether register flags is updated.
 #   'w'    - Bit(21) defining writes flag.
 #   'r'    - Bit(22) defining if SPSR register is read.
-#   'd'    - Bit(23) Direction (add vs subtract) of offset.
+#   'd'    - Bit(23) Direction (add vs subtract) of offset. (deprecated)
+#   'u'    - Bit(23) Direction (add vs subtract) of offset.
 #   'p'    - Bit(24) defining if pre-indexing should be used.
 #
 # Constraints can be broken into three categories:
@@ -87,10 +89,6 @@
 #
 # Safety constraints:
 #    RegsNotPc - All registers defined by instruction are not Pc (R15).
-#    RdCanBePc - Overrides Nacl Constraint that Rd!=Pc.
-#    RdCanBePcAndNotRdIsPcAndS - Overrides Nacl Constraint that Rd!=Pc,
-#         and adds constraint Rd not Pc (R15) and S=1 (updates
-#         register bit).
 #
 # Parse precondition and safety constraint:
 #    NotRaIsPcAndRegsNotPc - Parse precondition Ra!=Pc and safety
@@ -127,6 +125,7 @@ class Load3RegisterOp : LoadStore3RegisterOp
 class MaskedBinary2RegisterImmediateOp : Binary2RegisterImmediateOp
 class MaskedBinaryRegisterImmediateTest : BinaryRegisterImmediateTest
 class StoreRegisterList : LoadStoreRegisterList
+class Store2RegisterImm12OpRnNotRtOnWriteback : Store2RegisterImm12Op
 class Store3RegisterDoubleOp : LoadStore3RegisterDoubleOp
 class Store2RegisterImm8DoubleOp : LoadStore2RegisterImm8DoubleOp
 class Store2RegisterImm8Op : LoadStore2RegisterImm8Op
@@ -696,6 +695,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
               Ldrexb_Rule_70_A1_P144
               cccc00011101nnnndddd111110011111 (v6K)
 | 1110      = StoreExclusive3RegisterOp  => StoreBasedMemoryRtBits0To3
+              Strexh_Rule_205_A1_P406
               cccc00011110nnnndddd11111001tttt (v6K)
 | 1111      = LoadExclusive2RegisterOp => LoadBasedMemory
               Ldrexh_Rule_72_A1_P148
@@ -797,11 +797,7 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 # Note: Column op1 is repeated so that several rows can define
 # (anded) multiple test conditions for this row.
 | A(25) op1(24:20) B(4) Rn(19:16)  op1_repeated(24:20)
-| 0     xx0x0      -    -          ~0x010
-                                   = Store2RegisterImm12Op
-                                   => StoreBasedImmedMemory
-                                   Str_Rule_194_A1_P384
-                                   cccc010pd0w0nnnnttttiiiiiiiiiiii
+| 0     xx0x0      -    -          ~0x010 -> load_store_word_byte_str_or_push
 | 1     xx0x0      0    -          ~0x010
                                    = Store3RegisterImm5Op 
                                    => StoreBasedOffsetMemory
@@ -862,6 +858,23 @@ class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 | 0     0x111      -    -          - = Forbidden
 | 1     0x111      0    -          - "
 +--
+
++-- load_store_word_byte_str_or_push (See Section a5.3)
+# This table is written to handle special variant of Str that also
+# corresponds to a push, in table load_store_word_byte.
+| Flags(24:21) Rn(19:16) Imm12(11:0)
+# Note: The baseline class Store2RegisterImm12OpRnNotRtOnWriteback guarantees
+# that we don't allow Rt(15:12) to be PC or SP.
+| 1001         1101      000000000100 = Store2RegisterImm12OpRnNotRtOnWriteback
+                                      Push_Rule_123_A2_P248
+                                      cccc010100101101tttt000000000100
+| else:                               = Store2RegisterImm12Op
+                                      => StoreBasedImmedMemory
+                                      Str_Rule_194_A1_P384
+                                      cccc010pu0w0nnnnttttiiiiiiiiiiii
+                                      & ~cccc010100101101tttt000000000100
++--
+
 
 +-- media (See Section A5.4)
 | op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)

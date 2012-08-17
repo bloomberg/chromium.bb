@@ -24,6 +24,26 @@ namespace nacl_arm_test {
 // constructor that automatically initializes the expected decoder
 // to the corresponding instance in the generated DecoderState.
 
+class LoadStore2RegisterImm12OpTesterNotcccc010100101101tttt000000000100
+    : public LoadStore2RegisterImm12OpTester {
+ public:
+  LoadStore2RegisterImm12OpTesterNotcccc010100101101tttt000000000100(const NamedClassDecoder& decoder)
+    : LoadStore2RegisterImm12OpTester(decoder) {}
+  virtual bool PassesParsePreconditions(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+};
+
+bool LoadStore2RegisterImm12OpTesterNotcccc010100101101tttt000000000100
+::PassesParsePreconditions(
+     nacl_arm_dec::Instruction inst,
+     const NamedClassDecoder& decoder) {
+  if ((inst.Bits() & 0x0FFF0FFF) == 0x052D0004 /* constraint(31:0) == xxxx010100101101xxxx000000000100 */) return false;
+  return LoadStore2RegisterImm12OpTester::
+      PassesParsePreconditions(inst, decoder);
+}
+
 class Binary2RegisterBitRangeTester_Bfi_Rule_18_A1_P48_NotRnIsPc
     : public Binary2RegisterBitRangeTesterNotRnIsPc {
  public:
@@ -1770,11 +1790,11 @@ class MoveVfpRegisterOpWithTypeSelTester_Vmov_Rule_329_A1_P646_
   {}
 };
 
-class Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_
-    : public LoadStore2RegisterImm12OpTester {
+class Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_Notcccc010100101101tttt000000000100
+    : public LoadStore2RegisterImm12OpTesterNotcccc010100101101tttt000000000100 {
  public:
-  Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_()
-    : LoadStore2RegisterImm12OpTester(
+  Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_Notcccc010100101101tttt000000000100()
+    : LoadStore2RegisterImm12OpTesterNotcccc010100101101tttt000000000100(
       state_.Store2RegisterImm12Op_Str_Rule_194_A1_P384_instance_)
   {}
 };
@@ -1785,6 +1805,15 @@ class Store2RegisterImm12OpTester_Strb_Rule_197_A1_P390_
   Store2RegisterImm12OpTester_Strb_Rule_197_A1_P390_()
     : LoadStore2RegisterImm12OpTester(
       state_.Store2RegisterImm12Op_Strb_Rule_197_A1_P390_instance_)
+  {}
+};
+
+class Store2RegisterImm12OpRnNotRtOnWritebackTester_Push_Rule_123_A2_P248_
+    : public LoadStore2RegisterImm12OpTester {
+ public:
+  Store2RegisterImm12OpRnNotRtOnWritebackTester_Push_Rule_123_A2_P248_()
+    : LoadStore2RegisterImm12OpTester(
+      state_.Store2RegisterImm12OpRnNotRtOnWriteback_Push_Rule_123_A2_P248_instance_)
   {}
 };
 
@@ -1869,12 +1898,12 @@ class StoreExclusive3RegisterOpTester_Strexb_Rule_203_A1_P402_
   {}
 };
 
-class StoreExclusive3RegisterOpTester_cccc00011110nnnndddd11111001tttt_
+class StoreExclusive3RegisterOpTester_Strexh_Rule_205_A1_P406_
     : public StoreExclusive3RegisterOpTester {
  public:
-  StoreExclusive3RegisterOpTester_cccc00011110nnnndddd11111001tttt_()
+  StoreExclusive3RegisterOpTester_Strexh_Rule_205_A1_P406_()
     : StoreExclusive3RegisterOpTester(
-      state_.StoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt_instance_)
+      state_.StoreExclusive3RegisterOp_Strexh_Rule_205_A1_P406_instance_)
   {}
 };
 
@@ -3871,11 +3900,11 @@ TEST_F(Arm32DecoderStateTests,
 }
 
 TEST_F(Arm32DecoderStateTests,
-       Store2RegisterImm12OpTester_Str_Rule_194_A1_P384__cccc010pd0w0nnnnttttiiiiiiiiiiii_Test) {
-  Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_ baseline_tester;
+       Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_Notcccc010100101101tttt000000000100_cccc010pu0w0nnnnttttiiiiiiiiiiii_Test) {
+  Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_Notcccc010100101101tttt000000000100 baseline_tester;
   NamedStoreBasedImmedMemory_Str_Rule_194_A1_P384 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
-  a_vs_b_tester.Test("cccc010pd0w0nnnnttttiiiiiiiiiiii");
+  a_vs_b_tester.Test("cccc010pu0w0nnnnttttiiiiiiiiiiii");
 }
 
 TEST_F(Arm32DecoderStateTests,
@@ -3884,6 +3913,12 @@ TEST_F(Arm32DecoderStateTests,
   NamedStoreBasedImmedMemory_Strb_Rule_197_A1_P390 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc010pd1w0nnnnttttiiiiiiiiiiii");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       Store2RegisterImm12OpRnNotRtOnWritebackTester_Push_Rule_123_A2_P248__cccc010100101101tttt000000000100_Test) {
+  Store2RegisterImm12OpRnNotRtOnWritebackTester_Push_Rule_123_A2_P248_ tester;
+  tester.Test("cccc010100101101tttt000000000100");
 }
 
 TEST_F(Arm32DecoderStateTests,
@@ -3956,6 +3991,14 @@ TEST_F(Arm32DecoderStateTests,
   NamedStoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc00011100nnnndddd11111001tttt");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       StoreExclusive3RegisterOpTester_Strexh_Rule_205_A1_P406__cccc00011110nnnndddd11111001tttt_Test) {
+  StoreExclusive3RegisterOpTester_Strexh_Rule_205_A1_P406_ baseline_tester;
+  NamedStoreBasedMemoryRtBits0To3_Strexh_Rule_205_A1_P406 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc00011110nnnndddd11111001tttt");
 }
 
 TEST_F(Arm32DecoderStateTests,
