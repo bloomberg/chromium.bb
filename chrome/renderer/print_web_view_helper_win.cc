@@ -93,6 +93,54 @@ int CALLBACK EnhMetaFileProc(HDC dc,
   return 1;  // Continue enumeration
 }
 
+Metafile* FlattenTransparency(Metafile* metafile, const gfx::Size& page_size) {
+  // Currently, we handle alpha blend transparency for a single page.
+  // Therefore, expecting a metafile with page count 1.
+  DCHECK_EQ(1U, metafile->GetPageCount());
+
+  // Close the device context to retrieve the compiled metafile.
+  if (!metafile->FinishDocument())
+    NOTREACHED();
+
+  // Page used alpha blend, but printer doesn't support it.  Rewrite the
+  // metafile and flatten out the transparency.
+  base::win::ScopedGetDC screen_dc(NULL);
+  base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(screen_dc));
+  if (!bitmap_dc)
+    NOTREACHED() << "Bitmap DC creation failed";
+  SetGraphicsMode(bitmap_dc, GM_ADVANCED);
+  void* bits = NULL;
+  BITMAPINFO hdr;
+  gfx::CreateBitmapHeader(page_size.width(), page_size.height(),
+                          &hdr.bmiHeader);
+  base::win::ScopedBitmap hbitmap(CreateDIBSection(
+      bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
+  if (!hbitmap)
+    NOTREACHED() << "Raster bitmap creation for printing failed";
+
+  base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
+  RECT rect = { 0, 0, page_size.width(), page_size.height() };
+  HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+  FillRect(bitmap_dc, &rect, whiteBrush);
+
+  Metafile* metafile2(new printing::NativeMetafile);
+  metafile2->Init();
+  HDC hdc = metafile2->context();
+  DCHECK(hdc);
+  skia::InitializeDC(hdc);
+
+  RECT metafile_bounds = metafile->GetPageBounds(1).ToRECT();
+  // Process the old metafile, placing all non-AlphaBlend calls into the
+  // new metafile, and copying the results of all the AlphaBlend calls
+  // from the bitmap DC.
+  EnumEnhMetaFile(hdc,
+                  metafile->emf(),
+                  EnhMetaFileProc,
+                  &bitmap_dc,
+                  &metafile_bounds);
+  return metafile2;
+}
+
 }  // namespace
 
 void PrintWebViewHelper::PrintPageInternal(
@@ -278,51 +326,7 @@ Metafile* PrintWebViewHelper::RenderPage(
     DCHECK(!is_preview);
     skia::PlatformDevice* platform_device = skia::GetPlatformDevice(device);
     if (platform_device && platform_device->AlphaBlendUsed()) {
-      // Currently, we handle alpha blend transparency for a single page.
-      // Therefore, expecting a metafile with page count 1.
-      DCHECK_EQ(1U, metafile->GetPageCount());
-
-      // Close the device context to retrieve the compiled metafile.
-      if (!metafile->FinishDocument())
-        NOTREACHED();
-
-      // Page used alpha blend, but printer doesn't support it.  Rewrite the
-      // metafile and flatten out the transparency.
-      base::win::ScopedGetDC screen_dc(NULL);
-      base::win::ScopedCreateDC bitmap_dc(CreateCompatibleDC(screen_dc));
-      if (!bitmap_dc)
-        NOTREACHED() << "Bitmap DC creation failed";
-      SetGraphicsMode(bitmap_dc, GM_ADVANCED);
-      void* bits = NULL;
-      BITMAPINFO hdr;
-      gfx::CreateBitmapHeader(page_size.width(), page_size.height(),
-                              &hdr.bmiHeader);
-      base::win::ScopedBitmap hbitmap(CreateDIBSection(
-          bitmap_dc, &hdr, DIB_RGB_COLORS, &bits, NULL, 0));
-      if (!hbitmap)
-        NOTREACHED() << "Raster bitmap creation for printing failed";
-
-      base::win::ScopedSelectObject selectBitmap(bitmap_dc, hbitmap);
-      RECT rect = { 0, 0, page_size.width(), page_size.height() };
-      HBRUSH whiteBrush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
-      FillRect(bitmap_dc, &rect, whiteBrush);
-
-      Metafile* metafile2(new printing::NativeMetafile);
-      metafile2->Init();
-      HDC hdc = metafile2->context();
-      DCHECK(hdc);
-      skia::InitializeDC(hdc);
-
-      RECT metafile_bounds = metafile->GetPageBounds(1).ToRECT();
-      // Process the old metafile, placing all non-AlphaBlend calls into the
-      // new metafile, and copying the results of all the AlphaBlend calls
-      // from the bitmap DC.
-      EnumEnhMetaFile(hdc,
-                      metafile->emf(),
-                      EnhMetaFileProc,
-                      &bitmap_dc,
-                      &metafile_bounds);
-      return metafile2;
+      return FlattenTransparency(metafile, page_size);
     }
   }
   return metafile;
