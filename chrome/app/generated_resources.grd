@@ -318,7 +318,7 @@ are declared in build/common.gypi.
         Others
       </message>
       <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE" desc="The label text with the number of allowed and blocked cookies and site data objects.">
-        <ph name="DATA_SOURCE">$1<ex>foo.bar.org</ex></ph> (<ph name="ALLOWED_COUNT">$2<ex>6</ex></ph> Allowed / <ph name="BLOCKED_COUNT">$3<ex>0</ex></ph> Blocked)
+        <ph name="DATA_SOURCE">$1<ex>foo.bar.org</ex></ph> (<ph name="ALLOWED_COUNT">$2<ex>6</ex></ph> allowed / <ph name="BLOCKED_COUNT">$3<ex>0</ex></ph> blocked)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW" desc="The text of the menu item of a permissions menu on the Website Settings UI that resets the setting to the default setting which is allow.">
         Use global default (Allow)
