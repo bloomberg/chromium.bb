@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
-#define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
+#ifndef UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_WITH_CONTENT_H_
+#define UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_WITH_CONTENT_H_
 
 namespace content {
 class BrowserContext;
@@ -24,4 +24,4 @@ void ShowExamplesWindow(Operation operation,
 }  // namespace examples
 }  // namespace views
 
-#endif  // UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_H_
+#endif  // UI_VIEWS_EXAMPLES_EXAMPLES_WINDOW_WITH_CONTENT_H_
