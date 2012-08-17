@@ -45,7 +45,6 @@ class ScriptBadgesCommandsApiTest : public ExtensionApiTest {
   virtual ~ScriptBadgesCommandsApiTest() {}
 };
 
-#if !defined(OS_MACOSX)
 // Test the basic functionality of the Keybinding API:
 // - That pressing the shortcut keys should perform actions (activate the
 //   browser action or send an event).
@@ -168,4 +167,3 @@ IN_PROC_BROWSER_TEST_F(ScriptBadgesCommandsApiTest, ScriptBadge_DISABLED) {
   }
 }
 
-#endif  // !OS_MACOSX

@@ -17,7 +17,7 @@
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_WIN) && defined(USE_AURA)
+#if !defined(OS_WIN) && (defined(USE_AURA) || defined(OS_MACOSX))
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #endif
 
@@ -146,11 +146,10 @@ string16 Accelerator::GetShortcutText() const {
     else
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
     shortcut += key;
-#elif defined(USE_AURA)
+#elif defined(USE_AURA) || defined(OS_MACOSX)
     const uint16 c = GetCharacterFromKeyCode(key_code_, false);
-    if (c != 0) {
+    if (c != 0)
       shortcut += static_cast<string16::value_type>(base::ToUpperASCII(c));
-    }
 #elif defined(TOOLKIT_GTK)
     const gchar* name = NULL;
     switch (key_code_) {

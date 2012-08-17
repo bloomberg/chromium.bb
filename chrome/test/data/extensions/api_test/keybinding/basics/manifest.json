@@ -16,7 +16,7 @@
     "toggle-feature": {
       "suggested_key": {
         "windows": "Ctrl+Shift+Y",
-        "mac": "Command+Shift+Y",
+        "mac": "Ctrl+Shift+Y",
         "linux": "Ctrl+Shift+Y",
         "chromeos": "Ctrl+Shift+Y",
         "default": "Ctrl+Shift+Y"
@@ -25,7 +25,6 @@
     },
     "_execute_browser_action": {
       "suggested_key": {
-        "mac": "Command+Shift+F",
         "default": "Ctrl+Shift+F"
       }
     }

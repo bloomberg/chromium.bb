@@ -53,15 +53,13 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
   for (size_t i = 0; i < tokens.size(); i++) {
     if (tokens[i] == "Ctrl") {
       modifiers |= ui::EF_CONTROL_DOWN;
-    } else if (tokens[i] == "Alt") {
+    } else if (tokens[i] == "Alt" ||
+               (tokens[i] == "Option" && platform_key == "mac")) {
       modifiers |= ui::EF_ALT_DOWN;
     } else if (tokens[i] == "Shift") {
       modifiers |= ui::EF_SHIFT_DOWN;
     } else if (tokens[i] == "Command" && platform_key == "mac") {
-      // TODO(finnur): Implement for Mac.
-      // TODO(finnur): Reject Shift modifier if no Cmd/Opt (see below).
-    } else if (tokens[i] == "Option" && platform_key == "mac") {
-      // TODO(finnur): Implement for Mac.
+      modifiers |= ui::EF_COMMAND_DOWN;
     } else if (tokens[i].size() == 1) {
       if (key != ui::VKEY_UNKNOWN) {
         // Multiple key assignments.
@@ -85,15 +83,19 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
       return ui::Accelerator();
     }
   }
+  bool command = (modifiers & ui::EF_COMMAND_DOWN) != 0;
   bool ctrl = (modifiers & ui::EF_CONTROL_DOWN) != 0;
   bool alt = (modifiers & ui::EF_ALT_DOWN) != 0;
   bool shift = (modifiers & ui::EF_SHIFT_DOWN) != 0;
+
   // We support Ctrl+foo, Alt+foo, Ctrl+Shift+foo, Alt+Shift+foo, but not
   // Ctrl+Alt+foo and not Shift+foo either. For a more detailed reason why we
   // don't support Ctrl+Alt+foo see this article:
   // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx.
+  // On Mac Command can also be used in combination with Shift or on its own,
+  // as a modifier.
   if (key == ui::VKEY_UNKNOWN || (ctrl && alt) ||
-      ((platform_key != "mac") && shift && !ctrl && !alt)) {
+      (shift && !ctrl && !alt && !command)) {
     *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidKeyBinding,
         base::IntToString(index),

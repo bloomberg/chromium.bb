@@ -126,6 +126,9 @@ class LocationBarViewMac : public LocationBar,
   void SetPreviewEnabledPageAction(ExtensionAction* page_action,
                                    bool preview_enabled);
 
+  // Retrieve the frame for the given |page_action|.
+  NSRect GetPageActionFrame(ExtensionAction* page_action);
+
   // Return |page_action|'s info-bubble point in window coordinates.
   // This function should always be called with a visible page action.
   // If |page_action| is not a page action or not visible, NOTREACHED()

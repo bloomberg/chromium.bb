@@ -403,15 +403,24 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   decoration->UpdateVisibility(contents, GURL(toolbar_model_->GetText()));
 }
 
+NSRect LocationBarViewMac::GetPageActionFrame(ExtensionAction* page_action) {
+  PageActionDecoration* decoration = GetPageActionDecoration(page_action);
+  if (!decoration)
+    return NSZeroRect;
+
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  NSRect frame = [cell frameForDecoration:decoration inFrame:[field_ bounds]];
+  DCHECK(!NSIsEmptyRect(frame));
+  return frame;
+}
+
 NSPoint LocationBarViewMac::GetPageActionBubblePoint(
     ExtensionAction* page_action) {
   PageActionDecoration* decoration = GetPageActionDecoration(page_action);
   if (!decoration)
     return NSZeroPoint;
 
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  NSRect frame = [cell frameForDecoration:decoration inFrame:[field_ bounds]];
-  DCHECK(!NSIsEmptyRect(frame));
+  NSRect frame = GetPageActionFrame(page_action);
   if (NSIsEmptyRect(frame))
     return NSZeroPoint;
 

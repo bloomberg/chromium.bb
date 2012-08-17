@@ -589,6 +589,21 @@ enum NotificationType {
   // and the name of the command being added).
   NOTIFICATION_EXTENSION_COMMAND_ADDED,
 
+  // Sent when an extension command shortcut for a browser action is activated
+  // on Mac. The source is the profile and the details is a std::string
+  // containing an extension ID.
+  NOTIFICATION_EXTENSION_COMMAND_BROWSER_ACTION_MAC,
+
+  // Sent when an extension command shortcut for a page action is activated
+  // on Mac. The source is the profile and the details is a std::string
+  // containing an extension ID.
+  NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC,
+
+  // Sent when an extension command shortcut for a script badge is activated
+  // on Mac. The source is the profile and the details is a std::string
+  // containing an extension ID.
+  NOTIFICATION_EXTENSION_COMMAND_SCRIPT_BADGE_MAC,
+
   // A new extension RenderViewHost has been registered. The details are
   // the RenderViewHost*.
   NOTIFICATION_EXTENSION_VIEW_REGISTERED,

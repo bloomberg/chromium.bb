@@ -125,7 +125,7 @@ bool CommandService::AddKeybindingPref(
   std::string key = GetPlatformKeybindingKeyForAccelerator(accelerator);
 
   if (!allow_overrides && bindings->HasKey(key))
-      return false;  // Already taken.
+    return false;  // Already taken.
 
   DictionaryValue* keybinding = new DictionaryValue();
   keybinding->SetString(kExtension, extension_id);

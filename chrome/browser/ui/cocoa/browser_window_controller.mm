@@ -44,6 +44,7 @@
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
+#include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
@@ -412,6 +413,10 @@ enum {
     // on the window bounds to determine whether to show buttons or not.
     if ([self hasToolbar])  // Do not create the buttons in popups.
       [toolbarController_ createBrowserActionButtons];
+
+    extension_keybinding_registry_.reset(
+        new ExtensionKeybindingRegistryCocoa(browser_->profile(),
+                                             [self window]));
 
     // We are done initializing now.
     initializing_ = NO;
@@ -1164,6 +1169,11 @@ enum {
 // command.
 - (void)executeCommand:(int)command {
   chrome::ExecuteCommand(browser_.get(), command);
+}
+
+- (BOOL)handledByExtensionCommand:(NSEvent*)event {
+  return extension_keybinding_registry_->ProcessKeyEvent(
+      content::NativeWebKeyboardEvent(event));
 }
 
 // StatusBubble delegate method: tell the status bubble the frame it should

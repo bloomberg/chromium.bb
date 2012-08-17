@@ -62,6 +62,9 @@ class PageActionDecoration : public ImageDecoration,
   virtual NSMenu* GetMenu() OVERRIDE;
 
  private:
+  // Activate the page action in the given |frame|.
+  bool ActivatePageAction(NSRect frame);
+
   // Show the popup in the frame, with the given URL.
   void ShowPopup(const NSRect& frame, const GURL& popup_url);
 

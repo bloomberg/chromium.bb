@@ -2758,6 +2758,8 @@
         'browser/ui/cocoa/extensions/extension_installed_bubble_bridge.mm',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller.h',
         'browser/ui/cocoa/extensions/extension_installed_bubble_controller.mm',
+        'browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h',
+        'browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.mm',
         'browser/ui/cocoa/extensions/extension_popup_controller.h',
         'browser/ui/cocoa/extensions/extension_popup_controller.mm',
         'browser/ui/cocoa/extensions/extension_uninstall_dialog_cocoa.mm',

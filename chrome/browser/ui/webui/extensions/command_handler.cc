@@ -83,13 +83,9 @@ void CommandHandler::HandleSetExtensionCommandShortcut(
 }
 
 void CommandHandler::HandleSetShortcutHandlingSuspended(const ListValue* args) {
-#if !defined(OS_MACOSX)
   bool suspended;
   if (args->GetBoolean(0, &suspended))
     ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(suspended);
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {

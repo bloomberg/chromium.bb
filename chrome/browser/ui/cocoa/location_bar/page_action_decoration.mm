@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
@@ -75,6 +76,10 @@ PageActionDecoration::PageActionDecoration(
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       content::Source<Profile>(browser_->profile()));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC,
+      content::Source<Profile>(browser_->profile()));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_SCRIPT_BADGE_MAC,
+      content::Source<Profile>(browser_->profile()));
 
   // We set the owner last of all so that we can determine whether we are in
   // the process of initializing this class or not.
@@ -96,6 +101,10 @@ bool PageActionDecoration::AcceptsMousePress() {
 // Either notify listeners or show a popup depending on the Page
 // Action.
 bool PageActionDecoration::OnMousePressed(NSRect frame) {
+  return ActivatePageAction(frame);
+}
+
+bool PageActionDecoration::ActivatePageAction(NSRect frame) {
   TabContents* tab_contents = owner_->GetTabContents();
   if (!tab_contents) {
     // We don't want other code to try and handle this click. Returning true
@@ -265,6 +274,22 @@ void PageActionDecoration::Observe(
 
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC:
+    case chrome::NOTIFICATION_EXTENSION_COMMAND_SCRIPT_BADGE_MAC: {
+      std::pair<const std::string, gfx::NativeWindow>* payload =
+      content::Details<std::pair<const std::string, gfx::NativeWindow> >(
+          details).ptr();
+      std::string extension_id = payload->first;
+      gfx::NativeWindow window = payload->second;
+      if (window != browser_->window()->GetNativeWindow())
+        break;
+      if (extension_id != page_action_->extension_id())
+        break;
+      NSRect frame = owner_->GetPageActionFrame(page_action_);
+      ActivatePageAction(frame);
+      break;
+    }
+
     default:
       NOTREACHED() << "Unexpected notification";
       break;

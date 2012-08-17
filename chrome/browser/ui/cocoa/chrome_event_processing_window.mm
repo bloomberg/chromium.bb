@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #import "content/public/browser/render_widget_host_view_mac_base.h"
@@ -62,6 +63,15 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
   if (redispatchingEvent_)
     return NO;
+
+  NSWindow* window = event.window;
+  if (window) {
+    BrowserWindowController* controller = [window windowController];
+    if ([controller respondsToSelector:@selector(handledByExtensionCommand:)]) {
+      if ([controller handledByExtensionCommand:event])
+        return YES;
+    }
+  }
 
   // Give the web site a chance to handle the event. If it doesn't want to
   // handle it, it will call us back with one of the |handle*| methods above.

@@ -34,6 +34,7 @@ class BrowserWindowCocoa;
 @class ChromeToMobileBubbleController;
 @class DevToolsController;
 @class DownloadShelfController;
+class ExtensionKeybindingRegistryCocoa;
 @class FindBarCocoaController;
 @class FullscreenWindow;
 @class GTMWindowSheetController;
@@ -161,6 +162,10 @@ class WebContents;
   // -windowDidEnterFullScreen: gets called.
   GURL fullscreenUrl_;
   FullscreenExitBubbleType fullscreenBubbleType_;
+
+  // The Extension Command Registry used to determine which keyboard events to
+  // handle.
+  scoped_ptr<ExtensionKeybindingRegistryCocoa> extension_keybinding_registry_;
 }
 
 // A convenience class method which gets the |BrowserWindowController| for a
@@ -271,6 +276,10 @@ class WebContents;
 // |command| is an integer value containing one of the constants defined in the
 // "chrome/app/chrome_command_ids.h" file.
 - (void)executeCommand:(int)command;
+
+// Consults the Command Registry to see if this |event| needs to be handled as
+// an extension command and returns YES if so (NO otherwise).
+- (BOOL)handledByExtensionCommand:(NSEvent*)event;
 
 // Delegate method for the status bubble to query its base frame.
 - (NSRect)statusBubbleBaseFrame;
