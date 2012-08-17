@@ -33,6 +33,7 @@
 #include <avrfsdk.h>
 
 #include <algorithm>
+#include <iterator>
 #include <list>
 #include <vector>
 
@@ -40,9 +41,6 @@
 #include "common/windows/guid_string.h"
 
 using std::wstring;
-
-// Disable C4996: 'std::copy': Function call with parameters that may be unsafe.
-#pragma warning( disable : 4996 )
 
 namespace {
 
@@ -177,7 +175,9 @@ bool HandleTraceData::CollectHandleData(
   stream_data->Reserved = 0;
   std::copy(operations_.begin(),
             operations_.end(),
-            reinterpret_cast<AVRF_HANDLE_OPERATION*>(stream_data + 1));
+            stdext::checked_array_iterator<AVRF_HANDLE_OPERATION*>(
+                reinterpret_cast<AVRF_HANDLE_OPERATION*>(stream_data + 1),
+                operations_.size()));
 
   return true;
 }
