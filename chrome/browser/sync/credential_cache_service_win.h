@@ -56,12 +56,9 @@ class CredentialCacheService : public ProfileKeyedService,
   // to the local profile if the load was successful.
   void ReadCachedCredentialsFromAlternateProfile();
 
-  // Populates a new local credential cache file if the user is already signed
-  // in to the local profile, and there is no existing local credential cache.
-  // Used in scenarios where a user upgraded from an older version of Chrome
-  // that didn't support credential caching. This method is a no-op if local
-  // sync prefs have already been written to the local cache.
-  void WriteExistingSyncPrefsToLocalCache();
+  // Writes kSyncKeepEverythingSynced and the sync preferences for individual
+  // datatypes to the local cache.
+  void WriteSyncPrefsToLocalCache();
 
   // Resets |alternate_store_| and schedules the next read from the alternate
   // credential cache.
@@ -87,12 +84,15 @@ class CredentialCacheService : public ProfileKeyedService,
   void WriteLastUpdatedTime();
 
   // Updates the value of |pref_name| to |new_value|, unless the user has signed
-  // out, in which case we write an empty string value to |pref_name|.
+  // out, in which case we write an empty string value to |pref_name|. This
+  // method is a no-op if |new_value| is the same as the value found in the
+  // local cache.
   void PackAndUpdateStringPref(const std::string& pref_name,
                                const std::string& new_value);
 
   // Updates the value of |pref_name| to |new_value|, unless the user has signed
-  // out, in which case we write "false" to |pref_name|.
+  // out, in which case we write "false" to |pref_name|. This method is a no-op
+  // if |new_value| is the same as the value found in the local cache.
   void UpdateBooleanPref(const std::string& pref_name, bool new_value);
 
   // Returns the time at which the credential cache represented by |store| was
@@ -181,6 +181,10 @@ class CredentialCacheService : public ProfileKeyedService,
   // Initializes the JsonPrefStore object for the local profile directory.
   void InitializeLocalCredentialCacheWriter();
 
+  // Registers for notifications for events like sync sign in, sign out,
+  // (re)configuration, encryption and changes to the token service credentials.
+  void StartListeningForSyncConfigChanges();
+
   // Returns true if there is an empty value for kGoogleServicesUsername in the
   // credential cache for the local profile (indicating that the user first
   // signed in and then signed out). Returns false if there's no value at all
@@ -196,59 +200,76 @@ class CredentialCacheService : public ProfileKeyedService,
 
   // Initiates sync sign in using credentials read from the alternate profile by
   // persisting |google_services_username|, |encryption_bootstrap_token|,
-  // |keep_everything_synced| and |preferred_types| to the local pref store, and
-  // preparing ProfileSyncService for sign in.
+  // |keystore_encryption_bootstrap_token|, |keep_everything_synced| and
+  // |preferred_types| to the local pref store, and preparing ProfileSyncService
+  // for sign in.
   void InitiateSignInWithCachedCredentials(
       const std::string& google_services_username,
       const std::string& encryption_bootstrap_token,
+      const std::string& keystore_encryption_bootstrap_token,
       bool keep_everything_synced,
       ModelTypeSet preferred_types);
 
-  // Updates the TokenService credentials with |lsid| and |sid| and triggers the
-  // minting of new tokens for all Chrome services. ProfileSyncService is
-  // automatically notified when tokens are minted, and goes on to consume the
-  // updated credentials.
-  void UpdateTokenServiceCredentials(const std::string& lsid,
-                                     const std::string& sid);
+  // Updates the TokenService credentials with |alternate_lsid| and
+  // |alternate_sid| and triggers the minting of new tokens for all Chrome
+  // services. ProfileSyncService is automatically notified when tokens are
+  // minted, and goes on to consume the updated credentials.
+  void UpdateTokenServiceCredentials(const std::string& alternate_lsid,
+                                     const std::string& alternate_sid);
 
   // Initiates a sign out of sync. Called when we notice that the user has
   // signed out from the alternate mode by reading its credential cache.
   void InitiateSignOut();
 
   // Compares the sync preferences in the local profile with values that were
-  // read from the alternate profile -- |keep_everything_synced| and
-  // |preferred_types|. Returns true if the prefs have changed, and false
-  // otherwise.
-  bool HaveSyncPrefsChanged(bool keep_everything_synced,
-                            ModelTypeSet preferred_types) const;
+  // read from the alternate profile -- |alternate_keep_everything_synced| and
+  // |alternate_preferred_types|. Returns true if the prefs have changed, and
+  // false otherwise.
+  bool HaveSyncPrefsChanged(bool alternate_keep_everything_synced,
+                            ModelTypeSet alternate_preferred_types) const;
+
+  // Compares the sync encryption tokens in the local profile with values that
+  // were read from the alternate profile --
+  // |alternate_encryption_bootstrap_token| and
+  // |alternate_keystore_encryption_bootstrap_token|. Returns true if the tokens
+  // have changed, and false otherwise.
+  bool HaveSyncEncryptionTokensChanged(
+      const std::string& alternate_encryption_bootstrap_token,
+      const std::string& alternate_keystore_encryption_bootstrap_token);
 
   // Compares the token service credentials in the local profile with values
-  // that were read from the alternate profile -- |lsid| and |sid|. Returns true
-  // if the credentials have changed, and false otherwise.
-  bool HaveTokenServiceCredentialsChanged(const std::string& lsid,
-                                          const std::string& sid);
+  // that were read from the alternate profile -- |alternate_lsid| and
+  // |alternate_sid|. Returns true if the credentials have changed, and false
+  // otherwise.
+  bool HaveTokenServiceCredentialsChanged(const std::string& alternate_lsid,
+                                          const std::string& alternate_sid);
 
   // Determines if the user must be signed out of the local profile or not.
   // Called when updated settings are noticed in the alternate credential cache
-  // for |google_services_username|. Returns true if we should sign out, and
-  // false if not.
-  bool ShouldSignOutOfSync(const std::string& google_services_username);
+  // for |alternate_google_services_username|. Returns true if we should sign
+  // out, and false if not.
+  bool ShouldSignOutOfSync(
+      const std::string& alternate_google_services_username);
 
   // Determines if sync settings may be reconfigured or not. Called when
   // updated settings are noticed in the alternate credential cache for
-  // |google_services_username|. Returns true if we may reconfigure, and false
-  // if not.
-  bool MayReconfigureSync(const std::string& google_services_username);
+  // |alternate_google_services_username|. Returns true if we may reconfigure,
+  // and false if not.
+  bool MayReconfigureSync(
+      const std::string& alternate_google_services_username);
 
   // Determines if the user must be signed in to the local profile or not.
   // Called when updated settings are noticed in the alternate credential cache
-  // for |google_services_username|, with new values for |lsid|, |sid| and
-  // |encryption_bootstrap_token|. Returns true if we should sign in, and
-  // false if not.
-  bool ShouldSignInToSync(const std::string& google_services_username,
-                          const std::string& lsid,
-                          const std::string& sid,
-                          const std::string& encryption_bootstrap_token);
+  // for |alternate_google_services_username|, with new values for
+  // |alternate_lsid|, |alternate_sid|, |alternate_encryption_bootstrap_token|
+  // and |alternate_keystore_encryption_bootstrap_token|. Returns true if we
+  // should sign in, and false if not.
+  bool ShouldSignInToSync(
+      const std::string& alternate_google_services_username,
+      const std::string& alternate_lsid,
+      const std::string& alternate_sid,
+      const std::string& alternate_encryption_bootstrap_token,
+      const std::string& alternate_keystore_encryption_bootstrap_token);
 
   // Profile for which credentials are being cached.
   Profile* profile_;
