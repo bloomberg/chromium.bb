@@ -1115,7 +1115,6 @@
         'browser/chromeos/gdata/gdata_contacts_service_stub.h',
         'browser/chromeos/gdata/gdata_directory_service_unittest.cc',
         'browser/chromeos/gdata/gdata_file_system_unittest.cc',
-        'browser/chromeos/gdata/gdata_files_unittest.cc',
         'browser/chromeos/gdata/gdata_operation_registry_unittest.cc',
         'browser/chromeos/gdata/gdata_operations_unittest.cc',
         'browser/chromeos/gdata/gdata_sync_client_unittest.cc',

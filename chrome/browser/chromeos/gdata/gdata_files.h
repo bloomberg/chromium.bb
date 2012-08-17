@@ -63,7 +63,7 @@ class GDataEntry {
 
   // Converts to/from proto. Only handles the common part (i.e. does not
   // touch |file_specific_info|).
-  bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
+  void FromProto(const GDataEntryProto& proto);
   // TODO(achuith,satorux): Should this be virtual?
   void ToProto(GDataEntryProto* proto) const;
 
@@ -176,7 +176,7 @@ class GDataFile : public GDataEntry {
   virtual ~GDataFile();
 
   // Converts to/from proto.
-  bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
+  void FromProto(const GDataEntryProto& proto);
   void ToProto(GDataEntryProto* proto) const;
 
   DocumentEntry::EntryKind kind() const { return kind_; }
@@ -221,7 +221,7 @@ class GDataDirectory : public GDataEntry {
   virtual ~GDataDirectory();
 
   // Converts to/from proto.
-  bool FromProto(const GDataDirectoryProto& proto) WARN_UNUSED_RESULT;
+  void FromProto(const GDataDirectoryProto& proto);
   void ToProto(GDataDirectoryProto* proto) const;
 
   // Converts the children as a vector of GDataEntryProto.

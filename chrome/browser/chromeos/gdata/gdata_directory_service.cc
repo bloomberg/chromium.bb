@@ -28,29 +28,6 @@ const char kDBKeyLargestChangestamp[] = "m:largest_changestamp";
 const char kDBKeyVersion[] = "m:version";
 const char kDBKeyResourceIdPrefix[] = "r:";
 
-// Returns true if |proto| is a valid proto as the root directory.
-// Used to reject incompatible proto.
-bool IsValidRootDirectoryProto(const GDataDirectoryProto& proto) {
-  const GDataEntryProto& entry_proto = proto.gdata_entry();
-  // The title field for the root directory was originally empty, then
-  // changed to "gdata", then changed to "drive". Discard the proto data if
-  // the older formats are detected. See crbug.com/128133 for details.
-  if (entry_proto.title() != "drive") {
-    LOG(ERROR) << "Incompatible proto detected (bad title): "
-               << entry_proto.title();
-    return false;
-  }
-  // The title field for the root directory was originally empty. Discard
-  // the proto data if the older format is detected.
-  if (entry_proto.resource_id() != kGDataRootDirectoryResourceId) {
-    LOG(ERROR) << "Incompatible proto detected (bad resource ID): "
-               << entry_proto.resource_id();
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 EntryInfoResult::EntryInfoResult() : error(GDATA_FILE_ERROR_FAILED) {
@@ -673,11 +650,7 @@ bool GDataDirectoryService::ParseFromString(
     return false;
   }
 
-  if (!IsValidRootDirectoryProto(proto.gdata_directory()))
-    return false;
-
-  if (!root_->FromProto(proto.gdata_directory()))
-    return false;
+  root_->FromProto(proto.gdata_directory());
 
   origin_ = FROM_CACHE;
   largest_changestamp_ = proto.largest_changestamp();
@@ -696,18 +669,12 @@ scoped_ptr<GDataEntry> GDataDirectoryService::FromProtoString(
     entry.reset(CreateGDataDirectory());
     // Call GDataEntry::FromProto instead of GDataDirectory::FromProto because
     // the proto does not include children.
-    if (!entry->FromProto(entry_proto)) {
-      NOTREACHED() << "FromProto (directory) failed";
-      entry.reset();
-    }
+    entry->FromProto(entry_proto);
   } else {
     scoped_ptr<GDataFile> file(CreateGDataFile());
     // Call GDataFile::FromProto.
-    if (file->FromProto(entry_proto)) {
-      entry.reset(file.release());
-    } else {
-      NOTREACHED() << "FromProto (file) failed";
-    }
+    file->FromProto(entry_proto);
+    entry.reset(file.release());
   }
   return entry.Pass();
 }
