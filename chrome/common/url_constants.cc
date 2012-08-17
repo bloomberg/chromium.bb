@@ -79,6 +79,10 @@ const char kChromeUIUberURL[] = "chrome://chrome/";
 const char kChromeUIUberFrameURL[] = "chrome://uber-frame/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 
+#if defined(OS_ANDROID)
+const char kChromeUIWelcomeURL[] = "chrome://welcome/";
+#endif
+
 #if defined(OS_CHROMEOS)
 const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
 const char kChromeUIChooseMobileNetworkURL[] =
@@ -208,6 +212,10 @@ const char kChromeUIWorkersHost[] = "workers";
 
 const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUIThemePath[] = "theme";
+
+#if defined(OS_ANDROID)
+const char kChromeUIWelcomeHost[] = "welcome";
+#endif
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 const char kChromeUILinuxProxyConfigHost[] = "linux-proxy-config";

@@ -71,6 +71,10 @@ extern const char kChromeUIUberURL[];
 extern const char kChromeUIUberFrameURL[];
 extern const char kChromeUIVersionURL[];
 
+#if defined(OS_ANDROID)
+extern const char kChromeUIWelcomeURL[];
+#endif
+
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIActivationMessage[];
 extern const char kChromeUIChooseMobileNetworkURL[];
@@ -197,6 +201,10 @@ extern const char kChromeUIWorkersHost[];
 
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUIThemePath[];
+
+#if defined(OS_ANDROID)
+extern const char kChromeUIWelcomeHost[];
+#endif
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 extern const char kChromeUILinuxProxyConfigHost[];
@@ -387,6 +395,7 @@ extern const char kExtensionResourceScheme[];
 #if defined(OS_CHROMEOS)
 extern const char kDriveScheme[];
 #endif
+
 #if defined(OS_ANDROID)
 extern const char kContentScheme[];
 // Special Android file paths.

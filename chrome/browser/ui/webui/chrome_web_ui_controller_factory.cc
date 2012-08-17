@@ -63,6 +63,10 @@
 #include "ui/web_dialogs/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/welcome_ui_android.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/drive_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/choose_mobile_network_ui.h"
@@ -233,7 +237,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   /****************************************************************************
    * OS Specific #defines
    ***************************************************************************/
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  if (url.host() == chrome::kChromeUIWelcomeHost)
+    return &NewWebUI<WelcomeUI>;
+#else
   // These pages are implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;

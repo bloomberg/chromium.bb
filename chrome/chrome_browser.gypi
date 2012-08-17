@@ -4285,6 +4285,8 @@
         'browser/ui/webui/uber/uber_ui.h',
         'browser/ui/webui/web_ui_util.cc',
         'browser/ui/webui/web_ui_util.h',
+        'browser/ui/webui/welcome_ui_android.cc',
+        'browser/ui/webui/welcome_ui_android.h',
         'browser/ui/window_sizer/window_sizer.cc',
         'browser/ui/window_sizer/window_sizer.h',
         'browser/ui/window_sizer/window_sizer_ash.cc',
