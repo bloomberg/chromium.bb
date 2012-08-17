@@ -104,6 +104,8 @@
 
       # crosbug.com/136875
       '-fullscreen_mouselock.FullscreenMouselockTest.testTabFSDoesNotExitForAnchorLinks',
+      # crbug.com/143506
+      '-gtalk.test_basic.BasicTest',
       # crbug.com/131874
       '-infobars.OneClickInfobarTest.testNoOneClickInfobarAfterCancel',
       # crbug.com/133315
