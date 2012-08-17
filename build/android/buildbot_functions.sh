@@ -290,3 +290,18 @@ function bb_extract_build {
   return $extract_exitcode
   )
 }
+
+# Reboot all phones and wait for them to start back up
+# Does not break build if a phone fails to restart
+function bb_reboot_phones {
+  echo "@@@BUILD_STEP Rebooting phones@@@"
+  (
+  set +e
+  cd $CHROME_SRC/build/android/pylib;
+  for DEVICE in $(adb_get_devices); do
+    python -c "import android_commands;\
+        android_commands.AndroidCommands(device='$DEVICE').Reboot(True)" &
+  done
+  wait
+  )
+}
