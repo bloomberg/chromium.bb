@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
+#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -89,16 +90,20 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
 
 static void CreateBackgroundHostForExtensionLoad(
     ExtensionProcessManager* manager, const Extension* extension) {
-  if (extension->has_persistent_background_page()) {
+  if (extension->has_persistent_background_page())
     manager->CreateBackgroundHost(extension, extension->GetBackgroundURL());
-  }
 }
 
 static void CreateBackgroundHostsForProfileStartup(
-    ExtensionProcessManager* manager, const ExtensionSet* extensions) {
+    Profile* profile,
+    ExtensionProcessManager* manager,
+    const ExtensionSet* extensions) {
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
     CreateBackgroundHostForExtensionLoad(manager, *extension);
+
+    extensions::RuntimeEventRouter::DispatchOnStartupEvent(
+        profile, (*extension)->id());
   }
 }
 
@@ -557,19 +562,19 @@ void ExtensionProcessManager::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSIONS_READY: {
-      CreateBackgroundHostsForProfileStartup(this,
-          content::Source<Profile>(source).ptr()->
-              GetExtensionService()->extensions());
+      Profile* profile = content::Source<Profile>(source).ptr();
+      CreateBackgroundHostsForProfileStartup(profile, this,
+          profile->GetExtensionService()->extensions());
       break;
     }
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
-      ExtensionService* service =
-          content::Source<Profile>(source).ptr()->GetExtensionService();
+      Profile* profile = content::Source<Profile>(source).ptr();
+      ExtensionService* service = profile->GetExtensionService();
       if (service->is_ready()) {
         const Extension* extension =
             content::Details<const Extension>(details).ptr();
-        ::CreateBackgroundHostForExtensionLoad(this, extension);
+        CreateBackgroundHostForExtensionLoad(this, extension);
       }
       break;
     }
@@ -805,7 +810,8 @@ void IncognitoExtensionProcessManager::Observe(
         // service will be NULL.
         ExtensionService* service = GetProfile()->GetExtensionService();
         if (service && service->is_ready())
-          CreateBackgroundHostsForProfileStartup(this, service->extensions());
+          CreateBackgroundHostsForProfileStartup(GetProfile(),
+                                                 this, service->extensions());
       }
       break;
     }

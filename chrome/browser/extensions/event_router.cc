@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -31,6 +33,8 @@
 
 using base::Value;
 using content::BrowserThread;
+
+namespace extensions {
 
 namespace {
 
@@ -44,9 +48,15 @@ void NotifyEventListenerRemovedOnIOThread(
       profile, extension_id, sub_event_name);
 }
 
-}  // namespace
+void DispatchOnInstalledEvent(
+    Profile* profile, const std::string& extension_id) {
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
 
-namespace extensions {
+  RuntimeEventRouter::DispatchOnInstalledEvent(profile, extension_id);
+}
+
+}  // namespace
 
 struct EventRouter::ListenerProcess {
   content::RenderProcessHost* process;
@@ -558,8 +568,7 @@ void EventRouter::Observe(int type,
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
-                     profile_, extension->id()));
+          base::Bind(&DispatchOnInstalledEvent, profile_, extension->id()));
       break;
     }
     default:
