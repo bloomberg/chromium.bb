@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 
 #include "ash/launcher/launcher_types.h"
 #include "ash/system/tray/system_tray_delegate.h"
