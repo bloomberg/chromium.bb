@@ -184,6 +184,9 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
   if ((flags & content::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS) &&
       !command_line->HasSwitch(switches::kDisableAccelerated2dCanvas))
     command_line->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+  if ((flags & content::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
+      !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
+    command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(

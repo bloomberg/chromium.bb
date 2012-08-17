@@ -37,7 +37,7 @@
 // 16. "blacklist" is a list of gpu feature strings, valid values include
 //     "accelerated_2d_canvas", "accelerated_compositing", "webgl",
 //     "multisampling", "flash_3d", "flash_stage3d", "texture_sharing",
-//     and "all".
+//     "accelerated_video_decode", and "all".
 //     This field is mandatory.
 // 17. "description" has the description of the entry.
 // 18. "webkit_bugs" is an array of associated webkit bug numbers.
@@ -68,7 +68,7 @@
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "2.8",
+  "version": "2.9",
   "entries": [
     {
       "id": 1,
@@ -664,6 +664,26 @@
       },
       "blacklist": [
         "all"
+      ]
+    },
+    {
+      "id": 48,
+      "description": "Accelerated video decode is unavailable on Mac and Linux.",
+      "cr_bugs": [137247, 133828],
+      "exceptions": [
+        {
+          "os": {
+            "type": "chromeos"
+          }
+        },
+        {
+          "os": {
+            "type": "win"
+          }
+        }
+      ],
+      "blacklist": [
+        "accelerated_video_decode"
       ]
     }
   ]

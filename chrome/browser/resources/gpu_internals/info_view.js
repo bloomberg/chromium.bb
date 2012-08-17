@@ -82,7 +82,8 @@ cr.define('gpu', function() {
         'multisampling': 'WebGL multisampling',
         'flash_3d': 'Flash 3D',
         'flash_stage3d': 'Flash Stage3D',
-        'texture_sharing': 'Texture Sharing'
+        'texture_sharing': 'Texture Sharing',
+        'video_decode': 'Video Decode'
       };
       var statusLabelMap = {
         'disabled_software': 'Software only. Hardware acceleration disabled.',

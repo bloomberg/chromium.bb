@@ -2403,18 +2403,10 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(audio_renderer);
   }
 
-  // Accelerated video decode is not enabled by default on Linux.
-  // crbug.com/137247
-  bool use_accelerated_video_decode = false;
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-  use_accelerated_video_decode = true;
-#endif
-  use_accelerated_video_decode &= !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAcceleratedVideoDecode);
-  WebGraphicsContext3DCommandBufferImpl* context3d =
-      use_accelerated_video_decode ?
-      RenderThreadImpl::current()->GetGpuVDAContext3D() :
-      NULL;
+  WebGraphicsContext3DCommandBufferImpl* context3d = NULL;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAcceleratedVideoDecode))
+    context3d = RenderThreadImpl::current()->GetGpuVDAContext3D();
   if (context3d) {
     scoped_refptr<base::MessageLoopProxy> factories_loop =
         RenderThreadImpl::current()->compositor_thread() ?
