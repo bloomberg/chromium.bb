@@ -22,10 +22,10 @@
 namespace content {
 
 // How long a smooth scroll gesture should run when it is a near scroll.
-static const double kDurationOfNearScrollGestureSec = 0.15;
+static const int64 kDurationOfNearScrollGestureMs = 150;
 
 // How long a smooth scroll gesture should run when it is a far scroll.
-static const double kDurationOfFarScrollGestureSec = 0.5;
+static const int64 kDurationOfFarScrollGestureMs = 500;
 
 // static
 RenderWidgetHostViewPort* RenderWidgetHostViewPort::FromRWHV(
@@ -130,13 +130,13 @@ class BasicMouseWheelSmoothScrollGesture
 
   virtual bool ForwardInputEvents(base::TimeTicks now,
                                   RenderWidgetHost* host) OVERRIDE {
-    double duration_in_seconds;
+    int64 duration_in_ms;
     if (scroll_far_)
-      duration_in_seconds = kDurationOfFarScrollGestureSec;
+      duration_in_ms = kDurationOfFarScrollGestureMs;
     else
-      duration_in_seconds = kDurationOfNearScrollGestureSec;
+      duration_in_ms = kDurationOfNearScrollGestureMs;
 
-    if (now - start_time_ > base::TimeDelta::FromSeconds(duration_in_seconds))
+    if (now - start_time_ > base::TimeDelta::FromMilliseconds(duration_in_ms))
       return false;
 
     WebKit::WebMouseWheelEvent event;
