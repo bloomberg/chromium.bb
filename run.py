@@ -101,8 +101,11 @@ def SetupEnvironment():
   # Arch (x86-32, x86-64, arm)
   env.arch = None
 
-  # Don't trace in QEMU
+  # Trace in QEMU
   env.trace = False
+
+  # Debug the nexe using the debug stub
+  env.debug = False
 
 def PrintBanner(output):
   if not env.quiet:
@@ -177,6 +180,10 @@ def main(argv):
   if env.quiet:
     # Don't print sel_ldr logs
     sel_ldr_options += ['-l', '/dev/null']
+  if env.debug:
+    # Disabling validation (-c) is used by the debug stub test.
+    # TODO(dschuff): remove if/when it's no longer necessary
+    sel_ldr_options += ['-c', '-c', '-g']
 
   # Tell the user
   if is_dynamic:
@@ -447,6 +454,8 @@ def ArgSplit(argv):
       Usage2()
     elif arg in ('-t', '--trace'):
       env.trace = True
+    elif arg in ('-g', '--debug'):
+      env.debug = True
     elif arg.endswith('nexe') or arg.endswith('pexe'):
       nexe = arg
       break
