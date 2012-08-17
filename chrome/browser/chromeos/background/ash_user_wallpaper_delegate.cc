@@ -52,10 +52,14 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
 
     // It is a first boot case now. If kDisableBootAnimation flag
     // is passed, it only disables any transition after OOBE.
+    // |kDisableOobeAnimation| disables OOBE animation for slow hardware.
     bool is_registered = WizardController::IsDeviceRegistered();
-    bool disable_boot_animation = CommandLine::ForCurrentProcess()->
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    bool disable_boot_animation = command_line->
         HasSwitch(switches::kDisableBootAnimation);
-    if (is_registered && disable_boot_animation)
+    bool disable_oobe_animation = command_line->
+        HasSwitch(switches::kDisableOobeAnimation);
+    if (disable_oobe_animation || (is_registered && disable_boot_animation))
       return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
 
     return ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE;

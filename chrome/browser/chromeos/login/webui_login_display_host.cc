@@ -71,6 +71,8 @@ WebUILoginDisplayHost::WebUILoginDisplayHost(const gfx::Rect& background_bounds)
   bool is_registered = WizardController::IsDeviceRegistered();
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableNewOobe) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOobeAnimation) &&
       !zero_delay_enabled) {
     bool disable_boot_animation = CommandLine::ForCurrentProcess()->
         HasSwitch(switches::kDisableBootAnimation);
@@ -139,7 +141,7 @@ void WebUILoginDisplayHost::SetShutdownButtonEnabled(bool enable) {
 }
 
 void WebUILoginDisplayHost::SetStatusAreaVisible(bool visible) {
-  if (waiting_for_wallpaper_load_  && initialize_webui_in_parallel_)
+  if (waiting_for_wallpaper_load_ && initialize_webui_in_parallel_)
     status_area_saved_visibility_ = visible;
   else if (login_view_)
     login_view_->SetStatusAreaVisible(visible);
