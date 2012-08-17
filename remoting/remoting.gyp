@@ -11,12 +11,6 @@
     'remoting_audio%': 0,
     'remoting_multi_process%': 0,
 
-    # Use consistent strings across all platforms. Note that the plugin name
-    # is brand-dependent and is defined further down.
-    # Must match host/plugin/constants.h
-    'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
-    'host_plugin_description': 'Allow another user to access your computer securely over the Internet.',
-
     # The version is composed from major & minor versions specific to remoting
     # and build & patch versions inherited from Chrome.
     'version_py_path': '../chrome/tools/build/version.py',
@@ -29,19 +23,19 @@
       '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@").'
       '<!(python <(version_py_path) -f <(chrome_version_path) -t "@BUILD@")',
 
+    'branding_path': '../remoting/branding_<(branding)',
+    'copyright_info': '<!(python <(version_py_path) -f <(branding_path) -t "@COPYRIGHT@")',
+
+    # Use consistent strings across all platforms.
+    # These values must match host/plugin/constants.h
+    'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
+    'host_plugin_description': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_DESCRIPTION@")',
+    'host_plugin_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
+
     'conditions': [
       ['OS=="mac"', {
-        'conditions': [
-          ['branding=="Chrome"', {
-            'mac_bundle_id': 'com.google.Chrome',
-            'mac_creator': 'rimZ',
-            'copyright_by': 'Google Inc.',
-          }, {  # else: branding!="Chrome"
-            'mac_bundle_id': 'org.chromium.Chromium',
-            'mac_creator': 'Cr24',
-            'copyright_by': 'The Chromium Authors.',
-          }],  # branding
-        ],  # conditions
+        'mac_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_BUNDLE_ID@")',
+        'mac_creator': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_CREATOR@")',
         'host_plugin_extension': 'plugin',
         'host_plugin_prefix': '',
       }],
@@ -64,9 +58,8 @@
         'host_plugin_extension': 'dll',
         'host_plugin_prefix': '',
       }],
+
       ['branding=="Chrome"', {
-        # Must match host/plugin/constants.h
-        'host_plugin_name': 'Chrome Remote Desktop Host',
         'remoting_webapp_locale_files': [
           'webapp/_locales.official/ar/messages.json',
           'webapp/_locales.official/bg/messages.json',
@@ -112,8 +105,6 @@
           'webapp/_locales.official/zh_TW/messages.json',
         ],
       }, {  # else: branding!="Chrome"
-        # Must match host/plugin/constants.h
-        'host_plugin_name': 'Chromoting Host',
         'remoting_webapp_locale_files': [
           'webapp/_locales/en/messages.json',
         ],
@@ -271,19 +262,10 @@
           'target_name': 'remoting_host_uninstaller',
           'type': 'executable',
           'mac_bundle': 1,
-          'conditions': [
-            ['branding == "Chrome"', {
-              'variables': {
-                'bundle_id': 'com.google.chromeremotedesktop.host_uninstaller',
-                'bundle_name': 'Chrome Remote Desktop Host Uninstaller',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                'bundle_id': 'org.chromium.remoting.host_uninstaller',
-                'bundle_name': 'Chromoting Host Uninstaller',
-              },
-            }],
-          ],
+          'variables': {
+            'bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_ID@")',
+            'bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_NAME@")',
+          },
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
           ],
@@ -298,7 +280,7 @@
           'xcode_settings': {
             'INFOPLIST_FILE': 'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
           },
           'mac_bundle_resources': [
             'host/installer/mac/uninstaller/remoting_uninstaller.icns',
@@ -325,23 +307,12 @@
             'host/installer/build-installer-archive.py',
             '<@(remoting_host_installer_mac_files)',
           ],
-          'conditions': [
-            ['branding == "Chrome"', {
-              'variables': {
-                'host_name': 'Chrome Remote Desktop Host',
-                'host_service_name': 'Chrome Remote Desktop Host Service',
-                'host_uninstaller_name': 'Chrome Remote Desktop Host Uninstaller',
-                'bundle_prefix': 'com.google.pkg',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                'host_name': 'Chromoting Host',
-                'host_service_name': 'Chromoting Host Service',
-                'host_uninstaller_name': 'Chromoting Host Uninstaller',
-                'bundle_prefix': 'org.chromium.pkg',
-              },
-            }],
-          ],  # conditions
+          'variables': {
+            'host_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_PLUGIN_FILE_NAME@")',
+            'host_service_name': '<!(python <(version_py_path) -f <(branding_path) -t "@HOST_SERVICE_FILE_NAME@")',
+            'host_uninstaller_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_NAME@")',
+            'bundle_prefix': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_PREFIX@")',
+          },
           'actions': [
             {
               'action_name': 'Zip installer files for signing',
@@ -370,7 +341,7 @@
                 'VERSION_SHORT=<(version_short)',
                 'VERSION_MAJOR=<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@")',
                 'VERSION_MINOR=<!(python <(version_py_path) -f <(version_path) -t "@MINOR@")',
-                'COPYRIGHT_BY=<(copyright_by)',
+                'COPYRIGHT_INFO=<(copyright_info)',
                 'HOST_NAME=<(host_name)',
                 'HOST_SERVICE_NAME=<(host_service_name)',
                 'HOST_UNINSTALLER_NAME=<(host_uninstaller_name)',
@@ -422,22 +393,22 @@
             '../third_party/jsoncpp/overrides/include/',
             '../third_party/jsoncpp/source/include/',
             '../third_party/jsoncpp/source/src/lib_json/',
-	  ],
+          ],
 
           # These source files are included directly, instead of adding target
-	  # dependencies, because the targets are not yet built for 64-bit on
-	  # Mac OS X - http://crbug.com/125116.
-	  #
-	  # TODO(lambroslambrou): Fix this when Chrome supports building for
-	  # Mac OS X 64-bit - http://crbug.com/128122.
+          # dependencies, because the targets are not yet built for 64-bit on
+          # Mac OS X - http://crbug.com/125116.
+          #
+          # TODO(lambroslambrou): Fix this when Chrome supports building for
+          # Mac OS X 64-bit - http://crbug.com/128122.
           'sources': [
-	    '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
-	    '../third_party/jsoncpp/overrides/src/lib_json/json_value.cpp',
-	    '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
-	    '../third_party/modp_b64/modp_b64.cc',
+            '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
+            '../third_party/jsoncpp/overrides/src/lib_json/json_value.cpp',
+            '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
+            '../third_party/modp_b64/modp_b64.cc',
             'host/constants_mac.cc',
             'host/constants_mac.h',
-	    'host/host_config.cc',
+            'host/host_config.cc',
             'host/me2me_preference_pane.h',
             'host/me2me_preference_pane.mm',
             'host/me2me_preference_pane_confirm_pin.h',
@@ -453,12 +424,22 @@
               '$(SDKROOT)/System/Library/Frameworks/Security.framework',
             ],
           },
+          'variables': {
+            'bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_ID@")',
+            'bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_NAME@")',
+            # The XML new-line entity splits the label into two lines, which
+            # is the maximum number of lines allowed by the System Preferences
+            # applet.
+            # TODO(lambroslambrou): When these strings are localized, use "\n"
+            # instead of "&#x0a;" for linebreaks.
+            'pref_pane_icon_label': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_ICON_LABEL@")',
+          },
           'xcode_settings': {
             'ARCHS': ['i386', 'x86_64'],
             'GCC_ENABLE_OBJC_GC': 'supported',
             'INFOPLIST_FILE': 'host/me2me_preference_pane-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)" PREF_PANE_ICON_LABEL="<(pref_pane_icon_label)"',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_INFO="<(copyright_info)" PREF_PANE_ICON_LABEL="<(pref_pane_icon_label)"',
           },
           'mac_bundle_resources': [
             'host/me2me_preference_pane.xib',
@@ -475,25 +456,6 @@
               'variables': {
                 # A real .dSYM is needed for dump_syms to operate on.
                 'mac_real_dsym': 1,
-              },
-            }],
-            ['branding == "Chrome"', {
-              'variables': {
-                'bundle_id': 'com.google.chromeremotedesktop.preferences',
-                'bundle_name': 'Chrome Remote Desktop Host Preferences',
-
-                # The XML new-line entity splits the label into two lines,
-                # which is the maximum number of lines allowed by the System
-                # Preferences applet.
-                # TODO(lambroslambrou): When these strings are localized, use
-                # "\n" instead.
-                'pref_pane_icon_label': 'Chrome Remote&#x0a;Desktop Host',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                'bundle_id': 'org.chromium.remoting.preferences',
-                'bundle_name': 'Chromoting Host Preferences',
-                'pref_pane_icon_label': 'Chromoting&#x0a;Host',
               },
             }],
           ],  # conditions
@@ -670,15 +632,14 @@
         #   - build/util/LASTCHANGE - the last source code revision.
         #   - chrome/VERSION - the build & patch versions.
         #   - remoting/VERSION - the major & minor versions.
-        #   - xxx_branding - UI/localizable strings.
+        #   - (branding_path) - UI/localizable strings.
         #   - xxx.ver - per-binary non-localizable strings such as the binary
         #     name.
         {
           'target_name': 'remoting_version_resources',
           'type': 'none',
           'inputs': [
-            'chromium_branding',
-            'google_chrome_branding',
+            '<(branding_path)',
             'version.rc.version',
             '<(DEPTH)/build/util/LASTCHANGE',
             '<(version_path)',
@@ -703,17 +664,6 @@
                 'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',
                 'template_input_path': 'version.rc.version',
               },
-              'conditions': [
-                ['branding == "Chrome"', {
-                  'variables': {
-                     'branding_path': 'google_chrome_branding',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_path': 'chromium_branding',
-                  },
-                }],
-              ],
               'inputs': [
                 '<(template_input_path)',
                 '<(version_path)',
@@ -1508,21 +1458,13 @@
         }],
         ['OS=="mac"', {
           'mac_bundle': 1,
-          'conditions': [
-            ['branding == "Chrome"', {
-              'variables': {
-                 'host_bundle_id': 'com.google.chrome_remote_desktop.remoting_me2me_host',
-              },
-            }, { # else branding!="Chrome"
-              'variables': {
-                'host_bundle_id': 'org.chromium.chromoting.remoting_me2me_host',
-              },
-            }],
-          ],
+          'variables': {
+             'host_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_ID@")',
+          },
           'xcode_settings': {
             'INFOPLIST_FILE': 'host/remoting_me2me_host-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
-            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)" COPYRIGHT_INFO="<(copyright_info)"',
           },
           'mac_bundle_resources': [
             'host/disconnect_window.xib',

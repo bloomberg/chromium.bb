@@ -7,9 +7,9 @@
 
 // Warning: If you modify any macro in this file, make sure to modify
 // the following files too:
+//   - remoting/branding_Chrome
+//   - remoting/branding_Chromium
 //   - remoting/remoting.gyp
-//   - remoting/chromium_branding
-//   - remoting/google_chrome_branding
 //   - remoting/host/plugin/host_plugin.ver
 
 #define HOST_PLUGIN_DESCRIPTION \

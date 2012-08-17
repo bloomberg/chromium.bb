@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>VERSION_FULL</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2012 COPYRIGHT_BY All rights reserved.</string>
+	<string>COPYRIGHT_INFO</string>
 	<key>NSMainNibFile</key>
 	<string>me2me_preference_pane</string>
 	<key>NSPrefPaneIconFile</key>

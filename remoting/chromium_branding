@@ -1,7 +1,0 @@
-COMPANY_FULLNAME=The Chromium Authors
-PRODUCT_FULLNAME=Chromoting
-COPYRIGHT=Copyright (C) 2012 The Chromium Authors. All Rights Reserved.
-HOST_PLUGIN_FILE_DESCRIPTION=Allow another user to access your computer securely over the Internet.
-ME2ME_HOST_FILE_DESCRIPTION=Chromoting Host
-SERVICE_FILE_DESCRIPTION=Chromoting Service
-SERVICE_CONTROLLER_FILE_DESCRIPTION=Chromoting Host Controller
