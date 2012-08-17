@@ -139,6 +139,34 @@ class PPB_Instance_API {
                                  double minimum_factor,
                                  double maximium_factor) = 0;
 #if !defined(OS_NACL)
+  // Content Decryptor.
+  virtual void NeedKey(PP_Instance instance,
+                       PP_Var key_system,
+                       PP_Var session_id,
+                       PP_Var init_data) = 0;
+  virtual void KeyAdded(PP_Instance instance,
+                        PP_Var key_system,
+                        PP_Var session_id) = 0;
+  virtual void KeyMessage(PP_Instance instance,
+                          PP_Var key_system,
+                          PP_Var session_id,
+                          PP_Resource message,
+                          PP_Var default_url) = 0;
+  virtual void KeyError(PP_Instance instance,
+                        PP_Var key_system,
+                        PP_Var session_id,
+                        int32_t media_error,
+                        int32_t system_error) = 0;
+  virtual void DeliverBlock(PP_Instance instance,
+                            PP_Resource decrypted_block,
+                            int32_t request_id) = 0;
+  virtual void DeliverFrame(PP_Instance instance,
+                            PP_Resource decrypted_frame,
+                            int32_t request_id) = 0;
+  virtual void DeliverSamples(PP_Instance instance,
+                              PP_Resource decrypted_samples,
+                              int32_t request_id) = 0;
+
   // URLUtil.
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,

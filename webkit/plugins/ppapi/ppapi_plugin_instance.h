@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -34,6 +35,8 @@
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_messaging.h"
 #include "ppapi/c/ppp_mouse_lock.h"
+#include "ppapi/c/private/ppb_content_decryptor_private.h"
+#include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_instance_private.h"
 #include "ppapi/shared_impl/ppb_instance_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
@@ -236,6 +239,19 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   void Graphics3DContextLost();
 
+  // Provides access to PPP_ContentDecryptor_Private.
+  // TODO(tomfinegan): Move decryptor methods to delegate class.
+  typedef base::Callback<void(void*, int)> DecryptedDataCB;
+  bool GenerateKeyRequest(const std::string& key_system,
+                          const std::string& init_data);
+  bool AddKey(const std::string& session_id,
+              const std::string& key);
+  bool CancelKeyRequest(const std::string& session_id);
+  bool Decrypt(const base::StringPiece& encypted_block,
+               const DecryptedDataCB& callback);
+  bool DecryptAndDecode(const base::StringPiece& encypted_block,
+                        const DecryptedDataCB& callback);
+
   // There are 2 implementations of the fullscreen interface
   // PPB_FlashFullscreen is used by Pepper Flash.
   // PPB_Fullscreen is intended for other applications including NaCl.
@@ -409,6 +425,34 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
 
+  // TODO(tomfinegan): Move the next 7 methods to a delegate class.
+  virtual void NeedKey(PP_Instance instance,
+                       PP_Var key_system,
+                       PP_Var session_id,
+                       PP_Var init_data) OVERRIDE;
+  virtual void KeyAdded(PP_Instance instance,
+                        PP_Var key_system,
+                        PP_Var session_id) OVERRIDE;
+  virtual void KeyMessage(PP_Instance instance,
+                          PP_Var key_system,
+                          PP_Var session_id,
+                          PP_Resource message,
+                          PP_Var default_url) OVERRIDE;
+  virtual void KeyError(PP_Instance instance,
+                        PP_Var key_system,
+                        PP_Var session_id,
+                        int32_t media_error,
+                        int32_t system_code) OVERRIDE;
+  virtual void DeliverBlock(PP_Instance instance,
+                            PP_Resource decrypted_block,
+                            int32_t request_id) OVERRIDE;
+  virtual void DeliverFrame(PP_Instance instance,
+                            PP_Resource decrypted_frame,
+                            int32_t request_id) OVERRIDE;
+  virtual void DeliverSamples(PP_Instance instance,
+                              PP_Resource decrypted_samples,
+                              int32_t request_id) OVERRIDE;
+
   // Reset this instance as proxied. Resets cached interfaces to point to the
   // proxy and re-sends DidCreate, DidChangeView, and HandleDocumentLoad (if
   // necessary).
@@ -424,6 +468,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                  PluginModule* module,
                  ::ppapi::PPP_Instance_Combined* instance_interface);
 
+  bool LoadContentDecryptorInterface();
   bool LoadFindInterface();
   bool LoadInputEventInterface();
   bool LoadMessagingInterface();
@@ -555,6 +600,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   scoped_ptr< ::ppapi::thunk::ResourceCreationAPI> resource_creation_;
 
   // The plugin-provided interfaces.
+  const PPP_ContentDecryptor_Private* plugin_decryption_interface_;
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_InputEvent* plugin_input_event_interface_;
   const PPP_Messaging* plugin_messaging_interface_;

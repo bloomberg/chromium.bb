@@ -91,6 +91,7 @@
 
       # Private interfaces.
       'c/private/pp_file_handle.h',
+      'c/private/ppb_content_decryptor_private.h',
       'c/private/ppb_flash.h',
       'c/private/ppb_flash_clipboard.h',
       'c/private/ppb_flash_file.h',
@@ -113,6 +114,7 @@
       'c/private/ppb_tcp_socket_private.h',
       'c/private/ppb_udp_socket_private.h',
       'c/private/ppb_x509_certificate_private.h',
+      'c/private/ppp_content_decryptor_private.h',
 
       # Deprecated interfaces.
       'c/dev/deprecated_bool.h',
@@ -253,6 +255,8 @@
       'cpp/dev/scriptable_object_deprecated.cc',
 
       # Private interfaces.
+      'cpp/private/content_decryptor_private.cc',
+      'cpp/private/content_decryptor_private.h',
       'cpp/private/flash.cc',
       'cpp/private/flash.h',
       'cpp/private/flash_clipboard.cc',

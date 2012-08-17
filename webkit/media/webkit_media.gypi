@@ -83,5 +83,39 @@
         }],
       ],
     },
+    {
+      'target_name': 'ppapi_cdm_wrapper',
+      'type': 'none',
+      'dependencies': [
+        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp'
+      ],
+      'conditions': [
+        ['os_posix==1 and OS!="mac"', {
+          'cflags': ['-fvisibility=hidden'],
+          'type': 'shared_library',
+          # -gstabs, used in the official builds, causes an ICE. Simply remove
+          # it.
+          'cflags!': ['-gstabs'],
+        }],
+        ['OS=="win"', {
+          'type': 'shared_library',
+        }],
+        ['OS=="mac"', {
+          'type': 'loadable_module',
+          'mac_bundle': 1,
+          'product_extension': 'plugin',
+          'xcode_settings': {
+            'OTHER_LDFLAGS': [
+              # Not to strip important symbols by -Wl,-dead_strip.
+              '-Wl,-exported_symbol,_PPP_GetInterface',
+              '-Wl,-exported_symbol,_PPP_InitializeModule',
+              '-Wl,-exported_symbol,_PPP_ShutdownModule'
+            ]},
+        }],
+      ],
+      'sources': [
+        'crypto/ppapi/cdm_wrapper.cc',
+      ],
+    }
   ],
 }

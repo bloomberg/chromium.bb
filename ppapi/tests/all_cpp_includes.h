@@ -48,6 +48,7 @@
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/mouse_lock.h"
 #include "ppapi/cpp/point.h"
+#include "ppapi/cpp/private/content_decryptor_private.h"
 #include "ppapi/cpp/private/flash_fullscreen.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/private/instance_private.h"

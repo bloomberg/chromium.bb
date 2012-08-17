@@ -101,6 +101,14 @@ struct PPPVideoCapture_Buffer {
   base::SharedMemoryHandle handle;
 };
 
+// TODO(tomfinegan): This is identical to PPPVideoCapture_Buffer, maybe replace
+// both with a single type?
+struct PPPDecryptor_Buffer {
+  ppapi::HostResource resource;
+  uint32_t size;
+  base::SharedMemoryHandle handle;
+};
+
 #if defined(OS_WIN)
 typedef HANDLE ImageHandle;
 #elif defined(OS_MACOSX) || defined(OS_ANDROID)

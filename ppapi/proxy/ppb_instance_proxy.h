@@ -115,6 +115,32 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var GetPluginInstanceURL(
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
+  virtual void NeedKey(PP_Instance instance,
+                       PP_Var key_system,
+                       PP_Var session_id,
+                       PP_Var init_data) OVERRIDE;
+  virtual void KeyAdded(PP_Instance instance,
+                        PP_Var key_system,
+                        PP_Var session_id) OVERRIDE;
+  virtual void KeyMessage(PP_Instance instance,
+                          PP_Var key_system,
+                          PP_Var session_id,
+                          PP_Resource message,
+                          PP_Var default_url) OVERRIDE;
+  virtual void KeyError(PP_Instance instance,
+                        PP_Var key_system,
+                        PP_Var session_id,
+                        int32_t media_error,
+                        int32_t system_code) OVERRIDE;
+  virtual void DeliverBlock(PP_Instance instance,
+                            PP_Resource decrypted_block,
+                            int32_t request_id) OVERRIDE;
+  virtual void DeliverFrame(PP_Instance instance,
+                            PP_Resource decrypted_frame,
+                            int32_t request_id) OVERRIDE;
+  virtual void DeliverSamples(PP_Instance instance,
+                              PP_Resource decrypted_samples,
+                              int32_t request_id) OVERRIDE;
 #endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_PPB_INSTANCE;
@@ -173,6 +199,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
       const std::string& text,
       uint32_t caret,
       uint32_t anchor);
+
 #if !defined(OS_NACL)
   void OnHostMsgResolveRelativeToDocument(PP_Instance instance,
                                           SerializedVarReceiveInput relative,
@@ -187,6 +214,32 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                SerializedVarReturnValue result);
   void OnHostMsgGetPluginInstanceURL(PP_Instance instance,
                                      SerializedVarReturnValue result);
+  virtual void OnHostMsgNeedKey(PP_Instance instance,
+                                SerializedVarReceiveInput key_system,
+                                SerializedVarReceiveInput session_id,
+                                SerializedVarReceiveInput init_data);
+  virtual void OnHostMsgKeyAdded(PP_Instance instance,
+                                 SerializedVarReceiveInput key_system,
+                                 SerializedVarReceiveInput session_id);
+  virtual void OnHostMsgKeyMessage(PP_Instance instance,
+                                   SerializedVarReceiveInput key_system,
+                                   SerializedVarReceiveInput session_id,
+                                   PP_Resource message,
+                                   SerializedVarReceiveInput default_url);
+  virtual void OnHostMsgKeyError(PP_Instance instance,
+                                 SerializedVarReceiveInput key_system,
+                                 SerializedVarReceiveInput session_id,
+                                 int32_t media_error,
+                                 int32_t system_code);
+  virtual void OnHostMsgDeliverBlock(PP_Instance instance,
+                                     PP_Resource decrypted_block,
+                                     int32_t request_id);
+  virtual void OnHostMsgDeliverFrame(PP_Instance instance,
+                                     PP_Resource decrypted_frame,
+                                     int32_t request_id);
+  virtual void OnHostMsgDeliverSamples(PP_Instance instance,
+                                       PP_Resource decrypted_samples,
+                                       int32_t request_id);
 #endif  // !defined(OS_NACL)
 
   // Host -> Plugin message handlers.

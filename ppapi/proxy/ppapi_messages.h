@@ -245,6 +245,15 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::NetworkInfo)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
   IPC_STRUCT_TRAITS_MEMBER(mtu)
 IPC_STRUCT_TRAITS_END()
+
+// TODO(tomfinegan): This is identical to PPPVideoCapture_Buffer, maybe replace
+// both with a single type?
+IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPDecryptor_Buffer)
+  IPC_STRUCT_TRAITS_MEMBER(resource)
+  IPC_STRUCT_TRAITS_MEMBER(handle)
+  IPC_STRUCT_TRAITS_MEMBER(size)
+IPC_STRUCT_TRAITS_END()
+
 #endif  // !defined(OS_NACL)
 
 // These are from the browser to the plugin.
@@ -574,6 +583,27 @@ IPC_MESSAGE_ROUTED3(
     ppapi::HostResource /* broker */,
     IPC::PlatformFileForTransit /* handle */,
     int32_t /* result */)
+
+// PPP_ContentDecryptor_Dev
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::SerializedVar /* key_system, String */,
+                    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_AddKey,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::SerializedVar /* session_id, String */,
+                    ppapi::proxy::SerializedVar /* key, ArrayBuffer */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_CancelKeyRequest,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::SerializedVar /* session_id, String */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
+                    int32_t /* request_id */)
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_DecryptAndDecode,
+                    PP_Instance /* instance */,
+                    ppapi::HostResource /* encrypted_block, PPB_Buffer_Dev */,
+                    int32_t /* request_id */)
 
 // PPB_NetworkMonitor_Private.
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPBNetworkMonitor_NetworkList,
@@ -1135,6 +1165,41 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            uint32_t /* size */,
                            ppapi::HostResource /* result_resource */,
                            base::SharedMemoryHandle /* result_shm_handle */)
+
+// PPB_ContentDecryptor_Dev messages handled in PPB_Instance_Proxy.
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_NeedKey,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::SerializedVar /* key_system, String */,
+                    ppapi::proxy::SerializedVar /* session_id, String */,
+                    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_KeyAdded,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::SerializedVar /* key_system, String */,
+                    ppapi::proxy::SerializedVar /* session_id, String */)
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_KeyMessage,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::SerializedVar /* key_system, String */,
+                    ppapi::proxy::SerializedVar /* session_id, String */,
+                    PP_Resource /* message, PPB_Buffer_Dev */,
+                    ppapi::proxy::SerializedVar /* default_url, String */)
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_PPBInstance_KeyError,
+                    PP_Instance /* instance */,
+                    ppapi::proxy::SerializedVar /* key_system, String */,
+                    ppapi::proxy::SerializedVar /* session_id, String */,
+                    int32_t /* media_error */,
+                    int32_t /* system_code */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
+                    PP_Instance /* instance */,
+                    PP_Resource /* decrypted_block, PPB_Buffer_Dev */,
+                    int32_t /* request_id */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverFrame,
+                    PP_Instance /* instance */,
+                    PP_Resource /* decrypted_frame, PPB_Buffer_Dev */,
+                    int32_t /* request_id */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverSamples,
+                    PP_Instance /* instance */,
+                    PP_Resource /* decrypted_samples, PPB_Buffer_Dev */,
+                    int32_t /* request_id */)
 
 // PPB_NetworkMonitor_Private.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PPBNetworkMonitor_Start,

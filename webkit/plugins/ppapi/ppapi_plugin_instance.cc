@@ -114,6 +114,7 @@ using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::Var;
+using ppapi::ArrayBufferVar;
 using ppapi::ViewData;
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
@@ -294,6 +295,29 @@ scoped_array<const char*> StringVectorToArgArray(
   return array.Pass();
 }
 
+// Creates a PP_Resource containing a PPB_Buffer_Impl, copies |data| into the
+// buffer resource, and returns it. Returns a an invalid PP_Resource with an ID
+// of 0 on failure. Upon success, the returned Buffer resource has a reference
+// count of 1.
+PP_Resource MakeBufferResource(PP_Instance instance,
+                               const base::StringPiece& data) {
+  if (data.empty())
+    return 0;
+
+  ScopedPPResource resource(PPB_Buffer_Impl::Create(instance, data.size()));
+  if (!resource.get())
+    return 0;
+
+  EnterResourceNoLock<PPB_Buffer_API> enter(resource, true);
+  if (enter.failed())
+    return 0;
+
+  BufferAutoMapper mapper(enter.object());
+  memcpy(mapper.data(), data.data(), data.size());
+
+  return resource.get();
+}
+
 }  // namespace
 
 // static
@@ -323,6 +347,7 @@ PluginInstance::PluginInstance(
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
+      plugin_decryption_interface_(NULL),
       plugin_find_interface_(NULL),
       plugin_input_event_interface_(NULL),
       plugin_messaging_interface_(NULL),
@@ -965,6 +990,16 @@ void PluginInstance::StopFind() {
   plugin_find_interface_->StopFind(pp_instance());
 }
 
+bool PluginInstance::LoadContentDecryptorInterface() {
+  if (!plugin_decryption_interface_) {
+    plugin_decryption_interface_ =
+        static_cast<const PPP_ContentDecryptor_Private*>(
+          module_->GetPluginInterface(
+              PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE));
+  }
+  return !!plugin_decryption_interface_;
+}
+
 bool PluginInstance::LoadFindInterface() {
   if (!plugin_find_interface_) {
     plugin_find_interface_ =
@@ -1280,6 +1315,75 @@ void PluginInstance::RotateView(WebPlugin::RotationType type) {
       PP_PRIVATEPAGETRANSFORMTYPE_ROTATE_90_CCW;
   plugin_pdf_interface_->Transform(pp_instance(), transform_type);
   // NOTE: plugin instance may have been deleted.
+}
+
+bool PluginInstance::GenerateKeyRequest(const std::string& key_system,
+                                        const std::string& init_data) {
+  if (!LoadContentDecryptorInterface())
+    return false;
+  if (key_system.empty())
+    return false;
+  PP_Var init_data_array =
+      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(
+          init_data.size(), init_data.data());
+
+  return PP_ToBool(plugin_decryption_interface_->GenerateKeyRequest(
+      pp_instance(),
+      StringVar::StringToPPVar(key_system),
+      init_data_array));
+}
+
+bool PluginInstance::AddKey(const std::string& session_id,
+                            const std::string& key) {
+  if (!LoadContentDecryptorInterface())
+    return false;
+  PP_Var key_array =
+      PpapiGlobals::Get()->GetVarTracker()->MakeArrayBufferPPVar(key.size(),
+                                                                 key.data());
+
+  return PP_ToBool(plugin_decryption_interface_->AddKey(
+      pp_instance(),
+      StringVar::StringToPPVar(session_id),
+      key_array));
+}
+
+bool PluginInstance::CancelKeyRequest(const std::string& session_id) {
+  if (!LoadContentDecryptorInterface())
+    return false;
+
+  return PP_ToBool(plugin_decryption_interface_->CancelKeyRequest(
+      pp_instance(),
+      StringVar::StringToPPVar(session_id)));
+}
+
+bool PluginInstance::Decrypt(const base::StringPiece& encrypted_block,
+                             const DecryptedDataCB& callback) {
+  if (!LoadContentDecryptorInterface())
+    return false;
+  ScopedPPResource encrypted_resource(MakeBufferResource(pp_instance(),
+                                                         encrypted_block));
+  if (!encrypted_resource.get())
+    return false;
+
+  // TODO(tomfinegan): Store callback and ID in a map, and pass ID to decryptor.
+  return PP_ToBool(plugin_decryption_interface_->Decrypt(pp_instance(),
+                                                         encrypted_resource,
+                                                         0));
+}
+
+bool PluginInstance::DecryptAndDecode(const base::StringPiece& encrypted_block,
+                                      const DecryptedDataCB& callback) {
+  if (!LoadContentDecryptorInterface())
+    return false;
+  ScopedPPResource encrypted_resource(MakeBufferResource(pp_instance(),
+                                                         encrypted_block));
+  if (!encrypted_resource.get())
+    return false;
+  // TODO(tomfinegan): Store callback and ID in a map, and pass ID to decryptor.
+  return PP_ToBool(plugin_decryption_interface_->DecryptAndDecode(
+      pp_instance(),
+      encrypted_resource,
+      0));
 }
 
 bool PluginInstance::FlashIsFullscreenOrPending() {
@@ -1889,6 +1993,56 @@ PP_Var PluginInstance::GetFontFamilies(PP_Instance instance) {
   // No in-process implementation.
   return PP_MakeUndefined();
 }
+
+void PluginInstance::NeedKey(PP_Instance instance,
+                             PP_Var key_system_var,
+                             PP_Var session_id_var,
+                             PP_Var init_data_var) {
+  // TODO(tomfinegan): send the data to media stack.
+}
+
+void PluginInstance::KeyAdded(PP_Instance instance,
+                              PP_Var key_system_var,
+                              PP_Var session_id_var) {
+  // TODO(tomfinegan): send the data to media stack.
+}
+
+void PluginInstance::KeyMessage(PP_Instance instance,
+                                PP_Var key_system_var,
+                                PP_Var session_id_var,
+                                PP_Resource message_resource,
+                                PP_Var default_url_var) {
+  // TODO(tomfinegan): send the data to media stack.
+}
+
+void PluginInstance::KeyError(PP_Instance instance,
+                              PP_Var key_system_var,
+                              PP_Var session_id_var,
+                              int32_t media_error,
+                              int32_t system_code) {
+  // TODO(tomfinegan): send the data to media stack.
+}
+
+void PluginInstance::DeliverBlock(PP_Instance instance,
+                                  PP_Resource decrypted_block,
+                                  int32_t request_id) {
+  // TODO(xhwang): Pass the decrypted block back to media stack.
+}
+
+void PluginInstance::DeliverFrame(PP_Instance instance,
+                                  PP_Resource decrypted_frame,
+                                  int32_t request_id) {
+  // TODO(tomfinegan): To be implemented after completion of v0.1 of the
+  // EME/CDM work.
+}
+
+void PluginInstance::DeliverSamples(PP_Instance instance,
+                                    PP_Resource decrypted_samples,
+                                    int32_t request_id) {
+  // TODO(tomfinegan): To be implemented after completion of v0.1 of the
+  // EME/CDM work.
+}
+
 
 void PluginInstance::NumberOfFindResultsChanged(PP_Instance instance,
                                                 int32_t total,
