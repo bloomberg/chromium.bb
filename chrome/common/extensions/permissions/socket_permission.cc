@@ -90,50 +90,36 @@ APIPermissionDetail* SocketPermission::Diff(
     const APIPermissionDetail* rhs) const {
   CHECK(rhs->permission() == permission());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(permission());
+  scoped_refptr<SocketPermission> result = new SocketPermission(permission());
   std::set_difference(data_set_.begin(), data_set_.end(),
                       perm->data_set_.begin(), perm->data_set_.end(),
                       std::inserter<std::set<SocketPermissionData> >(
                           result->data_set_, result->data_set_.begin()));
-  if (result->data_set_.empty()) {
-    delete result;
-    result = NULL;
-  }
-  return result;
-
+  return result->data_set_.empty() ? NULL : result.release();
 }
 
 APIPermissionDetail* SocketPermission::Union(
     const APIPermissionDetail* rhs) const {
   CHECK(rhs->permission() == permission());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(permission());
+  scoped_refptr<SocketPermission> result = new SocketPermission(permission());
   std::set_union(data_set_.begin(), data_set_.end(),
                  perm->data_set_.begin(), perm->data_set_.end(),
                  std::inserter<std::set<SocketPermissionData> >(
                      result->data_set_, result->data_set_.begin()));
-  if (result->data_set_.empty()) {
-    delete result;
-    result = NULL;
-  }
-  return result;
-
+  return result->data_set_.empty() ? NULL : result.release();
 }
 
 APIPermissionDetail* SocketPermission::Intersect(
     const APIPermissionDetail* rhs) const {
   CHECK(rhs->permission() == permission());
   const SocketPermission* perm = static_cast<const SocketPermission*>(rhs);
-  SocketPermission* result = new SocketPermission(permission());
+  scoped_refptr<SocketPermission> result = new SocketPermission(permission());
   std::set_intersection(data_set_.begin(), data_set_.end(),
                         perm->data_set_.begin(), perm->data_set_.end(),
                         std::inserter<std::set<SocketPermissionData> >(
                             result->data_set_, result->data_set_.begin()));
-  if (result->data_set_.empty()) {
-    delete result;
-    result = NULL;
-  }
-  return result;
+  return result->data_set_.empty() ? NULL : result.release();
 }
 
 void SocketPermission::Write(IPC::Message* m) const {
