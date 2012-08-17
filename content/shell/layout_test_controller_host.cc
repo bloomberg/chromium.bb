@@ -4,9 +4,11 @@
 
 #include "content/shell/layout_test_controller_host.h"
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/shell/shell_messages.h"
+#include "content/shell/shell_switches.h"
 #include "webkit/support/webkit_support_gfx.h"
 
 namespace content {
@@ -184,12 +186,14 @@ void LayoutTestControllerHost::OnDumpChildFramesAsText() {
 void LayoutTestControllerHost::OnWaitUntilDone() {
   if (wait_until_done_)
     return;
-  watchdog_.Reset(base::Bind(&LayoutTestControllerHost::TimeoutHandler,
-                             base::Unretained(this)));
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      watchdog_.callback(),
-      base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout)) {
+    watchdog_.Reset(base::Bind(&LayoutTestControllerHost::TimeoutHandler,
+                               base::Unretained(this)));
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        watchdog_.callback(),
+        base::TimeDelta::FromMilliseconds(kTestTimeoutMilliseconds));
+  }
   wait_until_done_ = true;
 }
 
