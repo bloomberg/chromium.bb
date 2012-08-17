@@ -60,7 +60,7 @@ cr.define('options', function() {
       };
       $('autofill-edit-address-cancel-button').onmousedown = function(event) {
         event.preventDefault();
-      }
+      };
 
       self.guid = '';
       self.populateCountryList_();
@@ -96,38 +96,19 @@ cr.define('options', function() {
     setMultiValueList_: function(listName, entries) {
       // Add data entries.
       var list = $(listName);
-      list.dataModel = new ArrayDataModel(entries);
 
       // Add special entry for adding new values.
-      list.dataModel.splice(list.dataModel.length, 0, null);
+      var augmentedList = entries.slice();
+      augmentedList.push(null);
+      list.dataModel = new ArrayDataModel(augmentedList);
 
       // Update the status of the 'OK' button.
       this.inputFieldChanged_();
 
-      var self = this;
-      list.dataModel.addEventListener(
-        'splice', function(event) { self.inputFieldChanged_(); });
-      list.dataModel.addEventListener(
-        'change', function(event) { self.inputFieldChanged_(); });
-    },
-
-    /**
-     * Updates the data model for the name list with the values from |entries|.
-     * @param {Array} names The list of names to be added to the list.
-     */
-    setNameList_: function(names) {
-      // Add the given |names| as backing data for the list.
-      var list = $('full-name-list');
-      list.dataModel = new ArrayDataModel(names);
-
-      // Add special entry for adding new values.
-      list.dataModel.splice(list.dataModel.length, 0, null);
-
-      var self = this;
-      list.dataModel.addEventListener(
-        'splice', function(event) { self.inputFieldChanged_(); });
-      list.dataModel.addEventListener(
-        'change', function(event) { self.inputFieldChanged_(); });
+      list.dataModel.addEventListener('splice',
+                                      this.inputFieldChanged_.bind(this));
+      list.dataModel.addEventListener('change',
+                                      this.inputFieldChanged_.bind(this));
     },
 
     /**
@@ -275,7 +256,7 @@ cr.define('options', function() {
      * @private
      */
     clearInputFields_: function() {
-      this.setNameList_([]);
+      this.setMultiValueList_('full-name-list', []);
       $('company-name').value = '';
       $('addr-line-1').value = '';
       $('addr-line-2').value = '';
@@ -305,7 +286,7 @@ cr.define('options', function() {
      * @private
      */
     setInputFields_: function(address) {
-      this.setNameList_(address['fullName']);
+      this.setMultiValueList_('full-name-list', address['fullName']);
       $('company-name').value = address['companyName'];
       $('addr-line-1').value = address['addrLine1'];
       $('addr-line-2').value = address['addrLine2'];

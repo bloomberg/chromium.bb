@@ -728,6 +728,7 @@ cr.define('options.network', function() {
     /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
+      this.startBatchUpdates();
       this.autoExpands = true;
       this.addEventListener('blur', this.onBlur_);
       this.dataModel = new ArrayDataModel([]);
@@ -764,6 +765,7 @@ cr.define('options.network', function() {
           function(event) {
             enableDataRoaming_ = event.value.value;
           });
+      this.endBatchUpdates();
     },
 
     /**
@@ -878,6 +880,7 @@ cr.define('options.network', function() {
    */
   NetworkList.refreshNetworkData = function(data) {
     var networkList = $('network-list');
+    networkList.startBatchUpdates();
     cellularAvailable_ = data.cellularAvailable;
     cellularEnabled_ = data.cellularEnabled;
     wimaxAvailable_ = data.wimaxAvailable;
@@ -966,6 +969,7 @@ cr.define('options.network', function() {
     else
       networkList.deleteItem('vpn');
     networkList.updateToggleControl('airplaneMode', data.airplaneMode);
+    networkList.endBatchUpdates();
   };
 
   /**

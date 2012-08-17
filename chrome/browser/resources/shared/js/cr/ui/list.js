@@ -948,33 +948,34 @@ cr.define('cr.ui', function() {
     /**
      * Merges list items currently existing in the list with items in the range
      * [firstIndex, lastIndex). Removes or adds items if needed.
-     * Doesn't delete {@code this.pinnedItem_} if it presents (instead hides if
-     * it's out of the range). Also adds the items to {@code newCachedItems}.
+     * Doesn't delete {@code this.pinnedItem_} if it is present (instead hides
+     * it if it is out of the range). Adds items to {@code newCachedItems}.
      * @param {number} firstIndex The index of first item, inclusively.
      * @param {number} lastIndex The index of last item, exclusively.
      * @param {Object.<string, ListItem>} cachedItems Old items cache.
      * @param {Object.<string, ListItem>} newCachedItems New items cache.
      */
     mergeItems: function(firstIndex, lastIndex, cachedItems, newCachedItems) {
+      var self = this;
       var dataModel = this.dataModel;
+      var currentIndex = firstIndex;
 
-      function insert(to) {
+      function insert() {
         var dataItem = dataModel.item(currentIndex);
-        var newItem = cachedItems[currentIndex] || to.createItem(dataItem);
+        var newItem = cachedItems[currentIndex] || self.createItem(dataItem);
         newItem.listIndex = currentIndex;
         newCachedItems[currentIndex] = newItem;
-        to.insertBefore(newItem, item);
+        self.insertBefore(newItem, item);
         currentIndex++;
       }
 
-      function remove(from) {
+      function remove() {
         var next = item.nextSibling;
-        if (item != from.pinnedItem_)
-          from.removeChild(item);
+        if (item != self.pinnedItem_)
+          self.removeChild(item);
         item = next;
       }
 
-      var currentIndex = firstIndex;
       for (var item = this.beforeFiller_.nextSibling;
            item != this.afterFiller_ && currentIndex < lastIndex;) {
         if (!this.isItem(item)) {
@@ -984,19 +985,19 @@ cr.define('cr.ui', function() {
 
         var index = item.listIndex;
         if (cachedItems[index] != item || index < currentIndex) {
-          remove(this);
+          remove();
         } else if (index == currentIndex) {
           newCachedItems[currentIndex] = item;
           item = item.nextSibling;
           currentIndex++;
         } else {  // index > currentIndex
-          insert(this);
+          insert();
         }
       }
 
       while (item != this.afterFiller_) {
         if (this.isItem(item))
-          remove(this);
+          remove();
         else
           item = item.nextSibling;
       }
@@ -1010,7 +1011,7 @@ cr.define('cr.ui', function() {
       }
 
       while (currentIndex < lastIndex)
-        insert(this);
+        insert();
     },
 
     /**
@@ -1087,7 +1088,7 @@ cr.define('cr.ui', function() {
         return;
 
       var dataModel = this.dataModel;
-      if (!dataModel) {
+      if (!dataModel || !this.autoExpands_ && this.clientHeight == 0) {
         this.cachedItems_ = {};
         this.firstIndex_ = 0;
         this.lastIndex_ = 0;

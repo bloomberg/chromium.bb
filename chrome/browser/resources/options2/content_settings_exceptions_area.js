@@ -522,7 +522,7 @@ cr.define('options.contentSettings', function() {
         options.contentSettings.ExceptionsList.decorate(exceptionsLists[i]);
       }
 
-      ContentSettingsExceptionsArea.hideOTRLists();
+      ContentSettingsExceptionsArea.hideOTRLists(false);
 
       // If the user types in the URL without a hash, show just cookies.
       this.showList('cookies');
@@ -564,18 +564,20 @@ cr.define('options.contentSettings', function() {
    * Called when the last incognito window is closed.
    */
   ContentSettingsExceptionsArea.OTRProfileDestroyed = function() {
-    this.hideOTRLists();
+    this.hideOTRLists(true);
   };
 
   /**
-   * Clears and hides the incognito exceptions lists.
+   * Hides the incognito exceptions lists and optionally clears them as well.
+   * @param {boolean} clear Whether to clear the lists.
    */
-  ContentSettingsExceptionsArea.hideOTRLists = function() {
+  ContentSettingsExceptionsArea.hideOTRLists = function(clear) {
     var otrLists = document.querySelectorAll('list[mode=otr]');
 
     for (var i = 0; i < otrLists.length; i++) {
-      otrLists[i].reset();
       otrLists[i].parentNode.hidden = true;
+      if (clear)
+        otrLists[i].reset();
     }
   };
 
