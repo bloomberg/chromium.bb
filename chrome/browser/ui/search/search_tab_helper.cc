@@ -48,24 +48,15 @@ SearchTabHelper::SearchTabHelper(
 SearchTabHelper::~SearchTabHelper() {
 }
 
-void SearchTabHelper::OmniboxEditModelChanged(OmniboxEditModel* edit_model) {
+void SearchTabHelper::OmniboxEditModelChanged(bool user_input_in_progress,
+                                              bool cancelling) {
   if (!is_search_enabled_)
     return;
 
-  if (model_.mode().is_ntp()) {
-    if (edit_model->user_input_in_progress())
-      model_.SetMode(Mode(Mode::MODE_SEARCH, true));
-    return;
-  }
-
-  Mode::Type mode = Mode::MODE_DEFAULT;
-  GURL url(web_contents()->GetURL());
-  // TODO(kuan): revisit this condition when zero suggest becomes available.
-  if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()) ||
-      (edit_model->has_focus() && edit_model->user_input_in_progress())) {
-    mode = Mode::MODE_SEARCH;
-  }
-  model_.SetMode(Mode(mode, true));
+  if (user_input_in_progress)
+    model_.SetMode(Mode(Mode::MODE_SEARCH_SUGGESTIONS, true));
+  else if (cancelling)
+    UpdateModelBasedOnURL(web_contents()->GetURL(), true);
 }
 
 void SearchTabHelper::NavigateToPendingEntry(
@@ -75,7 +66,14 @@ void SearchTabHelper::NavigateToPendingEntry(
     return;
 
   // Do not animate if this url is the very first navigation for the tab.
-  UpdateModel(url, !web_contents()->GetController().IsInitialNavigation());
+  // NTP mode changes are initiated at "pending", all others are initiated
+  // when "committed".  This is because NTP is rendered natively so is faster
+  // to render than the web contents and we need to coordinate the animations.
+  if (IsNTP(url)) {
+    UpdateModelBasedOnURL(
+        url,
+        !web_contents()->GetController().IsInitialNavigation());
+  }
 }
 
 void SearchTabHelper::Observe(
@@ -85,21 +83,28 @@ void SearchTabHelper::Observe(
   DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
   content::LoadCommittedDetails* committed_details =
       content::Details<content::LoadCommittedDetails>(details).ptr();
-  // TODO(dhollowa): NavigationController::IsInitialNavigation() is always false
-  // by the time NOTIFICATION_NAV_ENTRY_COMMITTED is received, so please handle
-  // it appropriately when restructuring NavigateToPendingEntry() and this
-  // methods.
-  UpdateModel(committed_details->entry->GetURL(),
-              !web_contents()->GetController().IsInitialNavigation());
+
+  // TODO(dhollowa): Fix |NavigationController::IsInitialNavigation()| so that
+  // it spans the |NOTIFICATION_NAV_ENTRY_COMMITTED| notification.
+  // See comment in |NavigateToPendingEntry()| about why |!IsNTP()| is used.
+  if (!IsNTP(committed_details->entry->GetURL())) {
+    UpdateModelBasedOnURL(
+        committed_details->entry->GetURL(),
+        !web_contents()->GetController().IsInitialNavigation());
+  }
 }
 
-void SearchTabHelper::UpdateModel(const GURL& url, bool animate) {
+void SearchTabHelper::UpdateModelBasedOnURL(const GURL& url, bool animate) {
   Mode::Type type = Mode::MODE_DEFAULT;
   if (IsNTP(url))
     type = Mode::MODE_NTP;
   else if (google_util::IsInstantExtendedAPIGoogleSearchUrl(url.spec()))
-    type = Mode::MODE_SEARCH;
+    type = Mode::MODE_SEARCH_RESULTS;
   model_.SetMode(Mode(type, animate));
+}
+
+content::WebContents* SearchTabHelper::web_contents() {
+  return model_.tab_contents()->web_contents();
 }
 
 }  // namespace search

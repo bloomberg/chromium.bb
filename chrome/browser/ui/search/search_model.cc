@@ -39,13 +39,6 @@ void SearchModel::SetMode(const Mode& new_mode) {
   mode_.animate = false;
 }
 
-void SearchModel::MaybeChangeMode(Mode::Type from_mode, Mode::Type to_mode) {
-  if (mode_.mode == from_mode) {
-    Mode mode(to_mode, true);
-    SetMode(mode);
-  }
-}
-
 void SearchModel::AddObserver(SearchModelObserver* observer) {
   observers_.AddObserver(observer);
 }

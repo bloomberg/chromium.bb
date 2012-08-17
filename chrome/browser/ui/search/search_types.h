@@ -11,6 +11,36 @@ namespace search {
 // The Mode structure encodes the visual states encountered when interacting
 // with the NTP and the Omnibox.  State changes can be animated depending on the
 // context.
+//
+// *** Legend ***
+// |--------------+------------------------------------------------|
+// | Abbreviation | User Action                                    |
+// |--------------+------------------------------------------------|
+// | S            | Start.  First navigation to NTP                |
+// | N            | Navigation: Back/Forward/Direct                |
+// | T            | Tab switch                                     |
+// | I            | User input in Omnibox                          |
+// | D            | Defocus the Omnibox                            |
+// | E            | Escape out of Omnibox with suggestions showing |
+// | C            | Choose a suggestion from suggestion list       |
+//
+//
+// *** Transitions ***
+// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
+// |          | To      |     |         |     |          |     |         |     |
+// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
+// |          | NTP     |     | Search* |     | Search** |     | Default |     |
+// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
+// | From     | Animate | Pop | Animate | Pop | Animate  | Pop | Animate | Pop |
+// |----------+---------+-----+---------+-----+----------+-----+---------+-----|
+// | Start    |         | S   | -       | -   | -        | -   | -       | -   |
+// | NTP      | -       | -   | I       |     | N        | T   | N       | T   |
+// | Search*  | N D E   | T   | -       | -   | D E C    | T   | N D E C | T   |
+// | Search** | N       | T   | I       |     | -        | -   | N D E C | T   |
+// | Default  | N       | T   | I       |     | N        | T   | -       | -   |
+//
+// * Search with suggestions showing.
+// ** Search without suggestions showing.
 struct Mode {
   enum Type {
     // The default state means anything but the following states.
@@ -19,11 +49,11 @@ struct Mode {
     // On the NTP page and the NTP is ready to be displayed.
     MODE_NTP,
 
-    // Any of the following:
-    // . on the NTP page and the Omnibox is modified in some way.
-    // . on a search results page.
-    // . the Omnibox has focus.
-    MODE_SEARCH,
+    // On the NTP page and the Omnibox is modified in some way.
+    MODE_SEARCH_SUGGESTIONS,
+
+    // On a search results page.
+    MODE_SEARCH_RESULTS,
   };
 
   Mode() : mode(MODE_DEFAULT), animate(false) {
@@ -46,7 +76,7 @@ struct Mode {
   }
 
   bool is_search() const {
-    return mode == MODE_SEARCH;
+    return mode == MODE_SEARCH_SUGGESTIONS || mode == MODE_SEARCH_RESULTS;
   }
 
   Type mode;

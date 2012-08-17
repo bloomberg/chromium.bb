@@ -37,7 +37,7 @@ TEST_F(SearchDelegateTest, SearchModel) {
   chrome::ActivateTabAt(browser(), 1, true);
   contents = chrome::GetTabContentsAt(browser(), 1);
   contents->search_tab_helper()->model()->SetMode(
-      Mode(Mode::MODE_SEARCH, false));
+      Mode(Mode::MODE_SEARCH_RESULTS, false));
   EXPECT_TRUE(browser()->search_model()->mode().is_search());
 
   // The first tab is not active so changes should not propagate.

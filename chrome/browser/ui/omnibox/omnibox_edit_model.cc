@@ -979,6 +979,7 @@ void OmniboxEditModel::OnResultChanged(bool default_match_changed) {
     InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
     has_temporary_text_ = false;
     PopupBoundsChangedTo(gfx::Rect());
+    NotifySearchTabHelper();
   }
 }
 
@@ -1101,7 +1102,7 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
 void OmniboxEditModel::NotifySearchTabHelper() {
   if (controller_->GetTabContents()) {
     controller_->GetTabContents()->search_tab_helper()->
-        OmniboxEditModelChanged(this);
+        OmniboxEditModelChanged(user_input_in_progress_, !in_revert_);
   }
 }
 

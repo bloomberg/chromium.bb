@@ -508,7 +508,8 @@ gfx::ImageSkia* Tab::GetTabBackgroundImage(
     case chrome::search::Mode::MODE_NTP:
       return tp->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
 
-    case chrome::search::Mode::MODE_SEARCH:
+    case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
+    case chrome::search::Mode::MODE_SEARCH_RESULTS:
     case chrome::search::Mode::MODE_DEFAULT:
     default:
       return tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR_SEARCH);

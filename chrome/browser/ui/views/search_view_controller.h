@@ -72,11 +72,11 @@ class SearchViewController
     // Layout for the new tab page.
     STATE_NTP,
 
-    // Animating between STATE_NTP and STATE_SEARCH.
-    STATE_ANIMATING,
+    // Animating between STATE_NTP and STATE_SUGGESTIONS.
+    STATE_NTP_ANIMATING,
 
-    // Search layout. This is only used when the omnibox is visible.
-    STATE_SEARCH,
+    // Search layout. This is only used when the suggestions UI is visible.
+    STATE_SUGGESTIONS,
   };
 
   class OmniboxPopupViewParent;

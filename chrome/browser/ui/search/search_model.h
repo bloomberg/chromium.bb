@@ -36,9 +36,6 @@ class SearchModel {
   // Get the active mode.
   const Mode& mode() const { return mode_; }
 
-  // Change the mode to |to_mode| only if |from_mode| is the active mode.
-  void MaybeChangeMode(Mode::Type from_mode, Mode::Type to_mode);
-
   // Add and remove observers.
   void AddObserver(SearchModelObserver* observer);
   void RemoveObserver(SearchModelObserver* observer);

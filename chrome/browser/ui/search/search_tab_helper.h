@@ -14,6 +14,10 @@
 class OmniboxEditModel;
 class TabContents;
 
+namespace content {
+class WebContents;
+}
+
 namespace chrome {
 namespace search {
 
@@ -31,9 +35,9 @@ class SearchTabHelper : public content::WebContentsObserver,
 
   // Invoked when the OmniboxEditModel changes state in some way that might
   // affect the search mode.
-  void OmniboxEditModelChanged(OmniboxEditModel* edit_model);
+  void OmniboxEditModelChanged(bool user_input_in_progress, bool cancelling);
 
-  // content::WebContentsObserver overrides:
+  // Overridden from contents::WebContentsObserver:
   virtual void NavigateToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE;
@@ -44,9 +48,11 @@ class SearchTabHelper : public content::WebContentsObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  // Sets the mode of the model based on |url|.
-  // |animate| is set in the Mode passed to the model.
-  void UpdateModel(const GURL& url, bool animate);
+  // Sets the mode of the model based on |url|.  |animate| is based on initial
+  // navigation and used for the mode change on the |model_|.
+  void UpdateModelBasedOnURL(const GURL& url, bool animate);
+
+  content::WebContents* web_contents();
 
   const bool is_search_enabled_;
 

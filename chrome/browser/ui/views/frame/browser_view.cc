@@ -867,7 +867,8 @@ SkColor BrowserView::GetToolbarBackgroundColor(
       return theme_provider->GetColor(
           ThemeService::COLOR_SEARCH_NTP_BACKGROUND);
 
-    case chrome::search::Mode::MODE_SEARCH:
+    case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
+    case chrome::search::Mode::MODE_SEARCH_RESULTS:
       return theme_provider->GetColor(
           ThemeService::COLOR_SEARCH_SEARCH_BACKGROUND);
 
@@ -889,7 +890,8 @@ gfx::ImageSkia* BrowserView::GetToolbarBackgroundImage(
     case chrome::search::Mode::MODE_NTP:
       return theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
 
-    case chrome::search::Mode::MODE_SEARCH:
+    case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
+    case chrome::search::Mode::MODE_SEARCH_RESULTS:
     case chrome::search::Mode::MODE_DEFAULT:
     default:
       return theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR_SEARCH);

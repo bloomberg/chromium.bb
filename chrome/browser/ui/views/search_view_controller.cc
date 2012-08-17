@@ -299,8 +299,8 @@ void SearchViewController::ModeChanged(const chrome::search::Mode& old_mode,
 }
 
 void SearchViewController::OnImplicitAnimationsCompleted() {
-  DCHECK_EQ(STATE_ANIMATING, state_);
-  state_ = STATE_SEARCH;
+  DCHECK_EQ(STATE_NTP_ANIMATING, state_);
+  state_ = STATE_SUGGESTIONS;
   ntp_view_->SetVisible(false);
   // While |ntp_view_| was fading out, location bar was animating from the
   // middle of the NTP page to the top toolbar, at the same rate.
@@ -326,16 +326,15 @@ void SearchViewController::UpdateState() {
       new_state = STATE_NTP;
       break;
 
-    case chrome::search::Mode::MODE_SEARCH:
-      if (search_model()->mode().animate && state_ == STATE_NTP) {
-        new_state = STATE_ANIMATING;
-      } else {
-        // Only enter into MODE_SEARCH if the omnibox is visible.
-        if (omnibox_popup_view_parent_->is_child_visible())
-          new_state = STATE_SEARCH;
-        else
-          new_state = STATE_NOT_VISIBLE;
-      }
+    case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
+      if (search_model()->mode().animate && state_ == STATE_NTP)
+        new_state = STATE_NTP_ANIMATING;
+      else if (omnibox_popup_view_parent_->is_child_visible())
+        new_state = STATE_SUGGESTIONS;
+      break;
+
+    case chrome::search::Mode::MODE_SEARCH_RESULTS:
+      new_state = STATE_NOT_VISIBLE;
       break;
   }
   SetState(new_state);
@@ -357,13 +356,13 @@ void SearchViewController::SetState(State state) {
       CreateViews();
       break;
 
-    case STATE_ANIMATING:
+    case STATE_NTP_ANIMATING:
       // Should only animate from the ntp.
       DCHECK_EQ(STATE_NTP, old_state);
       StartAnimation();
       break;
 
-    case STATE_SEARCH:
+    case STATE_SUGGESTIONS:
       DestroyViews();
       CreateViews();
       ntp_view_->SetVisible(false);
@@ -477,7 +476,7 @@ void SearchViewController::DestroyViews() {
 void SearchViewController::PopupVisibilityChanged() {
   // Don't do anything while animating if the child is visible. Otherwise we'll
   // prematurely cancel the animation.
-  if (state_ != STATE_ANIMATING ||
+  if (state_ != STATE_NTP_ANIMATING ||
       !omnibox_popup_view_parent_->is_child_visible()) {
     UpdateState();
   }
