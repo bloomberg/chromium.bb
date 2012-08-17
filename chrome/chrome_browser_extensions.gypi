@@ -234,6 +234,11 @@
         'browser/extensions/api/system_info_cpu/cpu_info_provider.h',
         'browser/extensions/api/system_info_cpu/system_info_cpu_api.cc',
         'browser/extensions/api/system_info_cpu/system_info_cpu_api.h',
+        'browser/extensions/api/system_info_storage/system_info_storage_api.cc',
+        'browser/extensions/api/system_info_storage/system_info_storage_api.h',
+        'browser/extensions/api/system_info_storage/storage_info_provider.cc',
+        'browser/extensions/api/system_info_storage/storage_info_provider.h',
+        'browser/extensions/api/system_info_storage/storage_info_provider_win.cc',
         'browser/extensions/api/tabs/execute_code_in_tab_function.cc',
         'browser/extensions/api/tabs/execute_code_in_tab_function.h',
         'browser/extensions/api/tabs/tabs.cc',
@@ -688,6 +693,7 @@
                 ['include', '^browser/extensions/'],
 
                 # Other excluded stuff.
+                ['exclude', '^browser/extensions/api/system_info_storage/storage_info_provider_win.cc'],
                 ['exclude', '^browser/extensions/browser_action_test_util_gtk.cc'],
                 ['exclude', '^browser/extensions/extension_host_mac.h'],
                 ['exclude', '^browser/extensions/extension_host_mac.mm'],

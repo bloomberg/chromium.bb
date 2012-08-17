@@ -1,0 +1,40 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace experimental.systemInfo.storage {
+
+  enum StorageUnitType {
+    // Unknow storage type.
+    unknown,
+    // Hard disk.
+    harddisk,
+    // Removable storage, e.g.USB device.
+    removable
+  };
+
+  dictionary StorageUnitInfo {
+    // The unique id of the storage unit.
+    DOMString id;
+    // The type of storage device. The value is one of the constants defined
+    // for this type.
+    StorageUnitType type;
+    // The total amount of the storage space, in bytes.
+    double capacity;
+    // The available amount of the storage space, in bytes.
+    double availableCapacity;
+  };
+
+  dictionary StorageInfo {
+    // The array of storage units connected to the system.
+    StorageUnitInfo[] units;
+  };
+
+  callback StorageInfoCallback = void (StorageInfo info);
+
+  interface Functions {
+    // Get the storage information from the system.
+    static void get(StorageInfoCallback callback);
+  };
+};
+
