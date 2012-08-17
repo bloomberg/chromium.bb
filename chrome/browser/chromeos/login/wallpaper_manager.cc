@@ -426,17 +426,15 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
     index = ash::GetNextWallpaperIndex(index);
     SaveUserWallpaperProperties(email, User::DAILY, index);
   } else if (type == User::CUSTOMIZED) {
-    gfx::ImageSkia custom_wallpaper;
-    if (GetCustomWallpaperFromCache(email, &custom_wallpaper)) {
-      // In customized mode, we use index pref to save the user selected
-      // wallpaper layout. See function SaveWallpaperToLocalState().
-      ash::WallpaperLayout layout = static_cast<ash::WallpaperLayout>(index);
-      ash::Shell::GetInstance()->desktop_background_controller()->
-          SetCustomWallpaper(custom_wallpaper, layout);
+    // For security reason, use default wallpaper instead of custom wallpaper
+    // at login screen. The security issue is tracked in issue 143198. Once it
+    // fixed, we should then only use custom wallpaper.
+    if (!UserManager::Get()->IsUserLoggedIn()) {
+      index = ash::GetDefaultWallpaperIndex();
     } else {
       FetchCustomWallpaper(email);
+      return;
     }
-    return;
   }
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetDefaultWallpaper(index, false);
@@ -517,12 +515,8 @@ void WallpaperManager::CacheUserWallpaper(const std::string& email) {
   base::Time date;
   GetUserWallpaperProperties(email, &type, &index, &date);
   if (type == User::CUSTOMIZED) {
-    std::string wallpaper_path = GetWallpaperPathForUser(email, false).value();
-
-    // Uses WeakPtr here to make the request cancelable.
-    wallpaper_loader_->Start(wallpaper_path, 0,
-                             base::Bind(&WallpaperManager::CacheWallpaper,
-                                        weak_factory_.GetWeakPtr(), email));
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        CacheDefaultWallpaper(ash::GetDefaultWallpaperIndex());
   } else {
     ash::Shell::GetInstance()->desktop_background_controller()->
         CacheDefaultWallpaper(index);
