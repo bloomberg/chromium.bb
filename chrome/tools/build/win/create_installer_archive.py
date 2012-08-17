@@ -210,6 +210,14 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
     os.remove(archive_file)
     RunSystemCommand(cmd)
 
+  # Do not compress the archive in developer (component) builds.
+  if options.component_build == '1':
+    compressed_file = os.path.join(
+        options.output_dir, options.output_name + COMPRESSED_ARCHIVE_SUFFIX)
+    if os.path.exists(compressed_file):
+      os.remove(compressed_file)
+    return os.path.basename(archive_file)
+
   # If we are generating a patch, run bsdiff against previous build and
   # compress the resulting patch file. If this is not a patch just compress the
   # uncompressed archive file.
@@ -564,7 +572,9 @@ def _ParseOptions():
       help='Whether to include resource files from the "TOUCH" section of the '
            'input file.')
   parser.add_option('--component_build', default='0',
-      help='Whether this archive is packaging a component build.')
+      help='Whether this archive is packaging a component build. This will '
+           'also turn off compression of chrome.7z into chrome.packed.7z and '
+           'helpfully delete any old chrome.packed.7z in |output_dir|.')
 
   options, _ = parser.parse_args()
   if not options.build_dir:

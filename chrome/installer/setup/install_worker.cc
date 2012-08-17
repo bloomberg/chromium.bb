@@ -116,8 +116,18 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
     // %LOCALAPPDATA% otherwise), there is no need to do this for the archive.
     // Setup.exe, on the other hand, is created elsewhere so it must always be
     // copied.
+#if !defined(COMPONENT_BUILD)
     install_list->AddMoveTreeWorkItem(archive_path.value(), archive_dst.value(),
                                       temp_path.value(), WorkItem::ALWAYS_MOVE);
+#else  // COMPONENT_BUILD
+    // The archive is usually extracted in |temp_path| in which case we want to
+    // move it as mentioned above; however in the component build, setup.exe
+    // uses chrome.7z directly from the build output, moving it means that
+    // setup.exe cannot be run again without regenerating the archive, so copy
+    // it instead in this case to save developer time.
+    install_list->AddCopyTreeWorkItem(archive_path.value(), archive_dst.value(),
+                                      temp_path.value(), WorkItem::ALWAYS);
+#endif  // COMPONENT_BUILD
   }
 }
 

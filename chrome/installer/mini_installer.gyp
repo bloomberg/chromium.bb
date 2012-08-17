@@ -223,6 +223,9 @@
                   'variables': {
                     'component_build_flag': '',
                   },
+                  'outputs': [
+                    '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).packed.7z',
+                  ],
                 }],
                 ['disable_nacl==1', {
                   'inputs!': [
@@ -246,9 +249,10 @@
                 '<(PRODUCT_DIR)/icudt.dll',
               ],
               'outputs': [
+                # Also note that chrome.packed.7z is defined as an output in a
+                # conditional above.
                 'xxx2.out',
                 '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).7z',
-                '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).packed.7z',
                 '<(PRODUCT_DIR)/setup.ex_',
                 '<(INTERMEDIATE_DIR)/packed_files.rc',
               ],

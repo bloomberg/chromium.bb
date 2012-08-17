@@ -9,7 +9,7 @@ REM into the directory \[out|build]\[Debug|Release] on the current drive.
 REM
 REM Usage:
 REM   \\build.share\<path_to_checkout>\src\tools\win\copy-installer.bat
-REM 
+REM
 REM By default, the script will copy the Debug build in the tree, falling back
 REM to the Release build if one is not found.  Similarly, the ninja output
 REM directory is preferred over the devenv output directory.  Specify
@@ -50,7 +50,8 @@ SET TO=\%OUTPUT%\%BUILDTYPE%
 
 REM Figure out what files to copy based on the component type (shared/static).
 IF EXIST "%FROM%\base.dll" (
-SET TOCOPY=*.pdb setup.exe setup.exe.manifest chrome.packed.7z *.dll
+SET TOCOPY=*.pdb setup.exe setup.exe.manifest chrome.7z *.dll
+SET ARCHIVETODELETE=chrome.packed.7z
 SET INSTALLER=setup.exe
 ) ELSE (
 SET TOCOPY=*.pdb mini_installer.exe
@@ -64,6 +65,16 @@ IF EXIST "%FROM%\initial" (
 SET FROM=%FROM%\initial
 SET TOCOPY=*.pdb
 CALL :_copyfiles
+)
+
+REM Keeping the old chrome.packed.7z around could cause the new setup.exe to
+REM use it instead of the new chrome.7z, delete it to save developers from
+REM debugging nightmares!
+IF NOT "%ARCHIVETODELETE%"=="" (
+IF EXIST "%TO%\%ARCHIVETODELETE%" (
+ECHO Deleting old/deprecated %ARCHIVETODELETE%
+del /Q "%TO%\%ARCHIVETODELETE%"
+)
 )
 
 ECHO Ready to run/debug %TO%\%INSTALLER%.
