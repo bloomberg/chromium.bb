@@ -69,6 +69,16 @@ function updateCacheContents(cacheEntry) {
 }
 
 /**
+ * Updates the Local Storage summary.
+ * @param {Object} localStorageSummary Dictionaty describing the status of local
+ * stogage.
+ */
+function updateLocalStorageUsage(localStorageSummary) {
+  var freeSpaceInMB = localStorageSummary.free_space / (1 << 20);
+  $('local-storage-freespace').innerText = freeSpaceInMB;
+}
+
+/**
  * Creates an element named |elementName| containing the content |text|.
  * @param {string} elementName Name of the new element to be created.
  * @param {string} text Text to be contained in the new element.

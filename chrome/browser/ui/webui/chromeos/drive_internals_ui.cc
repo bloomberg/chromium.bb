@@ -9,6 +9,8 @@
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "base/memory/weak_ptr.h"
+#include "base/path_service.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_auth_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
@@ -23,6 +25,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "grit/browser_resources.h"
+
+using content::BrowserThread;
 
 namespace chromeos {
 
@@ -81,6 +85,16 @@ void GetGCacheContents(const FilePath& root_path,
   }
 
   gcache_summary->SetDouble("total_size", total_size);
+}
+
+// Gets the available disk space for the path |home_path|.
+void GetFreeDiskSpace(const FilePath& home_path,
+                      base::DictionaryValue* local_storage_summary) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(local_storage_summary);
+
+  const int64 free_space = base::SysInfo::AmountOfFreeDiskSpace(home_path);
+  local_storage_summary->SetDouble("free_space", free_space);
 }
 
 // Formats |entry| into text.
@@ -179,6 +193,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                        bool success,
                        const gdata::GDataCacheEntry& cache_entry);
 
+  // Called when GetFreeDiskSpace() is complete.
+  void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
+
   // The number of pending ReadDirectoryByPath() calls.
   int num_pending_reads_;
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
@@ -198,6 +215,8 @@ gdata::GDataSystemService* DriveInternalsWebUIHandler::GetSystemService() {
 }
 
 void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   gdata::GDataSystemService* system_service = GetSystemService();
   // |system_service| may be NULL in the guest/incognito mode.
   if (!system_service)
@@ -221,7 +240,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
       gdata::GDataCache::GetCacheRootPath(profile);
   base::ListValue* gcache_contents = new ListValue;
   base::DictionaryValue* gcache_summary = new DictionaryValue;
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
+  BrowserThread::PostBlockingPoolTaskAndReply(
       FROM_HERE,
       base::Bind(&GetGCacheContents,
                  root_path,
@@ -231,6 +250,20 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(gcache_contents),
                  base::Owned(gcache_summary)));
+
+  // Propagate the amount of local free space in bytes.
+  FilePath home_path;
+  if (PathService::Get(base::DIR_HOME, &home_path)) {
+    base::DictionaryValue* local_storage_summary = new DictionaryValue;
+    BrowserThread::PostBlockingPoolTaskAndReply(
+        FROM_HERE,
+        base::Bind(&GetFreeDiskSpace, home_path, local_storage_summary),
+        base::Bind(&DriveInternalsWebUIHandler::OnGetFreeDiskSpace,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Owned(local_storage_summary)));
+  } else {
+    LOG(ERROR) << "Home directory not found";
+  }
 }
 
 void DriveInternalsWebUIHandler::OnGetGCacheContents(
@@ -333,6 +366,15 @@ void DriveInternalsWebUIHandler::OnGetCacheEntry(
   value.SetBoolean("is_persistent", cache_entry.is_persistent());
 
   web_ui()->CallJavascriptFunction("updateCacheContents", value);
+}
+
+void DriveInternalsWebUIHandler::OnGetFreeDiskSpace(
+    base::DictionaryValue* local_storage_summary) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(local_storage_summary);
+
+  web_ui()->CallJavascriptFunction(
+      "updateLocalStorageUsage", *local_storage_summary);
 }
 
 }  // namespace
