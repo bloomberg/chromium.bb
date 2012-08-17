@@ -29,10 +29,12 @@
 - (id)andReturnBool:(BOOL)value;
 - (id)andReturnInteger:(NSInteger)value;
 - (id)andReturnUnsignedInteger:(NSUInteger)value;
+#if !TARGET_OS_IPHONE
 - (id)andReturnNSRect:(NSRect)rect;
 - (id)andReturnCGRect:(CGRect)rect;
 - (id)andReturnNSPoint:(NSPoint)point;
 - (id)andReturnCGPoint:(CGPoint)point;
+#endif
 @end
 
 // A constraint for verifying that something conforms to a protocol.

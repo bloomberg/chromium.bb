@@ -6,7 +6,7 @@
   'targets': [
   ],
   'conditions': [
-    ['OS=="mac"', {
+    ['OS=="mac" or OS=="ios"', {
       'targets' : [
         {
           'target_name' : 'ocmock',
