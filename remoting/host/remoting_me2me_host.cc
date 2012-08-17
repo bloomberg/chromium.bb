@@ -49,19 +49,24 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
+#if defined(OS_POSIX)
+#include "remoting/host/posix/sighup_listener.h"
+#endif  // defined(OS_POSIX)
+
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "remoting/host/curtain_mode_mac.h"
-#include "remoting/host/sighup_listener_mac.h"
-#endif
+#endif  // defined(OS_MACOSX)
+
 // N.B. OS_WIN is defined by including src/base headers.
 #if defined(OS_WIN)
 #include <commctrl.h>
-#endif
+#endif  // defined(OS_WIN)
+
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
-#endif
+#endif  // defined(TOOLKIT_GTK)
 
 namespace {
 
@@ -188,7 +193,7 @@ class HostProcess
 #endif  // defined(OS_WIN)
 
   void ListenForConfigChanges() {
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
     remoting::RegisterHupSignalHandler(
         base::Bind(&HostProcess::ConfigUpdatedDelayed, base::Unretained(this)));
 #elif defined(OS_WIN)
@@ -200,7 +205,7 @@ class HostProcess
     if (!config_watcher_->Watch(host_config_path_, delegate)) {
       LOG(ERROR) << "Couldn't watch file " << host_config_path_.value();
     }
-#endif
+#endif  // defined (OS_WIN)
   }
 
   void CreateAuthenticatorFactory() {

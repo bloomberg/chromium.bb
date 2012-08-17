@@ -1492,8 +1492,8 @@
       'sources': [
         'host/branding.cc',
         'host/branding.h',
-        'host/sighup_listener_mac.cc',
-        'host/sighup_listener_mac.h',
+        'host/posix/sighup_listener.cc',
+        'host/posix/sighup_listener.h',
         'host/remoting_me2me_host.cc',
         'host/usage_stats_consent.h',
         'host/usage_stats_consent_win.cc',
@@ -1501,6 +1501,11 @@
         'host/curtain_mode_mac.cc',
       ],
       'conditions': [
+        ['os_posix != 1', {
+          'sources/': [
+            ['exclude', '^host/posix/'],
+          ],
+        }],
         ['OS=="mac"', {
           'mac_bundle': 1,
           'conditions': [

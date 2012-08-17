@@ -649,14 +649,12 @@ def cleanup():
 def reload_config():
   for desktop in g_desktops:
     if desktop.host_proc:
-      # Terminating the Host will cause the main loop to spawn another
-      # instance, which will read any changes made to the Host config file.
-      desktop.host_proc.terminate()
+      desktop.host_proc.send_signal(signal.SIGHUP)
 
 
 def signal_handler(signum, stackframe):
-  if signum == signal.SIGUSR1:
-    logging.info("SIGUSR1 caught, reloading configuration.")
+  if signum == signal.SIGHUP:
+    logging.info("SIGHUP caught, reloading configuration.")
     reload_config()
   else:
     # Exit cleanly so the atexit handler, cleanup(), gets called.
@@ -712,7 +710,7 @@ def main():
     running, pid = PidFile(pid_filename).check()
     if not running:
       return 1
-    os.kill(pid, signal.SIGUSR1)
+    os.kill(pid, signal.SIGHUP)
     return 0
 
   if not options.size:
@@ -798,7 +796,7 @@ def main():
       host.save_config(host_config)
       running, pid = PidFile(pid_filename).check()
       if running and pid != 0:
-        os.kill(pid, signal.SIGUSR1)
+        os.kill(pid, signal.SIGHUP)
         print "The running instance has been updated with the new PIN."
         return 0
 
@@ -908,7 +906,7 @@ def main():
       pid, status = os.wait()
     except OSError, e:
       if e.errno == errno.EINTR:
-        # Retry on EINTR, which can happen if a signal such as SIGUSR1 is
+        # Retry on EINTR, which can happen if a signal such as SIGHUP is
         # received.
         continue
       else:

@@ -4,9 +4,10 @@
 
 // TODO(jamiewalch): Add unit tests for this.
 
-#include "remoting/host/sighup_listener_mac.h"
+#include "remoting/host/posix/sighup_listener.h"
 
 #include <errno.h>
+#include <signal.h>
 
 #include "base/compiler_specific.h"
 #include "base/eintr_wrapper.h"
