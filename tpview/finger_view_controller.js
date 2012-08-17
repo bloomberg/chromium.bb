@@ -56,19 +56,19 @@ FingerViewController.prototype = {
         return i;
     return -1;
   },
-  getHardwareStateLETimestamp: function(timestamp, layer) {
-    for (var i = layer.entries.length - 1; i >= 0; i--) {
-      if (layer.entries[i].type == 'hardwareState' &&
-          layer.entries[i].timestamp <= timestamp) {
+  getHardwareStateLETimestamp: function(timestamp) {
+    for (var i = this.entries.length - 1; i >= 0; i--) {
+      if (this.entries[i].type == 'hardwareState' &&
+          this.entries[i].timestamp <= timestamp) {
         return i;
       }
     }
     return -1;
   },
-  getHardwareStateGETimestamp: function(timestamp, layer) {
-    for (var i = 0; i < layer.entries.length; i++) {
-      if (layer.entries[i].type == 'hardwareState' &&
-          layer.entries[i].timestamp >= timestamp) {
+  getHardwareStateGETimestamp: function(timestamp) {
+    for (var i = 0; i < this.entries.length; i++) {
+      if (this.entries[i].type == 'hardwareState' &&
+          this.entries[i].timestamp >= timestamp) {
         return i;
       }
     }
@@ -185,50 +185,15 @@ FingerViewController.prototype = {
       return "N/A";
     return JSON.stringify(this.entries[index]);
   },
-  getGETimestamp: function(begin) {
-    if (this.entries[begin].type != 'hardwareState')
-      begin = this.nextHardwareState(begin);
-    if (begin == -1)
-      return -1;
-    else
-      return this.entries[begin].timestamp;
-  },
-  getLETimestamp: function(end) {
-    if (this.entries[end].type != 'hardwareState')
-      end = this.prevHardwareState(end);
-    if (end == -1)
-      return -1;
-    else
-      return this.entries[end].timestamp;
-  },
   getSnippet: function(begin, end) {
     var snippet = {};
-    var startTime = this.getGETimestamp(begin);
-    var endTime = this.getLETimestamp(end);
-
     for (var key in this.log) {
       if (!this.log.hasOwnProperty(key)) {
         continue;
       }
       snippet[key] = this.log[key];
     }
-
-    var currentLayer = snippet;
-    while (true) {
-      var currentBegin = this.getHardwareStateGETimestamp(startTime,
-                                                          currentLayer);
-      var currentEnd = this.getHardwareStateLETimestamp(endTime, currentLayer);
-      if (currentEnd > currentBegin && currentBegin != -1) {
-        currentLayer.entries = currentLayer.entries.slice(currentBegin,
-                                                          currentEnd);
-      } else {
-        currentLayer.entries = [];
-      }
-      if (currentLayer.hasOwnProperty('nextLayer'))
-        currentLayer = currentLayer.nextLayer;
-      else
-        break;
-    }
+    snippet.entries = snippet.entries.slice(begin, end + 1);
     return snippet;
   },
   getUnitTest: function(begin, end, interpreterName, testName) {
