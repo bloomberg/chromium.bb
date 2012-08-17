@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_CONSTRAINED_WINDOW_H_
 
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/native_widget_types.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,6 +18,21 @@
 //
 class ConstrainedWindow {
  public:
+  static const int kVerticalPadding = 14; // top/bottom padding.
+  static const int kHorizontalPadding = 17; // left/right padding.
+  static const int kRowPadding = 20;  // Vertical margin between dialog rows.
+  static const int kBorderRadius = 2;  // Border radius for dialog corners.
+
+  // Font style for dialog text.
+  static const ui::ResourceBundle::FontStyle kTextFontStyle =
+      ui::ResourceBundle::BaseFont;
+  // Font style for dialog title.
+  static const ui::ResourceBundle::FontStyle kTitleFontStyle =
+      ui::ResourceBundle::MediumFont;
+
+  SkColor GetBackgroundColor();  // Dialog background color.
+  SkColor GetTextColor();  // Dialog text color.
+
   // Makes the Constrained Window visible. Only one Constrained Window is shown
   // at a time per tab.
   virtual void ShowConstrainedWindow() = 0;

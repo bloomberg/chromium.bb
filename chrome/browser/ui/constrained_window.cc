@@ -6,6 +6,14 @@
 
 #include "base/logging.h"
 
+SkColor ConstrainedWindow::GetBackgroundColor() {
+  return SkColorSetRGB(0xfb, 0xfb, 0xfb);
+}
+
+SkColor ConstrainedWindow::GetTextColor() {
+  return SkColorSetRGB(0x33, 0x33, 0x33);
+}
+
 void ConstrainedWindow::FocusConstrainedWindow() {
 }
 
