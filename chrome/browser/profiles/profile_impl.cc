@@ -422,8 +422,8 @@ void ProfileImpl::DoFinalInit(bool is_new_profile) {
         base::Bind(&EnsureReadmeFile, GetPath()),
         base::TimeDelta::FromMilliseconds(create_readme_delay_ms));
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRestoreSessionState)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRestoreSessionState)) {
     content::BrowserContext::GetDefaultDOMStorageContext(this)->
         SetSaveSessionStorageOnDisk();
   }
