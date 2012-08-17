@@ -52,7 +52,7 @@ void ShowCertificateViewer(content::WebContents* web_contents,
   CFArrayAppendValue(policies, basic_policy);
   CFRelease(basic_policy);
 
-  status = net::x509_util::CreateRevocationPolicies(false, policies);
+  status = net::x509_util::CreateRevocationPolicies(false, false, policies);
   if (status != noErr) {
     NOTREACHED();
     return;
