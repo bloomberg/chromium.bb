@@ -93,7 +93,8 @@ bool PanelManager::UseBrowserlessPanels() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kOldPanels))
     return false;
 
-  return chrome::VersionInfo::GetChannel() <= chrome::VersionInfo::CHANNEL_DEV;
+  return chrome::VersionInfo::GetChannel() <=
+      chrome::VersionInfo::CHANNEL_UNKNOWN;
 }
 
 PanelManager::PanelManager()
