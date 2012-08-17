@@ -73,28 +73,6 @@ using WebKit::WebInputEvent;
 using WebKit::WebString;
 using WebKit::WebView;
 
-namespace {
-
-class ScopedLogLevel {
- public:
-  ScopedLogLevel(int level);
-  ~ScopedLogLevel();
-
- private:
-  int old_level_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedLogLevel);
-};
-
-ScopedLogLevel::ScopedLogLevel(int level)
-    : old_level_(logging::GetMinLogLevel()) {
-  logging::SetMinLogLevel(level);
-}
-
-ScopedLogLevel::~ScopedLogLevel() {
-  logging::SetMinLogLevel(old_level_);
-}
-
 // Proxy for WebPluginResourceClient.  The object owns itself after creation,
 // deleting itself after its callback has been called.
 class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
@@ -190,8 +168,6 @@ class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
   // For e.g. response for a HTTP byte range request.
   bool multibyte_response_expected_;
 };
-
-}  // namespace
 
 WebPluginDelegateProxy::WebPluginDelegateProxy(
     const std::string& mime_type,
@@ -343,15 +319,11 @@ bool WebPluginDelegateProxy::Initialize(
 #endif
 
   int instance_id;
-  {
-    // TODO(bauerb): Debugging for http://crbug.com/141055.
-    ScopedLogLevel log_level(-2);  // Equivalent to --v=2
-    bool result = channel_host->Send(new PluginMsg_CreateInstance(
-        mime_type_, &instance_id));
-    if (!result) {
-      LOG(ERROR) << "Couldn't send PluginMsg_CreateInstance";
-      return false;
-    }
+  bool result = channel_host->Send(new PluginMsg_CreateInstance(
+      mime_type_, &instance_id));
+  if (!result) {
+    LOG(ERROR) << "Couldn't send PluginMsg_CreateInstance";
+    return false;
   }
 
   channel_host_ = channel_host;
@@ -384,7 +356,7 @@ bool WebPluginDelegateProxy::Initialize(
 
   plugin_ = plugin;
 
-  bool result = false;
+  result = false;
   IPC::Message* msg = new PluginMsg_Init(instance_id_, params, &result);
   Send(msg);
 
