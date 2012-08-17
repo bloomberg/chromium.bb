@@ -332,6 +332,9 @@ void BluetoothAdapter::AdapterPropertyChanged(
   } else if (property_name == properties->devices.name()) {
     DevicesChanged(properties->devices.value());
 
+  } else if (property_name == properties->address.name()) {
+    address_ = properties->address.value();
+
   }
 }
 
