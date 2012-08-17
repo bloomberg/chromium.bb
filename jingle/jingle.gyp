@@ -171,6 +171,7 @@
         'notifier/communicator/login_settings_unittest.cc',
         'notifier/communicator/single_login_attempt_unittest.cc',
         'notifier/listener/non_blocking_push_client_unittest.cc',
+        'notifier/listener/notification_defines_unittest.cc',
         'notifier/listener/push_client_unittest.cc',
         'notifier/listener/push_notifications_send_update_task_unittest.cc',
         'notifier/listener/push_notifications_subscribe_task_unittest.cc',

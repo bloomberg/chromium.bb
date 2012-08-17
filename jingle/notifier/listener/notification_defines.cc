@@ -6,7 +6,7 @@
 
 #include <cstddef>
 
-#include "base/json/json_writer.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -65,14 +65,12 @@ bool Notification::Equals(const Notification& other) const {
 }
 
 std::string Notification::ToString() const {
-  // Put into a DictionaryValue and convert to a string; this gives a
-  // nice hex-encoding of |data|, which may be a binary string.
-  DictionaryValue dict;
-  dict.SetString("channel", channel);
-  dict.SetString("data", data);
-  std::string str;
-  base::JSONWriter::Write(&dict, &str);
-  return str;
+  // |channel| or |data| could hold binary data, so use GetDoubleQuotedJson()
+  // to escape them.
+  const std::string& printable_channel = base::GetDoubleQuotedJson(channel);
+  const std::string& printable_data = base::GetDoubleQuotedJson(data);
+  return
+      "{ channel: " + printable_channel + ", data: " + printable_data + " }";
 }
 
 }  // namespace notifier
