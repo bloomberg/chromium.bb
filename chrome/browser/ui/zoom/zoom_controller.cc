@@ -14,10 +14,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
+#include "grit/theme_resources.h"
 
 ZoomController::ZoomController(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
-      zoom_icon_state_(NONE),
       zoom_percent_(100),
       tab_contents_(tab_contents),
       observer_(NULL) {
@@ -32,6 +32,17 @@ ZoomController::ZoomController(TabContents* tab_contents)
 ZoomController::~ZoomController() {
   default_zoom_level_.Destroy();
   registrar_.RemoveAll();
+}
+
+bool ZoomController::IsAtDefaultZoom() const {
+  return content::ZoomValuesEqual(tab_contents_->web_contents()->GetZoomLevel(),
+                                  default_zoom_level_.GetValue());
+}
+
+int ZoomController::GetResourceForZoomLevel() const {
+  DCHECK(!IsAtDefaultZoom());
+  double zoom = tab_contents_->web_contents()->GetZoomLevel();
+  return zoom > default_zoom_level_.GetValue() ? IDR_ZOOM_PLUS : IDR_ZOOM_MINUS;
 }
 
 void ZoomController::DidNavigateMainFrame(
@@ -61,32 +72,9 @@ void ZoomController::Observe(int type,
 }
 
 void ZoomController::UpdateState(bool can_show_bubble) {
-  double current_zoom_level = tab_contents_->web_contents()->GetZoomLevel();
-  double default_zoom_level = default_zoom_level_.GetValue();
-
-  ZoomIconState state;
-  if (content::ZoomValuesEqual(current_zoom_level, default_zoom_level))
-    state = NONE;
-  else if (current_zoom_level > default_zoom_level)
-    state = ZOOM_PLUS_ICON;
-  else
-    state = ZOOM_MINUS_ICON;
-
   bool dummy;
-  int zoom_percent = tab_contents_->web_contents()->
-      GetZoomPercent(&dummy, &dummy);
+  zoom_percent_ = tab_contents_->web_contents()->GetZoomPercent(&dummy, &dummy);
 
-  if (state != zoom_icon_state_) {
-    zoom_icon_state_ = state;
-    if (observer_)
-      observer_->OnZoomIconChanged(tab_contents_, state);
-  }
-
-  if (zoom_percent != zoom_percent_) {
-    zoom_percent_ = zoom_percent;
-    if (observer_)
-      observer_->OnZoomChanged(tab_contents_,
-                               zoom_percent,
-                               can_show_bubble && state != NONE);
-  }
+  if (observer_)
+    observer_->OnZoomChanged(tab_contents_, can_show_bubble);
 }

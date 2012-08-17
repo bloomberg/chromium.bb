@@ -19,17 +19,16 @@ class ZoomObserver;
 class ZoomController : public content::NotificationObserver,
                        public content::WebContentsObserver {
  public:
-  enum ZoomIconState {
-    NONE = 0,
-    ZOOM_PLUS_ICON,
-    ZOOM_MINUS_ICON,
-  };
-
   explicit ZoomController(TabContents* tab_contents);
   virtual ~ZoomController();
 
-  ZoomIconState zoom_icon_state() const { return zoom_icon_state_; }
   int zoom_percent() const { return zoom_percent_; }
+
+  // Convenience method to quickly check if the tab's at default zoom.
+  bool IsAtDefaultZoom() const;
+
+  // Returns which image should be loaded for the current zoom level.
+  int GetResourceForZoomLevel() const;
 
   void set_observer(ZoomObserver* observer) { observer_ = observer; }
 
@@ -48,12 +47,9 @@ class ZoomController : public content::NotificationObserver,
   // notifies the observer if changes have occurred. |can_show_bubble| will be
   // true only if the active window changes the zoom on the current page (i.e.,
   // inactive window zoom changes, creating a new tab/window, or shifting
-  // between tabs/windows, although they may involve a change in the zoom, will
-  // not trigger the bubble to be shown).
+  // between tabs/windows, although they may involve a change in the zoom,
+  // should not trigger showing a bubble).
   void UpdateState(bool can_show_bubble);
-
-  // The current zoom icon state.
-  ZoomIconState zoom_icon_state_;
 
   // The current zoom percentage.
   int zoom_percent_;

@@ -1502,7 +1502,7 @@ gboolean LocationBarViewGtk::OnChromeToMobileButtonPress(
   return FALSE;
 }
 
-void LocationBarViewGtk::ShowZoomBubble(int zoom_percent) {
+void LocationBarViewGtk::ShowZoomBubble() {
   if (!zoom_.get() || toolbar_model_->input_in_progress())
     return;
 
@@ -1522,15 +1522,6 @@ void LocationBarViewGtk::ShowChromeToMobileBubble() {
   ChromeToMobileBubbleGtk::Show(GTK_IMAGE(chrome_to_mobile_image_), browser_);
 }
 
-void LocationBarViewGtk::SetZoomIconTooltipPercent(int zoom_percent) {
-  UpdateZoomIcon();
-}
-
-void LocationBarViewGtk::SetZoomIconState(
-    ZoomController::ZoomIconState zoom_icon_state) {
-  UpdateZoomIcon();
-}
-
 void LocationBarViewGtk::SetStarred(bool starred) {
   if (starred == starred_)
     return;
@@ -1539,29 +1530,36 @@ void LocationBarViewGtk::SetStarred(bool starred) {
   UpdateStarIcon();
 }
 
+void LocationBarViewGtk::ZoomChangedForActiveTab(bool can_show_bubble) {
+  UpdateZoomIcon();
+
+  // TODO(dbeam): don't show bubble if the wrench menu is showing.
+  if (can_show_bubble && gtk_widget_get_visible(zoom_.get()))
+    ShowZoomBubble();
+}
+
 void LocationBarViewGtk::UpdateZoomIcon() {
-  if (!zoom_.get() || !GetWebContents())
+  TabContents* tab_contents = GetTabContents();
+  if (!zoom_.get() || !tab_contents)
     return;
 
-  const ZoomController* zc = TabContents::FromWebContents(
-      GetWebContents())->zoom_controller();
-
-  if (toolbar_model_->input_in_progress() ||
-      zc->zoom_icon_state() == ZoomController::NONE) {
+  ZoomController* zoom_controller = tab_contents->zoom_controller();
+  if (!zoom_controller || zoom_controller->IsAtDefaultZoom() ||
+      toolbar_model_->input_in_progress()) {
     gtk_widget_hide(zoom_.get());
     ZoomBubbleGtk::Close();
     return;
   }
 
-  gtk_widget_show(zoom_.get());
-  int zoom_resource = zc->zoom_icon_state() == ZoomController::ZOOM_PLUS_ICON ?
-      IDR_ZOOM_PLUS : IDR_ZOOM_MINUS;
+  const int zoom_resource = zoom_controller->GetResourceForZoomLevel();
   gtk_image_set_from_pixbuf(GTK_IMAGE(zoom_image_),
       theme_service_->GetImageNamed(zoom_resource)->ToGdkPixbuf());
 
-  string16 tooltip = l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM,
-                                                   zc->zoom_percent());
+  string16 tooltip = l10n_util::GetStringFUTF16Int(
+      IDS_TOOLTIP_ZOOM, zoom_controller->zoom_percent());
   gtk_widget_set_tooltip_text(zoom_.get(), UTF16ToUTF8(tooltip).c_str());
+
+  gtk_widget_show(zoom_.get());
 }
 
 void LocationBarViewGtk::UpdateStarIcon() {

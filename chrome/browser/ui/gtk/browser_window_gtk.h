@@ -84,9 +84,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void SetDevToolsDockSide(DevToolsDockSide side) OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;
-  virtual void SetZoomIconState(ZoomController::ZoomIconState state) OVERRIDE;
-  virtual void SetZoomIconTooltipPercent(int zoom_percent) OVERRIDE;
-  virtual void ShowZoomBubble(int zoom_percent) OVERRIDE;
+  virtual void ZoomChangedForActiveTab(bool can_show_bubble) OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;

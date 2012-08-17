@@ -44,6 +44,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/plus_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -101,6 +102,7 @@ LocationBarViewMac::LocationBarViewMac(
       plus_decoration_(NULL),
       star_decoration_(new StarDecoration(command_updater)),
       chrome_to_mobile_decoration_(NULL),
+      zoom_decoration_(new ZoomDecoration(toolbar_model)),
       keyword_hint_decoration_(
           new KeywordHintDecoration(OmniboxViewMac::GetFieldFont())),
       profile_(profile),
@@ -252,6 +254,7 @@ void LocationBarViewMac::Update(const WebContents* contents,
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   star_decoration_->SetVisible(star_enabled);
   UpdateChromeToMobileEnabled();
+  UpdateZoomDecoration();
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   // OmniboxView restores state if the tab is non-NULL.
@@ -473,6 +476,7 @@ void LocationBarViewMac::SetEditable(bool editable) {
   [field_ setEditable:editable ? YES : NO];
   star_decoration_->SetVisible(IsStarEnabled());
   UpdateChromeToMobileEnabled();
+  UpdateZoomDecoration();
   UpdatePageActions();
   Layout();
 }
@@ -481,9 +485,7 @@ bool LocationBarViewMac::IsEditable() {
   return [field_ isEditable] ? true : false;
 }
 
-void LocationBarViewMac::SetStarred(bool starred) {
-  star_decoration_->SetStarred(starred);
-
+void LocationBarViewMac::OnDecorationsChanged() {
   // TODO(shess): The field-editor frame and cursor rects should not
   // change, here.
   [field_ updateCursorAndToolTipRects];
@@ -491,14 +493,22 @@ void LocationBarViewMac::SetStarred(bool starred) {
   [field_ setNeedsDisplay:YES];
 }
 
+void LocationBarViewMac::SetStarred(bool starred) {
+  star_decoration_->SetStarred(starred);
+  OnDecorationsChanged();
+}
+
 void LocationBarViewMac::SetChromeToMobileDecorationLit(bool lit) {
   chrome_to_mobile_decoration_->SetLit(lit);
+  OnDecorationsChanged();
+}
 
-  // TODO(shess): The field-editor frame and cursor rects should not
-  // change, here.
-  [field_ updateCursorAndToolTipRects];
-  [field_ resetFieldEditorFrameIfNeeded];
-  [field_ setNeedsDisplay:YES];
+void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
+  UpdateZoomDecoration();
+  OnDecorationsChanged();
+
+  // TODO(dbeam): show a zoom bubble when |can_show_bubble| is true, the zoom
+  // decoration is showing, and the wrench menu isn't showing.
 }
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
@@ -664,6 +674,7 @@ void LocationBarViewMac::Layout() {
   if (plus_decoration_.get())
     [cell addRightDecoration:plus_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
+  [cell addRightDecoration:zoom_decoration_.get()];
   if (chrome_to_mobile_decoration_.get())
     [cell addRightDecoration:chrome_to_mobile_decoration_.get()];
 
@@ -717,10 +728,7 @@ void LocationBarViewMac::Layout() {
   // TODO(shess): Anytime the field editor might have changed, the
   // cursor rects almost certainly should have changed.  The tooltips
   // might change even when the rects don't change.
-  [field_ resetFieldEditorFrameIfNeeded];
-  [field_ updateCursorAndToolTipRects];
-
-  [field_ setNeedsDisplay:YES];
+  OnDecorationsChanged();
 }
 
 void LocationBarViewMac::RedrawDecoration(LocationBarDecoration* decoration) {
@@ -747,4 +755,12 @@ void LocationBarViewMac::UpdateChromeToMobileEnabled() {
       ChromeToMobileServiceFactory::GetForProfile(profile_)->HasMobiles();
   chrome_to_mobile_decoration_->SetVisible(enabled);
   command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
+}
+
+void LocationBarViewMac::UpdateZoomDecoration() {
+  TabContents* tab_contents = GetTabContents();
+  if (!tab_contents)
+    return;
+
+  zoom_decoration_->Update(tab_contents->zoom_controller());
 }
