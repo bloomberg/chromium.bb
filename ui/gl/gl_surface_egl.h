@@ -66,6 +66,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual EGLConfig GetConfig() OVERRIDE;
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
+  virtual bool Resize(const gfx::Size& size) OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;

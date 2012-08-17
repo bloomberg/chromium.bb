@@ -338,6 +338,10 @@ gfx::Size NativeViewGLSurfaceEGL::GetSize() {
   return gfx::Size(width, height);
 }
 
+bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
+  return size == GetSize();
+}
+
 EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
   return surface_;
 }
