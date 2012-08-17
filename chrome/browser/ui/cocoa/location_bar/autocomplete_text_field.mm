@@ -78,12 +78,6 @@
 // a decoration area and get the expected selection behaviour,
 // likewise for multiple clicks in those areas.
 - (void)mouseDown:(NSEvent*)theEvent {
-  // Close the popup before processing the event.  This prevents the
-  // popup from being visible while a right-click context menu or
-  // page-action menu is visible.  Also, it matches other platforms.
-  if (observer_)
-    observer_->ClosePopup();
-
   // If the click was a Control-click, bring up the context menu.
   // |NSTextField| handles these cases inconsistently if the field is
   // not already first responder.

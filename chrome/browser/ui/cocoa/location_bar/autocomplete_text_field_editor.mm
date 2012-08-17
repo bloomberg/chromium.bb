@@ -468,15 +468,6 @@ BOOL ThePasteboardIsTooDamnBig() {
   textChangedByKeyEvents_ = NO;
 }
 
-- (void)mouseDown:(NSEvent*)theEvent {
-  // Close the popup before processing the event.
-  AutocompleteTextFieldObserver* observer = [self observer];
-  if (observer)
-    observer->ClosePopup();
-
-  [super mouseDown:theEvent];
-}
-
 - (BOOL)validateMenuItem:(NSMenuItem*)item {
   if ([item action] == @selector(copyToFindPboard:))
     return [self selectedRange].length > 0;
