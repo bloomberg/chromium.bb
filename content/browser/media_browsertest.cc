@@ -138,9 +138,9 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavMulaw) {
 }
 
 // TODO(dalecurtis): Fails seek test.  http://crbug.com/141020
-// IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearFlac) {
-//   PlayAudio("bear.flac", GetParam());
-// }
+IN_PROC_BROWSER_TEST_P(MediaTest, DISABLED_VideoBearFlac) {
+  PlayAudio("bear.flac", GetParam());
+}
 #endif
 #endif
 
@@ -148,10 +148,16 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavPcm) {
   PlayAudio("bear_pcm.wav", GetParam());
 }
 
-// Flaky. http://crbug.com/143151
+#if defined(OS_MACOSX)
+// TODO(dalecurtis): Flaky on Mac 10.6.  http://crbug.com/142896
 IN_PROC_BROWSER_TEST_P(MediaTest, FLAKY_VideoTulipWebm) {
   PlayVideo("tulip2.webm", GetParam());
 }
+#else
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoTulipWebm) {
+  PlayVideo("tulip2.webm", GetParam());
+}
+#endif
 
 INSTANTIATE_TEST_CASE_P(File, MediaTest, ::testing::Values(false));
 INSTANTIATE_TEST_CASE_P(Http, MediaTest, ::testing::Values(true));
