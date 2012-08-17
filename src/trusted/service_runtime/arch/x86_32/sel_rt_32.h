@@ -78,50 +78,61 @@ struct NaClThreadContext {
   /* ecx, edx, eax, eflags not saved */
   nacl_reg_t  ebx, esi, edi, prog_ctr; /* return addr */
   /*          0    4    8    c */
-  nacl_reg_t  frame_ptr;
+  /*
+   * TODO(mseaborn): We would like to remove the unused_padding
+   * fields, but the incremental Windows Gyp build does not know to
+   * rebuild the .S files when this header file changes.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=2969
+   */
+  uint32_t    unused_padding1;
   /*          10 */
-  nacl_reg_t  stack_ptr;
+  nacl_reg_t  frame_ptr;
   /*          14 */
-  uint16_t    ss; /* stack_ptr and ss must be adjacent */
+  uint32_t    unused_padding2;
   /*          18 */
-  uint16_t    fcw;
-  /*          1a */
-  uint16_t    sys_fcw;
+  nacl_reg_t  stack_ptr;
   /*          1c */
-  char        dummy[2];
+  uint16_t    ss; /* stack_ptr and ss must be adjacent */
+  /*          20 */
+  uint16_t    fcw;
+  /*          22 */
+  uint16_t    sys_fcw;
+  /*          24 */
+  uint16_t    align_padding1;
+  /*          26 */
   /*
    * gs is our TLS base in the app; on the host side it's either fs or gs.
    */
   uint16_t    ds, es, fs, gs;
-  /*          20  22  24  26 */
+  /*          28  2a  2c  2e */
   /*
    * spring_addr, sys_ret and new_prog_ctr are not a part of the
    * thread's register set, but are needed by NaClSwitch.  By
    * including them here, the two use the same interface.
    */
   nacl_reg_t  new_prog_ctr;
-  /*          28 */
-  nacl_reg_t  sysret;
-  /*          2c */
-  nacl_reg_t  spring_addr;
   /*          30 */
-  uint16_t    cs; /* spring_addr and cs must be adjacent */
+  nacl_reg_t  sysret;
   /*          34 */
-  uint16_t    padding;
-  /*          36 */
+  nacl_reg_t  spring_addr;
+  /*          38 */
+  uint16_t    cs; /* spring_addr and cs must be adjacent */
+  /*          3c */
+  uint16_t    align_padding2;
+  /*          3e */
 
   /* These two are adjacent because they are restored using 'lss'. */
   uint32_t    trusted_stack_ptr;
-  /*          38 */
+  /*          40 */
   uint16_t    trusted_ss;
-  /*          3c */
+  /*          44 */
 
   uint16_t    trusted_es;
-  /*          3e */
+  /*          46 */
   uint16_t    trusted_fs;
-  /*          40 */
+  /*          48 */
   uint16_t    trusted_gs;
-  /*          42 */
+  /*          4a */
 };
 
 #endif /* !defined(__ASSEMBLER__) */
@@ -130,24 +141,28 @@ struct NaClThreadContext {
 #define NACL_THREAD_CONTEXT_OFFSET_ESI           0x04
 #define NACL_THREAD_CONTEXT_OFFSET_EDI           0x08
 #define NACL_THREAD_CONTEXT_OFFSET_PROG_CTR      0x0c
-#define NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR     0x10
-#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR     0x14
-#define NACL_THREAD_CONTEXT_OFFSET_SS            0x18
-#define NACL_THREAD_CONTEXT_OFFSET_FCW           0x1a
-#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0x1c
-#define NACL_THREAD_CONTEXT_OFFSET_DS            0x20
-#define NACL_THREAD_CONTEXT_OFFSET_ES            0x22
-#define NACL_THREAD_CONTEXT_OFFSET_FS            0x24
-#define NACL_THREAD_CONTEXT_OFFSET_GS            0x26
-#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR  0x28
-#define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x2c
-#define NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR   0x30
-#define NACL_THREAD_CONTEXT_OFFSET_CS            0x34
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x38
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_SS    0x3c
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES    0x3e
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS    0x40
-#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS    0x42
+#define NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING1 0x10
+#define NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR     0x14
+#define NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING2 0x18
+#define NACL_THREAD_CONTEXT_OFFSET_STACK_PTR     0x1c
+#define NACL_THREAD_CONTEXT_OFFSET_SS            0x20
+#define NACL_THREAD_CONTEXT_OFFSET_FCW           0x22
+#define NACL_THREAD_CONTEXT_OFFSET_SYS_FCW       0x24
+#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING1 0x26
+#define NACL_THREAD_CONTEXT_OFFSET_DS            0x28
+#define NACL_THREAD_CONTEXT_OFFSET_ES            0x2a
+#define NACL_THREAD_CONTEXT_OFFSET_FS            0x2c
+#define NACL_THREAD_CONTEXT_OFFSET_GS            0x2e
+#define NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR  0x30
+#define NACL_THREAD_CONTEXT_OFFSET_SYSRET        0x34
+#define NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR   0x38
+#define NACL_THREAD_CONTEXT_OFFSET_CS            0x3c
+#define NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING2 0x3e
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR 0x40
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_SS    0x44
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_ES    0x46
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_FS    0x48
+#define NACL_THREAD_CONTEXT_OFFSET_TRUSTED_GS    0x4a
 
 #if !defined(__ASSEMBLER__)
 
@@ -168,12 +183,14 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ESI, esi);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_EDI, edi);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_PROG_CTR, prog_ctr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING1, unused_padding1);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FRAME_PTR, frame_ptr);
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_UNUSED_PADDING2, unused_padding2);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_STACK_PTR, stack_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SS, ss);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FCW, fcw);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYS_FCW, sys_fcw);
-  offset += 2;  /* Padding */
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING1, align_padding1);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_DS, ds);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ES, es);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_FS, fs);
@@ -182,7 +199,7 @@ static INLINE void NaClThreadContextOffsetCheck(void) {
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SYSRET, sysret);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR, spring_addr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_CS, cs);
-  offset += 2;  /* Padding */
+  NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_ALIGN_PADDING2, align_padding2);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_STACK_PTR,
                    trusted_stack_ptr);
   NACL_CHECK_FIELD(NACL_THREAD_CONTEXT_OFFSET_TRUSTED_SS, trusted_ss);
