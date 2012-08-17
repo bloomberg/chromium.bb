@@ -25,7 +25,7 @@ DownloadHistory::~DownloadHistory() {}
 
 void DownloadHistory::GetNextId(
     const HistoryService::DownloadNextIdCallback& callback) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfileIfExists(
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
@@ -35,7 +35,7 @@ void DownloadHistory::GetNextId(
 
 void DownloadHistory::Load(
     const HistoryService::DownloadQueryCallback& callback) {
-  HistoryService* hs = HistoryServiceFactory::GetForProfileIfExists(
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
