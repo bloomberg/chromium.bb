@@ -299,9 +299,12 @@
       function clickHandler(element) {
         setTimeout(<strong>"awesome(); totallyAwesome()"</strong>, 1000);
       }
+      function main() {
+        // Initialization work goes here.
+      }
     &lt;/script&gt;
   &lt;/head&gt;
-  &lt;body&gt;
+  &lt;body onload="main();"&gt;
     &lt;button <strong>onclick="clickHandler(this)"</strong>&gt;
       Click for awesomeness!
     &lt;/button&gt;
@@ -317,8 +320,13 @@
     JavaScript file (<code>popup.js</code> would be a good target).
   </li>
   <li>
-    The inline event handler definition must be rewritten in terms of
-    <code>addEventListener</code> and extracted into <code>popup.js</code>.
+    <p>The inline event handler definitions must be rewritten in terms of
+    <code>addEventListener</code> and extracted into <code>popup.js</code>.</p>
+    <p>If you're currently kicking off your program's execution via code like
+    <code>&lt;body onload="main();"&gt;</code>, consider replacing it by hooking
+    into the document's <code>DOMContentLoaded</code> event, or the window's
+    <code>load</code> event, depending on your needs. Below we'll use the
+    former, as it generally triggers more quickly.</p>
   </li>
   <li>
     The <code>setTimeout</code> call will need to be rewritten to avoid
@@ -337,22 +345,25 @@ function awesome() {
 function totallyAwesome() {
   // do something TOTALLY awesome!
 }
-<strong>
-function awesomeTask() {
+<strong>function awesomeTask() {
   awesome();
   totallyAwesome();
-}
-</strong>
+}</strong>
 function clickHandler(e) {
   setTimeout(<strong>awesomeTask</strong>, 1000);
+}
+function main() {
+  // Initialization work goes here.
 }
 // Add event listeners once the DOM has fully loaded by listening for the
 // `DOMContentLoaded` event on the document, and adding your listeners to
 // specific elements when it triggers.
-document.addEventListener('DOMContentLoaded', function () {
+<strong>document.addEventListener('DOMContentLoaded', function () {</strong>
   document.querySelector('button').addEventListener('click', clickHandler);
+  main();
 });
-popup.html:
+</pre>
+<pre>popup.html:
 ===========
 &lt;!doctype html&gt;
 &lt;html&gt;
