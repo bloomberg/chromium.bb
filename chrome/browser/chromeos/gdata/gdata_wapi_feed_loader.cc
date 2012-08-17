@@ -623,7 +623,7 @@ void GDataWapiFeedLoader::OnGetDocuments(
     ui_state->num_fetched_documents = num_accumulated_entries;
     ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
 
-    // Kick of the remaining part of the feeds.
+    // Kick off the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
         params->start_changestamp,
@@ -740,7 +740,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
     ui_state->num_fetched_documents = num_accumulated_entries;
     ui_state->feed_fetching_elapsed_time = base::TimeTicks::Now() - start_time;
 
-    // Kick of the remaining part of the feeds.
+    // Kick off the remaining part of the feeds.
     documents_service_->GetChangelist(
         current_feed->next_link(),
         params->start_changestamp,
@@ -894,7 +894,7 @@ void GDataWapiFeedLoader::ContinueWithInitializedDirectoryService(
     directory_service_->set_origin(REFRESHING);
   }
 
-  // Kick of the retrieval of the feed from server. If we have previously
+  // Kick off the retrieval of the feed from server. If we have previously
   // |reported| to the original callback, then we just need to refresh the
   // content without continuing search upon operation completion.
   ReloadFromServerIfNeeded(initial_origin,

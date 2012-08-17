@@ -61,12 +61,12 @@ bool DriveTaskExecutor::ExecuteAndNotify(
     raw_paths.push_back(raw_path);
   }
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile());
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(profile());
   DCHECK(current_index_ == 0);
   if (!system_service || !system_service->file_system())
     return false;
-  gdata::GDataFileSystemInterface* file_system = system_service->file_system();
+  GDataFileSystemInterface* file_system = system_service->file_system();
 
   // Reset the index, so we know when we're done.
   current_index_ = raw_paths.size();
@@ -82,24 +82,24 @@ bool DriveTaskExecutor::ExecuteAndNotify(
 
 void DriveTaskExecutor::OnFileEntryFetched(
     GDataFileError error,
-    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   // If we aborted, then this will be zero.
   if (!current_index_)
     return;
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile());
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(profile());
 
   // Here, we are only insterested in files.
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = gdata::GDATA_FILE_ERROR_NOT_FOUND;
+    error = GDATA_FILE_ERROR_NOT_FOUND;
 
   if (!system_service || error != GDATA_FILE_OK) {
     Done(false);
     return;
   }
 
-  gdata::DocumentsServiceInterface* docs_service =
+  DocumentsServiceInterface* docs_service =
       system_service->docs_service();
 
   // Send off a request for the document service to authorize the apps for the
@@ -115,7 +115,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
 
 void DriveTaskExecutor::OnAppAuthorized(
     const std::string& resource_id,
-    gdata::GDataErrorCode error,
+    GDataErrorCode error,
     scoped_ptr<base::Value> feed_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -123,10 +123,10 @@ void DriveTaskExecutor::OnAppAuthorized(
   if (!current_index_)
     return;
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile());
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(profile());
 
-  if (!system_service || error != gdata::HTTP_SUCCESS) {
+  if (!system_service || error != HTTP_SUCCESS) {
     Done(false);
     return;
   }

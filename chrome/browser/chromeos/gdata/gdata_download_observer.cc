@@ -89,9 +89,9 @@ void RunSubstituteGDataDownloadCallback(
   callback.Run(*file_path);
 }
 
-gdata::GDataSystemService* GetSystemService(Profile* profile) {
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(
+GDataSystemService* GetSystemService(Profile* profile) {
+  GDataSystemService* system_service =
+      GDataSystemServiceFactory::GetForProfile(
         profile ? profile : ProfileManager::GetDefaultProfile());
   DCHECK(system_service);
   return system_service;
@@ -104,13 +104,14 @@ void SubstituteGDataDownloadPathInternal(Profile* profile,
   DVLOG(1) << "SubstituteGDataDownloadPathInternal";
 
   const FilePath gdata_tmp_download_dir = GetSystemService(profile)->cache()->
-      GetCacheDirectoryPath(gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
+      GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
 
   // Swap the gdata path with a local path. Local path must be created
   // on a blocking thread.
   FilePath* gdata_tmp_download_path(new FilePath());
-  BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
-      base::Bind(&gdata::GDataDownloadObserver::GetGDataTempDownloadPath,
+  BrowserThread::GetBlockingPool()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GDataDownloadObserver::GetGDataTempDownloadPath,
                  gdata_tmp_download_dir,
                  gdata_tmp_download_path),
       base::Bind(&RunSubstituteGDataDownloadCallback,
@@ -135,7 +136,7 @@ void OnEntryFound(Profile* profile,
     const FilePath& gdata_dir_path,
     const base::Closure& substitute_callback,
     GDataFileError error,
-    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+    scoped_ptr<GDataEntryProto> entry_proto) {
   if (error == GDATA_FILE_ERROR_NOT_FOUND) {
     // Destination gdata directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;
@@ -212,7 +213,7 @@ void GDataDownloadObserver::SubstituteGDataDownloadPath(Profile* profile,
 
   SetDownloadParams(gdata_path, download);
 
-  if (gdata::util::IsUnderGDataMountPoint(gdata_path)) {
+  if (util::IsUnderGDataMountPoint(gdata_path)) {
     // Can't access drive if we're not authenticated.
     // We set off a chain of callbacks as follows:
     // DocumentsService::Authenticate
@@ -234,7 +235,7 @@ void GDataDownloadObserver::SetDownloadParams(const FilePath& gdata_path,
   if (!download)
     return;
 
-  if (gdata::util::IsUnderGDataMountPoint(gdata_path)) {
+  if (util::IsUnderGDataMountPoint(gdata_path)) {
     download->SetUserData(&kGDataPathKey,
                           new GDataUserData(gdata_path));
     download->SetDisplayName(gdata_path.BaseName());
