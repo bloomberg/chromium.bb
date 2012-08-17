@@ -4,6 +4,25 @@
 
 """Module that contains trybot patch pool code."""
 
+import constants
+import functools
+
+
+def ChromiteFilter(patch):
+  """Used with FilterFn to isolate patches to chromite."""
+  return patch.project == constants.CHROMITE_PROJECT
+
+
+def ManifestFilter(patch):
+  """Used with FilterFn to isolate patches to the manifest."""
+  return patch.project in (constants.MANIFEST_PROJECT,
+                           constants.MANIFEST_INT_PROJECT)
+
+
+def BranchFilter(branch, patch):
+  """Used with FilterFn to isolate patches based on a specific upstream."""
+  return patch.tracking_branch == branch
+
 
 class TrybotPatchPool(object):
   """Represents patches specified by the user to test."""
@@ -19,23 +38,43 @@ class TrybotPatchPool(object):
   def Filter(self, **kwargs):
     """Returns a new pool with only patches that match constraints.
 
-    **kwargs: constraints in the form of attr=value.  I.e.,
-              project='chromiumos/chromite', tracking_branch='master'.
+     Arguments:
+       **kwargs: constraints in the form of attr=value.  I.e.,
+                 project='chromiumos/chromite', tracking_branch='master'.
     """
-    filtered = []
-    for patch_list in [self.gerrit_patches, self.local_patches,
-                       self.remote_patches]:
-      sub_filtered = []
-      for patch in patch_list:
-        for key in kwargs:
-          if getattr(patch, key, object()) != kwargs[key]:
-            break
-        else:
-          sub_filtered.append(patch)
+    def AttributeFilter(patch):
+      for key in kwargs:
+        if getattr(patch, key, object()) != kwargs[key]:
+          return False
+      else:
+        return True
 
-      filtered.append(sub_filtered)
+    return self.FilterFn(AttributeFilter)
 
-    return TrybotPatchPool(*filtered)
+  def FilterFn(self, filter_fn, negate=False):
+    """Returns a new pool with only patches that match constraints.
+
+    Arguments:
+      filter_fn: Functor that accepts a 'patch' argument, and returns whether to
+                 include the patch in the results.
+      negate: Return patches that don't pass the filter_fn.
+    """
+    f = filter_fn
+    if negate:
+      f = lambda p : not filter_fn(p)
+
+    return self.__class__(
+        gerrit_patches=filter(f, self.gerrit_patches),
+        local_patches=filter(f, self.local_patches),
+        remote_patches=filter(f, self.remote_patches))
+
+  def FilterManifest(self, negate=False):
+    """Return a patch pool with only patches to the manifest."""
+    return self.FilterFn(ManifestFilter, negate=negate)
+
+  def FilterBranch(self, branch, negate=False):
+    """Return a patch pool with only patches based on a particular branch."""
+    return self.FilterFn(functools.partial(BranchFilter, branch), negate=negate)
 
   def __iter__(self):
     for source in [self.local_patches, self.remote_patches,

@@ -321,8 +321,11 @@ class Builder(object):
       sync_instance.Run()
       self._SetReleaseTag()
 
-      if self.patch_pool:
-        self._RunStage(stages.PatchChangesStage, self.patch_pool)
+      # Filter out patches to manifest, since PatchChangesStage can't handle
+      # them.  Manifest patches are patched in the BootstrapStage.
+      non_manifest_patches = self.patch_pool.FilterManifest(negate=True)
+      if non_manifest_patches:
+        self._RunStage(stages.PatchChangesStage, non_manifest_patches)
 
       if self._ShouldReExecuteInBuildRoot():
         print_report = False

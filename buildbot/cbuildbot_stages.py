@@ -282,8 +282,7 @@ class BootstrapStage(PatchChangesStage):
     if self._options.test_bootstrap:
       filter_branch = 'master'
 
-    self.patch_pool = self.patch_pool.Filter(tracking_branch=filter_branch)
-
+    self.patch_pool = self.patch_pool.FilterBranch(filter_branch)
     chromite_dir = os.path.join(self.tempdir, 'chromite')
     reference_repo = os.path.join(constants.SOURCE_ROOT, 'chromite', '.git')
     repository.CloneGitRepo(chromite_dir, constants.CHROMITE_URL,
