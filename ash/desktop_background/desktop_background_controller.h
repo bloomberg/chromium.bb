@@ -153,6 +153,9 @@ class ASH_EXPORT DesktopBackgroundController : public aura::WindowObserver {
   // Returns the appropriate wallpaper resolution for all root windows.
   WallpaperResolution GetAppropriateResolution();
 
+  // Send notification that background animation finished.
+  void NotifyAnimationFinished();
+
   // Can change at runtime.
   bool locked_;
 

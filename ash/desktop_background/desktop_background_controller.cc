@@ -260,6 +260,11 @@ void DesktopBackgroundController::OnWallpaperLoadCompleted(
   wallpaper_op_ = NULL;
 }
 
+void DesktopBackgroundController::NotifyAnimationFinished() {
+  Shell* shell = Shell::GetInstance();
+  shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
+}
+
 ui::Layer* DesktopBackgroundController::SetColorLayerForContainer(
     SkColor color,
     aura::RootWindow* root_window,
@@ -269,6 +274,11 @@ ui::Layer* DesktopBackgroundController::SetColorLayerForContainer(
 
   Shell::GetContainer(root_window,container_id)->
       layer()->Add(background_layer);
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&DesktopBackgroundController::NotifyAnimationFinished,
+                 weak_ptr_factory_.GetWeakPtr()));
+
   return background_layer;
 }
 
