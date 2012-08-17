@@ -203,6 +203,9 @@ _settings = dict(
 # vm_tests -- Run vm test type defined in constants.
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 
+# hw_tests_timeout -- Usually, 2 hours and twenty minutes.
+  hw_tests_timeout=8400,
+
 # hw_tests_pool -- Pool to use for hw testing.
   hw_tests_pool=constants.HWTEST_MACH_POOL,
 
@@ -461,6 +464,7 @@ paladin = _config(
   manifest_version=True,
   trybot_list=True,
   description='Commit Queue',
+  hw_tests_timeout=30*60,
 )
 
 incremental = _config(
@@ -586,6 +590,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   upload_hw_test_artifacts=True,
   hw_tests_num=1,
   hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
+  hw_tests_timeout=90*60,
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',

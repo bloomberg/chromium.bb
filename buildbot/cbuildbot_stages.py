@@ -1126,8 +1126,6 @@ class VMTestStage(BoardSpecificBuilderStage):
 class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
-  # If the tests take longer than 2h20m, abort.
-  INFRASTRUCTURE_TIMEOUT = 8400
   option_name = 'tests'
   config_name = 'hw_tests'
 
@@ -1136,6 +1134,8 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
                                       suffix=' [%s]' % suite)
     self._archive_stage = archive_stage
     self._suite = suite
+    # Bind this early so derived classes can override it.
+    self._timeout = build_config['hw_tests_timeout']
 
   # Disable use of calling parents HandleStageException class.
   # pylint: disable=W0212
@@ -1160,7 +1160,7 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
       build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
       debug = self._options.debug
     try:
-      with cros_build_lib.SubCommandTimeout(self.INFRASTRUCTURE_TIMEOUT):
+      with cros_build_lib.SubCommandTimeout(self._timeout):
         commands.RunHWTestSuite(build, self._suite, self._current_board,
                                 self._build_config['hw_tests_pool'],
                                 self._build_config['hw_tests_num'],
@@ -1176,28 +1176,22 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
 class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
                        ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
-  # TODO(sosa):  Major hack alert!!! This is intended to be used to verify
-  # test suites work and monitor them on the lab side without adversly affecting
-  # a build. Ideally we'd use a fire-and-forget script but none currently
-  # exists.
-  INFRASTRUCTURE_TIMEOUT = 60
+
+  def __init__(self, options, build_config, board, archive_stage, suite):
+    super(ASyncHWTestStage, self).__init__(self, options, build_config, board,
+                                           archive_stage, suite)
+    # TODO(sosa):  Major hack alert!!! This is intended to be used to verify
+    # test suites work and monitor them on the lab side without adversly
+    # affecting a build. Ideally we'd use a fire-and-forget script but none
+    # currently exists.
+    self._timeout = 60
+
 
   # Disable use of calling parents _HandleExceptionAsWarning class.
   # pylint: disable=W0212
   def _HandleExceptionAsWarning(self, exception):
     """Override and treat timeout's as success."""
     return self._HandleExceptionAsSuccess(exception)
-
-
-class PaladinHWTestStage(HWTestStage):
-  """Stage that runs tests in the Autotest lab for paladin builders.
-
-  This step differs from the HW Test stage as it has a lower threshold for
-  timeouts and does not block changes from being committed.
-  """
-  # Timeout after 30 minutes if the infrastructure hasn't completed running the
-  # tests. We'd rather abort after 30 minutes.
-  INFRASTRUCTURE_TIMEOUT = 30 * 60
 
 
 class SDKTestStage(bs.BuilderStage):

@@ -383,11 +383,7 @@ class SimpleBuilder(Builder):
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:
       for suite in config['hw_tests']:
-        if cbuildbot_config.IsCQType(config['build_type']):
-          stage_list.append([stages.PaladinHWTestStage, board, archive_stage,
-                             suite])
-        else:
-          stage_list.append([stages.HWTestStage, board, archive_stage, suite])
+        stage_list.append([stages.HWTestStage, board, archive_stage, suite])
 
       for suite in config['async_hw_tests']:
         stage_list.append([stages.ASyncHWTestStage, board, archive_stage,
