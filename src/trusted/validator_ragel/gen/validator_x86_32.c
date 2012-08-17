@@ -35,8 +35,8 @@ Bool ValidateChunkIA32(const uint8_t *data, size_t size,
                        const NaClCPUFeaturesX86 *cpu_features,
                        validation_callback_func user_callback,
                        void *callback_data) {
-  uint8_t *valid_targets = BitmapAllocate(size);
-  uint8_t *jump_dests = BitmapAllocate(size);
+  bitmap_word *valid_targets = BitmapAllocate(size);
+  bitmap_word *jump_dests = BitmapAllocate(size);
   const uint8_t *current_position;
   const uint8_t *end_of_bundle;
   int result = TRUE;

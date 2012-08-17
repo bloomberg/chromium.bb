@@ -137,27 +137,35 @@ enum operand_kind {
 #define SET_IMM2_TYPE(T)
 #define SET_IMM2_PTR(P)
 
-static const int kBitsPerByte = 8;
+#define BITMAP_WORD_NAME BITMAP_WORD_NAME1(NACL_HOST_WORDSIZE)
+#define BITMAP_WORD_NAME1(size) BITMAP_WORD_NAME2(size)
+#define BITMAP_WORD_NAME2(size) uint##size##_t
 
-static INLINE uint8_t *BitmapAllocate(size_t indexes) {
-  size_t byte_count = (indexes + kBitsPerByte - 1) / kBitsPerByte;
-  uint8_t *bitmap = malloc(byte_count);
+typedef BITMAP_WORD_NAME bitmap_word;
+
+static INLINE bitmap_word *BitmapAllocate(size_t indexes) {
+  size_t byte_count = ((indexes + NACL_HOST_WORDSIZE - 1) / NACL_HOST_WORDSIZE)*
+                      sizeof(bitmap_word);
+  bitmap_word *bitmap = malloc(byte_count);
   if (bitmap != NULL) {
     memset(bitmap, 0, byte_count);
   }
   return bitmap;
 }
 
-static FORCEINLINE int BitmapIsBitSet(uint8_t *bitmap, size_t index) {
-  return (bitmap[index / kBitsPerByte] & (1 << (index % kBitsPerByte))) != 0;
+static FORCEINLINE int BitmapIsBitSet(bitmap_word *bitmap, size_t index) {
+  return (bitmap[index / NACL_HOST_WORDSIZE] &
+          (((bitmap_word)1) << (index % NACL_HOST_WORDSIZE))) != 0;
 }
 
-static FORCEINLINE void BitmapSetBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] |= 1 << (index % kBitsPerByte);
+static FORCEINLINE void BitmapSetBit(bitmap_word *bitmap, size_t index) {
+  bitmap[index / NACL_HOST_WORDSIZE] |=
+                               ((bitmap_word)1) << (index % NACL_HOST_WORDSIZE);
 }
 
-static FORCEINLINE void BitmapClearBit(uint8_t *bitmap, size_t index) {
-  bitmap[index / kBitsPerByte] &= ~(1 << (index % kBitsPerByte));
+static FORCEINLINE void BitmapClearBit(bitmap_word *bitmap, size_t index) {
+  bitmap[index / NACL_HOST_WORDSIZE] &=
+                            ~(((bitmap_word)1) << (index % NACL_HOST_WORDSIZE));
 }
 
 /* Mark the destination of a jump instruction and make an early validity check:
@@ -166,7 +174,7 @@ static FORCEINLINE void BitmapClearBit(uint8_t *bitmap, size_t index) {
  * Returns TRUE iff the jump passes the early validity check.
  */
 static FORCEINLINE int MarkJumpTarget(size_t jump_dest,
-                                      uint8_t *jump_dests,
+                                      bitmap_word *jump_dests,
                                       size_t size) {
   if ((jump_dest & kBundleMask) == 0) {
     return TRUE;
@@ -182,21 +190,21 @@ static FORCEINLINE int MarkJumpTarget(size_t jump_dest,
 static INLINE Bool ProcessInvalidJumpTargets(
     const uint8_t *data,
     size_t size,
-    uint8_t *valid_targets,
-    uint8_t *jump_dests,
+    bitmap_word *valid_targets,
+    bitmap_word *jump_dests,
     validation_callback_func user_callback,
     void *callback_data) {
+  size_t elements = (size + NACL_HOST_WORDSIZE - 1) / NACL_HOST_WORDSIZE;
   size_t i;
 
-  assert(size % 32 == 0);
-
-  for (i = 0; i < size / 32; i++) {
-    uint32_t jump_dest_mask = ((uint32_t *) jump_dests)[i];
-    uint32_t valid_target_mask = ((uint32_t *) valid_targets)[i];
+  for (i = 0; i < elements ; i++) {
+    bitmap_word jump_dest_mask = jump_dests[i];
+    bitmap_word valid_target_mask = valid_targets[i];
     if ((jump_dest_mask & ~valid_target_mask) != 0) {
       // TODO(shcherbina): report address precisely, not just 32-byte block
       // TODO(khim): report all errors found, not just the first one
-      return user_callback(data + i * 32, data + i * 32, BAD_JUMP_TARGET,
+      return user_callback(data + i * NACL_HOST_WORDSIZE,
+                           data + i * NACL_HOST_WORDSIZE, BAD_JUMP_TARGET,
                            callback_data);
     }
   }
@@ -212,7 +220,8 @@ static INLINE Bool ProcessInvalidJumpTargets(
  */
 static FORCEINLINE void rel8_operand(const uint8_t *rip,
                                      const uint8_t* codeblock_start,
-                                     uint8_t *jump_dests, size_t jumpdests_size,
+                                     bitmap_word *jump_dests,
+                                     size_t jumpdests_size,
                                      uint32_t *instruction_info_collected) {
   int8_t offset = (uint8_t) (rip[-1]);
   size_t jump_dest = offset + (rip - codeblock_start);
@@ -229,7 +238,7 @@ static FORCEINLINE void rel8_operand(const uint8_t *rip,
  */
 static FORCEINLINE void rel32_operand(const uint8_t *rip,
                                       const uint8_t* codeblock_start,
-                                      uint8_t *jump_dests,
+                                      bitmap_word *jump_dests,
                                       size_t jumpdests_size,
                                       uint32_t *instruction_info_collected) {
   int32_t offset = (rip[-4] + 256U * (rip[-3] + 256U * (
@@ -245,7 +254,7 @@ static INLINE void check_access(ptrdiff_t instruction_start,
                                 enum register_name base,
                                 enum register_name index,
                                 uint8_t restricted_register,
-                                uint8_t *valid_targets,
+                                bitmap_word *valid_targets,
                                 uint32_t *instruction_info_collected) {
   if ((base == REG_RIP) || (base == REG_R15) ||
       (base == REG_RSP) || (base == REG_RBP)) {
