@@ -64,12 +64,6 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
                            const WebKit::WebIDBTransaction& transaction,
                            WebKit::WebExceptionCode& ec);
 
-  virtual void openCursor(const WebKit::WebIDBKeyRange& range,
-                          unsigned short direction,
-                          WebKit::WebIDBCallbacks* callbacks,
-                          const WebKit::WebIDBTransaction& transaction,
-                          WebKit::WebExceptionCode& ec);
-
   virtual void openCursor(const WebKit::WebIDBKeyRange&,
                           WebKit::WebIDBCursor::Direction direction,
                           WebKit::WebIDBCallbacks*,

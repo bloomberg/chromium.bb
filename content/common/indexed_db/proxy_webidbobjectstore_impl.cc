@@ -201,19 +201,6 @@ void RendererWebIDBObjectStoreImpl::openCursor(
       task_type, transaction, &ec);
 }
 
-void RendererWebIDBObjectStoreImpl::openCursor(
-    const WebIDBKeyRange& idb_key_range,
-    unsigned short direction, WebIDBCallbacks* callbacks,
-    const WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBObjectStoreOpenCursor(
-      idb_key_range, static_cast<WebKit::WebIDBCursor::Direction>(direction),
-      callbacks,  idb_object_store_id_,
-      WebKit::WebIDBTransaction::NormalTask, transaction, &ec);
-}
-
 void RendererWebIDBObjectStoreImpl::count(
     const WebIDBKeyRange& idb_key_range,
     WebIDBCallbacks* callbacks,
