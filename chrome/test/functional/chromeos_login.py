@@ -207,6 +207,9 @@ class ChromeosLogin(pyauto.PyUITest):
     # Build up some history and setup state in "Local State".
     url = self.GetHttpURLForDataPath('title2.html')
     self.NavigateToURL(url)
+    # chromeos often takes a while to register URLs into history.
+    self.assertTrue(self.WaitUntil(lambda: self.GetHistoryInfo().History()),
+                    msg='Could not open %s successfully' % url)
     open('/home/chronos/__magic__', 'w').close()
     open('/home/chronos/user/__magic__', 'w').close()
 
