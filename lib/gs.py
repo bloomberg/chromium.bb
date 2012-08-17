@@ -210,4 +210,4 @@ try:
   GSUTIL_BIN = GSContext.GetDefaultGSUtilBin()
 except cros_build_lib.RunCommandError:
   # Ignore it; let consuming code go boom in this case.
-  logger.warning("Couldn't find a usable gsutil in default pathways")
+  cros_build_lib.logger.warning("Didn't find a usable gsutil in default paths")
