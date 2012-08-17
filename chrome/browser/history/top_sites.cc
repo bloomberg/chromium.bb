@@ -77,14 +77,20 @@ const TopSites::PrepopulatedPage kPrepopulatedPages[] = {
   { IDS_CHROMEOS_WELCOME_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
     IDR_PRODUCT_LOGO_16, IDR_NEWTAB_CHROMEOS_WELCOME_PAGE_THUMBNAIL,
     SkColorSetRGB(0, 147, 60) },
+#elif defined(OS_ANDROID)
+    { IDS_MOBILE_WELCOME_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
+    IDR_PRODUCT_LOGO_16, IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL,
+    SkColorSetRGB(0, 147, 60) }
 #else
   { IDS_CHROME_WELCOME_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
     IDR_PRODUCT_LOGO_16, IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL,
     SkColorSetRGB(0, 147, 60) },
 #endif
+#if !defined(OS_ANDROID)
   { IDS_WEBSTORE_URL, IDS_EXTENSION_WEB_STORE_TITLE,
     IDR_WEBSTORE_ICON_16, IDR_NEWTAB_WEBSTORE_THUMBNAIL,
     SkColorSetRGB(63, 132, 197) }
+#endif
 };
 
 namespace {
@@ -102,6 +108,9 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
     // l10n_util isn't thread safe, so cache for use on the db thread.
     ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL));
     ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_WEBSTORE_URL));
+#if defined(OS_ANDROID)
+    ignore_urls_.insert(l10n_util::GetStringUTF8(IDS_MOBILE_WELCOME_URL));
+#endif
   }
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,

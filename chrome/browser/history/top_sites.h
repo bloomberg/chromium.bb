@@ -367,7 +367,11 @@ class TopSites
   DISALLOW_COPY_AND_ASSIGN(TopSites);
 };
 
+#if defined(OS_ANDROID)
+extern const TopSites::PrepopulatedPage kPrepopulatedPages[1];
+#else
 extern const TopSites::PrepopulatedPage kPrepopulatedPages[2];
+#endif
 
 }  // namespace history
 
