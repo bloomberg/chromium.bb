@@ -21,6 +21,7 @@
 EXTERN_C_BEGIN
 
 struct NaClApp;
+struct NaClAppThreadSuspendedRegisters;
 
 /*
  * The thread hosting the NaClAppThread may change suspend_state
@@ -114,7 +115,7 @@ struct NaClAppThread {
    * context switch (e.g. while executing the trampoline or
    * nacl_syscall_hook.c).
    */
-  struct NaClSignalContext  *suspended_registers;
+  struct NaClAppThreadSuspendedRegisters *suspended_registers;
   /*
    * If fault_signal is non-zero, the thread has faulted and so has
    * been suspended.  fault_signal indicates the type of fault (it is

@@ -81,6 +81,11 @@ int NaClThreadSuspensionSignalHandler(int signal,
                                       struct NaClAppThread *natp);
 #endif
 
+void NaClAppThreadGetSuspendedRegistersInternal(
+    struct NaClAppThread *natp, struct NaClSignalContext *regs);
+void NaClAppThreadSetSuspendedRegistersInternal(
+    struct NaClAppThread *natp, const struct NaClSignalContext *regs);
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_THREAD_SUSPENSION_H__ */

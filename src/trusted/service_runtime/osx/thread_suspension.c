@@ -14,6 +14,10 @@
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 
+struct NaClAppThreadSuspendedRegisters {
+  x86_thread_state_t context;
+};
+
 void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
                                   enum NaClSuspendState old_state,
                                   enum NaClSuspendState new_state) {
@@ -42,7 +46,6 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     kern_return_t result;
     mach_msg_type_number_t size;
-    x86_thread_state_t regs;
     mach_port_t thread_port = pthread_mach_thread_np(natp->thread.tid);
 
     result = thread_suspend(thread_port);
@@ -59,14 +62,14 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
         }
       }
 
-      size = sizeof(regs) / sizeof(natural_t);
+      size = sizeof(natp->suspended_registers->context) / sizeof(natural_t);
       result = thread_get_state(thread_port, x86_THREAD_STATE,
-                                (void *) &regs, &size);
+                                (void *) &natp->suspended_registers->context,
+                                &size);
       if (result != KERN_SUCCESS) {
         NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
                 "thread_get_state() call failed\n");
       }
-      NaClSignalContextFromMacThreadState(natp->suspended_registers, &regs);
     }
   }
   /*
@@ -84,6 +87,21 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
     }
   }
   NaClXMutexUnlock(&natp->suspend_mu);
+}
+
+void NaClAppThreadGetSuspendedRegistersInternal(
+    struct NaClAppThread *natp, struct NaClSignalContext *regs) {
+  NaClSignalContextFromMacThreadState(regs,
+                                      &natp->suspended_registers->context);
+}
+
+void NaClAppThreadSetSuspendedRegistersInternal(
+    struct NaClAppThread *natp, const struct NaClSignalContext *regs) {
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(regs);
+
+  NaClLog(LOG_FATAL, "NaClAppThreadSetSuspendedRegistersInternal: "
+          "Not implemented on Mac\n");
 }
 
 int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {

@@ -47,7 +47,7 @@ void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
 void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
                                         struct NaClSignalContext *regs) {
   if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
-    *regs = *natp->suspended_registers;
+    NaClAppThreadGetSuspendedRegistersInternal(natp, regs);
   } else {
     NaClThreadContextToSignalContext(&natp->user, regs);
   }
@@ -56,7 +56,7 @@ void NaClAppThreadGetSuspendedRegisters(struct NaClAppThread *natp,
 void NaClAppThreadSetSuspendedRegisters(struct NaClAppThread *natp,
                                         const struct NaClSignalContext *regs) {
   if ((natp->suspend_state & NACL_APP_THREAD_UNTRUSTED) != 0) {
-    *natp->suspended_registers = *regs;
+    NaClAppThreadSetSuspendedRegistersInternal(natp, regs);
   } else {
     /* TODO(eaeltsin): can we alter NaClAppThread.user? */
     NaClLog(LOG_WARNING,

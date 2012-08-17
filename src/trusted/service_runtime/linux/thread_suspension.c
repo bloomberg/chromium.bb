@@ -20,6 +20,10 @@
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 
+struct NaClAppThreadSuspendedRegisters {
+  struct NaClSignalContext context;
+};
+
 /*
  * If |*addr| still contains |value|, this waits to be woken up by a
  * FutexWake(addr,...) call from another thread; otherwise, it returns
@@ -79,7 +83,8 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
 static void HandleSuspendSignal(struct NaClSignalContext *regs) {
   uint32_t tls_idx = NaClTlsGetIdx();
   struct NaClAppThread *natp = nacl_thread[tls_idx];
-  struct NaClSignalContext *suspended_registers = natp->suspended_registers;
+  struct NaClSignalContext *suspended_registers =
+      &natp->suspended_registers->context;
 
   /* Sanity check. */
   if (natp->suspend_state != (NACL_APP_THREAD_UNTRUSTED |
@@ -273,6 +278,16 @@ void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
    * if it actually suspended during the context switch.
    */
   FutexWake(&natp->suspend_state, 1);
+}
+
+void NaClAppThreadGetSuspendedRegistersInternal(
+    struct NaClAppThread *natp, struct NaClSignalContext *regs) {
+  *regs = natp->suspended_registers->context;
+}
+
+void NaClAppThreadSetSuspendedRegistersInternal(
+    struct NaClAppThread *natp, const struct NaClSignalContext *regs) {
+  natp->suspended_registers->context = *regs;
 }
 
 int NaClAppThreadUnblockIfFaulted(struct NaClAppThread *natp, int *signal) {
