@@ -2406,7 +2406,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   // Accelerated video decode is not enabled by default on Linux.
   // crbug.com/137247
   bool use_accelerated_video_decode = false;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   use_accelerated_video_decode = true;
 #endif
   use_accelerated_video_decode &= !CommandLine::ForCurrentProcess()->HasSwitch(
