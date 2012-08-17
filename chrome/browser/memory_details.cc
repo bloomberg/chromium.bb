@@ -274,8 +274,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           if (extension) {
             string16 title = UTF8ToUTF16(extension->name());
             process.titles.push_back(title);
+            process.renderer_type =
+                ProcessMemoryInformation::RENDERER_EXTENSION;
+            continue;
           }
-          continue;
         }
 
         if (!contents) {
