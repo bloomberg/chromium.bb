@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -43,6 +44,19 @@ using content::WebUIMessageHandler;
 
 namespace {
 
+const char kSetAsDefaultBrowserHistogram[] = "DefaultBrowser.InteractionResult";
+
+// The enum permits registering in UMA the three possible outcomes.
+// ACCEPTED: user pressed Next and made Chrome default.
+// DECLINED: user simply closed the dialog without making Chrome default.
+// REGRETTED: user pressed Next but then elected a different default browser.
+enum MakeChromeDefaultResult {
+  MAKE_CHROME_DEFAULT_ACCEPTED,
+  MAKE_CHROME_DEFAULT_DECLINED,
+  MAKE_CHROME_DEFAULT_REGRETTED,
+  MAKE_CHROME_DEFAULT_MAX
+};
+
 ChromeWebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
   ChromeWebUIDataSource* data_source = new ChromeWebUIDataSource(
       chrome::kChromeUIMetroFlowHost);
@@ -66,6 +80,7 @@ ChromeWebUIDataSource* CreateSetAsDefaultBrowserUIHTMLSource() {
 class ResponseDelegate {
  public:
   virtual void SetChromeShutdownRequired(bool shutdown_chrome) = 0;
+  virtual void SetDialogInteractionResult(MakeChromeDefaultResult result) = 0;
 
  protected:
   virtual ~ResponseDelegate() { }
@@ -141,8 +156,18 @@ void SetAsDefaultBrowserHandler::SetDefaultWebClientUIState(
     // The operation concluded, but Chrome is still not the default.
     // If the call has succeeded, this suggests user has decided not to make
     // chrome the default. We fold this UI and move on.
+    if (response_delegate_) {
+      response_delegate_->SetDialogInteractionResult(
+          MAKE_CHROME_DEFAULT_REGRETTED);
+    }
+
     ConcludeInteraction(false);
   } else if (state == ShellIntegration::STATE_IS_DEFAULT) {
+    if (response_delegate_) {
+      response_delegate_->SetDialogInteractionResult(
+          MAKE_CHROME_DEFAULT_ACCEPTED);
+    }
+
     if (!Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
             prefs::kSuppressSwitchToMetroModeOnSetDefault)) {
       BrowserThread::PostTask(
@@ -234,12 +259,14 @@ class SetAsDefaultBrowserDialogImpl : public ui::WebDialogDelegate,
 
   // Overridden from ResponseDelegate:
   virtual void SetChromeShutdownRequired(bool shutdown_chrome);
+  virtual void SetDialogInteractionResult(MakeChromeDefaultResult result);
 
  private:
   Profile* profile_;
   Browser* browser_;
   mutable bool owns_handler_;
   SetAsDefaultBrowserHandler* handler_;
+  MakeChromeDefaultResult dialog_interation_result_;
   bool response_is_close_chrome_;
 
   DISALLOW_COPY_AND_ASSIGN(SetAsDefaultBrowserDialogImpl);
@@ -251,6 +278,7 @@ SetAsDefaultBrowserDialogImpl::SetAsDefaultBrowserDialogImpl(Profile* profile,
       browser_(browser),
       owns_handler_(true),
       handler_(new SetAsDefaultBrowserHandler(this)),
+      dialog_interation_result_(MAKE_CHROME_DEFAULT_DECLINED),
       response_is_close_chrome_(false) {
 }
 
@@ -300,6 +328,11 @@ std::string SetAsDefaultBrowserDialogImpl::GetDialogArgs() const {
 
 void SetAsDefaultBrowserDialogImpl::OnDialogClosed(
     const std::string& json_retval) {
+  // Register the user's response in UMA.
+  UMA_HISTOGRAM_ENUMERATION(kSetAsDefaultBrowserHistogram,
+                            dialog_interation_result_,
+                            MAKE_CHROME_DEFAULT_MAX);
+
   if (response_is_close_chrome_) {
     // If Metro Chrome has been activated, we should close this process.
     // We are restarting as metro now.
@@ -338,6 +371,11 @@ bool SetAsDefaultBrowserDialogImpl::HandleContextMenu(
 void SetAsDefaultBrowserDialogImpl::SetChromeShutdownRequired(
     bool shutdown_chrome) {
   response_is_close_chrome_ = shutdown_chrome;
+}
+
+void SetAsDefaultBrowserDialogImpl::SetDialogInteractionResult(
+    MakeChromeDefaultResult result) {
+  dialog_interation_result_ = result;
 }
 
 }  // namespace
