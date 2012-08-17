@@ -488,6 +488,13 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     if (curr_site_instance->HasWrongProcessForURL(dest_url))
       return curr_site_instance->GetRelatedSiteInstance(dest_url);
 
+    // View-source URLs must use a new SiteInstance and BrowsingInstance.
+    // TODO(nasko): This is the same condition as later in the function. This
+    // should be taken into account when refactoring this method as part of
+    // http://crbug.com/123007.
+    if (entry.IsViewSourceMode())
+      return SiteInstance::CreateForURL(browser_context, dest_url);
+
     // Normally the "site" on the SiteInstance is set lazily when the load
     // actually commits. This is to support better process sharing in case
     // the site redirects to some other site: we want to use the destination

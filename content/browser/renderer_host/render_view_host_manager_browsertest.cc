@@ -975,7 +975,9 @@ class RenderViewHostObserverArray {
 
 // Test for crbug.com/90867. Make sure we don't leak render view hosts since
 // they may cause crashes or memory corruptions when trying to call dead
-// delegate_.
+// delegate_. This test also verifies crbug.com/117420 and crbug.com/143255 to
+// ensure that a separate SiteInstance is created when navigating to view-source
+// URLs, regardless of current URL.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -985,20 +987,38 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
       FilePath(FILE_PATH_LITERAL("content/test/data")));
   ASSERT_TRUE(https_server.Start());
 
+  // Observe the created render_view_host's to make sure they will not leak.
+  RenderViewHostObserverArray rvh_observers;
+
+  GURL navigated_url(test_server()->GetURL("files/title2.html"));
+  GURL view_source_url(chrome::kViewSourceScheme + std::string(":") +
+      navigated_url.spec());
+
+  // Let's ensure that when we start with a blank window, navigating away to a
+  // view-source URL, we create a new SiteInstance.
+  content::RenderViewHost* blank_rvh = shell()->web_contents()->
+      GetRenderViewHost();
+  SiteInstance* blank_site_instance = blank_rvh->GetSiteInstance();
+  EXPECT_EQ(shell()->web_contents()->GetURL(), GURL::EmptyGURL());
+  EXPECT_EQ(blank_site_instance->GetSite(), GURL::EmptyGURL());
+  rvh_observers.AddObserverToRVH(blank_rvh);
+
+  // Now navigate to the view-source URL and ensure we got a different
+  // SiteInstance and RenderViewHost.
+  NavigateToURL(shell(), view_source_url);
+  EXPECT_NE(blank_rvh, shell()->web_contents()->GetRenderViewHost());
+  EXPECT_NE(blank_site_instance, shell()->web_contents()->
+      GetRenderViewHost()->GetSiteInstance());
+  rvh_observers.AddObserverToRVH(shell()->web_contents()->GetRenderViewHost());
+
   // Load a random page and then navigate to view-source: of it.
   // This used to cause two RVH instances for the same SiteInstance, which
   // was a problem.  This is no longer the case.
-  GURL navigated_url(test_server()->GetURL("files/title2.html"));
   NavigateToURL(shell(), navigated_url);
   SiteInstance* site_instance1 = shell()->web_contents()->
       GetRenderViewHost()->GetSiteInstance();
-
-  // Observe the newly created render_view_host to make sure it will not leak.
-  RenderViewHostObserverArray rvh_observers;
   rvh_observers.AddObserverToRVH(shell()->web_contents()->GetRenderViewHost());
 
-  GURL view_source_url(chrome::kViewSourceScheme + std::string(":") +
-      navigated_url.spec());
   NavigateToURL(shell(), view_source_url);
   rvh_observers.AddObserverToRVH(shell()->web_contents()->GetRenderViewHost());
   SiteInstance* site_instance2 = shell()->web_contents()->
