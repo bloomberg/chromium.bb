@@ -16,13 +16,13 @@ class WebContents;
 // service.
 class WebIntentPickerDelegate {
  public:
-  typedef WebIntentPickerModel::Disposition Disposition;
-
   // Base destructor.
   virtual ~WebIntentPickerDelegate() {}
 
   // Called when the user has chosen a service.
-  virtual void OnServiceChosen(const GURL& url, Disposition disposition) = 0;
+  virtual void OnServiceChosen(
+      const GURL& url,
+      webkit_glue::WebIntentServiceData::Disposition disposition) = 0;
 
   // Called when the picker has created WebContents to use for inline
   // disposition.

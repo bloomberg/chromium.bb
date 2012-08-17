@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
+#include "webkit/glue/web_intent_service_data.h"
 
 class Browser;
 struct DefaultWebIntentService;
@@ -91,8 +92,9 @@ class WebIntentPickerController
                        const content::NotificationDetails& details) OVERRIDE;
 
   // WebIntentPickerDelegate implementation.
-  virtual void OnServiceChosen(const GURL& url,
-                               Disposition disposition) OVERRIDE;
+  virtual void OnServiceChosen(
+      const GURL& url,
+      webkit_glue::WebIntentServiceData::Disposition disposition) OVERRIDE;
   virtual void OnInlineDispositionWebContentsCreated(
       content::WebContents* web_contents) OVERRIDE;
   virtual void OnExtensionInstallRequested(const std::string& id) OVERRIDE;

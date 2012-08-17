@@ -27,10 +27,10 @@ const string16 kId3(ASCIIToUTF16("aclehenhkckhebbbncbkefhcpcgepcgf"));
 const string16 kId4(ASCIIToUTF16("bclehenhkckhebbbncbkefhcpcgepcgf"));
 const string16 kId5(ASCIIToUTF16("cclehenhkckhebbbncbkefhcpcgepcgf"));
 const string16 kId6(ASCIIToUTF16("dclehenhkckhebbbncbkefhcpcgepcgf"));
-const WebIntentPickerModel::Disposition kWindowDisposition(
-    WebIntentPickerModel::DISPOSITION_WINDOW);
-const WebIntentPickerModel::Disposition kInlineDisposition(
-    WebIntentPickerModel::DISPOSITION_INLINE);
+const webkit_glue::WebIntentServiceData::Disposition kWindowDisposition(
+    webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
+const webkit_glue::WebIntentServiceData::Disposition kInlineDisposition(
+    webkit_glue::WebIntentServiceData::DISPOSITION_INLINE);
 
 }
 

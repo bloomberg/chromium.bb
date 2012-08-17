@@ -48,7 +48,6 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
-#include "webkit/glue/web_intent_service_data.h"
 
 using extensions::WebstoreInstaller;
 
@@ -81,19 +80,6 @@ WebIntentsRegistry* GetWebIntentsRegistry(TabContents* tab_contents) {
 // Gets the Chrome web store intents registry for the profile in |tab_contents|.
 CWSIntentsRegistry* GetCWSIntentsRegistry(TabContents* tab_contents) {
   return CWSIntentsRegistryFactory::GetForProfile(tab_contents->profile());
-}
-
-WebIntentPickerModel::Disposition ConvertDisposition(
-    webkit_glue::WebIntentServiceData::Disposition disposition) {
-  switch (disposition) {
-    case webkit_glue::WebIntentServiceData::DISPOSITION_INLINE:
-      return WebIntentPickerModel::DISPOSITION_INLINE;
-    case webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW:
-      return WebIntentPickerModel::DISPOSITION_WINDOW;
-    default:
-      NOTREACHED();
-      return WebIntentPickerModel::DISPOSITION_WINDOW;
-  }
 }
 
 // Returns the action-specific string for |action|.
@@ -298,8 +284,9 @@ void WebIntentPickerController::Observe(
   ClosePicker();
 }
 
-void WebIntentPickerController::OnServiceChosen(const GURL& url,
-                                                Disposition disposition) {
+void WebIntentPickerController::OnServiceChosen(
+    const GURL& url,
+    webkit_glue::WebIntentServiceData::Disposition disposition) {
   ExtensionService* service = tab_contents_->profile()->GetExtensionService();
   DCHECK(service);
   const extensions::Extension* extension = service->GetInstalledApp(url);
@@ -315,14 +302,14 @@ void WebIntentPickerController::OnServiceChosen(const GURL& url,
   }
 
   switch (disposition) {
-    case WebIntentPickerModel::DISPOSITION_INLINE:
+    case webkit_glue::WebIntentServiceData::DISPOSITION_INLINE:
       // Set the model to inline disposition. It will notify the picker which
       // will respond (via OnInlineDispositionWebContentsCreated) with the
       // WebContents to dispatch the intent to.
       picker_model_->SetInlineDisposition(url);
       break;
 
-    case WebIntentPickerModel::DISPOSITION_WINDOW: {
+    case webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW: {
       Browser* browser = browser::FindBrowserWithWebContents(
           tab_contents_->web_contents());
       TabContents* contents = chrome::TabContentsFactory(
@@ -465,10 +452,8 @@ void WebIntentPickerController::DispatchToInstalledExtension(
 
   picker_model_->AddInstalledService(
       service_data.title, service_data.service_url,
-      ConvertDisposition(service_data.disposition));
-  OnServiceChosen(
-      service_data.service_url,
-      ConvertDisposition(service_data.disposition));
+      service_data.disposition);
+  OnServiceChosen(service_data.service_url, service_data.disposition);
   AsyncOperationFinished();
 }
 
@@ -514,7 +499,7 @@ void WebIntentPickerController::AddServiceToModel(
   picker_model_->AddInstalledService(
       service.title,
       service.service_url,
-      ConvertDisposition(service.disposition));
+      service.disposition);
 
   pending_async_count_++;
   FaviconService::Handle handle = favicon_service->GetFaviconForURL(
@@ -829,7 +814,8 @@ void WebIntentPickerController::AsyncOperationFinished() {
 
 void WebIntentPickerController::InvokeService(
     const WebIntentPickerModel::InstalledService& service) {
-  if (service.disposition == WebIntentPickerModel::DISPOSITION_INLINE) {
+  if (service.disposition ==
+      webkit_glue::WebIntentServiceData::DISPOSITION_INLINE) {
     SetDialogState(kPickerMain);
   }
   OnServiceChosen(service.url, service.disposition);

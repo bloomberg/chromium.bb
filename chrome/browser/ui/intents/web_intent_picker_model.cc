@@ -30,9 +30,10 @@ WebIntentPickerModel::~WebIntentPickerModel() {
   DestroyAll();
 }
 
-void WebIntentPickerModel::AddInstalledService(const string16& title,
-                                               const GURL& url,
-                                               Disposition disposition) {
+void WebIntentPickerModel::AddInstalledService(
+    const string16& title,
+    const GURL& url,
+    webkit_glue::WebIntentServiceData::Disposition disposition) {
   // TODO(groby): Revisit to remove O(n^2) complexity.
   for (size_t i = 0; i < installed_services_.size(); ++i) {
     InstalledService* service = installed_services_[i];
@@ -165,7 +166,7 @@ void WebIntentPickerModel::DestroyAll() {
 WebIntentPickerModel::InstalledService::InstalledService(
     const string16& title,
     const GURL& url,
-    Disposition disposition)
+    webkit_glue::WebIntentServiceData::Disposition disposition)
     : title(title),
       url(url),
       favicon(ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(

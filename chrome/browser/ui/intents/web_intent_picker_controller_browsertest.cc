@@ -200,8 +200,6 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
 
 class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
  protected:
-  typedef WebIntentPickerModel::Disposition Disposition;
-
   WebIntentPickerControllerBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -306,7 +304,9 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     controller_->OnSendReturnMessage(reply_type);
   }
 
-  void OnServiceChosen(const GURL& url, Disposition disposition) {
+  void OnServiceChosen(
+      const GURL& url,
+      webkit_glue::WebIntentServiceData::Disposition disposition) {
     controller_->OnServiceChosen(url, disposition);
   }
 
@@ -353,7 +353,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
 
-  OnServiceChosen(kServiceURL2, WebIntentPickerModel::DISPOSITION_WINDOW);
+  OnServiceChosen(kServiceURL2,
+                  webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL2),
             chrome::GetActiveWebContents(browser())->GetURL());
@@ -417,7 +418,8 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
 
-  OnServiceChosen(kServiceURL1, WebIntentPickerModel::DISPOSITION_WINDOW);
+  OnServiceChosen(kServiceURL1,
+                  webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW);
   ASSERT_EQ(3, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL1),
             chrome::GetActiveWebContents(browser())->GetURL());
