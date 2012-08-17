@@ -230,7 +230,7 @@ TEST(URLMatcherConditionFactoryTest, TestSingletonProperty) {
 }
 
 TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
-  GURL gurl("https://www.google.com/webhp?sourceid=chrome-instant&ie=UTF-8"
+  GURL gurl("https://www.google.com:1234/webhp?sourceid=chrome-instant&ie=UTF-8"
       "&ion=1#hl=en&output=search&sclient=psy-ab&q=chrome%20is%20awesome");
   URLMatcherConditionFactory factory;
   std::string url = factory.CanonicalizeURLForComponentSearches(gurl);
@@ -326,18 +326,21 @@ TEST(URLMatcherConditionFactoryTest, TestComponentSearches) {
 }
 
 TEST(URLMatcherConditionFactoryTest, TestFullSearches) {
-  GURL gurl("https://www.google.com/webhp?sourceid=chrome-instant&ie=UTF-8"
+  // The Port 443 is stripped because it is the default port for https.
+  GURL gurl("https://www.google.com:443/webhp?sourceid=chrome-instant&ie=UTF-8"
       "&ion=1#hl=en&output=search&sclient=psy-ab&q=chrome%20is%20awesome");
   URLMatcherConditionFactory factory;
   std::string url = factory.CanonicalizeURLForFullSearches(gurl);
 
   EXPECT_TRUE(Matches(factory.CreateURLPrefixCondition(""), url));
-  EXPECT_TRUE(Matches(factory.CreateURLPrefixCondition("www.goog"), url));
-  EXPECT_TRUE(Matches(factory.CreateURLPrefixCondition("www.google.com"), url));
-  EXPECT_TRUE(
-      Matches(factory.CreateURLPrefixCondition(".www.google.com"), url));
-  EXPECT_TRUE(
-      Matches(factory.CreateURLPrefixCondition("www.google.com/"), url));
+  EXPECT_TRUE(Matches(factory.CreateURLPrefixCondition(
+      "https://www.goog"), url));
+  EXPECT_TRUE(Matches(factory.CreateURLPrefixCondition(
+      "https://www.google.com"), url));
+  EXPECT_TRUE(Matches(factory.CreateURLPrefixCondition(
+      "https://www.google.com/webhp?"), url));
+  EXPECT_FALSE(Matches(factory.CreateURLPrefixCondition(
+      "http://www.google.com"), url));
   EXPECT_FALSE(Matches(factory.CreateURLPrefixCondition("webhp"), url));
 
   EXPECT_TRUE(Matches(factory.CreateURLSuffixCondition(""), url));
@@ -346,18 +349,29 @@ TEST(URLMatcherConditionFactoryTest, TestFullSearches) {
 
   EXPECT_TRUE(Matches(factory.CreateURLContainsCondition(""), url));
   EXPECT_TRUE(Matches(factory.CreateURLContainsCondition("www.goog"), url));
-  EXPECT_TRUE(Matches(factory.CreateURLContainsCondition(".www.goog"), url));
   EXPECT_TRUE(Matches(factory.CreateURLContainsCondition("webhp"), url));
   EXPECT_TRUE(Matches(factory.CreateURLContainsCondition("?"), url));
   EXPECT_TRUE(Matches(factory.CreateURLContainsCondition("sourceid"), url));
   EXPECT_TRUE(Matches(factory.CreateURLContainsCondition("ion=1"), url));
+  EXPECT_FALSE(Matches(factory.CreateURLContainsCondition(".www.goog"), url));
   EXPECT_FALSE(Matches(factory.CreateURLContainsCondition("foobar"), url));
   EXPECT_FALSE(Matches(factory.CreateURLContainsCondition("search"), url));
+  EXPECT_FALSE(Matches(factory.CreateURLContainsCondition(":443"), url));
 
   EXPECT_TRUE(Matches(factory.CreateURLEqualsCondition(
-      "www.google.com/webhp?sourceid=chrome-instant&ie=UTF-8&ion=1"), url));
+      "https://www.google.com/webhp?sourceid=chrome-instant&ie=UTF-8&ion=1"),
+      url));
   EXPECT_FALSE(
-      Matches(factory.CreateURLEqualsCondition("www.google.com"), url));
+      Matches(factory.CreateURLEqualsCondition("https://www.google.com"), url));
+
+  // Same as above but this time with a non-standard port.
+  gurl = GURL("https://www.google.com:1234/webhp?sourceid=chrome-instant&"
+      "ie=UTF-8&ion=1#hl=en&output=search&sclient=psy-ab&q=chrome%20is%20"
+      "awesome");
+  url = factory.CanonicalizeURLForFullSearches(gurl);
+  EXPECT_TRUE(Matches(factory.CreateURLPrefixCondition(
+      "https://www.google.com:1234/webhp?"), url));
+  EXPECT_TRUE(Matches(factory.CreateURLContainsCondition(":1234"), url));
 }
 
 
