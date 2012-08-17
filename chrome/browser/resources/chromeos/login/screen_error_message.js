@@ -144,10 +144,10 @@ cr.define('login', function() {
 
     /**
      * Shows or hides offline message based on network on/offline state.
-     * @param {Integer} state Current state of the network (see NET_STATE).
+     * @param {number} state Current state of the network (see NET_STATE).
      * @param {string} network Name of the current network.
      * @param {string} reason Reason the callback was called.
-     * @param {int} lastNetworkType Last active network type.
+     * @param {number} lastNetworkType Last active network type.
      */
     updateState_: function(state, network, reason, lastNetworkType) {
       var currentScreen = Oobe.getInstance().currentScreen;
@@ -260,12 +260,16 @@ cr.define('login', function() {
           offlineMessage.onBeforeHide();
 
           offlineMessage.classList.add('faded');
-          offlineMessage.addEventListener('webkitTransitionEnd',
-            function f(e) {
-              offlineMessage.removeEventListener('webkitTransitionEnd', f);
-              if (offlineMessage.classList.contains('faded'))
-                offlineMessage.classList.add('hidden');
-            });
+          if (offlineMessage.classList.contains('animated')) {
+            offlineMessage.addEventListener('webkitTransitionEnd',
+              function f(e) {
+                offlineMessage.removeEventListener('webkitTransitionEnd', f);
+                if (offlineMessage.classList.contains('faded'))
+                  offlineMessage.classList.add('hidden');
+              });
+          } else {
+            offlineMessage.classList.add('hidden');
+          }
 
           currentScreen.classList.remove('hidden');
           currentScreen.classList.remove('faded');
@@ -293,10 +297,10 @@ cr.define('login', function() {
 
   /**
    * Network state changed callback.
-   * @param {Integer} state Current state of the network (see NET_STATE).
+   * @param {number} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the current network.
    * @param {string} reason Reason the callback was called.
-   * @param {int} lastNetworkType Last active network type.
+   * @param {number} lastNetworkType Last active network type.
    */
   ErrorMessageScreen.updateState = function(
       state, network, reason, lastNetworkType) {
