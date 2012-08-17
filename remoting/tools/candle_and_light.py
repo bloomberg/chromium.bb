@@ -23,6 +23,7 @@ def main():
   parser = OptionParser()
   parser.add_option('--wix_path', dest='wix_path')
   parser.add_option('--version', dest='version')
+  parser.add_option('--controller_clsid', dest='controller_clsid')
   parser.add_option('--product_dir', dest='product_dir')
   parser.add_option('--intermediate_dir', dest='intermediate_dir')
   parser.add_option('--sas_dll_path', dest='sas_dll_path')
@@ -42,6 +43,7 @@ def main():
       '-ext "%(wix_path)s\\WixFirewallExtension.dll" '
       '-ext "%(wix_path)s\\WixUIExtension.dll" '
       '-ext "%(wix_path)s\\WixUtilExtension.dll" '
+      '"-dControllerClsid="%(controller_clsid)s"" '
       '-dVersion=%(version)s '
       '"-dFileSource=%(product_dir)s" '
       '-dIconPath=resources/chromoting.ico '

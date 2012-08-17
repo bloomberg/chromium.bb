@@ -118,6 +118,12 @@
           'webapp/_locales/en/messages.json',
         ],
       }],
+      ['OS=="win"', {
+        # Use auto-generated CLSID for the daemon controller to make sure that
+        # the newly installed version of the controller will be used during
+        # upgrade even if there is an old instance running already.
+        'daemon_controller_clsid': '<!(python tools/uuidgen.py)',
+      }],
     ],
     'remoting_webapp_files': [
       'resources/chromoting16.png',
@@ -508,13 +514,13 @@
             'tools/breakpad_tester_win.cc',
           ],
         },  # end of target 'remoting_breakpad_tester'
-
         {
           'target_name': 'remoting_elevated_controller',
           'type': 'static_library',
           'sources': [
-            'host/win/elevated_controller.idl',
+            'host/win/elevated_controller_idl.templ',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.h',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.idl',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller_i.c',
           ],
           # This target exports a hard dependency because dependent targets may
@@ -530,6 +536,24 @@
               '<(SHARED_INTERMEDIATE_DIR)',
             ],
           },
+          'rules': [
+            {
+              'rule_name': 'generate_idl',
+              'extension': 'templ',
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/remoting/host/elevated_controller.idl',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-e', 'DAEMON_CONTROLLER_CLSID="<(daemon_controller_clsid)"',
+                '<(RULE_INPUT_PATH)',
+                '<@(_outputs)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Generating <@(_outputs)'
+            },
+          ],
         },  # end of target 'remoting_elevated_controller'
         {
           'target_name': 'remoting_host_controller',
@@ -540,6 +564,7 @@
             '_ATL_NO_AUTOMATIC_NAMESPACE',
             '_ATL_CSTRING_EXPLICIT_CONSTRUCTORS',
             'STRICT',
+            'DAEMON_CONTROLLER_CLSID="{<(daemon_controller_clsid)}"',
           ],
           'include_dirs': [
             '<(INTERMEDIATE_DIR)',
@@ -767,6 +792,7 @@
               'action': [
                 'python', 'tools/candle_and_light.py',
                 '--wix_path', '<(wix_path)',
+                '--controller_clsid', '{<(daemon_controller_clsid)}',
                 '--version', '<(version_full)',
                 '--product_dir', '<(PRODUCT_DIR).',
                 '--intermediate_dir', '<(INTERMEDIATE_DIR).',

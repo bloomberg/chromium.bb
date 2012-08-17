@@ -51,8 +51,17 @@ const wchar_t kDaemonControllerElevationMoniker[] =
 // Name of the Daemon Controller's worker thread.
 const char kDaemonControllerThreadName[] = "Daemon Controller thread";
 
-// The maximum interval between showing UAC prompts.
-const int kUacTimeoutSec = 15 * 60;
+// The maximum duration of keeping a reference to a privileged instance of
+// the Daemon Controller. This effectively reduces number of UAC prompts a user
+// sees.
+const int kPrivilegedTimeoutSec = 5 * 60;
+
+// The maximum duration of keeping a reference to an unprivileged instance of
+// the Daemon Controller. This interval should not be too long. If upgrade
+// happens while there is a live reference to a Daemon Controller instance
+// the old binary still can be used. So dropping the references often makes sure
+// that the old binary will go away sooner.
+const int kUnprivilegedTimeoutSec = 60;
 
 // A base::Thread implementation that initializes COM on the new thread.
 class ComThread : public base::Thread {
@@ -296,6 +305,13 @@ HRESULT DaemonControllerWin::ActivateController() {
 
     // Ignore the error. IID_IDaemonControl2 is optional.
     control_.QueryInterface(IID_IDaemonControl2, control2_.ReceiveVoid());
+
+    // Release |control_| upon expiration of the timeout.
+    release_timer_.reset(new base::OneShotTimer<DaemonControllerWin>());
+    release_timer_->Start(FROM_HERE,
+                          base::TimeDelta::FromSeconds(kUnprivilegedTimeoutSec),
+                          this,
+                          &DaemonControllerWin::ReleaseController);
   }
 
   return S_OK;
@@ -339,7 +355,7 @@ HRESULT DaemonControllerWin::ActivateElevatedController() {
     // Release |control_| upon expiration of the timeout.
     release_timer_.reset(new base::OneShotTimer<DaemonControllerWin>());
     release_timer_->Start(FROM_HERE,
-                          base::TimeDelta::FromSeconds(kUacTimeoutSec),
+                          base::TimeDelta::FromSeconds(kPrivilegedTimeoutSec),
                           this,
                           &DaemonControllerWin::ReleaseController);
   }

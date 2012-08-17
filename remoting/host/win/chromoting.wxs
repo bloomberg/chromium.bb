@@ -26,7 +26,6 @@
   <?define ControllerAppid = "{4ff35d5e-d226-4550-9248-03e7779e67de}" ?>
   <?define ControllerBinary = "remoting_host_controller.exe" ?>
   <?define ControllerClass = "ElevatedController Class" ?>
-  <?define ControllerClsid = "{430a9403-8176-4733-afdc-0b325a8fda84}" ?>
   <?define ControllerProgid =
     "ChromotingElevatedController.ElevatedController" ?>
   <?define ControllerTypelib = "{9d9a5a2c-576e-4acd-9c75-aabff74b205d}" ?>
@@ -43,6 +42,10 @@
       -join ($i | foreach {$_.ToString("X2")})
   -->
   <?define ControllerSd = "010004805C0000006C00000000000000140000000200480003000000000014000300000001010000000000050400000000001400030000000101000000000005120000000000180003000000010200000000000520000000200200000102000000000005200000002002000001020000000000052000000020020000" ?>
+
+  <?ifndef ControllerClsid ?>
+    <?error ControllerClsid must be defined ?>
+  <?endif?>
 
   <?ifndef FileSource ?>
     <?error FileSource must be defined ?>
@@ -90,10 +93,14 @@
       <Directory Id="ProgramFilesFolder">
         <?ifdef OfficialBuild ?>
           <Directory Id="program_files_google" Name="Google">
-            <Directory Id="binaries" Name="Chrome Remote Desktop"/>
+            <Directory Id="chromoting" Name="Chrome Remote Desktop">
+              <Directory Id="binaries" Name="$(var.Version)"/>
+            </Directory>
           </Directory>
         <?else?>
-          <Directory Id="binaries" Name="Chromoting"/>
+          <Directory Id="chromoting" Name="Chromoting">
+            <Directory Id="binaries" Name="$(var.Version)"/>
+          </Directory>
         <?endif?>
       </Directory>
       <Directory Id="CommonAppDataFolder">
@@ -217,11 +224,12 @@
 
             <RegistryKey Key="CurVer" Action="create">
               <RegistryValue Type="string"
-                             Value="$(var.ControllerProgid).1"/>
+                             Value="$(var.ControllerProgid).$(var.Version)"/>
             </RegistryKey>
           </RegistryKey>
 
-          <RegistryKey Key="$(var.ControllerProgid).1" Action="create">
+          <RegistryKey Key="$(var.ControllerProgid).$(var.Version)"
+                       Action="create">
             <RegistryValue Type="string"
                            Value="$(var.ControllerClass)"/>
 
@@ -251,7 +259,7 @@
 
               <RegistryKey Key="ProgID" Action="create">
                 <RegistryValue Type="string"
-                               Value="$(var.ControllerProgid).1"/>
+                               Value="$(var.ControllerProgid).$(var.Version)"/>
               </RegistryKey>
 
               <RegistryKey Key="TypeLib" Action="create">
