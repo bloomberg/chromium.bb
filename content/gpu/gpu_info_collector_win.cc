@@ -58,8 +58,6 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
   // http://crbug.com/124325, read the assessment result files directly.
   content::GpuPerformanceStats stats;
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
   // Get path to WinSAT results files.
   wchar_t winsat_results_path[MAX_PATH];
   DWORD size = ExpandEnvironmentStrings(
@@ -136,15 +134,25 @@ content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
   if (stats.gaming == 0.0)
     LOG(ERROR) << "Could not read gaming score from assessment results.";
 
+  return stats;
+}
+
+content::GpuPerformanceStats RetrieveGpuPerformanceStatsWithHistograms() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
+  content::GpuPerformanceStats stats = RetrieveGpuPerformanceStats();
+
+  UMA_HISTOGRAM_TIMES("GPU.WinSAT.ReadResultsFileTime",
+                      base::TimeTicks::Now() - start_time);
   UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.OverallScore2",
                               stats.overall * 10, 10, 200, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GraphicsScore2",
                               stats.graphics * 10, 10, 200, 50);
   UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.WinSAT.GamingScore2",
                               stats.gaming * 10, 10, 200, 50);
-
-  UMA_HISTOGRAM_TIMES("GPU.WinSAT.ReadResultsFileTime",
-                      base::TimeTicks::Now() - start_time);
+  UMA_HISTOGRAM_BOOLEAN(
+      "GPU.WinSAT.HasResults",
+      stats.overall != 0.0 && stats.graphics != 0.0 && stats.gaming != 0.0);
 
   return stats;
 }
@@ -168,11 +176,7 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
 
   DCHECK(gpu_info);
 
-  content::GpuPerformanceStats stats = RetrieveGpuPerformanceStats();
-  UMA_HISTOGRAM_BOOLEAN(
-      "GPU.WinSAT.HasResults",
-      stats.overall != 0.0 && stats.graphics != 0.0 && stats.gaming != 0.0);
-  gpu_info->performance_stats = stats;
+  gpu_info->performance_stats = RetrieveGpuPerformanceStats();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
@@ -227,7 +231,7 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   if (!CollectVideoCardInfo(gpu_info))
     rt = false;
 
-  gpu_info->performance_stats = RetrieveGpuPerformanceStats();
+  gpu_info->performance_stats = RetrieveGpuPerformanceStatsWithHistograms();
 
   return rt;
 }
