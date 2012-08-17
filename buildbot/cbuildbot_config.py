@@ -249,11 +249,10 @@ _settings = dict(
 # upload_symbols -- Do we upload debug symbols.
   upload_symbols=False,
 
-# git_url -- git repository URL for our manifests.
-#            External: http://git.chromium.org/git/chromiumos/manifest
-#            Internal:
-#                ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal
-  git_url=constants.MANIFEST_URL,
+# manifest_repo_url -- git repository URL for our manifests.
+#   External: https://git.chromium.org/git/chromiumos/manifest
+#   Internal: ssh://gerrit-int.chromium.org:29419/chromeos/manifest-internal
+  manifest_repo_url=constants.MANIFEST_URL,
 
 # manifest_version -- Whether we are using the manifest_version repo that stores
 #                     per-build manifests.
@@ -478,7 +477,7 @@ incremental = _config(
 internal = _config(
   internal=True,
   overlays=constants.BOTH_OVERLAYS,
-  git_url=constants.MANIFEST_INT_URL,
+  manifest_repo_url=constants.MANIFEST_INT_URL,
 )
 
 # This adds Chrome branding, and removes highdpi resources by default to save

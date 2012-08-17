@@ -836,6 +836,8 @@ def _CreateParser():
   group.add_remote_option('--maxarchives', dest='max_archive_builds',
                           default=3, type='int',
                           help="Change the local saved build count limit.")
+  parser.add_remote_option('--manifest-repo-url',
+                           help=('Overrides the default manifest repo url.'))
   group.add_remote_option('--noarchive', action='store_false', dest='archive',
                           default=True, help="Don't run archive stage.")
   group.add_remote_option('--nobootstrap', action='store_false',

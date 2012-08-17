@@ -341,17 +341,18 @@ class SyncStage(bs.BuilderStage):
   def Initialize(self):
     self._InitializeRepo()
 
-  def _InitializeRepo(self, git_url=None, build_root=None, **kwds):
+  def _InitializeRepo(self, build_root=None, **kwds):
     if build_root is None:
       build_root = self._build_root
 
-    if git_url is None:
-      git_url = self._build_config['git_url']
+    manifest_url = self._options.manifest_repo_url
+    if manifest_url is None:
+      manifest_url = self._build_config['manifest_repo_url']
 
     kwds.setdefault('referenced_repo', self._options.reference_repo)
     kwds.setdefault('branch', self._target_manifest_branch)
 
-    self.repo = repository.RepoRepository(git_url, build_root, **kwds)
+    self.repo = repository.RepoRepository(manifest_url, build_root, **kwds)
 
   def GetNextManifest(self):
     """Returns the manifest to use."""

@@ -58,7 +58,7 @@ class AbstractStageTest(mox.MoxTestBase):
     self._current_board = self._boards[0]
 
     self.url = 'fake_url'
-    self.build_config['git_url'] = self.url
+    self.build_config['manifest_repo_url'] = self.url
 
     # Use the cbuildbot parser to create properties and populate default values.
     parser = cbuildbot._CreateParser()
