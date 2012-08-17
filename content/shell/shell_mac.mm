@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
 #include "base/string_piece.h"
@@ -15,7 +14,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/shell/resource.h"
-#include "content/shell/shell_switches.h"
 #include "googleurl/src/gurl.h"
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
@@ -180,10 +178,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
                           NSClosableWindowMask |
                           NSMiniaturizableWindowMask |
                           NSResizableWindowMask;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
-    content_rect = NSOffsetRect(initial_window_bounds, -10000, -10000);
-    style_mask = NSBorderlessWindowMask;
-  }
   CrShellWindow* window =
       [[CrShellWindow alloc] initWithContentRect:content_rect
                 styleMask:style_mask

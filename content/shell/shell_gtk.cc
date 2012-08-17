@@ -7,7 +7,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -18,7 +17,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "content/shell/shell_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace content {
@@ -185,9 +183,6 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
   gtk_container_add(GTK_CONTAINER(window_), vbox_);
   gtk_widget_show_all(GTK_WIDGET(window_));
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
-    gtk_widget_set_uposition(GTK_WIDGET(window_), 10000, 10000);
 
   SizeTo(width, height);
 }
