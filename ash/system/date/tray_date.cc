@@ -38,7 +38,7 @@
 
 namespace {
 
-const int kPaddingVertical = 10;
+const int kPaddingVertical = 6;
 
 class DateDefaultView : public views::View,
                         public views::ButtonListener {
