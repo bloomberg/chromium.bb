@@ -48,27 +48,6 @@ class VIEWS_EXPORT HWNDMessageHandler {
   LRESULT OnEraseBkgnd(HDC dc);
   void OnExitMenuLoop(BOOL is_track_popup_menu);
   void OnExitSizeMove();
-  LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnInitMenu(HMENU menu);
-  void OnInitMenuPopup();
-  void OnInputLangChange(DWORD character_set, HKL input_language_id);
-  LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnKillFocus(HWND focused_window);
-  LRESULT OnMouseActivate(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnMove(const CPoint& point);
-  void OnMoving(UINT param, const RECT* new_bounds);
-  LRESULT OnNCHitTest(const CPoint& point);
-  LRESULT OnNCUAHDrawCaption(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnNCUAHDrawFrame(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
-  LRESULT OnReflectedMessage(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
-  void OnSetFocus(HWND last_focused_window);
-  LRESULT OnSetIcon(UINT size_type, HICON new_icon);
-  LRESULT OnSetText(const wchar_t* text);
-  void OnSize(UINT param, const CSize& size);
-  void OnThemeChanged();
-  void OnVScroll(int scroll_type, short position, HWND scrollbar);
 
   // TODO(beng): Can be removed once this object becomes the WindowImpl.
   bool remove_standard_frame() const { return remove_standard_frame_; }
@@ -76,21 +55,7 @@ class VIEWS_EXPORT HWNDMessageHandler {
     remove_standard_frame_ = remove_standard_frame;
   }
 
-  // Resets the window region for the current widget bounds if necessary.
-  // If |force| is true, the window region is reset to NULL even for native
-  // frame windows.
-  void ResetWindowRegion(bool force);
-
  private:
-  // TODO(beng): This won't be a style violation once this object becomes the
-  //             WindowImpl.
-  HWND hwnd();
-
-  // TODO(beng): Remove once this class becomes the WindowImpl.
-  LRESULT DefWindowProcWithRedrawLock(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param);
-
   // TODO(beng): Remove once this class becomes the WindowImpl.
   void SetMsgHandled(BOOL handled);
 
