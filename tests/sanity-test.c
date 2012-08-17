@@ -29,6 +29,8 @@
 #include "test-runner.h"
 #include "wayland-util.h"
 
+extern int leak_check_enabled;
+
 TEST(empty)
 {
 }
@@ -68,6 +70,8 @@ FAIL_TEST(sanity_malloc_direct)
 {
 	void *p;
 
+	assert(leak_check_enabled);
+
 	p = malloc(10);	/* memory leak */
 	assert(p);	/* assert that we got memory, also prevents
 			 * the malloc from getting optimized away. */
@@ -77,6 +81,8 @@ FAIL_TEST(sanity_malloc_direct)
 FAIL_TEST(sanity_malloc_indirect)
 {
 	struct wl_array array;
+
+	assert(leak_check_enabled);
 
 	wl_array_init(&array);
 
@@ -89,6 +95,8 @@ FAIL_TEST(sanity_malloc_indirect)
 FAIL_TEST(sanity_fd_leak)
 {
 	int fd[2];
+
+	assert(leak_check_enabled);
 
 	/* leak 2 file descriptors */
 	if (pipe(fd) < 0)

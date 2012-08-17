@@ -39,6 +39,8 @@ static void (*sys_free)(void*);
 static void* (*sys_realloc)(void*, size_t);
 static void* (*sys_calloc)(size_t, size_t);
 
+int leak_check_enabled;
+
 extern const struct test __start_test_section, __stop_test_section;
 
 __attribute__ ((visibility("default"))) void *
@@ -95,7 +97,7 @@ run_test(const struct test *t)
 
 	cur_fds = count_open_fds();
 	t->run();
-	if (!getenv("NO_ASSERT_LEAK_CHECK")) {
+	if (leak_check_enabled) {
 		assert(cur_alloc == num_alloc && "memory leak detected in test.");
 		assert(cur_fds == count_open_fds() && "fd leak detected");
 	}
@@ -114,6 +116,8 @@ int main(int argc, char *argv[])
 	sys_realloc = dlsym(RTLD_NEXT, "realloc");
 	sys_malloc = dlsym(RTLD_NEXT, "malloc");
 	sys_free = dlsym(RTLD_NEXT, "free");
+
+	leak_check_enabled = !getenv("NO_ASSERT_LEAK_CHECK");
 
 	if (argc == 2) {
 		t = find_test(argv[1]);
