@@ -127,6 +127,10 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy) = 0;
 
+  // Notifies the renderer that a paint is to be generated for the size
+  // passed in.
+  virtual void Repaint(const gfx::Size& size) = 0;
+
  protected:
   virtual ~RenderView() {}
 };

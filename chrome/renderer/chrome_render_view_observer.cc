@@ -27,6 +27,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/translate_helper.h"
+#include "chrome/renderer/webview_animating_overlay.h"
 #include "chrome/renderer/webview_color_overlay.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_view.h"
@@ -381,17 +382,29 @@ void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(
 }
 
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
-  bool already_deemphasized = !!dimmed_color_overlay_.get();
-  if (already_deemphasized == deemphasized)
-    return;
-
-  if (deemphasized) {
-    // 70% opaque grey.
-    SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
-    dimmed_color_overlay_.reset(
-        new WebViewColorOverlay(render_view(), greyish));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableFramelessConstrainedDialogs)) {
+    if (!dimmed_animating_overlay_.get()) {
+      dimmed_animating_overlay_.reset(
+          new WebViewAnimatingOverlay(render_view()));
+    }
+    if (deemphasized)
+      dimmed_animating_overlay_->Show();
+    else
+      dimmed_animating_overlay_->Hide();
   } else {
-    dimmed_color_overlay_.reset();
+    bool already_deemphasized = !!dimmed_color_overlay_.get();
+    if (already_deemphasized == deemphasized)
+      return;
+
+    if (deemphasized) {
+      // 70% opaque grey.
+      SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
+      dimmed_color_overlay_.reset(
+          new WebViewColorOverlay(render_view(), greyish));
+    } else {
+      dimmed_color_overlay_.reset();
+    }
   }
 }
 

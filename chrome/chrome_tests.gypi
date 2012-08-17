@@ -3025,6 +3025,7 @@
         'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
         'renderer/safe_browsing/phishing_thumbnailer_browsertest.cc',
         'renderer/translate_helper_browsertest.cc',
+        'renderer/webview_animating_overlay_browsertest.cc',
         'test/base/empty_browser_test.cc',
         'test/base/in_process_browser_test_browsertest.cc',
         'test/base/chrome_render_view_test.cc',
