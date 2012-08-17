@@ -56,3 +56,4 @@ class SetuidSandboxClient {
 }  // namespace sandbox
 
 #endif  // SANDBOX_LINUX_SUID_SETUID_SANDBOX_CLIENT_H_
+

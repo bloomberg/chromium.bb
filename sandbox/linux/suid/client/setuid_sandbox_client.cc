@@ -28,8 +28,8 @@ void SetSandboxAPIEnvironmentVariable(base::Environment* env) {
 // Wrapper around a shared C function.
 // Returns the "saved" environment variable name corresponding to |envvar|
 // in a new string or NULL.
-std::string* CreateSavedVariableName(const char* envvar) {
-  char* const saved_env_var = SandboxSavedEnvironmentVariable(envvar);
+std::string* CreateSavedVariableName(const char* env_var) {
+  char* const saved_env_var = SandboxSavedEnvironmentVariable(env_var);
   if (!saved_env_var)
     return NULL;
   std::string* saved_env_var_copy = new std::string(saved_env_var);
@@ -44,7 +44,7 @@ std::string* CreateSavedVariableName(const char* envvar) {
 // renderer.
 void SaveSUIDUnsafeEnvironmentVariables(base::Environment* env) {
   for (unsigned i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
-    const char* const env_var = kSUIDUnsafeEnvironmentVariables[i];
+    const char* env_var = kSUIDUnsafeEnvironmentVariables[i];
     // Get the saved environment variable corresponding to envvar.
     scoped_ptr<std::string> saved_env_var(CreateSavedVariableName(env_var));
     if (saved_env_var == NULL)
@@ -113,14 +113,14 @@ SetuidSandboxClient::~SetuidSandboxClient() {
 }
 
 bool SetuidSandboxClient::ChrootMe() {
-  int fd = GetIPCDescriptor(env_);
+  int ipc_fd = GetIPCDescriptor(env_);
 
-  if (fd < 0) {
+  if (ipc_fd < 0) {
     LOG(ERROR) << "Failed to obtain the sandbox IPC descriptor";
     return false;
   }
 
-  if (HANDLE_EINTR(write(fd, &kMsgChrootMe, 1)) != 1) {
+  if (HANDLE_EINTR(write(ipc_fd, &kMsgChrootMe, 1)) != 1) {
     PLOG(ERROR) << "Failed to write to chroot pipe";
     return false;
   }
@@ -134,7 +134,7 @@ bool SetuidSandboxClient::ChrootMe() {
   }
 
   char reply;
-  if (HANDLE_EINTR(read(fd, &reply, 1)) != 1) {
+  if (HANDLE_EINTR(read(ipc_fd, &reply, 1)) != 1) {
     PLOG(ERROR) << "Failed to read from chroot pipe";
     return false;
   }
@@ -176,3 +176,4 @@ void SetuidSandboxClient::SetupLaunchEnvironment() {
 }
 
 }  // namespace sandbox
+

@@ -39,11 +39,11 @@ void LogSandboxStarted(const std::string& sandbox_name) {
 bool IsSeccompLegacyDesired() {
 #if defined(SECCOMP_SANDBOX)
 #if defined(NDEBUG)
-  // Off by default; allow turning on with a switch.
+  // Off by default. Allow turning on with a switch.
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSeccompSandbox);
 #else
-  // On by default; allow turning off with a switch.
+  // On by default. Allow turning off with a switch.
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSeccompSandbox);
 #endif  // NDEBUG

@@ -45,7 +45,7 @@ class LinuxSandbox {
   // process type (this is for instance the case with the Zygote).
   // In that case, it is crucial that PreinitializeSandboxFinish() gets
   // called for every child process.
-  // TODO(markus,jln) we know this is not always done at the moment
+  // TODO(markus, jln) we know this is not always done at the moment
   // (crbug.com/139877).
   void PreinitializeSandbox(const std::string& process_type);
   // These should be called together.
