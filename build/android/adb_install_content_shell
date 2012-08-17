@@ -1,26 +1,33 @@
-#!/bin/bash
+#!/usr/bin/env python
 #
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-CONTENT_SHELL_APK=${CHROME_SRC}/out/Release/content_shell/ContentShell-debug.apk
+from multiprocessing import Process
+import os
 
-if [ ! -f "${CONTENT_SHELL_APK}" ]; then
-  echo "Error: Could not find ${CONTENT_SHELL_APK} to install."
-  exit 1
-fi
+from pylib import android_commands
 
-DEVS=$(adb devices | grep device | grep -v devices | awk '{ print $1 }')
 
-if [[ -z $DEVS ]]; then
-  echo "Error: No connected devices. Device needed to run content shell test."
-  exit 1
-fi
+def InstallContentShell(device):
+  apk_path = os.path.join(os.environ['CHROME_SRC'],
+                          'out/Release/content_shell/ContentShell-debug.apk')
+  result = android_commands.AndroidCommands(device=device).ManagedInstall(
+      apk_path, False, 'org.chromium.content_shell')
+  print '-----  Installed on %s  -----' % device
+  print result
 
-for DEV in ${DEVS}; do
-  # Reinstall content shell.  This will also kill existing content_shell procs.
-  echo "Installing ${CONTENT_SHELL_APK} in ${DEV}"
-  adb -s ${DEV} uninstall org.chromium.content_shell
-  adb -s ${DEV} install -r ${CONTENT_SHELL_APK}
-done
+
+devices = android_commands.GetAttachedDevices()
+if not devices:
+  raise Exception('Error: no connected devices')
+
+procs = []
+for device in devices:
+  p = Process(target=InstallContentShell, args=(device,))
+  p.start()
+  procs += [p]
+
+for p in procs:
+  p.join()
