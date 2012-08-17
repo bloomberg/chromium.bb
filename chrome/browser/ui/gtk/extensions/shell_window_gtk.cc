@@ -13,11 +13,9 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/rect.h"
 
-ShellWindowGtk::ShellWindowGtk(Profile* profile,
-                               const extensions::Extension* extension,
-                               const GURL& url,
+ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
                                const ShellWindow::CreateParams& params)
-    : ShellWindow(profile, extension, url),
+    : shell_window_(shell_window),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
       content_thinks_its_fullscreen_(false) {
@@ -59,7 +57,7 @@ ShellWindowGtk::ShellWindowGtk(Profile* profile,
   }
 
   // TODO(mihaip): Mirror contents of <title> tag in window title
-  gtk_window_set_title(window_, extension->name().c_str());
+  gtk_window_set_title(window_, extension()->name().c_str());
 
   g_signal_connect(window_, "delete-event",
                    G_CALLBACK(OnMainWindowDeleteEventThunk), this);
@@ -121,7 +119,7 @@ void ShellWindowGtk::Close() {
   // OnNativeClose does a delete this so no other members should
   // be accessed after. gtk_widget_destroy is safe (and must
   // be last).
-  OnNativeClose();
+  shell_window_->OnNativeClose();
   gtk_widget_destroy(window);
 }
 
@@ -220,10 +218,12 @@ bool ShellWindowGtk::IsFullscreenOrPending() const {
   return content_thinks_its_fullscreen_;
 }
 
+void ShellWindowGtk::UpdateWindowTitle() {
+  // TODO(jeremya): implement.
+}
+
 // static
-ShellWindow* ShellWindow::CreateImpl(Profile* profile,
-                                     const extensions::Extension* extension,
-                                     const GURL& url,
-                                     const ShellWindow::CreateParams& params) {
-  return new ShellWindowGtk(profile, extension, url, params);
+NativeShellWindow* NativeShellWindow::Create(
+    ShellWindow* shell_window, const ShellWindow::CreateParams& params) {
+  return new ShellWindowGtk(shell_window, params);
 }

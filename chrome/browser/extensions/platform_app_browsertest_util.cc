@@ -116,7 +116,7 @@ void PlatformAppBrowserTest::CloseShellWindow(ShellWindow* window) {
   content::WindowedNotificationObserver destroyed_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
-  window->Close();
+  window->GetBaseWindow()->Close();
   destroyed_observer.Wait();
 }
 

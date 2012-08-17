@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -19,14 +20,12 @@ namespace extensions {
 class Extension;
 }
 
-class ShellWindowGtk : public ShellWindow,
+class ShellWindowGtk : public NativeShellWindow,
                        public ExtensionViewGtk::Container,
                        public ui::ActiveWindowWatcherXObserver {
  public:
-  ShellWindowGtk(Profile* profile,
-                 const extensions::Extension* extension,
-                 const GURL& url,
-                 const CreateParams& params);
+  ShellWindowGtk(ShellWindow* shell_window,
+                 const ShellWindow::CreateParams& params);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -52,9 +51,17 @@ class ShellWindowGtk : public ShellWindow,
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
  private:
-  // ShellWindow implementation.
+  // NativeShellWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
+  virtual void UpdateWindowTitle() OVERRIDE;
+
+  content::WebContents* web_contents() const {
+    return shell_window_->web_contents();
+  }
+  const extensions::Extension* extension() const {
+    return shell_window_->extension();
+  }
 
   virtual ~ShellWindowGtk();
 
@@ -64,6 +71,8 @@ class ShellWindowGtk : public ShellWindow,
                        GdkEventConfigure*);
   CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnWindowState,
                        GdkEventWindowState*);
+
+  ShellWindow* shell_window_;  // weak - ShellWindow owns NativeShellWindow.
 
   GtkWindow* window_;
   GdkWindowState state_;

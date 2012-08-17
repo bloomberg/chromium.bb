@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
@@ -70,26 +71,25 @@ ShellWindow* ShellWindow::Create(Profile* profile,
                                  const GURL& url,
                                  const ShellWindow::CreateParams& params) {
   // This object will delete itself when the window is closed.
-  ShellWindow* window =
-      ShellWindow::CreateImpl(profile, extension, url, params);
+  ShellWindow* window = new ShellWindow(profile, extension);
+  window->Init(url, params);
   extensions::ShellWindowRegistry::Get(profile)->AddShellWindow(window);
   return window;
 }
 
 ShellWindow::ShellWindow(Profile* profile,
-                         const extensions::Extension* extension,
-                         const GURL& url)
+                         const extensions::Extension* extension)
     : profile_(profile),
       extension_(extension),
+      web_contents_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(profile, this)) {
-  // TODO(jeremya) this should all be done in an Init() method, not in the
-  // constructor. During this code, WebContents will be calling
-  // WebContentsDelegate methods, but at this point the vftables for the
-  // subclass are not yet in place, since it's still halfway through its
-  // constructor. As a result, overridden virtual methods won't be called.
+}
+
+void ShellWindow::Init(const GURL& url,
+                       const ShellWindow::CreateParams& params) {
   web_contents_ = WebContents::Create(
-      profile, SiteInstance::CreateForURL(profile, url), MSG_ROUTING_NONE,
+      profile(), SiteInstance::CreateForURL(profile(), url), MSG_ROUTING_NONE,
       NULL);
   contents_.reset(new TabContents(web_contents_));
   content::WebContentsObserver::Observe(web_contents_);
@@ -98,6 +98,8 @@ ShellWindow::ShellWindow(Profile* profile,
   web_contents_->GetMutableRendererPrefs()->
       browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
+
+  native_window_.reset(NativeShellWindow::Create(this, params));
 
   // Block the created RVH from loading anything until the background page
   // has had a chance to do any initialization it wants.
@@ -142,10 +144,6 @@ ShellWindow::~ShellWindow() {
 
   // Remove shutdown prevention.
   browser::EndKeepAlive();
-}
-
-bool ShellWindow::IsFullscreenOrPending() const {
-  return false;
 }
 
 void ShellWindow::RequestMediaAccessPermission(
@@ -239,6 +237,10 @@ void ShellWindow::OnNativeClose() {
   delete this;
 }
 
+BaseWindow* ShellWindow::GetBaseWindow() {
+  return native_window_.get();
+}
+
 string16 ShellWindow::GetTitle() const {
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
@@ -260,8 +262,14 @@ bool ShellWindow::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void ShellWindow::UpdateDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions) {
+  native_window_->UpdateDraggableRegions(regions);
+}
+
 void ShellWindow::CloseContents(WebContents* contents) {
-  Close();
+  DCHECK(contents == web_contents_);
+  native_window_->Close();
 }
 
 bool ShellWindow::ShouldSuppressDialogs() {
@@ -293,26 +301,26 @@ bool ShellWindow::IsPopupOrPanel(const WebContents* source) const {
 
 void ShellWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
   DCHECK(source == web_contents_);
-  SetBounds(pos);
+  native_window_->SetBounds(pos);
 }
 
 void ShellWindow::NavigationStateChanged(
     const content::WebContents* source, unsigned changed_flags) {
   DCHECK(source == web_contents_);
   if (changed_flags & content::INVALIDATE_TYPE_TITLE)
-    UpdateWindowTitle();
+    native_window_->UpdateWindowTitle();
 }
 
 void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
                                              bool enter_fullscreen) {
   DCHECK(source == web_contents_);
-  SetFullscreen(enter_fullscreen);
+  native_window_->SetFullscreen(enter_fullscreen);
 }
 
 bool ShellWindow::IsFullscreenForTabOrPending(
     const content::WebContents* source) const {
   DCHECK(source == web_contents_);
-  return IsFullscreenOrPending();
+  return native_window_->IsFullscreenOrPending();
 }
 
 void ShellWindow::Observe(int type,
@@ -334,11 +342,11 @@ void ShellWindow::Observe(int type,
           content::Details<extensions::UnloadedExtensionInfo>(
               details)->extension;
       if (extension_ == unloaded_extension)
-        Close();
+        native_window_->Close();
       break;
     }
     case content::NOTIFICATION_APP_TERMINATING:
-      Close();
+      native_window_->Close();
       break;
     default:
       NOTREACHED() << "Received unexpected notification";

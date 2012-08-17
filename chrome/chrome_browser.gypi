@@ -3050,6 +3050,7 @@
         'browser/ui/crypto_module_password_dialog_openssl.cc',
         'browser/ui/extensions/application_launch.cc',
         'browser/ui/extensions/application_launch.h',
+        'browser/ui/extensions/native_shell_window.h',
         'browser/ui/extensions/shell_window.cc',
         'browser/ui/extensions/shell_window.h',
         'browser/ui/find_bar/find_bar.h',

@@ -19,6 +19,7 @@
 class GURL;
 class Profile;
 class TabContents;
+class NativeShellWindow;
 
 namespace content {
 class WebContents;
@@ -37,8 +38,7 @@ struct DraggableRegion;
 class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
                     public content::WebContentsObserver,
-                    public ExtensionFunctionDispatcher::Delegate,
-                    public BaseWindow {
+                    public ExtensionFunctionDispatcher::Delegate {
  public:
   struct CreateParams {
     enum Frame {
@@ -65,29 +65,25 @@ class ShellWindow : public content::NotificationObserver,
   const extensions::Extension* extension() const { return extension_; }
   const TabContents* tab_contents() const { return contents_.get(); }
   content::WebContents* web_contents() const { return web_contents_; }
+  Profile* profile() const { return profile_; }
 
- protected:
-  ShellWindow(Profile* profile,
-              const extensions::Extension* extension,
-              const GURL& url);
-  virtual ~ShellWindow();
+  BaseWindow* GetBaseWindow();
+  gfx::NativeWindow GetNativeWindow() {
+    return GetBaseWindow()->GetNativeWindow();
+  }
 
-  // Called when the title of the window changes.
-  virtual void UpdateWindowTitle() {}
-  // Sub-classes should call this to determine what the window's title is on
-  // startup and from within UpdateWindowTitle().
+  // NativeShellWindows should call this to determine what the window's title
+  // is on startup and from within UpdateWindowTitle().
   virtual string16 GetTitle() const;
-
-  virtual void SetFullscreen(bool fullscreen) {}
-  virtual bool IsFullscreenOrPending() const;
-
-  // Called when the draggable regions are changed.
-  virtual void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) {}
 
   // Call to notify ShellRegistry and delete the window. Subclasses should
   // invoke this method instead of using "delete this".
   void OnNativeClose();
+
+ protected:
+  ShellWindow(Profile* profile,
+              const extensions::Extension* extension);
+  virtual ~ShellWindow();
 
  private:
   // PlatformAppBrowserTest needs access to web_contents()
@@ -95,10 +91,7 @@ class ShellWindow : public content::NotificationObserver,
 
   // Instantiates a platform-specific ShellWindow subclass (one implementation
   // per platform). Public users of ShellWindow should use ShellWindow::Create.
-  static ShellWindow* CreateImpl(Profile* profile,
-                                 const extensions::Extension* extension,
-                                 const GURL& url,
-                                 const CreateParams& params);
+  void Init(const GURL& url, const CreateParams& params);
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -151,6 +144,9 @@ class ShellWindow : public content::NotificationObserver,
   void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
                                    const std::string& message);
 
+  virtual void UpdateDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions);
+
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.
   const extensions::Extension* extension_;
@@ -161,6 +157,8 @@ class ShellWindow : public content::NotificationObserver,
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
+
+  scoped_ptr<NativeShellWindow> native_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

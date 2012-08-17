@@ -104,7 +104,7 @@ bool AppWindowCreateFunction::RunImpl() {
   }
   ShellWindow* shell_window =
       ShellWindow::Create(profile(), GetExtension(), url, create_params);
-  shell_window->Show();
+  shell_window->GetBaseWindow()->Show();
 
   content::WebContents* created_contents = shell_window->web_contents();
   int view_id = created_contents->GetRenderViewHost()->GetRoutingID();
@@ -114,22 +114,22 @@ bool AppWindowCreateFunction::RunImpl() {
 }
 
 bool AppWindowFocusFunction::RunWithWindow(ShellWindow* window) {
-  window->Activate();
+  window->GetBaseWindow()->Activate();
   return true;
 }
 
 bool AppWindowMaximizeFunction::RunWithWindow(ShellWindow* window) {
-  window->Maximize();
+  window->GetBaseWindow()->Maximize();
   return true;
 }
 
 bool AppWindowMinimizeFunction::RunWithWindow(ShellWindow* window) {
-  window->Minimize();
+  window->GetBaseWindow()->Minimize();
   return true;
 }
 
 bool AppWindowRestoreFunction::RunWithWindow(ShellWindow* window) {
-  window->Restore();
+  window->GetBaseWindow()->Restore();
   return true;
 }
 

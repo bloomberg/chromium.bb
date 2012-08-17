@@ -121,11 +121,9 @@
 - (void)setMouseDownCanMoveWindow:(BOOL)can_move;
 @end
 
-ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
-                                   const extensions::Extension* extension,
-                                   const GURL& url,
+ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
                                    const ShellWindow::CreateParams& params)
-    : ShellWindow(profile, extension, url),
+    : shell_window_(shell_window),
       has_frame_(params.frame == ShellWindow::CreateParams::FRAME_CHROME),
       attention_request_id_(0) {
   // Flip coordinates based on the primary screen.
@@ -141,7 +139,7 @@ ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
                 styleMask:style_mask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
-  [window setTitle:base::SysUTF8ToNSString(extension->name())];
+  [window setTitle:base::SysUTF8ToNSString(extension()->name())];
   gfx::Size min_size = params.minimum_size;
   if (min_size.width() || min_size.height()) {
     [window setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
@@ -353,6 +351,10 @@ void ShellWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   [window() setFrame:cocoa_bounds display:YES];
 }
 
+void ShellWindowCocoa::UpdateWindowTitle() {
+  // TODO(jeremya): implement.
+}
+
 void ShellWindowCocoa::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.
@@ -412,7 +414,7 @@ bool ShellWindowCocoa::IsAlwaysOnTop() const {
 
 void ShellWindowCocoa::WindowWillClose() {
   [window_controller_ setShellWindow:NULL];
-  OnNativeClose();
+  shell_window_->OnNativeClose();
 }
 
 void ShellWindowCocoa::WindowDidBecomeKey() {
@@ -444,9 +446,7 @@ NSWindow* ShellWindowCocoa::window() const {
 }
 
 // static
-ShellWindow* ShellWindow::CreateImpl(Profile* profile,
-                                     const extensions::Extension* extension,
-                                     const GURL& url,
-                                     const ShellWindow::CreateParams& params) {
-  return new ShellWindowCocoa(profile, extension, url, params);
+NativeShellWindow* NativeShellWindow::Create(
+    ShellWindow* shell_window, const ShellWindow::CreateParams& params) {
+  return new ShellWindowCocoa(shell_window, params);
 }

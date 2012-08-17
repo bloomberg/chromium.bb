@@ -64,7 +64,7 @@ ShellWindow* ShellWindowRegistry::GetShellWindowForNativeWindow(
     gfx::NativeWindow window) const {
   for (ShellWindowSet::const_iterator i = shell_windows_.begin();
        i != shell_windows_.end(); ++i) {
-    if ((*i)->GetNativeWindow() == window)
+    if ((*i)->GetBaseWindow()->GetNativeWindow() == window)
       return *i;
   }
 

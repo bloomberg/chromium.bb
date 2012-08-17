@@ -653,7 +653,7 @@ void ChromeLauncherController::Observe(
 }
 
 void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
-  aura::Window* window = shell_window->GetNativeWindow();
+  aura::Window* window = shell_window->GetBaseWindow()->GetNativeWindow();
   ash::LauncherItemStatus status = ash::wm::IsActiveWindow(window) ?
       ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   window->AddObserver(this);
@@ -713,7 +713,8 @@ void ChromeLauncherController::OnWindowRemovingFromRootWindow(
   // We can't count on getting called before or after the ShellWindowRegistry.
   if (remaining_windows.size() > 1 ||
       (remaining_windows.size() == 1 &&
-          (*remaining_windows.begin())->GetNativeWindow() != window)) {
+          (*remaining_windows.begin())->GetBaseWindow()->GetNativeWindow() !=
+              window)) {
     return;
   }
 

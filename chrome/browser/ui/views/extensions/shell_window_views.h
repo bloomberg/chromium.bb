@@ -5,12 +5,18 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_SHELL_WINDOW_VIEWS_H_
 
+#include "chrome/browser/ui/base_window.h"
+#include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class Profile;
+
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 class Extension;
@@ -21,13 +27,11 @@ namespace views {
 class WebView;
 }
 
-class ShellWindowViews : public ShellWindow,
+class ShellWindowViews : public NativeShellWindow,
                          public views::WidgetDelegateView {
  public:
-  ShellWindowViews(Profile* profile,
-                   const extensions::Extension* extension,
-                   const GURL& url,
-                   const CreateParams& params);
+  ShellWindowViews(ShellWindow* shell_window,
+                   const ShellWindow::CreateParams& params);
 
   bool frameless() const { return frameless_; }
   SkRegion* draggable_region() { return draggable_region_.get(); }
@@ -73,12 +77,20 @@ class ShellWindowViews : public ShellWindow,
   virtual gfx::Size GetMaximumSize() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
 
+  Profile* profile() { return shell_window_->profile(); }
+  content::WebContents* web_contents() {
+    return shell_window_->web_contents();
+  }
+  const extensions::Extension* extension() {
+    return shell_window_->extension();
+  }
+
  private:
   friend class ShellWindowFrameView;
 
   virtual ~ShellWindowViews();
 
-  // ShellWindow implementation.
+  // NativeShellWindow implementation.
   virtual void UpdateWindowTitle() OVERRIDE;
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
@@ -86,6 +98,8 @@ class ShellWindowViews : public ShellWindow,
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
 
   void OnViewWasResized();
+
+  ShellWindow* shell_window_; // weak - ShellWindow owns NativeShellWindow.
 
   views::WebView* web_view_;
   views::Widget* window_;

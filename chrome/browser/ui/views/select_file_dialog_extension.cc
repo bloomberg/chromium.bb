@@ -283,7 +283,7 @@ void SelectFileDialogExtension::SelectFileImpl(
       ShellWindow* shell_window = registry->GetShellWindowForNativeWindow(
           owner_window);
       if (shell_window) {
-        base_window = shell_window;
+        base_window = shell_window->GetBaseWindow();
         tab = shell_window->tab_contents();
         profile_ = *i;
         break;

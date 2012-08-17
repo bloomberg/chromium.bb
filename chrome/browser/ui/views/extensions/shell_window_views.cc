@@ -302,11 +302,9 @@ void ShellWindowFrameView::ButtonPressed(views::Button* sender,
     frame_->Close();
 }
 
-ShellWindowViews::ShellWindowViews(Profile* profile,
-                                   const extensions::Extension* extension,
-                                   const GURL& url,
+ShellWindowViews::ShellWindowViews(ShellWindow* shell_window,
                                    const ShellWindow::CreateParams& win_params)
-    : ShellWindow(profile, extension, url),
+    : shell_window_(shell_window),
       web_view_(NULL),
       is_fullscreen_(false),
       frameless_(win_params.frame == ShellWindow::CreateParams::FRAME_NONE) {
@@ -323,10 +321,10 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
   window_->SetBounds(window_bounds);
 #if defined(OS_WIN) && !defined(USE_AURA)
   std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
-      extension->id());
+      extension()->id());
   ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(app_name),
-                                                profile->GetPath()),
+      ShellIntegration::GetAppModelIdForProfile(
+          UTF8ToWide(app_name), shell_window_->profile()->GetPath()),
       GetWidget()->GetTopLevelWidget()->GetNativeWindow());
 #endif
   OnViewWasResized();
@@ -455,7 +453,7 @@ bool ShellWindowViews::IsAlwaysOnTop() const {
 }
 
 void ShellWindowViews::DeleteDelegate() {
-  OnNativeClose();
+  shell_window_->OnNativeClose();
 }
 
 bool ShellWindowViews::CanResize() const {
@@ -478,7 +476,7 @@ views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
 }
 
 string16 ShellWindowViews::GetWindowTitle() const {
-  return GetTitle();
+  return shell_window_->GetTitle();
 }
 
 views::Widget* ShellWindowViews::GetWidget() {
@@ -536,7 +534,8 @@ void ShellWindowViews::OnViewWasResized() {
           SkRegion::kUnion_Op);
     }
   }
-  web_contents()->GetRenderViewHost()->GetView()->SetClickthroughRegion(rgn);
+  if (web_contents()->GetRenderViewHost()->GetView())
+    web_contents()->GetRenderViewHost()->GetView()->SetClickthroughRegion(rgn);
 #endif
 }
 
@@ -580,9 +579,7 @@ void ShellWindowViews::UpdateDraggableRegions(
 }
 
 // static
-ShellWindow* ShellWindow::CreateImpl(Profile* profile,
-                                     const extensions::Extension* extension,
-                                     const GURL& url,
-                                     const ShellWindow::CreateParams& params) {
-  return new ShellWindowViews(profile, extension, url, params);
+NativeShellWindow* NativeShellWindow::Create(
+    ShellWindow* shell_window, const ShellWindow::CreateParams& params) {
+  return new ShellWindowViews(shell_window, params);
 }

@@ -10,10 +10,11 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
+#include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/draggable_region.h"
-#include "ui/gfx/rect.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
+#include "ui/gfx/rect.h"
 
 class Profile;
 class ShellWindowCocoa;
@@ -35,12 +36,10 @@ class ShellWindowCocoa;
 @end
 
 // Cocoa bridge to ShellWindow.
-class ShellWindowCocoa : public ShellWindow {
+class ShellWindowCocoa : public NativeShellWindow {
  public:
-  ShellWindowCocoa(Profile* profile,
-                   const extensions::Extension* extension,
-                   const GURL& url,
-                   const CreateParams& params);
+  ShellWindowCocoa(ShellWindow* shell_window,
+      const ShellWindow::CreateParams& params);
 
   // BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -72,22 +71,30 @@ class ShellWindowCocoa : public ShellWindow {
   void WindowDidResignKey();
 
  protected:
-  // ShellWindow implementation.
+  // NativeShellWindow implementation.
   virtual void SetFullscreen(bool fullscreen) OVERRIDE;
   virtual bool IsFullscreenOrPending() const OVERRIDE;
+  virtual void UpdateWindowTitle() OVERRIDE;
+  virtual void UpdateDraggableRegions(
+      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
 
  private:
   virtual ~ShellWindowCocoa();
 
-  // ShellWindow implementation.
-  virtual void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
-
   NSWindow* window() const;
+
+  content::WebContents* web_contents() const {
+    return shell_window_->web_contents();
+  }
+  const extensions::Extension* extension() const {
+    return shell_window_->extension();
+  }
 
   void InstallView();
   void UninstallView();
   void InstallDraggableRegionViews();
+
+  ShellWindow* shell_window_; // weak - ShellWindow owns NativeShellWindow.
 
   bool has_frame_;
 
