@@ -53,7 +53,7 @@ def GetIncompatibleDirectories():
   regex = '^(%s)$' % '|'.join(whitelist)
   result = []
   for directory in _FindThirdPartyDirs():
-    metadata = licenses.ParseDir(directory)
+    metadata = licenses.ParseDir(directory, require_license_file=False)
     if metadata.get('License Android Compatible', 'no') == 'yes':
       continue
     license = re.split(' [Ll]icenses?$', metadata['License'])[0]
@@ -193,10 +193,9 @@ def _Scan():
       and all_licenses_valid
 
 
-def _GenerateNoticeFile(print_warnings):
+def GenerateNoticeFile():
   """Generates the contents of an Android NOTICE file for the third-party code.
-  Args:
-    print_warnings: Whether to print warnings.
+  This is used by the snapshot tool.
   Returns:
     The contents of the NOTICE file.
   """
@@ -209,8 +208,9 @@ def _GenerateNoticeFile(print_warnings):
   # We provide attribution for all third-party directories.
   # TODO(steveblock): Limit this to only code used by the WebView binary.
   for directory in third_party_dirs:
-    license_file = licenses.ParseDir(directory)['License File']
-    if license_file != licenses.NOT_SHIPPED:
+    metadata = licenses.ParseDir(directory, require_license_file=False)
+    license_file = metadata['License File']
+    if license_file and license_file != licenses.NOT_SHIPPED:
       content.append(_ReadFile(license_file))
 
   return '\n'.join(content)
@@ -245,7 +245,7 @@ def main():
     else:
       return 1
   elif args[0] == 'notice':
-    print _GenerateNoticeFile(print_warnings=False)
+    print GenerateNoticeFile()
     return 0
 
   parser.print_help()

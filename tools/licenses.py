@@ -234,7 +234,7 @@ def AbsolutePath(path, filename):
         return absolute_path
     return None
 
-def ParseDir(path):
+def ParseDir(path, require_license_file=True):
     """Examine a third_party/foo component and extract its metadata."""
 
     # Parse metadata fields out of README.chromium.
@@ -282,15 +282,15 @@ def ParseDir(path):
         for filename in (metadata["License File"], "COPYING"):
             license_path = AbsolutePath(path, filename)
             if license_path is not None:
-                metadata["License File"] = license_path
                 break
 
-        if not license_path:
+        if require_license_file and not license_path:
             raise LicenseError("License file not found. "
                                "Either add a file named LICENSE, "
                                "import upstream's COPYING if available, "
                                "or add a 'License File:' line to "
                                "README.chromium with the appropriate path.")
+        metadata["License File"] = license_path
 
     if "Required Text" in metadata:
         required_path = AbsolutePath(path, metadata["Required Text"])
