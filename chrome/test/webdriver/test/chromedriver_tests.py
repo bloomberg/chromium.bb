@@ -1036,7 +1036,6 @@ class GeolocationTest(ChromeDriverTest):
   def testGeolocation(self):
     """Tests the get and set geolocation commands."""
     driver = self.GetNewDriver()
-    driver.get(self.GetTestDataUrl() + '/empty.html')
 
     # TODO(kkania): Update the python bindings and get rid of these.
     driver.command_executor._commands.update({
