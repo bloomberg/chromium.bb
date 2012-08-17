@@ -110,11 +110,6 @@ class RenderViewTest : public testing::Test {
   // Returns the IPC message ID of the navigation message.
   uint32 GetNavigationIPCType();
 
-  // Resize the view.
-  void Resize(gfx::Size new_size,
-              gfx::Rect resizer_rect,
-              bool is_fullscreen);
-
   // These are all methods from RenderViewImpl that we expose to testing code.
   bool OnMessageReceived(const IPC::Message& msg);
   void DidNavigateWithinPage(WebKit::WebFrame* frame, bool is_new_navigation);

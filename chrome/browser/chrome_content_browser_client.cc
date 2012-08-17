@@ -850,7 +850,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableBundledPpapiFlash,
       switches::kEnableCrxlessWebApps,
       switches::kEnableExperimentalExtensionApis,
-      switches::kEnableFramelessConstrainedDialogs,
       switches::kEnableHighDPIPDFPlugin,
       switches::kEnableIPCFuzzing,
       switches::kEnableNaCl,

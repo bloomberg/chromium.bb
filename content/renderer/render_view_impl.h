@@ -711,7 +711,6 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy) OVERRIDE;
-  virtual void Repaint(const gfx::Size& size) OVERRIDE;
 
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 

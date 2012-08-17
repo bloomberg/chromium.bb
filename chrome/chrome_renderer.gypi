@@ -270,8 +270,6 @@
         'renderer/translate_helper.h',
         'renderer/visitedlink_slave.cc',
         'renderer/visitedlink_slave.h',
-        'renderer/webview_animating_overlay.cc',
-        'renderer/webview_animating_overlay.h',
         'renderer/webview_color_overlay.cc',
         'renderer/webview_color_overlay.h',
       ],

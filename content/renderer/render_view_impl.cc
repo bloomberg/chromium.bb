@@ -2474,10 +2474,6 @@ void RenderViewImpl::loadURLExternally(
   loadURLExternally(frame, request, policy, WebString());
 }
 
-void RenderViewImpl::Repaint(const gfx::Size& size) {
-  OnMsgRepaint(size);
-}
-
 void RenderViewImpl::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy,
