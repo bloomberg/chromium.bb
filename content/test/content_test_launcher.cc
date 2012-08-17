@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/test/test_suite.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
@@ -16,6 +15,7 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_client.h"
 #include "content/shell/shell_main_delegate.h"
+#include "content/shell/shell_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -121,7 +121,9 @@ class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
   virtual bool AdjustChildProcessCommandLine(
-      CommandLine* command_line) OVERRIDE {
+      CommandLine* command_line, const FilePath& temp_data_dir) OVERRIDE {
+    command_line->AppendSwitchPath(switches::kContentShellDataPath,
+                                   temp_data_dir);
     return true;
   }
 

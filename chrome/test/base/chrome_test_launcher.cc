@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/run_loop.h"
-#include "base/scoped_temp_dir.h"
 #include "base/test/test_file_util.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -78,7 +77,7 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
   virtual bool AdjustChildProcessCommandLine(
-      CommandLine* command_line) OVERRIDE {
+      CommandLine* command_line, const FilePath& temp_data_dir) OVERRIDE {
     CommandLine new_command_line(command_line->GetProgram());
     CommandLine::SwitchMap switches = command_line->GetSwitches();
 
@@ -90,20 +89,7 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
       new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
     }
 
-    // Clean up previous temp dir.
-    // We Take() the directory and delete it ourselves so that the next
-    // CreateUniqueTempDir will succeed even if deleting the directory fails.
-    if (!temp_dir_.path().empty() &&
-        !file_util::DieFileDie(temp_dir_.Take(), true)) {
-      LOG(ERROR) << "Error deleting previous temp profile directory";
-    }
-
-    // Create a new user data dir and pass it to the child.
-    if (!temp_dir_.CreateUniqueTempDir() || !temp_dir_.IsValid()) {
-      LOG(ERROR) << "Error creating temp profile directory";
-      return false;
-    }
-    new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_dir_.path());
+    new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_data_dir);
 
     // file:// access for ChromeOS.
     new_command_line.AppendSwitch(switches::kAllowFileAccess);
@@ -133,8 +119,6 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
  private:
-  ScopedTempDir temp_dir_;
-
 #if !defined(USE_AURA) && defined(TOOLKIT_VIEWS)
   std::stack<linked_ptr<views::AcceleratorHandler> > handlers_;
 #endif

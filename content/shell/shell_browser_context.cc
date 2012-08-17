@@ -41,10 +41,13 @@ ShellBrowserContext::~ShellBrowserContext() {
 
 void ShellBrowserContext::InitWhileIOAllowed() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kContentBrowserTest) ||
-      cmd_line->HasSwitch(switches::kDumpRenderTree)) {
+  if (cmd_line->HasSwitch(switches::kDumpRenderTree)) {
     CHECK(testing_path_.CreateUniqueTempDir());
     path_ = testing_path_.path();
+    return;
+  }
+  if (cmd_line->HasSwitch(switches::kContentShellDataPath)) {
+    path_ = cmd_line->GetSwitchValuePath(switches::kContentShellDataPath);
     return;
   }
 #if defined(OS_WIN)

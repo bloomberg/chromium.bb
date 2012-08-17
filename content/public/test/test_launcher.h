@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 
 class CommandLine;
+class FilePath;
 
 namespace base {
 class RunLoop;
@@ -38,7 +39,8 @@ class TestLauncherDelegate {
   virtual std::string GetEmptyTestName() = 0;
   virtual bool Run(int argc, char** argv, int* return_code) = 0;
   virtual int RunTestSuite(int argc, char** argv) = 0;
-  virtual bool AdjustChildProcessCommandLine(CommandLine* command_line) = 0;
+  virtual bool AdjustChildProcessCommandLine(CommandLine* command_line,
+                                             const FilePath& temp_data_dir) = 0;
   virtual void PreRunMessageLoop(base::RunLoop* run_loop) {}
   virtual void PostRunMessageLoop() {}
 
