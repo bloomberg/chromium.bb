@@ -6668,6 +6668,10 @@ void TestingAutomationProvider::GetTabInfo(
   std::string error;
   if (GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error)) {
     NavigationEntry* entry = tab->GetController().GetActiveEntry();
+    if (!entry) {
+      reply.SendError("Unable to get active navigation entry");
+      return;
+    }
     DictionaryValue dict;
     dict.SetString("title", entry->GetTitleForDisplay(""));
     dict.SetString("url", entry->GetVirtualURL().spec());
