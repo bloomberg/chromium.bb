@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/string_util.h"
+#include "base/system_monitor/system_monitor.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -21,6 +22,7 @@
 #include "ui/base/event.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/native_theme/native_theme_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
@@ -544,7 +546,7 @@ NonClientFrameView* NativeWidgetWin::CreateNonClientFrameView() {
 
 void NativeWidgetWin::UpdateFrameAfterFrameChange() {
   // We've either gained or lost a custom window region, so reset it now.
-  message_handler_->ResetWindowRegion(true);
+  ResetWindowRegion(true);
 }
 
 bool NativeWidgetWin::ShouldUseNativeFrame() const {
@@ -1456,39 +1458,87 @@ void NativeWidgetWin::OnHScroll(int scroll_type,
 LRESULT NativeWidgetWin::OnImeMessages(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
-  return message_handler_->OnImeMessages(message, w_param, l_param);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (!input_method || input_method->IsMock()) {
+    SetMsgHandled(FALSE);
+    return 0;
+  }
+
+  InputMethodWin* ime_win = static_cast<InputMethodWin*>(input_method);
+  BOOL handled = FALSE;
+  LRESULT result = ime_win->OnImeMessages(message, w_param, l_param, &handled);
+
+  SetMsgHandled(handled);
+  return result;
 }
 
 void NativeWidgetWin::OnInitMenu(HMENU menu) {
+  bool is_fullscreen = IsFullscreen();
+  bool is_minimized = IsMinimized();
+  bool is_maximized = IsMaximized();
+  bool is_restored = !is_fullscreen && !is_minimized && !is_maximized;
+
   ScopedRedrawLock lock(this);
-  message_handler_->OnInitMenu(menu);
+  EnableMenuItem(menu, SC_RESTORE, is_minimized || is_maximized);
+  EnableMenuItem(menu, SC_MOVE, is_restored);
+  EnableMenuItem(menu, SC_SIZE,
+                 GetWidget()->widget_delegate()->CanResize() && is_restored);
+  EnableMenuItem(menu, SC_MAXIMIZE,
+                 GetWidget()->widget_delegate()->CanMaximize() &&
+                     !is_fullscreen && !is_maximized);
+  EnableMenuItem(menu, SC_MINIMIZE,
+                 GetWidget()->widget_delegate()->CanMaximize() &&
+                     !is_minimized);
 }
 
 void NativeWidgetWin::OnInitMenuPopup(HMENU menu,
                                       UINT position,
                                       BOOL is_system_menu) {
-  message_handler_->OnInitMenu(menu);
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnInputLangChange(DWORD character_set,
                                         HKL input_language_id) {
-  message_handler_->OnInputLangChange(character_set, input_language_id);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+
+  if (input_method && !input_method->IsMock()) {
+    static_cast<InputMethodWin*>(input_method)->OnInputLangChange(
+        character_set, input_language_id);
+  }
 }
 
 LRESULT NativeWidgetWin::OnKeyEvent(UINT message,
                                     WPARAM w_param,
                                     LPARAM l_param) {
-  return message_handler_->OnKeyEvent(message, w_param, l_param);
+  MSG msg = { hwnd(), message, w_param, l_param };
+  ui::KeyEvent key(msg, message == WM_CHAR);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->DispatchKeyEvent(key);
+  else
+    DispatchKeyEventPostIME(key);
+  return 0;
 }
 
 void NativeWidgetWin::OnKillFocus(HWND focused_window) {
-  message_handler_->OnKillFocus(focused_window);
+  delegate_->OnNativeBlur(focused_window);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->OnBlur();
+  SetMsgHandled(FALSE);
 }
 
 LRESULT NativeWidgetWin::OnMouseActivate(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
-  return message_handler_->OnMouseActivate(message, w_param, l_param);
+  // TODO(beng): resolve this with the GetWindowLong() check on the subsequent
+  //             line.
+  if (GetWidget()->non_client_view())
+    return delegate_->CanActivate() ? MA_ACTIVATE : MA_NOACTIVATEANDEAT;
+  if (GetWindowLong(GWL_EXSTYLE) & WS_EX_NOACTIVATE)
+    return MA_NOACTIVATE;
+  SetMsgHandled(FALSE);
+  return MA_ACTIVATE;
 }
 
 LRESULT NativeWidgetWin::OnMouseRange(UINT message,
@@ -1583,11 +1633,12 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
 }
 
 void NativeWidgetWin::OnMove(const CPoint& point) {
-  message_handler_->OnMove(point);
+  delegate_->OnNativeWidgetMove();
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
-  message_handler_->OnMoving(param, new_bounds);
+  delegate_->OnNativeWidgetMove();
 }
 
 LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
@@ -1722,7 +1773,34 @@ LRESULT NativeWidgetWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
 }
 
 LRESULT NativeWidgetWin::OnNCHitTest(const CPoint& point) {
-  return message_handler_->OnNCHitTest(point);
+  if (!GetWidget()->non_client_view()) {
+    SetMsgHandled(FALSE);
+    return 0;
+  }
+
+  // If the DWM is rendering the window controls, we need to give the DWM's
+  // default window procedure first chance to handle hit testing.
+  if (!message_handler_->remove_standard_frame() &&
+      GetWidget()->ShouldUseNativeFrame()) {
+    LRESULT result;
+    if (DwmDefWindowProc(GetNativeView(), WM_NCHITTEST, 0,
+                         MAKELPARAM(point.x, point.y), &result)) {
+      return result;
+    }
+  }
+
+  // First, give the NonClientView a chance to test the point to see if it
+  // provides any of the non-client area.
+  POINT temp = point;
+  MapWindowPoints(HWND_DESKTOP, GetNativeView(), &temp, 1);
+  int component = delegate_->GetNonClientComponent(gfx::Point(temp));
+  if (component != HTNOWHERE)
+    return component;
+
+  // Otherwise, we let Windows do all the native frame non-client handling for
+  // us.
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void NativeWidgetWin::OnNCPaint(HRGN rgn) {
@@ -1810,13 +1888,19 @@ void NativeWidgetWin::OnNCPaint(HRGN rgn) {
 LRESULT NativeWidgetWin::OnNCUAHDrawCaption(UINT msg,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  return message_handler_->OnNCUAHDrawCaption(msg, w_param, l_param);
+  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
+  // an explanation about why we need to handle this message.
+  SetMsgHandled(!GetWidget()->ShouldUseNativeFrame());
+  return 0;
 }
 
 LRESULT NativeWidgetWin::OnNCUAHDrawFrame(UINT msg,
                                           WPARAM w_param,
                                           LPARAM l_param) {
-  return message_handler_->OnNCUAHDrawFrame(msg, w_param, l_param);
+  // See comment in widget_win.h at the definition of WM_NCUAHDRAWCAPTION for
+  // an explanation about why we need to handle this message.
+  SetMsgHandled(!GetWidget()->ShouldUseNativeFrame());
+  return 0;
 }
 
 LRESULT NativeWidgetWin::OnNotify(int w_param, NMHDR* l_param) {
@@ -1854,31 +1938,49 @@ void NativeWidgetWin::OnPaint(HDC dc) {
 }
 
 LRESULT NativeWidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
-  return message_handler_->OnPowerBroadcast(power_event, data);
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  if (monitor)
+    monitor->ProcessWmPowerBroadcastMessage(power_event);
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 LRESULT NativeWidgetWin::OnReflectedMessage(UINT msg,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  return message_handler_->OnReflectedMessage(msg, w_param, l_param);
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 LRESULT NativeWidgetWin::OnSetCursor(UINT message,
                                      WPARAM w_param,
                                      LPARAM l_param) {
-  return message_handler_->OnSetCursor(message, w_param, l_param);
+  // Using ScopedRedrawLock here frequently allows content behind this window to
+  // paint in front of this window, causing glaring rendering artifacts.
+  // If omitting ScopedRedrawLock here triggers caption rendering artifacts via
+  // DefWindowProc message handling, we'll need to find a better solution.
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 void NativeWidgetWin::OnSetFocus(HWND old_focused_window) {
-  message_handler_->OnSetFocus(old_focused_window);
+  delegate_->OnNativeFocus(old_focused_window);
+  InputMethod* input_method = GetWidget()->GetInputMethodDirect();
+  if (input_method)
+    input_method->OnFocus();
+  SetMsgHandled(FALSE);
 }
 
 LRESULT NativeWidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
-  return message_handler_->OnSetIcon(size_type, new_icon);
+  // Use a ScopedRedrawLock to avoid weird non-client painting.
+  return DefWindowProcWithRedrawLock(WM_SETICON, size_type,
+                                     reinterpret_cast<LPARAM>(new_icon));
 }
 
 LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
-  return message_handler_->OnSetText(text);
+  // Use a ScopedRedrawLock to avoid weird non-client painting.
+  return DefWindowProcWithRedrawLock(WM_SETTEXT, NULL,
+                                     reinterpret_cast<LPARAM>(text));
 }
 
 void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
@@ -1898,7 +2000,10 @@ void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
 }
 
 void NativeWidgetWin::OnSize(UINT param, const CSize& size) {
-  message_handler_->OnSize(param, size);
+  RedrawWindow(GetNativeView(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+  // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
+  // invoked OnSize we ensure the RootView has been laid out.
+  ResetWindowRegion(false);
 }
 
 void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
@@ -1953,7 +2058,8 @@ void NativeWidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
 }
 
 void NativeWidgetWin::OnThemeChanged() {
-  message_handler_->OnThemeChanged();
+  // Notify NativeThemeWin.
+  ui::NativeThemeWin::instance()->CloseHandles();
 }
 
 LRESULT NativeWidgetWin::OnTouchEvent(UINT message,
@@ -1978,7 +2084,7 @@ LRESULT NativeWidgetWin::OnTouchEvent(UINT message,
 void NativeWidgetWin::OnVScroll(int scroll_type,
                                 short position,
                                 HWND scrollbar) {
-  message_handler_->OnVScroll(scroll_type, position, scrollbar);
+  SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
@@ -2184,30 +2290,6 @@ bool NativeWidgetWin::IsUsingCustomFrame() const {
   return GetWidget()->ShouldUseNativeFrame();
 }
 
-bool NativeWidgetWin::CanResize() const {
-  return GetWidget()->widget_delegate()->CanResize();
-}
-
-bool NativeWidgetWin::CanMaximize() const {
-  return GetWidget()->widget_delegate()->CanMaximize();
-}
-
-bool NativeWidgetWin::CanActivate() const {
-  return delegate_->CanActivate();
-}
-
-int NativeWidgetWin::GetNonClientComponent(const gfx::Point& point) const {
-  return delegate_->GetNonClientComponent(point);
-}
-
-void NativeWidgetWin::GetWindowMask(const gfx::Size& size, gfx::Path* path) {
-  GetWidget()->non_client_view()->GetWindowMask(size, path);
-}
-
-InputMethod* NativeWidgetWin::GetInputMethod() {
-  return GetWidget()->GetInputMethodDirect();
-}
-
 void NativeWidgetWin::HandleAppDeactivated() {
   // Another application was activated, we should reset any state that
   // disables inactive rendering now.
@@ -2261,18 +2343,6 @@ void NativeWidgetWin::HandleBeginWMSizeMove() {
 
 void NativeWidgetWin::HandleEndWMSizeMove() {
   delegate_->OnNativeWidgetEndUserBoundsChange();
-}
-
-void NativeWidgetWin::HandleMove() {
-  delegate_->OnNativeWidgetMove();
-}
-
-void NativeWidgetWin::HandleNativeFocus(HWND last_focused_window) {
-  delegate_->OnNativeFocus(last_focused_window);
-}
-
-void NativeWidgetWin::HandleNativeBlur(HWND focused_window) {
-  delegate_->OnNativeBlur(focused_window);
 }
 
 NativeWidgetWin* NativeWidgetWin::AsNativeWidgetWin() {
@@ -2487,6 +2557,49 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
 void NativeWidgetWin::UpdateDWMFrame() {
   MARGINS m = {10, 10, 10, 10};
   DwmExtendFrameIntoClientArea(GetNativeView(), &m);
+}
+
+void NativeWidgetWin::ResetWindowRegion(bool force) {
+  // A native frame uses the native window region, and we don't want to mess
+  // with it.
+  if (GetWidget()->ShouldUseNativeFrame() || !GetWidget()->non_client_view()) {
+    if (force)
+      SetWindowRgn(NULL, TRUE);
+    return;
+  }
+
+  // Changing the window region is going to force a paint. Only change the
+  // window region if the region really differs.
+  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
+  int current_rgn_result = GetWindowRgn(GetNativeView(), current_rgn);
+
+  CRect window_rect;
+  GetWindowRect(&window_rect);
+  HRGN new_region;
+  if (IsMaximized()) {
+    HMONITOR monitor =
+        MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi;
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(monitor, &mi);
+    CRect work_rect = mi.rcWork;
+    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
+    new_region = CreateRectRgnIndirect(&work_rect);
+  } else {
+    gfx::Path window_mask;
+    GetWidget()->non_client_view()->GetWindowMask(
+        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    new_region = window_mask.CreateNativeRegion();
+  }
+
+  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
+    // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
+    SetWindowRgn(new_region, TRUE);
+  } else {
+    DeleteObject(new_region);
+  }
+
+  DeleteObject(current_rgn);
 }
 
 LRESULT NativeWidgetWin::DefWindowProcWithRedrawLock(UINT message,
