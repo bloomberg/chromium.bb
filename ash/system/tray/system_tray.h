@@ -95,13 +95,14 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Temporarily hides/unhides the notification bubble.
   void SetHideNotifications(bool hidden);
 
+  // Returns true if the system bubble is visible.
+  bool IsSystemBubbleVisible() const;
+
   // Returns true if any bubble is visible.
   bool IsAnyBubbleVisible() const;
 
-  // Returns true if the launcher should show.
-  bool should_show_launcher() const {
-    return bubble_.get() && should_show_launcher_;
-  }
+  // Returns true if the mouse is inside the notification bubble.
+  bool IsMouseInNotificationBubble() const;
 
   AccessibilityObserver* accessibility_observer() const {
     return accessibility_observer_;
@@ -192,8 +193,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // Overridden from views::View.
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // Owned items.
@@ -227,9 +226,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
 
   // Bubble for notifications.
   scoped_ptr<internal::SystemTrayBubble> notification_bubble_;
-
-  // See description agove getter.
-  bool should_show_launcher_;
 
   // Keep track of the default view height so that when we create detailed
   // views directly (e.g. from a notification) we know what height to use.

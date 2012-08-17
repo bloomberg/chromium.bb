@@ -544,7 +544,8 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shell->GetAppListTargetVisibility())
     return AUTO_HIDE_SHOWN;
 
-  if (shell->system_tray() && shell->system_tray()->should_show_launcher())
+  if (shell->status_area_widget() &&
+      shell->status_area_widget()->should_show_launcher())
     return AUTO_HIDE_SHOWN;
 
   if (launcher_ && launcher_->IsShowingMenu())

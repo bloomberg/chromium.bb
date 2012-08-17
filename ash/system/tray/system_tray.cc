@@ -30,7 +30,6 @@
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -71,7 +70,6 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
       network_observer_(NULL),
       update_observer_(NULL),
       user_observer_(NULL),
-      should_show_launcher_(false),
       default_bubble_height_(0),
       hide_notifications_(false) {
 }
@@ -230,12 +228,23 @@ void SystemTray::SetHideNotifications(bool hide_notifications) {
   hide_notifications_ = hide_notifications;
 }
 
+bool SystemTray::IsSystemBubbleVisible() const {
+  return (bubble_.get() && bubble_->IsVisible());
+}
+
 bool SystemTray::IsAnyBubbleVisible() const {
   if (bubble_.get() && bubble_->IsVisible())
     return true;
   if (notification_bubble_.get() && notification_bubble_->IsVisible())
     return true;
   return false;
+}
+
+bool SystemTray::IsMouseInNotificationBubble() const {
+  if (!notification_bubble_.get())
+    return false;
+  return notification_bubble_->bubble_view()->GetBoundsInScreen().Contains(
+      gfx::Screen::GetCursorScreenPoint());
 }
 
 bool SystemTray::CloseBubbleForTest() const {
@@ -256,14 +265,7 @@ void SystemTray::RemoveBubble(SystemTrayBubble* bubble) {
   if (bubble == bubble_.get()) {
     DestroyBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
-    if (should_show_launcher_) {
-      // No need to show the launcher if the mouse isn't over the status area
-      // anymore.
-      should_show_launcher_ = GetWidget()->GetWindowBoundsInScreen().Contains(
-          gfx::Screen::GetCursorScreenPoint());
-      if (!should_show_launcher_)
-        Shell::GetInstance()->shelf()->UpdateAutoHideState();
-    }
+    UpdateShouldShowLauncher();
   } else if (bubble == notification_bubble_) {
     notification_bubble_.reset();
   } else {
@@ -340,13 +342,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   else
     detailed_item_ = NULL;
 
-  // If we have focus the shelf should be visible and we need to continue
-  // showing the shelf when the popup is shown.
-  if (GetWidget()->IsActive())
-    should_show_launcher_ = true;
-
   UpdateNotificationBubble();  // State changed, re-create notifications.
   status_area_widget()->HideNonSystemNotifications();
+  UpdateShouldShowLauncher();
 }
 
 void SystemTray::UpdateNotificationBubble() {
@@ -445,18 +443,6 @@ bool SystemTray::PerformAction(const ui::Event& event) {
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset);
   }
   return true;
-}
-
-void SystemTray::OnMouseEntered(const ui::MouseEvent& event) {
-  TrayBackgroundView::OnMouseEntered(event);
-  should_show_launcher_ = true;
-}
-
-void SystemTray::OnMouseExited(const ui::MouseEvent& event) {
-  TrayBackgroundView::OnMouseExited(event);
-  // When the popup closes we'll update |should_show_launcher_|.
-  if (!bubble_.get())
-    should_show_launcher_ = false;
 }
 
 void SystemTray::GetAccessibleState(ui::AccessibleViewState* state) {

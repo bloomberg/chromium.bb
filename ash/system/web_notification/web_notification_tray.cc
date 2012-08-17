@@ -21,6 +21,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -761,6 +762,10 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
         base::TimeDelta::FromMilliseconds(kUpdateDelayMs));
   }
 
+  bool IsVisible() const {
+    return bubble_widget_ && bubble_widget_->IsVisible();
+  }
+
   views::Widget* bubble_widget() const { return bubble_widget_; }
   TrayBubbleView* bubble_view() const { return bubble_view_; }
 
@@ -772,10 +777,12 @@ class WebNotificationTray::Bubble : public TrayBubbleView::Host,
 
   virtual void OnMouseEnteredView() OVERRIDE {
     StopAutoCloseTimer();
+    tray_->UpdateShouldShowLauncher();
   }
 
   virtual void OnMouseExitedView() OVERRIDE {
     StartAutoCloseTimer();
+    tray_->UpdateShouldShowLauncher();
   }
 
   virtual void OnClickedOutsideView() OVERRIDE {
@@ -907,6 +914,7 @@ void WebNotificationTray::ShowMessageCenterBubble() {
   message_center_bubble_.reset(
       new Bubble(this, Bubble::BUBBLE_TYPE_MESAGE_CENTER));
   status_area_widget()->SetHideSystemNotifications(true);
+  UpdateShouldShowLauncher();
 }
 
 void WebNotificationTray::HideMessageCenterBubble() {
@@ -916,6 +924,7 @@ void WebNotificationTray::HideMessageCenterBubble() {
   show_message_center_on_unlock_ = false;
   notification_list_->SetIsVisible(false);
   status_area_widget()->SetHideSystemNotifications(false);
+  UpdateShouldShowLauncher();
 }
 
 void WebNotificationTray::ShowNotificationBubble() {
@@ -952,6 +961,17 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
     show_message_center_on_unlock_ = false;
   }
   UpdateTray();
+}
+
+bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
+  return (message_center_bubble() && message_center_bubble_->IsVisible());
+}
+
+bool WebNotificationTray::IsMouseInNotificationBubble() const {
+  if (!notification_bubble())
+    return false;
+  return notification_bubble_->bubble_view()->GetBoundsInScreen().Contains(
+      gfx::Screen::GetCursorScreenPoint());
 }
 
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {

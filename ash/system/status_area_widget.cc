@@ -15,9 +15,11 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/shelf_layout_manager.h"
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -306,7 +308,8 @@ StatusAreaWidget::StatusAreaWidget()
     : status_area_widget_delegate_(new internal::StatusAreaWidgetDelegate),
       system_tray_(NULL),
       web_notification_tray_(NULL),
-      login_status_(user::LOGGED_IN_NONE) {
+      login_status_(user::LOGGED_IN_NONE),
+      should_show_launcher_(false) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
@@ -403,6 +406,28 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(
     system_tray_->UpdateAfterLoginStatusChange(login_status);
   if (web_notification_tray_)
     web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
+}
+
+void StatusAreaWidget::UpdateShouldShowLauncher() {
+  // If any bubble is visible, we should show the launcher.
+  bool should_show_launcher =
+      (system_tray_ && system_tray_->IsSystemBubbleVisible()) ||
+      (web_notification_tray_ &&
+       web_notification_tray_->IsMessageCenterBubbleVisible());
+  if (!should_show_launcher && Shell::GetInstance()->shelf()->IsVisible()) {
+    // If the launcher is currently visible, don't hide the launcher if
+    // the mouse is in this widget or in any notification bubbles.
+    should_show_launcher =
+        (GetWindowBoundsInScreen().Contains(
+            gfx::Screen::GetCursorScreenPoint())) ||
+        (system_tray_ && system_tray_->IsMouseInNotificationBubble()) ||
+        (web_notification_tray_ &&
+         web_notification_tray_->IsMouseInNotificationBubble());
+  }
+  if (should_show_launcher != should_show_launcher_) {
+    should_show_launcher_ = should_show_launcher;
+    Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  }
 }
 
 }  // namespace internal
