@@ -32,14 +32,15 @@ FaviconSQLHandler::~FaviconSQLHandler() {
 bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
                                const TableIDRows& ids_set) {
   FaviconID favicon_id = 0;
-  if (row.favicon_valid()) {
+  if (!row.favicon().empty()) {
     // If the image_data will be updated, it is not reasonable to find if the
     // icon is already in database, just create a new favicon.
     favicon_id = thumbnail_db_->AddFavicon(GURL(), history::FAVICON);
     if (!favicon_id)
       return false;
 
-    scoped_refptr<base::RefCountedMemory> image_data = row.favicon();
+    scoped_refptr<base::RefCountedMemory> image_data =
+        new base::RefCountedBytes(row.favicon());
     if (!thumbnail_db_->SetFavicon(favicon_id, image_data, Time::Now()))
       return false;
   }
@@ -104,7 +105,7 @@ bool FaviconSQLHandler::Delete(const TableIDRows& ids_set) {
 
 bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   if (!row->is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) ||
-      !row->favicon_valid())
+      row->favicon().empty())
     return true;
 
   DCHECK(row->is_value_set_explicitly(HistoryAndBookmarkRow::URL));
@@ -114,7 +115,8 @@ bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   if (!id)
     return false;
 
-  scoped_refptr<base::RefCountedMemory> image_data = row->favicon();
+  scoped_refptr<base::RefCountedMemory> image_data =
+      new base::RefCountedBytes(row->favicon());
   if (!thumbnail_db_->SetFavicon(id, image_data, Time::Now()))
     return false;
   return thumbnail_db_->AddIconMapping(row->url(), id);

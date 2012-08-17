@@ -385,7 +385,7 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
 
   scoped_ptr<FaviconChangeDetails> favicon;
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::FAVICON) &&
-      row.favicon_valid()) {
+      !row.favicon().empty()) {
     favicon.reset(new FaviconChangeDetails);
     if (!favicon.get())
       return false;
@@ -966,11 +966,10 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
-    scoped_refptr<base::RefCountedBytes> favicon = new base::RefCountedBytes();
-    if (!thumbnail_db_->GetFavicon(favicon_id, NULL, &favicon->data(), NULL,
-                                   NULL))
+    std::vector<unsigned char> favicon;
+    if (!thumbnail_db_->GetFavicon(favicon_id, NULL, &favicon, NULL, NULL))
       return false;
-    if (favicon->size())
+    if (!favicon.empty())
       new_row.set_favicon(favicon);
     favicon_details->urls.insert(old_url_row.url());
     favicon_details->urls.insert(row.url());

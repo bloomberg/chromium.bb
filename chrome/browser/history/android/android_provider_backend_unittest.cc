@@ -497,7 +497,7 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
   row2.set_title(UTF8ToUTF16("example"));
   std::vector<unsigned char> data;
   data.push_back('1');
-  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  row2.set_favicon(data);
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -606,7 +606,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   row2.set_title(UTF8ToUTF16("example"));
   std::vector<unsigned char> data;
   data.push_back('1');
-  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  row2.set_favicon(data);
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -795,7 +795,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   row2.set_title(UTF8ToUTF16("example"));
   std::vector<unsigned char> data;
   data.push_back('1');
-  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  row2.set_favicon(data);
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -975,7 +975,7 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   row2.set_title(UTF8ToUTF16("example"));
   std::vector<unsigned char> data;
   data.push_back('1');
-  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  row2.set_favicon(data);
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -1056,7 +1056,7 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   row2.set_title(UTF8ToUTF16("example"));
   std::vector<unsigned char> data;
   data.push_back('1');
-  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  row2.set_favicon(data);
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -1138,7 +1138,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   // Set favicon.
   std::vector<unsigned char> data;
   data.push_back('1');
-  update_row1.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  update_row1.set_favicon(data);
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
@@ -1164,7 +1164,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   HistoryAndBookmarkRow update_row2;
 
   // Set favicon.
-  update_row1.set_favicon(new base::RefCountedBytes());
+  update_row1.set_favicon(std::vector<unsigned char>());
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
   delegate_.ResetDetails();
@@ -1561,7 +1561,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   row2.set_title(UTF8ToUTF16("example"));
   std::vector<unsigned char> data;
   data.push_back('1');
-  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  row2.set_favicon(data);
 
   ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
   ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
@@ -1728,7 +1728,7 @@ TEST_F(AndroidProviderBackendTest, AndroidCTSComplianceFolderColumnExists) {
   row2.set_title(UTF8ToUTF16("example"));
   std::vector<unsigned char> data;
   data.push_back('1');
-  row2.set_favicon(base::RefCountedBytes::TakeVector(&data));
+  row2.set_favicon(data);
 
   AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);

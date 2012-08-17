@@ -117,16 +117,12 @@ class HistoryAndBookmarkRow {
   }
 
   // The favicon related to page if any.
-  void set_favicon(const scoped_refptr<base::RefCountedMemory>& data) {
+  void set_favicon(const std::vector<unsigned char>& data) {
     set_value_explicitly(FAVICON);
     favicon_ = data;
   }
-  const scoped_refptr<base::RefCountedMemory>& favicon() const {
+  const std::vector<unsigned char>& favicon() const {
     return favicon_;
-  }
-
-  bool favicon_valid() const {
-    return favicon_.get() && favicon_->size();
   }
 
   // The id of android url.
@@ -172,7 +168,7 @@ class HistoryAndBookmarkRow {
   string16 title_;
   base::Time created_;
   base::Time last_visit_time_;
-  scoped_refptr<base::RefCountedMemory> favicon_;
+  std::vector<unsigned char> favicon_;
   int visit_count_;
   bool is_bookmark_;
   int64 parent_id_;
