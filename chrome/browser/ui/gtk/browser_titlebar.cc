@@ -54,7 +54,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/active_window_watcher_x.h"
-#include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/image.h"
 
 using content::WebContents;
@@ -601,13 +600,11 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
         // top left of the custom frame, that will get updated when the
         // throbber is updated.
         Profile* profile = browser_window_->browser()->profile();
-        SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
-        if (icon.empty()) {
+        gfx::Image icon = browser_window_->browser()->GetCurrentPageIcon();
+        if (icon.IsEmpty()) {
           gtk_util::SetWindowIcon(window_, profile);
         } else {
-          GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
-          gtk_util::SetWindowIcon(window_, profile, icon_pixbuf);
-          g_object_unref(icon_pixbuf);
+          gtk_util::SetWindowIcon(window_, profile, icon.ToGdkPixbuf());
         }
         break;
       }
@@ -636,15 +633,14 @@ void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
     // Note: we want to exclude the application popup/panel window.
     if ((browser_window_->browser()->is_app() &&
         !browser_window_->browser()->is_type_tabbed())) {
-      SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
-      if (icon.empty()) {
+      gfx::Image icon = browser_window_->browser()->GetCurrentPageIcon();
+      if (icon.IsEmpty()) {
         // Fallback to the Chromium icon if the page has no icon.
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
             rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
       } else {
-        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(icon);
-        gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
-        g_object_unref(icon_pixbuf);
+        gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
+                                  icon.ToGdkPixbuf());
       }
     } else {
       gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),

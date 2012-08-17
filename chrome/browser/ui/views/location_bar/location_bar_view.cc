@@ -1053,9 +1053,9 @@ void LocationBarView::OnSetFocus() {
   focus_manager->SetFocusedView(view_to_focus_);
 }
 
-SkBitmap LocationBarView::GetFavicon() const {
+gfx::Image LocationBarView::GetFavicon() const {
   return delegate_->GetTabContents()->favicon_tab_helper()->
-             GetFavicon().AsBitmap();
+             GetFavicon();
 }
 
 string16 LocationBarView::GetTitle() const {

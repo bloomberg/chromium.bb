@@ -11,8 +11,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 
 using content::WebContents;
 
@@ -95,7 +95,7 @@ class TestingOmniboxEditController : public OmniboxEditController {
   virtual void OnInputInProgress(bool in_progress) OVERRIDE {}
   virtual void OnKillFocus() OVERRIDE {}
   virtual void OnSetFocus() OVERRIDE {}
-  virtual SkBitmap GetFavicon() const OVERRIDE { return SkBitmap(); }
+  virtual gfx::Image GetFavicon() const OVERRIDE { return gfx::Image(); }
   virtual string16 GetTitle() const OVERRIDE { return string16(); }
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
   virtual TabContents* GetTabContents() const OVERRIDE {

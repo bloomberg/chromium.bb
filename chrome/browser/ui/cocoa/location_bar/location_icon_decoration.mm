@@ -14,10 +14,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
-#include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/gfx/image/image.h"
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -65,9 +64,8 @@ NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
 }
 
 NSImage* LocationIconDecoration::GetDragImage() {
-  const SkBitmap& favicon = owner_->GetFavicon();
-  NSImage* iconImage = (!favicon.isNull()) ?
-      gfx::SkBitmapToNSImage(favicon) : GetImage();
+  NSImage* favicon = owner_->GetFavicon().AsNSImage();
+  NSImage* iconImage = favicon ? favicon : GetImage();
 
   NSImage* image = bookmark_pasteboard_helper_mac::DragImageForBookmark(
       iconImage, owner_->GetTitle());

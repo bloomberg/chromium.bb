@@ -25,9 +25,9 @@ class OmniboxEditController;
 class OmniboxPopupModel;
 class OmniboxView;
 class Profile;
-class SkBitmap;
 
 namespace gfx {
+class Image;
 class Rect;
 }
 
@@ -80,7 +80,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
 
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.
-  void GetDataForURLExport(GURL* url, string16* title, SkBitmap* favicon);
+  void GetDataForURLExport(GURL* url, string16* title, gfx::Image* favicon);
 
   // Returns true if a verbatim query should be used for Instant. A verbatim
   // query is forced in certain situations, such as pressing delete at the end

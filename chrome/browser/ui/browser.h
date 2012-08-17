@@ -54,7 +54,6 @@ class FindBarController;
 class FullscreenController;
 class PrefService;
 class Profile;
-class SkBitmap;
 class StatusBubble;
 class TabNavigation;
 class TabStripModel;
@@ -82,6 +81,7 @@ class WindowController;
 }
 
 namespace gfx {
+class Image;
 class Point;
 }
 
@@ -281,7 +281,7 @@ class Browser : public TabStripModelObserver,
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
   // Gets the Favicon of the page in the selected tab.
-  SkBitmap GetCurrentPageIcon() const;
+  gfx::Image GetCurrentPageIcon() const;
 
   // Gets the title of the window based on the selected tab's title.
   string16 GetWindowTitleForCurrentTab() const;

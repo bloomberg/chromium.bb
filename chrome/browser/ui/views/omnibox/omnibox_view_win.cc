@@ -58,6 +58,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -2489,11 +2490,11 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
 
   if (write_url) {
     string16 title;
-    SkBitmap favicon;
+    gfx::Image favicon;
     if (is_all_selected)
       model()->GetDataForURLExport(&url, &title, &favicon);
-    button_drag_utils::SetURLAndDragImage(url, title, favicon, &data,
-                                          native_view_host_->GetWidget());
+    button_drag_utils::SetURLAndDragImage(url, title, favicon.AsImageSkia(),
+        &data, native_view_host_->GetWidget());
     supported_modes |= DROPEFFECT_LINK;
     content::RecordAction(UserMetricsAction("Omnibox_DragURL"));
   } else {

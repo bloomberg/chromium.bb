@@ -893,8 +893,8 @@ void LocationBarViewGtk::OnSetFocus() {
   OnChanged();
 }
 
-SkBitmap LocationBarViewGtk::GetFavicon() const {
-  return GetTabContents()->favicon_tab_helper()->GetFavicon().AsBitmap();
+gfx::Image LocationBarViewGtk::GetFavicon() const {
+  return GetTabContents()->favicon_tab_helper()->GetFavicon();
 }
 
 string16 LocationBarViewGtk::GetTitle() const {
@@ -1433,13 +1433,11 @@ void LocationBarViewGtk::OnIconDragData(GtkWidget* sender,
 
 void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
                                          GdkDragContext* context) {
-  SkBitmap favicon = GetFavicon();
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(favicon);
-  if (!pixbuf)
+  gfx::Image favicon = GetFavicon();
+  if (favicon.IsEmpty())
     return;
-  drag_icon_ = bookmark_utils::GetDragRepresentation(pixbuf,
+  drag_icon_ = bookmark_utils::GetDragRepresentation(favicon.ToGdkPixbuf(),
       GetTitle(), theme_service_);
-  g_object_unref(pixbuf);
   gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
 
   WebContents* tab = GetWebContents();

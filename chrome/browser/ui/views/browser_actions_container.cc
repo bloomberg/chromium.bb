@@ -558,7 +558,7 @@ int BrowserActionsContainer::IconWidth(bool include_padding) {
   static int icon_width = 0;
   if (!initialized) {
     initialized = true;
-    icon_width = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    icon_width = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_BROWSER_ACTION)->width();
   }
   return icon_width + (include_padding ? kItemSpacing : 0);
@@ -570,7 +570,7 @@ int BrowserActionsContainer::IconHeight() {
   static int icon_height = 0;
   if (!initialized) {
     initialized = true;
-    icon_height = ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    icon_height = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_BROWSER_ACTION)->height();
   }
   return icon_height;
@@ -673,9 +673,11 @@ void BrowserActionsContainer::ModelLoaded() {
 
 void BrowserActionsContainer::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
-  chevron_->SetIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
-  chevron_->SetHoverIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW_H));
-  chevron_->SetPushedIcon(*tp->GetBitmapNamed(IDR_BROWSER_ACTIONS_OVERFLOW_P));
+  chevron_->SetIcon(*tp->GetImageSkiaNamed(IDR_BROWSER_ACTIONS_OVERFLOW));
+  chevron_->SetHoverIcon(*tp->GetImageSkiaNamed(
+      IDR_BROWSER_ACTIONS_OVERFLOW_H));
+  chevron_->SetPushedIcon(*tp->GetImageSkiaNamed(
+      IDR_BROWSER_ACTIONS_OVERFLOW_P));
 }
 
 void BrowserActionsContainer::SetContainerWidth() {

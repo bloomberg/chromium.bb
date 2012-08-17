@@ -40,7 +40,7 @@ ActionBoxButtonView::ActionBoxButtonView(Browser* browser, Profile* profile)
       starred_(false) {
   set_id(VIEW_ID_ACTION_BOX_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_ACTION_BOX_BUTTON));
-  SetIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_ACTION_BOX_BUTTON));
   set_accessibility_focusable(true);
   set_border(NULL);

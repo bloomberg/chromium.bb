@@ -11,8 +11,11 @@
 
 class GURL;
 class InstantController;
-class SkBitmap;
 class TabContents;
+
+namespace gfx {
+class Image;
+}
 
 // I am in hack-and-slash mode right now.
 // http://code.google.com/p/chromium/issues/detail?id=6772
@@ -52,7 +55,7 @@ class OmniboxEditController {
   virtual void OnSetFocus() = 0;
 
   // Returns the favicon of the current page.
-  virtual SkBitmap GetFavicon() const = 0;
+  virtual gfx::Image GetFavicon() const = 0;
 
   // Returns the title of the current page.
   virtual string16 GetTitle() const = 0;

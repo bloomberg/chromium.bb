@@ -35,7 +35,6 @@ class PageActionDecoration;
 class PlusDecoration;
 class Profile;
 class SelectedKeywordDecoration;
-class SkBitmap;
 class StarDecoration;
 class ToolbarModel;
 
@@ -150,7 +149,7 @@ class LocationBarViewMac : public LocationBar,
   virtual void OnInputInProgress(bool in_progress) OVERRIDE;
   virtual void OnKillFocus() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
-  virtual SkBitmap GetFavicon() const OVERRIDE;
+  virtual gfx::Image GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual TabContents* GetTabContents() const OVERRIDE;

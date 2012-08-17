@@ -66,6 +66,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 using content::WebContents;
 
@@ -321,7 +322,7 @@ void LocationBarViewMac::OnKillFocus() {
   // Do nothing.
 }
 
-SkBitmap LocationBarViewMac::GetFavicon() const {
+gfx::Image LocationBarViewMac::GetFavicon() const {
   return browser_->GetCurrentPageIcon();
 }
 

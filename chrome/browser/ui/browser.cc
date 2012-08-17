@@ -554,13 +554,12 @@ bool Browser::is_devtools() const {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, State Storage and Retrieval for UI:
 
-SkBitmap Browser::GetCurrentPageIcon() const {
+gfx::Image Browser::GetCurrentPageIcon() const {
   TabContents* contents = chrome::GetActiveTabContents(this);
   // |contents| can be NULL since GetCurrentPageIcon() is called by the window
   // during the window's creation (before tabs have been added).
-  // TODO: Let this return a gfx::Image.
   return contents ?
-      contents->favicon_tab_helper()->GetFavicon().AsBitmap() : SkBitmap();
+      contents->favicon_tab_helper()->GetFavicon() : gfx::Image();
 }
 
 string16 Browser::GetWindowTitleForCurrentTab() const {
