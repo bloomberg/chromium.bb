@@ -139,18 +139,18 @@ void LayoutTestControllerHost::OnImageDump(
     bool discard_transparency = true;
 #endif
 
-    webkit_support::EncodeBGRAPNGWithChecksum(
-        reinterpret_cast<const unsigned char*>(image.getPixels()),
-        image.width(),
-        image.height(),
-        static_cast<int>(image.rowBytes()),
-        discard_transparency,
-        actual_pixel_hash,
-        &png);
-
-    printf("Content-Type: image/png\n");
-    printf("Content-Length: %u\n", static_cast<unsigned>(png.size()));
-    fwrite(&png[0], 1, png.size(), stdout);
+    if (webkit_support::EncodeBGRAPNGWithChecksum(
+            reinterpret_cast<const unsigned char*>(image.getPixels()),
+            image.width(),
+            image.height(),
+            static_cast<int>(image.rowBytes()),
+            discard_transparency,
+            actual_pixel_hash,
+            &png)) {
+      printf("Content-Type: image/png\n");
+      printf("Content-Length: %u\n", static_cast<unsigned>(png.size()));
+      fwrite(&png[0], 1, png.size(), stdout);
+    }
   }
 
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
