@@ -34,70 +34,83 @@
 
 #include <stdint.h>
 #include <cstddef>
+#include "native_client/src/include/portability_bits.h"
 
 namespace nacl_arm_dec {
 
 class RegisterList;
 
-static const uint32_t kRegisterNoneNumber = 31;
-
 // A (POD) value class that names a single register.  We could use a typedef
 // for this, but it introduces some ambiguity problems because of the
 // implicit conversion to/from int.
+//
+// The 32-bit ARM v7 ARM and Thumb instruction sets have:
+//   - 15 32-bit GPRs, with:
+//       - R13/R14/R15 serving as SP/LR/PC.
+//       - R8-R15 being inaccessible in most 16-bit Thumb instructions.
+//   - FPRs, with:
+//       - 16 128-bit quadword registers, denoted Q0-Q15.
+//       - 32 64-bit doubleword registers, denoted D0-D31.
+//       - 32 32-bit single word registers, denoted S0-S31.
+//       - Note that the above holds true for only some ARM processors:
+//         different VFP implementations might have only D0-D15 with S0-S31,
+//         and Advanced SIMD support is required for the quadword registers.
+//       - The above FPRs are overlaid and accessing S/D/Q registers
+//         interchangeably is sometimes expected by the ARM ISA.
+//         Specifically S0-S3 correspond to D0-D1 as well as Q0,
+//         S4-S7 to D2-D3 and Q1, and so on.
+//         D16-D31 and Q8-Q15 do not correspond to any single word register.
+//
+// TODO(jfb) detail aarch64 when we support ARM v8.
 class Register {
  public:
-  Register() : number_(kRegisterNoneNumber) {}
-  explicit Register(uint32_t number) : number_(number) {}
+  typedef uint8_t Number;
+  // RegisterMask wide enough for aarch32, including "special" registers.
+  typedef uint32_t Mask;
 
-  // Note: can't make explicit without introducing compile-time errors
-  // on functions returning a Register value.
+  // TODO(jfb) Need different numbers for aarch64.
+  static const Number kNumberConditions = 16;
+  static const Number kNumberCondsDontCare = 17;
+  static const Number kNumberNone = 32;  // Out of GPR and FPR range.
+
+  Register() : number_(kNumberNone) {}
+  explicit Register(Number number) : number_(number) {}
   Register(const Register& r) : number_(r.number_) {}
 
   // Produces the bitmask used to represent this register, in both RegisterList
   // and ARM's LDM instruction.
-  uint32_t BitMask() const {
-    if (number_ == 31) return 0;
-    return (1 << number_);
+  Mask BitMask() const {
+    return (number_ == kNumberNone) ? 0 : (1u << number_);
   }
 
-  // Returns the register number for the register.
-  uint32_t number() const {
-    return number_;
-  }
+  Number number() const { return number_; }
+  bool Equals(const Register& r) const { return number_ == r.number_; }
 
-  bool Equals(const Register& r) const {
-    return number_ == r.number_;
-  }
-
-  // Changes the value of a register.
   Register& Copy(const Register& r) {
     number_ = r.number_;
     return *this;
   }
 
  private:
-  uint32_t number_;
-
-  // Disallow assignment.
-  Register& operator=(const Register& r);
+  Number number_;
+  Register& operator=(const Register& r);  // Disallow assignment.
 };
 
 // A special (POD) value used in some cases to indicate that a register field
 // is not used.  This is specially chosen to ensure that bitmask() == 0, so
 // it can be added to any RegisterList with no effect.
-// Note that -1 or 32 can't be used here because C++ doesn't define a portable
-// meaning for such shift distances.
-static const Register kRegisterNone(kRegisterNoneNumber);
+static const Register kRegisterNone(Register::kNumberNone);
 
 // The conditions (i.e. APSR N, Z, C, and V) are collectively modeled as r16.
 // These bits of the APSR register are separately tracked, so we can
 // test when any of the 4 bits (and hence conditional execution) is
 // affected. If you need to track other bits in the APSR, add them as
 // a separate register.
-static const uint32_t kConditionsIndex = 16;
-static const Register kConditions(kConditionsIndex);
+//
+static const Register kConditions(Register::kNumberConditions);
 
 // Registers with special meaning in our model:
+// TODO(jfb) This is different in aarch64.
 static const Register kRegisterPc(15);
 static const Register kRegisterLink(14);
 static const Register kRegisterStack(13);
@@ -110,8 +123,9 @@ static const Register kRegisterStack(13);
 //
 // Note: Do not add kCondsDontCareFlag to a RegisterList. Rather,
 // use the constant kCondsDontCare.
-static const uint32_t kCondsDontCareIndex = 17;
-static const Register kCondsDontCareFlag(kCondsDontCareIndex);
+//
+// TODO(jfb) Need a different number for aarch64.
+static const Register kCondsDontCareFlag(Register::kNumberCondsDontCare);
 
 // A collection of Registers.  Used to describe the side effects of operations.
 //
@@ -124,10 +138,8 @@ class RegisterList {
 
   // Produces a RegisterList that contains the registers specified in the
   // given bitmask.  To indicate rN, the bitmask must include (1 << N).
-  explicit RegisterList(uint32_t bitmask) : bits_(bitmask) {}
+  explicit RegisterList(Register::Mask bitmask) : bits_(bitmask) {}
 
-  // Note: can't make explicit without introducing compile-time errors
-  // on functions returning a RegisterList value.
   RegisterList(const RegisterList& other) : bits_(other.bits_) {}
 
   // Produces a RegisterList containing a single register.
@@ -183,24 +195,21 @@ class RegisterList {
   }
 
   // Returns the bits defined in the register list.
-  uint32_t bits() const {
+  Register::Mask bits() const {
     return bits_;
   }
 
-  // Returns the number of elements in the register list.
-  uint32_t size(uint32_t limit = 32) const {
-    uint32_t count = 0;
-    for (uint32_t i = 0; i < limit;  ++i) {
-      if (bits_ & (1 << i)) ++count;
-    }
-    return count;
+  // Number of ARM GPRs in the list.
+  // TODO(jfb) Update for aarch64.
+  uint32_t numGPRs() const {
+    // aarch32 only has 16 GPRs, we steal other registers for flags and such.
+    uint16_t gprs = bits_ & 0xFFFF;
+    return nacl::PopCount(gprs);
   }
 
  private:
-  uint32_t bits_;
-
-  // Disallow assignment.
-  RegisterList& operator=(const RegisterList& r);
+  Register::Mask bits_;
+  RegisterList& operator=(const RegisterList& r);  // Disallow assignment.
 };
 
 // A list containing every possible register, even some we don't define.
@@ -212,8 +221,8 @@ static const RegisterList kRegisterListEverything(-1);
 // lists returned from virtual ClassDecoder::defs, and only for actual
 // class decoders. It is used to communicate to class decoder testers
 // that the actual class decoder is not tracking conditions.
-static const RegisterList kCondsDontCare((1 << kConditionsIndex) |
-                                         (1 << kCondsDontCareIndex));
+static const RegisterList kCondsDontCare((1 << Register::kNumberConditions) |
+                                         (1 << Register::kNumberCondsDontCare));
 
 // The number of bits in an ARM instruction.
 static const int kArm32InstSize = 32;
@@ -223,7 +232,7 @@ static const int kThumbWordSize = 16;
 
 
 // Models an instruction, either a 32-bit ARM instruction of unspecified type,
-// or one word (16-bit) and two word (16-bit) THUMB instructions.
+// or one word (16-bit) and two word (32-bit) THUMB instructions.
 //
 // This class is designed for efficiency:
 //  - Its public methods for bitfield extraction are short and inline.
@@ -258,6 +267,9 @@ class Instruction {
     //
     // Curiously, even at aggressive optimization levels, GCC 4.3.2 generates a
     // less-efficient sequence of ands, bics, and shifts.
+    //
+    // TODO(jfb) Validate and fix this: this function is called very often and
+    //           could speed up validation quite a bit.
     uint32_t right_justified = bits_ >> lo;
     int bit_count = hi - lo + 1;
     uint32_t mask = (1 << bit_count) - 1;
@@ -267,6 +279,9 @@ class Instruction {
   // Changes the range of contiguous bits, with the given value.
   // Note: Assumes the value fits, if not, it is truncated.
   void SetBits(int hi, int lo, uint32_t value) {
+    // TODO(jfb) Same as the above function, this should generate a BFI
+    //           when hi and lo are compile-time constants.
+    //
     // Compute bit mask for range of bits.
     int bit_count = hi - lo + 1;
     uint32_t clear_mask = (1 << bit_count) - 1;
@@ -300,13 +315,28 @@ class Instruction {
     }
   }
 
-  // Possible values for the condition field, from the spec.  The names are
-  // pretty cryptic, but in practice we care only whether condition() == AL or
-  // not.
+  // Possible values for the condition field, from the ARM ARM section A8.3.
+  // Conditional execution is determined by the APSR's condition flags: NZCV.
   enum Condition {
-    // Values 0-14 -- order is significant!
-    EQ = 0, NE, CS, CC, MI, PL, VS, VC, HI, LS, GE, LT, GT, LE, AL,
-    UNCONDITIONAL = 0xF  // Equivalent to AL -- converted in our API
+    EQ = 0x0,  // Equal                         |  Z == 1
+    NE = 0x1,  // Not equal                     |  Z == 0
+    CS = 0x2,  // Carry set                     |  C == 1
+    CC = 0x3,  // Carry clear                   |  C == 0
+    MI = 0x4,  // Minus, negative               |  N == 1
+    PL = 0x5,  // Plus, positive or zero        |  N == 0
+    VS = 0x6,  // Overflow                      |  V == 1
+    VC = 0x7,  // No overflow                   |  V == 0
+    HI = 0x8,  // Unsigned higher               |  C == 1 && Z == 0
+    LS = 0x9,  // Unsigned lower or same        |  C == 0 || Z == 1
+    GE = 0xA,  // Signed greater than or equal  |  N == V
+    LT = 0xB,  // Signed less than              |  N != V
+    GT = 0xC,  // Signed greater than           |  Z == 0 && N == V
+    LE = 0xD,  // Signed less than or equal     |  Z == 1 || N != V
+    AL = 0xE,  // Always (unconditional)        |  Any
+    UNCONDITIONAL = 0xF,  // Equivalent to AL -- converted in our API
+    // Aliases:
+    HS = CS,  // Unsigned higher or same
+    LO = CC   // Unsigned lower
   };
 
   // Defines the size of enumerated type Condition, minus
@@ -328,6 +358,9 @@ class Instruction {
   // **********************************
   // Arm 16-bit instruction words API *
   // **********************************
+  //
+  // TODO(jfb) This Thumb API isn't currently used, and should be fixed up
+  //           before it does get used.
 
   // Creates a 1 word THUMB instruction.
   explicit Instruction(uint16_t word)
@@ -335,7 +368,7 @@ class Instruction {
 
   // Creates a 2 word THUMB instruction.
   explicit Instruction(uint16_t word1, uint16_t word2)
-      : bits_(((static_cast<int32_t>(word2) << kThumbWordSize)
+      : bits_(((static_cast<uint32_t>(word2) << kThumbWordSize)
                | static_cast<uint32_t>(word1)))
   {}
 
@@ -415,11 +448,9 @@ class Instruction {
 
  private:
   uint32_t bits_;
-
-  // Don't allow implicit assignment.
-  Instruction& operator=(const Instruction& insn);
+  Instruction& operator=(const Instruction& insn);  // Disallow assignment.
 };
 
-}  // namespace
+}  // namespace nacl_arm_dec
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_MODEL_H

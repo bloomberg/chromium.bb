@@ -374,11 +374,12 @@ static void RenderRegister(nacl_arm_dec::Register reg,
 
 // Adds text describing the given register list, to the end of the given buffer
 // of the given size.
+// TODO(jfb) This assumes all problematic RegisterList are GPRs, not FPRs.
 static void RenderRegisterList(nacl_arm_dec::RegisterList registers,
                                char** buffer,
                                size_t* buffer_size) {
-  uint32_t regs_size = registers.size(16);
-  if (regs_size == 0) {
+  uint32_t regs_count = registers.numGPRs();
+  if (regs_count == 0) {
     return;
   }
   bool is_first = true;
@@ -388,7 +389,7 @@ static void RenderRegisterList(nacl_arm_dec::RegisterList registers,
       continue;
     }
     if (is_first) {
-      if (regs_size > 1) {
+      if (regs_count > 1) {
         RenderText("(", buffer, buffer_size);
       }
       is_first = false;
@@ -397,12 +398,12 @@ static void RenderRegisterList(nacl_arm_dec::RegisterList registers,
     }
     RenderRegister(r, buffer, buffer_size);
   }
-  if (regs_size > 1) {
+  if (regs_count > 1) {
     RenderText(")", buffer, buffer_size);
   }
 }
 
-// Renders a text stringusing the given format. Does the following
+// Renders a text string using the given format. Does the following
 // substitutions:
 //    $s - Print corresponding safety level message.
 //    $a - Print the address associated with the problem.
@@ -618,4 +619,4 @@ void ProblemReporter::ToText(char* buffer,
          problem, method, user_data);
 }
 
-}  // namespace
+}  // namespace nacl_arm_val
