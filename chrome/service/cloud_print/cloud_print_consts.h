@@ -45,6 +45,7 @@ extern const char kJobFetchReasonQueryMore[];
 extern const char kPrintSystemFailedMessageId[];
 extern const char kGetPrinterCapsFailedMessageId[];
 extern const char kEnumPrintersFailedMessageId[];
+extern const char kZombiePrinterMessageId[];
 extern const char kDefaultCloudPrintOAuthClientId[];
 extern const char kDefaultCloudPrintOAuthClientSecret[];
 

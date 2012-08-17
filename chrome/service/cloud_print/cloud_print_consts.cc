@@ -54,6 +54,7 @@ const char kJobFetchReasonQueryMore[] = "querymore";
 const char kPrintSystemFailedMessageId[] = "printsystemfail";
 const char kGetPrinterCapsFailedMessageId[] = "getprncapsfail";
 const char kEnumPrintersFailedMessageId[] = "enumfail";
+const char kZombiePrinterMessageId[] = "zombieprinter";
 
 const char kDefaultCloudPrintOAuthClientId[] =
     "551556820943.apps.googleusercontent.com";

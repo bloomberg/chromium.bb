@@ -111,8 +111,15 @@ void CloudPrintConnector::CheckForJobs(const std::string& reason,
     return;
   if (!printer_id.empty()) {
     JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
-    if (index != job_handler_map_.end())
+    if (index != job_handler_map_.end()) {
       index->second->CheckForJobs(reason);
+    } else {
+      std::string status_message = l10n_util::GetStringUTF8(
+          IDS_CLOUD_PRINT_ZOMBIE_PRINTER);
+      LOG(ERROR) << "CP_CONNECTOR: " << status_message <<
+          " Printer_id: " << printer_id;
+      ReportUserMessage(kZombiePrinterMessageId, status_message);
+    }
   } else {
     for (JobHandlerMap::iterator index = job_handler_map_.begin();
          index != job_handler_map_.end(); index++) {
@@ -190,7 +197,7 @@ CloudPrintConnector::HandlePrinterListResponse(
   cloud_print::PrintSystem::PrintSystemResult result =
       print_system_->EnumeratePrinters(&local_printers);
   bool full_list = result.succeeded();
-  if (!result.succeeded()) {
+  if (!full_list) {
     std::string message = result.message();
     if (message.empty())
       message = l10n_util::GetStringFUTF8(IDS_CLOUD_PRINT_ENUM_FAILED,
@@ -213,10 +220,16 @@ CloudPrintConnector::HandlePrinterListResponse(
           InitJobHandlerForPrinter(printer_data);
         } else {
           // Cloud printer is not found on the local system.
+          std::string printer_id;
+          printer_data->GetString(kIdValue, &printer_id);
           if (full_list) {  // Delete only if we get the full list of printer.
-            std::string printer_id;
-            printer_data->GetString(kIdValue, &printer_id);
             AddPendingDeleteTask(printer_id);
+          } else {
+            LOG(ERROR) << "CP_CONNECTOR: Printer: " << printer_name <<
+                " id: " << printer_id <<
+                " not found in print system and full printer list was" <<
+                " not received.  Printer will not be able to process" <<
+                " jobs.";
           }
         }
       } else {
