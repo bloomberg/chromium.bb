@@ -132,7 +132,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       audio_renderer_sink_(audio_renderer_sink),
       is_local_source_(false),
       supports_save_(true),
-      decryptor_(proxy_.get(), client, frame) {
+      decryptor_(proxy_.get(), client, frame),
+      starting_(false) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -313,7 +314,7 @@ bool WebMediaPlayerImpl::supportsSave() const {
 void WebMediaPlayerImpl::seek(float seconds) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  if (seeking_) {
+  if (starting_ || seeking_) {
     pending_seek_ = true;
     pending_seek_seconds_ = seconds;
     proxy_->DemuxerCancelPendingSeek();
@@ -765,35 +766,9 @@ void WebMediaPlayerImpl::Repaint() {
   GetClient()->repaint();
 }
 
-void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
-  DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (status != media::PIPELINE_OK) {
-    // Any error that occurs before the pipeline can initialize should be
-    // considered a format error.
-    SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
-    // Repaint to trigger UI update.
-    Repaint();
-    return;
-  }
-
-  if (!hasVideo())
-    GetClient()->disableAcceleratedCompositing();
-
-  if (is_local_source_)
-    SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
-
-  SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
-  // Fire canplaythrough immediately after playback begins because of
-  // crbug.com/106480.
-  // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
-  SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-
-  // Repaint to trigger UI update.
-  Repaint();
-}
-
 void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
+  starting_ = false;
   seeking_ = false;
   if (pending_seek_) {
     pending_seek_ = false;
@@ -824,6 +799,15 @@ void WebMediaPlayerImpl::OnPipelineEnded(PipelineStatus status) {
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing) {
+    // Any error that occurs before reaching ReadyStateHaveMetadata should
+    // be considered a format error.
+    SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
+    Repaint();
+    return;
+  }
+
   switch (error) {
     case media::PIPELINE_OK:
       NOTREACHED() << "PIPELINE_OK isn't an error!";
@@ -864,6 +848,23 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
     case media::PIPELINE_STATUS_MAX:
       NOTREACHED() << "PIPELINE_STATUS_MAX isn't a real error!";
+      break;
+  }
+
+  // Repaint to trigger UI update.
+  Repaint();
+}
+
+void WebMediaPlayerImpl::OnPipelineBufferingState(
+    media::Pipeline::BufferingState buffering_state) {
+  DVLOG(1) << "OnPipelineBufferingState(" << buffering_state << ")";
+
+  switch (buffering_state) {
+    case media::Pipeline::kHaveMetadata:
+      SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+      break;
+    case media::Pipeline::kPrerollCompleted:
+      SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
       break;
   }
 
@@ -965,11 +966,13 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 }
 
 void WebMediaPlayerImpl::StartPipeline() {
+  starting_ = true;
   pipeline_->Start(
       filter_collection_.Pass(),
       base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback, proxy_.get()),
       base::Bind(&WebMediaPlayerProxy::PipelineErrorCallback, proxy_.get()),
-      base::Bind(&WebMediaPlayerProxy::PipelineInitializationCallback,
+      base::Bind(&WebMediaPlayerProxy::PipelineSeekCallback, proxy_.get()),
+      base::Bind(&WebMediaPlayerProxy::PipelineBufferingStateCallback,
                  proxy_.get()));
 }
 
@@ -984,6 +987,18 @@ void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
 void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   DVLOG(1) << "SetReadyState: " << state;
+
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing &&
+      state >= WebMediaPlayer::ReadyStateHaveMetadata) {
+    if (!hasVideo())
+      GetClient()->disableAcceleratedCompositing();
+  } else if (state == WebMediaPlayer::ReadyStateHaveEnoughData) {
+    if (is_local_source_ &&
+        network_state_ == WebMediaPlayer::NetworkStateLoading) {
+      SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
+    }
+  }
+
   ready_state_ = state;
   // Always notify to ensure client has the latest value.
   GetClient()->readyStateChanged();

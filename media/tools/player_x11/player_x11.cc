@@ -97,6 +97,8 @@ void Paint(MessageLoop* message_loop, const PaintCB& paint_cb) {
   g_video_renderer->PutCurrentFrame(video_frame);
 }
 
+static void OnBufferingState(media::Pipeline::BufferingState buffering_state) {}
+
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
 bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   const scoped_refptr<media::DataSource>& data_source,
@@ -140,7 +142,7 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   media::PipelineStatusNotification note;
   (*pipeline)->Start(
       collection.Pass(), media::PipelineStatusCB(), media::PipelineStatusCB(),
-      note.Callback());
+      note.Callback(), base::Bind(&OnBufferingState));
 
   // Wait until the pipeline is fully initialized.
   note.Wait();

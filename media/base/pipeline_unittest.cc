@@ -78,6 +78,7 @@ class CallbackHelper {
   MOCK_METHOD0(OnStop, void());
   MOCK_METHOD1(OnEnded, void(PipelineStatus));
   MOCK_METHOD1(OnError, void(PipelineStatus));
+  MOCK_METHOD1(OnBufferingState, void(Pipeline::BufferingState));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CallbackHelper);
@@ -217,6 +218,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(callbacks_, OnStart(start_status));
 
     if (start_status == PIPELINE_OK) {
+      EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kHaveMetadata));
       EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(0.0f));
 
       if (audio_stream_) {
@@ -229,13 +231,16 @@ class PipelineTest : public ::testing::Test {
         EXPECT_CALL(*mocks_->audio_renderer(), Play(_))
             .WillOnce(RunClosure());
       }
+      EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kPrerollCompleted));
     }
 
     pipeline_->Start(
         mocks_->Create().Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnBufferingState,
+                   base::Unretained(&callbacks_)));
     message_loop_.RunAllPending();
   }
 
@@ -245,6 +250,8 @@ class PipelineTest : public ::testing::Test {
 
   void CreateVideoStream() {
     video_stream_ = CreateStream(DemuxerStream::VIDEO);
+    EXPECT_CALL(*video_stream_, video_decoder_config())
+        .WillRepeatedly(ReturnRef(video_decoder_config_));
   }
 
   MockDemuxerStream* audio_stream() {
@@ -282,6 +289,8 @@ class PipelineTest : public ::testing::Test {
           .WillOnce(RunClosure());
     }
 
+    EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kPrerollCompleted));
+
     // We expect a successful seek callback.
     EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
   }
@@ -305,6 +314,7 @@ class PipelineTest : public ::testing::Test {
   scoped_refptr<StrictMock<MockDemuxerStream> > audio_stream_;
   scoped_refptr<StrictMock<MockDemuxerStream> > video_stream_;
   AudioRenderer::TimeCB audio_time_cb_;
+  VideoDecoderConfig video_decoder_config_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PipelineTest);
@@ -357,7 +367,9 @@ TEST_F(PipelineTest, NeverInitializes) {
         mocks_->Create().Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnBufferingState,
+                   base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
 
 
@@ -378,7 +390,9 @@ TEST_F(PipelineTest, RequiredFilterMissing) {
       collection.Pass(),
       base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
       base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-      base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+      base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
+      base::Bind(&CallbackHelper::OnBufferingState,
+                 base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
 }
 
@@ -855,6 +869,7 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
   EXPECT_CALL(*mocks_->audio_renderer(), Play(_))
       .WillOnce(RunClosure());
 
+  EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kPrerollCompleted));
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
   DoSeek(seek_time);
 
@@ -999,7 +1014,9 @@ class PipelineTeardownTest : public PipelineTest {
         mocks_->Create().Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
+        base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)),
+        base::Bind(&CallbackHelper::OnBufferingState,
+                   base::Unretained(&callbacks_)));
     message_loop_.RunAllPending();
   }
 
@@ -1091,6 +1108,8 @@ class PipelineTeardownTest : public PipelineTest {
                 Initialize(_, _, _, _, _, _, _, _, _, _))
         .WillOnce(RunPipelineStatusCB2());
 
+    EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kHaveMetadata));
+
     // If we get here it's a successful initialization.
     EXPECT_CALL(*mocks_->demuxer(), SetPlaybackRate(0.0f));
     EXPECT_CALL(*mocks_->audio_renderer(), SetPlaybackRate(0.0f));
@@ -1107,6 +1126,9 @@ class PipelineTeardownTest : public PipelineTest {
         .WillOnce(RunClosure());
     EXPECT_CALL(*mocks_->video_renderer(), Play(_))
         .WillOnce(RunClosure());
+
+    if (status == PIPELINE_OK)
+      EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kPrerollCompleted));
 
     return status;
   }
@@ -1161,6 +1183,7 @@ class PipelineTeardownTest : public PipelineTest {
 
     EXPECT_CALL(*mocks_->video_renderer(), Play(_)).WillOnce(RunClosure());
 
+    EXPECT_CALL(callbacks_, OnBufferingState(Pipeline::kPrerollCompleted));
     EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
     ExpectStop();
   }

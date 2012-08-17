@@ -23,6 +23,8 @@
 
 namespace media {
 
+static void OnBufferingState(media::Pipeline::BufferingState buffering_state) {}
+
 Movie::Movie()
     : audio_manager_(AudioManager::Create()),
       enable_audio_(false),
@@ -95,7 +97,8 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
       collection.Pass(),
       media::PipelineStatusCB(),
       media::PipelineStatusCB(),
-      note.Callback());
+      note.Callback(),
+      base::Bind(&OnBufferingState));
 
   // Wait until the pipeline is fully initialized.
   note.Wait();

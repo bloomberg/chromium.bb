@@ -89,12 +89,6 @@ void WebMediaPlayerProxy::Detach() {
   frame_provider_ = NULL;
 }
 
-void WebMediaPlayerProxy::PipelineInitializationCallback(
-    PipelineStatus status) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerProxy::PipelineInitializationTask, this, status));
-}
-
 void WebMediaPlayerProxy::PipelineSeekCallback(PipelineStatus status) {
   render_loop_->PostTask(FROM_HERE, base::Bind(
       &WebMediaPlayerProxy::PipelineSeekTask, this, status));
@@ -111,6 +105,12 @@ void WebMediaPlayerProxy::PipelineErrorCallback(PipelineStatus error) {
       &WebMediaPlayerProxy::PipelineErrorTask, this, error));
 }
 
+void WebMediaPlayerProxy::PipelineBufferingStateCallback(
+    media::Pipeline::BufferingState buffering_state) {
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::PipelineBufferingStateTask, this, buffering_state));
+}
+
 void WebMediaPlayerProxy::RepaintTask() {
   DCHECK(render_loop_->BelongsToCurrentThread());
   {
@@ -121,12 +121,6 @@ void WebMediaPlayerProxy::RepaintTask() {
   if (webmediaplayer_) {
     webmediaplayer_->Repaint();
   }
-}
-
-void WebMediaPlayerProxy::PipelineInitializationTask(PipelineStatus status) {
-  DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->OnPipelineInitialize(status);
 }
 
 void WebMediaPlayerProxy::PipelineSeekTask(PipelineStatus status) {
@@ -145,6 +139,13 @@ void WebMediaPlayerProxy::PipelineErrorTask(PipelineStatus error) {
   DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->OnPipelineError(error);
+}
+
+void WebMediaPlayerProxy::PipelineBufferingStateTask(
+    media::Pipeline::BufferingState buffering_state) {
+  DCHECK(render_loop_->BelongsToCurrentThread());
+  if (webmediaplayer_)
+    webmediaplayer_->OnPipelineBufferingState(buffering_state);
 }
 
 void WebMediaPlayerProxy::SetOpaqueTask(bool opaque) {

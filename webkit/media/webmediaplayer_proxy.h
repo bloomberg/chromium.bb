@@ -75,10 +75,11 @@ class WebMediaPlayerProxy
   void AbortDataSource();
 
   // Methods for Pipeline -> WebMediaPlayerImpl communication.
-  void PipelineInitializationCallback(media::PipelineStatus status);
   void PipelineSeekCallback(media::PipelineStatus status);
   void PipelineEndedCallback(media::PipelineStatus status);
   void PipelineErrorCallback(media::PipelineStatus error);
+  void PipelineBufferingStateCallback(
+      media::Pipeline::BufferingState buffering_state);
 
   // ChunkDemuxerClient implementation.
   virtual void DemuxerOpened(media::ChunkDemuxer* demuxer) OVERRIDE;
@@ -124,9 +125,6 @@ class WebMediaPlayerProxy
   // Invoke |webmediaplayer_| to perform a repaint.
   void RepaintTask();
 
-  // Notify |webmediaplayer_| that initialization has finished.
-  void PipelineInitializationTask(media::PipelineStatus status);
-
   // Notify |webmediaplayer_| that a seek has finished.
   void PipelineSeekTask(media::PipelineStatus status);
 
@@ -136,6 +134,10 @@ class WebMediaPlayerProxy
   // Notify |webmediaplayer_| that a pipeline error has occurred during
   // playback.
   void PipelineErrorTask(media::PipelineStatus error);
+
+  // Notify |webmediaplayer_| of buffering state changes.
+  void PipelineBufferingStateTask(
+      media::Pipeline::BufferingState buffering_state);
 
   // Inform |webmediaplayer_| whether the video content is opaque.
   void SetOpaqueTask(bool opaque);

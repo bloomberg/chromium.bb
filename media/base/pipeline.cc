@@ -23,6 +23,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 #include "media/base/video_renderer.h"
 
 using base::TimeDelta;
@@ -109,14 +110,16 @@ Pipeline::~Pipeline() {
 void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const PipelineStatusCB& ended_cb,
                      const PipelineStatusCB& error_cb,
-                     const PipelineStatusCB& start_cb) {
+                     const PipelineStatusCB& seek_cb,
+                     const BufferingStateCB& buffering_state_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
+  DCHECK(!buffering_state_cb.is_null());
 
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StartTask, this, base::Passed(&collection),
-      ended_cb, error_cb, start_cb));
+      ended_cb, error_cb, seek_cb, buffering_state_cb));
 }
 
 void Pipeline::Stop(const base::Closure& stop_cb) {
@@ -282,12 +285,14 @@ void Pipeline::ReportStatus(const PipelineStatusCB& cb, PipelineStatus status) {
     error_cb_.Reset();
 }
 
-void Pipeline::FinishInitialization() {
+void Pipeline::FinishSeek() {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  seek_timestamp_ = kNoTimestamp();
+  seek_pending_ = false;
+
   // Execute the seek callback, if present.  Note that this might be the
   // initial callback passed into Start().
   ReportStatus(seek_cb_, status_);
-  seek_timestamp_ = kNoTimestamp();
   seek_cb_.Reset();
 }
 
@@ -553,7 +558,8 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
 void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
                          const PipelineStatusCB& ended_cb,
                          const PipelineStatusCB& error_cb,
-                         const PipelineStatusCB& start_cb) {
+                         const PipelineStatusCB& seek_cb,
+                         const BufferingStateCB& buffering_state_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   CHECK_EQ(kCreated, state_)
       << "Media pipeline cannot be started more than once";
@@ -561,7 +567,8 @@ void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
   filter_collection_ = filter_collection.Pass();
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
-  seek_cb_ = start_cb;
+  seek_cb_ = seek_cb;
+  buffering_state_cb_ = buffering_state_cb;
 
   // Kick off initialization.
   pipeline_init_state_.reset(new PipelineInitState());
@@ -627,9 +634,15 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
   // Assuming audio renderer was created, create video renderer.
   if (state_ == kInitAudioRenderer) {
     SetState(kInitVideoRenderer);
-    if (InitializeVideoRenderer(demuxer_->GetStream(DemuxerStream::VIDEO))) {
+    scoped_refptr<DemuxerStream> video_stream =
+        demuxer_->GetStream(DemuxerStream::VIDEO);
+    if (InitializeVideoRenderer(video_stream)) {
       base::AutoLock auto_lock(lock_);
       has_video_ = true;
+
+      // Get an initial natural size so we have something when we signal
+      // the kHaveMetadata buffering state.
+      natural_size_ = video_stream->video_decoder_config().natural_size();
       return;
     }
   }
@@ -648,6 +661,8 @@ void Pipeline::InitializeTask(PipelineStatus last_stage_status) {
     // to set the initial playback rate and volume.
     PlaybackRateChangedTask(GetPlaybackRate());
     VolumeChangedTask(GetVolume());
+
+    buffering_state_cb_.Run(kHaveMetadata);
 
     // Fire a seek request to get the renderers to preroll. We can skip a seek
     // here as the demuxer should be at the start of the stream.
@@ -906,10 +921,14 @@ void Pipeline::FilterStateTransitionTask() {
       NOTREACHED() << "Unexpected state: " << state_;
     }
   } else if (state_ == kStarted) {
-    FinishInitialization();
 
-    // Finally, complete the seek.
-    seek_pending_ = false;
+    // Fire canplaythrough immediately after playback begins because of
+    // crbug.com/106480.
+    // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
+    if (status_ == PIPELINE_OK)
+      buffering_state_cb_.Run(kPrerollCompleted);
+
+    FinishSeek();
 
     // If a playback rate change was requested during a seek, do it now that
     // the seek has compelted.
@@ -1145,7 +1164,7 @@ void Pipeline::TearDownPipeline() {
       SetState(kStopping);
       DoStop(base::Bind(&Pipeline::OnTeardownStateTransition, this));
 
-      FinishInitialization();
+      FinishSeek();
       break;
 
     case kPausing:
@@ -1155,10 +1174,8 @@ void Pipeline::TearDownPipeline() {
       SetState(kStopping);
       DoStop(base::Bind(&Pipeline::OnTeardownStateTransition, this));
 
-      if (seek_pending_) {
-        seek_pending_ = false;
-        FinishInitialization();
-      }
+      if (seek_pending_)
+        FinishSeek();
 
       break;
 

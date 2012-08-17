@@ -226,10 +226,11 @@ class WebMediaPlayerImpl
 
   void Repaint();
 
-  void OnPipelineInitialize(media::PipelineStatus status);
   void OnPipelineSeek(media::PipelineStatus status);
   void OnPipelineEnded(media::PipelineStatus status);
   void OnPipelineError(media::PipelineStatus error);
+  void OnPipelineBufferingState(
+      media::Pipeline::BufferingState buffering_state);
   void OnDemuxerOpened();
   void OnKeyAdded(const std::string& key_system, const std::string& session_id);
   void OnKeyError(const std::string& key_system,
@@ -340,6 +341,8 @@ class WebMediaPlayerImpl
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
   ProxyDecryptor decryptor_;
+
+  bool starting_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
