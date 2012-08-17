@@ -319,16 +319,15 @@ void WallpaperManager::RestartTimer() {
   }
 }
 
-void WallpaperManager::SaveUserWallpaperProperties(const std::string& email,
-                                                   User::WallpaperType type,
-                                                   int index) {
+void WallpaperManager::SetUserWallpaperProperties(const std::string& email,
+                                                  User::WallpaperType type,
+                                                  int index,
+                                                  bool is_persistent) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   current_user_wallpaper_type_ = type;
   current_user_wallpaper_index_ = index;
-  // Ephemeral users can not save data to local state. We just cache the index
-  // in memory for them.
-  if (UserManager::Get()->IsCurrentUserEphemeral())
+  if (!is_persistent)
     return;
 
   PrefService* local_state = g_browser_process->local_state();
@@ -360,15 +359,17 @@ void WallpaperManager::SetUserWallpaperFromFile(
                  delegate));
 }
 
-void WallpaperManager::SetInitialUserWallpaper(const std::string& username) {
+void WallpaperManager::SetInitialUserWallpaper(const std::string& username,
+                                               bool is_persistent) {
   current_user_wallpaper_type_ = User::DEFAULT;
   if (username == kGuestUser)
     current_user_wallpaper_index_ = ash::GetGuestWallpaperIndex();
   else
     current_user_wallpaper_index_ = ash::GetDefaultWallpaperIndex();
-  SaveUserWallpaperProperties(username,
-                              current_user_wallpaper_type_,
-                              current_user_wallpaper_index_);
+  SetUserWallpaperProperties(username,
+                             current_user_wallpaper_type_,
+                             current_user_wallpaper_index_,
+                             is_persistent);
 
   // Some browser tests do not have shell instance. And it is not necessary to
   // create a wallpaper for these tests. Add HasInstance check to prevent tests
@@ -424,7 +425,8 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
   GetUserWallpaperProperties(email, &type, &index, &date);
   if (type == User::DAILY && date != base::Time::Now().LocalMidnight()) {
     index = ash::GetNextWallpaperIndex(index);
-    SaveUserWallpaperProperties(email, User::DAILY, index);
+    SetUserWallpaperProperties(email, User::DAILY, index,
+                               ShouldPersistDataForUser(email));
   } else if (type == User::CUSTOMIZED) {
     // For security reason, use default wallpaper instead of custom wallpaper
     // at login screen. The security issue is tracked in issue 143198. Once it
@@ -477,7 +479,7 @@ void WallpaperManager::BatchUpdateWallpaper() {
       base::Time current_date = base::Time::Now().LocalMidnight();
       if (type == User::DAILY && current_date != last_modification_date) {
         index = ash::GetNextWallpaperIndex(index);
-        SaveUserWallpaperProperties(email, type, index);
+        SetUserWallpaperProperties(email, type, index, true);
       }
       // Force a wallpaper update for logged in / last selected user.
       // TODO(bshe): Notify lock screen, wallpaper picker UI to update wallpaper
@@ -637,12 +639,15 @@ void WallpaperManager::SetWallpaper(const std::string& username,
   std::string wallpaper_path =
       GetWallpaperPathForUser(username, false).value();
 
-  // TODO(bshe): Ephemeral user should not save custom wallpaper to disk.
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&WallpaperManager::SaveWallpaper,
-                 base::Unretained(this), wallpaper_path, wallpaper));
+  bool is_persistent = ShouldPersistDataForUser(username);
+
+  if (is_persistent) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&WallpaperManager::SaveWallpaper,
+                   base::Unretained(this), wallpaper_path, wallpaper));
+  }
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
@@ -653,7 +658,13 @@ void WallpaperManager::SetWallpaper(const std::string& username,
 
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper.image(), layout);
-  SaveUserWallpaperProperties(username, type, layout);
+  SetUserWallpaperProperties(username, type, layout, is_persistent);
+}
+
+bool WallpaperManager::ShouldPersistDataForUser(const std::string& email) {
+  UserManager* user_manager = UserManager::Get();
+  return !(email == user_manager->GetLoggedInUser().email() &&
+           user_manager->IsCurrentUserEphemeral());
 }
 
 void WallpaperManager::OnWallpaperLoaded(ash::WallpaperLayout layout,

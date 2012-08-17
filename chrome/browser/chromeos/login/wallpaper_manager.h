@@ -91,13 +91,15 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                                 base::WeakPtr<WallpaperDelegate> delegate);
 
   // Set |email|'s wallpaper |type|, |index| and local date to local state.
-  void SaveUserWallpaperProperties(const std::string& email,
-                                   User::WallpaperType type,
-                                   int index);
+  // When |is_persistent| is false, changes are kept in memory only.
+  void SetUserWallpaperProperties(const std::string& email,
+                                  User::WallpaperType type,
+                                  int index,
+                                  bool is_persistent);
 
   // Sets one of the default wallpapers for the specified user and saves this
   // settings in local state.
-  void SetInitialUserWallpaper(const std::string& username);
+  void SetInitialUserWallpaper(const std::string& username, bool is_persistent);
 
   // Saves |username| selected wallpaper information to local state.
   void SaveUserWallpaperInfo(const std::string& username,
@@ -184,6 +186,11 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                     User::WallpaperType type,
                     base::WeakPtr<WallpaperDelegate> delegate,
                     const UserImage& wallpaper);
+
+  // Whether wallpaper data should be persisted for user |email|.
+  // Note: this function can not be called in SetUserWallpaperProperties. It
+  // will create a deadlock. (issue 142440)
+  bool ShouldPersistDataForUser(const std::string& email);
 
   // Sets wallpaper to image in |user_image| with |layout|.
   void OnWallpaperLoaded(ash::WallpaperLayout layout,

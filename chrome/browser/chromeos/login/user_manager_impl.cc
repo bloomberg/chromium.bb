@@ -276,7 +276,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     SaveUserDisplayName(GetLoggedInUser().email(),
         UTF8ToUTF16(GetLoggedInUser().GetAccountName(true)));
     SetInitialUserImage(email);
-    WallpaperManager::Get()->SetInitialUserWallpaper(email);
+    WallpaperManager::Get()->SetInitialUserWallpaper(email, true);
   } else {
     int image_index = logged_in_user_->image_index();
     // If current user image is profile image, it needs to be refreshed.
@@ -330,14 +330,14 @@ void UserManagerImpl::DemoUserLoggedIn() {
   is_current_user_ephemeral_ = true;
   logged_in_user_ = CreateUser(kDemoUser, /* is_ephemeral= */ true);
   SetInitialUserImage(kDemoUser);
-  WallpaperManager::Get()->SetInitialUserWallpaper(kDemoUser);
+  WallpaperManager::Get()->SetInitialUserWallpaper(kDemoUser, false);
   NotifyOnLogin();
 }
 
 void UserManagerImpl::GuestUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_ephemeral_ = true;
-  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUser);
+  WallpaperManager::Get()->SetInitialUserWallpaper(kGuestUser, false);
   logged_in_user_ = CreateUser(kGuestUser, /* is_ephemeral= */ true);
   NotifyOnLogin();
 }
@@ -348,7 +348,7 @@ void UserManagerImpl::EphemeralUserLoggedIn(const std::string& email) {
   is_current_user_ephemeral_ = true;
   logged_in_user_ = CreateUser(email, /* is_ephemeral= */ true);
   SetInitialUserImage(email);
-  WallpaperManager::Get()->SetInitialUserWallpaper(email);
+  WallpaperManager::Get()->SetInitialUserWallpaper(email, false);
   NotifyOnLogin();
 }
 
@@ -928,9 +928,10 @@ void UserManagerImpl::MigrateWallpaperData() {
           DictionaryPrefUpdate prefs_wallpapers_update(local_state,
                                                        kUserWallpapers);
           prefs_wallpapers_update->RemoveWithoutPathExpansion(username, NULL);
-          WallpaperManager::Get()->SaveUserWallpaperProperties(username,
-                                                               User::DEFAULT,
-                                                               index);
+          WallpaperManager::Get()->SetUserWallpaperProperties(username,
+                                                              User::DEFAULT,
+                                                              index,
+                                                              true);
         } else {
           // Before M20, wallpaper index is not saved into LocalState unless
           // user specifically sets a wallpaper. After M20, the default
@@ -944,8 +945,8 @@ void UserManagerImpl::MigrateWallpaperData() {
           // wallpaper for those users as described in cr/130685. So here we use
           // default wallpaper for users that exist in user list but does not
           // have an index saved in LocalState.
-          WallpaperManager::Get()->SaveUserWallpaperProperties(username,
-              User::DEFAULT, ash::GetDefaultWallpaperIndex());
+          WallpaperManager::Get()->SetUserWallpaperProperties(username,
+              User::DEFAULT, ash::GetDefaultWallpaperIndex(), true);
         }
       }
     }
@@ -954,8 +955,11 @@ void UserManagerImpl::MigrateWallpaperData() {
 
 void UserManagerImpl::SaveLoggedInUserWallpaperProperties(
     User::WallpaperType type, int index) {
-  WallpaperManager::Get()->SaveUserWallpaperProperties(
-      GetLoggedInUser().email(), type, index);
+  // Ephemeral users can not save data to local state.
+  // We just cache the index in memory for them.
+  bool is_persistent = !IsCurrentUserEphemeral();
+  WallpaperManager::Get()->SetUserWallpaperProperties(
+      GetLoggedInUser().email(), type, index, is_persistent);
 }
 
 void UserManagerImpl::SetUserImage(const std::string& username,
@@ -1076,7 +1080,8 @@ void UserManagerImpl::SaveWallpaperToLocalState(const std::string& username,
     ash::WallpaperLayout layout,
     User::WallpaperType type) {
   // TODO(bshe): We probably need to save wallpaper_path instead of index.
-  WallpaperManager::Get()->SaveUserWallpaperProperties(username, type, layout);
+  WallpaperManager::Get()->SetUserWallpaperProperties(
+      username, type, layout, true);
 }
 
 bool UserManagerImpl::SaveBitmapToFile(const UserImage& user_image,
